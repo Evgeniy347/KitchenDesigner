@@ -72,6 +72,7 @@ public class AnalysisContractTests
             IssueCatalog.DishwasherSunk(a, b, 40f),
             IssueCatalog.DishwasherFacadeHeight(a, b, 500),
             IssueCatalog.AttachDetached(a, b),
+            IssueCatalog.ScrewLegOffCentre(a, b, new ScrewLegOffCentre("X", 16f, 4f)),
         };
     }
 
@@ -87,6 +88,7 @@ public class AnalysisContractTests
             "EDG-01",
             "FAC-01",
             "GAP-01", "GAP-02",
+            "LEG-01",
             "SEAT-01",
         };
 
@@ -130,6 +132,7 @@ public class AnalysisContractTests
             ["DWH-02"] = IssueLevel.Warning,
             ["DWH-03"] = IssueLevel.Warning,
             ["DWH-04"] = IssueLevel.Warning,
+            ["LEG-01"] = IssueLevel.Warning,
         };
 
         CollectionAssert.AreEquivalent(expected.Keys, byCode.Keys,

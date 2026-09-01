@@ -119,6 +119,18 @@ namespace KitchenDesigner.Core
              (factory, d) => factory.CreatePillar(d.midHeightMM, d.name, d.Position, d.Dimensions.x),
              null),
 
+            (d => d.isScrewLeg,
+             (factory, d) => factory.CreateScrewLeg(d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is not ScrewLegElement leg) return;
+                 leg.Thread = d.screwLegThread;
+                 leg.BaseDiameterMM = d.screwLegBaseDiameterMM;
+                 leg.BaseHeightMM = d.screwLegBaseHeightMM;
+                 leg.ThreadLengthMM = d.screwLegThreadLengthMM;
+                 leg.InsertionDepthMM = d.screwLegInsertionMM;
+             }),
+
             (d => d.isTable,
              (factory, d) => factory.CreateTable(d.Dimensions, d.name, d.Position),
              (d, el) =>

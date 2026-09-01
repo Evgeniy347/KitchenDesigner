@@ -160,6 +160,17 @@ namespace KitchenDesigner.Core.MCP
                 diameterMM = pillar.DiameterMM
             }),
 
+            For<ScrewLegElement>((info, leg) => info.screwLeg = new ScrewLegInfo
+            {
+                thread = leg.Thread,
+                threadLengthMM = leg.ThreadLengthMM,
+                insertionMM = leg.InsertionDepthMM,
+                baseDiameterMM = leg.BaseDiameterMM,
+                baseHeightMM = leg.BaseHeightMM,
+                heightAboveFloorMM = leg.HeightAboveFloorMM,
+                hostName = leg.HostPartName ?? ""
+            }),
+
             For<CooktopElement>((info, cooktop) => info.cooktop = new CooktopInfo
             {
                 model = cooktop.Model,

@@ -142,7 +142,8 @@ SELECTOR (a string; space-separated clauses, ALL must match)
   B4_*                     name mask ('*' = glob; without '*' = substring)
   name:PATTERN             same, explicit
   type:board|wall|floor|window|door|drawer|facade|assembled_facade|
-       radial_shelf|panel|table|radius_table|stool|chair|sofa|pillar|light
+       radial_shelf|panel|table|radius_table|stool|chair|sofa|pillar|
+       screw_leg|light
   module:NAME / group:NAME by module name (mask allowed)
   thickness==18            compare a dimension in MM; also width/height/depth
                            with == != >= <= > <
@@ -222,6 +223,17 @@ SofaElement           Sofa (type:""sofa"", 2000x800x900 mm by default). NO armre
                       what is left up to height becomes the back. Body and cushion
                       decors via tabletop_material/legs_material.
 PillarElement         Pillar (type:""pillar"", mid_height_mm, diameter_mm).
+ScrewLegElement       Screw-in levelling leg with a threaded insert
+                      (type:""screw_leg""). A foot (screw_base_diameter_mm x
+                      screw_base_height_mm, 25x8 mm by default) plus a threaded
+                      rod (screw_thread M6/M8/M10, screw_thread_length_mm 50 by
+                      default) that goes screw_insertion_mm (25) INTO the part
+                      above it. Drop it under any part: it takes that part as its
+                      host, re-derives the thread length so the foot stands on the
+                      floor, and shares space with the host legally — a thread
+                      poking through a 16 mm board is not a collision. Snapping
+                      centres it on the host; off-centre on a side thinner than
+                      25 mm is reported as LEG-01.
 SinkElement / CooktopElement
                       Recessed appliances (type:""sink"" / ""cooktop""). They sit
                       on a plain board with a horizontal face (the countertop),

@@ -36,6 +36,7 @@ public class McpResponseFieldGuideParityTests
             ["faceObstructions"] = "детали вплотную перед лицевой гранью фасада",
             ["openingViolations"] = "детали, пересекающие траекторию открывания",
             ["pillar"] = "свойства опоры, только для PillarElement",
+            ["screwLeg"] = "свойства винтовой опоры, только для ScrewLegElement",
             ["cooktop"] = "свойства варочной, только для CooktopElement",
             ["oven"] = "свойства духовки, только для OvenElement",
             ["dishwasher"] = "свойства посудомойки, только для DishwasherElement",

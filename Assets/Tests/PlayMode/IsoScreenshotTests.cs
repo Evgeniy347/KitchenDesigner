@@ -934,6 +934,22 @@ public class IsoScreenshotTests
     }
 
     [UnityTest]
+    public IEnumerator IsoScrewLeg_M6x50()
+    {
+        int bodyH = ScrewLegSpec.BodyHeightMM(ScrewLegSpec.DEFAULT_THREAD_LENGTH_MM,
+            ScrewLegSpec.DEFAULT_BASE_HEIGHT_MM);
+        Vector3 pos = new Vector3(0f, bodyH * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateScrewLeg("IsoScrewLeg", pos);
+        _spawned.Add(go);
+        var leg = go.GetComponent<ScrewLegElement>();
+        Assert.IsNotNull(leg, "винтовая опора обязана быть опорой, а не доской");
+        Assert.AreEqual(ScrewLegSpec.DEFAULT_THREAD, leg!.Thread,
+            "снимок обязан показывать резьбу по умолчанию — M6");
+
+        yield return RenderElementIso(go, "iso_screw_leg_m6x50.png", 2.5f);
+    }
+
+    [UnityTest]
     public IEnumerator IsoAssembledFacade_Blind()
     {
         yield return RenderAssembledFacade(AssembledFill.Blind,

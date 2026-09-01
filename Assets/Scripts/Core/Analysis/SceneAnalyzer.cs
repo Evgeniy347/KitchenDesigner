@@ -28,6 +28,7 @@ namespace KitchenDesigner.Core.Analysis
             CollectDrawerFacadeLinks(all, issues);
             CollectAttachLinks(all, issues);
             CollectDishwasherFacadeLinks(all, issues);
+            CollectScrewLegCentring(all, issues);
             return issues;
         }
 
@@ -184,6 +185,18 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
+        private static void CollectScrewLegCentring(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var e in all)
+            {
+                if (!(e is ScrewLegElement leg)) continue;
+                var host = AttachLinks.Parent(leg);
+                if (host == null) continue;
+                if (ScrewLegCentring.TryFindOffCentre(leg, host, out var offCentre))
+                    issues.Add(IssueCatalog.ScrewLegOffCentre(leg, host, offCentre));
+            }
+        }
+
         private static FacadeElement? FindFacade(List<KitchenElement> all, string name)
         {
             foreach (var e in all)
@@ -212,6 +225,7 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeDishwasherBackGap = "DWH-04";
         public const string CodeDishwasherNoSupport = "DWH-05";
         public const string CodeAttachDetached = "ATT-01";
+        public const string CodeScrewLegOffCentre = "LEG-01";
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {
@@ -332,6 +346,14 @@ namespace KitchenDesigner.Core.Analysis
                 PairDetail(child, parent),
                 $"Прикреплённая деталь отошла от родителя — {Name(child)} и {Name(parent)} не в контакте",
                 child, parent);
+
+        public static AnalysisIssue ScrewLegOffCentre(KitchenElement leg, KitchenElement host,
+            ScrewLegOffCentre offCentre) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeScrewLegOffCentre,
+                PairDetail(leg, host),
+                $"Опора не по центру: сторона {offCentre.Axis} у {Name(host)} — {offCentre.SpanMM:F1} мм "
+                + $"(меньше {ScrewLegSpec.CENTRING_REQUIRED_SPAN_MM} мм), смещение {offCentre.OffsetMM:F1} мм",
+                leg, host);
 
         private static string Name(KitchenElement? e) =>
             e != null && !string.IsNullOrEmpty(e.PartName) ? e.PartName : "—";

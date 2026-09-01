@@ -115,7 +115,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_1",
@@ -231,7 +237,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_2",
@@ -347,7 +359,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_3",
@@ -463,7 +481,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_4",
@@ -579,7 +603,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_5",
@@ -695,7 +725,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_6",
@@ -811,7 +847,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_7",
@@ -927,7 +969,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_8",
@@ -1043,7 +1091,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_9",
@@ -1159,7 +1213,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_10",
@@ -1275,7 +1335,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_11",
@@ -1391,7 +1457,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_12",
@@ -1507,7 +1579,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_13",
@@ -1623,7 +1701,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_14",
@@ -1739,7 +1823,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_15",
@@ -1855,7 +1945,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_16",
@@ -1971,7 +2067,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Mode_17",
@@ -2087,7 +2189,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         }
     ],
     "groups": [],
@@ -2225,7 +2333,13 @@
         "edgeBanding": true,
         "edgeThicknessMM": 1.0,
         "edgeSkipValidation": false,
-        "edgeManualMask": 0
+        "edgeManualMask": 0,
+        "isScrewLeg": false,
+        "screwLegThread": "M6",
+        "screwLegThreadLengthMM": 50,
+        "screwLegInsertionMM": 25,
+        "screwLegBaseDiameterMM": 25,
+        "screwLegBaseHeightMM": 8
     },
     "undoHistory": [],
     "redoHistory": [],

@@ -399,6 +399,23 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, cooktop);
         }
 
+        public GameObject CreateScrewLeg(string name, Vector3 position)
+        {
+            var leg = ElementRoot.NewCube(name, "Винтовая опора", position);
+            ElementRoot.SwapBoxColliderForMeshCollider(leg);
+
+            var screwLeg = leg.AddComponent<ScrewLegElement>();
+            screwLeg.PartName = leg.name;
+            screwLeg.DimensionsMM = new Vector3Int(
+                ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM,
+                ScrewLegSpec.BodyHeightMM(ScrewLegSpec.DEFAULT_THREAD_LENGTH_MM,
+                    ScrewLegSpec.DEFAULT_BASE_HEIGHT_MM),
+                ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM);
+
+            if (DefaultMaterial != null) MaterialManager.ApplyById(screwLeg, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(leg, screwLeg);
+        }
+
         public GameObject CreateOven(string name, Vector3 position)
         {
             var go = ElementRoot.NewEmpty(name, "Духовка", position);

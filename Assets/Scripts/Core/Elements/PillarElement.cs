@@ -2,10 +2,13 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-	public class PillarElement : KitchenElement
+	public class PillarElement : KitchenElement, IAutoSeated
 	{
 
         public override string DisplayTypeName => "Опора";
+
+		public void SeatAfterMove(System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
+			PillarAutoFit.Seat(this, scene);
 		public const int DiameterMM_Default = 50;
 		public const int DiameterMM_Min = 20;
 		public const int DiameterMM_Max = 200;
@@ -79,22 +82,7 @@ namespace KitchenDesigner.Core
 			var meshRenderer = GetComponent<MeshRenderer>();
 			if (meshRenderer == null) meshRenderer = gameObject.AddComponent<MeshRenderer>();
 
-			UpdateCollider(mesh);
-		}
-
-		private void UpdateCollider(Mesh mesh)
-		{
-			var existing = GetComponent<Collider>();
-			if (existing != null && !(existing is MeshCollider))
-				Object.DestroyImmediate(existing);
-
-			var meshCollider = GetComponent<MeshCollider>();
-			if (meshCollider == null)
-			{
-				meshCollider = gameObject.AddComponent<MeshCollider>();
-				meshCollider.convex = false;
-			}
-			meshCollider.sharedMesh = mesh;
+			ElementRoot.UseMeshCollider(gameObject, mesh);
 		}
 
 		public override Vector3[] GetVertices() => GetVerticesAt(transform.position);

@@ -77,6 +77,11 @@ namespace KitchenDesigner.Core.MCP
 
             Unsupported("mid_height_mm", o => o.mid_height_mm.HasValue, el => el is PillarElement),
             Unsupported("diameter_mm", o => o.diameter_mm.HasValue, el => el is PillarElement),
+            Unsupported("screw_thread", o => o.screw_thread != null, el => el is ScrewLegElement),
+            Unsupported("screw_thread_length_mm", o => o.screw_thread_length_mm.HasValue, el => el is ScrewLegElement),
+            Unsupported("screw_insertion_mm", o => o.screw_insertion_mm.HasValue, el => el is ScrewLegElement),
+            Unsupported("screw_base_diameter_mm", o => o.screw_base_diameter_mm.HasValue, el => el is ScrewLegElement),
+            Unsupported("screw_base_height_mm", o => o.screw_base_height_mm.HasValue, el => el is ScrewLegElement),
             Unsupported("tint", o => o.tint != null, el => el is WindowElement),
             Unsupported("sill_protrusion_mm", o => o.sill_protrusion_mm.HasValue, el => el is WindowElement),
             Unsupported("sash_type", o => o.sash_type != null, el => el is DoorElement),

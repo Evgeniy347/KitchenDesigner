@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.UI
         Stool = 1 << 12,
         Chair = 1 << 13,
         Sofa = 1 << 14,
+        ScrewLeg = 1 << 15,
     }
 
     internal sealed class ContextMenuLayout

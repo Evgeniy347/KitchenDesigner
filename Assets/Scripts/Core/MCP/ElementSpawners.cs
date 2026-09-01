@@ -87,6 +87,8 @@ namespace KitchenDesigner.Core.MCP
                     item.height ?? PillarElement.MidHeightMM_Default, item.name, pos,
                     item.width ?? PillarElement.DiameterMM_Default),
 
+                ["screw_leg"] = (item, pos) => ElementFactory.CreateScrewLeg(item.name, pos),
+
                 ["sink"] = (item, pos) => ElementFactory.CreateSink(item.name, pos),
 
                 ["cooktop"] = (item, pos) => ElementFactory.CreateCooktop(item.name, pos, item.model ?? ""),

@@ -115,7 +115,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Facade_A",
@@ -231,7 +237,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Assembled_A",
@@ -347,7 +359,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Radial_A",
@@ -463,7 +481,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Wall_A",
@@ -584,7 +608,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         }
     ],
     "groups": [],
@@ -722,7 +752,13 @@
         "edgeBanding": true,
         "edgeThicknessMM": 1.0,
         "edgeSkipValidation": false,
-        "edgeManualMask": 0
+        "edgeManualMask": 0,
+        "isScrewLeg": false,
+        "screwLegThread": "M6",
+        "screwLegThreadLengthMM": 50,
+        "screwLegInsertionMM": 25,
+        "screwLegBaseDiameterMM": 25,
+        "screwLegBaseHeightMM": 8
     },
     "undoHistory": [],
     "redoHistory": [],

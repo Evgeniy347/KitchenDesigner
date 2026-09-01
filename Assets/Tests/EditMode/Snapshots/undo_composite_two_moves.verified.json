@@ -115,7 +115,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         },
         {
             "name": "Board_B",
@@ -231,7 +237,13 @@
             "edgeBanding": true,
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
-            "edgeManualMask": 0
+            "edgeManualMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8
         }
     ],
     "groups": [],
@@ -369,7 +381,13 @@
         "edgeBanding": true,
         "edgeThicknessMM": 1.0,
         "edgeSkipValidation": false,
-        "edgeManualMask": 0
+        "edgeManualMask": 0,
+        "isScrewLeg": false,
+        "screwLegThread": "M6",
+        "screwLegThreadLengthMM": 50,
+        "screwLegInsertionMM": 25,
+        "screwLegBaseDiameterMM": 25,
+        "screwLegBaseHeightMM": 8
     },
     "undoHistory": [
         {

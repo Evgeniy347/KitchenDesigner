@@ -400,30 +400,26 @@ namespace KitchenDesigner.Core
 
 			if (_wasMoved)
 			{
-				Vector3Int? pillarDimsBefore = null;
-				Vector3 pillarPosBefore = Vector3.zero;
-				int? pillarMidBefore = null;
-				if (_target is PillarElement pillarBefore)
+				Vector3Int? seatedDimsBefore = null;
+				Vector3 seatedPosBefore = Vector3.zero;
+				if (_target is IAutoSeated seatedBefore)
 				{
-					pillarDimsBefore = pillarBefore.DimensionsMM;
-					pillarPosBefore = pillarBefore.transform.position;
-					pillarMidBefore = pillarBefore.MidHeightMM;
+					seatedDimsBefore = _target.DimensionsMM;
+					seatedPosBefore = _target.transform.position;
+					seatedBefore.SeatAfterMove(PartRegistry.GetAll());
 				}
-
-				if (_target is PillarElement pillarToSeat)
-					PillarAutoFit.Seat(pillarToSeat, PartRegistry.GetAll());
 
 				foreach (var m in _moveSet)
 					if (m != null) MmGrid.Snap(m);
 
 				if (KitchenSettings.Instance.BlockOnViolation && MoveSetCausesViolation())
 				{
-					if (pillarMidBefore.HasValue && _target is PillarElement p)
-						p.MidHeightMM = pillarMidBefore.Value;
+					if (seatedDimsBefore.HasValue && _target != null)
+						_target.DimensionsMM = seatedDimsBefore.Value;
 					RevertMoveSet();
 				}
 				else
-					CommandStack.Execute(BuildMoveCommand(pillarDimsBefore, pillarPosBefore));
+					CommandStack.Execute(BuildMoveCommand(seatedDimsBefore, seatedPosBefore));
 			}
 			else
 			{
@@ -457,7 +453,7 @@ namespace KitchenDesigner.Core
             return false;
         }
 
-        private IUndoCommand BuildMoveCommand(Vector3Int? pillarDimsBefore = null, Vector3 pillarPosBefore = default)
+        private IUndoCommand BuildMoveCommand(Vector3Int? seatedDimsBefore = null, Vector3 seatedPosBefore = default)
         {
             var cmds = new List<IUndoCommand>();
             for (int i = 0; i < _moveSet.Count; i++)
@@ -468,14 +464,14 @@ namespace KitchenDesigner.Core
                 cmds.Add(new MoveCommand(m, _moveStart[i], m.transform.position, rotBefore, m.transform.rotation));
             }
 
-            if (pillarDimsBefore.HasValue && _target is PillarElement pillar)
+            if (seatedDimsBefore.HasValue && _target is IAutoSeated)
             {
-                var dimsAfter = pillar.DimensionsMM;
-                if (pillarDimsBefore.Value != dimsAfter)
+                var dimsAfter = _target.DimensionsMM;
+                if (seatedDimsBefore.Value != dimsAfter)
                 {
-                    cmds.Add(new ResizeCommand(pillar, pillarDimsBefore.Value, dimsAfter,
-                        pillarPosBefore, pillar.transform.position,
-                        pillar.transform.rotation, pillar.transform.rotation));
+                    cmds.Add(new ResizeCommand(_target, seatedDimsBefore.Value, dimsAfter,
+                        seatedPosBefore, _target.transform.position,
+                        _target.transform.rotation, _target.transform.rotation));
                 }
             }
 

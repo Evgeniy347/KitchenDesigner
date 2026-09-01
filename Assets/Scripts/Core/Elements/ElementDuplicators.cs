@@ -120,6 +120,23 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is ScrewLegElement,
+             (factory, source, pos) => factory.CreateScrewLeg(source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (ScrewLegElement)source;
+                 var made = copy.GetComponent<ScrewLegElement>();
+                 if (made != null)
+                 {
+                     made.Thread = src.Thread;
+                     made.BaseDiameterMM = src.BaseDiameterMM;
+                     made.BaseHeightMM = src.BaseHeightMM;
+                     made.ThreadLengthMM = src.ThreadLengthMM;
+                     made.InsertionDepthMM = src.InsertionDepthMM;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is StoolElement,
              (factory, source, pos) => factory.CreateStool(source.DimensionsMM,
                  ((StoolElement)source).CornerRadiusMM, source.PartName, pos),

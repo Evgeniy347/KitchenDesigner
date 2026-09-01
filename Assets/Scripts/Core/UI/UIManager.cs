@@ -169,6 +169,8 @@ namespace KitchenDesigner.Core.UI
 
         public void SpawnPillar(int midHeightMM, string name) => Spawner.SpawnPillar(midHeightMM, name);
 
+        public void SpawnScrewLeg(string name) => Spawner.SpawnScrewLeg(name);
+
         private Vector3 GroundPointInFrontOfCamera()
         {
             var cam = Camera.main;

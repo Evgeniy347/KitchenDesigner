@@ -197,6 +197,15 @@ namespace KitchenDesigner.Core
 				d.lightShadow = (int)lightEl.Shadow;
 			}
 			d.midHeightMM = pillar != null ? pillar.MidHeightMM : PillarElement.MidHeightMM_Default;
+			if (element is ScrewLegElement screwLeg)
+			{
+				d.isScrewLeg = true;
+				d.screwLegThread = screwLeg.Thread;
+				d.screwLegThreadLengthMM = screwLeg.ThreadLengthMM;
+				d.screwLegInsertionMM = screwLeg.InsertionDepthMM;
+				d.screwLegBaseDiameterMM = screwLeg.BaseDiameterMM;
+				d.screwLegBaseHeightMM = screwLeg.BaseHeightMM;
+			}
 
 			var grooveSpecs = element.Grooves;
 			d.grooves = new GrooveEntry[grooveSpecs.Count];

@@ -244,6 +244,34 @@ public class SnapshotTests
 
     // ── RadialShelfElement snapshots ─────────────────────────────────────
 
+    // ── Screw leg snapshots ──────────────────────────────────────────────
+
+    [Test]
+    public void Snapshot_ScrewLeg_Default()
+    {
+        var go = ElementFactory.CreateScrewLeg("DefaultScrewLeg", Vector3.zero);
+        Add(go);
+        var json = CaptureJson(new[] { go.GetComponent<KitchenElement>() });
+        Snapshot.Match(json, "screw_leg_default");
+    }
+
+    [Test]
+    public void Snapshot_ScrewLeg_Custom()
+    {
+        var go = ElementFactory.CreateScrewLeg("CustomScrewLeg", new Vector3(0.4f, 0.05f, -1.0f));
+        var leg = go.GetComponent<ScrewLegElement>();
+        leg.Thread = ScrewLegSpec.ThreadM10;
+        leg.BaseDiameterMM = 40;
+        leg.BaseHeightMM = 12;
+        leg.ThreadLengthMM = 90;
+        leg.InsertionDepthMM = 18;
+        leg.AttachedToName = "SomeSidePanel";
+        Add(go);
+
+        var json = CaptureJson(new[] { leg });
+        Snapshot.Match(json, "screw_leg_custom");
+    }
+
     [Test]
     public void Snapshot_RadialShelf_Default()
     {

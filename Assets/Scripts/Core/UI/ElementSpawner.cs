@@ -92,6 +92,13 @@ namespace KitchenDesigner.Core.UI
         public void SpawnDoor(Vector3Int dims, string name) =>
             PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateDoor(dims, name, pos));
 
+        public void SpawnScrewLeg(string name)
+        {
+            int totalH = ScrewLegSpec.BodyHeightMM(ScrewLegSpec.DEFAULT_THREAD_LENGTH_MM,
+                ScrewLegSpec.DEFAULT_BASE_HEIGHT_MM);
+            PlaceCenteredOnGround(totalH, pos => ElementFactory.CreateScrewLeg(name, pos));
+        }
+
         public void SpawnPillar(int midHeightMM, string name)
         {
             int totalH = PillarElement.TopHeightMM + midHeightMM + PillarElement.BottomHeightMM;

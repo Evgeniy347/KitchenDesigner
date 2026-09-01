@@ -63,6 +63,7 @@ namespace KitchenDesigner.Core
 
                     bool coDirectional = dot > 0;
                     if (isGroove && coDirectional) continue;
+                    if (coDirectional && part.Geometry.CentresOnTarget) continue;
 
                     Vector3 offset = of.center - mf.center;
                     float planeDist = Mathf.Abs(Vector3.Dot(offset, mf.normal));
@@ -144,10 +145,11 @@ namespace KitchenDesigner.Core
             Vector3 v = mf.upAxis;
             Rect mRect = FaceRects.Of(mf, u, v);
             Rect oRect = FaceRects.Of(of, u, v);
+            bool centres = part.Geometry.CentresOnTarget;
             float du = EdgeDetents.NearestDetentDelta(mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax,
-                part.MaxDist, EdgeDetents.GrooveWallCoordsAlong(wallFaces, u), out string labelU);
+                part.MaxDist, EdgeDetents.GrooveWallCoordsAlong(wallFaces, u), centres, out string labelU);
             float dv = EdgeDetents.NearestDetentDelta(mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax,
-                part.MaxDist, EdgeDetents.GrooveWallCoordsAlong(wallFaces, v), out string labelV);
+                part.MaxDist, EdgeDetents.GrooveWallCoordsAlong(wallFaces, v), centres, out string labelV);
 
             Vector3 snapPos = part.BasePos + planeShift * mf.normal + du * u + dv * v;
 

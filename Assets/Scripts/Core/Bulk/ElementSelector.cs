@@ -132,6 +132,7 @@ namespace KitchenDesigner.Core.Bulk
             if (e is ChairElement) return "chair";
             if (e is SofaElement) return "sofa";
             if (e is PillarElement) return "pillar";
+            if (e is ScrewLegElement) return "screw_leg";
             if (e is LightSourceElement) return "light";
             if (e is SinkElement) return "sink";
             if (e is CooktopElement) return "cooktop";

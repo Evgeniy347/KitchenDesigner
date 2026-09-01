@@ -27,17 +27,20 @@ public abstract class SnapCoreTestBase
         private readonly Vector3 _size;
         private readonly Quaternion _rotation;
         private readonly bool _isPanel;
+        private readonly bool _centresOnTarget;
 
-        public Box(string name, Vector3Int dims, Quaternion? rotation = null, bool isPanel = false)
+        public Box(string name, Vector3Int dims, Quaternion? rotation = null, bool isPanel = false,
+            bool centresOnTarget = false)
         {
             _name = name;
             _size = new Vector3(dims.x, dims.y, dims.z) * MM;
             _rotation = rotation ?? Quaternion.identity;
             _isPanel = isPanel;
+            _centresOnTarget = centresOnTarget;
         }
 
         public ElementGeometry At(Vector3 position)
-            => ElementGeometry.Box(_name, position, _size, _rotation, _isPanel);
+            => ElementGeometry.Box(_name, position, _size, _rotation, _isPanel, _centresOnTarget);
     }
 
     protected static Box Make(string name, Vector3Int dims, Quaternion? rotation = null)

@@ -947,4 +947,34 @@ public class RoundTripTests
         // HandleMode
         Assert.AreEqual("Resize", restored.handleMode);
     }
+
+    /// <summary>Все пять параметров винтовой опоры переживают сохранение.
+    ///
+    /// Значения намеренно НЕ по умолчанию: на дефолтах поле, которое вообще не
+    /// пишется, читается как правильное, и тест зелёный против кода, который
+    /// его потерял.</summary>
+    [Test]
+    public void ScrewLeg_AllProperties_RoundTrip()
+    {
+        var go = ElementFactory.CreateScrewLeg("Опора1", new Vector3(0.4f, 0.045f, -1.2f));
+        var leg = (ScrewLegElement)GetElement(go);
+        leg.Thread = ScrewLegSpec.ThreadM8;
+        leg.BaseDiameterMM = 30;
+        leg.BaseHeightMM = 10;
+        leg.ThreadLengthMM = 70;
+        leg.InsertionDepthMM = 20;
+
+        FullRoundTrip();
+
+        var r = Object.FindObjectsByType<KitchenElement>()[0] as ScrewLegElement;
+        Assert.IsNotNull(r, "восстановиться обязана именно опора, а не доска");
+        Assert.AreEqual(ScrewLegSpec.ThreadM8, r!.Thread, "резьба");
+        Assert.AreEqual(30, r!.BaseDiameterMM, "диаметр основания");
+        Assert.AreEqual(10, r!.BaseHeightMM, "высота основания");
+        Assert.AreEqual(70, r!.ThreadLengthMM, "длина резьбы");
+        Assert.AreEqual(20, r!.InsertionDepthMM, "заход в корпус");
+        Assert.AreEqual(60, r!.HeightAboveFloorMM, "высота над полом = 70 − 20 + 10");
+        Assert.AreEqual(new Vector3Int(30, 80, 30), r!.DimensionsMM,
+            "габарит опоры — пятка плюс вся резьба");
+    }
 }

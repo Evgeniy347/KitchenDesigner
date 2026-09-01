@@ -109,7 +109,7 @@ public class SidebarCatalogTests
     public void FurnitureGroup_HasTable()
     {
         var groups = SidebarCatalog.Build();
-        Assert.AreEqual(7, groups[3].items.Count);
+        Assert.AreEqual(8, groups[3].items.Count);
         var it = groups[3].items.Find(i => i.name == "Прямоугольный стол");
         Assert.IsNotNull(it);
         Assert.IsTrue(it.isFurniture);

@@ -22,6 +22,7 @@ namespace KitchenDesigner.Core.UI
             public bool isWindow;
             public bool isDoor;
             public bool isPillar;
+            public bool isScrewLeg;
             public bool isFloor;
             public bool isLightSource;
             public bool isSink;
@@ -49,7 +50,7 @@ namespace KitchenDesigner.Core.UI
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
                 isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isStool = false; isChair = false; isSofa = false; isWindow = false; isDoor = false;
-                isPillar = false; isFloor = false; isLightSource = false; isSink = false; isCooktop = false;
+                isPillar = false; isScrewLeg = false; isFloor = false; isLightSource = false; isSink = false; isCooktop = false;
                 isOven = false; isDishwasher = false;
                 isPanel = false; applianceModel = ""; pillarMidHeightMM = 75;
                 drawerType = "A"; drawerLength = 350;
@@ -156,8 +157,9 @@ namespace KitchenDesigner.Core.UI
                 SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM));
             sofa.isSofa = true;
             var pillar = PillarItem("Ножка", PillarElement.MidHeightMM_Default);
+            var screwLeg = ScrewLegItem("Винтовая опора");
             var sink = SinkItem("Мойка");
-            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, stool, chair, sofa, pillar, sink } };
+            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, stool, chair, sofa, pillar, screwLeg, sink } };
         }
 
         private static Group ApplianceGroup()
@@ -220,6 +222,17 @@ namespace KitchenDesigner.Core.UI
             var item = new Item(name, new Vector3Int(PillarElement.DiameterMM_Default, totalH, PillarElement.DiameterMM_Default));
             item.isPillar = true;
             item.pillarMidHeightMM = midHeightMM;
+            return item;
+        }
+
+        private static Item ScrewLegItem(string name)
+        {
+            int totalH = ScrewLegSpec.BodyHeightMM(ScrewLegSpec.DEFAULT_THREAD_LENGTH_MM,
+                ScrewLegSpec.DEFAULT_BASE_HEIGHT_MM);
+            var item = new Item(name, new Vector3Int(
+                ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM, totalH,
+                ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM));
+            item.isScrewLeg = true;
             return item;
         }
 

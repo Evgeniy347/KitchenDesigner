@@ -287,6 +287,8 @@ namespace KitchenDesigner.Core.UI
                 UIManager.Instance.SpawnTable(item.dims, item.name);
             else if (item.isPillar)
                 UIManager.Instance.SpawnPillar(item.pillarMidHeightMM, item.name);
+            else if (item.isScrewLeg)
+                UIManager.Instance.SpawnScrewLeg(item.name);
             else if (item.isPanel)
                 UIManager.Instance.SpawnPanel(item.dims, item.name,
                     item.gapLeft, item.gapRight, item.gapTop, item.gapBottom);

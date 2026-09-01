@@ -31,6 +31,8 @@ namespace KitchenDesigner.Core
 		GameObject CreateLightSource(string name, Vector3 position);
 		GameObject CreateSink(string name, Vector3 position);
 		GameObject CreateCooktop(string name, Vector3 position, string model = "");
+		GameObject CreateScrewLeg(string name, Vector3 position);
+
 		GameObject CreateOven(string name, Vector3 position);
 		GameObject CreateDishwasher(string name, Vector3 position);
 		GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,

@@ -19,7 +19,8 @@ namespace KitchenDesigner.Core
                 element.GetGrooveSeatFaces(),
                 element.GetGrooveWallFaces(),
                 min, max,
-                element is PanelElement);
+                element is PanelElement,
+                element is ScrewLegElement);
         }
 
         public static ElementGeometry ToGeometryAt(this KitchenElement element, Vector3 position)
@@ -35,7 +36,8 @@ namespace KitchenDesigner.Core
                 element.GetGrooveSeatFacesAt(position),
                 element.GetGrooveWallFacesAt(position),
                 min, max,
-                element is PanelElement);
+                element is PanelElement,
+                element is ScrewLegElement);
         }
 
         public static List<ElementGeometry> ToGeometry(this IEnumerable<KitchenElement> elements)

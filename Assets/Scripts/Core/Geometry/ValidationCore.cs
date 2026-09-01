@@ -78,6 +78,7 @@ namespace KitchenDesigner.Core
                 return;
             }
 
+            if (TryScrewLegContact(a, b, aIdx, bIdx, result)) return;
             if (SharesSpaceLegitimately(a, b)) return;
             if (TrySeatedGrooveContact(a, b, aIdx, bIdx, result)) return;
 
@@ -91,8 +92,39 @@ namespace KitchenDesigner.Core
             if (b.Is(ElementKind.Anchor)) _anchorsInIllegalOverlap.Add(bIdx);
         }
 
+        private static bool TryScrewLegContact(in ValidationElement a, in ValidationElement b,
+            int aIdx, int bIdx, CoreValidationResult result)
+        {
+            bool aLeg = a.Is(ElementKind.ScrewLeg);
+            bool bLeg = b.Is(ElementKind.ScrewLeg);
+            if (aLeg == bLeg) return false;
+            if (!a.IsPairedWith(b) && !b.IsPairedWith(a)) return false;
+
+            var leg = aLeg ? a : b;
+            var host = aLeg ? b : a;
+            int legFace = FaceContacts.FaceIndexByNormal(leg.Faces, UpNormal);
+            int hostFace = FaceContacts.FaceIndexByNormal(host.Faces, -UpNormal);
+            float area = LegSectionArea(leg);
+
+            result.Contacts.Add(aLeg
+                ? new CoreContact(aIdx, bIdx, legFace, hostFace, area, true)
+                : new CoreContact(aIdx, bIdx, hostFace, legFace, area, true));
+            return true;
+        }
+
+        private static readonly Vector3 UpNormal = new Vector3(0f, 1f, 0f);
+
+        private static float LegSectionArea(in ValidationElement leg)
+        {
+            var size = leg.Geometry.Max - leg.Geometry.Min;
+            return Mathf.Abs(size.x * size.z);
+        }
+
         private static bool SharesSpaceLegitimately(in ValidationElement a, in ValidationElement b)
         {
+            if (a.Is(ElementKind.ScrewLeg) || b.Is(ElementKind.ScrewLeg))
+                return a.IsPairedWith(b) || b.IsPairedWith(a);
+
             bool aDrawer = a.Is(ElementKind.Drawer);
             bool bDrawer = b.Is(ElementKind.Drawer);
 

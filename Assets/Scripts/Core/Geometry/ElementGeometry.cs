@@ -19,8 +19,11 @@ namespace KitchenDesigner.Core
 
         public readonly bool IsPanel;
 
+        public readonly bool CentresOnTarget;
+
         public ElementGeometry(int id, string name, Face[] faces, Face[] grooveSeatFaces,
-            Face[] grooveWallFaces, Vector3 min, Vector3 max, bool isPanel)
+            Face[] grooveWallFaces, Vector3 min, Vector3 max, bool isPanel,
+            bool centresOnTarget = false)
         {
             Id = id;
             Name = name;
@@ -30,6 +33,7 @@ namespace KitchenDesigner.Core
             Min = min;
             Max = max;
             IsPanel = isPanel;
+            CentresOnTarget = centresOnTarget;
         }
 
         public bool IsEmpty => Faces == null || Faces.Length == 0;
@@ -46,11 +50,11 @@ namespace KitchenDesigner.Core
         }
 
         public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
-            bool isPanel = false)
-            => Box(name, center, sizeUnits, Quaternion.identity, isPanel);
+            bool isPanel = false, bool centresOnTarget = false)
+            => Box(name, center, sizeUnits, Quaternion.identity, isPanel, centresOnTarget);
 
         public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
-            Quaternion rotation, bool isPanel = false)
+            Quaternion rotation, bool isPanel = false, bool centresOnTarget = false)
         {
             var half = sizeUnits * 0.5f;
             var axes = new[]
@@ -93,7 +97,7 @@ namespace KitchenDesigner.Core
 
             var empty = System.Array.Empty<Face>();
             return new ElementGeometry(name.GetHashCode(), name, faces, empty, empty,
-                min, max, isPanel);
+                min, max, isPanel, centresOnTarget);
         }
     }
 }

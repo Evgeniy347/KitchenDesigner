@@ -78,6 +78,14 @@ namespace KitchenDesigner.Core.MCP
                 if (op.mid_height_mm.HasValue) pillar.MidHeightMM = op.mid_height_mm.Value;
                 if (op.diameter_mm.HasValue) pillar.DiameterMM = op.diameter_mm.Value;
             }),
+            For<ScrewLegElement>((op, leg) =>
+            {
+                if (op.screw_thread != null) leg.Thread = op.screw_thread;
+                if (op.screw_base_diameter_mm.HasValue) leg.BaseDiameterMM = op.screw_base_diameter_mm.Value;
+                if (op.screw_base_height_mm.HasValue) leg.BaseHeightMM = op.screw_base_height_mm.Value;
+                if (op.screw_thread_length_mm.HasValue) leg.ThreadLengthMM = op.screw_thread_length_mm.Value;
+                if (op.screw_insertion_mm.HasValue) leg.InsertionDepthMM = op.screw_insertion_mm.Value;
+            }),
             For<WindowElement>((op, window) =>
             {
                 if (op.tint != null) window.Tint = McpWireEnums.ParseGlassTint(op.tint);

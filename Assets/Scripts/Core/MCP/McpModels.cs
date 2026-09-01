@@ -84,6 +84,7 @@ namespace KitchenDesigner.Core.MCP
 		public ChairInfo? chair;
 		public SofaInfo? sofa;
 		public PillarInfo? pillar;
+		public ScrewLegInfo? screwLeg;
 		public CooktopInfo? cooktop;
 		public OvenInfo? oven;
 		public DishwasherInfo? dishwasher;
@@ -318,6 +319,18 @@ namespace KitchenDesigner.Core.MCP
 	{
 		public int midHeightMM;
 		public int diameterMM;
+	}
+
+	[Serializable]
+	public class ScrewLegInfo
+	{
+		public string thread = ScrewLegSpec.DEFAULT_THREAD;
+		public int threadLengthMM;
+		public int insertionMM;
+		public int baseDiameterMM;
+		public int baseHeightMM;
+		public int heightAboveFloorMM;
+		public string hostName = "";
 	}
 
 	[Serializable]

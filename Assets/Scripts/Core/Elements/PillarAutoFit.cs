@@ -35,7 +35,7 @@ namespace KitchenDesigner.Core
             foreach (var el in scene)
             {
                 if (el == null) continue;
-                var aabb = AabbOf(el);
+                var aabb = ElementAabb.Of(el);
                 if (aabb.maxY > pillarCenter.y - BelowCentreUnits) continue;
                 if (OverlapsInXZ(pillarCenter, aabb, OverlapMarginUnits) && aabb.maxY > bestY)
                     bestY = aabb.maxY;
@@ -70,7 +70,7 @@ namespace KitchenDesigner.Core
             foreach (var el in scene)
             {
                 if (el == null || el == (KitchenElement)pillar) continue;
-                var aabb = AabbOf(el);
+                var aabb = ElementAabb.Of(el);
                 if (aabb.minY < minAbove || aabb.minY > maxAbove) continue;
                 if (!OverlapsInXZ(center, aabb, OverlapMarginUnits)) continue;
                 if (aabb.minY >= best) continue;
@@ -80,34 +80,7 @@ namespace KitchenDesigner.Core
             return found ? best : (float?)null;
         }
 
-        private static bool OverlapsInXZ(Vector3 point, Aabb aabb, float margin) =>
-            point.x >= aabb.minX - margin && point.x <= aabb.maxX + margin
-            && point.z >= aabb.minZ - margin && point.z <= aabb.maxZ + margin;
-
-        public readonly struct Aabb
-        {
-            public readonly float minX, maxX, minY, maxY, minZ, maxZ;
-
-            public Aabb(float minX, float maxX, float minY, float maxY, float minZ, float maxZ)
-            {
-                this.minX = minX; this.maxX = maxX;
-                this.minY = minY; this.maxY = maxY;
-                this.minZ = minZ; this.maxZ = maxZ;
-            }
-        }
-
-        public static Aabb AabbOf(KitchenElement el)
-        {
-            float minX = float.MaxValue, maxX = float.MinValue;
-            float minY = float.MaxValue, maxY = float.MinValue;
-            float minZ = float.MaxValue, maxZ = float.MinValue;
-            foreach (var v in el.GetVertices())
-            {
-                if (v.x < minX) minX = v.x; if (v.x > maxX) maxX = v.x;
-                if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
-                if (v.z < minZ) minZ = v.z; if (v.z > maxZ) maxZ = v.z;
-            }
-            return new Aabb(minX, maxX, minY, maxY, minZ, maxZ);
-        }
+        private static bool OverlapsInXZ(Vector3 point, ElementAabb aabb, float margin) =>
+            aabb.CoversInXZ(point, margin);
     }
 }

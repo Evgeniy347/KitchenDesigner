@@ -31,6 +31,20 @@ namespace KitchenDesigner.Core
             go.AddComponent<MeshCollider>().convex = false;
         }
 
+        public static void UseMeshCollider(GameObject go, Mesh mesh)
+        {
+            var existing = go.GetComponent<Collider>();
+            if (existing != null && !(existing is MeshCollider)) Object.DestroyImmediate(existing);
+
+            var meshCollider = go.GetComponent<MeshCollider>();
+            if (meshCollider == null)
+            {
+                meshCollider = go.AddComponent<MeshCollider>();
+                meshCollider.convex = false;
+            }
+            meshCollider.sharedMesh = mesh;
+        }
+
         public static GameObject Publish(GameObject go, KitchenElement element)
         {
             PartRegistry.Register(element);

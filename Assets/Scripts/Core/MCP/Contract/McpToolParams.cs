@@ -204,6 +204,18 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Pillar only: outer diameter in MM (clamped 20..200) — width and depth are always equal. Omit to keep.", Min = 20, Max = 200)]
         public int? diameter_mm;
 
+        [McpParam("Screw leg only: thread designation. Omit to keep.",
+            Enum = new[] { "M6", "M8", "M10" })]
+        public string? screw_thread;
+        [McpParam("Screw leg only: length of the threaded rod in MM (5..1000). The leg re-derives it from the floor when the leg is moved. Omit to keep.", Min = 5, Max = 1000)]
+        public int? screw_thread_length_mm;
+        [McpParam("Screw leg only: how deep the thread goes into the part it is screwed to, in MM (1..thread length). Below the part thickness the thread sticks out the other side, which is legal. Omit to keep.", Min = 1, Max = 1000)]
+        public int? screw_insertion_mm;
+        [McpParam("Screw leg only: diameter of the foot in MM (5..200) — width and depth are always equal. Omit to keep.", Min = 5, Max = 200)]
+        public int? screw_base_diameter_mm;
+        [McpParam("Screw leg only: height of the foot in MM (1..200). Omit to keep.", Min = 1, Max = 200)]
+        public int? screw_base_height_mm;
+
         [McpParam("Window only: glass tint — clear (transparent) or tinted (slightly darkened). Omit to keep.",
             Enum = new[] { "clear", "tinted" })]
         public string? tint;
@@ -235,7 +247,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pillar", "window", "door", "sink", "cooktop", "oven", "dishwasher" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;
@@ -434,7 +446,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsSetAttr
     {
-        [McpParam("Selector over the scene. Space-separated clauses (AND): name mask 'B4_*', 'name:PAT', 'type:board|wall|floor|window|door|drawer|facade|assembled_facade|radial_shelf|panel|table|pillar|light', 'module:NAME', 'thickness==18' (also width/height/depth with == != >= <= > <), 'all_boards', 'all_modules', '*'.", Required = true)]
+        [McpParam("Selector over the scene. Space-separated clauses (AND): name mask 'B4_*', 'name:PAT', 'type:board|wall|floor|window|door|drawer|facade|assembled_facade|radial_shelf|panel|table|pillar|screw_leg|light', 'module:NAME', 'thickness==18' (also width/height/depth with == != >= <= > <), 'all_boards', 'all_modules', '*'.", Required = true)]
         public string selector = "";
         [McpParam("New thickness (dimZ) in MM for every matched board (e.g. change all 18 to 16).")] public int? thickness;
         [McpParam("New width (dimX) in MM.")] public int? width;

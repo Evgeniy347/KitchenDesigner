@@ -150,6 +150,12 @@ namespace KitchenDesigner.Core
 		public float edgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
 		public bool edgeSkipValidation = false;
 		public int edgeManualMask = 0;
+		public bool isScrewLeg = false;
+		public string screwLegThread = ScrewLegSpec.DEFAULT_THREAD;
+		public int screwLegThreadLengthMM = ScrewLegSpec.DEFAULT_THREAD_LENGTH_MM;
+		public int screwLegInsertionMM = ScrewLegSpec.DEFAULT_INSERTION_MM;
+		public int screwLegBaseDiameterMM = ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM;
+		public int screwLegBaseHeightMM = ScrewLegSpec.DEFAULT_BASE_HEIGHT_MM;
 
         public ElementData() { }
 

@@ -14,5 +14,6 @@ namespace KitchenDesigner.Core
         Recessed = 1 << 5,
         FloatingFacade = 1 << 6,
         Facade = 1 << 7,
+        ScrewLeg = 1 << 8,
     }
 }
