@@ -48,6 +48,8 @@ namespace KitchenDesigner.Core
         public override MeshRenderer? DecorRenderer
             => _tabletop != null ? _tabletop.GetComponent<MeshRenderer>() : null;
 
+        protected override Vector3 EffectiveScale => FurnitureLayout.PhysicalScale(DimensionsMM);
+
         public override Vector2Int DecorSurfaceMM => FurnitureLayout.TopSurfaceMM(DimensionsMM);
 
         private LegSet Legs => _legSet ??= new LegSet(transform, "Leg");
@@ -139,14 +141,6 @@ namespace KitchenDesigner.Core
         public void SetLegsMaterial(Material material) => Legs.SetMaterial(material);
 
         public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
-
-        public override Face[] GetFacesAt(Vector3 position)
-            => GappedBox.Faces(FurnitureLayout.PhysicalScale(DimensionsMM), BoxGaps.None,
-                position, ValidationRotation);
-
-        public override Vector3[] GetVerticesAt(Vector3 position)
-            => GappedBox.Vertices(FurnitureLayout.PhysicalScale(DimensionsMM), BoxGaps.None,
-                position, transform.rotation);
 
         public override void PrepareForDestruction() => DestroyChildren();
 

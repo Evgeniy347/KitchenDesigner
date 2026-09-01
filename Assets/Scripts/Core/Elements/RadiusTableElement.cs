@@ -108,12 +108,6 @@ namespace KitchenDesigner.Core
 
         public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
 
-        public override Face[] GetFacesAt(Vector3 position)
-            => GappedBox.Faces(EffectiveScale, BoxGaps.None, position, ValidationRotation);
-
-        public override Vector3[] GetVerticesAt(Vector3 position)
-            => GappedBox.Vertices(EffectiveScale, BoxGaps.None, position, transform.rotation);
-
         public override void PrepareForDestruction() => DestroyChildren();
 
         public void DestroyChildren() => _legSet?.Destroy();
