@@ -67,7 +67,7 @@ export const GEN_TOOLS: GenTool[] = [
                     var p = f.GetCustomAttribute<McpParamAttribute>();
                     if (p == null) continue;
 
-                    var agentName = string.IsNullOrEmpty(p.Name) ? f.Name : p.Name!;
+                    var agentName = string.IsNullOrEmpty(p.AgentName) ? f.Name : p.AgentName!;
                     if (agentName != f.Name) rename.Add((agentName, f.Name));
                     lines.Add($"      {agentName}: {BuildZod(f, p)},");
                 }
@@ -155,10 +155,10 @@ export const GEN_TOOLS: GenTool[] = [
                 if (f2.GetCustomAttribute<McpIgnoreAttribute>() != null) continue;
                 var p2 = f2.GetCustomAttribute<McpParamAttribute>();
                 if (p2 == null) continue;
-                if (!string.IsNullOrEmpty(p2.Name) && p2.Name != f2.Name)
+                if (!string.IsNullOrEmpty(p2.AgentName) && p2.AgentName != f2.Name)
                     throw new InvalidOperationException(
                         "Nested param rename is not supported (the bridge applies rename only to " +
-                        $"top-level fields): {et.Name}.{f2.Name} -> {p2.Name}");
+                        $"top-level fields): {et.Name}.{f2.Name} -> {p2.AgentName}");
                 inner.Add($"{TsObjectKey(f2.Name)}: {BuildZod(f2, p2)}");
             }
             expr = "z.array(z.object({ " + string.Join(", ", inner) + " }))";

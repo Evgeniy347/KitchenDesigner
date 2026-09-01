@@ -49,7 +49,12 @@ public class McpToolRegistryParityTests
         Assert.IsNotEmpty(dispatched,
             "в диспетчере не нашлось ни одной ветки: сторож ослеп, а не позеленел");
 
-        var declared = McpToolRegistry.Tools.Where(t => !t.StaticText).Select(t => t.Name).ToList();
+        var declared = McpToolRegistry.UnityMethodNames().ToList();
+        CollectionAssert.DoesNotContain(declared, "guide",
+            "UnityMethodNames — это список для ДИСПЕТЧЕРА: инструмент со staticText мост "
+            + "отвечает локально, Unity его никогда не увидит. Стоит фильтру по StaticText "
+            + "пропасть, и сверка ниже начнёт требовать ветку switch для guide");
+
         var declaredOnly = declared.Except(dispatched).ToList();
         var dispatchedOnly = dispatched.Except(declared).ToList();
 

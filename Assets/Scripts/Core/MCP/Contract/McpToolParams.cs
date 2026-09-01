@@ -1,20 +1,5 @@
 using System;
 
-// Parameter POCOs for every MCP tool. One class per tool shape. Each agent-facing
-// field carries [McpParam] with its description + units; wire-only fields carry
-// [McpIgnore]. See McpToolAttributes.cs for rules.
-//
-// SURFACE CONVENTION (2026-07 redesign): every element-addressing tool takes an
-// ARRAY (names[] / ops[] / items[]) — there are NO single-element tools. Batches
-// are atomic: if ANY entry is invalid, NOTHING is applied.
-//
-// Nested op/item classes are consumed by the codegen (Zod) and the server JSON
-// schema, which do NOT support nested renames — nested field names MUST already
-// be the agent-facing snake_case names.
-//
-// Coordinates x/y/z are nullable where "omit an axis = keep current" applies; a
-// missing axis is NOT treated as 0 (see ResolveVec / ResolveDims in the handler).
-
 namespace KitchenDesigner.Core.MCP.Contract
 {
     [Serializable]
@@ -24,8 +9,6 @@ namespace KitchenDesigner.Core.MCP.Contract
             Enum = new[] { "workflow", "planning", "bulk", "elements", "fields", "drawers", "violations" })]
         public string? topic;
     }
-
-    // ── names[] / object_paths[] ─────────────────────────────────────────────
 
     [Serializable]
     public class ParamsNames
@@ -65,8 +48,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         public SetActiveOp[] ops = Array.Empty<SetActiveOp>();
     }
 
-    // Shared by advanced set_position / set_rotation / set_scale. The meters-vs-
-    // degrees nuance lives in each tool's description.
     [Serializable]
     public class TransformOp
     {
@@ -85,8 +66,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         public TransformOp[] ops = Array.Empty<TransformOp>();
     }
 
-    // ── Floor (scene singleton — no element addressing) ──────────────────────
-
     [Serializable]
     public class ParamsResizeFloor
     {
@@ -95,23 +74,15 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Floor thickness (Z) in MM.", Required = true, Min = 1)] public int depth;
     }
 
-    // ── edit_elements: THE universal property editor ─────────────────────────
-
-    /// <summary>Одна операция edit_elements. Все указанные поля применяются к
-    /// элементу разом. Типо-специфичные поля (зазоры, режимы, параметры ящика и
-    /// т.д.) валидируются по фактическому типу элемента — чужое поле = ошибка
-    /// всего батча.</summary>
     [Serializable]
     public class EditOp
     {
         [McpParam("Exact element name.", Required = true)] public string name = string.Empty;
 
-        // Допустимый алфавит имени: ^[A-Za-z0-9_-]+$ (см. ElementNaming).
         [McpParam("Rename the element to this new name. Must be unique among all elements (case-insensitive) "
             + "and match ^[A-Za-z0-9_-]+$ — latin letters, digits, '-' and '_' only; no spaces, no cyrillic. Omit to keep.")]
         public string? new_name;
 
-        // Geometry (any element; drawers reject width/height/depth).
         [McpParam("Target X in METERS. Omit to keep.")] public float? x;
         [McpParam("Target Y in METERS. Omit to keep.")] public float? y;
         [McpParam("Target Z in METERS. Omit to keep.")] public float? z;
@@ -125,14 +96,11 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Rotation around Y in DEGREES. Omit to keep.")] public float? rot_y;
         [McpParam("Rotation around Z in DEGREES. Omit to keep.")] public float? rot_z;
 
-        // Any element.
         [McpParam("Lock (true) / unlock (false). Unlock ONLY with the user's explicit permission. Omit to keep.")]
         public bool? locked;
         [McpParam("Material decor id or display name (see list_materials). Omit to keep.")]
         public string? material;
 
-        // Gaps — elements that have them: facades, HDF panels, plain parts and
-        // radial shelves. The gap grows the element's BOUNDING box, not its mesh.
         [McpParam("Gap in MM on the left side. Omit to keep.", Min = 0)] public int? gap_left;
         [McpParam("Gap in MM on the right side. Omit to keep.", Min = 0)] public int? gap_right;
         [McpParam("Gap in MM on the top side. Omit to keep.", Min = 0)] public int? gap_top;
@@ -152,7 +120,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Facade/window/door/oven/dishwasher: true = open, false = close (the oven and dishwasher doors drop DOWN around their bottom edge; the dishwasher takes its attached furniture facade with it). Omit to keep. For drawers use cycle_drawer_animation.")]
         public bool? is_open;
 
-        // Radial shelf, stool and chair.
         [McpParam("Corner rounding radius in MM. Radial shelf: clamped to 1..min(width, depth). " +
                   "Stool and chair (the seat): clamped to 0..min(width, depth)/2 — 0 is a square seat, " +
                   "the maximum is a fully round one (a circle when width == depth, a capsule otherwise). " +
@@ -164,7 +131,6 @@ namespace KitchenDesigner.Core.MCP.Contract
             Min = 0)]
         public int? seat_height;
 
-        // Cooktop.
         [McpParam("Cooktop only: cutout width in MM — the box that goes INTO the countertop " +
                   "(width/height/depth describe the 5 mm plate on top; height is the total). " +
                   "Clamped to 50..width-10. Omit to keep.", Min = 50)]
@@ -172,7 +138,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Cooktop only: cutout depth in MM. Clamped to 50..depth-10. Omit to keep.", Min = 50)]
         public int? cutout_depth;
 
-        // Grooves (plain board only).
         [McpParam("Plain board only: REPLACES the whole set of grooves. Comma-separated \"kind:side\" pairs, " +
                   "kind = through|blind, side = top|bottom|left|right (side names the edge the groove runs along, " +
                   "in the part's own frame). Example: \"through:top, blind:left\". Empty string removes all grooves. " +
@@ -180,7 +145,6 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "Duplicates of the same kind+side are rejected. Omit to keep.")]
         public string? grooves;
 
-        // Texture overlays (walls and floors only).
         [McpParam("Wall/floor only: REPLACES the whole set of texture overlays — local decors on a patch of " +
                   "one face. Semicolon-separated \"side:materialId\" items (semicolon, not comma: the area " +
                   "below already uses commas). side = a|b|c|d|e|f|all, where a..f are faces 0..5 of the box " +
@@ -192,7 +156,6 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "Example: \"a:oak; b:white@100,200+800x600\". Empty string removes all overlays. Omit to keep.")]
         public string? texture_overlays;
 
-        // Edge banding (plain board that is a sheet: exactly one side < 50 mm).
         [McpParam("Sheet board only: glue edge banding on the OPEN ends of the part. Which ends are open is " +
                   "computed from the scene (an end touching another part, a wall or the floor gets no banding) " +
                   "and cannot be set by hand. false clears all four CSV edge columns. Omit to keep.")]
@@ -203,7 +166,6 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "by another part. Omit to keep.")]
         public bool? edge_skip_validation;
 
-        // Drawer.
         [McpParam("Drawer only: runner system — gtv (bought metal box, one spec line) or " +
             "movento (wooden box exploded into separate spec parts). Omit to keep.",
             Enum = new[] { "gtv", "movento" })]
@@ -228,7 +190,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Static parts only (board, panel, shelf, table, pillar): exact name of the board or facade this element is ATTACHED to. An attached board follows its parent when the parent is moved, rotated or opened; resizing is never propagated. A facade cannot be attached to anything. Empty string detaches. Omit to keep.")]
         public string? attached_to_name;
 
-        // Tables (TableElement / RadiusTableElement) and the stool (tabletop/legs decors only).
         [McpParam("Table only: inward offset of legs from corners along X and Z, in MM. Omit to keep.", Min = 0)]
         public int? leg_inset_mm;
         [McpParam("Table and stool only: material id or display name for the tabletop (the stool seat) — see list_materials. Omit to keep.")]
@@ -236,20 +197,17 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Table and stool only: material id or display name for the legs (see list_materials). Omit to keep.")]
         public string? legs_material;
 
-        // Pillar.
         [McpParam("Pillar only: middle cylinder height in MM (clamped 50..100). Omit to keep.", Min = 50, Max = 100)]
         public int? mid_height_mm;
         [McpParam("Pillar only: outer diameter in MM (clamped 20..200) — width and depth are always equal. Omit to keep.", Min = 20, Max = 200)]
         public int? diameter_mm;
 
-        // Window.
         [McpParam("Window only: glass tint — clear (transparent) or tinted (slightly darkened). Omit to keep.",
             Enum = new[] { "clear", "tinted" })]
         public string? tint;
         [McpParam("Window only: windowsill outward protrusion in MM (0..200). Omit to keep.", Min = 0, Max = 200)]
         public int? sill_protrusion_mm;
 
-        // Door.
         [McpParam("Door only: sash type — glass (transparent) or blind (solid panel). Omit to keep.",
             Enum = new[] { "glass", "blind" })]
         public string? sash_type;
@@ -266,13 +224,9 @@ namespace KitchenDesigner.Core.MCP.Contract
         public bool dry_run;
     }
 
-    // ── create_elements ──────────────────────────────────────────────────────
-
-    /// <summary>Один создаваемый элемент. Тип задаётся полем type (не флагами).</summary>
     [Serializable]
     public class CreateItem
     {
-        // Допустимый алфавит имени: ^[A-Za-z0-9_-]+$ (см. ElementNaming).
         [McpParam("Unique name for the new element (case-insensitive across the whole project). "
             + "Must match ^[A-Za-z0-9_-]+$ — latin letters, digits, '-' and '_' only; no spaces, no cyrillic.",
             Required = true)]
@@ -306,8 +260,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Elements to create. At least 1. Whole batch is ONE undo step.", Required = true, Min = 1)]
         public CreateItem[] items = Array.Empty<CreateItem>();
     }
-
-    // ── v2 corner-anchored geometry (all coordinates in MM) ────────────────
 
     [Serializable]
     public class PlanPointMm
@@ -371,8 +323,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         public int sill_mm;
     }
 
-    // ── convert / clone / align / rename ─────────────────────────────────────
-
     [Serializable]
     public class ConvertOp
     {
@@ -432,8 +382,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         public AlignOp[] ops = Array.Empty<AlignOp>();
     }
 
-    // ── Diagnostics ──────────────────────────────────────────────────────────
-
     [Serializable]
     public class SnapDiagnoseOp
     {
@@ -481,8 +429,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string text = "";
     }
 
-    // ── v2: массовые/реляционные операции ────────────────────────────────────
-
     [Serializable]
     public class ParamsSetAttr
     {
@@ -524,8 +470,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("New on/off value.", Required = true)] public bool value;
     }
 
-    // ── Батч-чтения ──────────────────────────────────────────────────────────
-
     [Serializable]
     public class ParamsGetElements
     {
@@ -549,8 +493,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string[]? names;
     }
 
-    // ── Высокоуровневое размещение ───────────────────────────────────────────
-
     [Serializable]
     public class ParamsGetFreeSpace
     {
@@ -566,8 +508,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("World axis to distribute along.", Required = true, Enum = new[] { "x", "y", "z" })]
         public string axis = string.Empty;
     }
-
-    // ── Модули ───────────────────────────────────────────────────────────────
 
     [Serializable]
     public class ParamsCreateModule
@@ -601,8 +541,6 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string target_face = "";
         [McpParam("Face gap in MM.")] public float gap_mm;
     }
-
-    // ── v2 floorplan declaration ───────────────────────────────────────────
 
     [Serializable]
     public class FloorplanPoint

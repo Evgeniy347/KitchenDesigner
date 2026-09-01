@@ -1,28 +1,16 @@
 using System;
 using System.Collections.Generic;
 
-// The one authoritative list of MCP tools. Consumed by:
-//   • Unity  — McpCommandHandler dispatches these method names (parity test guards it).
-//   • Server — builds tools/list for real MCP over Streamable HTTP.
-//   • Codegen — emits mcp-server/src/tools.generated.ts (Zod) for the local bridge.
-// Keep this in sync with McpCommandHandler's switch (McpToolRegistryParityTests).
-//
-// SURFACE CONVENTION (2026-07): every element-addressing tool is a BATCH — it
-// takes names[] / ops[] / items[]. There are NO single-element tools. All
-// user-editable properties are changed through edit_elements.
-
 namespace KitchenDesigner.Core.MCP.Contract
 {
     public static class McpToolRegistry
     {
         public static readonly IReadOnlyList<McpToolDef> Tools = new List<McpToolDef>
         {
-            // ── Meta / cheat-sheet (answered locally, no Unity call) ──────────────
             new McpToolDef("guide", "Guide / cheat-sheet",
                 "Usage cheat-sheet. Topics: workflow (default; units, which tool to reach for, worked examples), planning (declarative floorplans: apply_floorplan/create_walls/create_floor/add_opening), bulk (selectors and set_attr/move/align/resize_module), elements (element types), fields (what each response field means), drawers (GTV drawers), violations (what counts as a violation). Call this first if unsure.",
                 McpToolKind.Read, typeof(ParamsGuide), staticText: true),
 
-            // ── Read: scene & elements ────────────────────────────────────────────
             new McpToolDef("ping", "Ping",
                 "Check that Unity is reachable. Returns Unity version.",
                 McpToolKind.Read, null),
@@ -72,7 +60,6 @@ namespace KitchenDesigner.Core.MCP.Contract
                 "Replace the project's free-text agent instructions. Persists in the project file.",
                 McpToolKind.Write, typeof(ParamsSetProjectInstructions)),
 
-            // ── v2: массовые/реляционные операции (сервер считает геометрию) ──────
             new McpToolDef("set_attr", "Set attribute over a selection",
                 "Bulk-change matched elements in ONE call by a selector: thickness/width/height/depth (MM), material, locked. Server picks the elements — you pass intent, not per-board numbers. Example: set_attr {selector:'all_boards thickness==18', thickness:16}. Undoable (geometry). Returns matched/updated/sceneViolationCount.",
                 McpToolKind.Write, typeof(ParamsSetAttr)),
@@ -104,7 +91,6 @@ namespace KitchenDesigner.Core.MCP.Contract
                 "The empty box between two boards: size (mm), bounds (m), center, and any elements already inside it. Use BEFORE creating or resizing something to fit between panels — no manual AABB math.",
                 McpToolKind.Read, typeof(ParamsGetFreeSpace)),
 
-            // ── Edit elements (ALL batch, ALL atomic) ─────────────────────────────
             new McpToolDef("create_elements", "Create elements (batch)",
                 "Create one or MANY elements in ONE call. Each item: unique name, type (board | wall | floor | facade | assembled_facade | radial_shelf | panel | drawer | movento_drawer | table | radius_table | stool | chair | pillar | window | door | sink | cooktop | oven | dishwasher, default board; an unknown type is REJECTED, the whole batch with it), x/y/z in METERS, width/height/depth in MILLIMETERS, plus type-specific fields (gaps, fill, drawer params, ...). sink and cooktop are RECESSED into a worktop: create them above one and they seat themselves. cooktop, oven and dishwasher are built-in appliances: they take their size from the manufacturer and ignore width/height/depth (a cooktop only when given model:...); a dishwasher has no front of its own — attach a facade to it with edit_elements attached_facade_name. panel = ДВП/ХДФ back panel whose gaps count toward its bounding box, so it seats into grooves. Atomic: if ANY item is invalid, NOTHING is created. Whole batch is ONE undo step. For architecture (walls, room floors, windows/doors) prefer the corner-anchored tools apply_floorplan / create_walls / create_floor / add_opening — they derive the geometry server-side instead of making you compute centers.",
                 McpToolKind.Write, typeof(ParamsCreateElements)),
@@ -142,7 +128,6 @@ namespace KitchenDesigner.Core.MCP.Contract
                 "LEGACY: set the size of the scene's single BasePlate floor plate in MILLIMETERS. Real rooms use polygon floors — prefer create_floor / apply_floorplan. Undoable.",
                 McpToolKind.Write, typeof(ParamsResizeFloor)),
 
-            // ── Modules (named groups of boards) ──────────────────────────────────
             new McpToolDef("get_modules", "List modules",
                 "List all modules (named groups) with their member boards and bounding box.",
                 McpToolKind.Read, null),
@@ -168,7 +153,6 @@ namespace KitchenDesigner.Core.MCP.Contract
                 "Leave module edit mode.",
                 McpToolKind.Write, null),
 
-            // ── Settings / diagnostics / export ───────────────────────────────────
             new McpToolDef("set_setting", "Change a setting",
                 "Toggle one boolean project setting. name is one of: snap_enabled | grid_enabled | camera_pan_free. Scene visibility (walls, objects, outlines, light sources) is per-edit-mode and UI-only — not exposed here.",
                 McpToolKind.Write, typeof(ParamsSetSetting)),
@@ -185,7 +169,6 @@ namespace KitchenDesigner.Core.MCP.Contract
                 "Capture a screenshot of the app; returns the saved PNG file path.",
                 McpToolKind.Read, null),
 
-            // ── Advanced: raw Unity objects (no undo / no validation) ─────────────
             new McpToolDef("find_objects", "Find objects (advanced)",
                 "ADVANCED. Find GameObjects by partial name. For kitchen boards prefer get_all_elements.",
                 McpToolKind.Read, typeof(ParamsFindObjects)),
@@ -221,7 +204,6 @@ namespace KitchenDesigner.Core.MCP.Contract
                 McpToolKind.Write, null),
         };
 
-        /// <summary>Method names in the registry (excludes staticText-only tools like guide).</summary>
         public static IEnumerable<string> UnityMethodNames()
         {
             foreach (var t in Tools)

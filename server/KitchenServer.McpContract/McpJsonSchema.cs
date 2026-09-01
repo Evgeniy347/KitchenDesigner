@@ -36,7 +36,7 @@ namespace KitchenServer.McpContract
                 var p = f.GetCustomAttribute<McpParamAttribute>();
                 if (p == null) continue;
 
-                var agentName = string.IsNullOrEmpty(p.Name) ? f.Name : p.Name;
+                var agentName = string.IsNullOrEmpty(p.AgentName) ? f.Name : p.AgentName;
                 properties[agentName] = FieldSchema(f, p);
                 if (p.Required) required.Add(agentName);
             }
@@ -60,7 +60,7 @@ namespace KitchenServer.McpContract
                 if (f.GetCustomAttribute<McpIgnoreAttribute>() != null) continue;
                 var p = f.GetCustomAttribute<McpParamAttribute>();
                 if (p == null) continue;
-                var agentName = string.IsNullOrEmpty(p.Name) ? f.Name : p.Name;
+                var agentName = string.IsNullOrEmpty(p.AgentName) ? f.Name : p.AgentName;
                 if (agentName != f.Name)
                 {
                     map ??= new Dictionary<string, string>();
@@ -120,9 +120,9 @@ namespace KitchenServer.McpContract
                     if (f2.GetCustomAttribute<McpIgnoreAttribute>() != null) continue;
                     var p2 = f2.GetCustomAttribute<McpParamAttribute>();
                     if (p2 == null) continue;
-                    if (!string.IsNullOrEmpty(p2.Name) && p2.Name != f2.Name)
+                    if (!string.IsNullOrEmpty(p2.AgentName) && p2.AgentName != f2.Name)
                         throw new InvalidOperationException(
-                            $"Nested param rename is not supported: {et.Name}.{f2.Name} -> {p2.Name}");
+                            $"Nested param rename is not supported: {et.Name}.{f2.Name} -> {p2.AgentName}");
                     itemProps[f2.Name] = FieldSchema(f2, p2);
                     if (p2.Required) itemRequired.Add(f2.Name);
                 }
