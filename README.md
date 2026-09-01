@@ -8,15 +8,11 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
-  <a href="https://kitchendesigner.duckdns.org/"><img src="https://img.shields.io/badge/Live Demo-ducks-green.svg" alt="Live Demo"></a>
 </p>
 
 <p align="center">
   <img src="docs/photo.png" alt="Кухня в фоторежиме" width="850">
 </p>
-
-**Демо (работает в браузере, ничего ставить не нужно):**
-[kitchendesigner.duckdns.org](https://kitchendesigner.duckdns.org/)
 
 ---
 
@@ -146,7 +142,7 @@
 
 **Фоторежим** — отдельный режим для красивой картинки: достраивается потолок,
 стены перестают прятаться, включаются тени, сглаживание, затенение и bloom.
-Пресеты качества — от слабого железа и WebGL до «всё включено». Заглавный кадр
+Пресеты качества — от слабого железа до «всё включено». Заглавный кадр
 этого README снят именно так.
 
 В обычном режиме, наоборот, всё лёгкое: стены при наведении опускаются до
@@ -187,9 +183,8 @@ Kitchen Designer доступен по **MCP (Model Context Protocol)** — ИИ
 
 | Документ | О чём |
 |----------|-------|
-| [readme-mcp.md](readme-mcp.md) | Подключение ИИ-агента: локальный мост и удалённый сервер |
+| [readme-mcp.md](readme-mcp.md) | Подключение ИИ-агента к запущенному приложению |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Сборка, запуск, тесты, генераторы картинок для `docs/` |
-| [docs/SERVER.md](docs/SERVER.md) | Веб-версия: порты, хранение проектов, аутентификация, поток MCP |
 | [docs/UI-GUIDELINES.md](docs/UI-GUIDELINES.md) | Свод правил интерфейса: единицы, отмена операций, глифы, снапшоты |
 | [docs/TEXTURES.md](docs/TEXTURES.md) | Как добавить декор ЛДСП/МДФ/камня в каталог текстур |
 | [docs/APPLIANCES-BRIEF.md](docs/APPLIANCES-BRIEF.md) | Встраиваемая техника Bosch: модели и их фиксированные габариты |
@@ -203,13 +198,10 @@ Kitchen Designer доступен по **MCP (Model Context Protocol)** — ИИ
 
 | Компонент | Версия |
 |-----------|--------|
+| Платформа | Windows (десктоп) |
 | Unity | 6000.4.3f1 |
 | Render Pipeline | URP 17.4.0 |
-| Язык (front) | C# |
-| Бэкенд | ASP.NET Core 10 + Blazor Server |
-| Оркестрация | .NET Aspire 13 |
-| Аутентификация | ASP.NET Identity |
-| База данных | PostgreSQL |
+| Язык | C# |
 | Тесты | Unity Test Framework (NUnit) |
 
 Подробности сборки и запуска — в [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
