@@ -3,6 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
+using KitchenDesigner.Core.MCP.Contract;
 using Newtonsoft.Json.Linq;
 
 /// <summary>
@@ -70,12 +71,40 @@ public class McpBatchToolsTests
     [Test]
     public void McpJson_DropsNullFields()
     {
-        var info = new ElementInfo { name = "A" }; // drawer/table/faceGaps = null
+        var info = new ElementInfo { name = "A" };
         var json = McpJson.Serialize(info);
         StringAssert.DoesNotContain("\"drawer\"", json);
         StringAssert.DoesNotContain("\"table\"", json);
         StringAssert.DoesNotContain("\"faceGaps\"", json);
         StringAssert.DoesNotContain("\"faceNormalX\"", json);
+    }
+
+    [Test]
+    public void McpJson_UnknownParameterField_IsRejected_AndTheAnswerNamesIt()
+    {
+        var typo = JObject.Parse("{\"names\":[\"A\"],\"nmaes\":[\"B\"]}");
+
+        var ex = Assert.Throws<Newtonsoft.Json.JsonSerializationException>(
+            () => typo.ToObjectStrict<ParamsNames>(),
+            "лишнее поле в параметрах — это опечатка агента или отставший клиент; "
+            + "молча проглотить его значит выполнить НЕ ту команду, о которой просили");
+
+        StringAssert.Contains("nmaes", ex!.Message,
+            "в ответе должно стоять имя незнакомого поля: без него агент видит только "
+            + "«contract violation» и не знает, что именно исправить");
+        StringAssert.Contains("MCP parameter contract violation", ex.Message);
+    }
+
+    [Test]
+    public void McpJson_KnownFieldsOnly_DeserializeWithoutComplaint()
+    {
+        var ok = JObject.Parse("{\"names\":[\"A\",\"B\"]}");
+
+        var parsed = ok.ToObjectStrict<ParamsNames>();
+
+        CollectionAssert.AreEqual(new[] { "A", "B" }, parsed.names,
+            "положительный контроль к строгой проверке: без него тест выше зеленел бы "
+            + "и на разборе, который отвергает вообще всё");
     }
 
     // ── get_elements ─────────────────────────────────────────────────────
@@ -163,6 +192,26 @@ public class McpBatchToolsTests
         var d = Data(resp);
         Assert.IsTrue(d["ok"]!.Value<bool>());
         Assert.AreEqual(2, (d["results"] as JArray)!.Count);
+    }
+
+    [Test]
+    public void EditElements_OmittedAxis_KeepsItsValue_InsteadOfBeingReadAsZero()
+    {
+        var a = MakeElement("A", new Vector3Int(500, 400, 18), new Vector3(1.5f, 0.9f, 2.25f));
+
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "A", x = 3.0f } }
+        }));
+
+        Assert.AreEqual("result", resp.type, "edit failed: " + resp.data);
+        Assert.AreEqual(3.0f, a.transform.position.x, 1e-4f);
+        Assert.AreEqual(0.9f, a.transform.position.y, 1e-4f,
+            "пропущенная ось — «оставь как есть», а НЕ 0: иначе правка одной координаты "
+            + "роняет деталь на пол");
+        Assert.AreEqual(2.25f, a.transform.position.z, 1e-4f, "то же по Z");
+        Assert.AreEqual(new Vector3Int(500, 400, 18), a.DimensionsMM,
+            "размеры не указывали — они и не менялись");
     }
 
     [Test]

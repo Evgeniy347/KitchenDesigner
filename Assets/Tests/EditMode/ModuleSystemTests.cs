@@ -127,6 +127,28 @@ public class ModuleSystemTests
     // ── MCP: конфигурация модуля ────────────────────────────────────────
 
     [Test]
+    public void Mcp_ModuleInfo_GivesTheCentreInMetres_AndTheSizeInMillimetres()
+    {
+        Make("Бок левый", new Vector3Int(500, 720, 18), Vector3.zero);
+        Make("Бок правый", new Vector3Int(500, 720, 18), new Vector3(0.582f, 0f, 0f));
+
+        _handler!.Handle(Req("create_module", new
+        {
+            name = "Тумба",
+            members = new[] { "Бок левый", "Бок правый" }
+        }));
+        var info = _handler!.Handle(Req("module_info", new { modules = new[] { "Тумба" } }));
+        var m = Newtonsoft.Json.Linq.JObject.FromObject(info.data!)["results"]![0]!
+            .ToObject<ModuleInfo>()!;
+
+        Assert.AreEqual(0.291f, m.boundsCenter![0], 0.002f,
+            "boundsCenter — ЮНИТЫ (метры), как posX/posY/posZ: середина между 0 и 0.582 м");
+        Assert.AreEqual(1082, m.boundsSizeMM![0], 2,
+            "boundsSizeMM — МИЛЛИМЕТРЫ, в одном ответе с метрами центра. Смешение единиц "
+            + "в одном объекте — ошибка №1 клиента, и держит её только этот тест");
+    }
+
+    [Test]
     public void Mcp_CreateModule_AndReadConfiguration()
     {
         Make("Бок левый", new Vector3Int(500, 720, 18), Vector3.zero);
