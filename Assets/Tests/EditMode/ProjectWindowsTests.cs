@@ -251,7 +251,7 @@ public class ProjectWindowsTests
         foreach (var file in files)
             foreach (System.Text.RegularExpressions.Match m in
                 System.Text.RegularExpressions.Regex.Matches(
-                    System.IO.File.ReadAllText(file), "WindowId\s*=>\s*\"([^\"]+)\""))
+                    System.IO.File.ReadAllText(file), @"WindowId\s*=>\s*""([^""]+)"""))
                 ids.Add(m.Groups[1].Value);
         ids.Sort(System.StringComparer.Ordinal);
 

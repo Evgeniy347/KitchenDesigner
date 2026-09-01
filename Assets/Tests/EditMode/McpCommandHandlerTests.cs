@@ -1403,6 +1403,6 @@ public class McpCommandHandlerTests
 
         Assert.AreEqual("error", resp.type,
             "set_setting знает три ключа и отказывает остальным вслух: молчаливое ok на неизвестную настройку — это успех без действия");
-        StringAssert.Contains("Unknown setting", Newtonsoft.Json.Linq.JObject.FromObject(resp.data!)["message"]!.Value<string>()!);
+        StringAssert.Contains("Unknown setting", Newtonsoft.Json.Linq.JObject.FromObject(resp.data!)["message"]!.ToString());
     }
 }
