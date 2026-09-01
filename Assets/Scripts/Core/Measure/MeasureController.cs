@@ -174,7 +174,7 @@ namespace KitchenDesigner.Core.Measure
         {
             if (Anchor.HasValue)
             {
-                CommitSecondEnd();
+                CommitSecondEnd(Anchor.Value);
                 return;
             }
 
@@ -193,12 +193,12 @@ namespace KitchenDesigner.Core.Measure
             MeasureStore.Select(Hovered);
         }
 
-        private void CommitSecondEnd()
+        private void CommitSecondEnd(Vector3 anchor)
         {
             if (Hint.HasValue)
-                MeasureStore.Add(new MeasureSegment(Anchor.Value, Hint.Value));
+                MeasureStore.Add(new MeasureSegment(anchor, Hint.Value));
             else if (PlaneHint.HasValue && PreviewEnd.HasValue)
-                MeasureStore.Add(new MeasureSegment(Anchor.Value, PreviewEnd.Value));
+                MeasureStore.Add(new MeasureSegment(anchor, PreviewEnd.Value));
             Anchor = null;
             PreviewEnd = null;
         }
