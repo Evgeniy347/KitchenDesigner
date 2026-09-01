@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEngine;
 using KitchenDesigner.Core;
 
 namespace KitchenDesigner.Tests.Geometry
@@ -73,6 +74,29 @@ namespace KitchenDesigner.Tests.Geometry
                 "два выражения описывают ОДНУ мебель и обязаны сходиться в стыке: "
                 + "щель между ножкой и крышкой или их взаимное проникновение видны "
                 + "только на рендере, а тестами не ловились ни разу");
+        }
+
+        [Test]
+        public void PhysicalScale_ConvertsEveryAxisSeparately_KeepingItsOwnOrder()
+        {
+            var scale = FurnitureLayout.PhysicalScale(new Vector3Int(360, 900, 450));
+
+            Assert.AreEqual(0.36f, scale.x, 1e-6f, "ширина остаётся шириной");
+            Assert.AreEqual(0.9f, scale.y, 1e-6f, "высота остаётся высотой");
+            Assert.AreEqual(0.45f, scale.z, 1e-6f,
+                "глубина остаётся глубиной: три РАЗНЫХ числа взяты нарочно — на "
+                + "кубе перепутанные местами оси дали бы тот же ответ");
+        }
+
+        [Test]
+        public void TopSurfaceMM_IsWidthByDepth_NotWidthByHeight()
+        {
+            var surface = FurnitureLayout.TopSurfaceMM(new Vector3Int(360, 900, 450));
+
+            Assert.AreEqual(new Vector2Int(360, 450), surface,
+                "вторая ось горизонтальной крышки — ГЛУБИНА, а не высота: "
+                + "с высотой декор растягивался бы по столешнице (CONVENTIONS.md, "
+                + "«декор тайлится, а не растягивается»)");
         }
     }
 }
