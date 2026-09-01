@@ -83,6 +83,10 @@ public class IsoScreenshotTests
         cam.backgroundColor = new Color(0.18f, 0.18f, 0.20f, 1f);
         cam.orthographic = false;
         cam.fieldOfView = IsoFov;
+        // Кадр всегда 512 на 512, а не размер экрана батча: без явного
+        // aspect WorldToViewportPoint считает по экрану, и проверка «деталь
+        // влезла в кадр» мерила бы не тот кадр, который потом рисуется.
+        cam.aspect = (float)RenderW / RenderH;
         cam.nearClipPlane = 0.01f;
         cam.farClipPlane = 100f;
 
@@ -688,4 +692,208 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+
+    // ─ Составные элементы: рамка по мировому AABB, а не по корню ─
+    // Шаблон из CONVENTIONS берёт GetComponent на КОРНЕ и считает кадр из dims
+    // корня. Для варочной, духовки и посудомойки это неверно дважды: рендерера
+    // на корне нет вовсе (ElementRoot.NewEmpty), а дочерние коробки не
+    // центрированы на pivot и местами выходят за объявленный габарит — ручка
+    // духовки торчит на HANDLE_PROTRUSION_MM/2 дальше половины DEPTH_MM.
+    // Поэтому кадр строится по мировому AABB всех рендереров, а тест
+    // УТВЕРЖДАЕТ, что деталь целиком попала в кадр, а не просто сохраняет PNG.
+
+    /// <summary>Доля кадра, которая обязана остаться полем вокруг детали.
+    /// Ноль означал бы «краем пикселя коснулось — сойдёт».</summary>
+    private const float FramePadding = 0.02f;
+
+    private static Bounds RendererBoundsOf(GameObject go)
+    {
+        var renderers = go.GetComponentsInChildren<Renderer>();
+        Assert.IsNotEmpty(renderers,
+            "у элемента нет ни одного рендерера: снимок вышел бы пустым кадром, а тест "
+            + "зелёным — " + go.name);
+
+        var bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+            bounds.Encapsulate(renderers[i].bounds);
+        return bounds;
+    }
+
+    private static void AssertFitsInFrame(Camera cam, Bounds bounds, string what)
+    {
+        var min = bounds.min;
+        var max = bounds.max;
+        var outside = new List<string>();
+
+        for (int i = 0; i < 8; i++)
+        {
+            var corner = new Vector3(
+                (i & 1) == 0 ? min.x : max.x,
+                (i & 2) == 0 ? min.y : max.y,
+                (i & 4) == 0 ? min.z : max.z);
+
+            var v = cam.WorldToViewportPoint(corner);
+            bool inFrame = v.z > 0f
+                && v.x >= FramePadding && v.x <= 1f - FramePadding
+                && v.y >= FramePadding && v.y <= 1f - FramePadding;
+            if (!inFrame) outside.Add(corner + " -> " + v);
+        }
+
+        Assert.IsEmpty(outside,
+            "деталь не влезла в кадр: снимок обрезает её, и визуальная регрессия смотрит "
+            + "на половину предмета, ничего об этом не сообщая. Ровно это даёт кадр по "
+            + "корню у составных элементов — " + what + ". Углы вне кадра:\n"
+            + string.Join("\n", outside));
+    }
+
+    private IEnumerator RenderElementIso(GameObject go, string png, float distanceScale)
+    {
+        // Дочерние коробки строятся в ApplyDimensions/Start — до кадра их нет.
+        yield return null;
+
+        var bounds = RendererBoundsOf(go);
+        var (camGo, cam) = CreateIsoCamera(bounds.center, bounds.size, distanceScale);
+        _spawned.Add(camGo);
+
+        AssertFitsInFrame(cam, bounds, go.name);
+
+        yield return RenderToPng(cam, png);
+
+        Object.DestroyImmediate(camGo);
+    }
+
+    /// <summary>Положительный контроль к хелперу: у трёх составных типов на
+    /// корне рендерера НЕТ, поэтому шаблонному GetComponent на корне находить
+    /// нечего, а у духовки геометрия ещё и выходит за объявленный габарит. Без
+    /// этого теста «рамка по AABB» выглядит перестраховкой, и следующий агент
+    /// вернёт шаблон.</summary>
+    [UnityTest]
+    public IEnumerator IsoAppliances_KeepTheirGeometryInChildren_NotOnTheRoot()
+    {
+        var cooktop = ElementFactory.CreateCooktop("CtrlCooktop", Vector3.zero);
+        var oven = ElementFactory.CreateOven("CtrlOven", new Vector3(2f, 0.3f, 0f));
+        var dishwasher = ElementFactory.CreateDishwasher("CtrlDishwasher", new Vector3(4f, 0.4f, 0f));
+        _spawned.Add(cooktop);
+        _spawned.Add(oven);
+        _spawned.Add(dishwasher);
+        yield return null;
+
+        foreach (var go in new[] { cooktop, oven, dishwasher })
+        {
+            Assert.IsNull(go.GetComponent<Renderer>(),
+                "рендерера на корне нет — шаблонный кадр по GetComponent на корне "
+                + "строить не из чего: " + go.name);
+            Assert.Greater(RendererBoundsOf(go).size.magnitude, 0f,
+                "а в детях геометрия есть: " + go.name);
+        }
+
+        var cooktopBounds = RendererBoundsOf(cooktop);
+        Assert.Less(cooktopBounds.center.y, cooktop.transform.position.y - 0.01f,
+            "варочная висит НИЖЕ своего pivot: плита толщиной RIM_HEIGHT_MM над нулём, "
+            + "короб выреза под ним. Кадр, наведённый на позицию корня, смотрит выше "
+            + "детали");
+
+        float declaredHalfDepth = OvenElement.DEPTH_MM * 0.5f * AppConstants.MM_TO_UNITS;
+        Assert.Greater(RendererBoundsOf(oven).max.z - oven.transform.position.z,
+            declaredHalfDepth + 0.02f,
+            "ручка духовки торчит за объявленный габарит DEPTH_MM: кадр по dims корня "
+            + "срезает её");
+    }
+
+    // ─ Изометрия шести типов, у которых снимка не было ───────
+
+    [UnityTest]
+    public IEnumerator IsoPanel_500x716()
+    {
+        var dims = new Vector3Int(500, 716, 4);
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreatePanel(dims, "IsoPanel", pos);
+        _spawned.Add(go);
+        Assert.IsNotNull(go.GetComponent<PanelElement>(),
+            "ХДФ-задник обязан быть панелью, а не обычной доской");
+
+        yield return RenderElementIso(go, "iso_panel_500x716.png", 2.5f);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoAssembledFacade_Blind()
+    {
+        yield return RenderAssembledFacade(AssembledFill.Blind,
+            "IsoAssembledBlind", "iso_assembled_facade_blind.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoAssembledFacade_Glass()
+    {
+        yield return RenderAssembledFacade(AssembledFill.Glass,
+            "IsoAssembledGlass", "iso_assembled_facade_glass.png");
+    }
+
+    private IEnumerator RenderAssembledFacade(AssembledFill fill, string name, string png)
+    {
+        var dims = new Vector3Int(450, 716, 22);
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateAssembledFacade(dims, name, pos, fill);
+        _spawned.Add(go);
+        var facade = go.GetComponent<AssembledFacadeElement>();
+        Assert.IsNotNull(facade, "сборный фасад обязан быть сборным фасадом, а не доской");
+        Assert.AreEqual(fill, facade!.Fill,
+            "снимок обязан показывать то заполнение, которое заказали: два снимка с "
+            + "одинаковой картинкой не отличили бы глухую вставку от стекла");
+
+        yield return RenderElementIso(go, png, 2.5f);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoCooktop_Bosch()
+    {
+        // Короб выреза уходит вниз от pivot: поднимаем корень так, чтобы его низ
+        // лёг на пол.
+        float lift = (CooktopElement.DEFAULT_HEIGHT_MM - CooktopElement.RIM_HEIGHT_MM)
+            * AppConstants.MM_TO_UNITS;
+        var go = ElementFactory.CreateCooktop("IsoCooktop", new Vector3(0f, lift, 0f));
+        _spawned.Add(go);
+        Assert.IsNotNull(go.GetComponent<CooktopElement>(),
+            "варочная обязана быть варочной, а не доской");
+
+        yield return RenderElementIso(go, "iso_cooktop.png", 3f);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoOven_Bosch()
+    {
+        float half = OvenElement.FACADE_HEIGHT_MM * 0.5f * AppConstants.MM_TO_UNITS;
+        var go = ElementFactory.CreateOven("IsoOven", new Vector3(0f, half, 0f));
+        _spawned.Add(go);
+        Assert.IsNotNull(go.GetComponent<OvenElement>(),
+            "духовка обязана быть духовкой, а не доской");
+
+        yield return RenderElementIso(go, "iso_oven.png", 3f);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoDishwasher_Bosch()
+    {
+        float half = DishwasherElement.ModelDimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS;
+        var go = ElementFactory.CreateDishwasher("IsoDishwasher", new Vector3(0f, half, 0f));
+        _spawned.Add(go);
+        Assert.IsNotNull(go.GetComponent<DishwasherElement>(),
+            "посудомойка обязана быть посудомойкой, а не доской");
+
+        yield return RenderElementIso(go, "iso_dishwasher.png", 3f);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoLightSource_Default()
+    {
+        var go = ElementFactory.CreateLightSource("IsoLamp", new Vector3(0f, 1.5f, 0f));
+        _spawned.Add(go);
+        Assert.IsNotNull(go.GetComponent<LightSourceElement>(),
+            "светильник обязан быть светильником, а не доской");
+        Assert.IsNotNull(go.GetComponentInChildren<Light>(),
+            "светильник без источника света — просто шар: снимок обязан показывать "
+            + "включённую лампу");
+
+        yield return RenderElementIso(go, "iso_light_source.png", 3f);
+    }
 }

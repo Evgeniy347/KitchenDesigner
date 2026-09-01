@@ -38,6 +38,13 @@ namespace KitchenDesigner.Core
             Vector3 position, AssembledFill fill = AssembledFill.Blind) =>
             Instance.CreateAssembledFacade(dimensionsMM, name, position, fill);
 
+        public static GameObject CreatePanel(Vector3Int dimensionsMM, string name, Vector3 position,
+            int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
+            int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM,
+            int gapFront = PanelElement.DEFAULT_GAP_MM, int gapBack = PanelElement.DEFAULT_GAP_MM) =>
+            Instance.CreatePanel(dimensionsMM, name, position,
+                gapLeft, gapRight, gapTop, gapBottom, gapFront, gapBack);
+
         public static GameObject CreateRadialShelf(int widthMM, int depthMM, int thicknessMM, int cornerRadiusMM, string name, Vector3 position) =>
             Instance.CreateRadialShelf(widthMM, depthMM, thicknessMM, cornerRadiusMM, name, position);
 
