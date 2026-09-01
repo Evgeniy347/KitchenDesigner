@@ -92,6 +92,12 @@ namespace KitchenDesigner.Core
 
         public void RefreshHighlights()
         {
+            if (HighlightBatch.Suspended)
+            {
+                HighlightBatch.Defer();
+                return;
+            }
+
             RefreshCount++;
             if (!_materialsInitialized)
             {

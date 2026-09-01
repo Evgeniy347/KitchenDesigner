@@ -8,6 +8,8 @@ namespace KitchenDesigner.Core
     {
         public static List<GameObject> Restore(ProjectData data)
         {
+            using var batch = HighlightBatch.Open();
+
             var created = new List<GameObject>();
             if (data == null || data.elements == null) return created;
 

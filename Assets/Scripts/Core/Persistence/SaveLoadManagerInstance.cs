@@ -91,6 +91,8 @@ namespace KitchenDesigner.Core
             var data = _files.Read(path);
             if (data == null) return false;
 
+            using var batch = HighlightBatch.Open();
+
             if (!IsVersionCompatible(data))
                 Debug.LogWarning($"[SaveLoad] Version mismatch: file={data.version}, app={AppConstants.SAVE_FORMAT_VERSION}");
 
