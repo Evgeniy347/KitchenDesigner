@@ -26,17 +26,6 @@ namespace KitchenDesigner.Tests.Geometry
         private static float DistanceTo(Vector2 point, Vector2 centre)
             => (point - centre).magnitude;
 
-        /// <summary>Знаковое расстояние до скруглённого прямоугольника: &lt;= 0
-        /// означает «точка под сиденьем».</summary>
-        private static float SignedDistanceToRoundedRect(Vector2 point,
-            float width, float depth, float radius)
-        {
-            float qx = Mathf.Abs(point.x) - (width * 0.5f - radius);
-            float qy = Mathf.Abs(point.y) - (depth * 0.5f - radius);
-            var q = new Vector2(Mathf.Max(qx, 0f), Mathf.Max(qy, 0f));
-            return q.magnitude + Mathf.Min(Mathf.Max(qx, qy), 0f) - radius;
-        }
-
         [Test]
         public void Uniform_ZeroRadius_ProfileIsExactlyTheFourCorners()
         {
@@ -154,7 +143,7 @@ namespace KitchenDesigner.Tests.Geometry
                     centre.y + Mathf.Sign(centre.y) * leg * 0.5f);
 
                 Assert.LessOrEqual(
-                    SignedDistanceToRoundedRect(farCorner, width, depth, radius), 0f,
+                    RoundedRectProfile.SignedDistance(farCorner, width, depth, radius), 0f,
                     "у круглой табуретки углы сиденья срезаны, поэтому ножку, поставленную "
                     + "по прямоугольной схеме, вынесло бы наружу контура — она обязана "
                     + "подтягиваться внутрь по диагонали");
@@ -179,7 +168,7 @@ namespace KitchenDesigner.Tests.Geometry
                     centre.y + Mathf.Sign(centre.y) * leg * 0.5f);
 
                 Assert.LessOrEqual(
-                    SignedDistanceToRoundedRect(farCorner, width, depth, radius), 0f,
+                    RoundedRectProfile.SignedDistance(farCorner, width, depth, radius), 0f,
                     "несимметричный след — тот самый случай, на котором капсульный стол уже "
                     + "выносил ножки наружу столешницы (CONVENTIONS.md → «A mesh and its "
                     + "metadata must describe the SAME shape»)");

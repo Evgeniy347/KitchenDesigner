@@ -13,35 +13,38 @@ namespace KitchenDesigner.Core
             => Mathf.Max(Mathf.Abs(width), Mathf.Abs(depth)) * MinPointSpacingRatio;
 
         public static Vector2[] Uniform(float width, float depth, float radius, int segments)
-            => Build(width, depth, radius, radius, radius, radius, segments);
+            => Build(width, depth, CornerRadii.Uniform(radius), segments);
 
         public static Vector2[] Build(float width, float depth,
             float radiusMinusXMinusZ, float radiusPlusXMinusZ,
             float radiusPlusXPlusZ, float radiusMinusXPlusZ, int segments)
+            => Build(width, depth, new CornerRadii(radiusMinusXMinusZ, radiusPlusXMinusZ,
+                radiusPlusXPlusZ, radiusMinusXPlusZ), segments);
+
+        public static Vector2[] Build(float width, float depth, CornerRadii radii, int segments)
         {
             float w = Mathf.Max(float.Epsilon, width);
             float d = Mathf.Max(float.Epsilon, depth);
             float spacing = MinPointSpacing(w, d);
             int arcSegments = Mathf.Max(1, segments);
 
-            var radii = Fit(w, d,
-                radiusMinusXMinusZ, radiusPlusXMinusZ, radiusPlusXPlusZ, radiusMinusXPlusZ);
+            var fitted = Fit(w, d, radii);
 
             float halfW = w * 0.5f;
             float halfD = d * 0.5f;
             var centres = new[]
             {
-                new Vector2(-halfW + radii[0], -halfD + radii[0]),
-                new Vector2(halfW - radii[1], -halfD + radii[1]),
-                new Vector2(halfW - radii[2], halfD - radii[2]),
-                new Vector2(-halfW + radii[3], halfD - radii[3]),
+                new Vector2(-halfW + fitted[0], -halfD + fitted[0]),
+                new Vector2(halfW - fitted[1], -halfD + fitted[1]),
+                new Vector2(halfW - fitted[2], halfD - fitted[2]),
+                new Vector2(-halfW + fitted[3], halfD - fitted[3]),
             };
             var startAngles = new[] { Mathf.PI, -Mathf.PI * 0.5f, 0f, Mathf.PI * 0.5f };
 
             var points = new List<Vector2>();
-            for (int corner = 0; corner < 4; corner++)
+            for (int corner = 0; corner < CornerRadii.Count; corner++)
             {
-                float r = radii[corner];
+                float r = fitted[corner];
                 if (r <= 0f)
                 {
                     Append(points, centres[corner], spacing);
@@ -63,6 +66,45 @@ namespace KitchenDesigner.Core
             return points.ToArray();
         }
 
+        public static float SignedDistance(Vector2 point, float width, float depth, float radius)
+            => SignedDistance(point, width, depth, CornerRadii.Uniform(radius));
+
+        public static float SignedDistance(Vector2 point, float width, float depth,
+            CornerRadii asked)
+        {
+            float w = Mathf.Max(float.Epsilon, width);
+            float d = Mathf.Max(float.Epsilon, depth);
+            float halfW = w * 0.5f;
+            float halfD = d * 0.5f;
+            var radii = Fit(w, d, asked);
+
+            for (int corner = 0; corner < CornerRadii.Count; corner++)
+            {
+                float r = radii[corner];
+                float qx = TowardsX(corner) * point.x - (halfW - r);
+                float qy = TowardsZ(corner) * point.y - (halfD - r);
+                if (qx > 0f && qy > 0f) return new Vector2(qx, qy).magnitude - r;
+            }
+
+            return Mathf.Max(Mathf.Abs(point.x) - halfW, Mathf.Abs(point.y) - halfD);
+        }
+
+        public static CornerRadii Fit(float width, float depth, CornerRadii asked)
+        {
+            float r0 = Mathf.Max(0f, asked.MinusXMinusZ);
+            float r1 = Mathf.Max(0f, asked.PlusXMinusZ);
+            float r2 = Mathf.Max(0f, asked.PlusXPlusZ);
+            float r3 = Mathf.Max(0f, asked.MinusXPlusZ);
+
+            float fit = 1f;
+            fit = Mathf.Min(fit, EdgeFit(width, r0, r1));
+            fit = Mathf.Min(fit, EdgeFit(depth, r1, r2));
+            fit = Mathf.Min(fit, EdgeFit(width, r2, r3));
+            fit = Mathf.Min(fit, EdgeFit(depth, r3, r0));
+
+            return new CornerRadii(r0 * fit, r1 * fit, r2 * fit, r3 * fit);
+        }
+
         public static float SignedArea(Vector2[] points)
         {
             if (points == null || points.Length < 3) return 0f;
@@ -78,29 +120,9 @@ namespace KitchenDesigner.Core
             return sum * 0.5f;
         }
 
-        private static float[] Fit(float width, float depth,
-            float rMinusXMinusZ, float rPlusXMinusZ, float rPlusXPlusZ, float rMinusXPlusZ)
-        {
-            var radii = new[]
-            {
-                Mathf.Max(0f, rMinusXMinusZ),
-                Mathf.Max(0f, rPlusXMinusZ),
-                Mathf.Max(0f, rPlusXPlusZ),
-                Mathf.Max(0f, rMinusXPlusZ),
-            };
+        private static float TowardsX(int corner) => corner == 1 || corner == 2 ? 1f : -1f;
 
-            float fit = 1f;
-            fit = Mathf.Min(fit, EdgeFit(width, radii[0], radii[1]));
-            fit = Mathf.Min(fit, EdgeFit(depth, radii[1], radii[2]));
-            fit = Mathf.Min(fit, EdgeFit(width, radii[2], radii[3]));
-            fit = Mathf.Min(fit, EdgeFit(depth, radii[3], radii[0]));
-
-            if (fit < 1f)
-                for (int i = 0; i < radii.Length; i++)
-                    radii[i] *= fit;
-
-            return radii;
-        }
+        private static float TowardsZ(int corner) => corner >= 2 ? 1f : -1f;
 
         private static float EdgeFit(float edgeLength, float first, float second)
             => first + second <= edgeLength ? 1f : edgeLength / (first + second);
