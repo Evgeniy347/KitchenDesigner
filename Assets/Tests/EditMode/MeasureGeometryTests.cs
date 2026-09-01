@@ -212,4 +212,184 @@ public class MeasureGeometryTests
         Assert.AreEqual(0, MeasureStore.Segments.Count);
         Assert.IsNull(MeasureStore.Selected);
     }
+
+    // ── Пиксельный размер в мире ────────────────────────────────────────
+
+    [Test]
+    public void MeasureGeometry_WorldSizeForPixels_PerspectiveCamera_GrowsProportionallyWithDistance()
+    {
+        var go = new GameObject("PerspectiveCam");
+        try
+        {
+            var cam = go.AddComponent<Camera>();
+            cam.orthographic = false;
+            cam.fieldOfView = 60f;
+            cam.transform.position = Vector3.zero;
+            cam.transform.rotation = Quaternion.identity;
+
+            float near = MeasureGeometry.WorldSizeForPixels(cam, new Vector3(0f, 0f, 2f), 10f);
+            float far = MeasureGeometry.WorldSizeForPixels(cam, new Vector3(0f, 0f, 4f), 10f);
+
+            Assert.Greater(near, 0f, "предусловие: на конечном расстоянии размер положителен");
+            Assert.AreEqual(2f * near, far, near * 1e-3f,
+                "вдвое дальше — вдвое крупнее в мире, и ровно поэтому на ЭКРАНЕ штрих "
+                + "пунктира и точка замера остаются одного размера при отдалении камеры");
+        }
+        finally { Object.DestroyImmediate(go); }
+    }
+
+    [Test]
+    public void MeasureGeometry_WorldSizeForPixels_OrthographicCamera_IgnoresDistance()
+    {
+        var go = new GameObject("OrthographicCam");
+        try
+        {
+            var cam = go.AddComponent<Camera>();
+            cam.orthographic = true;
+            cam.orthographicSize = 5f;
+
+            float near = MeasureGeometry.WorldSizeForPixels(cam, new Vector3(0f, 0f, 2f), 10f);
+            float far = MeasureGeometry.WorldSizeForPixels(cam, new Vector3(0f, 0f, 400f), 10f);
+
+            Assert.Greater(near, 0f, "предусловие: размер положителен");
+            Assert.AreEqual(near, far, near * 1e-3f,
+                "в ортографии экранный масштаб от расстояния не зависит — если бы здесь "
+                + "работала перспективная формула, разметка «худела» бы в изометрии");
+        }
+        finally { Object.DestroyImmediate(go); }
+    }
+
+    [Test]
+    public void MeasureGeometry_WorldSizeForPixels_NoCamera_IsZero()
+    {
+        Assert.AreEqual(0f, MeasureGeometry.WorldSizeForPixels(null!, Vector3.zero, 10f),
+            "рендерер зовёт это до проверки камеры — вернуть NaN значило бы разложить "
+            + "разметку в мусорную геометрию вместо того, чтобы просто ничего не нарисовать");
+    }
+
+    // ── Отрезок ─────────────────────────────────────────────────────────
+
+    [Test]
+    public void MeasureSegment_Axis_AnswersTheSameAsMeasureGeometry()
+    {
+        var alongY = new MeasureSegment(Vector3.zero, new Vector3(0f, 0.5f, 0f));
+        var diagonal = new MeasureSegment(Vector3.zero, new Vector3(0.5f, 0.5f, 0f));
+
+        Assert.AreEqual(1, alongY.Axis, "0=X, 1=Y, 2=Z — эти числа читает подпись замера");
+        Assert.AreEqual(-1, diagonal.Axis, "−1 = отрезок не лежит ни на одной оси");
+        Assert.AreEqual(MeasureGeometry.AxisOf(diagonal.A, diagonal.B), diagonal.Axis,
+            "у отрезка нет своей арифметики осей — иначе подпись и диагностика разошлись бы");
+    }
+
+    // ── Событие Changed у хранилища ─────────────────────────────────────
+
+    [Test]
+    public void MeasureStore_EveryChangeOfTheSetOrOfTheSelection_RaisesChanged()
+    {
+        MeasureStore.Clear();
+        var seg = new MeasureSegment(Vector3.zero, Vector3.up);
+        int fired = 0;
+        void Handler() => fired++;
+
+        MeasureStore.Changed += Handler;
+        try
+        {
+            MeasureStore.Add(seg);
+            Assert.AreEqual(1, fired, "окно свойств замера перерисовывается по этому событию");
+
+            MeasureStore.Select(seg);
+            Assert.AreEqual(2, fired, "смена выбора — тоже перерисовка окна");
+
+            MeasureStore.Remove(seg);
+            Assert.AreEqual(3, fired);
+
+            MeasureStore.Add(new MeasureSegment(Vector3.zero, Vector3.right));
+            MeasureStore.Clear();
+            Assert.AreEqual(5, fired, "выход из режима стирает замеры — окно обязано узнать");
+        }
+        finally { MeasureStore.Changed -= Handler; }
+    }
+
+    [Test]
+    public void MeasureStore_ARepeatedSelectionOrAnEmptyClear_StaysSilent()
+    {
+        MeasureStore.Clear();
+        var seg = new MeasureSegment(Vector3.zero, Vector3.up);
+        MeasureStore.Add(seg);
+        MeasureStore.Select(seg);
+
+        int fired = 0;
+        void Handler() => fired++;
+
+        MeasureStore.Changed += Handler;
+        try
+        {
+            MeasureStore.Select(seg);
+            Assert.AreEqual(0, fired, "выбор не менялся — перерисовывать нечего");
+
+            MeasureStore.Remove(new MeasureSegment(Vector3.zero, Vector3.forward));
+            Assert.AreEqual(0, fired, "чужого отрезка в списке нет — набор не менялся");
+
+            MeasureStore.Clear();
+            MeasureStore.Clear();
+            Assert.AreEqual(1, fired, "второй Clear по пустому хранилищу молчит");
+        }
+        finally { MeasureStore.Changed -= Handler; }
+    }
+
+    // ── Вход и выход из режима ──────────────────────────────────────────
+
+    [Test]
+    public void MeasureMode_Enabling_TurnsTheEyedropperOff()
+    {
+        KitchenDesigner.Core.Tools.EyedropperMode.Reset();
+        KitchenDesigner.Core.Tools.EyedropperMode.SetActive(true);
+
+        MeasureMode.SetActive(true);
+
+        Assert.IsFalse(KitchenDesigner.Core.Tools.EyedropperMode.Active,
+            "два режима-захватчика мыши одновременно не имеют смысла — симметрично тому, "
+            + "как включение пипетки гасит рулетку");
+        KitchenDesigner.Core.Tools.EyedropperMode.Reset();
+    }
+
+    [Test]
+    public void MeasureMode_Enabling_AfterTheSelectionManagerWasDestroyed_DoesNotThrow()
+    {
+        var go = new GameObject("SelectionManager");
+        var manager = go.AddComponent<SelectionManager>();
+        SelectionManager.Instance = manager;
+        Object.DestroyImmediate(go);
+
+        try
+        {
+            Assert.DoesNotThrow(() => MeasureMode.SetActive(true),
+                "Instance ставится в Awake и в OnDestroy не гасится, поэтому после выгрузки "
+                + "сцены здесь лежит уничтоженный объект: сравнивать его можно только "
+                + "Unity-оператором !=. `?.` видит живую C#-ссылку, лезет внутрь и роняет "
+                + "вход в режим MissingReferenceException");
+        }
+        finally { SelectionManager.Instance = null; }
+    }
+
+    [Test]
+    public void MeasureMode_Changed_FiresOnEveryTransition_AndStaysSilentOnARepeat()
+    {
+        int fired = 0;
+        void Handler() => fired++;
+
+        MeasureMode.Changed += Handler;
+        try
+        {
+            MeasureMode.SetActive(true);
+            Assert.AreEqual(1, fired, "кнопка тулбара обязана перерисоваться на входе в режим");
+
+            MeasureMode.SetActive(true);
+            Assert.AreEqual(1, fired, "состояние не менялось — переключения не было");
+
+            MeasureMode.SetActive(false);
+            Assert.AreEqual(2, fired, "выход из режима — тоже смена состояния");
+        }
+        finally { MeasureMode.Changed -= Handler; }
+    }
 }
