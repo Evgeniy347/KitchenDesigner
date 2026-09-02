@@ -61,6 +61,9 @@ namespace KitchenDesigner.Core.UI
                 case SidebarItemKind.WallHungToilet:
                     spawner.SpawnWallHungToilet(item.name);
                     break;
+                case SidebarItemKind.Bathtub:
+                    spawner.SpawnBathtub(item.dims, item.name);
+                    break;
                 case SidebarItemKind.Table:
                     spawner.SpawnTable(item.dims, item.name);
                     break;

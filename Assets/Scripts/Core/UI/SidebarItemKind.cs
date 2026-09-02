@@ -24,6 +24,7 @@ namespace KitchenDesigner.Core.UI
         Dishwasher,
         Toilet,
         WallHungToilet,
+        Bathtub,
         Floor,
         LightSource,
         Window,

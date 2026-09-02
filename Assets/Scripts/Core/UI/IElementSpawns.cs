@@ -34,6 +34,8 @@ namespace KitchenDesigner.Core.UI
 
         void SpawnWallHungToilet(string name);
 
+        void SpawnBathtub(Vector3Int dims, string name);
+
         void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom);
 

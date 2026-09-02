@@ -90,6 +90,8 @@ namespace KitchenDesigner.Core.UI
 
             public bool isWallHungToilet => kind == SidebarItemKind.WallHungToilet;
 
+            public bool isBathtub => kind == SidebarItemKind.Bathtub;
+
             public bool isFloor => kind == SidebarItemKind.Floor;
 
             public bool isLightSource => kind == SidebarItemKind.LightSource;
@@ -237,7 +239,10 @@ namespace KitchenDesigner.Core.UI
             {
                 title = "Сантехника",
                 shortLabel = "С",
-                items = new List<Item> { ToiletItem("Унитаз"), WallHungToiletItem("Инсталляция") },
+                items = new List<Item>
+                {
+                    ToiletItem("Унитаз"), WallHungToiletItem("Инсталляция"), BathtubItem("Ванна"),
+                },
             };
         }
 
@@ -247,6 +252,11 @@ namespace KitchenDesigner.Core.UI
         private static Item WallHungToiletItem(string name)
             => new Item(name, WallHungToiletElement.ModelDimensionsMM,
                 SidebarItemKind.WallHungToilet);
+
+        private static Item BathtubItem(string name)
+            => new Item(name, new Vector3Int(BathtubElement.DefaultWidthMM,
+                BathtubElement.DefaultHeightMM, BathtubElement.DefaultDepthMM),
+                SidebarItemKind.Bathtub);
 
         private static Item DishwasherItem(string name)
         {

@@ -94,6 +94,12 @@ namespace KitchenDesigner.Core.UI
                     WallHungToiletElement.DefaultSeatHeightMM,
                     WallHungToiletElement.DefaultFlushPlateHeightMM, name, pos));
 
+        public void SpawnBathtub(Vector3Int dims, string name) =>
+            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateBathtub(dims,
+                BathtubElement.DefaultRimWidthMM, BathtubElement.DefaultBowlDepthMM,
+                BathtubElement.DefaultBowlRadiusMM, BathtubElement.DefaultBowlFilletMM,
+                name, pos));
+
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom) =>
             PlaceCenteredOnGround(dims.y, pos =>
