@@ -136,7 +136,7 @@ namespace KitchenDesigner.Core
              (d, el) =>
              {
                  if (el is not TableElement table) return;
-                 ApplyTabletopMaterials(d, table);
+                 RestoreTabletopMaterials(d, table);
                  table.LegInsetMM = d.legInsetMM;
              }),
 
@@ -145,48 +145,33 @@ namespace KitchenDesigner.Core
              (d, el) =>
              {
                  if (el is not RadiusTableElement table) return;
-                 ApplyTabletopMaterials(d, table);
+                 RestoreTabletopMaterials(d, table);
                  table.LegInsetMM = d.legInsetMM;
              }),
 
             (d => d.isStool,
              (factory, d) => factory.CreateStool(d.Dimensions, d.cornerRadius, d.name, d.Position),
-             (d, el) =>
-             {
-                 if (el is StoolElement stool) ApplyTabletopMaterials(d, stool);
-             }),
+             RestoreTabletopMaterials),
 
             (d => d.isChair,
              (factory, d) => factory.CreateChair(d.Dimensions, d.cornerRadius, d.seatHeightMM,
                  d.name, d.Position),
-             (d, el) =>
-             {
-                 if (el is ChairElement chair) ApplyTabletopMaterials(d, chair);
-             }),
+             RestoreTabletopMaterials),
 
             (d => d.isSofa,
              (factory, d) => factory.CreateSofa(d.Dimensions, d.cornerRadius, d.seatHeightMM,
                  d.name, d.Position),
-             (d, el) =>
-             {
-                 if (el is SofaElement sofa) ApplyTabletopMaterials(d, sofa);
-             }),
+             RestoreTabletopMaterials),
 
             (d => d.isPouffe,
              (factory, d) => factory.CreatePouffe(d.Dimensions, d.cornerRadius,
                  d.pouffeSeatThicknessMM, d.name, d.Position),
-             (d, el) =>
-             {
-                 if (el is PouffeElement pouffe) ApplyTabletopMaterials(d, pouffe);
-             }),
+             RestoreTabletopMaterials),
 
             (d => d.isBed,
              (factory, d) => factory.CreateBed(d.Dimensions, d.bedDouble, d.bedHeadboard,
                  d.name, d.Position),
-             (d, el) =>
-             {
-                 if (el is BedElement bed) ApplyTabletopMaterials(d, bed);
-             }),
+             RestoreTabletopMaterials),
 
             (d => d.isRadialShelf,
              (factory, d) => factory.CreateRadialShelf(d.Dimensions.x, d.Dimensions.z,
@@ -266,8 +251,9 @@ namespace KitchenDesigner.Core
             }
         }
 
-        private static void ApplyTabletopMaterials(ElementData data, ITabletop tabletop)
+        private static void RestoreTabletopMaterials(ElementData data, KitchenElement el)
         {
+            if (el is not ITabletop tabletop) return;
             if (!string.IsNullOrEmpty(data.legsMaterialId))
                 MaterialManager.ApplyLegs(tabletop, MaterialCatalog.Get(data.legsMaterialId));
             if (!string.IsNullOrEmpty(data.tabletopMaterialId))

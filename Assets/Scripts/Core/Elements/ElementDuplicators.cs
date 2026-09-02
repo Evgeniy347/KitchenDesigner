@@ -109,15 +109,9 @@ namespace KitchenDesigner.Core
              (factory, source, pos) => factory.CreateRadiusTable(source.DimensionsMM, source.PartName, pos),
              (source, copy) =>
              {
-                 var src = (RadiusTableElement)source;
                  var made = copy.GetComponent<RadiusTableElement>();
-                 if (made != null)
-                 {
-                     made.LegInsetMM = src.LegInsetMM;
-                     made.TabletopMaterialId = src.TabletopMaterialId;
-                     made.LegsMaterialId = src.LegsMaterialId;
-                 }
-                 CopyMaterial(source, copy);
+                 if (made != null) made.LegInsetMM = ((RadiusTableElement)source).LegInsetMM;
+                 CopyTabletopSlots(source, copy);
              }),
 
             (el => el is ScrewLegElement,
@@ -140,81 +134,31 @@ namespace KitchenDesigner.Core
             (el => el is StoolElement,
              (factory, source, pos) => factory.CreateStool(source.DimensionsMM,
                  ((StoolElement)source).CornerRadiusMM, source.PartName, pos),
-             (source, copy) =>
-             {
-                 var src = (StoolElement)source;
-                 var made = copy.GetComponent<StoolElement>();
-                 if (made != null)
-                 {
-                     made.TabletopMaterialId = src.TabletopMaterialId;
-                     made.LegsMaterialId = src.LegsMaterialId;
-                 }
-                 CopyMaterial(source, copy);
-             }),
+             CopyTabletopSlots),
 
             (el => el is ChairElement,
              (factory, source, pos) => factory.CreateChair(source.DimensionsMM,
                  ((ChairElement)source).CornerRadiusMM, ((ChairElement)source).SeatHeightMM,
                  source.PartName, pos),
-             (source, copy) =>
-             {
-                 var src = (ChairElement)source;
-                 var made = copy.GetComponent<ChairElement>();
-                 if (made != null)
-                 {
-                     made.TabletopMaterialId = src.TabletopMaterialId;
-                     made.LegsMaterialId = src.LegsMaterialId;
-                 }
-                 CopyMaterial(source, copy);
-             }),
+             CopyTabletopSlots),
 
             (el => el is SofaElement,
              (factory, source, pos) => factory.CreateSofa(source.DimensionsMM,
                  ((SofaElement)source).CornerRadiusMM, ((SofaElement)source).SeatHeightMM,
                  source.PartName, pos),
-             (source, copy) =>
-             {
-                 var src = (SofaElement)source;
-                 var made = copy.GetComponent<SofaElement>();
-                 if (made != null)
-                 {
-                     made.TabletopMaterialId = src.TabletopMaterialId;
-                     made.LegsMaterialId = src.LegsMaterialId;
-                 }
-                 CopyMaterial(source, copy);
-             }),
+             CopyTabletopSlots),
 
             (el => el is PouffeElement,
              (factory, source, pos) => factory.CreatePouffe(source.DimensionsMM,
                  ((PouffeElement)source).CornerRadiusMM,
                  ((PouffeElement)source).SeatThicknessMM, source.PartName, pos),
-             (source, copy) =>
-             {
-                 var src = (PouffeElement)source;
-                 var made = copy.GetComponent<PouffeElement>();
-                 if (made != null)
-                 {
-                     made.TabletopMaterialId = src.TabletopMaterialId;
-                     made.LegsMaterialId = src.LegsMaterialId;
-                 }
-                 CopyMaterial(source, copy);
-             }),
+             CopyTabletopSlots),
 
             (el => el is BedElement,
              (factory, source, pos) => factory.CreateBed(source.DimensionsMM,
                  ((BedElement)source).IsDouble, ((BedElement)source).HasHeadboard,
                  source.PartName, pos),
-             (source, copy) =>
-             {
-                 var src = (BedElement)source;
-                 var made = copy.GetComponent<BedElement>();
-                 if (made != null)
-                 {
-                     made.TabletopMaterialId = src.TabletopMaterialId;
-                     made.LegsMaterialId = src.LegsMaterialId;
-                 }
-                 CopyMaterial(source, copy);
-             }),
+             CopyTabletopSlots),
 
             (el => el is WindowElement,
              (factory, source, pos) =>
@@ -283,6 +227,17 @@ namespace KitchenDesigner.Core
         {
             var el = copy.GetComponent<KitchenElement>();
             if (el != null) MaterialManager.ApplyById(el, source.MaterialId);
+        }
+
+        private static void CopyTabletopSlots(KitchenElement source, GameObject copy)
+        {
+            if (source is ITabletop src
+                && copy.GetComponent<KitchenElement>() is ITabletop made)
+            {
+                made.TabletopMaterialId = src.TabletopMaterialId;
+                made.LegsMaterialId = src.LegsMaterialId;
+            }
+            CopyMaterial(source, copy);
         }
 
         private static void CopyPlainPart(KitchenElement source, GameObject copy)
