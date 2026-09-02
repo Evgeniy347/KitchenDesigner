@@ -139,8 +139,9 @@ namespace KitchenDesigner.Core
         private void PlaceBedding()
         {
             var dims = DimensionsMM;
-            Bedding.Cushion(BedLayout.MattressName, BedLayout.MattressCentreMM(dims),
-                BedLayout.MattressSizeMM(dims), BedLayout.MattressCornerRadiusMM);
+            Bedding.SoftSlab(BedLayout.MattressName, BedLayout.MattressCentreMM(dims),
+                BedLayout.MattressSizeMM(dims), BedLayout.MattressPlanRadiusMM,
+                BedLayout.MattressFilletMM);
 
             var centres = BedLayout.PillowCentresMM(dims, _isDouble);
             var size = BedLayout.PillowSizeMM(dims, _isDouble);

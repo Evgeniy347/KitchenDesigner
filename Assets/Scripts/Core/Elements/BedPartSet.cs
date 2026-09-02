@@ -20,6 +20,15 @@ namespace KitchenDesigner.Core
                 CushionMesh.Build(sizeMM * toU, radiusMM * toU));
         }
 
+        public void SoftSlab(string name, Vector3 centreMM, Vector3 sizeMM,
+            float planRadiusMM, float filletMM)
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            Place(name, centreMM, Vector3.zero, SoftSlabMesh.Build(
+                sizeMM.x * toU, sizeMM.z * toU, planRadiusMM * toU,
+                sizeMM.y * toU, filletMM * toU));
+        }
+
         public void Extrusion(string name, Vector3 centreMM, Vector3 eulerAngles,
             float profileWidthMM, float profileDepthMM, float thicknessMM, float radiusMM)
         {

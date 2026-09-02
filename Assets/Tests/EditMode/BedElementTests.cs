@@ -365,4 +365,49 @@ public class BedElementTests
         bed.IsDouble = false;
         Assert.AreEqual(BedElement.SizeSingle, bed.SizeName, "и следует за переключателем");
     }
+
+    [Test]
+    public void Mattress_TopIsFlat_NotDomed_SoTheMattressIsASoftSlabAndNotACushion()
+    {
+        var bed = Bed(new Vector3Int(1800, 900, 2000), true, true);
+        var mesh = Required(bed, BedLayout.MattressName).GetComponent<MeshFilter>().sharedMesh;
+        Assert.IsNotNull(mesh, "у матраса обязан быть меш");
+
+        float toMM = 1f / AppConstants.MM_TO_UNITS;
+        float topMM = float.MinValue;
+        foreach (var v in mesh!.vertices) topMM = Mathf.Max(topMM, v.y * toMM);
+
+        float leftMM = float.MaxValue;
+        float rightMM = float.MinValue;
+        foreach (var v in mesh.vertices)
+        {
+            if (v.y * toMM < topMM - Tolerance.ContactMm) continue;
+            leftMM = Mathf.Min(leftMM, v.x * toMM);
+            rightMM = Mathf.Max(rightMM, v.x * toMM);
+        }
+
+        float width = BedLayout.MattressSizeMM(bed.DimensionsMM).x;
+        Assert.AreEqual(width - 2f * BedLayout.MattressFilletMM, rightMM - leftMM, 1f,
+            "верх матраса — ПЛОСКОЕ плато во всю ширину минус скругление кромки. У подушки "
+            + "CushionSurface верхняя точка одна: выпуклость поднимает центр над периметром, "
+            + "и плато вырождается в точку. Тест ловит возврат матраса на CushionMesh");
+
+        Assert.AreEqual(BedLayout.MattressThicknessMM * 0.5f, topMM, 1f,
+            "и плато лежит ровно на половине толщины: матрас обязан остаться 180 мм толщиной, "
+            + "иначе он утонет в царге или повиснет над ней");
+    }
+
+    [Test]
+    public void Mattress_PlanRadius_IsNamedApartFromTheEdgeFillet()
+    {
+        Assert.AreEqual(BedLayout.MattressPlanRadiusMM, BedLayout.MattressFilletMM,
+            "сегодня оба 60 мм, и матрас выглядит ровно как раньше");
+
+        var size = BedLayout.MattressSizeMM(BedLayout.DefaultDimensions(true, true));
+        float fitted = SoftSlabSurface.FitFillet(size.x, size.z, size.y,
+            BedLayout.MattressFilletMM);
+        Assert.AreEqual(BedLayout.MattressFilletMM, fitted, 0.01f,
+            "скругление кромки обязано помещаться в половину толщины без подгонки: если "
+            + "FitFillet его срезает, матрас на экране уже не тот, что назван в BedLayout");
+    }
 }

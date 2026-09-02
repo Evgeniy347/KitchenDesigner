@@ -314,5 +314,27 @@ namespace KitchenDesigner.Tests.Geometry
                 "подушки ищут ПО ИМЕНИ, а не по индексу в списке детей: индекс поехал бы "
                 + "при смене типа кровати, когда вторая подушка исчезает");
         }
+
+        [Test]
+        public void TheMattressPlan_IsNoLongerCappedByItsOwnThickness()
+        {
+            var size = BedLayout.MattressSizeMM(Double());
+            float capsule = size.x * 0.5f;
+
+            var cushion = new CushionSurface(size, capsule);
+            Assert.Less(cushion.Radius, BedLayout.MattressThicknessMM * 0.5f,
+                "пока матрас был подушкой, план и кромку скругляло ОДНО число, и оно "
+                + "упиралось в половину толщины: капсульный или круглый план кровати был "
+                + "физически недостижим, сколько бы миллиметров ни просили");
+
+            var slab = new SoftSlabSurface(size.x, size.z, CornerRadii.Uniform(capsule),
+                size.y, BedLayout.MattressFilletMM);
+            Assert.AreEqual(capsule, slab.Radii.MinusXMinusZ, Tol,
+                "мягкая плита держит план и кромку врозь: радиус плана ограничен только "
+                + "стороной следа, поэтому матрас в пол-ширины радиусом — капсула — доезжает "
+                + "до меша целиком");
+            Assert.AreEqual(BedLayout.MattressFilletMM, slab.Fillet, Tol,
+                "и кромка при этом остаётся своей, 60 мм: она не тянется за радиусом плана");
+        }
     }
 }

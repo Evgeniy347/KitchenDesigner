@@ -19,7 +19,8 @@ namespace KitchenDesigner.Core
 
         public const int MattressThicknessMM = 180;
         public const int MattressInsetMM = 30;
-        public const int MattressCornerRadiusMM = 60;
+        public const int MattressPlanRadiusMM = 60;
+        public const int MattressFilletMM = 60;
 
         public const int PillowThicknessMM = 120;
         public const int PillowWidthMM = 700;
