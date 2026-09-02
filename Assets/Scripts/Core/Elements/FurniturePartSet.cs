@@ -51,6 +51,11 @@ namespace KitchenDesigner.Core
             DestroyObject(part);
         }
 
+        public MeshRenderer? RendererOf(string name)
+            => _parts.TryGetValue(name, out var part) && part != null
+                ? part.GetComponent<MeshRenderer>()
+                : null;
+
         public void SetMaterial(Material material)
         {
             _material = material;
