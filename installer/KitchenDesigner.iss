@@ -86,6 +86,14 @@ Source: "..\Build\*"; DestDir: "{app}"; \
 ; MIT требует, чтобы текст лицензии ехал с каждой копией.
 Source: "..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; \
   Flags: ignoreversion
+; Демонстрационный проект — копия docs\example.save.json. Программа открывает
+; его один раз, при первом запуске, и до «Сохранить копию» не даёт менять
+; ничего: писать сюда она не будет (папка установки per-user ДОСТУПНА на
+; запись, поэтому защита в коде, а не в правах). Расширение .json — штатное,
+; с ним работают NativeFileDialog и SaveLoadManager. Переустановка обновляет
+; образец: он не пользовательские данные.
+Source: "..\docs\example.save.json"; DestDir: "{app}\Demo"; DestName: "demo.json"; \
+  Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
