@@ -280,8 +280,9 @@ namespace KitchenDesigner.Core
 
         public void SyncLightState()
         {
-            if (_light != null) _light.enabled = _globalOn;
-            if (_upLight != null) _upLight.enabled = _globalOn && _shape != LampShape.Sphere;
+            bool lit = LightSwitchNetwork.IsLit(PartName);
+            if (_light != null) _light.enabled = lit;
+            if (_upLight != null) _upLight.enabled = lit && _shape != LampShape.Sphere;
         }
     }
 }

@@ -76,6 +76,8 @@ namespace KitchenDesigner.Core
                     e.AttachedToName = newName;
 
             element.PartName = newName;
+
+            if (element is LightSourceElement) LightSwitchNetwork.RenameLight(oldName, newName);
         }
 
         public static string UniqueName(string baseName) => ElementNaming.Normalize(baseName);
