@@ -180,6 +180,11 @@ public class McpUiPropertyParityTests
             new Vector3Int(PouffeElement.DefaultWidthMM, PouffeElement.DefaultHeightMM,
                 PouffeElement.DefaultDepthMM), PouffeElement.DefaultCornerRadiusMM,
             PouffeElement.DefaultSeatThicknessMM, PROBE, Vector3.zero));
+        yield return ("ToiletElement", () => ElementFactory.CreateToilet(
+            ToiletElement.DefaultSeatHeightMM, PROBE, Vector3.zero));
+        yield return ("WallHungToiletElement", () => ElementFactory.CreateWallHungToilet(
+            WallHungToiletElement.DefaultSeatHeightMM,
+            WallHungToiletElement.DefaultFlushPlateHeightMM, PROBE, Vector3.zero));
         yield return ("BedElement", () => ElementFactory.CreateBed(
             new Vector3Int(BedElement.DefaultWidthMM, BedElement.DefaultHeightMM,
                 BedElement.DefaultDepthMM), true, true, PROBE, Vector3.zero));
