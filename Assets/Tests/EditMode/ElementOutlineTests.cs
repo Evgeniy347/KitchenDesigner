@@ -152,18 +152,38 @@ public class ElementOutlineTests
     }
 
     [Test]
-    public void UnlitChain_FallsBackToAShaderThePartsThemselvesUse()
+    public void UnlitChain_StartsWithAShaderThatSurvivesTheBuild_NotWithUrpUnlit()
     {
         var chain = ElementOutline.UnlitShaderChain;
 
-        Assert.AreEqual("Universal Render Pipeline/Unlit", chain[0],
-            "контур не должен зависеть от освещения — предпочтителен Unlit");
+        Assert.AreEqual(ElementOutline.PrimaryShaderName, chain[0],
+            "контур не должен зависеть от освещения, и URP/Unlit этого НЕ обеспечивает: "
+            + "им не пользуется ни один материал проекта, поэтому в собранном плеере его "
+            + "нет вовсе (проверено grep-ом по дереву сборки), Shader.Find возвращает там "
+            + "null, и контур молча уезжал на URP/Lit — то есть темнел вместе с комнатой");
+        Assert.IsNotNull(Resources.Load<Shader>(ElementOutline.PrimaryShaderResourcePath),
+            "первое звено обязано лежать в Resources: только так стриппинг его не тронет, "
+            + "иначе мы поменяли одно вырезаемое звено на другое");
         CollectionAssert.Contains(chain, "Universal Render Pipeline/Lit",
-            "URP/Unlit вырезается из сборки, если им не пользуется ни один материал, и Shader.Find там вернёт null; "
-            + "запасным обязан быть шейдер самих деталей, который вырезать нельзя");
+            "последним запасом остаётся шейдер самих деталей — его вырезать нельзя");
         Assert.IsNotNull(Shader.Find("Universal Render Pipeline/Lit"),
             "запасной шейдер обязан существовать в проекте, иначе запас фиктивный");
-        Assert.IsNotNull(ElementOutline.MakeUnlit(Color.black),
+    }
+
+    [Test]
+    public void UnlitOutline_ResolvesToTheUnlitShader_NotToTheLitFallback()
+    {
+        var shader = ElementOutline.FindUnlitShader();
+        Assert.IsNotNull(shader,
             "контур не имеет права исчезнуть из-за отсутствующего шейдера");
+        Assert.AreEqual(ElementOutline.PrimaryShaderName, shader!.name,
+            "разрешаться обязано ПЕРВОЕ звено: запас существует на случай беды, "
+            + "а не как обычный путь — именно молчаливый уход на запас и был дефектом");
+
+        var m = ElementOutline.MakeUnlit(Color.black);
+        Assert.IsNotNull(m, "материал контура обязан создаваться");
+        Assert.AreEqual(ElementOutline.PrimaryShaderName, m!.shader.name,
+            "этот материал получают все двенадцать рёбер контура");
+        Object.DestroyImmediate(m);
     }
 }

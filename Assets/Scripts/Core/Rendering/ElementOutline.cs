@@ -39,8 +39,13 @@ namespace KitchenDesigner.Core
 
         internal const string OutlineRootName = "__Outline";
 
+        internal const string PrimaryShaderName = "Hidden/KD/UnlitColor";
+
+        internal const string PrimaryShaderResourcePath = "Shaders/UnlitColor";
+
         internal static readonly string[] UnlitShaderChain =
         {
+            PrimaryShaderName,
             "Universal Render Pipeline/Unlit",
             "Universal Render Pipeline/Lit",
             "Sprites/Default",
@@ -160,14 +165,22 @@ namespace KitchenDesigner.Core
             }
         }
 
-        internal static Material? MakeUnlit(Color color)
+        internal static Shader? FindUnlitShader()
         {
-            Shader? shader = null;
             foreach (var name in UnlitShaderChain)
             {
-                shader = Shader.Find(name);
-                if (shader != null) break;
+                var found = Shader.Find(name);
+                if (found != null) return found;
+                if (name != PrimaryShaderName) continue;
+                found = Resources.Load<Shader>(PrimaryShaderResourcePath);
+                if (found != null) return found;
             }
+            return null;
+        }
+
+        internal static Material? MakeUnlit(Color color)
+        {
+            var shader = FindUnlitShader();
             if (shader == null) return null;
 
             var m = new Material(shader);
