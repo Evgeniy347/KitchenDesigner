@@ -6,6 +6,16 @@ namespace KitchenDesigner.Core.Handles
     /// <summary>Материалы ручек: ZTest Always поверх всего (обоснование — в HandleOverlay.shader).</summary>
     public static class HandleMaterials
     {
+        public const string ShaderName = "Hidden/KD/HandleOverlay";
+
+        public const string ShaderResourcePath = "Shaders/HandleOverlay";
+
+        public const string ShaderMissingMessage =
+            "[Handles] Шейдер " + ShaderName + " не найден — ручки трансформации "
+            + "не будут видны. Подмены обычным шейдером здесь нет намеренно: "
+            + "с честной проверкой глубины ручка тонет в соседней детали, и "
+            + "инструмент молча перестаёт работать.";
+
         public static readonly Color AxisX = new Color(0.90f, 0.25f, 0.25f);
         public static readonly Color AxisY = new Color(0.35f, 0.85f, 0.35f);
         public static readonly Color AxisZ = new Color(0.35f, 0.55f, 0.95f);
@@ -27,8 +37,7 @@ namespace KitchenDesigner.Core.Handles
             if (shader == null)
             {
                 _shaderMissing = true;
-                Debug.LogWarning("[Handles] Шейдер ручек не найден — "
-                    + "ручки трансформации не будут видны.");
+                Debug.LogWarning(ShaderMissingMessage);
                 return null;
             }
 
@@ -39,13 +48,10 @@ namespace KitchenDesigner.Core.Handles
             return material;
         }
 
-        private static Shader? FindShader()
+        public static Shader? FindShader()
         {
-            var shader = Shader.Find("Hidden/KD/HandleOverlay");
-            if (shader == null) shader = Resources.Load<Shader>("Shaders/HandleOverlay");
-            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Sprites/Default");
+            var shader = Shader.Find(ShaderName);
+            if (shader == null) shader = Resources.Load<Shader>(ShaderResourcePath);
             return shader;
         }
     }
