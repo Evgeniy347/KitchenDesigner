@@ -62,7 +62,7 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<PerfMonitor>() == null) gameObject.AddComponent<PerfMonitor>();
 #endif
 
-            GameContext.Services!.SaveLoadManager.LoadLastSession();
+            DemoProjectLoader.OpenDemoOrLastSession(GameContext.Services!.SaveLoadManager);
             TextureLibrary.PrefetchScene();
 
             if (FindAnyObjectByType<MCP.UnityTcpBridge>() == null) gameObject.AddComponent<MCP.UnityTcpBridge>();

@@ -11,7 +11,7 @@ namespace KitchenDesigner.Core
         {
             if (DemoMode.Current.MutationsAllowed) return false;
             RollBack(command);
-            (Prompt ?? UI.DemoModeDialogUI.ShowIfAvailable).Invoke();
+            Prompt?.Invoke();
             return true;
         }
 

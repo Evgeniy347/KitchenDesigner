@@ -20,35 +20,30 @@ namespace KitchenDesigner.Core.UI
         internal bool IsVisible => _root != null && _root.gameObject.activeSelf;
         internal string? MessageText => _message != null ? _message.text : null;
 
-        private void Awake() => Instance = this;
+        private void Awake()
+        {
+            Instance = this;
+            DemoModeGuard.Prompt = ShowIfAvailable;
+        }
 
         private void OnDestroy()
         {
-            if (ReferenceEquals(Instance, this)) Instance = null;
+            if (!ReferenceEquals(Instance, this)) return;
+            Instance = null;
+            DemoModeGuard.Prompt = null;
         }
 
         public static void ShowIfAvailable()
         {
-            var dialog = Instance != null ? Instance : CreateUnderCanvas();
+            var dialog = Instance;
             if (dialog == null || dialog.IsVisible) return;
             dialog.Show();
-        }
-
-        private static DemoModeDialogUI? CreateUnderCanvas()
-        {
-            var canvas = UIManager.Instance != null ? UIManager.Instance.Canvas : null;
-            if (canvas == null) return null;
-            var host = new GameObject("DemoModeDialog");
-            host.transform.SetParent(canvas.transform, false);
-            var dialog = host.AddComponent<DemoModeDialogUI>();
-            dialog.Build(canvas.transform);
-            return dialog;
         }
 
         public void Build(Transform parent)
         {
             var backdrop = UIFactory.CreatePanel("DemoModeDialogBackdrop", parent,
-                Vector2.zero, Vector2.one, new Color(0f, 0f, 0f, 0.55f));
+                Vector2.zero, Vector2.one, UIStyle.ModalBackdrop);
             _root = backdrop.rectTransform;
             _root.anchorMin = Vector2.zero;
             _root.anchorMax = Vector2.one;

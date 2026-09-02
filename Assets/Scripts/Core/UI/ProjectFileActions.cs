@@ -6,6 +6,11 @@ namespace KitchenDesigner.Core.UI
 
         public void SaveCurrent()
         {
+            if (DemoMode.Current.IsActive)
+            {
+                SaveAs();
+                return;
+            }
             if (SaveLoadManager.HasLastPath)
             {
                 if (SaveLoadManager.SaveToLastPath())
@@ -22,7 +27,7 @@ namespace KitchenDesigner.Core.UI
         {
             string suggested = SaveLoadManager.HasLastPath
                 ? System.IO.Path.GetFileName(SaveLoadManager.LastPath)
-                : "kitchen.json";
+                : SuggestedNameForANewFile();
             string? path = NativeFileDialog.SaveDialog("Сохранить проект кухни",
                 suggested, SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return;
@@ -38,6 +43,9 @@ namespace KitchenDesigner.Core.UI
             if (SaveLoadManager.LoadFromPath(path))
                 Toast("Загружено: " + System.IO.Path.GetFileName(path));
         }
+
+        private static string SuggestedNameForANewFile() =>
+            DemoMode.Current.IsActive ? DemoModeStrings.SuggestedFileName : "kitchen.json";
 
         private static void Toast(string msg) => ToastNotification.ShowIfAvailable(msg);
 

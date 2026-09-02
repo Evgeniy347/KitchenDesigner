@@ -48,9 +48,12 @@ namespace KitchenDesigner.Core
         public bool SaveToPath(string path)
         {
             if (string.IsNullOrEmpty(path)) return false;
+            if (DemoMode.Current.IsDemoFile(path)) return false;
             bool ok = _files.Write(path, CaptureCurrentScene());
-            if (ok) LastPath = path;
-            return ok;
+            if (!ok) return false;
+            LastPath = path;
+            DemoMode.Current.ProjectSavedTo(path);
+            return true;
         }
 
         public bool SaveToLastPath() => HasLastPath && SaveToPath(LastPath);
@@ -68,6 +71,7 @@ namespace KitchenDesigner.Core
         {
             if (!ReplaceSceneWithFile(path)) return false;
             LastPath = path;
+            DemoMode.Current.ProjectLoadedFrom(path);
             return true;
         }
 

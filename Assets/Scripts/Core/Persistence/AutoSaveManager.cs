@@ -22,9 +22,15 @@ namespace KitchenDesigner.Core
 
         public static bool SaveOnQuit()
         {
+            if (!AutoSaveIsOn()) return false;
+            return SaveIntoTheOpenProjectOrAutosave();
+        }
+
+        private static bool AutoSaveIsOn()
+        {
             var settings = KitchenSettings.Instance;
             if (settings == null || !settings.AutoSave) return false;
-            return SaveIntoTheOpenProjectOrAutosave();
+            return DemoMode.Current.AutoSaveAllowed;
         }
 
         private static bool SaveIntoTheOpenProjectOrAutosave()
@@ -46,8 +52,7 @@ namespace KitchenDesigner.Core
             {
                 yield return new WaitForSeconds(IntervalSecondsRightNow());
 
-                var settings = KitchenSettings.Instance;
-                if (settings == null || !settings.AutoSave) continue;
+                if (!AutoSaveIsOn()) continue;
 
                 string current = SaveLoadManager.CaptureCurrentJson();
                 if (current == _lastSavedJson) continue;
