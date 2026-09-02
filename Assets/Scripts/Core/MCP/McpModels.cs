@@ -83,6 +83,7 @@ namespace KitchenDesigner.Core.MCP
 		public StoolInfo? stool;
 		public ChairInfo? chair;
 		public SofaInfo? sofa;
+		public PouffeInfo? pouffe;
 		public BedInfo? bed;
 		public PillarInfo? pillar;
 		public ScrewLegInfo? screwLeg;
@@ -311,6 +312,18 @@ namespace KitchenDesigner.Core.MCP
 		public int seatHeightMM;
 		public int backDepthMM;
 		public int cushionCount;
+		public string tabletopMaterialId = MaterialCatalog.DefaultId;
+		public string legsMaterialId = MaterialCatalog.DefaultId;
+	}
+
+	[Serializable]
+	public class PouffeInfo
+	{
+		public int cornerRadiusMM;
+		public int maxCornerRadiusMM;
+		public int seatThicknessMM;
+		public int maxSeatThicknessMM;
+		public int bodyHeightMM;
 		public string tabletopMaterialId = MaterialCatalog.DefaultId;
 		public string legsMaterialId = MaterialCatalog.DefaultId;
 	}

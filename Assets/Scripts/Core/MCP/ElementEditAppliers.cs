@@ -36,6 +36,12 @@ namespace KitchenDesigner.Core.MCP
                 if (op.corner_radius.HasValue) sofa.CornerRadiusMM = op.corner_radius.Value;
                 if (op.seat_height.HasValue) sofa.SeatHeightMM = op.seat_height.Value;
             }),
+            For<PouffeElement>((op, pouffe) =>
+            {
+                if (op.pouffe_seat_thickness.HasValue)
+                    pouffe.SeatThicknessMM = op.pouffe_seat_thickness.Value;
+                if (op.corner_radius.HasValue) pouffe.CornerRadiusMM = op.corner_radius.Value;
+            }),
             For<BedElement>((op, bed) =>
             {
                 if (op.bed_double.HasValue) bed.IsDouble = op.bed_double.Value;

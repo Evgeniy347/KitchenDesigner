@@ -121,7 +121,8 @@ namespace KitchenDesigner.Core.MCP.Contract
         public bool? is_open;
 
         [McpParam("Corner rounding radius in MM. Radial shelf: clamped to 1..min(width, depth). " +
-                  "Stool, chair and sofa (the seat body): clamped to 0..min(width, depth)/2 — 0 is a square seat, " +
+                  "Stool, chair, sofa (the seat body) and pouffe (the whole upholstered box): " +
+                  "clamped to 0..min(width, depth)/2 — 0 is a square seat, " +
                   "the maximum is a fully round one (a circle when width == depth, a capsule otherwise). " +
                   "Omit to keep.", Min = 0)]
         public int? corner_radius;
@@ -216,6 +217,11 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Screw leg only: height of the foot in MM (1..200). Omit to keep.", Min = 1, Max = 200)]
         public int? screw_base_height_mm;
 
+        [McpParam("Pouffe only: thickness of the soft seat cushion in MM, clamped to "
+                  + "20..height/3. What is left of the height goes to the upholstered box "
+                  + "below it — a pouffe has no legs. Omit to keep.", Min = 1)]
+        public int? pouffe_seat_thickness;
+
         [McpParam("Bed only: true = double (1800 wide, two pillows, six legs), false = single "
                   + "(900 wide, one pillow, four legs). Switching RESETS width/height/depth to "
                   + "the defaults of the new type, discarding a manual resize. Omit to keep.")]
@@ -256,7 +262,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;

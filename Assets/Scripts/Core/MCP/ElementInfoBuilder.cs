@@ -154,6 +154,18 @@ namespace KitchenDesigner.Core.MCP
                 };
             }),
 
+            For<PouffeElement>((info, pouffe) => info.pouffe = new PouffeInfo
+            {
+                cornerRadiusMM = pouffe.CornerRadiusMM,
+                maxCornerRadiusMM = PouffeElement.MaxCornerRadiusMM(pouffe.DimensionsMM),
+                seatThicknessMM = pouffe.SeatThicknessMM,
+                maxSeatThicknessMM = PouffeElement.MaxSeatThicknessMM(pouffe.DimensionsMM.y),
+                bodyHeightMM = PouffeLayout.BodyHeightMM(pouffe.DimensionsMM.y,
+                    pouffe.SeatThicknessMM),
+                tabletopMaterialId = pouffe.TabletopMaterialId,
+                legsMaterialId = pouffe.LegsMaterialId
+            }),
+
             For<BedElement>((info, bed) => info.bed = new BedInfo
             {
                 size = bed.SizeName,
