@@ -16,6 +16,7 @@ namespace KitchenDesigner.Core
 			var stool = element as StoolElement;
 			var chair = element as ChairElement;
 			var sofa = element as SofaElement;
+			var pouffe = element as PouffeElement;
 			var bed = element as BedElement;
 			var tableEl2 = element as TableElement;
 			var windowEl = element as WindowElement;
@@ -53,6 +54,9 @@ namespace KitchenDesigner.Core
             d.isStool = stool != null;
             d.isChair = chair != null;
             d.isSofa = sofa != null;
+            d.isPouffe = pouffe != null;
+            d.pouffeSeatThicknessMM = pouffe != null ? pouffe.SeatThicknessMM
+                : PouffeLayout.DefaultSeatThicknessMM;
             d.isBed = bed != null;
             d.bedDouble = bed != null ? bed.IsDouble : true;
             d.bedHeadboard = bed != null ? bed.HasHeadboard : true;
@@ -70,7 +74,8 @@ namespace KitchenDesigner.Core
             d.cornerRadius = radialShelf != null ? radialShelf.CornerRadius
                 : stool != null ? stool.CornerRadiusMM
                 : chair != null ? chair.CornerRadiusMM
-                : sofa != null ? sofa.CornerRadiusMM : 0;
+                : sofa != null ? sofa.CornerRadiusMM
+                : pouffe != null ? pouffe.CornerRadiusMM : 0;
 
             d.gapLeft = element.SupportsGaps ? element.GapLeft : 0;
             d.gapRight = element.SupportsGaps ? element.GapRight : 0;

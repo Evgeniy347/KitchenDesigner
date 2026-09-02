@@ -172,6 +172,14 @@ namespace KitchenDesigner.Core
                  if (el is SofaElement sofa) ApplyTabletopMaterials(d, sofa);
              }),
 
+            (d => d.isPouffe,
+             (factory, d) => factory.CreatePouffe(d.Dimensions, d.cornerRadius,
+                 d.pouffeSeatThicknessMM, d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is PouffeElement pouffe) ApplyTabletopMaterials(d, pouffe);
+             }),
+
             (d => d.isBed,
              (factory, d) => factory.CreateBed(d.Dimensions, d.bedDouble, d.bedHeadboard,
                  d.name, d.Position),

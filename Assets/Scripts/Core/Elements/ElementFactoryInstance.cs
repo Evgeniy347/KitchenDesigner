@@ -316,6 +316,21 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, sofa);
         }
 
+        public GameObject CreatePouffe(Vector3Int dimensionsMM, int cornerRadiusMM,
+            int seatThicknessMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Пуфик", position);
+
+            var pouffe = go.AddComponent<PouffeElement>();
+            pouffe.PartName = go.name;
+            pouffe.DimensionsMM = dimensionsMM;
+            pouffe.SeatThicknessMM = seatThicknessMM;
+            pouffe.CornerRadiusMM = cornerRadiusMM;
+
+            if (DefaultMaterial != null) pouffe.SetMaterial(DefaultMaterial);
+            return ElementRoot.Publish(go, pouffe);
+        }
+
         public GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard,
             string name, Vector3 position)
         {

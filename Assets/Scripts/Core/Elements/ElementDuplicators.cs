@@ -184,6 +184,22 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is PouffeElement,
+             (factory, source, pos) => factory.CreatePouffe(source.DimensionsMM,
+                 ((PouffeElement)source).CornerRadiusMM,
+                 ((PouffeElement)source).SeatThicknessMM, source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (PouffeElement)source;
+                 var made = copy.GetComponent<PouffeElement>();
+                 if (made != null)
+                 {
+                     made.TabletopMaterialId = src.TabletopMaterialId;
+                     made.LegsMaterialId = src.LegsMaterialId;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is BedElement,
              (factory, source, pos) => factory.CreateBed(source.DimensionsMM,
                  ((BedElement)source).IsDouble, ((BedElement)source).HasHeadboard,

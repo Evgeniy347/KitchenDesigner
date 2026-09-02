@@ -67,6 +67,9 @@ namespace KitchenDesigner.Core
 		public static GameObject CreateSofa(Vector3Int dimensionsMM, int cornerRadiusMM, int seatHeightMM, string name, Vector3 position) =>
 			Instance.CreateSofa(dimensionsMM, cornerRadiusMM, seatHeightMM, name, position);
 
+		public static GameObject CreatePouffe(Vector3Int dimensionsMM, int cornerRadiusMM, int seatThicknessMM, string name, Vector3 position) =>
+			Instance.CreatePouffe(dimensionsMM, cornerRadiusMM, seatThicknessMM, name, position);
+
 		public static GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard, string name, Vector3 position) =>
 			Instance.CreateBed(dimensionsMM, isDouble, hasHeadboard, name, position);
 
