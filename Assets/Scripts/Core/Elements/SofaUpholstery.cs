@@ -42,7 +42,7 @@ namespace KitchenDesigner.Core
 
         private void Rebuild(int index, SofaPartBox box)
         {
-            var mesh = box.Shape == SofaPartShape.Cushion ? Cushion(box) : Extrusion(box);
+            var mesh = BuildMesh(box);
 
             DestroyObject(_meshes[index]);
             _meshes[index] = mesh;
@@ -53,6 +53,22 @@ namespace KitchenDesigner.Core
             part.transform.localRotation = Quaternion.Euler(SofaLayout.EulerAnglesFor(box.Orientation));
             part.transform.localScale = Vector3.one;
             part.GetComponent<MeshFilter>().sharedMesh = mesh;
+        }
+
+        private static Mesh BuildMesh(SofaPartBox box) => box.Shape switch
+        {
+            SofaPartShape.Cushion => Cushion(box),
+            SofaPartShape.SoftSlab => SoftSlab(box),
+            _ => Extrusion(box),
+        };
+
+        private static Mesh SoftSlab(SofaPartBox box)
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            float thickness = box.ThicknessMM * toU;
+            return SoftSlabMesh.Build(box.ProfileWidthMM * toU, box.ProfileDepthMM * toU,
+                box.RadiusMM * toU, thickness,
+                thickness * SoftSlabSurface.MaxFilletThicknessRatio);
         }
 
         private static Mesh Cushion(SofaPartBox box)

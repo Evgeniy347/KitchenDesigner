@@ -17,12 +17,20 @@ namespace KitchenDesigner.Tests.Geometry
     ///
     /// Главное свойство, которое здесь удерживается, — СИДУШКА НИКОГДА НЕ
     /// СВЕШИВАЕТСЯ С ТУМБЫ. Тумба строится профильным выдавливанием и её углы
-    /// срезаны радиусом, а сидушка — подушка CushionMesh, то есть коробка со
-    /// скруглением, ограниченным собственной толщиной (50 мм дают фаску не
-    /// больше 25). Значит на круглом пуфике углы квадратной подушки вылезли бы
-    /// наружу окружности, если бы отступ был константой. Отсюда отступ
-    /// пропорционален радиусу: угол прямоугольника, вписанного в скругление
-    /// радиуса r, отходит от дуги ровно на r*(1 - 1/sqrt2).</summary>
+    /// срезаны радиусом; сидушка — мягкая плита SoftSlabSurface того же
+    /// семейства контуров, СЖАТАЯ ВНУТРЬ на отступ. Сжатие скруглённого
+    /// прямоугольника внутрь на d — это стороны минус 2d и радиусы минус d,
+    /// поэтому круглая тумба несёт КРУГЛУЮ сидушку, а квадратная — квадратную.
+    ///
+    /// Отступ при этом остался пропорционален радиусу, и это уже не про
+    /// вписанность, а про вид: угол прямоугольника, вписанного в скругление
+    /// радиуса r, отходит от дуги ровно на r*(1 - 1/sqrt2), и на этом числе
+    /// сидушка круглого пуфика читается отдельной деталью, а не срезом тумбы.
+    ///
+    /// До SoftSlabSurface сидушка была подушкой CushionMesh — коробкой, чьё
+    /// угловое скругление подрезано собственной толщиной (50 мм дают не больше
+    /// 25). На круглой тумбе лежал КВАДРАТ, вписанный в окружность; это и
+    /// видно на iso_pouffe_450x400x450_round.png.</summary>
     public class PouffeLayoutTests
     {
         private const float Tol = 1e-3f;
@@ -65,9 +73,9 @@ namespace KitchenDesigner.Tests.Geometry
                 + "сиденья дивана (360), то есть пуфик встаёт рядом с диваном как "
                 + "дополнительное место, а не как рабочий стул");
             Assert.AreEqual(50, PouffeLayout.DefaultSeatThicknessMM,
-                "сидушка 50 мм — это то, что назвал пользователь; на этой толщине подушка "
-                + "CushionMesh получает фаску до 25 мм и надув около 4,5 мм, то есть "
-                + "выглядит мягкой, а не доской");
+                "сидушка 50 мм — это то, что назвал пользователь; на этой толщине мягкая "
+                + "плита получает фаску кромки 25 мм, то есть бок читается полукруглым и "
+                + "выглядит мягким, а не доской");
             Assert.AreEqual(120, PouffeLayout.DefaultCornerRadiusMM,
                 "120 мм — тот же радиус скругления, что у дивана по умолчанию: пуфик и "
                 + "диван стоят рядом и обязаны читаться одной семьёй. На 450 мм это "
@@ -154,8 +162,8 @@ namespace KitchenDesigner.Tests.Geometry
         {
             Assert.AreEqual(PouffeLayout.MinSeatThicknessMM,
                 PouffeLayout.ClampSeatThicknessMM(400, 1),
-                "тоньше 20 мм подушка вырождается: CushionSurface подрезает фаску по "
-                + "самой малой полуоси, и от мягкости не остаётся ничего");
+                "тоньше 20 мм сидушка вырождается: фаска кромки — половина толщины, и "
+                + "на 10 мм мягкости уже не видно");
             Assert.AreEqual(133, PouffeLayout.ClampSeatThicknessMM(400, 300),
                 "и толще трети высоты — тоже нет");
             Assert.AreEqual(50, PouffeLayout.ClampSeatThicknessMM(400, 50),
@@ -203,27 +211,56 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void SeatRadius_NeverExceedsHalfTheSeatThickness()
+        public void SeatRadius_IsTheBodyRadiusOffsetInwardByTheInset()
         {
-            Assert.AreEqual(25f, PouffeLayout.SeatRadiusMM(50, 225), Tol,
-                "подушка толщиной 50 мм физически не может нести фаску больше 25: "
-                + "CushionSurface подрезал бы её молча, и метаданные разошлись бы с мешем "
-                + "(CONVENTIONS.md → «A mesh and its metadata must describe the SAME shape»)");
-            Assert.AreEqual(0f, PouffeLayout.SeatRadiusMM(50, 0), Tol,
-                "у квадратного пуфика подушка тоже с прямыми углами — иначе форма верха "
-                + "и низа разъедется");
+            Assert.AreEqual(159f, PouffeLayout.SeatRadiusMM(225), Tol,
+                "круглый пуфик 450 мм: тумба радиуса 225, отступ 66, значит сидушка — "
+                + "окружность радиуса 159 на плане 318x318. То есть КРУГ, а не квадрат: "
+                + "внутренний офсет скруглённого прямоугольника снимает по d и со "
+                + "стороны, и с радиуса. Подрезка радиуса толщиной (25 мм) вернула бы "
+                + "квадратную сидушку на круглую тумбу");
+            Assert.AreEqual(PouffeLayout.SeatRadiusMM(225),
+                (450 - 2 * PouffeLayout.SeatInsetMM(225)) * 0.5f, Tol,
+                "и этот радиус — ровно половина стороны сжатого плана, то есть сидушка "
+                + "круглого пуфика кругла ПОЛНОСТЬЮ, без остатка прямого участка");
+            Assert.AreEqual(0f, PouffeLayout.SeatRadiusMM(0), Tol,
+                "у квадратного пуфика сидушка тоже с прямыми углами в плане: форма "
+                + "верха и низа обязана читаться одной");
+            Assert.AreEqual(0f, PouffeLayout.SeatRadiusMM(10), Tol,
+                "и при радиусе меньше минимального отступа офсет упирается в ноль, а не "
+                + "уходит в отрицательный: вывернутый контур дал бы вывернутый меш");
         }
 
         [Test]
-        public void Seat_IsACushion_LyingFlat_AndNamedSoItCanBeFoundByName()
+        public void SeatFillet_ComesFromTheThickness_AndIsIndependentOfThePlan()
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            var seat = PouffeLayout.Seat(Default(), 225, 50);
+            var surface = new SoftSlabSurface(seat.ProfileWidthMM * toU,
+                seat.ProfileDepthMM * toU, CornerRadii.Uniform(seat.RadiusMM * toU),
+                seat.ThicknessMM * toU,
+                seat.ThicknessMM * toU * SoftSlabSurface.MaxFilletThicknessRatio);
+
+            Assert.AreEqual(25f * toU, surface.Fillet, 1e-6f,
+                "фаска кромки — половина толщины сидушки и БОЛЬШЕ НИЧЕГО: именно "
+                + "разведение плана и толщины отличает мягкую плиту от подушки, у "
+                + "которой одно число подрезало другое");
+            Assert.AreEqual(seat.RadiusMM * toU, surface.Radii.PlusXPlusZ, 1e-6f,
+                "а план прошёл нетронутым: 159 мм радиуса на сидушке толщиной 50 — "
+                + "ровно то, что CushionSurface подрезал бы до 25");
+        }
+
+        [Test]
+        public void Seat_IsASoftSlab_LyingFlat_AndNamedSoItCanBeFoundByName()
         {
             var seat = PouffeLayout.Seat(Default(), PouffeLayout.DefaultCornerRadiusMM,
                 PouffeLayout.DefaultSeatThicknessMM);
 
-            Assert.AreEqual(SofaPartShape.Cushion, seat.Shape,
-                "сидушка — подушка: скругление по всем трём осям и лёгкий надув граней. "
-                + "Профильное выдавливание дало бы доску с острой верхней кромкой, то есть "
-                + "второе жёсткое сиденье табуретки");
+            Assert.AreEqual(SofaPartShape.SoftSlab, seat.Shape,
+                "сидушка — мягкая плита: контур повторяет тумбу, а верхняя и нижняя "
+                + "кромки скруглены фаской. Профильное выдавливание дало бы доску с "
+                + "острой кромкой, то есть второе жёсткое сиденье табуретки; подушка "
+                + "CushionMesh не умеет круглый план и дала бы квадрат на круглой тумбе");
             Assert.AreEqual(SofaPartOrientation.Horizontal, seat.Orientation,
                 "и лежит плашмя: разворот нужен только вертикальным деталям дивана");
             Assert.AreEqual(PouffeLayout.SeatName, seat.Name,

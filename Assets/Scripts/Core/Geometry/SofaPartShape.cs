@@ -4,5 +4,6 @@ namespace KitchenDesigner.Core
     {
         Extruded,
         Cushion,
+        SoftSlab,
     }
 }
