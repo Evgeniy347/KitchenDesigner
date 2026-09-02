@@ -287,6 +287,8 @@ namespace KitchenDesigner.Core
         private static void RestoreLamp(ElementData data, KitchenElement el)
         {
             if (el is not LightSourceElement lamp) return;
+            if (data.Dimensions.x > 0 && data.Dimensions.y > 0 && data.Dimensions.z > 0)
+                lamp.DimensionsMM = data.Dimensions;
             lamp.TemperatureK = data.lightTemperatureK;
             lamp.PowerW = data.lightPowerW;
             lamp.DiffusionPct = data.lightDiffusionPct;
