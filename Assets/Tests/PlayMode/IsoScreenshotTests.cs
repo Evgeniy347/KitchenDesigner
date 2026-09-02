@@ -763,6 +763,66 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+    // ─ Bathtub isometric screenshots ───────────────────
+
+    [UnityTest]
+    public IEnumerator IsoBathtub_1700x600x700_Default()
+    {
+        yield return RenderBathtub(BathtubElement.DefaultBowlRadiusMM, "IsoBathtub",
+            "iso_bathtub_1700x600x700.png");
+    }
+
+    /// <summary>Радиус чаши НОЛЬ — строго прямоугольная ванна. Снаружи корпус
+    /// обязан остаться скруглённым: его радиус выводится как радиус чаши плюс
+    /// борт, поэтому на нуле он равен ширине борта, а не нулю. Острой кромки
+    /// борта в акриле не бывает, и это единственный кадр, где видно, что
+    /// производная не схлопнулась вместе со своим слагаемым.</summary>
+    [UnityTest]
+    public IEnumerator IsoBathtub_1700x600x700_SquareBowlKeepsARoundedShell()
+    {
+        yield return RenderBathtub(0, "IsoBathtubSquare",
+            "iso_bathtub_1700x600x700_square.png", false);
+    }
+
+    /// <summary>Радиус чаши на ПРЕДЕЛЕ — торцы обязаны стать полукруглыми, а
+    /// борт остаться равномерным по всему периметру. Это верхняя граница, за
+    /// которой RoundedRectProfile начал бы ужимать радиус сам, и борт в углу
+    /// поехал бы; на умолчании такое расхождение не видно.</summary>
+    [UnityTest]
+    public IEnumerator IsoBathtub_1700x600x700_WidestBowlGivesSemicircularEnds()
+    {
+        var dims = BathtubLayout.DefaultDimensionsMM;
+        int widest = BathtubElement.MaxBowlRadiusMM(dims, BathtubElement.DefaultRimWidthMM);
+        yield return RenderBathtub(widest, "IsoBathtubRound",
+            "iso_bathtub_1700x600x700_round.png", false);
+    }
+
+    private IEnumerator RenderBathtub(int bowlRadiusMM, string name, string png,
+        bool capturePanel = true)
+    {
+        var dims = BathtubLayout.DefaultDimensionsMM;
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateBathtub(dims, BathtubElement.DefaultRimWidthMM,
+            BathtubElement.DefaultBowlDepthMM, bowlRadiusMM,
+            BathtubElement.DefaultBowlFilletMM, name, pos);
+        _spawned.Add(go);
+
+        var tub = go.GetComponent<BathtubElement>();
+        Assert.IsNotNull(tub, "фабрика обязана вернуть именно BathtubElement");
+        Assert.AreEqual(dims, tub!.DimensionsMM,
+            "габарит ванны задаёт пользователь, и кадр обязан показывать заказанный");
+        Assert.AreEqual(bowlRadiusMM, tub.BowlRadiusMM,
+            "и тот радиус чаши, который заказали: подрезка на предельном значении не "
+            + "имеет права его сдвинуть, иначе кадр «полукруглые торцы» молча "
+            + "выродится в кадр умолчания");
+        Assert.AreEqual(bowlRadiusMM + tub.RimWidthMM,
+            BathtubLayout.ShellCornerRadiusMM(dims, tub.RimWidthMM, tub.BowlRadiusMM),
+            "наружный радиус — производная: радиус чаши плюс борт. Разойдись она с "
+            + "кадром, борт в углу стал бы шире или уже, чем на прямом участке");
+
+        yield return RenderIsoFrame(pos, dims, png, capturePanel);
+    }
+
     // ─ Radial shelf isometric screenshot ───────────────────
 
     [UnityTest]

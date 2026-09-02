@@ -180,6 +180,25 @@ public class ElementDuplicatorTests
         return el!;
     }
 
+    /// <summary>У ванны ЧЕТЫРЕ поля формы, и все четыре подрезаются габаритом.
+    /// Ветка дублирования, забывшая любое из них, отдаёт копию с заводским
+    /// значением вместо заказанного — и это не видно: ванна остаётся ванной
+    /// правильного размера, просто с другой чашей. Значения тут НЕзаводские
+    /// специально: совпавшее с умолчанием не отличить от потерянного.</summary>
+    [Test]
+    public void Duplicate_Bathtub_KeepsAllFourBowlFields()
+    {
+        var source = Made(ElementFactory.CreateBathtub(
+            BathtubLayout.DefaultDimensionsMM, 61, 401, 151, 91, "Bathtub", Vector3.zero));
+
+        var copy = ElementFactory.Duplicate(source).GetComponent<BathtubElement>();
+
+        Assert.AreEqual(61, copy.RimWidthMM, "борт");
+        Assert.AreEqual(401, copy.BowlDepthMM, "глубина чаши");
+        Assert.AreEqual(151, copy.BowlRadiusMM, "радиус чаши");
+        Assert.AreEqual(91, copy.BowlFilletMM, "скругление дна");
+    }
+
     [Test]
     public void Duplicate_Pillar_KeepsItsDiameter()
     {
