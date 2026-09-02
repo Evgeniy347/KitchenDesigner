@@ -92,12 +92,15 @@ public class McpUiCreationParityTests
         var missing = SidebarReaches().Where(m => !Exempt(m) && !AgentReaches().Contains(m)).ToList();
 
         Assert.IsEmpty(missing,
-            "человек заводит этот объект кнопкой сайдбара, а агент через create_elements — "
-            + "никак. Ровно так из MCP выпадали мойка и пуфик: в UI объект есть, в реестре "
-            + "спаунеров его нет, и агент про него не узнает ниоткуда. Завести тип в "
-            + "CreateItem.type и ветку в ElementSpawners.ByType (AGENTS.md → «New property "
-            + "checklist») либо, если это решение о продукте, — запись с причиной в "
-            + "NotCalledByMcp. Не заводится агентом: " + string.Join(", ", missing));
+            McpUiParityRule.Rule
+            + "ЧТО СЛОМАНО: человек заводит этот объект кнопкой сайдбара, а агент через "
+            + "create_elements — никак. Ровно так из MCP выпадали мойка и пуфик: в UI объект "
+            + "есть, в реестре спаунеров его нет, и агент про него не узнает ниоткуда. "
+            + "ЧТО СДЕЛАТЬ: завести тип в CreateItem.type и ветку в ElementSpawners.ByType — "
+            + "либо, если объект намеренно не предлагается агенту, добавить запись с причиной "
+            + "в NotCalledByMcp. "
+            + McpUiParityRule.CreationAddresses
+            + "Не заводится агентом: " + string.Join(", ", missing));
     }
 
     /// <summary>Сторож сканера. Регулярное выражение по исходнику — самый
