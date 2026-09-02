@@ -396,6 +396,34 @@ public class ElementPropertyDiagramTests
     }
 
     [UnityTest]
+    public IEnumerator ContextMenu_Toilet_SavesPng()
+    {
+        var dims = ToiletElement.ModelDimensionsMM;
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateToilet(ToiletElement.DefaultSeatHeightMM, "Унитаз", pos);
+        var el = go.GetComponent<KitchenElement>();
+        Assert.IsNotNull(el);
+        yield return CapturePanel("ContextMenu", "contextmenu_toilet.png",
+            () => { ContextMenuUI.Instance!.Open(el); },
+            () => { ContextMenuUI.Instance?.Close(); });
+    }
+
+    [UnityTest]
+    public IEnumerator ContextMenu_WallHungToilet_SavesPng()
+    {
+        var dims = WallHungToiletElement.ModelDimensionsMM;
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateWallHungToilet(
+            WallHungToiletElement.DefaultSeatHeightMM,
+            WallHungToiletElement.DefaultFlushPlateHeightMM, "Инсталляция", pos);
+        var el = go.GetComponent<KitchenElement>();
+        Assert.IsNotNull(el);
+        yield return CapturePanel("ContextMenu", "contextmenu_wall_hung_toilet.png",
+            () => { ContextMenuUI.Instance!.Open(el); },
+            () => { ContextMenuUI.Instance?.Close(); });
+    }
+
+    [UnityTest]
     public IEnumerator ContextMenu_Pillar_SavesPng()
     {
         int totalH = PillarElement.TopHeightMM + PillarElement.MidHeightMM_Default + PillarElement.BottomHeightMM;

@@ -430,6 +430,40 @@ public class SnapshotTests
         Snapshot.Match(json, "pouffe_custom");
     }
 
+    // ── Toilet snapshots ─────────────────────────────────────────────────
+
+    /// <summary>Габарит у обоих унитазов фиксированный, поэтому снимок
+    /// проверяет ровно то, что габаритом не проверяется: собственные поля.
+    /// Оба сняты на НЕумолчальных значениях (460 вместо 400; 520 и 730 вместо
+    /// 400 и 600) — поле, забытое в ElementCapture, при умолчании неотличимо от
+    /// записанного, и ровно так квадратная табуретка однажды загрузилась
+    /// скруглённой. У подвесного оба числа ещё и различны между собой: равные
+    /// дали бы одинаковый JSON при перепутанных местами полях.</summary>
+    [Test]
+    public void Snapshot_Toilet_Custom()
+    {
+        var go = ElementFactory.CreateToilet(460, "BigToilet", new Vector3(1.2f, 0.395f, -0.7f));
+        var toilet = go.GetComponent<ToiletElement>();
+        toilet.MaterialId = "oak";
+        Add(go);
+
+        var json = CaptureJson(new[] { go.GetComponent<KitchenElement>() });
+        Snapshot.Match(json, "toilet_custom");
+    }
+
+    [Test]
+    public void Snapshot_WallHungToilet_Custom()
+    {
+        var go = ElementFactory.CreateWallHungToilet(520, 730, "HungToilet",
+            new Vector3(-0.8f, 0.5f, 1.1f));
+        var toilet = go.GetComponent<WallHungToiletElement>();
+        toilet.MaterialId = "oak";
+        Add(go);
+
+        var json = CaptureJson(new[] { go.GetComponent<KitchenElement>() });
+        Snapshot.Match(json, "wall_hung_toilet_custom");
+    }
+
     // ── Full scene snapshot ──────────────────────────────────────────────
 
     [Test]

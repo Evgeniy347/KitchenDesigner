@@ -660,6 +660,109 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+    // ─ Toilet isometric screenshots ───────────────────
+
+    [UnityTest]
+    public IEnumerator IsoToilet_360x790x660_Default()
+    {
+        yield return RenderToilet(ToiletElement.DefaultSeatHeightMM, "IsoToilet",
+            "iso_toilet_360x790x660.png");
+    }
+
+    /// <summary>Кадр на ПРЕДЕЛЬНОЙ высоте сиденья: там бачку остаётся ровно
+    /// минимум, и если формула предела разойдётся с раскладкой, на этом кадре
+    /// бачок налезет на крышку или повиснет над ней. На умолчании такое
+    /// расхождение не видно.</summary>
+    [UnityTest]
+    public IEnumerator IsoToilet_360x790x660_HighSeat()
+    {
+        yield return RenderToilet(ToiletElement.MaxSeatHeightMM, "IsoToiletHigh",
+            "iso_toilet_360x790x660_high.png", false);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoWallHungToilet_360x1000x540_Default()
+    {
+        yield return RenderWallHungToilet(WallHungToiletElement.DefaultSeatHeightMM,
+            WallHungToiletElement.DefaultFlushPlateHeightMM, "IsoWallHungToilet",
+            "iso_wall_hung_toilet_360x1000x540.png");
+    }
+
+    /// <summary>Чаша на верхнем пределе. Панель смыва заказана умолчальной и
+    /// обязана приехать ПОДНЯТОЙ — это единственный кадр, где одностороннюю
+    /// связь двух параметров видно глазами.</summary>
+    [UnityTest]
+    public IEnumerator IsoWallHungToilet_360x1000x540_HighBowlPushesThePlate()
+    {
+        yield return RenderWallHungToilet(WallHungToiletElement.MaxSeatHeightMM,
+            WallHungToiletElement.DefaultFlushPlateHeightMM, "IsoWallHungToiletHigh",
+            "iso_wall_hung_toilet_360x1000x540_high.png", false);
+    }
+
+    private IEnumerator RenderToilet(int seatHeightMM, string name, string png,
+        bool capturePanel = true)
+    {
+        var dims = ToiletElement.ModelDimensionsMM;
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateToilet(seatHeightMM, name, pos);
+        _spawned.Add(go);
+
+        var toilet = go.GetComponent<ToiletElement>();
+        Assert.IsNotNull(toilet, "фабрика обязана вернуть именно ToiletElement");
+        Assert.AreEqual(dims, toilet!.DimensionsMM,
+            "габарит компакта фиксирован, и кадр обязан показывать именно его");
+        Assert.AreEqual(seatHeightMM, toilet.SeatHeightMM,
+            "и ту высоту чаши, которую заказали: подрезка на предельном значении не "
+            + "имеет права его сдвинуть");
+        Assert.IsNotNull(go.transform.Find(ToiletLayout.CisternName),
+            "бачок — отдельный именованный ребёнок: кадр без него был бы кадром "
+            + "приставного унитаза");
+        Assert.IsNotNull(go.transform.Find(ToiletLayout.ButtonName),
+            "хромированная кнопка живёт во ВТОРОМ наборе деталей: её пропажа означает, "
+            + "что второй слот декора не строится вовсе");
+
+        yield return RenderIsoFrame(pos, dims, png, capturePanel);
+    }
+
+    private IEnumerator RenderWallHungToilet(int seatHeightMM, int plateHeightMM, string name,
+        string png, bool capturePanel = true)
+    {
+        var dims = WallHungToiletElement.ModelDimensionsMM;
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateWallHungToilet(seatHeightMM, plateHeightMM, name, pos);
+        _spawned.Add(go);
+
+        var toilet = go.GetComponent<WallHungToiletElement>();
+        Assert.IsNotNull(toilet, "фабрика обязана вернуть именно WallHungToiletElement");
+        Assert.AreEqual(dims, toilet!.DimensionsMM,
+            "габарит инсталляции фиксирован и включает пустоту под чашей");
+        Assert.AreEqual(seatHeightMM, toilet.SeatHeightMM,
+            "и ту высоту чаши, которую заказали");
+        Assert.AreEqual(WallHungToiletLayout.ClampPlateBottomMM(seatHeightMM, plateHeightMM),
+            toilet.FlushPlateHeightMM,
+            "панель либо на заказанной высоте, либо поднята чашей — третьего варианта "
+            + "у односторонней связи нет");
+        Assert.IsNotNull(go.transform.Find(WallHungToiletLayout.PlateName),
+            "панель смыва — отдельный именованный ребёнок: без неё кадр показал бы "
+            + "чашу, висящую в воздухе безо всякой инсталляции");
+
+        yield return RenderIsoFrame(pos, dims, png, capturePanel);
+    }
+
+    private IEnumerator RenderIsoFrame(Vector3 pos, Vector3Int dims, string png,
+        bool capturePanel)
+    {
+        Vector3 size = MmToUnits(dims);
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return capturePanel
+            ? RenderToPng(cam, png)
+            : RenderToPng(cam, png, null);
+
+        Object.DestroyImmediate(camGo);
+    }
+
     // ─ Radial shelf isometric screenshot ───────────────────
 
     [UnityTest]

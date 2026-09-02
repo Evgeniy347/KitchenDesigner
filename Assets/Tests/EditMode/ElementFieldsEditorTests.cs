@@ -81,6 +81,15 @@ public class ElementFieldsEditorTests
                 PouffeElement.DefaultDepthMM), PouffeElement.DefaultCornerRadiusMM,
             PouffeElement.DefaultSeatThicknessMM, "Пуфик", Vector3.zero));
 
+    private ToiletElement Toilet() =>
+        Spawn<ToiletElement>(ElementFactory.CreateToilet(
+            ToiletElement.DefaultSeatHeightMM, "Унитаз", Vector3.zero));
+
+    private WallHungToiletElement WallHungToilet() =>
+        Spawn<WallHungToiletElement>(ElementFactory.CreateWallHungToilet(
+            WallHungToiletElement.DefaultSeatHeightMM,
+            WallHungToiletElement.DefaultFlushPlateHeightMM, "Инсталляция", Vector3.zero));
+
     private TableElement Table() =>
         Spawn<TableElement>(ElementFactory.CreateTable(
             new Vector3Int(1200, 750, 700), "Стол", Vector3.zero));
@@ -540,6 +549,108 @@ public class ElementFieldsEditorTests
             "и своя строка скругления тоже: у табуретки есть СВОЁ поле с той же "
             + "подписью, и показать оба разом значило бы дать человеку два поля с "
             + "одним смыслом, из которых работает одно");
+    }
+
+    /// <summary>Один редактор обслуживает оба варианта унитаза, и строка
+    /// «Высота чаши» у них ОБЩАЯ — это и есть то, что тут стережётся: узел один,
+    /// а элементов два, и запись обязана попадать в тот, что открыт сейчас.</summary>
+    [Test]
+    public void Toilet_SeatHeightRow_IsBuilt_AndAppliesAndIsUndoable()
+    {
+        var toilet = Toilet();
+        _menu!.Open(toilet);
+        Assume.That(Text(Field(ToiletFieldsEditor.SeatHeightNode)), Is.EqualTo("400"));
+
+        Type(ToiletFieldsEditor.SeatHeightNode, "460");
+
+        Assert.AreEqual(460, toilet.SeatHeightMM, "высота чаши применяется вместе с размерами");
+        CommandStack.Undo();
+        Assert.AreEqual(ToiletElement.DefaultSeatHeightMM, toilet.SeatHeightMM,
+            "одна правка — один шаг отмены");
+    }
+
+    [Test]
+    public void Toilet_SeatHeightRow_ShowsTheCLAMPEDValueBack()
+    {
+        var toilet = Toilet();
+        _menu!.Open(toilet);
+
+        Type(ToiletFieldsEditor.SeatHeightNode, "10000");
+
+        Assert.AreEqual(ToiletElement.MaxSeatHeightMM, toilet.SeatHeightMM,
+            "чаша не вправе подняться настолько, чтобы бачку осталось меньше минимума");
+        Assert.AreEqual(ToiletElement.MaxSeatHeightMM.ToString(),
+            Text(Field(ToiletFieldsEditor.SeatHeightNode)),
+            "поле обязано показать ПРИНЯТОЕ значение, а не набранное: иначе человек "
+            + "видит собственный ввод вместо того, что элемент взял");
+    }
+
+    [Test]
+    public void WallHungToilet_ShowsBothRows_WhileTheCompactShowsOnlyTheSeat()
+    {
+        _menu!.Open(WallHungToilet());
+        Assert.IsTrue(
+            Panel().Find("F_" + ToiletFieldsEditor.FlushPlateHeightNode)!.gameObject
+                .activeInHierarchy,
+            "у подвесного панель смыва есть, и её высота обязана быть видна");
+
+        _menu!.Open(Toilet());
+        Assert.IsTrue(
+            Panel().Find("F_" + ToiletFieldsEditor.SeatHeightNode)!.gameObject
+                .activeInHierarchy,
+            "общая строка обязана пережить смену выделения между двумя вариантами");
+        Assert.IsFalse(
+            Panel().Find("F_" + ToiletFieldsEditor.FlushPlateHeightNode)!.gameObject
+                .activeInHierarchy,
+            "у напольного панели смыва нет: видимая строка правила бы ничто");
+    }
+
+    [Test]
+    public void WallHungToilet_FlushPlateRow_AppliesAndIsPushedUpByTheBowl()
+    {
+        var toilet = WallHungToilet();
+        _menu!.Open(toilet);
+        Assume.That(Text(Field(ToiletFieldsEditor.FlushPlateHeightNode)), Is.EqualTo("600"));
+
+        Type(ToiletFieldsEditor.SeatHeightNode, "600");
+
+        Assert.AreEqual(600, toilet.SeatHeightMM, "чаша поднялась на предел");
+        Assert.AreEqual(WallHungToiletElement.MinFlushPlateHeightMM(600),
+            toilet.FlushPlateHeightMM,
+            "поднятая чаша ТОЛКАЕТ панель вверх: связь односторонняя, и без неё панель "
+            + "оказалась бы под крышкой унитаза");
+        Assert.AreEqual(toilet.FlushPlateHeightMM.ToString(),
+            Text(Field(ToiletFieldsEditor.FlushPlateHeightNode)),
+            "и вторая строка обязана показать новое значение, хотя правили первую");
+    }
+
+    [Test]
+    public void ToiletRows_AreHiddenForOtherFurniture()
+    {
+        _menu!.Open(Toilet());
+        _menu!.Open(Stool());
+
+        Assert.IsFalse(
+            Panel().Find("F_" + ToiletFieldsEditor.SeatHeightNode)!.gameObject
+                .activeInHierarchy,
+            "строка «Высота чаши» у табуретки мертва: правка поля, которое ничего "
+            + "не делает, — худший вид молчаливого отказа");
+    }
+
+    [Test]
+    public void Toilets_ShowCeramicAndButtonRows_InsteadOfThePlainTextureRow()
+    {
+        foreach (var toilet in new KitchenElement[] { Toilet(), WallHungToilet() })
+        {
+            _menu!.Open(toilet);
+
+            Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
+                "у унитаза два декора — керамика и хром: он носитель ITabletop");
+            Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy,
+                "второй слот тоже обязан быть виден");
+            Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
+                "общая строка «Текстура» у носителя двух слотов скрыта");
+        }
     }
 
     [Test]

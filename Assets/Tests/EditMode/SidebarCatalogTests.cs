@@ -7,19 +7,25 @@ public class SidebarCatalogTests
 {
     /// <summary>Индекс группы «Помещение»: она последняя, и её номер сдвигается
     /// каждый раз, когда перед ней появляется новая группа.</summary>
-    private const int RoomIndex = 5;
+    private const int RoomIndex = 6;
+
+    /// <summary>Индекс группы «Сантехника»: заведена унитазами, дальше в неё
+    /// лягут ванна, смеситель и душ соседних сессий.</summary>
+    private const int SanitaryIndex = 5;
 
     [Test]
-    public void Build_HasSixGroups()
+    public void Build_HasSevenGroups()
     {
         var groups = SidebarCatalog.Build();
 
-        Assert.AreEqual(6, groups.Count);
+        Assert.AreEqual(7, groups.Count,
+            "шестой встала «Сантехника» — перед «Помещением», чтобы комната осталась последней");
         Assert.AreEqual("детали", groups[0].title);
         Assert.AreEqual("Фасады", groups[1].title);
         Assert.AreEqual("Ящики", groups[2].title);
         Assert.AreEqual("Мебель", groups[3].title);
         Assert.AreEqual("Техника", groups[4].title);
+        Assert.AreEqual("Сантехника", groups[SanitaryIndex].title);
         Assert.AreEqual("Помещение", groups[RoomIndex].title);
     }
 
@@ -230,6 +236,51 @@ public class SidebarCatalogTests
         Assert.IsTrue(it.isSink, "элемент «Мойка» помечен как мойка");
         Assert.AreEqual(new Vector3Int(
             SinkElement.OUTER_WIDTH_MM, SinkElement.TotalHeightMM, SinkElement.OUTER_DEPTH_MM), it.dims);
+    }
+
+    [Test]
+    public void SanitaryGroup_ShortLabelIsS()
+    {
+        var groups = SidebarCatalog.Build();
+        Assert.AreEqual("С", groups[SanitaryIndex].shortLabel,
+            "свёрнутый сайдбар подписывает группу одной буквой, и «С» не занята: "
+            + "Д, Ф, Я, М, Т, П");
+    }
+
+    [Test]
+    public void SanitaryGroup_HasBothToilets_WithTheirOwnKinds()
+    {
+        var items = SidebarCatalog.Build()[SanitaryIndex].items;
+
+        Assert.AreEqual(2, items.Count,
+            "группа заведена двумя унитазами; ванна, смеситель и душ придут отдельно");
+
+        var compact = items.Find(i => i.name == "Унитаз");
+        Assert.IsTrue(compact.isToilet,
+            "напольный унитаз обязан нести свой вид: с чужим он завёлся бы другим объектом, "
+            + "а маршрутизатор не отказывает, он просто зовёт другой спаун");
+        Assert.AreEqual(ToiletElement.ModelDimensionsMM, compact.dims,
+            "габарит в каталоге обязан совпадать с собственным габаритом типа, иначе "
+            + "сайдбар и MCP заводят разные унитазы");
+
+        var wallHung = items.Find(i => i.name == "Инсталляция");
+        Assert.IsTrue(wallHung.isWallHungToilet,
+            "подвесной унитаз обязан нести свой вид, а не вид напольного: у них разные "
+            + "габариты и разное поведение у стены");
+        Assert.AreEqual(WallHungToiletElement.ModelDimensionsMM, wallHung.dims,
+            "то же для подвесного");
+    }
+
+    [Test]
+    public void SanitaryGroup_DoesNotStealTheSinkFromTheFurnitureGroup()
+    {
+        var groups = SidebarCatalog.Build();
+
+        Assert.IsFalse(groups[SanitaryIndex].items.Exists(i => i.name == "Мойка"),
+            "мойка осталась в «Мебели» намеренно: она кухонная, а не сантехника этой "
+            + "группы, и её переезд сдвинул бы чужие кнопки без единой просьбы");
+        Assert.IsTrue(groups[3].items.Exists(i => i.name == "Мойка"),
+            "и она обязана остаться там, где была");
     }
 
     [Test]

@@ -78,6 +78,10 @@ public class SidebarSpawnRouterTests
 
         public void SpawnPouffe(Vector3Int dims, string name) => Put(nameof(SpawnPouffe), dims, name);
 
+        public void SpawnToilet(string name) => Put(nameof(SpawnToilet), name);
+
+        public void SpawnWallHungToilet(string name) => Put(nameof(SpawnWallHungToilet), name);
+
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom) =>
             Put(nameof(SpawnPanel), dims, name, gapLeft, gapRight, gapTop, gapBottom);

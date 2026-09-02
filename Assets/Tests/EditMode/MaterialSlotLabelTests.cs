@@ -86,6 +86,13 @@ public class MaterialSlotLabelTests
             PouffeElement.DefaultDepthMM), PouffeElement.DefaultCornerRadiusMM,
         PouffeElement.DefaultSeatThicknessMM, "Пуфик", Vector3.zero));
 
+    private KitchenElement Toilet() => Spawn(ElementFactory.CreateToilet(
+        ToiletElement.DefaultSeatHeightMM, "Унитаз", Vector3.zero));
+
+    private KitchenElement WallHungToilet() => Spawn(ElementFactory.CreateWallHungToilet(
+        WallHungToiletElement.DefaultSeatHeightMM,
+        WallHungToiletElement.DefaultFlushPlateHeightMM, "Инсталляция", Vector3.zero));
+
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
     private string LabelText(string node) =>
@@ -159,6 +166,25 @@ public class MaterialSlotLabelTests
     }
 
     [Test]
+    public void MaterialRows_OfACompactToilet_AreCalledCeramicAndButton()
+    {
+        Assert.AreEqual(("Керамика", "Кнопка"), LabelsFor(Toilet()),
+            "у унитаза нет ни столешницы, ни сиденья в смысле мебели: первый слот красит "
+            + "всю керамику разом — пьедестал, чашу, сиденье, крышку и бачок, — второй "
+            + "только кнопку смыва. Разделение проходит там, где его видит человек: "
+            + "фарфор против металла");
+    }
+
+    [Test]
+    public void MaterialRows_OfAWallHungToilet_AreCalledCeramicAndPlate()
+    {
+        Assert.AreEqual(("Керамика", "Панель"), LabelsFor(WallHungToilet()),
+            "первая подпись совпадает с напольным намеренно — это та же керамика, — а "
+            + "вторая расходится: у напольного во втором слоте одна кнопка на бачке, у "
+            + "подвесного вся панель смыва вместе с двумя кнопками");
+    }
+
+    [Test]
     public void MaterialRow_OfAStool_NeverSaysTabletop()
     {
         var (top, legs) = LabelsFor(Stool());
@@ -182,7 +208,8 @@ public class MaterialSlotLabelTests
     [Test]
     public void MaterialSlotLabels_LeaveTheSerializedDecorIdsAlone()
     {
-        foreach (var element in new[] { Table(), RadiusTable(), Stool(), Chair(), Sofa(), Bed(), Pouffe() })
+        foreach (var element in new[] { Table(), RadiusTable(), Stool(), Chair(), Sofa(), Bed(),
+            Pouffe(), Toilet(), WallHungToilet() })
         {
             var tabletop = (ITabletop)element;
             tabletop.TabletopMaterialId = "oak";
