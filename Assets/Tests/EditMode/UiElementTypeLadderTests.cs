@@ -43,6 +43,7 @@ public class UiElementTypeLadderTests
         ("ScrewLegFieldsEditor.cs", "реестр редакторов"),
         ("BedFieldsEditor.cs", "реестр редакторов"),
         ("PouffeFieldsEditor.cs", "реестр редакторов"),
+        ("BathtubFieldsEditor.cs", "реестр редакторов"),
     };
 
     /// <summary>Формы вопроса «какого ты типа». Базовый <c>KitchenElement</c>
