@@ -119,7 +119,7 @@ namespace KitchenDesigner.Core.UI
             _spawner ??= new ElementSpawner(GroundPointInFrontOfCamera, () => _placement);
 
         private ProjectFileActions FileActions =>
-            _fileActions ??= new ProjectFileActions(_canvas!.transform);
+            _fileActions ??= new ProjectFileActions();
 
         private void Update()
         {

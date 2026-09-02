@@ -11,7 +11,6 @@ for %%I in (
     "%root%\Temp"
     "%root%\Logs"
     "%root%\Build"
-    "%root%\Builds"
     "%root%\.vs"
     "%root%\UserSettings"
     "%root%\test-results\tmp\TestResults.xml"
@@ -25,28 +24,6 @@ for %%I in (
         ) else (
             del /f /q "%%~I"
         )
-        if !errorlevel! equ 0 (
-            echo   [DEL] %%~I
-            set /a removed+=1
-        ) else (
-            echo   [ERR] %%~I
-            set /a errors+=1
-        )
-    )
-)
-
-REM ---- Server build artifacts ----
-for %%I in (
-    "%root%\server\KitchenServer.AppHost\bin"
-    "%root%\server\KitchenServer.AppHost\obj"
-    "%root%\server\KitchenServer.Web\bin"
-    "%root%\server\KitchenServer.Web\obj"
-    "%root%\server\KitchenServer.ServiceDefaults\bin"
-    "%root%\server\KitchenServer.ServiceDefaults\obj"
-    "%root%\server\publish"
-) do (
-    if exist "%%~I" (
-        rmdir /s /q "%%~I"
         if !errorlevel! equ 0 (
             echo   [DEL] %%~I
             set /a removed+=1

@@ -51,16 +51,6 @@ namespace KitchenDesigner.Core.UI
             _ssgiToggle = _rows.AddToggle(page, ref y, "Отражённый свет (SSGI)", s.PhotoSSGI,
                 v => { s.PhotoSSGI = v; PhotoMode.RefreshIfActive(); }, read: () => s.PhotoSSGI);
 
-#if UNITY_WEBGL
-            MarkUnavailableInWebGL(_ssgiToggle, "Отражённый свет (SSGI)");
-            if (_presetLinkedToggles.TryGetValue("Суперсэмплинг", out var supersampling))
-                MarkUnavailableInWebGL(supersampling, "Суперсэмплинг");
-
-            y -= 4;
-            UIFactory.CreateLabel("PhotoWebGLLimitations", page,
-                "* данные функции отключены в WebGL", 13,
-                new Vector2(0, y), new Vector2(SettingsRowFactory.ContentW, 24), TextAnchor.MiddleCenter);
-#endif
         }
 
         public void Dispose() => PhotoMode.Changed -= SyncActiveToggle;
@@ -80,14 +70,6 @@ namespace KitchenDesigner.Core.UI
             if (label != null && s != null) label.text = PresetName(PhotoQualityPresetTable.Detect(s));
         }
 
-#if UNITY_WEBGL
-        private void MarkUnavailableInWebGL(Toggle toggle, string labelKey)
-        {
-            _rows.SetToggleEnabled(toggle, labelKey, false);
-            var lbl = _rows.RowLabel(labelKey);
-            if (lbl != null) lbl.text = labelKey + "*";
-        }
-#endif
 
         private void AddPresetLinkedToggle(Transform page, ref float y, string label, bool value,
             Action<bool> setter, Func<bool> read)

@@ -30,7 +30,7 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void ContractSources_ImportOnlySystem_SoTheServerCompilesTheSameFiles()
+        public void ContractSources_ImportOnlySystem_SoTheGeneratorCompilesTheSameFiles()
         {
             var offenders = new List<string>();
 
@@ -46,9 +46,9 @@ namespace KitchenDesigner.Tests.Geometry
                 }
 
             CollectionAssert.IsEmpty(offenders,
-                "Contract/ компилируют ДВА компилятора: Unity (KitchenDesigner.Runtime) и сервер "
-                + "(KitchenServer.McpContract линкует ТЕ ЖЕ файлы). Любой using вне System — "
-                + "UnityEngine, Newtonsoft — ломает серверную сборку, и контракт перестаёт быть "
+                "Contract/ компилируют ДВА компилятора: Unity (KitchenDesigner.Runtime) и "
+                + "dotnet (tools/McpContractGen линкует ТЕ ЖЕ файлы). Любой using вне System — "
+                + "UnityEngine, Newtonsoft — ломает сборку генератора, и контракт перестаёт быть "
                 + "одним источником правды. Нарушители:\n" + string.Join("\n", offenders));
         }
 

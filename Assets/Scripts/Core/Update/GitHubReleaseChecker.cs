@@ -1,4 +1,3 @@
-#if !UNITY_WEBGL
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -48,4 +47,3 @@ namespace KitchenDesigner.Core.Update
         }
     }
 }
-#endif

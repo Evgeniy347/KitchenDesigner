@@ -73,8 +73,7 @@ The tool surface is **contract-first**. The single source of truth is
 `McpGuideTexts`). From it:
 
 - `npm run gen:tools` regenerates `src/tools.generated.ts` (Zod tool table +
-  guide texts) via `server/tools/McpContractGen`;
-- the ASP.NET server builds its `tools/list` from the same contract at runtime.
+  guide texts) via `tools/McpContractGen`.
 
 Adding a method = three steps: (1) params class + registry entry in the Contract,
 (2) a `case` + handler in `McpCommandHandler.cs`, (3) `npm run gen:tools`.

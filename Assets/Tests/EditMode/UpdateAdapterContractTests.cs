@@ -42,19 +42,6 @@ public class UpdateAdapterContractTests
     }
 
     [Test]
-    public void NetworkAdapters_AreCompiledOutOfTheWebGlBuild()
-    {
-        foreach (var file in new[]
-                 {
-                     "GitHubReleaseChecker.cs", "UnityWebRequestDownloader.cs", "UpdateService.cs",
-                 })
-            Assert.AreEqual("#if !UNITY_WEBGL", FirstMeaningfulLine(Source(file)),
-                file + ": в WebGL автообновления нет вовсе — установщика там некуда ставить, "
-                + "и UnityWebRequest к GitHub из браузера упёрся бы в CORS. "
-                + "Класс не должен попадать в WebGL-сборку даже мёртвым кодом");
-    }
-
-    [Test]
     public void InstallerApplier_IsCompiledOnlyIntoTheWindowsPlayer()
     {
         Assert.AreEqual("#if UNITY_STANDALONE_WIN && !UNITY_EDITOR",

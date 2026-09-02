@@ -237,7 +237,7 @@ public readonly struct ElementGeometry
 
 ## 6. Этапы
 
-Каждый этап заканчивается зелёным полным прогоном (EditMode + PlayMode + ASP.NET).
+Каждый этап заканчивается зелёным полным прогоном (EditMode + PlayMode).
 
 | # | Этап | Часы | Результат |
 |---|---|---|---|

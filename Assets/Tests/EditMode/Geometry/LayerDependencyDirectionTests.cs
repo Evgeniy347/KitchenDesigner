@@ -62,7 +62,7 @@ namespace KitchenDesigner.Tests.Geometry
         /// кто его поднимает.</summary>
         private static readonly (string layer, int ceiling, string why)[] McpBudgets =
         {
-            ("Infrastructure", 4, "Bootstrap поднимает мост MCP (TCP, WebSocket и перехват консоли) — "
+            ("Infrastructure", 2, "Bootstrap поднимает мост MCP (TCP и перехват консоли) — "
                 + "композиционный корень; больше про MCP не знает никто"),
         };
 

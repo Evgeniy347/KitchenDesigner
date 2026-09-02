@@ -148,8 +148,9 @@ public interface IFixedSizeElement { }
 
 - **Единичный масштаб корня**: `localScale = 1` + override `EffectiveScale`,
   иначе дети масштабируются дважды (см. мойку/окно/варочную).
-- **WebGL-стриппинг**: примитивы собирать вручную, компоненты добавлять явным
-  `AddComponent` — `GameObject.CreatePrimitive` теряет коллайдеры в WebGL-сборке.
+- **Стриппинг линкера**: примитивы собирать вручную, компоненты добавлять явным
+  `AddComponent` — `GameObject.CreatePrimitive` полагается на типы, которые
+  линкер вырезает.
 - **`[Undoable]` / `[NotUndoable("причина")]`** на КАЖДОМ публичном свойстве —
   иначе `UndoableCoverageTests` роняет сборку.
 - **Чек-лист нового свойства** — `AGENTS.md` → «New property checklist» (5 пунктов).

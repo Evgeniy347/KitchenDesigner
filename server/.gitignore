@@ -1,9 +1,0 @@
-bin/
-obj/
-*.user
-.vs/
-
-data/
-webgl/
-aspire*.txt
-aspire*.log

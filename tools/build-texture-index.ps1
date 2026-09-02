@@ -100,7 +100,7 @@ function Write-Index($entries, [string]$file) {
     }
     [void]$sb.AppendLine('  ]')
     [void]$sb.AppendLine('}')
-    # Без BOM: в WebGL индекс приходит текстом ответа, и BOM сорвал бы разбор.
+    # Без BOM: индекс читается как текст, и BOM сорвал бы разбор.
     [System.IO.File]::WriteAllText($file, $sb.ToString(),
         (New-Object System.Text.UTF8Encoding $false))
 }

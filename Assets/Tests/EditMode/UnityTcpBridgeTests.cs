@@ -1,4 +1,3 @@
-#if !UNITY_WEBGL
 
 using System;
 using NUnit.Framework;
@@ -87,4 +86,3 @@ public class UnityTcpBridgeTests
     private const string PortVariable = "UNITY_MCP_PORT";
 }
 
-#endif // !UNITY_WEBGL

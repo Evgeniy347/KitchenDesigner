@@ -1,4 +1,3 @@
-#if !UNITY_WEBGL
 using System.Collections;
 using UnityEngine;
 using KitchenDesigner.Core.UI;
@@ -62,4 +61,3 @@ namespace KitchenDesigner.Core.Update
         }
     }
 }
-#endif

@@ -62,72 +62,10 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<PerfMonitor>() == null) gameObject.AddComponent<PerfMonitor>();
 #endif
 
-#if UNITY_WEBGL
-            if (FindAnyObjectByType<Networking.ProjectApiClient>() == null)
-                gameObject.AddComponent<Networking.ProjectApiClient>();
-
-            var urlProjectId = ParseProjectIdFromUrl();
-            if (!string.IsNullOrEmpty(urlProjectId))
-                Networking.ProjectApiClient.Instance!.CurrentProjectId = urlProjectId;
-
-            var urlLockGuid = GetQueryParam("lockGuid");
-            if (!string.IsNullOrEmpty(urlLockGuid))
-                Networking.ProjectApiClient.Instance!.LockGuid = urlLockGuid;
-
-            Networking.ProjectApiClient.Instance!.FetchConfig(enabled =>
-            {
-                if (enabled)
-                {
-                    var api = Networking.ProjectApiClient.Instance;
-                    if (api.HasCurrentProject)
-                    {
-                        api.LoadProject(api.CurrentProjectId,
-                            (name, jsonData) =>
-                            {
-                                var projectData = SaveLoadManager.Deserialize(jsonData);
-                                if (projectData == null) return;
-                                SaveLoadManager.LastPath = api.CurrentProjectId;
-                                SaveLoadManager.ClearBoards(PartRegistry.Instance.GetAll());
-                                SaveLoadManager.RestoreScene(projectData);
-                                if (ElementHighlighter.Instance != null)
-                                    ElementHighlighter.Instance.RefreshHighlights();
-                                TextureLibrary.PrefetchScene();
-                            },
-                            _ =>
-                            {
-            GameContext.Services!.SaveLoadManager.LoadLastSession();
-                                TextureLibrary.PrefetchScene();
-                            });
-                        return;
-                    }
-                }
-            GameContext.Services!.SaveLoadManager.LoadLastSession();
-                TextureLibrary.PrefetchScene();
-            });
-#else
             GameContext.Services!.SaveLoadManager.LoadLastSession();
             TextureLibrary.PrefetchScene();
-#endif
 
-#if UNITY_WEBGL
-            if (FindAnyObjectByType<MCP.WebSocketBridge>() == null)
-            {
-                var wsBridge = gameObject.AddComponent<MCP.WebSocketBridge>();
-                wsBridge.SetAutoConnect(false);
-
-                var mcpKey = GetQueryParam("mcpKey");
-                if (!string.IsNullOrEmpty(mcpKey))
-                {
-                    var wsUrl = BuildWebSocketUrl("/api/mcp/ws");
-                    var projectId = GetQueryParam("projectId");
-                    if (!string.IsNullOrEmpty(projectId))
-                        wsUrl += "?projectId=" + Uri.EscapeDataString(projectId);
-                    wsBridge.Connect(wsUrl!, mcpKey);
-                }
-            }
-#else
             if (FindAnyObjectByType<MCP.UnityTcpBridge>() == null) gameObject.AddComponent<MCP.UnityTcpBridge>();
-#endif
             MCP.ConsoleLogCapture.Initialize();
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
@@ -141,42 +79,5 @@ namespace KitchenDesigner.Core
             GameContext.Clear();
         }
 
-#if UNITY_WEBGL
-        private static string? GetQueryParam(string name)
-        {
-            var url = Application.absoluteURL;
-            if (string.IsNullOrEmpty(url)) return null;
-
-            var queryIndex = url.IndexOf('?');
-            if (queryIndex < 0) return null;
-
-            var query = url.Substring(queryIndex + 1);
-            foreach (var pair in query.Split('&'))
-            {
-                var eqIndex = pair.IndexOf('=');
-                if (eqIndex < 0) continue;
-
-                var key = pair.Substring(0, eqIndex);
-                if (!string.Equals(key, name, StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                return Uri.UnescapeDataString(pair.Substring(eqIndex + 1));
-            }
-
-            return null;
-        }
-
-        private static string? ParseProjectIdFromUrl() => GetQueryParam("projectId");
-
-        private static string? BuildWebSocketUrl(string path)
-        {
-            var url = Application.absoluteURL;
-            if (string.IsNullOrEmpty(url)) return null;
-
-            var uri = new Uri(url);
-            var scheme = uri.Scheme == Uri.UriSchemeHttps ? "wss" : "ws";
-            return $"{scheme}://{uri.Authority}{path}";
-        }
-#endif
     }
 }

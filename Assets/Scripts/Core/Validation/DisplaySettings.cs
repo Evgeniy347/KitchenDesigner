@@ -28,11 +28,7 @@ namespace KitchenDesigner.Core
 
         internal static bool TheAppOwnsItsWindowSize()
         {
-#if UNITY_WEBGL
-            return false;
-#else
             return !Application.isEditor;
-#endif
         }
     }
 }

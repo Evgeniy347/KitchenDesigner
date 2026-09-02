@@ -1,7 +1,4 @@
 using UnityEngine;
-#if UNITY_WEBGL && !UNITY_EDITOR
-using System.Runtime.InteropServices;
-#endif
 
 namespace KitchenDesigner.Core
 {
@@ -21,20 +18,12 @@ namespace KitchenDesigner.Core
 
         private static int DefaultActiveFps()
         {
-#if UNITY_WEBGL
-            return 30;
-#else
             return -1;
-#endif
         }
 
         private static int DefaultIdleFps()
         {
-#if UNITY_WEBGL && !UNITY_EDITOR
-            return 1;
-#else
             return 10;
-#endif
         }
 
         public void MarkActive(float now, float graceSeconds)
@@ -70,9 +59,6 @@ namespace KitchenDesigner.Core
         {
             MarkActive(Time.unscaledTime, IdleGraceSeconds);
             Apply(ActiveFps);
-#if UNITY_WEBGL && !UNITY_EDITOR
-            FrameRateWake_Init(gameObject.name);
-#endif
         }
 
         private void Update()
@@ -110,9 +96,5 @@ namespace KitchenDesigner.Core
             if (Instance == this) Instance = null;
         }
 
-#if UNITY_WEBGL && !UNITY_EDITOR
-        [DllImport("__Internal")]
-        private static extern void FrameRateWake_Init(string gameObjectName);
-#endif
     }
 }

@@ -9,15 +9,13 @@ REM  cost but kept falling over, and diagnosing its failures cost more than it s
 REM
 REM  IMPORTANT: -RunTests and -RunPlayMode NO LONGER BUILD the player. The build used
 REM  to follow every test run and added 7-8 minutes to each check. Need a player -
-REM  call build.cmd with no flags (release) or -WinDebug / -WebGL / -WebGLDebug.
+REM  call build.cmd with no flags (release) or -WinDebug.
 REM ---------------------------------------------------------------------------
 
 set "FLAG_CLEAN="
 set "FLAG_TESTS="
 set "FLAG_PLAY="
 set "FLAG_BUILD="
-set "FLAG_WEBGL="
-set "FLAG_WEBGL_DEBUG="
 set "FLAG_WIN_DEBUG="
 set "FILTER="
 
@@ -27,8 +25,6 @@ if /i "%~1"=="-Clean" set "FLAG_CLEAN=1"
 if /i "%~1"=="-RunTests" set "FLAG_TESTS=1"
 if /i "%~1"=="-RunPlayMode" set "FLAG_PLAY=1"
 if /i "%~1"=="-BuildOnly" set "FLAG_BUILD=1"
-if /i "%~1"=="-WebGL" set "FLAG_WEBGL=1"
-if /i "%~1"=="-WebGLDebug" set "FLAG_WEBGL_DEBUG=1"
 if /i "%~1"=="-WinDebug" set "FLAG_WIN_DEBUG=1"
 REM Via goto, not an if-block: inside parentheses %~1 expands BEFORE the shift,
 REM and the filter value is lost.
@@ -80,8 +76,6 @@ if defined FLAG_TESTS goto :done_no_build
 if defined FLAG_PLAY goto :done_no_build
 
 REM ---- Builds ----
-if defined FLAG_WEBGL goto :build_webgl
-if defined FLAG_WEBGL_DEBUG goto :build_webgl_debug
 if defined FLAG_WIN_DEBUG goto :build_win_debug
 
 echo === Build Windows ===
@@ -141,53 +135,5 @@ echo.
 echo =================================
 echo  WINDOWS DEBUG BUILD FAILED - exit code: !buildExit!
 echo  Log: %log%.winDebug.log
-echo =================================
-exit /b 1
-
-:build_webgl
-echo === Build WebGL Release ===
-if exist "%root%\Builds\WebGL" rmdir /s /q "%root%\Builds\WebGL"
-mkdir "%root%\Builds\WebGL"
-%gate% method -Method BuildProject.BuildWebGLRelease -LogSuffix webgl
-set "buildExit=!errorlevel!"
-
-if !buildExit! neq 0 goto :fail_webgl
-if not exist "%root%\Builds\WebGL\index.html" goto :fail_webgl
-echo.
-echo =================================
-echo  WEBGL RELEASE BUILD OK
-echo  Output: %root%\Builds\WebGL\
-echo =================================
-exit /b 0
-
-:fail_webgl
-echo.
-echo =================================
-echo  WEBGL BUILD FAILED - exit code: !buildExit!
-echo  Log: %log%.webgl.log
-echo =================================
-exit /b 1
-
-:build_webgl_debug
-echo === Build WebGL Debug (fast) ===
-if exist "%root%\Builds\WebGL_Debug" rmdir /s /q "%root%\Builds\WebGL_Debug"
-mkdir "%root%\Builds\WebGL_Debug"
-%gate% method -Method BuildProject.BuildWebGLDebug -LogSuffix webglDebug
-set "buildExit=!errorlevel!"
-
-if !buildExit! neq 0 goto :fail_webgl_debug
-if not exist "%root%\Builds\WebGL_Debug\index.html" goto :fail_webgl_debug
-echo.
-echo =================================
-echo  WEBGL DEBUG BUILD OK
-echo  Output: %root%\Builds\WebGL_Debug\
-echo =================================
-exit /b 0
-
-:fail_webgl_debug
-echo.
-echo =================================
-echo  WEBGL DEBUG BUILD FAILED - exit code: !buildExit!
-echo  Log: %log%.webglDebug.log
 echo =================================
 exit /b 1

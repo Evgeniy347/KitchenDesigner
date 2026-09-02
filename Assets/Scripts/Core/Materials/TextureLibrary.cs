@@ -25,12 +25,8 @@ namespace KitchenDesigner.Core
         {
             get
             {
-#if UNITY_WEBGL && !UNITY_EDITOR
-                return false;
-#else
                 try { return Directory.Exists(DirectoryPath); }
                 catch (Exception) { return false; }
-#endif
             }
         }
 
@@ -201,9 +197,7 @@ namespace KitchenDesigner.Core
             tex.name = name;
             MaterialManager.ConfigureTexture(tex);
 
-#if !UNITY_WEBGL || UNITY_EDITOR
             if (tex.width % 4 == 0 && tex.height % 4 == 0) tex.Compress(highQuality: false);
-#endif
             tex.Apply(updateMipmaps: false, makeNoLongerReadable: true);
             return tex;
         }

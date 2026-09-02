@@ -29,22 +29,9 @@ namespace KitchenDesigner.Core
 
         private static bool SaveIntoTheOpenProjectOrAutosave()
         {
-#if UNITY_WEBGL
-            var api = Object.FindAnyObjectByType<Networking.ProjectApiClient>();
-            if (api != null && Networking.ProjectApiClient.Enabled && api.HasCurrentProject)
-            {
-                string json = SaveLoadManager.CaptureCurrentJson();
-                api.SaveCurrent(json, () => { }, _ => { });
-                return true;
-            }
             if (SaveLoadManager.HasLastPath)
                 return SaveLoadManager.SaveToLastPath();
             return SaveLoadManager.SaveProject(AutoSaveName, backup: false);
-#else
-            if (SaveLoadManager.HasLastPath)
-                return SaveLoadManager.SaveToLastPath();
-            return SaveLoadManager.SaveProject(AutoSaveName, backup: false);
-#endif
         }
 
         private static float IntervalSecondsRightNow()

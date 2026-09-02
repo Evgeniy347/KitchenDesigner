@@ -1,4 +1,3 @@
-#if !UNITY_WEBGL
 
 using System;
 using System.Net;
@@ -60,4 +59,3 @@ namespace KitchenDesigner.Core
     }
 }
 
-#endif

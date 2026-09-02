@@ -16,25 +16,14 @@ Assets/Scenes/TestScene.unity → Play
 
 | Скрипт | Назначение |
 |--------|-----------|
-| `build.cmd` | Сборка Windows (.exe) или WebGL. Флаги: `-Clean`, `-RunTests`, `-RunPlayMode`, `-BuildOnly`, `-WebGL`, `-WebGLDebug`, `-WinDebug` |
-| `build-server.cmd` | Сборка ASP.NET-сервера |
-| `clean.cmd` | Очистка временных файлов (Unity + сервер) |
+| `build.cmd` | Сборка Windows (.exe). Флаги: `-Clean`, `-RunTests`, `-RunPlayMode`, `-BuildOnly`, `-WinDebug` |
+| `clean.cmd` | Очистка временных файлов Unity |
 
 ## Запуск
-
-**Локально (отладка):**
 
 | Скрипт | Назначение |
 |--------|-----------|
 | `run-desktop.cmd` | Самая быстрая итерация: инкрементальная development-сборка Windows (Mono) → `Build_Debug/`, запускает exe. `-NoBuild` — только запуск |
-| `run-webgl.cmd` | WebGL-отладка в Docker: собирает `Builds/WebGL_Debug` (без сжатия и стриппинга), поднимает nginx+web+db из `server/docker-compose.local.yml`, открывает http://localhost:8080. nginx монтирует папку сборки напрямую — пересобрал WebGL, обновил страницу, Docker не перезапускаешь. `-NoBuild` — пропустить сборку Unity |
-
-**Релиз:**
-
-| Скрипт | Назначение |
-|--------|-----------|
-| `build.cmd -WebGL` | Релизная сборка WebGL (gzip, high stripping) → `Builds/WebGL` |
-| `deploy.cmd` | Публикация сервера + копирование WebGL-сборки и `server/docker-compose.yml` на прод-хост |
 
 **Замеры сборки** (тёплый кеш Library; полное время включает ~15 с запуска
 редактора Unity):
@@ -43,8 +32,6 @@ Assets/Scenes/TestScene.unity → Play
 |---------|--------------|----------------|--------|
 | Windows Debug, инкрементально (`-WinDebug`) | 19 с | 6 с | 157 МБ |
 | Windows Debug, первый прогон | 71 с | 55 с | 157 МБ |
-| WebGL Debug (`-WebGLDebug`) | 73 с | 56 с | 200 МБ |
-| WebGL Release (`-WebGL`) | 9,5 мин | 549 с | 13,5 МБ |
 
 ## Тесты
 
@@ -111,9 +98,5 @@ Assets/Scenes/TestScene.unity → Play
 |-----------|--------|
 | Unity | 6000.4.3f1 |
 | Render Pipeline | URP 17.4.0 |
-| Язык (front) | C# |
-| Бэкенд | ASP.NET Core 10 + Blazor Server |
-| Оркестрация | .NET Aspire 13 |
-| Аутентификация | ASP.NET Identity |
-| База данных | PostgreSQL |
+| Язык | C# |
 | Тесты | Unity Test Framework (NUnit) |

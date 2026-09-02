@@ -30,8 +30,7 @@ public class HandleMeshesTests
         Assert.AreEqual(1f, cube.bounds.size.z, 1e-4f);
         Assert.AreEqual(24, cube.vertexCount,
             "куб собран вручную по четыре вершины на грань: ручки — голые меши "
-            + "без коллайдера, поэтому им нечего терять на WebGL-стриппинге "
-            + "(условие для примитивов держит WebGLPrimitiveStrippingTests)");
+            + "без коллайдера, поэтому линкеру нечего у них вырезать");
     }
 
     [Test]

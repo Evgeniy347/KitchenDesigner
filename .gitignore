@@ -32,6 +32,11 @@ ehthumbs_vista.db
 !/geometry/**/*.csproj
 /geometry/**/bin/
 /geometry/**/obj/
+
+# Генератор Zod-таблицы инструментов MCP из общего контракта (npm run gen:tools).
+!/tools/McpContractGen/*.csproj
+/tools/McpContractGen/bin/
+/tools/McpContractGen/obj/
 /geometry/**/StrykerOutput/
 *.opendb
 *.VC.db
@@ -127,11 +132,6 @@ mcp-server/node_modules/
 /AGENTS.md
 /todo*.md
 
-# ===========================
-# .NET Publish Output
-# ===========================
-server/publish/
-
 # Build counter
 build_count.txt
 
@@ -150,11 +150,9 @@ tmp-scripts/
 
 # Deployment secrets
 .env
-server/.env
 
 # Удалённые файлы уезжают сюда, а не стираются (CONVENTIONS.md)
 _trash/
-/server/KitchenServer.Tests/TestResults
 
 # Мусор пакета Performance Testing: перезаписывается каждым прогоном PlayMode
 /Assets/Resources/PerformanceTestRunInfo.json*
