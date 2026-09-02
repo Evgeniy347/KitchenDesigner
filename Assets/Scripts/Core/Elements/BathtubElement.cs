@@ -115,9 +115,9 @@ namespace KitchenDesigner.Core
 
         private Material Skin()
         {
-            if (!MaterialManager.HasCustomDecor(this)) return BathtubMaterials.WhiteAcrylic;
+            if (SanitaryDecor.IsFactoryLook(MaterialId)) return SanitaryMaterials.WhiteAcrylic;
             var decor = MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
-            return decor != null ? decor! : BathtubMaterials.WhiteAcrylic;
+            return decor != null ? decor! : SanitaryMaterials.WhiteAcrylic;
         }
 
         private BasinSurface Shell(Vector3Int dims)

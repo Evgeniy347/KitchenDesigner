@@ -113,10 +113,10 @@ namespace KitchenDesigner.Core
         }
 
         public void SetTabletopMaterial(Material material) => Ceramic.SetMaterial(
-            SanitaryDecor.ChosenOrFactory(_ceramicMaterialId, material, ToiletMaterials.Ceramic));
+            SanitaryDecor.ChosenOrFactory(_ceramicMaterialId, material, SanitaryMaterials.Ceramic));
 
         public void SetLegsMaterial(Material material) => Chrome.SetMaterial(
-            SanitaryDecor.ChosenOrFactory(_buttonMaterialId, material, ToiletMaterials.Chrome));
+            SanitaryDecor.ChosenOrFactory(_buttonMaterialId, material, SanitaryMaterials.Chrome));
 
         public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
 
