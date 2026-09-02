@@ -52,6 +52,13 @@ namespace KitchenDesigner.Core.MCP
                 if (op.flush_plate_height.HasValue)
                     toilet.FlushPlateHeightMM = op.flush_plate_height.Value;
             }),
+            For<BathtubElement>((op, tub) =>
+            {
+                if (op.rim_width.HasValue) tub.RimWidthMM = op.rim_width.Value;
+                if (op.bowl_depth.HasValue) tub.BowlDepthMM = op.bowl_depth.Value;
+                if (op.bowl_radius.HasValue) tub.BowlRadiusMM = op.bowl_radius.Value;
+                if (op.bowl_fillet.HasValue) tub.BowlFilletMM = op.bowl_fillet.Value;
+            }),
             For<BedElement>((op, bed) =>
             {
                 if (op.bed_double.HasValue) bed.IsDouble = op.bed_double.Value;

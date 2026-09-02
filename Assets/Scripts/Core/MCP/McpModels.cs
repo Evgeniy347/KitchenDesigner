@@ -87,6 +87,7 @@ namespace KitchenDesigner.Core.MCP
 		public PouffeInfo? pouffe;
 		public ToiletInfo? toilet;
 		public WallHungToiletInfo? wallHungToilet;
+		public BathtubInfo? bathtub;
 		public BedInfo? bed;
 		public PillarInfo? pillar;
 		public ScrewLegInfo? screwLeg;
@@ -354,6 +355,22 @@ namespace KitchenDesigner.Core.MCP
 		public int maxFlushPlateHeightMM;
 		public string tabletopMaterialId = MaterialCatalog.DefaultId;
 		public string legsMaterialId = MaterialCatalog.DefaultId;
+	}
+
+	[Serializable]
+	public class BathtubInfo
+	{
+		public int rimWidthMM;
+		public int maxRimWidthMM;
+		public int bowlDepthMM;
+		public int maxBowlDepthMM;
+		public int bowlRadiusMM;
+		public int maxBowlRadiusMM;
+		public int bowlFilletMM;
+		public int maxBowlFilletMM;
+		public int shellCornerRadiusMM;
+		public int bowlWidthMM;
+		public int bowlDepthPlanMM;
 	}
 
 	[Serializable]

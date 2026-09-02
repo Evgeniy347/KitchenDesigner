@@ -146,6 +146,32 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "the plate top never leaves the 1000 mm envelope. Omit to keep.", Min = 0)]
         public int? flush_plate_height;
 
+        [McpParam("Bathtub only: width of the flat rim around the bowl in MM. Clamped to " +
+                  "5..(min(width,depth)-200)/2 — a bowl at least 200 mm across always stays " +
+                  "inside. Raising it LOWERS the ceilings of bowl_radius and bowl_fillet. " +
+                  "Omit to keep.", Min = 0)]
+        public int? rim_width;
+
+        [McpParam("Bathtub only: depth of the bowl below the rim in MM. Clamped to " +
+                  "50..height-30 — 30 mm of shell always stays under the bowl, so the tub " +
+                  "never stands with a hole in the floor. Lowering it LOWERS the ceiling of " +
+                  "bowl_fillet. Omit to keep.", Min = 0)]
+        public int? bowl_depth;
+
+        [McpParam("Bathtub only: plan corner radius of the BOWL in MM, not of the outer " +
+                  "shell — the shell radius is bowl_radius + rim_width, which is what keeps " +
+                  "the rim the same width in the corner as along the straight side. " +
+                  "Clamped to 0..(min(width,depth)-2*rim_width)/2: 0 is a strictly " +
+                  "rectangular tub, the maximum gives semicircular ends. Omit to keep.",
+            Min = 0)]
+        public int? bowl_radius;
+
+        [McpParam("Bathtub only: radius of the wall-to-floor fillet inside the bowl in MM. " +
+                  "Clamped to 0..min(bowl_depth, (min(width,depth)-2*rim_width-60)/2) — the " +
+                  "arc never reaches above the rim and never closes the bowl floor to a " +
+                  "point. Omit to keep.", Min = 0)]
+        public int? bowl_fillet;
+
         [McpParam("Cooktop only: cutout width in MM — the box that goes INTO the countertop " +
                   "(width/height/depth describe the 5 mm plate on top; height is the total). " +
                   "Clamped to 50..width-10. Omit to keep.", Min = 50)]
@@ -274,7 +300,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;

@@ -143,7 +143,7 @@ SELECTOR (a string; space-separated clauses, ALL must match)
   name:PATTERN             same, explicit
   type:board|wall|floor|window|door|drawer|facade|assembled_facade|
        radial_shelf|panel|table|radius_table|stool|chair|sofa|pouffe|bed|pillar|
-       screw_leg|toilet|wall_hung_toilet|light
+       screw_leg|toilet|wall_hung_toilet|bathtub|light
   module:NAME / group:NAME by module name (mask allowed)
   thickness==18            compare a dimension in MM; also width/height/depth
                            with == != >= <= > <
@@ -252,6 +252,20 @@ WallHungToiletElement Wall-hung toilet / installation (type:""wall_hung_toilet""
                       default, clamped to seat_height+88..835). Raising the bowl
                       PUSHES the plate up, never the other way round. Ceramic and
                       plate decors via tabletop_material/legs_material.
+BathtubElement        Rectangular acrylic bathtub (type:""bathtub"", 1700x600x700 mm by
+                      default — width x height x depth, the long side running along
+                      X so it sits against a wall). Size IS editable, unlike the
+                      toilets. Four shape fields, and each one lowers the ceiling of
+                      the next: rim_width (40 mm, the flat rim), bowl_depth (450 mm,
+                      down from the rim), bowl_radius (120 mm) and bowl_fillet
+                      (80 mm, the wall-to-floor arc inside the bowl). bowl_radius is
+                      the radius of the BOWL, not of the outer shell: the shell gets
+                      bowl_radius + rim_width, which is what keeps the rim the same
+                      width in the corner as along the straight side. Set it to 0 for
+                      a strictly rectangular tub, to the maximum for semicircular
+                      ends. Decor is a single slot (material); leave it alone for the
+                      factory look, white acrylic. The tub does NOT seat itself on
+                      the floor — place it yourself.
 BedElement            Bed (type:""bed"", 1800x900x2000 mm by default — width x
                       height x LENGTH: the length runs along Z, because the
                       headboard faces -Z like every other back in this family).
@@ -375,7 +389,7 @@ moduleId/moduleName   Group membership (0/absent = not grouped).
 materialId            Decor id (list_materials).
 facadeMode            Facade opening mode (""front_left"", ""drawer_out"", ...).
 drawer / table / radiusTable / stool / chair / sofa / pouffe / bed / toilet /
-wallHungToilet        Type-specific sub-objects, absent otherwise.
+wallHungToilet / bathtub   Type-specific sub-objects, absent otherwise.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
   {name, kind, anchor:[x,z] MM corner, size:[width,depth,height] MM, rotY,

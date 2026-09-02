@@ -58,6 +58,10 @@ namespace KitchenDesigner.Core.MCP
             Unsupported("seat_height", o => o.seat_height.HasValue, AcceptsSeatHeight),
             Unsupported("flush_plate_height", o => o.flush_plate_height.HasValue,
                 el => el is WallHungToiletElement),
+            Unsupported("rim_width", o => o.rim_width.HasValue, el => el is BathtubElement),
+            Unsupported("bowl_depth", o => o.bowl_depth.HasValue, el => el is BathtubElement),
+            Unsupported("bowl_radius", o => o.bowl_radius.HasValue, el => el is BathtubElement),
+            Unsupported("bowl_fillet", o => o.bowl_fillet.HasValue, el => el is BathtubElement),
             Unsupported("cutout_width", o => o.cutout_width.HasValue, el => el is CooktopElement),
             Unsupported("cutout_depth", o => o.cutout_depth.HasValue, el => el is CooktopElement),
 

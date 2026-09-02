@@ -192,6 +192,24 @@ namespace KitchenDesigner.Core.MCP
                     legsMaterialId = toilet.LegsMaterialId
                 }),
 
+            For<BathtubElement>((info, tub) => info.bathtub = new BathtubInfo
+            {
+                rimWidthMM = tub.RimWidthMM,
+                maxRimWidthMM = BathtubElement.MaxRimWidthMM(tub.DimensionsMM),
+                bowlDepthMM = tub.BowlDepthMM,
+                maxBowlDepthMM = BathtubElement.MaxBowlDepthMM(tub.DimensionsMM),
+                bowlRadiusMM = tub.BowlRadiusMM,
+                maxBowlRadiusMM =
+                    BathtubElement.MaxBowlRadiusMM(tub.DimensionsMM, tub.RimWidthMM),
+                bowlFilletMM = tub.BowlFilletMM,
+                maxBowlFilletMM = BathtubElement.MaxBowlFilletMM(
+                    tub.DimensionsMM, tub.RimWidthMM, tub.BowlDepthMM),
+                shellCornerRadiusMM = BathtubLayout.ShellCornerRadiusMM(
+                    tub.DimensionsMM, tub.RimWidthMM, tub.BowlRadiusMM),
+                bowlWidthMM = BathtubLayout.InnerWidthMM(tub.DimensionsMM, tub.RimWidthMM),
+                bowlDepthPlanMM = BathtubLayout.InnerDepthMM(tub.DimensionsMM, tub.RimWidthMM)
+            }),
+
             For<BedElement>((info, bed) => info.bed = new BedInfo
             {
                 size = bed.SizeName,

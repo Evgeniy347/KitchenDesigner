@@ -31,6 +31,10 @@ namespace KitchenDesigner.Core.MCP
             WallHungToiletElement.DefaultSeatHeightMM;
         public const int WALL_HUNG_TOILET_DEFAULT_PLATE_HEIGHT_MM =
             WallHungToiletElement.DefaultFlushPlateHeightMM;
+        public const int BATHTUB_DEFAULT_RIM_WIDTH_MM = BathtubElement.DefaultRimWidthMM;
+        public const int BATHTUB_DEFAULT_BOWL_DEPTH_MM = BathtubElement.DefaultBowlDepthMM;
+        public const int BATHTUB_DEFAULT_BOWL_RADIUS_MM = BathtubElement.DefaultBowlRadiusMM;
+        public const int BATHTUB_DEFAULT_BOWL_FILLET_MM = BathtubElement.DefaultBowlFilletMM;
         public const bool BED_DEFAULT_IS_DOUBLE = true;
         public const bool BED_DEFAULT_HAS_HEADBOARD = true;
         public const int WINDOW_DEFAULT_WIDTH_MM = 900;
@@ -102,6 +106,11 @@ namespace KitchenDesigner.Core.MCP
                 ["wall_hung_toilet"] = (item, pos) => ElementFactory.CreateWallHungToilet(
                     WALL_HUNG_TOILET_DEFAULT_SEAT_HEIGHT_MM,
                     WALL_HUNG_TOILET_DEFAULT_PLATE_HEIGHT_MM, item.name, pos),
+
+                ["bathtub"] = (item, pos) => ElementFactory.CreateBathtub(BathtubDims(item),
+                    BATHTUB_DEFAULT_RIM_WIDTH_MM, BATHTUB_DEFAULT_BOWL_DEPTH_MM,
+                    BATHTUB_DEFAULT_BOWL_RADIUS_MM, BATHTUB_DEFAULT_BOWL_FILLET_MM,
+                    item.name, pos),
 
                 ["bed"] = (item, pos) => ElementFactory.CreateBed(BedDims(item),
                     BED_DEFAULT_IS_DOUBLE, BED_DEFAULT_HAS_HEADBOARD, item.name, pos),
@@ -181,6 +190,11 @@ namespace KitchenDesigner.Core.MCP
             item.width ?? PouffeElement.DefaultWidthMM,
             item.height ?? PouffeElement.DefaultHeightMM,
             item.depth ?? PouffeElement.DefaultDepthMM);
+
+        private static Vector3Int BathtubDims(CreateItem item) => new Vector3Int(
+            item.width ?? BathtubElement.DefaultWidthMM,
+            item.height ?? BathtubElement.DefaultHeightMM,
+            item.depth ?? BathtubElement.DefaultDepthMM);
 
         private static Vector3Int BedDims(CreateItem item) => new Vector3Int(
             item.width ?? BedElement.DefaultWidthMM,
