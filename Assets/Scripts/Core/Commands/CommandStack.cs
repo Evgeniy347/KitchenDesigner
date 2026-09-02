@@ -35,6 +35,7 @@ namespace KitchenDesigner.Core
 
         public static void Execute(IUndoCommand command)
         {
+            if (DemoModeGuard.BlocksAndRollsBack(command)) return;
             SceneRevision.Bump();
             if (_capture == null) { Instance.Execute(command); return; }
             command.Execute();
