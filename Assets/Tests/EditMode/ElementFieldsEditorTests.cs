@@ -284,6 +284,66 @@ public class ElementFieldsEditorTests
             "и наоборот: у табуретки высоты сиденья нет — это её общая высота");
     }
 
+    private SofaElement Sofa() =>
+        Spawn<SofaElement>(ElementFactory.CreateSofa(
+            new Vector3Int(SofaElement.DefaultWidthMM, SofaElement.DefaultHeightMM,
+                SofaElement.DefaultDepthMM), SofaElement.DefaultCornerRadiusMM,
+            SofaElement.DefaultSeatHeightMM, "Диван", Vector3.zero));
+
+    /// <summary>Тот же сторож двух половин реестра, что у табуретки и стула, —
+    /// у дивана его не было вовсе: обе строки жили без единого теста, и потеря
+    /// вызова Build() прошла бы молча. Узлы у дивана свои
+    /// (F_СкруглениеДивана, F_ВысотаОснованияДивана), потому что подписи
+    /// «Скругление» и «Высота ...» он делит с другой мебелью.</summary>
+    [Test]
+    public void Sofa_BothRows_AreBuilt_AndOpenWithTheElementsValues()
+    {
+        _menu!.Open(Sofa());
+
+        Assert.IsNotNull(Panel().Find("F_" + SofaFieldsEditor.CornerRadiusNode),
+            "строка «Скругление» дивана обязана быть ПОСТРОЕНА: занести редактор в "
+            + "реестр _editors и забыть позвать его Build() — значит получить свойство, "
+            + "которое нечем править, и молча");
+        Assert.IsNotNull(Panel().Find("F_" + SofaFieldsEditor.SeatHeightNode),
+            "и строка «Высота основания» тоже");
+        Assert.AreEqual(SofaElement.DefaultCornerRadiusMM.ToString(),
+            Text(Field(SofaFieldsEditor.CornerRadiusNode)),
+            "поле открывается значением элемента, а не пустым и не чужим");
+        Assert.AreEqual(SofaElement.DefaultSeatHeightMM.ToString(),
+            Text(Field(SofaFieldsEditor.SeatHeightNode)),
+            "и второе поле тоже");
+    }
+
+    [Test]
+    public void Sofa_CornerRadiusRow_Applies_AndIsUndoable()
+    {
+        var sofa = Sofa();
+        _menu!.Open(sofa);
+
+        Type(SofaFieldsEditor.CornerRadiusNode, "200");
+
+        Assert.AreEqual(200, sofa.CornerRadiusMM, "скругление применяется вместе с размерами");
+        CommandStack.Undo();
+        Assert.AreEqual(SofaElement.DefaultCornerRadiusMM, sofa.CornerRadiusMM,
+            "одна правка — один шаг отмены");
+    }
+
+    [Test]
+    public void Sofa_SeatHeightRow_ShowsTheClampedValueBack_NotWhatWasTyped()
+    {
+        var sofa = Sofa();
+        _menu!.Open(sofa);
+
+        Type(SofaFieldsEditor.SeatHeightNode, "5000");
+
+        int expected = SofaElement.MaxSeatHeightMM(SofaElement.DefaultHeightMM);
+        Assert.AreEqual(expected, sofa.SeatHeightMM,
+            "высота основания зажата так, чтобы спинке осталось место");
+        Assert.AreEqual(expected.ToString(), Text(Field(SofaFieldsEditor.SeatHeightNode)),
+            "и в поле обязана вернуться ПРИНЯТАЯ высота, а не напечатанная "
+            + "(CONVENTIONS.md → «Read a value back only AFTER EndCapture»)");
+    }
+
     private BedElement Bed() =>
         Spawn<BedElement>(ElementFactory.CreateBed(
             BedLayout.DefaultDimensions(true, true), true, true, "Кровать", Vector3.zero));
@@ -415,6 +475,39 @@ public class ElementFieldsEditorTests
             "и поле обязано показать ПРИНЯТОЕ значение, а не набранное: значение, "
             + "записанное обратно изнутри BeginCapture, показывало бы человеку его "
             + "собственный ввод вместо того, что элемент взял");
+    }
+
+    /// <summary>Оба поля пуфика уезжают в элемент за ОДИН Apply. Тест закрывает
+    /// дыру, из-за которой обе строки проверялись только поодиночке: потеря
+    /// одной из них при общем обходе полей осталась бы незамеченной.
+    ///
+    /// Он же отвечает на вопрос о ПОРЯДКЕ записи. Порядка здесь нет: скругление
+    /// зажимается по DimensionsMM.x/z, толщина сидушки — по DimensionsMM.y, а
+    /// размеры к этому моменту уже применены и внутри Apply не меняются, так что
+    /// ни одно из свойств не видит другого. Если такая связь когда-нибудь
+    /// появится, красным станет именно этот тест — и порядок записи придётся
+    /// назначать осознанно, а не наследовать от порядка строк в панели.</summary>
+    [Test]
+    public void Pouffe_SeatThicknessAndCornerRadius_ApplyTogether_EachClampedByTheDimensionsAlone()
+    {
+        var pouffe = Pouffe();
+        _menu!.Open(pouffe);
+
+        Field(PouffeFieldsEditor.SeatThicknessNode).text = "10000";
+        Type(PouffeFieldsEditor.CornerRadiusNode, "1000");
+
+        int maxRadius = PouffeElement.MaxCornerRadiusMM(pouffe.DimensionsMM);
+        int maxThickness = PouffeElement.MaxSeatThicknessMM(PouffeElement.DefaultHeightMM);
+        Assert.AreEqual(maxRadius, pouffe.CornerRadiusMM,
+            "скругление зажато половиной меньшей стороны — и только ею");
+        Assert.AreEqual(maxThickness, pouffe.SeatThicknessMM,
+            "сидушка зажата третью высоты — и только ею; вторая строка обязана "
+            + "доехать в том же Apply, что и первая");
+        Assert.AreEqual(maxRadius.ToString(), Text(Field(PouffeFieldsEditor.CornerRadiusNode)),
+            "оба поля показывают ПРИНЯТОЕ значение, а не набранное");
+        Assert.AreEqual(maxThickness.ToString(),
+            Text(Field(PouffeFieldsEditor.SeatThicknessNode)),
+            "и второе — тоже принятое: 10000 мм сидушки в 400-мм пуфик не помещается");
     }
 
     [Test]
