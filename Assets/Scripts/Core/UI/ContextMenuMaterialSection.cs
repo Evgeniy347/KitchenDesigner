@@ -17,9 +17,7 @@ namespace KitchenDesigner.Core.UI
         private string? _previewBefore;
         private MaterialSlot _previewSlot;
 
-        private const ElementFacet TabletopSlots =
-            ElementFacet.Table | ElementFacet.Stool | ElementFacet.Chair | ElementFacet.Sofa
-            | ElementFacet.Bed | ElementFacet.Pouffe;
+        private bool HasTwoDecorSlots => _host.Target is ITabletop;
 
         public ContextMenuMaterialSection(IContextMenuHost host) => _host = host;
 
@@ -33,15 +31,15 @@ namespace KitchenDesigner.Core.UI
 
             var options = MaterialOptions.DisplayNames();
             _base = _host.Rows.Dropdown("Текстура", options, index => Choose(MaterialSlot.Base, index),
-                RowVisibility.When(() => !_host.TargetFacets.Has(TabletopSlots)), "CtxMaterial");
+                RowVisibility.When(() => !HasTwoDecorSlots), "CtxMaterial");
             (_tabletopLabel, _tabletop) = _host.Rows.NamedDropdown("CtxTableTop",
                 TabletopDecor.TabletopLabel, new List<string>(options),
                 index => Choose(MaterialSlot.Base, index),
-                RowVisibility.For(TabletopSlots), TabletopLabelNode);
+                RowVisibility.When(() => HasTwoDecorSlots), TabletopLabelNode);
             (_legsLabel, _legs) = _host.Rows.NamedDropdown("CtxTableLegs",
                 TabletopDecor.LegsLabel, new List<string>(options),
                 index => Choose(MaterialSlot.Legs, index),
-                RowVisibility.For(TabletopSlots), LegsLabelNode);
+                RowVisibility.When(() => HasTwoDecorSlots), LegsLabelNode);
 
             DropdownHover.Attach(_base, option => Preview(MaterialSlot.Base, option), EndPreview);
             DropdownHover.Attach(_tabletop, option => Preview(MaterialSlot.Base, option), EndPreview);
@@ -117,7 +115,7 @@ namespace KitchenDesigner.Core.UI
         }
 
         private MaterialSlot SlotFor(MaterialSlot requested) =>
-            requested == MaterialSlot.Base && _host.TargetFacets.Has(TabletopSlots)
+            requested == MaterialSlot.Base && HasTwoDecorSlots
                 ? MaterialSlot.Tabletop
                 : requested;
 

@@ -86,6 +86,10 @@ namespace KitchenDesigner.Core.UI
 
             public bool isDishwasher => kind == SidebarItemKind.Dishwasher;
 
+            public bool isToilet => kind == SidebarItemKind.Toilet;
+
+            public bool isWallHungToilet => kind == SidebarItemKind.WallHungToilet;
+
             public bool isFloor => kind == SidebarItemKind.Floor;
 
             public bool isLightSource => kind == SidebarItemKind.LightSource;
@@ -111,6 +115,7 @@ namespace KitchenDesigner.Core.UI
                 DrawerGroup(),
                 FurnitureGroup(),
                 ApplianceGroup(),
+                SanitaryGroup(),
                 new Group
                 {
                     title = "Помещение",
@@ -225,6 +230,23 @@ namespace KitchenDesigner.Core.UI
                 items = new List<Item> { genericCooktop, modelCooktop, oven, dishwasher },
             };
         }
+
+        private static Group SanitaryGroup()
+        {
+            return new Group
+            {
+                title = "Сантехника",
+                shortLabel = "С",
+                items = new List<Item> { ToiletItem("Унитаз"), WallHungToiletItem("Инсталляция") },
+            };
+        }
+
+        private static Item ToiletItem(string name)
+            => new Item(name, ToiletElement.ModelDimensionsMM, SidebarItemKind.Toilet);
+
+        private static Item WallHungToiletItem(string name)
+            => new Item(name, WallHungToiletElement.ModelDimensionsMM,
+                SidebarItemKind.WallHungToilet);
 
         private static Item DishwasherItem(string name)
         {

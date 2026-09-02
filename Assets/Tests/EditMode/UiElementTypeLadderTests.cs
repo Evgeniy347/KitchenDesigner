@@ -44,6 +44,8 @@ public class UiElementTypeLadderTests
         ("BedFieldsEditor.cs", "реестр редакторов"),
         ("PouffeFieldsEditor.cs", "реестр редакторов"),
         ("BathtubFieldsEditor.cs", "реестр редакторов"),
+        ("ToiletFieldsEditor.cs", "реестр редакторов: один на оба варианта унитаза — "
+            + "строка «Высота чаши» у них общая, а «Высота панели» только у подвесного"),
     };
 
     /// <summary>Формы вопроса «какого ты типа». Базовый <c>KitchenElement</c>

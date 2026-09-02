@@ -30,6 +30,10 @@ namespace KitchenDesigner.Core.UI
 
         void SpawnPouffe(Vector3Int dims, string name);
 
+        void SpawnToilet(string name);
+
+        void SpawnWallHungToilet(string name);
+
         void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom);
 

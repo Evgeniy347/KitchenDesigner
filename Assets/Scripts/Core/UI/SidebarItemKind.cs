@@ -22,6 +22,8 @@ namespace KitchenDesigner.Core.UI
         Cooktop,
         Oven,
         Dishwasher,
+        Toilet,
+        WallHungToilet,
         Floor,
         LightSource,
         Window,

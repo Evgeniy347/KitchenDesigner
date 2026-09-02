@@ -84,6 +84,16 @@ namespace KitchenDesigner.Core.UI
                 PouffeElement.DefaultCornerRadiusMM, PouffeElement.DefaultSeatThicknessMM,
                 name, pos));
 
+        public void SpawnToilet(string name) =>
+            PlaceCenteredOnGround(ToiletElement.ModelDimensionsMM.y,
+                pos => ElementFactory.CreateToilet(ToiletElement.DefaultSeatHeightMM, name, pos));
+
+        public void SpawnWallHungToilet(string name) =>
+            PlaceCenteredOnGround(WallHungToiletElement.ModelDimensionsMM.y,
+                pos => ElementFactory.CreateWallHungToilet(
+                    WallHungToiletElement.DefaultSeatHeightMM,
+                    WallHungToiletElement.DefaultFlushPlateHeightMM, name, pos));
+
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom) =>
             PlaceCenteredOnGround(dims.y, pos =>
