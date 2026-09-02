@@ -8,11 +8,19 @@ using KitchenDesigner.Core.UI;
 /// Play mode Unity не зовёт OnDestroy и подписка переживает свои кнопки.</summary>
 public class SidebarUITests
 {
+    private const string RoomGroupTitle = "Помещение";
+
     [Test]
     public void ItemCategory_MatchesTheCategoryTheSpawnedElementWillGet()
     {
         var groups = SidebarCatalog.Build();
-        var room = groups[5].items;
+        var roomGroup = groups.Find(g => g.title == RoomGroupTitle);
+        Assert.IsNotNull(roomGroup.items,
+            "группа «" + RoomGroupTitle + "» не найдена: ищем её ПО ИМЕНИ, а не по номеру, "
+            + "потому что номер сдвигает каждая новая группа перед ней — «Сантехника» "
+            + "сдвинула, и Find по пустому списку тихо вернул пункт по умолчанию, "
+            + "который классифицируется как Regular");
+        var room = roomGroup.items;
 
         Assert.AreEqual(EditModeManager.Category.Always,
             SidebarUI.ItemCategory(room.Find(i => i.name == EditModeManager.KorobName)),

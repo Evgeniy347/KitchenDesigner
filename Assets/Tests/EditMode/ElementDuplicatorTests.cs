@@ -245,6 +245,8 @@ public class ElementDuplicatorTests
             Made(ElementFactory.CreateSofa(new Vector3Int(1800, 800, 900), 20, 420, "Sofa", Vector3.zero)),
             Made(ElementFactory.CreatePouffe(new Vector3Int(400, 420, 400), 20, 80, "Pouffe", Vector3.zero)),
             Made(ElementFactory.CreateBed(new Vector3Int(1600, 500, 2000), true, true, "Bed", Vector3.zero)),
+            Made(ElementFactory.CreateToilet(430, "Toilet", Vector3.zero)),
+            Made(ElementFactory.CreateWallHungToilet(430, 640, "WallHungToilet", Vector3.zero)),
         };
 
         var declared = new List<Type>();
