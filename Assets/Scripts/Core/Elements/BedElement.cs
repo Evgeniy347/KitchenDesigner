@@ -16,8 +16,8 @@ namespace KitchenDesigner.Core
         private const int ResetsDimensionsOrder = -200;
 
         private LegSet? _legSet;
-        private BedPartSet? _bedding;
-        private BedPartSet? _carcass;
+        private FurniturePartSet? _bedding;
+        private FurniturePartSet? _carcass;
         private TabletopSurface? _frame;
         private readonly RebuildGuard _rebuild = new RebuildGuard();
 
@@ -86,9 +86,9 @@ namespace KitchenDesigner.Core
 
         private LegSet Legs => _legSet ??= new LegSet(transform, BedLayout.LegNamePrefix);
 
-        private BedPartSet Bedding => _bedding ??= new BedPartSet(transform);
+        private FurniturePartSet Bedding => _bedding ??= new FurniturePartSet(transform);
 
-        private BedPartSet Carcass => _carcass ??= new BedPartSet(transform);
+        private FurniturePartSet Carcass => _carcass ??= new FurniturePartSet(transform);
 
         private TabletopSurface Frame => _frame ??= new TabletopSurface(gameObject, AdoptOwnedMesh);
 

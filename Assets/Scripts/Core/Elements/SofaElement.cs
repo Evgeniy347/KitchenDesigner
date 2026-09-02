@@ -14,8 +14,8 @@ namespace KitchenDesigner.Core
         public const int MinBaseHeightMM = SofaLayout.MinBaseHeightMM;
         public const int MinBackrestHeightMM = SofaLayout.MinBackrestHeightMM;
 
-        private SofaUpholstery? _body;
-        private SofaUpholstery? _cushions;
+        private FurniturePartSet? _body;
+        private FurniturePartSet? _cushions;
         private TabletopSurface? _base;
         private readonly RebuildGuard _rebuild = new RebuildGuard();
 
@@ -83,9 +83,9 @@ namespace KitchenDesigner.Core
             set => TabletopMaterialId = value;
         }
 
-        private SofaUpholstery Body => _body ??= new SofaUpholstery(transform);
+        private FurniturePartSet Body => _body ??= new FurniturePartSet(transform);
 
-        private SofaUpholstery Cushions => _cushions ??= new SofaUpholstery(transform);
+        private FurniturePartSet Cushions => _cushions ??= new FurniturePartSet(transform);
 
         private TabletopSurface Base => _base ??= new TabletopSurface(gameObject, AdoptOwnedMesh);
 

@@ -103,7 +103,7 @@ namespace KitchenDesigner.Tests.Geometry
             Assert.AreEqual(FurnitureLayout.TopCentreY(400, 50) / AppConstants.MM_TO_UNITS,
                 PouffeLayout.SeatCentreYMM(400, 50), Tol,
                 "то же самое, что считает FurnitureLayout для крышки, только в "
-                + "миллиметрах: SofaUpholstery принимает центр части в мм и сама "
+                + "миллиметрах: FurniturePartSet принимает центр части в мм и сама "
                 + "переводит в юниты");
         }
 

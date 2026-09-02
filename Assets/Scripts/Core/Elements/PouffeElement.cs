@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core
         public const string SeatChildName = PouffeLayout.SeatName;
 
         private TabletopSurface? _body;
-        private SofaUpholstery? _seat;
+        private FurniturePartSet? _seat;
         private readonly RebuildGuard _rebuild = new RebuildGuard();
 
         [SerializeField] private int _cornerRadiusMM = DefaultCornerRadiusMM;
@@ -83,7 +83,7 @@ namespace KitchenDesigner.Core
 
         private TabletopSurface Body => _body ??= new TabletopSurface(gameObject, AdoptOwnedMesh);
 
-        private SofaUpholstery Seat => _seat ??= new SofaUpholstery(transform);
+        private FurniturePartSet Seat => _seat ??= new FurniturePartSet(transform);
 
         private void ApplyMaterial()
             => TabletopDecor.ApplyBothSlots(this, _bodyMaterialId, _seatMaterialId);

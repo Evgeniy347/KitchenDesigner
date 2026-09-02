@@ -37,7 +37,7 @@ namespace KitchenDesigner.Tests.Geometry
         /// <summary>Помощники, строящие меш ДЛЯ элемента. Они не элементы и своей
         /// поверхности декора не имеют — её называет владелец, и скан ищет владельца.</summary>
         private static readonly string[] MeshBuildingHelpers =
-            { "TabletopSurface.cs", "SofaUpholstery.cs", "BedPartSet.cs" };
+            { "TabletopSurface.cs", "FurniturePartSet.cs" };
 
         private const string DeclaresDecorSurface = @"\bVector2Int\s+DecorSurfaceMM\b";
 
