@@ -23,9 +23,26 @@ namespace KitchenDesigner.Core
 
         public static Vector2[] Build(float width, float depth, CornerRadii radii, int segments)
         {
+            float spacing = MinPointSpacing(
+                Mathf.Max(float.Epsilon, width), Mathf.Max(float.Epsilon, depth));
+            var ring = Ring(width, depth, radii, segments);
+
+            var points = new List<Vector2>();
+            for (int i = 0; i < ring.Length; i++) Append(points, ring[i].Position, spacing);
+
+            while (points.Count > 3 && Coincide(points[0], points[points.Count - 1], spacing))
+                points.RemoveAt(points.Count - 1);
+
+            return points.ToArray();
+        }
+
+        public static int RingPointCount(int segments)
+            => CornerRadii.Count * (Mathf.Max(1, segments) + 1);
+
+        public static OutlinePoint[] Ring(float width, float depth, CornerRadii radii, int segments)
+        {
             float w = Mathf.Max(float.Epsilon, width);
             float d = Mathf.Max(float.Epsilon, depth);
-            float spacing = MinPointSpacing(w, d);
             int arcSegments = Mathf.Max(1, segments);
 
             var fitted = Fit(w, d, radii);
@@ -41,29 +58,20 @@ namespace KitchenDesigner.Core
             };
             var startAngles = new[] { Mathf.PI, -Mathf.PI * 0.5f, 0f, Mathf.PI * 0.5f };
 
-            var points = new List<Vector2>();
+            var ring = new OutlinePoint[RingPointCount(arcSegments)];
+            int index = 0;
             for (int corner = 0; corner < CornerRadii.Count; corner++)
             {
                 float r = fitted[corner];
-                if (r <= 0f)
-                {
-                    Append(points, centres[corner], spacing);
-                    continue;
-                }
-
                 for (int i = 0; i <= arcSegments; i++)
                 {
                     float angle = startAngles[corner] + Mathf.PI * 0.5f * i / arcSegments;
-                    Append(points, new Vector2(
-                        centres[corner].x + Mathf.Cos(angle) * r,
-                        centres[corner].y + Mathf.Sin(angle) * r), spacing);
+                    var outward = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                    ring[index++] = new OutlinePoint(centres[corner] + outward * r, outward);
                 }
             }
 
-            while (points.Count > 3 && Coincide(points[0], points[points.Count - 1], spacing))
-                points.RemoveAt(points.Count - 1);
-
-            return points.ToArray();
+            return ring;
         }
 
         public static float SignedDistance(Vector2 point, float width, float depth, float radius)

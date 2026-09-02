@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
@@ -22,6 +23,12 @@ namespace KitchenDesigner.Core
 
         public static CornerRadii Uniform(float radius)
             => new CornerRadii(radius, radius, radius, radius);
+
+        public CornerRadii Inset(float distance) => new CornerRadii(
+            Mathf.Max(0f, MinusXMinusZ - distance),
+            Mathf.Max(0f, PlusXMinusZ - distance),
+            Mathf.Max(0f, PlusXPlusZ - distance),
+            Mathf.Max(0f, MinusXPlusZ - distance));
 
         public float this[int corner]
         {
