@@ -34,6 +34,8 @@ public static class EveryElementType
         (typeof(ChairElement), n => ElementFactory.CreateChair(new Vector3Int(453, 903, 457), 27, 463, n, Vector3.zero)),
         (typeof(SofaElement), n => ElementFactory.CreateSofa(new Vector3Int(1807, 803, 903), 31, 427, n, Vector3.zero)),
         (typeof(PouffeElement), n => ElementFactory.CreatePouffe(new Vector3Int(407, 423, 403), 37, 83, n, Vector3.zero)),
+        (typeof(ToiletElement), n => ElementFactory.CreateToilet(437, n, Vector3.zero)),
+        (typeof(WallHungToiletElement), n => ElementFactory.CreateWallHungToilet(457, 653, n, Vector3.zero)),
         (typeof(BedElement), n => ElementFactory.CreateBed(new Vector3Int(1607, 503, 2003), false, false, n, Vector3.zero)),
         (typeof(PillarElement), n => ElementFactory.CreatePillar(713, n, Vector3.zero, 87)),
         (typeof(ScrewLegElement), n => ElementFactory.CreateScrewLeg(n, Vector3.zero)),

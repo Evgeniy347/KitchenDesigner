@@ -331,6 +331,36 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, pouffe);
         }
 
+        public GameObject CreateToilet(int seatHeightMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Унитаз", position);
+
+            var toilet = go.AddComponent<ToiletElement>();
+            toilet.PartName = go.name;
+            toilet.DimensionsMM = ToiletElement.ModelDimensionsMM;
+            toilet.SeatHeightMM = seatHeightMM;
+            toilet.Movable = true;
+
+            if (DefaultMaterial != null) toilet.SetMaterial(DefaultMaterial);
+            return ElementRoot.Publish(go, toilet);
+        }
+
+        public GameObject CreateWallHungToilet(int seatHeightMM, int flushPlateHeightMM,
+            string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Унитаз подвесной", position);
+
+            var toilet = go.AddComponent<WallHungToiletElement>();
+            toilet.PartName = go.name;
+            toilet.DimensionsMM = WallHungToiletElement.ModelDimensionsMM;
+            toilet.SeatHeightMM = seatHeightMM;
+            toilet.FlushPlateHeightMM = flushPlateHeightMM;
+            toilet.Movable = true;
+
+            if (DefaultMaterial != null) toilet.SetMaterial(DefaultMaterial);
+            return ElementRoot.Publish(go, toilet);
+        }
+
         public GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard,
             string name, Vector3 position)
         {

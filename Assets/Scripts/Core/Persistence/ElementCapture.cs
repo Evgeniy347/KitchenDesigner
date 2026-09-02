@@ -17,6 +17,8 @@ namespace KitchenDesigner.Core
 			var chair = element as ChairElement;
 			var sofa = element as SofaElement;
 			var pouffe = element as PouffeElement;
+			var toilet = element as ToiletElement;
+			var wallHungToilet = element as WallHungToiletElement;
 			var bed = element as BedElement;
 			var tableEl2 = element as TableElement;
 			var windowEl = element as WindowElement;
@@ -57,6 +59,14 @@ namespace KitchenDesigner.Core
             d.isPouffe = pouffe != null;
             d.pouffeSeatThicknessMM = pouffe != null ? pouffe.SeatThicknessMM
                 : PouffeLayout.DefaultSeatThicknessMM;
+            d.isToilet = toilet != null;
+            d.isWallHungToilet = wallHungToilet != null;
+            d.toiletSeatHeightMM = toilet != null ? toilet.SeatHeightMM
+                : wallHungToilet != null ? wallHungToilet.SeatHeightMM
+                : ToiletLayout.DefaultSeatHeightMM;
+            d.toiletFlushPlateHeightMM = wallHungToilet != null
+                ? wallHungToilet.FlushPlateHeightMM
+                : WallHungToiletLayout.DefaultPlateBottomMM;
             d.isBed = bed != null;
             d.bedDouble = bed != null ? bed.IsDouble : true;
             d.bedHeadboard = bed != null ? bed.HasHeadboard : true;

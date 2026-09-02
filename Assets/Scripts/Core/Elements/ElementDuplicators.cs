@@ -159,6 +159,37 @@ namespace KitchenDesigner.Core
                  ((PouffeElement)source).SeatThicknessMM, source.PartName, pos),
              CopyTabletopSlots),
 
+            (el => el is ToiletElement,
+             (factory, source, pos) => factory.CreateToilet(
+                 ((ToiletElement)source).SeatHeightMM, source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (ToiletElement)source;
+                 var made = copy.GetComponent<ToiletElement>();
+                 if (made != null)
+                 {
+                     made.TabletopMaterialId = src.TabletopMaterialId;
+                     made.LegsMaterialId = src.LegsMaterialId;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
+            (el => el is WallHungToiletElement,
+             (factory, source, pos) => factory.CreateWallHungToilet(
+                 ((WallHungToiletElement)source).SeatHeightMM,
+                 ((WallHungToiletElement)source).FlushPlateHeightMM, source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (WallHungToiletElement)source;
+                 var made = copy.GetComponent<WallHungToiletElement>();
+                 if (made != null)
+                 {
+                     made.TabletopMaterialId = src.TabletopMaterialId;
+                     made.LegsMaterialId = src.LegsMaterialId;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is BedElement,
              (factory, source, pos) => factory.CreateBed(source.DimensionsMM,
                  ((BedElement)source).IsDouble, ((BedElement)source).HasHeadboard,

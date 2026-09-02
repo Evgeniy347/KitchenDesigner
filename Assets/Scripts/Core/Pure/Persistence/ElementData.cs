@@ -66,6 +66,10 @@ namespace KitchenDesigner.Core
         public bool isSofa = false;
         public bool isPouffe = false;
         public int pouffeSeatThicknessMM = PouffeLayout.DefaultSeatThicknessMM;
+        public bool isToilet = false;
+        public bool isWallHungToilet = false;
+        public int toiletSeatHeightMM = ToiletLayout.DefaultSeatHeightMM;
+        public int toiletFlushPlateHeightMM = WallHungToiletLayout.DefaultPlateBottomMM;
         public bool isBed = false;
         public bool bedDouble = true;
         public bool bedHeadboard = true;

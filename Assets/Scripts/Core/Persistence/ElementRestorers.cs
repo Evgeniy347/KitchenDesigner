@@ -168,6 +168,15 @@ namespace KitchenDesigner.Core
                  d.pouffeSeatThicknessMM, d.name, d.Position),
              RestoreTabletopMaterials),
 
+            (d => d.isWallHungToilet,
+             (factory, d) => factory.CreateWallHungToilet(d.toiletSeatHeightMM,
+                 d.toiletFlushPlateHeightMM, d.name, d.Position),
+             RestoreTabletopMaterials),
+
+            (d => d.isToilet,
+             (factory, d) => factory.CreateToilet(d.toiletSeatHeightMM, d.name, d.Position),
+             RestoreTabletopMaterials),
+
             (d => d.isBed,
              (factory, d) => factory.CreateBed(d.Dimensions, d.bedDouble, d.bedHeadboard,
                  d.name, d.Position),
