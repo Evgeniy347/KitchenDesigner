@@ -226,83 +226,88 @@
     },
     {
       "type": "Button",
-      "text": "Кровать",
+      "text": "Пуфик",
       "position": [22, -492]
     },
     {
       "type": "Button",
-      "text": "Ножка",
+      "text": "Кровать",
       "position": [22, -521]
     },
     {
       "type": "Button",
-      "text": "Винтовая опора",
+      "text": "Ножка",
       "position": [22, -550]
     },
     {
       "type": "Button",
-      "text": "Мойка",
+      "text": "Винтовая опора",
       "position": [22, -579]
     },
     {
       "type": "Button",
+      "text": "Мойка",
+      "position": [22, -608]
+    },
+    {
+      "type": "Button",
       "text": "▼  Техника",
-      "position": [8, -608]
+      "position": [8, -637]
     },
     {
       "type": "Button",
       "text": "Варочная поверхность",
-      "position": [22, -642]
-    },
-    {
-      "type": "Button",
-      "text": "Варочная Bosch PUE611BB5E",
       "position": [22, -671]
     },
     {
       "type": "Button",
+      "text": "Варочная Bosch PUE611BB5E",
+      "position": [22, -700]
+    },
+    {
+      "type": "Button",
       "text": "Духовка Bosch HBA514BB3",
-      "position": [22, -716]
+      "position": [22, -745]
     },
     {
       "type": "Button",
       "text": "Посудомойка Bosch SMV25EX02E",
-      "position": [22, -761]
+      "position": [22, -790]
     },
     {
       "type": "Button",
       "text": "▼  Помещение",
-      "position": [8, -806]
+      "position": [8, -835]
     },
     {
       "type": "Button",
       "text": "Короб",
-      "position": [22, -840]
-    },
-    {
-      "type": "Button",
-      "text": "Стена",
       "position": [22, -869]
     },
     {
       "type": "Button",
-      "text": "Окно",
+      "text": "Стена",
       "position": [22, -898]
     },
     {
       "type": "Button",
-      "text": "Дверь",
+      "text": "Окно",
       "position": [22, -927]
     },
     {
       "type": "Button",
-      "text": "Пол",
+      "text": "Дверь",
       "position": [22, -956]
     },
     {
       "type": "Button",
-      "text": "Источник света",
+      "text": "Пол",
       "position": [22, -985]
+    },
+    {
+      "type": "Button",
+      "text": "Источник света",
+      "position": [22, -1014]
     }
   ]
 }

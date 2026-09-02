@@ -13,12 +13,7 @@
     },
     {
       "type": "Button",
-      "text": "IsoWindowDef",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "IsoWindowDef_Wall",
+      "text": "IsoPouffeRounded",
       "position": [20, 0]
     },
     {
