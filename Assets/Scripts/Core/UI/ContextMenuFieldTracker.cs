@@ -119,6 +119,8 @@ namespace KitchenDesigner.Core.UI
             _apply();
         }
 
+        internal void ForgetLastApplyFrame() => _lastApplyFrame = -1;
+
         public void UpdateHighlight(TMP_InputField field)
         {
             if (field == null) return;
