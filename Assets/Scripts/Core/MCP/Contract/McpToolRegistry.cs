@@ -154,7 +154,7 @@ namespace KitchenDesigner.Core.MCP.Contract
                 McpToolKind.Write, null),
 
             new McpToolDef("set_setting", "Change a setting",
-                "Toggle one boolean project setting. name is one of: snap_enabled | grid_enabled | camera_pan_free. Scene visibility (walls, objects, outlines, light sources) is per-edit-mode and UI-only — not exposed here.",
+                "Change one project setting — every setting get_settings reports can also be set here. On/off keys (send value): snap_enabled | grid_enabled | block_on_violation | auto_save | snap_verbose_log | camera_pan_free. Numeric keys (send number): snap_threshold | grid_step | auto_save_interval | edge_partial_threshold | mouse_sensitivity | wasd_speed | arrow_speed. Scene visibility (walls, objects, outlines, light sources) and photo mode are per-edit-mode and UI-only — not exposed here.",
                 McpToolKind.Write, typeof(ParamsSetSetting)),
             new McpToolDef("set_snap_verbose", "Verbose snap log",
                 "Turn detailed snap logging in the Unity console on or off (debugging).",

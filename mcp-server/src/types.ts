@@ -237,7 +237,8 @@ export interface AddToModuleParams {
 
 export interface SetSettingParams {
   name: string;
-  value: boolean;
+  value?: boolean;
+  number?: number;
 }
 
 export interface SnapVerboseParams {

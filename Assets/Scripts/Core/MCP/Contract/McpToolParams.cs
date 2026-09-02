@@ -497,9 +497,18 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsSetSetting
     {
-        [McpParam("Setting key.", Required = true, Enum = new[] { "snap_enabled", "grid_enabled", "camera_pan_free" })]
+        [McpParam("Setting key.", Required = true, Enum = new[]
+        {
+            "snap_enabled", "snap_threshold", "grid_enabled", "grid_step",
+            "block_on_violation", "auto_save", "auto_save_interval", "snap_verbose_log",
+            "camera_pan_free", "edge_partial_threshold", "mouse_sensitivity",
+            "wasd_speed", "arrow_speed",
+        })]
         public string name = string.Empty;
-        [McpParam("New on/off value.", Required = true)] public bool value;
+        [McpParam("New on/off value. Send this for the on/off settings (snap_enabled, grid_enabled, block_on_violation, auto_save, snap_verbose_log, camera_pan_free).")]
+        public bool? value;
+        [McpParam("New numeric value: snap_threshold and grid_step in MM, auto_save_interval in seconds, edge_partial_threshold in %, mouse_sensitivity / wasd_speed / arrow_speed as a multiplier. Send this instead of value for those keys.")]
+        public float? number;
     }
 
     [Serializable]

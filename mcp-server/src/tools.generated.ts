@@ -469,11 +469,12 @@ export const GEN_TOOLS: GenTool[] = [
   {
     name: "set_setting",
     title: "Change a setting",
-    description: "Toggle one boolean project setting. name is one of: snap_enabled | grid_enabled | camera_pan_free. Scene visibility (walls, objects, outlines, light sources) is per-edit-mode and UI-only \u2014 not exposed here.",
+    description: "Change one project setting \u2014 every setting get_settings reports can also be set here. On/off keys (send value): snap_enabled | grid_enabled | block_on_violation | auto_save | snap_verbose_log | camera_pan_free. Numeric keys (send number): snap_threshold | grid_step | auto_save_interval | edge_partial_threshold | mouse_sensitivity | wasd_speed | arrow_speed. Scene visibility (walls, objects, outlines, light sources) and photo mode are per-edit-mode and UI-only \u2014 not exposed here.",
     kind: "write",
     inputSchema: {
-      name: z.enum(["snap_enabled", "grid_enabled", "camera_pan_free"]).describe("Setting key."),
-      value: z.boolean().describe("New on/off value."),
+      name: z.enum(["snap_enabled", "snap_threshold", "grid_enabled", "grid_step", "block_on_violation", "auto_save", "auto_save_interval", "snap_verbose_log", "camera_pan_free", "edge_partial_threshold", "mouse_sensitivity", "wasd_speed", "arrow_speed"]).describe("Setting key."),
+      value: z.boolean().optional().describe("New on/off value. Send this for the on/off settings (snap_enabled, grid_enabled, block_on_violation, auto_save, snap_verbose_log, camera_pan_free)."),
+      number: z.number().finite().optional().describe("New numeric value: snap_threshold and grid_step in MM, auto_save_interval in seconds, edge_partial_threshold in %, mouse_sensitivity / wasd_speed / arrow_speed as a multiplier. Send this instead of value for those keys."),
     },
   },
   {

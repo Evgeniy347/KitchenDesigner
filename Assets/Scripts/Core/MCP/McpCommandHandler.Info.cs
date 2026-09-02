@@ -48,22 +48,10 @@ namespace KitchenDesigner.Core.MCP
         {
             var s = KitchenSettings.Instance;
             if (s == null) return McpResponse.Error(req.id, -1, "KitchenSettings not loaded");
-            return McpResponse.Result(req.id, new
-            {
-                snapEnabled = s.SnapEnabled,
-                snapThresholdMM = s.SnapThreshold,
-                gridEnabled = s.GridEnabled,
-                gridStepMM = s.GridStep,
-                blockOnViolation = s.BlockOnViolation,
-                autoSave = s.AutoSave,
-                autoSaveIntervalSec = s.AutoSaveInterval,
-                snapVerboseLog = SnapSystem.VerboseLog,
-                cameraPanFree = s.CameraPanFree,
-                edgePartialThresholdPct = s.EdgePartialThresholdPct,
-                mouseSensitivity = s.MouseSensitivity,
-                wasdSpeed = s.WasdSpeed,
-                arrowSpeed = s.ArrowSpeed
-            });
+            var data = new System.Collections.Generic.Dictionary<string, object>(
+                System.StringComparer.Ordinal);
+            foreach (var key in SettingKeys.All) data[key.Field] = key.Read();
+            return McpResponse.Result(req.id, data);
         }
 
         private McpResponse HandleGetProjectInstructions(McpRequest req)
@@ -90,17 +78,28 @@ namespace KitchenDesigner.Core.MCP
             var s = KitchenSettings.Instance;
             if (s == null) return McpResponse.Error(req.id, -1, "KitchenSettings not loaded");
 
-            switch (p.name.ToLowerInvariant())
+            var key = SettingKeys.Find(p.name.ToLowerInvariant());
+            if (key == null)
+                return McpResponse.Error(req.id, -32602, $"Unknown setting: {p.name}");
+
+            if (key.IsNumber)
             {
-                case "snap_enabled": s.SnapEnabled = p.value; break;
-                case "grid_enabled": s.GridEnabled = p.value; break;
-                case "camera_pan_free": s.CameraPanFree = p.value; break;
-                default:
-                    return McpResponse.Error(req.id, -32602, $"Unknown setting: {p.name}");
+                if (!p.number.HasValue)
+                    return McpResponse.Error(req.id, -32602,
+                        $"Setting '{p.name}' takes a number: send 'number', not 'value'");
+                key.WriteNumber!(p.number.Value);
+            }
+            else
+            {
+                if (!p.value.HasValue)
+                    return McpResponse.Error(req.id, -32602,
+                        $"Setting '{p.name}' is on/off: send 'value', not 'number'");
+                key.WriteFlag!(p.value.Value);
             }
 
-            Debug.Log($"[MCP] Setting '{p.name}' = {p.value}");
-            return McpResponse.Result(req.id, new { ok = true, name = p.name, value = p.value });
+            var stored = key.Read();
+            Debug.Log($"[MCP] Setting '{p.name}' = {stored}");
+            return McpResponse.Result(req.id, new { ok = true, name = p.name, value = stored });
         }
 
         private McpResponse HandleSetSnapVerbose(McpRequest req)

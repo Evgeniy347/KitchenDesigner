@@ -42,4 +42,13 @@ internal static class McpUiParityRule
         + "вызов фабрики в Assets/Scripts/Core/UI/ElementSpawner.cs; создание агентом — тип "
         + "в CreateItem.type (Assets/Scripts/Core/MCP/Contract/McpToolParams.cs) и ветка в "
         + "ElementSpawners.ByType (Assets/Scripts/Core/MCP/ElementSpawners.cs). ";
+
+    /// <summary>Куда идти за настройкой. Таблица одна, и из неё живут обе
+    /// стороны — поэтому адрес тут короче остальных.</summary>
+    public const string SettingAddresses =
+        "Адреса: строка панели — Assets/Scripts/Core/UI/Settings*Tab.cs; ключ агента — "
+        + "таблица SettingKeys.All (Assets/Scripts/Core/MCP/SettingKeys.cs), откуда "
+        + "set_setting и get_settings берут его сами, плюс тот же ключ в перечислении "
+        + "ParamsSetSetting.name и в описании инструмента set_setting "
+        + "(Assets/Scripts/Core/MCP/Contract/). ";
 }
