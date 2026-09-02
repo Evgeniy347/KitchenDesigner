@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core
 {
-    public enum SofaPartShape
+    public enum FurniturePartShape
     {
         Extruded,
         Cushion,

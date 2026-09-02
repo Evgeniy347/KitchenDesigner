@@ -20,7 +20,7 @@ namespace KitchenDesigner.Tests.Geometry
         private static Vector3Int Default() => new Vector3Int(
             SofaLayout.DefaultWidthMM, SofaLayout.DefaultHeightMM, SofaLayout.DefaultDepthMM);
 
-        private static SofaPartBox Named(SofaPartBox[] boxes, string name)
+        private static FurniturePartBox Named(FurniturePartBox[] boxes, string name)
         {
             foreach (var box in boxes)
                 if (box.Name == name) return box;
@@ -28,7 +28,7 @@ namespace KitchenDesigner.Tests.Geometry
             return default;
         }
 
-        private static void AssertInsideBox(SofaPartBox part, Vector3Int dims, string what)
+        private static void AssertInsideBox(FurniturePartBox part, Vector3Int dims, string what)
         {
             var half = new Vector3(dims.x * 0.5f, dims.y * 0.5f, dims.z * 0.5f);
             var size = part.SizeMM;
@@ -52,12 +52,12 @@ namespace KitchenDesigner.Tests.Geometry
                 "четыре подушки — это и есть форма дивана с фотографии; константа "
                 + "CushionCount уезжает наружу через MCP (SofaInfo.cushionCount), и разойтись "
                 + "с реальной раскладкой ей нельзя");
-            Assert.AreEqual(SofaPartOrientation.Side,
+            Assert.AreEqual(FurniturePartOrientation.Side,
                 Named(cushions, SofaLayout.ArmCushionLeftName).Orientation,
                 "боковая подушка лежит вдоль глубины: её профиль развёрнут в плоскости "
                 + "(длина, высота), поэтому валик выходит скруглённым и спереди, и сверху. "
                 + "Вертикальная выдавка дала бы доску с острой верхней кромкой");
-            Assert.AreEqual(SofaPartOrientation.Frontal,
+            Assert.AreEqual(FurniturePartOrientation.Frontal,
                 Named(cushions, SofaLayout.BackCushionLeftName).Orientation,
                 "спинная подушка стоит: её профиль развёрнут во фронтальной плоскости, и "
                 + "скругления видны там, где на них смотрят");
@@ -179,43 +179,6 @@ namespace KitchenDesigner.Tests.Geometry
                 + "наложить её на спинную");
             Assert.AreEqual(narrow, 2f * arm + 2f * back + 3f * SofaLayout.CushionGapMM, 1e-3f,
                 "и ширина по-прежнему расходится без остатка");
-        }
-
-        [Test]
-        public void EulerAnglesFor_TurnTheProfilePlane_TowardsTheAxisEachPartIsSeenFrom()
-        {
-            Assert.AreEqual(Vector3.zero, SofaLayout.EulerAnglesFor(SofaPartOrientation.Horizontal),
-                "горизонтальная часть строится как есть: ProfileExtrusionMesh выдавливает "
-                + "профиль (x, z) вверх");
-            Assert.AreEqual(new Vector3(-90f, 0f, 0f),
-                SofaLayout.EulerAnglesFor(SofaPartOrientation.Frontal),
-                "поворот -90 вокруг X ставит вторую ось профиля вверх, а толщину — вдоль Z: "
-                + "скругления оказываются во фронтальной плоскости");
-            Assert.AreEqual(new Vector3(-90f, 90f, 0f),
-                SofaLayout.EulerAnglesFor(SofaPartOrientation.Side),
-                "плюс поворот на 90 вокруг Y кладёт первую ось профиля вдоль Z, а толщину — "
-                + "вдоль X: получается валик вдоль глубины дивана");
-        }
-
-        [Test]
-        public void SizeMM_ReportsTheWorldAxes_NotTheProfileAxes()
-        {
-            var frontal = new SofaPartBox("f", Vector3.zero, 700f, 400f, 200f, 90f,
-                SofaPartOrientation.Frontal);
-            var side = new SofaPartBox("s", Vector3.zero, 700f, 400f, 200f, 90f,
-                SofaPartOrientation.Side);
-            var horizontal = new SofaPartBox("h", Vector3.zero, 700f, 400f, 200f, 90f,
-                SofaPartOrientation.Horizontal);
-
-            Assert.AreEqual(new Vector3(700f, 400f, 200f), frontal.SizeMM,
-                "у стоячей подушки ширина профиля идёт по X, вторая ось профиля — по Y, "
-                + "толщина — по Z");
-            Assert.AreEqual(new Vector3(200f, 400f, 700f), side.SizeMM,
-                "у бокового валика первая ось профиля лежит вдоль Z, а толщина — вдоль X; "
-                + "перепутать их значит проверять габарит по чужой оси и не заметить вылет");
-            Assert.AreEqual(new Vector3(700f, 200f, 400f), horizontal.SizeMM,
-                "у горизонтальной части толщина идёт вверх, а вторая ось профиля — в глубину: "
-                + "это исходная система ProfileExtrusionMesh");
         }
 
         [Test]

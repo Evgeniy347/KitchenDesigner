@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public readonly struct SofaPartBox
+    public readonly struct FurniturePartBox
     {
         public readonly string Name;
         public readonly Vector3 CentreMM;
@@ -10,12 +10,12 @@ namespace KitchenDesigner.Core
         public readonly float ProfileDepthMM;
         public readonly float ThicknessMM;
         public readonly float RadiusMM;
-        public readonly SofaPartOrientation Orientation;
-        public readonly SofaPartShape Shape;
+        public readonly FurniturePartOrientation Orientation;
+        public readonly FurniturePartShape Shape;
 
-        public SofaPartBox(string name, Vector3 centreMM, float profileWidthMM,
+        public FurniturePartBox(string name, Vector3 centreMM, float profileWidthMM,
             float profileDepthMM, float thicknessMM, float radiusMM,
-            SofaPartOrientation orientation, SofaPartShape shape = SofaPartShape.Extruded)
+            FurniturePartOrientation orientation, FurniturePartShape shape = FurniturePartShape.Extruded)
         {
             Name = name;
             CentreMM = centreMM;
@@ -31,9 +31,9 @@ namespace KitchenDesigner.Core
 
         public Vector3 SizeMM => Orientation switch
         {
-            SofaPartOrientation.Frontal =>
+            FurniturePartOrientation.Frontal =>
                 new Vector3(ProfileWidthMM, ProfileDepthMM, ThicknessMM),
-            SofaPartOrientation.Side =>
+            FurniturePartOrientation.Side =>
                 new Vector3(ThicknessMM, ProfileDepthMM, ProfileWidthMM),
             _ => LocalSizeMM,
         };

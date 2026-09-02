@@ -12,7 +12,7 @@ namespace KitchenDesigner.Core
 
         public SofaUpholstery(Transform owner) => _owner = owner;
 
-        public void Place(IReadOnlyList<SofaPartBox> boxes)
+        public void Place(IReadOnlyList<FurniturePartBox> boxes)
         {
             Ensure(boxes.Count);
             for (int i = 0; i < boxes.Count; i++) Rebuild(i, boxes[i]);
@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core
             _meshes.Clear();
         }
 
-        private void Rebuild(int index, SofaPartBox box)
+        private void Rebuild(int index, FurniturePartBox box)
         {
             var mesh = BuildMesh(box);
 
@@ -50,19 +50,19 @@ namespace KitchenDesigner.Core
             var part = _parts[index];
             part.name = box.Name;
             part.transform.localPosition = box.CentreMM * AppConstants.MM_TO_UNITS;
-            part.transform.localRotation = Quaternion.Euler(SofaLayout.EulerAnglesFor(box.Orientation));
+            part.transform.localRotation = Quaternion.Euler(FurnitureLayout.EulerAnglesFor(box.Orientation));
             part.transform.localScale = Vector3.one;
             part.GetComponent<MeshFilter>().sharedMesh = mesh;
         }
 
-        private static Mesh BuildMesh(SofaPartBox box) => box.Shape switch
+        private static Mesh BuildMesh(FurniturePartBox box) => box.Shape switch
         {
-            SofaPartShape.Cushion => Cushion(box),
-            SofaPartShape.SoftSlab => SoftSlab(box),
+            FurniturePartShape.Cushion => Cushion(box),
+            FurniturePartShape.SoftSlab => SoftSlab(box),
             _ => Extrusion(box),
         };
 
-        private static Mesh SoftSlab(SofaPartBox box)
+        private static Mesh SoftSlab(FurniturePartBox box)
         {
             float toU = AppConstants.MM_TO_UNITS;
             float thickness = box.ThicknessMM * toU;
@@ -71,13 +71,13 @@ namespace KitchenDesigner.Core
                 thickness * SoftSlabSurface.MaxFilletThicknessRatio);
         }
 
-        private static Mesh Cushion(SofaPartBox box)
+        private static Mesh Cushion(FurniturePartBox box)
         {
             float toU = AppConstants.MM_TO_UNITS;
             return CushionMesh.Build(box.LocalSizeMM * toU, box.RadiusMM * toU);
         }
 
-        private static Mesh Extrusion(SofaPartBox box)
+        private static Mesh Extrusion(FurniturePartBox box)
         {
             float toU = AppConstants.MM_TO_UNITS;
             float width = box.ProfileWidthMM * toU;

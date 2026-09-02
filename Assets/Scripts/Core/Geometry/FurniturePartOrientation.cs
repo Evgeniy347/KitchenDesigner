@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core
 {
-    public enum SofaPartOrientation
+    public enum FurniturePartOrientation
     {
         Horizontal,
         Frontal,

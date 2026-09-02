@@ -27,5 +27,13 @@ namespace KitchenDesigner.Core
 
         public static int ClampCornerRadiusMM(Vector3Int dimensionsMM, int value)
             => Mathf.Clamp(value, 0, MaxCornerRadiusMM(dimensionsMM));
+
+        public static Vector3 EulerAnglesFor(FurniturePartOrientation orientation)
+            => orientation switch
+            {
+                FurniturePartOrientation.Frontal => new Vector3(-90f, 0f, 0f),
+                FurniturePartOrientation.Side => new Vector3(-90f, 90f, 0f),
+                _ => Vector3.zero,
+            };
     }
 }

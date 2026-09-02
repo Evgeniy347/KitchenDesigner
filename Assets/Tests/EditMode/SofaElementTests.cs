@@ -206,7 +206,7 @@ public class SofaElementTests
             "вершин на шве скругления не нашлось — тест позеленел бы, ничего не проверив");
     }
 
-    private static SofaPartBox CushionBox(string name)
+    private static FurniturePartBox CushionBox(string name)
     {
         foreach (var box in SofaLayout.Cushions(new Vector3Int(2000, 800, 900), 400))
             if (box.Name == name) return box;

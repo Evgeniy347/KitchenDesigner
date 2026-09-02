@@ -256,12 +256,12 @@ namespace KitchenDesigner.Tests.Geometry
             var seat = PouffeLayout.Seat(Default(), PouffeLayout.DefaultCornerRadiusMM,
                 PouffeLayout.DefaultSeatThicknessMM);
 
-            Assert.AreEqual(SofaPartShape.SoftSlab, seat.Shape,
+            Assert.AreEqual(FurniturePartShape.SoftSlab, seat.Shape,
                 "сидушка — мягкая плита: контур повторяет тумбу, а верхняя и нижняя "
                 + "кромки скруглены фаской. Профильное выдавливание дало бы доску с "
                 + "острой кромкой, то есть второе жёсткое сиденье табуретки; подушка "
                 + "CushionMesh не умеет круглый план и дала бы квадрат на круглой тумбе");
-            Assert.AreEqual(SofaPartOrientation.Horizontal, seat.Orientation,
+            Assert.AreEqual(FurniturePartOrientation.Horizontal, seat.Orientation,
                 "и лежит плашмя: разворот нужен только вертикальным деталям дивана");
             Assert.AreEqual(PouffeLayout.SeatName, seat.Name,
                 "имя детали — единственный способ найти её потом: поиск ребёнка по "

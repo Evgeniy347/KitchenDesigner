@@ -60,14 +60,7 @@ namespace KitchenDesigner.Core
                 (widthMM - 2f * ArmCushionWidthFor(widthMM)
                     - (PartsAcrossWidth - 1) * CushionGapMM) * 0.5f);
 
-        public static Vector3 EulerAnglesFor(SofaPartOrientation orientation) => orientation switch
-        {
-            SofaPartOrientation.Frontal => new Vector3(-90f, 0f, 0f),
-            SofaPartOrientation.Side => new Vector3(-90f, 90f, 0f),
-            _ => Vector3.zero,
-        };
-
-        public static SofaPartBox BackRail(Vector3Int dimensionsMM, int seatHeightMM)
+        public static FurniturePartBox BackRail(Vector3Int dimensionsMM, int seatHeightMM)
         {
             float backDepth = BackDepthFor(dimensionsMM.z);
             float railHeight = Mathf.Max(1f,
@@ -75,13 +68,13 @@ namespace KitchenDesigner.Core
             float centreY = -dimensionsMM.y * 0.5f + seatHeightMM + railHeight * 0.5f;
             float centreZ = -dimensionsMM.z * 0.5f + backDepth * 0.5f;
 
-            return new SofaPartBox(BackRailName, new Vector3(0f, centreY, centreZ),
+            return new FurniturePartBox(BackRailName, new Vector3(0f, centreY, centreZ),
                 dimensionsMM.x, backDepth, railHeight,
                 FittedRadius(BackRailRadiusMM, dimensionsMM.x, backDepth),
-                SofaPartOrientation.Horizontal);
+                FurniturePartOrientation.Horizontal);
         }
 
-        public static SofaPartBox[] Cushions(Vector3Int dimensionsMM, int seatHeightMM)
+        public static FurniturePartBox[] Cushions(Vector3Int dimensionsMM, int seatHeightMM)
         {
             float floorY = -dimensionsMM.y * 0.5f;
             float backZ = -dimensionsMM.z * 0.5f;
@@ -106,22 +99,22 @@ namespace KitchenDesigner.Core
 
             return new[]
             {
-                new SofaPartBox(ArmCushionLeftName,
+                new FurniturePartBox(ArmCushionLeftName,
                     new Vector3(-armCentreX, armCentreY, armCentreZ),
                     armLength, armHeight, armWidth, armRadius,
-                    SofaPartOrientation.Side, SofaPartShape.Cushion),
-                new SofaPartBox(ArmCushionRightName,
+                    FurniturePartOrientation.Side, FurniturePartShape.Cushion),
+                new FurniturePartBox(ArmCushionRightName,
                     new Vector3(armCentreX, armCentreY, armCentreZ),
                     armLength, armHeight, armWidth, armRadius,
-                    SofaPartOrientation.Side, SofaPartShape.Cushion),
-                new SofaPartBox(BackCushionLeftName,
+                    FurniturePartOrientation.Side, FurniturePartShape.Cushion),
+                new FurniturePartBox(BackCushionLeftName,
                     new Vector3(-cushionCentreX, cushionCentreY, cushionCentreZ),
                     cushionWidth, backrestHeight, cushionThickness, cushionRadius,
-                    SofaPartOrientation.Frontal, SofaPartShape.Cushion),
-                new SofaPartBox(BackCushionRightName,
+                    FurniturePartOrientation.Frontal, FurniturePartShape.Cushion),
+                new FurniturePartBox(BackCushionRightName,
                     new Vector3(cushionCentreX, cushionCentreY, cushionCentreZ),
                     cushionWidth, backrestHeight, cushionThickness, cushionRadius,
-                    SofaPartOrientation.Frontal, SofaPartShape.Cushion),
+                    FurniturePartOrientation.Frontal, FurniturePartShape.Cushion),
             };
         }
 

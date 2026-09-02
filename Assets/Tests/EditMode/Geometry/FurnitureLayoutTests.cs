@@ -140,5 +140,43 @@ namespace KitchenDesigner.Tests.Geometry
                 + "с высотой декор растягивался бы по столешнице (CONVENTIONS.md, "
                 + "«декор тайлится, а не растягивается»)");
         }
+
+        [Test]
+        public void EulerAnglesFor_TurnTheProfilePlane_TowardsTheAxisEachPartIsSeenFrom()
+        {
+            Assert.AreEqual(Vector3.zero,
+                FurnitureLayout.EulerAnglesFor(FurniturePartOrientation.Horizontal),
+                "горизонтальная часть строится как есть: ProfileExtrusionMesh выдавливает "
+                + "профиль (x, z) вверх");
+            Assert.AreEqual(new Vector3(-90f, 0f, 0f),
+                FurnitureLayout.EulerAnglesFor(FurniturePartOrientation.Frontal),
+                "поворот -90 вокруг X ставит вторую ось профиля вверх, а толщину — вдоль Z: "
+                + "скругления оказываются во фронтальной плоскости");
+            Assert.AreEqual(new Vector3(-90f, 90f, 0f),
+                FurnitureLayout.EulerAnglesFor(FurniturePartOrientation.Side),
+                "плюс поворот на 90 вокруг Y кладёт первую ось профиля вдоль Z, а толщину — "
+                + "вдоль X: получается валик вдоль глубины дивана");
+        }
+
+        [Test]
+        public void SizeMM_ReportsTheWorldAxes_NotTheProfileAxes()
+        {
+            var frontal = new FurniturePartBox("f", Vector3.zero, 700f, 400f, 200f, 90f,
+                FurniturePartOrientation.Frontal);
+            var side = new FurniturePartBox("s", Vector3.zero, 700f, 400f, 200f, 90f,
+                FurniturePartOrientation.Side);
+            var horizontal = new FurniturePartBox("h", Vector3.zero, 700f, 400f, 200f, 90f,
+                FurniturePartOrientation.Horizontal);
+
+            Assert.AreEqual(new Vector3(700f, 400f, 200f), frontal.SizeMM,
+                "у стоячей подушки ширина профиля идёт по X, вторая ось профиля — по Y, "
+                + "толщина — по Z");
+            Assert.AreEqual(new Vector3(200f, 400f, 700f), side.SizeMM,
+                "у бокового валика первая ось профиля лежит вдоль Z, а толщина — вдоль X; "
+                + "перепутать их значит проверять габарит по чужой оси и не заметить вылет");
+            Assert.AreEqual(new Vector3(700f, 200f, 400f), horizontal.SizeMM,
+                "у горизонтальной части толщина идёт вверх, а вторая ось профиля — в глубину: "
+                + "это исходная система ProfileExtrusionMesh");
+        }
     }
 }

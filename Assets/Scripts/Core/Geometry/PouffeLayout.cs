@@ -47,20 +47,20 @@ namespace KitchenDesigner.Core
         public static float SeatRadiusMM(int cornerRadiusMM)
             => Mathf.Max(0f, Mathf.Max(0, cornerRadiusMM) - SeatInsetMM(cornerRadiusMM));
 
-        public static SofaPartBox Seat(Vector3Int dimensionsMM, int cornerRadiusMM,
+        public static FurniturePartBox Seat(Vector3Int dimensionsMM, int cornerRadiusMM,
             int seatThicknessMM)
         {
             int radiusMM = ClampCornerRadiusMM(dimensionsMM, cornerRadiusMM);
             int thicknessMM = ClampSeatThicknessMM(dimensionsMM.y, seatThicknessMM);
             int insetMM = SeatInsetMM(radiusMM);
 
-            return new SofaPartBox(SeatName,
+            return new FurniturePartBox(SeatName,
                 new Vector3(0f, SeatCentreYMM(dimensionsMM.y, thicknessMM), 0f),
                 Mathf.Max(MinSeatSideMM, dimensionsMM.x - 2f * insetMM),
                 Mathf.Max(MinSeatSideMM, dimensionsMM.z - 2f * insetMM),
                 thicknessMM,
                 SeatRadiusMM(radiusMM),
-                SofaPartOrientation.Horizontal, SofaPartShape.SoftSlab);
+                FurniturePartOrientation.Horizontal, FurniturePartShape.SoftSlab);
         }
     }
 }
