@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class LightSwitchElement : KitchenElement, ITabletop, IWallMounted, IWallDevice
+    public class LightSwitchElement : KitchenElement, ITabletop, IWallMounted, IWallDevice,
+        ILightSwitch
     {
         public override string DisplayTypeName => "Выключатель";
 
@@ -34,6 +35,8 @@ namespace KitchenDesigner.Core
             => Parts.Body.RendererOf(WallDeviceLayout.RimTopName + "0");
 
         public IReadOnlyList<string> LightNames => _lightNames;
+
+        public Vector3 LinkAnchor => transform.position;
 
         [Undoable]
         public bool IsOn
@@ -191,6 +194,7 @@ namespace KitchenDesigner.Core
         protected override void OnElementDestroyed()
         {
             DestroyChildren();
+            if (Lighting.LightPickMode.IsPickingFor(this)) Lighting.LightPickMode.SetSource(null);
             LightSwitchNetwork.Refresh();
         }
 

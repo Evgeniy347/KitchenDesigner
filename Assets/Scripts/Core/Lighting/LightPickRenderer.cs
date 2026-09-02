@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using KitchenDesigner.Core.Measure;
-using KitchenDesigner.Core.UI;
 
 namespace KitchenDesigner.Core.Lighting
 {
@@ -49,8 +48,8 @@ namespace KitchenDesigner.Core.Lighting
             foreach (var link in LightPickController.VisibleLinks())
             {
                 GL.Color(link.BelongsToTheSwitchBeingEdited
-                    ? UIStyle.LightLinkLine
-                    : UIStyle.LightLinkExisting);
+                    ? LightLinkPalette.Line
+                    : LightLinkPalette.Existing);
                 DashedLineDrawer.Dashed(cam, link.From, link.To, LineThicknessPx);
                 DashedLineDrawer.Point(cam, link.From, EndpointRadiusPx);
                 DashedLineDrawer.Point(cam, link.To, EndpointRadiusPx);
@@ -62,7 +61,7 @@ namespace KitchenDesigner.Core.Lighting
             var ctrl = LightPickController.Instance;
             if (ctrl == null || !ctrl.HasPreview) return;
 
-            GL.Color(ctrl.Hovered != null ? UIStyle.LightLinkHover : UIStyle.LightLinkLine);
+            GL.Color(ctrl.HoveredLight != null ? LightLinkPalette.Hover : LightLinkPalette.Line);
             DashedLineDrawer.Dashed(cam, ctrl.Anchor!.Value, ctrl.CursorPoint!.Value,
                 LineThicknessPx);
             DashedLineDrawer.Point(cam, ctrl.Anchor!.Value, EndpointRadiusPx);

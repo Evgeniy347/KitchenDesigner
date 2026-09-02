@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
@@ -63,6 +64,9 @@ namespace KitchenDesigner.Core
             return switches;
         }
 
+        public static LightSourceElement? LightUnder(Collider? collider)
+            => collider == null ? null : collider.GetComponentInParent<LightSourceElement>();
+
         public static List<string> LiveLightNames()
         {
             var names = new List<string>();
@@ -82,16 +86,16 @@ namespace KitchenDesigner.Core
             return null;
         }
 
-        public static List<LightSourceElement> LightsOf(LightSwitchElement? source)
+        public static List<Vector3> LinkAnchorsOf(ILightSwitch? source)
         {
-            var lamps = new List<LightSourceElement>();
-            if (source == null) return lamps;
+            var anchors = new List<Vector3>();
+            if (source == null) return anchors;
             foreach (var name in source.LightNames)
             {
                 var lamp = LightNamed(name);
-                if (lamp != null && !lamps.Contains(lamp)) lamps.Add(lamp);
+                if (lamp != null) anchors.Add(lamp.transform.position);
             }
-            return lamps;
+            return anchors;
         }
 
         public static void RenameLight(string? oldName, string? newName)
@@ -120,7 +124,7 @@ namespace KitchenDesigner.Core
             Refresh();
         }
 
-        private static List<string> NamesOf(LightSwitchElement source)
+        private static List<string> NamesOf(ILightSwitch source)
             => new List<string>(source.LightNames);
 
         private static void EnsureCollected()

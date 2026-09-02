@@ -4,30 +4,30 @@ namespace KitchenDesigner.Core.Lighting
 {
     public static class LinkLights
     {
-        public static void Add(LightSwitchElement? source, string? lightName)
+        public static void Add(ILightSwitch? source, string? lightName)
         {
             if (source == null || string.IsNullOrEmpty(lightName)) return;
             Apply(source, SwitchLightLinks.WithAdded(source.LightNames, lightName));
         }
 
-        public static void RemoveAt(LightSwitchElement? source, int index)
+        public static void RemoveAt(ILightSwitch? source, int index)
         {
             if (source == null) return;
             Apply(source, SwitchLightLinks.WithRemovedAt(source.LightNames, index));
         }
 
-        public static void ReplaceAt(LightSwitchElement? source, int index, string? lightName)
+        public static void ReplaceAt(ILightSwitch? source, int index, string? lightName)
         {
             if (source == null) return;
             Apply(source, SwitchLightLinks.WithReplacedAt(source.LightNames, index, lightName));
         }
 
-        public static List<string> Live(LightSwitchElement? source)
+        public static List<string> Live(ILightSwitch? source)
             => source == null
                 ? new List<string>()
                 : SwitchLightLinks.Sanitized(source.LightNames, LightSwitchNetwork.LiveLightNames());
 
-        public static void Prune(LightSwitchElement? source)
+        public static void Prune(ILightSwitch? source)
         {
             if (source == null) return;
             var live = Live(source);
@@ -35,7 +35,7 @@ namespace KitchenDesigner.Core.Lighting
             source.SetLightNames(live);
         }
 
-        private static void Apply(LightSwitchElement source, List<string> after)
+        private static void Apply(ILightSwitch source, List<string> after)
         {
             var before = new List<string>(source.LightNames);
             if (SameNames(before, after)) return;

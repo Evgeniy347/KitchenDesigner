@@ -31,18 +31,21 @@ namespace KitchenDesigner.Core.UI
         private readonly TMP_Dropdown?[] _rowLight =
             new TMP_Dropdown?[SwitchLightLinks.MaxLightsPerSwitch];
         private readonly List<string> _options = new List<string>();
+        private readonly List<string> _links = new List<string>();
         private bool _expanded;
         private int _fingerprint;
 
         public ContextMenuLightLinkSection(IContextMenuHost host) => _host = host;
 
-        private LightSwitchElement? Target => _host.Target as LightSwitchElement;
+        private ILightSwitch? Target
+            => _host.Target != null ? _host.Target as ILightSwitch : null;
 
         public bool Eligible() => Target != null;
 
-        public int Count() => Target != null ? LinkLights.Live(Target).Count : 0;
+        public int Count() => _links.Count;
 
-        public bool ChangedOutsideTheMenu() => Eligible() && Fingerprint() != _fingerprint;
+        public bool ChangedOutsideTheMenu()
+            => Eligible() && Fingerprint(Target!.LightNames) != _fingerprint;
 
         public void Build(Transform parent)
         {
@@ -152,17 +155,18 @@ namespace KitchenDesigner.Core.UI
             ConfirmDeleteButton.DisarmAll();
             RebuildOptions();
 
-            var links = Target != null ? LinkLights.Live(Target) : new List<string>();
-            _fingerprint = Fingerprint(links);
+            _links.Clear();
+            if (Target != null) _links.AddRange(LinkLights.Live(Target));
+            _fingerprint = Target != null ? Fingerprint(Target.LightNames) : 0;
 
             if (_countLabel != null)
-                _countLabel.text = $"{HeaderCaption} ({links.Count})  "
+                _countLabel.text = $"{HeaderCaption} ({_links.Count})  "
                     + (_expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed);
 
             for (int i = 0; i < _rowLight.Length; i++)
             {
-                if (i >= links.Count) continue;
-                _rowLight[i]?.SetValueWithoutNotify(_options.IndexOf(links[i]));
+                if (i >= _links.Count) continue;
+                _rowLight[i]?.SetValueWithoutNotify(_options.IndexOf(_links[i]));
                 _rowLight[i]?.RefreshShownValue();
             }
 

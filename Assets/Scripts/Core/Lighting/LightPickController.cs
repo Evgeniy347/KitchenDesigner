@@ -11,13 +11,18 @@ namespace KitchenDesigner.Core.Lighting
 
         public static LightPickController? Instance { get; private set; }
 
-        public LightSourceElement? Hovered { get; private set; }
+        public LightSourceElement? HoveredLight { get; private set; }
 
         public Vector3? CursorPoint { get; private set; }
 
-        public Vector3? Anchor => LightPickMode.Source != null
-            ? LightPickMode.Source.transform.position
-            : (Vector3?)null;
+        public Vector3? Anchor
+        {
+            get
+            {
+                var source = LightPickMode.Source;
+                return source != null ? source.LinkAnchor : (Vector3?)null;
+            }
+        }
 
         public bool HasPreview => Anchor.HasValue && CursorPoint.HasValue;
 
@@ -55,17 +60,17 @@ namespace KitchenDesigner.Core.Lighting
 
         internal void UpdateHover(Camera cam, Vector2 mouse)
         {
-            Hovered = null;
+            HoveredLight = null;
             Ray ray = cam.ScreenPointToRay(mouse);
             if (!Physics.Raycast(ray, out RaycastHit hit)) return;
-            Hovered = hit.collider.GetComponentInParent<LightSourceElement>();
+            HoveredLight = LightSwitchNetwork.LightUnder(hit.collider);
         }
 
         internal void UpdateCursorPoint(Camera cam, Vector2 mouse)
         {
-            if (Hovered != null)
+            if (HoveredLight != null)
             {
-                CursorPoint = Hovered.transform.position;
+                CursorPoint = HoveredLight.transform.position;
                 return;
             }
 
@@ -84,23 +89,23 @@ namespace KitchenDesigner.Core.Lighting
         internal void HandleClick()
         {
             var source = LightPickMode.Source;
-            if (source == null || Hovered == null) return;
-            LinkLights.Add(source, Hovered.PartName);
+            if (source == null || HoveredLight == null) return;
+            LinkLights.Add(source, HoveredLight.PartName);
         }
 
         internal static List<LightLinkSegment> VisibleLinks()
         {
             var segments = new List<LightLinkSegment>();
             foreach (var source in LightSwitchNetwork.AllSwitches())
-                foreach (var lamp in LightSwitchNetwork.LightsOf(source))
-                    segments.Add(new LightLinkSegment(source.transform.position,
-                        lamp.transform.position, source == LightPickMode.Source));
+                foreach (var anchor in LightSwitchNetwork.LinkAnchorsOf(source))
+                    segments.Add(new LightLinkSegment(source.LinkAnchor, anchor,
+                        LightPickMode.IsPickingFor(source)));
             return segments;
         }
 
         private void ResetState()
         {
-            Hovered = null;
+            HoveredLight = null;
             CursorPoint = null;
         }
 

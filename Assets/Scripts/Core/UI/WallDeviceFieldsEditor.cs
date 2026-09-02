@@ -37,7 +37,7 @@ namespace KitchenDesigner.Core.UI
         public override void Build()
         {
             var anyDevice = RowVisibility.When(() => Host.Target is IWallDevice);
-            var switchOnly = RowVisibility.When(() => Host.Target is LightSwitchElement);
+            var switchOnly = RowVisibility.When(() => Host.Target is ILightSwitch);
 
             var widthRow = Rows.NumberField(PlateWidthLabel, anyDevice, "мм", PlateWidthNode);
             var heightRow = Rows.NumberField(PlateHeightLabel, anyDevice, "мм", PlateHeightNode);
@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core.UI
                     WallDeviceLayout.ClampPostCount(device.PostCount) - WallDeviceLayout.MinPostCount);
                 _posts?.RefreshShownValue();
             }
-            if (element is LightSwitchElement source)
+            if (element is ILightSwitch source)
                 _powered?.SetIsOnWithoutNotify(source.IsOn);
         }
 
@@ -102,17 +102,7 @@ namespace KitchenDesigner.Core.UI
 
         private void OnPoweredToggled(bool on)
         {
-            if (!(Host.Target is LightSwitchElement source)) return;
-            if (source.IsOn == on) return;
-
-            var before = UndoableProperties.Capture(source);
-            source.IsOn = on;
-            var after = UndoableProperties.Capture(source);
-            source.IsOn = !on;
-
-            var command = SetPropertiesCommand.TryCreate(source, before, after);
-            if (command == null) source.IsOn = on;
-            else CommandStack.Execute(command);
+            if (Host.Target is ILightSwitch source) Lighting.SwitchPower.Set(source, on);
         }
 
         private static int PlateWidthOf(KitchenElement element)

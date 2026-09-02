@@ -4,21 +4,21 @@ namespace KitchenDesigner.Core.Lighting
 {
     public static class LightPickMode
     {
-        public static LightSwitchElement? Source { get; private set; }
+        public static ILightSwitch? Source { get; private set; }
 
         public static bool Active => Source != null;
 
         public static event Action? Changed;
 
-        public static bool IsPickingFor(LightSwitchElement? source)
-            => source != null && Source == source;
+        public static bool IsPickingFor(ILightSwitch? source)
+            => source != null && ReferenceEquals(Source, source);
 
-        public static void Toggle(LightSwitchElement? source)
+        public static void Toggle(ILightSwitch? source)
             => SetSource(IsPickingFor(source) ? null : source);
 
-        public static void SetSource(LightSwitchElement? source)
+        public static void SetSource(ILightSwitch? source)
         {
-            if (Source == source) return;
+            if (ReferenceEquals(Source, source)) return;
             Source = source;
 
             if (source != null)
