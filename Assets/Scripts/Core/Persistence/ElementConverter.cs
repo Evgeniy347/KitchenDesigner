@@ -10,15 +10,11 @@ namespace KitchenDesigner.Core
         public static KitchenElement Convert(KitchenElement source, TargetType targetType)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
-            var currentType = GetElementType(source);
-            if (currentType == targetType) return source;
-
-            if (currentType == TargetType.Drawer || targetType == TargetType.Drawer) return source;
-            if (currentType == TargetType.Window || targetType == TargetType.Window) return source;
-            if (currentType == TargetType.Door || targetType == TargetType.Door) return source;
-            if (source is CooktopElement) return source;
-            if (source is OvenElement) return source;
-            if (source is DishwasherElement) return source;
+            if (!CanConvert(source)) return source;
+            if (targetType == TargetType.Drawer) return source;
+            if (targetType == TargetType.Window) return source;
+            if (targetType == TargetType.Door) return source;
+            if (GetElementType(source) == targetType) return source;
 
             var go = source.gameObject;
 
@@ -133,6 +129,17 @@ namespace KitchenDesigner.Core
             }
 
             return result;
+        }
+
+        public static bool CanConvert(KitchenElement? element)
+        {
+            if (element == null) return false;
+            if (element.GetComponent<Wall>() != null) return false;
+            if (element.GetComponent<BasePlate>() != null) return false;
+            if (element is AssembledFacadeElement) return true;
+            if (element is RadialShelfElement) return true;
+            if (element is FacadeElement) return true;
+            return element.GetType() == typeof(KitchenElement);
         }
 
         public static TargetType GetElementType(KitchenElement element)

@@ -50,20 +50,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (element == null) return Group.None;
             if (element is DrawerElement) return Group.Drawer;
-            if (element is TableElement || element is RadiusTableElement || element is StoolElement
-                || element is ChairElement || element is SofaElement
-                || element is BedElement || element is PouffeElement
-                || element is PillarElement
-                || element is WindowElement || element is DoorElement || element is PanelElement
-                || element is LightSourceElement || element is FloorElement
-                || element is SinkElement || element is CooktopElement || element is OvenElement
-                || element is DishwasherElement) return Group.None;
-            if (element.GetComponent<Wall>() != null || element.GetComponent<BasePlate>() != null)
-                return Group.None;
-            if (element is AssembledFacadeElement || element is RadialShelfElement
-                || element is FacadeElement) return Group.Structural;
-            if (element.GetType() == typeof(KitchenElement)) return Group.Structural;
-            return Group.None;
+            return ElementConverter.CanConvert(element) ? Group.Structural : Group.None;
         }
 
         public static Choice CurrentChoiceOf(KitchenElement element)

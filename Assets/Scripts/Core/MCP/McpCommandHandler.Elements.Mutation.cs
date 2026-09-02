@@ -434,6 +434,12 @@ namespace KitchenDesigner.Core.MCP
                 if (element == null) { errors.Add($"Element not found: {op.name}"); continue; }
                 var lockErr = RequireMovable(element, op.name, req.id);
                 if (lockErr != null) { errors.Add($"'{op.name}' is LOCKED"); continue; }
+                if (!ElementConverter.CanConvert(element))
+                {
+                    errors.Add($"'{op.name}' is a {Bulk.ElementSelector.TypeOf(element)} and cannot change type: "
+                        + "convert_elements works only on board, facade, assembled_facade and radial_shelf");
+                    continue;
+                }
                 var converted = ElementConverter.Convert(element, target);
                 if (converted is AssembledFacadeElement assembled && !string.IsNullOrEmpty(op.fill))
                     assembled.Fill = McpWireEnums.ParseFill(op.fill);
