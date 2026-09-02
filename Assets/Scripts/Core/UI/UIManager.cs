@@ -115,7 +115,7 @@ namespace KitchenDesigner.Core.UI
 
         public void ToggleErrors() => TogglePanel(ToolbarPanel.Errors);
 
-        private ElementSpawner Spawner =>
+        internal ElementSpawner Spawner =>
             _spawner ??= new ElementSpawner(GroundPointInFrontOfCamera, () => _placement);
 
         private ProjectFileActions FileActions =>

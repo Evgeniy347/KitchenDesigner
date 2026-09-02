@@ -238,74 +238,7 @@ namespace KitchenDesigner.Core.UI
         private void Spawn(SidebarCatalog.Item item)
         {
             if (UIManager.Instance == null) return;
-            if (item.isFloor)
-            {
-                UIManager.Instance.SpawnFloor(item.dims, item.name);
-                return;
-            }
-            if (item.isLightSource)
-            {
-                UIManager.Instance.SpawnLightSource(item.name);
-                return;
-            }
-            if (item.isSink)
-            {
-                UIManager.Instance.SpawnSink(item.name);
-                return;
-            }
-            if (item.isCooktop)
-            {
-                UIManager.Instance.SpawnCooktop(item.name, item.applianceModel);
-                return;
-            }
-            if (item.isOven)
-            {
-                UIManager.Instance.SpawnOven(item.name);
-                return;
-            }
-            if (item.isDishwasher)
-            {
-                UIManager.Instance.SpawnDishwasher(item.name);
-                return;
-            }
-            if (item.isDrawer)
-                UIManager.Instance.SpawnDrawer(item.drawerType, item.drawerLength, item.drawerColor, item.drawerWidth, item.name,
-                    item.drawerSystem == "movento" ? DrawerSystem.Movento : DrawerSystem.Gtv);
-            else if (item.isWindow)
-                UIManager.Instance.SpawnWindow(item.dims, item.name);
-            else if (item.isDoor)
-                UIManager.Instance.SpawnDoor(item.dims, item.name);
-            else if (item.isRadiusTable)
-                UIManager.Instance.SpawnRadiusTable(item.dims, item.name);
-            else if (item.isStool)
-                UIManager.Instance.SpawnStool(item.dims, item.name);
-            else if (item.isChair)
-                UIManager.Instance.SpawnChair(item.dims, item.name);
-            else if (item.isSofa)
-                UIManager.Instance.SpawnSofa(item.dims, item.name);
-            else if (item.isBed)
-                UIManager.Instance.SpawnBed(item.dims, item.name);
-            else if (item.isPouffe)
-                UIManager.Instance.SpawnPouffe(item.dims, item.name);
-            else if (item.isFurniture)
-                UIManager.Instance.SpawnTable(item.dims, item.name);
-            else if (item.isPillar)
-                UIManager.Instance.SpawnPillar(item.pillarMidHeightMM, item.name);
-            else if (item.isScrewLeg)
-                UIManager.Instance.SpawnScrewLeg(item.name);
-            else if (item.isPanel)
-                UIManager.Instance.SpawnPanel(item.dims, item.name,
-                    item.gapLeft, item.gapRight, item.gapTop, item.gapBottom);
-            else if (item.isRadialShelf)
-                UIManager.Instance.SpawnRadialShelf(item.dims, item.name);
-            else if (item.isAssembled)
-                UIManager.Instance.SpawnAssembledFacade(item.dims, item.name);
-            else if (item.isFacade)
-                UIManager.Instance.SpawnFacade(item.dims, item.name, item.gapLeft, item.gapRight, item.gapTop, item.gapBottom);
-            else if (item.isWall)
-                UIManager.Instance.SpawnWall(item.dims, item.name);
-            else
-                UIManager.Instance.SpawnBoard(item.dims, item.name);
+            SidebarSpawnRouter.Route(item, UIManager.Instance.Spawner);
         }
 
         private void SetExpanded(bool expanded)

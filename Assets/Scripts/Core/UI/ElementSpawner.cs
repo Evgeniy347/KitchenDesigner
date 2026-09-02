@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.UI
 {
-    public sealed class ElementSpawner
+    public sealed class ElementSpawner : IElementSpawns
     {
         private readonly Func<Vector3> _groundPointInFrontOfCamera;
         private readonly Func<PlacementController?> _placement;
