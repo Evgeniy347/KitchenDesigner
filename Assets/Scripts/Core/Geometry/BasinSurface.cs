@@ -91,7 +91,7 @@ namespace KitchenDesigner.Core
                     int index = ring * perRing + j;
                     var point = outline[j];
                     positions[index] = new Vector3(point.Position.x, section.Y, point.Position.y);
-                    normals[index] = Outward(point.Outward, section);
+                    normals[index] = section.Normal(point.Outward);
                     uvs[index] = Unwrap(positions[index]);
                 }
             }
@@ -175,15 +175,6 @@ namespace KitchenDesigner.Core
         private static bool Coincide(SoftSlabRing a, SoftSlabRing b)
             => Mathf.Abs(a.Inset - b.Inset) < Tolerance.EpsilonUnits
                 && Mathf.Abs(a.Y - b.Y) < Tolerance.EpsilonUnits;
-
-        private static Vector3 Outward(Vector2 planar, SoftSlabRing section)
-        {
-            var normal = new Vector3(
-                planar.x * section.Radial, section.Up, planar.y * section.Radial);
-            return normal.sqrMagnitude > Tolerance.EpsilonSqr
-                ? normal.normalized
-                : new Vector3(0f, Mathf.Sign(section.Up), 0f);
-        }
 
         private Vector2 Unwrap(Vector3 position)
             => new Vector2(position.x / _width + 0.5f, position.z / _depth + 0.5f);
