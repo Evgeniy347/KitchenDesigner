@@ -83,6 +83,7 @@ namespace KitchenDesigner.Core.MCP
 		public StoolInfo? stool;
 		public ChairInfo? chair;
 		public SofaInfo? sofa;
+		public BedInfo? bed;
 		public PillarInfo? pillar;
 		public ScrewLegInfo? screwLeg;
 		public CooktopInfo? cooktop;
@@ -310,6 +311,20 @@ namespace KitchenDesigner.Core.MCP
 		public int seatHeightMM;
 		public int backDepthMM;
 		public int cushionCount;
+		public string tabletopMaterialId = MaterialCatalog.DefaultId;
+		public string legsMaterialId = MaterialCatalog.DefaultId;
+	}
+
+	[Serializable]
+	public class BedInfo
+	{
+		public string size = string.Empty;
+		public bool isDouble;
+		public bool hasHeadboard;
+		public int pillowCount;
+		public int legCount;
+		public int legHeightMM;
+		public int mattressTopMM;
 		public string tabletopMaterialId = MaterialCatalog.DefaultId;
 		public string legsMaterialId = MaterialCatalog.DefaultId;
 	}

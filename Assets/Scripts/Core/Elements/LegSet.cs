@@ -19,6 +19,7 @@ namespace KitchenDesigner.Core
         public void Place(Vector2[] footprint, float centreY, Vector3 legScale)
         {
             Ensure(footprint.Length);
+            Trim(footprint.Length);
             for (int i = 0; i < footprint.Length; i++)
             {
                 var leg = _legs[i];
@@ -50,6 +51,19 @@ namespace KitchenDesigner.Core
                 else Object.DestroyImmediate(leg);
             }
             _legs.Clear();
+        }
+
+        private void Trim(int count)
+        {
+            for (int i = _legs.Count - 1; i >= count; i--)
+            {
+                var leg = _legs[i];
+                _legs.RemoveAt(i);
+                if (leg == null) continue;
+                leg.transform.SetParent(null, false);
+                if (Application.isPlaying) Object.Destroy(leg);
+                else Object.DestroyImmediate(leg);
+            }
         }
 
         private void Ensure(int count)

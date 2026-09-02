@@ -25,6 +25,7 @@ namespace KitchenDesigner.Core
 		GameObject CreateStool(Vector3Int dimensionsMM, int cornerRadiusMM, string name, Vector3 position);
 		GameObject CreateChair(Vector3Int dimensionsMM, int cornerRadiusMM, int seatHeightMM, string name, Vector3 position);
 		GameObject CreateSofa(Vector3Int dimensionsMM, int cornerRadiusMM, int seatHeightMM, string name, Vector3 position);
+		GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard, string name, Vector3 position);
 		GameObject CreatePillar(int midHeightMM, string name, Vector3 position,
 			int diameterMM = PillarElement.DiameterMM_Default);
 		GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position);

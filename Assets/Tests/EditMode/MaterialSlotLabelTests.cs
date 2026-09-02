@@ -78,6 +78,9 @@ public class MaterialSlotLabelTests
             SofaElement.DefaultDepthMM), SofaElement.DefaultCornerRadiusMM,
         SofaElement.DefaultSeatHeightMM, "Диван", Vector3.zero));
 
+    private KitchenElement Bed() => Spawn(ElementFactory.CreateBed(
+        BedLayout.DefaultDimensions(true, true), true, true, "Кровать", Vector3.zero));
+
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
     private string LabelText(string node) =>
@@ -130,6 +133,16 @@ public class MaterialSlotLabelTests
     }
 
     [Test]
+    public void MaterialRows_OfABed_AreCalledCarcassAndMattress()
+    {
+        Assert.AreEqual(("Каркас", "Матрас"), LabelsFor(Bed()),
+            "у кровати нет ни столешницы, ни сиденья: первый слот красит деревянную часть "
+            + "целиком — царгу, спинку и ножки (BedElement.SetTabletopMaterial), второй — "
+            + "постель, матрас вместе с подушками (SetLegsMaterial). Разделение проходит "
+            + "там, где его видит человек: дерево против ткани");
+    }
+
+    [Test]
     public void MaterialRow_OfAStool_NeverSaysTabletop()
     {
         var (top, legs) = LabelsFor(Stool());
@@ -153,7 +166,7 @@ public class MaterialSlotLabelTests
     [Test]
     public void MaterialSlotLabels_LeaveTheSerializedDecorIdsAlone()
     {
-        foreach (var element in new[] { Table(), RadiusTable(), Stool(), Chair(), Sofa() })
+        foreach (var element in new[] { Table(), RadiusTable(), Stool(), Chair(), Sofa(), Bed() })
         {
             var tabletop = (ITabletop)element;
             tabletop.TabletopMaterialId = "oak";

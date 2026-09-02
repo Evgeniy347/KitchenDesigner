@@ -24,6 +24,8 @@ namespace KitchenDesigner.Core.MCP
         public const int STOOL_DEFAULT_CORNER_RADIUS_MM = 0;
         public const int CHAIR_DEFAULT_CORNER_RADIUS_MM = 0;
         public const int SOFA_DEFAULT_CORNER_RADIUS_MM = SofaElement.DefaultCornerRadiusMM;
+        public const bool BED_DEFAULT_IS_DOUBLE = true;
+        public const bool BED_DEFAULT_HAS_HEADBOARD = true;
         public const int WINDOW_DEFAULT_WIDTH_MM = 900;
         public const int WINDOW_DEFAULT_HEIGHT_MM = 1200;
         public const int OPENING_DEFAULT_WALL_DEPTH_MM = 100;
@@ -82,6 +84,9 @@ namespace KitchenDesigner.Core.MCP
                 ["sofa"] = (item, pos) => ElementFactory.CreateSofa(SofaDims(item),
                     SOFA_DEFAULT_CORNER_RADIUS_MM, SofaElement.DefaultSeatHeightMM,
                     item.name, pos),
+
+                ["bed"] = (item, pos) => ElementFactory.CreateBed(BedDims(item),
+                    BED_DEFAULT_IS_DOUBLE, BED_DEFAULT_HAS_HEADBOARD, item.name, pos),
 
                 ["pillar"] = (item, pos) => ElementFactory.CreatePillar(
                     item.height ?? PillarElement.MidHeightMM_Default, item.name, pos,
@@ -153,6 +158,11 @@ namespace KitchenDesigner.Core.MCP
             item.width ?? SofaElement.DefaultWidthMM,
             item.height ?? SofaElement.DefaultHeightMM,
             item.depth ?? SofaElement.DefaultDepthMM);
+
+        private static Vector3Int BedDims(CreateItem item) => new Vector3Int(
+            item.width ?? BedElement.DefaultWidthMM,
+            item.height ?? BedElement.DefaultHeightMM,
+            item.depth ?? BedElement.DefaultDepthMM);
 
         private static Vector3Int TableDims(CreateItem item) => new Vector3Int(
             item.width ?? TABLE_DEFAULT_WIDTH_MM,

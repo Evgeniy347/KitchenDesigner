@@ -184,6 +184,22 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is BedElement,
+             (factory, source, pos) => factory.CreateBed(source.DimensionsMM,
+                 ((BedElement)source).IsDouble, ((BedElement)source).HasHeadboard,
+                 source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (BedElement)source;
+                 var made = copy.GetComponent<BedElement>();
+                 if (made != null)
+                 {
+                     made.TabletopMaterialId = src.TabletopMaterialId;
+                     made.LegsMaterialId = src.LegsMaterialId;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is WindowElement,
              (factory, source, pos) =>
              {

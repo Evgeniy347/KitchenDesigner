@@ -64,6 +64,9 @@ namespace KitchenDesigner.Core
         public bool isStool = false;
         public bool isChair = false;
         public bool isSofa = false;
+        public bool isBed = false;
+        public bool bedDouble = true;
+        public bool bedHeadboard = true;
         public int seatHeightMM = AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT;
         public int legInsetMM = 100;
         public int gapLeft = 2;

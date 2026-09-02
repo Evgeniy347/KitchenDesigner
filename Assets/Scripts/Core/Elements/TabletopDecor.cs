@@ -20,6 +20,10 @@ namespace KitchenDesigner.Core
 
         public const string CushionsLabel = "Подушки";
 
+        public const string FrameLabel = "Каркас";
+
+        public const string MattressLabel = "Матрас";
+
         public const string MaterialIdAliasReason =
             "псевдоним TabletopMaterialId — см. его причину";
 

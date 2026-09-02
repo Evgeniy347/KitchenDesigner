@@ -216,6 +216,15 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Screw leg only: height of the foot in MM (1..200). Omit to keep.", Min = 1, Max = 200)]
         public int? screw_base_height_mm;
 
+        [McpParam("Bed only: true = double (1800 wide, two pillows, six legs), false = single "
+                  + "(900 wide, one pillow, four legs). Switching RESETS width/height/depth to "
+                  + "the defaults of the new type, discarding a manual resize. Omit to keep.")]
+        public bool? bed_double;
+        [McpParam("Bed only: true = with a headboard at the head end (-Z), false = without. "
+                  + "Switching RESETS the height to the default of the new type (900 with a "
+                  + "headboard, 600 without) and leaves width and length alone. Omit to keep.")]
+        public bool? bed_headboard;
+
         [McpParam("Window only: glass tint — clear (transparent) or tinted (slightly darkened). Omit to keep.",
             Enum = new[] { "clear", "tinted" })]
         public string? tint;
@@ -247,7 +256,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;

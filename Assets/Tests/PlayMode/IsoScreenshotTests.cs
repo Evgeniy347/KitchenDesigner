@@ -531,6 +531,63 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+    // ─ Bed isometric screenshots ───────────────────
+
+    [UnityTest]
+    public IEnumerator IsoBed_1800x900x2000_DoubleWithHeadboard()
+    {
+        yield return RenderBed(BedLayout.DefaultDimensions(true, true), true, true,
+            "IsoBedDouble", "iso_bed_1800x900x2000_double.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoBed_900x600x2000_SingleWithoutHeadboard()
+    {
+        yield return RenderBed(BedLayout.DefaultDimensions(false, false), false, false,
+            "IsoBedSingle", "iso_bed_900x600x2000_single_no_headboard.png", false);
+    }
+
+    /// <summary>capturePanel == false — второй кадр той же сцены: панель между
+    /// двумя снимками кровати не меняется, а каждый лишний эталон панели пришлось
+    /// бы принимать руками после любой правки сайдбара.</summary>
+    private IEnumerator RenderBed(Vector3Int dims, bool isDouble, bool hasHeadboard,
+        string name, string png, bool capturePanel = true)
+    {
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateBed(dims, isDouble, hasHeadboard, name, pos);
+        _spawned.Add(go);
+
+        go.transform.rotation = Quaternion.Euler(0f, FrontTowardsCameraDeg, 0f);
+        var bed = go.GetComponent<BedElement>();
+        Assert.IsNotNull(bed, "фабрика обязана вернуть именно BedElement");
+        Assert.AreEqual(dims, bed!.DimensionsMM,
+            "снимок обязан показывать тот габарит, который заказали: переключатели типа "
+            + "сбрасывают размер, и фабрика не должна сделать это ПОСЛЕ выставления размера");
+        Assert.AreEqual(isDouble, bed.IsDouble, "и тот тип, который заказали");
+        Assert.AreEqual(hasHeadboard, bed.HasHeadboard, "и то изголовье, которое заказали");
+
+        Assert.AreEqual(hasHeadboard, go.transform.Find(BedLayout.HeadboardName) != null,
+            "спинка — отдельный ребёнок с именем: кровать без спинки не имеет права её "
+            + "показывать, а кровать со спинкой — прятать");
+        Assert.IsNotNull(go.transform.Find(BedLayout.MattressName),
+            "снимок кровати без матраса был бы снимком пустой рамы");
+        for (int i = 0; i < BedLayout.DoublePillowCount; i++)
+            Assert.AreEqual(i < BedLayout.PillowCount(isDouble),
+                go.transform.Find(BedLayout.PillowName(i)) != null,
+                "подушек ровно столько, сколько диктует тип: одна у односпальной, две у "
+                + "двуспальной — и лишняя обязана исчезнуть, а не остаться от прошлой сборки");
+
+        Vector3 size = MmToUnits(dims);
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return capturePanel
+            ? RenderToPng(cam, png)
+            : RenderToPng(cam, png, null);
+
+        Object.DestroyImmediate(camGo);
+    }
+
     // ─ Radial shelf isometric screenshot ───────────────────
 
     [UnityTest]

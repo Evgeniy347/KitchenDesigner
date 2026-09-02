@@ -389,6 +389,26 @@ public class SnapshotTests
         Snapshot.Match(json, "sofa_custom");
     }
 
+    // ── BedElement snapshot ──────────────────────────────────────────────
+
+    /// <summary>Кровать несёт два СВОИХ булевых поля, и оба стартуют с
+    /// <c>true</c> — двуспальная со спинкой. Снимок берётся с обоими в
+    /// <c>false</c>: поле, которое забыли записать в ElementCapture, при
+    /// умолчательном значении неотличимо от записанного, и именно так однажды
+    /// квадратная табуретка загрузилась скруглённой.</summary>
+    [Test]
+    public void Snapshot_Bed_Custom()
+    {
+        var go = ElementFactory.CreateBed(new Vector3Int(940, 640, 1930), false, false,
+            "SmallBed", new Vector3(0.5f, 0.32f, -1.0f));
+        var bed = go.GetComponent<BedElement>();
+        bed.MaterialId = "oak";
+        Add(go);
+
+        var json = CaptureJson(new[] { go.GetComponent<KitchenElement>() });
+        Snapshot.Match(json, "bed_custom");
+    }
+
     // ── Full scene snapshot ──────────────────────────────────────────────
 
     [Test]

@@ -18,7 +18,8 @@ namespace KitchenDesigner.Core.UI
         private MaterialSlot _previewSlot;
 
         private const ElementFacet TabletopSlots =
-            ElementFacet.Table | ElementFacet.Stool | ElementFacet.Chair | ElementFacet.Sofa;
+            ElementFacet.Table | ElementFacet.Stool | ElementFacet.Chair | ElementFacet.Sofa
+            | ElementFacet.Bed;
 
         public ContextMenuMaterialSection(IContextMenuHost host) => _host = host;
 

@@ -154,6 +154,19 @@ namespace KitchenDesigner.Core.MCP
                 };
             }),
 
+            For<BedElement>((info, bed) => info.bed = new BedInfo
+            {
+                size = bed.SizeName,
+                isDouble = bed.IsDouble,
+                hasHeadboard = bed.HasHeadboard,
+                pillowCount = bed.PillowCount,
+                legCount = bed.LegCount,
+                legHeightMM = BedLayout.LegHeightMM,
+                mattressTopMM = BedLayout.DeckTopMM,
+                tabletopMaterialId = bed.TabletopMaterialId,
+                legsMaterialId = bed.LegsMaterialId
+            }),
+
             For<PillarElement>((info, pillar) => info.pillar = new PillarInfo
             {
                 midHeightMM = pillar.MidHeightMM,

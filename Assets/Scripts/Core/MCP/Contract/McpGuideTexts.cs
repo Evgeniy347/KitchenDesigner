@@ -142,7 +142,7 @@ SELECTOR (a string; space-separated clauses, ALL must match)
   B4_*                     name mask ('*' = glob; without '*' = substring)
   name:PATTERN             same, explicit
   type:board|wall|floor|window|door|drawer|facade|assembled_facade|
-       radial_shelf|panel|table|radius_table|stool|chair|sofa|pillar|
+       radial_shelf|panel|table|radius_table|stool|chair|sofa|bed|pillar|
        screw_leg|light
   module:NAME / group:NAME by module name (mask allowed)
   thickness==18            compare a dimension in MM; also width/height/depth
@@ -221,6 +221,22 @@ SofaElement           Sofa (type:""sofa"", 2000x800x900 mm by default). NO armre
                       rounds the solid base BLOCK (120 mm by default); seat_height
                       is that block's top above the floor (360 mm by default), and
                       what is left up to height becomes the back. Body and cushion
+                      decors via tabletop_material/legs_material.
+BedElement            Bed (type:""bed"", 1800x900x2000 mm by default — width x
+                      height x LENGTH: the length runs along Z, because the
+                      headboard faces -Z like every other back in this family).
+                      Built from 100 mm legs, a 200 mm frame, a 180 mm mattress
+                      and pillows on top; the mattress top is 480 mm above the
+                      floor. TWO switches, both of which RESET dimensions:
+                      bed_double true = 1800 wide with two pillows and six legs,
+                      false = 900 wide with one pillow and four legs (switching
+                      resets width/height/depth to that type's defaults and
+                      discards a manual resize — switching there and back is two
+                      resets, not an undo); bed_headboard true/false resets the
+                      HEIGHT only (900 with a headboard, 600 without, which is
+                      the top of the pillows). Between switches width, length and
+                      height stay freely editable; height is clamped to 600
+                      without a headboard and 700 with one. Carcass and mattress
                       decors via tabletop_material/legs_material.
 PillarElement         Pillar (type:""pillar"", mid_height_mm, diameter_mm).
 ScrewLegElement       Screw-in levelling leg with a threaded insert
@@ -325,7 +341,8 @@ faceGaps              Per-axis nearest OPPOSITE neighbour: {axis, neighbor, gapM
 moduleId/moduleName   Group membership (0/absent = not grouped).
 materialId            Decor id (list_materials).
 facadeMode            Facade opening mode (""front_left"", ""drawer_out"", ...).
-drawer / table / radiusTable / stool / chair / sofa   Type-specific sub-objects, absent
+drawer / table / radiusTable / stool / chair / sofa / bed   Type-specific sub-objects,
+                      absent
                       otherwise.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:

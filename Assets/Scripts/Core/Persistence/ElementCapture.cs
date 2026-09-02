@@ -16,6 +16,7 @@ namespace KitchenDesigner.Core
 			var stool = element as StoolElement;
 			var chair = element as ChairElement;
 			var sofa = element as SofaElement;
+			var bed = element as BedElement;
 			var tableEl2 = element as TableElement;
 			var windowEl = element as WindowElement;
 			var doorEl = element as DoorElement;
@@ -52,6 +53,9 @@ namespace KitchenDesigner.Core
             d.isStool = stool != null;
             d.isChair = chair != null;
             d.isSofa = sofa != null;
+            d.isBed = bed != null;
+            d.bedDouble = bed != null ? bed.IsDouble : true;
+            d.bedHeadboard = bed != null ? bed.HasHeadboard : true;
             d.seatHeightMM = chair != null ? chair.SeatHeightMM
                 : sofa != null ? sofa.SeatHeightMM
                 : AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT;

@@ -283,6 +283,8 @@ namespace KitchenDesigner.Core.UI
                 UIManager.Instance.SpawnChair(item.dims, item.name);
             else if (item.isSofa)
                 UIManager.Instance.SpawnSofa(item.dims, item.name);
+            else if (item.isBed)
+                UIManager.Instance.SpawnBed(item.dims, item.name);
             else if (item.isFurniture)
                 UIManager.Instance.SpawnTable(item.dims, item.name);
             else if (item.isPillar)

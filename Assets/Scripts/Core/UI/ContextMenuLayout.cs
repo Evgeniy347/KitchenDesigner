@@ -24,6 +24,7 @@ namespace KitchenDesigner.Core.UI
         Chair = 1 << 13,
         Sofa = 1 << 14,
         ScrewLeg = 1 << 15,
+        Bed = 1 << 16,
     }
 
     internal sealed class ContextMenuLayout

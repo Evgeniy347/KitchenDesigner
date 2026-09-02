@@ -52,6 +52,7 @@ namespace KitchenDesigner.Core.UI
             if (element is DrawerElement) return Group.Drawer;
             if (element is TableElement || element is RadiusTableElement || element is StoolElement
                 || element is ChairElement || element is SofaElement
+                || element is BedElement
                 || element is PillarElement
                 || element is WindowElement || element is DoorElement || element is PanelElement
                 || element is LightSourceElement || element is FloorElement

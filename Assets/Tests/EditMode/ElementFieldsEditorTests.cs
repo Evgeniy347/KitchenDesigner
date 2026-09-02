@@ -278,6 +278,102 @@ public class ElementFieldsEditorTests
             "и наоборот: у табуретки высоты сиденья нет — это её общая высота");
     }
 
+    private BedElement Bed() =>
+        Spawn<BedElement>(ElementFactory.CreateBed(
+            BedLayout.DefaultDimensions(true, true), true, true, "Кровать", Vector3.zero));
+
+    private TMP_Dropdown Dropdown(string node) =>
+        Panel().Find(node)!.GetComponent<TMP_Dropdown>();
+
+    /// <summary>Та же регрессия, что у табуретки: реестр редакторов состоит из
+    /// ДВУХ половин — массива _editors и списка вызовов Build(), — и строка,
+    /// заведённая только в одной, молча не появляется в панели. Тест открывает
+    /// меню и ищет узлы по имени, как их видит человек.</summary>
+    [Test]
+    public void Bed_TypeRows_AreBuilt_AndShowTheCurrentType()
+    {
+        var bed = Bed();
+        _menu!.Open(bed);
+
+        Assert.IsTrue(Panel().Find(BedFieldsEditor.SizeNode)!.gameObject.activeInHierarchy,
+            "строка «Тип кровати» обязана быть видна у кровати");
+        Assert.IsTrue(Panel().Find(BedFieldsEditor.HeadboardNode)!.gameObject.activeInHierarchy,
+            "и строка «Изголовье» тоже");
+        Assert.AreEqual(1, Dropdown(BedFieldsEditor.SizeNode).value,
+            "двуспальная — второй вариант списка; индекс, разошедшийся со смыслом, "
+            + "переключал бы кровать наоборот");
+        Assert.AreEqual(1, Dropdown(BedFieldsEditor.HeadboardNode).value,
+            "и «Со спинкой» — тоже второй");
+    }
+
+    [Test]
+    public void Bed_SizeDropdown_SwitchesTheTypeAndResetsTheSize_Undoably()
+    {
+        var bed = Bed();
+        bed.DimensionsMM = new Vector3Int(1600, 950, 2100);
+        _menu!.Open(bed);
+
+        Dropdown(BedFieldsEditor.SizeNode).value = 0;
+
+        Assert.IsFalse(bed.IsDouble, "выбор «Односпальная» обязан дойти до элемента");
+        Assert.AreEqual(BedLayout.DefaultDimensions(false, true), bed.DimensionsMM,
+            "смена типа сбрасывает габарит на дефолтный — прямое указание пользователя");
+        Assert.AreEqual("900", Text(Field("Ширина")),
+            "и поле ширины обязано показать НОВЫЙ размер: человек, который не увидит "
+            + "сброса в панели, решит, что переключатель не сработал");
+
+        CommandStack.Undo();
+        Assert.IsTrue(bed.IsDouble, "переключатель обязан откатываться");
+        Assert.AreEqual(new Vector3Int(1600, 950, 2100), bed.DimensionsMM,
+            "и отмена обязана вернуть РУЧНОЙ размер, а не дефолт двуспальной: флаг типа "
+            + "восстанавливается раньше габарита (Undoable.Order), иначе он сбросил бы "
+            + "только что восстановленные миллиметры");
+    }
+
+    [Test]
+    public void Bed_HeadboardDropdown_SwitchesTheHeadboard_Undoably()
+    {
+        var bed = Bed();
+        _menu!.Open(bed);
+
+        Dropdown(BedFieldsEditor.HeadboardNode).value = 0;
+
+        Assert.IsFalse(bed.HasHeadboard, "выбор «Без спинки» обязан дойти до элемента");
+        Assert.AreEqual(BedLayout.HeightFor(false), bed.DimensionsMM.y,
+            "и высота обязана сброситься до верха подушек");
+
+        CommandStack.Undo();
+        Assert.IsTrue(bed.HasHeadboard, "и это тоже один шаг отмены");
+        Assert.AreEqual(BedLayout.HeightFor(true), bed.DimensionsMM.y,
+            "вместе с высотой");
+    }
+
+    [Test]
+    public void Bed_ShowsCarcassAndMattressRows_InsteadOfThePlainTextureRow()
+    {
+        _menu!.Open(Bed());
+
+        Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
+            "у кровати два декора — каркас и постель: она носитель ITabletop");
+        Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy,
+            "второй слот тоже обязан быть виден");
+        Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
+            "общая строка «Текстура» у носителя двух слотов скрыта");
+    }
+
+    [Test]
+    public void BedRows_AreHiddenForOtherFurniture()
+    {
+        _menu!.Open(Bed());
+        _menu!.Open(Stool());
+
+        Assert.IsFalse(Panel().Find(BedFieldsEditor.SizeNode)!.gameObject.activeInHierarchy,
+            "строки кровати у табуретки мертвы: человек правил бы переключатель, который "
+            + "ничего не делает");
+        Assert.IsFalse(Panel().Find(BedFieldsEditor.HeadboardNode)!.gameObject.activeInHierarchy,
+            "и вторая строка тоже");
+    }
+
     [Test]
     public void Drawer_DimensionFieldsAreReadOnly()
     {

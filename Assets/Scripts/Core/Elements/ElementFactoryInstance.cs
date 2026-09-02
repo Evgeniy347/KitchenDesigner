@@ -316,6 +316,21 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, sofa);
         }
 
+        public GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard,
+            string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Кровать", position);
+
+            var bed = go.AddComponent<BedElement>();
+            bed.PartName = go.name;
+            bed.IsDouble = isDouble;
+            bed.HasHeadboard = hasHeadboard;
+            bed.DimensionsMM = dimensionsMM;
+
+            if (DefaultMaterial != null) bed.SetMaterial(DefaultMaterial);
+            return ElementRoot.Publish(go, bed);
+        }
+
         public GameObject CreatePillar(int midHeightMM, string name, Vector3 position,
             int diameterMM = PillarElement.DiameterMM_Default)
         {

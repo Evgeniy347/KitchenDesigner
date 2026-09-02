@@ -172,6 +172,14 @@ namespace KitchenDesigner.Core
                  if (el is SofaElement sofa) ApplyTabletopMaterials(d, sofa);
              }),
 
+            (d => d.isBed,
+             (factory, d) => factory.CreateBed(d.Dimensions, d.bedDouble, d.bedHeadboard,
+                 d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is BedElement bed) ApplyTabletopMaterials(d, bed);
+             }),
+
             (d => d.isRadialShelf,
              (factory, d) => factory.CreateRadialShelf(d.Dimensions.x, d.Dimensions.z,
                  d.Dimensions.y, d.cornerRadius, d.name, d.Position),
