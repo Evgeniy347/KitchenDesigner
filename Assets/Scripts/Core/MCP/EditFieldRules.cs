@@ -23,7 +23,8 @@ namespace KitchenDesigner.Core.MCP
             || el is SofaElement || el is PouffeElement;
 
         internal static bool AcceptsSeatHeight(KitchenElement el) =>
-            el is ChairElement || el is SofaElement;
+            el is ChairElement || el is SofaElement || el is ToiletElement
+            || el is WallHungToiletElement;
 
         internal readonly struct EditTarget
         {
@@ -55,6 +56,8 @@ namespace KitchenDesigner.Core.MCP
             Unsupported("is_open", o => o.is_open.HasValue, AcceptsOpenFlag),
             Unsupported("corner_radius", o => o.corner_radius.HasValue, AcceptsCornerRadius),
             Unsupported("seat_height", o => o.seat_height.HasValue, AcceptsSeatHeight),
+            Unsupported("flush_plate_height", o => o.flush_plate_height.HasValue,
+                el => el is WallHungToiletElement),
             Unsupported("cutout_width", o => o.cutout_width.HasValue, el => el is CooktopElement),
             Unsupported("cutout_depth", o => o.cutout_depth.HasValue, el => el is CooktopElement),
 

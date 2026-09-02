@@ -85,6 +85,8 @@ namespace KitchenDesigner.Core.MCP
 		public ChairInfo? chair;
 		public SofaInfo? sofa;
 		public PouffeInfo? pouffe;
+		public ToiletInfo? toilet;
+		public WallHungToiletInfo? wallHungToilet;
 		public BedInfo? bed;
 		public PillarInfo? pillar;
 		public ScrewLegInfo? screwLeg;
@@ -325,6 +327,31 @@ namespace KitchenDesigner.Core.MCP
 		public int seatThicknessMM;
 		public int maxSeatThicknessMM;
 		public int bodyHeightMM;
+		public string tabletopMaterialId = MaterialCatalog.DefaultId;
+		public string legsMaterialId = MaterialCatalog.DefaultId;
+	}
+
+	[Serializable]
+	public class ToiletInfo
+	{
+		public int seatHeightMM;
+		public int minSeatHeightMM;
+		public int maxSeatHeightMM;
+		public int cisternHeightMM;
+		public string tabletopMaterialId = MaterialCatalog.DefaultId;
+		public string legsMaterialId = MaterialCatalog.DefaultId;
+	}
+
+	[Serializable]
+	public class WallHungToiletInfo
+	{
+		public int seatHeightMM;
+		public int minSeatHeightMM;
+		public int maxSeatHeightMM;
+		public int bowlBottomMM;
+		public int flushPlateHeightMM;
+		public int minFlushPlateHeightMM;
+		public int maxFlushPlateHeightMM;
 		public string tabletopMaterialId = MaterialCatalog.DefaultId;
 		public string legsMaterialId = MaterialCatalog.DefaultId;
 	}

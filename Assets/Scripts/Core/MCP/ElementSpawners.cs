@@ -26,6 +26,11 @@ namespace KitchenDesigner.Core.MCP
         public const int SOFA_DEFAULT_CORNER_RADIUS_MM = SofaElement.DefaultCornerRadiusMM;
         public const int POUFFE_DEFAULT_CORNER_RADIUS_MM = PouffeElement.DefaultCornerRadiusMM;
         public const int POUFFE_DEFAULT_SEAT_THICKNESS_MM = PouffeElement.DefaultSeatThicknessMM;
+        public const int TOILET_DEFAULT_SEAT_HEIGHT_MM = ToiletElement.DefaultSeatHeightMM;
+        public const int WALL_HUNG_TOILET_DEFAULT_SEAT_HEIGHT_MM =
+            WallHungToiletElement.DefaultSeatHeightMM;
+        public const int WALL_HUNG_TOILET_DEFAULT_PLATE_HEIGHT_MM =
+            WallHungToiletElement.DefaultFlushPlateHeightMM;
         public const bool BED_DEFAULT_IS_DOUBLE = true;
         public const bool BED_DEFAULT_HAS_HEADBOARD = true;
         public const int WINDOW_DEFAULT_WIDTH_MM = 900;
@@ -90,6 +95,13 @@ namespace KitchenDesigner.Core.MCP
                 ["pouffe"] = (item, pos) => ElementFactory.CreatePouffe(PouffeDims(item),
                     POUFFE_DEFAULT_CORNER_RADIUS_MM, POUFFE_DEFAULT_SEAT_THICKNESS_MM,
                     item.name, pos),
+
+                ["toilet"] = (item, pos) => ElementFactory.CreateToilet(
+                    TOILET_DEFAULT_SEAT_HEIGHT_MM, item.name, pos),
+
+                ["wall_hung_toilet"] = (item, pos) => ElementFactory.CreateWallHungToilet(
+                    WALL_HUNG_TOILET_DEFAULT_SEAT_HEIGHT_MM,
+                    WALL_HUNG_TOILET_DEFAULT_PLATE_HEIGHT_MM, item.name, pos),
 
                 ["bed"] = (item, pos) => ElementFactory.CreateBed(BedDims(item),
                     BED_DEFAULT_IS_DOUBLE, BED_DEFAULT_HAS_HEADBOARD, item.name, pos),

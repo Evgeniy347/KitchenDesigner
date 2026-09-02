@@ -130,12 +130,21 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "Omit to keep.", Min = 0)]
         public int? corner_radius;
 
-        [McpParam("Chair and sofa only: height of the seat TOP above the floor in MM. Chair: " +
-                  "clamped to 80..height-50 — the legs and the backrest each keep at least 50 mm. " +
-                  "Sofa: it is the height of the solid base block, clamped to 150..height-200. " +
-                  "Omit to keep.",
+        [McpParam("Chair, sofa and both toilets: height of the seat TOP above the floor in MM. " +
+                  "Chair: clamped to 80..height-50 — the legs and the backrest each keep at " +
+                  "least 50 mm. Sofa: it is the height of the solid base block, clamped to " +
+                  "150..height-200. Compact toilet: clamped to 350..502, and what is left up " +
+                  "to the fixed 790 mm becomes the cistern. Wall-hung toilet: clamped to " +
+                  "350..600, and raising it PUSHES flush_plate_height up when the plate would " +
+                  "land on the lid. Omit to keep.",
             Min = 0)]
         public int? seat_height;
+
+        [McpParam("Wall-hung toilet only: height of the BOTTOM of the flush plate above the " +
+                  "floor in MM (the plate itself is 240x165 mm). Clamped to " +
+                  "seat_height+88..835 — at least 50 mm of tiling above the closed lid, and " +
+                  "the plate top never leaves the 1000 mm envelope. Omit to keep.", Min = 0)]
+        public int? flush_plate_height;
 
         [McpParam("Cooktop only: cutout width in MM — the box that goes INTO the countertop " +
                   "(width/height/depth describe the 5 mm plate on top; height is the total). " +
@@ -265,7 +274,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;

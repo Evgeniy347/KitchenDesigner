@@ -42,6 +42,16 @@ namespace KitchenDesigner.Core.MCP
                     pouffe.SeatThicknessMM = op.pouffe_seat_thickness.Value;
                 if (op.corner_radius.HasValue) pouffe.CornerRadiusMM = op.corner_radius.Value;
             }),
+            For<ToiletElement>((op, toilet) =>
+            {
+                if (op.seat_height.HasValue) toilet.SeatHeightMM = op.seat_height.Value;
+            }),
+            For<WallHungToiletElement>((op, toilet) =>
+            {
+                if (op.seat_height.HasValue) toilet.SeatHeightMM = op.seat_height.Value;
+                if (op.flush_plate_height.HasValue)
+                    toilet.FlushPlateHeightMM = op.flush_plate_height.Value;
+            }),
             For<BedElement>((op, bed) =>
             {
                 if (op.bed_double.HasValue) bed.IsDouble = op.bed_double.Value;

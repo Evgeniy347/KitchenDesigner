@@ -143,7 +143,7 @@ SELECTOR (a string; space-separated clauses, ALL must match)
   name:PATTERN             same, explicit
   type:board|wall|floor|window|door|drawer|facade|assembled_facade|
        radial_shelf|panel|table|radius_table|stool|chair|sofa|pouffe|bed|pillar|
-       screw_leg|light
+       screw_leg|toilet|wall_hung_toilet|light
   module:NAME / group:NAME by module name (mask allowed)
   thickness==18            compare a dimension in MM; also width/height/depth
                            with == != >= <= > <
@@ -230,6 +230,28 @@ PouffeElement         Pouffe (type:""pouffe"", 450x400x450 mm by default). An
                       clamped to 20..height/3) and the rest of the height is the
                       box. Body and cushion decors via tabletop_material/
                       legs_material.
+ToiletElement         Compact toilet (type:""toilet""). FIXED 360x790x660 mm — it
+                      ignores width/height/depth like a built-in appliance, and
+                      only yaw rotation is allowed. Pedestal, bowl, seat, lid and
+                      a cistern at the BACK (-Z), plus a chrome flush button flush
+                      with the cistern top. seat_height is the only shape
+                      parameter (400 mm by default, clamped to 350..502); what is
+                      left up to 790 becomes the cistern, which never drops below
+                      250 mm. Ceramic and button decors via tabletop_material/
+                      legs_material — leave them alone for the factory look, white
+                      ceramic and chrome.
+WallHungToiletElement Wall-hung toilet / installation (type:""wall_hung_toilet"").
+                      FIXED 360x1000x540 mm, yaw only, and it SNAPS to the nearest
+                      wall by itself: rot_y is ignored, the element turns its back
+                      (-Z) to the wall and slides along it. The envelope starts at
+                      the FLOOR on purpose — the bowl hangs, but the concealed
+                      cistern (not modelled) occupies the wall from the floor up.
+                      seat_height is the top of the bowl above the floor (400 mm
+                      by default, clamped to 350..600); flush_plate_height is the
+                      BOTTOM of the 240x165 mm dual flush plate (600 mm by
+                      default, clamped to seat_height+88..835). Raising the bowl
+                      PUSHES the plate up, never the other way round. Ceramic and
+                      plate decors via tabletop_material/legs_material.
 BedElement            Bed (type:""bed"", 1800x900x2000 mm by default — width x
                       height x LENGTH: the length runs along Z, because the
                       headboard faces -Z like every other back in this family).
@@ -352,8 +374,8 @@ faceGaps              Per-axis nearest OPPOSITE neighbour: {axis, neighbor, gapM
 moduleId/moduleName   Group membership (0/absent = not grouped).
 materialId            Decor id (list_materials).
 facadeMode            Facade opening mode (""front_left"", ""drawer_out"", ...).
-drawer / table / radiusTable / stool / chair / sofa / pouffe / bed   Type-specific
-                      sub-objects, absent otherwise.
+drawer / table / radiusTable / stool / chair / sofa / pouffe / bed / toilet /
+wallHungToilet        Type-specific sub-objects, absent otherwise.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
   {name, kind, anchor:[x,z] MM corner, size:[width,depth,height] MM, rotY,

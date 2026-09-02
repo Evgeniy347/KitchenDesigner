@@ -167,6 +167,31 @@ namespace KitchenDesigner.Core.MCP
                 legsMaterialId = pouffe.LegsMaterialId
             }),
 
+            For<ToiletElement>((info, toilet) => info.toilet = new ToiletInfo
+            {
+                seatHeightMM = toilet.SeatHeightMM,
+                minSeatHeightMM = ToiletElement.MinSeatHeightMM,
+                maxSeatHeightMM = ToiletElement.MaxSeatHeightMM,
+                cisternHeightMM = toilet.CisternHeightMM,
+                tabletopMaterialId = toilet.TabletopMaterialId,
+                legsMaterialId = toilet.LegsMaterialId
+            }),
+
+            For<WallHungToiletElement>((info, toilet) => info.wallHungToilet =
+                new WallHungToiletInfo
+                {
+                    seatHeightMM = toilet.SeatHeightMM,
+                    minSeatHeightMM = WallHungToiletElement.MinSeatHeightMM,
+                    maxSeatHeightMM = WallHungToiletElement.MaxSeatHeightMM,
+                    bowlBottomMM = toilet.BowlBottomMM,
+                    flushPlateHeightMM = toilet.FlushPlateHeightMM,
+                    minFlushPlateHeightMM =
+                        WallHungToiletElement.MinFlushPlateHeightMM(toilet.SeatHeightMM),
+                    maxFlushPlateHeightMM = WallHungToiletElement.MaxFlushPlateHeightMM,
+                    tabletopMaterialId = toilet.TabletopMaterialId,
+                    legsMaterialId = toilet.LegsMaterialId
+                }),
+
             For<BedElement>((info, bed) => info.bed = new BedInfo
             {
                 size = bed.SizeName,
