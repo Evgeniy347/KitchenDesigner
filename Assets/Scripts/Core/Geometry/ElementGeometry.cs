@@ -19,11 +19,14 @@ namespace KitchenDesigner.Core
 
         public readonly bool IsPanel;
 
-        public readonly bool CentresOnTarget;
+        public readonly Vector3 MountNormal;
+
+        public bool CentresOnTarget =>
+            MountNormal.x != 0f || MountNormal.y != 0f || MountNormal.z != 0f;
 
         public ElementGeometry(int id, string name, Face[] faces, Face[] grooveSeatFaces,
             Face[] grooveWallFaces, Vector3 min, Vector3 max, bool isPanel,
-            bool centresOnTarget = false)
+            Vector3 mountNormal = default)
         {
             Id = id;
             Name = name;
@@ -33,7 +36,7 @@ namespace KitchenDesigner.Core
             Min = min;
             Max = max;
             IsPanel = isPanel;
-            CentresOnTarget = centresOnTarget;
+            MountNormal = mountNormal;
         }
 
         public bool IsEmpty => Faces == null || Faces.Length == 0;
@@ -50,11 +53,11 @@ namespace KitchenDesigner.Core
         }
 
         public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
-            bool isPanel = false, bool centresOnTarget = false)
-            => Box(name, center, sizeUnits, Quaternion.identity, isPanel, centresOnTarget);
+            bool isPanel = false, Vector3 mountNormal = default)
+            => Box(name, center, sizeUnits, Quaternion.identity, isPanel, mountNormal);
 
         public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
-            Quaternion rotation, bool isPanel = false, bool centresOnTarget = false)
+            Quaternion rotation, bool isPanel = false, Vector3 mountNormal = default)
         {
             var half = sizeUnits * 0.5f;
             var axes = new[]
@@ -97,7 +100,7 @@ namespace KitchenDesigner.Core
 
             var empty = System.Array.Empty<Face>();
             return new ElementGeometry(name.GetHashCode(), name, faces, empty, empty,
-                min, max, isPanel, centresOnTarget);
+                min, max, isPanel, mountNormal);
         }
     }
 }

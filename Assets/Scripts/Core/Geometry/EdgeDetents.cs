@@ -21,21 +21,18 @@ namespace KitchenDesigner.Core
 
         public const string CentreLabel = "центр";
 
-        public static float NearestDetentDelta(float aMin, float aMax, float bMin, float bMax,
-            float threshold, List<float>? grooveCoords, out string label) =>
-            NearestDetentDelta(aMin, aMax, bMin, bMax, threshold, grooveCoords, false, out label);
+        public static float CentreDelta(float aMin, float aMax, float bMin, float bMax,
+            float threshold)
+        {
+            float delta = (bMin + bMax - aMin - aMax) * 0.5f;
+            return Mathf.Abs(delta) <= threshold ? delta : 0f;
+        }
 
         public static float NearestDetentDelta(float aMin, float aMax, float bMin, float bMax,
-            float threshold, List<float>? grooveCoords, bool preferCentre, out string label)
+            float threshold, List<float>? grooveCoords, out string label)
         {
             float aCenter = (aMin + aMax) * 0.5f;
             float bCenter = (bMin + bMax) * 0.5f;
-
-            if (preferCentre && Mathf.Abs(bCenter - aCenter) <= threshold)
-            {
-                label = CentreLabel;
-                return bCenter - aCenter;
-            }
 
             var detents = new List<(float d, string name)>
             {

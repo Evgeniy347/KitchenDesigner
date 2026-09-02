@@ -26,7 +26,8 @@ public class SnapCoreScrewLegCentreTests : SnapCoreTestBase
             new Vector3(0f, SideBottomY + 350f * MM, 0f));
 
     private static Box Leg(bool centres) =>
-        new Box("Leg", new Vector3Int(25, 58, 25), null, false, centres);
+        new Box("Leg", new Vector3Int(25, 58, 25), null, false,
+            centres ? Vector3.up : Vector3.zero);
 
     private static Vector3 LegAt(float x) => new Vector3(x, SideBottomY - LegHalfY, x * 0f);
 
@@ -59,5 +60,75 @@ public class SnapCoreScrewLegCentreTests : SnapCoreTestBase
 
         Assert.IsFalse(result.snapped,
             "центровка — это детент, а не магнит на всю сцену: за порогом опора свободна");
+    }
+
+    // ─ Живой случай из сцены: Vintovaya_opora под A4_plint_drawer_L_inner ───
+    //
+    // Цоколь 482x80x16 висит дном на 20 мм над полом, опора стоит пяткой на полу
+    // и ростом 58 мм перекрывает его по высоте на 38 мм. Раньше побеждали БОКОВЫЕ
+    // контакты: опора приклеивалась то к задней пласти цоколя, то к передней (в
+    // сцене — прыжок с −1856 сразу на −1814 мимо середины −1835), а кандидат «под
+    // деталью, по центру» отбрасывался как ломающий уже зафиксированную ось Y —
+    // ту самую, которой пятка стоит на полу.
+
+    private const float PlinthBottomY = 20f * MM;
+    private const float PlinthHalfZ = 8f * MM;
+
+    private const float LegCentreY = 29f * MM;
+
+    private static ElementGeometry Plinth() =>
+        At(Make("Plinth", new Vector3Int(482, 80, 16)),
+            new Vector3(0f, PlinthBottomY + 40f * MM, 0f));
+
+    private static Box FloorLeg() =>
+        new Box("Leg", new Vector3Int(25, 58, 25), null, false, Vector3.up);
+
+    private static List<ElementGeometry> PlinthScene() =>
+        new List<ElementGeometry> { Floor(), Plinth() };
+
+    private static Vector3 LegOnFloorAt(float z) => new Vector3(0f, LegCentreY, z);
+
+    [Test]
+    public void UnderThePlinth_TheLegCentresOnItsThickness()
+    {
+        var result = Snap(FloorLeg(), PlinthScene(), LegOnFloorAt(-12f * MM));
+
+        Assert.IsTrue(result.snapped, "подошла под цоколь — середина обязана предлагаться");
+        Assert.AreEqual(0f, result.position.z, Tol,
+            "опора встаёт на середину шестнадцатимиллиметровой толщины цоколя");
+    }
+
+    [Test]
+    public void Centring_LeavesTheHeightAlone_TheFootStaysOnTheFloor()
+    {
+        var result = Snap(FloorLeg(), PlinthScene(), LegOnFloorAt(-12f * MM));
+
+        Assert.AreEqual(LegCentreY, result.position.y, Tol,
+            "высоту опора добирает длиной резьбы уже после отпускания, а не съезжая "
+            + "вниз при перетаскивании: сдвиг вдоль оси крепления у центровки нулевой, "
+            + "иначе кандидат ломает ось, которой пятка стоит на полу, и его выбрасывают");
+    }
+
+    [Test]
+    public void FlushBehindThePlinth_TheLegGoesToTheMiddle_NotToTheFarSide()
+    {
+        var result = Snap(FloorLeg(), PlinthScene(), LegOnFloorAt(-20.5f * MM));
+
+        Assert.IsTrue(result.snapped, "цоколь в пределах порога — предложение обязано быть");
+        Assert.AreEqual(0f, result.position.z, Tol,
+            "именно этот случай и был в сцене: стоя вплотную ЗА цоколем, опора уезжала "
+            + "на 41 мм к его передней пласти (−1856 → −1814) мимо середины. Боковых "
+            + "контактов у круглой пятки Ø25 не бывает — есть только «под деталью, "
+            + "по центру» (−1835)");
+    }
+
+    [Test]
+    public void TheFarSideOfThePlinth_IsNotOfferedEither()
+    {
+        var result = Snap(FloorLeg(), PlinthScene(), LegOnFloorAt(14f * MM));
+
+        Assert.IsTrue(result.snapped, "с той стороны середина видна ровно так же");
+        Assert.AreEqual(0f, result.position.z, Tol,
+            "подходя с другой стороны, опора приходит на ту же середину");
     }
 }

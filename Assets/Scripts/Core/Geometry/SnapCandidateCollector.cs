@@ -57,6 +57,8 @@ namespace KitchenDesigner.Core
                     Face mf = part.Faces[i];
 
                     if (!isGroove && GrooveSeating.SeatSupersedesFace(mf, of, seatFaces)) continue;
+                    if (part.Geometry.CentresOnTarget
+                        && !LiesOnTheMountAxis(part.Geometry, mf)) continue;
 
                     float dot = Vector3.Dot(mf.normal, of.normal);
                     if (!Tolerance.IsParallel(dot)) continue;
@@ -75,13 +77,64 @@ namespace KitchenDesigner.Core
 
                     float planeShift = Vector3.Dot(offset, mf.normal);
 
-                    if (coDirectional)
+                    if (IsTheMountFace(part.Geometry, mf))
+                        AddCentringContact(part, other, mf, of, i, j, hasLineContact, into);
+                    else if (coDirectional)
                         AddFarEdgeAlignment(part, other, mf, of, i, j, planeShift, hasLineContact, into);
                     else
                         AddFlushContact(part, other, wallFaces, mf, of, i, j, isGroove,
                             planeDist, planeShift, overlapRatio, hasLineContact, into);
                 }
             }
+        }
+
+        private static bool LiesOnTheMountAxis(in ElementGeometry moved, in Face face) =>
+            Mathf.Abs(Vector3.Dot(face.normal, moved.MountNormal)) >= Tolerance.ParallelDot;
+
+        private static bool IsTheMountFace(in ElementGeometry moved, in Face face) =>
+            moved.CentresOnTarget
+            && Vector3.Dot(face.normal, moved.MountNormal) >= Tolerance.ParallelDot;
+
+        private static void AddCentringContact(in MovedPart part, in ElementGeometry other,
+            in Face mf, in Face of, int i, int j, bool hasLineContact, SnapCandidates into)
+        {
+            Vector3 u = mf.rightAxis;
+            Vector3 v = mf.upAxis;
+            Rect mRect = FaceRects.Of(mf, u, v);
+            Rect oRect = FaceRects.Of(of, u, v);
+            float du = EdgeDetents.CentreDelta(mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax,
+                part.MaxDist);
+            float dv = EdgeDetents.CentreDelta(mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax,
+                part.MaxDist);
+
+            Vector3 snapPos = part.BasePos + du * u + dv * v;
+            float dist = Vector3.Distance(snapPos, part.BasePos);
+            if (dist <= ZeroShiftEpsilon) return;
+
+            into.Candidates.Add(new SnapCandidate
+            {
+                dist = dist,
+                result = new SnapResult
+                {
+                    snapped = true,
+                    position = snapPos,
+                    targetName = other.Name,
+                    faceIndex = j,
+                    snapPoint = mf.center,
+                    targetPoint = of.center
+                },
+                normal = mf.normal,
+                planeShift = 0f,
+                u = u,
+                v = v,
+                du = du,
+                dv = dv,
+                hasLineContact = hasLineContact,
+                log = part.Verbose
+                    ? $"[Snap] {part.Geometry.Name} → {other.Name} | центровка под деталью " +
+                      $"m{i}/o{j} du={du * 1000f:F2}мм dv={dv * 1000f:F2}мм"
+                    : null
+            });
         }
 
         private static void AddFarEdgeAlignment(in MovedPart part, in ElementGeometry other,
@@ -145,11 +198,10 @@ namespace KitchenDesigner.Core
             Vector3 v = mf.upAxis;
             Rect mRect = FaceRects.Of(mf, u, v);
             Rect oRect = FaceRects.Of(of, u, v);
-            bool centres = part.Geometry.CentresOnTarget;
             float du = EdgeDetents.NearestDetentDelta(mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax,
-                part.MaxDist, EdgeDetents.GrooveWallCoordsAlong(wallFaces, u), centres, out string labelU);
+                part.MaxDist, EdgeDetents.GrooveWallCoordsAlong(wallFaces, u), out string labelU);
             float dv = EdgeDetents.NearestDetentDelta(mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax,
-                part.MaxDist, EdgeDetents.GrooveWallCoordsAlong(wallFaces, v), centres, out string labelV);
+                part.MaxDist, EdgeDetents.GrooveWallCoordsAlong(wallFaces, v), out string labelV);
 
             Vector3 snapPos = part.BasePos + planeShift * mf.normal + du * u + dv * v;
 
