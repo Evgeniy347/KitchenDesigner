@@ -103,7 +103,12 @@ namespace KitchenDesigner.Core
 
             (el => el is TableElement,
              (factory, source, pos) => factory.CreateTable(source.DimensionsMM, source.PartName, pos),
-             CopyMaterial),
+             (source, copy) =>
+             {
+                 var made = copy.GetComponent<TableElement>();
+                 if (made != null) made.LegInsetMM = ((TableElement)source).LegInsetMM;
+                 CopyTabletopSlots(source, copy);
+             }),
 
             (el => el is RadiusTableElement,
              (factory, source, pos) => factory.CreateRadiusTable(source.DimensionsMM, source.PartName, pos),

@@ -191,4 +191,94 @@ public class ElementDuplicatorTests
         Assert.AreEqual(150, copy.DiameterMM,
             "копия опоры обязана сохранить сечение: фабрика по умолчанию ставит 50");
     }
+
+    /// <summary>Репро дефекта: обычный стол при дублировании терял отступ ножек и
+    /// декор ножек. Его ветка реестра отдавала только CopyMaterial, а MaterialId у
+    /// TableElement — всего лишь псевдоним TabletopMaterialId, поэтому переживала
+    /// копирование одна столешница: отступ возвращался к заводскому, а ножки
+    /// перекрашивались в цвет столешницы. RadiusTableElement копировал оба поля с
+    /// самого начала — два родственных типа расходились в поведении.</summary>
+    [Test]
+    public void Duplicate_Table_KeepsLegInsetAndLegsDecor()
+    {
+        var dims = new Vector3Int(1200, 750, 700);
+        var factoryDefault = (TableElement)Made(
+            ElementFactory.CreateTable(dims, "TableDefault", Vector3.zero));
+        Assume.That(factoryDefault.LegInsetMM, Is.Not.EqualTo(47),
+            "предусловие: 47 мм не совпадает с заводским отступом, иначе тест остался бы "
+            + "зелёным и при полностью потерянном поле");
+
+        var source = (TableElement)Made(ElementFactory.CreateTable(dims, "Table", Vector3.zero));
+        source.LegInsetMM = 47;
+        source.TabletopMaterialId = "decor-top";
+        source.LegsMaterialId = "decor-legs";
+
+        var copy = ElementFactory.Duplicate(source).GetComponent<TableElement>();
+
+        Assert.AreEqual(47, copy.LegInsetMM,
+            "отступ ножек обязан пережить копирование: без него копия молча встаёт с "
+            + "заводскими ножками, хотя у радиусного стола это работало всегда");
+        Assert.AreEqual("decor-legs", copy.LegsMaterialId,
+            "слот ножек — отдельный декор: без него копия красит ножки в цвет столешницы, "
+            + "потому что MaterialId у стола лишь псевдоним TabletopMaterialId");
+        Assert.AreEqual("decor-top", copy.TabletopMaterialId,
+            "слот столешницы не должен пострадать от переноса слота ножек");
+    }
+
+    /// <summary>Парность по ПОВЕДЕНИЮ, а не по тексту исходника: у ITabletop два слота
+    /// декора, и копия обязана сохранить оба у КАЖДОГО типа. Обычный стол был
+    /// единственным, кто отдавал в реестр CopyMaterial вместо CopyTabletopSlots, и
+    /// терял слот ножек; поимённая проверка одного типа не помешала бы следующему
+    /// повторить пропуск. Набор экземпляров не записан руками — он сверяется
+    /// рефлексией по сборке ядра, поэтому новый ITabletop сначала уронит сам список,
+    /// а не пройдёт мимо проверки (CONVENTIONS.md → «A field list written out more
+    /// than twice gets a parity test»).</summary>
+    [Test]
+    public void Duplicate_EveryTabletopType_KeepsBothDecorSlots()
+    {
+        var originals = new List<KitchenElement>
+        {
+            Made(ElementFactory.CreateTable(new Vector3Int(1200, 750, 700), "Table", Vector3.zero)),
+            Made(ElementFactory.CreateRadiusTable(new Vector3Int(1200, 750, 700), "RTable", Vector3.zero)),
+            Made(ElementFactory.CreateStool(new Vector3Int(360, 450, 360), 20, "Stool", Vector3.zero)),
+            Made(ElementFactory.CreateChair(new Vector3Int(450, 900, 450), 20, 450, "Chair", Vector3.zero)),
+            Made(ElementFactory.CreateSofa(new Vector3Int(1800, 800, 900), 20, 420, "Sofa", Vector3.zero)),
+            Made(ElementFactory.CreatePouffe(new Vector3Int(400, 420, 400), 20, 80, "Pouffe", Vector3.zero)),
+            Made(ElementFactory.CreateBed(new Vector3Int(1600, 500, 2000), true, true, "Bed", Vector3.zero)),
+        };
+
+        var declared = new List<Type>();
+        foreach (var type in typeof(ITabletop).Assembly.GetTypes())
+            if (typeof(ITabletop).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
+                declared.Add(type);
+
+        Assert.IsNotEmpty(declared,
+            "рефлексия не нашла ни одного ITabletop — сканер смотрит не в ту сборку, "
+            + "и тогда проверка ниже зелёная, но не проверяет ничего");
+        CollectionAssert.AreEquivalent(declared, originals.ConvertAll(el => el.GetType()),
+            "список экземпляров разошёлся с типами ITabletop в сборке ядра: новый тип "
+            + "обязан появиться и здесь, иначе он копируется без проверки слотов");
+
+        var lost = new List<string>();
+        foreach (var source in originals)
+        {
+            var slots = (ITabletop)source;
+            var typeName = source.GetType().Name;
+            slots.TabletopMaterialId = "top-" + typeName;
+            slots.LegsMaterialId = "legs-" + typeName;
+
+            var copy = (ITabletop)ElementFactory.Duplicate(source).GetComponent<KitchenElement>();
+
+            if (copy.TabletopMaterialId != slots.TabletopMaterialId)
+                lost.Add(typeName + ".TabletopMaterialId = " + copy.TabletopMaterialId
+                    + " (ожидался " + slots.TabletopMaterialId + ")");
+            if (copy.LegsMaterialId != slots.LegsMaterialId)
+                lost.Add(typeName + ".LegsMaterialId = " + copy.LegsMaterialId
+                    + " (ожидался " + slots.LegsMaterialId + ")");
+        }
+
+        Assert.IsEmpty(lost,
+            "ветка реестра ElementDuplicators отдала не CopyTabletopSlots, и копия потеряла "
+            + "слот декора: " + string.Join("; ", lost));
+    }
 }
