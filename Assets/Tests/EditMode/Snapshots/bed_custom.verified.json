@@ -2,15 +2,15 @@
     "version": 1,
     "elements": [
         {
-            "name": "BigSofa",
+            "name": "SmallBed",
             "dimensionsMM": [
-                1800,
-                820,
-                950
+                940,
+                640,
+                1930
             ],
             "position": [
                 0.5,
-                0.4099999964237213,
+                0.3199999928474426,
                 -1.0
             ],
             "rotation": [
@@ -29,11 +29,11 @@
             "isRadiusTable": false,
             "isStool": false,
             "isChair": false,
-            "isSofa": true,
-            "isBed": false,
-            "bedDouble": true,
-            "bedHeadboard": true,
-            "seatHeightMM": 371,
+            "isSofa": false,
+            "isBed": true,
+            "bedDouble": false,
+            "bedHeadboard": false,
+            "seatHeightMM": 450,
             "legInsetMM": 100,
             "gapLeft": 0,
             "gapRight": 0,
@@ -51,7 +51,7 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "cornerRadius": 143,
+            "cornerRadius": 0,
             "isDrawer": false,
             "drawerSystem": 0,
             "drawerType": 0,
