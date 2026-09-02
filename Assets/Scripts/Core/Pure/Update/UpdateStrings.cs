@@ -25,6 +25,7 @@ namespace KitchenDesigner.Core.Update
             "Загружаем Kitchen Designer {0}…\n\n" +
             "После завершения загрузки приложение будет автоматически перезапущено.";
         public const string DownloadCancelButton = "Отмена";
+        public const string RetryAttempt = "Повторная попытка {0} из {1}…";
     }
 
     public enum StatusLevel { Info, Success, Error }

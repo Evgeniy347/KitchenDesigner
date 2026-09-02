@@ -11,6 +11,7 @@ namespace KitchenDesigner.Core.Update
         private RectTransform? _root;
         private TMP_Text? _title;
         private TMP_Text? _message;
+        private TMP_Text? _retry;
         private Slider? _progress;
         internal Button? CancelButton;
 
@@ -18,15 +19,19 @@ namespace KitchenDesigner.Core.Update
 
         internal bool IsVisible => _root != null && _root.gameObject.activeSelf;
         internal string? MessageText => _message != null ? _message.text : null;
+        internal string? RetryText => _retry != null ? _retry.text : null;
         internal float Progress => _progress != null ? _progress.value : -1f;
         internal bool ProgressBarIsInteractive => _progress != null && _progress.interactable;
         internal RectTransform? BackdropRect => _root;
         internal RectTransform? TitleRect => _title != null ? _title.rectTransform : null;
         internal RectTransform? MessageRect => _message != null ? _message.rectTransform : null;
+        internal RectTransform? RetryRect => _retry != null ? _retry.rectTransform : null;
+        internal RectTransform? CancelRect =>
+            CancelButton != null ? (RectTransform)CancelButton.transform : null;
 
 
         private const float W = 460f;
-        private const float H = 210f;
+        private const float H = 240f;
 
         public void Build(Transform parent)
         {
@@ -49,13 +54,18 @@ namespace KitchenDesigner.Core.Update
             _title = title;
 
             _message = UIFactory.CreateLabel("DownloadMessage", pr, "",
-                16, new Vector2(0, 15f), new Vector2(W - 40f, 90f), TextAnchor.UpperLeft);
+                16, new Vector2(0, 30f), new Vector2(W - 40f, 90f), TextAnchor.UpperLeft);
             _message.enableWordWrapping = true;
 
             _progress = UIFactory.CreateSlider("DownloadProgressBar", pr, 0f, 1f, 0f,
                 new Vector2(0, -30f), new Vector2(W - 40f, 24f), null!);
             _progress.interactable = false;
             _progress.fillRect.GetComponent<Image>().color = UIStyle.Accent;
+
+            _retry = UIFactory.CreateLabel("DownloadRetry", pr, "",
+                UIStyle.FontSmall, new Vector2(0, -55f), new Vector2(W - 40f, 20f),
+                TextAnchor.MiddleCenter);
+            _retry.color = UIStyle.HighlightWarning;
 
             CancelButton = UIFactory.CreateButton("DownloadCancel", pr,
                 UpdateStrings.DownloadCancelButton, new Vector2(0, -H / 2f + 30f),
@@ -68,6 +78,7 @@ namespace KitchenDesigner.Core.Update
         {
             _onCancel = onCancel;
             if (_message != null) _message.text = string.Format(UpdateStrings.DownloadMessage, version);
+            if (_retry != null) _retry.text = string.Empty;
             SetProgress(0f);
             if (_root != null)
             {
@@ -79,6 +90,13 @@ namespace KitchenDesigner.Core.Update
         public void SetProgress(float t01)
         {
             if (_progress != null) _progress.value = Mathf.Clamp01(t01);
+        }
+
+        public void ShowRetry(int attemptNumber, int totalAttempts)
+        {
+            if (_retry != null)
+                _retry.text = string.Format(UpdateStrings.RetryAttempt, attemptNumber, totalAttempts);
+            SetProgress(0f);
         }
 
         public void Hide()

@@ -44,6 +44,20 @@ public class UpdateStringsTests
     }
 
     [Test]
+    public void RetryAttempt_CarriesBothTheAttemptNumberAndTheirTotal()
+    {
+        string formatted = string.Format(UpdateStrings.RetryAttempt, 2, 3);
+
+        StringAssert.Contains("2", formatted,
+            "номер текущей попытки — половина смысла строки");
+        StringAssert.Contains("3", formatted,
+            "без общего числа попыток пользователь не знает, сколько ещё ждать "
+            + "перед тем, как обновление сдастся");
+        Assert.AreEqual(-1, formatted.IndexOf('{'),
+            "лишний {N} в шаблоне не подставится и уедет на экран как есть");
+    }
+
+    [Test]
     public void EveryUserFacingString_IsFilledIn()
     {
         Assert.IsNotEmpty(UpdateStrings.CheckError);
@@ -55,5 +69,6 @@ public class UpdateStringsTests
         Assert.IsNotEmpty(UpdateStrings.UpdateCancelButton);
         Assert.IsNotEmpty(UpdateStrings.DownloadTitle);
         Assert.IsNotEmpty(UpdateStrings.DownloadCancelButton);
+        Assert.IsNotEmpty(UpdateStrings.RetryAttempt);
     }
 }

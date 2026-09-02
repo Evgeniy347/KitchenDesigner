@@ -139,6 +139,55 @@ public class UpdateDialogUiTests
     }
 
     [Test]
+    public void DownloadDialog_ShowRetry_NamesTheAttemptAndIsClearedByTheNextDownload()
+    {
+        var go = new GameObject("dl");
+        var dlg = go.AddComponent<DownloadProgressUI>();
+        dlg.Build(_canvas.transform);
+
+        dlg.ShowDownloading("0.700", () => { });
+        Assert.IsEmpty(dlg.RetryText,
+            "строка повтора при обычной загрузке пуста: «повторная попытка» на "
+            + "первой же попытке сообщает о сбое, которого не было");
+
+        dlg.SetProgress(0.6f);
+        dlg.ShowRetry(2, 3);
+
+        Assert.That(dlg.RetryText, Does.Contain("2").And.Contain("3"),
+            "оба числа обязаны доехать до окна: «повторная попытка 2» без «из 3» "
+            + "не говорит пользователю, сколько ещё ждать");
+        Assert.AreEqual(0f, dlg.Progress, 0.001f,
+            "новая попытка качает файл с нуля — полоса, оставшаяся на 60%, "
+            + "показывала бы прогресс уже оборванной загрузки");
+
+        dlg.ShowDownloading("0.701", () => { });
+        Assert.IsEmpty(dlg.RetryText,
+            "следующее обновление начинается с чистого окна: строка повтора, "
+            + "пережившая закрытие, врёт про совершенно другую загрузку");
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
+    public void DownloadDialog_RetryLine_SitsBetweenTheProgressBarAndTheCancelButton()
+    {
+        var go = new GameObject("dl");
+        var dlg = go.AddComponent<DownloadProgressUI>();
+        dlg.Build(_canvas.transform);
+        dlg.ShowDownloading("0.700", () => { });
+        dlg.ShowRetry(3, 3);
+
+        Assert.IsNotNull(dlg.RetryRect, "строки повтора нет вовсе");
+        Assert.IsNotNull(dlg.CancelRect, "кнопки отмены нет вовсе");
+        float retryBottom = dlg.RetryRect.TransformPoint(new Vector3(0f, dlg.RetryRect.rect.yMin, 0f)).y;
+        float cancelTop = dlg.CancelRect.TransformPoint(new Vector3(0f, dlg.CancelRect.rect.yMax, 0f)).y;
+
+        Assert.GreaterOrEqual(retryBottom, cancelTop,
+            "строка добавлена в окно фиксированной высоты: наехав на кнопку, она "
+            + "перекрывает единственный способ прервать загрузку");
+        Object.DestroyImmediate(go);
+    }
+
+    [Test]
     public void DownloadDialog_ProgressBar_CannotBeDraggedByTheUser()
     {
         var go = new GameObject("dl");

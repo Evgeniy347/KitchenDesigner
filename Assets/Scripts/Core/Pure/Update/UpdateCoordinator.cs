@@ -111,12 +111,18 @@ namespace KitchenDesigner.Core.Update
             _targetPath = System.IO.Path.Combine(_tempDirProvider(), _pending.FileName);
             _downloadDialog.ShowDownloading(_pending.Version, OnDownloadCancelRequested);
             _downloader.Start(_pending.DownloadUrl, _targetPath,
-                OnDownloadProgress, OnDownloadComplete, OnDownloadFailure);
+                OnDownloadProgress, OnDownloadAttemptStarted, OnDownloadComplete, OnDownloadFailure);
         }
 
         private void OnDownloadProgress(float t01)
         {
             _downloadDialog.SetProgress(Mathf.Clamp01(t01));
+        }
+
+        private void OnDownloadAttemptStarted(int attemptNumber, int totalAttempts)
+        {
+            if (attemptNumber <= 1) return;
+            _downloadDialog.ShowRetry(attemptNumber, totalAttempts);
         }
 
         private void OnDownloadComplete()

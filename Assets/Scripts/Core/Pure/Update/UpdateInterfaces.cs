@@ -10,7 +10,8 @@ namespace KitchenDesigner.Core.Update
     public interface IInstallerDownloader
     {
         void Start(string url, string targetPath,
-            Action<float> onProgress, Action onComplete, Action<string, bool> onFailureWithCancelledFlag);
+            Action<float> onProgress, Action<int, int> onAttemptStarted,
+            Action onComplete, Action<string, bool> onFailureWithCancelledFlag);
         void Cancel();
     }
 
@@ -34,6 +35,7 @@ namespace KitchenDesigner.Core.Update
     {
         void ShowDownloading(string version, Action onCancel);
         void SetProgress(float t01);
+        void ShowRetry(int attemptNumber, int totalAttempts);
         void Hide();
     }
 }

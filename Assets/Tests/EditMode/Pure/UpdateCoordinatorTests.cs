@@ -27,10 +27,12 @@ public class UpdateCoordinatorTests
     private sealed class FakeDownloader : IInstallerDownloader
     {
         public int StartCalls; public string Url; public string Path;
-        public Action<float> Progress; public Action Complete; public Action<string, bool> Fail;
+        public Action<float> Progress; public Action<int, int> Attempt;
+        public Action Complete; public Action<string, bool> Fail;
         public int CancelCalls;
-        public void Start(string url, string targetPath, Action<float> p, Action c, Action<string, bool> f)
-        { StartCalls++; Url = url; Path = targetPath; Progress = p; Complete = c; Fail = f; }
+        public void Start(string url, string targetPath, Action<float> p, Action<int, int> a,
+            Action c, Action<string, bool> f)
+        { StartCalls++; Url = url; Path = targetPath; Progress = p; Attempt = a; Complete = c; Fail = f; }
         public void Cancel() { CancelCalls++; }
     }
 
@@ -62,9 +64,12 @@ public class UpdateCoordinatorTests
     {
         public int ShowCalls; public int HideCalls; public string Version; public Action OnCancel;
         public readonly List<float> Progress = new();
+        public readonly List<(int attempt, int total)> Retries = new();
         public void ShowDownloading(string version, Action onCancel)
         { ShowCalls++; Version = version; OnCancel = onCancel; }
         public void SetProgress(float t01) => Progress.Add(t01);
+        public void ShowRetry(int attemptNumber, int totalAttempts)
+            => Retries.Add((attemptNumber, totalAttempts));
         public void Hide() => HideCalls++;
     }
 
@@ -289,6 +294,55 @@ public class UpdateCoordinatorTests
         _downloader.Fail("cancelled", true);
         Assert.AreEqual(UpdateStrings.DownloadCancelled, _status.Last.Item1);
         Assert.AreEqual(hidesBeforeCancel + 1, _ddlg.HideCalls);
+    }
+
+    // ── Повторы загрузки ──────────────────────────────────────────────────
+    [Test]
+    public void FirstDownloadAttempt_IsNotAnnouncedAsARetry()
+    {
+        _c.CheckForUpdates();
+        _checker.Ok(Newer());
+        _udlg.OnUpdate();
+        _downloader.Attempt(1, 3);
+
+        CollectionAssert.IsEmpty(_ddlg.Retries,
+            "первая попытка — это обычная загрузка. Надпись «повторная попытка 1 из 3» "
+            + "на старте сообщает о сбое, которого не было");
+    }
+
+    [Test]
+    public void SecondDownloadAttempt_TellsTheUserItIsARetry_WithBothNumbers()
+    {
+        _c.CheckForUpdates();
+        _checker.Ok(Newer());
+        _udlg.OnUpdate();
+        _downloader.Attempt(2, 3);
+
+        CollectionAssert.AreEqual(new[] { (2, 3) }, _ddlg.Retries,
+            "молчаливый повтор выглядит как зависшая загрузка: прогресс уехал назад "
+            + "в ноль, а окно об этом не сказало. Номер попытки и их общее число "
+            + "обязаны доехать до окна оба — «повторная попытка 2» без «из 3» не "
+            + "говорит, сколько ещё ждать");
+    }
+
+    [Test]
+    public void DownloadRetries_DoNotTouchTheApplierOrTheStatusBar_UntilTheDownloaderReportsBack()
+    {
+        _c.CheckForUpdates();
+        _checker.Ok(Newer());
+        _udlg.OnUpdate();
+        _downloader.Attempt(2, 3);
+        _downloader.Attempt(3, 3);
+
+        Assert.AreEqual(0, _applier.Calls,
+            "повтор — это ещё не отказ и не успех: устанавливать нечего");
+        CollectionAssert.IsEmpty(_status.Shown,
+            "ошибку пользователь видит ОДИН раз, после исчерпания попыток. Статус "
+            + "об ошибке на каждой промежуточной попытке — три красных сообщения "
+            + "подряд про обновление, которое в итоге поставится");
+        Assert.AreEqual(0, _ddlg.HideCalls,
+            "окно загрузки живёт через все попытки: закрыв его на первом сбое, "
+            + "повтор пришлось бы вести за спиной у пользователя");
     }
 
     [Test]

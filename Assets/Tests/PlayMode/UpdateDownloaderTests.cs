@@ -21,6 +21,11 @@ public class UpdateDownloaderTests
     private static string TempPath(string prefix)
         => Path.Combine(Path.GetTempPath(), prefix + Guid.NewGuid().ToString("N") + ".bin");
 
+    // Тот же расклад попыток, что в бою (три), но с паузами в кадры вместо
+    // секунд: боевые 2 и 5 с превратили бы каждый тест на отказ в семисекундное
+    // ожидание, а проверяется здесь СЧЁТ попыток, не их темп.
+    private static UpdateRetryPolicy Impatient() => new UpdateRetryPolicy(0.02f, 0.05f);
+
     [UnityTest]
     public IEnumerator Downloader_DownloadsLocalFile_ReportsProgressAndCompletes()
     {
@@ -38,7 +43,7 @@ public class UpdateDownloaderTests
             bool done = false, failed = false;
             float lastProgress = -1f;
             downloader.Start(new Uri(src).AbsoluteUri, dst,
-                p => lastProgress = p, () => done = true, (_, _) => failed = true);
+                p => lastProgress = p, (_, _) => { }, () => done = true, (_, _) => failed = true);
 
             float elapsed = 0f;
             while (!done && !failed && elapsed < TimeoutSeconds)
@@ -75,8 +80,11 @@ public class UpdateDownloaderTests
             var downloader = go.AddComponent<UnityWebRequestDownloader>();
 
             bool done = false, failed = false, cancelled = false;
+            int attempts = 0;
+            downloader.RetryPolicy = Impatient();
             downloader.Start(new Uri(TempPath("kd-update-missing-")).AbsoluteUri, dst,
-                _ => { }, () => done = true, (_, c) => { failed = true; cancelled = c; });
+                _ => { }, (_, _) => attempts++, () => done = true,
+                (_, c) => { failed = true; cancelled = c; });
 
             float elapsed = 0f;
             while (!done && !failed && elapsed < TimeoutSeconds)
@@ -88,6 +96,10 @@ public class UpdateDownloaderTests
             Assert.IsTrue(failed, "отсутствующий источник должен завершиться отказом");
             Assert.IsFalse(done);
             Assert.IsFalse(cancelled);
+            Assert.AreEqual(downloader.RetryPolicy.MaxAttempts, attempts,
+                "сетевой отказ повторяется до исчерпания попыток, и об отказе "
+                + "пользователю говорят ОДИН раз — после последней. Одна попытка "
+                + "здесь означает, что цикл повторов не работает вовсе");
             Assert.IsFalse(File.Exists(dst), "при отказе недокачанный файл удаляется");
         }
         finally
@@ -111,8 +123,11 @@ public class UpdateDownloaderTests
 
             bool done = false, failed = false, cancelled = false;
             string reason = null;
+            int attempts = 0;
+            downloader.RetryPolicy = Impatient();
             downloader.Start(new Uri(src).AbsoluteUri, dst,
-                _ => { }, () => done = true, (m, c) => { failed = true; reason = m; cancelled = c; });
+                _ => { }, (_, _) => attempts++, () => done = true,
+                (m, c) => { failed = true; reason = m; cancelled = c; });
             downloader.Cancel();
 
             float elapsed = 0f;
@@ -129,6 +144,10 @@ public class UpdateDownloaderTests
                 + "иначе пользователь, нажавший «Отмена», получает окно с ошибкой сети. "
                 + "Причина: " + reason);
             Assert.IsFalse(done);
+            Assert.AreEqual(1, attempts,
+                "отмена — не сбой сети: повторять нечего. Повтор после «Отмена» "
+                + "качает файл, от которого пользователь только что отказался, "
+                + "и показывает ему окно, которое он закрыл");
             Assert.IsFalse(File.Exists(dst),
                 "недокачанный файл после отмены остаётся мусором в temp и, что хуже, "
                 + "выглядит как готовый установщик");
