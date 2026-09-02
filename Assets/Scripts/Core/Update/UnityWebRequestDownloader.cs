@@ -12,7 +12,7 @@ namespace KitchenDesigner.Core.Update
         private UnityWebRequest? _active;
         private bool _cancelRequested;
 
-        internal UpdateRetryPolicy RetryPolicy { get; set; } = UpdateRetryPolicy.ForInstallerDownload();
+        public UpdateRetryPolicy RetryPolicy { get; set; } = UpdateRetryPolicy.ForInstallerDownload();
 
         public void Start(string url, string targetPath,
             Action<float> onProgress, Action<int, int> onAttemptStarted,
