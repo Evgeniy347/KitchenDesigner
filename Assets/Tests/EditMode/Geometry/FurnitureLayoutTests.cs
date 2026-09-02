@@ -89,6 +89,48 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
+        public void MaxCornerRadiusMM_IsHalfOfTheSHORTERHorizontalSide_NotOfTheWidth()
+        {
+            Assert.AreEqual(175, FurnitureLayout.MaxCornerRadiusMM(
+                new Vector3Int(600, 400, 350)),
+                "скругление съедает обе горизонтальные стороны сразу, поэтому его "
+                + "потолок задаёт МЕНЬШАЯ из них: 350/2 = 175. Габарит взят "
+                + "несимметричным нарочно — на квадрате перепутанные местами ширина "
+                + "и глубина дали бы тот же ответ");
+        }
+
+        [Test]
+        public void MaxCornerRadiusMM_IgnoresHeight_EvenWhenHeightIsTheSmallestOfTheThree()
+        {
+            Assert.AreEqual(200, FurnitureLayout.MaxCornerRadiusMM(
+                new Vector3Int(400, 30, 900)),
+                "скругляется контур в плане, а не бок: высота 30 мм не имеет к "
+                + "потолку радиуса никакого отношения");
+        }
+
+        [Test]
+        public void MaxCornerRadiusMM_NeverGoesNegative_OnADegenerateFootprint()
+        {
+            Assert.AreEqual(0, FurnitureLayout.MaxCornerRadiusMM(
+                new Vector3Int(-10, 450, 360)),
+                "отрицательный потолок сделал бы Clamp невозможным (min > max) и "
+                + "вернул бы саму отрицательную границу — то есть радиус наружу");
+        }
+
+        [Test]
+        public void ClampCornerRadiusMM_HoldsBothEnds_ZeroAndTheHalfSide()
+        {
+            var dims = new Vector3Int(600, 400, 350);
+
+            Assert.AreEqual(0, FurnitureLayout.ClampCornerRadiusMM(dims, -50),
+                "ноль — законное значение: это прямоугольная мебель без скругления");
+            Assert.AreEqual(175, FurnitureLayout.ClampCornerRadiusMM(dims, 10000),
+                "выше половины меньшей стороны контур вывернулся бы наружу");
+            Assert.AreEqual(120, FurnitureLayout.ClampCornerRadiusMM(dims, 120),
+                "значение внутри диапазона обязано пройти насквозь неизменным");
+        }
+
+        [Test]
         public void TopSurfaceMM_IsWidthByDepth_NotWidthByHeight()
         {
             var surface = FurnitureLayout.TopSurfaceMM(new Vector3Int(360, 900, 450));

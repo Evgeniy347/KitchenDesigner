@@ -27,11 +27,8 @@ namespace KitchenDesigner.Core
 
         public string ShapeName =>
             _cornerRadiusMM <= 0 ? ShapeSquare
-            : _cornerRadiusMM >= MaxCornerRadiusMM(DimensionsMM) ? ShapeRound
+            : _cornerRadiusMM >= FurnitureLayout.MaxCornerRadiusMM(DimensionsMM) ? ShapeRound
             : ShapeRounded;
-
-        public static int MaxCornerRadiusMM(Vector3Int dimensionsMM)
-            => Mathf.Max(0, Mathf.Min(dimensionsMM.x, dimensionsMM.z) / 2);
 
         protected override Vector3 EffectiveScale => FurnitureLayout.PhysicalScale(DimensionsMM);
 
@@ -45,7 +42,7 @@ namespace KitchenDesigner.Core
             get => _cornerRadiusMM;
             set
             {
-                value = ClampCornerRadius(value);
+                value = FurnitureLayout.ClampCornerRadiusMM(DimensionsMM, value);
                 if (_cornerRadiusMM == value) return;
                 _cornerRadiusMM = value;
                 ApplyDimensions();
@@ -77,9 +74,6 @@ namespace KitchenDesigner.Core
 
         private TabletopSurface Seat => _seat ??= new TabletopSurface(gameObject, AdoptOwnedMesh);
 
-        private int ClampCornerRadius(int value)
-            => Mathf.Clamp(value, 0, MaxCornerRadiusMM(DimensionsMM));
-
         private void ApplyMaterial()
             => TabletopDecor.ApplyBothSlots(this, _seatMaterialId, _legsMaterialId);
 
@@ -87,7 +81,7 @@ namespace KitchenDesigner.Core
 
         private void Rebuild()
         {
-            _cornerRadiusMM = ClampCornerRadius(_cornerRadiusMM);
+            _cornerRadiusMM = FurnitureLayout.ClampCornerRadiusMM(DimensionsMM, _cornerRadiusMM);
             transform.localScale = Vector3.one;
             RebuildSeat();
             PlaceLegs();

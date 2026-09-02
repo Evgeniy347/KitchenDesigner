@@ -328,7 +328,7 @@ public class ElementPropertyDiagramTests
         var dims = new Vector3Int(StoolElement.DefaultWidthMM,
             StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM);
         Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
-        var go = ElementFactory.CreateStool(dims, StoolElement.MaxCornerRadiusMM(dims),
+        var go = ElementFactory.CreateStool(dims, FurnitureLayout.MaxCornerRadiusMM(dims),
             "Табуретка", pos);
         var el = go.GetComponent<KitchenElement>();
         Assert.IsNotNull(el);
@@ -343,7 +343,7 @@ public class ElementPropertyDiagramTests
         var dims = new Vector3Int(ChairElement.DefaultWidthMM,
             ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM);
         Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
-        var go = ElementFactory.CreateChair(dims, ChairElement.MaxCornerRadiusMM(dims),
+        var go = ElementFactory.CreateChair(dims, FurnitureLayout.MaxCornerRadiusMM(dims),
             AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT, "Стул", pos);
         var el = go.GetComponent<KitchenElement>();
         Assert.IsNotNull(el);

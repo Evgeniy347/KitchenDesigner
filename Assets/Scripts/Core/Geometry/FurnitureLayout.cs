@@ -21,5 +21,11 @@ namespace KitchenDesigner.Core
 
         public static Vector2Int TopSurfaceMM(Vector3Int dimensionsMM)
             => new Vector2Int(dimensionsMM.x, dimensionsMM.z);
+
+        public static int MaxCornerRadiusMM(Vector3Int dimensionsMM)
+            => Mathf.Max(0, Mathf.Min(dimensionsMM.x, dimensionsMM.z) / 2);
+
+        public static int ClampCornerRadiusMM(Vector3Int dimensionsMM, int value)
+            => Mathf.Clamp(value, 0, MaxCornerRadiusMM(dimensionsMM));
     }
 }

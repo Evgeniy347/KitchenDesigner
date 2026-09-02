@@ -259,7 +259,7 @@ public class ChairElementTests
     [Test]
     public void Chair_Backrest_IsAPlainBox_NotAProfileExtrusion()
     {
-        var chair = Chair(400, 900, 400, ChairElement.MaxCornerRadiusMM(
+        var chair = Chair(400, 900, 400, FurnitureLayout.MaxCornerRadiusMM(
             new Vector3Int(400, 900, 400)));
         var backrest = Backrest(chair);
 

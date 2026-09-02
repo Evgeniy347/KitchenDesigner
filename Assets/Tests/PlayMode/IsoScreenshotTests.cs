@@ -361,7 +361,7 @@ public class IsoScreenshotTests
     {
         var dims = new Vector3Int(StoolElement.DefaultWidthMM,
             StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM);
-        yield return RenderStool(dims, StoolElement.MaxCornerRadiusMM(dims),
+        yield return RenderStool(dims, FurnitureLayout.MaxCornerRadiusMM(dims),
             "IsoStoolRound", "iso_stool_360x450x360_round.png");
     }
 
@@ -369,7 +369,7 @@ public class IsoScreenshotTests
     public IEnumerator IsoStool_600x450x360_Capsule()
     {
         var dims = new Vector3Int(600, StoolElement.DefaultHeightMM, 360);
-        yield return RenderStool(dims, StoolElement.MaxCornerRadiusMM(dims),
+        yield return RenderStool(dims, FurnitureLayout.MaxCornerRadiusMM(dims),
             "IsoStoolCapsule", "iso_stool_600x450x360_capsule.png");
     }
 
@@ -409,7 +409,7 @@ public class IsoScreenshotTests
     {
         var dims = new Vector3Int(ChairElement.DefaultWidthMM,
             ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM);
-        yield return RenderChair(dims, ChairElement.MaxCornerRadiusMM(dims), 350,
+        yield return RenderChair(dims, FurnitureLayout.MaxCornerRadiusMM(dims), 350,
             "IsoChairRound", "iso_chair_400x900x400_round.png");
     }
 

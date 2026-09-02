@@ -27,9 +27,6 @@ namespace KitchenDesigner.Core
         [SerializeField] private string _seatMaterialId = MaterialCatalog.DefaultId;
         [SerializeField] private string _legsMaterialId = MaterialCatalog.DefaultId;
 
-        public static int MaxCornerRadiusMM(Vector3Int dimensionsMM)
-            => Mathf.Max(0, Mathf.Min(dimensionsMM.x, dimensionsMM.z) / 2);
-
         public static int MaxSeatHeightMM(int overallHeightMM)
             => Mathf.Max(1, overallHeightMM - MinBackrestHeightMM);
 
@@ -48,7 +45,7 @@ namespace KitchenDesigner.Core
             get => _cornerRadiusMM;
             set
             {
-                value = ClampCornerRadius(value);
+                value = FurnitureLayout.ClampCornerRadiusMM(DimensionsMM, value);
                 if (_cornerRadiusMM == value) return;
                 _cornerRadiusMM = value;
                 ApplyDimensions();
@@ -96,9 +93,6 @@ namespace KitchenDesigner.Core
 
         private TabletopSurface Seat => _seat ??= new TabletopSurface(gameObject, AdoptOwnedMesh);
 
-        private int ClampCornerRadius(int value)
-            => Mathf.Clamp(value, 0, MaxCornerRadiusMM(DimensionsMM));
-
         private int ClampSeatHeight(int value)
             => Mathf.Clamp(value, MinSeatHeightMM(DimensionsMM.y), MaxSeatHeightMM(DimensionsMM.y));
 
@@ -109,7 +103,7 @@ namespace KitchenDesigner.Core
 
         private void Rebuild()
         {
-            _cornerRadiusMM = ClampCornerRadius(_cornerRadiusMM);
+            _cornerRadiusMM = FurnitureLayout.ClampCornerRadiusMM(DimensionsMM, _cornerRadiusMM);
             _seatHeightMM = ClampSeatHeight(_seatHeightMM);
             transform.localScale = Vector3.one;
             RebuildSeat();

@@ -20,10 +20,10 @@ namespace KitchenDesigner.Core
         public static readonly float CornerPullRatio = 1f - Mathf.Sqrt(0.5f);
 
         public static int MaxCornerRadiusMM(Vector3Int dimensionsMM)
-            => Mathf.Max(0, Mathf.Min(dimensionsMM.x, dimensionsMM.z) / 2);
+            => FurnitureLayout.MaxCornerRadiusMM(dimensionsMM);
 
         public static int ClampCornerRadiusMM(Vector3Int dimensionsMM, int value)
-            => Mathf.Clamp(value, 0, MaxCornerRadiusMM(dimensionsMM));
+            => FurnitureLayout.ClampCornerRadiusMM(dimensionsMM, value);
 
         public static int MaxSeatThicknessMM(int overallHeightMM)
             => Mathf.Max(MinSeatThicknessMM, overallHeightMM / SeatThicknessHeightDivisor);
