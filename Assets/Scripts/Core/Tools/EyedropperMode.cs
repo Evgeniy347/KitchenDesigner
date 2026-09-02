@@ -20,6 +20,7 @@ namespace KitchenDesigner.Core.Tools
             if (on)
             {
                 Measure.MeasureMode.SetActive(false);
+                Lighting.LightPickMode.SetSource(null);
                 DropSelectionSoItsResizeHandlesStopEatingClicks();
             }
 

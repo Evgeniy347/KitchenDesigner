@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core.Measure
             if (on)
             {
                 Tools.EyedropperMode.SetActive(false);
+                Lighting.LightPickMode.SetSource(null);
                 DropSelectionSoItsResizeHandlesStopEatingClicks();
             }
             else

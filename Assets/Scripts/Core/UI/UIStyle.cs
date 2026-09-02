@@ -33,6 +33,10 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color MeasureHover = new Color(1f, 0.95f, 0.55f, 1f);
         public static readonly Color MeasureSelected = new Color(1f, 0.85f, 0.1f, 0.25f);
 
+        public static readonly Color LightLinkLine = new Color(0.95f, 0.15f, 0.15f, 1f);
+        public static readonly Color LightLinkExisting = new Color(0.85f, 0.30f, 0.30f, 0.55f);
+        public static readonly Color LightLinkHover = new Color(1f, 0.85f, 0.35f, 1f);
+
         public const float HitTarget = 32f;
         public const float GapInner = 8f;
         public const float GapSection = 16f;

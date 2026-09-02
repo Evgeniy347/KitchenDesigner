@@ -47,6 +47,10 @@ namespace KitchenDesigner.Core
                 gameObject.AddComponent<Measure.MeasureController>();
             if (FindAnyObjectByType<Measure.MeasureRenderer>() == null)
                 gameObject.AddComponent<Measure.MeasureRenderer>();
+            if (FindAnyObjectByType<Lighting.LightPickController>() == null)
+                gameObject.AddComponent<Lighting.LightPickController>();
+            if (FindAnyObjectByType<Lighting.LightPickRenderer>() == null)
+                gameObject.AddComponent<Lighting.LightPickRenderer>();
             if (FindAnyObjectByType<Tools.EyedropperController>() == null)
                 gameObject.AddComponent<Tools.EyedropperController>();
             if (FindAnyObjectByType<SceneChangeTracker>() == null) gameObject.AddComponent<SceneChangeTracker>();

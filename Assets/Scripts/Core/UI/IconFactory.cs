@@ -12,7 +12,7 @@ namespace KitchenDesigner.Core.UI
 
         private static Sprite? _gear, _floppy, _floppyPlus, _folder, _undo, _redo, _pin, _warning, _pencil;
         private static Sprite? _caretUp, _caretDown;
-        private static Sprite? _ruler, _bulb, _sun, _eyedropper;
+        private static Sprite? _ruler, _bulb, _sun, _eyedropper, _crosshair;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -29,6 +29,7 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Bulb => _bulb ??= BuildBulb();
         public static Sprite Sun => _sun ??= BuildSun();
         public static Sprite Eyedropper => _eyedropper ??= BuildEyedropper();
+        public static Sprite Crosshair => _crosshair ??= BuildCrosshair();
 
         private static Sprite BuildGear()
         {
@@ -233,6 +234,29 @@ namespace KitchenDesigner.Core.UI
                     32 + Mathf.RoundToInt(cos * 27), 32 + Mathf.RoundToInt(sin * 27),
                     2, Ink);
             }
+        }
+
+        private static Sprite BuildCrosshair()
+        {
+            var px = NewCanvas();
+            DrawCrosshairRing(px);
+            DrawCrosshairArms(px);
+            Disc(px, 32, 32, 3, Accent);
+            return Finish(px);
+        }
+
+        private static void DrawCrosshairRing(Color32[] px)
+        {
+            Disc(px, 32, 32, 20, Ink);
+            Disc(px, 32, 32, 16, Clear);
+        }
+
+        private static void DrawCrosshairArms(Color32[] px)
+        {
+            Line(px, 32, 5, 32, 27, 3, Ink);
+            Line(px, 32, 37, 32, 59, 3, Ink);
+            Line(px, 5, 32, 27, 32, 3, Ink);
+            Line(px, 37, 32, 59, 32, 3, Ink);
         }
 
         private static Sprite BuildEyedropper()

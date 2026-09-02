@@ -7,8 +7,6 @@ namespace KitchenDesigner.Core.Measure
     public class MeasureRenderer : MonoBehaviour
     {
         internal const float LineThicknessPx = 2.5f;
-        private const float DashLengthPx = 9f;
-        private const float DashGapPx = 6f;
         private const float PointRadiusPx = 5f;
         private const float TubeRadiusPx = 10f;
         private const int TubeSideCount = 12;
@@ -18,22 +16,11 @@ namespace KitchenDesigner.Core.Measure
 
         private Material? _lineMaterial;
 
-        private void Awake()
-        {
-            var shader = Shader.Find("Hidden/OverlayLine");
-            if (shader == null) shader = Resources.Load<Shader>("Shaders/OverlayLine");
-            _lineMaterial = BuildLineMaterialOrWarn(shader, message => Debug.LogWarning(message));
-        }
+        private void Awake() => _lineMaterial = BuildLineMaterialOrWarn(
+            OverlayLineMaterial.FindShader(), message => Debug.LogWarning(message));
 
         internal static Material? BuildLineMaterialOrWarn(Shader? shader, Action<string> warn)
-        {
-            if (shader == null)
-            {
-                warn(OverlayLineShaderMissing);
-                return null;
-            }
-            return new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
-        }
+            => OverlayLineMaterial.BuildOrWarn(shader, warn, OverlayLineShaderMissing);
 
         public static Camera? ResolveCamera(Camera? current, Camera? main) =>
             current != null ? current : main;
@@ -102,13 +89,14 @@ namespace KitchenDesigner.Core.Measure
             {
                 bool accent = ctrl != null && ctrl.Hovered == seg;
                 GL.Color(accent ? UIStyle.MeasureHover : UIStyle.MeasureLine);
-                DrawDashed(cam, seg.A, seg.B);
+                DashedLineDrawer.Dashed(cam, seg.A, seg.B, LineThicknessPx);
             }
 
             if (ctrl != null && ctrl.HasPreview)
             {
                 GL.Color(UIStyle.MeasureLine);
-                DrawDashed(cam, ctrl.Anchor!.Value, ctrl.PreviewEnd!.Value);
+                DashedLineDrawer.Dashed(cam, ctrl.Anchor!.Value, ctrl.PreviewEnd!.Value,
+                    LineThicknessPx);
             }
             GL.End();
         }
@@ -121,8 +109,8 @@ namespace KitchenDesigner.Core.Measure
             foreach (var seg in MeasureStore.Segments)
             {
                 GL.Color(UIStyle.MeasureLine);
-                DrawCameraFacingPoint(cam, seg.A);
-                DrawCameraFacingPoint(cam, seg.B);
+                DashedLineDrawer.Point(cam, seg.A, PointRadiusPx);
+                DashedLineDrawer.Point(cam, seg.B, PointRadiusPx);
             }
 
             if (ctrl != null)
@@ -130,7 +118,7 @@ namespace KitchenDesigner.Core.Measure
                 if (ctrl.Anchor.HasValue)
                 {
                     GL.Color(UIStyle.MeasureLine);
-                    DrawCameraFacingPoint(cam, ctrl.Anchor.Value);
+                    DashedLineDrawer.Point(cam, ctrl.Anchor.Value, PointRadiusPx);
                 }
                 if (ctrl.Hint.HasValue) DrawInterchangeableHintPoint(cam, ctrl.Hint.Value);
                 if (ctrl.PlaneHint.HasValue) DrawInterchangeableHintPoint(cam, ctrl.PlaneHint.Value);
@@ -141,57 +129,7 @@ namespace KitchenDesigner.Core.Measure
         private static void DrawInterchangeableHintPoint(Camera cam, Vector3 point)
         {
             GL.Color(UIStyle.MeasureHint);
-            DrawCameraFacingPoint(cam, point);
-        }
-
-        private static void DrawDashed(Camera cam, Vector3 a, Vector3 b)
-        {
-            Vector3 delta = b - a;
-            float length = delta.magnitude;
-            if (length < Tolerance.EpsilonUnits) return;
-            Vector3 dir = delta / length;
-
-            float worldPerPixel = MeasureGeometry.WorldSizeForPixels(cam, (a + b) * 0.5f, 1f);
-            float dash = DashLengthPx * worldPerPixel;
-            float step = (DashLengthPx + DashGapPx) * worldPerPixel;
-            if (step < Tolerance.EpsilonUnits) return;
-
-            for (float t = 0f; t < length; t += step)
-            {
-                Vector3 p0 = a + dir * t;
-                Vector3 p1 = a + dir * Mathf.Min(t + dash, length);
-                DrawCameraFacingStrip(cam, p0, p1, LineThicknessPx);
-            }
-        }
-
-        private static void DrawCameraFacingStrip(Camera cam, Vector3 a, Vector3 b, float thicknessPx)
-        {
-            Vector3 axis = b - a;
-            if (axis.sqrMagnitude < Tolerance.EpsilonSqr) return;
-
-            Vector3 side = Vector3.Cross(axis.normalized, cam.transform.forward);
-            if (side.sqrMagnitude < Tolerance.EpsilonSqr) return;
-            side.Normalize();
-
-            float ha = MeasureGeometry.WorldSizeForPixels(cam, a, thicknessPx * 0.5f);
-            float hb = MeasureGeometry.WorldSizeForPixels(cam, b, thicknessPx * 0.5f);
-
-            GL.Vertex(a - side * ha);
-            GL.Vertex(a + side * ha);
-            GL.Vertex(b + side * hb);
-            GL.Vertex(b - side * hb);
-        }
-
-        private static void DrawCameraFacingPoint(Camera cam, Vector3 p)
-        {
-            float r = MeasureGeometry.WorldSizeForPixels(cam, p, PointRadiusPx);
-            Vector3 right = cam.transform.right * r;
-            Vector3 up = cam.transform.up * r;
-
-            GL.Vertex(p - right - up);
-            GL.Vertex(p - right + up);
-            GL.Vertex(p + right + up);
-            GL.Vertex(p + right - up);
+            DashedLineDrawer.Point(cam, point, PointRadiusPx);
         }
 
         private static void DrawTube(Camera cam, Vector3 a, Vector3 b)
