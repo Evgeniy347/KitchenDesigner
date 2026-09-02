@@ -13,10 +13,25 @@ using KitchenDesigner.Core.Update;
 /// запрос создавался, но SendWebRequest() не вызывался: прогресс стоял на нуле,
 /// колбэки не приходили и «Отмена» ничего не делала. Тест на завершение
 /// падал бы по таймауту, если запрос снова не стартует.
+///
+/// Повторы проверяются ПАРОЙ тестов, и поодиночке ни один из них не годится:
+/// «ненайденный источник» требует ровно одной попытки и остался бы зелёным,
+/// даже если цикл повторов выкинуть целиком, а «неотвечающий хост» требует
+/// всех трёх и краснеет ровно в этом случае. Разделяет их не удача, а
+/// классификация отказа: внятный ответ сервера повторять нечего, молчание —
+/// нужно. Попытки считаются через onAttemptStarted, а не по времени: паузы в
+/// тестах сжаты до кадров (см. Impatient).
 /// </summary>
 public class UpdateDownloaderTests
 {
     private const float TimeoutSeconds = 15f;
+
+    // Порт 1 на петле: соединение отвергается мгновенно и локально — ни DNS, ни
+    // внешней сети, ни ожидания таймаута, поэтому тест детерминирован и быстр.
+    // Именно такой отказ (соединения нет, кода ответа нет) политика и обязана
+    // повторять; несуществующий file:// для этого не годится — на него Unity
+    // отвечает кодом, то есть источник ВНЯТНО сказал «файла нет».
+    private const string UnreachableUrl = "http://127.0.0.1:1/kd-installer.exe";
 
     private static string TempPath(string prefix)
         => Path.Combine(Path.GetTempPath(), prefix + Guid.NewGuid().ToString("N") + ".bin");
@@ -80,11 +95,12 @@ public class UpdateDownloaderTests
             var downloader = go.AddComponent<UnityWebRequestDownloader>();
 
             bool done = false, failed = false, cancelled = false;
+            string reason = null;
             int attempts = 0;
             downloader.RetryPolicy = Impatient();
             downloader.Start(new Uri(TempPath("kd-update-missing-")).AbsoluteUri, dst,
                 _ => { }, (_, _) => attempts++, () => done = true,
-                (_, c) => { failed = true; cancelled = c; });
+                (m, c) => { failed = true; reason = m; cancelled = c; });
 
             float elapsed = 0f;
             while (!done && !failed && elapsed < TimeoutSeconds)
@@ -96,11 +112,56 @@ public class UpdateDownloaderTests
             Assert.IsTrue(failed, "отсутствующий источник должен завершиться отказом");
             Assert.IsFalse(done);
             Assert.IsFalse(cancelled);
-            Assert.AreEqual(downloader.RetryPolicy.MaxAttempts, attempts,
-                "сетевой отказ повторяется до исчерпания попыток, и об отказе "
-                + "пользователю говорят ОДИН раз — после последней. Одна попытка "
-                + "здесь означает, что цикл повторов не работает вовсе");
+            Assert.AreEqual(1, attempts,
+                "источник ОТВЕТИЛ, и ответ этот — «такого файла нет». Он не станет "
+                + "другим ни через две секунды, ни через семь: повторять здесь значит "
+                + "тянуть отказ, о котором уже всё известно. Повторяется молчание "
+                + "канала (см. соседний тест на неотвечающий хост), а не внятный "
+                + "ответ. Причина: " + reason);
             Assert.IsFalse(File.Exists(dst), "при отказе недокачанный файл удаляется");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(go);
+            try { if (File.Exists(dst)) File.Delete(dst); } catch (IOException) { }
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator Downloader_RetriesUntilAttemptsRunOut_WhenTheHostNeverAnswers()
+    {
+        var dst = TempPath("kd-update-dst-");
+        var go = new GameObject("downloader");
+        try
+        {
+            var downloader = go.AddComponent<UnityWebRequestDownloader>();
+
+            bool done = false, failed = false, cancelled = false;
+            string reason = null;
+            int attempts = 0;
+            downloader.RetryPolicy = Impatient();
+            downloader.Start(UnreachableUrl, dst,
+                _ => { }, (_, _) => attempts++, () => done = true,
+                (m, c) => { failed = true; reason = m; cancelled = c; });
+
+            float elapsed = 0f;
+            while (!done && !failed && elapsed < TimeoutSeconds)
+            {
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            Assert.IsTrue(failed, $"отказ не дошёл до колбэка за {TimeoutSeconds} с");
+            Assert.IsFalse(done);
+            Assert.IsFalse(cancelled, "пользователь ничего не отменял: " + reason);
+            Assert.AreEqual(downloader.RetryPolicy.MaxAttempts, attempts,
+                "ради этого случая ретраи и делались: сервер не ответил вообще, кода "
+                + "ответа нет, и следующая попытка через пару секунд вполне может "
+                + "пройти. Одна попытка здесь означает, что цикл повторов не крутится "
+                + "вовсе — и тогда тест на ненайденный файл зеленеет по совершенно "
+                + "другой причине, чем думает его автор. Причина: " + reason);
+            Assert.IsFalse(File.Exists(dst),
+                "после исчерпания попыток в temp не остаётся ни одного огрызка");
         }
         finally
         {
