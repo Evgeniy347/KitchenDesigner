@@ -378,6 +378,42 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, bathtub);
         }
 
+        public GameObject CreateBathMixer(BathMixerSpec spec, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Смеситель", position);
+
+            var mixer = go.AddComponent<BathMixerElement>();
+            mixer.PartName = go.name;
+            mixer.BodyDiameterMM = spec.BodyDiameterMM;
+            mixer.BodyLengthMM = spec.BodyLengthMM;
+            mixer.CentresMM = spec.CentresMM;
+            mixer.EscutcheonReachMM = spec.EscutcheonReachMM;
+            mixer.SpoutLengthMM = spec.SpoutLengthMM;
+            mixer.OutletDiameterMM = spec.OutletDiameterMM;
+            mixer.Movable = true;
+
+            return ElementRoot.Publish(go, mixer);
+        }
+
+        public GameObject CreateShowerColumn(ShowerColumnSpec spec, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "ДушеваяСтойка", position);
+
+            var column = go.AddComponent<ShowerColumnElement>();
+            column.PartName = go.name;
+            column.RiserDiameterMM = spec.RiserDiameterMM;
+            column.WallOffsetMM = spec.WallOffsetMM;
+            column.ColumnHeightMM = spec.ColumnHeightMM;
+            column.ArmReachMM = spec.ArmReachMM;
+            column.HeadDiameterMM = spec.HeadDiameterMM;
+            column.HeadThicknessMM = spec.HeadThicknessMM;
+            column.HandShowerDiameterMM = spec.HandShowerDiameterMM;
+            column.HoseLengthMM = spec.HoseLengthMM;
+            column.Movable = true;
+
+            return ElementRoot.Publish(go, column);
+        }
+
         public GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard,
             string name, Vector3 position)
         {

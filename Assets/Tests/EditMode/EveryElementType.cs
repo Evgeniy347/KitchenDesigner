@@ -37,6 +37,8 @@ public static class EveryElementType
         (typeof(ToiletElement), n => ElementFactory.CreateToilet(437, n, Vector3.zero)),
         (typeof(WallHungToiletElement), n => ElementFactory.CreateWallHungToilet(457, 653, n, Vector3.zero)),
         (typeof(BathtubElement), n => ElementFactory.CreateBathtub(new Vector3Int(1703, 607, 703), 43, 447, 117, 73, n, Vector3.zero)),
+        (typeof(BathMixerElement), n => ElementFactory.CreateBathMixer(BathMixerSpec.Clamped(163, 287, 63, 41, 127, 17), n, Vector3.zero)),
+        (typeof(ShowerColumnElement), n => ElementFactory.CreateShowerColumn(ShowerColumnSpec.Clamped(1213, 37, 263, 37, 407, 71, 117, 1063), n, Vector3.zero)),
         (typeof(BedElement), n => ElementFactory.CreateBed(new Vector3Int(1607, 503, 2003), false, false, n, Vector3.zero)),
         (typeof(PillarElement), n => ElementFactory.CreatePillar(713, n, Vector3.zero, 87)),
         (typeof(ScrewLegElement), n => ElementFactory.CreateScrewLeg(n, Vector3.zero)),

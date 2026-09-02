@@ -7,12 +7,17 @@ namespace KitchenDesigner.Core
     {
         private readonly GameObject _owner;
         private readonly Action<Mesh> _adoptMesh;
+        private readonly bool _convexCollider;
         private Material? _material;
 
         public OwnedMeshBody(GameObject owner, Action<Mesh> adoptMesh)
+            : this(owner, adoptMesh, true) { }
+
+        public OwnedMeshBody(GameObject owner, Action<Mesh> adoptMesh, bool convexCollider)
         {
             _owner = owner;
             _adoptMesh = adoptMesh;
+            _convexCollider = convexCollider;
         }
 
         public void Rebuild(Mesh mesh)
@@ -45,7 +50,7 @@ namespace KitchenDesigner.Core
 
             var meshCollider = _owner.GetComponent<MeshCollider>();
             if (meshCollider == null) meshCollider = _owner.AddComponent<MeshCollider>();
-            meshCollider.convex = true;
+            meshCollider.convex = _convexCollider;
             meshCollider.sharedMesh = mesh;
         }
     }

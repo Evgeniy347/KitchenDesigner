@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class ShowerColumnElement : KitchenElement, IWallMounted, IFixedSizeElement
+    public class ShowerColumnElement : KitchenElement, IWallMounted, IFixedSizeElement,
+        IPaintsItself
     {
         public override string DisplayTypeName => "Душевая стойка";
 
@@ -25,6 +26,10 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _hoseLengthMM = ShowerColumnSpec.DefaultHoseLengthMM;
 
         private readonly RebuildGuard _rebuild = new RebuildGuard();
+        private OwnedMeshBody? _body;
+
+        private OwnedMeshBody Body =>
+            _body ??= new OwnedMeshBody(gameObject, AdoptOwnedMesh, false);
 
         public ShowerColumnSpec Spec => ShowerColumnSpec.Clamped(_columnHeightMM,
             _riserDiameterMM, _headDiameterMM, _headThicknessMM, _armReachMM, _wallOffsetMM,
@@ -122,19 +127,20 @@ namespace KitchenDesigner.Core
             transform.localScale = Vector3.one;
             if (SuppressVisualRebuild) return;
 
-            var mesh = BuildMesh(spec);
-            AdoptOwnedMesh(mesh);
-
-            var filter = GetComponent<MeshFilter>();
-            if (filter == null) filter = gameObject.AddComponent<MeshFilter>();
-            filter.sharedMesh = mesh;
-
-            var renderer = GetComponent<MeshRenderer>();
-            if (renderer == null) renderer = gameObject.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = PlumbingMaterials.MatteBlack;
-
-            ElementRoot.UseMeshCollider(gameObject, mesh);
+            Body.SetMaterial(Skin());
+            Body.Rebuild(BuildMesh(spec));
+            MaterialManager.RefreshTiling(this);
         }
+
+        private Material Skin()
+        {
+            if (SanitaryDecor.IsFactoryLook(MaterialId)) return SanitaryMaterials.MatteBlack;
+            var decor = MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
+            return decor != null ? decor! : SanitaryMaterials.MatteBlack;
+        }
+
+        public void SetMaterial(Material material) => Body.SetMaterial(
+            SanitaryDecor.ChosenOrFactory(MaterialId, material, SanitaryMaterials.MatteBlack));
 
         private static Mesh BuildMesh(ShowerColumnSpec spec)
         {

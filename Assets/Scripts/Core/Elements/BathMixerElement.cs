@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class BathMixerElement : KitchenElement, IWallMounted, IFixedSizeElement
+    public class BathMixerElement : KitchenElement, IWallMounted, IFixedSizeElement, IPaintsItself
     {
         public override string DisplayTypeName => "Смеситель для ванны";
 
@@ -22,6 +22,9 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _outletDiameterMM = BathMixerSpec.DefaultOutletDiameterMM;
 
         private readonly RebuildGuard _rebuild = new RebuildGuard();
+        private OwnedMeshBody? _body;
+
+        private OwnedMeshBody Body => _body ??= new OwnedMeshBody(gameObject, AdoptOwnedMesh);
 
         public BathMixerSpec Spec => BathMixerSpec.Clamped(_centresMM, _bodyLengthMM,
             _bodyDiameterMM, _escutcheonReachMM, _spoutLengthMM, _outletDiameterMM);
@@ -103,18 +106,20 @@ namespace KitchenDesigner.Core
 
             var builder = new PlumbingMesh(BathMixerLayout.BoundsMM(spec).center);
             builder.AddSegments(BathMixerLayout.Parts(spec));
-            var mesh = builder.Build();
-            AdoptOwnedMesh(mesh);
 
-            var filter = GetComponent<MeshFilter>();
-            if (filter == null) filter = gameObject.AddComponent<MeshFilter>();
-            filter.sharedMesh = mesh;
-
-            var renderer = GetComponent<MeshRenderer>();
-            if (renderer == null) renderer = gameObject.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = PlumbingMaterials.Chrome;
-
-            ElementRoot.UseMeshCollider(gameObject, mesh);
+            Body.SetMaterial(Skin());
+            Body.Rebuild(builder.Build());
+            MaterialManager.RefreshTiling(this);
         }
+
+        private Material Skin()
+        {
+            if (SanitaryDecor.IsFactoryLook(MaterialId)) return SanitaryMaterials.Chrome;
+            var decor = MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
+            return decor != null ? decor! : SanitaryMaterials.Chrome;
+        }
+
+        public void SetMaterial(Material material) => Body.SetMaterial(
+            SanitaryDecor.ChosenOrFactory(MaterialId, material, SanitaryMaterials.Chrome));
     }
 }

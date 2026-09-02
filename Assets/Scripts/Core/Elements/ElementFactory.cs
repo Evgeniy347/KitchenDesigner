@@ -79,6 +79,12 @@ namespace KitchenDesigner.Core
 		public static GameObject CreateBathtub(Vector3Int dimensionsMM, int rimWidthMM, int bowlDepthMM, int bowlRadiusMM, int bowlFilletMM, string name, Vector3 position) =>
 			Instance.CreateBathtub(dimensionsMM, rimWidthMM, bowlDepthMM, bowlRadiusMM, bowlFilletMM, name, position);
 
+		public static GameObject CreateBathMixer(BathMixerSpec spec, string name, Vector3 position) =>
+			Instance.CreateBathMixer(spec, name, position);
+
+		public static GameObject CreateShowerColumn(ShowerColumnSpec spec, string name, Vector3 position) =>
+			Instance.CreateShowerColumn(spec, name, position);
+
 		public static GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard, string name, Vector3 position) =>
 			Instance.CreateBed(dimensionsMM, isDouble, hasHeadboard, name, position);
 

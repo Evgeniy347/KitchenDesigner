@@ -75,6 +75,24 @@ namespace KitchenDesigner.Core
         public int bathtubBowlDepthMM = BathtubLayout.DefaultBowlDepthMM;
         public int bathtubBowlRadiusMM = BathtubLayout.DefaultBowlRadiusMM;
         public int bathtubBowlFilletMM = BathtubLayout.DefaultBowlFilletMM;
+
+        public bool isBathMixer = false;
+        public int bathMixerCentresMM = BathMixerSpec.DefaultCentresMM;
+        public int bathMixerBodyLengthMM = BathMixerSpec.DefaultBodyLengthMM;
+        public int bathMixerBodyDiameterMM = BathMixerSpec.DefaultBodyDiameterMM;
+        public int bathMixerEscutcheonReachMM = BathMixerSpec.DefaultEscutcheonReachMM;
+        public int bathMixerSpoutLengthMM = BathMixerSpec.DefaultSpoutLengthMM;
+        public int bathMixerOutletDiameterMM = BathMixerSpec.DefaultOutletDiameterMM;
+
+        public bool isShowerColumn = false;
+        public int showerColumnHeightMM = ShowerColumnSpec.DefaultColumnHeightMM;
+        public int showerRiserDiameterMM = ShowerColumnSpec.DefaultRiserDiameterMM;
+        public int showerHeadDiameterMM = ShowerColumnSpec.DefaultHeadDiameterMM;
+        public int showerHeadThicknessMM = ShowerColumnSpec.DefaultHeadThicknessMM;
+        public int showerArmReachMM = ShowerColumnSpec.DefaultArmReachMM;
+        public int showerWallOffsetMM = ShowerColumnSpec.DefaultWallOffsetMM;
+        public int showerHandDiameterMM = ShowerColumnSpec.DefaultHandShowerDiameterMM;
+        public int showerHoseLengthMM = ShowerColumnSpec.DefaultHoseLengthMM;
         public bool isBed = false;
         public bool bedDouble = true;
         public bool bedHeadboard = true;

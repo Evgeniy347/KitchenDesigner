@@ -197,6 +197,16 @@ namespace KitchenDesigner.Core
                  source.PartName, pos),
              CopyMaterial),
 
+            (el => el is BathMixerElement,
+             (factory, source, pos) => factory.CreateBathMixer(((BathMixerElement)source).Spec,
+                 source.PartName, pos),
+             CopyMaterial),
+
+            (el => el is ShowerColumnElement,
+             (factory, source, pos) => factory.CreateShowerColumn(
+                 ((ShowerColumnElement)source).Spec, source.PartName, pos),
+             CopyMaterial),
+
             (el => el is BedElement,
              (factory, source, pos) => factory.CreateBed(source.DimensionsMM,
                  ((BedElement)source).IsDouble, ((BedElement)source).HasHeadboard,

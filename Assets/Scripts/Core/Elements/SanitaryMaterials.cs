@@ -7,6 +7,7 @@ namespace KitchenDesigner.Core
         private static Material? _whiteAcrylic;
         private static Material? _ceramic;
         private static Material? _chrome;
+        private static Material? _matteBlack;
 
         public static Material WhiteAcrylic =>
             ApplianceMaterials.Cached(ref _whiteAcrylic,
@@ -19,5 +20,9 @@ namespace KitchenDesigner.Core
         public static Material Chrome =>
             ApplianceMaterials.Cached(ref _chrome,
                 new Color(0.78f, 0.80f, 0.82f, 1f), 0.9f, 0.85f);
+
+        public static Material MatteBlack =>
+            ApplianceMaterials.Cached(ref _matteBlack,
+                new Color(0.07f, 0.07f, 0.075f, 1f), 0.35f, 0.22f);
     }
 }

@@ -183,6 +183,22 @@ namespace KitchenDesigner.Core
                  d.name, d.Position),
              null),
 
+            (d => d.isBathMixer,
+             (factory, d) => factory.CreateBathMixer(BathMixerSpec.Clamped(d.bathMixerCentresMM,
+                     d.bathMixerBodyLengthMM, d.bathMixerBodyDiameterMM,
+                     d.bathMixerEscutcheonReachMM, d.bathMixerSpoutLengthMM,
+                     d.bathMixerOutletDiameterMM),
+                 d.name, d.Position),
+             null),
+
+            (d => d.isShowerColumn,
+             (factory, d) => factory.CreateShowerColumn(ShowerColumnSpec.Clamped(
+                     d.showerColumnHeightMM, d.showerRiserDiameterMM, d.showerHeadDiameterMM,
+                     d.showerHeadThicknessMM, d.showerArmReachMM, d.showerWallOffsetMM,
+                     d.showerHandDiameterMM, d.showerHoseLengthMM),
+                 d.name, d.Position),
+             null),
+
             (d => d.isBed,
              (factory, d) => factory.CreateBed(d.Dimensions, d.bedDouble, d.bedHeadboard,
                  d.name, d.Position),
