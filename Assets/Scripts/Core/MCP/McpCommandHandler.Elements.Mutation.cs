@@ -49,6 +49,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var (op, el, mat, _) in resolved)
             {
                 if (op.locked.HasValue) el.Movable = !op.locked.Value;
+                if (op.transparent.HasValue) el.Transparent = op.transparent.Value;
                 if (mat != null)
                 {
                     MaterialManager.Apply(el, mat);

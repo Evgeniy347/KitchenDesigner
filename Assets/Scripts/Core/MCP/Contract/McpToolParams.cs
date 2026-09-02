@@ -98,6 +98,9 @@ namespace KitchenDesigner.Core.MCP.Contract
 
         [McpParam("Lock (true) / unlock (false). Unlock ONLY with the user's explicit permission. Omit to keep.")]
         public bool? locked;
+        [McpParam("Draw the element see-through (true) or solid (false). Visual only — size, position and the "
+            + "specification are unaffected. Omit to keep.")]
+        public bool? transparent;
         [McpParam("Material decor id or display name (see list_materials). Omit to keep.")]
         public string? material;
 

@@ -53,6 +53,7 @@ namespace KitchenDesigner.Core.MCP
         public float rotZ;
         public bool active;
         public bool locked;
+        public bool transparent;
         public int moduleId;
         public string? moduleName;
         public string materialId = string.Empty;

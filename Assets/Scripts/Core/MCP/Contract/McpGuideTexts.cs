@@ -341,6 +341,9 @@ effectiveDim*         dim + gaps (any element that has them). NOT rotation-aware
                       - prefer worldDim* for world-space reasoning.
 locked                true = move/resize/delete will be rejected (edit_elements
                       {locked:false} unlocks).
+transparent           true = drawn see-through (edit_elements {transparent:...}).
+                      Appearance only - size, position and the specification are
+                      the same as for a solid element.
 hasViolations         true = this element overlaps something or is disconnected.
 faceGaps              Per-axis nearest OPPOSITE neighbour: {axis, neighbor, gapMM,
                       touching, isOverlap}. touching=true means flush contact
