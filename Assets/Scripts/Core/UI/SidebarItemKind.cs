@@ -1,0 +1,30 @@
+namespace KitchenDesigner.Core.UI
+{
+    public enum SidebarItemKind
+    {
+        Board,
+        Wall,
+        Facade,
+        AssembledFacade,
+        Panel,
+        Drawer,
+        RadialShelf,
+        Table,
+        RadiusTable,
+        Stool,
+        Chair,
+        Sofa,
+        Bed,
+        Pouffe,
+        Pillar,
+        ScrewLeg,
+        Sink,
+        Cooktop,
+        Oven,
+        Dishwasher,
+        Floor,
+        LightSource,
+        Window,
+        Door,
+    }
+}

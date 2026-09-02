@@ -5,33 +5,19 @@ namespace KitchenDesigner.Core.UI
 {
     public static class SidebarCatalog
     {
+        public const int DefaultGapMM = 2;
+        public const string DefaultDrawerType = "A";
+        public const int DefaultDrawerLengthMM = 350;
+        public const string DefaultDrawerColor = "Anthracite";
+        public const int DefaultDrawerWidthMM = 400;
+        public const string DefaultDrawerSystem = "gtv";
+        public const string MoventoDrawerSystem = "movento";
+
         public struct Item
         {
             public string name;
             public Vector3Int dims;
-            public bool isWall;
-            public bool isFacade;
-            public bool isAssembled;
-            public bool isDrawer;
-            public bool isRadialShelf;
-            public bool isFurniture;
-            public bool isRadiusTable;
-            public bool isStool;
-            public bool isChair;
-            public bool isSofa;
-            public bool isBed;
-            public bool isPouffe;
-            public bool isWindow;
-            public bool isDoor;
-            public bool isPillar;
-            public bool isScrewLeg;
-            public bool isFloor;
-            public bool isLightSource;
-            public bool isSink;
-            public bool isCooktop;
-            public bool isOven;
-            public bool isDishwasher;
-            public bool isPanel;
+            public SidebarItemKind kind;
             public string applianceModel;
             public int pillarMidHeightMM;
             public string drawerType;
@@ -43,21 +29,70 @@ namespace KitchenDesigner.Core.UI
             public int gapRight;
             public int gapTop;
             public int gapBottom;
-            public Item(string name, Vector3Int dims, bool isWall = false, bool isFacade = false,
-                int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2,
-                bool isAssembled = false)
+
+            public Item(string name, Vector3Int dims,
+                SidebarItemKind kind = SidebarItemKind.Board,
+                int gapLeft = DefaultGapMM, int gapRight = DefaultGapMM,
+                int gapTop = DefaultGapMM, int gapBottom = DefaultGapMM)
             {
-                this.name = name; this.dims = dims; this.isWall = isWall;
-                this.isFacade = isFacade; this.isAssembled = isAssembled;
+                this.name = name; this.dims = dims; this.kind = kind;
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
-                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isStool = false; isChair = false; isSofa = false; isBed = false; isPouffe = false; isWindow = false; isDoor = false;
-                isPillar = false; isScrewLeg = false; isFloor = false; isLightSource = false; isSink = false; isCooktop = false;
-                isOven = false; isDishwasher = false;
-                isPanel = false; applianceModel = ""; pillarMidHeightMM = 75;
-                drawerType = "A"; drawerLength = 350;
-                drawerColor = "Anthracite"; drawerWidth = 400; drawerSystem = "gtv";
+                applianceModel = "";
+                pillarMidHeightMM = PillarElement.MidHeightMM_Default;
+                drawerType = DefaultDrawerType;
+                drawerLength = DefaultDrawerLengthMM;
+                drawerColor = DefaultDrawerColor;
+                drawerWidth = DefaultDrawerWidthMM;
+                drawerSystem = DefaultDrawerSystem;
             }
+
+            public bool isWall => kind == SidebarItemKind.Wall;
+
+            public bool isFacade => kind == SidebarItemKind.Facade
+                                    || kind == SidebarItemKind.AssembledFacade;
+
+            public bool isAssembled => kind == SidebarItemKind.AssembledFacade;
+
+            public bool isPanel => kind == SidebarItemKind.Panel;
+
+            public bool isDrawer => kind == SidebarItemKind.Drawer;
+
+            public bool isRadialShelf => kind == SidebarItemKind.RadialShelf;
+
+            public bool isFurniture => kind == SidebarItemKind.Table;
+
+            public bool isRadiusTable => kind == SidebarItemKind.RadiusTable;
+
+            public bool isStool => kind == SidebarItemKind.Stool;
+
+            public bool isChair => kind == SidebarItemKind.Chair;
+
+            public bool isSofa => kind == SidebarItemKind.Sofa;
+
+            public bool isBed => kind == SidebarItemKind.Bed;
+
+            public bool isPouffe => kind == SidebarItemKind.Pouffe;
+
+            public bool isPillar => kind == SidebarItemKind.Pillar;
+
+            public bool isScrewLeg => kind == SidebarItemKind.ScrewLeg;
+
+            public bool isSink => kind == SidebarItemKind.Sink;
+
+            public bool isCooktop => kind == SidebarItemKind.Cooktop;
+
+            public bool isOven => kind == SidebarItemKind.Oven;
+
+            public bool isDishwasher => kind == SidebarItemKind.Dishwasher;
+
+            public bool isFloor => kind == SidebarItemKind.Floor;
+
+            public bool isLightSource => kind == SidebarItemKind.LightSource;
+
+            public bool isWindow => kind == SidebarItemKind.Window;
+
+            public bool isDoor => kind == SidebarItemKind.Door;
         }
 
         public struct Group
@@ -83,13 +118,16 @@ namespace KitchenDesigner.Core.UI
                     items = new List<Item>
                     {
                         new Item("Короб", new Vector3Int(600, 600, 600)),
-                        new Item("Стена", new Vector3Int(2000, 2500, 100), true),
-                        WindowItem("Окно", new Vector3Int(900, 1200, 100)),
-                        DoorItem("Дверь", new Vector3Int(900, 2000, 100)),
-                        FloorItem("Пол", new Vector3Int(
+                        new Item("Стена", new Vector3Int(2000, 2500, 100),
+                            SidebarItemKind.Wall),
+                        new Item("Окно", new Vector3Int(900, 1200, 100),
+                            SidebarItemKind.Window),
+                        new Item("Дверь", new Vector3Int(900, 2000, 100),
+                            SidebarItemKind.Door),
+                        new Item("Пол", new Vector3Int(
                             FloorElement.DEFAULT_SIZE_MM,
                             FloorElement.DEFAULT_THICKNESS_MM,
-                            FloorElement.DEFAULT_SIZE_MM)),
+                            FloorElement.DEFAULT_SIZE_MM), SidebarItemKind.Floor),
                         LightSourceItem("Источник света"),
                     }
                 },
@@ -99,12 +137,11 @@ namespace KitchenDesigner.Core.UI
         private static Group BoardGroup()
         {
             var regular = new Item("Полка", new Vector3Int(600, 400, 16));
-            var radial = new Item("Радиусная полка", new Vector3Int(600, 400, 16));
-            radial.isRadialShelf = true;
-            var panel = new Item("ДВП/ХДФ", new Vector3Int(600, 400, 3),
+            var radial = new Item("Радиусная полка", new Vector3Int(600, 400, 16),
+                SidebarItemKind.RadialShelf);
+            var panel = new Item("ДВП/ХДФ", new Vector3Int(600, 400, 3), SidebarItemKind.Panel,
                 gapLeft: PanelElement.DEFAULT_GAP_MM, gapRight: PanelElement.DEFAULT_GAP_MM,
                 gapTop: PanelElement.DEFAULT_GAP_MM, gapBottom: PanelElement.DEFAULT_GAP_MM);
-            panel.isPanel = true;
             return new Group { title = "детали", shortLabel = "Д", items = new List<Item> { regular, radial, panel } };
         }
 
@@ -116,54 +153,59 @@ namespace KitchenDesigner.Core.UI
                 shortLabel = "Ф",
                 items = new List<Item>
                 {
-                    new Item("Фасад щитовой", new Vector3Int(600, 716, 18), false, true, 2, 2, 2, 2),
-                    new Item("Фасад сборный", new Vector3Int(600, 716, 18), false, true,
-                        0, 0, 0, 0, isAssembled: true),
+                    new Item("Фасад щитовой", new Vector3Int(600, 716, 18),
+                        SidebarItemKind.Facade, DefaultGapMM, DefaultGapMM,
+                        DefaultGapMM, DefaultGapMM),
+                    new Item("Фасад сборный", new Vector3Int(600, 716, 18),
+                        SidebarItemKind.AssembledFacade, 0, 0, 0, 0),
                 }
             };
         }
 
         private static Group DrawerGroup()
         {
-            var gtv = DrawerItem("Ящик GTV", "A", 350, "gtv");
-            var movento = DrawerItem("Ящик Movento", "A", 500, "movento");
+            var gtv = DrawerItem("Ящик GTV", DefaultDrawerType, DefaultDrawerLengthMM,
+                DefaultDrawerSystem);
+            var movento = DrawerItem("Ящик Movento", DefaultDrawerType, 500,
+                MoventoDrawerSystem);
             return new Group { title = "Ящики", shortLabel = "Я", items = new List<Item> { gtv, movento } };
         }
 
-        private static Item DrawerItem(string name, string drawerType, int length, string system = "gtv")
+        private static Item DrawerItem(string name, string drawerType, int length,
+            string system = DefaultDrawerSystem)
         {
             int height = drawerType switch { "A" => 86, "B" => 120, "C" => 168, _ => 200 };
-            var item = new Item(name, new Vector3Int(400, height, length));
-            item.isDrawer = true;
+            var item = new Item(name, new Vector3Int(DefaultDrawerWidthMM, height, length),
+                SidebarItemKind.Drawer);
             item.drawerType = drawerType;
             item.drawerLength = length;
-            item.drawerColor = "Anthracite";
-            item.drawerWidth = 400;
+            item.drawerColor = DefaultDrawerColor;
+            item.drawerWidth = DefaultDrawerWidthMM;
             item.drawerSystem = system;
             return item;
         }
 
         private static Group FurnitureGroup()
         {
-            var table = new Item("Прямоугольный стол", new Vector3Int(2000, 750, 1000));
-            table.isFurniture = true;
-            var radiusTable = new Item("Радиусный стол", new Vector3Int(2000, 750, 1000));
-            radiusTable.isRadiusTable = true;
+            var table = new Item("Прямоугольный стол", new Vector3Int(2000, 750, 1000),
+                SidebarItemKind.Table);
+            var radiusTable = new Item("Радиусный стол", new Vector3Int(2000, 750, 1000),
+                SidebarItemKind.RadiusTable);
             var stool = new Item("Табуретка", new Vector3Int(StoolElement.DefaultWidthMM,
-                StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM));
-            stool.isStool = true;
+                StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM),
+                SidebarItemKind.Stool);
             var chair = new Item("Стул", new Vector3Int(ChairElement.DefaultWidthMM,
-                ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM));
-            chair.isChair = true;
+                ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM),
+                SidebarItemKind.Chair);
             var sofa = new Item("Диван", new Vector3Int(SofaElement.DefaultWidthMM,
-                SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM));
-            sofa.isSofa = true;
+                SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM),
+                SidebarItemKind.Sofa);
             var bed = new Item("Кровать", new Vector3Int(BedElement.DefaultWidthMM,
-                BedElement.DefaultHeightMM, BedElement.DefaultDepthMM));
-            bed.isBed = true;
+                BedElement.DefaultHeightMM, BedElement.DefaultDepthMM),
+                SidebarItemKind.Bed);
             var pouffe = new Item("Пуфик", new Vector3Int(PouffeElement.DefaultWidthMM,
-                PouffeElement.DefaultHeightMM, PouffeElement.DefaultDepthMM));
-            pouffe.isPouffe = true;
+                PouffeElement.DefaultHeightMM, PouffeElement.DefaultDepthMM),
+                SidebarItemKind.Pouffe);
             var pillar = PillarItem("Ножка", PillarElement.MidHeightMM_Default);
             var screwLeg = ScrewLegItem("Винтовая опора");
             var sink = SinkItem("Мойка");
@@ -186,49 +228,46 @@ namespace KitchenDesigner.Core.UI
 
         private static Item DishwasherItem(string name)
         {
-            var item = new Item(name, DishwasherElement.ModelDimensionsMM);
-            item.isDishwasher = true;
+            var item = new Item(name, DishwasherElement.ModelDimensionsMM,
+                SidebarItemKind.Dishwasher);
             item.applianceModel = DishwasherElement.MODEL;
             return item;
         }
 
         private static Item OvenItem(string name)
         {
-            var item = new Item(name, OvenElement.ModelDimensionsMM);
-            item.isOven = true;
+            var item = new Item(name, OvenElement.ModelDimensionsMM, SidebarItemKind.Oven);
             item.applianceModel = OvenElement.MODEL;
             return item;
         }
 
         private static Item CooktopModelItem(string name, string model)
         {
-            var item = new Item(name, CooktopElement.ModelDimensionsMM(model));
-            item.isCooktop = true;
+            var item = new Item(name, CooktopElement.ModelDimensionsMM(model),
+                SidebarItemKind.Cooktop);
             item.applianceModel = model;
             return item;
         }
 
         private static Item CooktopItem(string name)
         {
-            var item = new Item(name, new Vector3Int(
-                CooktopElement.DEFAULT_WIDTH_MM, CooktopElement.DEFAULT_HEIGHT_MM, CooktopElement.DEFAULT_DEPTH_MM));
-            item.isCooktop = true;
-            return item;
+            return new Item(name, new Vector3Int(
+                CooktopElement.DEFAULT_WIDTH_MM, CooktopElement.DEFAULT_HEIGHT_MM,
+                CooktopElement.DEFAULT_DEPTH_MM), SidebarItemKind.Cooktop);
         }
 
         private static Item SinkItem(string name)
         {
-            var item = new Item(name, new Vector3Int(
-                SinkElement.OUTER_WIDTH_MM, SinkElement.TotalHeightMM, SinkElement.OUTER_DEPTH_MM));
-            item.isSink = true;
-            return item;
+            return new Item(name, new Vector3Int(
+                SinkElement.OUTER_WIDTH_MM, SinkElement.TotalHeightMM,
+                SinkElement.OUTER_DEPTH_MM), SidebarItemKind.Sink);
         }
 
         private static Item PillarItem(string name, int midHeightMM)
         {
             int totalH = PillarElement.TopHeightMM + midHeightMM + PillarElement.BottomHeightMM;
-            var item = new Item(name, new Vector3Int(PillarElement.DiameterMM_Default, totalH, PillarElement.DiameterMM_Default));
-            item.isPillar = true;
+            var item = new Item(name, new Vector3Int(PillarElement.DiameterMM_Default, totalH,
+                PillarElement.DiameterMM_Default), SidebarItemKind.Pillar);
             item.pillarMidHeightMM = midHeightMM;
             return item;
         }
@@ -237,42 +276,17 @@ namespace KitchenDesigner.Core.UI
         {
             int totalH = ScrewLegSpec.BodyHeightMM(ScrewLegSpec.DEFAULT_THREAD_LENGTH_MM,
                 ScrewLegSpec.DEFAULT_BASE_HEIGHT_MM);
-            var item = new Item(name, new Vector3Int(
+            return new Item(name, new Vector3Int(
                 ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM, totalH,
-                ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM));
-            item.isScrewLeg = true;
-            return item;
-        }
-
-        private static Item FloorItem(string name, Vector3Int dims)
-        {
-            var item = new Item(name, dims);
-            item.isFloor = true;
-            return item;
+                ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM), SidebarItemKind.ScrewLeg);
         }
 
         private static Item LightSourceItem(string name)
         {
-            var item = new Item(name, new Vector3Int(
+            return new Item(name, new Vector3Int(
                 LampSpec.DEFAULT_SIZE_MM,
                 LampSpec.DEFAULT_SIZE_MM,
-                LampSpec.DEFAULT_SIZE_MM));
-            item.isLightSource = true;
-            return item;
-        }
-
-        private static Item WindowItem(string name, Vector3Int dims)
-        {
-            var item = new Item(name, dims);
-            item.isWindow = true;
-            return item;
-        }
-
-        private static Item DoorItem(string name, Vector3Int dims)
-        {
-            var item = new Item(name, dims);
-            item.isDoor = true;
-            return item;
+                LampSpec.DEFAULT_SIZE_MM), SidebarItemKind.LightSource);
         }
     }
 }
