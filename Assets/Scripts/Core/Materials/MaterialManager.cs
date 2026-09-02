@@ -181,6 +181,13 @@ namespace KitchenDesigner.Core
                 return;
             }
 
+            if (element is IPaintsItself painter)
+            {
+                painter.SetMaterial(mat);
+                RefreshTiling(element, def);
+                return;
+            }
+
             if (element is CooktopElement cooktop)
             {
                 cooktop.ApplyMaterials();

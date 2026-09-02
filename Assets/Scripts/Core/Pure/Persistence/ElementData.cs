@@ -70,6 +70,11 @@ namespace KitchenDesigner.Core
         public bool isWallHungToilet = false;
         public int toiletSeatHeightMM = ToiletLayout.DefaultSeatHeightMM;
         public int toiletFlushPlateHeightMM = WallHungToiletLayout.DefaultPlateBottomMM;
+        public bool isBathtub = false;
+        public int bathtubRimWidthMM = BathtubLayout.DefaultRimWidthMM;
+        public int bathtubBowlDepthMM = BathtubLayout.DefaultBowlDepthMM;
+        public int bathtubBowlRadiusMM = BathtubLayout.DefaultBowlRadiusMM;
+        public int bathtubBowlFilletMM = BathtubLayout.DefaultBowlFilletMM;
         public bool isBed = false;
         public bool bedDouble = true;
         public bool bedHeadboard = true;

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class BathtubElement : KitchenElement
+    public class BathtubElement : KitchenElement, IPaintsItself
     {
         public override string DisplayTypeName => "Ванна";
 
@@ -119,6 +119,9 @@ namespace KitchenDesigner.Core
             var decor = MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
             return decor != null ? decor! : SanitaryMaterials.WhiteAcrylic;
         }
+
+        public void SetMaterial(Material material) => Body.SetMaterial(
+            SanitaryDecor.ChosenOrFactory(MaterialId, material, SanitaryMaterials.WhiteAcrylic));
 
         private BasinSurface Shell(Vector3Int dims)
         {

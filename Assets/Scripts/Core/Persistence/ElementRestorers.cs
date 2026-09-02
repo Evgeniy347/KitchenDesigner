@@ -177,6 +177,12 @@ namespace KitchenDesigner.Core
              (factory, d) => factory.CreateToilet(d.toiletSeatHeightMM, d.name, d.Position),
              RestoreTabletopMaterials),
 
+            (d => d.isBathtub,
+             (factory, d) => factory.CreateBathtub(d.Dimensions, d.bathtubRimWidthMM,
+                 d.bathtubBowlDepthMM, d.bathtubBowlRadiusMM, d.bathtubBowlFilletMM,
+                 d.name, d.Position),
+             null),
+
             (d => d.isBed,
              (factory, d) => factory.CreateBed(d.Dimensions, d.bedDouble, d.bedHeadboard,
                  d.name, d.Position),

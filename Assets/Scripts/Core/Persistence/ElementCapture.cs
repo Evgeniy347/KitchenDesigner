@@ -19,6 +19,7 @@ namespace KitchenDesigner.Core
 			var pouffe = element as PouffeElement;
 			var toilet = element as ToiletElement;
 			var wallHungToilet = element as WallHungToiletElement;
+			var bathtub = element as BathtubElement;
 			var bed = element as BedElement;
 			var tableEl2 = element as TableElement;
 			var windowEl = element as WindowElement;
@@ -67,6 +68,15 @@ namespace KitchenDesigner.Core
             d.toiletFlushPlateHeightMM = wallHungToilet != null
                 ? wallHungToilet.FlushPlateHeightMM
                 : WallHungToiletLayout.DefaultPlateBottomMM;
+            d.isBathtub = bathtub != null;
+            d.bathtubRimWidthMM = bathtub != null ? bathtub.RimWidthMM
+                : BathtubLayout.DefaultRimWidthMM;
+            d.bathtubBowlDepthMM = bathtub != null ? bathtub.BowlDepthMM
+                : BathtubLayout.DefaultBowlDepthMM;
+            d.bathtubBowlRadiusMM = bathtub != null ? bathtub.BowlRadiusMM
+                : BathtubLayout.DefaultBowlRadiusMM;
+            d.bathtubBowlFilletMM = bathtub != null ? bathtub.BowlFilletMM
+                : BathtubLayout.DefaultBowlFilletMM;
             d.isBed = bed != null;
             d.bedDouble = bed != null ? bed.IsDouble : true;
             d.bedHeadboard = bed != null ? bed.HasHeadboard : true;

@@ -361,6 +361,23 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, toilet);
         }
 
+        public GameObject CreateBathtub(Vector3Int dimensionsMM, int rimWidthMM,
+            int bowlDepthMM, int bowlRadiusMM, int bowlFilletMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Ванна", position);
+
+            var bathtub = go.AddComponent<BathtubElement>();
+            bathtub.PartName = go.name;
+            bathtub.DimensionsMM = dimensionsMM;
+            bathtub.RimWidthMM = rimWidthMM;
+            bathtub.BowlDepthMM = bowlDepthMM;
+            bathtub.BowlRadiusMM = bowlRadiusMM;
+            bathtub.BowlFilletMM = bowlFilletMM;
+            bathtub.Movable = true;
+
+            return ElementRoot.Publish(go, bathtub);
+        }
+
         public GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard,
             string name, Vector3 position)
         {

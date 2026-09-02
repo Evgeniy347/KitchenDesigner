@@ -190,6 +190,13 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is BathtubElement,
+             (factory, source, pos) => factory.CreateBathtub(source.DimensionsMM,
+                 ((BathtubElement)source).RimWidthMM, ((BathtubElement)source).BowlDepthMM,
+                 ((BathtubElement)source).BowlRadiusMM, ((BathtubElement)source).BowlFilletMM,
+                 source.PartName, pos),
+             CopyMaterial),
+
             (el => el is BedElement,
              (factory, source, pos) => factory.CreateBed(source.DimensionsMM,
                  ((BedElement)source).IsDouble, ((BedElement)source).HasHeadboard,
