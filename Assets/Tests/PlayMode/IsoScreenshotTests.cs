@@ -588,6 +588,76 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+    // ─ Pouffe isometric screenshots ───────────────────
+
+    [UnityTest]
+    public IEnumerator IsoPouffe_450x400x450_Rounded()
+    {
+        yield return RenderPouffe(DefaultPouffeDims(), PouffeElement.DefaultCornerRadiusMM,
+            PouffeElement.DefaultSeatThicknessMM, "IsoPouffeRounded",
+            "iso_pouffe_450x400x450_rounded.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoPouffe_450x400x450_Square()
+    {
+        yield return RenderPouffe(DefaultPouffeDims(), 0,
+            PouffeElement.DefaultSeatThicknessMM, "IsoPouffeSquare",
+            "iso_pouffe_450x400x450_square.png", false);
+    }
+
+    /// <summary>Круглый пуфик — предельный случай правила отступа сидушки:
+    /// подушка не умеет следовать круглому плану, её угловое скругление
+    /// ограничено собственной толщиной, поэтому её квадрат ВПИСЫВАЕТСЯ в
+    /// окружность тумбы. Этот кадр существует, чтобы предел было видно
+    /// глазами, а не только в арифметике PouffeLayoutTests.</summary>
+    [UnityTest]
+    public IEnumerator IsoPouffe_450x400x450_Round()
+    {
+        var dims = DefaultPouffeDims();
+        yield return RenderPouffe(dims, PouffeElement.MaxCornerRadiusMM(dims),
+            PouffeElement.DefaultSeatThicknessMM, "IsoPouffeRound",
+            "iso_pouffe_450x400x450_round.png", false);
+    }
+
+    private static Vector3Int DefaultPouffeDims() => new Vector3Int(
+        PouffeElement.DefaultWidthMM, PouffeElement.DefaultHeightMM,
+        PouffeElement.DefaultDepthMM);
+
+    private IEnumerator RenderPouffe(Vector3Int dims, int cornerRadiusMM,
+        int seatThicknessMM, string name, string png, bool capturePanel = true)
+    {
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreatePouffe(dims, cornerRadiusMM, seatThicknessMM, name, pos);
+        _spawned.Add(go);
+
+        var pouffe = go.GetComponent<PouffeElement>();
+        Assert.IsNotNull(pouffe, "фабрика обязана вернуть именно PouffeElement");
+        Assert.AreEqual(dims, pouffe!.DimensionsMM,
+            "снимок обязан показывать заказанный габарит: свойства пуфика подрезаются "
+            + "габаритом, поэтому фабрика обязана выставить его ПЕРВЫМ");
+        Assert.AreEqual(cornerRadiusMM, pouffe.CornerRadiusMM,
+            "и ту форму, которую заказали: радиус не должен молча схлопнуться");
+        Assert.AreEqual(seatThicknessMM, pouffe.SeatThicknessMM,
+            "и ту толщину сидушки, которую заказали");
+        Assert.IsNotNull(go.transform.Find(PouffeElement.SeatChildName),
+            "сидушка — отдельный именованный ребёнок: снимок пуфика без неё был бы "
+            + "снимком обитой тумбы");
+        Assert.IsNotNull(go.GetComponent<MeshRenderer>(),
+            "обитая тумба живёт на КОРНЕ: без её рендерера кадр показал бы одну "
+            + "сидушку, висящую в воздухе");
+
+        Vector3 size = MmToUnits(dims);
+        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return capturePanel
+            ? RenderToPng(cam, png)
+            : RenderToPng(cam, png, null);
+
+        Object.DestroyImmediate(camGo);
+    }
+
     // ─ Radial shelf isometric screenshot ───────────────────
 
     [UnityTest]

@@ -109,8 +109,8 @@ public class SidebarCatalogTests
     public void FurnitureGroup_HasTable()
     {
         var groups = SidebarCatalog.Build();
-        Assert.AreEqual(9, groups[3].items.Count,
-            "девятым в «Мебели» встала кровать");
+        Assert.AreEqual(10, groups[3].items.Count,
+            "девятой в «Мебели» встала кровать, десятым — пуфик");
         var it = groups[3].items.Find(i => i.name == "Прямоугольный стол");
         Assert.IsNotNull(it);
         Assert.IsTrue(it.isFurniture);
@@ -163,6 +163,22 @@ public class SidebarCatalogTests
             BedElement.DefaultHeightMM, BedElement.DefaultDepthMM), it.dims,
             "габариты кровати в каталоге обязаны совпадать с её собственными значениями "
             + "по умолчанию, иначе сайдбар и MCP заводят разные кровати");
+    }
+
+    [Test]
+    public void FurnitureGroup_HasPouffe()
+    {
+        var groups = SidebarCatalog.Build();
+        var it = groups[3].items.Find(i => i.name == "Пуфик");
+        Assert.IsNotNull(it, "пуфик обязан быть в сайдбаре: иначе завести его можно "
+            + "только через MCP");
+        Assert.IsTrue(it.isPouffe,
+            "и именно своим флагом: SidebarUI ветвится по этим флагам, и пуфик с чужим "
+            + "флагом завёлся бы табуреткой — на ножках и с жёстким сиденьем");
+        Assert.AreEqual(new Vector3Int(PouffeElement.DefaultWidthMM,
+            PouffeElement.DefaultHeightMM, PouffeElement.DefaultDepthMM), it.dims,
+            "габариты пуфика в каталоге обязаны совпадать с его собственными значениями "
+            + "по умолчанию, иначе сайдбар и MCP заводят разные пуфики");
     }
 
     [Test]

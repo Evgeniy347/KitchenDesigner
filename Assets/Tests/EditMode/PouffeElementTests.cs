@@ -270,6 +270,50 @@ public class PouffeElementTests
             + "загрузке чужого проекта");
     }
 
+    /// <summary>Ловушка, на которой споткнулась кровать, но в другую сторону.
+    /// Скругление и толщина сидушки подрезаются ГАБАРИТОМ, поэтому фабрика
+    /// обязана выставить DimensionsMM ПЕРВЫМ: на умолчательном габарите
+    /// свежего компонента (0x0x0) потолок радиуса равен нулю, и заказанные
+    /// 120 мм схлопнулись бы в 0 молча — пуфик приехал бы квадратным.</summary>
+    [Test]
+    public void Factory_SetsTheSizeBeforeTheProperties_SoNeitherIsSilentlyClamped()
+    {
+        var go = ElementFactory.CreatePouffe(new Vector3Int(520, 380, 410), 90, 70,
+            "Пуфик-Ф", Vector3.zero);
+        _spawned.Add(go);
+        var pouffe = go.GetComponent<PouffeElement>();
+
+        Assert.IsNotNull(pouffe, "фабрика обязана вернуть PouffeElement");
+        Assert.AreEqual(new Vector3Int(520, 380, 410), pouffe!.DimensionsMM,
+            "габарит доезжает целиком");
+        Assert.AreEqual(90, pouffe.CornerRadiusMM,
+            "и радиус тоже: подрезка нулевым габаритом обнулила бы его молча");
+        Assert.AreEqual(70, pouffe.SeatThicknessMM,
+            "и толщина сидушки — её потолок тоже считается от высоты");
+    }
+
+    [Test]
+    public void Duplicate_OfAPouffe_IsAPouffe_AndKeepsBothOfItsOwnValues()
+    {
+        var source = Pouffe(520, 380, 410, 90, 70);
+        source.TabletopMaterialId = "oak";
+        source.LegsMaterialId = "velvet";
+
+        var copy = ElementDuplicators.Copy(ElementFactory.Instance, source, Vector3.one);
+        _spawned.Add(copy);
+        var made = copy.GetComponent<PouffeElement>();
+
+        Assert.IsNotNull(made,
+            "каждый реестр ветвится через is XxxElement: пропущенная ветка не падает, "
+            + "а молча отдаёт обычную доску");
+        Assert.AreEqual(90, made!.CornerRadiusMM, "копия сохраняет форму");
+        Assert.AreEqual(70, made.SeatThicknessMM, "и толщину сидушки");
+        Assert.AreEqual("oak", made.TabletopMaterialId, "и декор обивки");
+        Assert.AreEqual("velvet", made.LegsMaterialId,
+            "и декор сидушки: копия с одним общим декором означала бы, что второй "
+            + "слот при дублировании теряется");
+    }
+
     [Test]
     public void Pouffe_Destroyed_TakesItsSeatWithIt()
     {

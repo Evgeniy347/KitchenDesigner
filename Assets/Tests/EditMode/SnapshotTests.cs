@@ -409,6 +409,27 @@ public class SnapshotTests
         Snapshot.Match(json, "bed_custom");
     }
 
+    // ── PouffeElement snapshot ───────────────────────────────────────────
+
+    /// <summary>Снимок берётся на НЕумолчальных значениях обоих собственных
+    /// полей пуфика: 90 мм вместо 120 и 70 мм вместо 50. Поле, которое забыли
+    /// записать в ElementCapture, при умолчательном значении неотличимо от
+    /// записанного — ровно так квадратная табуретка однажды загрузилась
+    /// скруглённой. Габарит тоже несимметричный: на 450x450 перепутанные оси
+    /// дали бы тот же JSON.</summary>
+    [Test]
+    public void Snapshot_Pouffe_Custom()
+    {
+        var go = ElementFactory.CreatePouffe(new Vector3Int(520, 380, 410), 90, 70,
+            "BigPouffe", new Vector3(0.5f, 0.19f, -1.0f));
+        var pouffe = go.GetComponent<PouffeElement>();
+        pouffe.MaterialId = "oak";
+        Add(go);
+
+        var json = CaptureJson(new[] { go.GetComponent<KitchenElement>() });
+        Snapshot.Match(json, "pouffe_custom");
+    }
+
     // ── Full scene snapshot ──────────────────────────────────────────────
 
     [Test]

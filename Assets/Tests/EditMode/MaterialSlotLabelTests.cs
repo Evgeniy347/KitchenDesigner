@@ -81,6 +81,11 @@ public class MaterialSlotLabelTests
     private KitchenElement Bed() => Spawn(ElementFactory.CreateBed(
         BedLayout.DefaultDimensions(true, true), true, true, "Кровать", Vector3.zero));
 
+    private KitchenElement Pouffe() => Spawn(ElementFactory.CreatePouffe(
+        new Vector3Int(PouffeElement.DefaultWidthMM, PouffeElement.DefaultHeightMM,
+            PouffeElement.DefaultDepthMM), PouffeElement.DefaultCornerRadiusMM,
+        PouffeElement.DefaultSeatThicknessMM, "Пуфик", Vector3.zero));
+
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
     private string LabelText(string node) =>
@@ -143,6 +148,17 @@ public class MaterialSlotLabelTests
     }
 
     [Test]
+    public void MaterialRows_OfAPouffe_AreCalledUpholsteryAndSeat()
+    {
+        Assert.AreEqual(("Обивка", "Сиденье"), LabelsFor(Pouffe()),
+            "у пуфика нет ни столешницы, ни ножек: первый слот красит обитую тумбу "
+            + "(PouffeElement.SetTabletopMaterial → Body), второй — мягкую сидушку "
+            + "(SetLegsMaterial → Seat). «Обивка» совпадает с диваном намеренно — это "
+            + "одна и та же вещь, — а вторая подпись расходится: у дивана подушки "
+            + "лежат НА сиденье, у пуфика сидушка сиденьем и является");
+    }
+
+    [Test]
     public void MaterialRow_OfAStool_NeverSaysTabletop()
     {
         var (top, legs) = LabelsFor(Stool());
@@ -166,7 +182,7 @@ public class MaterialSlotLabelTests
     [Test]
     public void MaterialSlotLabels_LeaveTheSerializedDecorIdsAlone()
     {
-        foreach (var element in new[] { Table(), RadiusTable(), Stool(), Chair(), Sofa(), Bed() })
+        foreach (var element in new[] { Table(), RadiusTable(), Stool(), Chair(), Sofa(), Bed(), Pouffe() })
         {
             var tabletop = (ITabletop)element;
             tabletop.TabletopMaterialId = "oak";

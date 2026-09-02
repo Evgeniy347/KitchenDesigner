@@ -75,6 +75,12 @@ public class ElementFieldsEditorTests
             new Vector3Int(StoolElement.DefaultWidthMM, StoolElement.DefaultHeightMM,
                 StoolElement.DefaultDepthMM), 0, "Табуретка", Vector3.zero));
 
+    private PouffeElement Pouffe() =>
+        Spawn<PouffeElement>(ElementFactory.CreatePouffe(
+            new Vector3Int(PouffeElement.DefaultWidthMM, PouffeElement.DefaultHeightMM,
+                PouffeElement.DefaultDepthMM), PouffeElement.DefaultCornerRadiusMM,
+            PouffeElement.DefaultSeatThicknessMM, "Пуфик", Vector3.zero));
+
     private TableElement Table() =>
         Spawn<TableElement>(ElementFactory.CreateTable(
             new Vector3Int(1200, 750, 700), "Стол", Vector3.zero));
@@ -372,6 +378,75 @@ public class ElementFieldsEditorTests
             + "ничего не делает");
         Assert.IsFalse(Panel().Find(BedFieldsEditor.HeadboardNode)!.gameObject.activeInHierarchy,
             "и вторая строка тоже");
+    }
+
+    /// <summary>Узел строки пуфика назван явно, а не подписью: подпись
+    /// «Скругление» уже занята табуреткой, и два редактора, взявшие узел из
+    /// подписи, склеили бы свои строки в одну. Тест ищет строку по имени узла —
+    /// то есть проверяет ровно то соглашение, на котором это держится.</summary>
+    [Test]
+    public void Pouffe_CornerRadiusRow_IsBuilt_AndAppliesAndIsUndoable()
+    {
+        var pouffe = Pouffe();
+        _menu!.Open(pouffe);
+        Assume.That(Text(Field(PouffeFieldsEditor.CornerRadiusNode)), Is.EqualTo("120"));
+
+        Type(PouffeFieldsEditor.CornerRadiusNode, "60");
+
+        Assert.AreEqual(60, pouffe.CornerRadiusMM, "скругление применяется вместе с размерами");
+        CommandStack.Undo();
+        Assert.AreEqual(PouffeElement.DefaultCornerRadiusMM, pouffe.CornerRadiusMM,
+            "одна правка — один шаг отмены");
+    }
+
+    [Test]
+    public void Pouffe_SeatThicknessRow_AppliesAndShowsTheCLAMPEDValueBack()
+    {
+        var pouffe = Pouffe();
+        _menu!.Open(pouffe);
+        Assume.That(Text(Field(PouffeFieldsEditor.SeatThicknessNode)), Is.EqualTo("50"));
+
+        Type(PouffeFieldsEditor.SeatThicknessNode, "10000");
+
+        int max = PouffeElement.MaxSeatThicknessMM(PouffeElement.DefaultHeightMM);
+        Assert.AreEqual(max, pouffe.SeatThicknessMM,
+            "сидушка не вправе занимать больше трети высоты пуфика");
+        Assert.AreEqual(max.ToString(), Text(Field(PouffeFieldsEditor.SeatThicknessNode)),
+            "и поле обязано показать ПРИНЯТОЕ значение, а не набранное: значение, "
+            + "записанное обратно изнутри BeginCapture, показывало бы человеку его "
+            + "собственный ввод вместо того, что элемент взял");
+    }
+
+    [Test]
+    public void Pouffe_ShowsUpholsteryAndSeatRows_InsteadOfThePlainTextureRow()
+    {
+        _menu!.Open(Pouffe());
+
+        Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
+            "у пуфика два декора — обивка и сидушка: он носитель ITabletop");
+        Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy,
+            "второй слот тоже обязан быть виден");
+        Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
+            "общая строка «Текстура» у носителя двух слотов скрыта");
+    }
+
+    [Test]
+    public void PouffeRows_AreHiddenForOtherFurniture()
+    {
+        _menu!.Open(Pouffe());
+        _menu!.Open(Stool());
+
+        Assert.IsFalse(
+            Panel().Find("F_" + PouffeFieldsEditor.SeatThicknessNode)!.gameObject
+                .activeInHierarchy,
+            "строка «Толщина сидушки» у табуретки мертва: сидушки у неё нет, и человек "
+            + "правил бы поле, которое ничего не делает");
+        Assert.IsFalse(
+            Panel().Find("F_" + PouffeFieldsEditor.CornerRadiusNode)!.gameObject
+                .activeInHierarchy,
+            "и своя строка скругления тоже: у табуретки есть СВОЁ поле с той же "
+            + "подписью, и показать оба разом значило бы дать человеку два поля с "
+            + "одним смыслом, из которых работает одно");
     }
 
     [Test]
