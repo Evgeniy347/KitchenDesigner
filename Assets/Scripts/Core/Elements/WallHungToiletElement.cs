@@ -15,7 +15,6 @@ namespace KitchenDesigner.Core
         public const int DefaultFlushPlateHeightMM = WallHungToiletLayout.DefaultPlateBottomMM;
 
         private const int SeatBeforePlateOrder = -100;
-        private const float RotationEpsilonDegrees = 0.05f;
 
         private FurniturePartSet? _ceramic;
         private FurniturePartSet? _chrome;
@@ -141,27 +140,7 @@ namespace KitchenDesigner.Core
             MaterialManager.RefreshTiling(this);
         }
 
-        public void SnapToWall()
-        {
-            var wall = WallProximity.Nearest(this);
-            if (wall == null) return;
-
-            var centre = wall.FullPosition;
-            var normal = WallMountedPose.OutwardNormal(WallProximity.FaceNormal(wall), centre,
-                transform.position);
-            float standoff = WallProximity.HalfThicknessUnits(wall)
-                + WallHungToiletLayout.DepthMM * 0.5f * AppConstants.MM_TO_UNITS;
-
-            var seated = WallMountedPose.SeatedPosition(transform.position, centre, normal,
-                standoff);
-            var facing = Quaternion.Euler(0f, WallMountedPose.YawDegrees(normal), 0f);
-
-            if ((seated - transform.position).sqrMagnitude <= Tolerance.EpsilonSqr
-                && Quaternion.Angle(facing, transform.rotation) <= RotationEpsilonDegrees)
-                return;
-
-            transform.SetPositionAndRotation(seated, facing);
-        }
+        public void SnapToWall() => WallSeating.Seat(this, WallHungToiletLayout.DepthMM);
 
         public void SeatAfterMove(IReadOnlyList<KitchenElement> scene)
         {
