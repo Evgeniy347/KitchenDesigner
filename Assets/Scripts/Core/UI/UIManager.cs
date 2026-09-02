@@ -158,6 +158,8 @@ namespace KitchenDesigner.Core.UI
 
         public void SpawnBed(Vector3Int dims, string name) => Spawner.SpawnBed(dims, name);
 
+        public void SpawnPouffe(Vector3Int dims, string name) => Spawner.SpawnPouffe(dims, name);
+
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
             int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM) =>

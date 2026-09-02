@@ -20,6 +20,7 @@ namespace KitchenDesigner.Core.UI
             public bool isChair;
             public bool isSofa;
             public bool isBed;
+            public bool isPouffe;
             public bool isWindow;
             public bool isDoor;
             public bool isPillar;
@@ -50,7 +51,7 @@ namespace KitchenDesigner.Core.UI
                 this.isFacade = isFacade; this.isAssembled = isAssembled;
                 this.gapLeft = gapLeft; this.gapRight = gapRight;
                 this.gapTop = gapTop; this.gapBottom = gapBottom;
-                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isStool = false; isChair = false; isSofa = false; isBed = false; isWindow = false; isDoor = false;
+                isDrawer = false; isRadialShelf = false; isFurniture = false; isRadiusTable = false; isStool = false; isChair = false; isSofa = false; isBed = false; isPouffe = false; isWindow = false; isDoor = false;
                 isPillar = false; isScrewLeg = false; isFloor = false; isLightSource = false; isSink = false; isCooktop = false;
                 isOven = false; isDishwasher = false;
                 isPanel = false; applianceModel = ""; pillarMidHeightMM = 75;
@@ -160,10 +161,13 @@ namespace KitchenDesigner.Core.UI
             var bed = new Item("Кровать", new Vector3Int(BedElement.DefaultWidthMM,
                 BedElement.DefaultHeightMM, BedElement.DefaultDepthMM));
             bed.isBed = true;
+            var pouffe = new Item("Пуфик", new Vector3Int(PouffeElement.DefaultWidthMM,
+                PouffeElement.DefaultHeightMM, PouffeElement.DefaultDepthMM));
+            pouffe.isPouffe = true;
             var pillar = PillarItem("Ножка", PillarElement.MidHeightMM_Default);
             var screwLeg = ScrewLegItem("Винтовая опора");
             var sink = SinkItem("Мойка");
-            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, stool, chair, sofa, bed, pillar, screwLeg, sink } };
+            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, stool, chair, sofa, pouffe, bed, pillar, screwLeg, sink } };
         }
 
         private static Group ApplianceGroup()

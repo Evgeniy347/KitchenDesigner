@@ -79,6 +79,11 @@ namespace KitchenDesigner.Core.UI
         public void SpawnBed(Vector3Int dims, string name) =>
             PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateBed(dims, true, true, name, pos));
 
+        public void SpawnPouffe(Vector3Int dims, string name) =>
+            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreatePouffe(dims,
+                PouffeElement.DefaultCornerRadiusMM, PouffeElement.DefaultSeatThicknessMM,
+                name, pos));
+
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom) =>
             PlaceCenteredOnGround(dims.y, pos =>
