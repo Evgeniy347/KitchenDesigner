@@ -209,6 +209,9 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602, $"Wall '{p.wall}' not found");
             if (p.offset_mm < 0 || p.width <= 0 || p.height <= 0 || p.sill_mm < 0)
                 return McpResponse.Error(req.id, -32602, "offset/sill must be non-negative; width/height positive");
+            if (kind == "door" && p.sill_mm != 0)
+                return McpResponse.Error(req.id, -32602,
+                    $"door sill must be 0, got {p.sill_mm}: a door opening starts at the floor");
             var wallDims = wallElement.DimensionsMM;
             bool thicknessAlongX = wallDims.x <= wallDims.z;
             int wallLength = thicknessAlongX ? wallDims.z : wallDims.x;

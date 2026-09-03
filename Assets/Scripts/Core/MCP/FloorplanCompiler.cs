@@ -103,6 +103,8 @@ namespace KitchenDesigner.Core.MCP
                 if (o.kind != "window" && o.kind != "door") c.errors.Add($"Opening '{o.id}' has invalid kind '{o.kind}'");
                 if (o.offset_mm < 0 || o.width <= 0 || o.height <= 0 || o.sill_mm < 0)
                     c.errors.Add($"Opening '{o.id}' has invalid dimensions/offset");
+                if (o.kind == "door" && o.sill_mm != 0)
+                    c.errors.Add($"Door '{o.id}' must have sill_mm 0: a door opening starts at the floor");
                 c.openings.Add(o);
                 foreach (var room in c.rooms) if (room.walls.Contains(o.wall)) room.openings.Add(o.id);
             }

@@ -498,7 +498,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public int offset_mm;
         [McpParam("Opening width in MM.", Required = true, Min = 1)] public int width;
         [McpParam("Opening height in MM.", Required = true, Min = 1)] public int height;
-        [McpParam("Height from wall base to opening bottom in MM. Door usually uses 0.", Min = 0)]
+        [McpParam("Height from wall base to opening bottom in MM. Must be 0 for a door: a door opening starts at the floor.", Min = 0)]
         public int sill_mm;
     }
 
@@ -771,7 +771,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Offset from wall start in MM.", Required = true, Min = 0)] public int offset_mm;
         [McpParam("Width in MM.", Required = true, Min = 1)] public int width;
         [McpParam("Height in MM.", Required = true, Min = 1)] public int height;
-        [McpParam("Sill/bottom height from wall base in MM.", Min = 0)] public int sill_mm;
+        [McpParam("Sill height from wall base in MM. Must be 0 for a door: a door opening starts at the floor.", Min = 0)] public int sill_mm;
     }
 
     [Serializable]
