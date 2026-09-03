@@ -1,4 +1,7 @@
 using System;
+using KitchenDesigner.Core.Lighting;
+using KitchenDesigner.Core.Measure;
+using KitchenDesigner.Core.Tools;
 
 namespace KitchenDesigner.Core
 {
@@ -26,10 +29,19 @@ namespace KitchenDesigner.Core
 
         internal static void Enter()
         {
+            CloseToolsThatDrawOverlays();
             _prevTintEnabled = ElementHighlighter.TintEnabled;
             ElementHighlighter.TintEnabled = false;
             RefreshHighlights();
             ApplySceneOverFinalMaterials();
+        }
+
+        private static void CloseToolsThatDrawOverlays()
+        {
+            MeasureMode.SetActive(false);
+            LightPickMode.SetSource(null);
+            EyedropperMode.SetActive(false);
+            TextureOverlayHandles.End();
         }
 
         internal static void Exit()

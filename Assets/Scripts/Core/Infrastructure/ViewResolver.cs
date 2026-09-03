@@ -12,7 +12,9 @@ namespace KitchenDesigner.Core
         private const int PhotoLocked =
             RoomLocked
             | (1 << (int)ViewField.Objects)
-            | (1 << (int)ViewField.HideLightSources);
+            | (1 << (int)ViewField.HideLightSources)
+            | (1 << (int)ViewField.WallOutline)
+            | (1 << (int)ViewField.ObjectOutline);
 
         public static ViewPreset PresetFor(EditMode mode, KitchenSettings? s)
         {
@@ -43,11 +45,11 @@ namespace KitchenDesigner.Core
                 case EditMode.Photo:
                     return new ViewState(
                         wallsEnabled: true,
-                        wallOutline: p.wallOutline,
+                        wallOutline: false,
                         lowerNearWalls: false,
                         hideOpeningsOnLoweredWalls: false,
                         objectsVisible: true,
-                        edgeOutline: p.edgeOutline,
+                        edgeOutline: false,
                         hideLightSources: false,
                         locked: PhotoLocked);
 
