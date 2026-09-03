@@ -116,10 +116,10 @@ namespace KitchenDesigner.Core
             switch (slot)
             {
                 case MaterialSlot.Tabletop:
-                    if (element is ITabletop top) ApplyTabletop(top, def);
+                    if (element is IHasTwoDecorSlots top) ApplyTabletop(top, def);
                     break;
                 case MaterialSlot.Legs:
-                    if (element is ITabletop legs) ApplyLegs(legs, def);
+                    if (element is IHasTwoDecorSlots legs) ApplyLegs(legs, def);
                     break;
                 default:
                     Apply(element, def);
@@ -133,15 +133,15 @@ namespace KitchenDesigner.Core
             switch (slot)
             {
                 case MaterialSlot.Tabletop:
-                    return element is ITabletop top ? top.TabletopMaterialId : element.MaterialId;
+                    return element is IHasTwoDecorSlots top ? top.TabletopMaterialId : element.MaterialId;
                 case MaterialSlot.Legs:
-                    return element is ITabletop legs ? legs.LegsMaterialId : element.MaterialId;
+                    return element is IHasTwoDecorSlots legs ? legs.LegsMaterialId : element.MaterialId;
                 default:
                     return element.MaterialId;
             }
         }
 
-        public static void ApplyTabletop(ITabletop tabletop, MaterialDef def)
+        public static void ApplyTabletop(IHasTwoDecorSlots tabletop, MaterialDef def)
         {
             if (tabletop == null || def == null) return;
             tabletop.TabletopMaterialId = def.id;
@@ -150,7 +150,7 @@ namespace KitchenDesigner.Core
             if (tabletop is KitchenElement element) RefreshTiling(element, def);
         }
 
-        public static void ApplyLegs(ITabletop tabletop, MaterialDef def)
+        public static void ApplyLegs(IHasTwoDecorSlots tabletop, MaterialDef def)
         {
             if (tabletop == null || def == null) return;
             tabletop.LegsMaterialId = def.id;
@@ -174,7 +174,7 @@ namespace KitchenDesigner.Core
             var mat = GetSharedMaterial(def);
             if (mat == null) return;
 
-            if (element is ITabletop tabletop)
+            if (element is IHasTwoDecorSlots tabletop)
             {
                 tabletop.SetTabletopMaterial(mat);
                 RefreshTiling(element, def);

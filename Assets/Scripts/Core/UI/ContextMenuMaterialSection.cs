@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core.UI
         private string? _previewBefore;
         private MaterialSlot _previewSlot;
 
-        private bool HasTwoDecorSlots => _host.Target is ITabletop;
+        private bool HasTwoDecorSlots => _host.Target is IHasTwoDecorSlots;
 
         public ContextMenuMaterialSection(IContextMenuHost host) => _host = host;
 
@@ -52,7 +52,7 @@ namespace KitchenDesigner.Core.UI
         {
             Show(_base, element.MaterialId);
 
-            if (!(element is ITabletop tabletop)) return;
+            if (!(element is IHasTwoDecorSlots tabletop)) return;
 
             Show(_tabletop, tabletop.TabletopMaterialId);
             Show(_legs, tabletop.LegsMaterialId);
@@ -67,7 +67,7 @@ namespace KitchenDesigner.Core.UI
 
         public void ApplyLegsChoice(KitchenElement target)
         {
-            if (_legs == null || !(target is ITabletop tabletop)) return;
+            if (_legs == null || !(target is IHasTwoDecorSlots tabletop)) return;
             var all = MaterialCatalog.All;
             if (_legs.value < 0 || _legs.value >= all.Count) return;
             var def = all[_legs.value];

@@ -11,7 +11,7 @@ using KitchenDesigner.Core.UI;
 /// табуретки и стула это сиденье, у дивана вообще нет ни столешницы, ни ножек,
 /// а есть обивка и подушки.
 ///
-/// Ответ даёт элемент (<c>ITabletop.TabletopSlotLabel</c> /
+/// Ответ даёт элемент (<c>IHasTwoDecorSlots.TabletopSlotLabel</c> /
 /// <c>LegsSlotLabel</c>), а не лестница по типу в UI — этого требует
 /// CONVENTIONS.md → «Element type checks live in ONE place per layer», и за
 /// слоем UI следит <c>UiElementTypeLadderTests</c>.
@@ -211,7 +211,7 @@ public class MaterialSlotLabelTests
         foreach (var element in new[] { Table(), RadiusTable(), Stool(), Chair(), Sofa(), Bed(),
             Pouffe(), Toilet(), WallHungToilet() })
         {
-            var tabletop = (ITabletop)element;
+            var tabletop = (IHasTwoDecorSlots)element;
             tabletop.TabletopMaterialId = "oak";
             tabletop.LegsMaterialId = "concrete";
 

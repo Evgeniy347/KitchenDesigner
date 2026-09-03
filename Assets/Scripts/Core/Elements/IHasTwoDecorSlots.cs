@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public interface ITabletop
+    public interface IHasTwoDecorSlots
     {
         string TabletopMaterialId { get; set; }
 

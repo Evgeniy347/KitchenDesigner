@@ -164,16 +164,16 @@ public class ElementTypeRegistryExerciseTests
     }
 
     /// <summary>Тот же дефект, что был пойман в дублировании, но на пути
-    /// сохранения: у ITabletop ДВА слота декора, а MaterialId у стола — лишь
+    /// сохранения: у IHasTwoDecorSlots ДВА слота декора, а MaterialId у стола — лишь
     /// псевдоним столешницы, поэтому ветка, восстанавливающая «материал», молча
     /// теряет ножки. Слоты не помечены [Undoable] и в проверку выше не попадают.</summary>
     [Test]
     public void Restore_EveryTabletopType_KeepsBothDecorSlots()
     {
         var declared = EveryElementType.Declared()
-            .Where(t => typeof(ITabletop).IsAssignableFrom(t)).ToList();
+            .Where(t => typeof(IHasTwoDecorSlots).IsAssignableFrom(t)).ToList();
         Assert.IsNotEmpty(declared,
-            "рефлексия не нашла ни одного ITabletop — сканер смотрит не в ту сборку, и проверка "
+            "рефлексия не нашла ни одного IHasTwoDecorSlots — сканер смотрит не в ту сборку, и проверка "
             + "ниже зелёная, но не проверяет ничего");
 
         var lost = new List<string>();
@@ -181,7 +181,7 @@ public class ElementTypeRegistryExerciseTests
         {
             EveryElementType.ClearScene();
             var source = EveryElementType.Spawn(type, "Top" + type.Name);
-            var slots = (ITabletop)source;
+            var slots = (IHasTwoDecorSlots)source;
             MaterialManager.ApplyTabletop(slots, MaterialCatalog.Get(TopDecorId));
             MaterialManager.ApplyLegs(slots, MaterialCatalog.Get(LegsDecorId));
             Assert.AreEqual(TopDecorId, slots.TabletopMaterialId,
@@ -189,7 +189,7 @@ public class ElementTypeRegistryExerciseTests
             Assert.AreEqual(LegsDecorId, slots.LegsMaterialId,
                 "предусловие: декор ножек вообще назначился");
 
-            var copy = (ITabletop)RestoreThroughFile(source);
+            var copy = (IHasTwoDecorSlots)RestoreThroughFile(source);
             if (copy.TabletopMaterialId != TopDecorId)
                 lost.Add(type.Name + ".TabletopMaterialId = " + copy.TabletopMaterialId);
             if (copy.LegsMaterialId != LegsDecorId)

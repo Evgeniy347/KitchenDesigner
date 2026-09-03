@@ -16,7 +16,7 @@ namespace KitchenDesigner.Core.MCP
         internal static bool AcceptsLegInset(KitchenElement el) =>
             el is TableElement || el is RadiusTableElement;
 
-        internal static bool AcceptsTabletopSlots(KitchenElement el) => el is ITabletop;
+        internal static bool AcceptsTabletopSlots(KitchenElement el) => el is IHasTwoDecorSlots;
 
         internal static bool AcceptsCornerRadius(KitchenElement el) =>
             el is RadialShelfElement || el is StoolElement || el is ChairElement

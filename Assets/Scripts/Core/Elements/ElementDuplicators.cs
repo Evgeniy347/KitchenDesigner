@@ -304,8 +304,8 @@ namespace KitchenDesigner.Core
 
         private static void CopyTabletopSlots(KitchenElement source, GameObject copy)
         {
-            if (source is ITabletop src
-                && copy.GetComponent<KitchenElement>() is ITabletop made)
+            if (source is IHasTwoDecorSlots src
+                && copy.GetComponent<KitchenElement>() is IHasTwoDecorSlots made)
             {
                 made.TabletopMaterialId = src.TabletopMaterialId;
                 made.LegsMaterialId = src.LegsMaterialId;

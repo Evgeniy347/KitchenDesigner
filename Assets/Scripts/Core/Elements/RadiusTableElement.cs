@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class RadiusTableElement : KitchenElement, ITabletop
+    public class RadiusTableElement : KitchenElement, IHasTwoDecorSlots
     {
 
         public override string DisplayTypeName => "Радиусный стол";

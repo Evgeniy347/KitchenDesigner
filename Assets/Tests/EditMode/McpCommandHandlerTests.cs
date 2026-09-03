@@ -652,7 +652,7 @@ public class McpCommandHandlerTests
             ops = new object[] { new { name = "ST4", tabletop_material = MaterialCatalog.DefaultId } }
         }));
         Assert.AreEqual("result", accepted.type,
-            "декоры сиденья и ножек у табуретки есть — она носитель ITabletop, и правило "
+            "декоры сиденья и ножек у табуретки есть — она носитель IHasTwoDecorSlots, и правило "
             + "для них разведено с правилом для leg_inset_mm");
     }
 

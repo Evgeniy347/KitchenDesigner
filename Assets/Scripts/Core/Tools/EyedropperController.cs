@@ -92,7 +92,7 @@ namespace KitchenDesigner.Core.Tools
         }
 
         internal static MaterialSlot VisibleDecorSlotOf(KitchenElement element)
-            => element is ITabletop ? MaterialSlot.Tabletop : MaterialSlot.Base;
+            => element is IHasTwoDecorSlots ? MaterialSlot.Tabletop : MaterialSlot.Base;
 
         private static bool ShiftHeld() =>
             Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);

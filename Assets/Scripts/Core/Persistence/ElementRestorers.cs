@@ -297,7 +297,7 @@ namespace KitchenDesigner.Core
 
         private static void RestoreTabletopMaterials(ElementData data, KitchenElement el)
         {
-            if (el is not ITabletop tabletop) return;
+            if (el is not IHasTwoDecorSlots tabletop) return;
             if (!string.IsNullOrEmpty(data.legsMaterialId))
                 MaterialManager.ApplyLegs(tabletop, MaterialCatalog.Get(data.legsMaterialId));
             if (!string.IsNullOrEmpty(data.tabletopMaterialId))

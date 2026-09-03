@@ -405,7 +405,7 @@ public class EyedropperTests
 
     // ── Какой слот декора видит человек ────────────────────────────────
 
-    private class TabletopStub : KitchenElement, ITabletop
+    private class TabletopStub : KitchenElement, IHasTwoDecorSlots
     {
         public string TabletopMaterialId { get; set; } = string.Empty;
         public string LegsMaterialId { get; set; } = string.Empty;

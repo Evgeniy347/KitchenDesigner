@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class ToiletElement : KitchenElement, ITabletop, IFixedSizeElement, IStandsOnFloor
+    public class ToiletElement : KitchenElement, IHasTwoDecorSlots, IFixedSizeElement, IStandsOnFloor
     {
         public override string DisplayTypeName => "Унитаз-компакт";
 

@@ -30,7 +30,7 @@ namespace KitchenDesigner.Core
         public static string SlotIdOrDefault(string? materialId)
             => materialId ?? MaterialCatalog.DefaultId;
 
-        public static void ApplyBothSlots(ITabletop target, string tabletopMaterialId,
+        public static void ApplyBothSlots(IHasTwoDecorSlots target, string tabletopMaterialId,
             string legsMaterialId)
         {
             var topDef = MaterialCatalog.Get(tabletopMaterialId);
@@ -47,7 +47,7 @@ namespace KitchenDesigner.Core
             }
         }
 
-        public static void SetBothSlots(ITabletop target, Material material)
+        public static void SetBothSlots(IHasTwoDecorSlots target, Material material)
         {
             target.SetTabletopMaterial(material);
             target.SetLegsMaterial(material);

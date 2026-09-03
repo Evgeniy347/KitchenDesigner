@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class LightSwitchElement : KitchenElement, ITabletop, IWallMounted, IWallDevice,
+    public class LightSwitchElement : KitchenElement, IHasTwoDecorSlots, IWallMounted, IWallDevice,
         IKeepsPlacementHeight, ILightSwitch
     {
         public override string DisplayTypeName => "Выключатель";

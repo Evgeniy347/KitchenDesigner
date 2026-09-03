@@ -165,7 +165,7 @@ public class ElementFieldsEditorTests
         _menu!.Open(Stool());
 
         Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
-            "у табуретки два декора — сиденье и ножки: она носитель ITabletop");
+            "у табуретки два декора — сиденье и ножки: она носитель IHasTwoDecorSlots");
         Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy);
         Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
             "общая строка «Текстура» у носителя столешницы скрыта — иначе один декор "
@@ -272,7 +272,7 @@ public class ElementFieldsEditorTests
         _menu!.Open(Chair());
 
         Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
-            "у стула два декора — сиденье со спинкой и ножки: он носитель ITabletop");
+            "у стула два декора — сиденье со спинкой и ножки: он носитель IHasTwoDecorSlots");
         Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy);
         Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
             "общая строка «Текстура» у носителя столешницы скрыта");
@@ -429,7 +429,7 @@ public class ElementFieldsEditorTests
         _menu!.Open(Bed());
 
         Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
-            "у кровати два декора — каркас и постель: она носитель ITabletop");
+            "у кровати два декора — каркас и постель: она носитель IHasTwoDecorSlots");
         Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy,
             "второй слот тоже обязан быть виден");
         Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
@@ -525,7 +525,7 @@ public class ElementFieldsEditorTests
         _menu!.Open(Pouffe());
 
         Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
-            "у пуфика два декора — обивка и сидушка: он носитель ITabletop");
+            "у пуфика два декора — обивка и сидушка: он носитель IHasTwoDecorSlots");
         Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy,
             "второй слот тоже обязан быть виден");
         Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
@@ -645,7 +645,7 @@ public class ElementFieldsEditorTests
             _menu!.Open(toilet);
 
             Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
-                "у унитаза два декора — керамика и хром: он носитель ITabletop");
+                "у унитаза два декора — керамика и хром: он носитель IHasTwoDecorSlots");
             Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy,
                 "второй слот тоже обязан быть виден");
             Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,

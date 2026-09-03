@@ -15,7 +15,7 @@ using NUnit.Framework;
 /// Теперь тип решается один раз (<c>ElementFacets.Of</c> — фасеты, реестр
 /// <c>ElementFieldsEditor.Handles</c> — редакторы), а дальше по слою едут
 /// данные: набор фасетов, редактор, интерфейс (<c>IOpenable</c>,
-/// <c>IWallMounted</c>, <c>IFacadeHost</c>, <c>ITabletop</c>).
+/// <c>IWallMounted</c>, <c>IFacadeHost</c>, <c>IHasTwoDecorSlots</c>).
 ///
 /// <c>Handles</c> — это и есть тот единственный вопрос для редактора, поэтому
 /// он разрешён ПРАВИЛОМ, а не строкой в списке: скан пропускает выражение

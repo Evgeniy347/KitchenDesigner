@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class BedElement : KitchenElement, ITabletop
+    public class BedElement : KitchenElement, IHasTwoDecorSlots
     {
         public override string DisplayTypeName => "Кровать";
 
