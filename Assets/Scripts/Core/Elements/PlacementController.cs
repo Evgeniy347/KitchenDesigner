@@ -57,7 +57,8 @@ namespace KitchenDesigner.Core
                 ? ray.GetPoint(enter)
                 : cam.transform.position + cam.transform.forward * 2f;
 
-            point.y = pending is LightSourceElement || pending is SinkElement || pending is CooktopElement
+            point.y = pending is LightSourceElement || pending is SinkElement
+                || pending is CooktopElement || pending is IKeepsPlacementHeight
                 ? pending.transform.position.y
                 : pending.DimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS;
 

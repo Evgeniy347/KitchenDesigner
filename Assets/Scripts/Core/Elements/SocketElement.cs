@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class SocketElement : KitchenElement, ITabletop, IWallMounted, IWallDevice
+    public class SocketElement : KitchenElement, ITabletop, IWallMounted, IWallDevice,
+        IKeepsPlacementHeight
     {
         public override string DisplayTypeName => "Розетка";
 
