@@ -12,6 +12,12 @@ public class SettingsPanelUITests
     private Canvas? _canvas;
     private SettingsPanelUI? _ui;
 
+    // Страницы вкладок лежат НЕ прямо на панели, а в области прокрутки окна:
+    // параметров стало больше, чем помещается в 900 px, и вкладка «Фото режим»
+    // прятала около 330 px. Путь собран в одну константу намеренно — когда
+    // структура окна поменяется снова, править придётся одну строку, а не сорок.
+    private const string PagePath = "SettingsPanel/SettingsPanelBody/SettingsPanelBodyContent/";
+
     [SetUp]
     public void Setup()
     {
@@ -99,20 +105,20 @@ public class SettingsPanelUITests
     [Test]
     public void TabPages_Exist()
     {
-        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Project"), "Tab_Project page should exist");
-        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_View"), "Tab_View page should exist");
-        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Control"), "Tab_Control page should exist");
-        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Photo"), "Tab_Photo page should exist");
-        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_Light"), "Tab_Light page should exist");
-        Assert.IsNotNull(_canvas!.transform.Find("SettingsPanel/Tab_About"), "Tab_About page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Project"), "Tab_Project page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_View"), "Tab_View page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Control"), "Tab_Control page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Photo"), "Tab_Photo page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Light"), "Tab_Light page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_About"), "Tab_About page should exist");
     }
 
     [Test]
     public void SwitchTab_OnlyActivePageVisible()
     {
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project").gameObject;
-        var photo = _canvas!.transform.Find("SettingsPanel/Tab_Photo").gameObject;
-        var about = _canvas!.transform.Find("SettingsPanel/Tab_About").gameObject;
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project").gameObject;
+        var photo = _canvas!.transform.Find(PagePath + "Tab_Photo").gameObject;
+        var about = _canvas!.transform.Find(PagePath + "Tab_About").gameObject;
 
         Assert.IsTrue(project.activeSelf, "Project tab should be active by default");
         Assert.IsFalse(photo.activeSelf, "Photo tab should be hidden by default");
@@ -211,7 +217,7 @@ public class SettingsPanelUITests
     {
         var panel = _canvas!.transform.Find("SettingsPanel").GetComponent<RectTransform>();
         var closeBtn = _canvas!.transform.Find("SettingsPanel/SetClose").GetComponent<RectTransform>();
-        var projectTab = _canvas!.transform.Find("SettingsPanel/Tab_Project").GetComponent<RectTransform>();
+        var projectTab = _canvas!.transform.Find(PagePath + "Tab_Project").GetComponent<RectTransform>();
 
         float closeY = closeBtn.anchoredPosition.y;
         Assert.IsTrue(closeY < 0, "Close button should be below the panel center");
@@ -229,7 +235,7 @@ public class SettingsPanelUITests
             "Свободное панорамирование"
         };
 
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
 
         foreach (var label in expectedToggles)
         {
@@ -256,8 +262,8 @@ public class SettingsPanelUITests
             "Объекты", "Контур объектов", "Скрыть источники света"
         };
 
-        var view = _canvas!.transform.Find("SettingsPanel/Tab_View");
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var view = _canvas!.transform.Find(PagePath + "Tab_View");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
 
         foreach (var label in expectedToggles)
         {
@@ -271,7 +277,7 @@ public class SettingsPanelUITests
     [Test]
     public void ViewTab_PresetSwitch_FollowsEditMode()
     {
-        var view = _canvas!.transform.Find("SettingsPanel/Tab_View");
+        var view = _canvas!.transform.Find(PagePath + "Tab_View");
         var normalBtn = view.Find("RowViewPreset/ViewPreset_0");
         var roomBtn = view.Find("RowViewPreset/ViewPreset_1");
         Assert.IsNotNull(normalBtn, "сегмент «Обычный» должен быть");
@@ -294,7 +300,7 @@ public class SettingsPanelUITests
     public void ViewTab_Presets_AreIndependent()
     {
         var s = KitchenSettings.Instance;
-        var view = _canvas!.transform.Find("SettingsPanel/Tab_View");
+        var view = _canvas!.transform.Find(PagePath + "Tab_View");
         var walls = view.Find("RowTgl_Стены/Tgl_Стены").GetComponent<Toggle>();
 
         walls.isOn = false;
@@ -320,7 +326,7 @@ public class SettingsPanelUITests
             "Стены", "Контур стен", "Опускать ближние стены", "Скрывать окна и двери",
             "Объекты", "Контур объектов", "Скрыть источники света"
         };
-        var view = _canvas!.transform.Find("SettingsPanel/Tab_View");
+        var view = _canvas!.transform.Find(PagePath + "Tab_View");
 
         EditModeManager.SetMode(EditMode.Photo);
         foreach (var label in labels)
@@ -343,7 +349,7 @@ public class SettingsPanelUITests
     public void ProjectTab_HasEdgeThresholdField()
     {
         var s = KitchenSettings.Instance;
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
 
         var row = project.Find("RowFld_Нижний порог кромки");
         Assert.IsNotNull(row, "строка порога должна быть на вкладке «Проект»");
@@ -367,7 +373,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         Assert.IsNotNull(s);
 
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
 
         AssertToggleValue(project, "Сетка", s.GridEnabled);
         AssertToggleValue(project, "Привязка к деталям", s.SnapEnabled);
@@ -376,7 +382,7 @@ public class SettingsPanelUITests
         AssertToggleValue(project, "Пространственная сетка", s.SpatialGrid);
         AssertToggleValue(project, "Свободное панорамирование", s.CameraPanFree);
 
-        var view = _canvas!.transform.Find("SettingsPanel/Tab_View");
+        var view = _canvas!.transform.Find(PagePath + "Tab_View");
         AssertToggleValue(view, "Объекты", s.NormalView.objectsVisible);
         AssertToggleValue(view, "Контур объектов", s.NormalView.edgeOutline);
         AssertToggleValue(view, "Стены", s.NormalView.wallsEnabled);
@@ -400,8 +406,8 @@ public class SettingsPanelUITests
         float prevThreshold = s.SnapThreshold;
         float prevWasd = s.WasdSpeed;
 
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
-        var control = _canvas!.transform.Find("SettingsPanel/Tab_Control");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
+        var control = _canvas!.transform.Find(PagePath + "Tab_Control");
         Assert.IsTrue(ToggleOf(project, "Привязка к деталям").isOn, "на старте привязка включена");
 
         try
@@ -438,7 +444,7 @@ public class SettingsPanelUITests
     [Test]
     public void SubOptions_AreIndented_UnderTheirParent()
     {
-        var view = _canvas!.transform.Find("SettingsPanel/Tab_View");
+        var view = _canvas!.transform.Find(PagePath + "Tab_View");
 
         float wallsX = LabelX(view, "Стены");
         float outlineX = LabelX(view, "Контур стен");
@@ -456,7 +462,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         bool prev = s.NormalView.wallsEnabled;
 
-        var view = _canvas!.transform.Find("SettingsPanel/Tab_View");
+        var view = _canvas!.transform.Find(PagePath + "Tab_View");
         var walls = view.Find("RowTgl_Стены/Tgl_Стены").GetComponent<Toggle>();
 
         walls.isOn = false;
@@ -475,7 +481,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         bool prev = s.NormalView.lowerNearWalls;
 
-        var view = _canvas!.transform.Find("SettingsPanel/Tab_View");
+        var view = _canvas!.transform.Find(PagePath + "Tab_View");
         var lower = view.Find("RowTgl_Опускать ближние стены/Tgl_Опускать ближние стены").GetComponent<Toggle>();
 
         lower.isOn = false;
@@ -490,7 +496,7 @@ public class SettingsPanelUITests
     [Test]
     public void LowerNearWalls_Disabled_InRoomMode()
     {
-        var view = _canvas!.transform.Find("SettingsPanel/Tab_View");
+        var view = _canvas!.transform.Find(PagePath + "Tab_View");
         Assert.IsTrue(ToggleOf(view, "Опускать ближние стены").interactable,
             "в обычном режиме тумблер активен");
 
@@ -508,7 +514,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         bool prev = s.NormalView.objectsVisible;
 
-        var view = _canvas!.transform.Find("SettingsPanel/Tab_View");
+        var view = _canvas!.transform.Find(PagePath + "Tab_View");
         var objects = view.Find("RowTgl_Объекты/Tgl_Объекты").GetComponent<Toggle>();
 
         objects.isOn = false;
@@ -525,7 +531,7 @@ public class SettingsPanelUITests
     [Test]
     public void ControlTab_HasThreeSliders()
     {
-        var control = _canvas!.transform.Find("SettingsPanel/Tab_Control");
+        var control = _canvas!.transform.Find(PagePath + "Tab_Control");
         Assert.IsNotNull(control);
 
         string[] labels = { "Чувствительность мыши", "Скорость WASD", "Скорость ←→↑↓" };
@@ -544,7 +550,7 @@ public class SettingsPanelUITests
     public void ControlSliders_HaveCorrectInitialValues()
     {
         var s = KitchenSettings.Instance;
-        var control = _canvas!.transform.Find("SettingsPanel/Tab_Control");
+        var control = _canvas!.transform.Find(PagePath + "Tab_Control");
 
         Assert.AreEqual(s.MouseSensitivity, SliderOf(control, "Чувствительность мыши").value, 0.001f);
         Assert.AreEqual(s.WasdSpeed, SliderOf(control, "Скорость WASD").value, 0.001f);
@@ -557,7 +563,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         float prev = s.WasdSpeed;
 
-        var control = _canvas!.transform.Find("SettingsPanel/Tab_Control");
+        var control = _canvas!.transform.Find(PagePath + "Tab_Control");
         SliderOf(control, "Скорость WASD").value = 2.5f;
         Assert.AreEqual(2.5f, s.WasdSpeed, 0.001f);
 
@@ -567,7 +573,7 @@ public class SettingsPanelUITests
     [Test]
     public void ToggleRow_CheckmarkReflectsState()
     {
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
         var toggleObj = project.Find("RowTgl_Сетка/Tgl_Сетка");
         var toggle = toggleObj.GetComponent<Toggle>();
 
@@ -583,7 +589,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         bool prev = s.GridEnabled;
 
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
         var toggle = project.Find("RowTgl_Сетка/Tgl_Сетка").GetComponent<Toggle>();
         toggle.isOn = !prev;
 
@@ -602,7 +608,7 @@ public class SettingsPanelUITests
             "Шаг сетки", "Порог привязки", "Интервал автосохранения"
         };
 
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
 
         foreach (var label in expectedInputs)
         {
@@ -621,7 +627,7 @@ public class SettingsPanelUITests
     public void InputRows_HaveCorrectInitialValues()
     {
         var s = KitchenSettings.Instance;
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
 
         AssertFieldValue(project, "Шаг сетки", s.GridStep.ToString());
         AssertFieldValue(project, "Порог привязки", s.SnapThreshold.ToString("F0"));
@@ -634,7 +640,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         int prev = s.GridStep;
 
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
         var field = project.Find("RowFld_Шаг сетки/Fld_Шаг сетки").GetComponent<TMP_InputField>();
         field.text = "42";
         field.onEndEdit.Invoke("42");
@@ -650,7 +656,7 @@ public class SettingsPanelUITests
         var s = KitchenSettings.Instance;
         int prev = s.GridStep;
 
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
         var field = project.Find("RowFld_Шаг сетки/Fld_Шаг сетки").GetComponent<TMP_InputField>();
         field.text = "abc";
         field.onEndEdit.Invoke("abc");
@@ -661,7 +667,7 @@ public class SettingsPanelUITests
     [Test]
     public void InputField_HasOutlineComponent()
     {
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
         var field = project.Find("RowFld_Шаг сетки/Fld_Шаг сетки").GetComponent<TMP_InputField>();
         var outline = field.GetComponent<Outline>();
         Assert.IsNotNull(outline, "InputField should have Outline component");
@@ -672,7 +678,7 @@ public class SettingsPanelUITests
     [Test]
     public void AboutTab_HasVersionAndBuildDate()
     {
-        var about = _canvas!.transform.Find("SettingsPanel/Tab_About");
+        var about = _canvas!.transform.Find(PagePath + "Tab_About");
         Assert.IsNotNull(about);
 
         var verLabel = about.Find("AboutVersion");
@@ -691,7 +697,7 @@ public class SettingsPanelUITests
     [Test]
     public void ProjectRows_AreOrderedDescending()
     {
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
         var rows = new List<RectTransform>();
         foreach (Transform child in project)
         {
@@ -740,7 +746,7 @@ public class SettingsPanelUITests
     [Test]
     public void ToggleRows_HaveCheckboxGraphic()
     {
-        var project = _canvas!.transform.Find("SettingsPanel/Tab_Project");
+        var project = _canvas!.transform.Find(PagePath + "Tab_Project");
         var toggle = project.Find("RowTgl_Сетка/Tgl_Сетка").GetComponent<Toggle>();
         Assert.IsNotNull(toggle.graphic);
         Assert.IsNotNull(toggle.targetGraphic);
