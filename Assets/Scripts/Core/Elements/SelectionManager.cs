@@ -78,71 +78,73 @@ namespace KitchenDesigner.Core
             }
         }
 
-        private const float DoubleClickSeconds = 0.35f;
-        private float _lastClickTime = -10f;
-        private int _lastClickGroupId;
-
-        private bool IsDoubleClickOnGroup(LinkGroup group)
-        {
-            return group != null && group.id == _lastClickGroupId &&
-                   Time.unscaledTime - _lastClickTime <= DoubleClickSeconds;
-        }
-
-        private void RememberClick(LinkGroup? group)
-        {
-            _lastClickTime = Time.unscaledTime;
-            _lastClickGroupId = group != null ? group.id : 0;
-        }
+        private readonly DoubleClickTracker _clicks = new DoubleClickTracker();
+        private List<KitchenElement> _selectionBeforeClick = new List<KitchenElement>();
 
         public void HandleClickOnElement(KitchenElement? element, bool ctrlHeld)
         {
             _collapseCandidate = null;
 
-            if (element != null && element.GetComponent<BasePlate>() == null)
+            var group = element != null ? GroupManager.GroupOf(element) : null;
+            int groupId = group != null ? group.id : 0;
+            int elementId = element != null ? element.GetInstanceID() : 0;
+            float now = Time.unscaledTime;
+
+            var input = new SceneClickInput
             {
-                if (!EditModeManager.IsInteractable(element))
-                {
-                    if (!ctrlHeld)
-                        DeselectAll();
-                    return;
-                }
+                HasElement = element != null && element.GetComponent<BasePlate>() == null,
+                Interactable = element != null && EditModeManager.IsInteractable(element),
+                ModuleEditActive = ModuleEditMode.IsActive,
+                ModuleEditable = element != null && ModuleEditMode.IsEditable(element),
+                CtrlHeld = ctrlHeld,
+                InGroup = group != null,
+                RepeatsGroup = _clicks.RepeatsGroup(groupId, now),
+                RepeatsElement = _clicks.RepeatsElement(elementId, now),
+                InMultiSelection = element != null && _selectedElements.Count > 1
+                    && _selectedElements.Contains(element),
+                Kind = ElementActivator.KindOf(element),
+            };
 
-                var group = GroupManager.GroupOf(element);
+            var selectionBefore = new List<KitchenElement>(_selectedElements);
+            var action = SceneClickPlan.Decide(input);
+            ApplyClickAction(action, element, group);
 
-                if (ModuleEditMode.IsActive)
-                {
-                    if (!ModuleEditMode.IsEditable(element)) return;
-                    if (ctrlHeld) ToggleInSelection(element);
-                    else Select(element);
-                    return;
-                }
+            if (!SceneClickPlan.RecordsClick(action)) return;
+            if (!SceneClickPlan.KeepsSelectionSnapshot(action)) _selectionBeforeClick = selectionBefore;
+            _clicks.Remember(groupId, elementId, now);
+        }
 
-                if (ctrlHeld)
-                    ToggleInSelection(element);
-                else if (group != null)
-                {
-                    if (IsDoubleClickOnGroup(group))
-                    {
-                        ModuleEditMode.Enter(group);
-                        Select(element);
-                    }
-                    else
-                        SelectOnly(GroupManager.MembersOf(group));
-                }
-                else if (_selectedElements.Count > 1 && _selectedElements.Contains(element))
-                {
+        private void ApplyClickAction(SceneClickAction action, KitchenElement? element, LinkGroup? group)
+        {
+            switch (action)
+            {
+                case SceneClickAction.DeselectAll:
+                    DeselectAll();
+                    break;
+                case SceneClickAction.ModuleToggleInSelection:
+                case SceneClickAction.ToggleInSelection:
+                    ToggleInSelection(element!);
+                    break;
+                case SceneClickAction.ModuleSelect:
+                case SceneClickAction.Select:
+                    Select(element!);
+                    break;
+                case SceneClickAction.SelectGroup:
+                    SelectOnly(GroupManager.MembersOf(group!));
+                    break;
+                case SceneClickAction.EnterModuleEdit:
+                    ModuleEditMode.Enter(group!);
+                    Select(element!);
+                    break;
+                case SceneClickAction.ActivateSwitch:
+                    ElementActivator.Activate(element);
+                    SelectOnly(_selectionBeforeClick);
+                    break;
+                case SceneClickAction.CollapseToClicked:
                     _selected = element;
                     _collapseCandidate = element;
-                }
-                else
-                    Select(element);
-
-                RememberClick(group);
-                return;
+                    break;
             }
-
-            if (!ctrlHeld)
-                DeselectAll();
         }
 
         private KitchenElement? _collapseCandidate;
