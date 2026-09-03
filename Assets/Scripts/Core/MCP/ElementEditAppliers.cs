@@ -59,6 +59,39 @@ namespace KitchenDesigner.Core.MCP
                 if (op.bowl_radius.HasValue) tub.BowlRadiusMM = op.bowl_radius.Value;
                 if (op.bowl_fillet.HasValue) tub.BowlFilletMM = op.bowl_fillet.Value;
             }),
+            For<BathMixerElement>((op, mixer) =>
+            {
+                if (op.mixer_body_diameter.HasValue)
+                    mixer.BodyDiameterMM = op.mixer_body_diameter.Value;
+                if (op.mixer_body_length.HasValue)
+                    mixer.BodyLengthMM = op.mixer_body_length.Value;
+                if (op.mixer_centres.HasValue) mixer.CentresMM = op.mixer_centres.Value;
+                if (op.mixer_escutcheon_reach.HasValue)
+                    mixer.EscutcheonReachMM = op.mixer_escutcheon_reach.Value;
+                if (op.mixer_spout_length.HasValue)
+                    mixer.SpoutLengthMM = op.mixer_spout_length.Value;
+                if (op.mixer_outlet_diameter.HasValue)
+                    mixer.OutletDiameterMM = op.mixer_outlet_diameter.Value;
+            }),
+            For<ShowerColumnElement>((op, column) =>
+            {
+                if (op.shower_riser_diameter.HasValue)
+                    column.RiserDiameterMM = op.shower_riser_diameter.Value;
+                if (op.shower_wall_offset.HasValue)
+                    column.WallOffsetMM = op.shower_wall_offset.Value;
+                if (op.shower_column_height.HasValue)
+                    column.ColumnHeightMM = op.shower_column_height.Value;
+                if (op.shower_arm_reach.HasValue)
+                    column.ArmReachMM = op.shower_arm_reach.Value;
+                if (op.shower_head_diameter.HasValue)
+                    column.HeadDiameterMM = op.shower_head_diameter.Value;
+                if (op.shower_head_thickness.HasValue)
+                    column.HeadThicknessMM = op.shower_head_thickness.Value;
+                if (op.shower_hand_diameter.HasValue)
+                    column.HandShowerDiameterMM = op.shower_hand_diameter.Value;
+                if (op.shower_hose_length.HasValue)
+                    column.HoseLengthMM = op.shower_hose_length.Value;
+            }),
             For<BedElement>((op, bed) =>
             {
                 if (op.bed_double.HasValue) bed.IsDouble = op.bed_double.Value;

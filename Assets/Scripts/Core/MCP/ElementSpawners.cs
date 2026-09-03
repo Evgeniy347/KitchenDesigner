@@ -112,6 +112,12 @@ namespace KitchenDesigner.Core.MCP
                     BATHTUB_DEFAULT_BOWL_RADIUS_MM, BATHTUB_DEFAULT_BOWL_FILLET_MM,
                     item.name, pos),
 
+                ["bath_mixer"] = (item, pos) => ElementFactory.CreateBathMixer(
+                    BathMixerSpec.Default, item.name, pos),
+
+                ["shower_column"] = (item, pos) => ElementFactory.CreateShowerColumn(
+                    ShowerColumnSpec.Default, item.name, pos),
+
                 ["bed"] = (item, pos) => ElementFactory.CreateBed(BedDims(item),
                     BED_DEFAULT_IS_DOUBLE, BED_DEFAULT_HAS_HEADBOARD, item.name, pos),
 

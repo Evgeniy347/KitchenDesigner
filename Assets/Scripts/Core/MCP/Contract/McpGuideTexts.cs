@@ -143,7 +143,8 @@ SELECTOR (a string; space-separated clauses, ALL must match)
   name:PATTERN             same, explicit
   type:board|wall|floor|window|door|drawer|facade|assembled_facade|
        radial_shelf|panel|table|radius_table|stool|chair|sofa|pouffe|bed|pillar|
-       screw_leg|toilet|wall_hung_toilet|bathtub|light
+       screw_leg|toilet|wall_hung_toilet|bathtub|bath_mixer|
+       shower_column|light
   module:NAME / group:NAME by module name (mask allowed)
   thickness==18            compare a dimension in MM; also width/height/depth
                            with == != >= <= > <
@@ -266,6 +267,35 @@ BathtubElement        Rectangular acrylic bathtub (type:""bathtub"", 1700x600x70
                       ends. Decor is a single slot (material); leave it alone for the
                       factory look, white acrylic. The tub does NOT seat itself on
                       the floor — place it yourself.
+BathMixerElement      Wall-mounted thermostatic bath mixer (type:""bath_mixer"",
+                      270x90x182 mm by default). It MOUNTS ON A WALL: it seats
+                      itself flush against the nearest wall face and turns to
+                      face away from it, so place it near a wall and let it snap
+                      rather than positioning it by hand. Size is COMPUTED from
+                      six shape fields and cannot be set directly:
+                      mixer_centres (150 mm, the wall inlet spacing),
+                      mixer_body_length (270), mixer_body_diameter (70, which is
+                      also the body height), mixer_escutcheon_reach (34, how far
+                      the round covers stand off the wall), mixer_spout_length
+                      (110) and mixer_outlet_diameter (13, G 1/2 for the shower
+                      hose). The depth is driven by the SPOUT, not by the body.
+                      Decor is a single slot (material); leave it alone for the
+                      factory look, chrome. It does NOT set its own height above
+                      the floor - place it yourself.
+ShowerColumnElement   Shower column with a rain head (type:""shower_column"",
+                      250x1414x505 mm by default). Wall-mounted like the mixer.
+                      It has NO mixer of its own - the block at the bottom is a
+                      diverter, without valves. Eight shape fields:
+                      shower_column_height (1150), shower_riser_diameter (32),
+                      shower_head_diameter (250), shower_head_thickness (30),
+                      shower_arm_reach (380 from the wall), shower_wall_offset
+                      (60), shower_hand_diameter (110) and shower_hose_length
+                      (1000). Element height is NOT the column height: the hose
+                      hangs in a loop below the diverter and the bounding box
+                      covers it, so the default 1150 mm column measures 1414 mm.
+                      Element width is the rain head diameter. Decor is a single
+                      slot (material); leave it alone for the factory look,
+                      matte black.
 BedElement            Bed (type:""bed"", 1800x900x2000 mm by default — width x
                       height x LENGTH: the length runs along Z, because the
                       headboard faces -Z like every other back in this family).
@@ -389,7 +419,8 @@ moduleId/moduleName   Group membership (0/absent = not grouped).
 materialId            Decor id (list_materials).
 facadeMode            Facade opening mode (""front_left"", ""drawer_out"", ...).
 drawer / table / radiusTable / stool / chair / sofa / pouffe / bed / toilet /
-wallHungToilet / bathtub   Type-specific sub-objects, absent otherwise.
+wallHungToilet / bathtub / bathMixer / showerColumn
+                      Type-specific sub-objects, absent otherwise.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
   {name, kind, anchor:[x,z] MM corner, size:[width,depth,height] MM, rotY,

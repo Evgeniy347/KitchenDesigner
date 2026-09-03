@@ -88,6 +88,8 @@ namespace KitchenDesigner.Core.MCP
 		public ToiletInfo? toilet;
 		public WallHungToiletInfo? wallHungToilet;
 		public BathtubInfo? bathtub;
+		public BathMixerInfo? bathMixer;
+		public ShowerColumnInfo? showerColumn;
 		public BedInfo? bed;
 		public PillarInfo? pillar;
 		public ScrewLegInfo? screwLeg;
@@ -371,6 +373,34 @@ namespace KitchenDesigner.Core.MCP
 		public int shellCornerRadiusMM;
 		public int bowlWidthMM;
 		public int bowlDepthPlanMM;
+	}
+
+	[Serializable]
+	public class BathMixerInfo
+	{
+		public int centresMM;
+		public int maxCentresMM;
+		public int bodyLengthMM;
+		public int minBodyLengthMM;
+		public int bodyDiameterMM;
+		public int escutcheonReachMM;
+		public int spoutLengthMM;
+		public int outletDiameterMM;
+	}
+
+	[Serializable]
+	public class ShowerColumnInfo
+	{
+		public int columnHeightMM;
+		public int minColumnHeightMM;
+		public int riserDiameterMM;
+		public int headDiameterMM;
+		public int headThicknessMM;
+		public int armReachMM;
+		public int minArmReachMM;
+		public int wallOffsetMM;
+		public int handShowerDiameterMM;
+		public int hoseLengthMM;
 	}
 
 	[Serializable]

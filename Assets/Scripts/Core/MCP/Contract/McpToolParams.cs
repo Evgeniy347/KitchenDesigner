@@ -172,6 +172,84 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "point. Omit to keep.", Min = 0)]
         public int? bowl_fillet;
 
+        [McpParam("Wall mixer only: distance between the two wall inlets in MM (150 by " +
+                  "default, the standard wall spacing). Clamped to 60..body_length minus " +
+                  "body_diameter, so both escutcheons stay inside the body ends. Omit to " +
+                  "keep.", Min = 0)]
+        public int? mixer_centres;
+
+        [McpParam("Wall mixer only: overall body length in MM across the flow handle and the " +
+                  "thermostat head (270 by default). Clamped to max(150, body_diameter+60)" +
+                  "..600. Raising it RAISES the ceiling of mixer_centres. Omit to keep.",
+            Min = 0)]
+        public int? mixer_body_length;
+
+        [McpParam("Wall mixer only: body diameter in MM, which is also its height (70 by " +
+                  "default). Clamped to 30..160. Raising it LOWERS the ceiling of " +
+                  "mixer_centres and RAISES the floor of mixer_body_length. Omit to keep.",
+            Min = 0)]
+        public int? mixer_body_diameter;
+
+        [McpParam("Wall mixer only: how far the round escutcheons stand off the wall in MM " +
+                  "(34 by default). The body axis sits this far out PLUS its own radius, so " +
+                  "the body rests on the escutcheon faces instead of cutting into the wall. " +
+                  "Clamped to 10..200. Omit to keep.", Min = 0)]
+        public int? mixer_escutcheon_reach;
+
+        [McpParam("Wall mixer only: how far the spout reaches forward from the body axis in " +
+                  "MM (110 by default); it also drops two fifths of that. Clamped to " +
+                  "40..400. This field, not the body, drives the element depth. Omit to keep.",
+            Min = 0)]
+        public int? mixer_spout_length;
+
+        [McpParam("Wall mixer only: diameter of the hose outlet under the body in MM (13 by " +
+                  "default, G 1/2). Clamped to 8..40. Omit to keep.", Min = 0)]
+        public int? mixer_outlet_diameter;
+
+        [McpParam("Shower column only: height of the column in MM from the diverter to the " +
+                  "top of the gooseneck (1150 by default). This is NOT the element height: " +
+                  "the hose loop hangs below the diverter and the bounding box covers it. " +
+                  "Clamped to max(500, 7*riser_diameter)..2200. Omit to keep.", Min = 0)]
+        public int? shower_column_height;
+
+        [McpParam("Shower column only: diameter of the vertical riser tube in MM (32 by " +
+                  "default). Clamped to 16..60. It also sets the bend radius of the " +
+                  "gooseneck (3.5x), so raising it RAISES the floor of shower_arm_reach. " +
+                  "Omit to keep.", Min = 0)]
+        public int? shower_riser_diameter;
+
+        [McpParam("Shower column only: diameter of the round rain head in MM (250 by " +
+                  "default). Clamped to 80..600. It is the widest part of the column and " +
+                  "therefore the element width. Omit to keep.", Min = 0)]
+        public int? shower_head_diameter;
+
+        [McpParam("Shower column only: thickness of the flat rain head in MM (30 by " +
+                  "default). Clamped to 8..120. Omit to keep.", Min = 0)]
+        public int? shower_head_thickness;
+
+        [McpParam("Shower column only: distance from the WALL to the rain head axis in MM " +
+                  "(380 by default). Clamped to wall_offset + 40 + bend radius .. 800 — a " +
+                  "shorter reach than the bend would fold the gooseneck back into the wall. " +
+                  "Omit to keep.", Min = 0)]
+        public int? shower_arm_reach;
+
+        [McpParam("Shower column only: distance from the wall to the riser axis in MM (60 by " +
+                  "default), set by the two wall brackets. Clamped to 20..200. Raising it " +
+                  "RAISES the floor of shower_arm_reach. Omit to keep.", Min = 0)]
+        public int? shower_wall_offset;
+
+        [McpParam("Shower column only: diameter of the hand shower head in MM (110 by " +
+                  "default). Clamped to 60..200; it also scales the handle. Omit to keep.",
+            Min = 0)]
+        public int? shower_hand_diameter;
+
+        [McpParam("Shower column only: length of the flexible hose in MM (1000 by default). " +
+                  "Clamped to 300..3000. The slack over the straight distance between the " +
+                  "diverter and the handle hangs as a loop BELOW the diverter and grows the " +
+                  "element downwards; a hose shorter than that distance is drawn straight " +
+                  "and is not stretched. Omit to keep.", Min = 0)]
+        public int? shower_hose_length;
+
         [McpParam("Cooktop only: cutout width in MM — the box that goes INTO the countertop " +
                   "(width/height/depth describe the 5 mm plate on top; height is the total). " +
                   "Clamped to 50..width-10. Omit to keep.", Min = 50)]
@@ -300,7 +378,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;

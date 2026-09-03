@@ -210,6 +210,35 @@ namespace KitchenDesigner.Core.MCP
                 bowlDepthPlanMM = BathtubLayout.InnerDepthMM(tub.DimensionsMM, tub.RimWidthMM)
             }),
 
+            For<BathMixerElement>((info, mixer) => info.bathMixer = new BathMixerInfo
+            {
+                centresMM = mixer.CentresMM,
+                maxCentresMM = BathMixerSpec.MaxCentresForMM(mixer.BodyLengthMM,
+                    mixer.BodyDiameterMM),
+                bodyLengthMM = mixer.BodyLengthMM,
+                minBodyLengthMM = BathMixerSpec.MinBodyLengthForMM(mixer.BodyDiameterMM),
+                bodyDiameterMM = mixer.BodyDiameterMM,
+                escutcheonReachMM = mixer.EscutcheonReachMM,
+                spoutLengthMM = mixer.SpoutLengthMM,
+                outletDiameterMM = mixer.OutletDiameterMM
+            }),
+
+            For<ShowerColumnElement>((info, column) => info.showerColumn = new ShowerColumnInfo
+            {
+                columnHeightMM = column.ColumnHeightMM,
+                minColumnHeightMM =
+                    ShowerColumnSpec.MinColumnHeightForMM(column.RiserDiameterMM),
+                riserDiameterMM = column.RiserDiameterMM,
+                headDiameterMM = column.HeadDiameterMM,
+                headThicknessMM = column.HeadThicknessMM,
+                armReachMM = column.ArmReachMM,
+                minArmReachMM = ShowerColumnSpec.MinArmReachForMM(column.RiserDiameterMM,
+                    column.WallOffsetMM),
+                wallOffsetMM = column.WallOffsetMM,
+                handShowerDiameterMM = column.HandShowerDiameterMM,
+                hoseLengthMM = column.HoseLengthMM
+            }),
+
             For<BedElement>((info, bed) => info.bed = new BedInfo
             {
                 size = bed.SizeName,
