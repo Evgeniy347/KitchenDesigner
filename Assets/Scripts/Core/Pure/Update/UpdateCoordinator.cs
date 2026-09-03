@@ -110,7 +110,7 @@ namespace KitchenDesigner.Core.Update
 
             _targetPath = System.IO.Path.Combine(_tempDirProvider(), _pending.FileName);
             _downloadDialog.ShowDownloading(_pending.Version, OnDownloadCancelRequested);
-            _downloader.Start(_pending.DownloadUrl, _targetPath,
+            _downloader.BeginDownload(_pending.DownloadUrl, _targetPath,
                 OnDownloadProgress, OnDownloadAttemptStarted, OnDownloadComplete, OnDownloadFailure);
         }
 

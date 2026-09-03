@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core.Update
 
     public interface IInstallerDownloader
     {
-        void Start(string url, string targetPath,
+        void BeginDownload(string url, string targetPath,
             Action<float> onProgress, Action<int, int> onAttemptStarted,
             Action onComplete, Action<string, bool> onFailureWithCancelledFlag);
         void Cancel();

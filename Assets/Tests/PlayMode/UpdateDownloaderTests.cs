@@ -57,7 +57,7 @@ public class UpdateDownloaderTests
 
             bool done = false, failed = false;
             float lastProgress = -1f;
-            downloader.Start(new Uri(src).AbsoluteUri, dst,
+            downloader.BeginDownload(new Uri(src).AbsoluteUri, dst,
                 p => lastProgress = p, (_, _) => { }, () => done = true, (_, _) => failed = true);
 
             float elapsed = 0f;
@@ -98,7 +98,7 @@ public class UpdateDownloaderTests
             string reason = null;
             int attempts = 0;
             downloader.RetryPolicy = Impatient();
-            downloader.Start(new Uri(TempPath("kd-update-missing-")).AbsoluteUri, dst,
+            downloader.BeginDownload(new Uri(TempPath("kd-update-missing-")).AbsoluteUri, dst,
                 _ => { }, (_, _) => attempts++, () => done = true,
                 (m, c) => { failed = true; reason = m; cancelled = c; });
 
@@ -140,7 +140,7 @@ public class UpdateDownloaderTests
             string reason = null;
             int attempts = 0;
             downloader.RetryPolicy = Impatient();
-            downloader.Start(UnreachableUrl, dst,
+            downloader.BeginDownload(UnreachableUrl, dst,
                 _ => { }, (_, _) => attempts++, () => done = true,
                 (m, c) => { failed = true; reason = m; cancelled = c; });
 
@@ -186,7 +186,7 @@ public class UpdateDownloaderTests
             string reason = null;
             int attempts = 0;
             downloader.RetryPolicy = Impatient();
-            downloader.Start(new Uri(src).AbsoluteUri, dst,
+            downloader.BeginDownload(new Uri(src).AbsoluteUri, dst,
                 _ => { }, (_, _) => attempts++, () => done = true,
                 (m, c) => { failed = true; reason = m; cancelled = c; });
             downloader.Cancel();

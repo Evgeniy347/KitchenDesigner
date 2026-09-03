@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core.Update
 
         public UpdateRetryPolicy RetryPolicy { get; set; } = UpdateRetryPolicy.ForInstallerDownload();
 
-        public void Start(string url, string targetPath,
+        public void BeginDownload(string url, string targetPath,
             Action<float> onProgress, Action<int, int> onAttemptStarted,
             Action onComplete, Action<string, bool> onFailure)
         {

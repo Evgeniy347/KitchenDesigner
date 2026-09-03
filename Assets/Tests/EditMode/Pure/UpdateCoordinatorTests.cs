@@ -26,13 +26,13 @@ public class UpdateCoordinatorTests
 
     private sealed class FakeDownloader : IInstallerDownloader
     {
-        public int StartCalls; public string Url; public string Path;
+        public int BeginDownloadCalls; public string Url; public string Path;
         public Action<float> Progress; public Action<int, int> Attempt;
         public Action Complete; public Action<string, bool> Fail;
         public int CancelCalls;
-        public void Start(string url, string targetPath, Action<float> p, Action<int, int> a,
+        public void BeginDownload(string url, string targetPath, Action<float> p, Action<int, int> a,
             Action c, Action<string, bool> f)
-        { StartCalls++; Url = url; Path = targetPath; Progress = p; Attempt = a; Complete = c; Fail = f; }
+        { BeginDownloadCalls++; Url = url; Path = targetPath; Progress = p; Attempt = a; Complete = c; Fail = f; }
         public void Cancel() { CancelCalls++; }
     }
 
@@ -160,7 +160,7 @@ public class UpdateCoordinatorTests
         _udlg.OnCancel();
 
         Assert.AreEqual(1, _udlg.HideCalls);
-        Assert.AreEqual(0, _downloader.StartCalls);
+        Assert.AreEqual(0, _downloader.BeginDownloadCalls);
         Assert.AreEqual(UpdateCoordinator.State.Idle, _c.CurrentState);
     }
 
@@ -174,7 +174,7 @@ public class UpdateCoordinatorTests
         Assert.AreEqual(1, _udlg.HideCalls);
         Assert.AreEqual(1, _ddlg.ShowCalls);
         Assert.AreEqual("0.700", _ddlg.Version);
-        Assert.AreEqual(1, _downloader.StartCalls);
+        Assert.AreEqual(1, _downloader.BeginDownloadCalls);
         Assert.AreEqual("https://gh/i.exe", _downloader.Url);
         Assert.AreEqual(@"Z:\tmp\KitchenDesigner-Setup-0.700-x64.exe", _downloader.Path);
         Assert.AreEqual(UpdateCoordinator.State.Downloading, _c.CurrentState);
