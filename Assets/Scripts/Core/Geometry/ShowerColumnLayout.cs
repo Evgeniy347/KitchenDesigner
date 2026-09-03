@@ -25,6 +25,8 @@ namespace KitchenDesigner.Core
         public const float SliderRingHalfHeightMM = 30f;
         public const float HoseDiameterMM = 15f;
 
+        public const float DiverterAboveFloorMM = 1100f;
+
         public const float HandleLengthRatio = 2.2f;
         public const float HandleBelowSliderRatio = 0.38f;
         public const float HandShowerStandoffRatio = 0.35f;
@@ -146,6 +148,9 @@ namespace KitchenDesigner.Core
             bounds.Encapsulate(new Bounds(diverter.CentreMM, diverter.SizeMM));
             return bounds;
         }
+
+        public static float CentreAboveFloorMM(ShowerColumnSpec spec) =>
+            DiverterAboveFloorMM + BoundsMM(spec).center.y;
 
         public static Vector3Int DimensionsMM(ShowerColumnSpec spec)
         {

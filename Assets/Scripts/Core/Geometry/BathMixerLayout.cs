@@ -16,6 +16,8 @@ namespace KitchenDesigner.Core
         public const float OutletSeatRatio = 0.3f;
         public const float ButtonInsetRatio = 0.3f;
 
+        public const float BodyAxisAboveFloorMM = 700f;
+
         public const float ButtonRiseMM = 5f;
         public const float OutletLengthMM = 18f;
 
@@ -82,6 +84,9 @@ namespace KitchenDesigner.Core
         }
 
         public static Bounds BoundsMM(BathMixerSpec spec) => PipeBounds.Of(Parts(spec));
+
+        public static float CentreAboveFloorMM(BathMixerSpec spec) =>
+            BodyAxisAboveFloorMM + BoundsMM(spec).center.y;
 
         public static Vector3Int DimensionsMM(BathMixerSpec spec)
         {

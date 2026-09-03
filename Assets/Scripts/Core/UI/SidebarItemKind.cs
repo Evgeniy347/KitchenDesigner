@@ -25,6 +25,8 @@ namespace KitchenDesigner.Core.UI
         Toilet,
         WallHungToilet,
         Bathtub,
+        BathMixer,
+        ShowerColumn,
         Floor,
         LightSource,
         Window,

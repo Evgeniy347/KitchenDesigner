@@ -36,6 +36,10 @@ namespace KitchenDesigner.Core.UI
 
         void SpawnBathtub(Vector3Int dims, string name);
 
+        void SpawnBathMixer(string name);
+
+        void SpawnShowerColumn(string name);
+
         void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom);
 

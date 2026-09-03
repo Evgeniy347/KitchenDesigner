@@ -92,6 +92,10 @@ namespace KitchenDesigner.Core.UI
 
             public bool isBathtub => kind == SidebarItemKind.Bathtub;
 
+            public bool isBathMixer => kind == SidebarItemKind.BathMixer;
+
+            public bool isShowerColumn => kind == SidebarItemKind.ShowerColumn;
+
             public bool isFloor => kind == SidebarItemKind.Floor;
 
             public bool isLightSource => kind == SidebarItemKind.LightSource;
@@ -242,6 +246,7 @@ namespace KitchenDesigner.Core.UI
                 items = new List<Item>
                 {
                     ToiletItem("Унитаз"), WallHungToiletItem("Инсталляция"), BathtubItem("Ванна"),
+                    BathMixerItem("Смеситель"), ShowerColumnItem("Душевая стойка"),
                 },
             };
         }
@@ -257,6 +262,14 @@ namespace KitchenDesigner.Core.UI
             => new Item(name, new Vector3Int(BathtubElement.DefaultWidthMM,
                 BathtubElement.DefaultHeightMM, BathtubElement.DefaultDepthMM),
                 SidebarItemKind.Bathtub);
+
+        private static Item BathMixerItem(string name)
+            => new Item(name, BathMixerLayout.DimensionsMM(BathMixerSpec.Default),
+                SidebarItemKind.BathMixer);
+
+        private static Item ShowerColumnItem(string name)
+            => new Item(name, ShowerColumnLayout.DimensionsMM(ShowerColumnSpec.Default),
+                SidebarItemKind.ShowerColumn);
 
         private static Item DishwasherItem(string name)
         {

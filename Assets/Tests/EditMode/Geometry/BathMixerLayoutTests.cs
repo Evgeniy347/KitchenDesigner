@@ -161,6 +161,22 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
+        public void BathMixerLayout_CentreAboveFloorMM_PutsTheBodyAxisAtTapHeight()
+        {
+            var spec = BathMixerSpec.Default;
+            float centre = BathMixerLayout.CentreAboveFloorMM(spec);
+            float bodyAxis = centre - BathMixerLayout.BoundsMM(spec).center.y;
+
+            Assert.AreEqual(BathMixerLayout.BodyAxisAboveFloorMM, bodyAxis, Tol,
+                "смеситель вешается по ОСИ КОРПУСА, а не по центру габарита: центр смещён "
+                + "изливом и штуцером вниз, и подставив его напрямую, получили бы кран, "
+                + "висящий на пару сантиметров ниже задуманного");
+            Assert.Greater(centre, 0f,
+                "и это высота НАД полом: настенный смеситель, рождённый на полу, "
+                + "пользователь двигает руками каждый раз");
+        }
+
+        [Test]
         public void BathMixerSpec_Default_MatchesTheReferencePhoto()
         {
             var spec = BathMixerSpec.Default;

@@ -100,6 +100,18 @@ namespace KitchenDesigner.Core.UI
                 BathtubElement.DefaultBowlRadiusMM, BathtubElement.DefaultBowlFilletMM,
                 name, pos));
 
+        public void SpawnBathMixer(string name) =>
+            PlaceAtHeightUnaffectedByGrid(
+                BathMixerLayout.CentreAboveFloorMM(BathMixerSpec.Default)
+                    * AppConstants.MM_TO_UNITS,
+                pos => ElementFactory.CreateBathMixer(BathMixerSpec.Default, name, pos));
+
+        public void SpawnShowerColumn(string name) =>
+            PlaceAtHeightUnaffectedByGrid(
+                ShowerColumnLayout.CentreAboveFloorMM(ShowerColumnSpec.Default)
+                    * AppConstants.MM_TO_UNITS,
+                pos => ElementFactory.CreateShowerColumn(ShowerColumnSpec.Default, name, pos));
+
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom) =>
             PlaceCenteredOnGround(dims.y, pos =>

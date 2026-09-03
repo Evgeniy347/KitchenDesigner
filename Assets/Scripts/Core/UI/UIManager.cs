@@ -169,6 +169,10 @@ namespace KitchenDesigner.Core.UI
 
         public void SpawnBathtub(Vector3Int dims, string name) => Spawner.SpawnBathtub(dims, name);
 
+        public void SpawnBathMixer(string name) => Spawner.SpawnBathMixer(name);
+
+        public void SpawnShowerColumn(string name) => Spawner.SpawnShowerColumn(name);
+
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
             int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM) =>

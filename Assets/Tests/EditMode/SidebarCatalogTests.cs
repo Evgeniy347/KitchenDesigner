@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -252,8 +253,10 @@ public class SidebarCatalogTests
     {
         var items = SidebarCatalog.Build()[SanitaryIndex].items;
 
-        Assert.AreEqual(2, items.Count,
-            "группа заведена двумя унитазами; ванна, смеситель и душ придут отдельно");
+        Assert.IsTrue(items.Count >= 2,
+            "оба унитаза обязаны быть в группе. Пересчёта ВСЕЙ группы здесь нет намеренно: "
+            + "он краснел на каждом новом предмете сантехники (ванна сломала его первой), "
+            + "и такой тест перестаёт значить что-либо, потому что его чинят цифрой");
 
         var compact = items.Find(i => i.name == "Унитаз");
         Assert.IsTrue(compact.isToilet,
@@ -269,6 +272,43 @@ public class SidebarCatalogTests
             + "габариты и разное поведение у стены");
         Assert.AreEqual(WallHungToiletElement.ModelDimensionsMM, wallHung.dims,
             "то же для подвесного");
+    }
+
+    [Test]
+    public void SanitaryGroup_GivesEveryItemItsOwnKind()
+    {
+        var items = SidebarCatalog.Build()[SanitaryIndex].items;
+        var seen = new Dictionary<SidebarItemKind, string>();
+
+        foreach (var item in items)
+        {
+            string clash = seen.TryGetValue(item.kind, out var other) ? other : "";
+            Assert.IsEmpty(clash,
+                "два предмета сантехники с одним видом — «" + item.name + "» и «" + clash
+                + "». Маршрутизатор на это не отказывает, он просто зовёт спаун чужого "
+                + "вида, и кнопка заводит не тот объект. Это и есть свойство, ради "
+                + "которого тест существует, и оно не про КОЛИЧЕСТВО предметов в группе");
+            seen[item.kind] = item.name;
+        }
+    }
+
+    [Test]
+    public void SanitaryGroup_HasTheWallMixerAndTheShowerColumn()
+    {
+        var items = SidebarCatalog.Build()[SanitaryIndex].items;
+
+        var mixer = items.Find(i => i.name == "Смеситель");
+        Assert.IsTrue(mixer.isBathMixer, "смеситель обязан нести свой вид");
+        Assert.AreEqual(BathMixerLayout.DimensionsMM(BathMixerSpec.Default), mixer.dims,
+            "габарит в каталоге обязан быть ВЫЧИСЛЕННЫМ из умолчательной раскладки: "
+            + "у смесителя размер выводится из формы, и вписанное руками число разошлось "
+            + "бы с тем, что реально заводит фабрика, при первой же правке умолчаний");
+
+        var column = items.Find(i => i.name == "Душевая стойка");
+        Assert.IsTrue(column.isShowerColumn, "душевая стойка обязана нести свой вид");
+        Assert.AreEqual(ShowerColumnLayout.DimensionsMM(ShowerColumnSpec.Default), column.dims,
+            "то же для стойки, и тут расхождение было бы особенно грубым: её габарит на "
+            + "четверть метра выше самой стойки из-за петли шланга");
     }
 
     [Test]

@@ -189,6 +189,10 @@ public class McpUiPropertyParityTests
             BathtubLayout.DefaultDimensionsMM, BathtubElement.DefaultRimWidthMM,
             BathtubElement.DefaultBowlDepthMM, BathtubElement.DefaultBowlRadiusMM,
             BathtubElement.DefaultBowlFilletMM, PROBE, Vector3.zero));
+        yield return ("BathMixerElement", () => ElementFactory.CreateBathMixer(
+            BathMixerSpec.Default, PROBE, Vector3.zero));
+        yield return ("ShowerColumnElement", () => ElementFactory.CreateShowerColumn(
+            ShowerColumnSpec.Default, PROBE, Vector3.zero));
         yield return ("BedElement", () => ElementFactory.CreateBed(
             new Vector3Int(BedElement.DefaultWidthMM, BedElement.DefaultHeightMM,
                 BedElement.DefaultDepthMM), true, true, PROBE, Vector3.zero));

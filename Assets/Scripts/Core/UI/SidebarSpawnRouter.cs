@@ -64,6 +64,12 @@ namespace KitchenDesigner.Core.UI
                 case SidebarItemKind.Bathtub:
                     spawner.SpawnBathtub(item.dims, item.name);
                     break;
+                case SidebarItemKind.BathMixer:
+                    spawner.SpawnBathMixer(item.name);
+                    break;
+                case SidebarItemKind.ShowerColumn:
+                    spawner.SpawnShowerColumn(item.name);
+                    break;
                 case SidebarItemKind.Table:
                     spawner.SpawnTable(item.dims, item.name);
                     break;

@@ -199,6 +199,52 @@ public class ElementDuplicatorTests
         Assert.AreEqual(91, copy.BowlFilletMM, "скругление дна");
     }
 
+    /// <summary>Шесть полей формы смесителя подрезают друг друга, и три из них —
+    /// цепочкой: диаметр корпуса опускает потолок межосевому и поднимает пол
+    /// длине корпуса. Ветка дублирования, забывшая любое поле или переставившая
+    /// два присвоения местами, отдаёт копию с ЗАВОДСКИМ значением вместо
+    /// заказанного, и это не видно: смеситель остаётся смесителем, просто
+    /// другим. Числа тут незаводские специально — совпавшее с умолчанием не
+    /// отличить от потерянного.</summary>
+    [Test]
+    public void Duplicate_BathMixer_KeepsAllSixShapeFields()
+    {
+        var source = Made(ElementFactory.CreateBathMixer(
+            BathMixerSpec.Clamped(163, 287, 63, 41, 127, 17), "BathMixer", Vector3.zero));
+
+        var copy = ElementFactory.Duplicate(source).GetComponent<BathMixerElement>();
+
+        Assert.AreEqual(163, copy.CentresMM, "межосевое");
+        Assert.AreEqual(287, copy.BodyLengthMM, "длина корпуса");
+        Assert.AreEqual(63, copy.BodyDiameterMM, "диаметр корпуса");
+        Assert.AreEqual(41, copy.EscutcheonReachMM, "вылет отражателя");
+        Assert.AreEqual(127, copy.SpoutLengthMM, "длина излива");
+        Assert.AreEqual(17, copy.OutletDiameterMM, "диаметр штуцера");
+    }
+
+    /// <summary>То же для восьми полей стойки. Здесь потеря заметна ещё меньше:
+    /// габарит стойки ВЫЧИСЛЯЕТСЯ из формы, поэтому копия с потерянной длиной
+    /// шланга отличается от оригинала не только петлёй, но и высотой коробки —
+    /// а на глаз это читается как «копия почему-то встала иначе».</summary>
+    [Test]
+    public void Duplicate_ShowerColumn_KeepsAllEightShapeFields()
+    {
+        var source = Made(ElementFactory.CreateShowerColumn(
+            ShowerColumnSpec.Clamped(1213, 37, 263, 37, 407, 71, 117, 1063),
+            "ShowerColumn", Vector3.zero));
+
+        var copy = ElementFactory.Duplicate(source).GetComponent<ShowerColumnElement>();
+
+        Assert.AreEqual(1213, copy.ColumnHeightMM, "высота стойки");
+        Assert.AreEqual(37, copy.RiserDiameterMM, "диаметр штанги");
+        Assert.AreEqual(263, copy.HeadDiameterMM, "диаметр лейки");
+        Assert.AreEqual(37, copy.HeadThicknessMM, "толщина лейки");
+        Assert.AreEqual(407, copy.ArmReachMM, "вынос лейки");
+        Assert.AreEqual(71, copy.WallOffsetMM, "вылет от стены");
+        Assert.AreEqual(117, copy.HandShowerDiameterMM, "диаметр ручной лейки");
+        Assert.AreEqual(1063, copy.HoseLengthMM, "длина шланга");
+    }
+
     [Test]
     public void Duplicate_Pillar_KeepsItsDiameter()
     {

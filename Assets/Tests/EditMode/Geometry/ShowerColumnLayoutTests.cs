@@ -181,6 +181,22 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
+        public void ShowerColumnLayout_CentreAboveFloorMM_PutsTheRainHeadOverhead()
+        {
+            var spec = ShowerColumnSpec.Default;
+            float centre = ShowerColumnLayout.CentreAboveFloorMM(spec);
+            var bounds = ShowerColumnLayout.BoundsMM(spec);
+            float diverterBottom = centre - bounds.center.y;
+
+            Assert.AreEqual(ShowerColumnLayout.DiverterAboveFloorMM, diverterBottom, Tol,
+                "стойка вешается по НИЗУ ДИВЕРТОРА: центр габарита утянут вниз петлёй "
+                + "шланга, и по нему стойка села бы почти на полметра ниже");
+            Assert.Greater(diverterBottom + spec.ColumnHeightMM, 2000f,
+                "верх стойки обязан оказаться выше человека: тропическая лейка на высоте "
+                + "плеча — это не душ, а мойка");
+        }
+
+        [Test]
         public void ShowerColumnSpec_Default_MatchesTheReferencePhoto()
         {
             var spec = ShowerColumnSpec.Default;
