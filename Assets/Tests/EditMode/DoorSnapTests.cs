@@ -82,7 +82,7 @@ public class DoorSnapTests : SnapTestBase
     }
 
     [Test]
-    public void Door_YPosition_ClampedToWallBounds()
+    public void Door_PlacedHighOnTheWall_SitsBackDownOnTheFloor()
     {
         var wallGo = ElementFactory.CreateWall(
             new Vector3Int(100, 2500, 3000), "Wall_DoorPos", new Vector3(0, 1.25f, 0));
@@ -97,12 +97,13 @@ public class DoorSnapTests : SnapTestBase
         door!.SnapToWall();
 
         float toU = AppConstants.MM_TO_UNITS;
-        float wallTop = 1.25f + 2500 * toU * 0.5f;
-        float doorHalfH = door.DimensionsMM.y * toU * 0.5f;
-        float expectedMaxY = wallTop - doorHalfH;
+        float wallBase = 1.25f - 2500 * toU * 0.5f;
+        float doorBottom = door.transform.position.y - door.DimensionsMM.y * toU * 0.5f;
 
-        Assert.LessOrEqual(door.transform.position.y, expectedMaxY + 1e-5f,
-            "центр двери не должен быть выше верхней границы стены");
+        Assert.AreEqual(wallBase, doorBottom, Tol,
+            "у двери нет порога: низ проёма прибит к полу, а не к тому, куда её поставили. " +
+            "Прежняя редакция этого теста (clamp по верхней границе стены) не могла упасть — " +
+            "посаженная на пол дверь заведомо ниже потолка");
     }
 
     [Test]
