@@ -180,6 +180,51 @@ public class DoorThresholdTests : SnapTestBase
             "окно не вырезано — тест смотрит не туда");
     }
 
+    /// <summary>Порог — это не только простенок в стене, но и нижняя перекладина
+    /// коробки: горизонтальный брус во всю ширину проёма, стоявший на 10 мм над
+    /// полом. Под ним нельзя пройти, и у настоящей двери его нет — коробка у
+    /// двери П-образная: две стойки и притолока.</summary>
+    [Test]
+    public void Door_Frame_HasNoBottomRail()
+    {
+        SpawnWall("Wall_NoSill");
+        var door = SpawnDoor("Door_NoSill", 1.05f);
+        door.SnapToWall();
+
+        var frame = door.transform.Find("_Static");
+        Assert.IsNotNull(frame, "коробка двери должна существовать");
+
+        var names = new List<string>();
+        foreach (Transform child in frame!) names.Add(child.name);
+
+        CollectionAssert.DoesNotContain(names, "FrameBottom",
+            "нижняя перекладина коробки — это и есть порог под дверью");
+        CollectionAssert.Contains(names, "FrameLeft", "стойка коробки на месте");
+        CollectionAssert.Contains(names, "FrameRight", "вторая стойка на месте");
+        CollectionAssert.Contains(names, "FrameTop", "притолока на месте");
+    }
+
+    /// <summary>Убрав нижнюю перекладину, полотно обязано занять её место, а не
+    /// оставить щель: низ полотна встаёт ровно на низ стоек — 10 мм над полом.</summary>
+    [Test]
+    public void DoorLeaf_FillsTheSpaceWhereTheBottomRailUsedToBe()
+    {
+        SpawnWall("Wall_LeafDown");
+        var door = SpawnDoor("Door_LeafDown", 1.05f);
+        door.SnapToWall();
+
+        var jamb = door.transform.Find("_Static/FrameLeft")!;
+        float jambBottom = jamb.position.y - jamb.localScale.y * 0.5f;
+
+        var sashBottom = door.transform.Find("_Sash/SashBottom")!;
+        float leafBottom = sashBottom.position.y - sashBottom.lossyScale.y * 0.5f;
+
+        Assert.AreEqual(jambBottom, leafBottom, Tol,
+            "низ полотна обязан совпасть с низом стоек — иначе на месте порога осталась щель");
+        Assert.AreEqual(WallBaseY + DoorOpeningLayout.LeafFloorGapMM * MM, leafBottom, Tol,
+            "и это те же 10 мм над полом, зазор под дверью");
+    }
+
     private static List<WallMeshBuilder.WindowCutout> CutoutOnTheWallBase() =>
         new List<WallMeshBuilder.WindowCutout>
         {

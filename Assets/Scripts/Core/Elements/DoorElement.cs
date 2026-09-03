@@ -30,7 +30,7 @@ namespace KitchenDesigner.Core
         private static Material? _glassMat;
 
         private readonly List<GameObject> _children = new List<GameObject>();
-        private GameObject? _frameTop, _frameBottom, _frameLeft, _frameRight;
+        private GameObject? _frameTop, _frameLeft, _frameRight;
         private GameObject? _glassPane;
         private GameObject? _sashLeft, _sashRight, _sashTop, _sashBottom;
         private Transform? _staticGroup;
@@ -341,7 +341,7 @@ namespace KitchenDesigner.Core
                 _sashGroup = sashGo.transform;
             }
 
-            const int needed = 9;
+            const int needed = 8;
             while (_children.Count < needed)
             {
                 int idx = _children.Count;
@@ -358,21 +358,20 @@ namespace KitchenDesigner.Core
             _frameLeft   = _children[0];
             _frameRight  = _children[1];
             _frameTop    = _children[2];
-            _frameBottom = _children[3];
-            _glassPane   = _children[4];
-            _sashLeft    = _children[5];
-            _sashRight   = _children[6];
-            _sashTop     = _children[7];
-            _sashBottom  = _children[8];
+            _glassPane   = _children[3];
+            _sashLeft    = _children[4];
+            _sashRight   = _children[5];
+            _sashTop     = _children[6];
+            _sashBottom  = _children[7];
         }
 
-        private static bool IsSashChild(int idx) => idx == 4 || idx >= 5;
+        private static bool IsSashChild(int idx) => idx >= 3;
 
         private string GetChildName(int idx) => idx switch
         {
-            0 => "FrameLeft", 1 => "FrameRight", 2 => "FrameTop", 3 => "FrameBottom",
-            4 => "Glass",
-            5 => "SashLeft", 6 => "SashRight", 7 => "SashTop", 8 => "SashBottom",
+            0 => "FrameLeft", 1 => "FrameRight", 2 => "FrameTop",
+            3 => "Glass",
+            4 => "SashLeft", 5 => "SashRight", 6 => "SashTop", 7 => "SashBottom",
             _ => "Child" + idx
         };
 
@@ -393,7 +392,8 @@ namespace KitchenDesigner.Core
             float halfD = totalD * 0.5f;
 
             float innerW = totalW - 2f * frameU;
-            float innerH = leafH - 2f * frameU;
+            float innerH = leafH - frameU;
+            float innerY = leafY - frameU * 0.5f;
 
             int hidden = ComputeHiddenSides();
 
@@ -415,16 +415,10 @@ namespace KitchenDesigner.Core
                 _frameTop.transform.localScale = new Vector3(innerW, frameU, totalD);
                 _frameTop.SetActive((hidden & 4) == 0);
             }
-            if (_frameBottom != null)
-            {
-                _frameBottom.transform.localPosition = new Vector3(0f, leafY - halfLeafH + frameU * 0.5f, 0f);
-                _frameBottom.transform.localScale = new Vector3(innerW, frameU, totalD);
-                _frameBottom.SetActive((hidden & 8) == 0);
-            }
 
             float sashU = AppConstants.WINDOW_SASH_MM * toU;
             float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, totalD);
-            _sashClosedLocal = new Vector3(0f, leafY, 0f);
+            _sashClosedLocal = new Vector3(0f, innerY, 0f);
             _sashHalfExtents = new Vector3(innerW * 0.5f, innerH * 0.5f, sashD * 0.5f);
 
             if (_sashLeft != null)
@@ -504,7 +498,7 @@ namespace KitchenDesigner.Core
             float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, dims.z * toU);
             float glassThick = AppConstants.WINDOW_GLASS_THICKNESS_MM * toU;
             float innerW = dims.x * toU - 2f * frameU;
-            float innerH = DoorOpeningLayout.LeafHeightMM(dims.y) * toU - 2f * frameU;
+            float innerH = DoorOpeningLayout.LeafHeightMM(dims.y) * toU - frameU;
             float paneThick = _sashType == DoorSashType.Blind ? sashD : glassThick;
             _glassPane.transform.localScale =
                 new Vector3(innerW - 2f * sashU, innerH - 2f * sashU, paneThick);
@@ -516,7 +510,7 @@ namespace KitchenDesigner.Core
             if (def == null) return;
             var mat = MaterialManager.GetSharedMaterial(def);
             if (mat == null) return;
-            foreach (var go in new[] { _frameLeft, _frameRight, _frameTop, _frameBottom,
+            foreach (var go in new[] { _frameLeft, _frameRight, _frameTop,
                                        _sashLeft, _sashRight, _sashTop, _sashBottom })
             {
                 var mr = go != null ? go.GetComponent<MeshRenderer>() : null;
@@ -535,7 +529,7 @@ namespace KitchenDesigner.Core
                     else Object.DestroyImmediate(child);
                 }
             _children.Clear();
-            _frameLeft = _frameRight = _frameTop = _frameBottom = null;
+            _frameLeft = _frameRight = _frameTop = null;
             _glassPane = null;
             _sashLeft = _sashRight = _sashTop = _sashBottom = null;
         }
