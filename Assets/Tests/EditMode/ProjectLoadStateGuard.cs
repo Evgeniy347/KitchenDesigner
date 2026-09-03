@@ -20,6 +20,8 @@ public sealed class ProjectLoadStateGuard
     private readonly ResizeHandleManager.HandleMode _handleMode;
     private readonly bool _lightsOn;
     private readonly bool _tintEnabled;
+    private readonly int _musicTrack;
+    private readonly int _musicVolumePct;
 
     private ProjectLoadStateGuard()
     {
@@ -28,6 +30,8 @@ public sealed class ProjectLoadStateGuard
         _handleMode = ResizeHandleManager.Mode;
         _lightsOn = LightSourceElement.GlobalOn;
         _tintEnabled = ElementHighlighter.TintEnabled;
+        _musicTrack = KitchenDesigner.Core.Audio.MusicState.Track;
+        _musicVolumePct = KitchenDesigner.Core.Audio.MusicState.VolumePct;
     }
 
     public static ProjectLoadStateGuard Capture() => new ProjectLoadStateGuard();
@@ -43,6 +47,8 @@ public sealed class ProjectLoadStateGuard
         ResizeHandleManager.SetMode(_handleMode);
         LightSourceElement.SetGlobalOn(_lightsOn);
         ElementHighlighter.TintEnabled = _tintEnabled;
+        KitchenDesigner.Core.Audio.MusicState.Track = _musicTrack;
+        KitchenDesigner.Core.Audio.MusicState.VolumePct = _musicVolumePct;
 
         ProjectInstructions.Reset();
         ProjectRooms.Reset();

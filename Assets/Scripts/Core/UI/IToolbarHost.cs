@@ -8,6 +8,7 @@ namespace KitchenDesigner.Core.UI
         ProjectInstructions,
         Settings,
         DayNight,
+        Music,
     }
 
     public interface IToolbarHost

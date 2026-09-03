@@ -82,6 +82,8 @@ namespace KitchenDesigner.Core.UI
                 EditModeManager.Label(EditModeManager.Mode), ref x, 190, EditModeManager.Cycle);
             _editModeLabel = editModeBtn.GetComponentInChildren<TMP_Text>();
 
+            AddRightPanelToggle(bar.transform, "Music", IconFactory.Note, ToolbarPanel.Music, "Музыка");
+
             EditModeManager.Changed += RefreshEditModeLabel;
         }
 
@@ -113,6 +115,20 @@ namespace KitchenDesigner.Core.UI
             ToolbarPanel panel, ref float x, string tooltip)
         {
             var btn = AddIconButton(parent, name, icon, ref x, () => _host!.TogglePanel(panel), tooltip);
+            _toggles.Add((btn, () => _host!.IsPanelVisible(panel)));
+            return btn;
+        }
+
+        private Button AddRightPanelToggle(Transform parent, string name, Sprite icon,
+            ToolbarPanel panel, string tooltip)
+        {
+            const float insetFromTheRightEdge = -8f;
+            var btn = UIFactory.CreateIconButton(name, parent, icon, Vector2.zero,
+                new Vector2(ButtonH, ButtonH), () => _host!.TogglePanel(panel));
+            var rt = btn.GetComponent<RectTransform>();
+            UIFactory.AnchorTopRight(rt);
+            rt.anchoredPosition = new Vector2(insetFromTheRightEdge, ButtonY);
+            TooltipUI.Attach(btn.gameObject, tooltip);
             _toggles.Add((btn, () => _host!.IsPanelVisible(panel)));
             return btn;
         }

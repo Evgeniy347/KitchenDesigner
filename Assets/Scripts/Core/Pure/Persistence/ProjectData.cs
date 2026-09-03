@@ -28,6 +28,9 @@ namespace KitchenDesigner.Core
         public bool tintEnabled = true;
         public bool lightsOn = true;
 
+        public int musicTrack = 0;
+        public int musicVolumePct = Audio.MusicState.DEFAULT_VOLUME_PCT;
+
         public WindowStateData[] windows = new WindowStateData[0];
 
         public ProjectData() { }

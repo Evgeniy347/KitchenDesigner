@@ -64,6 +64,8 @@ namespace KitchenDesigner.Core
 
             ElementHighlighter.TintEnabled = data.tintEnabled;
             LightSourceElement.SetGlobalOn(data.lightsOn);
+            Audio.MusicState.Track = data.musicTrack;
+            Audio.MusicState.VolumePct = data.musicVolumePct;
             ProjectWindows.Apply(data.windows);
 
             ProjectInstructions.Text = data.projectInstructions ?? "";

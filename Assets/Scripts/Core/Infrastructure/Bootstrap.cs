@@ -62,6 +62,7 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<TextureOverlayHandles>() == null) gameObject.AddComponent<TextureOverlayHandles>();
             if (FindAnyObjectByType<UI.ConsoleOverlay>() == null) gameObject.AddComponent<UI.ConsoleOverlay>();
             if (FindAnyObjectByType<UndoHandler>() == null) gameObject.AddComponent<UndoHandler>();
+            if (FindAnyObjectByType<Audio.MusicPlayer>() == null) gameObject.AddComponent<Audio.MusicPlayer>();
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (FindAnyObjectByType<PerfMonitor>() == null) gameObject.AddComponent<PerfMonitor>();

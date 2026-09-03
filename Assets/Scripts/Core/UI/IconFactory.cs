@@ -13,6 +13,7 @@ namespace KitchenDesigner.Core.UI
         private static Sprite? _gear, _floppy, _floppyPlus, _folder, _undo, _redo, _pin, _warning, _pencil;
         private static Sprite? _caretUp, _caretDown;
         private static Sprite? _ruler, _bulb, _sun, _eyedropper, _crosshair;
+        private static Sprite? _note, _play, _pause, _trackNext, _trackPrev;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -30,6 +31,11 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Sun => _sun ??= BuildSun();
         public static Sprite Eyedropper => _eyedropper ??= BuildEyedropper();
         public static Sprite Crosshair => _crosshair ??= BuildCrosshair();
+        public static Sprite Note => _note ??= BuildNote();
+        public static Sprite Play => _play ??= BuildPlay();
+        public static Sprite Pause => _pause ??= BuildPause();
+        public static Sprite TrackNext => _trackNext ??= BuildSkip(true);
+        public static Sprite TrackPrev => _trackPrev ??= BuildSkip(false);
 
         private static Sprite BuildGear()
         {
@@ -277,6 +283,78 @@ namespace KitchenDesigner.Core.UI
         private static void DrawEyedropperCollar(Color32[] px) => Rect(px, 23, 36, 42, 40, Ink2);
 
         private static void DrawEyedropperTip(Color32[] px) => ArrowDown(px, 32, 21, 13, Ink);
+
+        private static Sprite BuildNote()
+        {
+            var px = NewCanvas();
+            DrawNoteHead(px);
+            DrawNoteStem(px);
+            DrawNoteFlag(px);
+            return Finish(px);
+        }
+
+        private static void DrawNoteHead(Color32[] px) => Disc(px, 24, 18, 11, Ink);
+
+        private static void DrawNoteStem(Color32[] px) => Rect(px, 32, 18, 38, 54, Ink);
+
+        private static void DrawNoteFlag(Color32[] px)
+        {
+            Line(px, 36, 52, 50, 40, 3, Ink2);
+            Line(px, 36, 44, 48, 34, 3, Ink2);
+        }
+
+        private static Sprite BuildPlay()
+        {
+            var px = NewCanvas();
+            TriangleRight(px, 20, 48, 32, 20, Ink);
+            return Finish(px);
+        }
+
+        private static Sprite BuildPause()
+        {
+            var px = NewCanvas();
+            Rect(px, 20, 14, 29, 50, Ink);
+            Rect(px, 35, 14, 44, 50, Ink);
+            return Finish(px);
+        }
+
+        private static Sprite BuildSkip(bool forward)
+        {
+            var px = NewCanvas();
+            if (forward)
+            {
+                TriangleRight(px, 14, 40, 32, 18, Ink);
+                Rect(px, 43, 14, 50, 50, Ink2);
+            }
+            else
+            {
+                TriangleLeft(px, 24, 50, 32, 18, Ink);
+                Rect(px, 14, 14, 21, 50, Ink2);
+            }
+            return Finish(px);
+        }
+
+        private static void TriangleRight(Color32[] px, int x0, int x1, int cy, int halfH, Color col)
+        {
+            int w = x1 - x0;
+            if (w <= 0) return;
+            for (int x = x0; x <= x1; x++)
+            {
+                int half = Mathf.RoundToInt(halfH * (1f - (x - x0) / (float)w));
+                Rect(px, x, cy - half, x + 1, cy + half + 1, col);
+            }
+        }
+
+        private static void TriangleLeft(Color32[] px, int x0, int x1, int cy, int halfH, Color col)
+        {
+            int w = x1 - x0;
+            if (w <= 0) return;
+            for (int x = x0; x <= x1; x++)
+            {
+                int half = Mathf.RoundToInt(halfH * ((x - x0) / (float)w));
+                Rect(px, x, cy - half, x + 1, cy + half + 1, col);
+            }
+        }
 
         private static void Line(Color32[] px, int x0, int y0, int x1, int y1, int thick, Color col)
         {

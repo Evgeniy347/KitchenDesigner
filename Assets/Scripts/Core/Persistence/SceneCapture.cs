@@ -45,6 +45,8 @@ namespace KitchenDesigner.Core
 
             data.tintEnabled = ElementHighlighter.TintEnabled;
             data.lightsOn = LightSourceElement.GlobalOn;
+            data.musicTrack = Audio.MusicState.Track;
+            data.musicVolumePct = Audio.MusicState.VolumePct;
             data.windows = ProjectWindows.Capture();
 
             CaptureHistory(data, ordered);

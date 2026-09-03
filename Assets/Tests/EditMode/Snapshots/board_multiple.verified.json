@@ -762,5 +762,7 @@
     },
     "tintEnabled": true,
     "lightsOn": true,
+    "musicTrack": 0,
+    "musicVolumePct": 60,
     "windows": []
 }

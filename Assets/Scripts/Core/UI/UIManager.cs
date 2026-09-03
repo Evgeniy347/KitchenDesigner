@@ -57,6 +57,10 @@ namespace KitchenDesigner.Core.UI
             dayNightPanel.Build(windowLayer);
             _panels[ToolbarPanel.DayNight] = dayNightPanel;
 
+            var musicPanel = gameObject.AddComponent<MusicPanelUI>();
+            musicPanel.Build(windowLayer);
+            _panels[ToolbarPanel.Music] = musicPanel;
+
             _groupMenu = gameObject.AddComponent<GroupMenuUI>();
             _groupMenu.Build(windowLayer);
 

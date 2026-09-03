@@ -3,6 +3,11 @@
   "children": [
     {
       "type": "Button",
+      "text": "Music",
+      "position": [-8, -6]
+    },
+    {
+      "type": "Button",
       "text": "Спецификация",
       "position": [8, -6]
     },
