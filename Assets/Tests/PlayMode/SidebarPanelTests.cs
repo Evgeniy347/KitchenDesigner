@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Text;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
@@ -13,7 +15,16 @@ using KitchenDesigner.Core.UI;
 /// EditModeManager.Changed и отписывается в OnDestroy, а вне Play mode Unity
 /// OnDestroy не зовёт. Тот же набор в EditMode оставлял живой обработчик с уже
 /// уничтоженными кнопками, и следующий же набор, трогающий режим, падал с
-/// MissingReferenceException — 20 чужих тестов подряд.</summary>
+/// MissingReferenceException — 20 чужих тестов подряд.
+///
+/// Узлы здесь ищет <see cref="Child"/>, а НЕ Transform.Find, и это не стиль.
+/// Find трактует «/» как разделитель пути, а в каталоге есть пункт «ДВП/ХДФ»:
+/// объект называется SbItem_детали_ДВП/ХДФ, Find уходит искать ребёнка
+/// «SbItem_детали_ДВП» с ребёнком «ХДФ», не находит и возвращает null. Пока
+/// тесты дёргали пункты поимённо, слэш никому не попадался; первый же обход
+/// всего каталога упал NullReferenceException без единого слова о причине.
+/// Child перебирает детей по точному имени и падает текстом, называющим
+/// недостающий узел.</summary>
 public class SidebarPanelTests
 {
     private GameObject _canvasGo = null!;
@@ -40,15 +51,34 @@ public class SidebarPanelTests
         EditModeManager.Reset();
     }
 
-    private Transform Panel => _canvasGo.transform.Find("Sidebar");
+    private static Transform Child(Transform parent, string name)
+    {
+        for (int i = 0; i < parent.childCount; i++)
+            if (parent.GetChild(i).name == name) return parent.GetChild(i);
 
-    private Transform Full => Panel.Find("SbFull");
+        var present = new StringBuilder();
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            if (i > 0) present.Append(", ");
+            present.Append(parent.GetChild(i).name);
+        }
 
-    private RectTransform FullContent => (RectTransform)Full.Find("SbFullContent");
+        Assert.Fail($"в «{parent.name}» нет дочернего узла «{name}». Есть: [{present}]");
+        return null!;
+    }
 
-    private Transform Item(string group, string name) => FullContent.Find("SbItem_" + group + "_" + name);
+    private Transform Panel => Child(_canvasGo.transform, "Sidebar");
 
-    private Button Header(string group) => FullContent.Find("SbGrp_" + group).GetComponent<Button>();
+    private Transform Full => Child(Panel, "SbFull");
+
+    private RectTransform FullContent => (RectTransform)Child(Full, "SbFullContent");
+
+    private static string ItemNode(string group, string name) => "SbItem_" + group + "_" + name;
+
+    private Transform Item(string group, string name) => Child(FullContent, ItemNode(group, name));
+
+    private Button Header(string group)
+        => Child(FullContent, "SbGrp_" + group).GetComponent<Button>();
 
     private static void AssertSameColor(Color expected, Color actual, string message)
     {
@@ -63,6 +93,9 @@ public class SidebarPanelTests
         rt.GetWorldCorners(corners);
         return corners[0].y;
     }
+
+    private static float RowBottom(RectTransform rt)
+        => -rt.anchoredPosition.y + rt.sizeDelta.y;
 
     [Test]
     public void GroupHeader_PutsTheGlyphBeforeTheTitle_AndFlipsItOnToggle()
@@ -109,35 +142,81 @@ public class SidebarPanelTests
             + "шагом двухстрочная кнопка накрыла бы следующую");
     }
 
+    /// <summary>Каждый пункт каталога обязан доехать до содержимого панели.
+    /// Проверка идёт по НАБОРУ имён детей, а не поиском по одному: имя
+    /// «ДВП/ХДФ» ищется через Transform.Find как путь и не находится вовсе.</summary>
+    [Test]
+    public void EveryCatalogItem_HasItsButtonInTheContent()
+    {
+        var present = new HashSet<string>();
+        for (int i = 0; i < FullContent.childCount; i++)
+            present.Add(FullContent.GetChild(i).name);
+
+        foreach (var g in SidebarCatalog.Build())
+            foreach (var it in g.items)
+                Assert.IsTrue(present.Contains(ItemNode(g.title, it.name)),
+                    $"пункта «{it.name}» из группы «{g.title}» нет среди кнопок каталога");
+    }
+
+    /// <summary>Сторож самого способа искать узлы. Проверки ниже опираются на
+    /// то, что отсутствующий узел даёт ИМЕНОВАННОЕ падение: пока поиск шёл
+    /// через Transform.Find, пропажа приходила как NullReferenceException без
+    /// строчки о том, чего не хватает, и на разбор такого падения уходил целый
+    /// прогон PlayMode. Если этот тест позеленеет неправильно — то есть Child
+    /// снова начнёт возвращать null вместо падения, — вся диагностика соседних
+    /// проверок молча вернётся к NRE.</summary>
+    [Test]
+    public void MissingNode_IsReportedByName_NotAsANullReference()
+    {
+        var ex = Assert.Throws<AssertionException>(() => Child(Full, "SbNoSuchNode"));
+
+        Assert.IsNotNull(ex);
+        StringAssert.Contains("SbNoSuchNode", ex!.Message,
+            "сообщение обязано называть недостающий узел");
+        StringAssert.Contains("SbFullContent", ex.Message,
+            "и перечислять то, что рядом есть — иначе опечатку в имени не отличить от пропажи");
+    }
+
     /// <summary>Каталог выше окна сайдбара — и обязан целиком доставаться
     /// прокруткой. Пока корень был жёсткие 960 px без ScrollRect, 34 пункта
     /// в 7 группах занимали 1280 px, и до нижних восьми было не добраться
-    /// ничем.</summary>
+    /// ничем.
+    ///
+    /// Нижний край ищется обходом ДЕТЕЙ содержимого, а не поиском кнопок по
+    /// именам каталога: инвариант «всё внутри объявленной высоты» касается
+    /// любой строки, которая там лежит, включая заголовки групп.</summary>
     [Test]
     public void CatalogTallerThanTheWindow_StaysReachableThroughScrolling()
     {
-        var scroll = Full.GetComponent<ScrollRect>();
         var viewport = (RectTransform)Full;
+        var scroll = Full.GetComponent<ScrollRect>();
 
         Assert.IsNotNull(scroll, "каталог не помещается в панель — без ScrollRect его не достать");
-        Assert.AreSame(FullContent, scroll.content);
+
+        var content = FullContent;
+        Assert.AreSame(content, scroll.content, "прокрутке подсунут не тот узел содержимого");
         Assert.IsTrue(scroll.vertical);
         Assert.AreEqual(ScrollRect.MovementType.Clamped, scroll.movementType,
             "содержимое не должно оттягиваться за края — как в дереве объектов");
 
         float lowest = 0f;
-        foreach (var g in SidebarCatalog.Build())
-            foreach (var it in g.items)
-            {
-                var rt = Item(g.title, it.name).GetComponent<RectTransform>();
-                lowest = Mathf.Max(lowest, -rt.anchoredPosition.y + rt.sizeDelta.y);
-            }
+        string lowestName = "";
+        for (int i = 0; i < content.childCount; i++)
+        {
+            var rt = (RectTransform)content.GetChild(i);
+            if (!rt.gameObject.activeSelf) continue;
+            float bottom = RowBottom(rt);
+            if (bottom <= lowest) continue;
+            lowest = bottom;
+            lowestName = rt.name;
+        }
 
+        Assert.Greater(content.childCount, 0, "в содержимом каталога нет ни одной строки");
         Assume.That(lowest, Is.GreaterThan(viewport.rect.height),
             "проверка имеет смысл, только пока каталог выше окна");
-        Assert.GreaterOrEqual(FullContent.sizeDelta.y, lowest,
-            "высота содержимого обязана накрывать нижний край последнего пункта: "
-            + "всё, что за ней, прокрутка не покажет");
+        Assert.GreaterOrEqual(content.sizeDelta.y, lowest,
+            $"нижний край «{lowestName}» лежит на {lowest} px, а содержимому объявлено "
+            + $"{content.sizeDelta.y} px: всё, что за этой границей, прокрутка не покажет");
     }
 
     [Test]
@@ -157,15 +236,16 @@ public class SidebarPanelTests
     [Test]
     public void Collapsed_ShowsShortLabelsAndHidesThePin()
     {
-        var pin = Panel.Find("SbPin");
+        var pin = Child(Panel, "SbPin");
         Assume.That(pin.gameObject.activeSelf, Is.True);
 
-        Panel.Find("SbCollapse").GetComponent<Button>().onClick.Invoke();
+        Child(Panel, "SbCollapse").GetComponent<Button>().onClick.Invoke();
 
         Assert.IsFalse(Full.gameObject.activeSelf);
-        var mini = Panel.Find("SbMini");
+        var mini = Child(Panel, "SbMini");
         Assert.IsTrue(mini.gameObject.activeSelf);
-        Assert.AreEqual("Т", mini.Find("SbMiniContent/SbMini_Техника").GetComponentInChildren<TMP_Text>().text,
+        var strip = Child(mini, "SbMiniContent");
+        Assert.AreEqual("Т", Child(strip, "SbMini_Техника").GetComponentInChildren<TMP_Text>().text,
             "в узкой полосе группа подписана своей буквой из каталога");
         Assert.IsFalse(pin.gameObject.activeSelf,
             "булавка видна только в развёрнутом сайдбаре: в полосе шириной 52 px "
@@ -179,11 +259,11 @@ public class SidebarPanelTests
     [Test]
     public void CollapsedStrip_AlsoScrolls_SoNewGroupsCannotHideBelowTheEdge()
     {
-        var mini = Panel.Find("SbMini");
+        var mini = Child(Panel, "SbMini");
+        var content = (RectTransform)Child(mini, "SbMiniContent");
         var scroll = mini.GetComponent<ScrollRect>();
-        var content = (RectTransform)mini.Find("SbMiniContent");
 
-        Assert.IsNotNull(scroll);
+        Assert.IsNotNull(scroll, "полоса групп растёт с каталогом и тоже обязана прокручиваться");
         Assert.AreSame(content, scroll.content);
         Assert.AreEqual(SidebarLayout.MiniContentHeight(SidebarCatalog.Build().Count),
             content.sizeDelta.y,
