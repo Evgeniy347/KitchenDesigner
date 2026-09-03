@@ -45,7 +45,10 @@ namespace KitchenDesigner.Core.UI
 
         public ContentFit Fit()
         {
-            RectSpans.Collect(Content, _spans);
+            var content = Content;
+            if (content == null) return new ContentFit(0f, VisibleHeight, default);
+
+            RectSpans.Collect(content, _spans);
             var fit = ContentExtent.Measure(_spans, BottomPadPx, VisibleHeight);
             _scroll.ContentHeight = fit.ContentHeight;
             return fit;
