@@ -92,6 +92,24 @@ namespace KitchenDesigner.Core.MCP
                 if (op.shower_hose_length.HasValue)
                     column.HoseLengthMM = op.shower_hose_length.Value;
             }),
+            For<IWallDevice>((op, device) =>
+            {
+                if (op.wall_device_plate_width.HasValue)
+                    device.PlateWidthMM = op.wall_device_plate_width.Value;
+                if (op.wall_device_plate_height.HasValue)
+                    device.PlateHeightMM = op.wall_device_plate_height.Value;
+                if (op.wall_device_protrusion.HasValue)
+                    device.ProtrusionMM = op.wall_device_protrusion.Value;
+                if (op.wall_device_posts.HasValue)
+                    device.PostCount = op.wall_device_posts.Value;
+            }),
+            For<ILightSwitch>((op, source) =>
+            {
+                if (op.switch_on.HasValue) source.IsOn = op.switch_on.Value;
+                if (op.switch_lights != null)
+                    source.SetLightNames(SwitchLightLinks.Sanitized(op.switch_lights,
+                        LightSwitchNetwork.LiveLightNames()));
+            }),
             For<BedElement>((op, bed) =>
             {
                 if (op.bed_double.HasValue) bed.IsDouble = op.bed_double.Value;

@@ -423,6 +423,7 @@ namespace KitchenDesigner.Core
             var socket = go.AddComponent<SocketElement>();
             socket.PartName = go.name;
             spec.ApplyTo(socket);
+            socket.DimensionsMM = spec.DimensionsMM;
             socket.Movable = true;
 
             return ElementRoot.Publish(go, socket);
@@ -438,6 +439,7 @@ namespace KitchenDesigner.Core
             spec.ApplyTo(source);
             source.IsOn = isOn;
             source.SetLightNames(lightNames);
+            source.DimensionsMM = spec.DimensionsMM;
             source.Movable = true;
 
             return ElementRoot.Publish(go, source);

@@ -90,6 +90,8 @@ namespace KitchenDesigner.Core.MCP
 		public BathtubInfo? bathtub;
 		public BathMixerInfo? bathMixer;
 		public ShowerColumnInfo? showerColumn;
+		public WallDeviceInfo? wallDevice;
+		public LightSwitchInfo? lightSwitch;
 		public BedInfo? bed;
 		public PillarInfo? pillar;
 		public ScrewLegInfo? screwLeg;
@@ -401,6 +403,23 @@ namespace KitchenDesigner.Core.MCP
 		public int wallOffsetMM;
 		public int handShowerDiameterMM;
 		public int hoseLengthMM;
+	}
+
+	[Serializable]
+	public class WallDeviceInfo
+	{
+		public int plateWidthMM;
+		public int plateHeightMM;
+		public int protrusionMM;
+		public int postCount;
+	}
+
+	[Serializable]
+	public class LightSwitchInfo
+	{
+		public bool isOn;
+		public string[] lights = Array.Empty<string>();
+		public int maxLights;
 	}
 
 	[Serializable]

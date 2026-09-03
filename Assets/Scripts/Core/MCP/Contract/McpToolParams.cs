@@ -250,6 +250,39 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "and is not stretched. Omit to keep.", Min = 0)]
         public int? shower_hose_length;
 
+        [McpParam("Socket and light switch only: width of ONE plate in MM (80 by default). " +
+                  "Clamped to 40..200. The element width is this times wall_device_posts, so " +
+                  "width/height/depth are COMPUTED here and setting them is refused. " +
+                  "Omit to keep.", Min = 0)]
+        public int? wall_device_plate_width;
+
+        [McpParam("Socket and light switch only: plate height in MM (80 by default). Clamped " +
+                  "to 40..200. Omit to keep.", Min = 0)]
+        public int? wall_device_plate_height;
+
+        [McpParam("Socket and light switch only: how far the device stands off the wall in MM " +
+                  "(10 by default). Clamped to 3..60. It is the element depth, and it is split " +
+                  "into frame, recess and body, so a larger value deepens the socket well " +
+                  "rather than moving the plate. Omit to keep.", Min = 0)]
+        public int? wall_device_protrusion;
+
+        [McpParam("Socket and light switch only: number of posts side by side, 1..3 (1 by " +
+                  "default) - a double socket or a two-key switch. Posts sit flush against " +
+                  "each other, so this MULTIPLIES the element width. Omit to keep.", Min = 0)]
+        public int? wall_device_posts;
+
+        [McpParam("Light switch only: whether the switch is on (true by default). A lamp " +
+                  "named by at least one switch is lit when at least one of those switches is " +
+                  "on; a lamp no switch names keeps following the global light. Omit to keep.")]
+        public bool? switch_on;
+
+        [McpParam("Light switch only: names of the light sources this switch controls, " +
+                  "REPLACING the current list (send an empty array to unlink everything). " +
+                  "Up to 12; unknown names and duplicates are dropped. One switch may control " +
+                  "several lamps and one lamp may be controlled by several switches - the link " +
+                  "is stored only here, on the switch. Omit to keep.")]
+        public string[]? switch_lights;
+
         [McpParam("Cooktop only: cutout width in MM — the box that goes INTO the countertop " +
                   "(width/height/depth describe the 5 mm plate on top; height is the total). " +
                   "Clamped to 50..width-10. Omit to keep.", Min = 50)]
@@ -378,7 +411,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch" })]
         public string? type;
 
         [McpParam("Position X in METERS.")] public float x;

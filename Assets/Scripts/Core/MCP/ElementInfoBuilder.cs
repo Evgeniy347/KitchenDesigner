@@ -239,6 +239,21 @@ namespace KitchenDesigner.Core.MCP
                 hoseLengthMM = column.HoseLengthMM
             }),
 
+            For<IWallDevice>((info, device) => info.wallDevice = new WallDeviceInfo
+            {
+                plateWidthMM = device.PlateWidthMM,
+                plateHeightMM = device.PlateHeightMM,
+                protrusionMM = device.ProtrusionMM,
+                postCount = device.PostCount
+            }),
+
+            For<ILightSwitch>((info, source) => info.lightSwitch = new LightSwitchInfo
+            {
+                isOn = source.IsOn,
+                lights = LinkedLightNames(source),
+                maxLights = SwitchLightLinks.MaxLightsPerSwitch
+            }),
+
             For<BedElement>((info, bed) => info.bed = new BedInfo
             {
                 size = bed.SizeName,
@@ -343,6 +358,14 @@ namespace KitchenDesigner.Core.MCP
             dishwasher.FindAttachedFacade() is FacadeElement facade
                 ? DishwasherElement.PlinthForFacade(facade.DimensionsMM.y)
                 : 0;
+
+        private static string[] LinkedLightNames(ILightSwitch source)
+        {
+            var names = source.LightNames;
+            var copy = new string[names.Count];
+            for (int i = 0; i < names.Count; i++) copy[i] = names[i];
+            return copy;
+        }
 
         private static Detail For<T>(Action<ElementInfo, T> fill) where T : class
             => (info, el) => { if (el is T typed) fill(info, typed); };

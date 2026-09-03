@@ -118,6 +118,12 @@ namespace KitchenDesigner.Core.MCP
                 ["shower_column"] = (item, pos) => ElementFactory.CreateShowerColumn(
                     ShowerColumnSpec.Default, item.name, pos),
 
+                ["socket"] = (item, pos) => ElementFactory.CreateSocket(
+                    WallDeviceSpec.Default, item.name, pos),
+
+                ["light_switch"] = (item, pos) => ElementFactory.CreateLightSwitch(
+                    WallDeviceSpec.Default, true, null, item.name, pos),
+
                 ["bed"] = (item, pos) => ElementFactory.CreateBed(BedDims(item),
                     BED_DEFAULT_IS_DOUBLE, BED_DEFAULT_HAS_HEADBOARD, item.name, pos),
 

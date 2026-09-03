@@ -144,7 +144,7 @@ SELECTOR (a string; space-separated clauses, ALL must match)
   type:board|wall|floor|window|door|drawer|facade|assembled_facade|
        radial_shelf|panel|table|radius_table|stool|chair|sofa|pouffe|bed|pillar|
        screw_leg|toilet|wall_hung_toilet|bathtub|bath_mixer|
-       shower_column|light
+       shower_column|socket|light_switch|light
   module:NAME / group:NAME by module name (mask allowed)
   thickness==18            compare a dimension in MM; also width/height/depth
                            with == != >= <= > <
@@ -296,6 +296,36 @@ ShowerColumnElement   Shower column with a rain head (type:""shower_column"",
                       Element width is the rain head diameter. Decor is a single
                       slot (material); leave it alone for the factory look,
                       matte black.
+SocketElement         Mains socket on a wall (type:""socket"", 80x80x10 mm by
+                      default). It MOUNTS ON A WALL: it seats itself flush
+                      against the nearest wall face and turns to face away from
+                      it, so place it near a wall and let it snap rather than
+                      positioning it by hand. Size is COMPUTED from four shape
+                      fields and cannot be set directly:
+                      wall_device_plate_width (80), wall_device_plate_height
+                      (80), wall_device_protrusion (10, which is the depth and
+                      is split into frame, recess and body) and
+                      wall_device_posts (1..3 - a double or triple block, which
+                      MULTIPLIES the width). Decor has TWO slots: tabletop_material
+                      is the frame, legs_material is the contacts; leave them
+                      alone for the factory look, white plastic and dark
+                      contacts. It does NOT set its own height above the floor -
+                      place it yourself.
+LightSwitchElement    Light switch on a wall (type:""light_switch"", 80x80x10 mm
+                      by default). Same wall mounting and the same four shape
+                      fields as the socket, with a key in the frame opening
+                      instead of a socket well - wall_device_posts is the number
+                      of KEYS. Two more fields drive the light: switch_on
+                      (true by default) and switch_lights, the names of the
+                      LightSourceElements this switch controls (REPLACES the
+                      list, up to 12, unknown names dropped). The link is
+                      many-to-many and is stored ONLY on the switch: one switch
+                      may control several lamps and one lamp may be listed by
+                      several switches. A lamp named by at least one switch is
+                      lit when at least one of those switches is on; a lamp no
+                      switch names keeps following the global light as before.
+                      Decor slots: tabletop_material is the frame,
+                      legs_material is the key.
 BedElement            Bed (type:""bed"", 1800x900x2000 mm by default — width x
                       height x LENGTH: the length runs along Z, because the
                       headboard faces -Z like every other back in this family).
