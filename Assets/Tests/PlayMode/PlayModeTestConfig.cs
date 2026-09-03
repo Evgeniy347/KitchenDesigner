@@ -21,7 +21,7 @@ public static class PlayModeTestConfig
     /// </summary>
     public static void ConfigureForTests()
     {
-        UnityTcpBridge.TestPort = TestMcpPort;
+        KitchenDesigner.Core.McpBridgeStatus.TestPort = TestMcpPort;
         // Даже если тест случайно создаст UpdateService — проверка обновлений
         // (сеть на GitHub) не должна запускаться.
         KitchenDesigner.Core.Update.UpdateService.StartupCheckEnabled = false;

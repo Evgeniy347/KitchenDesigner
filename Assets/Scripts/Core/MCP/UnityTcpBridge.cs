@@ -14,9 +14,7 @@ namespace KitchenDesigner.Core.MCP
 {
     public class UnityTcpBridge : MonoBehaviour
     {
-        public const int DefaultPort = 9337;
-
-        [SerializeField] private int _port = DefaultPort;
+        [SerializeField] private int _port = McpBridgeStatus.DefaultPort;
         [SerializeField] private bool _autoStart = true;
 
         private TcpListener? _listener;
@@ -27,38 +25,15 @@ namespace KitchenDesigner.Core.MCP
         private readonly object _clientsLock = new object();
         private McpCommandHandler? _handler;
 
-        public static int? TestPort { get; set; }
-
         public int Port => _port;
         public bool IsRunning => _running;
-
-        public static int ResolvePort(int fallbackPort = DefaultPort)
-        {
-            if (TestPort.HasValue)
-                return TestPort.Value;
-
-            var env = System.Environment.GetEnvironmentVariable("UNITY_MCP_PORT");
-            if (!string.IsNullOrWhiteSpace(env) && int.TryParse(env, out var envPort) && envPort > 0)
-                return envPort;
-
-            var args = System.Environment.GetCommandLineArgs();
-            for (int i = 0; i < args.Length - 1; i++)
-            {
-                if (args[i].Equals("-mcpPort", StringComparison.OrdinalIgnoreCase) &&
-                    int.TryParse(args[i + 1], out var argPort) && argPort > 0)
-                {
-                    return argPort;
-                }
-            }
-
-            return fallbackPort;
-        }
 
         private void Awake()
         {
             DontDestroyOnLoad(gameObject);
             _handler = new McpCommandHandler();
-            _port = ResolvePort(_port);
+            _port = McpBridgeStatus.ResolvePort(_port);
+            McpBridgeStatus.Report(_port, false);
         }
 
         private void Start()
@@ -84,6 +59,7 @@ namespace KitchenDesigner.Core.MCP
             _running = true;
             _serverThread = new Thread(ServerLoop) { IsBackground = true, Name = "MCP-TCP" };
             _serverThread.Start();
+            McpBridgeStatus.Report(_port, true);
             Debug.Log($"[MCP] Bridge started on port {_port}");
         }
 
@@ -103,6 +79,7 @@ namespace KitchenDesigner.Core.MCP
                 try { _listener.Stop(); } catch { }
                 _listener = null;
             }
+            McpBridgeStatus.Report(_port, false);
             Debug.Log("[MCP] Bridge stopped");
         }
 

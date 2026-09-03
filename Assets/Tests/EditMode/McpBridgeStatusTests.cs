@@ -1,50 +1,49 @@
 
 using System;
 using NUnit.Framework;
-using UnityEngine;
-using KitchenDesigner.Core.MCP;
+using KitchenDesigner.Core;
 
-public class UnityTcpBridgeTests
+public class McpBridgeStatusTests
 {
     private int? _previousTestPort;
 
     [SetUp]
     public void SetUp()
     {
-        _previousTestPort = UnityTcpBridge.TestPort;
-        UnityTcpBridge.TestPort = null;
+        _previousTestPort = McpBridgeStatus.TestPort;
+        McpBridgeStatus.TestPort = null;
     }
 
     [TearDown]
     public void TearDown()
     {
-        UnityTcpBridge.TestPort = _previousTestPort;
+        McpBridgeStatus.TestPort = _previousTestPort;
     }
 
     [Test]
     public void ResolvePort_ReturnsDefault_WhenNoOverride()
     {
-        Assert.AreEqual(UnityTcpBridge.DefaultPort, UnityTcpBridge.ResolvePort());
+        Assert.AreEqual(McpBridgeStatus.DefaultPort, McpBridgeStatus.ResolvePort());
     }
 
     [Test]
     public void ResolvePort_ReturnsTestPort_WhenStaticOverrideSet()
     {
-        UnityTcpBridge.TestPort = 19337;
-        Assert.AreEqual(19337, UnityTcpBridge.ResolvePort());
+        McpBridgeStatus.TestPort = 19337;
+        Assert.AreEqual(19337, McpBridgeStatus.ResolvePort());
     }
 
     [Test]
     public void ResolvePort_TestPortTakesPrecedenceOverFallback()
     {
-        UnityTcpBridge.TestPort = 12345;
-        Assert.AreEqual(12345, UnityTcpBridge.ResolvePort(9999));
+        McpBridgeStatus.TestPort = 12345;
+        Assert.AreEqual(12345, McpBridgeStatus.ResolvePort(9999));
     }
 
     [Test]
     public void ResolvePort_ReturnsFallback_WhenNoOverrides()
     {
-        Assert.AreEqual(5555, UnityTcpBridge.ResolvePort(5555));
+        Assert.AreEqual(5555, McpBridgeStatus.ResolvePort(5555));
     }
 
     [Test]
@@ -54,7 +53,7 @@ public class UnityTcpBridgeTests
         try
         {
             Environment.SetEnvironmentVariable(PortVariable, "18081");
-            Assert.AreEqual(18081, UnityTcpBridge.ResolvePort(5555),
+            Assert.AreEqual(18081, McpBridgeStatus.ResolvePort(5555),
                 "UNITY_MCP_PORT перебивает значение по умолчанию: этим переменным "
                 + "окружения мост запускают рядом с уже занятым портом");
         }
@@ -71,9 +70,9 @@ public class UnityTcpBridgeTests
         try
         {
             Environment.SetEnvironmentVariable(PortVariable, "18081");
-            UnityTcpBridge.TestPort = 17000;
+            McpBridgeStatus.TestPort = 17000;
 
-            Assert.AreEqual(17000, UnityTcpBridge.ResolvePort(5555),
+            Assert.AreEqual(17000, McpBridgeStatus.ResolvePort(5555),
                 "приоритет: TestPort выше UNITY_MCP_PORT. Иначе переменная окружения "
                 + "машины, на которой идёт прогон, молча уводит тест на чужой порт");
         }
@@ -83,6 +82,6 @@ public class UnityTcpBridgeTests
         }
     }
 
-    private const string PortVariable = "UNITY_MCP_PORT";
+    private const string PortVariable = McpBridgeStatus.PortVariable;
 }
 
