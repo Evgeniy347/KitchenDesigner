@@ -17,8 +17,8 @@ namespace KitchenDesigner.Core
         public const int MinPostCount = 1;
         public const int MaxPostCount = 3;
 
-        public const int SocketCentreAboveFloorMM = 300;
-        public const int SwitchCentreAboveFloorMM = 900;
+        public const int SocketCentreAboveFloorMM = 850;
+        public const int SwitchCentreAboveFloorMM = 850;
 
         public const float RimWidthRatio = 0.14f;
         public const float MinRimWidthMM = 4f;
