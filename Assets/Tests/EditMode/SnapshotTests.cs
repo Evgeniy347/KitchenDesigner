@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.UI;
 
 /// <summary>
 /// Golden-master snapshot tests: каждый тест генерирует JSON сцены/элемента
@@ -28,7 +29,14 @@ public class SnapshotTests
     /// полном прогоне тесты проходили, а с -testFilter SnapshotTests падали 19 из
     /// 21. Полный сброс перед КАЖДЫМ тестом делает эталоны воспроизводимыми в
     /// любом окружении; TearDown возвращает застигнутое состояние, чтобы сами
-    /// снапшоты не ломали соседние наборы.</summary>
+    /// снапшоты не ломали соседние наборы.
+    ///
+    /// Третий кусок того же рода — реестр окон: снимок сериализует блок windows,
+    /// а ProjectWindows это статический список. Окно, пережившее чужой TearDown,
+    /// всплывает здесь как windows:[settings] в сценах, где UI вообще не строят.
+    /// Само окно у SnapshotTests не строится ни одно, поэтому пустой список —
+    /// единственный правильный эталон, и Clear() делает его независимым от
+    /// соседей.</summary>
     [SetUp]
     public void Setup()
     {
@@ -38,6 +46,7 @@ public class SnapshotTests
 
         if (s != null) s.ResetToDefaults();
         ResizeHandleManager.SetMode(ResizeHandleManager.HandleMode.Resize);
+        ProjectWindows.Clear();
         ResetScene();
     }
 
