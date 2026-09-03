@@ -72,7 +72,7 @@ namespace KitchenDesigner.Core
 
             (el => el is SinkElement,
              (factory, source, pos) => factory.CreateSink(source.PartName, pos),
-             null),
+             CopyMaterial),
 
             (el => el is CooktopElement,
              (factory, source, pos) =>
@@ -89,11 +89,11 @@ namespace KitchenDesigner.Core
 
             (el => el is OvenElement,
              (factory, source, pos) => factory.CreateOven(source.PartName, pos),
-             null),
+             CopyMaterial),
 
             (el => el is DishwasherElement,
              (factory, source, pos) => factory.CreateDishwasher(source.PartName, pos),
-             null),
+             CopyMaterial),
 
             (el => el is PillarElement,
              (factory, source, pos) =>
