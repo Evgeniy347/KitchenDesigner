@@ -1371,7 +1371,7 @@ public class McpCommandHandlerTests
     }
 
     [Test]
-    public void GetSettings_CarriesTheProjectSettings_ButNoViewOrPhotoSettings()
+    public void GetSettings_CarriesTheProjectSettings_ButNoViewSettings()
     {
         Assume.That(KitchenSettings.Instance, Is.Not.Null, "нужен Resources/KitchenSettings");
 
@@ -1382,16 +1382,19 @@ public class McpCommandHandlerTests
         Assert.IsNotNull(d["snapEnabled"],
             "положительный контроль: ответ вообще что-то несёт, иначе проверка ниже зеленеет на пустом объекте");
 
+        Assert.IsNotNull(d["photoExposurePct"],
+            "фоторежим агенту ОТДАН намеренно: подобрать свет и экспозицию — это десятки комбинаций, и цикл set_setting → take_screenshot делает это за секунды, тогда как серия кликов по панели невоспроизводима. Решение отменяет прежний запрет и держится этой строкой");
+
         var viewKeys = new List<string>();
         foreach (var prop in d.Properties())
         {
             var n = prop.Name.ToLowerInvariant();
-            if (n.StartsWith("photo") || n.Contains("visible") || n == "windowedmode" || n == "spatialgrid")
+            if (n.Contains("visible") || n == "windowedmode" || n == "spatialgrid")
                 viewKeys.Add(prop.Name);
         }
 
         CollectionAssert.IsEmpty(viewKeys,
-            "настройки ВИДА (стены, объекты, контуры, свет, фоторежим) привязаны к режиму работы человека за панелью и не меняют геометрию. Отдать их агенту значит пригласить его их крутить: " + string.Join(", ", viewKeys));
+            "настройки ВИДА (стены, объекты, контуры, свет) привязаны к режиму работы человека за панелью и не меняют геометрию. Отдать их агенту значит пригласить его их крутить: " + string.Join(", ", viewKeys));
     }
 
     [Test]
@@ -1399,10 +1402,10 @@ public class McpCommandHandlerTests
     {
         Assume.That(KitchenSettings.Instance, Is.Not.Null, "нужен Resources/KitchenSettings");
 
-        var resp = _handler!.Handle(MakeReq("set_setting", new { name = "photo_shadows", value = true }));
+        var resp = _handler!.Handle(MakeReq("set_setting", new { name = "chandelier_sparkle", value = true }));
 
         Assert.AreEqual("error", resp.type,
-            "set_setting знает три ключа и отказывает остальным вслух: молчаливое ok на неизвестную настройку — это успех без действия");
+            "set_setting знает свою таблицу ключей и отказывает остальным вслух: молчаливое ok на неизвестную настройку — это успех без действия");
         StringAssert.Contains("Unknown setting", Newtonsoft.Json.Linq.JObject.FromObject(resp.data!)["message"]!.ToString());
     }
 }

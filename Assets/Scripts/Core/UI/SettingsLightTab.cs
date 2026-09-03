@@ -17,6 +17,13 @@ namespace KitchenDesigner.Core.UI
                 s.PhotoAmbientPct, Percent, v => s.PhotoAmbientPct = v, () => s.PhotoAmbientPct);
             AddPhotoSlider(page, ref y, "Отскок от пола", 0, KitchenSettings.PHOTO_FLOOR_BOUNCE_MAX_PCT,
                 s.PhotoFloorBouncePct, Percent, v => s.PhotoFloorBouncePct = v, () => s.PhotoFloorBouncePct);
+            AddPhotoSlider(page, ref y, "Потолок сверху", 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
+                s.PhotoAmbientSkyPct, Percent, v => s.PhotoAmbientSkyPct = v, () => s.PhotoAmbientSkyPct);
+            AddPhotoSlider(page, ref y, "Стены сбоку", 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
+                s.PhotoAmbientEquatorPct, Percent, v => s.PhotoAmbientEquatorPct = v,
+                () => s.PhotoAmbientEquatorPct);
+            AddPhotoSlider(page, ref y, "Предел отскока", 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
+                s.PhotoBounceMaxPct, Percent, v => s.PhotoBounceMaxPct = v, () => s.PhotoBounceMaxPct);
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddHeader(page, ref y, "Экспозиция и тон");

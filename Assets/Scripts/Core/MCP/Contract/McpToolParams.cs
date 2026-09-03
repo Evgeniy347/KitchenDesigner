@@ -650,11 +650,22 @@ namespace KitchenDesigner.Core.MCP.Contract
             "block_on_violation", "auto_save", "auto_save_interval", "snap_verbose_log",
             "camera_pan_free", "edge_partial_threshold", "mouse_sensitivity",
             "wasd_speed", "arrow_speed",
+            "photo_quality", "photo_shadows", "photo_soft_shadows", "photo_anti_aliasing",
+            "photo_supersampling", "photo_ambient_occlusion", "photo_bloom", "photo_vignette",
+            "photo_ceiling", "photo_ssgi", "photo_lamp_shadows", "photo_hdr",
+            "photo_ambient", "photo_floor_bounce", "photo_ambient_sky", "photo_ambient_equator",
+            "photo_bounce_max", "photo_exposure", "photo_contrast", "photo_saturation",
+            "photo_bloom_strength", "photo_bloom_threshold", "photo_vignette_strength",
+            "photo_sun_shadow_strength", "photo_shadow_distance", "photo_render_scale",
+            "photo_shadowmap", "photo_lights_per_object",
+            "photo_ao_intensity", "photo_ao_radius", "photo_ao_direct", "photo_ao_falloff",
+            "photo_ssgi_strength", "photo_ssgi_radius", "photo_ssgi_samples",
+            "photo_ssgi_resolution", "photo_ssgi_blur",
         })]
         public string name = string.Empty;
-        [McpParam("New on/off value. Send this for the on/off settings (snap_enabled, grid_enabled, block_on_violation, auto_save, snap_verbose_log, camera_pan_free).")]
+        [McpParam("New on/off value. Send this for the on/off settings (snap_enabled, grid_enabled, block_on_violation, auto_save, snap_verbose_log, camera_pan_free, and every photo_* key that names a toggle: photo_shadows, photo_soft_shadows, photo_anti_aliasing, photo_supersampling, photo_ambient_occlusion, photo_bloom, photo_vignette, photo_ceiling, photo_ssgi, photo_lamp_shadows, photo_hdr).")]
         public bool? value;
-        [McpParam("New numeric value: snap_threshold and grid_step in MM, auto_save_interval in seconds, edge_partial_threshold in %, mouse_sensitivity / wasd_speed / arrow_speed as a multiplier. Send this instead of value for those keys.")]
+        [McpParam("New numeric value: snap_threshold and grid_step in MM, auto_save_interval in seconds, edge_partial_threshold in %, mouse_sensitivity / wasd_speed / arrow_speed as a multiplier. Photo mode: photo_quality 0=low 1=medium 2=high 3=custom; photo_ssgi_radius / photo_ao_radius in MM; photo_shadow_distance and photo_ao_falloff in metres; photo_shadowmap in pixels; photo_ssgi_samples and photo_lights_per_object are counts; photo_ssgi_blur in pixels (0 = no denoise); everything else in %. Send this instead of value for those keys.")]
         public float? number;
     }
 

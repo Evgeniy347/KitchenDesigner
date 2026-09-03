@@ -108,7 +108,7 @@ Shader "Hidden/KitchenDesigner/ScreenSpaceGI"
                     wsum += w;
                 }
 
-                if (wsum > 1e-4) indirect /= wsum;
+                indirect /= (half)samples;
 
                 // Заполняем в основном тёмные участки, чтобы яркие поверхности не мылить.
                 half mask = saturate(1.0 - Luma(col.rgb) * 0.8);
@@ -130,6 +130,8 @@ Shader "Hidden/KitchenDesigner/ScreenSpaceGI"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
             #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
 
+            int _SsgiBlurRadius;   // радиус денойза в пикселях, 0 — денойз выключен
+
             bool IsSky(float rawDepth)
             {
             #if UNITY_REVERSED_Z
@@ -144,12 +146,14 @@ Shader "Hidden/KitchenDesigner/ScreenSpaceGI"
                 float2 uv = input.texcoord;
                 half4 center = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_LinearClamp, uv, 0);
 
+                int R = _SsgiBlurRadius;
+                if (R <= 0) return center;
+
                 float rawC = SampleSceneDepth(uv);
                 if (IsSky(rawC)) return center;
                 float eyeC = LinearEyeDepth(rawC, _ZBufferParams);
 
                 float2 texel = 1.0 / _ScreenParams.xy;
-                const int R = 3;               // радиус в пикселях
                 half3 accum = center.rgb;
                 half wsum = 1.0;
 

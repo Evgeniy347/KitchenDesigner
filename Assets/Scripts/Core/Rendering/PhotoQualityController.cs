@@ -28,12 +28,11 @@ namespace KitchenDesigner.Core
         private const string MainLightShadowmapResolutionField = "m_MainLightShadowmapResolution";
         private const string RendererDataListField = "m_RendererDataList";
 
-        private const int HighDensityShadowMapResolution = 4096;
-        private const float ShadowBiasForDenseMap = 0.05f;
-        private const float ShadowNormalBiasForDenseMap = 0.35f;
+        private const string SoftShadowsSupportedField = "m_SoftShadowsSupported";
+        private const string AdditionalLightShadowsSupportedField = "m_AdditionalLightShadowsSupported";
+
         private const int AntiAliasedMsaaSamples = 4;
         private const int PlainMsaaSamples = 1;
-        private const float SupersampledRenderScale = 1.5f;
         private const float PlainRenderScale = 1f;
         private const float PercentToUnit = 0.01f;
         private const float BloomScatter = 0.6f;
@@ -53,13 +52,15 @@ namespace KitchenDesigner.Core
         private static float _prevRenderScale;
         private static float _prevShadowDistance;
         private static int _prevShadowRes = -1;
+        private static bool _prevHdr;
+        private static bool _prevSoftShadowsSupported;
+        private static bool _prevAdditionalLightShadowsSupported;
+        private static int _prevLightsPerObject;
         private static AntialiasingMode _prevCamAA;
         private static AntialiasingQuality _prevCamAAQuality;
         private static bool _prevPostProcessing;
         private static LightShadows _prevSunShadows;
         private static float _prevSunShadowStrength;
-        private static float _prevSunShadowBias;
-        private static float _prevSunNormalBias;
         private static float _prevAmbientIntensity;
         private static AmbientMode _prevAmbientMode;
         private static Color _prevAmbientLight;
@@ -83,6 +84,8 @@ namespace KitchenDesigner.Core
             LightSourceElement.RefreshAll();
             SetRendererFeatureActive(SsaoFeatureTypeName, s.PhotoAmbientOcclusion);
             SetRendererFeatureActive(SsgiFeatureTypeName, s.PhotoSSGI);
+            PhotoRendererFeatures.ConfigureAmbientOcclusion(s);
+            PhotoRendererFeatures.ConfigureScreenSpaceGI(s);
 
             _applied = true;
         }
@@ -97,6 +100,11 @@ namespace KitchenDesigner.Core
                 asset.msaaSampleCount = _prevMsaa;
                 asset.renderScale = _prevRenderScale;
                 asset.shadowDistance = _prevShadowDistance;
+                asset.supportsHDR = _prevHdr;
+                asset.maxAdditionalLightsCount = _prevLightsPerObject;
+                SetPrivateBoolField(asset, SoftShadowsSupportedField, _prevSoftShadowsSupported);
+                SetPrivateBoolField(asset, AdditionalLightShadowsSupportedField,
+                    _prevAdditionalLightShadowsSupported);
                 if (_prevShadowRes > 0)
                     SetPrivateIntField(asset, MainLightShadowmapResolutionField, _prevShadowRes);
             }
@@ -118,8 +126,6 @@ namespace KitchenDesigner.Core
             {
                 sun.shadows = _prevSunShadows;
                 sun.shadowStrength = _prevSunShadowStrength;
-                sun.shadowBias = _prevSunShadowBias;
-                sun.shadowNormalBias = _prevSunNormalBias;
             }
 
             if (_ambientSnapped)
@@ -154,14 +160,24 @@ namespace KitchenDesigner.Core
             _prevMsaa = asset.msaaSampleCount;
             _prevRenderScale = asset.renderScale;
             _prevShadowDistance = asset.shadowDistance;
+            _prevHdr = asset.supportsHDR;
+            _prevSoftShadowsSupported = asset.supportsSoftShadows;
+            _prevAdditionalLightShadowsSupported = asset.supportsAdditionalLightShadows;
+            _prevLightsPerObject = asset.maxAdditionalLightsCount;
 
             asset.msaaSampleCount = s.PhotoAntiAliasing ? AntiAliasedMsaaSamples : PlainMsaaSamples;
-            asset.renderScale = s.PhotoSupersampling ? SupersampledRenderScale : PlainRenderScale;
+            asset.renderScale = s.PhotoSupersampling
+                ? s.PhotoRenderScalePct * PercentToUnit
+                : PlainRenderScale;
             asset.shadowDistance = s.PhotoShadowDistanceM;
+            asset.supportsHDR = s.PhotoHdr;
+            asset.maxAdditionalLightsCount = s.PhotoLightsPerObject;
+            SetPrivateBoolField(asset, SoftShadowsSupportedField, s.PhotoShadows && s.PhotoSoftShadows);
+            SetPrivateBoolField(asset, AdditionalLightShadowsSupportedField, s.PhotoLampShadows);
 
             _prevShadowRes = GetPrivateIntField(asset, MainLightShadowmapResolutionField);
             if (s.PhotoShadows)
-                SetPrivateIntField(asset, MainLightShadowmapResolutionField, HighDensityShadowMapResolution);
+                SetPrivateIntField(asset, MainLightShadowmapResolutionField, s.PhotoShadowMapPx);
         }
 
         internal static LightShadows SunShadowsFor(KitchenSettings s) =>
@@ -175,13 +191,9 @@ namespace KitchenDesigner.Core
             if (sun == null) return;
             _prevSunShadows = sun.shadows;
             _prevSunShadowStrength = sun.shadowStrength;
-            _prevSunShadowBias = sun.shadowBias;
-            _prevSunNormalBias = sun.shadowNormalBias;
 
             sun.shadows = SunShadowsFor(s);
             sun.shadowStrength = s.PhotoSunShadowStrengthPct * PercentToUnit;
-            sun.shadowBias = ShadowBiasForDenseMap;
-            sun.shadowNormalBias = ShadowNormalBiasForDenseMap;
         }
 
         private static void ApplyCamera(KitchenSettings s)
@@ -205,10 +217,10 @@ namespace KitchenDesigner.Core
         internal static AmbientGradient AmbientFor(KitchenSettings s)
         {
             float level = s.PhotoAmbientPct * PercentToUnit;
-            Color bounce = SampleFloorBounce() * (s.PhotoFloorBouncePct * PercentToUnit);
+            Color bounce = SampleFloorBounce(s) * (s.PhotoFloorBouncePct * PercentToUnit);
             return new AmbientGradient(
-                AmbientSkyBase * level,
-                AmbientEquatorBase * level,
+                AmbientSkyBase * (level * s.PhotoAmbientSkyPct * PercentToUnit),
+                AmbientEquatorBase * (level * s.PhotoAmbientEquatorPct * PercentToUnit),
                 bounce * level);
         }
 
@@ -229,26 +241,33 @@ namespace KitchenDesigner.Core
             RenderSettings.ambientGroundColor = gradient.Ground;
         }
 
-        internal static Color DimmedBounceOf(Color floorAlbedo) => new Color(
-            Mathf.Clamp(floorAlbedo.r * BounceAlbedoFraction, 0f, MaxBounce.r),
-            Mathf.Clamp(floorAlbedo.g * BounceAlbedoFraction, 0f, MaxBounce.g),
-            Mathf.Clamp(floorAlbedo.b * BounceAlbedoFraction, 0f, MaxBounce.b));
+        internal static Color DimmedBounceOf(Color floorAlbedo) => DimmedBounceOf(floorAlbedo, 1f);
 
-        internal static Color SampleFloorBounce()
+        internal static Color DimmedBounceOf(Color floorAlbedo, float ceilingScale) => new Color(
+            Mathf.Clamp(floorAlbedo.r * BounceAlbedoFraction, 0f, MaxBounce.r * ceilingScale),
+            Mathf.Clamp(floorAlbedo.g * BounceAlbedoFraction, 0f, MaxBounce.g * ceilingScale),
+            Mathf.Clamp(floorAlbedo.b * BounceAlbedoFraction, 0f, MaxBounce.b * ceilingScale));
+
+        internal static Color SampleFloorBounce() => SampleFloorBounce(KitchenSettings.Instance);
+
+        internal static Color SampleFloorBounce(KitchenSettings? s)
         {
+            float ceilingScale = s == null ? 1f : s.PhotoBounceMaxPct * PercentToUnit;
             var floor = GameObject.FindWithTag("Floor");
             var mr = floor != null ? floor.GetComponent<MeshRenderer>() : null;
             var mat = mr != null ? mr.sharedMaterial : null;
-            if (mat == null) return NeutralWarmBounce;
+            if (mat == null) return NeutralWarmBounce * ceilingScale;
             try
             {
-                if (mat.HasProperty("_BaseColor")) return DimmedBounceOf(mat.GetColor("_BaseColor"));
-                if (mat.HasProperty("_Color")) return DimmedBounceOf(mat.GetColor("_Color"));
-                return NeutralWarmBounce;
+                if (mat.HasProperty("_BaseColor"))
+                    return DimmedBounceOf(mat.GetColor("_BaseColor"), ceilingScale);
+                if (mat.HasProperty("_Color"))
+                    return DimmedBounceOf(mat.GetColor("_Color"), ceilingScale);
+                return NeutralWarmBounce * ceilingScale;
             }
             catch (Exception)
             {
-                return NeutralWarmBounce;
+                return NeutralWarmBounce * ceilingScale;
             }
         }
 
@@ -322,6 +341,16 @@ namespace KitchenDesigner.Core
             }
             catch (Exception) { }
             return -1;
+        }
+
+        private static void SetPrivateBoolField(object obj, string field, bool value)
+        {
+            try
+            {
+                var f = obj.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
+                f?.SetValue(obj, value);
+            }
+            catch (Exception) { }
         }
 
         private static void SetPrivateIntField(object obj, string field, int value)

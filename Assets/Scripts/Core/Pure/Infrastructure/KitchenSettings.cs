@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class KitchenSettings
+    public partial class KitchenSettings
     {
         private static KitchenSettings? _instance;
         public static KitchenSettings Instance => _instance ??= new KitchenSettings();
@@ -328,11 +328,12 @@ namespace KitchenDesigner.Core
             _photoSunShadowStrengthPct = PHOTO_SUN_SHADOW_DEFAULT_PCT;
             _photoShadowDistanceM = PHOTO_SHADOW_DISTANCE_DEFAULT_M;
             _photoLampShadows = true;
+            ResetPhotoTuning();
         }
 
         public KitchenSettingsData ToData()
         {
-            return new KitchenSettingsData
+            var data = new KitchenSettingsData
             {
                 gridStep = _gridStep,
                 gridEnabled = _gridEnabled,
@@ -380,6 +381,8 @@ namespace KitchenDesigner.Core
                 photoShadowDistanceM = _photoShadowDistanceM,
                 photoLampShadows = _photoLampShadows
             };
+            CapturePhotoTuning(data);
+            return data;
         }
 
         public void ApplyFrom(KitchenSettingsData? data)
@@ -421,6 +424,7 @@ namespace KitchenDesigner.Core
             PhotoSunShadowStrengthPct = data.photoSunShadowStrengthPct;
             PhotoShadowDistanceM = data.photoShadowDistanceM;
             _photoLampShadows = data.photoLampShadows;
+            ApplyPhotoTuning(data);
         }
 
         private void ApplyViewPresets(KitchenSettingsData data)

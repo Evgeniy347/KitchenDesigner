@@ -97,6 +97,8 @@ namespace KitchenDesigner.Core.MCP
                 key.WriteFlag!(p.value.Value);
             }
 
+            PhotoMode.RefreshIfActive();
+
             var stored = key.Read();
             Debug.Log($"[MCP] Setting '{p.name}' = {stored}");
             return McpResponse.Result(req.id, new { ok = true, name = p.name, value = stored });

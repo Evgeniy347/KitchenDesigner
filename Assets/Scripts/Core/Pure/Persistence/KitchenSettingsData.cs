@@ -54,5 +54,22 @@ namespace KitchenDesigner.Core
         public int photoSunShadowStrengthPct = KitchenSettings.PHOTO_SUN_SHADOW_DEFAULT_PCT;
         public int photoShadowDistanceM = KitchenSettings.PHOTO_SHADOW_DISTANCE_DEFAULT_M;
         public bool photoLampShadows = true;
+
+        public bool photoHdr = true;
+        public int photoRenderScalePct = KitchenSettings.PHOTO_RENDER_SCALE_DEFAULT_PCT;
+        public int photoShadowMapPx = KitchenSettings.PHOTO_SHADOWMAP_DEFAULT_PX;
+        public int photoLightsPerObject = KitchenSettings.PHOTO_LIGHTS_PER_OBJECT_DEFAULT;
+        public int photoAmbientSkyPct = KitchenSettings.PHOTO_AMBIENT_SKY_DEFAULT_PCT;
+        public int photoAmbientEquatorPct = KitchenSettings.PHOTO_AMBIENT_EQUATOR_DEFAULT_PCT;
+        public int photoBounceMaxPct = KitchenSettings.PHOTO_BOUNCE_MAX_DEFAULT_PCT;
+        public int photoAoIntensityPct = KitchenSettings.PHOTO_AO_INTENSITY_DEFAULT_PCT;
+        public int photoAoRadiusMM = KitchenSettings.PHOTO_AO_RADIUS_DEFAULT_MM;
+        public int photoAoDirectPct = KitchenSettings.PHOTO_AO_DIRECT_DEFAULT_PCT;
+        public int photoAoFalloffM = KitchenSettings.PHOTO_AO_FALLOFF_DEFAULT_M;
+        public int photoSsgiStrengthPct = KitchenSettings.PHOTO_SSGI_STRENGTH_DEFAULT_PCT;
+        public int photoSsgiRadiusMM = KitchenSettings.PHOTO_SSGI_RADIUS_DEFAULT_MM;
+        public int photoSsgiSamples = KitchenSettings.PHOTO_SSGI_SAMPLES_DEFAULT;
+        public int photoSsgiResolutionPct = KitchenSettings.PHOTO_SSGI_RESOLUTION_DEFAULT_PCT;
+        public int photoSsgiBlurPx = KitchenSettings.PHOTO_SSGI_BLUR_DEFAULT_PX;
     }
 }

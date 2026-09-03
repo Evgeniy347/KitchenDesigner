@@ -36,12 +36,6 @@ public class McpSettingsParityTests
     /// <see cref="EveryExemption_StillNamesALiveSetting_AndAStillMissingOne"/>.</summary>
     private static readonly (string property, string why)[] PanelOnly =
     {
-        ("Photo*",
-         "фоторежим целиком: качество, тени, сглаживание, экспозиция, свечение, виньетка. "
-         + "Это настройки КАДРА, а не проекта — они не меняют ни одной детали и ни одного "
-         + "размера, и агенту нечего ими добиваться. Решение записано в описании самого "
-         + "инструмента set_setting и продублировано тестом "
-         + "McpCommandHandlerTests.GetSettings_CarriesTheProjectSettings_ButNoViewOrPhotoSettings"),
         ("SpatialGrid",
          "пространственный индекс — переключатель для отладки производительности, а не "
          + "настройка проекта. Держится вне ответа тем же тестом GetSettings_Carries...: "
@@ -125,8 +119,12 @@ public class McpSettingsParityTests
 
     /// <summary>Какое свойство меняет каждый ключ — по факту, а не по имени.
     /// Пробное значение подбирается так, чтобы гарантированно отличаться от
-    /// текущего: у флага это его отрицание, у числа — сдвиг, переживающий любой
-    /// клампинг сеттера.</summary>
+    /// текущего: у флага это его отрицание, у числа — сдвиг вверх, а если он
+    /// НИЧЕГО не изменил, то сдвиг вниз. Судить по коду ответа нельзя: настройка,
+    /// стоящая на своём максимуме, принимает +7 с ответом «ok» и остаётся на месте,
+    /// и раньше такой ключ объявлялся отсутствующим — на этом ложно покраснели
+    /// photo_lights_per_object (1..8, значение 8) и photo_sun_shadow_strength
+    /// (0..100, значение 100).</summary>
     private HashSet<string> McpWrites()
     {
         var written = new HashSet<string>(StringComparer.Ordinal);
@@ -139,8 +137,9 @@ public class McpSettingsParityTests
             if (key.IsNumber)
             {
                 var current = Convert.ToSingle(key.Read());
-                ok = SetSetting(key.Wire, current + 7f, numeric: true)
-                     || SetSetting(key.Wire, current - 7f, numeric: true);
+                ok = SetSetting(key.Wire, current + 7f, numeric: true);
+                if (!Changed(before, Snapshot()).Any())
+                    ok = SetSetting(key.Wire, current - 7f, numeric: true) && ok;
             }
             else
             {
