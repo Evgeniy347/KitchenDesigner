@@ -168,8 +168,8 @@ namespace KitchenDesigner.Core
                  var made = copy.GetComponent<ToiletElement>();
                  if (made != null)
                  {
-                     made.TabletopMaterialId = src.TabletopMaterialId;
-                     made.LegsMaterialId = src.LegsMaterialId;
+                     made.PrimaryMaterialId = src.PrimaryMaterialId;
+                     made.SecondaryMaterialId = src.SecondaryMaterialId;
                  }
                  CopyMaterial(source, copy);
              }),
@@ -184,8 +184,8 @@ namespace KitchenDesigner.Core
                  var made = copy.GetComponent<WallHungToiletElement>();
                  if (made != null)
                  {
-                     made.TabletopMaterialId = src.TabletopMaterialId;
-                     made.LegsMaterialId = src.LegsMaterialId;
+                     made.PrimaryMaterialId = src.PrimaryMaterialId;
+                     made.SecondaryMaterialId = src.SecondaryMaterialId;
                  }
                  CopyMaterial(source, copy);
              }),
@@ -307,8 +307,8 @@ namespace KitchenDesigner.Core
             if (source is IHasTwoDecorSlots src
                 && copy.GetComponent<KitchenElement>() is IHasTwoDecorSlots made)
             {
-                made.TabletopMaterialId = src.TabletopMaterialId;
-                made.LegsMaterialId = src.LegsMaterialId;
+                made.PrimaryMaterialId = src.PrimaryMaterialId;
+                made.SecondaryMaterialId = src.SecondaryMaterialId;
             }
             CopyMaterial(source, copy);
         }

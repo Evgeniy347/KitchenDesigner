@@ -80,14 +80,14 @@ namespace KitchenDesigner.Core
         }
 
         [NotUndoable(TabletopDecor.TabletopSlotReason)]
-        public string TabletopMaterialId
+        public string PrimaryMaterialId
         {
             get => _ceramicMaterialId;
             set { _ceramicMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
         [NotUndoable(TabletopDecor.LegsSlotReason)]
-        public string LegsMaterialId
+        public string SecondaryMaterialId
         {
             get => _plateMaterialId;
             set { _plateMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
@@ -96,13 +96,13 @@ namespace KitchenDesigner.Core
         [NotUndoable(TabletopDecor.MaterialIdAliasReason)]
         public override string MaterialId
         {
-            get => TabletopMaterialId;
-            set => TabletopMaterialId = value;
+            get => PrimaryMaterialId;
+            set => PrimaryMaterialId = value;
         }
 
-        public string TabletopSlotLabel => SanitaryDecor.CeramicLabel;
+        public string PrimarySlotLabel => SanitaryDecor.CeramicLabel;
 
-        public string LegsSlotLabel => SanitaryDecor.PlateLabel;
+        public string SecondarySlotLabel => SanitaryDecor.PlateLabel;
 
         private FurniturePartSet Ceramic => _ceramic ??= new FurniturePartSet(transform);
 
@@ -145,10 +145,10 @@ namespace KitchenDesigner.Core
         public void SeatOnFloor(IReadOnlyList<KitchenElement> scene) =>
             FloorSeating.Seat(this, scene);
 
-        public void SetTabletopMaterial(Material material) => Ceramic.SetMaterial(
+        public void SetPrimaryMaterial(Material material) => Ceramic.SetMaterial(
             SanitaryDecor.ChosenOrFactory(_ceramicMaterialId, material, SanitaryMaterials.Ceramic));
 
-        public void SetLegsMaterial(Material material) => Chrome.SetMaterial(
+        public void SetSecondaryMaterial(Material material) => Chrome.SetMaterial(
             SanitaryDecor.ChosenOrFactory(_plateMaterialId, material, SanitaryMaterials.Chrome));
 
         public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);

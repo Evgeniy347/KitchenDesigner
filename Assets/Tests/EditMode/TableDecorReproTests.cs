@@ -84,11 +84,11 @@ public class TableDecorReproTests
 
         MaterialManager.ApplyOwnDecor(table);
 
-        Assert.AreEqual("oak", table.TabletopMaterialId,
+        Assert.AreEqual("oak", table.PrimaryMaterialId,
             "ApplyOwnDecor зовётся подсветкой после КАЖДОЙ правки, ножек в том числе; "
             + "читая базовый MaterialId, он возвращал столешнице устаревший декор — "
             + "симптом «меняешь ножки, меняется столешница»");
-        Assert.AreEqual("wenge", table.LegsMaterialId,
+        Assert.AreEqual("wenge", table.SecondaryMaterialId,
             "перекраска столешницы не имеет права трогать ножки");
     }
 
@@ -101,8 +101,8 @@ public class TableDecorReproTests
         MaterialManager.ApplySlot(table, MaterialSlot.Tabletop, MaterialCatalog.Get("oak"));
         MaterialManager.ApplySlot(table, MaterialSlot.Legs, MaterialCatalog.Get("wenge"));
 
-        Assert.AreEqual("oak", table.TabletopMaterialId);
-        Assert.AreEqual("wenge", table.LegsMaterialId);
+        Assert.AreEqual("oak", table.PrimaryMaterialId);
+        Assert.AreEqual("wenge", table.SecondaryMaterialId);
         Assert.AreEqual("oak", MaterialManager.MaterialIdOf(table, MaterialSlot.Tabletop));
         Assert.AreEqual("wenge", MaterialManager.MaterialIdOf(table, MaterialSlot.Legs));
     }

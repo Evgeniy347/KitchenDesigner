@@ -407,12 +407,12 @@ public class EyedropperTests
 
     private class TabletopStub : KitchenElement, IHasTwoDecorSlots
     {
-        public string TabletopMaterialId { get; set; } = string.Empty;
-        public string LegsMaterialId { get; set; } = string.Empty;
-        public void SetTabletopMaterial(Material material) { }
-        public void SetLegsMaterial(Material material) { }
-        public string TabletopSlotLabel => "Столешница";
-        public string LegsSlotLabel => "Ножки";
+        public string PrimaryMaterialId { get; set; } = string.Empty;
+        public string SecondaryMaterialId { get; set; } = string.Empty;
+        public void SetPrimaryMaterial(Material material) { }
+        public void SetSecondaryMaterial(Material material) { }
+        public string PrimarySlotLabel => "Столешница";
+        public string SecondarySlotLabel => "Ножки";
     }
 
     [Test]

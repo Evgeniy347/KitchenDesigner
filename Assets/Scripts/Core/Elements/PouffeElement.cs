@@ -61,14 +61,14 @@ namespace KitchenDesigner.Core
         }
 
         [NotUndoable(TabletopDecor.TabletopSlotReason)]
-        public string TabletopMaterialId
+        public string PrimaryMaterialId
         {
             get => _bodyMaterialId;
             set { _bodyMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
         [NotUndoable(TabletopDecor.LegsSlotReason)]
-        public string LegsMaterialId
+        public string SecondaryMaterialId
         {
             get => _seatMaterialId;
             set { _seatMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
@@ -77,8 +77,8 @@ namespace KitchenDesigner.Core
         [NotUndoable(TabletopDecor.MaterialIdAliasReason)]
         public override string MaterialId
         {
-            get => TabletopMaterialId;
-            set => TabletopMaterialId = value;
+            get => PrimaryMaterialId;
+            set => PrimaryMaterialId = value;
         }
 
         private TabletopSurface Body => _body ??= new TabletopSurface(gameObject, AdoptOwnedMesh);
@@ -110,13 +110,13 @@ namespace KitchenDesigner.Core
                 PouffeLayout.BodyCentreY(dims.y, _seatThicknessMM));
         }
 
-        public void SetTabletopMaterial(Material material) => Body.SetMaterial(material);
+        public void SetPrimaryMaterial(Material material) => Body.SetMaterial(material);
 
-        public void SetLegsMaterial(Material material) => Seat.SetMaterial(material);
+        public void SetSecondaryMaterial(Material material) => Seat.SetMaterial(material);
 
-        public string TabletopSlotLabel => TabletopDecor.UpholsteryLabel;
+        public string PrimarySlotLabel => TabletopDecor.UpholsteryLabel;
 
-        public string LegsSlotLabel => TabletopDecor.SeatLabel;
+        public string SecondarySlotLabel => TabletopDecor.SeatLabel;
 
         public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
 

@@ -54,10 +54,10 @@ namespace KitchenDesigner.Core.UI
 
             if (!(element is IHasTwoDecorSlots tabletop)) return;
 
-            Show(_tabletop, tabletop.TabletopMaterialId);
-            Show(_legs, tabletop.LegsMaterialId);
-            Label(_tabletopLabel, tabletop.TabletopSlotLabel);
-            Label(_legsLabel, tabletop.LegsSlotLabel);
+            Show(_tabletop, tabletop.PrimaryMaterialId);
+            Show(_legs, tabletop.SecondaryMaterialId);
+            Label(_tabletopLabel, tabletop.PrimarySlotLabel);
+            Label(_legsLabel, tabletop.SecondarySlotLabel);
         }
 
         private static void Label(TMP_Text? label, string text)
@@ -72,7 +72,7 @@ namespace KitchenDesigner.Core.UI
             if (_legs.value < 0 || _legs.value >= all.Count) return;
             var def = all[_legs.value];
 
-            tabletop.LegsMaterialId = def.id;
+            tabletop.SecondaryMaterialId = def.id;
             MaterialManager.ApplyLegs(tabletop, def);
         }
 

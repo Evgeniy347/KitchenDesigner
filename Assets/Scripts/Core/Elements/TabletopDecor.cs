@@ -25,7 +25,7 @@ namespace KitchenDesigner.Core
         public const string MattressLabel = "Матрас";
 
         public const string MaterialIdAliasReason =
-            "псевдоним TabletopMaterialId — см. его причину";
+            "псевдоним PrimaryMaterialId — см. его причину";
 
         public static string SlotIdOrDefault(string? materialId)
             => materialId ?? MaterialCatalog.DefaultId;
@@ -38,19 +38,19 @@ namespace KitchenDesigner.Core
             if (topDef != null)
             {
                 var mat = MaterialManager.GetSharedMaterial(topDef);
-                if (mat != null) target.SetTabletopMaterial(mat);
+                if (mat != null) target.SetPrimaryMaterial(mat);
             }
             if (legsDef != null)
             {
                 var mat = MaterialManager.GetSharedMaterial(legsDef);
-                if (mat != null) target.SetLegsMaterial(mat);
+                if (mat != null) target.SetSecondaryMaterial(mat);
             }
         }
 
         public static void SetBothSlots(IHasTwoDecorSlots target, Material material)
         {
-            target.SetTabletopMaterial(material);
-            target.SetLegsMaterial(material);
+            target.SetPrimaryMaterial(material);
+            target.SetSecondaryMaterial(material);
         }
     }
 }

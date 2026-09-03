@@ -259,7 +259,7 @@ public class ElementDuplicatorTests
 
     /// <summary>Репро дефекта: обычный стол при дублировании терял отступ ножек и
     /// декор ножек. Его ветка реестра отдавала только CopyMaterial, а MaterialId у
-    /// TableElement — всего лишь псевдоним TabletopMaterialId, поэтому переживала
+    /// TableElement — всего лишь псевдоним PrimaryMaterialId, поэтому переживала
     /// копирование одна столешница: отступ возвращался к заводскому, а ножки
     /// перекрашивались в цвет столешницы. RadiusTableElement копировал оба поля с
     /// самого начала — два родственных типа расходились в поведении.</summary>
@@ -275,18 +275,18 @@ public class ElementDuplicatorTests
 
         var source = (TableElement)Made(ElementFactory.CreateTable(dims, "Table", Vector3.zero));
         source.LegInsetMM = 47;
-        source.TabletopMaterialId = "decor-top";
-        source.LegsMaterialId = "decor-legs";
+        source.PrimaryMaterialId = "decor-top";
+        source.SecondaryMaterialId = "decor-legs";
 
         var copy = ElementFactory.Duplicate(source).GetComponent<TableElement>();
 
         Assert.AreEqual(47, copy.LegInsetMM,
             "отступ ножек обязан пережить копирование: без него копия молча встаёт с "
             + "заводскими ножками, хотя у радиусного стола это работало всегда");
-        Assert.AreEqual("decor-legs", copy.LegsMaterialId,
+        Assert.AreEqual("decor-legs", copy.SecondaryMaterialId,
             "слот ножек — отдельный декор: без него копия красит ножки в цвет столешницы, "
-            + "потому что MaterialId у стола лишь псевдоним TabletopMaterialId");
-        Assert.AreEqual("decor-top", copy.TabletopMaterialId,
+            + "потому что MaterialId у стола лишь псевдоним PrimaryMaterialId");
+        Assert.AreEqual("decor-top", copy.PrimaryMaterialId,
             "слот столешницы не должен пострадать от переноса слота ножек");
     }
 
@@ -377,17 +377,17 @@ public class ElementDuplicatorTests
         {
             var slots = (IHasTwoDecorSlots)source;
             var typeName = source.GetType().Name;
-            slots.TabletopMaterialId = "top-" + typeName;
-            slots.LegsMaterialId = "legs-" + typeName;
+            slots.PrimaryMaterialId = "top-" + typeName;
+            slots.SecondaryMaterialId = "legs-" + typeName;
 
             var copy = (IHasTwoDecorSlots)ElementFactory.Duplicate(source).GetComponent<KitchenElement>();
 
-            if (copy.TabletopMaterialId != slots.TabletopMaterialId)
-                lost.Add(typeName + ".TabletopMaterialId = " + copy.TabletopMaterialId
-                    + " (ожидался " + slots.TabletopMaterialId + ")");
-            if (copy.LegsMaterialId != slots.LegsMaterialId)
-                lost.Add(typeName + ".LegsMaterialId = " + copy.LegsMaterialId
-                    + " (ожидался " + slots.LegsMaterialId + ")");
+            if (copy.PrimaryMaterialId != slots.PrimaryMaterialId)
+                lost.Add(typeName + ".PrimaryMaterialId = " + copy.PrimaryMaterialId
+                    + " (ожидался " + slots.PrimaryMaterialId + ")");
+            if (copy.SecondaryMaterialId != slots.SecondaryMaterialId)
+                lost.Add(typeName + ".SecondaryMaterialId = " + copy.SecondaryMaterialId
+                    + " (ожидался " + slots.SecondaryMaterialId + ")");
         }
 
         Assert.IsEmpty(lost,

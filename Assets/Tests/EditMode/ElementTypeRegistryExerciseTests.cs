@@ -13,7 +13,7 @@ using KitchenDesigner.Core.Bulk;
 /// ElementTypeCompletenessTests читает исходники и утверждает, что тип НАЗВАН в
 /// каждом реестре. Этого мало, и обычный стол это доказал: он был назван в реестре
 /// дублирования, сторож месяцами зеленел, а сама ветка отдавала не то — копия
-/// теряла LegsMaterialId и LegInsetMM. «Тип зарегистрирован» и «регистрация делает
+/// теряла SecondaryMaterialId и LegInsetMM. «Тип зарегистрирован» и «регистрация делает
 /// то, что обещает» — разные утверждения, и греп про второе не знает ничего.
 ///
 /// Здесь проверяется второе: каждый тип реально создаётся фабрикой, реально едет
@@ -184,16 +184,16 @@ public class ElementTypeRegistryExerciseTests
             var slots = (IHasTwoDecorSlots)source;
             MaterialManager.ApplyTabletop(slots, MaterialCatalog.Get(TopDecorId));
             MaterialManager.ApplyLegs(slots, MaterialCatalog.Get(LegsDecorId));
-            Assert.AreEqual(TopDecorId, slots.TabletopMaterialId,
+            Assert.AreEqual(TopDecorId, slots.PrimaryMaterialId,
                 "предусловие: декор столешницы вообще назначился");
-            Assert.AreEqual(LegsDecorId, slots.LegsMaterialId,
+            Assert.AreEqual(LegsDecorId, slots.SecondaryMaterialId,
                 "предусловие: декор ножек вообще назначился");
 
             var copy = (IHasTwoDecorSlots)RestoreThroughFile(source);
-            if (copy.TabletopMaterialId != TopDecorId)
-                lost.Add(type.Name + ".TabletopMaterialId = " + copy.TabletopMaterialId);
-            if (copy.LegsMaterialId != LegsDecorId)
-                lost.Add(type.Name + ".LegsMaterialId = " + copy.LegsMaterialId);
+            if (copy.PrimaryMaterialId != TopDecorId)
+                lost.Add(type.Name + ".PrimaryMaterialId = " + copy.PrimaryMaterialId);
+            if (copy.SecondaryMaterialId != LegsDecorId)
+                lost.Add(type.Name + ".SecondaryMaterialId = " + copy.SecondaryMaterialId);
         }
 
         Assert.IsEmpty(lost,

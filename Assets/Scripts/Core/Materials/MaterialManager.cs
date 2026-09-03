@@ -133,9 +133,9 @@ namespace KitchenDesigner.Core
             switch (slot)
             {
                 case MaterialSlot.Tabletop:
-                    return element is IHasTwoDecorSlots top ? top.TabletopMaterialId : element.MaterialId;
+                    return element is IHasTwoDecorSlots top ? top.PrimaryMaterialId : element.MaterialId;
                 case MaterialSlot.Legs:
-                    return element is IHasTwoDecorSlots legs ? legs.LegsMaterialId : element.MaterialId;
+                    return element is IHasTwoDecorSlots legs ? legs.SecondaryMaterialId : element.MaterialId;
                 default:
                     return element.MaterialId;
             }
@@ -144,18 +144,18 @@ namespace KitchenDesigner.Core
         public static void ApplyTabletop(IHasTwoDecorSlots tabletop, MaterialDef def)
         {
             if (tabletop == null || def == null) return;
-            tabletop.TabletopMaterialId = def.id;
+            tabletop.PrimaryMaterialId = def.id;
             var mat = GetSharedMaterial(def);
-            if (mat != null) tabletop.SetTabletopMaterial(mat);
+            if (mat != null) tabletop.SetPrimaryMaterial(mat);
             if (tabletop is KitchenElement element) RefreshTiling(element, def);
         }
 
         public static void ApplyLegs(IHasTwoDecorSlots tabletop, MaterialDef def)
         {
             if (tabletop == null || def == null) return;
-            tabletop.LegsMaterialId = def.id;
+            tabletop.SecondaryMaterialId = def.id;
             var mat = GetSharedMaterial(def);
-            if (mat != null) tabletop.SetLegsMaterial(mat);
+            if (mat != null) tabletop.SetSecondaryMaterial(mat);
         }
 
         public static bool HasCustomDecor(KitchenElement element)
@@ -176,7 +176,7 @@ namespace KitchenDesigner.Core
 
             if (element is IHasTwoDecorSlots tabletop)
             {
-                tabletop.SetTabletopMaterial(mat);
+                tabletop.SetPrimaryMaterial(mat);
                 RefreshTiling(element, def);
                 return;
             }

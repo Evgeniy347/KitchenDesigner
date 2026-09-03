@@ -380,11 +380,11 @@ public class MaterialPreviewTests
         _ctx!.Open(table);
 
         Preview(legs: true, id: "oak");
-        Assert.AreEqual("oak", table.LegsMaterialId, "BUG: наведение на «Ножки» ничего не показало");
-        Assert.AreEqual("white", table.TabletopMaterialId, "столешницу трогать нельзя");
+        Assert.AreEqual("oak", table.SecondaryMaterialId, "BUG: наведение на «Ножки» ничего не показало");
+        Assert.AreEqual("white", table.PrimaryMaterialId, "столешницу трогать нельзя");
 
         EndPreview();
-        Assert.AreEqual("white", table.LegsMaterialId, "BUG: декор ножек не вернулся");
+        Assert.AreEqual("white", table.SecondaryMaterialId, "BUG: декор ножек не вернулся");
     }
 
     [Test]
@@ -401,10 +401,10 @@ public class MaterialPreviewTests
 
         Choose(legs: false, id: "oak");
 
-        Assert.AreEqual("oak", table.TabletopMaterialId,
+        Assert.AreEqual("oak", table.PrimaryMaterialId,
             "у стола строка «Текстура» скрыта, а её список правит СТОЛЕШНИЦУ: базовый слот "
             + "у стола ничего не красит, и выбор ушёл бы в никуда");
-        Assert.AreEqual("white", table.LegsMaterialId, "ножки этот список не трогает");
+        Assert.AreEqual("white", table.SecondaryMaterialId, "ножки этот список не трогает");
     }
 
     [Test]

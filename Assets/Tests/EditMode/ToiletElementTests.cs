@@ -175,16 +175,16 @@ public class ToiletElementTests
     public void Duplicating_ACompactToilet_KeepsItsTypeSeatHeightAndBothDecorSlots()
     {
         var source = Toilet(455);
-        source.TabletopMaterialId = "oak";
-        source.LegsMaterialId = "concrete";
+        source.PrimaryMaterialId = "oak";
+        source.SecondaryMaterialId = "concrete";
 
         var copy = Add<ToiletElement>(ElementDuplicators.Copy(
             ElementFactory.Instance, source, new Vector3(1f, 0.395f, 0f)));
 
         Assert.IsNotNull(copy, "копия унитаза обязана остаться унитазом, а не выйти доской");
         Assert.AreEqual(455, copy.SeatHeightMM, "высота чаши обязана доехать до копии");
-        Assert.AreEqual("oak", copy.TabletopMaterialId, "керамика обязана доехать");
-        Assert.AreEqual("concrete", copy.LegsMaterialId,
+        Assert.AreEqual("oak", copy.PrimaryMaterialId, "керамика обязана доехать");
+        Assert.AreEqual("concrete", copy.SecondaryMaterialId,
             "и второй слот тоже: именно его теряла ветка дублирования стола");
     }
 

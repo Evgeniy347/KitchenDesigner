@@ -236,9 +236,9 @@ public class PouffeElementTests
     {
         var pouffe = DefaultPouffe();
 
-        Assert.AreEqual("Обивка", pouffe.TabletopSlotLabel,
+        Assert.AreEqual("Обивка", pouffe.PrimarySlotLabel,
             "у пуфика нет столешницы — нижний объём это обивка");
-        Assert.AreEqual("Сиденье", pouffe.LegsSlotLabel,
+        Assert.AreEqual("Сиденье", pouffe.SecondarySlotLabel,
             "и нет ножек: второй слот — сидушка. Подписи «Столешница»/«Ножки» верны "
             + "только для стола и врут для всей мягкой мебели");
     }
@@ -248,11 +248,11 @@ public class PouffeElementTests
     {
         var pouffe = DefaultPouffe();
 
-        pouffe.TabletopMaterialId = "oak";
-        pouffe.LegsMaterialId = "velvet";
+        pouffe.PrimaryMaterialId = "oak";
+        pouffe.SecondaryMaterialId = "velvet";
 
-        Assert.AreEqual("oak", pouffe.TabletopMaterialId, "обивка помнит свой декор");
-        Assert.AreEqual("velvet", pouffe.LegsMaterialId,
+        Assert.AreEqual("oak", pouffe.PrimaryMaterialId, "обивка помнит свой декор");
+        Assert.AreEqual("velvet", pouffe.SecondaryMaterialId,
             "а сидушка — свой: один общий id означал бы, что второй слот в меню ничего "
             + "не делает");
         Assert.AreEqual("oak", pouffe.MaterialId,
@@ -265,9 +265,9 @@ public class PouffeElementTests
     {
         var pouffe = DefaultPouffe();
 
-        pouffe.TabletopMaterialId = null!;
+        pouffe.PrimaryMaterialId = null!;
 
-        Assert.AreEqual(MaterialCatalog.DefaultId, pouffe.TabletopMaterialId,
+        Assert.AreEqual(MaterialCatalog.DefaultId, pouffe.PrimaryMaterialId,
             "null в id декора уехал бы в сохранение и вернулся оттуда исключением при "
             + "загрузке чужого проекта");
     }
@@ -298,8 +298,8 @@ public class PouffeElementTests
     public void Duplicate_OfAPouffe_IsAPouffe_AndKeepsBothOfItsOwnValues()
     {
         var source = Pouffe(520, 380, 410, 90, 70);
-        source.TabletopMaterialId = "oak";
-        source.LegsMaterialId = "velvet";
+        source.PrimaryMaterialId = "oak";
+        source.SecondaryMaterialId = "velvet";
 
         var copy = ElementDuplicators.Copy(ElementFactory.Instance, source, Vector3.one);
         _spawned.Add(copy);
@@ -310,8 +310,8 @@ public class PouffeElementTests
             + "а молча отдаёт обычную доску");
         Assert.AreEqual(90, made!.CornerRadiusMM, "копия сохраняет форму");
         Assert.AreEqual(70, made.SeatThicknessMM, "и толщину сидушки");
-        Assert.AreEqual("oak", made.TabletopMaterialId, "и декор обивки");
-        Assert.AreEqual("velvet", made.LegsMaterialId,
+        Assert.AreEqual("oak", made.PrimaryMaterialId, "и декор обивки");
+        Assert.AreEqual("velvet", made.SecondaryMaterialId,
             "и декор сидушки: копия с одним общим декором означала бы, что второй "
             + "слот при дублировании теряется");
     }

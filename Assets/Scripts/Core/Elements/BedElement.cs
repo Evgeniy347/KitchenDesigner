@@ -64,14 +64,14 @@ namespace KitchenDesigner.Core
         }
 
         [NotUndoable(TabletopDecor.TabletopSlotReason)]
-        public string TabletopMaterialId
+        public string PrimaryMaterialId
         {
             get => _frameMaterialId;
             set { _frameMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
         [NotUndoable(TabletopDecor.LegsSlotReason)]
-        public string LegsMaterialId
+        public string SecondaryMaterialId
         {
             get => _beddingMaterialId;
             set { _beddingMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
@@ -80,8 +80,8 @@ namespace KitchenDesigner.Core
         [NotUndoable(TabletopDecor.MaterialIdAliasReason)]
         public override string MaterialId
         {
-            get => TabletopMaterialId;
-            set => TabletopMaterialId = value;
+            get => PrimaryMaterialId;
+            set => PrimaryMaterialId = value;
         }
 
         private LegSet Legs => _legSet ??= new LegSet(transform, BedLayout.LegNamePrefix);
@@ -170,18 +170,18 @@ namespace KitchenDesigner.Core
                 BedLayout.HeadboardThicknessMM, radius);
         }
 
-        public void SetTabletopMaterial(Material material)
+        public void SetPrimaryMaterial(Material material)
         {
             Frame.SetMaterial(material);
             Carcass.SetMaterial(material);
             Legs.SetMaterial(material);
         }
 
-        public void SetLegsMaterial(Material material) => Bedding.SetMaterial(material);
+        public void SetSecondaryMaterial(Material material) => Bedding.SetMaterial(material);
 
-        public string TabletopSlotLabel => TabletopDecor.FrameLabel;
+        public string PrimarySlotLabel => TabletopDecor.FrameLabel;
 
-        public string LegsSlotLabel => TabletopDecor.MattressLabel;
+        public string SecondarySlotLabel => TabletopDecor.MattressLabel;
 
         public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
 

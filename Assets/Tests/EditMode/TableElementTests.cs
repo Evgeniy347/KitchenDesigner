@@ -183,8 +183,8 @@ public class TableElementTests
         Assert.AreEqual(oakMat, renderer.sharedMaterial,
             "BUG: после снятия выделения радиусного стола текстура сбросилась в дефолтную");
 
-        Assert.AreEqual("oak", table.TabletopMaterialId,
-            "BUG: TabletopMaterialId сбросился после снятия выделения");
+        Assert.AreEqual("oak", table.PrimaryMaterialId,
+            "BUG: PrimaryMaterialId сбросился после снятия выделения");
 
         Object.DestroyImmediate(go);
     }
@@ -214,8 +214,8 @@ public class TableElementTests
         _selection.DeselectAll();
         Assert.IsFalse(_selection.IsSelected(table));
 
-        Assert.AreEqual("oak", table.TabletopMaterialId,
-            "BUG: TabletopMaterialId сбросился у прямоугольного стола после снятия выделения");
+        Assert.AreEqual("oak", table.PrimaryMaterialId,
+            "BUG: PrimaryMaterialId сбросился у прямоугольного стола после снятия выделения");
 
         Object.DestroyImmediate(go);
     }
@@ -464,9 +464,9 @@ public class TableElementTests
         Assert.AreEqual(1, restored.Count);
         var rt = restored[0].GetComponent<TableElement>();
         Assert.IsNotNull(rt);
-        Assert.AreEqual("oak", rt.TabletopMaterialId,
+        Assert.AreEqual("oak", rt.PrimaryMaterialId,
             "столешница обязана восстанавливаться из файла");
-        Assert.AreEqual("wenge", rt.LegsMaterialId);
+        Assert.AreEqual("wenge", rt.SecondaryMaterialId);
 
         foreach (var o in restored)
             if (o != null) Object.DestroyImmediate(o);
@@ -498,9 +498,9 @@ public class TableElementTests
         Assert.AreEqual(1, restored.Count);
         var rt = restored[0].GetComponent<RadiusTableElement>();
         Assert.IsNotNull(rt);
-        Assert.AreEqual("oak", rt.TabletopMaterialId,
+        Assert.AreEqual("oak", rt.PrimaryMaterialId,
             "столешница обязана восстанавливаться из файла");
-        Assert.AreEqual("wenge", rt.LegsMaterialId);
+        Assert.AreEqual("wenge", rt.SecondaryMaterialId);
 
         foreach (var o in restored)
             if (o != null) Object.DestroyImmediate(o);

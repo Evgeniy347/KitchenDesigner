@@ -66,14 +66,14 @@ namespace KitchenDesigner.Core
         }
 
         [NotUndoable(TabletopDecor.TabletopSlotReason)]
-        public string TabletopMaterialId
+        public string PrimaryMaterialId
         {
             get => _seatMaterialId;
             set { _seatMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
         [NotUndoable(TabletopDecor.LegsSlotReason)]
-        public string LegsMaterialId
+        public string SecondaryMaterialId
         {
             get => _legsMaterialId;
             set { _legsMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
@@ -82,8 +82,8 @@ namespace KitchenDesigner.Core
         [NotUndoable(TabletopDecor.MaterialIdAliasReason)]
         public override string MaterialId
         {
-            get => TabletopMaterialId;
-            set => TabletopMaterialId = value;
+            get => PrimaryMaterialId;
+            set => PrimaryMaterialId = value;
         }
 
         private LegSet Legs => _legSet ??= new LegSet(transform, "Leg");
@@ -150,17 +150,17 @@ namespace KitchenDesigner.Core
                 new Vector3(dims.x * toU, heightMM * toU, thicknessMM * toU));
         }
 
-        public void SetTabletopMaterial(Material material)
+        public void SetPrimaryMaterial(Material material)
         {
             Seat.SetMaterial(material);
             Backrest.SetMaterial(material);
         }
 
-        public void SetLegsMaterial(Material material) => Legs.SetMaterial(material);
+        public void SetSecondaryMaterial(Material material) => Legs.SetMaterial(material);
 
-        public string TabletopSlotLabel => TabletopDecor.SeatLabel;
+        public string PrimarySlotLabel => TabletopDecor.SeatLabel;
 
-        public string LegsSlotLabel => TabletopDecor.LegsLabel;
+        public string SecondarySlotLabel => TabletopDecor.LegsLabel;
 
         public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
 

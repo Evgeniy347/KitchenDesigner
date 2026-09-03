@@ -4,16 +4,16 @@ namespace KitchenDesigner.Core
 {
     public interface IHasTwoDecorSlots
     {
-        string TabletopMaterialId { get; set; }
+        string PrimaryMaterialId { get; set; }
 
-        string LegsMaterialId { get; set; }
+        string SecondaryMaterialId { get; set; }
 
-        string TabletopSlotLabel { get; }
+        string PrimarySlotLabel { get; }
 
-        string LegsSlotLabel { get; }
+        string SecondarySlotLabel { get; }
 
-        void SetTabletopMaterial(Material material);
+        void SetPrimaryMaterial(Material material);
 
-        void SetLegsMaterial(Material material);
+        void SetSecondaryMaterial(Material material);
     }
 }

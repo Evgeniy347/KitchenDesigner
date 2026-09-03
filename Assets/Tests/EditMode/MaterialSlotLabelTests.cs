@@ -11,8 +11,8 @@ using KitchenDesigner.Core.UI;
 /// табуретки и стула это сиденье, у дивана вообще нет ни столешницы, ни ножек,
 /// а есть обивка и подушки.
 ///
-/// Ответ даёт элемент (<c>IHasTwoDecorSlots.TabletopSlotLabel</c> /
-/// <c>LegsSlotLabel</c>), а не лестница по типу в UI — этого требует
+/// Ответ даёт элемент (<c>IHasTwoDecorSlots.PrimarySlotLabel</c> /
+/// <c>SecondarySlotLabel</c>), а не лестница по типу в UI — этого требует
 /// CONVENTIONS.md → «Element type checks live in ONE place per layer», и за
 /// слоем UI следит <c>UiElementTypeLadderTests</c>.
 ///
@@ -141,7 +141,7 @@ public class MaterialSlotLabelTests
     {
         Assert.AreEqual(("Обивка", "Подушки"), LabelsFor(Sofa()),
             "у дивана нет ни столешницы, ни ножек: слоты красят корпус и подушки "
-            + "(SofaElement.SetTabletopMaterial → Body, SetLegsMaterial → Cushions)");
+            + "(SofaElement.SetPrimaryMaterial → Body, SetSecondaryMaterial → Cushions)");
     }
 
     [Test]
@@ -149,8 +149,8 @@ public class MaterialSlotLabelTests
     {
         Assert.AreEqual(("Каркас", "Матрас"), LabelsFor(Bed()),
             "у кровати нет ни столешницы, ни сиденья: первый слот красит деревянную часть "
-            + "целиком — царгу, спинку и ножки (BedElement.SetTabletopMaterial), второй — "
-            + "постель, матрас вместе с подушками (SetLegsMaterial). Разделение проходит "
+            + "целиком — царгу, спинку и ножки (BedElement.SetPrimaryMaterial), второй — "
+            + "постель, матрас вместе с подушками (SetSecondaryMaterial). Разделение проходит "
             + "там, где его видит человек: дерево против ткани");
     }
 
@@ -159,8 +159,8 @@ public class MaterialSlotLabelTests
     {
         Assert.AreEqual(("Обивка", "Сиденье"), LabelsFor(Pouffe()),
             "у пуфика нет ни столешницы, ни ножек: первый слот красит обитую тумбу "
-            + "(PouffeElement.SetTabletopMaterial → Body), второй — мягкую сидушку "
-            + "(SetLegsMaterial → Seat). «Обивка» совпадает с диваном намеренно — это "
+            + "(PouffeElement.SetPrimaryMaterial → Body), второй — мягкую сидушку "
+            + "(SetSecondaryMaterial → Seat). «Обивка» совпадает с диваном намеренно — это "
             + "одна и та же вещь, — а вторая подпись расходится: у дивана подушки "
             + "лежат НА сиденье, у пуфика сидушка сиденьем и является");
     }
@@ -212,8 +212,8 @@ public class MaterialSlotLabelTests
             Pouffe(), Toilet(), WallHungToilet() })
         {
             var tabletop = (IHasTwoDecorSlots)element;
-            tabletop.TabletopMaterialId = "oak";
-            tabletop.LegsMaterialId = "concrete";
+            tabletop.PrimaryMaterialId = "oak";
+            tabletop.SecondaryMaterialId = "concrete";
 
             var json = JsonUtility.ToJson(ElementCapture.FromElement(element));
             var restored = JsonUtility.FromJson<ElementData>(json);

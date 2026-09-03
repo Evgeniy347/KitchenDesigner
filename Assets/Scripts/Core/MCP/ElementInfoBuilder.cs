@@ -104,16 +104,16 @@ namespace KitchenDesigner.Core.MCP
             For<TableElement>((info, table) => info.table = new TableInfo
             {
                 legInsetMM = table.LegInsetMM,
-                tabletopMaterialId = table.TabletopMaterialId,
-                legsMaterialId = table.LegsMaterialId
+                tabletopMaterialId = table.PrimaryMaterialId,
+                legsMaterialId = table.SecondaryMaterialId
             }),
 
             For<RadiusTableElement>((info, table) => info.radiusTable = new RadiusTableInfo
             {
                 legInsetMM = table.LegInsetMM,
                 shape = "capsule",
-                tabletopMaterialId = table.TabletopMaterialId,
-                legsMaterialId = table.LegsMaterialId
+                tabletopMaterialId = table.PrimaryMaterialId,
+                legsMaterialId = table.SecondaryMaterialId
             }),
 
             For<StoolElement>((info, stool) =>
@@ -123,8 +123,8 @@ namespace KitchenDesigner.Core.MCP
                 {
                     cornerRadiusMM = stool.CornerRadiusMM,
                     shape = stool.ShapeName,
-                    tabletopMaterialId = stool.TabletopMaterialId,
-                    legsMaterialId = stool.LegsMaterialId
+                    tabletopMaterialId = stool.PrimaryMaterialId,
+                    legsMaterialId = stool.SecondaryMaterialId
                 };
             }),
 
@@ -136,8 +136,8 @@ namespace KitchenDesigner.Core.MCP
                     cornerRadiusMM = chair.CornerRadiusMM,
                     seatHeightMM = chair.SeatHeightMM,
                     backrestThicknessMM = ChairElement.BackrestThicknessMM,
-                    tabletopMaterialId = chair.TabletopMaterialId,
-                    legsMaterialId = chair.LegsMaterialId
+                    tabletopMaterialId = chair.PrimaryMaterialId,
+                    legsMaterialId = chair.SecondaryMaterialId
                 };
             }),
 
@@ -150,8 +150,8 @@ namespace KitchenDesigner.Core.MCP
                     seatHeightMM = sofa.SeatHeightMM,
                     backDepthMM = SofaLayout.BackDepthMM,
                     cushionCount = SofaLayout.CushionCount,
-                    tabletopMaterialId = sofa.TabletopMaterialId,
-                    legsMaterialId = sofa.LegsMaterialId
+                    tabletopMaterialId = sofa.PrimaryMaterialId,
+                    legsMaterialId = sofa.SecondaryMaterialId
                 };
             }),
 
@@ -163,8 +163,8 @@ namespace KitchenDesigner.Core.MCP
                 maxSeatThicknessMM = PouffeElement.MaxSeatThicknessMM(pouffe.DimensionsMM.y),
                 bodyHeightMM = PouffeLayout.BodyHeightMM(pouffe.DimensionsMM.y,
                     pouffe.SeatThicknessMM),
-                tabletopMaterialId = pouffe.TabletopMaterialId,
-                legsMaterialId = pouffe.LegsMaterialId
+                tabletopMaterialId = pouffe.PrimaryMaterialId,
+                legsMaterialId = pouffe.SecondaryMaterialId
             }),
 
             For<ToiletElement>((info, toilet) => info.toilet = new ToiletInfo
@@ -173,8 +173,8 @@ namespace KitchenDesigner.Core.MCP
                 minSeatHeightMM = ToiletElement.MinSeatHeightMM,
                 maxSeatHeightMM = ToiletElement.MaxSeatHeightMM,
                 cisternHeightMM = toilet.CisternHeightMM,
-                tabletopMaterialId = toilet.TabletopMaterialId,
-                legsMaterialId = toilet.LegsMaterialId
+                tabletopMaterialId = toilet.PrimaryMaterialId,
+                legsMaterialId = toilet.SecondaryMaterialId
             }),
 
             For<WallHungToiletElement>((info, toilet) => info.wallHungToilet =
@@ -188,8 +188,8 @@ namespace KitchenDesigner.Core.MCP
                     minFlushPlateHeightMM =
                         WallHungToiletElement.MinFlushPlateHeightMM(toilet.SeatHeightMM),
                     maxFlushPlateHeightMM = WallHungToiletElement.MaxFlushPlateHeightMM,
-                    tabletopMaterialId = toilet.TabletopMaterialId,
-                    legsMaterialId = toilet.LegsMaterialId
+                    tabletopMaterialId = toilet.PrimaryMaterialId,
+                    legsMaterialId = toilet.SecondaryMaterialId
                 }),
 
             For<BathtubElement>((info, tub) => info.bathtub = new BathtubInfo
@@ -263,8 +263,8 @@ namespace KitchenDesigner.Core.MCP
                 legCount = bed.LegCount,
                 legHeightMM = BedLayout.LegHeightMM,
                 mattressTopMM = BedLayout.DeckTopMM,
-                tabletopMaterialId = bed.TabletopMaterialId,
-                legsMaterialId = bed.LegsMaterialId
+                tabletopMaterialId = bed.PrimaryMaterialId,
+                legsMaterialId = bed.SecondaryMaterialId
             }),
 
             For<PillarElement>((info, pillar) => info.pillar = new PillarInfo

@@ -104,14 +104,14 @@ namespace KitchenDesigner.Core
         }
 
         [NotUndoable(TabletopDecor.TabletopSlotReason)]
-        public string TabletopMaterialId
+        public string PrimaryMaterialId
         {
             get => _bodyMaterialId;
             set { _bodyMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
         [NotUndoable(TabletopDecor.LegsSlotReason)]
-        public string LegsMaterialId
+        public string SecondaryMaterialId
         {
             get => _keyMaterialId;
             set { _keyMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
@@ -120,13 +120,13 @@ namespace KitchenDesigner.Core
         [NotUndoable(TabletopDecor.MaterialIdAliasReason)]
         public override string MaterialId
         {
-            get => TabletopMaterialId;
-            set => TabletopMaterialId = value;
+            get => PrimaryMaterialId;
+            set => PrimaryMaterialId = value;
         }
 
-        public string TabletopSlotLabel => WallDeviceDecor.PlateLabel;
+        public string PrimarySlotLabel => WallDeviceDecor.PlateLabel;
 
-        public string LegsSlotLabel => WallDeviceDecor.KeyLabel;
+        public string SecondarySlotLabel => WallDeviceDecor.KeyLabel;
 
         public WallDeviceSpec Spec => WallDeviceSpec.Of(this);
 
@@ -180,10 +180,10 @@ namespace KitchenDesigner.Core
             MaterialManager.RefreshTiling(this);
         }
 
-        public void SetTabletopMaterial(Material material) => Parts.Body.SetMaterial(
+        public void SetPrimaryMaterial(Material material) => Parts.Body.SetMaterial(
             SanitaryDecor.ChosenOrFactory(_bodyMaterialId, material, WallDeviceMaterials.Plastic));
 
-        public void SetLegsMaterial(Material material) => Parts.Accent.SetMaterial(
+        public void SetSecondaryMaterial(Material material) => Parts.Accent.SetMaterial(
             SanitaryDecor.ChosenOrFactory(_keyMaterialId, material, WallDeviceMaterials.Key));
 
         public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);

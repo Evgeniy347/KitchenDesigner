@@ -163,7 +163,7 @@ public class WallDeviceDecorTests
     {
         var source = NewSwitch();
 
-        source.LegsMaterialId = DecorId;
+        source.SecondaryMaterialId = DecorId;
 
         Assert.AreNotSame(WallDeviceMaterials.Key, KeyOf(source),
             "клавишу можно перекрасить отдельно — иначе второй слот бесполезен");
