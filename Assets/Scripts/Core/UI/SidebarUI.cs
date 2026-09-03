@@ -7,21 +7,26 @@ namespace KitchenDesigner.Core.UI
 {
     public class SidebarUI : MonoBehaviour
     {
-        private const float ExpandedW = 220f;
-        private const float CollapsedW = 52f;
-        private const float TopOffsetUnderToolbar = 52f;
+        public const float ScrollGutterW = 16f;
+        public const float ExpandedW = 236f;
+        public const float CollapsedW = 52f;
+        public const float TopOffsetUnderToolbar = 52f;
+        public const float BottomMargin = 42f;
+        public const float TopStripH = 36f;
+        public const float ScrollBarW = 8f;
 
-        private const float Pad = 8f;
-        private const float HeaderH = 30f;
-        public const float ItemW = ExpandedW - 2f * Pad - 14f;
-        private const float SingleLineItemH = 26f;
-        private const float ItemPadH = 8f;
-        private const float ItemPadV = 8f;
-        private const int ItemMaxLines = 2;
+        public const float ItemW = ExpandedW - 2f * SidebarLayout.Pad
+            - SidebarLayout.ItemIndent - ScrollGutterW;
+        public const float HeaderW = ItemW + SidebarLayout.ItemIndent;
         public const int ItemFont = UIStyle.FontSmall;
+
+        private const float ItemPadH = 8f;
+        private const int ItemMaxLines = 2;
         private const float ItemGlyphReserve = 2f;
 
         private RectTransform? _panel;
+        private ScrollArea? _full;
+        private ScrollArea? _mini;
         private GameObject? _fullRoot;
         private GameObject? _miniRoot;
         private TMP_Text? _collapseLabel;
@@ -36,9 +41,12 @@ namespace KitchenDesigner.Core.UI
             public RectTransform? header;
             public TMP_Text? headerLabel;
             public readonly List<RectTransform> items = new List<RectTransform>();
+            public readonly List<float> itemHeights = new List<float>();
             public bool open = true;
         }
         private readonly List<GroupUI> _groups = new List<GroupUI>();
+        private readonly List<SidebarGroupMetrics> _metrics = new List<SidebarGroupMetrics>();
+        private readonly List<SidebarRow> _rows = new List<SidebarRow>();
 
         private class ModeStyledItem
         {
@@ -51,11 +59,10 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("Sidebar", canvas, new Vector2(0, -TopOffsetUnderToolbar),
-                new Vector2(ExpandedW, 1000f));
-            UIFactory.AnchorTopLeft(panel.rectTransform);
-            panel.rectTransform.anchoredPosition = new Vector2(0, -TopOffsetUnderToolbar);
+            var panel = UIFactory.CreatePanel("Sidebar", canvas, Vector2.zero,
+                new Vector2(ExpandedW, 0f));
             _panel = panel.rectTransform;
+            StretchUnderToolbar(_panel);
 
             var collapseBtn = UIFactory.CreateButton("SbCollapse", _panel, "«",
                 new Vector2(4, -4), new Vector2(36, 28), () => SetExpanded(!_expanded));
@@ -69,10 +76,14 @@ namespace KitchenDesigner.Core.UI
             pinBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(46, -4);
             _pinBg = pinBtn.GetComponent<Image>();
 
-            _fullRoot = CreateRoot("SbFull", new Vector2(0, -36), new Vector2(ExpandedW, 960f));
+            _full = ScrollArea.Create("SbFull", _panel, ScrollBarW);
+            FillBelowStrip(_full.Viewport);
+            _fullRoot = _full.Viewport.gameObject;
             BuildFull();
 
-            _miniRoot = CreateRoot("SbMini", new Vector2(0, -36), new Vector2(CollapsedW, 960f));
+            _mini = ScrollArea.Create("SbMini", _panel, 0f);
+            FillBelowStrip(_mini.Viewport);
+            _miniRoot = _mini.Viewport.gameObject;
             BuildMini();
 
             ApplyState();
@@ -86,24 +97,32 @@ namespace KitchenDesigner.Core.UI
             EditModeManager.Changed -= ApplyModeStyling;
         }
 
-        private GameObject CreateRoot(string name, Vector2 pos, Vector2 size)
+        private static void StretchUnderToolbar(RectTransform rt)
         {
-            var rt = UIFactory.CreateRect(name, _panel!);
-            UIFactory.AnchorTopLeft(rt);
-            rt.anchoredPosition = pos;
-            rt.sizeDelta = size;
-            return rt.gameObject;
+            rt.anchorMin = new Vector2(0f, 0f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.offsetMin = new Vector2(0f, BottomMargin);
+            rt.offsetMax = new Vector2(ExpandedW, -TopOffsetUnderToolbar);
+        }
+
+        private static void FillBelowStrip(RectTransform rt)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = new Vector2(0f, -TopStripH);
         }
 
         public static float ItemHeight(string name)
-        {
-            int lines = ItemLines(name);
-            return Mathf.Max(SingleLineItemH, Mathf.Ceil(lines * ItemFont * DropdownItemFit.LineHeightFactor + ItemPadV));
-        }
+            => SidebarLayout.ItemHeight(ItemLines(name), ItemFont,
+                DropdownItemFit.LineHeightFactor);
 
         public static int ItemLines(string name)
         {
-            float textW = ItemW - 2f * ItemPadH - ItemGlyphReserve * ItemFont * DropdownItemFit.GlyphWidthFactor;
+            float textW = ItemW - 2f * ItemPadH - ItemGlyphReserve * ItemFont
+                * DropdownItemFit.GlyphWidthFactor;
             return DropdownItemFit.LinesFor(name, textW, ItemFont, ItemMaxLines);
         }
 
@@ -112,8 +131,8 @@ namespace KitchenDesigner.Core.UI
             foreach (var g in SidebarCatalog.Build())
             {
                 var gu = new GroupUI { title = g.title };
-                var header = UIFactory.CreateButton("SbGrp_" + g.title, _fullRoot!.transform, g.title,
-                    Vector2.zero, new Vector2(ExpandedW - 2 * Pad, HeaderH), () => ToggleGroup(gu));
+                var header = UIFactory.CreateButton("SbGrp_" + g.title, _full!.Content, g.title,
+                    Vector2.zero, new Vector2(HeaderW, SidebarLayout.HeaderH), () => ToggleGroup(gu));
                 UIFactory.AnchorTopLeft(header.GetComponent<RectTransform>());
                 gu.header = header.GetComponent<RectTransform>();
 
@@ -121,7 +140,7 @@ namespace KitchenDesigner.Core.UI
                 if (headerLabel != null)
                 {
                     headerLabel.alignment = TextAlignmentOptions.Left;
-                    headerLabel.margin = new Vector4(Pad, 2f, Pad, 2f);
+                    headerLabel.margin = new Vector4(SidebarLayout.Pad, 2f, SidebarLayout.Pad, 2f);
                     headerLabel.enableWordWrapping = false;
                     headerLabel.overflowMode = TextOverflowModes.Ellipsis;
                     gu.headerLabel = headerLabel;
@@ -130,10 +149,12 @@ namespace KitchenDesigner.Core.UI
 
                 foreach (var it in g.items)
                 {
-                    var btn = UIFactory.CreateButton("SbItem_" + g.title + "_" + it.name, _fullRoot.transform,
-                        it.name, Vector2.zero, new Vector2(ItemW, ItemHeight(it.name)), () => Spawn(it));
+                    float h = ItemHeight(it.name);
+                    var btn = UIFactory.CreateButton("SbItem_" + g.title + "_" + it.name, _full.Content,
+                        it.name, Vector2.zero, new Vector2(ItemW, h), () => Spawn(it));
                     UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
                     gu.items.Add(btn.GetComponent<RectTransform>());
+                    gu.itemHeights.Add(h);
 
                     var style = new ModeStyledItem { button = btn, cat = ItemCategory(it) };
                     style.label = btn.GetComponentInChildren<TMP_Text>();
@@ -182,38 +203,44 @@ namespace KitchenDesigner.Core.UI
 
         private void RelayoutFull()
         {
-            float y = -Pad;
+            _metrics.Clear();
             foreach (var gu in _groups)
+                _metrics.Add(new SidebarGroupMetrics(gu.open, gu.itemHeights));
+
+            float height = SidebarLayout.Place(_metrics, _rows);
+
+            foreach (var row in _rows)
             {
-                gu.header!.anchoredPosition = new Vector2(Pad, y);
-                y -= gu.header.sizeDelta.y + 4f;
-                foreach (var item in gu.items)
+                var gu = _groups[row.Group];
+                if (row.IsHeader)
                 {
-                    item.gameObject.SetActive(gu.open);
-                    if (gu.open)
-                    {
-                        item.anchoredPosition = new Vector2(Pad + 14f, y);
-                        y -= item.sizeDelta.y + 3f;
-                    }
+                    gu.header!.anchoredPosition = row.Position;
+                    continue;
                 }
+
+                var item = gu.items[row.Item];
+                item.gameObject.SetActive(row.Visible);
+                if (row.Visible) item.anchoredPosition = row.Position;
             }
+
+            _full!.ContentHeight = height;
         }
 
         private void BuildMini()
         {
-            const float pad = 6f;
-            float y = -pad;
-            int index = 0;
-            foreach (var g in SidebarCatalog.Build())
+            var groups = SidebarCatalog.Build();
+            for (int i = 0; i < groups.Count; i++)
             {
-                int i = index;
-                var btn = UIFactory.CreateButton("SbMini_" + g.title, _miniRoot!.transform, g.shortLabel,
-                    Vector2.zero, new Vector2(CollapsedW - 2 * pad, 38f), () => OpenGroup(i));
-                UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
-                btn.GetComponent<RectTransform>().anchoredPosition = new Vector2(pad, y);
-                y -= 42f;
-                index++;
+                int index = i;
+                var btn = UIFactory.CreateButton("SbMini_" + groups[i].title, _mini!.Content,
+                    groups[i].shortLabel, Vector2.zero,
+                    new Vector2(CollapsedW - 2f * SidebarLayout.MiniPad, SidebarLayout.MiniButtonH),
+                    () => OpenGroup(index));
+                var rt = btn.GetComponent<RectTransform>();
+                UIFactory.AnchorTopLeft(rt);
+                rt.anchoredPosition = new Vector2(SidebarLayout.MiniPad, SidebarLayout.MiniItemY(i));
             }
+            _mini!.ContentHeight = SidebarLayout.MiniContentHeight(groups.Count);
         }
 
         private void ToggleGroup(GroupUI gu)
@@ -255,9 +282,9 @@ namespace KitchenDesigner.Core.UI
 
         private void ApplyState()
         {
-            var size = _panel!.sizeDelta;
-            size.x = _expanded ? ExpandedW : CollapsedW;
-            _panel.sizeDelta = size;
+            var right = _panel!.offsetMax;
+            right.x = _expanded ? ExpandedW : CollapsedW;
+            _panel.offsetMax = right;
 
             _fullRoot!.SetActive(_expanded);
             _miniRoot!.SetActive(!_expanded);

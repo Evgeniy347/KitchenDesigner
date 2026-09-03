@@ -21,6 +21,9 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color RowSelected = new Color(0.45f, 0.40f, 0.15f, 1f);
         public static readonly Color Separator = new Color(0.35f, 0.37f, 0.42f, 1f);
         public static readonly Color ModalBackdrop = new Color(0f, 0f, 0f, 0.55f);
+        public static readonly Color ScrollTrack = new Color(0.10f, 0.10f, 0.13f, 0.6f);
+        public static readonly Color ScrollHandle = new Color(0.38f, 0.40f, 0.46f, 1f);
+        public static readonly Color RaycastOnly = new Color(0f, 0f, 0f, 0.01f);
 
         public static readonly Color EdgePresent = new Color(0.30f, 0.75f, 0.35f, 1f);
         public static readonly Color EdgeAbsent = new Color(0.72f, 0.74f, 0.78f, 1f);
