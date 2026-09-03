@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class CooktopElement : KitchenElement, IPartCutout, IFixedSizeElement
+    public class CooktopElement : KitchenElement, IPartCutout, IFixedSizeElement,
+        IPaintsItself
     {
         public override string DisplayTypeName => HasFixedSize ? Model : "Варочная";
 
@@ -454,13 +455,18 @@ namespace KitchenDesigner.Core
             MaterialManager.RefreshTiling(this);
         }
 
-        public void ApplyMaterials()
+        public void ApplyMaterials() => Mesh.ApplySurfaceMaterial(Skin());
+
+        private Material Skin()
         {
-            Material? decor = null;
-            if (MaterialManager.HasCustomDecor(this))
-                decor = MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
-            Mesh.ApplySurfaceMaterial(decor ?? ApplianceMaterials.CooktopGlass);
+            if (SanitaryDecor.IsFactoryLook(MaterialId)) return ApplianceMaterials.CooktopGlass;
+            var decor = MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
+            return decor != null ? decor! : ApplianceMaterials.CooktopGlass;
         }
+
+        public void SetMaterial(Material material) => Mesh.ApplySurfaceMaterial(
+            SanitaryDecor.ChosenOrFactory(MaterialId, material,
+                ApplianceMaterials.CooktopGlass));
 
         public void DestroyChildren() => Mesh.Destroy();
 

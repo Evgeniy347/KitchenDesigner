@@ -4,7 +4,7 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     public class WallHungToiletElement : KitchenElement, ITabletop, IFixedSizeElement,
-        IWallMounted, IAutoSeated
+        IWallMounted, IStandsOnFloor
     {
         public override string DisplayTypeName => "Унитаз подвесной";
 
@@ -142,15 +142,8 @@ namespace KitchenDesigner.Core
 
         public void SnapToWall() => WallSeating.Seat(this, WallHungToiletLayout.DepthMM);
 
-        public void SeatAfterMove(IReadOnlyList<KitchenElement> scene)
-        {
-            float floorY = PillarAutoFit.FloorUnder(transform.position, scene);
-            if (floorY <= PillarAutoFit.NoFloorFound + 1f) return;
-
-            var p = transform.position;
-            transform.position = new Vector3(p.x,
-                floorY + WallHungToiletLayout.HeightMM * 0.5f * AppConstants.MM_TO_UNITS, p.z);
-        }
+        public void SeatOnFloor(IReadOnlyList<KitchenElement> scene) =>
+            FloorSeating.Seat(this, scene);
 
         public void SetTabletopMaterial(Material material) => Ceramic.SetMaterial(
             SanitaryDecor.ChosenOrFactory(_ceramicMaterialId, material, SanitaryMaterials.Ceramic));

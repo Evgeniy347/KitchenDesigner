@@ -188,13 +188,6 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            if (element is CooktopElement cooktop)
-            {
-                cooktop.ApplyMaterials();
-                RefreshTiling(element, def);
-                return;
-            }
-
             var r = element.GetComponentInChildren<MeshRenderer>();
             if (r == null) return;
 
