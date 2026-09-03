@@ -68,6 +68,8 @@ namespace KitchenDesigner.Core.UI
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddHeader(page, ref y, "Ambient occlusion");
+            AddPresetLinkedToggle(page, ref y, "AO в полном разрешении", s.PhotoAoFullRes,
+                v => s.PhotoAoFullRes = v, () => s.PhotoAoFullRes);
             AddSlider(page, ref y, "Сила AO", 0, KitchenSettings.PHOTO_AO_INTENSITY_MAX_PCT,
                 s.PhotoAoIntensityPct, Percent, v => s.PhotoAoIntensityPct = v, () => s.PhotoAoIntensityPct);
             AddSlider(page, ref y, "Радиус AO",

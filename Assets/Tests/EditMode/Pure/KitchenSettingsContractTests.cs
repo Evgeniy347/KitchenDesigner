@@ -33,6 +33,7 @@ public class KitchenSettingsContractTests
     private static readonly string[] LegacyDataOnlyFields =
     {
         "viewSchema",
+        "photoSchema",
         "edgeOutline", "wallsEnabled", "lowerNearWalls", "wallOutline",
         "hideOpeningsOnLoweredWalls", "objectsVisible", "hideLightSources",
     };

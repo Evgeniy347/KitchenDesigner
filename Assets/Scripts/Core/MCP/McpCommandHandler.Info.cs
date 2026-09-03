@@ -10,6 +10,8 @@ namespace KitchenDesigner.Core.MCP
 {
     public partial class McpCommandHandler
     {
+        private const int ScreenshotMsaaSamples = 4;
+
         private McpResponse HandleGetSpecification(McpRequest req)
         {
             var spec = SpecificationManager.Build(PartRegistry.GetAll());
@@ -113,16 +115,87 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new { ok = true, enabled = p.enabled });
         }
 
+        private McpResponse HandleSetPhotoCamera(McpRequest req)
+        {
+            var p = req.Params?.ToObjectStrict<ParamsPhotoCamera>();
+            if (p == null) return McpResponse.Error(req.id, -32602, "params required");
+
+            var cam = Object.FindAnyObjectByType<CameraController>();
+            if (cam == null) return McpResponse.Error(req.id, -1, "CameraController not found");
+
+            var state = cam.GetState();
+            state.photoTargetX = p.target_x ?? state.photoTargetX;
+            state.photoTargetY = p.target_y ?? state.photoTargetY;
+            state.photoTargetZ = p.target_z ?? state.photoTargetZ;
+            state.photoAngleX = p.angle_x ?? state.photoAngleX;
+            state.photoAngleY = p.angle_y ?? state.photoAngleY;
+            state.photoDistance = p.distance ?? state.photoDistance;
+            cam.SetState(state);
+
+            var applied = cam.GetState();
+            return McpResponse.Result(req.id, new
+            {
+                ok = true,
+                photoActive = PhotoMode.Active,
+                target = new { x = applied.photoTargetX, y = applied.photoTargetY, z = applied.photoTargetZ },
+                angle_x = applied.photoAngleX,
+                angle_y = applied.photoAngleY,
+                distance = applied.photoDistance
+            });
+        }
+
         private McpResponse HandleTakeScreenshot(McpRequest req)
         {
+            var cam = Camera.main;
+            if (cam == null) return McpResponse.Error(req.id, -1, "No main camera");
+
+            var shot = req.Params?.ToObjectStrict<ParamsScreenshot>();
+            int renders = Mathf.Clamp(shot?.renders ?? 1, 1, 64);
+
             var path = Path.Combine(Application.temporaryCachePath, "mcp_screenshot.png");
-            var tex = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
-            tex.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
-            tex.Apply();
-            var bytes = ImageConversion.EncodeToPNG(tex);
-            File.WriteAllBytes(path, bytes);
-            Object.Destroy(tex);
-            return McpResponse.Result(req.id, new { ok = true, path });
+            int w = Mathf.Max(1, Screen.width);
+            int h = Mathf.Max(1, Screen.height);
+
+            var s = KitchenSettings.Instance;
+            bool photo = PhotoMode.Active && s != null;
+            float scale = photo && s!.PhotoSupersampling ? s.PhotoRenderScalePct * 0.01f : 1f;
+            int msaa = photo && s!.PhotoAntiAliasing ? ScreenshotMsaaSamples : 1;
+            int rw = Mathf.Max(1, Mathf.RoundToInt(w * scale));
+            int rh = Mathf.Max(1, Mathf.RoundToInt(h * scale));
+
+            var rt = RenderTexture.GetTemporary(rw, rh, 24, RenderTextureFormat.Default,
+                RenderTextureReadWrite.Default, msaa);
+            var flat = RenderTexture.GetTemporary(w, h, 0, RenderTextureFormat.Default);
+            var prevTarget = cam.targetTexture;
+            var prevActive = RenderTexture.active;
+            var tex = new Texture2D(w, h, TextureFormat.RGB24, false);
+            double renderMs = 0;
+            try
+            {
+                cam.targetTexture = rt;
+                var clock = System.Diagnostics.Stopwatch.StartNew();
+                for (int i = 0; i < renders; i++) cam.Render();
+                Graphics.Blit(rt, flat);
+                RenderTexture.active = flat;
+                tex.ReadPixels(new Rect(0, 0, w, h), 0, 0);
+                tex.Apply();
+                renderMs = clock.Elapsed.TotalMilliseconds;
+                File.WriteAllBytes(path, ImageConversion.EncodeToPNG(tex));
+            }
+            finally
+            {
+                cam.targetTexture = prevTarget;
+                RenderTexture.active = prevActive;
+                RenderTexture.ReleaseTemporary(flat);
+                RenderTexture.ReleaseTemporary(rt);
+                Object.Destroy(tex);
+            }
+            return McpResponse.Result(req.id, new
+            {
+                ok = true, path, width = w, height = h,
+                renderWidth = rw, renderHeight = rh, msaa, renders,
+                renderMs = System.Math.Round(renderMs, 2)
+            });
         }
 
         private McpResponse HandleCycleDrawerAnimation(McpRequest req)

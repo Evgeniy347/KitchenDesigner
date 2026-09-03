@@ -271,12 +271,19 @@ namespace KitchenDesigner.Core
             }
         }
 
+        internal static TonemappingMode TonemapModeFor(KitchenSettings s) => s.PhotoTonemap switch
+        {
+            KitchenSettings.PHOTO_TONEMAP_NONE => TonemappingMode.None,
+            KitchenSettings.PHOTO_TONEMAP_NEUTRAL => TonemappingMode.Neutral,
+            _ => TonemappingMode.ACES,
+        };
+
         private static void ApplyPostProcessing(KitchenSettings s)
         {
             var profile = ScriptableObject.CreateInstance<VolumeProfile>();
 
             var tonemap = profile.Add<Tonemapping>();
-            tonemap.mode.Override(TonemappingMode.ACES);
+            tonemap.mode.Override(TonemapModeFor(s));
 
             var color = profile.Add<ColorAdjustments>();
             color.postExposure.Override(s.PhotoExposurePct * PercentToUnit);
@@ -288,6 +295,7 @@ namespace KitchenDesigner.Core
                 var bloom = profile.Add<Bloom>();
                 bloom.intensity.Override(s.PhotoBloomPct * PercentToUnit);
                 bloom.threshold.Override(s.PhotoBloomThresholdPct * PercentToUnit);
+                bloom.clamp.Override(s.PhotoBloomClampPct * PercentToUnit);
                 bloom.scatter.Override(BloomScatter);
             }
 

@@ -642,6 +642,24 @@ namespace KitchenDesigner.Core.MCP.Contract
     }
 
     [Serializable]
+    public class ParamsScreenshot
+    {
+        [McpParam("How many times to render the frame before reading it back. 1 (the default) just takes the picture. A higher count turns the call into a cost measurement: the read-back is a fixed ~15 ms tax that hides the frame cost, so time a 1-render call and an 8-render call and divide the difference by 7 to get milliseconds per frame.", Min = 1)]
+        public int? renders;
+    }
+
+    [Serializable]
+    public class ParamsPhotoCamera
+    {
+        [McpParam("Point the camera looks at, X in METERS. Omit to keep.")] public float? target_x;
+        [McpParam("Point the camera looks at, Y in METERS — eye height above the floor. Omit to keep.")] public float? target_y;
+        [McpParam("Point the camera looks at, Z in METERS. Omit to keep.")] public float? target_z;
+        [McpParam("Pitch in DEGREES: 0 is level, positive looks DOWN, negative looks UP. Omit to keep.")] public float? angle_x;
+        [McpParam("Yaw in DEGREES around the vertical axis. Omit to keep.")] public float? angle_y;
+        [McpParam("Distance from the target in METERS. Clamped to the camera's own range. Omit to keep.", Min = 0)] public float? distance;
+    }
+
+    [Serializable]
     public class ParamsSetSetting
     {
         [McpParam("Setting key.", Required = true, Enum = new[]
@@ -652,10 +670,12 @@ namespace KitchenDesigner.Core.MCP.Contract
             "wasd_speed", "arrow_speed",
             "photo_active", "photo_quality", "photo_shadows", "photo_soft_shadows", "photo_anti_aliasing",
             "photo_supersampling", "photo_ambient_occlusion", "photo_bloom", "photo_vignette",
-            "photo_ceiling", "photo_ssgi", "photo_lamp_shadows", "photo_hdr",
+            "photo_ceiling", "photo_ssgi", "photo_lamp_shadows", "photo_hdr", "photo_ao_full_res",
             "photo_ambient", "photo_floor_bounce", "photo_ambient_sky", "photo_ambient_equator",
             "photo_bounce_max", "photo_exposure", "photo_contrast", "photo_saturation",
-            "photo_bloom_strength", "photo_bloom_threshold", "photo_vignette_strength",
+            "photo_tonemap",
+            "photo_bloom_strength", "photo_bloom_threshold", "photo_bloom_clamp",
+            "photo_vignette_strength",
             "photo_sun_shadow_strength", "photo_shadow_distance", "photo_render_scale",
             "photo_shadowmap", "photo_lights_per_object",
             "photo_ao_intensity", "photo_ao_radius", "photo_ao_direct", "photo_ao_falloff",
@@ -665,7 +685,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
         [McpParam("New on/off value. Send this for the on/off settings (snap_enabled, grid_enabled, block_on_violation, auto_save, snap_verbose_log, camera_pan_free, and every photo_* key that names a toggle: photo_shadows, photo_soft_shadows, photo_anti_aliasing, photo_supersampling, photo_ambient_occlusion, photo_bloom, photo_vignette, photo_ceiling, photo_ssgi, photo_lamp_shadows, photo_hdr).")]
         public bool? value;
-        [McpParam("New numeric value: snap_threshold and grid_step in MM, auto_save_interval in seconds, edge_partial_threshold in %, mouse_sensitivity / wasd_speed / arrow_speed as a multiplier. Photo mode: photo_quality 0=low 1=medium 2=high 3=custom; photo_ssgi_radius / photo_ao_radius in MM; photo_shadow_distance and photo_ao_falloff in metres; photo_shadowmap in pixels; photo_ssgi_samples and photo_lights_per_object are counts; photo_ssgi_blur in pixels (0 = no denoise); everything else in %. Send this instead of value for those keys.")]
+        [McpParam("New numeric value: snap_threshold and grid_step in MM, auto_save_interval in seconds, edge_partial_threshold in %, mouse_sensitivity / wasd_speed / arrow_speed as a multiplier. Photo mode: photo_quality 0=low 1=medium 2=high 3=custom; photo_ssgi_radius / photo_ao_radius in MM; photo_shadow_distance and photo_ao_falloff in metres; photo_shadowmap in pixels; photo_ssgi_samples and photo_lights_per_object are counts; photo_ssgi_blur in pixels (0 = no denoise); photo_bloom_clamp caps how bright one pixel may contribute to the glow, in % of white — it is what stops an open sky from smearing over the whole frame; everything else in %. Send this instead of value for those keys.")]
         public float? number;
     }
 

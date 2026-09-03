@@ -27,6 +27,9 @@ namespace KitchenDesigner.Core.UI
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddHeader(page, ref y, "Экспозиция и тон");
+            AddPhotoSlider(page, ref y, "Тонемаппинг",
+                KitchenSettings.PHOTO_TONEMAP_NONE, KitchenSettings.PHOTO_TONEMAP_ACES,
+                s.PhotoTonemap, TonemapName, v => s.PhotoTonemap = v, () => s.PhotoTonemap);
             AddPhotoSlider(page, ref y, "Экспозиция",
                 KitchenSettings.PHOTO_EXPOSURE_MIN_PCT, KitchenSettings.PHOTO_EXPOSURE_MAX_PCT,
                 s.PhotoExposurePct, ExposureValue, v => s.PhotoExposurePct = v, () => s.PhotoExposurePct);
@@ -44,6 +47,10 @@ namespace KitchenDesigner.Core.UI
             AddPhotoSlider(page, ref y, "Порог свечения", 0, KitchenSettings.PHOTO_BLOOM_THRESHOLD_MAX_PCT,
                 s.PhotoBloomThresholdPct, Percent, v => s.PhotoBloomThresholdPct = v,
                 () => s.PhotoBloomThresholdPct);
+            AddPhotoSlider(page, ref y, "Предел свечения",
+                KitchenSettings.PHOTO_BLOOM_CLAMP_MIN_PCT, KitchenSettings.PHOTO_BLOOM_CLAMP_MAX_PCT,
+                s.PhotoBloomClampPct, Percent, v => s.PhotoBloomClampPct = v,
+                () => s.PhotoBloomClampPct);
             AddPhotoSlider(page, ref y, "Сила виньетки", 0, FullPercent,
                 s.PhotoVignettePct, Percent, v => s.PhotoVignettePct = v, () => s.PhotoVignettePct);
 
@@ -73,6 +80,13 @@ namespace KitchenDesigner.Core.UI
             _rows.AddIntSlider(page, ref y, label, min, max, value, format,
                 v => { apply(v); PhotoMode.RefreshIfActive(); }, read);
         }
+
+        private static string TonemapName(int v) => v switch
+        {
+            KitchenSettings.PHOTO_TONEMAP_NONE => "нет",
+            KitchenSettings.PHOTO_TONEMAP_NEUTRAL => "нейтральный",
+            _ => "ACES",
+        };
 
         private static string Percent(int v) => v + " %";
         private static string Meters(int v) => v + " м";

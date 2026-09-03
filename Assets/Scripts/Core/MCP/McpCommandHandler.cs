@@ -87,6 +87,7 @@ namespace KitchenDesigner.Core.MCP
                     case "set_setting": return HandleSetSetting(request);
                     case "set_snap_verbose": return HandleSetSnapVerbose(request);
                     case "take_screenshot": return HandleTakeScreenshot(request);
+                    case "set_photo_camera": return HandleSetPhotoCamera(request);
                     case "cycle_drawer_animation": return HandleCycleDrawerAnimation(request);
                     case "list_materials": return HandleListMaterials(request);
                     case "reload_textures": return HandleReloadTextures(request);

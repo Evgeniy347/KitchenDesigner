@@ -44,6 +44,7 @@ namespace KitchenDesigner.Core
                 SetField(settings, "Radius", s.PhotoAoRadiusMM * MillimetreToMetre);
                 SetField(settings, "DirectLightingStrength", s.PhotoAoDirectPct * PercentToUnit);
                 SetField(settings, "Falloff", (float)s.PhotoAoFalloffM);
+                SetBoolField(settings, "Downsample", !s.PhotoAoFullRes);
             }
         }
 
@@ -75,6 +76,17 @@ namespace KitchenDesigner.Core
                 if (data == null) continue;
                 foreach (var feature in data.rendererFeatures)
                     if (feature != null) yield return feature;
+            }
+        }
+
+        private static void SetBoolField(object target, string name, bool value)
+        {
+            try
+            {
+                target.GetType().GetField(name, Hidden)?.SetValue(target, value);
+            }
+            catch (Exception)
+            {
             }
         }
 

@@ -166,7 +166,11 @@ namespace KitchenDesigner.Core
         public PhotoQualityPreset PhotoQuality
         {
             get => _photoQuality;
-            set => _photoQuality = value;
+            set
+            {
+                _photoQuality = value;
+                PhotoQualityPresetTable.ApplyToggles(value, this);
+            }
         }
 
         public bool PhotoShadows
@@ -307,28 +311,7 @@ namespace KitchenDesigner.Core
             _mouseSensitivity = 1f;
             _wasdSpeed = 1f;
             _arrowSpeed = 1f;
-            _photoQuality = PhotoQualityPreset.High;
-            _photoShadows = true;
-            _photoSoftShadows = true;
-            _photoAntiAliasing = true;
-            _photoSupersampling = true;
-            _photoAmbientOcclusion = true;
-            _photoBloom = true;
-            _photoVignette = true;
-            _photoCeiling = true;
-            _photoSSGI = false;
-            _photoAmbientPct = PHOTO_AMBIENT_DEFAULT_PCT;
-            _photoFloorBouncePct = PHOTO_FLOOR_BOUNCE_DEFAULT_PCT;
-            _photoExposurePct = PHOTO_EXPOSURE_DEFAULT_PCT;
-            _photoContrastPct = PHOTO_CONTRAST_DEFAULT_PCT;
-            _photoSaturationPct = PHOTO_SATURATION_DEFAULT_PCT;
-            _photoBloomPct = PHOTO_BLOOM_DEFAULT_PCT;
-            _photoBloomThresholdPct = PHOTO_BLOOM_THRESHOLD_DEFAULT_PCT;
-            _photoVignettePct = PHOTO_VIGNETTE_DEFAULT_PCT;
-            _photoSunShadowStrengthPct = PHOTO_SUN_SHADOW_DEFAULT_PCT;
-            _photoShadowDistanceM = PHOTO_SHADOW_DISTANCE_DEFAULT_M;
-            _photoLampShadows = true;
-            ResetPhotoTuning();
+            ResetPhotoLook();
         }
 
         public KitchenSettingsData ToData()
@@ -403,28 +386,7 @@ namespace KitchenDesigner.Core
             _mouseSensitivity = Mathf.Clamp(data.mouseSensitivity, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
             _wasdSpeed = Mathf.Clamp(data.wasdSpeed, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
             _arrowSpeed = Mathf.Clamp(data.arrowSpeed, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
-            _photoQuality = (PhotoQualityPreset)Mathf.Clamp(data.photoQuality, 0, 3);
-            _photoShadows = data.photoShadows;
-            _photoSoftShadows = data.photoSoftShadows;
-            _photoAntiAliasing = data.photoAntiAliasing;
-            _photoSupersampling = data.photoSupersampling;
-            _photoAmbientOcclusion = data.photoAmbientOcclusion;
-            _photoBloom = data.photoBloom;
-            _photoVignette = data.photoVignette;
-            _photoCeiling = data.photoCeiling;
-            _photoSSGI = data.photoSSGI;
-            PhotoAmbientPct = data.photoAmbientPct;
-            PhotoFloorBouncePct = data.photoFloorBouncePct;
-            PhotoExposurePct = data.photoExposurePct;
-            PhotoContrastPct = data.photoContrastPct;
-            PhotoSaturationPct = data.photoSaturationPct;
-            PhotoBloomPct = data.photoBloomPct;
-            PhotoBloomThresholdPct = data.photoBloomThresholdPct;
-            PhotoVignettePct = data.photoVignettePct;
-            PhotoSunShadowStrengthPct = data.photoSunShadowStrengthPct;
-            PhotoShadowDistanceM = data.photoShadowDistanceM;
-            _photoLampShadows = data.photoLampShadows;
-            ApplyPhotoTuning(data);
+            ApplyPhotoSettings(data);
         }
 
         private void ApplyViewPresets(KitchenSettingsData data)

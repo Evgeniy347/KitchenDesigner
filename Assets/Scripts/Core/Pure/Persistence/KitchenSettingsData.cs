@@ -55,7 +55,13 @@ namespace KitchenDesigner.Core
         public int photoShadowDistanceM = KitchenSettings.PHOTO_SHADOW_DISTANCE_DEFAULT_M;
         public bool photoLampShadows = true;
 
+        public const int CURRENT_PHOTO_SCHEMA = 1;
+        public int photoSchema = 0;
+
         public bool photoHdr = true;
+        public int photoBloomClampPct = KitchenSettings.PHOTO_BLOOM_CLAMP_DEFAULT_PCT;
+        public int photoTonemap = KitchenSettings.PHOTO_TONEMAP_DEFAULT;
+        public bool photoAoFullRes = true;
         public int photoRenderScalePct = KitchenSettings.PHOTO_RENDER_SCALE_DEFAULT_PCT;
         public int photoShadowMapPx = KitchenSettings.PHOTO_SHADOWMAP_DEFAULT_PX;
         public int photoLightsPerObject = KitchenSettings.PHOTO_LIGHTS_PER_OBJECT_DEFAULT;

@@ -866,6 +866,75 @@ public class RoundTripTests
         gs.ApplyFrom(backup);
     }
 
+    /// <summary>Миграция фоторежима. В сборках, где у URPForwardRenderer не был
+    /// назначен postProcessData, вся постобработка молча не выполнялась: тонемаппинг,
+    /// экспозиция, свечение и виньетка не влияли ни на один пиксель. Числа, которые
+    /// пользователь крутил в тот период, поэтому не несут его выбора — они не были
+    /// ничем проверены глазом. Когда постобработка ожила, свечение 103 % при пороге
+    /// 108 % выжгло 33 % кадра добела, а виньетка 70 % задавила 24 %.
+    /// Отсутствие photoSchema в файле — точный штамп той эпохи: его пишет только
+    /// сборка с уже живым конвейером. Так что вся секция возвращается к умолчаниям,
+    /// а PhotoLookMigrated поднимает флаг, по которому SceneRestorer говорит об этом
+    /// пользователю вслух — молча переписывать чужие настройки нельзя.
+    /// Кадрирование камеры не трогается: оно живёт в ProjectData, а не здесь.</summary>
+    [Test]
+    public void Settings_PhotoLookFromDeadPipelineEra_ResetsToDefaultsAndSaysSo()
+    {
+        var gs = KitchenSettings.Instance;
+        var backup = gs.ToData();
+
+        var data = JsonUtility.FromJson<KitchenSettingsData>(
+            "{\"photoBloomPct\":103,\"photoBloomThresholdPct\":108,"
+            + "\"photoVignettePct\":70,\"photoExposurePct\":3,\"photoAmbientPct\":99,"
+            + "\"photoFloorBouncePct\":97,\"photoSSGI\":true,\"photoAoFalloffM\":11}");
+        Assert.AreEqual(0, data.photoSchema, "старый файл без штампа схемы фоторежима");
+
+        gs.ApplyFrom(data);
+
+        Assert.IsTrue(gs.PhotoLookMigrated, "миграция должна себя объявить");
+        Assert.AreEqual(KitchenSettings.PHOTO_BLOOM_DEFAULT_PCT, gs.PhotoBloomPct, "свечение");
+        Assert.AreEqual(KitchenSettings.PHOTO_BLOOM_THRESHOLD_DEFAULT_PCT,
+            gs.PhotoBloomThresholdPct, "порог свечения");
+        Assert.AreEqual(KitchenSettings.PHOTO_BLOOM_CLAMP_DEFAULT_PCT,
+            gs.PhotoBloomClampPct, "предел свечения");
+        Assert.AreEqual(KitchenSettings.PHOTO_VIGNETTE_DEFAULT_PCT, gs.PhotoVignettePct, "виньетка");
+        Assert.AreEqual(KitchenSettings.PHOTO_EXPOSURE_DEFAULT_PCT, gs.PhotoExposurePct, "экспозиция");
+        Assert.AreEqual(KitchenSettings.PHOTO_FLOOR_BOUNCE_DEFAULT_PCT,
+            gs.PhotoFloorBouncePct, "отскок от пола");
+        Assert.AreEqual(KitchenSettings.PHOTO_AO_FALLOFF_DEFAULT_M, gs.PhotoAoFalloffM, "затухание AO");
+        Assert.IsFalse(gs.PhotoSSGI, "SSGI выключен по умолчанию");
+
+        gs.ApplyFrom(backup);
+    }
+
+    /// <summary>Обратная сторона той же миграции: файл, записанный уже живым
+    /// конвейером, несёт photoSchema = 1, и его числа — осознанный выбор. Их не
+    /// трогают, иначе пользователь не смог бы сохранить ни одну свою настройку.
+    /// Без этого теста первый был бы зелёным и при «сбрасывать всегда».</summary>
+    [Test]
+    public void Settings_PhotoLookSavedByALivePipeline_SurvivesTheRoundTrip()
+    {
+        var gs = KitchenSettings.Instance;
+        var backup = gs.ToData();
+
+        gs.PhotoBloomPct = 77;
+        gs.PhotoVignettePct = 41;
+        gs.PhotoBloomClampPct = 913;
+        var saved = gs.ToData();
+        Assert.AreEqual(KitchenSettingsData.CURRENT_PHOTO_SCHEMA, saved.photoSchema,
+            "сохранение всегда ставит текущий штамп");
+
+        gs.ResetToDefaults();
+        gs.ApplyFrom(saved);
+
+        Assert.IsFalse(gs.PhotoLookMigrated, "новый файл не мигрируют");
+        Assert.AreEqual(77, gs.PhotoBloomPct, "свечение пережило круг");
+        Assert.AreEqual(41, gs.PhotoVignettePct, "виньетка пережила круг");
+        Assert.AreEqual(913, gs.PhotoBloomClampPct, "предел свечения пережил круг");
+
+        gs.ApplyFrom(backup);
+    }
+
     /// <summary>Миграция: у старого проекта (viewSchema = 0) единственный набор
     /// флагов был общим на все режимы — он становится пресетом обычного, а
     /// «помещение» получает значения из коробки.</summary>

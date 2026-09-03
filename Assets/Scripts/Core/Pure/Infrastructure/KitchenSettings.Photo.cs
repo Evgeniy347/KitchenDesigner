@@ -18,9 +18,18 @@ namespace KitchenDesigner.Core
         public const int PHOTO_BOUNCE_MAX_DEFAULT_PCT = 400;
         public const int PHOTO_AMBIENT_PART_MAX_PCT = 400;
 
-        public const int PHOTO_AO_INTENSITY_DEFAULT_PCT = 200;
+        public const int PHOTO_TONEMAP_NONE = 0;
+        public const int PHOTO_TONEMAP_NEUTRAL = 1;
+        public const int PHOTO_TONEMAP_ACES = 2;
+        public const int PHOTO_TONEMAP_DEFAULT = PHOTO_TONEMAP_NEUTRAL;
+
+        public const int PHOTO_BLOOM_CLAMP_DEFAULT_PCT = 400;
+        public const int PHOTO_BLOOM_CLAMP_MIN_PCT = 100;
+        public const int PHOTO_BLOOM_CLAMP_MAX_PCT = 20000;
+
+        public const int PHOTO_AO_INTENSITY_DEFAULT_PCT = 250;
         public const int PHOTO_AO_INTENSITY_MAX_PCT = 500;
-        public const int PHOTO_AO_RADIUS_DEFAULT_MM = 200;
+        public const int PHOTO_AO_RADIUS_DEFAULT_MM = 50;
         public const int PHOTO_AO_RADIUS_MIN_MM = 10;
         public const int PHOTO_AO_RADIUS_MAX_MM = 1000;
         public const int PHOTO_AO_DIRECT_DEFAULT_PCT = 10;
@@ -50,6 +59,10 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _photoAmbientSkyPct = PHOTO_AMBIENT_SKY_DEFAULT_PCT;
         [SerializeField] private int _photoAmbientEquatorPct = PHOTO_AMBIENT_EQUATOR_DEFAULT_PCT;
         [SerializeField] private int _photoBounceMaxPct = PHOTO_BOUNCE_MAX_DEFAULT_PCT;
+
+        [SerializeField] private int _photoBloomClampPct = PHOTO_BLOOM_CLAMP_DEFAULT_PCT;
+        [SerializeField] private int _photoTonemap = PHOTO_TONEMAP_DEFAULT;
+        [SerializeField] private bool _photoAoFullRes = true;
 
         [SerializeField] private int _photoAoIntensityPct = PHOTO_AO_INTENSITY_DEFAULT_PCT;
         [SerializeField] private int _photoAoRadiusMM = PHOTO_AO_RADIUS_DEFAULT_MM;
@@ -102,6 +115,24 @@ namespace KitchenDesigner.Core
         {
             get => _photoBounceMaxPct;
             set => _photoBounceMaxPct = Mathf.Clamp(value, 0, PHOTO_AMBIENT_PART_MAX_PCT);
+        }
+
+        public int PhotoBloomClampPct
+        {
+            get => _photoBloomClampPct;
+            set => _photoBloomClampPct = Mathf.Clamp(value, PHOTO_BLOOM_CLAMP_MIN_PCT, PHOTO_BLOOM_CLAMP_MAX_PCT);
+        }
+
+        public int PhotoTonemap
+        {
+            get => _photoTonemap;
+            set => _photoTonemap = Mathf.Clamp(value, PHOTO_TONEMAP_NONE, PHOTO_TONEMAP_ACES);
+        }
+
+        public bool PhotoAoFullRes
+        {
+            get => _photoAoFullRes;
+            set => _photoAoFullRes = value;
         }
 
         public int PhotoAoIntensityPct
@@ -158,6 +189,67 @@ namespace KitchenDesigner.Core
             set => _photoSsgiBlurPx = Mathf.Clamp(value, 0, PHOTO_SSGI_BLUR_MAX_PX);
         }
 
+        internal void ResetPhotoLook()
+        {
+            _photoQuality = PhotoQualityPreset.High;
+            _photoShadows = true;
+            _photoSoftShadows = true;
+            _photoAntiAliasing = true;
+            _photoSupersampling = true;
+            _photoAmbientOcclusion = true;
+            _photoBloom = true;
+            _photoVignette = true;
+            _photoCeiling = true;
+            _photoSSGI = false;
+            _photoLampShadows = true;
+            _photoAmbientPct = PHOTO_AMBIENT_DEFAULT_PCT;
+            _photoFloorBouncePct = PHOTO_FLOOR_BOUNCE_DEFAULT_PCT;
+            _photoExposurePct = PHOTO_EXPOSURE_DEFAULT_PCT;
+            _photoContrastPct = PHOTO_CONTRAST_DEFAULT_PCT;
+            _photoSaturationPct = PHOTO_SATURATION_DEFAULT_PCT;
+            _photoBloomPct = PHOTO_BLOOM_DEFAULT_PCT;
+            _photoBloomThresholdPct = PHOTO_BLOOM_THRESHOLD_DEFAULT_PCT;
+            _photoVignettePct = PHOTO_VIGNETTE_DEFAULT_PCT;
+            _photoSunShadowStrengthPct = PHOTO_SUN_SHADOW_DEFAULT_PCT;
+            _photoShadowDistanceM = PHOTO_SHADOW_DISTANCE_DEFAULT_M;
+            ResetPhotoTuning();
+        }
+
+        public bool PhotoLookMigrated { get; private set; }
+
+        private void ApplyPhotoSettings(KitchenSettingsData data)
+        {
+            PhotoLookMigrated = data.photoSchema < KitchenSettingsData.CURRENT_PHOTO_SCHEMA;
+            if (PhotoLookMigrated)
+            {
+                ResetPhotoLook();
+                return;
+            }
+
+            _photoQuality = (PhotoQualityPreset)Mathf.Clamp(data.photoQuality, 0, 3);
+            _photoShadows = data.photoShadows;
+            _photoSoftShadows = data.photoSoftShadows;
+            _photoAntiAliasing = data.photoAntiAliasing;
+            _photoSupersampling = data.photoSupersampling;
+            _photoAmbientOcclusion = data.photoAmbientOcclusion;
+            _photoBloom = data.photoBloom;
+            _photoVignette = data.photoVignette;
+            _photoCeiling = data.photoCeiling;
+            _photoSSGI = data.photoSSGI;
+            _photoLampShadows = data.photoLampShadows;
+            PhotoAmbientPct = data.photoAmbientPct;
+            PhotoFloorBouncePct = data.photoFloorBouncePct;
+            PhotoExposurePct = data.photoExposurePct;
+            PhotoContrastPct = data.photoContrastPct;
+            PhotoSaturationPct = data.photoSaturationPct;
+            PhotoBloomPct = data.photoBloomPct;
+            PhotoBloomThresholdPct = data.photoBloomThresholdPct;
+            PhotoVignettePct = data.photoVignettePct;
+            PhotoSunShadowStrengthPct = data.photoSunShadowStrengthPct;
+            PhotoShadowDistanceM = data.photoShadowDistanceM;
+            ApplyPhotoTuning(data);
+        }
+
         private void ResetPhotoTuning()
         {
             _photoHdr = true;
@@ -167,6 +259,9 @@ namespace KitchenDesigner.Core
             _photoAmbientSkyPct = PHOTO_AMBIENT_SKY_DEFAULT_PCT;
             _photoAmbientEquatorPct = PHOTO_AMBIENT_EQUATOR_DEFAULT_PCT;
             _photoBounceMaxPct = PHOTO_BOUNCE_MAX_DEFAULT_PCT;
+            _photoBloomClampPct = PHOTO_BLOOM_CLAMP_DEFAULT_PCT;
+            _photoTonemap = PHOTO_TONEMAP_DEFAULT;
+            _photoAoFullRes = true;
             _photoAoIntensityPct = PHOTO_AO_INTENSITY_DEFAULT_PCT;
             _photoAoRadiusMM = PHOTO_AO_RADIUS_DEFAULT_MM;
             _photoAoDirectPct = PHOTO_AO_DIRECT_DEFAULT_PCT;
@@ -180,6 +275,7 @@ namespace KitchenDesigner.Core
 
         private void CapturePhotoTuning(KitchenSettingsData data)
         {
+            data.photoSchema = KitchenSettingsData.CURRENT_PHOTO_SCHEMA;
             data.photoHdr = _photoHdr;
             data.photoRenderScalePct = _photoRenderScalePct;
             data.photoShadowMapPx = _photoShadowMapPx;
@@ -187,6 +283,9 @@ namespace KitchenDesigner.Core
             data.photoAmbientSkyPct = _photoAmbientSkyPct;
             data.photoAmbientEquatorPct = _photoAmbientEquatorPct;
             data.photoBounceMaxPct = _photoBounceMaxPct;
+            data.photoBloomClampPct = _photoBloomClampPct;
+            data.photoTonemap = _photoTonemap;
+            data.photoAoFullRes = _photoAoFullRes;
             data.photoAoIntensityPct = _photoAoIntensityPct;
             data.photoAoRadiusMM = _photoAoRadiusMM;
             data.photoAoDirectPct = _photoAoDirectPct;
@@ -207,6 +306,9 @@ namespace KitchenDesigner.Core
             PhotoAmbientSkyPct = data.photoAmbientSkyPct;
             PhotoAmbientEquatorPct = data.photoAmbientEquatorPct;
             PhotoBounceMaxPct = data.photoBounceMaxPct;
+            PhotoBloomClampPct = data.photoBloomClampPct;
+            PhotoTonemap = data.photoTonemap;
+            PhotoAoFullRes = data.photoAoFullRes;
             PhotoAoIntensityPct = data.photoAoIntensityPct;
             PhotoAoRadiusMM = data.photoAoRadiusMM;
             PhotoAoDirectPct = data.photoAoDirectPct;
