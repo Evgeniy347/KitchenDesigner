@@ -772,23 +772,31 @@ public class SettingsPanelUITests
 
         var text = SettingsMcpTab.GuideText();
         StringAssert.Contains(SettingsMcpTab.ServerName, text, "имя MCP-сервера");
-        StringAssert.Contains("npm run build", text, "как собрать мост");
+        StringAssert.Contains("127.0.0.1:9337/mcp", text, "адрес, который вводит пользователь");
+        StringAssert.DoesNotContain("npm", text,
+            "мост на Node больше не собирают: сервер живёт внутри программы, и любое "
+            + "упоминание npm отправляет пользователя ставить то, чего мы не поставляем");
         Assert.Greater(text.Length, 1000, "инструкция подозрительно короткая — файл обрезан?");
     }
 
-    /// <summary>Текст для агента — это САМА инструкция, а не ссылка на неё:
-    /// агенту, у которого нет выхода в сеть, ссылка бесполезна. Порт при этом
-    /// объявляется в шапке и перебивает то, что написано в тексте: приложение
-    /// можно запустить с -mcpPort, и агент обязан взять живой порт.</summary>
+    /// <summary>Текст для агента больше НЕ содержит инструкцию целиком: агенту
+    /// нужен один адрес, а не страница про сборку моста. Порт живой — приложение
+    /// можно запустить с -mcpPort, и в буфер обязан лечь тот порт, который
+    /// программа действительно слушает.</summary>
     [Test]
-    public void McpTab_AgentPrompt_CarriesTheWholeGuideAndTheLivePort()
+    public void McpTab_AgentPrompt_IsShort_NamesTheUrl_AndAsksForPing()
     {
         var prompt = SettingsMcpTab.AgentPrompt(9500);
 
-        StringAssert.Contains(SettingsMcpTab.GuideText(), prompt,
-            "инструкция вложена в текст целиком, а не заменена ссылкой");
-        StringAssert.Contains("9500", prompt, "живой порт назван");
+        StringAssert.Contains("http://127.0.0.1:9500/mcp", prompt, "живой адрес названа целиком");
+        StringAssert.Contains(SettingsMcpTab.ServerName, prompt, "под каким именем прописать");
         StringAssert.Contains("ping", prompt, "чем проверить связь");
+        StringAssert.DoesNotContain("node", prompt,
+            "ставить Node пользователю больше не нужно, и просить его об этом нельзя");
+        StringAssert.DoesNotContain("npm", prompt);
+        Assert.Less(prompt.Length, 1500,
+            "текст читает агент и человек: страница на 200 строк вместо адреса — это "
+            + "ровно та ситуация, ради ухода от которой сервер и переехал внутрь программы");
     }
 
     /// <summary>Второй способ — вставить конфигурацию руками. Это готовый JSON,
@@ -802,9 +810,11 @@ public class SettingsPanelUITests
         var parsed = Newtonsoft.Json.Linq.JObject.Parse(snippet);
         var server = parsed["mcpServers"]?[SettingsMcpTab.ServerName];
         Assert.IsNotNull(server, "в конфиге нет сервера " + SettingsMcpTab.ServerName);
-        Assert.AreEqual("node", (string?)server!["command"], "мост запускается node");
-        Assert.AreEqual("9500", (string?)server["env"]!["UNITY_MCP_PORT"],
-            "порт в конфиге — тот же, что показан на вкладке");
+        Assert.AreEqual("http://127.0.0.1:9500/mcp", (string?)server!["url"],
+            "клиент подключается по адресу; порт — тот же, что показан на вкладке");
+        Assert.IsNull(server["command"],
+            "command означало бы «запусти процесс»: запускать больше нечего, и попытка "
+            + "запустить node у пользователя без Node молча оставит его без сервера");
     }
 
     /// <summary>Состояние моста — первое, что смотрит человек, у которого агент

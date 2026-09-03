@@ -49,28 +49,30 @@ namespace KitchenDesigner.Core.UI
 
         public static string AgentPrompt() => AgentPrompt(ActivePort());
 
+        public static string Url(int port) => "http://127.0.0.1:" + port + McpBridgeStatus.Path;
+
         public static string AgentPrompt(int port) =>
-            "Подключи меня к Kitchen Designer по MCP. Инструкция целиком ниже — прочитай её "
-            + "и сделай всё сам.\n"
+            "Подключи меня к Kitchen Designer по MCP.\n"
             + "\n"
-            + $"Программа уже запущена и слушает TCP 127.0.0.1:{port}. Если в инструкции "
-            + $"встретится другой порт, верным считай {port}.\n"
-            + "Когда закончишь, вызови инструмент ping и скажи, что он ответил.\n"
+            + "Сервер уже запущен на этом компьютере и ждёт подключения:\n"
+            + $"  {Url(port)}\n"
+            + "Транспорт — Streamable HTTP, авторизации нет, слушает только localhost.\n"
             + "\n"
-            + "-----------------------------------------\n"
+            + $"Добавь его в свою конфигурацию под именем {ServerName}. Например:\n"
+            + $"  Claude Code:      claude mcp add --transport http {ServerName} {Url(port)}\n"
+            + $"  Cursor / VS Code: запись с \"url\": \"{Url(port)}\"\n"
+            + $"  Codex:            [mcp_servers.{ServerName}]  url = \"{Url(port)}\"\n"
             + "\n"
-            + GuideText();
+            + "Когда подключишься, вызови инструмент ping и скажи, что он ответил, затем "
+            + "прочитай get_project_instructions. Если сервер недоступен — программа "
+            + "Kitchen Designer закрыта, попроси меня открыть её.";
 
         public static string ConfigSnippet() => ConfigSnippet(ActivePort());
 
         public static string ConfigSnippet(int port) =>
             "{\n"
             + "  \"mcpServers\": {\n"
-            + $"    \"{ServerName}\": {{\n"
-            + "      \"command\": \"node\",\n"
-            + "      \"args\": [\"<полный путь>/mcp-server/dist/index.js\"],\n"
-            + $"      \"env\": {{ \"UNITY_MCP_PORT\": \"{port}\" }}\n"
-            + "    }\n"
+            + $"    \"{ServerName}\": {{ \"url\": \"{Url(port)}\" }}\n"
             + "  }\n"
             + "}";
 
@@ -95,8 +97,8 @@ namespace KitchenDesigner.Core.UI
             y -= SettingsRowFactory.GapPx;
             _rows.AddHeader(page, ref y, "Подключение");
             AddParagraph(page, ref y, "McpConnectHint",
-                "Кнопка кладёт в буфер всю инструкцию и ваш порт. Вставьте её агенту — "
-                + "интернет для этого не нужен.", 44f);
+                "Кнопка кладёт в буфер короткий текст с адресом сервера. Вставьте его "
+                + "агенту — он подключится сам.", 44f);
             AddWideButton(page, ref y, "McpCopyPrompt", "Скопировать инструкцию для агента",
                 () => Copy(AgentPrompt()));
             AddWideButton(page, ref y, "McpCopyConfig", "Скопировать конфиг mcp.json",
