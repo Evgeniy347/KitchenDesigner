@@ -749,6 +749,73 @@ public class IsoScreenshotTests
         yield return RenderIsoFrame(pos, dims, png, capturePanel);
     }
 
+    // ─ Socket and light switch isometric screenshots ────────────────────────
+
+    [UnityTest]
+    public IEnumerator IsoSocket_80x80x10_Default()
+    {
+        yield return RenderSocket(WallDeviceSpec.Default, "IsoSocket",
+            "iso_socket_80x80x10.png");
+    }
+
+    /// <summary>Тройной блок. Посты стоят ВПЛОТНУЮ и умножают ширину габарита —
+    /// единственное поле, которое меняет размер элемента, а не только его
+    /// начинку. Умолчательный кадр этого не показывает вовсе: там пост один, и
+    /// раскладка, потерявшая шаг между постами, выглядела бы на нём правильно.</summary>
+    [UnityTest]
+    public IEnumerator IsoSocket_ThreePostsStandFlushAndTripleTheWidth()
+    {
+        var triple = WallDeviceSpec.Clamped(WallDeviceLayout.DefaultPlateWidthMM,
+            WallDeviceLayout.DefaultPlateHeightMM, WallDeviceLayout.DefaultProtrusionMM,
+            WallDeviceLayout.MaxPostCount);
+
+        Assert.AreEqual(WallDeviceLayout.DefaultPlateWidthMM * WallDeviceLayout.MaxPostCount,
+            triple.DimensionsMM.x,
+            "кадр имеет смысл только если посты ДЕЙСТВИТЕЛЬНО умножили ширину: иначе он "
+            + "показывает одиночную розетку под другим именем");
+
+        yield return RenderSocket(triple, "IsoSocketTriple", "iso_socket_triple.png", false);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoLightSwitch_80x80x10_Default()
+    {
+        yield return RenderLightSwitch(WallDeviceSpec.Default, "IsoLightSwitch",
+            "iso_light_switch_80x80x10.png");
+    }
+
+    private IEnumerator RenderSocket(WallDeviceSpec spec, string name, string png,
+        bool capturePanel = true)
+    {
+        var go = ElementFactory.CreateSocket(spec, name, Vector3.zero);
+        _spawned.Add(go);
+
+        var socket = go.GetComponent<SocketElement>();
+        Assert.IsNotNull(socket, "фабрика обязана вернуть именно SocketElement");
+        Assert.AreEqual(spec.PostCount, socket!.PostCount,
+            "заказанное число постов обязано дойти неподрезанным, иначе кадр блока молча "
+            + "вырождается в кадр одиночной розетки");
+        Assert.AreEqual(spec.DimensionsMM, socket.DimensionsMM,
+            "габарит ВЫЧИСЛЯЕТСЯ из формы: разойдись он с раскладкой, камера кадрировала "
+            + "бы не то, что построено");
+
+        yield return RenderIsoFrame(Vector3.zero, spec.DimensionsMM, png, capturePanel);
+    }
+
+    private IEnumerator RenderLightSwitch(WallDeviceSpec spec, string name, string png,
+        bool capturePanel = true)
+    {
+        var go = ElementFactory.CreateLightSwitch(spec, true, null, name, Vector3.zero);
+        _spawned.Add(go);
+
+        var source = go.GetComponent<LightSwitchElement>();
+        Assert.IsNotNull(source, "фабрика обязана вернуть именно LightSwitchElement");
+        Assert.AreEqual(spec.DimensionsMM, source!.DimensionsMM,
+            "габарит ВЫЧИСЛЯЕТСЯ из формы, как и у розетки");
+
+        yield return RenderIsoFrame(Vector3.zero, spec.DimensionsMM, png, capturePanel);
+    }
+
     private IEnumerator RenderIsoFrame(Vector3 pos, Vector3Int dims, string png,
         bool capturePanel)
     {

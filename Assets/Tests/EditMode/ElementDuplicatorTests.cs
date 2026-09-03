@@ -298,6 +298,50 @@ public class ElementDuplicatorTests
     /// рефлексией по сборке ядра, поэтому новый ITabletop сначала уронит сам список,
     /// а не пройдёт мимо проверки (CONVENTIONS.md → «A field list written out more
     /// than twice gets a parity test»).</summary>
+    /// <summary>Четыре поля формы у обоих настенных устройств, и два из них —
+    /// ширина и высота рамки — одного рода и в одних единицах. Ветка
+    /// дублирования, переставившая их местами, отдаёт копию, которая выглядит
+    /// почти как оригинал и молча врёт о размерах; поэтому здесь числа не только
+    /// незаводские, но и РАЗНЫЕ между собой. Число постов проверяется отдельной
+    /// строкой: оно умножает ширину габарита, и его потеря — единственная,
+    /// которую видно глазом.</summary>
+    [Test]
+    public void Duplicate_Socket_KeepsAllFourShapeFields()
+    {
+        var source = Made(ElementFactory.CreateSocket(
+            WallDeviceSpec.Clamped(97, 83, 13, 2), "SocketShape", Vector3.zero));
+
+        var copy = ElementFactory.Duplicate(source).GetComponent<SocketElement>();
+
+        Assert.AreEqual(97, copy.PlateWidthMM, "ширина рамки");
+        Assert.AreEqual(83, copy.PlateHeightMM, "высота рамки");
+        Assert.AreEqual(13, copy.ProtrusionMM, "вынос от стены");
+        Assert.AreEqual(2, copy.PostCount, "число постов");
+    }
+
+    /// <summary>У выключателя к тем же четырём добавляются питание и список
+    /// светильников. Список — это и есть вся связь: копия, потерявшая его,
+    /// остаётся выключателем, который ничем не управляет, и заметить это можно
+    /// только щёлкнув по нему.</summary>
+    [Test]
+    public void Duplicate_LightSwitch_KeepsItsShapePowerAndLinks()
+    {
+        Made(ElementFactory.CreateLightSource("Люстра", Vector3.zero));
+        var source = Made(ElementFactory.CreateLightSwitch(
+            WallDeviceSpec.Clamped(89, 91, 17, 3), false, new[] { "Люстра" },
+            "SwitchShape", Vector3.zero));
+
+        var copy = ElementFactory.Duplicate(source).GetComponent<LightSwitchElement>();
+
+        Assert.AreEqual(89, copy.PlateWidthMM, "ширина рамки");
+        Assert.AreEqual(91, copy.PlateHeightMM, "высота рамки");
+        Assert.AreEqual(17, copy.ProtrusionMM, "вынос от стены");
+        Assert.AreEqual(3, copy.PostCount, "число клавиш");
+        Assert.IsFalse(copy.IsOn, "состояние клавиши");
+        Assert.AreEqual(new[] { "Люстра" }, copy.LightNames,
+            "список светильников — это вся связь, и без него копия ничем не управляет");
+    }
+
     [Test]
     public void Duplicate_EveryTabletopType_KeepsBothDecorSlots()
     {
@@ -312,6 +356,8 @@ public class ElementDuplicatorTests
             Made(ElementFactory.CreateBed(new Vector3Int(1600, 500, 2000), true, true, "Bed", Vector3.zero)),
             Made(ElementFactory.CreateToilet(430, "Toilet", Vector3.zero)),
             Made(ElementFactory.CreateWallHungToilet(430, 640, "WallHungToilet", Vector3.zero)),
+            Made(ElementFactory.CreateSocket(WallDeviceSpec.Clamped(97, 83, 13, 2), "Socket", Vector3.zero)),
+            Made(ElementFactory.CreateLightSwitch(WallDeviceSpec.Clamped(89, 91, 17, 3), false, null, "LightSwitch", Vector3.zero)),
         };
 
         var declared = new List<Type>();

@@ -40,6 +40,10 @@ namespace KitchenDesigner.Core.UI
 
         void SpawnShowerColumn(string name);
 
+        void SpawnSocket(string name);
+
+        void SpawnLightSwitch(string name);
+
         void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom);
 

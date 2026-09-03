@@ -96,6 +96,10 @@ namespace KitchenDesigner.Core.UI
 
             public bool isShowerColumn => kind == SidebarItemKind.ShowerColumn;
 
+            public bool isSocket => kind == SidebarItemKind.Socket;
+
+            public bool isLightSwitch => kind == SidebarItemKind.LightSwitch;
+
             public bool isFloor => kind == SidebarItemKind.Floor;
 
             public bool isLightSource => kind == SidebarItemKind.LightSource;
@@ -140,6 +144,8 @@ namespace KitchenDesigner.Core.UI
                             FloorElement.DEFAULT_THICKNESS_MM,
                             FloorElement.DEFAULT_SIZE_MM), SidebarItemKind.Floor),
                         LightSourceItem("Источник света"),
+                        SocketItem("Розетка"),
+                        LightSwitchItem("Выключатель"),
                     }
                 },
             };
@@ -325,6 +331,12 @@ namespace KitchenDesigner.Core.UI
                 ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM, totalH,
                 ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM), SidebarItemKind.ScrewLeg);
         }
+
+        private static Item SocketItem(string name)
+            => new Item(name, WallDeviceSpec.Default.DimensionsMM, SidebarItemKind.Socket);
+
+        private static Item LightSwitchItem(string name)
+            => new Item(name, WallDeviceSpec.Default.DimensionsMM, SidebarItemKind.LightSwitch);
 
         private static Item LightSourceItem(string name)
         {

@@ -70,6 +70,12 @@ namespace KitchenDesigner.Core.UI
                 case SidebarItemKind.ShowerColumn:
                     spawner.SpawnShowerColumn(item.name);
                     break;
+                case SidebarItemKind.Socket:
+                    spawner.SpawnSocket(item.name);
+                    break;
+                case SidebarItemKind.LightSwitch:
+                    spawner.SpawnLightSwitch(item.name);
+                    break;
                 case SidebarItemKind.Table:
                     spawner.SpawnTable(item.dims, item.name);
                     break;

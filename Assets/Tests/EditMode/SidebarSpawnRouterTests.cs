@@ -88,6 +88,10 @@ public class SidebarSpawnRouterTests
 
         public void SpawnShowerColumn(string name) => Put(nameof(SpawnShowerColumn), name);
 
+        public void SpawnSocket(string name) => Put(nameof(SpawnSocket), name);
+
+        public void SpawnLightSwitch(string name) => Put(nameof(SpawnLightSwitch), name);
+
         public void SpawnPanel(Vector3Int dims, string name,
             int gapLeft, int gapRight, int gapTop, int gapBottom) =>
             Put(nameof(SpawnPanel), dims, name, gapLeft, gapRight, gapTop, gapBottom);

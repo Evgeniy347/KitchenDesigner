@@ -33,6 +33,7 @@ namespace KitchenDesigner.Core.UI
 
         private readonly ContextMenuLayout _layout = new();
         private readonly ContextMenuTextureSection _textures;
+        private readonly ContextMenuLightLinkSection _lightLinks;
         private readonly ContextMenuFieldTracker _fields;
         private readonly ContextMenuEdgeSection _edges;
         private readonly ContextMenuGrooveSection _grooves;
@@ -55,6 +56,7 @@ namespace KitchenDesigner.Core.UI
         private readonly BathtubFieldsEditor _bathtubFields;
         private readonly BathMixerFieldsEditor _bathMixerFields;
         private readonly ShowerColumnFieldsEditor _showerColumnFields;
+        private readonly WallDeviceFieldsEditor _wallDeviceFields;
         private readonly WallOpeningFieldsEditor _openingFields;
         private readonly FacadeFieldsEditor _facadeFields;
         private readonly AssembledFacadeFieldsEditor _assembledFields;
@@ -66,6 +68,7 @@ namespace KitchenDesigner.Core.UI
         public ContextMenuUI()
         {
             _textures = new ContextMenuTextureSection(this);
+            _lightLinks = new ContextMenuLightLinkSection(this);
             _fields = new ContextMenuFieldTracker(Apply);
             _edges = new ContextMenuEdgeSection(this);
             _grooves = new ContextMenuGrooveSection(this);
@@ -88,6 +91,7 @@ namespace KitchenDesigner.Core.UI
             _bathtubFields = new BathtubFieldsEditor(this);
             _bathMixerFields = new BathMixerFieldsEditor(this);
             _showerColumnFields = new ShowerColumnFieldsEditor(this);
+            _wallDeviceFields = new WallDeviceFieldsEditor(this);
             _openingFields = new WallOpeningFieldsEditor(this);
             _facadeFields = new FacadeFieldsEditor(this);
             _assembledFields = new AssembledFacadeFieldsEditor(this);
@@ -96,7 +100,7 @@ namespace KitchenDesigner.Core.UI
                 _radialFields, _cooktopFields, _drawerFields, _pillarFields, _screwLegFields,
                 _tableFields, _stoolFields, _chairFields, _sofaFields, _bedFields,
                 _pouffeFields, _toiletFields, _bathtubFields, _bathMixerFields,
-                _showerColumnFields, _openingFields, _lights,
+                _showerColumnFields, _wallDeviceFields, _openingFields, _lights,
                 _assembledFields, _facadeFields,
             };
         }
@@ -164,6 +168,7 @@ namespace KitchenDesigner.Core.UI
             _lights.Build();
             BuildPositionSection(panel.transform);
             _textures.Build(panel.transform, _materials.Build());
+            _lightLinks.Build(panel.transform);
             BuildPropertySection();
             BuildActions(panel.transform);
             ConfigureFieldInput();
@@ -316,6 +321,7 @@ namespace KitchenDesigner.Core.UI
             _bathtubFields.Build();
             _bathMixerFields.Build();
             _showerColumnFields.Build();
+            _wallDeviceFields.Build();
             _pillarFields.Build();
             _screwLegFields.Build();
         }
@@ -474,6 +480,12 @@ namespace KitchenDesigner.Core.UI
                     _textures.Refresh();
                     RelayoutForTarget();
                 }
+
+                if (_lightLinks.ChangedOutsideTheMenu())
+                {
+                    _lightLinks.Refresh();
+                    RelayoutForTarget();
+                }
             }
 
             SideHighlighter.Sync();
@@ -542,6 +554,7 @@ namespace KitchenDesigner.Core.UI
                 _rotationDisplay.Forget();
                 _grooves.Collapse();
                 _textures.Collapse();
+                _lightLinks.Collapse();
                 _gaps.Collapse();
                 _lights.Collapse();
                 TextureOverlayHandles.End();
@@ -586,6 +599,7 @@ namespace KitchenDesigner.Core.UI
             _edges.Refresh();
             if (element.SupportsTextureOverlays) _textures.RebuildMaterialOptions();
             _textures.Refresh();
+            _lightLinks.Refresh();
             RelayoutForTarget();
 
                 RefreshTransformFields();

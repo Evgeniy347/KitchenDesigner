@@ -100,6 +100,17 @@ namespace KitchenDesigner.Core.UI
                 BathtubElement.DefaultBowlRadiusMM, BathtubElement.DefaultBowlFilletMM,
                 name, pos));
 
+        public void SpawnSocket(string name) =>
+            PlaceAtHeightUnaffectedByGrid(
+                WallDeviceLayout.SocketCentreAboveFloorMM * AppConstants.MM_TO_UNITS,
+                pos => ElementFactory.CreateSocket(WallDeviceSpec.Default, name, pos));
+
+        public void SpawnLightSwitch(string name) =>
+            PlaceAtHeightUnaffectedByGrid(
+                WallDeviceLayout.SwitchCentreAboveFloorMM * AppConstants.MM_TO_UNITS,
+                pos => ElementFactory.CreateLightSwitch(WallDeviceSpec.Default, true, null,
+                    name, pos));
+
         public void SpawnBathMixer(string name) =>
             PlaceAtHeightUnaffectedByGrid(
                 BathMixerLayout.CentreAboveFloorMM(BathMixerSpec.Default)

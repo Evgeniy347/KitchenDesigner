@@ -379,6 +379,30 @@ public class SidebarCatalogTests
         Assert.IsTrue(lamp.isLightSource, "элемент «Источник света» помечен как источник света");
     }
 
+    /// <summary>Розетка и выключатель — электрика, и живут они в «Помещении»
+    /// рядом с источником света, а не в сантехнике. Габарит обязан быть
+    /// ВЫЧИСЛЕННЫМ из умолчательной спецификации: размер у обоих выводится из
+    /// формы, и вписанное руками число разошлось бы с тем, что реально заводит
+    /// фабрика, при первой же правке умолчаний.</summary>
+    [Test]
+    public void Room_ContainsTheSocketAndTheSwitch_EachWithItsOwnKind()
+    {
+        var room = SidebarCatalog.Build()[RoomIndex];
+
+        var socket = room.items.Find(it => it.name == "Розетка");
+        var lightSwitch = room.items.Find(it => it.name == "Выключатель");
+
+        Assert.IsTrue(socket.isSocket, "розетка обязана нести свой вид");
+        Assert.IsTrue(lightSwitch.isLightSwitch, "выключатель обязан нести свой вид");
+        Assert.AreNotEqual(socket.kind, lightSwitch.kind,
+            "два вида на одну кнопку маршрутизатор не отвергает — он просто зовёт чужой "
+            + "спаун, и кнопка заводит не тот объект");
+        Assert.AreEqual(WallDeviceSpec.Default.DimensionsMM, socket.dims,
+            "габарит розетки в каталоге обязан быть вычисленным из умолчаний");
+        Assert.AreEqual(WallDeviceSpec.Default.DimensionsMM, lightSwitch.dims,
+            "габарит выключателя — тем же порядком");
+    }
+
     /// <summary>Высота кнопки палитры обязана вмещать все строки её названия.
     /// Пока высота была жёстко 26 px, длинные имена техники переносились по
     /// словам и рисовались ЗА кнопкой, налезая на соседний пункт.</summary>

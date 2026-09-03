@@ -27,6 +27,8 @@ namespace KitchenDesigner.Core.UI
         Bathtub,
         BathMixer,
         ShowerColumn,
+        Socket,
+        LightSwitch,
         Floor,
         LightSource,
         Window,

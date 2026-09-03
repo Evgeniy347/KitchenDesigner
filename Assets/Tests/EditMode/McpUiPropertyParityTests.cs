@@ -193,6 +193,10 @@ public class McpUiPropertyParityTests
             BathMixerSpec.Default, PROBE, Vector3.zero));
         yield return ("ShowerColumnElement", () => ElementFactory.CreateShowerColumn(
             ShowerColumnSpec.Default, PROBE, Vector3.zero));
+        yield return ("SocketElement", () => ElementFactory.CreateSocket(
+            WallDeviceSpec.Default, PROBE, Vector3.zero));
+        yield return ("LightSwitchElement", () => ElementFactory.CreateLightSwitch(
+            WallDeviceSpec.Default, true, null, PROBE, Vector3.zero));
         yield return ("BedElement", () => ElementFactory.CreateBed(
             new Vector3Int(BedElement.DefaultWidthMM, BedElement.DefaultHeightMM,
                 BedElement.DefaultDepthMM), true, true, PROBE, Vector3.zero));
