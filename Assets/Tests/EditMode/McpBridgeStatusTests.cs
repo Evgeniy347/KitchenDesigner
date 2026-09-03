@@ -82,6 +82,36 @@ public class McpBridgeStatusTests
         }
     }
 
+    [Test]
+    public void Url_UsesTheResolvedPort_AndTheMcpPath()
+    {
+        McpBridgeStatus.Report(9500, true);
+        try
+        {
+            Assert.AreEqual("http://127.0.0.1:9500/mcp", McpBridgeStatus.Url,
+                "эту строку вкладка настроек кладёт пользователю в буфер, и он отдаёт её "
+                + "агенту дословно. Слой UI не имеет права ссылаться на MCP "
+                + "(LayerDependencyDirectionTests, UI->MCP = 0), поэтому URL собирается "
+                + "здесь, в Infrastructure, и ровно один раз");
+            StringAssert.DoesNotContain("localhost", McpBridgeStatus.Url,
+                "в префикс слушателя localhost не добавлен: на части машин он резолвится "
+                + "в ::1, и Mono открыл бы второй сокет. Адрес для агента обязан быть тем, "
+                + "который мы действительно слушаем");
+        }
+        finally
+        {
+            McpBridgeStatus.Forget();
+        }
+    }
+
+    [Test]
+    public void TheLegacyTcpPort_IsNotTheHttpPort()
+    {
+        Assert.AreNotEqual(McpBridgeStatus.DefaultPort, McpBridgeStatus.LegacyTcpPort,
+            "оба моста поднимаются одним Bootstrap; совпадение портов означает, что второй "
+            + "молча не стартует, и виноватым выглядит тот, кто запустился первым");
+    }
+
     private const string PortVariable = McpBridgeStatus.PortVariable;
 }
 

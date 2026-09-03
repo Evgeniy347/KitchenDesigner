@@ -6,6 +6,10 @@ namespace KitchenDesigner.Core
     {
         public const int DefaultPort = 9337;
 
+        public const int LegacyTcpPort = DefaultPort + 1;
+
+        public const string Path = "/mcp";
+
         public const string PortVariable = "UNITY_MCP_PORT";
 
         public const string PortArgument = "-mcpPort";
@@ -17,6 +21,8 @@ namespace KitchenDesigner.Core
         private static int? _reportedPort;
 
         public static int Port => _reportedPort ?? ResolvePort();
+
+        public static string Url => "http://127.0.0.1:" + Port + Path;
 
         public static void Report(int port, bool running)
         {

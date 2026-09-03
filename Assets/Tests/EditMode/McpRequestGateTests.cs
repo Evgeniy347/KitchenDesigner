@@ -21,7 +21,7 @@ public class McpRequestGateTests
         => McpRequestGate.Inspect(method, path, host, origin, length, Port);
 
     [Test]
-    public void APostToTheMcpPath_FromLoopback_Passes()
+    public void APostToTheMcpPath_FromLoopback_ReachesTheRouter()
     {
         Assert.AreEqual(0, Inspect().status,
             "обычный запрос агента обязан проходить — иначе тесты ниже проверяют закрытую дверь");

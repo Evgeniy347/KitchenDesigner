@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core.MCP
 {
     public class UnityTcpBridge : MonoBehaviour
     {
-        [SerializeField] private int _port = McpBridgeStatus.DefaultPort;
+        [SerializeField] private int _port = McpBridgeStatus.LegacyTcpPort;
         [SerializeField] private bool _autoStart = true;
 
         private TcpListener? _listener;
@@ -32,8 +32,6 @@ namespace KitchenDesigner.Core.MCP
         {
             DontDestroyOnLoad(gameObject);
             _handler = new McpCommandHandler();
-            _port = McpBridgeStatus.ResolvePort(_port);
-            McpBridgeStatus.Report(_port, false);
         }
 
         private void Start()
@@ -59,8 +57,7 @@ namespace KitchenDesigner.Core.MCP
             _running = true;
             _serverThread = new Thread(ServerLoop) { IsBackground = true, Name = "MCP-TCP" };
             _serverThread.Start();
-            McpBridgeStatus.Report(_port, true);
-            Debug.Log($"[MCP] Bridge started on port {_port}");
+            Debug.Log($"[MCP] Legacy TCP bridge started on port {_port}");
         }
 
         public void StopBridge()
@@ -79,8 +76,7 @@ namespace KitchenDesigner.Core.MCP
                 try { _listener.Stop(); } catch { }
                 _listener = null;
             }
-            McpBridgeStatus.Report(_port, false);
-            Debug.Log("[MCP] Bridge stopped");
+            Debug.Log("[MCP] Legacy TCP bridge stopped");
         }
 
         private void ServerLoop()

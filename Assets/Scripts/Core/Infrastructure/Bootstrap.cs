@@ -70,6 +70,7 @@ namespace KitchenDesigner.Core
             DemoProjectLoader.OpenDemoOrLastSession(GameContext.Services!.SaveLoadManager);
             TextureLibrary.PrefetchScene();
 
+            if (FindAnyObjectByType<MCP.McpHttpBridge>() == null) gameObject.AddComponent<MCP.McpHttpBridge>();
             if (FindAnyObjectByType<MCP.UnityTcpBridge>() == null) gameObject.AddComponent<MCP.UnityTcpBridge>();
             MCP.ConsoleLogCapture.Initialize();
 
