@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class BathtubElement : KitchenElement, IPaintsItself
+    public class BathtubElement : KitchenElement, IPaintsItself, IStandsOnFloor
     {
         public override string DisplayTypeName => "Ванна";
 
@@ -122,6 +123,9 @@ namespace KitchenDesigner.Core
 
         public void SetMaterial(Material material) => Body.SetMaterial(
             SanitaryDecor.ChosenOrFactory(MaterialId, material, SanitaryMaterials.WhiteAcrylic));
+
+        public void SeatOnFloor(IReadOnlyList<KitchenElement> scene) =>
+            FloorSeating.Seat(this, scene);
 
         private BasinSurface Shell(Vector3Int dims)
         {

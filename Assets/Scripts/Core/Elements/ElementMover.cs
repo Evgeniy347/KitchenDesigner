@@ -409,6 +409,9 @@ namespace KitchenDesigner.Core
 					seatedBefore.SeatAfterMove(PartRegistry.GetAll());
 				}
 
+				if (_moveSet.Count <= 1 && _target is IStandsOnFloor standing)
+					standing.SeatOnFloor(PartRegistry.GetAll());
+
 				foreach (var m in _moveSet)
 					if (m != null) MmGrid.Snap(m);
 

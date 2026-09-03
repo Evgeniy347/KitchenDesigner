@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class ToiletElement : KitchenElement, ITabletop, IFixedSizeElement, IAutoSeated
+    public class ToiletElement : KitchenElement, ITabletop, IFixedSizeElement, IStandsOnFloor
     {
         public override string DisplayTypeName => "Унитаз-компакт";
 
@@ -102,15 +102,8 @@ namespace KitchenDesigner.Core
             MaterialManager.RefreshTiling(this);
         }
 
-        public void SeatAfterMove(IReadOnlyList<KitchenElement> scene)
-        {
-            float floorY = PillarAutoFit.FloorUnder(transform.position, scene);
-            if (floorY <= PillarAutoFit.NoFloorFound + 1f) return;
-
-            var p = transform.position;
-            transform.position = new Vector3(p.x,
-                floorY + ToiletLayout.HeightMM * 0.5f * AppConstants.MM_TO_UNITS, p.z);
-        }
+        public void SeatOnFloor(IReadOnlyList<KitchenElement> scene) =>
+            FloorSeating.Seat(this, scene);
 
         public void SetTabletopMaterial(Material material) => Ceramic.SetMaterial(
             SanitaryDecor.ChosenOrFactory(_ceramicMaterialId, material, SanitaryMaterials.Ceramic));
