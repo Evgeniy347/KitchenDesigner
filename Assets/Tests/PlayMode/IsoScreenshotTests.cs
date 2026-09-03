@@ -823,6 +823,104 @@ public class IsoScreenshotTests
         yield return RenderIsoFrame(pos, dims, png, capturePanel);
     }
 
+    // ─ Wall mixer and shower column isometric screenshots ───────────────────
+
+    [UnityTest]
+    public IEnumerator IsoBathMixer_270x90x182_Default()
+    {
+        yield return RenderBathMixer(BathMixerSpec.Default, "IsoBathMixer",
+            "iso_bath_mixer_270x90x182.png");
+    }
+
+    /// <summary>Межосевое на ПРЕДЕЛЕ — отражатели уезжают к самым торцам
+    /// корпуса. Это верхняя граница подрезки (длина минус диаметр), и держит
+    /// её один кадр: на умолчании отражатели стоят с большим запасом внутри, и
+    /// съехавшая на диаметр граница выглядела бы точно так же.</summary>
+    [UnityTest]
+    public IEnumerator IsoBathMixer_WidestCentresKeepTheEscutcheonsOnTheBody()
+    {
+        var wide = BathMixerSpec.Clamped(BathMixerSpec.MaxCentresForMM(
+                BathMixerSpec.DefaultBodyLengthMM, BathMixerSpec.DefaultBodyDiameterMM),
+            BathMixerSpec.DefaultBodyLengthMM, BathMixerSpec.DefaultBodyDiameterMM,
+            BathMixerSpec.DefaultEscutcheonReachMM, BathMixerSpec.DefaultSpoutLengthMM,
+            BathMixerSpec.DefaultOutletDiameterMM);
+
+        yield return RenderBathMixer(wide, "IsoBathMixerWide",
+            "iso_bath_mixer_270x90x182_wide.png", false);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoShowerColumn_250x1414x505_Default()
+    {
+        yield return RenderShowerColumn(ShowerColumnSpec.Default, "IsoShowerColumn",
+            "iso_shower_column_250x1414x505.png");
+    }
+
+    /// <summary>Шланг КОРОЧЕ расстояния между штуцером и рукояткой — петли не
+    /// существует, и он обязан быть натянут по прямой, а не растянут до
+    /// заказанной длины. Умолчательный кадр этого не показывает: там петля есть
+    /// всегда, и подставная кривая, игнорирующая длину, выглядела бы на нём
+    /// правильно.</summary>
+    [UnityTest]
+    public IEnumerator IsoShowerColumn_AHoseShorterThanTheGapRunsStraight()
+    {
+        var taut = ShowerColumnSpec.Clamped(ShowerColumnSpec.DefaultColumnHeightMM,
+            ShowerColumnSpec.DefaultRiserDiameterMM, ShowerColumnSpec.DefaultHeadDiameterMM,
+            ShowerColumnSpec.DefaultHeadThicknessMM, ShowerColumnSpec.DefaultArmReachMM,
+            ShowerColumnSpec.DefaultWallOffsetMM,
+            ShowerColumnSpec.DefaultHandShowerDiameterMM, ShowerColumnSpec.MinHoseLengthMM);
+
+        Assert.Less(taut.HoseLengthMM,
+            (ShowerColumnLayout.HoseInletMM(taut) - ShowerColumnLayout.HoseOutletMM(taut))
+                .magnitude,
+            "кадр имеет смысл только если шланга ДЕЙСТВИТЕЛЬНО не хватает на прямую: "
+            + "иначе он показывает обычную петлю под другим именем");
+
+        yield return RenderShowerColumn(taut, "IsoShowerColumnTaut",
+            "iso_shower_column_taut_hose.png", false);
+    }
+
+    private IEnumerator RenderBathMixer(BathMixerSpec spec, string name, string png,
+        bool capturePanel = true)
+    {
+        var dims = BathMixerLayout.DimensionsMM(spec);
+        Vector3 pos = new Vector3(0f,
+            BathMixerLayout.CentreAboveFloorMM(spec) * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateBathMixer(spec, name, pos);
+        _spawned.Add(go);
+
+        var mixer = go.GetComponent<BathMixerElement>();
+        Assert.IsNotNull(mixer, "фабрика обязана вернуть именно BathMixerElement");
+        Assert.AreEqual(spec.CentresMM, mixer!.CentresMM,
+            "заказанное межосевое обязано дойти неподрезанным, иначе кадр предельного "
+            + "значения молча вырождается в кадр умолчания");
+        Assert.AreEqual(dims, mixer.DimensionsMM,
+            "габарит смесителя ВЫЧИСЛЯЕТСЯ из формы: разойдись он с раскладкой, камера "
+            + "кадрировала бы не то, что построено");
+
+        yield return RenderIsoFrame(pos, dims, png, capturePanel);
+    }
+
+    private IEnumerator RenderShowerColumn(ShowerColumnSpec spec, string name, string png,
+        bool capturePanel = true)
+    {
+        var dims = ShowerColumnLayout.DimensionsMM(spec);
+        Vector3 pos = new Vector3(0f,
+            ShowerColumnLayout.CentreAboveFloorMM(spec) * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateShowerColumn(spec, name, pos);
+        _spawned.Add(go);
+
+        var column = go.GetComponent<ShowerColumnElement>();
+        Assert.IsNotNull(column, "фабрика обязана вернуть именно ShowerColumnElement");
+        Assert.AreEqual(spec.HoseLengthMM, column!.HoseLengthMM,
+            "заказанная длина шланга обязана дойти неподрезанной: подрезка превратила бы "
+            + "кадр натянутого шланга в кадр умолчания");
+        Assert.Greater(dims.y, spec.ColumnHeightMM - 1,
+            "габарит обязан накрывать стойку целиком вместе с петлёй под ней");
+
+        yield return RenderIsoFrame(pos, dims, png, capturePanel);
+    }
+
     // ─ Radial shelf isometric screenshot ───────────────────
 
     [UnityTest]
