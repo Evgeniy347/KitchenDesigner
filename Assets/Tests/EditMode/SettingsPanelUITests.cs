@@ -258,7 +258,8 @@ public class SettingsPanelUITests
     {
         string[] expectedToggles =
         {
-            "Стены", "Контур стен", "Опускать ближние стены", "Скрывать окна и двери",
+            "Стены", "Контур стен", "Опускать ближние стены", "Опускать все стены",
+            "Скрывать окна и двери",
             "Объекты", "Контур объектов", "Скрыть источники света"
         };
 
@@ -280,8 +281,10 @@ public class SettingsPanelUITests
         var view = _canvas!.transform.Find(PagePath + "Tab_View");
         var normalBtn = view.Find("RowViewPreset/ViewPreset_0");
         var roomBtn = view.Find("RowViewPreset/ViewPreset_1");
+        var photoBtn = view.Find("RowViewPreset/ViewPreset_2");
         Assert.IsNotNull(normalBtn, "сегмент «Обычный» должен быть");
         Assert.IsNotNull(roomBtn, "сегмент «Помещение» должен быть");
+        Assert.IsNotNull(photoBtn, "сегмент «Фоторежим» должен быть");
 
         Assert.IsTrue(CaptionOf(normalBtn!).Contains("текущий"),
             "в обычном режиме текущий пресет — «Обычный»");
@@ -289,6 +292,10 @@ public class SettingsPanelUITests
         EditModeManager.SetMode(EditMode.Room);
         Assert.IsTrue(CaptionOf(roomBtn!).Contains("текущий"),
             "в режиме «помещение» вкладка показывает его пресет");
+
+        EditModeManager.SetMode(EditMode.Photo);
+        Assert.IsTrue(CaptionOf(photoBtn!).Contains("текущий"),
+            "в фоторежиме вкладка показывает пресет фоторежима");
 
         EditModeManager.SetMode(EditMode.Normal);
         Assert.IsTrue(CaptionOf(normalBtn!).Contains("текущий"));
@@ -317,23 +324,27 @@ public class SettingsPanelUITests
         s.NormalView.wallsEnabled = true;
     }
 
-    /// <summary>В фоторежиме видно всё и менять нельзя ничего.</summary>
+    /// <summary>Фоторежим — третий пресет, а не набор зашитых значений: его
+    /// тумблеры правятся и пишут в свой пресет, не задевая рабочий режим.</summary>
     [Test]
-    public void ViewTab_AllTogglesDisabled_InPhotoMode()
+    public void ViewTab_PhotoPreset_IsEditable_AndSeparateFromNormal()
     {
-        string[] labels =
-        {
-            "Стены", "Контур стен", "Опускать ближние стены", "Скрывать окна и двери",
-            "Объекты", "Контур объектов", "Скрыть источники света"
-        };
+        var s = KitchenSettings.Instance;
         var view = _canvas!.transform.Find(PagePath + "Tab_View");
+        bool prevNormal = s.NormalView.wallsEnabled;
+        bool prevPhoto = s.PhotoView.wallsEnabled;
 
         EditModeManager.SetMode(EditMode.Photo);
-        foreach (var label in labels)
-            Assert.IsFalse(ToggleOf(view, label).interactable, $"'{label}' в фоторежиме заблокирован");
+        var walls = ToggleOf(view, "Стены");
+        Assert.IsTrue(walls.interactable,
+            "в фоторежиме вкладка открыта на его собственном пресете и правится");
+
+        walls.isOn = false;
+        Assert.IsFalse(s.PhotoView.wallsEnabled, "правится пресет фоторежима");
+        Assert.AreEqual(prevNormal, s.NormalView.wallsEnabled, "пресет обычного режима не тронут");
 
         EditModeManager.SetMode(EditMode.Normal);
-        Assert.IsTrue(ToggleOf(view, "Стены").interactable, "после выхода доступность вернулась");
+        s.PhotoView.wallsEnabled = prevPhoto;
     }
 
     private static string CaptionOf(Transform button)
@@ -454,6 +465,8 @@ public class SettingsPanelUITests
         Assert.Greater(outlineX, wallsX, "«Контур» должен быть с отступом от «Стены»");
         Assert.AreEqual(outlineX, lowerX, 0.01f, "оба на первом уровне вложенности");
         Assert.Greater(hideX, lowerX, "«Скрывать окна и двери» — второй уровень");
+        Assert.AreEqual(hideX, LabelX(view, "Опускать все стены"), 0.01f,
+            "«Опускать все стены» — тоже подопция опускания, тот же уровень");
     }
 
     [Test]
@@ -486,9 +499,12 @@ public class SettingsPanelUITests
 
         lower.isOn = false;
         Assert.IsFalse(ToggleOf(view, "Скрывать окна и двери").interactable);
+        Assert.IsFalse(ToggleOf(view, "Опускать все стены").interactable,
+            "«все стены» без опускания ничего не значит — тумблер заблокирован");
 
         lower.isOn = true;
         Assert.IsTrue(ToggleOf(view, "Скрывать окна и двери").interactable);
+        Assert.IsTrue(ToggleOf(view, "Опускать все стены").interactable);
 
         s.NormalView.lowerNearWalls = prev;
     }
@@ -690,6 +706,38 @@ public class SettingsPanelUITests
         Assert.IsNotNull(dateLabel);
         var dateText = dateLabel.GetComponent<TextMeshProUGUI>().text;
         Assert.IsTrue(dateText.StartsWith("Сборка:"));
+    }
+
+    /// <summary>Копирайт — обязательная строка «о программе», а не украшение:
+    /// без неё сборку нельзя раздавать. Год и имя проверяются буквально,
+    /// потому что опечатка в них тихо переживёт любой рефакторинг.</summary>
+    [Test]
+    public void AboutTab_ShowsTheCopyrightLine()
+    {
+        var about = _canvas!.transform.Find(PagePath + "Tab_About");
+        var label = about.Find("AboutCopyright");
+        Assert.IsNotNull(label, "строки копирайта нет на вкладке «О программе»");
+
+        Assert.AreEqual("Copyright (c) 2025 Evgeniy347",
+            label!.GetComponent<TextMeshProUGUI>().text,
+            "текст копирайта задан дословно");
+    }
+
+    /// <summary>Сведения о сборке нужны в чужих руках: пользователь копирует их
+    /// одной кнопкой и вкладывает в письмо об ошибке. Поэтому в отчёте обязаны
+    /// быть версия, дата и окружение, а не только название.</summary>
+    [Test]
+    public void AboutTab_BuildReport_CarriesVersionDateAndEnvironment()
+    {
+        var report = SettingsAboutTab.BuildReport();
+
+        StringAssert.Contains(BuildInfo.Version, report, "версия");
+        StringAssert.Contains(BuildInfo.BuildDate, report, "дата сборки");
+        StringAssert.Contains(Application.unityVersion, report, "версия движка");
+        StringAssert.Contains(SettingsAboutTab.Copyright, report, "копирайт");
+
+        var about = _canvas!.transform.Find(PagePath + "Tab_About");
+        Assert.IsNotNull(about.Find("AboutCopy"), "кнопка копирования сведений о сборке");
     }
 
     // ── Row ordering ────────────────────────────────────────

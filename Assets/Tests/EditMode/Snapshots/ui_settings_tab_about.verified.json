@@ -38,13 +38,28 @@
     },
     {
       "type": "Label",
-      "text": "Версия: <masked>",
+      "text": "Kitchen Designer",
       "position": [0, 312]
     },
     {
       "type": "Label",
-      "text": "Сборка: <masked>",
+      "text": "Версия: <masked>",
       "position": [0, 274]
+    },
+    {
+      "type": "Label",
+      "text": "Сборка: <masked>",
+      "position": [0, 238]
+    },
+    {
+      "type": "Button",
+      "text": "Скопировать сведения о сборке",
+      "position": [0, 184]
+    },
+    {
+      "type": "Label",
+      "text": "Copyright (c) 2025 Evgeniy347",
+      "position": [0, 156]
     },
     {
       "type": "Button",
