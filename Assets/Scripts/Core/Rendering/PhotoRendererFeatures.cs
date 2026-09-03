@@ -18,6 +18,12 @@ namespace KitchenDesigner.Core
         private const float PercentToUnit = 0.01f;
         private const float MillimetreToMetre = 0.001f;
 
+        public static void SilenceUntilPhotoMode()
+        {
+            SetActive(SsaoTypeName, false);
+            SetActive(nameof(ScreenSpaceGIFeature), false);
+        }
+
         public static void SetActive(string typeNameContains, bool enabled)
         {
             foreach (var feature in All())

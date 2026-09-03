@@ -13,18 +13,18 @@ namespace KitchenDesigner.Core
         public const int PHOTO_LIGHTS_PER_OBJECT_DEFAULT = 8;
         public const int PHOTO_LIGHTS_PER_OBJECT_MAX = 8;
 
-        public const int PHOTO_AMBIENT_SKY_DEFAULT_PCT = 100;
-        public const int PHOTO_AMBIENT_EQUATOR_DEFAULT_PCT = 100;
-        public const int PHOTO_BOUNCE_MAX_DEFAULT_PCT = 100;
+        public const int PHOTO_AMBIENT_SKY_DEFAULT_PCT = 200;
+        public const int PHOTO_AMBIENT_EQUATOR_DEFAULT_PCT = 280;
+        public const int PHOTO_BOUNCE_MAX_DEFAULT_PCT = 400;
         public const int PHOTO_AMBIENT_PART_MAX_PCT = 400;
 
         public const int PHOTO_AO_INTENSITY_DEFAULT_PCT = 200;
         public const int PHOTO_AO_INTENSITY_MAX_PCT = 500;
-        public const int PHOTO_AO_RADIUS_DEFAULT_MM = 300;
+        public const int PHOTO_AO_RADIUS_DEFAULT_MM = 200;
         public const int PHOTO_AO_RADIUS_MIN_MM = 10;
         public const int PHOTO_AO_RADIUS_MAX_MM = 1000;
-        public const int PHOTO_AO_DIRECT_DEFAULT_PCT = 15;
-        public const int PHOTO_AO_FALLOFF_DEFAULT_M = 10;
+        public const int PHOTO_AO_DIRECT_DEFAULT_PCT = 10;
+        public const int PHOTO_AO_FALLOFF_DEFAULT_M = 4;
         public const int PHOTO_AO_FALLOFF_MIN_M = 1;
         public const int PHOTO_AO_FALLOFF_MAX_M = 100;
 

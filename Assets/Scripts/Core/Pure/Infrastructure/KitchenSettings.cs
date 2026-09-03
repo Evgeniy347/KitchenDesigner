@@ -37,7 +37,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _photoBloom = true;
         [SerializeField] private bool _photoVignette = true;
         [SerializeField] private bool _photoCeiling = true;
-        [SerializeField] private bool _photoSSGI = true;
+        [SerializeField] private bool _photoSSGI = false;
 
         [SerializeField] private int _photoAmbientPct = PHOTO_AMBIENT_DEFAULT_PCT;
         [SerializeField] private int _photoFloorBouncePct = PHOTO_FLOOR_BOUNCE_DEFAULT_PCT;
@@ -53,22 +53,22 @@ namespace KitchenDesigner.Core
 
         public const int PHOTO_AMBIENT_DEFAULT_PCT = 100;
         public const int PHOTO_AMBIENT_MAX_PCT = 400;
-        public const int PHOTO_FLOOR_BOUNCE_DEFAULT_PCT = 100;
+        public const int PHOTO_FLOOR_BOUNCE_DEFAULT_PCT = 250;
         public const int PHOTO_FLOOR_BOUNCE_MAX_PCT = 300;
-        public const int PHOTO_EXPOSURE_DEFAULT_PCT = 0;
+        public const int PHOTO_EXPOSURE_DEFAULT_PCT = 50;
         public const int PHOTO_EXPOSURE_MIN_PCT = -300;
         public const int PHOTO_EXPOSURE_MAX_PCT = 300;
         public const int PHOTO_CONTRAST_DEFAULT_PCT = 8;
         public const int PHOTO_SATURATION_DEFAULT_PCT = 6;
         public const int PHOTO_COLOR_MIN_PCT = -100;
         public const int PHOTO_COLOR_MAX_PCT = 100;
-        public const int PHOTO_BLOOM_DEFAULT_PCT = 35;
+        public const int PHOTO_BLOOM_DEFAULT_PCT = 30;
         public const int PHOTO_BLOOM_MAX_PCT = 300;
-        public const int PHOTO_BLOOM_THRESHOLD_DEFAULT_PCT = 110;
+        public const int PHOTO_BLOOM_THRESHOLD_DEFAULT_PCT = 150;
         public const int PHOTO_BLOOM_THRESHOLD_MAX_PCT = 500;
         public const int PHOTO_VIGNETTE_DEFAULT_PCT = 22;
         public const int PHOTO_SUN_SHADOW_DEFAULT_PCT = 100;
-        public const int PHOTO_SHADOW_DISTANCE_DEFAULT_M = 22;
+        public const int PHOTO_SHADOW_DISTANCE_DEFAULT_M = 10;
         public const int PHOTO_SHADOW_DISTANCE_MIN_M = 5;
         public const int PHOTO_SHADOW_DISTANCE_MAX_M = 100;
 
@@ -316,7 +316,7 @@ namespace KitchenDesigner.Core
             _photoBloom = true;
             _photoVignette = true;
             _photoCeiling = true;
-            _photoSSGI = true;
+            _photoSSGI = false;
             _photoAmbientPct = PHOTO_AMBIENT_DEFAULT_PCT;
             _photoFloorBouncePct = PHOTO_FLOOR_BOUNCE_DEFAULT_PCT;
             _photoExposurePct = PHOTO_EXPOSURE_DEFAULT_PCT;

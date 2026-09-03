@@ -12,6 +12,7 @@ namespace KitchenDesigner.Core
             KeepStackTracesOutOfInfoLogs();
             DefaultGameServices.Install();
             DisplaySettings.ApplyWindowMode();
+            PhotoRendererFeatures.SilenceUntilPhotoMode();
         }
 
         internal static void KeepStackTracesOutOfInfoLogs() =>

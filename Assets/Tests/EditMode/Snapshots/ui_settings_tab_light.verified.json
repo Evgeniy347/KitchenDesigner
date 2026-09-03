@@ -73,6 +73,16 @@
     },
     {
       "type": "Label",
+      "text": "Потолок сверху",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Предел отскока",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
       "text": "Сила виньетки",
       "position": [-90, 0]
     },
@@ -84,6 +94,11 @@
     {
       "type": "Label",
       "text": "Сила теней солнца",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Стены сбоку",
       "position": [-90, 0]
     },
     {
@@ -113,7 +128,7 @@
     },
     {
       "type": "Label",
-      "text": "22 м",
+      "text": "10 м",
       "position": [208, 0]
     },
     {
@@ -133,12 +148,22 @@
     },
     {
       "type": "Label",
-      "text": "100 %",
+      "text": "250 %",
       "position": [208, 0]
     },
     {
       "type": "Label",
-      "text": "110 %",
+      "text": "150 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "200 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400 %",
       "position": [208, 0]
     },
     {
@@ -148,7 +173,7 @@
     },
     {
       "type": "Label",
-      "text": "35 %",
+      "text": "30 %",
       "position": [208, 0]
     },
     {
@@ -158,7 +183,12 @@
     },
     {
       "type": "Label",
-      "text": "0.0 EV",
+      "text": "280 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "+0.5 EV",
       "position": [208, 0]
     },
     {

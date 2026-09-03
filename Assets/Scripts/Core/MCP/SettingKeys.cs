@@ -68,6 +68,8 @@ namespace KitchenDesigner.Core.MCP
             SettingKey.Number("arrow_speed", "arrowSpeed",
                 () => S.ArrowSpeed, v => S.ArrowSpeed = v),
 
+            SettingKey.Flag("photo_active", "photoActive",
+                () => PhotoMode.Active, PhotoMode.SetActive),
             SettingKey.Number("photo_quality", "photoQuality",
                 () => (int)S.PhotoQuality, v => S.PhotoQuality = (PhotoQualityPreset)Mathf.Clamp((int)v, 0, 3)),
             SettingKey.Flag("photo_shadows", "photoShadows",

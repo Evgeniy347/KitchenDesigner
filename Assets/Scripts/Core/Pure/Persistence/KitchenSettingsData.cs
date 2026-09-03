@@ -41,7 +41,7 @@ namespace KitchenDesigner.Core
         public bool photoBloom = true;
         public bool photoVignette = true;
         public bool photoCeiling = true;
-        public bool photoSSGI = true;
+        public bool photoSSGI = false;
 
         public int photoAmbientPct = KitchenSettings.PHOTO_AMBIENT_DEFAULT_PCT;
         public int photoFloorBouncePct = KitchenSettings.PHOTO_FLOOR_BOUNCE_DEFAULT_PCT;

@@ -38,6 +38,16 @@
     },
     {
       "type": "Label",
+      "text": "AO по прямому свету",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Ambient occlusion",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
       "text": "Ambient occlusion",
       "position": [-90, 0]
     },
@@ -53,6 +63,31 @@
     },
     {
       "type": "Label",
+      "text": "Выборок SSGI",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Затухание AO",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Карта теней",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Ламп на объект",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Масштаб рендера",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
       "text": "Мягкие тени",
       "position": [-90, 0]
     },
@@ -63,7 +98,37 @@
     },
     {
       "type": "Label",
+      "text": "Отражённый свет (SSGI, опытный)",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
       "text": "Потолок по стенам",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Радиус AO",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Радиус SSGI",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Разрешение SSGI",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Разрешение и тени",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Расширенный диапазон (HDR)",
       "position": [-90, 0]
     },
     {
@@ -74,6 +139,21 @@
     {
       "type": "Label",
       "text": "Сглаживание",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сглаживание SSGI",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила AO",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила SSGI",
       "position": [-90, 0]
     },
     {
@@ -97,6 +177,66 @@
       "position": [165, 0]
     },
     {
+      "type": "Label",
+      "text": "10 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "32",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "4 м",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "4096 px",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "8",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "150 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "200 мм",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "800 мм",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "50 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "3 px",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "200 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "70 %",
+      "position": [208, 0]
+    },
+    {
       "type": "Toggle",
       "label": "Tgl_Ambient occlusion",
       "isOn": true,
@@ -116,13 +256,19 @@
     },
     {
       "type": "Toggle",
-      "label": "Tgl_Отражённый свет (SSGI)",
-      "isOn": true,
+      "label": "Tgl_Отражённый свет (SSGI, опытный)",
+      "isOn": false,
       "position": [224, 0]
     },
     {
       "type": "Toggle",
       "label": "Tgl_Потолок по стенам",
+      "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Расширенный диапазон (HDR)",
       "isOn": true,
       "position": [224, 0]
     },

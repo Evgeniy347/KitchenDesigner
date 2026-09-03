@@ -48,7 +48,7 @@ namespace KitchenDesigner.Core.UI
             _rows.AddToggle(page, ref y, "Потолок по стенам", s.PhotoCeiling,
                 v => { s.PhotoCeiling = v; PhotoMode.RefreshIfActive(); }, read: () => s.PhotoCeiling);
 
-            _ssgiToggle = _rows.AddToggle(page, ref y, "Отражённый свет (SSGI)", s.PhotoSSGI,
+            _ssgiToggle = _rows.AddToggle(page, ref y, "Отражённый свет (SSGI, опытный)", s.PhotoSSGI,
                 v => { s.PhotoSSGI = v; PhotoMode.RefreshIfActive(); }, read: () => s.PhotoSSGI);
 
             _rows.AddToggle(page, ref y, "Расширенный диапазон (HDR)", s.PhotoHdr,

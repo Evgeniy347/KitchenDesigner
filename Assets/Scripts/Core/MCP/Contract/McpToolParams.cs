@@ -650,7 +650,7 @@ namespace KitchenDesigner.Core.MCP.Contract
             "block_on_violation", "auto_save", "auto_save_interval", "snap_verbose_log",
             "camera_pan_free", "edge_partial_threshold", "mouse_sensitivity",
             "wasd_speed", "arrow_speed",
-            "photo_quality", "photo_shadows", "photo_soft_shadows", "photo_anti_aliasing",
+            "photo_active", "photo_quality", "photo_shadows", "photo_soft_shadows", "photo_anti_aliasing",
             "photo_supersampling", "photo_ambient_occlusion", "photo_bloom", "photo_vignette",
             "photo_ceiling", "photo_ssgi", "photo_lamp_shadows", "photo_hdr",
             "photo_ambient", "photo_floor_bounce", "photo_ambient_sky", "photo_ambient_equator",
