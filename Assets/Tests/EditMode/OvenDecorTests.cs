@@ -18,9 +18,8 @@ using KitchenDesigner.Core;
 /// снимок габаритов материала не видит.
 ///
 /// Обратная сторона того же дефекта: выбранный декор ложился ровно на одного
-/// ребёнка (то же «BodyBottom») и исчезал при первой перестройке, потому что
-/// <c>RebuildGeometry</c> зовёт <c>ApplyMaterials</c>, а та знала только про
-/// заводские материалы. Перекрасить духовку было нельзя вообще.
+/// ребёнка (то же «BodyBottom») и не попадал на дверцу вообще. Перекрасить
+/// духовку было нельзя.
 ///
 /// Лечится не веткой по типу в MaterialManager (лестница типов там уже была, и
 /// растить её запрещено — CONVENTIONS.md → «Element type checks live in ONE place
@@ -32,7 +31,18 @@ using KitchenDesigner.Core;
 /// Декор кладётся на «Facade» — видимую дверцу; корпус, стекло, панель и ручка
 /// остаются заводскими. Свойство ДВУСТОРОННЕЕ, и односторонний тест здесь был бы
 /// хуже, чем никакого: заглушив первое возвратом заводской краски всегда,
-/// получили бы технику, которую нельзя перекрасить.</summary>
+/// получили бы технику, которую нельзя перекрасить.
+///
+/// Про <c>AChosenDecor_SurvivesARebuildCausedByResizing</c> отдельно. Сначала он
+/// был написан как «запомни материал дверцы, перестрой, сравни с запомненным» — и
+/// на сломанном коде вышел ЗЕЛЁНЫМ, хотя обязан был краснеть. Причина не в том,
+/// что перестройка не трогает материалы: трогает, <c>RebuildGeometry</c> зовёт
+/// <c>ApplyMaterials</c>. Причина в том, что декор на дверцу не попадал, и
+/// «запомненным» оказывался заводской чёрный — тест сравнивал заводское с
+/// заводским и не мог упасть в принципе. Поэтому сравнение теперь идёт с
+/// материалом декора из каталога, а перед перестройкой на дверцу нарочно мажется
+/// третий материал: если перестройка не запустится, мазок доживёт до ассерта и
+/// тест покраснеет. Так он не может пройти впустую ни по одной из двух причин.</summary>
 public class OvenDecorTests
 {
     private const string DecorId = "test_oven_decor";
@@ -67,7 +77,7 @@ public class OvenDecorTests
         return oven!;
     }
 
-    private static Material? PaintOf(OvenElement oven, string childName)
+    private static MeshRenderer RendererOf(OvenElement oven, string childName)
     {
         var part = oven.transform.Find(childName);
         Assert.IsNotNull(part, "духовка строит деталь «" + childName + "» отдельным "
@@ -76,8 +86,11 @@ public class OvenDecorTests
         Assert.IsNotNull(renderer, "у детали «" + childName + "» обязан быть рендерер: "
             + "именно такого ребёнка находит общий путь Apply, когда у элемента нет "
             + "своей ветки");
-        return renderer!.sharedMaterial;
+        return renderer!;
     }
+
+    private static Material? PaintOf(OvenElement oven, string childName)
+        => RendererOf(oven, childName).sharedMaterial;
 
     private static Material ChosenDecor()
     {
@@ -149,12 +162,15 @@ public class OvenDecorTests
     {
         var oven = NewOven();
         MaterialManager.ApplyById(oven, DecorId);
-        var chosen = PaintOf(oven, Facade);
+        RendererOf(oven, Facade).sharedMaterial = ApplianceMaterials.OvenGlass;
 
         oven.DimensionsMM = new Vector3Int(600, 600, 570);
 
-        Assert.AreSame(chosen, PaintOf(oven, Facade),
+        Assert.AreSame(ChosenDecor(), PaintOf(oven, Facade),
             "перестройка меша решает про материал заново, и «поставь заводскую дверцу» "
-            + "вернуло бы чёрный поверх выбранного декора при первом же изменении размера");
+            + "вернуло бы чёрный поверх выбранного декора при первом же изменении "
+            + "размера. Мазок стеклом перед перестройкой — страховка от второй беды: "
+            + "если перестройка вообще не запустится, он доживёт до сюда и тест "
+            + "покраснеет, вместо того чтобы пройти впустую");
     }
 }

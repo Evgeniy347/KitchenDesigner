@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class DishwasherElement : KitchenElement, IFixedSizeElement, IFacadeHost, IOpenable
+    public class DishwasherElement : KitchenElement, IFixedSizeElement, IFacadeHost, IOpenable,
+        IPaintsItself
     {
         public override bool CanFollowAnAttachParent => false;
 
@@ -299,15 +300,34 @@ namespace KitchenDesigner.Core
             return (Vector3.Min(min, fMin), Vector3.Max(max, fMax));
         }
 
+        public override MeshRenderer? DecorRenderer => Boxes.RendererOf(IdxDoor);
+
         private void ApplyMaterials()
         {
+            var front = Skin();
             for (int i = 0; i < ChildCount; i++)
                 Boxes.SetMaterial(i, i switch
                 {
                     IdxPanel => ApplianceMaterials.DishwasherPanel,
-                    IdxDoor or IdxBase => ApplianceMaterials.DishwasherDoor,
+                    IdxDoor or IdxBase => front,
                     _ => ApplianceMaterials.DishwasherTank,
                 });
+        }
+
+        private Material Skin()
+        {
+            if (SanitaryDecor.IsFactoryLook(MaterialId))
+                return ApplianceMaterials.DishwasherDoor;
+            var decor = MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
+            return decor != null ? decor! : ApplianceMaterials.DishwasherDoor;
+        }
+
+        public void SetMaterial(Material material)
+        {
+            var front = SanitaryDecor.ChosenOrFactory(MaterialId, material,
+                ApplianceMaterials.DishwasherDoor);
+            Boxes.SetMaterial(IdxDoor, front);
+            Boxes.SetMaterial(IdxBase, front);
         }
 
         public void DestroyChildren() => Boxes.Destroy();

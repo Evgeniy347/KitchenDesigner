@@ -81,7 +81,7 @@ namespace KitchenDesigner.Core
             }
         }
 
-        public void Rebuild(int faucetSign)
+        public void Rebuild(int faucetSign, Material? decor)
         {
             EnsureChildren();
             if (_children.Count < CHILD_COUNT) return;
@@ -108,7 +108,7 @@ namespace KitchenDesigner.Core
             Cube(BowlBottom, new Vector3(0f, -bowlH + wall * 0.5f, 0f), new Vector3(bowlW, wall, bowlD));
 
             RebuildFaucet(faucetSign, toU, outerD, rimH, rimW);
-            ApplyMaterials();
+            ApplyMaterials(decor);
         }
 
         private void RebuildFaucet(int faucetSign, float toU, float outerD, float rimH, float rimW)
@@ -156,7 +156,7 @@ namespace KitchenDesigner.Core
             go.transform.localScale = PrimitiveMesh.CylinderScale(diameter, height);
         }
 
-        private void ApplyMaterials()
+        public void ApplyMaterials(Material? decor)
         {
             var steel = ApplianceMaterials.SinkSteel;
             var bottom = ApplianceMaterials.SinkBowlBottom;
@@ -164,7 +164,9 @@ namespace KitchenDesigner.Core
             {
                 var mr = _children[i].GetComponent<MeshRenderer>();
                 if (mr == null) continue;
-                mr.sharedMaterial = i == BowlBottom ? bottom : steel;
+                mr.sharedMaterial = i >= FaucetBase
+                    ? steel
+                    : decor ?? (i == BowlBottom ? bottom : steel);
             }
         }
 

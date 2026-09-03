@@ -15,11 +15,7 @@ using KitchenDesigner.Core;
 /// (<c>CopyMaterial</c> → тот же <c>ApplyById</c>): один борт бортика становился
 /// серым у копии и после загрузки файла, а остальная мойка оставалась стальной.
 ///
-/// Обратная сторона: выбранный декор ложился ровно на этого одного ребёнка и
-/// исчезал при первой перестройке — <c>SinkMesh.Rebuild</c> заканчивается
-/// <c>ApplyMaterials</c>, знавшей только заводскую сталь. Перекрасить мойку было
-/// нельзя.
-///
+/// Обратная сторона: выбранный декор ложился ровно на этого одного ребёнка.
 /// Поэтому проверка декора смотрит на «RimBack», а не только на «RimFront»: на
 /// первого ребёнка декор ложился и БЕЗ правки, и тест по нему одному зеленел бы,
 /// ничего не доказав.
@@ -30,7 +26,21 @@ using KitchenDesigner.Core;
 ///
 /// Свойство ДВУСТОРОННЕЕ, и односторонний тест был бы хуже, чем никакого:
 /// заглушив первое возвратом стали всегда, получили бы мойку, которую нельзя
-/// перекрасить.</summary>
+/// перекрасить.
+///
+/// Про <c>AChosenDecor_SurvivesARebuildCausedByResizing</c> отдельно. Сначала он
+/// сравнивал материал «RimBack» ПОСЛЕ перестройки с материалом того же борта ДО
+/// неё — и на сломанном коде вышел зелёным, хотя обязан был краснеть: декор туда
+/// не попадал, «до» и «после» оба были заводской сталью, и упасть тест не мог в
+/// принципе. Перестройка при этом честно работает — <c>SinkMesh.Rebuild</c>
+/// заканчивается <c>ApplyMaterials</c>. Теперь сравнение идёт с материалом декора
+/// из каталога, а перед перестройкой на борт нарочно мажется третий материал: не
+/// запустись перестройка — мазок доживёт до ассерта и тест покраснеет.
+///
+/// Второй путь перестройки у мойки — <c>UpdateFaucetSide</c>: он тоже зовёт
+/// <c>SinkMesh.Rebuild</c> и тоже смывал бы декор, поэтому решение про материал
+/// принимается внутри <c>SinkElement.Skin</c>, общего для обоих вызовов, а не в
+/// точке вызова.</summary>
 public class SinkDecorTests
 {
     private const string DecorId = "test_sink_decor";
@@ -66,7 +76,7 @@ public class SinkDecorTests
         return sink!;
     }
 
-    private static Material? PaintOf(SinkElement sink, string childName)
+    private static MeshRenderer RendererOf(SinkElement sink, string childName)
     {
         var part = sink.transform.Find(childName);
         Assert.IsNotNull(part, "мойка строит деталь «" + childName + "» отдельным "
@@ -75,8 +85,11 @@ public class SinkDecorTests
         Assert.IsNotNull(renderer, "у детали «" + childName + "» обязан быть рендерер: "
             + "именно такого ребёнка находит общий путь Apply, когда у элемента нет "
             + "своей ветки");
-        return renderer!.sharedMaterial;
+        return renderer!;
     }
+
+    private static Material? PaintOf(SinkElement sink, string childName)
+        => RendererOf(sink, childName).sharedMaterial;
 
     private static Material ChosenDecor()
     {
@@ -144,13 +157,16 @@ public class SinkDecorTests
     {
         var sink = NewSink();
         MaterialManager.ApplyById(sink, DecorId);
-        var chosen = PaintOf(sink, RimBack);
+        RendererOf(sink, RimBack).sharedMaterial = ApplianceMaterials.SinkBowlBottom;
 
         sink.DimensionsMM = new Vector3Int(SinkElement.OUTER_WIDTH_MM,
             SinkElement.TotalHeightMM, SinkElement.OUTER_DEPTH_MM);
 
-        Assert.AreSame(chosen, PaintOf(sink, RimBack),
+        Assert.AreSame(ChosenDecor(), PaintOf(sink, RimBack),
             "перестройка меша решает про материал заново, и «поставь заводскую сталь» "
-            + "вернула бы сталь поверх выбранного декора при первом же изменении размера");
+            + "вернула бы сталь поверх выбранного декора при первом же изменении "
+            + "размера. Мазок дном чаши перед перестройкой — страховка от второй беды: "
+            + "если перестройка вообще не запустится, он доживёт до сюда и тест "
+            + "покраснеет, вместо того чтобы пройти впустую");
     }
 }

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class SinkElement : KitchenElement, IPartCutout
+    public class SinkElement : KitchenElement, IPartCutout, IPaintsItself
     {
         public override string DisplayTypeName => "Мойка";
 
@@ -58,6 +58,13 @@ namespace KitchenDesigner.Core
 
         private SinkMesh Mesh => _mesh ??= new SinkMesh(transform);
 
+        private Material? Skin() => SanitaryDecor.IsFactoryLook(MaterialId)
+            ? null
+            : MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
+
+        public void SetMaterial(Material material) => Mesh.ApplyMaterials(
+            SanitaryDecor.IsFactoryLook(MaterialId) ? null : material);
+
         [NotUndoable("служебная привязка к детали, вычисляется SnapToPart")]
         public string AttachedPartName
         {
@@ -101,7 +108,7 @@ namespace KitchenDesigner.Core
             transform.localScale = Vector3.one;
             Data.DimensionsMM = new Vector3Int(OUTER_WIDTH_MM, TotalHeightMM, OUTER_DEPTH_MM);
             UpdateCollider();
-            Mesh.Rebuild(_faucetSign);
+            Mesh.Rebuild(_faucetSign, Skin());
         }
 
         public void SnapToPart()
@@ -251,7 +258,7 @@ namespace KitchenDesigner.Core
             int faucetSign = spacePlus >= spaceMinus ? plusInSinkZ : -plusInSinkZ;
             if (faucetSign == _faucetSign) return;
             _faucetSign = faucetSign;
-            Mesh.Rebuild(_faucetSign);
+            Mesh.Rebuild(_faucetSign, Skin());
         }
 
         public GrooveMesh.Rect2 CutoutRectIn(KitchenElement part)

@@ -43,6 +43,13 @@ namespace KitchenDesigner.Core
             go.transform.localScale = sizeMM * toU;
         }
 
+        public MeshRenderer? RendererOf(int idx)
+        {
+            if (idx < 0 || idx >= _children.Count) return null;
+            var child = _children[idx];
+            return child != null ? child.GetComponent<MeshRenderer>() : null;
+        }
+
         public void SetMaterial(int idx, Material material)
         {
             if (idx < 0 || idx >= _children.Count) return;

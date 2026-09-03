@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class OvenElement : KitchenElement, IFixedSizeElement, IOpenable
+    public class OvenElement : KitchenElement, IFixedSizeElement, IOpenable, IPaintsItself
     {
         public override bool CanFollowAnAttachParent => false;
 
@@ -217,18 +217,32 @@ namespace KitchenDesigner.Core
         public (Vector3 min, Vector3 max) GetOpenBounds(float progress) =>
             Door.WorldBounds(transform, progress);
 
+        public override MeshRenderer? DecorRenderer => Boxes.RendererOf(IdxFacade);
+
         private void ApplyMaterials()
         {
+            var facade = Skin();
             for (int i = 0; i < ChildCount; i++)
                 Boxes.SetMaterial(i, i switch
                 {
-                    IdxFacade => ApplianceMaterials.OvenFacade,
+                    IdxFacade => facade,
                     IdxGlass => ApplianceMaterials.OvenGlass,
                     IdxPanel => ApplianceMaterials.OvenPanel,
                     IdxHandle => ApplianceMaterials.OvenHandle,
                     _ => ApplianceMaterials.OvenBody,
                 });
         }
+
+        private Material Skin()
+        {
+            if (SanitaryDecor.IsFactoryLook(MaterialId)) return ApplianceMaterials.OvenFacade;
+            var decor = MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
+            return decor != null ? decor! : ApplianceMaterials.OvenFacade;
+        }
+
+        public void SetMaterial(Material material) => Boxes.SetMaterial(IdxFacade,
+            SanitaryDecor.ChosenOrFactory(MaterialId, material,
+                ApplianceMaterials.OvenFacade));
 
         public void DestroyChildren() => Boxes.Destroy();
 

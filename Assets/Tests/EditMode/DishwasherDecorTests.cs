@@ -13,12 +13,10 @@ using KitchenDesigner.Core;
 /// <c>GetComponentInChildren&lt;MeshRenderer&gt;()</c> находит первого ребёнка —
 /// «BodyBottom». Попадали туда открытие проекта (<c>ElementRestorers.ApplyShared</c>
 /// → <c>ApplyById</c>) и дублирование (<c>CopyMaterial</c> → тот же
-/// <c>ApplyById</c>), то есть серел корпус у копии и после загрузки файла.
+/// <c>ApplyById</c>), то есть серел бак у копии и после загрузки файла.
 ///
 /// Обратная сторона: выбранный декор ложился на того же единственного ребёнка и
-/// исчезал при первой перестройке — <c>RebuildGeometry</c> зовёт
-/// <c>ApplyMaterials</c>, знавшую только заводские материалы. Перекрасить
-/// посудомойку было нельзя.
+/// на фронт не попадал вовсе. Перекрасить посудомойку было нельзя.
 ///
 /// Лечится способностью <c>IPaintsItself</c>, а не веткой по типу в
 /// MaterialManager (CONVENTIONS.md → «Element type checks live in ONE place per
@@ -27,7 +25,16 @@ using KitchenDesigner.Core;
 ///
 /// Свойство ДВУСТОРОННЕЕ, и односторонний тест был бы хуже, чем никакого:
 /// заглушив первое возвратом заводской краски всегда, получили бы технику,
-/// которую нельзя перекрасить.</summary>
+/// которую нельзя перекрасить.
+///
+/// Про <c>AChosenDecor_SurvivesARebuildCausedByResizing</c> отдельно. Сначала он
+/// сравнивал материал дверцы ПОСЛЕ перестройки с материалом дверцы ДО неё — и на
+/// сломанном коде вышел зелёным, хотя обязан был краснеть: декор на дверцу не
+/// попадал, «до» и «после» оба были заводским тёмным, и упасть тест не мог в
+/// принципе. Перестройка при этом честно работает — <c>RebuildGeometry</c> зовёт
+/// <c>ApplyMaterials</c>. Теперь сравнение идёт с материалом декора из каталога, а
+/// перед перестройкой на дверцу нарочно мажется третий материал: не запустись
+/// перестройка — мазок доживёт до ассерта и тест покраснеет.</summary>
 public class DishwasherDecorTests
 {
     private const string DecorId = "test_dishwasher_decor";
@@ -63,7 +70,7 @@ public class DishwasherDecorTests
         return dishwasher!;
     }
 
-    private static Material? PaintOf(DishwasherElement dishwasher, string childName)
+    private static MeshRenderer RendererOf(DishwasherElement dishwasher, string childName)
     {
         var part = dishwasher.transform.Find(childName);
         Assert.IsNotNull(part, "посудомойка строит деталь «" + childName + "» отдельным "
@@ -72,8 +79,11 @@ public class DishwasherDecorTests
         Assert.IsNotNull(renderer, "у детали «" + childName + "» обязан быть рендерер: "
             + "именно такого ребёнка находит общий путь Apply, когда у элемента нет "
             + "своей ветки");
-        return renderer!.sharedMaterial;
+        return renderer!;
     }
+
+    private static Material? PaintOf(DishwasherElement dishwasher, string childName)
+        => RendererOf(dishwasher, childName).sharedMaterial;
 
     private static Material ChosenDecor()
     {
@@ -148,12 +158,15 @@ public class DishwasherDecorTests
     {
         var dishwasher = NewDishwasher();
         MaterialManager.ApplyById(dishwasher, DecorId);
-        var chosen = PaintOf(dishwasher, Door);
+        RendererOf(dishwasher, Door).sharedMaterial = ApplianceMaterials.DishwasherPanel;
 
         dishwasher.DimensionsMM = new Vector3Int(600, 820, 550);
 
-        Assert.AreSame(chosen, PaintOf(dishwasher, Door),
+        Assert.AreSame(ChosenDecor(), PaintOf(dishwasher, Door),
             "перестройка меша решает про материал заново, и «поставь заводскую дверцу» "
-            + "вернуло бы тёмный поверх выбранного декора при первом же изменении размера");
+            + "вернуло бы тёмный поверх выбранного декора при первом же изменении "
+            + "размера. Мазок панелью перед перестройкой — страховка от второй беды: "
+            + "если перестройка вообще не запустится, он доживёт до сюда и тест "
+            + "покраснеет, вместо того чтобы пройти впустую");
     }
 }
