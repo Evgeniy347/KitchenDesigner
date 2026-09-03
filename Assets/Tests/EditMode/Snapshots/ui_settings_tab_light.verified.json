@@ -83,6 +83,11 @@
     },
     {
       "type": "Label",
+      "text": "Предел свечения",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
       "text": "Сила виньетки",
       "position": [-90, 0]
     },
@@ -109,6 +114,11 @@
     {
       "type": "Label",
       "text": "Тени сцены",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Тонемаппинг",
       "position": [-90, 0]
     },
     {
@@ -168,6 +178,11 @@
     },
     {
       "type": "Label",
+      "text": "400 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
       "text": "22 %",
       "position": [208, 0]
     },
@@ -184,6 +199,11 @@
     {
       "type": "Label",
       "text": "280 %",
+      "position": [208, 0]
+    },
+    {
+      "type": "Label",
+      "text": "нейтральный",
       "position": [208, 0]
     },
     {

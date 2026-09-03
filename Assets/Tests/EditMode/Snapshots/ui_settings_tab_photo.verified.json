@@ -38,6 +38,11 @@
     },
     {
       "type": "Label",
+      "text": "AO в полном разрешении",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
       "text": "AO по прямому свету",
       "position": [-90, 0]
     },
@@ -208,7 +213,7 @@
     },
     {
       "type": "Label",
-      "text": "200 мм",
+      "text": "50 мм",
       "position": [208, 0]
     },
     {
@@ -228,13 +233,19 @@
     },
     {
       "type": "Label",
-      "text": "200 %",
+      "text": "250 %",
       "position": [208, 0]
     },
     {
       "type": "Label",
       "text": "70 %",
       "position": [208, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_AO в полном разрешении",
+      "isOn": true,
+      "position": [224, 0]
     },
     {
       "type": "Toggle",
