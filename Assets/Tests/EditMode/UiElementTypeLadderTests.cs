@@ -17,13 +17,21 @@ using NUnit.Framework;
 /// данные: набор фасетов, редактор, интерфейс (<c>IOpenable</c>,
 /// <c>IWallMounted</c>, <c>IFacadeHost</c>, <c>ITabletop</c>).
 ///
+/// <c>Handles</c> — это и есть тот единственный вопрос для редактора, поэтому
+/// он разрешён ПРАВИЛОМ, а не строкой в списке: скан пропускает выражение
+/// <c>override bool Handles(...)</c> и ровно его. Раньше ради этой одной строки
+/// файл целиком попадал в список разрешённых и мог спрашивать тип где угодно и
+/// сколько угодно раз — типизированный <c>NumberFieldsEditor.Bind&lt;T&gt;</c>
+/// убрал вопрос из геттеров и сеттеров, и шесть редакторов вышли из списка.
+///
 /// Список разрешённых файлов лежит ЗДЕСЬ, а не в конфиге: расширить его можно
 /// только осознанной правкой этого теста, которую видно в ревью.
 /// </summary>
 public class UiElementTypeLadderTests
 {
     /// <summary>Файлы слоя UI, которым спрашивать конкретный тип элемента
-    /// РАЗРЕШЕНО. Каждому нужна причина — иначе список станет свалкой.</summary>
+    /// РАЗРЕШЕНО и ВНЕ <c>Handles</c>. Каждому нужна причина — иначе список
+    /// станет свалкой.</summary>
     private static readonly (string file, string why)[] Allowed =
     {
         ("ElementFacets.cs", "единственное место, где тип превращается в данные — набор ElementFacet"),
@@ -32,21 +40,15 @@ public class UiElementTypeLadderTests
         ("CooktopCutoutFieldsEditor.cs", "реестр редакторов"),
         ("DrawerBoxFieldsEditor.cs", "реестр редакторов"),
         ("PillarFieldsEditor.cs", "реестр редакторов"),
-        ("TableLegFieldsEditor.cs", "реестр редакторов"),
-        ("StoolFieldsEditor.cs", "реестр редакторов"),
-        ("ChairFieldsEditor.cs", "реестр редакторов"),
-        ("SofaFieldsEditor.cs", "реестр редакторов"),
         ("WallOpeningFieldsEditor.cs", "реестр редакторов"),
         ("LightFieldsEditor.cs", "реестр редакторов"),
         ("FacadeFieldsEditor.cs", "реестр редакторов"),
         ("AssembledFacadeFieldsEditor.cs", "реестр редакторов"),
         ("ScrewLegFieldsEditor.cs", "реестр редакторов"),
-        ("BedFieldsEditor.cs", "реестр редакторов"),
-        ("PouffeFieldsEditor.cs", "реестр редакторов"),
-        ("BathtubFieldsEditor.cs", "реестр редакторов"),
-        ("BathMixerFieldsEditor.cs", "реестр редакторов"),
-        ("ShowerColumnFieldsEditor.cs", "реестр редакторов"),
-        ("ToiletFieldsEditor.cs", "реестр редакторов: один на оба варианта унитаза — "
+        ("BathtubFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
+        ("BathMixerFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
+        ("ShowerColumnFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
+        ("ToiletFieldsEditor.cs", "видимость строк: один редактор на оба варианта унитаза — "
             + "строка «Высота чаши» у них общая, а «Высота панели» только у подвесного"),
     };
 
@@ -63,6 +65,14 @@ public class UiElementTypeLadderTests
         (@"\(\s*(?!KitchenElement\b)[A-Z]\w*Element\s*\)\s*[\w(]",
             "жёсткое приведение к конкретному типу"),
     };
+
+    /// <summary>Сколько строк отводится ответу <c>Handles</c>. Предикат из двух
+    /// вариантов («унитаз обычный или подвесной») занимает две; всё, что длиннее,
+    /// — уже не одна проверка, и хвост попадает под общий запрет.</summary>
+    private const int MaxHandlesLines = 3;
+
+    private static readonly Regex HandlesStart =
+        new Regex(@"\boverride\s+bool\s+Handles\s*\(", RegexOptions.Compiled);
 
     private static string UiSourceDir()
     {
@@ -96,6 +106,45 @@ public class UiElementTypeLadderTests
         return false;
     }
 
+    /// <summary>Строки единственного разрешённого вопроса — выражения
+    /// <c>override bool Handles(...)</c> от его начала до точки с запятой.</summary>
+    private static HashSet<int> HandlesLines(string[] lines)
+    {
+        var exempt = new HashSet<int>();
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (!HandlesStart.IsMatch(lines[i])) continue;
+            for (int j = i; j < lines.Length && j < i + MaxHandlesLines; j++)
+            {
+                exempt.Add(j);
+                if (lines[j].Contains(";")) break;
+            }
+        }
+
+        return exempt;
+    }
+
+    private static List<string> Violations(string name, string[] lines)
+    {
+        var found = new List<string>();
+        var exempt = HandlesLines(lines);
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (exempt.Contains(i)) continue;
+
+            var trimmed = lines[i].TrimStart();
+            if (trimmed.StartsWith("//") || trimmed.StartsWith("*") || trimmed.StartsWith("/*"))
+                continue;
+
+            foreach (var (pattern, why) in Banned)
+                if (Regex.IsMatch(lines[i], pattern))
+                    found.Add($"{name}:{i + 1} — {why}\n    {trimmed}");
+        }
+
+        return found;
+    }
+
     [Test]
     public void UiSources_AskForAnElementType_OnlyInTheAllowedFiles()
     {
@@ -108,24 +157,51 @@ public class UiElementTypeLadderTests
         {
             var name = Path.GetFileName(file);
             if (IsAllowed(name)) continue;
-
-            var lines = File.ReadAllLines(file);
-            for (int i = 0; i < lines.Length; i++)
-            {
-                var trimmed = lines[i].TrimStart();
-                if (trimmed.StartsWith("//") || trimmed.StartsWith("*") || trimmed.StartsWith("/*"))
-                    continue;
-
-                foreach (var (pattern, why) in Banned)
-                    if (Regex.IsMatch(lines[i], pattern))
-                        violations.Add($"{name}:{i + 1} — {why}\n    {trimmed}");
-            }
+            violations.AddRange(Violations(name, File.ReadAllLines(file)));
         }
 
         Assert.IsEmpty(violations,
             "Тип элемента спрашивают один раз на слой, дальше едут данные. "
             + "Расширять список разрешённых файлов — осознанная правка теста. Найдено:\n"
             + string.Join("\n", violations));
+    }
+
+    /// <summary>Послабление — ровно ответ <c>Handles</c>, а не файл вокруг него:
+    /// такой же вопрос строкой ниже обязан быть найден.</summary>
+    [Test]
+    public void HandlesExemption_CoversThePredicateAndNothingElse()
+    {
+        var sample = new[]
+        {
+            "        public override bool Handles(KitchenElement element)",
+            "            => element is ToiletElement || element is WallHungToiletElement;",
+            "",
+            "        private static int SeatOf(KitchenElement element) =>",
+            "            element is ToiletElement toilet ? toilet.SeatHeightMM : 0;",
+        };
+
+        var violations = Violations("Sample.cs", sample);
+
+        Assert.AreEqual(1, violations.Count,
+            "должен остаться ровно вопрос из геттера:\n" + string.Join("\n", violations));
+        StringAssert.Contains("Sample.cs:5", violations[0]);
+    }
+
+    /// <summary>Разросшийся <c>Handles</c> перестаёт быть одной проверкой:
+    /// послабление обрывается, и хвост снова виден сторожу.</summary>
+    [Test]
+    public void HandlesExemption_StopsWhenThePredicateGrows()
+    {
+        var sample = new[]
+        {
+            "        public override bool Handles(KitchenElement element)",
+            "            => element is AElement",
+            "            || element is BElement",
+            "            || element is CElement;",
+        };
+
+        Assert.AreEqual(sample.Length - MaxHandlesLines, Violations("Big.cs", sample).Count,
+            "хвост длинного предиката обязан попасть под общий запрет");
     }
 
     /// <summary>Скан должен реально видеть слой. Сломанный путь дал бы пустой
@@ -169,5 +245,25 @@ public class UiElementTypeLadderTests
 
         Assert.IsEmpty(missing,
             "в списке разрешённых числятся несуществующие файлы: " + string.Join(", ", missing));
+    }
+
+    /// <summary>Разрешение, которое больше не нужно, — это разрешение, выданное
+    /// на будущее без причины. Файл из списка обязан ДЕЙСТВИТЕЛЬНО нарушать
+    /// правило; перестал — строка уходит вместе с долгом.</summary>
+    [Test]
+    public void EveryAllowedFile_ActuallyNeedsItsPermission()
+    {
+        var dir = UiSourceDir();
+        var idle = new List<string>();
+        foreach (var (file, _) in Allowed)
+        {
+            var path = Path.Combine(dir, file);
+            if (!File.Exists(path)) continue;
+            if (Violations(file, File.ReadAllLines(path)).Count == 0) idle.Add(file);
+        }
+
+        Assert.IsEmpty(idle,
+            "эти файлы больше не спрашивают тип вне Handles — уберите их из списка: "
+            + string.Join(", ", idle));
     }
 }

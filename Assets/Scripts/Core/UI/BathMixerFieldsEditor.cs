@@ -37,76 +37,24 @@ namespace KitchenDesigner.Core.UI
             var outletRow = Rows.NumberField(OutletDiameterLabel, visibility, "мм",
                 OutletDiameterNode);
 
-            Bind(bodyDiameterRow, BodyDiameterOf, SetBodyDiameter,
+            Bind<BathMixerElement>(bodyDiameterRow, mixer => mixer.BodyDiameterMM,
+                (mixer, value) => mixer.BodyDiameterMM = value,
                 BathMixerSpec.DefaultBodyDiameterMM.ToString());
-            Bind(bodyLengthRow, BodyLengthOf, SetBodyLength,
+            Bind<BathMixerElement>(bodyLengthRow, mixer => mixer.BodyLengthMM,
+                (mixer, value) => mixer.BodyLengthMM = value,
                 BathMixerSpec.DefaultBodyLengthMM.ToString());
-            Bind(centresRow, CentresOf, SetCentres, BathMixerSpec.DefaultCentresMM.ToString());
-            Bind(reachRow, ReachOf, SetReach,
+            Bind<BathMixerElement>(centresRow, mixer => mixer.CentresMM,
+                (mixer, value) => mixer.CentresMM = value,
+                BathMixerSpec.DefaultCentresMM.ToString());
+            Bind<BathMixerElement>(reachRow, mixer => mixer.EscutcheonReachMM,
+                (mixer, value) => mixer.EscutcheonReachMM = value,
                 BathMixerSpec.DefaultEscutcheonReachMM.ToString());
-            Bind(spoutRow, SpoutOf, SetSpout, BathMixerSpec.DefaultSpoutLengthMM.ToString());
-            Bind(outletRow, OutletOf, SetOutlet,
+            Bind<BathMixerElement>(spoutRow, mixer => mixer.SpoutLengthMM,
+                (mixer, value) => mixer.SpoutLengthMM = value,
+                BathMixerSpec.DefaultSpoutLengthMM.ToString());
+            Bind<BathMixerElement>(outletRow, mixer => mixer.OutletDiameterMM,
+                (mixer, value) => mixer.OutletDiameterMM = value,
                 BathMixerSpec.DefaultOutletDiameterMM.ToString());
-        }
-
-        private static int CentresOf(KitchenElement element) =>
-            element is BathMixerElement mixer
-                ? mixer.CentresMM
-                : BathMixerSpec.DefaultCentresMM;
-
-        private static void SetCentres(KitchenElement element, int value)
-        {
-            if (element is BathMixerElement mixer) mixer.CentresMM = value;
-        }
-
-        private static int BodyLengthOf(KitchenElement element) =>
-            element is BathMixerElement mixer
-                ? mixer.BodyLengthMM
-                : BathMixerSpec.DefaultBodyLengthMM;
-
-        private static void SetBodyLength(KitchenElement element, int value)
-        {
-            if (element is BathMixerElement mixer) mixer.BodyLengthMM = value;
-        }
-
-        private static int BodyDiameterOf(KitchenElement element) =>
-            element is BathMixerElement mixer
-                ? mixer.BodyDiameterMM
-                : BathMixerSpec.DefaultBodyDiameterMM;
-
-        private static void SetBodyDiameter(KitchenElement element, int value)
-        {
-            if (element is BathMixerElement mixer) mixer.BodyDiameterMM = value;
-        }
-
-        private static int ReachOf(KitchenElement element) =>
-            element is BathMixerElement mixer
-                ? mixer.EscutcheonReachMM
-                : BathMixerSpec.DefaultEscutcheonReachMM;
-
-        private static void SetReach(KitchenElement element, int value)
-        {
-            if (element is BathMixerElement mixer) mixer.EscutcheonReachMM = value;
-        }
-
-        private static int SpoutOf(KitchenElement element) =>
-            element is BathMixerElement mixer
-                ? mixer.SpoutLengthMM
-                : BathMixerSpec.DefaultSpoutLengthMM;
-
-        private static void SetSpout(KitchenElement element, int value)
-        {
-            if (element is BathMixerElement mixer) mixer.SpoutLengthMM = value;
-        }
-
-        private static int OutletOf(KitchenElement element) =>
-            element is BathMixerElement mixer
-                ? mixer.OutletDiameterMM
-                : BathMixerSpec.DefaultOutletDiameterMM;
-
-        private static void SetOutlet(KitchenElement element, int value)
-        {
-            if (element is BathMixerElement mixer) mixer.OutletDiameterMM = value;
         }
     }
 }

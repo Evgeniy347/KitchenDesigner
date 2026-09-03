@@ -26,45 +26,18 @@ namespace KitchenDesigner.Core.UI
             var bowlFilletRow = Rows.NumberField(BowlFilletLabel, visibility, "мм",
                 BowlFilletNode);
 
-            Bind(rimRow, RimOf, SetRim, BathtubLayout.DefaultRimWidthMM.ToString());
-            Bind(bowlDepthRow, BowlDepthOf, SetBowlDepth,
+            Bind<BathtubElement>(rimRow, tub => tub.RimWidthMM,
+                (tub, value) => tub.RimWidthMM = value,
+                BathtubLayout.DefaultRimWidthMM.ToString());
+            Bind<BathtubElement>(bowlDepthRow, tub => tub.BowlDepthMM,
+                (tub, value) => tub.BowlDepthMM = value,
                 BathtubLayout.DefaultBowlDepthMM.ToString());
-            Bind(bowlRadiusRow, BowlRadiusOf, SetBowlRadius,
+            Bind<BathtubElement>(bowlRadiusRow, tub => tub.BowlRadiusMM,
+                (tub, value) => tub.BowlRadiusMM = value,
                 BathtubLayout.DefaultBowlRadiusMM.ToString());
-            Bind(bowlFilletRow, BowlFilletOf, SetBowlFillet,
+            Bind<BathtubElement>(bowlFilletRow, tub => tub.BowlFilletMM,
+                (tub, value) => tub.BowlFilletMM = value,
                 BathtubLayout.DefaultBowlFilletMM.ToString());
-        }
-
-        private static int RimOf(KitchenElement element) =>
-            element is BathtubElement tub ? tub.RimWidthMM : BathtubLayout.DefaultRimWidthMM;
-
-        private static void SetRim(KitchenElement element, int value)
-        {
-            if (element is BathtubElement tub) tub.RimWidthMM = value;
-        }
-
-        private static int BowlDepthOf(KitchenElement element) =>
-            element is BathtubElement tub ? tub.BowlDepthMM : BathtubLayout.DefaultBowlDepthMM;
-
-        private static void SetBowlDepth(KitchenElement element, int value)
-        {
-            if (element is BathtubElement tub) tub.BowlDepthMM = value;
-        }
-
-        private static int BowlRadiusOf(KitchenElement element) =>
-            element is BathtubElement tub ? tub.BowlRadiusMM : BathtubLayout.DefaultBowlRadiusMM;
-
-        private static void SetBowlRadius(KitchenElement element, int value)
-        {
-            if (element is BathtubElement tub) tub.BowlRadiusMM = value;
-        }
-
-        private static int BowlFilletOf(KitchenElement element) =>
-            element is BathtubElement tub ? tub.BowlFilletMM : BathtubLayout.DefaultBowlFilletMM;
-
-        private static void SetBowlFillet(KitchenElement element, int value)
-        {
-            if (element is BathtubElement tub) tub.BowlFilletMM = value;
         }
     }
 }

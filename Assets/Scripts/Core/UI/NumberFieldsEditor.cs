@@ -6,37 +6,94 @@ namespace KitchenDesigner.Core.UI
 {
     internal abstract class NumberFieldsEditor : ElementFieldsEditor
     {
-        private sealed class NumberFieldBinding
+        private interface INumberFieldCase
         {
-            private readonly Func<KitchenElement, int> _read;
-            private readonly Action<KitchenElement, int> _write;
+            bool TryRead(KitchenElement element, out int value);
 
-            public NumberFieldBinding(TMP_InputField field, Func<KitchenElement, int> read,
-                Action<KitchenElement, int> write, string idleText)
+            void Write(KitchenElement element, int value);
+        }
+
+        private sealed class NumberFieldCase<T> : INumberFieldCase where T : class
+        {
+            private readonly Func<T, int> _read;
+            private readonly Action<T, int> _write;
+
+            public NumberFieldCase(Func<T, int> read, Action<T, int> write)
+            {
+                _read = read;
+                _write = write;
+            }
+
+            public bool TryRead(KitchenElement element, out int value)
+            {
+                if (element is T typed)
+                {
+                    value = _read(typed);
+                    return true;
+                }
+
+                value = 0;
+                return false;
+            }
+
+            public void Write(KitchenElement element, int value)
+            {
+                if (element is T typed) _write(typed, value);
+            }
+        }
+
+        internal sealed class NumberFieldBinding
+        {
+            private readonly List<INumberFieldCase> _cases = new List<INumberFieldCase>();
+
+            internal NumberFieldBinding(TMP_InputField field, string idleText)
             {
                 Field = field;
                 IdleText = idleText;
-                _read = read;
-                _write = write;
             }
 
             public TMP_InputField Field { get; }
 
             public string IdleText { get; }
 
-            public string TextOf(KitchenElement element) => _read(element).ToString();
+            public NumberFieldBinding Or<T>(Func<T, int> read, Action<T, int> write)
+                where T : class
+            {
+                _cases.Add(new NumberFieldCase<T>(read, write));
+                return this;
+            }
 
-            public void Write(KitchenElement element, ContextMenuFieldTracker fields) =>
-                _write(element, fields.ParseInt(Field, _read(element)));
+            public string TextOf(KitchenElement element)
+            {
+                foreach (var branch in _cases)
+                    if (branch.TryRead(element, out int value))
+                        return value.ToString();
+                return IdleText;
+            }
+
+            public void Write(KitchenElement element, ContextMenuFieldTracker fields)
+            {
+                foreach (var branch in _cases)
+                    if (branch.TryRead(element, out int current))
+                    {
+                        branch.Write(element, fields.ParseInt(Field, current));
+                        return;
+                    }
+            }
         }
 
         private readonly List<NumberFieldBinding> _bindings = new List<NumberFieldBinding>();
 
         protected NumberFieldsEditor(IContextMenuHost host) : base(host) { }
 
-        protected void Bind(TMP_InputField field, Func<KitchenElement, int> read,
-            Action<KitchenElement, int> write, string idleText) =>
-            _bindings.Add(new NumberFieldBinding(field, read, write, idleText));
+        protected NumberFieldBinding Bind<T>(TMP_InputField field, Func<T, int> read,
+            Action<T, int> write, string idleText) where T : class
+        {
+            var binding = new NumberFieldBinding(field, idleText);
+            binding.Or(read, write);
+            _bindings.Add(binding);
+            return binding;
+        }
 
         public override IEnumerable<TMP_InputField?> ArithmeticFields()
         {

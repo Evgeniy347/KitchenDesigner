@@ -23,33 +23,14 @@ namespace KitchenDesigner.Core.UI
             var plateRow = Rows.NumberField(FlushPlateHeightLabel, wallHungOnly, "мм",
                 FlushPlateHeightNode);
 
-            Bind(seatRow, SeatHeightOf, SetSeatHeight,
-                ToiletLayout.DefaultSeatHeightMM.ToString());
-            Bind(plateRow, FlushPlateHeightOf, SetFlushPlateHeight,
+            Bind<ToiletElement>(seatRow, toilet => toilet.SeatHeightMM,
+                    (toilet, value) => toilet.SeatHeightMM = value,
+                    ToiletLayout.DefaultSeatHeightMM.ToString())
+                .Or<WallHungToiletElement>(wallHung => wallHung.SeatHeightMM,
+                    (wallHung, value) => wallHung.SeatHeightMM = value);
+            Bind<WallHungToiletElement>(plateRow, wallHung => wallHung.FlushPlateHeightMM,
+                (wallHung, value) => wallHung.FlushPlateHeightMM = value,
                 WallHungToiletLayout.DefaultPlateBottomMM.ToString());
-        }
-
-        private static int SeatHeightOf(KitchenElement element) => element switch
-        {
-            ToiletElement toilet => toilet.SeatHeightMM,
-            WallHungToiletElement wallHung => wallHung.SeatHeightMM,
-            _ => ToiletLayout.DefaultSeatHeightMM,
-        };
-
-        private static void SetSeatHeight(KitchenElement element, int value)
-        {
-            if (element is ToiletElement toilet) toilet.SeatHeightMM = value;
-            else if (element is WallHungToiletElement wallHung) wallHung.SeatHeightMM = value;
-        }
-
-        private static int FlushPlateHeightOf(KitchenElement element)
-            => element is WallHungToiletElement wallHung
-                ? wallHung.FlushPlateHeightMM
-                : WallHungToiletLayout.DefaultPlateBottomMM;
-
-        private static void SetFlushPlateHeight(KitchenElement element, int value)
-        {
-            if (element is WallHungToiletElement wallHung) wallHung.FlushPlateHeightMM = value;
         }
     }
 }

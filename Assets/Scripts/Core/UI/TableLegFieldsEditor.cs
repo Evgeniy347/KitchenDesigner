@@ -10,18 +10,11 @@ namespace KitchenDesigner.Core.UI
             element is TableElement || element is RadiusTableElement;
 
         public override void Build() =>
-            Bind(Rows.NumberField("Сдвиг опор", RowVisibility.For(ElementFacet.Table)),
-                InsetOf, SetInset, FallbackInsetMM.ToString());
-
-        private static int InsetOf(KitchenElement element) =>
-            element is TableElement table ? table.LegInsetMM
-                : element is RadiusTableElement radiusTable ? radiusTable.LegInsetMM
-                : FallbackInsetMM;
-
-        private static void SetInset(KitchenElement element, int value)
-        {
-            if (element is TableElement table) table.LegInsetMM = value;
-            else if (element is RadiusTableElement radiusTable) radiusTable.LegInsetMM = value;
-        }
+            Bind<TableElement>(
+                Rows.NumberField("Сдвиг опор", RowVisibility.For(ElementFacet.Table)),
+                table => table.LegInsetMM, (table, value) => table.LegInsetMM = value,
+                FallbackInsetMM.ToString())
+            .Or<RadiusTableElement>(table => table.LegInsetMM,
+                (table, value) => table.LegInsetMM = value);
     }
 }

@@ -43,98 +43,30 @@ namespace KitchenDesigner.Core.UI
                 HandDiameterNode);
             var hoseRow = Rows.NumberField(HoseLengthLabel, visibility, "мм", HoseLengthNode);
 
-            Bind(riserRow, RiserOf, SetRiser, ShowerColumnSpec.DefaultRiserDiameterMM.ToString());
-            Bind(offsetRow, OffsetOf, SetOffset,
+            Bind<ShowerColumnElement>(riserRow, column => column.RiserDiameterMM,
+                (column, value) => column.RiserDiameterMM = value,
+                ShowerColumnSpec.DefaultRiserDiameterMM.ToString());
+            Bind<ShowerColumnElement>(offsetRow, column => column.WallOffsetMM,
+                (column, value) => column.WallOffsetMM = value,
                 ShowerColumnSpec.DefaultWallOffsetMM.ToString());
-            Bind(heightRow, HeightOf, SetHeight,
+            Bind<ShowerColumnElement>(heightRow, column => column.ColumnHeightMM,
+                (column, value) => column.ColumnHeightMM = value,
                 ShowerColumnSpec.DefaultColumnHeightMM.ToString());
-            Bind(reachRow, ReachOf, SetReach, ShowerColumnSpec.DefaultArmReachMM.ToString());
-            Bind(headRow, HeadOf, SetHead, ShowerColumnSpec.DefaultHeadDiameterMM.ToString());
-            Bind(thicknessRow, ThicknessOf, SetThickness,
+            Bind<ShowerColumnElement>(reachRow, column => column.ArmReachMM,
+                (column, value) => column.ArmReachMM = value,
+                ShowerColumnSpec.DefaultArmReachMM.ToString());
+            Bind<ShowerColumnElement>(headRow, column => column.HeadDiameterMM,
+                (column, value) => column.HeadDiameterMM = value,
+                ShowerColumnSpec.DefaultHeadDiameterMM.ToString());
+            Bind<ShowerColumnElement>(thicknessRow, column => column.HeadThicknessMM,
+                (column, value) => column.HeadThicknessMM = value,
                 ShowerColumnSpec.DefaultHeadThicknessMM.ToString());
-            Bind(handRow, HandOf, SetHand,
+            Bind<ShowerColumnElement>(handRow, column => column.HandShowerDiameterMM,
+                (column, value) => column.HandShowerDiameterMM = value,
                 ShowerColumnSpec.DefaultHandShowerDiameterMM.ToString());
-            Bind(hoseRow, HoseOf, SetHose, ShowerColumnSpec.DefaultHoseLengthMM.ToString());
-        }
-
-        private static int HeightOf(KitchenElement element) =>
-            element is ShowerColumnElement column
-                ? column.ColumnHeightMM
-                : ShowerColumnSpec.DefaultColumnHeightMM;
-
-        private static void SetHeight(KitchenElement element, int value)
-        {
-            if (element is ShowerColumnElement column) column.ColumnHeightMM = value;
-        }
-
-        private static int RiserOf(KitchenElement element) =>
-            element is ShowerColumnElement column
-                ? column.RiserDiameterMM
-                : ShowerColumnSpec.DefaultRiserDiameterMM;
-
-        private static void SetRiser(KitchenElement element, int value)
-        {
-            if (element is ShowerColumnElement column) column.RiserDiameterMM = value;
-        }
-
-        private static int HeadOf(KitchenElement element) =>
-            element is ShowerColumnElement column
-                ? column.HeadDiameterMM
-                : ShowerColumnSpec.DefaultHeadDiameterMM;
-
-        private static void SetHead(KitchenElement element, int value)
-        {
-            if (element is ShowerColumnElement column) column.HeadDiameterMM = value;
-        }
-
-        private static int ThicknessOf(KitchenElement element) =>
-            element is ShowerColumnElement column
-                ? column.HeadThicknessMM
-                : ShowerColumnSpec.DefaultHeadThicknessMM;
-
-        private static void SetThickness(KitchenElement element, int value)
-        {
-            if (element is ShowerColumnElement column) column.HeadThicknessMM = value;
-        }
-
-        private static int ReachOf(KitchenElement element) =>
-            element is ShowerColumnElement column
-                ? column.ArmReachMM
-                : ShowerColumnSpec.DefaultArmReachMM;
-
-        private static void SetReach(KitchenElement element, int value)
-        {
-            if (element is ShowerColumnElement column) column.ArmReachMM = value;
-        }
-
-        private static int OffsetOf(KitchenElement element) =>
-            element is ShowerColumnElement column
-                ? column.WallOffsetMM
-                : ShowerColumnSpec.DefaultWallOffsetMM;
-
-        private static void SetOffset(KitchenElement element, int value)
-        {
-            if (element is ShowerColumnElement column) column.WallOffsetMM = value;
-        }
-
-        private static int HandOf(KitchenElement element) =>
-            element is ShowerColumnElement column
-                ? column.HandShowerDiameterMM
-                : ShowerColumnSpec.DefaultHandShowerDiameterMM;
-
-        private static void SetHand(KitchenElement element, int value)
-        {
-            if (element is ShowerColumnElement column) column.HandShowerDiameterMM = value;
-        }
-
-        private static int HoseOf(KitchenElement element) =>
-            element is ShowerColumnElement column
-                ? column.HoseLengthMM
-                : ShowerColumnSpec.DefaultHoseLengthMM;
-
-        private static void SetHose(KitchenElement element, int value)
-        {
-            if (element is ShowerColumnElement column) column.HoseLengthMM = value;
+            Bind<ShowerColumnElement>(hoseRow, column => column.HoseLengthMM,
+                (column, value) => column.HoseLengthMM = value,
+                ShowerColumnSpec.DefaultHoseLengthMM.ToString());
         }
     }
 }

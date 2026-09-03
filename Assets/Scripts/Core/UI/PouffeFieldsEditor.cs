@@ -19,27 +19,11 @@ namespace KitchenDesigner.Core.UI
             var seatThicknessRow = Rows.NumberField(SeatThicknessLabel, visibility, "мм",
                 SeatThicknessNode);
 
-            Bind(seatThicknessRow, ThicknessOf, SetThickness,
+            Bind<PouffeElement>(seatThicknessRow, pouffe => pouffe.SeatThicknessMM,
+                (pouffe, value) => pouffe.SeatThicknessMM = value,
                 PouffeLayout.DefaultSeatThicknessMM.ToString());
-            Bind(cornerRadiusRow, RadiusOf, SetRadius, "0");
-        }
-
-        private static int RadiusOf(KitchenElement element) =>
-            element is PouffeElement pouffe ? pouffe.CornerRadiusMM : 0;
-
-        private static void SetRadius(KitchenElement element, int value)
-        {
-            if (element is PouffeElement pouffe) pouffe.CornerRadiusMM = value;
-        }
-
-        private static int ThicknessOf(KitchenElement element) =>
-            element is PouffeElement pouffe
-                ? pouffe.SeatThicknessMM
-                : PouffeLayout.DefaultSeatThicknessMM;
-
-        private static void SetThickness(KitchenElement element, int value)
-        {
-            if (element is PouffeElement pouffe) pouffe.SeatThicknessMM = value;
+            Bind<PouffeElement>(cornerRadiusRow, pouffe => pouffe.CornerRadiusMM,
+                (pouffe, value) => pouffe.CornerRadiusMM = value, "0");
         }
     }
 }

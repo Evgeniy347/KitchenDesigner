@@ -43,11 +43,14 @@ namespace KitchenDesigner.Core.UI
             var heightRow = Rows.NumberField(PlateHeightLabel, anyDevice, "мм", PlateHeightNode);
             var protrusionRow = Rows.NumberField(ProtrusionLabel, anyDevice, "мм", ProtrusionNode);
 
-            Bind(widthRow, PlateWidthOf, SetPlateWidth,
+            Bind<IWallDevice>(widthRow, device => device.PlateWidthMM,
+                (device, value) => device.PlateWidthMM = value,
                 WallDeviceLayout.DefaultPlateWidthMM.ToString());
-            Bind(heightRow, PlateHeightOf, SetPlateHeight,
+            Bind<IWallDevice>(heightRow, device => device.PlateHeightMM,
+                (device, value) => device.PlateHeightMM = value,
                 WallDeviceLayout.DefaultPlateHeightMM.ToString());
-            Bind(protrusionRow, ProtrusionOf, SetProtrusion,
+            Bind<IWallDevice>(protrusionRow, device => device.ProtrusionMM,
+                (device, value) => device.ProtrusionMM = value,
                 WallDeviceLayout.DefaultProtrusionMM.ToString());
 
             _posts = Rows.Dropdown(PostCountLabel, PostOptions(), OnPostCountSelected,
@@ -103,36 +106,6 @@ namespace KitchenDesigner.Core.UI
         private void OnPoweredToggled(bool on)
         {
             if (Host.Target is ILightSwitch source) Lighting.SwitchPower.Set(source, on);
-        }
-
-        private static int PlateWidthOf(KitchenElement element)
-            => element is IWallDevice device
-                ? device.PlateWidthMM
-                : WallDeviceLayout.DefaultPlateWidthMM;
-
-        private static void SetPlateWidth(KitchenElement element, int value)
-        {
-            if (element is IWallDevice device) device.PlateWidthMM = value;
-        }
-
-        private static int PlateHeightOf(KitchenElement element)
-            => element is IWallDevice device
-                ? device.PlateHeightMM
-                : WallDeviceLayout.DefaultPlateHeightMM;
-
-        private static void SetPlateHeight(KitchenElement element, int value)
-        {
-            if (element is IWallDevice device) device.PlateHeightMM = value;
-        }
-
-        private static int ProtrusionOf(KitchenElement element)
-            => element is IWallDevice device
-                ? device.ProtrusionMM
-                : WallDeviceLayout.DefaultProtrusionMM;
-
-        private static void SetProtrusion(KitchenElement element, int value)
-        {
-            if (element is IWallDevice device) device.ProtrusionMM = value;
         }
     }
 }
