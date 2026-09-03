@@ -644,7 +644,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsScreenshot
     {
-        [McpParam("How many times to render the frame before reading it back. 1 (the default) just takes the picture. A higher count turns the call into a cost measurement: the read-back is a fixed ~15 ms tax that hides the frame cost, so time a 1-render call and an 8-render call and divide the difference by 7 to get milliseconds per frame.", Min = 1)]
+        [McpParam("How many times to render the frame before reading it back — a COUNT of renders, not a duration. 1 (the default) just takes the picture. A higher count turns the call into a cost measurement: the read-back is a fixed ~15 ms tax that hides the frame cost, so time a 1-render call and an 8-render call and divide the difference by 7 to get milliseconds per frame.", Min = 1)]
         public int? renders;
     }
 
