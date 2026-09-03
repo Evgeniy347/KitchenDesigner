@@ -80,6 +80,7 @@ namespace KitchenDesigner.Core.UI
 
             var toast = gameObject.AddComponent<ToastNotification>();
             toast.Build(_canvas.transform);
+            PhotoLookMigrationNotice.ShowIfPending();
 
             var statusBar = gameObject.AddComponent<StatusBarUI>();
             statusBar.Build(_canvas.transform);

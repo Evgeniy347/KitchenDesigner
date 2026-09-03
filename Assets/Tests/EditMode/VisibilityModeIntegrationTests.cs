@@ -173,8 +173,8 @@ public class VisibilityModeIntegrationTests
     public void Matrix_RoomMode(ViewField field, bool value, bool editable)
         => AssertMatrix(EditMode.Room, field, value, editable);
 
-    // Фото: видно всё, менять нельзя ничего. Контуры — не сокрытие геометрии,
-    // поэтому берутся из пресета обычного режима.
+    // Фото: видно всё, менять нельзя ничего. Контуры гасятся насильно —
+    // это кадр, а не рабочий вид.
     [TestCase(ViewField.Walls, true, false)]
     [TestCase(ViewField.WallOutline, false, false)]
     [TestCase(ViewField.LowerNearWalls, false, false)]
@@ -622,5 +622,38 @@ public class VisibilityModeIntegrationTests
             Assert.IsTrue(EditModeManager.IsInteractable(_windowEl), $"{mode}: окно всегда интерактивно");
             Assert.IsTrue(EditModeManager.IsInteractable(_doorEl), $"{mode}: дверь всегда интерактивна");
         }
+    }
+
+    /// <summary>Матрица выше кормит фоторежим пресетом, в котором обводки И ТАК
+    /// выключены, поэтому её строки про контуры проходили бы и без починки.
+    /// Здесь обводки включены — ровно как у пользователя, приславшего кадр с
+    /// чёрным пунктиром по стыку потолка и пунктирным кольцом вокруг плафона.
+    /// Фоторежим обязан погасить их сам и не дать включить обратно.</summary>
+    [Test]
+    public void PhotoMode_KillsOutlinesEvenWhenThePresetAsksForThem()
+    {
+        Normal.wallOutline = true;
+        Normal.edgeOutline = true;
+        Room.wallOutline = true;
+        Room.edgeOutline = true;
+
+        EditModeManager.SetMode(EditMode.Normal);
+        Assume.That(ViewResolver.Current.Get(ViewField.ObjectOutline), Is.True,
+            "в обычном режиме обводка объектов взята из пресета — иначе тест ничего не ловит");
+        Assume.That(ViewResolver.Current.Get(ViewField.WallOutline), Is.True,
+            "в обычном режиме обводка стен взята из пресета");
+
+        EditModeManager.SetMode(EditMode.Photo);
+
+        Assert.IsFalse(ViewResolver.Current.Get(ViewField.ObjectOutline),
+            "фоторежим: обводка объектов не рисуется в кадре");
+        Assert.IsFalse(ViewResolver.Current.Get(ViewField.WallOutline),
+            "фоторежим: обводка стен не рисуется в кадре");
+        Assert.IsTrue(ViewResolver.Resolve(EditMode.Photo).IsLocked(ViewField.ObjectOutline),
+            "фоторежим: обводка объектов заперта, а не просто выключена");
+        Assert.IsTrue(ViewResolver.Resolve(EditMode.Photo).IsLocked(ViewField.WallOutline),
+            "фоторежим: обводка стен заперта, а не просто выключена");
+        Assert.IsFalse(ViewResolver.Resolve(EditMode.Normal).IsLocked(ViewField.ObjectOutline),
+            "в обычном режиме та же обводка остаётся под рукой пользователя");
     }
 }

@@ -41,7 +41,10 @@ namespace KitchenDesigner.Core.UI
                 SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return;
             if (SaveLoadManager.LoadFromPath(path))
+            {
                 Toast("Загружено: " + System.IO.Path.GetFileName(path));
+                PhotoLookMigrationNotice.ShowIfPending();
+            }
         }
 
         private static string SuggestedNameForANewFile() =>

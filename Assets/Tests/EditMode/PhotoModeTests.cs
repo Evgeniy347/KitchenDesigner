@@ -617,4 +617,94 @@ public class PhotoModeLifecycleTests
             "смена пресета вне фоторежима не имеет права включить тяжёлые эффекты сама");
         Assert.IsFalse(CeilingBuilder.Exists);
     }
+
+    // ── Пресет качества = ещё и цена кадра ───────────────────────────────────
+
+    /// <summary>Сеттер PhotoQuality когда-то только запоминал число, а тумблеры
+    /// оставлял как были. Панель звала Apply и потому работала, а set_setting
+    /// photo_quality двигал одну подпись — три прогона замера намерили одни и те
+    /// же настройки и дали 12,6/11,4/11,5 мс, где низкий вышел дороже высокого.
+    /// Ловушку убрал сам сеттер; тест держит её закрытой.</summary>
+    [Test]
+    public void SettingPhotoQuality_AppliesThePresetAndNotJustTheLabel()
+    {
+        var gs = KitchenSettings.Instance;
+        var before = gs.ToData();
+        try
+        {
+            gs.PhotoQuality = PhotoQualityPreset.High;
+            Assume.That(gs.PhotoSupersampling, Is.True, "высокий пресет включает суперсэмплинг");
+
+            gs.PhotoQuality = PhotoQualityPreset.Low;
+
+            Assert.IsFalse(gs.PhotoSupersampling, "низкий пресет обязан выключить суперсэмплинг");
+            Assert.IsFalse(gs.PhotoAmbientOcclusion, "низкий пресет обязан выключить AO");
+            Assert.IsFalse(gs.PhotoBloom, "низкий пресет обязан выключить свечение");
+            Assert.AreEqual(PhotoQualityPresetTable.LOW_SHADOWMAP_PX, gs.PhotoShadowMapPx,
+                "низкий пресет обязан уронить карту теней");
+        }
+        finally
+        {
+            gs.ApplyFrom(before);
+        }
+    }
+
+    /// <summary>Пресеты обязаны отличаться не только красотой, но и ценой, иначе
+    /// выбирать между ними незачем. Замер на трёх ракурсах дал 5,0 / 6,8 / 13,0 мс
+    /// на кадр — разгоняют его ровно эти две числовые оси плюс полноразмерный AO.
+    /// Пока лестница строго возрастает, «низкое» не может однажды оказаться
+    /// дороже «высокого», как оно уже было.</summary>
+    [Test]
+    public void Presets_ClimbInCostAndNotOnlyInLooks()
+    {
+        var low = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.Low);
+        var medium = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.Medium);
+        var high = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.High);
+
+        Assert.Less(low.ShadowMapPx, medium.ShadowMapPx, "карта теней: низкое < среднее");
+        Assert.Less(medium.ShadowMapPx, high.ShadowMapPx, "карта теней: среднее < высокое");
+        Assert.LessOrEqual(low.RenderScalePct, medium.RenderScalePct, "масштаб рендера не падает");
+        Assert.Less(medium.RenderScalePct, high.RenderScalePct, "суперсэмплинг только у высокого");
+
+        Assert.IsFalse(low.AoFullRes, "у низкого AO вообще выключен");
+        Assert.IsFalse(medium.AoFullRes, "среднее держит AO в половинном разрешении");
+        Assert.IsTrue(high.AoFullRes, "полноразмерный AO — привилегия высокого");
+
+        Assert.Less(low.EnabledCount, medium.EnabledCount, "включённых эффектов: низкое < среднее");
+        Assert.Less(medium.EnabledCount, high.EnabledCount, "включённых эффектов: среднее < высокое");
+    }
+
+    /// <summary>Инструменты, рисующие свои линии поверх сцены, не знали про
+    /// фоторежим и не сбрасывались при входе: рулетка и пипетка продолжали
+    /// рисоваться в кадре. Проверяем обе — их состояние можно поднять прямо
+    /// отсюда, поэтому тест краснеет, если Enter перестанет их закрывать.</summary>
+    [Test]
+    public void EnteringPhotoMode_ClosesTheToolsThatDrawOverlays()
+    {
+        var s = KitchenSettings.Instance;
+        var before = s.ToData();
+        try
+        {
+            KitchenDesigner.Core.Measure.MeasureMode.SetActive(true);
+            KitchenDesigner.Core.Tools.EyedropperMode.SetActive(true);
+            Assume.That(KitchenDesigner.Core.Measure.MeasureMode.Active, Is.True, "рулетка включена до входа");
+            Assume.That(KitchenDesigner.Core.Tools.EyedropperMode.Active, Is.True, "пипетка включена до входа");
+
+            EditModeManager.SetMode(EditMode.Photo);
+
+            Assert.IsFalse(KitchenDesigner.Core.Measure.MeasureMode.Active,
+                "рулетка обязана закрыться при входе в фоторежим");
+            Assert.IsFalse(KitchenDesigner.Core.Tools.EyedropperMode.Active,
+                "пипетка обязана закрыться при входе в фоторежим");
+            Assert.IsFalse(KitchenDesigner.Core.Lighting.LightPickMode.Active,
+                "выбор ламп обязан закрыться при входе в фоторежим");
+        }
+        finally
+        {
+            EditModeManager.SetMode(EditMode.Normal);
+            KitchenDesigner.Core.Measure.MeasureMode.SetActive(false);
+            KitchenDesigner.Core.Tools.EyedropperMode.SetActive(false);
+            s.ApplyFrom(before);
+        }
+    }
 }

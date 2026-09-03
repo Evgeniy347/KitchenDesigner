@@ -874,8 +874,8 @@ public class RoundTripTests
     /// 108 % выжгло 33 % кадра добела, а виньетка 70 % задавила 24 %.
     /// Отсутствие photoSchema в файле — точный штамп той эпохи: его пишет только
     /// сборка с уже живым конвейером. Так что вся секция возвращается к умолчаниям,
-    /// а PhotoLookMigrated поднимает флаг, по которому SceneRestorer говорит об этом
-    /// пользователю вслух — молча переписывать чужие настройки нельзя.
+    /// а одноразовый флаг ConsumePhotoLookMigratedNotice поднимает всплывашку в UI —
+    /// молча переписывать чужие настройки нельзя.
     /// Кадрирование камеры не трогается: оно живёт в ProjectData, а не здесь.</summary>
     [Test]
     public void Settings_PhotoLookFromDeadPipelineEra_ResetsToDefaultsAndSaysSo()
@@ -891,7 +891,9 @@ public class RoundTripTests
 
         gs.ApplyFrom(data);
 
-        Assert.IsTrue(gs.PhotoLookMigrated, "миграция должна себя объявить");
+        Assert.IsTrue(gs.ConsumePhotoLookMigratedNotice(), "миграция должна себя объявить");
+        Assert.IsFalse(gs.ConsumePhotoLookMigratedNotice(),
+            "объявляется один раз: иначе всплывашка вернётся при каждом следующем открытии");
         Assert.AreEqual(KitchenSettings.PHOTO_BLOOM_DEFAULT_PCT, gs.PhotoBloomPct, "свечение");
         Assert.AreEqual(KitchenSettings.PHOTO_BLOOM_THRESHOLD_DEFAULT_PCT,
             gs.PhotoBloomThresholdPct, "порог свечения");
@@ -927,7 +929,7 @@ public class RoundTripTests
         gs.ResetToDefaults();
         gs.ApplyFrom(saved);
 
-        Assert.IsFalse(gs.PhotoLookMigrated, "новый файл не мигрируют");
+        Assert.IsFalse(gs.ConsumePhotoLookMigratedNotice(), "новый файл не мигрируют");
         Assert.AreEqual(77, gs.PhotoBloomPct, "свечение пережило круг");
         Assert.AreEqual(41, gs.PhotoVignettePct, "виньетка пережила круг");
         Assert.AreEqual(913, gs.PhotoBloomClampPct, "предел свечения пережил круг");

@@ -215,12 +215,19 @@ namespace KitchenDesigner.Core
             ResetPhotoTuning();
         }
 
-        public bool PhotoLookMigrated { get; private set; }
+        private bool _photoLookMigrated;
+
+        public bool ConsumePhotoLookMigratedNotice()
+        {
+            if (!_photoLookMigrated) return false;
+            _photoLookMigrated = false;
+            return true;
+        }
 
         private void ApplyPhotoSettings(KitchenSettingsData data)
         {
-            PhotoLookMigrated = data.photoSchema < KitchenSettingsData.CURRENT_PHOTO_SCHEMA;
-            if (PhotoLookMigrated)
+            _photoLookMigrated = data.photoSchema < KitchenSettingsData.CURRENT_PHOTO_SCHEMA;
+            if (_photoLookMigrated)
             {
                 ResetPhotoLook();
                 return;

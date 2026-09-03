@@ -6,12 +6,6 @@ namespace KitchenDesigner.Core
 {
     internal static class SceneRestorer
     {
-        internal const string PhotoLookMigratedNotice =
-            "Настройки фоторежима сохранены в версии, где постобработка была отключена, "
-            + "и ни на что не влияли. Они возвращены к значениям по умолчанию.";
-
-        private const float PhotoLookNoticeSeconds = 8f;
-
         public static List<GameObject> Restore(ProjectData data)
         {
             using var batch = HighlightBatch.Open();
@@ -66,11 +60,7 @@ namespace KitchenDesigner.Core
                 RestoreBasePlate(data.basePlate);
 
             if (data.settings != null)
-            {
                 KitchenSettings.Instance.ApplyFrom(data.settings);
-                if (KitchenSettings.Instance.PhotoLookMigrated)
-                    UI.ToastNotification.ShowIfAvailable(PhotoLookMigratedNotice, PhotoLookNoticeSeconds);
-            }
 
             ElementHighlighter.TintEnabled = data.tintEnabled;
             LightSourceElement.SetGlobalOn(data.lightsOn);
