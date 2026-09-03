@@ -113,9 +113,18 @@ function Invoke-Stryker {
     Push-Location $projectTests
     try {
         # --project у Stryker — ФИЛЬТР ПО ИМЕНИ проекта, а не путь к нему.
+        # Contract/ — это ДАННЫЕ: 64 описания инструментов, тексты шпаргалки и
+        # строки-описания полей. Мутант, стирающий описание, не убивается ничем и
+        # не должен: тест, который сверяет текст описания с самим собой, ничего не
+        # проверяет. Логика того же каталога (McpJsonSchema, McpToolAttributes)
+        # мутируется как обычно — исключены поимённо только файлы-данные.
+        $contractData = @('McpToolRegistry', 'McpToolParams', 'McpGuideTexts', 'McpContractEnums')
         $strykerArgs = @('--project', $csproj.Name,
             '--reporter', 'html', '--reporter', 'json', '--reporter', 'cleartext',
             '--break-at', "$Threshold")
+        foreach ($dataFile in $contractData) {
+            $strykerArgs += @('--mutate', "!**/Contract/$dataFile.cs")
+        }
 
         $started = Get-Date
         dotnet-stryker @strykerArgs | Tee-Object -Variable output

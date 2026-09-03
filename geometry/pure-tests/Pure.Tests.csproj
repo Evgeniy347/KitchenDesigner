@@ -11,6 +11,9 @@
 
   <ItemGroup>
     <Compile Include="..\..\Assets\Tests\EditMode\Pure\**\*.cs" />
+    <Compile Include="..\..\Assets\Tests\EditMode\Geometry\RepoPaths.cs">
+      <Link>Geometry\RepoPaths.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
