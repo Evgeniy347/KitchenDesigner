@@ -1175,7 +1175,7 @@ public class DishwasherElementTests
     /// <summary>«E» на выделенном фасаде, пристёгнутом к посудомойке, идёт
     /// через <c>dw.ToggleOpen()</c> — а не через <c>f.ToggleOpen()</c> (фасад
     /// пассажир, его собственная анимация выключена). Защита от регрессии:
-    /// <see cref="Rendering.CameraController.ToggleSelectedOpenables"/> обязан
+    /// <see cref="Rendering.CameraController.ActivateSelected"/> обязан
     /// найти хост-посудомойку по фасаду и открыть именно её.</summary>
     [Test]
     public void AttachedFacade_HotkeyGoesThroughDishwasher()
@@ -1186,7 +1186,7 @@ public class DishwasherElementTests
         dw.OnAttachedFacadeChanged(null, facade);
 
         // Имитируем выбор фасада + «E»: путь один и тот же, что в
-        // CameraController.ToggleSelectedOpenables — открыть хост, не фасад.
+        // CameraController.ActivateSelected — открыть хост, не фасад.
         var host = KitchenDesigner.Core.UI.ContextMenuUI.FindDishwasherForFacade(facade);
         Assert.IsNotNull(host, "фасад обязан находиться среди хостов посудомойки");
         host!.ToggleOpen();

@@ -266,7 +266,7 @@ namespace KitchenDesigner.Core
                 PhotoMode.Toggle();
 
             if (Input.GetKeyDown(KeyCode.E))
-                ToggleSelectedOpenables();
+                ActivateSelected();
 
             HandleWASD();
             HandleArrowOrbit();
@@ -274,14 +274,11 @@ namespace KitchenDesigner.Core
             UpdateScrollSmooth(Time.deltaTime);
         }
 
-        public void ToggleSelectedOpenables()
+        public void ActivateSelected()
         {
             var sel = SelectionManager.Instance;
             if (sel == null) return;
-            foreach (var el in sel.SelectedElements)
-                if (el is IOpenable openable)
-                    openable.CycleOpenState();
-
+            ElementActivator.ActivateAll(sel.SelectedElements);
             UI.ContextMenuUI.Instance?.SyncOpenLabels();
         }
 

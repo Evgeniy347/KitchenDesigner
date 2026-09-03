@@ -762,31 +762,31 @@ public class CameraControllerTests
     }
 
     [Test]
-    public void ToggleSelectedOpenables_OpensPlainFacade()
+    public void ActivateSelected_OpensPlainFacade()
     {
         var sel = EnsureSelection();
         var facade = MakeFacade("test_facade");
         sel.Select(facade);
 
         Assert.False(facade.IsOpen, "фасад закрыт");
-        _controller!.ToggleSelectedOpenables();
+        _controller!.ActivateSelected();
         Assert.True(facade.IsOpen, "E открывает обычный фасад");
     }
 
     [Test]
-    public void ToggleSelectedOpenables_OpensDrawer()
+    public void ActivateSelected_OpensDrawer()
     {
         var sel = EnsureSelection();
         var drawer = MakeTestDrawer("test_drawer");
         sel.Select(drawer);
 
         Assert.False(drawer.IsOpen, "ящик закрыт");
-        _controller!.ToggleSelectedOpenables();
+        _controller!.ActivateSelected();
         Assert.True(drawer.IsOpen, "E открывает ящик");
     }
 
     [Test]
-    public void ToggleSelectedOpenables_FacadeOnDrawer_OpensDrawerNotFacade()
+    public void ActivateSelected_FacadeOnDrawer_OpensDrawerNotFacade()
     {
         var sel = EnsureSelection();
         var drawer = MakeTestDrawer("test_drawer");
@@ -797,14 +797,14 @@ public class CameraControllerTests
         Assert.False(facade.IsOpen, "фасад закрыт");
         Assert.False(drawer.IsOpen, "ящик закрыт");
 
-        _controller!.ToggleSelectedOpenables();
+        _controller!.ActivateSelected();
 
         Assert.True(facade.IsOpen, "фасад синхронно открыт с ящиком (SyncAttachedFacade)");
         Assert.True(drawer.IsOpen, "E открывает привязанный ящик через фасад");
     }
 
     [Test]
-    public void ToggleSelectedOpenables_DoubleDrawer_CyclesState()
+    public void ActivateSelected_DoubleDrawer_CyclesState()
     {
         var sel = EnsureSelection();
         var lower = MakeTestDrawer("lower");
@@ -818,38 +818,38 @@ public class CameraControllerTests
         sel.Select(lower);
 
         Assert.AreEqual(DoubleDrawerState.Closed, lower.DoubleState);
-        _controller!.ToggleSelectedOpenables();
+        _controller!.ActivateSelected();
         Assert.AreNotEqual(DoubleDrawerState.Closed, lower.DoubleState,
             "E циклирует двойной ящик");
     }
 
     [Test]
-    public void ToggleSelectedOpenables_OpensOven()
+    public void ActivateSelected_OpensOven()
     {
         var sel = EnsureSelection();
         var oven = MakeOven("test_oven");
         sel.Select(oven);
 
         Assert.False(oven.IsOpen, "духовка закрыта");
-        _controller!.ToggleSelectedOpenables();
+        _controller!.ActivateSelected();
         Assert.True(oven.IsOpen, "E открывает дверцу духовки");
 
-        _controller!.ToggleSelectedOpenables();
+        _controller!.ActivateSelected();
         Assert.False(oven.IsOpen, "E закрывает дверцу духовки обратно");
     }
 
     [Test]
-    public void ToggleSelectedOpenables_OpensDishwasher()
+    public void ActivateSelected_OpensDishwasher()
     {
         var sel = EnsureSelection();
         var dw = MakeDishwasher("test_dishwasher");
         sel.Select(dw);
 
         Assert.False(dw.IsOpen, "посудомойка закрыта");
-        _controller!.ToggleSelectedOpenables();
+        _controller!.ActivateSelected();
         Assert.True(dw.IsOpen, "E открывает дверцу посудомойки");
 
-        _controller!.ToggleSelectedOpenables();
+        _controller!.ActivateSelected();
         Assert.False(dw.IsOpen, "E закрывает дверцу посудомойки обратно");
     }
 }
