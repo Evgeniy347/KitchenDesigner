@@ -9,8 +9,12 @@ namespace KitchenDesigner.Core.UI
         private const float TitleY = PanelH * 0.5f - 55;
         private const float TabY = PanelH * 0.5f - 94;
         private const float ContentTopY = PanelH * 0.5f - 138;
+        private const float CloseH = 40f;
         private const float CloseY = -PanelH * 0.5f + 54;
         private const float PanelSidePad = 40f;
+
+        private const float BodyTopInset = PanelH * 0.5f - ContentTopY - SettingsRowFactory.RowH * 0.5f;
+        private const float BodyBottomInset = PanelH * 0.5f + CloseY + CloseH * 0.5f + UIStyle.GapInner;
 
         private static readonly string[] TabLabels =
             { "Проект", "Вид", "Управление", "Фото режим", "Свет", "О программе" };
@@ -19,6 +23,7 @@ namespace KitchenDesigner.Core.UI
         private readonly SettingsTabStrip _tabs = new();
 
         private GameObject? _root;
+        private WindowBody? _body;
         private SettingsProjectTab? _projectTab;
         private SettingsViewTab? _viewTab;
         private SettingsPhotoTab? _photoTab;
@@ -43,32 +48,37 @@ namespace KitchenDesigner.Core.UI
 
             _tabs.BuildButtons(panel.transform, TabLabels, PanelW - PanelSidePad, TabY);
 
+            _body = WindowBody.Create(panel.rectTransform, BodyTopInset, BodyBottomInset,
+                PanelSidePad * 0.5f);
+            _tabs.AfterSwitch = () => _body?.Fit();
+
             _projectTab = new SettingsProjectTab(_rows, RefreshDependentStates);
             _viewTab = new SettingsViewTab(_rows, RefreshDependentStates);
             _photoTab = new SettingsPhotoTab(_rows);
 
-            _projectTab.Build(_tabs.AddPage(panel.transform, "Tab_Project").transform, s, ContentTopY);
-            _viewTab.Build(_tabs.AddPage(panel.transform, "Tab_View").transform, ContentTopY);
-            new SettingsControlTab(_rows)
-                .Build(_tabs.AddPage(panel.transform, "Tab_Control").transform, s, ContentTopY);
-            _photoTab.Build(_tabs.AddPage(panel.transform, "Tab_Photo").transform, s, ContentTopY);
-            new SettingsLightTab(_rows)
-                .Build(_tabs.AddPage(panel.transform, "Tab_Light").transform, s, ContentTopY);
-            new SettingsAboutTab()
-                .Build(_tabs.AddPage(panel.transform, "Tab_About").transform, ContentTopY);
+            _projectTab.Build(AddPage("Tab_Project"), s, ContentTopY);
+            _viewTab.Build(AddPage("Tab_View"), ContentTopY);
+            new SettingsControlTab(_rows).Build(AddPage("Tab_Control"), s, ContentTopY);
+            _photoTab.Build(AddPage("Tab_Photo"), s, ContentTopY);
+            new SettingsLightTab(_rows).Build(AddPage("Tab_Light"), s, ContentTopY);
+            new SettingsAboutTab().Build(AddPage("Tab_About"), ContentTopY);
 
             _tabs.Switch(0);
 
             _viewTab.FollowEditMode();
 
             UIFactory.CreateButton("SetClose", panel.transform, "Закрыть",
-                new Vector2(0, CloseY), new Vector2(160, 40),
+                new Vector2(0, CloseY), new Vector2(160, CloseH),
                 () => SetVisible(false));
 
             UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
 
+            _body.Fit();
             _root.SetActive(false);
         }
+
+        private Transform AddPage(string name) =>
+            _tabs.AddPage(_body!.Content, name, _body!.PanelOriginY).transform;
 
         private void OnDestroy()
         {
@@ -89,6 +99,7 @@ namespace KitchenDesigner.Core.UI
             if (s == null) return;
             _projectTab?.RefreshDependentStates(s);
             _viewTab?.Refresh();
+            _body?.Fit();
         }
 
         public string WindowId => "settings";

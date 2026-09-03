@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,10 +13,13 @@ namespace KitchenDesigner.Core.UI
         private readonly List<Button> _buttons = new();
         private readonly List<GameObject> _pages = new();
 
-        public GameObject AddPage(Transform panel, string name)
+        public Action? AfterSwitch { get; set; }
+
+        public GameObject AddPage(Transform parent, string name, float originY)
         {
             var page = new GameObject(name);
-            page.transform.SetParent(panel, false);
+            page.transform.SetParent(parent, false);
+            page.transform.localPosition = new Vector3(0f, originY, 0f);
             _pages.Add(page);
             return page;
         }
@@ -45,6 +49,7 @@ namespace KitchenDesigner.Core.UI
                     i == index ? UIStyle.SurfaceActive : UIStyle.SurfaceInactive;
             for (int i = 0; i < _pages.Count; i++)
                 _pages[i].SetActive(i == index);
+            AfterSwitch?.Invoke();
         }
     }
 }
