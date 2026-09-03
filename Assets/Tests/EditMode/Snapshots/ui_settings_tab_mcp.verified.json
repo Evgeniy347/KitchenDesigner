@@ -1,0 +1,115 @@
+﻿{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Настройки",
+      "position": [0, 395]
+    },
+    {
+      "type": "Button",
+      "text": "Проект",
+      "position": [-245, 356]
+    },
+    {
+      "type": "Button",
+      "text": "Вид",
+      "position": [-181, 356]
+    },
+    {
+      "type": "Button",
+      "text": "Управление",
+      "position": [-103, 356]
+    },
+    {
+      "type": "Button",
+      "text": "Фото режим",
+      "position": [1, 356]
+    },
+    {
+      "type": "Button",
+      "text": "Свет",
+      "position": [82, 356]
+    },
+    {
+      "type": "Button",
+      "text": "MCP",
+      "position": [142, 356]
+    },
+    {
+      "type": "Button",
+      "text": "О программе",
+      "position": [227, 356]
+    },
+    {
+      "type": "Label",
+      "text": "Программа отдаёт открытый проект ИИ-агенту по протоколу MCP. Агент расставляет короба, выравнивает фасады, ищет пересечения и собирает спецификацию прямо в вашей сцене — правки видно сразу, отмена работает как обычно.",
+      "position": [0, 252]
+    },
+    {
+      "type": "Label",
+      "text": "Мост остановлен · порт 9337",
+      "position": [0, 151]
+    },
+    {
+      "type": "Label",
+      "text": "Мост включается вместе с программой. Пока она открыта, агенту есть куда подключаться.",
+      "position": [0, 110]
+    },
+    {
+      "type": "Label",
+      "text": "Скопируйте текст ниже и отправьте его своему агенту — он прочитает инструкцию и настроится сам.",
+      "position": [0, 16]
+    },
+    {
+      "type": "Label",
+      "text": "Подключение",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Подробная инструкция",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Состояние",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Что это даёт",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Button",
+      "text": "Скопировать инструкцию для агента",
+      "position": [0, -44]
+    },
+    {
+      "type": "Button",
+      "text": "Скопировать конфиг mcp.json",
+      "position": [0, -82]
+    },
+    {
+      "type": "Label",
+      "text": "https://github.com/Evgeniy347/KitchenDesigner/blob/develop/docs/MCP-CONNECT.md",
+      "position": [0, -145]
+    },
+    {
+      "type": "Button",
+      "text": "Открыть инструкцию на GitHub",
+      "position": [0, -196]
+    },
+    {
+      "type": "Button",
+      "text": "Закрыть",
+      "position": [0, -396]
+    }
+  ]
+}

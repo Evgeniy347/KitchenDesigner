@@ -9,6 +9,8 @@ namespace KitchenDesigner.Core.UI
     {
         public const float TabFontSize = 14f;
         public const float TabH = 32f;
+        public const float TabGap = 4f;
+        public const float TabPaddingPx = 14f;
 
         private readonly List<Button> _buttons = new();
         private readonly List<GameObject> _pages = new();
@@ -26,20 +28,51 @@ namespace KitchenDesigner.Core.UI
 
         public void BuildButtons(Transform parent, IReadOnlyList<string> labels, float stripW, float y)
         {
-            float tabW = stripW / labels.Count;
-
             for (int i = 0; i < labels.Count; i++)
             {
                 int idx = i;
-                float posX = -stripW * 0.5f + tabW * i + tabW * 0.5f;
                 var btn = UIFactory.CreateButton($"Tab_{idx}", parent, labels[idx],
-                    new Vector2(posX, y), new Vector2(tabW - 4, TabH),
+                    new Vector2(0f, y), new Vector2(stripW / labels.Count, TabH),
                     () => Switch(idx));
                 btn.GetComponent<Image>().color = UIStyle.SurfaceInactive;
                 var caption = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
                 if (caption != null) caption.fontSize = TabFontSize;
                 _buttons.Add(btn);
             }
+
+            LayOut(labels, stripW, y);
+        }
+
+        private void LayOut(IReadOnlyList<string> labels, float stripW, float y)
+        {
+            var widths = new float[labels.Count];
+            float sum = 0f;
+            for (int i = 0; i < labels.Count; i++)
+            {
+                widths[i] = CaptionWidth(_buttons[i], labels[i]) + TabPaddingPx * 2f;
+                sum += widths[i];
+            }
+            if (sum <= 0f) return;
+
+            float available = stripW - TabGap * (labels.Count - 1);
+            float scale = available / sum;
+
+            float x = -stripW * 0.5f;
+            for (int i = 0; i < labels.Count; i++)
+            {
+                float w = widths[i] * scale;
+                var rect = (RectTransform)_buttons[i].transform;
+                rect.sizeDelta = new Vector2(w, TabH);
+                rect.anchoredPosition = new Vector2(x + w * 0.5f, y);
+                x += w + TabGap;
+            }
+        }
+
+        private static float CaptionWidth(Button button, string label)
+        {
+            var caption = button.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            if (caption == null || caption.font == null) return label.Length * TabFontSize * 0.5f;
+            return caption.GetPreferredValues(label).x;
         }
 
         public void Switch(int index)

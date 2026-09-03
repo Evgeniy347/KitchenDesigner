@@ -92,7 +92,7 @@ public class SettingsPanelUITests
     [Test]
     public void TabButtons_HaveCorrectLabels()
     {
-        string[] expected = { "Проект", "Вид", "Управление", "Фото режим", "Свет", "О программе" };
+        string[] expected = { "Проект", "Вид", "Управление", "Фото режим", "Свет", "MCP", "О программе" };
         for (int i = 0; i < expected.Length; i++)
         {
             var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
@@ -110,6 +110,7 @@ public class SettingsPanelUITests
         Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Control"), "Tab_Control page should exist");
         Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Photo"), "Tab_Photo page should exist");
         Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Light"), "Tab_Light page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Mcp"), "Tab_Mcp page should exist");
         Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_About"), "Tab_About page should exist");
     }
 
@@ -124,9 +125,9 @@ public class SettingsPanelUITests
         Assert.IsFalse(photo.activeSelf, "Photo tab should be hidden by default");
         Assert.IsFalse(about.activeSelf, "About tab should be hidden by default");
 
-        // Tab_1 → «Помещение», Tab_2 → «Управление», Tab_3 → «Фото режим»,
-        // Tab_4 → «Свет», Tab_5 → «О программе».
-        _canvas!.transform.Find("SettingsPanel/Tab_5").GetComponent<Button>().onClick.Invoke();
+        // Tab_1 → «Вид», Tab_2 → «Управление», Tab_3 → «Фото режим»,
+        // Tab_4 → «Свет», Tab_5 → «MCP», Tab_6 → «О программе».
+        _canvas!.transform.Find("SettingsPanel/Tab_6").GetComponent<Button>().onClick.Invoke();
         Assert.IsFalse(project.activeSelf, "Project should hide after switching to About");
         Assert.IsTrue(about.activeSelf, "About should show after click");
         Assert.IsFalse(photo.activeSelf, "Photo should stay hidden");
@@ -738,6 +739,77 @@ public class SettingsPanelUITests
 
         var about = _canvas!.transform.Find(PagePath + "Tab_About");
         Assert.IsNotNull(about.Find("AboutCopy"), "кнопка копирования сведений о сборке");
+    }
+
+    // ── MCP tab ─────────────────────────────────────────────
+
+    /// <summary>Вкладка существует ради одного действия: скопировать текст и
+    /// отдать его агенту. Проверяется, что это действие на месте — кнопка, её
+    /// подпись и ссылка на подробную инструкцию, набранная текстом (её можно
+    /// переписать руками, если браузер не открылся).</summary>
+    [Test]
+    public void McpTab_HasTheCopyButtonsAndTheGuideLink()
+    {
+        var mcp = _canvas!.transform.Find(PagePath + "Tab_Mcp");
+        Assert.IsNotNull(mcp, "вкладки MCP нет в панели");
+
+        Assert.IsNotNull(mcp.Find("McpCopyPrompt"), "кнопка «скопировать инструкцию для агента»");
+        Assert.IsNotNull(mcp.Find("McpCopyConfig"), "кнопка «скопировать конфиг mcp.json»");
+        Assert.IsNotNull(mcp.Find("McpOpenGuide"), "кнопка «открыть инструкцию на GitHub»");
+
+        var url = mcp.Find("McpGuideUrl");
+        Assert.IsNotNull(url, "адрес инструкции должен быть виден текстом, а не только в кнопке");
+        Assert.AreEqual(SettingsMcpTab.GuideUrl, url!.GetComponent<TextMeshProUGUI>().text);
+    }
+
+    /// <summary>Текст для агента бесполезен, если из него не собирается рабочая
+    /// конфигурация. Поэтому проверяется не длина, а наличие всех четырёх
+    /// обязательных частей: адрес инструкции, имя сервера, порт и то, что
+    /// запускать. Порт подставляется живой — приложение можно запустить с
+    /// -mcpPort, и инструкция обязана назвать ТОТ порт, а не 9337 из константы.</summary>
+    [Test]
+    public void McpTab_AgentPrompt_NamesTheGuidePortAndServer()
+    {
+        var prompt = SettingsMcpTab.AgentPrompt(9500);
+
+        StringAssert.Contains(SettingsMcpTab.GuideUrl, prompt, "адрес подробной инструкции");
+        StringAssert.Contains(SettingsMcpTab.ServerName, prompt, "имя MCP-сервера");
+        StringAssert.Contains("9500", prompt, "порт подставляется живой, а не зашитый");
+        StringAssert.Contains("dist/index.js", prompt, "что именно запускать мостом");
+        StringAssert.DoesNotContain("9337", prompt,
+            "порт по умолчанию не должен просочиться рядом с настоящим — агент возьмёт не тот");
+    }
+
+    /// <summary>Второй способ — вставить конфигурацию руками. Это готовый JSON,
+    /// и он обязан быть валидным: сломанный не даст даже сообщения об ошибке,
+    /// агент просто не увидит сервер.</summary>
+    [Test]
+    public void McpTab_ConfigSnippet_IsValidJsonWithTheServerAndPort()
+    {
+        var snippet = SettingsMcpTab.ConfigSnippet(9500);
+
+        var parsed = Newtonsoft.Json.Linq.JObject.Parse(snippet);
+        var server = parsed["mcpServers"]?[SettingsMcpTab.ServerName];
+        Assert.IsNotNull(server, "в конфиге нет сервера " + SettingsMcpTab.ServerName);
+        Assert.AreEqual("node", (string?)server!["command"], "мост запускается node");
+        Assert.AreEqual("9500", (string?)server["env"]!["UNITY_MCP_PORT"],
+            "порт в конфиге — тот же, что показан на вкладке");
+    }
+
+    /// <summary>Состояние моста — первое, что смотрит человек, у которого агент
+    /// не подключился. Строка обязана называть порт и говорить, работает мост
+    /// или нет; в тестовой сцене моста нет, значит «остановлен».</summary>
+    [Test]
+    public void McpTab_StatusLine_TellsPortAndWhetherTheBridgeRuns()
+    {
+        var mcp = _canvas!.transform.Find(PagePath + "Tab_Mcp");
+        var status = mcp.Find("McpStatus");
+        Assert.IsNotNull(status, "строки состояния нет");
+
+        var text = status!.GetComponent<TextMeshProUGUI>().text;
+        StringAssert.Contains(SettingsMcpTab.ActivePort().ToString(), text, "порт назван");
+        Assert.IsFalse(SettingsMcpTab.BridgeRunning(), "в тестовой сцене моста нет");
+        StringAssert.Contains("остановлен", text, "и это сказано словами, а не только цветом");
     }
 
     // ── Row ordering ────────────────────────────────────────

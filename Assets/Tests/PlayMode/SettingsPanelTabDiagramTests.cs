@@ -18,6 +18,7 @@ public class SettingsPanelTabDiagramTests
     private GameObject? _camGo;
     private GameObject? _eventSystem;
     private KitchenSettingsData? _settingsBackup;
+    private int? _mcpPortBackup;
 
     [UnityTearDown]
     public IEnumerator TearDown()
@@ -29,12 +30,21 @@ public class SettingsPanelTabDiagramTests
         var s = KitchenSettings.Instance;
         if (s != null && _settingsBackup != null) s.ApplyFrom(_settingsBackup);
         _settingsBackup = null;
+
+        McpBridgeStatus.TestPort = _mcpPortBackup;
+        McpBridgeStatus.Forget();
         yield return null;
     }
 
     private (Canvas canvas, Camera cam, SettingsPanelUI ui) BuildPanel()
     {
         // Детерминизм снапшота: дефолтные настройки независимо от прочих тестов.
+        // Порт MCP тоже: соседние тесты уводят его на 19337, и вкладка «MCP»
+        // показала бы чужое число.
+        _mcpPortBackup = McpBridgeStatus.TestPort;
+        McpBridgeStatus.TestPort = McpBridgeStatus.DefaultPort;
+        McpBridgeStatus.Forget();
+
         var settings = KitchenSettings.Instance;
         _settingsBackup = settings != null ? settings.ToData() : null;
         if (settings != null) settings.ResetToDefaults();
@@ -121,8 +131,8 @@ public class SettingsPanelTabDiagramTests
         yield return CaptureAndSave("settings_tab_project.png");
     }
 
-    // Шесть вкладок: «Проект» (0), «Вид» (1), «Управление» (2),
-    // «Фото режим» (3), «Свет» (4), «О программе» (5).
+    // Семь вкладок: «Проект» (0), «Вид» (1), «Управление» (2),
+    // «Фото режим» (3), «Свет» (4), «MCP» (5), «О программе» (6).
     [UnityTest]
     public IEnumerator TabView_SavesPng()
     {
@@ -160,10 +170,19 @@ public class SettingsPanelTabDiagramTests
     }
 
     [UnityTest]
-    public IEnumerator TabAbout_SavesPng()
+    public IEnumerator TabMcp_SavesPng()
     {
         BuildPanel();
         SwitchToTab(5);
+        yield return null;
+        yield return CaptureAndSave("settings_tab_mcp.png");
+    }
+
+    [UnityTest]
+    public IEnumerator TabAbout_SavesPng()
+    {
+        BuildPanel();
+        SwitchToTab(6);
         yield return null;
         yield return CaptureAndSave("settings_tab_about.png");
     }

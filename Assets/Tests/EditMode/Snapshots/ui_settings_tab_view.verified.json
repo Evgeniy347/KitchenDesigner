@@ -9,32 +9,37 @@
     {
       "type": "Button",
       "text": "Проект",
-      "position": [-233, 356]
+      "position": [-245, 356]
     },
     {
       "type": "Button",
       "text": "Вид",
-      "position": [-140, 356]
+      "position": [-181, 356]
     },
     {
       "type": "Button",
       "text": "Управление",
-      "position": [-47, 356]
+      "position": [-103, 356]
     },
     {
       "type": "Button",
       "text": "Фото режим",
-      "position": [47, 356]
+      "position": [1, 356]
     },
     {
       "type": "Button",
       "text": "Свет",
-      "position": [140, 356]
+      "position": [82, 356]
+    },
+    {
+      "type": "Button",
+      "text": "MCP",
+      "position": [142, 356]
     },
     {
       "type": "Button",
       "text": "О программе",
-      "position": [233, 356]
+      "position": [227, 356]
     },
     {
       "type": "Button",
