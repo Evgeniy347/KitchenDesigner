@@ -19,6 +19,7 @@ namespace KitchenDesigner.Core
 
         public ViewPreset? viewNormal;
         public ViewPreset? viewRoom;
+        public ViewPreset? viewPhoto;
 
         public bool edgeOutline = true;
         public bool wallsEnabled = true;

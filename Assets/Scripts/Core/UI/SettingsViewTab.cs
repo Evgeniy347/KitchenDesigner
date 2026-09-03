@@ -10,6 +10,13 @@ namespace KitchenDesigner.Core.UI
         public const string WallOutlineId = "Контур стен";
         public const string ObjectOutlineId = "Контур объектов";
 
+        private const float PresetRowH = 46f;
+
+        private static readonly string[] PresetCaptions = { "Обычный", "Помещение", "Фоторежим" };
+
+        private static readonly EditMode[] PresetModes =
+            { EditMode.Normal, EditMode.Room, EditMode.Photo };
+
         private readonly SettingsRowFactory _rows;
         private readonly Action _dependentStatesChanged;
 
@@ -24,7 +31,7 @@ namespace KitchenDesigner.Core.UI
             _dependentStatesChanged = dependentStatesChanged;
         }
 
-        private EditMode EditedPresetMode => _presetTab == 1 ? EditMode.Room : EditMode.Normal;
+        private EditMode EditedPresetMode => PresetModes[_presetTab];
 
         public void Build(Transform page, float topY)
         {
@@ -37,6 +44,8 @@ namespace KitchenDesigner.Core.UI
             AddViewToggle(page, ref y, ViewField.WallOutline, "Контур", WallOutlineId, 1);
             AddViewToggle(page, ref y, ViewField.LowerNearWalls, "Опускать ближние стены",
                 "Опускать ближние стены", 1);
+            AddViewToggle(page, ref y, ViewField.LowerAllWalls, "Опускать все стены",
+                "Опускать все стены", 2);
             AddViewToggle(page, ref y, ViewField.HideOpeningsOnLoweredWalls, "Скрывать окна и двери",
                 "Скрывать окна и двери", 2);
 
@@ -57,15 +66,18 @@ namespace KitchenDesigner.Core.UI
 
         public void FollowEditMode()
         {
-            _presetTab = EditModeManager.Mode == EditMode.Room ? 1 : 0;
+            _presetTab = CurrentModeTab;
             _dependentStatesChanged();
         }
+
+        private static int CurrentModeTab => Array.IndexOf(PresetModes, EditModeManager.Mode);
 
         public void Refresh()
         {
             var edited = EditedPresetMode;
             var state = ViewResolver.Resolve(edited);
 
+            int currentIdx = CurrentModeTab;
             for (int i = 0; i < _presetButtons.Count; i++)
             {
                 var btn = _presetButtons[i];
@@ -74,8 +86,7 @@ namespace KitchenDesigner.Core.UI
                 if (img != null) img.color = i == _presetTab ? UIStyle.SurfaceActive : UIStyle.SurfaceInactive;
                 var caption = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
                 if (caption == null) continue;
-                int currentIdx = EditModeManager.Mode == EditMode.Room ? 1 : 0;
-                caption.text = (i == 1 ? "Помещение" : "Обычный") + (i == currentIdx ? " (текущий)" : "");
+                caption.text = PresetCaptions[i] + (i == currentIdx ? " (текущий)" : "");
             }
 
             foreach (var kv in _toggles)
@@ -88,8 +99,7 @@ namespace KitchenDesigner.Core.UI
 
                 var parent = ViewResolver.ParentOf(field);
                 bool parentOn = parent == null || state.Get(parent.Value);
-                bool enabled = parentOn
-                    && ViewResolver.IsEditable(EditModeManager.Mode, edited, field);
+                bool enabled = parentOn && ViewResolver.IsEditable(edited, field);
                 _rows.SetToggleEnabled(toggle, _toggleKeys[field], enabled);
             }
         }
@@ -98,18 +108,21 @@ namespace KitchenDesigner.Core.UI
         {
             var rowRect = SettingsRowFactory.CreateRow("RowViewPreset", parent, y);
 
-            float btnW = (SettingsRowFactory.ContentW - 8) * 0.5f;
-            for (int i = 0; i < 2; i++)
+            int count = PresetModes.Length;
+            float gap = 4f;
+            float btnW = (SettingsRowFactory.ContentW - gap * (count - 1)) / count;
+            float firstX = -(SettingsRowFactory.ContentW - btnW) * 0.5f;
+            for (int i = 0; i < count; i++)
             {
                 int idx = i;
                 var btn = UIFactory.CreateButton($"ViewPreset_{idx}", rowRect, "",
-                    new Vector2(-btnW * 0.5f - 2 + idx * (btnW + 4), 0),
-                    new Vector2(btnW, SettingsRowFactory.RowH),
+                    new Vector2(firstX + idx * (btnW + gap), 0),
+                    new Vector2(btnW, PresetRowH),
                     () => SwitchPreset(idx));
                 _presetButtons.Add(btn);
             }
 
-            y -= SettingsRowFactory.RowStep;
+            y -= PresetRowH + SettingsRowFactory.RowStep - SettingsRowFactory.RowH;
         }
 
         private void SwitchPreset(int index)

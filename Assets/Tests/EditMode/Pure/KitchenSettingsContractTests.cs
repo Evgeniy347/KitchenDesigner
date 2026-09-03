@@ -50,6 +50,7 @@ public class KitchenSettingsContractTests
     private static string SaveFieldName(FieldInfo f) =>
         f.Name == "_normalView" ? "viewNormal"
         : f.Name == "_roomView" ? "viewRoom"
+        : f.Name == "_photoView" ? "viewPhoto"
         : char.ToLowerInvariant(f.Name[1]) + f.Name.Substring(2);
 
     private static void MutateEverySetting(KitchenSettings s)

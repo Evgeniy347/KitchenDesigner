@@ -5,6 +5,7 @@ namespace KitchenDesigner.Core
         Walls,
         WallOutline,
         LowerNearWalls,
+        LowerAllWalls,
         HideOpeningsOnLoweredWalls,
         Objects,
         ObjectOutline,

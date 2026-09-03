@@ -36,6 +36,8 @@ public class SaveFormatDefaultsTests
                 "ракурс не обязателен: ToData всегда пишет клон, а ApplyFrom зовёт ViewPreset.CopyFrom, который на null не меняет пресет",
             ["KitchenSettingsData.viewRoom"] =
                 "то же, что и viewNormal: отсутствие ракурса в файле оставляет текущий",
+            ["KitchenSettingsData.viewPhoto"] =
+                "то же, что и viewNormal: отсутствие ракурса в файле оставляет текущий",
         };
 
     private static readonly Dictionary<string, string> FixedLengthArrays =

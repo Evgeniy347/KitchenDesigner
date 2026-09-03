@@ -133,6 +133,7 @@ public class VisibilityModeIntegrationTests
 
     private static ViewPreset Normal => KitchenSettings.Instance.NormalView;
     private static ViewPreset Room => KitchenSettings.Instance.RoomView;
+    private static ViewPreset Photo => KitchenSettings.Instance.PhotoView;
 
     // ═══════════════════════════════════════════════════════════
     //  1. Таблица режимов — исполняемая спецификация
@@ -145,6 +146,7 @@ public class VisibilityModeIntegrationTests
         p.wallsEnabled = false;
         p.wallOutline = false;
         p.lowerNearWalls = true;
+        p.lowerAllWalls = true;
         p.hideOpeningsOnLoweredWalls = true;
         p.objectsVisible = false;
         p.edgeOutline = false;
@@ -155,6 +157,7 @@ public class VisibilityModeIntegrationTests
     [TestCase(ViewField.Walls, false, true)]
     [TestCase(ViewField.WallOutline, false, true)]
     [TestCase(ViewField.LowerNearWalls, true, true)]
+    [TestCase(ViewField.LowerAllWalls, true, true)]
     [TestCase(ViewField.HideOpeningsOnLoweredWalls, true, true)]
     [TestCase(ViewField.Objects, false, true)]
     [TestCase(ViewField.ObjectOutline, false, true)]
@@ -166,6 +169,7 @@ public class VisibilityModeIntegrationTests
     [TestCase(ViewField.Walls, true, false)]
     [TestCase(ViewField.WallOutline, false, true)]
     [TestCase(ViewField.LowerNearWalls, false, false)]
+    [TestCase(ViewField.LowerAllWalls, false, false)]
     [TestCase(ViewField.HideOpeningsOnLoweredWalls, false, false)]
     [TestCase(ViewField.Objects, false, true)]
     [TestCase(ViewField.ObjectOutline, false, true)]
@@ -173,15 +177,15 @@ public class VisibilityModeIntegrationTests
     public void Matrix_RoomMode(ViewField field, bool value, bool editable)
         => AssertMatrix(EditMode.Room, field, value, editable);
 
-    // Фото: видно всё, менять нельзя ничего. Контуры гасятся насильно —
-    // это кадр, а не рабочий вид.
-    [TestCase(ViewField.Walls, true, false)]
-    [TestCase(ViewField.WallOutline, false, false)]
-    [TestCase(ViewField.LowerNearWalls, false, false)]
-    [TestCase(ViewField.HideOpeningsOnLoweredWalls, false, false)]
-    [TestCase(ViewField.Objects, true, false)]
-    [TestCase(ViewField.ObjectOutline, false, false)]
-    [TestCase(ViewField.HideLightSources, false, false)]
+    // Фото: у режима СВОЙ пресет, и он правится так же свободно, как обычный.
+    [TestCase(ViewField.Walls, false, true)]
+    [TestCase(ViewField.WallOutline, false, true)]
+    [TestCase(ViewField.LowerNearWalls, true, true)]
+    [TestCase(ViewField.LowerAllWalls, true, true)]
+    [TestCase(ViewField.HideOpeningsOnLoweredWalls, true, true)]
+    [TestCase(ViewField.Objects, false, true)]
+    [TestCase(ViewField.ObjectOutline, false, true)]
+    [TestCase(ViewField.HideLightSources, true, true)]
     public void Matrix_PhotoMode(ViewField field, bool value, bool editable)
         => AssertMatrix(EditMode.Photo, field, value, editable);
 
@@ -189,13 +193,12 @@ public class VisibilityModeIntegrationTests
     {
         SetDistinctivePreset(Normal);
         SetDistinctivePreset(Room);
+        SetDistinctivePreset(Photo);
         EditModeManager.SetMode(mode);
 
         Assert.AreEqual(value, ViewResolver.Current.Get(field),
             $"{mode}/{field}: эффективное значение");
-        // Пресет, открытый на вкладке, — тот же, что правит режим.
-        var presetMode = mode == EditMode.Room ? EditMode.Room : EditMode.Normal;
-        Assert.AreEqual(editable, ViewResolver.IsEditable(mode, presetMode, field),
+        Assert.AreEqual(editable, ViewResolver.IsEditable(mode, field),
             $"{mode}/{field}: доступность тумблера");
     }
 
@@ -329,12 +332,49 @@ public class VisibilityModeIntegrationTests
         Assert.GreaterOrEqual(_wallFrontComp.AttachedDoors.Count, 1, "дверь всё ещё AttachedDoor");
     }
 
+    /// <summary>«Опускать все стены» снимает выбор по камере: под неё попадает и
+    /// перегородка, которая стоит в центре сцены и по правилу ближней стены не
+    /// опускается никогда.</summary>
+    [Test]
+    public void NormalMode_LowerAllWalls_LowersThePartitionToo()
+    {
+        Normal.lowerNearWalls = true;
+        Normal.lowerAllWalls = false;
+
+        EditModeManager.SetMode(EditMode.Normal);
+        ApplyVisibility();
+        Assert.IsTrue(_wallFrontComp.IsLowered, "ближняя стена опущена и без новой галочки");
+        Assert.IsFalse(_wallPartComp.IsLowered,
+            "перегородка стоит в центре сцены — правило ближней стены её не берёт");
+
+        Normal.lowerAllWalls = true;
+        ApplyVisibility();
+        Assert.IsTrue(_wallFrontComp.IsLowered, "ближняя стена осталась опущенной");
+        Assert.IsTrue(_wallPartComp.IsLowered,
+            "с «опускать все стены» опущены все, а не только ближние");
+    }
+
+    /// <summary>Галочка живёт ПОД опусканием: выключено опускание — «все стены»
+    /// ничего не делает, иначе она обходила бы собственного родителя.</summary>
+    [Test]
+    public void NormalMode_LowerAllWalls_DoesNothing_WhenLoweringIsOff()
+    {
+        Normal.lowerNearWalls = false;
+        Normal.lowerAllWalls = true;
+
+        EditModeManager.SetMode(EditMode.Normal);
+        ApplyVisibility();
+
+        Assert.IsFalse(_wallFrontComp.IsLowered, "опускание выключено — стена целая");
+        Assert.IsFalse(_wallPartComp.IsLowered, "перегородка тоже целая");
+    }
+
     // ═══════════════════════════════════════════════════════════
     //  3. Фоторежим — видно всё
     // ═══════════════════════════════════════════════════════════
 
     [Test]
-    public void PhotoMode_ShowsEverything_RegardlessOfPreset()
+    public void PhotoMode_ShowsEverything_ByItsOwnDefaultPreset()
     {
         SetDistinctivePreset(Normal);   // всё погашено и опускается
 
@@ -350,7 +390,7 @@ public class VisibilityModeIntegrationTests
         Assert.IsTrue(SceneVisibility.AnyRendererEnabled(_doorEl), "дверь видна");
         Assert.IsTrue(_shelf.GetComponent<MeshRenderer>()!.enabled, "деталь видна");
         Assert.IsTrue(_lamp.GetComponent<MeshRenderer>()!.enabled,
-            "плафон виден: «скрыть источники света» в фоторежиме не действует");
+            "плафон виден: в пресете фоторежима «скрыть источники света» выключено");
     }
 
     /// <summary>Вход и выход не трогают сохраняемые настройки: фоторежим только
@@ -360,8 +400,10 @@ public class VisibilityModeIntegrationTests
     {
         SetDistinctivePreset(Normal);
         SetDistinctivePreset(Room);
+        SetDistinctivePreset(Photo);
         var normalBefore = Normal.Clone();
         var roomBefore = Room.Clone();
+        var photoBefore = Photo.Clone();
 
         EditModeManager.SetMode(EditMode.Photo);
         ApplyVisibility();
@@ -372,7 +414,44 @@ public class VisibilityModeIntegrationTests
         {
             Assert.AreEqual(normalBefore.Get(f), Normal.Get(f), $"пресет «обычный», {f}");
             Assert.AreEqual(roomBefore.Get(f), Room.Get(f), $"пресет «помещение», {f}");
+            Assert.AreEqual(photoBefore.Get(f), Photo.Get(f), $"пресет «фоторежим», {f}");
         }
+    }
+
+    /// <summary>У фоторежима СВОИ сохраняемые настройки вида: правка его пресета
+    /// меняет кадр и не трогает рабочий режим. До этого фоторежим подставлял
+    /// зашитые значения, и настроить его было нечем.</summary>
+    [Test]
+    public void PhotoMode_TakesItsPictureFromItsOwnPreset()
+    {
+        Normal.wallsEnabled = true;
+        Photo.wallsEnabled = false;
+
+        EditModeManager.SetMode(EditMode.Photo);
+        ApplyVisibility();
+        Assert.IsFalse(_wallFront.GetComponent<MeshRenderer>()!.enabled,
+            "стены погашены в пресете фоторежима — значит погашены и в кадре");
+
+        EditModeManager.SetMode(EditMode.Normal);
+        ApplyVisibility();
+        Assert.IsTrue(_wallFront.GetComponent<MeshRenderer>()!.enabled,
+            "пресет обычного режима не задет настройкой фоторежима");
+    }
+
+    /// <summary>Из коробки фоторежим показывает всё и ничего не опускает: это
+    /// кадр, а не рабочий вид.</summary>
+    [Test]
+    public void PhotoMode_DefaultPreset_ShowsEverythingWithoutOutlines()
+    {
+        var defaults = ViewPreset.PhotoDefaults();
+
+        Assert.IsTrue(defaults.wallsEnabled, "стены видны");
+        Assert.IsTrue(defaults.objectsVisible, "объекты видны");
+        Assert.IsFalse(defaults.lowerNearWalls, "стены не опускаются");
+        Assert.IsFalse(defaults.lowerAllWalls, "и все разом тоже");
+        Assert.IsFalse(defaults.wallOutline, "контур стен погашен");
+        Assert.IsFalse(defaults.edgeOutline, "контур объектов погашен");
+        Assert.IsFalse(defaults.hideLightSources, "плафоны на месте");
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -624,13 +703,17 @@ public class VisibilityModeIntegrationTests
         }
     }
 
-    /// <summary>Матрица выше кормит фоторежим пресетом, в котором обводки И ТАК
-    /// выключены, поэтому её строки про контуры проходили бы и без починки.
-    /// Здесь обводки включены — ровно как у пользователя, приславшего кадр с
-    /// чёрным пунктиром по стыку потолка и пунктирным кольцом вокруг плафона.
-    /// Фоторежим обязан погасить их сам и не дать включить обратно.</summary>
+    /// <summary>Пользователь прислал кадр с чёрным пунктиром по стыку потолка и
+    /// пунктирным кольцом вокруг плафона: фоторежим брал обводки из рабочего
+    /// пресета. Теперь у фоторежима свой пресет, и занимать чужой ему незачем:
+    /// обводки включены в обоих рабочих режимах, а кадр обязан остаться чистым.
+    ///
+    /// Раньше это держалось запретом: фоторежим ФОРСИРОВАЛ обводки в ноль и не
+    /// давал их включить. Запрет снят намеренно — у фоторежима появились свои
+    /// сохраняемые тумблеры, — поэтому дефект сторожит уже не замок, а дефолт
+    /// пресета фоторежима и его независимость от рабочего.</summary>
     [Test]
-    public void PhotoMode_KillsOutlinesEvenWhenThePresetAsksForThem()
+    public void PhotoMode_KeepsOutlinesOff_WhenTheWorkingPresetsAskForThem()
     {
         Normal.wallOutline = true;
         Normal.edgeOutline = true;
@@ -649,11 +732,9 @@ public class VisibilityModeIntegrationTests
             "фоторежим: обводка объектов не рисуется в кадре");
         Assert.IsFalse(ViewResolver.Current.Get(ViewField.WallOutline),
             "фоторежим: обводка стен не рисуется в кадре");
-        Assert.IsTrue(ViewResolver.Resolve(EditMode.Photo).IsLocked(ViewField.ObjectOutline),
-            "фоторежим: обводка объектов заперта, а не просто выключена");
-        Assert.IsTrue(ViewResolver.Resolve(EditMode.Photo).IsLocked(ViewField.WallOutline),
-            "фоторежим: обводка стен заперта, а не просто выключена");
-        Assert.IsFalse(ViewResolver.Resolve(EditMode.Normal).IsLocked(ViewField.ObjectOutline),
-            "в обычном режиме та же обводка остаётся под рукой пользователя");
+
+        Photo.edgeOutline = true;
+        Assert.IsTrue(ViewResolver.Current.Get(ViewField.ObjectOutline),
+            "включённая В СВОЁМ пресете обводка в фоторежиме работает: замка больше нет");
     }
 }

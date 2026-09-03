@@ -5,6 +5,7 @@ namespace KitchenDesigner.Core
         public readonly bool WallsEnabled;
         public readonly bool WallOutline;
         public readonly bool LowerNearWalls;
+        public readonly bool LowerAllWalls;
         public readonly bool HideOpeningsOnLoweredWalls;
         public readonly bool ObjectsVisible;
         public readonly bool EdgeOutline;
@@ -13,12 +14,13 @@ namespace KitchenDesigner.Core
         private readonly int _locked;
 
         public ViewState(bool wallsEnabled, bool wallOutline, bool lowerNearWalls,
-            bool hideOpeningsOnLoweredWalls, bool objectsVisible, bool edgeOutline,
-            bool hideLightSources, int locked)
+            bool lowerAllWalls, bool hideOpeningsOnLoweredWalls, bool objectsVisible,
+            bool edgeOutline, bool hideLightSources, int locked)
         {
             WallsEnabled = wallsEnabled;
             WallOutline = wallOutline;
             LowerNearWalls = lowerNearWalls;
+            LowerAllWalls = lowerAllWalls;
             HideOpeningsOnLoweredWalls = hideOpeningsOnLoweredWalls;
             ObjectsVisible = objectsVisible;
             EdgeOutline = edgeOutline;
@@ -31,6 +33,7 @@ namespace KitchenDesigner.Core
             ViewField.Walls => WallsEnabled,
             ViewField.WallOutline => WallOutline,
             ViewField.LowerNearWalls => LowerNearWalls,
+            ViewField.LowerAllWalls => LowerAllWalls,
             ViewField.HideOpeningsOnLoweredWalls => HideOpeningsOnLoweredWalls,
             ViewField.Objects => ObjectsVisible,
             ViewField.ObjectOutline => EdgeOutline,
@@ -42,6 +45,7 @@ namespace KitchenDesigner.Core
         public int VisibilityHash =>
             (WallsEnabled ? 1 : 0) | (LowerNearWalls ? 2 : 0)
             | (HideOpeningsOnLoweredWalls ? 4 : 0) | (ObjectsVisible ? 8 : 0)
-            | (EdgeOutline ? 16 : 0) | (WallOutline ? 32 : 0) | (HideLightSources ? 64 : 0);
+            | (EdgeOutline ? 16 : 0) | (WallOutline ? 32 : 0) | (HideLightSources ? 64 : 0)
+            | (LowerAllWalls ? 128 : 0);
     }
 }

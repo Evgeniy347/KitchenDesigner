@@ -39,7 +39,7 @@
     {
       "type": "Button",
       "text": "Обычный (текущий)",
-      "position": [-120, 0]
+      "position": [-161, 0]
     },
     {
       "type": "Label",
@@ -78,13 +78,23 @@
     },
     {
       "type": "Label",
+      "text": "Опускать все стены",
+      "position": [-50, 0]
+    },
+    {
+      "type": "Label",
       "text": "Скрывать окна и двери",
       "position": [-50, 0]
     },
     {
       "type": "Button",
       "text": "Помещение",
-      "position": [120, 0]
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Фоторежим",
+      "position": [161, 0]
     },
     {
       "type": "Toggle",
@@ -108,6 +118,12 @@
       "type": "Toggle",
       "label": "Tgl_Опускать ближние стены",
       "isOn": true,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Опускать все стены",
+      "isOn": false,
       "position": [224, 0]
     },
     {

@@ -681,6 +681,7 @@
             "wallsEnabled": true,
             "wallOutline": true,
             "lowerNearWalls": true,
+            "lowerAllWalls": false,
             "hideOpeningsOnLoweredWalls": false,
             "objectsVisible": true,
             "edgeOutline": true,
@@ -690,9 +691,20 @@
             "wallsEnabled": true,
             "wallOutline": true,
             "lowerNearWalls": true,
+            "lowerAllWalls": false,
             "hideOpeningsOnLoweredWalls": false,
             "objectsVisible": true,
             "edgeOutline": true,
+            "hideLightSources": false
+        },
+        "viewPhoto": {
+            "wallsEnabled": true,
+            "wallOutline": false,
+            "lowerNearWalls": false,
+            "lowerAllWalls": false,
+            "hideOpeningsOnLoweredWalls": false,
+            "objectsVisible": true,
+            "edgeOutline": false,
             "hideLightSources": false
         },
         "edgeOutline": true,

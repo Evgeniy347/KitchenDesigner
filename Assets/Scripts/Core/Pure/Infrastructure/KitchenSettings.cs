@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _windowedMode = true;
         [SerializeField] private ViewPreset? _normalView = new ViewPreset();
         [SerializeField] private ViewPreset? _roomView = new ViewPreset();
+        [SerializeField] private ViewPreset? _photoView = ViewPreset.PhotoDefaults();
         [SerializeField] private bool _cameraPanFree = false;
         [SerializeField] private int _edgePartialThresholdPct = EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT;
 
@@ -129,6 +130,8 @@ namespace KitchenDesigner.Core
         public ViewPreset NormalView => _normalView ??= new ViewPreset();
 
         public ViewPreset RoomView => _roomView ??= new ViewPreset();
+
+        public ViewPreset PhotoView => _photoView ??= ViewPreset.PhotoDefaults();
 
         public const int EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT = 5;
         public const int EDGE_PARTIAL_THRESHOLD_MAX_PCT = 50;
@@ -306,6 +309,7 @@ namespace KitchenDesigner.Core
             _windowedMode = true;
             NormalView.ResetToDefaults();
             RoomView.ResetToDefaults();
+            PhotoView.ResetToPhotoDefaults();
             _cameraPanFree = false;
             _edgePartialThresholdPct = EDGE_PARTIAL_THRESHOLD_DEFAULT_PCT;
             _mouseSensitivity = 1f;
@@ -330,6 +334,7 @@ namespace KitchenDesigner.Core
                 viewSchema = KitchenSettingsData.CURRENT_VIEW_SCHEMA,
                 viewNormal = NormalView.Clone(),
                 viewRoom = RoomView.Clone(),
+                viewPhoto = PhotoView.Clone(),
                 wallsEnabled = NormalView.wallsEnabled,
                 wallOutline = NormalView.wallOutline,
                 lowerNearWalls = NormalView.lowerNearWalls,
@@ -404,11 +409,13 @@ namespace KitchenDesigner.Core
                     hideLightSources = data.hideLightSources,
                 });
                 RoomView.ResetToDefaults();
+                PhotoView.ResetToPhotoDefaults();
                 return;
             }
 
             NormalView.CopyFrom(data.viewNormal);
             RoomView.CopyFrom(data.viewRoom);
+            PhotoView.CopyFrom(data.viewPhoto);
         }
     }
 }

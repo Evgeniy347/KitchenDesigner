@@ -51,7 +51,9 @@ namespace KitchenDesigner.Core
                     continue;
                 }
 
-                bool lower = lowerMode && WallCutaway.ShouldLower(e.transform.position, sceneCenter, camF);
+                bool lower = lowerMode
+                    && (view.LowerAllWalls
+                        || WallCutaway.ShouldLower(e.transform.position, sceneCenter, camF));
                 wall.SetLowered(lower, loweredUnits);
                 ApplyOpeningVisibility(wall, hidden: lower && hideOpenings);
             }
