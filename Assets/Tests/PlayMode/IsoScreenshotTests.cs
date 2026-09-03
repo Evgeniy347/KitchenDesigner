@@ -902,8 +902,47 @@ public class IsoScreenshotTests
     /// 512×512 даёт около четверти пикселя на миллиметр: штанга Ø 32 мм —
     /// восемь пикселей, хомут кронштейна — два. На общем виде НЕВОЗМОЖНО
     /// увидеть, разделились детали или слиплись, и ровно поэтому первая
-    /// версия обеих моделей прошла все проверки, будучи комком.</summary>
+    /// версия обеих моделей прошла все проверки, будучи комком.
+    ///
+    /// И главный урок первого круга. Смеситель и стойка снимались СО СТОРОНЫ
+    /// СТЕНЫ. Камера проекта стоит на -Z, настенная арматура садится задней
+    /// гранью на z=0 и растёт в +Z — значит в кадр она попадает затылком, и
+    /// ближе всего к объективу оказываются отражатели, заслоняя собой корпус.
+    /// Излива, рычага расхода и лицевой стороны лейки на таком снимке нет
+    /// вовсе. Разбирая кадры, это легко списать на геометрию: «не видно
+    /// излива» выглядит как «излив плохо сделан», и целый круг правок ушёл бы
+    /// в стол. Лечится тем же разворотом на 180°, что уже придуман для
+    /// дивана, и связку держит IsoCamera_FacesTheWallSideOfAFitting.</summary>
     private const float CloseUpDistanceScale = 1.21f;
+
+    /// <summary>Держит связку, из-за которой разворот понадобился второй раз,
+    /// теперь для настенной арматуры: камера стоит со стороны -Z, а лицо
+    /// смесителя и стойки смотрит в +Z, потому что задней гранью они садятся
+    /// на стену.
+    ///
+    /// Тест сторожит ОБА конца, а не один. Разверни IsoDir или перенеси
+    /// плоскость посадки — и разворот станет вредным, а красное покажет на
+    /// константу, которую надо убрать.</summary>
+    [Test]
+    public void IsoCamera_FacesTheWallSideOfAFitting_SoWallFittingsMustTurnAround()
+    {
+        var spec = BathMixerSpec.Default;
+
+        Assert.Less(IsoDir.z, 0f, "камера смотрит со стороны -Z");
+        Assert.AreEqual(0f, BathMixerLayout.BoundsMM(spec).min.z, 1e-3f,
+            "а настенная арматура садится на стену задней гранью габарита, то есть "
+            + "плоскостью z=0 — той самой, к которой обращён объектив");
+        Assert.Greater(BathMixerOutlets.SpoutMouthMM(spec).z,
+            BathMixerLayout.BodyAxisZMM(spec),
+            "лицо же её смотрит в противоположную сторону: излив уходит в +Z");
+        Assert.Greater(ShowerColumnSpec.Default.ArmReachMM,
+            ShowerColumnSpec.Default.WallOffsetMM,
+            "и гусак стойки — туда же");
+
+        Assert.AreEqual(180f, FrontTowardsCameraDeg,
+            "раз обе стороны связки сошлись, арматура обязана развернуться к камере "
+            + "лицом: иначе снимок показывает затылки отражателей, а излива на нём нет");
+    }
 
     [UnityTest]
     public IEnumerator IsoBathMixer_Default()
@@ -933,7 +972,7 @@ public class IsoScreenshotTests
     public IEnumerator IsoBathMixer_ThermostatHeadCloseUp()
     {
         var spec = BathMixerSpec.Default;
-        var collar = BathMixerLayout.ScaleCollar(spec);
+        var collar = BathMixerControls.ScaleCollar(spec);
 
         yield return RenderBathMixerCloseUp(spec, "IsoBathMixerThermostat",
             new Vector3(collar.FromMM.x, 0f, BathMixerLayout.BodyAxisZMM(spec)),
@@ -948,11 +987,12 @@ public class IsoScreenshotTests
     public IEnumerator IsoBathMixer_DiverterAndSpoutCloseUp()
     {
         var spec = BathMixerSpec.Default;
-        var mouth = BathMixerOutlets.SpoutMouthMM(spec);
+        var elbow = BathMixerOutlets.SpoutElbowMM(spec);
+        var tip = BathMixerOutlets.SpoutTipMM(spec);
 
         yield return RenderBathMixerCloseUp(spec, "IsoBathMixerDiverter",
-            new Vector3(BathMixerOutlets.StationXMM(spec) * 0.5f, mouth.y * 0.5f,
-                BathMixerLayout.BodyAxisZMM(spec) + spec.SpoutLengthMM * 0.4f),
+            new Vector3(BathMixerOutlets.StationXMM(spec) * 0.35f,
+                (elbow.y + tip.y) * 0.5f, (elbow.z + tip.z) * 0.5f),
             spec.BodyLengthMM * 0.8f, "iso_bath_mixer_diverter.png");
     }
 
@@ -1015,6 +1055,23 @@ public class IsoScreenshotTests
             spec.ArmReachMM * 1.6f, "iso_shower_column_gooseneck.png");
     }
 
+    /// <summary>Крупный план низа: блок дивертора с рычагом и верх петли
+    /// шланга, уходящей из него вниз. На общем виде стойки шланг Ø 15 мм —
+    /// это четыре пикселя, и проверить по нему нечего; а дивертор без этого
+    /// кадра остаётся комом, про который неизвестно даже, орган это
+    /// управления или кусок трубы.</summary>
+    [UnityTest]
+    public IEnumerator IsoShowerColumn_DiverterAndHoseLoopCloseUp()
+    {
+        var spec = ShowerColumnSpec.Default;
+        float loopBottom = PipePath.LowestPoint(ShowerColumnLayout.HosePath(spec)).y;
+
+        yield return RenderShowerColumnCloseUp(spec, "IsoShowerColumnDiverter",
+            new Vector3(0f, loopBottom * 0.5f, ShowerColumnLayout.DiverterDepthMM(spec) * 0.7f),
+            (ShowerColumnLayout.DiverterHeightMM(spec) - loopBottom) * 1.5f,
+            "iso_shower_column_diverter.png");
+    }
+
     private static BathMixerSpec WidestMixer() =>
         BathMixerSpec.Clamped(
             BathMixerSpec.MaxCentresForMM(BathMixerSpec.DefaultBodyLengthMM,
@@ -1036,7 +1093,10 @@ public class IsoScreenshotTests
     /// от центра габарита, а не от нуля раскладки.</summary>
     private static Vector3 WorldFromLayoutMM(Vector3 posUnits, Bounds boundsMM,
         Vector3 pointMM) =>
-        posUnits + (pointMM - boundsMM.center) * AppConstants.MM_TO_UNITS;
+        posUnits + TurnedToCamera * ((pointMM - boundsMM.center) * AppConstants.MM_TO_UNITS);
+
+    private static Quaternion TurnedToCamera =>
+        Quaternion.Euler(0f, FrontTowardsCameraDeg, 0f);
 
     /// <summary>Крупный план, наведённый мимо модели, сохраняется на диск как
     /// обычный кадр — просто пустой — и никого не настораживает. Поэтому
@@ -1089,6 +1149,7 @@ public class IsoScreenshotTests
     {
         var go = ElementFactory.CreateBathMixer(spec, name, pos);
         _spawned.Add(go);
+        go.transform.rotation = TurnedToCamera;
 
         var mixer = go.GetComponent<BathMixerElement>();
         Assert.IsNotNull(mixer, "фабрика обязана вернуть именно BathMixerElement");
@@ -1130,6 +1191,7 @@ public class IsoScreenshotTests
     {
         var go = ElementFactory.CreateShowerColumn(spec, name, pos);
         _spawned.Add(go);
+        go.transform.rotation = TurnedToCamera;
 
         var column = go.GetComponent<ShowerColumnElement>();
         Assert.IsNotNull(column, "фабрика обязана вернуть именно ShowerColumnElement");

@@ -10,35 +10,43 @@ namespace KitchenDesigner.Tests.Geometry
     /// штуцер под шланг G 1/2 диаметром 13 мм.
     ///
     /// Все эти числа — умолчания, а не константы: пользователь правит их в
-    /// панели, и потому важна не сама цифра, а СВЯЗИ между ними, которые
-    /// нельзя нарушить никаким набором значений.
+    /// панели, и потому важна не сама цифра, а СВЯЗИ между ними.
     ///
     /// Связь первая: плоскость стены — это z=0, и ничто не имеет права уйти
-    /// за неё. Смеситель проёма не режет (в отличие от окна и двери), он
-    /// висит на грани, и его задняя грань габарита обязана лежать в этой
-    /// плоскости — иначе WallMountedPose.SeatedPosition посадит его с
-    /// зазором или утопит в стену ровно на ошибку габарита.
+    /// за неё. Смеситель проёма не режет, он висит на грани, и задняя грань
+    /// его габарита обязана лежать в этой плоскости — иначе
+    /// WallMountedPose.SeatedPosition посадит его с зазором или утопит в
+    /// стену ровно на ошибку габарита.
     ///
     /// Связь вторая: корпус ЛЕЖИТ на отражателях. Ось корпуса отстоит от
-    /// стены на вылет отражателя плюс собственный радиус, так что задняя
-    /// образующая корпуса касается переднего торца отражателя. Задай ось по
-    /// самому вылету 34 мм — и корпус радиусом 35 мм войдёт в стену на
-    /// миллиметр.
+    /// стены на вылет отражателя плюс радиус самой толстой его части, так что
+    /// торцевые головки не входят в стену. Считай ось по тонкой части — и
+    /// головка радиусом 35 мм утопится в кладку.
     ///
-    /// Связь третья — она же лекарство от «бесформенного батона», которым
-    /// смеситель был в первой версии. Корпус НЕ цилиндр постоянного сечения:
-    /// он делится межосевым расстоянием на три части. Между эксцентриками
-    /// лежит тонкая перемычка, а наружу от каждого эксцентрика выходит своя
-    /// толстая головка — слева рукоятка расхода, справа термоголовка со
-    /// шкалой. Длина головки поэтому не своё число, а производная
-    /// (длина − межосевое)/2, и при любом межосевом внутри подрезки она
-    /// остаётся положительной: на максимуме межосевого она равна ровно
-    /// радиусу корпуса.
+    /// Связь третья — про силуэт, и она стоила двух переделок. Сначала корпус
+    /// был ОДНИМ цилиндром постоянного диаметра: различить на нём было
+    /// нечего, модель читалась батоном. Тогда его перетянули в талию — и
+    /// силуэт ПЕРЕВЕРНУЛСЯ: получилась гантель, два кома по краям и ниточка
+    /// между ними, тогда как на референсе корпус идёт почти постоянным
+    /// диаметром. Правильный ответ оказался третьим: диаметр почти
+    /// постоянный, а детали отделяются УЗКИМИ КАНАВКАМИ и ступенями, как на
+    /// настоящей хромированной арматуре. Отсюда MinBodySlendernessRatio — он
+    /// сторожит, чтобы тонкая часть не уехала обратно в ниточку.
     ///
-    /// Связь четвёртая: дивертор — ОДИН узел. Кнопка-переключатель сверху и
+    /// Связь четвёртая: отражатели стоят У СТЕНЫ отдельными плоскими дисками,
+    /// а не в одну линию с корпусом. Между их передним торцом и задней
+    /// образующей корпуса обязан оставаться просвет, в котором виден только
+    /// тонкий эксцентрик: именно этот зазор и отделяет их глазом.
+    ///
+    /// Связь пятая: дивертор — ОДИН узел. Кнопка-переключатель сверху и
     /// штуцер под шланг снизу сидят на одной вертикальной оси, потому что это
-    /// два конца одного клапана. Разъедь они по длине корпуса — и модель
-    /// станет показывать два независимых прибора вместо одного.</summary>
+    /// два конца одного клапана.
+    ///
+    /// И связь шестая, про кадр: лицо смесителя смотрит в +Z. Камера
+    /// изометрии стоит со стороны -Z, поэтому в своих кадрах смеситель
+    /// обязан развернуться — иначе снимок показывает стену и затылки
+    /// отражателей, а излива на нём нет вовсе. Так первый круг и был
+    /// потерян.</summary>
     public class BathMixerLayoutTests
     {
         private const float Tol = 1e-3f;
@@ -61,100 +69,176 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void BathMixerLayout_Escutcheon_IsADiscWithAShoulder_NotAConeIntoTheBody()
+        public void BathMixerLayout_Escutcheon_IsAFlatDiscWithAChamfer_NotAConeFromTheWall()
         {
             var spec = BathMixerSpec.Default;
             var disc = BathMixerLayout.EscutcheonDisc(spec, -1f);
-            var shoulder = BathMixerLayout.EscutcheonShoulder(spec, -1f);
+            var chamfer = BathMixerLayout.EscutcheonChamfer(spec, -1f);
 
             Assert.AreEqual(disc.FromRadiusMM, disc.ToRadiusMM, Tol,
-                "отражатель начинается ЦИЛИНДРОМ: у конуса от самой стены нет силуэта, и "
-                + "именно так он сливался с корпусом в первой версии");
-            Assert.AreEqual(disc.ToMM.z, shoulder.FromMM.z, Tol,
-                "плечо продолжает диск без разрыва");
-            Assert.AreEqual(spec.EscutcheonReachMM, shoulder.ToMM.z, Tol,
+                "отражатель — ПЛОСКИЙ ДИСК постоянного радиуса: у конуса от самой стены "
+                + "нет силуэта, и именно так он сливался с корпусом в первой версии");
+            Assert.AreEqual(disc.ToMM.z, chamfer.FromMM.z, Tol,
+                "фаска продолжает диск без разрыва");
+            Assert.AreEqual(spec.EscutcheonReachMM, chamfer.ToMM.z, Tol,
                 "и заканчивается ровно на заявленном вылете: вылет отражателя — это то, "
                 + "что видно от стены, а не половина этого");
-            Assert.Less(shoulder.ToRadiusMM, shoulder.FromRadiusMM,
-                "плечо СУЖАЕТСЯ к корпусу — это уступ, по которому глаз отделяет "
+            Assert.Less(chamfer.ToRadiusMM, chamfer.FromRadiusMM,
+                "фаска СУЖАЕТСЯ к корпусу — это уступ, по которому глаз отделяет "
                 + "отражатель от трубы");
+            Assert.LessOrEqual(BathMixerLayout.EscutcheonRadiusMM(spec),
+                BathMixerLayout.BodyRadiusMM(spec),
+                "и диск НЕ ШИРЕ корпуса: камера изометрии стоит со стороны стены, и "
+                + "отражатель шире корпуса заслоняет собой всё остальное");
         }
 
         [Test]
         public void BathMixerLayout_Inlet_LeavesAVisibleGapBetweenTheEscutcheonAndTheBody()
         {
             var spec = BathMixerSpec.Default;
-            var shoulder = BathMixerLayout.EscutcheonShoulder(spec, 1f);
+            var chamfer = BathMixerLayout.EscutcheonChamfer(spec, 1f);
             var inlet = BathMixerLayout.Inlet(spec, 1f);
 
-            Assert.AreEqual(shoulder.ToMM.z, inlet.FromMM.z, Tol,
+            Assert.AreEqual(chamfer.ToMM.z, inlet.FromMM.z, Tol,
                 "эксцентрик начинается там, где кончается отражатель");
             Assert.AreEqual(BathMixerLayout.BodyAxisZMM(spec), inlet.ToMM.z, Tol,
                 "и кончается на оси корпуса, а не перед ним");
-            Assert.AreEqual(shoulder.FromMM.x, inlet.FromMM.x, Tol,
+            Assert.AreEqual(chamfer.FromMM.x, inlet.FromMM.x, Tol,
                 "эксцентрик соосен своему отражателю");
-            Assert.Less(inlet.FromRadiusMM, shoulder.ToRadiusMM,
+            Assert.Less(inlet.FromRadiusMM, chamfer.ToRadiusMM,
                 "и он ТОНЬШЕ горловины отражателя: без этой ступеньки отражатель, "
                 + "эксцентрик и корпус читаются одной сплошной колбасой");
-            Assert.Greater(BathMixerLayout.BodyAxisZMM(spec) - BathMixerLayout.BarRadiusMM(spec),
+            Assert.Greater(
+                BathMixerLayout.BodyAxisZMM(spec) - BathMixerLayout.BodyTubeRadiusMM(spec),
                 spec.EscutcheonReachMM,
-                "между передним торцом отражателя и задней образующей перемычки остаётся "
-                + "просвет: сквозь него видно стену, и это главный признак, что отражатель "
-                + "отдельная деталь");
+                "между передним торцом отражателя и задней образующей корпуса остаётся "
+                + "ПРОСВЕТ: сквозь него видно стену, и это главный признак, что "
+                + "отражатель отдельная деталь, а не начало корпуса");
         }
 
         [Test]
-        public void BathMixerLayout_BodyAxisZMM_LaysTheBodyOnTheEscutcheonFace()
+        public void BathMixerLayout_BodyAxisZMM_KeepsTheFattestPartOutOfTheWall()
         {
             var spec = BathMixerSpec.Default;
 
             Assert.AreEqual(spec.EscutcheonReachMM,
                 BathMixerLayout.BodyAxisZMM(spec) - BathMixerLayout.BodyRadiusMM(spec), Tol,
-                "задняя образующая корпуса касается переднего торца отражателя. Поставь ось "
-                + "корпуса прямо на вылет 34 мм — и корпус радиусом 35 мм войдёт в стену");
+                "ось корпуса отсчитана от САМОЙ ТОЛСТОЙ его части — торцевых головок. "
+                + "Посчитай её по тонкой средней трубе, и головка радиусом 35 мм войдёт в "
+                + "стену на пять миллиметров");
         }
 
         [Test]
-        public void BathMixerLayout_Bar_SpansExactlyTheCentresAndIsThinnerThanBothHeads()
+        public void BathMixerLayout_BodyTube_IsNearlyAsFatAsTheHeads_NotADumbbellWaist()
         {
             var spec = BathMixerSpec.Default;
-            var bar = BathMixerLayout.Bar(spec);
-            var flow = BathMixerLayout.FlowHead(spec);
-            var thermostat = BathMixerLayout.ThermostatHead(spec);
 
-            Assert.AreEqual(BathMixerLayout.InletXMM(spec, -1f), bar.FromMM.x, Tol,
-                "перемычка начинается на оси левого подключения");
-            Assert.AreEqual(BathMixerLayout.InletXMM(spec, 1f), bar.ToMM.x, Tol,
-                "и кончается на оси правого: ровно тот участок корпуса, внутри которого "
-                + "идёт вода между двумя вводами");
-            Assert.AreEqual(bar.FromMM.x, flow.ToMM.x, Tol,
-                "ручка расхода начинается там, где кончается перемычка");
-            Assert.AreEqual(bar.ToMM.x, thermostat.FromMM.x, Tol,
-                "и термоголовка — тоже: головка это ровно тот кусок корпуса, что торчит "
-                + "наружу от своего ввода");
-            Assert.Less(bar.FromRadiusMM, flow.ToRadiusMM,
-                "перемычка ТОНЬШЕ головки: без этой талии корпус читается одним батоном, "
-                + "на котором нечего различать");
-            Assert.Less(bar.FromRadiusMM, thermostat.FromRadiusMM,
-                "и тоньше термоголовки тоже — талия симметрична");
+            Assert.GreaterOrEqual(
+                BathMixerLayout.BodyTubeRadiusMM(spec) / BathMixerLayout.BodyRadiusMM(spec),
+                BathMixerLayout.MinBodySlendernessRatio,
+                "на референсе корпус идёт ПОЧТИ ПОСТОЯННЫМ диаметром, и детали на нём "
+                + "разделены канавками, а не перетяжкой. Утончи середину сильнее — и "
+                + "силуэт перевернётся в гантель: два кома по краям и ниточка между "
+                + "ними. Это уже случилось однажды и стоило целого круга правок");
+            Assert.Less(BathMixerLayout.BodyTubeRadiusMM(spec),
+                BathMixerLayout.BodyRadiusMM(spec),
+                "но и не заподлицо: без ступени у головок нечего различать, и корпус "
+                + "снова станет одним батоном");
         }
 
         [Test]
-        public void BathMixerLayout_Heads_ReachTheBodyEndsAndSwellOutwards()
+        public void BathMixerLayout_Groove_IsNarrowerThanBothTheBodyAndTheHeadItSeparates()
         {
             var spec = BathMixerSpec.Default;
-            var flow = BathMixerLayout.FlowHead(spec);
-            var thermostat = BathMixerLayout.ThermostatHead(spec);
+            var groove = BathMixerLayout.Groove(spec, 1f);
+            var head = BathMixerControls.Shoulder(spec, 1f);
 
-            Assert.AreEqual(-spec.BodyLengthMM * 0.5f, flow.FromMM.x, Tol,
-                "левый торец корпуса — это торец ручки расхода");
-            Assert.AreEqual(spec.BodyLengthMM * 0.5f, thermostat.ToMM.x, Tol,
+            Assert.AreEqual(BathMixerLayout.InletXMM(spec, 1f), groove.FromMM.x, Tol,
+                "канавка начинается на оси подключения — там, где кончается корпус");
+            Assert.AreEqual(groove.ToMM.x, head.FromMM.x, Tol,
+                "и упирается в головку без разрыва");
+            Assert.Less(groove.FromRadiusMM, BathMixerLayout.BodyTubeRadiusMM(spec),
+                "канавка УЖЕ корпуса");
+            Assert.Less(groove.FromRadiusMM, head.FromRadiusMM,
+                "и уже головки: две ступени подряд — это и есть то, чем настоящая "
+                + "хромированная арматура отделяет деталь от детали");
+            Assert.Less(groove.LengthMM, BathMixerLayout.HeadLengthMM(spec),
+                "и она КОРОТКАЯ: растянутая канавка перестаёт быть канавкой и снова "
+                + "становится талией");
+        }
+
+        [Test]
+        public void BathMixerControls_Handles_ReachTheBodyEndsAndChamferAtTheVeryTip()
+        {
+            var spec = BathMixerSpec.Default;
+            var flowCap = BathMixerControls.Cap(spec, -1f);
+            var thermostatCap = BathMixerControls.Cap(spec, 1f);
+            var shoulder = BathMixerControls.Shoulder(spec, -1f);
+
+            Assert.AreEqual(-spec.BodyLengthMM * 0.5f, flowCap.ToMM.x, Tol,
+                "левый торец корпуса — это торец рукоятки расхода");
+            Assert.AreEqual(spec.BodyLengthMM * 0.5f, thermostatCap.ToMM.x, Tol,
                 "правый — торец термоголовки");
-            Assert.Greater(flow.FromRadiusMM, flow.ToRadiusMM,
-                "ручка расширяется НАРУЖУ: за неё берутся рукой, и её торец — самая "
-                + "толстая точка корпуса");
-            Assert.Greater(thermostat.ToRadiusMM, thermostat.FromRadiusMM,
-                "термоголовка тоже: обе головки раздуты к торцам, талия между ними");
+            Assert.AreEqual(shoulder.ToMM, flowCap.FromMM,
+                "плечо и торцевая фаска идут встык");
+            Assert.Greater(shoulder.ToRadiusMM, shoulder.FromRadiusMM,
+                "головка расширяется НАРУЖУ от канавки: за рукоятку берутся рукой");
+            Assert.Less(flowCap.ToRadiusMM, flowCap.FromRadiusMM,
+                "а на самом торце снята фаска: обрубленный плоский торец выглядит "
+                + "распилом, а не деталью");
+        }
+
+        [Test]
+        public void BathMixerControls_Lever_StandsOffTheBodyAxisWhereACylinderCannotHide()
+        {
+            var spec = BathMixerSpec.Default;
+            var lever = BathMixerControls.Lever(spec);
+            float z = BathMixerLayout.BodyAxisZMM(spec);
+
+            Assert.Less(lever.FromMM.x, 0f,
+                "рычаг расхода сидит на ЛЕВОЙ головке — по референсу расход слева, "
+                + "термостат справа");
+            Assert.Less(Radial(lever.FromMM, z), BathMixerLayout.BodyRadiusMM(spec),
+                "корень рычага утоплен в головку: снаружи он дал бы кольцевой шов");
+            Assert.Greater(Radial(lever.ToMM, z), BathMixerLayout.BodyRadiusMM(spec),
+                "а его конец ВЫХОДИТ за поверхность головки. Это единственная деталь "
+                + "смесителя, унесённая с главной оси вбок, и потому единственная, "
+                + "которую нельзя спутать с очередным кольцом на трубе");
+            Assert.Less(lever.ToMM.y, lever.FromMM.y,
+                "и смотрит он вперёд-вниз, как на референсе, а не в потолок");
+        }
+
+        [Test]
+        public void BathMixerControls_ScaleCollar_RidesOnTheThermostatHeadAndStandsProud()
+        {
+            var spec = BathMixerSpec.Default;
+            var collar = BathMixerControls.ScaleCollar(spec);
+            var head = BathMixerControls.Shoulder(spec, 1f);
+
+            Assert.Greater(collar.FromMM.x, head.FromMM.x,
+                "кольцо шкалы сидит НА термоголовке, а не на канавке");
+            Assert.Less(collar.ToMM.x, spec.BodyLengthMM * 0.5f,
+                "и не свисает с её торца");
+            Assert.Greater(collar.FromRadiusMM, BathMixerLayout.BodyRadiusMM(spec),
+                "кольцо ВЫСТУПАЕТ над головкой: заподлицо оно невидимо, а это "
+                + "единственная деталь, по которой термоголовка отличается от рукоятки "
+                + "расхода");
+        }
+
+        [Test]
+        public void BathMixerControls_LimitButton_SitsOnTopOfTheHeadAndNotOnItsEndFace()
+        {
+            var spec = BathMixerSpec.Default;
+            var button = BathMixerControls.LimitButton(spec);
+
+            Assert.Greater(button.ToMM.y, button.FromMM.y,
+                "кнопка ограничителя торчит ВВЕРХ");
+            Assert.Greater(button.ToMM.y, BathMixerLayout.BodyRadiusMM(spec),
+                "и выступает над головкой: утопленная заподлицо кнопка не видна ни с "
+                + "одного ракурса");
+            Assert.Less(button.FromMM.x + button.FromRadiusMM, spec.BodyLengthMM * 0.5f,
+                "но она сидит СВЕРХУ, а не на торце: вылези она за торец — и заявленные "
+                + "270 мм длины перестали бы совпадать с габаритом");
         }
 
         [Test]
@@ -171,41 +255,67 @@ namespace KitchenDesigner.Tests.Geometry
                 "на предельном межосевом головка укорачивается ровно до радиуса корпуса — "
                 + "полусфера, а не исчезнувшая деталь. Это прямое следствие того, что "
                 + "потолок межосевого равен длине минус ДИАМЕТР");
-            Assert.Greater(BathMixerLayout.HeadLengthMM(widest), 0f,
-                "и она никогда не выворачивается наизнанку: отрицательная головка "
-                + "нарисовалась бы конусом, растущим внутрь корпуса");
+            Assert.Greater(BathMixerControls.CapLengthMM(widest), 0f,
+                "и торцевая фаска на ней ещё существует: обнулись она, и головка "
+                + "кончилась бы плоским распилом");
         }
 
         [Test]
-        public void BathMixerLayout_ScaleCollar_RidesOnTheThermostatHeadAndStandsProud()
+        public void BathMixerOutlets_Spout_IsAThickBranchAndNotAStrawInTheBody()
         {
             var spec = BathMixerSpec.Default;
-            var collar = BathMixerLayout.ScaleCollar(spec);
-            var head = BathMixerLayout.ThermostatHead(spec);
+            var shoulder = BathMixerOutlets.SpoutShoulder(spec);
 
-            Assert.Greater(collar.FromMM.x, head.FromMM.x,
-                "кольцо шкалы сидит НА термоголовке, а не на перемычке");
-            Assert.Less(collar.ToMM.x, head.ToMM.x,
-                "и не свисает с её торца");
-            Assert.Greater(collar.FromRadiusMM, BathMixerLayout.BodyRadiusMM(spec),
-                "кольцо ВЫСТУПАЕТ над головкой: заподлицо оно невидимо, а это единственная "
-                + "деталь, по которой термоголовка отличается от ручки расхода");
+            Assert.Greater(shoulder.FromRadiusMM,
+                BathMixerLayout.BodyTubeRadiusMM(spec) * BathMixerOutlets.MinBranchRatio,
+                "излив — САМАЯ УЗНАВАЕМАЯ деталь смесителя, и он обязан быть толстым "
+                + "ответвлением, а не трубочкой: тонкий излив тонет в силуэте корпуса и "
+                + "на кадре его просто нет");
+            Assert.Less(Radial(shoulder.FromMM, BathMixerLayout.BodyAxisZMM(spec)),
+                BathMixerLayout.BodyTubeRadiusMM(spec),
+                "корень излива утоплен в корпус: посади его на поверхность — и на стыке "
+                + "появится кольцевой шов");
         }
 
         [Test]
-        public void BathMixerLayout_LimitButton_SitsOnTopOfTheHeadAndNotOnItsEndFace()
+        public void BathMixerOutlets_Spout_LeavesTheBodyForwardAndDownAndBreaksAtTheMouth()
         {
             var spec = BathMixerSpec.Default;
-            var button = BathMixerLayout.LimitButton(spec);
+            var shoulder = BathMixerOutlets.SpoutShoulder(spec);
+            var run = BathMixerOutlets.SpoutRun(spec);
+            var mouth = BathMixerOutlets.SpoutMouth(spec);
 
-            Assert.Greater(button.ToMM.y, button.FromMM.y,
-                "кнопка ограничителя торчит ВВЕРХ");
-            Assert.Greater(button.ToMM.y, BathMixerLayout.BodyRadiusMM(spec),
-                "и выступает над головкой: утопленная заподлицо кнопка не видна ни с "
-                + "одного ракурса");
-            Assert.Less(button.FromMM.x + button.FromRadiusMM, spec.BodyLengthMM * 0.5f,
-                "но она сидит СВЕРХУ, а не на торце: вылези она за торец — и заявленные "
-                + "270 мм длины перестали бы совпадать с габаритом");
+            Assert.AreEqual(shoulder.ToMM, run.FromMM, "плечо и прямой участок встык");
+            Assert.AreEqual(run.ToMM, mouth.FromMM, "прямой участок и носик — тоже");
+            Assert.Greater(run.ToMM.z, run.FromMM.z, "излив уходит ВПЕРЁД от стены");
+            Assert.Less(run.ToMM.y, run.FromMM.y,
+                "и ВНИЗ: горизонтальный излив лил бы мимо ванны");
+            Assert.Less(run.ToRadiusMM, run.FromRadiusMM,
+                "излив сужается к носику — он конический, а не трубка постоянного сечения");
+            Assert.Greater(Slope(mouth), Slope(run),
+                "а носик падает КРУЧЕ прямого участка: этот излом и есть то, по чему "
+                + "излив читается изливом, а не палкой, воткнутой в корпус");
+            Assert.Greater(Slope(run), Slope(shoulder),
+                "и весь излив ЛОМАЕТСЯ трижды, всё круче вниз: одна прямая от корпуса до "
+                + "носика читается спицей");
+            Assert.Greater(mouth.ToRadiusMM, mouth.FromRadiusMM,
+                "срез носика слегка развальцован наружу");
+        }
+
+        [Test]
+        public void BathMixerOutlets_SpoutMouth_EndsAtTheDeclaredReachWellBelowTheBody()
+        {
+            var spec = BathMixerSpec.Default;
+            var mouth = BathMixerOutlets.SpoutMouth(spec);
+
+            Assert.AreEqual(BathMixerLayout.BodyAxisZMM(spec) + spec.SpoutLengthMM,
+                mouth.ToMM.z, Tol,
+                "вылет излива отсчитывается от ОСИ корпуса: это то расстояние, на которое "
+                + "струя выносится за край ванны");
+            Assert.Less(mouth.ToMM.y,
+                -BathMixerLayout.BodyRadiusMM(spec) - BathMixerLayout.BodyTubeRadiusMM(spec),
+                "и носик висит НИЖЕ корпуса с запасом в целую трубу: подберись он ближе — "
+                + "и на изометрии сверху излив снова спрячется в силуэте");
         }
 
         [Test]
@@ -221,11 +331,13 @@ namespace KitchenDesigner.Tests.Geometry
                 + "показывать два независимых прибора");
             Assert.AreEqual(knob.FromMM.z, nipple.FromMM.z, Tol,
                 "и по глубине тоже соосны");
-            Assert.Greater(knob.FromMM.y, nipple.FromMM.y,
-                "кнопка сверху, штуцер снизу");
+            Assert.Greater(knob.FromMM.y, nipple.FromMM.y, "кнопка сверху, штуцер снизу");
             Assert.Greater(knob.FromMM.x, 0f,
                 "и весь узел смещён к термоголовке, как на референсе, а не стоит по центру "
                 + "под изливом");
+            Assert.Less(knob.FromMM.x + knob.FromRadiusMM,
+                BathMixerLayout.InletXMM(spec, 1f),
+                "но не заезжает на канавку: клапан сидит в КОРПУСЕ, между подключениями");
         }
 
         [Test]
@@ -239,8 +351,8 @@ namespace KitchenDesigner.Tests.Geometry
                 + "сядет шланг душевой стойки");
             Assert.Less(nipple.ToMM.y, nipple.FromMM.y,
                 "штуцер смотрит вниз: шланг вешается снизу");
-            Assert.Greater(nipple.FromMM.y, -BathMixerLayout.BarRadiusMM(spec),
-                "верх штуцера утоплен в перемычку: начни его от нижней образующей, и на "
+            Assert.Greater(nipple.FromMM.y, -BathMixerLayout.BodyTubeRadiusMM(spec),
+                "верх штуцера утоплен в корпус: начни его от нижней образующей, и на "
                 + "стыке будет видна щель при любом наклоне камеры");
             Assert.Less(nipple.ToMM.y, -BathMixerLayout.BodyRadiusMM(spec),
                 "а низ выходит ЗА нижнюю образующую головок: короткий штуцер прячется в "
@@ -248,63 +360,36 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void BathMixerOutlets_Spout_LeavesTheBodyForwardAndDownAndBreaksAtTheMouth()
-        {
-            var spec = BathMixerSpec.Default;
-            var run = BathMixerOutlets.SpoutRun(spec);
-            var mouth = BathMixerOutlets.SpoutMouth(spec);
-
-            Assert.AreEqual(BathMixerLayout.BodyAxisZMM(spec), run.FromMM.z, Tol,
-                "излив растёт из ОСИ корпуса: посади его на поверхность — и на стыке "
-                + "появится кольцевой шов");
-            Assert.Greater(run.ToMM.z, run.FromMM.z, "излив уходит ВПЕРЁД от стены");
-            Assert.Less(run.ToMM.y, run.FromMM.y,
-                "и ВНИЗ: горизонтальный излив лил бы мимо ванны");
-            Assert.Less(run.ToRadiusMM, run.FromRadiusMM,
-                "излив сужается к носику — он конический, а не трубка постоянного сечения");
-            Assert.AreEqual(run.ToMM, mouth.FromMM,
-                "носик продолжает излив без разрыва");
-            Assert.Greater(Slope(mouth), Slope(run),
-                "и падает КРУЧЕ прямого участка: этот излом и есть то, по чему излив "
-                + "читается изливом, а не палкой, воткнутой в корпус");
-            Assert.Greater(mouth.ToRadiusMM, mouth.FromRadiusMM,
-                "срез носика слегка развальцован наружу");
-        }
-
-        [Test]
-        public void BathMixerOutlets_SpoutMouth_EndsAtTheDeclaredReachBelowTheBody()
-        {
-            var spec = BathMixerSpec.Default;
-            var mouth = BathMixerOutlets.SpoutMouth(spec);
-
-            Assert.AreEqual(BathMixerLayout.BodyAxisZMM(spec) + spec.SpoutLengthMM,
-                mouth.ToMM.z, Tol,
-                "вылет излива отсчитывается от ОСИ корпуса: это то расстояние, на которое "
-                + "струя выносится за край ванны");
-            Assert.Less(mouth.ToMM.y, -BathMixerLayout.BodyRadiusMM(spec),
-                "и носик висит НИЖЕ корпуса: окажись он внутри силуэта — излива на кадре "
-                + "не видно вовсе");
-        }
-
-        [Test]
         public void BathMixerOutlets_Spout_DoesNotCollideWithTheHoseNipple()
         {
             var spec = BathMixerSpec.Default;
-            var run = BathMixerOutlets.SpoutRun(spec);
+            var shoulder = BathMixerOutlets.SpoutShoulder(spec);
             var nipple = BathMixerOutlets.HoseNipple(spec);
 
-            Assert.Greater(Mathf.Abs(nipple.FromMM.x - run.FromMM.x),
-                run.FromRadiusMM + nipple.FromRadiusMM,
+            Assert.Greater(Mathf.Abs(nipple.FromMM.x - shoulder.FromMM.x),
+                shoulder.FromRadiusMM + nipple.FromRadiusMM,
                 "излив и штуцер висят снизу рядом, и их оси обязаны разойтись дальше суммы "
                 + "радиусов: иначе они срастаются в одну каплю под корпусом");
         }
 
         [Test]
-        public void BathMixerLayout_BoundsMM_StartsExactlyAtTheWallPlane()
+        public void BathMixerLayout_FaceLooksAwayFromTheWall_SoTheIsoFrameMustTurnItAround()
         {
-            Assert.AreEqual(0f, BathMixerLayout.BoundsMM(BathMixerSpec.Default).min.z, Tol,
+            var spec = BathMixerSpec.Default;
+
+            Assert.AreEqual(0f, BathMixerLayout.BoundsMM(spec).min.z, Tol,
                 "задняя грань габарита — это плоскость стены. Сдвиг здесь превращается в "
                 + "зазор или в утопленный в стену смеситель при посадке на грань");
+            Assert.Greater(BathMixerOutlets.SpoutMouthMM(spec).z,
+                BathMixerLayout.BodyAxisZMM(spec),
+                "а лицо — в +Z: излив, рычаг расхода и носик уходят ОТ стены. Камера "
+                + "изометрии стоит со стороны -Z, поэтому кадр смесителя обязан его "
+                + "развернуть; неразвёрнутый снимок показывает затылки отражателей, и "
+                + "излива на нём нет вовсе");
+            Assert.Greater(BathMixerControls.Lever(spec).ToMM.z,
+                BathMixerLayout.BodyAxisZMM(spec),
+                "рычаг смотрит туда же, куда излив: обе опознавательные детали на одной "
+                + "стороне, и обе теряются при съёмке со стены");
         }
 
         [Test]
@@ -335,9 +420,9 @@ namespace KitchenDesigner.Tests.Geometry
             var dims = BathMixerLayout.DimensionsMM(spec);
 
             Assert.AreEqual(270, dims.x,
-                "длина по крайним точкам с референса: ручка расхода и термоголовка — это "
-                + "торцы корпуса, и красная кнопка-ограничитель сидит СВЕРХУ головки, а не "
-                + "на её торце, иначе габарит уехал бы за 270 мм");
+                "длина по крайним точкам с референса: рукоятка расхода и термоголовка — "
+                + "это торцы корпуса, и красная кнопка-ограничитель сидит СВЕРХУ головки, "
+                + "а не на её торце, иначе габарит уехал бы за 270 мм");
             Assert.Greater(dims.z, spec.EscutcheonReachMM + spec.SpoutLengthMM,
                 "глубину задаёт излив, а не корпус: он уходит вперёд от оси корпуса, "
                 + "которая сама стоит впереди стены");
@@ -402,6 +487,9 @@ namespace KitchenDesigner.Tests.Geometry
                 "штуцер G 1/2 — 13 мм, и это единственное число, которое обязано совпасть с "
                 + "чужой деталью: на него садится шланг");
         }
+
+        private static float Radial(Vector3 pointMM, float axisZMM) =>
+            new Vector2(pointMM.y, pointMM.z - axisZMM).magnitude;
 
         private static float Slope(PipeSegment segment)
         {

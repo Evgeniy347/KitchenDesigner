@@ -15,33 +15,45 @@ namespace KitchenDesigner.Tests.Geometry
     /// массивом точек, потому что стык двух отдельных труб виден кольцевым
     /// швом ровно там, где на настоящей стойке гладкий гиб.
     ///
-    /// И вот на чём это сломалось в первой версии, и почему тестов на
-    /// ломаную теперь три. Дуга гиба строится от центра по двум осям —
-    /// «откуда начать» и «куда мести». Начальную ось задали вниз вместо
-    /// назад, и дуга поехала: её первая точка оказалась не на верхнем конце
-    /// прямого участка, а на радиус гиба НИЖЕ и на радиус ВПЕРЁД. Ломаная от
-    /// этого не порвалась — протяжка честно соединила прямой участок с
-    /// уехавшей точкой наклонным куском, и вся стойка встала в габаритной
-    /// коробке по диагонали. Никакой тест этого не поймал: концы ломаной
-    /// остались на своих местах, длина звеньев осталась ненулевой, габарит
-    /// сошёлся. Ловится это только проверкой ВНУТРЕННОСТИ ломаной: ниже
-    /// центра гиба штанга строго вертикальна, длинных звеньев ровно два
-    /// (прямой участок и вынос), и обе касательные гиба лежат на радиусе от
-    /// его центра. Проверено обратной подстановкой сломанных осей — краснеют
-    /// все три; проверка «шаг не длиннее самого длинного законного» при этом
-    /// оставалась зелёной, потому что прямой участок штанги длиннее любой
-    /// кривой перемычки.
+    /// И вот на чём это сломалось, и почему тестов на ломаную теперь три.
+    /// Дуга гиба строится от центра по двум осям — «откуда начать» и «куда
+    /// мести». Начальную ось задали вниз вместо назад, и дуга поехала: её
+    /// первая точка оказалась не на верхнем конце прямого участка, а на
+    /// радиус гиба НИЖЕ и на радиус ВПЕРЁД. Ломаная от этого не порвалась —
+    /// протяжка честно соединила прямой участок с уехавшей точкой наклонным
+    /// куском, и вся стойка встала в габаритной коробке по диагонали. Никакой
+    /// тест этого не поймал: концы ломаной остались на своих местах, длина
+    /// звеньев осталась ненулевой, габарит сошёлся. Ловится это только
+    /// проверкой ВНУТРЕННОСТИ ломаной: ниже центра гиба штанга строго
+    /// вертикальна, длинных звеньев ровно два (прямой участок и вынос), и обе
+    /// касательные гиба лежат на радиусе от его центра. Проверено обратной
+    /// подстановкой сломанных осей — краснеют все три; проверка «шаг не
+    /// длиннее самого длинного законного» при этом оставалась зелёной, потому
+    /// что прямой участок штанги длиннее любой кривой перемычки.
     ///
     /// Отсюда же ограничение на вынос: он обязан быть больше, чем вылет
     /// штанги от стены плюс радиус гиба, иначе четверть окружности
     /// заканчивается ДАЛЬШЕ точки, куда её ведут, и гусак загибается назад к
     /// стене.
     ///
+    /// Второй урок, оплаченный целым кругом правок: почти все детали стойки —
+    /// соосные цилиндры близких диаметров, и потому они СЛИПАЮТСЯ в колбасу.
+    /// Кронштейн, надетый на штангу, читается вздутием самой трубы, а не
+    /// хомутом. Лечится это тремя вещами разом, и все три здесь под тестом:
+    /// заметная ступень диаметра, ЗАЗОР между деталями (плечо кронштейна
+    /// тоньше и розетки, и хомута), и детали, унесённые с главной оси вбок
+    /// (рычаг дивертора, вынос держателя).
+    ///
     /// Ручная лейка висит в держателе НАКЛОННО — и её наклон задаёт не сама
-    /// лейка, а держатель: центр чашки держателя лежит на оси рукоятки, и
-    /// вся лейка строится от этой точки вверх и вниз по одному направлению.
-    /// Поэтому шланг приходит не «куда-то вниз», а точно в нижний торец
-    /// рукоятки и вдоль её оси.
+    /// лейка, а держатель: центр чашки лежит на оси рукоятки, и вся лейка
+    /// строится от этой точки вверх и вниз по одному направлению. Поэтому
+    /// шланг приходит не «куда-то вниз», а точно в нижний торец рукоятки и
+    /// вдоль её оси.
+    ///
+    /// Лицо стойки смотрит в +Z: туда уходят гусак, вынос держателя и рычаг
+    /// дивертора. Камера изометрии стоит со стороны -Z, поэтому кадр стойки
+    /// обязан её развернуть — иначе лейка снимается с изнанки и выглядит
+    /// ложкой.
     ///
     /// Габарит стойки НЕ равен её высоте: петля шланга свисает ниже нижнего
     /// штуцера, и коробка обязана её накрыть — иначе шланг торчит из
@@ -147,11 +159,28 @@ namespace KitchenDesigner.Tests.Geometry
             var bounds = ShowerColumnLayout.BoundsMM(spec);
 
             Assert.AreEqual(0f, bounds.min.z, Tol,
-                "фланцы кронштейнов и задняя стенка дивертора лежат в плоскости стены: это "
-                + "та грань, которой стойка садится на стену");
+                "розетки кронштейнов и задняя стенка дивертора лежат в плоскости стены: "
+                + "это та грань, которой стойка садится на стену");
             Assert.AreEqual(spec.ColumnHeightMM, bounds.max.y, Tol,
                 "верх габарита — это верх стойки: заявленная высота обязана быть той самой "
                 + "высотой, а не приблизительной");
+        }
+
+        [Test]
+        public void ShowerColumnLayout_FaceLooksAwayFromTheWall_SoTheIsoFrameMustTurnItAround()
+        {
+            var spec = ShowerColumnSpec.Default;
+
+            Assert.Greater(spec.ArmReachMM, spec.WallOffsetMM,
+                "гусак уходит ОТ стены в +Z");
+            Assert.Greater(ShowerColumnLayout.HolderCentreMM(spec).z, spec.WallOffsetMM,
+                "держатель ручной лейки вынесен туда же");
+            Assert.Greater(ShowerColumnLayout.DiverterLever(spec).ToMM.z,
+                ShowerColumnLayout.DiverterDepthMM(spec),
+                "и рычаг дивертора торчит из передней стенки блока. Все три опознавательные "
+                + "детали на одной стороне, камера изометрии стоит с противоположной, и "
+                + "потому кадр стойки обязан её развернуть: снятая с изнанки лейка "
+                + "выглядит ложкой");
         }
 
         [Test]
@@ -209,25 +238,43 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void ShowerColumnLayout_Brackets_ClampTheRiserAtTwoHeights()
+        public void ShowerColumnLayout_Bracket_IsARosetteAThinArmAndAClampWithStepsBetween()
         {
             var spec = ShowerColumnSpec.Default;
             float upper = spec.ColumnHeightMM * ShowerColumnLayout.UpperBracketRatio;
-            float lower = spec.ColumnHeightMM * ShowerColumnLayout.LowerBracketRatio;
+            var rosette = ShowerColumnLayout.BracketRosette(spec, upper);
+            var arm = ShowerColumnLayout.BracketArm(spec, upper);
+            var collar = ShowerColumnLayout.BracketCollar(spec, upper);
 
-            Assert.AreEqual(0f, ShowerColumnLayout.BracketRosette(spec, upper).FromMM.z, Tol,
-                "верхний кронштейн упирается фланцем в стену");
-            Assert.AreEqual(0f, ShowerColumnLayout.BracketRosette(spec, lower).FromMM.z, Tol,
-                "нижний тоже: стойка держится на двух точках, а не висит на одной");
-            Assert.Greater(upper, lower, "верхний кронштейн выше нижнего");
-            Assert.AreEqual(spec.WallOffsetMM,
-                ShowerColumnLayout.BracketArm(spec, upper).ToMM.z, Tol,
-                "плечо кронштейна доходит ровно до оси штанги: короче — щель, длиннее — "
-                + "труба протыкает кронштейн насквозь");
-            Assert.Greater(ShowerColumnLayout.BracketCollar(spec, upper).FromRadiusMM,
-                ShowerColumnLayout.RiserRadiusMM(spec),
-                "и на оси штанги кронштейн заканчивается ХОМУТОМ шире трубы: без него "
-                + "плечо втыкается в гладкую трубу и кронштейн не читается");
+            Assert.AreEqual(0f, rosette.FromMM.z, Tol,
+                "кронштейн упирается розеткой в стену");
+            Assert.AreEqual(rosette.FromRadiusMM, rosette.ToRadiusMM, Tol,
+                "розетка — плоский диск, а не конус: у конуса нет силуэта");
+            Assert.AreEqual(spec.WallOffsetMM, arm.ToMM.z, Tol,
+                "плечо доходит ровно до оси штанги: короче — щель, длиннее — труба "
+                + "протыкает кронштейн насквозь");
+            Assert.Less(arm.FromRadiusMM, collar.FromRadiusMM,
+                "плечо ТОНЬШЕ хомута");
+            Assert.Less(arm.FromRadiusMM, rosette.FromRadiusMM,
+                "и тоньше розетки: именно этот перепад создаёт ЗАЗОР, в котором глаз "
+                + "видит, что кронштейн — отдельная деталь, а не вздутие трубы");
+            Assert.Greater(collar.FromRadiusMM, ShowerColumnLayout.RiserRadiusMM(spec),
+                "а хомут ОХВАТЫВАЕТ штангу: заподлицо он неотличим от самой трубы");
+        }
+
+        [Test]
+        public void ShowerColumnLayout_Brackets_HoldTheRiserAtTwoDifferentHeights()
+        {
+            var spec = ShowerColumnSpec.Default;
+
+            Assert.Greater(ShowerColumnLayout.UpperBracketRatio,
+                ShowerColumnLayout.LowerBracketRatio,
+                "верхний кронштейн выше нижнего: стойка держится на двух точках, а не "
+                + "висит на одной");
+            Assert.Greater(ShowerColumnLayout.LowerBracketRatio * spec.ColumnHeightMM,
+                ShowerColumnLayout.DiverterHeightMM(spec),
+                "и нижний стоит ВЫШЕ дивертора: сядь он на блок — и два узла срастутся в "
+                + "один ком у самого пола");
         }
 
         [Test]
@@ -236,6 +283,7 @@ namespace KitchenDesigner.Tests.Geometry
             var spec = ShowerColumnSpec.Default;
             var cup = ShowerColumnLayout.HolderCup(spec);
             var grip = ShowerColumnHandShower.Grip(spec);
+            var arm = ShowerColumnLayout.HolderArm(spec);
             var centre = ShowerColumnLayout.HolderCentreMM(spec);
 
             Assert.Less(Vector3.Cross(cup.AxisMM.normalized, grip.AxisMM.normalized).magnitude,
@@ -249,8 +297,27 @@ namespace KitchenDesigner.Tests.Geometry
             Assert.Greater(cup.FromRadiusMM,
                 ShowerColumnHandShower.GripRadiusAtHolderMM(spec),
                 "чашка ОХВАТЫВАЕТ рукоятку: уже неё — и держатель прячется внутри лейки");
-            Assert.AreEqual(spec.WallOffsetMM, ShowerColumnLayout.HolderArm(spec).FromMM.z, Tol,
-                "а плечо держателя растёт от оси штанги");
+            Assert.Less(arm.FromRadiusMM, cup.FromRadiusMM,
+                "а плечо держателя тоньше чашки: та же ступень, что у кронштейна, и по "
+                + "той же причине");
+        }
+
+        [Test]
+        public void ShowerColumnLayout_Holder_CarriesTheHandShowerClearOfTheRiser()
+        {
+            var spec = ShowerColumnSpec.Default;
+            var grip = ShowerColumnHandShower.Grip(spec);
+            float gap = grip.FromMM.z - spec.WallOffsetMM
+                - ShowerColumnLayout.RiserRadiusMM(spec)
+                - Mathf.Max(grip.FromRadiusMM, grip.ToRadiusMM);
+
+            Assert.Greater(gap, 0f,
+                "между штангой и рукояткой ручной лейки остаётся ВОЗДУХ. Прижми лейку к "
+                + "трубе — и на общем виде обе сольются в одно утолщение: так и было, "
+                + "пока вынос держателя был вдвое короче");
+            Assert.Greater(ShowerColumnLayout.HolderCentreMM(spec).z - spec.WallOffsetMM,
+                ShowerColumnLayout.SliderCollar(spec).FromRadiusMM,
+                "и сам вынос длиннее радиуса хомута: иначе чашка сидит внутри хомута");
         }
 
         [Test]
@@ -270,6 +337,22 @@ namespace KitchenDesigner.Tests.Geometry
                 "головка ручной лейки Ø 110 мм с референса");
             Assert.Less(face.ToRadiusMM, face.FromRadiusMM,
                 "и её лицевая сторона слегка завалена внутрь, а не срезана плоско");
+        }
+
+        [Test]
+        public void ShowerColumnHandShower_Head_IsADiscWithAStraightRim()
+        {
+            var spec = ShowerColumnSpec.Default;
+            var rim = ShowerColumnHandShower.HeadRim(spec);
+
+            Assert.AreEqual(rim.FromRadiusMM, rim.ToRadiusMM, Tol,
+                "у головки есть ПРЯМОЙ поясок постоянного радиуса — та самая видимая "
+                + "толщина, без которой лейка читается блямбой");
+            Assert.Greater(rim.LengthMM, 0f, "и он не выродился в ноль");
+            Assert.Greater(ShowerColumnHandShower.HeadThicknessMM(spec)
+                / spec.HandShowerDiameterMM, ShowerColumnHandShower.MinHeadStoutnessRatio,
+                "и головка достаточно толстая относительно своего диаметра: плоский блин "
+                + "на изометрии виден с ребра и превращается в палку поперёк рукоятки");
         }
 
         [Test]
@@ -295,36 +378,49 @@ namespace KitchenDesigner.Tests.Geometry
             float handTop = ShowerColumnHandShower.HeadFaceMM(spec).y
                 + spec.HandShowerDiameterMM * 0.5f;
 
-            Assert.Less(handTop,
-                ShowerColumnLayout.RainHeadTopYMM(spec) - spec.HeadThicknessMM,
+            Assert.Less(handTop, ShowerColumnRainHead.BottomYMM(spec),
                 "ручная лейка целиком НИЖЕ тропической: наклон подымает её головку, и "
                 + "стоит перестараться с ним — две лейки срастутся в одну кляксу");
         }
 
         [Test]
-        public void ShowerColumnLayout_RainHead_HangsUnderTheArmEndAsAFlatDisc()
+        public void ShowerColumnRainHead_HangsUnderTheArmOnABossAndKeepsAFlatDisc()
         {
             var spec = ShowerColumnSpec.Default;
-            var face = ShowerColumnLayout.RainFace(spec);
-            var crown = ShowerColumnLayout.RainCrown(spec);
+            var boss = ShowerColumnRainHead.Boss(spec);
+            var rim = ShowerColumnRainHead.Rim(spec);
+            var bottom = ShowerColumnRainHead.BottomChamfer(spec);
 
-            Assert.AreEqual(spec.ArmReachMM, face.FromMM.z, Tol, "лейка соосна концу выноса");
-            Assert.AreEqual(spec.HeadDiameterMM * 0.5f, face.ToRadiusMM, Tol,
-                "тропическая лейка Ø 250 мм с референса");
-            Assert.AreEqual(spec.HeadThicknessMM, crown.ToMM.y - face.FromMM.y, Tol,
-                "и она плоская: 30 мм толщины на всю пачку из трёх колец, а не полусфера");
-            Assert.AreEqual(ShowerColumnLayout.RainHeadTopYMM(spec), crown.ToMM.y, Tol,
-                "верх лейки касается нижней образующей выноса: щель между ними видно "
+            Assert.AreEqual(spec.ArmReachMM, rim.FromMM.z, Tol, "лейка соосна концу выноса");
+            Assert.AreEqual(ShowerColumnRainHead.TopYMM(spec), boss.ToMM.y, Tol,
+                "бобышка касается нижней образующей выноса: щель между ними видно "
                 + "насквозь, а нахлёст даёт кольцевой шов");
-            Assert.Less(crown.ToRadiusMM, crown.FromRadiusMM,
-                "и сверху она завалена: прямой цилиндр читается шайбой, а не лейкой");
+            Assert.Greater(boss.FromRadiusMM, ShowerColumnLayout.RiserRadiusMM(spec),
+                "бобышка ТОЛЩЕ трубы");
+            Assert.Less(boss.FromRadiusMM, rim.FromRadiusMM,
+                "и тоньше диска: это переходная ступень между трубой и лейкой, без "
+                + "которой труба втекает в диск и всё вместе читается ложкой");
+            Assert.AreEqual(rim.FromRadiusMM, rim.ToRadiusMM, Tol,
+                "поясок диска — ПРЯМОЙ цилиндр постоянного радиуса: это и есть видимая "
+                + "толщина лейки, ради которой всё затевалось");
+            Assert.AreEqual(spec.HeadDiameterMM * 0.5f, rim.FromRadiusMM, Tol,
+                "и его радиус — заявленные Ø 250 мм, а не меньше на величину заваленной "
+                + "кромки");
+            Assert.Less(bottom.FromRadiusMM, bottom.ToRadiusMM,
+                "снизу кромка завалена фаской: острый край в литом пластике не бывает");
+            Assert.AreEqual(spec.HeadThicknessMM,
+                ShowerColumnRainHead.DiscTopYMM(spec) - ShowerColumnRainHead.BottomYMM(spec),
+                Tol,
+                "а вся пачка колец в сумме даёт заявленные 30 мм толщины: бобышка сверх "
+                + "них, она часть подвеса, а не лейки");
         }
 
         [Test]
-        public void ShowerColumnLayout_DiverterBox_SitsOnTheWallAtTheBottom()
+        public void ShowerColumnLayout_DiverterBox_SitsOnTheWallAndCarriesALeverOffAxis()
         {
             var spec = ShowerColumnSpec.Default;
             var box = ShowerColumnLayout.DiverterBox(spec);
+            var lever = ShowerColumnLayout.DiverterLever(spec);
 
             Assert.AreEqual(0f, box.CentreMM.y - box.SizeMM.y * 0.5f, Tol,
                 "низ дивертора — это низ стойки");
@@ -334,6 +430,11 @@ namespace KitchenDesigner.Tests.Geometry
                 spec.WallOffsetMM + ShowerColumnLayout.RiserRadiusMM(spec),
                 "и блок накрывает штангу целиком: труба, торчащая из передней стенки "
                 + "переключателя, выглядит как ошибка сборки");
+            Assert.Greater(lever.ToMM.z, box.CentreMM.z + box.SizeMM.z * 0.5f,
+                "рычаг ВЫХОДИТ за переднюю стенку блока: без него дивертор остаётся "
+                + "гладким комом, по которому не понять, что это орган управления");
+            Assert.Less(lever.FromMM.z, box.CentreMM.z + box.SizeMM.z * 0.5f,
+                "а корень его утоплен внутрь — иначе на стенке будет кольцевой шов");
         }
 
         [Test]
