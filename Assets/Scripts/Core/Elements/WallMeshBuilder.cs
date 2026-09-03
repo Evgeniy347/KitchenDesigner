@@ -141,18 +141,18 @@ namespace KitchenDesigner.Core
                     }
                     else if (frontFace)
                     {
-                        int nxBot = j > 0 ? CountInside(cutouts, cx, (ySplits[j - 1] + ys) * 0.5f) : 0;
-                        int nxTop = j < ySplits.Count - 2 ? CountInside(cutouts, cx, (ye + ySplits[j + 2]) * 0.5f) : 0;
-                        int nxLft = i > 0 ? CountInside(cutouts, (xSplits[i - 1] + xs) * 0.5f, cy) : 0;
-                        int nxRgt = i < xSplits.Count - 2 ? CountInside(cutouts, (xe + xSplits[i + 2]) * 0.5f, cy) : 0;
+                        bool wallBelow = j > 0 && CountInside(cutouts, cx, (ySplits[j - 1] + ys) * 0.5f) == 0;
+                        bool wallAbove = j < ySplits.Count - 2 && CountInside(cutouts, cx, (ye + ySplits[j + 2]) * 0.5f) == 0;
+                        bool wallLeft = i > 0 && CountInside(cutouts, (xSplits[i - 1] + xs) * 0.5f, cy) == 0;
+                        bool wallRight = i < xSplits.Count - 2 && CountInside(cutouts, (xe + xSplits[i + 2]) * 0.5f, cy) == 0;
 
-                        if (nxBot == 0)
+                        if (wallBelow)
                             AddQuad(verts, tris, V(xs, ys, zBack), V(xe, ys, zBack), V(xe, ys, zFront), V(xs, ys, zFront));
-                        if (nxTop == 0)
+                        if (wallAbove)
                             AddQuad(verts, tris, V(xs, ye, zFront), V(xe, ye, zFront), V(xe, ye, zBack), V(xs, ye, zBack));
-                        if (nxLft == 0)
+                        if (wallLeft)
                             AddQuad(verts, tris, V(xs, ys, zFront), V(xs, ys, zBack), V(xs, ye, zBack), V(xs, ye, zFront));
-                        if (nxRgt == 0)
+                        if (wallRight)
                             AddQuad(verts, tris, V(xe, ys, zBack), V(xe, ys, zFront), V(xe, ye, zFront), V(xe, ye, zBack));
                     }
                 }

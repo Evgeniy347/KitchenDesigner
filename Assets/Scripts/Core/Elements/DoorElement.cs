@@ -271,13 +271,11 @@ namespace KitchenDesigner.Core
             float toU = AppConstants.MM_TO_UNITS;
             float wallHalfH = wallDims.y * toU * 0.5f;
             float wallCenterY = wall.FullPosition.y;
-            float targetHalfH = targetY * toU * 0.5f;
-            float clampedY = Mathf.Clamp(transform.position.y,
-                wallCenterY - wallHalfH + targetHalfH,
-                wallCenterY + wallHalfH - targetHalfH);
-            if (Mathf.Abs(clampedY - transform.position.y) > Tolerance.EpsilonUnits)
+            float groundedY = wallCenterY - wallHalfH +
+                DoorOpeningLayout.CentreAboveWallBaseMM(targetY) * toU;
+            if (Mathf.Abs(groundedY - transform.position.y) > Tolerance.EpsilonUnits)
             {
-                transform.position = new Vector3(transform.position.x, clampedY, transform.position.z);
+                transform.position = new Vector3(transform.position.x, groundedY, transform.position.z);
                 _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
             }
 
@@ -387,45 +385,46 @@ namespace KitchenDesigner.Core
             float glassThick = AppConstants.WINDOW_GLASS_THICKNESS_MM * toU;
 
             float totalW = dims.x * toU;
-            float totalH = dims.y * toU;
             float totalD = dims.z * toU;
+            float leafH = DoorOpeningLayout.LeafHeightMM(dims.y) * toU;
+            float leafY = DoorOpeningLayout.LeafCentreOffsetMM(dims.y) * toU;
             float halfW = totalW * 0.5f;
-            float halfH = totalH * 0.5f;
+            float halfLeafH = leafH * 0.5f;
             float halfD = totalD * 0.5f;
 
             float innerW = totalW - 2f * frameU;
-            float innerH = totalH - 2f * frameU;
+            float innerH = leafH - 2f * frameU;
 
             int hidden = ComputeHiddenSides();
 
             if (_frameLeft != null)
             {
-                _frameLeft.transform.localPosition = new Vector3(-halfW + frameU * 0.5f, 0f, 0f);
-                _frameLeft.transform.localScale = new Vector3(frameU, totalH, totalD);
+                _frameLeft.transform.localPosition = new Vector3(-halfW + frameU * 0.5f, leafY, 0f);
+                _frameLeft.transform.localScale = new Vector3(frameU, leafH, totalD);
                 _frameLeft.SetActive((hidden & 1) == 0);
             }
             if (_frameRight != null)
             {
-                _frameRight.transform.localPosition = new Vector3(halfW - frameU * 0.5f, 0f, 0f);
-                _frameRight.transform.localScale = new Vector3(frameU, totalH, totalD);
+                _frameRight.transform.localPosition = new Vector3(halfW - frameU * 0.5f, leafY, 0f);
+                _frameRight.transform.localScale = new Vector3(frameU, leafH, totalD);
                 _frameRight.SetActive((hidden & 2) == 0);
             }
             if (_frameTop != null)
             {
-                _frameTop.transform.localPosition = new Vector3(0f, halfH - frameU * 0.5f, 0f);
+                _frameTop.transform.localPosition = new Vector3(0f, leafY + halfLeafH - frameU * 0.5f, 0f);
                 _frameTop.transform.localScale = new Vector3(innerW, frameU, totalD);
                 _frameTop.SetActive((hidden & 4) == 0);
             }
             if (_frameBottom != null)
             {
-                _frameBottom.transform.localPosition = new Vector3(0f, -halfH + frameU * 0.5f, 0f);
+                _frameBottom.transform.localPosition = new Vector3(0f, leafY - halfLeafH + frameU * 0.5f, 0f);
                 _frameBottom.transform.localScale = new Vector3(innerW, frameU, totalD);
                 _frameBottom.SetActive((hidden & 8) == 0);
             }
 
             float sashU = AppConstants.WINDOW_SASH_MM * toU;
             float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, totalD);
-            _sashClosedLocal = new Vector3(0f, 0f, 0f);
+            _sashClosedLocal = new Vector3(0f, leafY, 0f);
             _sashHalfExtents = new Vector3(innerW * 0.5f, innerH * 0.5f, sashD * 0.5f);
 
             if (_sashLeft != null)
@@ -505,7 +504,7 @@ namespace KitchenDesigner.Core
             float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, dims.z * toU);
             float glassThick = AppConstants.WINDOW_GLASS_THICKNESS_MM * toU;
             float innerW = dims.x * toU - 2f * frameU;
-            float innerH = dims.y * toU - 2f * frameU;
+            float innerH = DoorOpeningLayout.LeafHeightMM(dims.y) * toU - 2f * frameU;
             float paneThick = _sashType == DoorSashType.Blind ? sashD : glassThick;
             _glassPane.transform.localScale =
                 new Vector3(innerW - 2f * sashU, innerH - 2f * sashU, paneThick);

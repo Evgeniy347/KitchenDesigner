@@ -165,24 +165,31 @@ namespace KitchenDesigner.Core
 
             var cutouts = new List<WallMeshBuilder.WindowCutout>();
 
-            void AddCutout(KitchenElement opening)
+            void AddCutout(KitchenElement opening, bool downToWallBase)
             {
                 if (opening == null) return;
                 var oDims = opening.DimensionsMM;
                 Vector3 lp = Quaternion.Inverse(transform.rotation) * (opening.transform.position - FullPosition);
                 float u = (thickAlongX ? lp.z : lp.x) / Mathf.Max(0.001f, wallW);
                 float v = lp.y / Mathf.Max(0.001f, wallH);
+                float halfV = oDims.y * 0.001f * 0.5f / Mathf.Max(0.001f, wallH);
+                if (downToWallBase)
+                {
+                    var span = DoorOpeningLayout.GroundedSpanNorm(v, halfV);
+                    halfV = span.Size * 0.5f;
+                    v = span.Min + halfV;
+                }
                 cutouts.Add(new WallMeshBuilder.WindowCutout
                 {
                     centerNorm = new Vector2(u, v),
                     halfSizeNorm = new Vector2(
                         oDims.x * 0.001f * 0.5f / Mathf.Max(0.001f, wallW),
-                        oDims.y * 0.001f * 0.5f / Mathf.Max(0.001f, wallH))
+                        halfV)
                 });
             }
 
-            foreach (var w in _attachedWindows) AddCutout(w);
-            foreach (var d in _attachedDoors) AddCutout(d);
+            foreach (var w in _attachedWindows) AddCutout(w, false);
+            foreach (var d in _attachedDoors) AddCutout(d, true);
 
             if (_customMesh != null)
             {
