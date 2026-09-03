@@ -101,4 +101,23 @@ public class SettingsPanelLifetimeTests
             + "прерывало TearDown, панель оставалась живой и всплывала блоком windows "
             + "в 25 снимках сцены, к UI не имеющих отношения");
     }
+    [Test]
+    public void SettingsWindow_PersistsOnlyItsVisibility_BecauseItNeitherMovesNorResizes()
+    {
+        var ui = BuildPanel();
+
+        var state = ProjectWindows.Capture().Single(w => w.id == "settings");
+
+        Assert.IsFalse(ui.HeightAdjustable,
+            "окно настроек не тянется по высоте, поэтому height в файле проекта всегда 0");
+        Assert.AreEqual(0f, state.x, 0.001f,
+            "и не перетаскивается — WindowDrag.Attach на нём не вызывают, окно всегда по центру");
+        Assert.AreEqual(0f, state.y, 0.001f, "то же по вертикали");
+        Assert.AreEqual(0f, state.height, 0.001f,
+            "нули здесь не мусор, а честное состояние центрированного нерастяжимого окна: "
+            + "смысл несёт единственное поле visible, ради которого окно и зарегистрировано — "
+            + "проект открывается с теми же открытыми окнами. Если окну добавят перетаскивание "
+            + "или ресайз, этот тест покраснеет, и нули придётся пересмотреть осознанно, "
+            + "а не обнаружить их в снимке случайно");
+    }
 }
