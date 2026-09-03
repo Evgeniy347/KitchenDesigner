@@ -30,6 +30,9 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
+            _photoTab?.Dispose();
+            _viewTab?.Dispose();
+
             var panel = UIFactory.CreatePanel("SettingsPanel", canvas, Vector2.zero, new Vector2(PanelW, PanelH));
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
@@ -95,6 +98,7 @@ namespace KitchenDesigner.Core.UI
 
         private void RefreshDependentStates()
         {
+            if (_root == null) return;
             var s = KitchenSettings.Instance;
             if (s == null) return;
             _projectTab?.RefreshDependentStates(s);
