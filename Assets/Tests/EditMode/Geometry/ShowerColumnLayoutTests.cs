@@ -24,9 +24,13 @@ namespace KitchenDesigner.Tests.Geometry
     /// уехавшей точкой наклонным куском, и вся стойка встала в габаритной
     /// коробке по диагонали. Никакой тест этого не поймал: концы ломаной
     /// остались на своих местах, длина звеньев осталась ненулевой, габарит
-    /// сошёлся. Ловится это только проверкой на КАЖДОЕ звено — что ниже гиба
-    /// штанга строго вертикальна, и что дуга нигде не делает шаг длиннее
-    /// своей хорды.
+    /// сошёлся. Ловится это только проверкой ВНУТРЕННОСТИ ломаной: ниже
+    /// центра гиба штанга строго вертикальна, длинных звеньев ровно два
+    /// (прямой участок и вынос), и обе касательные гиба лежат на радиусе от
+    /// его центра. Проверено обратной подстановкой сломанных осей — краснеют
+    /// все три; проверка «шаг не длиннее самого длинного законного» при этом
+    /// оставалась зелёной, потому что прямой участок штанги длиннее любой
+    /// кривой перемычки.
     ///
     /// Отсюда же ограничение на вынос: он обязан быть больше, чем вылет
     /// штанги от стены плюс радиус гиба, иначе четверть окружности
@@ -45,6 +49,8 @@ namespace KitchenDesigner.Tests.Geometry
     public class ShowerColumnLayoutTests
     {
         private const float Tol = 1e-3f;
+
+        private const float LongStepFactor = 1.5f;
 
         [Test]
         public void ShowerColumnLayout_RiserPath_RunsFromTheDiverterToTheArmEnd()
@@ -82,15 +88,14 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void ShowerColumnLayout_RiserPath_TakesNoStepLongerThanTheBendChord()
+        public void ShowerColumnLayout_RiserPath_HasExactlyTwoStraightRunsAndTheArcBetweenThem()
         {
             var spec = ShowerColumnSpec.Default;
             var path = ShowerColumnLayout.RiserPath(spec);
-            float bend = ShowerColumnLayout.BendRadiusMM(spec.RiserDiameterMM);
-            float chord = 2f * bend
+            float chord = 2f * ShowerColumnLayout.BendRadiusMM(spec.RiserDiameterMM)
                 * Mathf.Sin(Mathf.PI * 0.25f / ShowerColumnLayout.GooseneckArcSegments);
-            float straight = ShowerColumnLayout.BendCentreMM(spec).y;
-            float horizontal = spec.ArmReachMM - spec.WallOffsetMM - bend;
+            int longSteps = 0;
+            int lastLong = -1;
 
             for (int i = 1; i < path.Length; i++)
             {
@@ -98,11 +103,19 @@ namespace KitchenDesigner.Tests.Geometry
                 Assert.Greater(step, Tolerance.ContactMm,
                     "совпавшие точки на стыке прямой и дуги: направление между ними не "
                     + "определено, и кольцо протяжки в этом узле схлопнется");
-                Assert.LessOrEqual(step, Mathf.Max(Mathf.Max(straight, horizontal), chord) + Tol,
-                    "и ни одно звено не длиннее самого длинного законного: прямого "
-                    + "участка, горизонтального выноса или хорды дуги. Лишнее длинное "
-                    + "звено — это перемычка к уехавшей дуге, тот самый перекос стойки");
+                if (step <= chord * LongStepFactor) continue;
+                longSteps++;
+                lastLong = i;
             }
+
+            Assert.AreEqual(2, longSteps,
+                "длинных звеньев в ломаной ровно ДВА — прямой участок штанги и "
+                + "горизонтальный вынос. Всё между ними короче хорды дуги. Третье "
+                + "длинное звено означает, что дуга родилась в стороне и протяжка "
+                + "дотянулась до неё перемычкой: это и есть перекос стойки");
+            Assert.AreEqual(path.Length - 1, lastLong,
+                "и второе длинное звено — последнее в ломаной: вынос идёт ПОСЛЕ гиба, а "
+                + "не где-то в его середине");
         }
 
         [Test]
