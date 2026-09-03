@@ -235,20 +235,57 @@ public class DoorThresholdTests : SnapTestBase
             }
         };
 
-    /// <summary>Откос — это ЧЕТЫРЕ разных квада, и на уровне пола внутри проёма
-    /// вершины оставляют два из них: горизонтальный низ (его быть не должно —
-    /// он дублирует нижнюю крышку стены) и вертикальные щёки, которые обязаны
-    /// доходить до пола. По вершине их не различить, поэтому считаются
-    /// треугольники, ЦЕЛИКОМ лежащие в плоскости пола: щёки в неё не попадают,
-    /// а нижняя крышка стены попадает, но её вершины стоят на краях стены.</summary>
+    /// <summary>Порог в дверном проёме бывает двух родов, и оба — горизонтальная
+    /// поверхность на уровне пола внутри выреза. Первый — откос: квад, дублирующий
+    /// нижнюю крышку стены. Второй — сама НИЖНЯЯ КРЫШКА, которая раньше шла сплошной
+    /// плитой во всю длину стены, включая проём: под дверью оставалась пластина
+    /// шириной проёма и толщиной стены. При совпадении с полом она давала
+    /// z-fighting, а при 250-мм стене читалась как настоящий порожек.
+    ///
+    /// Проверяется НАКРЫТИЕ ТОЧКИ, а не число треугольников: после починки крышка
+    /// разрезана на куски по бокам от проёма, и у них появились вершины внутри
+    /// диапазона проёма по x — счётчик треугольников краснел бы на исправном
+    /// меше.</summary>
     [Test]
-    public void Builder_CutoutReachingTheWallBase_AddsNoHorizontalRevealThere()
+    public void Builder_CutoutReachingTheWallBase_LeavesNoFloorLevelSurfaceInTheOpening()
     {
         var mesh = WallMeshBuilder.Build(CutoutOnTheWallBase());
 
+        Assert.IsFalse(FloorPlaneCovers(mesh, 0f, 0f),
+            "на уровне пола внутри проёма осталась горизонтальная поверхность — это порог");
+        Assert.IsFalse(FloorPlaneCovers(mesh, 0.14f, 0.4f),
+            "у самого края проёма — тоже проём, там пола стены быть не должно");
+        Assert.IsTrue(FloorPlaneCovers(mesh, 0.3f, 0f),
+            "рядом с проёмом стена стоит на полу, и её нижняя крышка обязана остаться — "
+            + "иначе снизу видно нутро стены");
+    }
+
+    /// <summary>Окно низ стены не режет: под подоконником стена стоит, и её нижняя
+    /// крышка обязана быть сплошной.</summary>
+    [Test]
+    public void Builder_CutoutAboveTheWallBase_KeepsTheBottomCapWhole()
+    {
+        var mesh = WallMeshBuilder.Build(new List<WallMeshBuilder.WindowCutout>
+        {
+            new WallMeshBuilder.WindowCutout
+            {
+                centerNorm = new Vector2(0f, 0.1f),
+                halfSizeNorm = new Vector2(0.15f, 0.2f),
+            }
+        });
+
+        Assert.IsTrue(FloorPlaneCovers(mesh, 0f, 0f),
+            "вырез не доходит до пола, значит под ним стена — крышку резать нечем");
+    }
+
+    /// <summary>Есть ли горизонтальная поверхность в плоскости пола (y = -0,5 в
+    /// нормированных координатах меша) над точкой (x, z). Вертикальные щёки проёма
+    /// в эту плоскость не попадают целиком, поэтому берутся только треугольники,
+    /// у которых в ней ВСЕ три вершины.</summary>
+    private static bool FloorPlaneCovers(Mesh mesh, float x, float z)
+    {
         var verts = mesh.vertices;
         var tris = mesh.triangles;
-        int flatInsideOpening = 0;
         for (int t = 0; t < tris.Length; t += 3)
         {
             var a = verts[tris[t]];
@@ -257,14 +294,11 @@ public class DoorThresholdTests : SnapTestBase
             if (Mathf.Abs(a.y + 0.5f) > 1e-4f ||
                 Mathf.Abs(b.y + 0.5f) > 1e-4f ||
                 Mathf.Abs(c.y + 0.5f) > 1e-4f) continue;
-            if (Mathf.Abs(a.x) < 0.5f - 1e-4f ||
-                Mathf.Abs(b.x) < 0.5f - 1e-4f ||
-                Mathf.Abs(c.x) < 0.5f - 1e-4f) flatInsideOpening++;
+            if (PointInTriangle(x, z,
+                new Vector3(a.x, a.z, 0f), new Vector3(b.x, b.z, 0f), new Vector3(c.x, c.z, 0f)))
+                return true;
         }
-
-        Assert.AreEqual(0, flatInsideOpening,
-            "горизонтальный откос на уровне пола внутри проёма — стены там уже нет, " +
-            "и этот квад лишь дублирует нижнюю крышку стены (z-fighting в дверном проёме)");
+        return false;
     }
 
     /// <summary>Обратная сторона той же правки: срезать откосы на границе грани

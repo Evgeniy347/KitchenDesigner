@@ -60,8 +60,47 @@ namespace KitchenDesigner.Core
                 V(s.startFront, y1, front), V(s.startBack, y1, back));
             AddQuad(verts, tris, V(s.startFront, y1, front), V(s.endFront, y1, front),
                 V(s.endBack, y1, back), V(s.startBack, y1, back));
-            AddQuad(verts, tris, V(s.startBack, y0, back), V(s.endBack, y0, back),
-                V(s.endFront, y0, front), V(s.startFront, y0, front));
+            AddBottomCapNorm(verts, tris, cutouts, s, y0, front, back);
+        }
+
+        private static void AddBottomCapNorm(List<Vector3> verts, List<int> tris,
+            List<WindowCutout> cutouts, EndShape s, float y0, float front, float back)
+        {
+            foreach (var span in SolidSpansAlongBase(cutouts,
+                Mathf.Min(s.startFront, s.startBack), Mathf.Max(s.endFront, s.endBack)))
+            {
+                float sb = Mathf.Clamp(span.Min, s.startBack, s.endBack);
+                float eb = Mathf.Clamp(span.Max, s.startBack, s.endBack);
+                float sf = Mathf.Clamp(span.Min, s.startFront, s.endFront);
+                float ef = Mathf.Clamp(span.Max, s.startFront, s.endFront);
+                AddQuad(verts, tris, V(sb, y0, back), V(eb, y0, back),
+                    V(ef, y0, front), V(sf, y0, front));
+            }
+        }
+
+        private static List<Span> SolidSpansAlongBase(List<WindowCutout> cutouts,
+            float from, float to)
+        {
+            var spans = new List<Span> { new Span(from, to) };
+
+            foreach (var co in cutouts)
+            {
+                if (co.centerNorm.y - co.halfSizeNorm.y > DoorOpeningLayout.WallBaseNorm + MinCellNorm)
+                    continue;
+
+                float hole0 = co.centerNorm.x - co.halfSizeNorm.x;
+                float hole1 = co.centerNorm.x + co.halfSizeNorm.x;
+                var kept = new List<Span>();
+                foreach (var span in spans)
+                {
+                    if (hole1 <= span.Min || hole0 >= span.Max) { kept.Add(span); continue; }
+                    if (hole0 - span.Min > MinCellNorm) kept.Add(new Span(span.Min, hole0));
+                    if (span.Max - hole1 > MinCellNorm) kept.Add(new Span(hole1, span.Max));
+                }
+                spans = kept;
+            }
+
+            return spans;
         }
 
         private static void AddBoxNorm(List<Vector3> verts, List<int> tris,
