@@ -71,7 +71,6 @@ namespace KitchenDesigner.Core
             TextureLibrary.PrefetchScene();
 
             if (FindAnyObjectByType<MCP.McpHttpBridge>() == null) gameObject.AddComponent<MCP.McpHttpBridge>();
-            if (FindAnyObjectByType<MCP.UnityTcpBridge>() == null) gameObject.AddComponent<MCP.UnityTcpBridge>();
             MCP.ConsoleLogCapture.Initialize();
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR

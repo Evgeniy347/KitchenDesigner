@@ -171,5 +171,35 @@ namespace KitchenDesigner.Core.MCP
                 throw failure;
             return result!;
         }
+
+#if UNITY_EDITOR
+        [UnityEditor.MenuItem("Kitchen Designer/MCP Bridge/Start")]
+        private static void EditorStart()
+        {
+            var bridge = FindAnyObjectByType<McpHttpBridge>();
+            if (bridge == null)
+            {
+                var go = new GameObject("MCPBridge");
+                bridge = go.AddComponent<McpHttpBridge>();
+            }
+            bridge.StartBridge();
+        }
+
+        [UnityEditor.MenuItem("Kitchen Designer/MCP Bridge/Stop")]
+        private static void EditorStop()
+        {
+            var bridge = FindAnyObjectByType<McpHttpBridge>();
+            if (bridge != null) bridge.StopBridge();
+        }
+
+        [UnityEditor.MenuItem("Kitchen Designer/MCP Bridge/Toggle")]
+        private static void EditorToggle()
+        {
+            var bridge = FindAnyObjectByType<McpHttpBridge>();
+            if (bridge == null) { EditorStart(); return; }
+            if (bridge.IsRunning) bridge.StopBridge();
+            else bridge.StartBridge();
+        }
+#endif
     }
 }

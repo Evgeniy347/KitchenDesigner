@@ -6,8 +6,6 @@ namespace KitchenDesigner.Core
     {
         public const int DefaultPort = 9337;
 
-        public const int LegacyTcpPort = DefaultPort + 1;
-
         public const string Path = "/mcp";
 
         public const string PortVariable = "UNITY_MCP_PORT";

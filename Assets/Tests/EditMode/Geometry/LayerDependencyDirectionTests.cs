@@ -62,11 +62,8 @@ namespace KitchenDesigner.Tests.Geometry
         /// кто его поднимает.</summary>
         private static readonly (string layer, int ceiling, string why)[] McpBudgets =
         {
-            ("Infrastructure", 3, "Bootstrap поднимает мосты MCP (HTTP, устаревший TCP и "
-                + "перехват консоли) — композиционный корень; больше про MCP не знает никто. "
-                + "Три вместо двух — переходный период: HTTP-эндпоинт занял 9337, TCP-мост "
-                + "уехал на 9338 и живёт до подтверждения его удаления. Потолок вернуть к 2 "
-                + "тем же коммитом, каким уйдёт UnityTcpBridge"),
+            ("Infrastructure", 2, "Bootstrap поднимает мост MCP (HTTP-эндпоинт и перехват "
+                + "консоли) — композиционный корень; больше про MCP не знает никто"),
         };
 
         private static readonly string UiReferencePattern =

@@ -17,7 +17,7 @@ public static class PlayModeTestConfig
 
     /// <summary>
     /// Must be called before any Bootstrap is created so that the auto-created
-    /// <see cref="UnityTcpBridge"/> picks the test port in its Awake().
+    /// MCP bridge picks the test port in its Awake().
     /// </summary>
     public static void ConfigureForTests()
     {

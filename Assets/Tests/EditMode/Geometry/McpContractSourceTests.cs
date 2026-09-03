@@ -48,8 +48,8 @@ namespace KitchenDesigner.Tests.Geometry
             CollectionAssert.IsEmpty(offenders,
                 "Contract/ компилируют ДВА компилятора: Unity (KitchenDesigner.Runtime) и "
                 + "dotnet (geometry/pure/Pure.csproj линкует ТЕ ЖЕ файлы, чтобы McpJsonSchema и "
-                + "его тесты шли по быстрому пути; то же делает tools/McpContractGen, пока он "
-                + "жив). Любой using вне System — UnityEngine, Newtonsoft — ломает вторую "
+                + "его тесты шли по быстрому пути). Любой using вне System — UnityEngine, "
+                + "Newtonsoft — ломает вторую "
                 + "сборку, и контракт перестаёт быть одним источником правды. Нарушители:\n"
                 + string.Join("\n", offenders));
         }

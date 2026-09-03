@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using KitchenDesigner.Core.MCP.Contract;
-using KitchenDesigner.Tests.Geometry;
 
-/// <summary>JSON Schema для tools/list раньше жила в Zod внутри Node-моста
-/// (mcp-server/src/tools.generated.ts, генератор tools/McpContractGen). Приложение
-/// отдаёт tools/list само, значит схему строит C#: McpJsonSchema читает те же поля
+/// <summary>JSON Schema для tools/list раньше жила в Zod внутри Node-моста, который
+/// переводил MCP в наш построчный протокол. Приложение отдаёт tools/list само,
+/// значит схему строит C#: McpJsonSchema читает те же поля
 /// Contract/Params* и те же атрибуты [McpParam]/[McpIgnore].
 ///
 /// Тесты живут на быстром пути (0,3 с вместо холодного Unity) ровно потому, что
@@ -239,67 +236,5 @@ public class McpJsonSchemaTests
         Assert.AreEqual(true, open["openWorldHint"]);
         Assert.IsFalse(open.ContainsKey("destructiveHint"),
             "ADVANCED_OPEN_WORLD в Node не объявлял destructiveHint вовсе");
-    }
-
-    /// <summary>Временный тест: он держит новую схему рядом с той, что до сих пор
-    /// генерируется в Zod. Удаляется вместе с mcp-server/ и tools/McpContractGen.</summary>
-    [Test]
-    public void SchemaFieldSets_MatchTheZodEmitter_ToolByTool()
-    {
-        var zod = ZodFieldsByTool();
-        var diffs = new List<string>();
-
-        foreach (var tool in McpToolRegistry.Tools)
-        {
-            var mine = ((Dictionary<string, object>)McpJsonSchema.ForTool(tool)["properties"])
-                .Keys.OrderBy(k => k, StringComparer.Ordinal).ToList();
-            var theirs = zod.TryGetValue(tool.Name, out var fields)
-                ? fields.OrderBy(k => k, StringComparer.Ordinal).ToList()
-                : new List<string>();
-
-            if (!mine.SequenceEqual(theirs, StringComparer.Ordinal))
-                diffs.Add(tool.Name + ": C# [" + string.Join(", ", mine) + "] vs Zod ["
-                    + string.Join(", ", theirs) + "]");
-        }
-
-        CollectionAssert.IsEmpty(diffs,
-            "набор параметров, который агент увидит из приложения, разошёлся с тем, что до сих "
-            + "пор отдаёт Node-мост. Пока живут оба, расхождение означает, что один из них врёт:\n"
-            + string.Join("\n", diffs));
-    }
-
-    private static Dictionary<string, List<string>> ZodFieldsByTool()
-    {
-        var path = Path.Combine(RepoPaths.Subdir("mcp-server", "src"), "tools.generated.ts");
-        Assert.IsTrue(File.Exists(path), "нет " + path + ": тест паритета смотрит в пустоту");
-
-        var byTool = new Dictionary<string, List<string>>(StringComparer.Ordinal);
-        var name = new Regex("^    name: \"(?<n>[^\"]+)\",$");
-        var field = new Regex("^      (?<f>\\w+): z\\.");
-        string? current = null;
-        var inSchema = false;
-
-        foreach (var line in File.ReadAllLines(path))
-        {
-            var nameMatch = name.Match(line);
-            if (nameMatch.Success)
-            {
-                current = nameMatch.Groups["n"].Value;
-                byTool[current] = new List<string>();
-                inSchema = false;
-                continue;
-            }
-            if (line == "    inputSchema: {") { inSchema = true; continue; }
-            if (inSchema && line == "    },") { inSchema = false; continue; }
-            if (!inSchema || current == null) continue;
-
-            var fieldMatch = field.Match(line);
-            if (fieldMatch.Success) byTool[current].Add(fieldMatch.Groups["f"].Value);
-        }
-
-        Assert.GreaterOrEqual(byTool.Count, McpToolRegistry.Tools.Count,
-            "разбор tools.generated.ts нашёл меньше инструментов, чем есть в реестре — "
-            + "сравнивать нечего, и зелёный тест ничего бы не значил");
-        return byTool;
     }
 }

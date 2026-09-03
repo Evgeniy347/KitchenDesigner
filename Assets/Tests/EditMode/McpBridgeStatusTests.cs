@@ -104,14 +104,6 @@ public class McpBridgeStatusTests
         }
     }
 
-    [Test]
-    public void TheLegacyTcpPort_IsNotTheHttpPort()
-    {
-        Assert.AreNotEqual(McpBridgeStatus.DefaultPort, McpBridgeStatus.LegacyTcpPort,
-            "оба моста поднимаются одним Bootstrap; совпадение портов означает, что второй "
-            + "молча не стартует, и виноватым выглядит тот, кто запустился первым");
-    }
-
     private const string PortVariable = McpBridgeStatus.PortVariable;
 }
 
