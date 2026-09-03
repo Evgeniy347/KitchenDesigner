@@ -744,40 +744,51 @@ public class SettingsPanelUITests
     // ── MCP tab ─────────────────────────────────────────────
 
     /// <summary>Вкладка существует ради одного действия: скопировать текст и
-    /// отдать его агенту. Проверяется, что это действие на месте — кнопка, её
-    /// подпись и ссылка на подробную инструкцию, набранная текстом (её можно
-    /// переписать руками, если браузер не открылся).</summary>
+    /// отдать его агенту. Проверяется, что это действие на месте — обе кнопки
+    /// копирования и кнопка, открывающая инструкцию, которая едет вместе с
+    /// плеером.</summary>
     [Test]
-    public void McpTab_HasTheCopyButtonsAndTheGuideLink()
+    public void McpTab_HasTheCopyButtonsAndTheGuideButton()
     {
         var mcp = _canvas!.transform.Find(PagePath + "Tab_Mcp");
         Assert.IsNotNull(mcp, "вкладки MCP нет в панели");
 
         Assert.IsNotNull(mcp.Find("McpCopyPrompt"), "кнопка «скопировать инструкцию для агента»");
         Assert.IsNotNull(mcp.Find("McpCopyConfig"), "кнопка «скопировать конфиг mcp.json»");
-        Assert.IsNotNull(mcp.Find("McpOpenGuide"), "кнопка «открыть инструкцию на GitHub»");
-
-        var url = mcp.Find("McpGuideUrl");
-        Assert.IsNotNull(url, "адрес инструкции должен быть виден текстом, а не только в кнопке");
-        Assert.AreEqual(SettingsMcpTab.GuideUrl, url!.GetComponent<TextMeshProUGUI>().text);
+        Assert.IsNotNull(mcp.Find("McpOpenGuide"), "кнопка «открыть инструкцию»");
+        Assert.IsNotNull(mcp.Find("McpGuidePath"), "где инструкция лежит — сказано словами");
     }
 
-    /// <summary>Текст для агента бесполезен, если из него не собирается рабочая
-    /// конфигурация. Поэтому проверяется не длина, а наличие всех четырёх
-    /// обязательных частей: адрес инструкции, имя сервера, порт и то, что
-    /// запускать. Порт подставляется живой — приложение можно запустить с
-    /// -mcpPort, и инструкция обязана назвать ТОТ порт, а не 9337 из константы.</summary>
+    /// <summary>Инструкция обязана ехать ВМЕСТЕ с плеером, а не жить ссылкой на
+    /// GitHub: у человека, который открыл программу без интернета (или просто не
+    /// хочет ходить на чужой сайт), подключение не должно упираться в браузер.
+    /// StreamingAssets попадает в сборку целиком, а установщик копирует всю папку
+    /// Build — значит файл доедет до пользователя сам.</summary>
     [Test]
-    public void McpTab_AgentPrompt_NamesTheGuidePortAndServer()
+    public void McpGuide_ShipsWithThePlayer_AndIsNotEmpty()
+    {
+        Assert.IsTrue(SettingsMcpTab.GuideShipped,
+            "инструкции нет в StreamingAssets — в сборку она не поедет: " + SettingsMcpTab.GuidePath);
+
+        var text = SettingsMcpTab.GuideText();
+        StringAssert.Contains(SettingsMcpTab.ServerName, text, "имя MCP-сервера");
+        StringAssert.Contains("npm run build", text, "как собрать мост");
+        Assert.Greater(text.Length, 1000, "инструкция подозрительно короткая — файл обрезан?");
+    }
+
+    /// <summary>Текст для агента — это САМА инструкция, а не ссылка на неё:
+    /// агенту, у которого нет выхода в сеть, ссылка бесполезна. Порт при этом
+    /// объявляется в шапке и перебивает то, что написано в тексте: приложение
+    /// можно запустить с -mcpPort, и агент обязан взять живой порт.</summary>
+    [Test]
+    public void McpTab_AgentPrompt_CarriesTheWholeGuideAndTheLivePort()
     {
         var prompt = SettingsMcpTab.AgentPrompt(9500);
 
-        StringAssert.Contains(SettingsMcpTab.GuideUrl, prompt, "адрес подробной инструкции");
-        StringAssert.Contains(SettingsMcpTab.ServerName, prompt, "имя MCP-сервера");
-        StringAssert.Contains("9500", prompt, "порт подставляется живой, а не зашитый");
-        StringAssert.Contains("dist/index.js", prompt, "что именно запускать мостом");
-        StringAssert.DoesNotContain("9337", prompt,
-            "порт по умолчанию не должен просочиться рядом с настоящим — агент возьмёт не тот");
+        StringAssert.Contains(SettingsMcpTab.GuideText(), prompt,
+            "инструкция вложена в текст целиком, а не заменена ссылкой");
+        StringAssert.Contains("9500", prompt, "живой порт назван");
+        StringAssert.Contains("ping", prompt, "чем проверить связь");
     }
 
     /// <summary>Второй способ — вставить конфигурацию руками. Это готовый JSON,

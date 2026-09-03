@@ -180,9 +180,10 @@ Kitchen Designer доступен по **MCP (Model Context Protocol)** — ИИ
 
 Подойдёт любой MCP-совместимый агент (Claude Code, Cursor, Codex, opencode и
 подобные). Самый быстрый путь: откройте в программе **Настройки → MCP** и
-нажмите «Скопировать инструкцию для агента» — вставьте скопированный текст в чат
-агента, дальше он настроится сам. Пошагово и по каждому агенту отдельно —
-[docs/MCP-CONNECT.md](docs/MCP-CONNECT.md).
+нажмите «Скопировать инструкцию для агента»: в буфер ляжет вся инструкция и ваш
+порт, останется вставить её в чат агента — дальше он настроится сам. Тот же
+текст лежит файлом рядом с программой и здесь —
+[Assets/StreamingAssets/MCP-CONNECT.md](Assets/StreamingAssets/MCP-CONNECT.md).
 
 ---
 
@@ -190,7 +191,7 @@ Kitchen Designer доступен по **MCP (Model Context Protocol)** — ИИ
 
 | Документ | О чём |
 |----------|-------|
-| [docs/MCP-CONNECT.md](docs/MCP-CONNECT.md) | Подключение ИИ-агента: что поставить, что прописать, что делать, если не подключается |
+| [Assets/StreamingAssets/MCP-CONNECT.md](Assets/StreamingAssets/MCP-CONNECT.md) | Подключение ИИ-агента: что поставить, что прописать, что делать, если не подключается. Едет вместе с плеером и открывается кнопкой на вкладке «MCP» |
 | [readme-mcp.md](readme-mcp.md) | То же для разработчика: мост, порт, проверка связи |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Сборка, запуск, тесты, генераторы картинок для `docs/` |
 | [docs/UI-GUIDELINES.md](docs/UI-GUIDELINES.md) | Свод правил интерфейса: единицы, отмена операций, глифы, снапшоты |
