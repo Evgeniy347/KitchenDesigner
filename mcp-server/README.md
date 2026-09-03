@@ -1,9 +1,22 @@
-# Unity Kitchen Designer — MCP bridge
+# Unity Kitchen Designer — MCP bridge (DEPRECATED, to be removed)
+
+> **This bridge is obsolete.** The application speaks MCP itself, over Streamable
+> HTTP on `http://127.0.0.1:9337/mcp`, and needs no Node at all:
+>
+> ```
+> claude mcp add --transport http unity-kitchen http://127.0.0.1:9337/mcp
+> ```
+>
+> See `Assets/StreamingAssets/MCP-CONNECT.md`. This directory, together with
+> `tools/McpContractGen` and `Assets/Scripts/Core/MCP/UnityTcpBridge.cs`, is
+> waiting for the owner's confirmation before deletion. Until then the line
+> protocol it talks to has moved to port **9338**, so an old configuration needs
+> `UNITY_MCP_PORT=9338` to keep working.
 
 MCP server that lets an AI model drive the Kitchen Designer app running in Unity.
 
 ```
- LLM ──stdio (MCP)──▶ this server ──TCP :9337 (JSON lines)──▶ Unity
+ LLM ──stdio (MCP)──▶ this server ──TCP :9338 (JSON lines)──▶ Unity
                                                     McpCommandHandler.cs
 ```
 
