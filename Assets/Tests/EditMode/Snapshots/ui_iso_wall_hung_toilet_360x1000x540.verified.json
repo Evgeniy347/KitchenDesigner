@@ -13,12 +13,7 @@
     },
     {
       "type": "Button",
-      "text": "IsoCountertop",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "IsoSink",
+      "text": "IsoWallHungToilet",
       "position": [20, 0]
     },
     {

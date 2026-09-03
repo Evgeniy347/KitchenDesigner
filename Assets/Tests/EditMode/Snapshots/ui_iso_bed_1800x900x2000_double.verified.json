@@ -276,38 +276,78 @@
     },
     {
       "type": "Button",
-      "text": "▼  Помещение",
+      "text": "▼  Сантехника",
       "position": [8, -835]
     },
     {
       "type": "Button",
-      "text": "Короб",
+      "text": "Унитаз",
       "position": [22, -869]
     },
     {
       "type": "Button",
-      "text": "Стена",
+      "text": "Инсталляция",
       "position": [22, -898]
     },
     {
       "type": "Button",
-      "text": "Окно",
+      "text": "Ванна",
       "position": [22, -927]
     },
     {
       "type": "Button",
-      "text": "Дверь",
+      "text": "Смеситель",
       "position": [22, -956]
     },
     {
       "type": "Button",
-      "text": "Пол",
+      "text": "Душевая стойка",
       "position": [22, -985]
     },
     {
       "type": "Button",
+      "text": "▼  Помещение",
+      "position": [8, -1014]
+    },
+    {
+      "type": "Button",
+      "text": "Короб",
+      "position": [22, -1048]
+    },
+    {
+      "type": "Button",
+      "text": "Стена",
+      "position": [22, -1077]
+    },
+    {
+      "type": "Button",
+      "text": "Окно",
+      "position": [22, -1106]
+    },
+    {
+      "type": "Button",
+      "text": "Дверь",
+      "position": [22, -1135]
+    },
+    {
+      "type": "Button",
+      "text": "Пол",
+      "position": [22, -1164]
+    },
+    {
+      "type": "Button",
       "text": "Источник света",
-      "position": [22, -1014]
+      "position": [22, -1193]
+    },
+    {
+      "type": "Button",
+      "text": "Розетка",
+      "position": [22, -1222]
+    },
+    {
+      "type": "Button",
+      "text": "Выключатель",
+      "position": [22, -1251]
     }
   ]
 }

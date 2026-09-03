@@ -2,16 +2,16 @@
     "version": 1,
     "elements": [
         {
-            "name": "BigPouffe",
+            "name": "HungToilet",
             "dimensionsMM": [
-                520,
-                380,
-                410
+                360,
+                1000,
+                540
             ],
             "position": [
+                -0.800000011920929,
                 0.5,
-                0.1899999976158142,
-                -1.0
+                1.100000023841858
             ],
             "rotation": [
                 0.0,
@@ -30,12 +30,12 @@
             "isStool": false,
             "isChair": false,
             "isSofa": false,
-            "isPouffe": true,
-            "pouffeSeatThicknessMM": 70,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
             "isToilet": false,
-            "isWallHungToilet": false,
-            "toiletSeatHeightMM": 400,
-            "toiletFlushPlateHeightMM": 600,
+            "isWallHungToilet": true,
+            "toiletSeatHeightMM": 520,
+            "toiletFlushPlateHeightMM": 730,
             "isBathtub": false,
             "bathtubRimWidthMM": 40,
             "bathtubBowlDepthMM": 450,
@@ -86,7 +86,7 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "cornerRadius": 90,
+            "cornerRadius": 0,
             "isDrawer": false,
             "drawerSystem": 0,
             "drawerType": 0,

@@ -13,12 +13,7 @@
     },
     {
       "type": "Button",
-      "text": "IsoCountertop",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "IsoSink",
+      "text": "IsoSocket",
       "position": [20, 0]
     },
     {

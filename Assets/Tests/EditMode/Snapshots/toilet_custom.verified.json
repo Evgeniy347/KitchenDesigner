@@ -2,16 +2,16 @@
     "version": 1,
     "elements": [
         {
-            "name": "BigPouffe",
+            "name": "BigToilet",
             "dimensionsMM": [
-                520,
-                380,
-                410
+                360,
+                790,
+                660
             ],
             "position": [
-                0.5,
-                0.1899999976158142,
-                -1.0
+                1.2000000476837159,
+                0.39500001072883608,
+                -0.699999988079071
             ],
             "rotation": [
                 0.0,
@@ -30,11 +30,11 @@
             "isStool": false,
             "isChair": false,
             "isSofa": false,
-            "isPouffe": true,
-            "pouffeSeatThicknessMM": 70,
-            "isToilet": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": true,
             "isWallHungToilet": false,
-            "toiletSeatHeightMM": 400,
+            "toiletSeatHeightMM": 460,
             "toiletFlushPlateHeightMM": 600,
             "isBathtub": false,
             "bathtubRimWidthMM": 40,
@@ -86,7 +86,7 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "cornerRadius": 90,
+            "cornerRadius": 0,
             "isDrawer": false,
             "drawerSystem": 0,
             "drawerType": 0,
