@@ -32,7 +32,7 @@ public class McpContractSurfaceTests
         { "delete_elements", "dissolve_module", "delete_object" };
 
     private static readonly string[] UnitWords =
-        { "MM", "METER", "DEGREE", "mm", "meter", "degree", "%", "0..1" };
+        { "MM", "METER", "DEGREE", "COUNT", "mm", "meter", "degree", "%", "0..1" };
 
     private static List<Type> ReachableParamsTypes()
     {

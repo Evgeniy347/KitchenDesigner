@@ -449,8 +449,24 @@ moduleId/moduleName   Group membership (0/absent = not grouped).
 materialId            Decor id (list_materials).
 facadeMode            Facade opening mode (""front_left"", ""drawer_out"", ...).
 drawer / table / radiusTable / stool / chair / sofa / pouffe / bed / toilet /
-wallHungToilet / bathtub / bathMixer / showerColumn
+wallHungToilet / bathtub / bathMixer / showerColumn / wallDevice / lightSwitch
                       Type-specific sub-objects, absent otherwise.
+wallDevice            Socket AND light switch: {plateWidthMM, plateHeightMM,
+                      protrusionMM, postCount}. These four are the SOURCE of the
+                      element size, not a copy of it: width = plateWidthMM x
+                      postCount, height = plateHeightMM, depth = protrusionMM.
+                      Edit them, not width/height/depth - those are refused.
+lightSwitch           Light switch only: {isOn, lights, maxLights}. lights are
+                      the NAMES of the light sources this switch controls, and
+                      the link lives ONLY here - there is no field on the lamp
+                      saying which switches reach it, so to find that, scan the
+                      switches. The relation is many-to-many: one switch may
+                      name several lamps, one lamp may be named by several
+                      switches. A lamp named by at least one switch is lit when
+                      at least one of those switches has isOn - a lamp no switch
+                      names keeps following the global light instead. maxLights
+                      is the ceiling; a write past it is dropped, not an error,
+                      which is why the ceiling is reported next to the list.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
   {name, kind, anchor:[x,z] MM corner, size:[width,depth,height] MM, rotY,

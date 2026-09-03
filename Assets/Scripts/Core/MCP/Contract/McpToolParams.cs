@@ -266,9 +266,10 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "rather than moving the plate. Omit to keep.", Min = 0)]
         public int? wall_device_protrusion;
 
-        [McpParam("Socket and light switch only: number of posts side by side, 1..3 (1 by " +
-                  "default) - a double socket or a two-key switch. Posts sit flush against " +
-                  "each other, so this MULTIPLIES the element width. Omit to keep.", Min = 0)]
+        [McpParam("Socket and light switch only: COUNT of posts side by side, 1..3 " +
+                  "(1 by default) - a double socket or a two-key switch. A plain count, not " +
+                  "a length: it is NOT millimetres. Posts sit flush against each other, so " +
+                  "this MULTIPLIES the element width in MM. Omit to keep.", Min = 0)]
         public int? wall_device_posts;
 
         [McpParam("Light switch only: whether the switch is on (true by default). A lamp " +
