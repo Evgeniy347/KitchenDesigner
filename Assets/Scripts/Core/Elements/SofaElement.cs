@@ -62,21 +62,21 @@ namespace KitchenDesigner.Core
             }
         }
 
-        [NotUndoable(TabletopDecor.TabletopSlotReason)]
+        [NotUndoable(DecorSlots.PrimarySlotReason)]
         public string PrimaryMaterialId
         {
             get => _bodyMaterialId;
-            set { _bodyMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
+            set { _bodyMaterialId = DecorSlots.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
-        [NotUndoable(TabletopDecor.LegsSlotReason)]
+        [NotUndoable(DecorSlots.SecondarySlotReason)]
         public string SecondaryMaterialId
         {
             get => _cushionMaterialId;
-            set { _cushionMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
+            set { _cushionMaterialId = DecorSlots.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
-        [NotUndoable(TabletopDecor.MaterialIdAliasReason)]
+        [NotUndoable(DecorSlots.MaterialIdAliasReason)]
         public override string MaterialId
         {
             get => PrimaryMaterialId;
@@ -93,7 +93,7 @@ namespace KitchenDesigner.Core
             => Mathf.Clamp(value, MinSeatHeightMM(DimensionsMM.y), MaxSeatHeightMM(DimensionsMM.y));
 
         private void ApplyMaterial()
-            => TabletopDecor.ApplyBothSlots(this, _bodyMaterialId, _cushionMaterialId);
+            => DecorSlots.ApplyBothSlots(this, _bodyMaterialId, _cushionMaterialId);
 
         public override void ApplyDimensions() => _rebuild.Run(Rebuild);
 
@@ -124,11 +124,11 @@ namespace KitchenDesigner.Core
 
         public void SetSecondaryMaterial(Material material) => Cushions.SetMaterial(material);
 
-        public string PrimarySlotLabel => TabletopDecor.UpholsteryLabel;
+        public string PrimarySlotLabel => DecorSlots.UpholsteryLabel;
 
-        public string SecondarySlotLabel => TabletopDecor.CushionsLabel;
+        public string SecondarySlotLabel => DecorSlots.CushionsLabel;
 
-        public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
+        public void SetMaterial(Material material) => DecorSlots.SetBothSlots(this, material);
 
         public override void PrepareForDestruction() => DestroyChildren();
 

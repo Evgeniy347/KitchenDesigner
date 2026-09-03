@@ -107,7 +107,7 @@ namespace KitchenDesigner.Core
              {
                  var made = copy.GetComponent<TableElement>();
                  if (made != null) made.LegInsetMM = ((TableElement)source).LegInsetMM;
-                 CopyTabletopSlots(source, copy);
+                 CopyDecorSlots(source, copy);
              }),
 
             (el => el is RadiusTableElement,
@@ -116,7 +116,7 @@ namespace KitchenDesigner.Core
              {
                  var made = copy.GetComponent<RadiusTableElement>();
                  if (made != null) made.LegInsetMM = ((RadiusTableElement)source).LegInsetMM;
-                 CopyTabletopSlots(source, copy);
+                 CopyDecorSlots(source, copy);
              }),
 
             (el => el is ScrewLegElement,
@@ -139,25 +139,25 @@ namespace KitchenDesigner.Core
             (el => el is StoolElement,
              (factory, source, pos) => factory.CreateStool(source.DimensionsMM,
                  ((StoolElement)source).CornerRadiusMM, source.PartName, pos),
-             CopyTabletopSlots),
+             CopyDecorSlots),
 
             (el => el is ChairElement,
              (factory, source, pos) => factory.CreateChair(source.DimensionsMM,
                  ((ChairElement)source).CornerRadiusMM, ((ChairElement)source).SeatHeightMM,
                  source.PartName, pos),
-             CopyTabletopSlots),
+             CopyDecorSlots),
 
             (el => el is SofaElement,
              (factory, source, pos) => factory.CreateSofa(source.DimensionsMM,
                  ((SofaElement)source).CornerRadiusMM, ((SofaElement)source).SeatHeightMM,
                  source.PartName, pos),
-             CopyTabletopSlots),
+             CopyDecorSlots),
 
             (el => el is PouffeElement,
              (factory, source, pos) => factory.CreatePouffe(source.DimensionsMM,
                  ((PouffeElement)source).CornerRadiusMM,
                  ((PouffeElement)source).SeatThicknessMM, source.PartName, pos),
-             CopyTabletopSlots),
+             CopyDecorSlots),
 
             (el => el is ToiletElement,
              (factory, source, pos) => factory.CreateToilet(
@@ -210,19 +210,19 @@ namespace KitchenDesigner.Core
             (el => el is SocketElement,
              (factory, source, pos) => factory.CreateSocket(((SocketElement)source).Spec,
                  source.PartName, pos),
-             CopyTabletopSlots),
+             CopyDecorSlots),
 
             (el => el is LightSwitchElement,
              (factory, source, pos) => factory.CreateLightSwitch(
                  ((LightSwitchElement)source).Spec, ((LightSwitchElement)source).IsOn,
                  LightNamesOf(source), source.PartName, pos),
-             CopyTabletopSlots),
+             CopyDecorSlots),
 
             (el => el is BedElement,
              (factory, source, pos) => factory.CreateBed(source.DimensionsMM,
                  ((BedElement)source).IsDouble, ((BedElement)source).HasHeadboard,
                  source.PartName, pos),
-             CopyTabletopSlots),
+             CopyDecorSlots),
 
             (el => el is WindowElement,
              (factory, source, pos) =>
@@ -302,7 +302,7 @@ namespace KitchenDesigner.Core
             if (el != null) MaterialManager.ApplyById(el, source.MaterialId);
         }
 
-        private static void CopyTabletopSlots(KitchenElement source, GameObject copy)
+        private static void CopyDecorSlots(KitchenElement source, GameObject copy)
         {
             if (source is IHasTwoDecorSlots src
                 && copy.GetComponent<KitchenElement>() is IHasTwoDecorSlots made)

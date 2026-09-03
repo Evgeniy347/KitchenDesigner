@@ -84,21 +84,21 @@ namespace KitchenDesigner.Core
             }
         }
 
-        [NotUndoable(TabletopDecor.TabletopSlotReason)]
+        [NotUndoable(DecorSlots.PrimarySlotReason)]
         public string PrimaryMaterialId
         {
             get => _bodyMaterialId;
-            set { _bodyMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
+            set { _bodyMaterialId = DecorSlots.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
-        [NotUndoable(TabletopDecor.LegsSlotReason)]
+        [NotUndoable(DecorSlots.SecondarySlotReason)]
         public string SecondaryMaterialId
         {
             get => _contactMaterialId;
-            set { _contactMaterialId = TabletopDecor.SlotIdOrDefault(value); ApplyMaterial(); }
+            set { _contactMaterialId = DecorSlots.SlotIdOrDefault(value); ApplyMaterial(); }
         }
 
-        [NotUndoable(TabletopDecor.MaterialIdAliasReason)]
+        [NotUndoable(DecorSlots.MaterialIdAliasReason)]
         public override string MaterialId
         {
             get => PrimaryMaterialId;
@@ -152,10 +152,10 @@ namespace KitchenDesigner.Core
             SanitaryDecor.ChosenOrFactory(_contactMaterialId, material,
                 WallDeviceMaterials.Contact));
 
-        public void SetMaterial(Material material) => TabletopDecor.SetBothSlots(this, material);
+        public void SetMaterial(Material material) => DecorSlots.SetBothSlots(this, material);
 
         private void ApplyMaterial()
-            => TabletopDecor.ApplyBothSlots(this, _bodyMaterialId, _contactMaterialId);
+            => DecorSlots.ApplyBothSlots(this, _bodyMaterialId, _contactMaterialId);
 
         public override void PrepareForDestruction() => DestroyChildren();
 

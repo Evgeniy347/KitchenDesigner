@@ -160,7 +160,7 @@ public class ElementFieldsEditorTests
     }
 
     [Test]
-    public void Stool_TabletopAndLegsMaterialRows_AreShown_InsteadOfThePlainTextureRow()
+    public void Stool_BothDecorSlotRows_AreShown_InsteadOfThePlainTextureRow()
     {
         _menu!.Open(Stool());
 
@@ -267,7 +267,7 @@ public class ElementFieldsEditorTests
     }
 
     [Test]
-    public void Chair_TabletopAndLegsMaterialRows_AreShown_InsteadOfThePlainTextureRow()
+    public void Chair_BothDecorSlotRows_AreShown_InsteadOfThePlainTextureRow()
     {
         _menu!.Open(Chair());
 

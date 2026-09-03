@@ -405,7 +405,7 @@ public class EyedropperTests
 
     // ── Какой слот декора видит человек ────────────────────────────────
 
-    private class TabletopStub : KitchenElement, IHasTwoDecorSlots
+    private class TwoSlotStub : KitchenElement, IHasTwoDecorSlots
     {
         public string PrimaryMaterialId { get; set; } = string.Empty;
         public string SecondaryMaterialId { get; set; } = string.Empty;
@@ -416,15 +416,15 @@ public class EyedropperTests
     }
 
     [Test]
-    public void VisibleDecorSlotOf_TabletopCarrier_IsTheTabletopSlot()
+    public void VisibleDecorSlotOf_ATwoSlotCarrier_IsTheTabletopSlot()
     {
         var go = new GameObject("Стол");
         _spawned.Add(go);
-        var table = go.AddComponent<TabletopStub>();
+        var table = go.AddComponent<TwoSlotStub>();
 
         Assert.AreEqual(MaterialSlot.Tabletop, EyedropperController.VisibleDecorSlotOf(table),
-            "у носителя столешницы свойство «Текстура» в меню скрыто, а видимая "
-            + "поверхность — крышка: пипетка обязана брать и класть её декор");
+            "у носителя двух слотов декора свойство «Текстура» в меню скрыто, а видимая "
+            + "поверхность — первый слот: пипетка обязана брать и класть его декор");
     }
 
     [Test]

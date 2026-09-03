@@ -95,9 +95,9 @@ namespace KitchenDesigner.Core
                 d.legInsetMM = tableEl2.LegInsetMM;
             else if (radiusTable != null)
                 d.legInsetMM = radiusTable.LegInsetMM;
-            var tabletop = element as IHasTwoDecorSlots;
-            d.legsMaterialId = tabletop != null ? tabletop.SecondaryMaterialId : MaterialCatalog.DefaultId;
-            d.tabletopMaterialId = tabletop != null ? tabletop.PrimaryMaterialId : MaterialCatalog.DefaultId;
+            var slots = element as IHasTwoDecorSlots;
+            d.legsMaterialId = slots != null ? slots.SecondaryMaterialId : MaterialCatalog.DefaultId;
+            d.tabletopMaterialId = slots != null ? slots.PrimaryMaterialId : MaterialCatalog.DefaultId;
             d.cornerRadius = radialShelf != null ? radialShelf.CornerRadius
                 : stool != null ? stool.CornerRadiusMM
                 : chair != null ? chair.CornerRadiusMM

@@ -2,12 +2,12 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    internal static class TabletopDecor
+    internal static class DecorSlots
     {
-        public const string TabletopSlotReason =
+        public const string PrimarySlotReason =
             "декор ставится через SetMaterialCommand (MaterialSlot.Tabletop)";
 
-        public const string LegsSlotReason =
+        public const string SecondarySlotReason =
             "декор ставится через SetMaterialCommand (MaterialSlot.Legs)";
 
         public const string TabletopLabel = "Столешница";
@@ -30,19 +30,19 @@ namespace KitchenDesigner.Core
         public static string SlotIdOrDefault(string? materialId)
             => materialId ?? MaterialCatalog.DefaultId;
 
-        public static void ApplyBothSlots(IHasTwoDecorSlots target, string tabletopMaterialId,
-            string legsMaterialId)
+        public static void ApplyBothSlots(IHasTwoDecorSlots target, string primaryMaterialId,
+            string secondaryMaterialId)
         {
-            var topDef = MaterialCatalog.Get(tabletopMaterialId);
-            var legsDef = MaterialCatalog.Get(legsMaterialId);
-            if (topDef != null)
+            var primaryDef = MaterialCatalog.Get(primaryMaterialId);
+            var secondaryDef = MaterialCatalog.Get(secondaryMaterialId);
+            if (primaryDef != null)
             {
-                var mat = MaterialManager.GetSharedMaterial(topDef);
+                var mat = MaterialManager.GetSharedMaterial(primaryDef);
                 if (mat != null) target.SetPrimaryMaterial(mat);
             }
-            if (legsDef != null)
+            if (secondaryDef != null)
             {
-                var mat = MaterialManager.GetSharedMaterial(legsDef);
+                var mat = MaterialManager.GetSharedMaterial(secondaryDef);
                 if (mat != null) target.SetSecondaryMaterial(mat);
             }
         }

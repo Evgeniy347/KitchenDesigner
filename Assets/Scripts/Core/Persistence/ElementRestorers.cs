@@ -136,7 +136,7 @@ namespace KitchenDesigner.Core
              (d, el) =>
              {
                  if (el is not TableElement table) return;
-                 RestoreTabletopMaterials(d, table);
+                 RestoreDecorSlots(d, table);
                  table.LegInsetMM = d.legInsetMM;
              }),
 
@@ -145,37 +145,37 @@ namespace KitchenDesigner.Core
              (d, el) =>
              {
                  if (el is not RadiusTableElement table) return;
-                 RestoreTabletopMaterials(d, table);
+                 RestoreDecorSlots(d, table);
                  table.LegInsetMM = d.legInsetMM;
              }),
 
             (d => d.isStool,
              (factory, d) => factory.CreateStool(d.Dimensions, d.cornerRadius, d.name, d.Position),
-             RestoreTabletopMaterials),
+             RestoreDecorSlots),
 
             (d => d.isChair,
              (factory, d) => factory.CreateChair(d.Dimensions, d.cornerRadius, d.seatHeightMM,
                  d.name, d.Position),
-             RestoreTabletopMaterials),
+             RestoreDecorSlots),
 
             (d => d.isSofa,
              (factory, d) => factory.CreateSofa(d.Dimensions, d.cornerRadius, d.seatHeightMM,
                  d.name, d.Position),
-             RestoreTabletopMaterials),
+             RestoreDecorSlots),
 
             (d => d.isPouffe,
              (factory, d) => factory.CreatePouffe(d.Dimensions, d.cornerRadius,
                  d.pouffeSeatThicknessMM, d.name, d.Position),
-             RestoreTabletopMaterials),
+             RestoreDecorSlots),
 
             (d => d.isWallHungToilet,
              (factory, d) => factory.CreateWallHungToilet(d.toiletSeatHeightMM,
                  d.toiletFlushPlateHeightMM, d.name, d.Position),
-             RestoreTabletopMaterials),
+             RestoreDecorSlots),
 
             (d => d.isToilet,
              (factory, d) => factory.CreateToilet(d.toiletSeatHeightMM, d.name, d.Position),
-             RestoreTabletopMaterials),
+             RestoreDecorSlots),
 
             (d => d.isBathtub,
              (factory, d) => factory.CreateBathtub(d.Dimensions, d.bathtubRimWidthMM,
@@ -203,19 +203,19 @@ namespace KitchenDesigner.Core
              (factory, d) => factory.CreateSocket(WallDeviceSpec.Clamped(d.wallDevicePlateWidthMM,
                      d.wallDevicePlateHeightMM, d.wallDeviceProtrusionMM, d.wallDevicePostCount),
                  d.name, d.Position),
-             RestoreTabletopMaterials),
+             RestoreDecorSlots),
 
             (d => d.isLightSwitch,
              (factory, d) => factory.CreateLightSwitch(
                  WallDeviceSpec.Clamped(d.wallDevicePlateWidthMM, d.wallDevicePlateHeightMM,
                      d.wallDeviceProtrusionMM, d.wallDevicePostCount),
                  d.lightSwitchOn, d.switchLightNames, d.name, d.Position),
-             RestoreTabletopMaterials),
+             RestoreDecorSlots),
 
             (d => d.isBed,
              (factory, d) => factory.CreateBed(d.Dimensions, d.bedDouble, d.bedHeadboard,
                  d.name, d.Position),
-             RestoreTabletopMaterials),
+             RestoreDecorSlots),
 
             (d => d.isRadialShelf,
              (factory, d) => factory.CreateRadialShelf(d.Dimensions.x, d.Dimensions.z,
@@ -295,13 +295,13 @@ namespace KitchenDesigner.Core
             }
         }
 
-        private static void RestoreTabletopMaterials(ElementData data, KitchenElement el)
+        private static void RestoreDecorSlots(ElementData data, KitchenElement el)
         {
-            if (el is not IHasTwoDecorSlots tabletop) return;
+            if (el is not IHasTwoDecorSlots slots) return;
             if (!string.IsNullOrEmpty(data.legsMaterialId))
-                MaterialManager.ApplyLegs(tabletop, MaterialCatalog.Get(data.legsMaterialId));
+                MaterialManager.ApplySecondarySlot(slots, MaterialCatalog.Get(data.legsMaterialId));
             if (!string.IsNullOrEmpty(data.tabletopMaterialId))
-                MaterialManager.ApplyTabletop(tabletop, MaterialCatalog.Get(data.tabletopMaterialId));
+                MaterialManager.ApplyPrimarySlot(slots, MaterialCatalog.Get(data.tabletopMaterialId));
         }
 
         private static void RestoreFacadeState(ElementData data, KitchenElement el)

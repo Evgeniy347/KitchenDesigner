@@ -668,7 +668,7 @@ namespace KitchenDesigner.Core.UI
             ApplyDimensionFields(target, oldDims);
             foreach (var editor in _editors) editor.Apply(target);
 
-            _materials.ApplyLegsChoice(target);
+            _materials.ApplySecondarySlotChoice(target);
 
             _gaps.ApplyTo(target);
 

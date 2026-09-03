@@ -101,8 +101,8 @@ public class MaterialSlotLabelTests
     private (string top, string legs) LabelsFor(KitchenElement element)
     {
         _menu!.Open(element);
-        return (LabelText(ContextMenuMaterialSection.TabletopLabelNode),
-            LabelText(ContextMenuMaterialSection.LegsLabelNode));
+        return (LabelText(ContextMenuMaterialSection.PrimarySlotLabelNode),
+            LabelText(ContextMenuMaterialSection.SecondarySlotLabelNode));
     }
 
     [Test]
@@ -211,9 +211,9 @@ public class MaterialSlotLabelTests
         foreach (var element in new[] { Table(), RadiusTable(), Stool(), Chair(), Sofa(), Bed(),
             Pouffe(), Toilet(), WallHungToilet() })
         {
-            var tabletop = (IHasTwoDecorSlots)element;
-            tabletop.PrimaryMaterialId = "oak";
-            tabletop.SecondaryMaterialId = "concrete";
+            var slots = (IHasTwoDecorSlots)element;
+            slots.PrimaryMaterialId = "oak";
+            slots.SecondaryMaterialId = "concrete";
 
             var json = JsonUtility.ToJson(ElementCapture.FromElement(element));
             var restored = JsonUtility.FromJson<ElementData>(json);

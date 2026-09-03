@@ -143,7 +143,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (op.is_open.HasValue) dishwasher.SetOpen(op.is_open.Value);
             }),
-            For<IHasTwoDecorSlots>(ApplyTabletopAndLegsMaterials),
+            For<IHasTwoDecorSlots>(ApplyDecorSlotMaterials),
             For<TableElement>((op, table) =>
             {
                 if (op.leg_inset_mm.HasValue) table.LegInsetMM = op.leg_inset_mm.Value;
@@ -192,17 +192,17 @@ namespace KitchenDesigner.Core.MCP
         private static Applier For<T>(Action<EditOp, T> apply) where T : class
             => (op, el) => { if (el is T typed) apply(op, typed); };
 
-        private static void ApplyTabletopAndLegsMaterials(EditOp op, IHasTwoDecorSlots tabletop)
+        private static void ApplyDecorSlotMaterials(EditOp op, IHasTwoDecorSlots slots)
         {
             if (op.tabletop_material != null)
             {
                 var def = MaterialCatalog.Find(op.tabletop_material);
-                if (def != null) MaterialManager.ApplyTabletop(tabletop, def);
+                if (def != null) MaterialManager.ApplyPrimarySlot(slots, def);
             }
             if (op.legs_material != null)
             {
                 var def = MaterialCatalog.Find(op.legs_material);
-                if (def != null) MaterialManager.ApplyLegs(tabletop, def);
+                if (def != null) MaterialManager.ApplySecondarySlot(slots, def);
             }
         }
     }

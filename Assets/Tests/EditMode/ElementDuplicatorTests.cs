@@ -292,7 +292,7 @@ public class ElementDuplicatorTests
 
     /// <summary>Парность по ПОВЕДЕНИЮ, а не по тексту исходника: у IHasTwoDecorSlots два слота
     /// декора, и копия обязана сохранить оба у КАЖДОГО типа. Обычный стол был
-    /// единственным, кто отдавал в реестр CopyMaterial вместо CopyTabletopSlots, и
+    /// единственным, кто отдавал в реестр CopyMaterial вместо CopyDecorSlots, и
     /// терял слот ножек; поимённая проверка одного типа не помешала бы следующему
     /// повторить пропуск. Набор экземпляров не записан руками — он сверяется
     /// рефлексией по сборке ядра, поэтому новый IHasTwoDecorSlots сначала уронит сам список,
@@ -343,7 +343,7 @@ public class ElementDuplicatorTests
     }
 
     [Test]
-    public void Duplicate_EveryTabletopType_KeepsBothDecorSlots()
+    public void Duplicate_EveryCarrier_KeepsBothDecorSlots()
     {
         var originals = new List<KitchenElement>
         {
@@ -391,7 +391,7 @@ public class ElementDuplicatorTests
         }
 
         Assert.IsEmpty(lost,
-            "ветка реестра ElementDuplicators отдала не CopyTabletopSlots, и копия потеряла "
+            "ветка реестра ElementDuplicators отдала не CopyDecorSlots, и копия потеряла "
             + "слот декора: " + string.Join("; ", lost));
     }
 }

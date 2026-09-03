@@ -8,11 +8,11 @@ namespace KitchenDesigner.Core.UI
     {
         private readonly IContextMenuHost _host;
 
-        public const string TabletopLabelNode = "L_CtxTableTop";
-        public const string LegsLabelNode = "L_CtxTableLegs";
+        public const string PrimarySlotLabelNode = "L_CtxTableTop";
+        public const string SecondarySlotLabelNode = "L_CtxTableLegs";
 
-        private TMP_Dropdown? _base, _tabletop, _legs;
-        private TMP_Text? _tabletopLabel, _legsLabel;
+        private TMP_Dropdown? _base, _primarySlot, _secondarySlot;
+        private TMP_Text? _primarySlotLabel, _secondarySlotLabel;
         private KitchenElement? _previewTarget;
         private string? _previewBefore;
         private MaterialSlot _previewSlot;
@@ -32,18 +32,18 @@ namespace KitchenDesigner.Core.UI
             var options = MaterialOptions.DisplayNames();
             _base = _host.Rows.Dropdown("Текстура", options, index => Choose(MaterialSlot.Base, index),
                 RowVisibility.When(() => !HasTwoDecorSlots), "CtxMaterial");
-            (_tabletopLabel, _tabletop) = _host.Rows.NamedDropdown("CtxTableTop",
-                TabletopDecor.TabletopLabel, new List<string>(options),
+            (_primarySlotLabel, _primarySlot) = _host.Rows.NamedDropdown("CtxTableTop",
+                DecorSlots.TabletopLabel, new List<string>(options),
                 index => Choose(MaterialSlot.Base, index),
-                RowVisibility.When(() => HasTwoDecorSlots), TabletopLabelNode);
-            (_legsLabel, _legs) = _host.Rows.NamedDropdown("CtxTableLegs",
-                TabletopDecor.LegsLabel, new List<string>(options),
+                RowVisibility.When(() => HasTwoDecorSlots), PrimarySlotLabelNode);
+            (_secondarySlotLabel, _secondarySlot) = _host.Rows.NamedDropdown("CtxTableLegs",
+                DecorSlots.LegsLabel, new List<string>(options),
                 index => Choose(MaterialSlot.Legs, index),
-                RowVisibility.When(() => HasTwoDecorSlots), LegsLabelNode);
+                RowVisibility.When(() => HasTwoDecorSlots), SecondarySlotLabelNode);
 
             DropdownHover.Attach(_base, option => Preview(MaterialSlot.Base, option), EndPreview);
-            DropdownHover.Attach(_tabletop, option => Preview(MaterialSlot.Base, option), EndPreview);
-            DropdownHover.Attach(_legs, option => Preview(MaterialSlot.Legs, option), EndPreview);
+            DropdownHover.Attach(_primarySlot, option => Preview(MaterialSlot.Base, option), EndPreview);
+            DropdownHover.Attach(_secondarySlot, option => Preview(MaterialSlot.Legs, option), EndPreview);
 
             return options;
         }
@@ -52,12 +52,12 @@ namespace KitchenDesigner.Core.UI
         {
             Show(_base, element.MaterialId);
 
-            if (!(element is IHasTwoDecorSlots tabletop)) return;
+            if (!(element is IHasTwoDecorSlots slots)) return;
 
-            Show(_tabletop, tabletop.PrimaryMaterialId);
-            Show(_legs, tabletop.SecondaryMaterialId);
-            Label(_tabletopLabel, tabletop.PrimarySlotLabel);
-            Label(_legsLabel, tabletop.SecondarySlotLabel);
+            Show(_primarySlot, slots.PrimaryMaterialId);
+            Show(_secondarySlot, slots.SecondaryMaterialId);
+            Label(_primarySlotLabel, slots.PrimarySlotLabel);
+            Label(_secondarySlotLabel, slots.SecondarySlotLabel);
         }
 
         private static void Label(TMP_Text? label, string text)
@@ -65,15 +65,15 @@ namespace KitchenDesigner.Core.UI
             if (label != null) label.text = text;
         }
 
-        public void ApplyLegsChoice(KitchenElement target)
+        public void ApplySecondarySlotChoice(KitchenElement target)
         {
-            if (_legs == null || !(target is IHasTwoDecorSlots tabletop)) return;
+            if (_secondarySlot == null || !(target is IHasTwoDecorSlots slots)) return;
             var all = MaterialCatalog.All;
-            if (_legs.value < 0 || _legs.value >= all.Count) return;
-            var def = all[_legs.value];
+            if (_secondarySlot.value < 0 || _secondarySlot.value >= all.Count) return;
+            var def = all[_secondarySlot.value];
 
-            tabletop.SecondaryMaterialId = def.id;
-            MaterialManager.ApplyLegs(tabletop, def);
+            slots.SecondaryMaterialId = def.id;
+            MaterialManager.ApplySecondarySlot(slots, def);
         }
 
         internal void Choose(MaterialSlot requested, int index)

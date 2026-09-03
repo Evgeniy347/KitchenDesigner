@@ -10,7 +10,7 @@ using KitchenDesigner.Core.MCP.Contract;
 /// Имена ПОЛЕЙ обоих слотов декора — внешний формат, а не имя в C#.
 ///
 /// Круг «сохранение → загрузка» на каждом носителе уже держат
-/// <c>ElementTypeRegistryExerciseTests.Restore_EveryTabletopType_KeepsBothDecorSlots</c>
+/// <c>ElementTypeRegistryExerciseTests.Restore_EveryCarrier_KeepsBothDecorSlots</c>
 /// и двадцать семь эталонов <c>*.verified.json</c>; повторять их здесь незачем.
 /// Не прикрыт был другой конец той же границы — провод MCP. Круговой тест его
 /// не ловит в принципе: он пишет и читает ОДНИМ И ТЕМ ЖЕ полем, поэтому

@@ -168,7 +168,7 @@ public class ElementTypeRegistryExerciseTests
     /// псевдоним столешницы, поэтому ветка, восстанавливающая «материал», молча
     /// теряет ножки. Слоты не помечены [Undoable] и в проверку выше не попадают.</summary>
     [Test]
-    public void Restore_EveryTabletopType_KeepsBothDecorSlots()
+    public void Restore_EveryCarrier_KeepsBothDecorSlots()
     {
         var declared = EveryElementType.Declared()
             .Where(t => typeof(IHasTwoDecorSlots).IsAssignableFrom(t)).ToList();
@@ -182,8 +182,8 @@ public class ElementTypeRegistryExerciseTests
             EveryElementType.ClearScene();
             var source = EveryElementType.Spawn(type, "Top" + type.Name);
             var slots = (IHasTwoDecorSlots)source;
-            MaterialManager.ApplyTabletop(slots, MaterialCatalog.Get(TopDecorId));
-            MaterialManager.ApplyLegs(slots, MaterialCatalog.Get(LegsDecorId));
+            MaterialManager.ApplyPrimarySlot(slots, MaterialCatalog.Get(TopDecorId));
+            MaterialManager.ApplySecondarySlot(slots, MaterialCatalog.Get(LegsDecorId));
             Assert.AreEqual(TopDecorId, slots.PrimaryMaterialId,
                 "предусловие: декор столешницы вообще назначился");
             Assert.AreEqual(LegsDecorId, slots.SecondaryMaterialId,
@@ -198,7 +198,7 @@ public class ElementTypeRegistryExerciseTests
 
         Assert.IsEmpty(lost,
             "слот декора не пережил сохранение: ветка ElementRestorers не позвала "
-            + "RestoreTabletopMaterials, и мебель открывается перекрашенной — "
+            + "RestoreDecorSlots, и мебель открывается перекрашенной — "
             + string.Join("; ", lost));
     }
 

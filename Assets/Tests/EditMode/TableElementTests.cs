@@ -452,8 +452,8 @@ public class TableElementTests
         Assert.IsNotNull(oak, "декор 'oak' должен быть в каталоге");
         Assert.IsNotNull(wenge, "декор 'wenge' должен быть в каталоге");
 
-        MaterialManager.ApplyTabletop(table, oak);
-        MaterialManager.ApplyLegs(table, wenge);
+        MaterialManager.ApplyPrimarySlot(table, oak);
+        MaterialManager.ApplySecondarySlot(table, wenge);
 
         var data = ElementCapture.FromElement(table);
         Assert.AreEqual("oak", data.tabletopMaterialId,
@@ -486,8 +486,8 @@ public class TableElementTests
         Assert.IsNotNull(oak, "декор 'oak' должен быть в каталоге");
         Assert.IsNotNull(wenge, "декор 'wenge' должен быть в каталоге");
 
-        MaterialManager.ApplyTabletop(table, oak);
-        MaterialManager.ApplyLegs(table, wenge);
+        MaterialManager.ApplyPrimarySlot(table, oak);
+        MaterialManager.ApplySecondarySlot(table, wenge);
 
         var data = ElementCapture.FromElement(table);
         Assert.AreEqual("oak", data.tabletopMaterialId,

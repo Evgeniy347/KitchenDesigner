@@ -375,8 +375,8 @@ public class MaterialPreviewTests
         var tableGo = ElementFactory.CreateTable(new Vector3Int(1200, 750, 700), "Стол", Vector3.zero);
         tableGo.transform.SetParent(_canvasGo!.transform);
         var table = tableGo.GetComponent<TableElement>();
-        MaterialManager.ApplyTabletop(table, MaterialCatalog.Get("white"));
-        MaterialManager.ApplyLegs(table, MaterialCatalog.Get("white"));
+        MaterialManager.ApplyPrimarySlot(table, MaterialCatalog.Get("white"));
+        MaterialManager.ApplySecondarySlot(table, MaterialCatalog.Get("white"));
         _ctx!.Open(table);
 
         Preview(legs: true, id: "oak");
@@ -395,8 +395,8 @@ public class MaterialPreviewTests
         var tableGo = ElementFactory.CreateTable(new Vector3Int(1200, 750, 700), "Стол2", Vector3.zero);
         tableGo.transform.SetParent(_canvasGo!.transform);
         var table = tableGo.GetComponent<TableElement>();
-        MaterialManager.ApplyTabletop(table, MaterialCatalog.Get("white"));
-        MaterialManager.ApplyLegs(table, MaterialCatalog.Get("white"));
+        MaterialManager.ApplyPrimarySlot(table, MaterialCatalog.Get("white"));
+        MaterialManager.ApplySecondarySlot(table, MaterialCatalog.Get("white"));
         _ctx!.Open(table);
 
         Choose(legs: false, id: "oak");

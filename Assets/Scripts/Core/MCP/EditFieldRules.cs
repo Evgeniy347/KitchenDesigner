@@ -16,7 +16,7 @@ namespace KitchenDesigner.Core.MCP
         internal static bool AcceptsLegInset(KitchenElement el) =>
             el is TableElement || el is RadiusTableElement;
 
-        internal static bool AcceptsTabletopSlots(KitchenElement el) => el is IHasTwoDecorSlots;
+        internal static bool AcceptsDecorSlots(KitchenElement el) => el is IHasTwoDecorSlots;
 
         internal static bool AcceptsCornerRadius(KitchenElement el) =>
             el is RadialShelfElement || el is StoolElement || el is ChairElement
@@ -117,8 +117,8 @@ namespace KitchenDesigner.Core.MCP
             RejectBadAttachment,
 
             Unsupported("leg_inset_mm", o => o.leg_inset_mm.HasValue, AcceptsLegInset),
-            Unsupported("tabletop_material", o => o.tabletop_material != null, AcceptsTabletopSlots),
-            Unsupported("legs_material", o => o.legs_material != null, AcceptsTabletopSlots),
+            Unsupported("tabletop_material", o => o.tabletop_material != null, AcceptsDecorSlots),
+            Unsupported("legs_material", o => o.legs_material != null, AcceptsDecorSlots),
 
             Unsupported("mid_height_mm", o => o.mid_height_mm.HasValue, el => el is PillarElement),
             Unsupported("diameter_mm", o => o.diameter_mm.HasValue, el => el is PillarElement),

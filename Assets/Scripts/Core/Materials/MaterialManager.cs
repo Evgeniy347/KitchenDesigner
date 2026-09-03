@@ -116,10 +116,10 @@ namespace KitchenDesigner.Core
             switch (slot)
             {
                 case MaterialSlot.Tabletop:
-                    if (element is IHasTwoDecorSlots top) ApplyTabletop(top, def);
+                    if (element is IHasTwoDecorSlots primary) ApplyPrimarySlot(primary, def);
                     break;
                 case MaterialSlot.Legs:
-                    if (element is IHasTwoDecorSlots legs) ApplyLegs(legs, def);
+                    if (element is IHasTwoDecorSlots secondary) ApplySecondarySlot(secondary, def);
                     break;
                 default:
                     Apply(element, def);
@@ -133,29 +133,29 @@ namespace KitchenDesigner.Core
             switch (slot)
             {
                 case MaterialSlot.Tabletop:
-                    return element is IHasTwoDecorSlots top ? top.PrimaryMaterialId : element.MaterialId;
+                    return element is IHasTwoDecorSlots primary ? primary.PrimaryMaterialId : element.MaterialId;
                 case MaterialSlot.Legs:
-                    return element is IHasTwoDecorSlots legs ? legs.SecondaryMaterialId : element.MaterialId;
+                    return element is IHasTwoDecorSlots secondary ? secondary.SecondaryMaterialId : element.MaterialId;
                 default:
                     return element.MaterialId;
             }
         }
 
-        public static void ApplyTabletop(IHasTwoDecorSlots tabletop, MaterialDef def)
+        public static void ApplyPrimarySlot(IHasTwoDecorSlots slots, MaterialDef def)
         {
-            if (tabletop == null || def == null) return;
-            tabletop.PrimaryMaterialId = def.id;
+            if (slots == null || def == null) return;
+            slots.PrimaryMaterialId = def.id;
             var mat = GetSharedMaterial(def);
-            if (mat != null) tabletop.SetPrimaryMaterial(mat);
-            if (tabletop is KitchenElement element) RefreshTiling(element, def);
+            if (mat != null) slots.SetPrimaryMaterial(mat);
+            if (slots is KitchenElement element) RefreshTiling(element, def);
         }
 
-        public static void ApplyLegs(IHasTwoDecorSlots tabletop, MaterialDef def)
+        public static void ApplySecondarySlot(IHasTwoDecorSlots slots, MaterialDef def)
         {
-            if (tabletop == null || def == null) return;
-            tabletop.SecondaryMaterialId = def.id;
+            if (slots == null || def == null) return;
+            slots.SecondaryMaterialId = def.id;
             var mat = GetSharedMaterial(def);
-            if (mat != null) tabletop.SetSecondaryMaterial(mat);
+            if (mat != null) slots.SetSecondaryMaterial(mat);
         }
 
         public static bool HasCustomDecor(KitchenElement element)
@@ -174,9 +174,9 @@ namespace KitchenDesigner.Core
             var mat = GetSharedMaterial(def);
             if (mat == null) return;
 
-            if (element is IHasTwoDecorSlots tabletop)
+            if (element is IHasTwoDecorSlots slots)
             {
-                tabletop.SetPrimaryMaterial(mat);
+                slots.SetPrimaryMaterial(mat);
                 RefreshTiling(element, def);
                 return;
             }
