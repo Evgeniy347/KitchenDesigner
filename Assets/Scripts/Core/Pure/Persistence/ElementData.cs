@@ -93,6 +93,15 @@ namespace KitchenDesigner.Core
         public int showerWallOffsetMM = ShowerColumnSpec.DefaultWallOffsetMM;
         public int showerHandDiameterMM = ShowerColumnSpec.DefaultHandShowerDiameterMM;
         public int showerHoseLengthMM = ShowerColumnSpec.DefaultHoseLengthMM;
+
+        public bool isSocket = false;
+        public bool isLightSwitch = false;
+        public int wallDevicePlateWidthMM = WallDeviceLayout.DefaultPlateWidthMM;
+        public int wallDevicePlateHeightMM = WallDeviceLayout.DefaultPlateHeightMM;
+        public int wallDeviceProtrusionMM = WallDeviceLayout.DefaultProtrusionMM;
+        public int wallDevicePostCount = WallDeviceLayout.DefaultPostCount;
+        public bool lightSwitchOn = true;
+        public string[] switchLightNames = System.Array.Empty<string>();
         public bool isBed = false;
         public bool bedDouble = true;
         public bool bedHeadboard = true;

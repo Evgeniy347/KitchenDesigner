@@ -137,6 +137,8 @@ namespace KitchenDesigner.Core.Bulk
             if (e is BathtubElement) return "bathtub";
             if (e is BathMixerElement) return "bath_mixer";
             if (e is ShowerColumnElement) return "shower_column";
+            if (e is SocketElement) return "socket";
+            if (e is LightSwitchElement) return "light_switch";
             if (e is BedElement) return "bed";
             if (e is PillarElement) return "pillar";
             if (e is ScrewLegElement) return "screw_leg";

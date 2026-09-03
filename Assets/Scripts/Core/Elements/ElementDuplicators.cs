@@ -207,6 +207,17 @@ namespace KitchenDesigner.Core
                  ((ShowerColumnElement)source).Spec, source.PartName, pos),
              CopyMaterial),
 
+            (el => el is SocketElement,
+             (factory, source, pos) => factory.CreateSocket(((SocketElement)source).Spec,
+                 source.PartName, pos),
+             CopyTabletopSlots),
+
+            (el => el is LightSwitchElement,
+             (factory, source, pos) => factory.CreateLightSwitch(
+                 ((LightSwitchElement)source).Spec, ((LightSwitchElement)source).IsOn,
+                 LightNamesOf(source), source.PartName, pos),
+             CopyTabletopSlots),
+
             (el => el is BedElement,
              (factory, source, pos) => factory.CreateBed(source.DimensionsMM,
                  ((BedElement)source).IsDouble, ((BedElement)source).HasHeadboard,
@@ -274,6 +285,15 @@ namespace KitchenDesigner.Core
             }
             throw new InvalidOperationException(
                 "ElementDuplicators без замыкающей записи: " + source.PartName);
+        }
+
+        private static string[] LightNamesOf(KitchenElement source)
+        {
+            if (!(source is ILightSwitch sw)) return Array.Empty<string>();
+            var names = sw.LightNames;
+            var copy = new string[names.Count];
+            for (int i = 0; i < names.Count; i++) copy[i] = names[i];
+            return copy;
         }
 
         private static void CopyMaterial(KitchenElement source, GameObject copy)

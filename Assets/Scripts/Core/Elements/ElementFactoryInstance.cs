@@ -390,6 +390,7 @@ namespace KitchenDesigner.Core
             mixer.EscutcheonReachMM = spec.EscutcheonReachMM;
             mixer.SpoutLengthMM = spec.SpoutLengthMM;
             mixer.OutletDiameterMM = spec.OutletDiameterMM;
+            mixer.DimensionsMM = BathMixerLayout.DimensionsMM(spec);
             mixer.Movable = true;
 
             return ElementRoot.Publish(go, mixer);
@@ -409,9 +410,37 @@ namespace KitchenDesigner.Core
             column.HeadThicknessMM = spec.HeadThicknessMM;
             column.HandShowerDiameterMM = spec.HandShowerDiameterMM;
             column.HoseLengthMM = spec.HoseLengthMM;
+            column.DimensionsMM = ShowerColumnLayout.DimensionsMM(spec);
             column.Movable = true;
 
             return ElementRoot.Publish(go, column);
+        }
+
+        public GameObject CreateSocket(WallDeviceSpec spec, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Розетка", position);
+
+            var socket = go.AddComponent<SocketElement>();
+            socket.PartName = go.name;
+            spec.ApplyTo(socket);
+            socket.Movable = true;
+
+            return ElementRoot.Publish(go, socket);
+        }
+
+        public GameObject CreateLightSwitch(WallDeviceSpec spec, bool isOn, string[]? lightNames,
+            string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, "Выключатель", position);
+
+            var source = go.AddComponent<LightSwitchElement>();
+            source.PartName = go.name;
+            spec.ApplyTo(source);
+            source.IsOn = isOn;
+            source.SetLightNames(lightNames);
+            source.Movable = true;
+
+            return ElementRoot.Publish(go, source);
         }
 
         public GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard,

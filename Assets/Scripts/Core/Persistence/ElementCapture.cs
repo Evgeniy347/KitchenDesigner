@@ -22,6 +22,8 @@ namespace KitchenDesigner.Core
 			var bathtub = element as BathtubElement;
 			var bathMixer = element as BathMixerElement;
 			var showerColumn = element as ShowerColumnElement;
+			var socket = element as SocketElement;
+			var lightSwitch = element as LightSwitchElement;
 			var bed = element as BedElement;
 			var tableEl2 = element as TableElement;
 			var windowEl = element as WindowElement;
@@ -81,6 +83,7 @@ namespace KitchenDesigner.Core
                 : BathtubLayout.DefaultBowlFilletMM;
             CaptureBathMixer(d, bathMixer);
             CaptureShowerColumn(d, showerColumn);
+            CaptureWallDevice(d, socket, lightSwitch);
             d.isBed = bed != null;
             d.bedDouble = bed != null ? bed.IsDouble : true;
             d.bedHeadboard = bed != null ? bed.HasHeadboard : true;
@@ -271,6 +274,32 @@ namespace KitchenDesigner.Core
             d.bathMixerEscutcheonReachMM = spec.EscutcheonReachMM;
             d.bathMixerSpoutLengthMM = spec.SpoutLengthMM;
             d.bathMixerOutletDiameterMM = spec.OutletDiameterMM;
+        }
+
+        private static void CaptureWallDevice(ElementData d, SocketElement? socket,
+            LightSwitchElement? lightSwitch)
+        {
+            d.isSocket = socket != null;
+            d.isLightSwitch = lightSwitch != null;
+
+            var device = socket != null ? (IWallDevice?)socket : lightSwitch;
+            var spec = WallDeviceSpec.Of(device);
+            d.wallDevicePlateWidthMM = spec.PlateWidthMM;
+            d.wallDevicePlateHeightMM = spec.PlateHeightMM;
+            d.wallDeviceProtrusionMM = spec.ProtrusionMM;
+            d.wallDevicePostCount = spec.PostCount;
+
+            d.lightSwitchOn = lightSwitch == null || lightSwitch.IsOn;
+            d.switchLightNames = LinkedLightNames(lightSwitch);
+        }
+
+        private static string[] LinkedLightNames(LightSwitchElement? lightSwitch)
+        {
+            if (lightSwitch == null) return System.Array.Empty<string>();
+            var names = lightSwitch.LightNames;
+            var copy = new string[names.Count];
+            for (int i = 0; i < names.Count; i++) copy[i] = names[i];
+            return copy;
         }
 
         private static void CaptureShowerColumn(ElementData d, ShowerColumnElement? column)

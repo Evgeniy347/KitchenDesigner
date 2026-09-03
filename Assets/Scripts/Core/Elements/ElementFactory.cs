@@ -85,6 +85,12 @@ namespace KitchenDesigner.Core
 		public static GameObject CreateShowerColumn(ShowerColumnSpec spec, string name, Vector3 position) =>
 			Instance.CreateShowerColumn(spec, name, position);
 
+		public static GameObject CreateSocket(WallDeviceSpec spec, string name, Vector3 position) =>
+			Instance.CreateSocket(spec, name, position);
+
+		public static GameObject CreateLightSwitch(WallDeviceSpec spec, bool isOn, string[]? lightNames, string name, Vector3 position) =>
+			Instance.CreateLightSwitch(spec, isOn, lightNames, name, position);
+
 		public static GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard, string name, Vector3 position) =>
 			Instance.CreateBed(dimensionsMM, isDouble, hasHeadboard, name, position);
 

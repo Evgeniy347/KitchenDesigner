@@ -128,6 +128,8 @@ namespace KitchenDesigner.Core
 
         public string LegsSlotLabel => WallDeviceDecor.KeyLabel;
 
+        public WallDeviceSpec Spec => WallDeviceSpec.Of(this);
+
         private WallDeviceParts Parts => _parts ??= new WallDeviceParts(this);
 
         public void SetLightNames(IEnumerable<string>? names)

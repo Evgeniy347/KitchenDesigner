@@ -32,6 +32,9 @@ namespace KitchenDesigner.Core
 			int bowlRadiusMM, int bowlFilletMM, string name, Vector3 position);
 		GameObject CreateBathMixer(BathMixerSpec spec, string name, Vector3 position);
 		GameObject CreateShowerColumn(ShowerColumnSpec spec, string name, Vector3 position);
+		GameObject CreateSocket(WallDeviceSpec spec, string name, Vector3 position);
+		GameObject CreateLightSwitch(WallDeviceSpec spec, bool isOn, string[]? lightNames,
+			string name, Vector3 position);
 		GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard, string name, Vector3 position);
 		GameObject CreatePillar(int midHeightMM, string name, Vector3 position,
 			int diameterMM = PillarElement.DiameterMM_Default);

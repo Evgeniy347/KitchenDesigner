@@ -108,6 +108,8 @@ namespace KitchenDesigner.Core
 
         public string LegsSlotLabel => WallDeviceDecor.ContactLabel;
 
+        public WallDeviceSpec Spec => WallDeviceSpec.Of(this);
+
         private WallDeviceParts Parts => _parts ??= new WallDeviceParts(this);
 
         private void Start() => SnapToWall();

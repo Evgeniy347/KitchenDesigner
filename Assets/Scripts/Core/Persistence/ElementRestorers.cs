@@ -199,6 +199,19 @@ namespace KitchenDesigner.Core
                  d.name, d.Position),
              null),
 
+            (d => d.isSocket,
+             (factory, d) => factory.CreateSocket(WallDeviceSpec.Clamped(d.wallDevicePlateWidthMM,
+                     d.wallDevicePlateHeightMM, d.wallDeviceProtrusionMM, d.wallDevicePostCount),
+                 d.name, d.Position),
+             null),
+
+            (d => d.isLightSwitch,
+             (factory, d) => factory.CreateLightSwitch(
+                 WallDeviceSpec.Clamped(d.wallDevicePlateWidthMM, d.wallDevicePlateHeightMM,
+                     d.wallDeviceProtrusionMM, d.wallDevicePostCount),
+                 d.lightSwitchOn, d.switchLightNames, d.name, d.Position),
+             null),
+
             (d => d.isBed,
              (factory, d) => factory.CreateBed(d.Dimensions, d.bedDouble, d.bedHeadboard,
                  d.name, d.Position),
