@@ -3,7 +3,7 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     public class ShowerColumnElement : KitchenElement, IWallMounted, IFixedSizeElement,
-        IPaintsItself
+        IKeepsPlacementHeight, IPaintsItself
     {
         public override string DisplayTypeName => "Душевая стойка";
 

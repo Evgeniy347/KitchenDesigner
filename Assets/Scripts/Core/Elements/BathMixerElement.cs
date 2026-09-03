@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class BathMixerElement : KitchenElement, IWallMounted, IFixedSizeElement, IPaintsItself
+    public class BathMixerElement : KitchenElement, IWallMounted, IFixedSizeElement,
+        IKeepsPlacementHeight, IPaintsItself
     {
         public override string DisplayTypeName => "Смеситель для ванны";
 

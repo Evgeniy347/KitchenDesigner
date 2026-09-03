@@ -892,35 +892,75 @@ public class IsoScreenshotTests
 
     // ─ Wall mixer and shower column isometric screenshots ───────────────────
 
+    /// <summary>Имена этих кадров НЕ несут габарит, в отличие от доски или
+    /// фасада. У смесителя и стойки габарит ВЫЧИСЛЯЕТСЯ из формы, и первая же
+    /// правка носика или наклона лейки переименовала бы и PNG, и лежащий
+    /// рядом эталон панели. Эталон при этом осиротел бы, а тест упал бы на
+    /// «нет verified-файла» — хотя панель не менялась ни на пиксель.
+    ///
+    /// Крупные планы здесь не украшение. Стойка высотой полтора метра в кадре
+    /// 512×512 даёт около четверти пикселя на миллиметр: штанга Ø 32 мм —
+    /// восемь пикселей, хомут кронштейна — два. На общем виде НЕВОЗМОЖНО
+    /// увидеть, разделились детали или слиплись, и ровно поэтому первая
+    /// версия обеих моделей прошла все проверки, будучи комком.</summary>
+    private const float CloseUpDistanceScale = 1.21f;
+
     [UnityTest]
-    public IEnumerator IsoBathMixer_270x90x182_Default()
+    public IEnumerator IsoBathMixer_Default()
     {
         yield return RenderBathMixer(BathMixerSpec.Default, "IsoBathMixer",
-            "iso_bath_mixer_270x90x182.png");
+            "iso_bath_mixer_default.png");
     }
 
     /// <summary>Межосевое на ПРЕДЕЛЕ — отражатели уезжают к самым торцам
-    /// корпуса. Это верхняя граница подрезки (длина минус диаметр), и держит
-    /// её один кадр: на умолчании отражатели стоят с большим запасом внутри, и
-    /// съехавшая на диаметр граница выглядела бы точно так же.</summary>
+    /// корпуса, а головки схлопываются до полусфер: их длина это
+    /// (длина − межосевое)/2, и на потолке межосевого она равна радиусу
+    /// корпуса. Это верхняя граница подрезки, и держит её один кадр: на
+    /// умолчании головки длинные, и съехавшая на диаметр граница выглядела бы
+    /// точно так же.</summary>
     [UnityTest]
     public IEnumerator IsoBathMixer_WidestCentresKeepTheEscutcheonsOnTheBody()
     {
-        var wide = BathMixerSpec.Clamped(BathMixerSpec.MaxCentresForMM(
-                BathMixerSpec.DefaultBodyLengthMM, BathMixerSpec.DefaultBodyDiameterMM),
-            BathMixerSpec.DefaultBodyLengthMM, BathMixerSpec.DefaultBodyDiameterMM,
-            BathMixerSpec.DefaultEscutcheonReachMM, BathMixerSpec.DefaultSpoutLengthMM,
-            BathMixerSpec.DefaultOutletDiameterMM);
+        yield return RenderBathMixer(WidestMixer(), "IsoBathMixerWide",
+            "iso_bath_mixer_widest_centres.png", false);
+    }
 
-        yield return RenderBathMixer(wide, "IsoBathMixerWide",
-            "iso_bath_mixer_270x90x182_wide.png", false);
+    /// <summary>Крупный план правого торца: термоголовка, выступающее кольцо
+    /// шкалы на ней и кнопка-ограничитель сверху. Три детали, которых на
+    /// общем виде не разглядеть, и ровно те три, по которым термостатический
+    /// смеситель отличается от обрубка трубы.</summary>
+    [UnityTest]
+    public IEnumerator IsoBathMixer_ThermostatHeadCloseUp()
+    {
+        var spec = BathMixerSpec.Default;
+        var collar = BathMixerLayout.ScaleCollar(spec);
+
+        yield return RenderBathMixerCloseUp(spec, "IsoBathMixerThermostat",
+            new Vector3(collar.FromMM.x, 0f, BathMixerLayout.BodyAxisZMM(spec)),
+            spec.BodyLengthMM * 0.55f, "iso_bath_mixer_thermostat.png");
+    }
+
+    /// <summary>Крупный план низа: излив с изломом у носика, штуцер G 1/2 под
+    /// шланг и кнопка дивертора ровно над ним. Здесь же видно талию корпуса
+    /// между эксцентриками — без неё все эти детали тонули в одном
+    /// цилиндре.</summary>
+    [UnityTest]
+    public IEnumerator IsoBathMixer_DiverterAndSpoutCloseUp()
+    {
+        var spec = BathMixerSpec.Default;
+        var mouth = BathMixerOutlets.SpoutMouthMM(spec);
+
+        yield return RenderBathMixerCloseUp(spec, "IsoBathMixerDiverter",
+            new Vector3(BathMixerOutlets.StationXMM(spec) * 0.5f, mouth.y * 0.5f,
+                BathMixerLayout.BodyAxisZMM(spec) + spec.SpoutLengthMM * 0.4f),
+            spec.BodyLengthMM * 0.8f, "iso_bath_mixer_diverter.png");
     }
 
     [UnityTest]
-    public IEnumerator IsoShowerColumn_250x1414x505_Default()
+    public IEnumerator IsoShowerColumn_Default()
     {
         yield return RenderShowerColumn(ShowerColumnSpec.Default, "IsoShowerColumn",
-            "iso_shower_column_250x1414x505.png");
+            "iso_shower_column_default.png");
     }
 
     /// <summary>Шланг КОРОЧЕ расстояния между штуцером и рукояткой — петли не
@@ -931,11 +971,7 @@ public class IsoScreenshotTests
     [UnityTest]
     public IEnumerator IsoShowerColumn_AHoseShorterThanTheGapRunsStraight()
     {
-        var taut = ShowerColumnSpec.Clamped(ShowerColumnSpec.DefaultColumnHeightMM,
-            ShowerColumnSpec.DefaultRiserDiameterMM, ShowerColumnSpec.DefaultHeadDiameterMM,
-            ShowerColumnSpec.DefaultHeadThicknessMM, ShowerColumnSpec.DefaultArmReachMM,
-            ShowerColumnSpec.DefaultWallOffsetMM,
-            ShowerColumnSpec.DefaultHandShowerDiameterMM, ShowerColumnSpec.MinHoseLengthMM);
+        var taut = TautHoseColumn();
 
         Assert.Less(taut.HoseLengthMM,
             (ShowerColumnLayout.HoseInletMM(taut) - ShowerColumnLayout.HoseOutletMM(taut))
@@ -947,12 +983,110 @@ public class IsoScreenshotTests
             "iso_shower_column_taut_hose.png", false);
     }
 
+    /// <summary>Крупный план узла держателя: хомут на штанге, плечо вперёд,
+    /// чашка вокруг рукоятки и наклонённая в ней ручная лейка. Именно этот
+    /// узел на общем виде выглядел блямбой — четыре детали в двадцати
+    /// пикселях.</summary>
+    [UnityTest]
+    public IEnumerator IsoShowerColumn_HandShowerInItsHolderCloseUp()
+    {
+        var spec = ShowerColumnSpec.Default;
+
+        yield return RenderShowerColumnCloseUp(spec, "IsoShowerColumnHand",
+            ShowerColumnLayout.HolderCentreMM(spec),
+            ShowerColumnHandShower.GripLengthMM(spec) * 1.9f,
+            "iso_shower_column_hand_shower.png");
+    }
+
+    /// <summary>Крупный план верха: гиб гусака и тропическая лейка под ним.
+    /// Стойка стояла в габаритной коробке ПО ДИАГОНАЛИ, потому что дуга гиба
+    /// рождалась в стороне от прямого участка, и протяжка тянула к ней
+    /// наклонную перемычку. На общем виде полутораметровой стойки этот
+    /// наклон читался как «модель просто кривая»; здесь он был бы виден
+    /// сразу.</summary>
+    [UnityTest]
+    public IEnumerator IsoShowerColumn_GooseneckAndRainHeadCloseUp()
+    {
+        var spec = ShowerColumnSpec.Default;
+
+        yield return RenderShowerColumnCloseUp(spec, "IsoShowerColumnGooseneck",
+            new Vector3(0f, ShowerColumnLayout.ArmAxisYMM(spec) - spec.HeadDiameterMM * 0.4f,
+                spec.ArmReachMM * 0.6f),
+            spec.ArmReachMM * 1.6f, "iso_shower_column_gooseneck.png");
+    }
+
+    private static BathMixerSpec WidestMixer() =>
+        BathMixerSpec.Clamped(
+            BathMixerSpec.MaxCentresForMM(BathMixerSpec.DefaultBodyLengthMM,
+                BathMixerSpec.DefaultBodyDiameterMM),
+            BathMixerSpec.DefaultBodyLengthMM, BathMixerSpec.DefaultBodyDiameterMM,
+            BathMixerSpec.DefaultEscutcheonReachMM, BathMixerSpec.DefaultSpoutLengthMM,
+            BathMixerSpec.DefaultOutletDiameterMM);
+
+    private static ShowerColumnSpec TautHoseColumn() =>
+        ShowerColumnSpec.Clamped(ShowerColumnSpec.DefaultColumnHeightMM,
+            ShowerColumnSpec.DefaultRiserDiameterMM, ShowerColumnSpec.DefaultHeadDiameterMM,
+            ShowerColumnSpec.DefaultHeadThicknessMM, ShowerColumnSpec.DefaultArmReachMM,
+            ShowerColumnSpec.DefaultWallOffsetMM,
+            ShowerColumnSpec.DefaultHandShowerDiameterMM, ShowerColumnSpec.MinHoseLengthMM);
+
+    /// <summary>Точка раскладки (миллиметры, начало — плоскость стены и низ
+    /// узла крепления) в мировые координаты. Меш строится от ЦЕНТРА
+    /// габарита, и элемент стоит центром в pos — поэтому смещение считается
+    /// от центра габарита, а не от нуля раскладки.</summary>
+    private static Vector3 WorldFromLayoutMM(Vector3 posUnits, Bounds boundsMM,
+        Vector3 pointMM) =>
+        posUnits + (pointMM - boundsMM.center) * AppConstants.MM_TO_UNITS;
+
+    /// <summary>Крупный план, наведённый мимо модели, сохраняется на диск как
+    /// обычный кадр — просто пустой — и никого не настораживает. Поэтому
+    /// точка наводки проверяется ДО рендера: она обязана лежать внутри
+    /// габарита элемента.</summary>
+    private static void AssertDetailIsOnTheModel(Bounds boundsMM, Vector3 detailMM, string png)
+    {
+        Assert.IsTrue(boundsMM.Contains(detailMM),
+            $"точка наводки крупного плана {png} — {detailMM} мм — вне габарита элемента "
+            + $"{boundsMM.min}..{boundsMM.max} мм: камера смотрела бы в пустоту");
+    }
+
+    private IEnumerator RenderCloseUp(Vector3 centreUnits, float spanMM, string png)
+    {
+        var (camGo, cam) = CreateIsoCamera(centreUnits,
+            Vector3.one * (spanMM * AppConstants.MM_TO_UNITS), CloseUpDistanceScale);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, png, null);
+
+        Object.DestroyImmediate(camGo);
+    }
+
     private IEnumerator RenderBathMixer(BathMixerSpec spec, string name, string png,
         bool capturePanel = true)
     {
         var dims = BathMixerLayout.DimensionsMM(spec);
-        Vector3 pos = new Vector3(0f,
-            BathMixerLayout.CentreAboveFloorMM(spec) * AppConstants.MM_TO_UNITS, 0f);
+        Vector3 pos = MixerPosition(spec);
+        SpawnBathMixer(spec, name, pos);
+
+        yield return RenderIsoFrame(pos, dims, png, capturePanel);
+    }
+
+    private IEnumerator RenderBathMixerCloseUp(BathMixerSpec spec, string name,
+        Vector3 detailMM, float spanMM, string png)
+    {
+        Vector3 pos = MixerPosition(spec);
+        SpawnBathMixer(spec, name, pos);
+
+        var bounds = BathMixerLayout.BoundsMM(spec);
+        AssertDetailIsOnTheModel(bounds, detailMM, png);
+
+        yield return RenderCloseUp(WorldFromLayoutMM(pos, bounds, detailMM), spanMM, png);
+    }
+
+    private static Vector3 MixerPosition(BathMixerSpec spec) =>
+        new Vector3(0f, BathMixerLayout.CentreAboveFloorMM(spec) * AppConstants.MM_TO_UNITS, 0f);
+
+    private void SpawnBathMixer(BathMixerSpec spec, string name, Vector3 pos)
+    {
         var go = ElementFactory.CreateBathMixer(spec, name, pos);
         _spawned.Add(go);
 
@@ -961,19 +1095,39 @@ public class IsoScreenshotTests
         Assert.AreEqual(spec.CentresMM, mixer!.CentresMM,
             "заказанное межосевое обязано дойти неподрезанным, иначе кадр предельного "
             + "значения молча вырождается в кадр умолчания");
-        Assert.AreEqual(dims, mixer.DimensionsMM,
+        Assert.AreEqual(BathMixerLayout.DimensionsMM(spec), mixer.DimensionsMM,
             "габарит смесителя ВЫЧИСЛЯЕТСЯ из формы: разойдись он с раскладкой, камера "
             + "кадрировала бы не то, что построено");
-
-        yield return RenderIsoFrame(pos, dims, png, capturePanel);
     }
 
     private IEnumerator RenderShowerColumn(ShowerColumnSpec spec, string name, string png,
         bool capturePanel = true)
     {
         var dims = ShowerColumnLayout.DimensionsMM(spec);
-        Vector3 pos = new Vector3(0f,
+        Vector3 pos = ColumnPosition(spec);
+        SpawnShowerColumn(spec, name, pos);
+
+        yield return RenderIsoFrame(pos, dims, png, capturePanel);
+    }
+
+    private IEnumerator RenderShowerColumnCloseUp(ShowerColumnSpec spec, string name,
+        Vector3 detailMM, float spanMM, string png)
+    {
+        Vector3 pos = ColumnPosition(spec);
+        SpawnShowerColumn(spec, name, pos);
+
+        var bounds = ShowerColumnLayout.BoundsMM(spec);
+        AssertDetailIsOnTheModel(bounds, detailMM, png);
+
+        yield return RenderCloseUp(WorldFromLayoutMM(pos, bounds, detailMM), spanMM, png);
+    }
+
+    private static Vector3 ColumnPosition(ShowerColumnSpec spec) =>
+        new Vector3(0f,
             ShowerColumnLayout.CentreAboveFloorMM(spec) * AppConstants.MM_TO_UNITS, 0f);
+
+    private void SpawnShowerColumn(ShowerColumnSpec spec, string name, Vector3 pos)
+    {
         var go = ElementFactory.CreateShowerColumn(spec, name, pos);
         _spawned.Add(go);
 
@@ -982,10 +1136,9 @@ public class IsoScreenshotTests
         Assert.AreEqual(spec.HoseLengthMM, column!.HoseLengthMM,
             "заказанная длина шланга обязана дойти неподрезанной: подрезка превратила бы "
             + "кадр натянутого шланга в кадр умолчания");
-        Assert.Greater(dims.y, spec.ColumnHeightMM - 1,
-            "габарит обязан накрывать стойку целиком вместе с петлёй под ней");
-
-        yield return RenderIsoFrame(pos, dims, png, capturePanel);
+        Assert.AreEqual(ShowerColumnLayout.DimensionsMM(spec), column.DimensionsMM,
+            "габарит стойки ВЫЧИСЛЯЕТСЯ из формы вместе с петлёй шланга: разойдись он с "
+            + "раскладкой, камера кадрировала бы не то, что построено");
     }
 
     // ─ Radial shelf isometric screenshot ───────────────────
