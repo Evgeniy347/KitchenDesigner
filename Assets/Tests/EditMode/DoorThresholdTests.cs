@@ -180,24 +180,62 @@ public class DoorThresholdTests : SnapTestBase
             "окно не вырезано — тест смотрит не туда");
     }
 
-    [Test]
-    public void Builder_CutoutReachingTheWallBase_AddsNoRevealThere()
-    {
-        var mesh = WallMeshBuilder.Build(new List<WallMeshBuilder.WindowCutout>
+    private static List<WallMeshBuilder.WindowCutout> CutoutOnTheWallBase() =>
+        new List<WallMeshBuilder.WindowCutout>
         {
             new WallMeshBuilder.WindowCutout
             {
                 centerNorm = new Vector2(0f, -0.2f),
                 halfSizeNorm = new Vector2(0.15f, 0.3f),
             }
-        });
+        };
 
-        foreach (var v in mesh.vertices)
+    /// <summary>Откос — это ЧЕТЫРЕ разных квада, и на уровне пола внутри проёма
+    /// вершины оставляют два из них: горизонтальный низ (его быть не должно —
+    /// он дублирует нижнюю крышку стены) и вертикальные щёки, которые обязаны
+    /// доходить до пола. По вершине их не различить, поэтому считаются
+    /// треугольники, ЦЕЛИКОМ лежащие в плоскости пола: щёки в неё не попадают,
+    /// а нижняя крышка стены попадает, но её вершины стоят на краях стены.</summary>
+    [Test]
+    public void Builder_CutoutReachingTheWallBase_AddsNoHorizontalRevealThere()
+    {
+        var mesh = WallMeshBuilder.Build(CutoutOnTheWallBase());
+
+        var verts = mesh.vertices;
+        var tris = mesh.triangles;
+        int flatInsideOpening = 0;
+        for (int t = 0; t < tris.Length; t += 3)
         {
-            if (Mathf.Abs(v.y + 0.5f) > 1e-4f) continue;
-            Assert.GreaterOrEqual(Mathf.Abs(v.x), 0.5f - 1e-4f,
-                $"вершина {v} на базе стены внутри проёма — откос там, где стены уже нет " +
-                "(дубль нижней крышки стены, z-fighting в дверном проёме)");
+            var a = verts[tris[t]];
+            var b = verts[tris[t + 1]];
+            var c = verts[tris[t + 2]];
+            if (Mathf.Abs(a.y + 0.5f) > 1e-4f ||
+                Mathf.Abs(b.y + 0.5f) > 1e-4f ||
+                Mathf.Abs(c.y + 0.5f) > 1e-4f) continue;
+            if (Mathf.Abs(a.x) < 0.5f - 1e-4f ||
+                Mathf.Abs(b.x) < 0.5f - 1e-4f ||
+                Mathf.Abs(c.x) < 0.5f - 1e-4f) flatInsideOpening++;
         }
+
+        Assert.AreEqual(0, flatInsideOpening,
+            "горизонтальный откос на уровне пола внутри проёма — стены там уже нет, " +
+            "и этот квад лишь дублирует нижнюю крышку стены (z-fighting в дверном проёме)");
+    }
+
+    /// <summary>Обратная сторона той же правки: срезать откосы на границе грани
+    /// целиком нельзя. Вертикальная щека проёма стоит НА ПОЛУ, и если её
+    /// потерять, в дверную коробку будет видно нутро стены.</summary>
+    [Test]
+    public void Builder_CutoutReachingTheWallBase_KeepsTheJambStandingOnTheFloor()
+    {
+        var mesh = WallMeshBuilder.Build(CutoutOnTheWallBase());
+
+        bool jambTouchesFloor = false;
+        foreach (var v in mesh.vertices)
+            if (Mathf.Abs(v.x + 0.15f) < 1e-4f && Mathf.Abs(v.y + 0.5f) < 1e-4f)
+                jambTouchesFloor = true;
+
+        Assert.IsTrue(jambTouchesFloor,
+            "щека проёма не доходит до пола — правка срезала откосы на границе грани целиком");
     }
 }
