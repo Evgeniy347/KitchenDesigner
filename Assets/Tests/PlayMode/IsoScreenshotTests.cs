@@ -85,6 +85,13 @@ public class IsoScreenshotTests
     private static readonly Vector3 IsoDir =
         new Vector3(0.5f, 0.5f, -0.866f).normalized;
 
+    /// <summary>Пол дистанции: мелкий объект не подпускается к объективу
+    /// ближе полуметра, иначе винтовая опора занимала бы весь кадр без
+    /// единого ориентира вокруг. Для КРУПНЫХ ПЛАНОВ это ровно наоборот —
+    /// там пол не даёт кадру стать меньше ~414 мм, и узел, ради которого
+    /// кадр снимают, тонет в общем виде. См. CreateCloseUpCamera.</summary>
+    private const float MinCameraDistance = 0.5f;
+
     /// <summary>Создать камеру для изометрического рендера объекта.
     /// Расстояние вычисляется из размера объекта так, чтобы он занимал
     /// ~70% высоты кадра. Ракурс 3/4 справа-сверху со стороны -Z.</summary>
@@ -104,7 +111,7 @@ public class IsoScreenshotTests
         cam.farClipPlane = 100f;
 
         float maxDim = Mathf.Max(size.x, size.y, size.z);
-        float distance = Mathf.Max(maxDim * distanceScale, 0.5f);
+        float distance = Mathf.Max(maxDim * distanceScale, MinCameraDistance);
 
         camGo.transform.position = center + IsoDir * distance;
         camGo.transform.LookAt(center);
@@ -967,16 +974,19 @@ public class IsoScreenshotTests
     /// <summary>Крупный план правого торца: термоголовка, выступающее кольцо
     /// шкалы на ней и кнопка-ограничитель сверху. Три детали, которых на
     /// общем виде не разглядеть, и ровно те три, по которым термостатический
-    /// смеситель отличается от обрубка трубы.</summary>
+    /// смеситель отличается от обрубка трубы.
+    ///
+    /// Наводка — СЕРЕДИНА головки, а не начало кольца шкалы: кадр, названный
+    /// по узлу, обязан держать узел в центре, а не у края.</summary>
     [UnityTest]
     public IEnumerator IsoBathMixer_ThermostatHeadCloseUp()
     {
         var spec = BathMixerSpec.Default;
-        var collar = BathMixerControls.ScaleCollar(spec);
 
         yield return RenderBathMixerCloseUp(spec, "IsoBathMixerThermostat",
-            new Vector3(collar.FromMM.x, 0f, BathMixerLayout.BodyAxisZMM(spec)),
-            spec.BodyLengthMM * 0.55f, "iso_bath_mixer_thermostat.png");
+            new Vector3(BathMixerControls.HandleMidXMM(spec, 1f), 0f,
+                BathMixerLayout.BodyAxisZMM(spec)),
+            ThermostatSpanMM(spec), "iso_bath_mixer_thermostat.png");
     }
 
     /// <summary>Крупный план низа: излив с изломом у носика, штуцер G 1/2 под
@@ -993,7 +1003,7 @@ public class IsoScreenshotTests
         yield return RenderBathMixerCloseUp(spec, "IsoBathMixerDiverter",
             new Vector3(BathMixerOutlets.StationXMM(spec) * 0.35f,
                 (elbow.y + tip.y) * 0.5f, (elbow.z + tip.z) * 0.5f),
-            spec.BodyLengthMM * 0.8f, "iso_bath_mixer_diverter.png");
+            SpoutSpanMM(spec), "iso_bath_mixer_diverter.png");
     }
 
     [UnityTest]
@@ -1072,6 +1082,43 @@ public class IsoScreenshotTests
             "iso_shower_column_diverter.png");
     }
 
+    private const float ThermostatSpanRatio = 0.5f;
+    private const float SpoutSpanRatio = 0.8f;
+
+    private static float ThermostatSpanMM(BathMixerSpec spec) =>
+        spec.BodyLengthMM * ThermostatSpanRatio;
+
+    private static float SpoutSpanMM(BathMixerSpec spec) =>
+        spec.BodyLengthMM * SpoutSpanRatio;
+
+    /// <summary>Сторож против возврата крупных планов смесителя на общую
+    /// камеру. У той стоит пол дистанции MinCameraDistance, и оба этих кадра
+    /// в него упираются — то есть через неё они физически не могут быть
+    /// крупными. Так и вышло в первый раз: заказанные 148 мм превратились в
+    /// ~414 мм, головка уехала к краю кадра, и выглядело это как ошибка
+    /// геометрии, а не камеры.
+    ///
+    /// Тест краснеет с ОБЕИХ сторон. Раздуй кадр до размеров, которые общая
+    /// камера уже умеет — и он скажет, что крупный план перестал быть
+    /// крупным.</summary>
+    [Test]
+    public void CloseUpFramesOfTheMixer_AreTighterThanTheSharedCameraCanEverBe()
+    {
+        var spec = BathMixerSpec.Default;
+        float toU = AppConstants.MM_TO_UNITS * CloseUpDistanceScale;
+
+        Assert.Less(ThermostatSpanMM(spec) * toU, MinCameraDistance,
+            "кадр термоголовки обязан быть теснее пола общей камеры: иначе снимать его "
+            + "отдельным кадром незачем — то же самое видно на общем виде");
+        Assert.Less(SpoutSpanMM(spec) * toU, MinCameraDistance,
+            "и кадр излива тоже");
+        Assert.Greater(ThermostatSpanMM(spec),
+            BathMixerControls.ScaleCollar(spec).FromRadiusMM
+                + BathMixerControls.LimitButton(spec).ToMM.y,
+            "но не теснее самого узла: кольцо шкалы вместе с кнопкой сверху обязано "
+            + "влезть в кадр целиком, иначе крупный план режет ровно то, ради чего снят");
+    }
+
     private static BathMixerSpec WidestMixer() =>
         BathMixerSpec.Clamped(
             BathMixerSpec.MaxCentresForMM(BathMixerSpec.DefaultBodyLengthMM,
@@ -1109,10 +1156,34 @@ public class IsoScreenshotTests
             + $"{boundsMM.min}..{boundsMM.max} мм: камера смотрела бы в пустоту");
     }
 
+    /// <summary>Крупный план НЕ может пользоваться CreateIsoCamera: там стоит
+    /// пол дистанции MinCameraDistance, и любой кадр уже ~414 мм в него
+    /// упирается. Первый заказанный крупный план узла термоголовки — 148 мм —
+    /// молча превратился в кадр шириной с полторы длины смесителя, где сама
+    /// головка уехала к краю, а середину занял излив. Ошибка при этом
+    /// выглядит не как ошибка камеры, а как «деталь не там построена».</summary>
+    private (GameObject camGo, Camera cam) CreateCloseUpCamera(Vector3 centre, float spanMM)
+    {
+        var camGo = new GameObject("IsoCloseUpCam");
+        var cam = camGo.AddComponent<Camera>();
+        cam.clearFlags = CameraClearFlags.SolidColor;
+        cam.backgroundColor = new Color(0.18f, 0.18f, 0.20f, 1f);
+        cam.orthographic = false;
+        cam.fieldOfView = IsoFov;
+        cam.aspect = (float)RenderW / RenderH;
+        cam.nearClipPlane = 0.01f;
+        cam.farClipPlane = 100f;
+
+        float distance = spanMM * AppConstants.MM_TO_UNITS * CloseUpDistanceScale;
+        camGo.transform.position = centre + IsoDir * distance;
+        camGo.transform.LookAt(centre);
+
+        return (camGo, cam);
+    }
+
     private IEnumerator RenderCloseUp(Vector3 centreUnits, float spanMM, string png)
     {
-        var (camGo, cam) = CreateIsoCamera(centreUnits,
-            Vector3.one * (spanMM * AppConstants.MM_TO_UNITS), CloseUpDistanceScale);
+        var (camGo, cam) = CreateCloseUpCamera(centreUnits, spanMM);
         _spawned.Add(camGo);
 
         yield return RenderToPng(cam, png, null);

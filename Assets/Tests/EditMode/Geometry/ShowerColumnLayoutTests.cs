@@ -408,6 +408,16 @@ namespace KitchenDesigner.Tests.Geometry
                 + "кромки");
             Assert.Less(bottom.FromRadiusMM, bottom.ToRadiusMM,
                 "снизу кромка завалена фаской: острый край в литом пластике не бывает");
+            Assert.Less(ShowerColumnRainHead.TopChamferMM(spec),
+                ShowerColumnRainHead.BottomChamferMM(spec),
+                "а СВЕРХУ фаска заметно у́же нижней. Камера изометрии смотрит на лейку "
+                + "под тридцать градусов сверху, и широкая верхняя фаска в этой "
+                + "проекции даёт кольцо во всю ширину диска — она-то и съедала весь "
+                + "поясок, из-за чего лейка читалась плоской пилюлей");
+            Assert.Greater(rim.LengthMM, spec.HeadThicknessMM * 0.5f,
+                "и прямой поясок занимает БОЛЬШЕ половины толщины: он и есть та "
+                + "видимая толщина, ради которой всё затевалось, а фаски — только "
+                + "притупление кромок");
             Assert.AreEqual(spec.HeadThicknessMM,
                 ShowerColumnRainHead.DiscTopYMM(spec) - ShowerColumnRainHead.BottomYMM(spec),
                 Tol,

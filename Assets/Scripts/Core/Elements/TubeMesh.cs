@@ -5,33 +5,32 @@ namespace KitchenDesigner.Core
 {
     internal static class TubeMesh
     {
-        public const int RadialSegments = 16;
-
         public static void Append(MeshAccumulator target, IReadOnlyList<Vector3> points,
-            IReadOnlyList<float> radii)
+            IReadOnlyList<float> radii, int radialSegments)
         {
             if (points.Count < 2) return;
 
+            int sides = Mathf.Max(3, radialSegments);
             var tangents = Tangents(points);
             var normals = Frames(tangents);
             int firstRing = target.VertexCount;
 
             for (int i = 0; i < points.Count; i++)
                 AddRing(target, points[i], tangents[i], normals[i], radii[i],
-                    i / (float)(points.Count - 1));
+                    i / (float)(points.Count - 1), sides);
 
             for (int i = 0; i + 1 < points.Count; i++)
-                StitchRings(target, firstRing + i * (RadialSegments + 1),
-                    firstRing + (i + 1) * (RadialSegments + 1));
+                StitchRings(target, firstRing + i * (sides + 1),
+                    firstRing + (i + 1) * (sides + 1), sides);
 
-            AddCap(target, points[0], tangents[0], normals[0], radii[0], false);
+            AddCap(target, points[0], tangents[0], normals[0], radii[0], false, sides);
             int last = points.Count - 1;
-            AddCap(target, points[last], tangents[last], normals[last], radii[last], true);
+            AddCap(target, points[last], tangents[last], normals[last], radii[last], true, sides);
         }
 
         public static void AppendSegment(MeshAccumulator target, Vector3 from, Vector3 to,
-            float fromRadius, float toRadius) =>
-            Append(target, new[] { from, to }, new[] { fromRadius, toRadius });
+            float fromRadius, float toRadius, int radialSegments) =>
+            Append(target, new[] { from, to }, new[] { fromRadius, toRadius }, radialSegments);
 
         private static Vector3[] Tangents(IReadOnlyList<Vector3> points)
         {
@@ -78,22 +77,22 @@ namespace KitchenDesigner.Core
         }
 
         private static void AddRing(MeshAccumulator target, Vector3 centre, Vector3 tangent,
-            Vector3 normal, float radius, float v)
+            Vector3 normal, float radius, float v, int sides)
         {
             var binormal = Vector3.Cross(tangent, normal);
 
-            for (int i = 0; i <= RadialSegments; i++)
+            for (int i = 0; i <= sides; i++)
             {
-                float angle = i * Mathf.PI * 2f / RadialSegments;
+                float angle = i * Mathf.PI * 2f / sides;
                 var outward = normal * Mathf.Cos(angle) + binormal * Mathf.Sin(angle);
                 target.AddVertex(centre + outward * radius, outward,
-                    new Vector2(i / (float)RadialSegments, v));
+                    new Vector2(i / (float)sides, v));
             }
         }
 
-        private static void StitchRings(MeshAccumulator target, int lower, int upper)
+        private static void StitchRings(MeshAccumulator target, int lower, int upper, int sides)
         {
-            for (int i = 0; i < RadialSegments; i++)
+            for (int i = 0; i < sides; i++)
             {
                 target.AddTriangle(lower + i, upper + i, lower + i + 1);
                 target.AddTriangle(lower + i + 1, upper + i, upper + i + 1);
@@ -101,7 +100,7 @@ namespace KitchenDesigner.Core
         }
 
         private static void AddCap(MeshAccumulator target, Vector3 centre, Vector3 tangent,
-            Vector3 normal, float radius, bool forward)
+            Vector3 normal, float radius, bool forward, int sides)
         {
             var facing = forward ? tangent : -tangent;
             var binormal = Vector3.Cross(tangent, normal);
@@ -110,16 +109,16 @@ namespace KitchenDesigner.Core
             target.AddVertex(centre, facing, new Vector2(0.5f, 0.5f));
 
             int ring = target.VertexCount;
-            for (int i = 0; i <= RadialSegments; i++)
+            for (int i = 0; i <= sides; i++)
             {
-                float angle = i * Mathf.PI * 2f / RadialSegments;
+                float angle = i * Mathf.PI * 2f / sides;
                 float cos = Mathf.Cos(angle);
                 float sin = Mathf.Sin(angle);
                 target.AddVertex(centre + (normal * cos + binormal * sin) * radius, facing,
                     new Vector2(cos * 0.5f + 0.5f, sin * 0.5f + 0.5f));
             }
 
-            for (int i = 0; i < RadialSegments; i++)
+            for (int i = 0; i < sides; i++)
                 if (forward)
                     target.AddTriangle(centreIndex, ring + i + 1, ring + i);
                 else

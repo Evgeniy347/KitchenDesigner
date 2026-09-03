@@ -5,16 +5,21 @@ namespace KitchenDesigner.Core
     public static class ShowerColumnRainHead
     {
         public const float BossRadiusRatio = 1.4f;
-        public const float BossLengthRatio = 0.35f;
+        public const float BossLengthRatio = 0.5f;
         public const float RimRadiusRatio = 0.5f;
-        public const float ChamferRadiusRatio = 0.46f;
-        public const float ChamferRatio = 0.12f;
+        public const float TopChamferRadiusRatio = 0.485f;
+        public const float BottomChamferRadiusRatio = 0.44f;
+        public const float TopChamferRatio = 0.06f;
+        public const float BottomChamferRatio = 0.16f;
 
         public static float BossLengthMM(ShowerColumnSpec spec) =>
             spec.HeadThicknessMM * BossLengthRatio;
 
-        public static float ChamferMM(ShowerColumnSpec spec) =>
-            spec.HeadThicknessMM * ChamferRatio;
+        public static float TopChamferMM(ShowerColumnSpec spec) =>
+            spec.HeadThicknessMM * TopChamferRatio;
+
+        public static float BottomChamferMM(ShowerColumnSpec spec) =>
+            spec.HeadThicknessMM * BottomChamferRatio;
 
         public static float TopYMM(ShowerColumnSpec spec) =>
             ShowerColumnLayout.ArmAxisYMM(spec) - ShowerColumnLayout.RiserRadiusMM(spec);
@@ -33,22 +38,22 @@ namespace KitchenDesigner.Core
 
         public static PipeSegment TopChamfer(ShowerColumnSpec spec) =>
             new PipeSegment(
-                new Vector3(0f, DiscTopYMM(spec) - ChamferMM(spec), spec.ArmReachMM),
+                new Vector3(0f, DiscTopYMM(spec) - TopChamferMM(spec), spec.ArmReachMM),
                 new Vector3(0f, DiscTopYMM(spec), spec.ArmReachMM),
                 spec.HeadDiameterMM * RimRadiusRatio,
-                spec.HeadDiameterMM * ChamferRadiusRatio);
+                spec.HeadDiameterMM * TopChamferRadiusRatio);
 
         public static PipeSegment Rim(ShowerColumnSpec spec) =>
             new PipeSegment(
-                new Vector3(0f, BottomYMM(spec) + ChamferMM(spec), spec.ArmReachMM),
-                new Vector3(0f, DiscTopYMM(spec) - ChamferMM(spec), spec.ArmReachMM),
+                new Vector3(0f, BottomYMM(spec) + BottomChamferMM(spec), spec.ArmReachMM),
+                new Vector3(0f, DiscTopYMM(spec) - TopChamferMM(spec), spec.ArmReachMM),
                 spec.HeadDiameterMM * RimRadiusRatio);
 
         public static PipeSegment BottomChamfer(ShowerColumnSpec spec) =>
             new PipeSegment(
                 new Vector3(0f, BottomYMM(spec), spec.ArmReachMM),
-                new Vector3(0f, BottomYMM(spec) + ChamferMM(spec), spec.ArmReachMM),
-                spec.HeadDiameterMM * ChamferRadiusRatio,
+                new Vector3(0f, BottomYMM(spec) + BottomChamferMM(spec), spec.ArmReachMM),
+                spec.HeadDiameterMM * BottomChamferRadiusRatio,
                 spec.HeadDiameterMM * RimRadiusRatio);
 
         public static PipeSegment[] Parts(ShowerColumnSpec spec) =>

@@ -16,7 +16,9 @@ namespace KitchenDesigner.Core
             float toU = AppConstants.MM_TO_UNITS;
             TubeMesh.AppendSegment(_target,
                 Local(segmentMM.FromMM), Local(segmentMM.ToMM),
-                segmentMM.FromRadiusMM * toU, segmentMM.ToRadiusMM * toU);
+                segmentMM.FromRadiusMM * toU, segmentMM.ToRadiusMM * toU,
+                PipeTessellation.RadialSegmentsFor(
+                    Mathf.Max(segmentMM.FromRadiusMM, segmentMM.ToRadiusMM)));
         }
 
         public void AddSegments(IReadOnlyList<PipeSegment> segmentsMM)
@@ -37,7 +39,8 @@ namespace KitchenDesigner.Core
                 radii[i] = radiusMM * toU;
             }
 
-            TubeMesh.Append(_target, points, radii);
+            TubeMesh.Append(_target, points, radii,
+                PipeTessellation.RadialSegmentsFor(radiusMM));
         }
 
         public void AddRoundedBox(Vector3 centreMM, Vector3 sizeMM, float cornerRadiusMM)
