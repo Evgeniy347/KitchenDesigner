@@ -13,10 +13,13 @@ namespace KitchenDesigner.Core.MCP
         [SerializeField] private int _port = McpBridgeStatus.DefaultPort;
         [SerializeField] private bool _autoStart = true;
 
+        public const int ShutdownWaitMs = 2000;
+
         private HttpListener? _listener;
         private Thread? _serverThread;
         private volatile bool _running;
         private readonly ConcurrentQueue<Action> _mainThreadActions = new ConcurrentQueue<Action>();
+        private readonly ManualResetEventSlim _shuttingDown = new ManualResetEventSlim(false);
         private McpCommandHandler? _handler;
         private McpRpcRouter? _router;
 
@@ -47,6 +50,8 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
+        private void OnApplicationQuit() => StopBridge();
+
         private void OnDestroy() => StopBridge();
 
         public void StartBridge()
@@ -68,6 +73,7 @@ namespace KitchenDesigner.Core.MCP
             }
 
             _running = true;
+            _shuttingDown.Reset();
             _serverThread = new Thread(ServerLoop) { IsBackground = true, Name = "MCP-HTTP" };
             _serverThread.Start();
             McpBridgeStatus.Report(_port, true);
@@ -79,12 +85,20 @@ namespace KitchenDesigner.Core.MCP
             if (!_running && _listener == null) return;
 
             _running = false;
+            _shuttingDown.Set();
+
             if (_listener != null)
             {
+                try { _listener.Stop(); } catch { }
                 try { _listener.Close(); } catch { }
                 _listener = null;
             }
+
+            var thread = _serverThread;
             _serverThread = null;
+            if (thread != null && !thread.Join(ShutdownWaitMs))
+                Debug.LogWarning($"[MCP] Listener thread did not stop within {ShutdownWaitMs} ms");
+
             McpBridgeStatus.Report(_port, false);
             Debug.Log("[MCP] Bridge stopped");
         }
@@ -152,7 +166,7 @@ namespace KitchenDesigner.Core.MCP
         {
             McpResponse? result = null;
             Exception? failure = null;
-            var done = new ManualResetEventSlim(false);
+            using var done = new ManualResetEventSlim(false);
 
             _mainThreadActions.Enqueue(() =>
             {
@@ -165,7 +179,11 @@ namespace KitchenDesigner.Core.MCP
                 finally { done.Set(); }
             });
 
-            if (!done.Wait(TimeSpan.FromSeconds(McpToolCall.TimeoutSeconds)))
+            int finished = WaitHandle.WaitAny(
+                new[] { done.WaitHandle, _shuttingDown.WaitHandle },
+                TimeSpan.FromSeconds(McpToolCall.TimeoutSeconds));
+
+            if (finished != 0)
                 throw new TimeoutException(request.method);
             if (failure != null)
                 throw failure;

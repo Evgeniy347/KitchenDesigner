@@ -200,4 +200,46 @@ public class McpHttpBridgeTests
             return code;
         }
     }
+
+    /// <summary>Выключение обязано быть ОГРАНИЧЕННЫМ по времени. Приложение
+    /// закрывается на глазах у человека, и мост, который «когда-нибудь» отпустит
+    /// поток слушателя, читается как зависший конструктор: окно пропало, процесс
+    /// висит. Здесь измеряется само выключение — оно не имеет права занимать
+    /// дольше отведённого ожидания, даже если слушатель занят.</summary>
+    [UnityTest]
+    public IEnumerator StopBridge_ReturnsWithinItsShutdownBudget()
+    {
+        StartBridgeOn(FreePort());
+        yield return null;
+        Assume.That(_bridge!.IsRunning, Is.True, "мост не поднялся — мерить нечего");
+
+        var started = DateTime.UtcNow;
+        _bridge.StopBridge();
+        var spent = (DateTime.UtcNow - started).TotalMilliseconds;
+
+        Assert.IsFalse(_bridge.IsRunning, "после остановки мост считает себя выключенным");
+        Assert.Less(spent, McpHttpBridge.ShutdownWaitMs * 2,
+            $"остановка заняла {spent:F0} мс при бюджете {McpHttpBridge.ShutdownWaitMs} мс — "
+            + "именно так выглядит «просто запустил и виснет» при закрытии окна");
+    }
+
+    /// <summary>Порт обязан освободиться СРАЗУ, а не «когда поток догорит». Если
+    /// слушатель пережил остановку, следующий запуск молча упадёт на «адрес занят»,
+    /// и мост будет числиться выключенным, продолжая держать сокет.</summary>
+    [UnityTest]
+    public IEnumerator StopBridge_ReleasesThePort_SoTheBridgeCanStartAgain()
+    {
+        int port = FreePort();
+        StartBridgeOn(port);
+        yield return null;
+        Assume.That(_bridge!.IsRunning, Is.True);
+
+        _bridge.StopBridge();
+
+        var again = new HttpListener();
+        again.Prefixes.Add($"http://127.0.0.1:{port}/");
+        Assert.DoesNotThrow(() => again.Start(),
+            "порт остался занят мёртвым слушателем — повторный запуск приложения не поднимет мост");
+        again.Close();
+    }
 }
