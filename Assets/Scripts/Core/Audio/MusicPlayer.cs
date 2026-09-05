@@ -26,6 +26,8 @@ namespace KitchenDesigner.Core.Audio
             MusicState.Changed += ApplyState;
         }
 
+        private void Start() => Play();
+
         private void OnDestroy()
         {
             MusicState.Changed -= ApplyState;

@@ -34,6 +34,18 @@ public class MusicPlayerTests
     }
 
     [UnityTest]
+    public IEnumerator Playback_StartsByItself_WhenTheAppLaunches()
+    {
+        yield return null;
+
+        Assert.IsTrue(MusicPlayer.Instance!.IsPlaying,
+            "музыка играет с первого кадра, без нажатия «пуск»: плеер поднимается в Bootstrap "
+            + "ДО открытия проекта, и старт живёт в Start, а не в Awake — иначе он взял бы "
+            + "первый трек, а не тот, что записан в открываемом проекте");
+        Assert.IsNotNull(_host!.GetComponent<AudioSource>().clip, "и трек для него загружен");
+    }
+
+    [UnityTest]
     public IEnumerator Play_LoadsTheTrackFromResources_AndStartsIt()
     {
         var player = MusicPlayer.Instance!;
