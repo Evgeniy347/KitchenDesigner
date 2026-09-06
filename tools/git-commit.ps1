@@ -199,8 +199,11 @@ if ($All) {
     git add -A
     if ($LASTEXITCODE -ne 0) { throw 'git add -A failed.' }
 } elseif ($Files -and $Files.Count -gt 0) {
-    git add -- @Files
-    if ($LASTEXITCODE -ne 0) { throw 'git add failed.' }
+    $onDisk = @($Files | Where-Object { Test-Path $_ })
+    if ($onDisk.Count -gt 0) {
+        git add -A -- @onDisk
+        if ($LASTEXITCODE -ne 0) { throw 'git add failed.' }
+    }
 } elseif (-not $Amend) {
     throw 'Nothing to stage: pass -Files <paths> or -All.'
 }

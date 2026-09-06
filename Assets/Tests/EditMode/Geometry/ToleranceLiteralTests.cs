@@ -44,16 +44,12 @@ namespace KitchenDesigner.Tests.Geometry
                 + "геометрия детали, но пороги всё равно безымянные"),
             ("CeilingGeometry.cs", 5,
                 "1e-4f — ровно Tolerance.EpsilonUnits, зашитый копией: прямой долг"),
-                        ("DoorElement.cs", 3,
-                "1e-12f/1e-8f перед normalize и 0.05° «поворот уже доехал»: "
-                + "Tolerance.EpsilonSqr рядом, но не та величина"),
             ("ElementMover.cs", 2,
                 "1e-4f и 1e-8f как защита перед normalize; Tolerance.EpsilonSqr = 1e-6f"),
             ("ElementOutline.cs", 1, "1e-6f перед построением поворота отрезка = Tolerance.EpsilonSqr"),
             ("FacadeValidator.cs", 1,
                 "0.001f на скалярном произведении — порог «фасад смотрит наружу»"),
             ("GrooveMesh.cs", 1, "1e-5f при склейке совпавших координат реза = Tolerance.SnapEpsilon"),
-            ("InputCapture.cs", 1, "0.01f мёртвой зоны колеса мыши — ввод, а не геометрия"),
             ("MmGrid.cs", 1,
                 "0.9999f — «дробная часть не дотянула до целого мм»; порог округления, не длина"),
             ("SpatialGridRenderer.cs", 1, "1e-3f при выборе крупной линии сетки"),
@@ -62,7 +58,11 @@ namespace KitchenDesigner.Tests.Geometry
                 "0.01° поворота и 0.001f высоты стены; второй — сравнение с нулём в юнитах"),
             ("WallCutaway.cs", 3,
                 "1e-6f/1e-8f перед normalize и -0.1f как «камера точно с той стороны»"),
-            ("WindowElement.cs", 3, "копия тройки из DoorElement — оба створчатые"),
+            ("WallOpeningElement.cs", 3,
+                "1e-12f/1e-8f перед normalize и 0.05° «поворот уже доехал»: "
+                + "Tolerance.EpsilonSqr рядом, но не та величина. Раньше эта тройка "
+                + "стояла ДВАЖДЫ — в DoorElement и WindowElement; общая база их "
+                + "слила, потолок 6 схлопнулся в 3"),
         };
 
         private static string CoreDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
