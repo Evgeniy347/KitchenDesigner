@@ -18,18 +18,14 @@ using KitchenDesigner.Core.UI;
 /// не свисает с фасада и не тонет в соседней, — а сама духовка ни к какой
 /// детали не привязывается и переживает сохранение и дублирование.
 /// </summary>
-public class OvenElementTests
+public class OvenElementTests : McpTestFixture
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-    private McpCommandHandler? _handler;
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
 
     [SetUp]
     public void SetUp()
     {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
         GroupManager.Clear();
         CommandStack.Clear();
     }
@@ -649,12 +645,6 @@ public class OvenElementTests
     }
 
     // ── MCP ─────────────────────────────────────────────────────────────
-
-    private McpRequest MakeReq(string method, object data)
-    {
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(data);
-        return new McpRequest { id = "test", method = method, Params = JObject.Parse(json) };
-    }
 
     /// <summary>Полезная нагрузка ответа: у результата — данные, у ошибки —
     /// {code, message}. Оба живут в одном поле data.</summary>

@@ -20,18 +20,14 @@ using KitchenDesigner.Core.UI;
 /// дублирование машины — и диапазон высоты фасада, который обязан ПРЕДУПРЕЖДАТЬ,
 /// а не запрещать.
 /// </summary>
-public class DishwasherElementTests
+public class DishwasherElementTests : McpTestFixture
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-    private McpCommandHandler? _handler;
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
 
     [SetUp]
     public void SetUp()
     {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
         GroupManager.Clear();
         CommandStack.Clear();
     }
@@ -584,12 +580,6 @@ public class DishwasherElementTests
     }
 
     // ── MCP ─────────────────────────────────────────────────────────────
-
-    private McpRequest MakeReq(string method, object data)
-    {
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(data);
-        return new McpRequest { id = "test", method = method, Params = JObject.Parse(json) };
-    }
 
     private static JObject Payload(McpResponse resp) => JObject.FromObject(resp.data!);
 

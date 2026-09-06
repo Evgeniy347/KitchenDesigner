@@ -9,23 +9,8 @@ using KitchenDesigner.Core.MCP;
 /// редактирования модуля (детали модуля редактируются, остальное заблокировано)
 /// и MCP-доступ к конфигурации («модуль X состоит из…»).
 /// </summary>
-public class ModuleSystemTests
+public class ModuleSystemTests : McpTestFixture
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-    private McpCommandHandler? _handler;
-
-    private KitchenElement Make(string name, Vector3Int dims, Vector3 pos)
-    {
-        var go = new GameObject(name);
-        go.transform.position = pos;
-        var e = go.AddComponent<KitchenElement>();
-        e.PartName = name;
-        e.DimensionsMM = dims;
-        PartRegistry.Register(e);
-        _spawned.Add(go);
-        return e;
-    }
-
     private static McpRequest Req(string method, object? data = null)
     {
         var json = data != null
@@ -42,7 +27,6 @@ public class ModuleSystemTests
     [SetUp]
     public void Setup()
     {
-        _handler = new McpCommandHandler();
         ModuleEditMode.Exit();
         GroupManager.Clear();
     }
@@ -66,7 +50,7 @@ public class ModuleSystemTests
     [Test]
     public void NoActiveModule_EverythingEditable()
     {
-        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var a = MakeElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
         Assert.IsFalse(ModuleEditMode.IsActive);
         Assert.IsTrue(ModuleEditMode.IsEditable(a));
     }
@@ -74,9 +58,9 @@ public class ModuleSystemTests
     [Test]
     public void ActiveModule_OnlyMembersEditable()
     {
-        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
-        var b = Make("B", new Vector3Int(800, 400, 18), new Vector3(1f, 0f, 0f));
-        var outsider = Make("Out", new Vector3Int(600, 300, 18), new Vector3(2f, 0f, 0f));
+        var a = MakeElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = MakeElement("B", new Vector3Int(800, 400, 18), new Vector3(1f, 0f, 0f));
+        var outsider = MakeElement("Out", new Vector3Int(600, 300, 18), new Vector3(2f, 0f, 0f));
         var g = GroupManager.Link(new List<KitchenElement> { a, b });
 
         ModuleEditMode.Enter(g!);
@@ -91,8 +75,8 @@ public class ModuleSystemTests
     [Test]
     public void EnterExit_FiresChangedEvent()
     {
-        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
-        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.right);
+        var a = MakeElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = MakeElement("B", new Vector3Int(800, 400, 18), Vector3.right);
         var g = GroupManager.Link(new List<KitchenElement> { a, b });
 
         int fired = 0;
@@ -113,8 +97,8 @@ public class ModuleSystemTests
     [Test]
     public void UnlinkActiveModule_ExitsEditMode()
     {
-        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
-        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.right);
+        var a = MakeElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = MakeElement("B", new Vector3Int(800, 400, 18), Vector3.right);
         var g = GroupManager.Link(new List<KitchenElement> { a, b });
 
         ModuleEditMode.Enter(g!);
@@ -129,8 +113,8 @@ public class ModuleSystemTests
     [Test]
     public void Mcp_ModuleInfo_GivesTheCentreInMetres_AndTheSizeInMillimetres()
     {
-        Make("Бок левый", new Vector3Int(500, 720, 18), Vector3.zero);
-        Make("Бок правый", new Vector3Int(500, 720, 18), new Vector3(0.582f, 0f, 0f));
+        MakeElement("Бок левый", new Vector3Int(500, 720, 18), Vector3.zero);
+        MakeElement("Бок правый", new Vector3Int(500, 720, 18), new Vector3(0.582f, 0f, 0f));
 
         _handler!.Handle(Req("create_module", new
         {
@@ -152,9 +136,9 @@ public class ModuleSystemTests
     [Test]
     public void Mcp_CreateModule_AndReadConfiguration()
     {
-        Make("Бок левый", new Vector3Int(500, 720, 18), Vector3.zero);
-        Make("Бок правый", new Vector3Int(500, 720, 18), new Vector3(0.582f, 0f, 0f));
-        Make("Дно", new Vector3Int(564, 18, 500), new Vector3(0.291f, -0.351f, 0f));
+        MakeElement("Бок левый", new Vector3Int(500, 720, 18), Vector3.zero);
+        MakeElement("Бок правый", new Vector3Int(500, 720, 18), new Vector3(0.582f, 0f, 0f));
+        MakeElement("Дно", new Vector3Int(564, 18, 500), new Vector3(0.291f, -0.351f, 0f));
 
         var create = _handler!.Handle(Req("create_module", new
         {
@@ -188,7 +172,7 @@ public class ModuleSystemTests
     [Test]
     public void Mcp_CreateModule_MissingElement_Fails()
     {
-        Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        MakeElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
         var resp = _handler!.Handle(Req("create_module", new
         {
             name = "X",
@@ -201,9 +185,9 @@ public class ModuleSystemTests
     [Test]
     public void Mcp_EnterExitModuleEdit()
     {
-        var a = Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
-        var b = Make("B", new Vector3Int(800, 400, 18), Vector3.right);
-        var outsider = Make("Out", new Vector3Int(600, 300, 18), new Vector3(2f, 0f, 0f));
+        var a = MakeElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        var b = MakeElement("B", new Vector3Int(800, 400, 18), Vector3.right);
+        var outsider = MakeElement("Out", new Vector3Int(600, 300, 18), new Vector3(2f, 0f, 0f));
         _handler!.Handle(Req("create_module", new { name = "М1", members = new[] { "A", "B" } }));
 
         var enter = _handler!.Handle(Req("enter_module_edit", new { module = "М1" }));
@@ -224,9 +208,9 @@ public class ModuleSystemTests
     [Test]
     public void Mcp_AddAndRemoveFromModule()
     {
-        Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
-        Make("B", new Vector3Int(800, 400, 18), Vector3.right);
-        var extra = Make("Полка", new Vector3Int(564, 18, 450), new Vector3(0f, 1f, 0f));
+        MakeElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        MakeElement("B", new Vector3Int(800, 400, 18), Vector3.right);
+        var extra = MakeElement("Полка", new Vector3Int(564, 18, 450), new Vector3(0f, 1f, 0f));
         _handler!.Handle(Req("create_module", new { name = "М1", members = new[] { "A", "B" } }));
 
         var add = _handler!.Handle(Req("add_to_module", new { module = "М1", names = new[] { "Полка" } }));
@@ -242,10 +226,10 @@ public class ModuleSystemTests
     [Test]
     public void Mcp_GetModules_ListsAll()
     {
-        Make("A", new Vector3Int(800, 400, 18), Vector3.zero);
-        Make("B", new Vector3Int(800, 400, 18), Vector3.right);
-        Make("C", new Vector3Int(800, 400, 18), new Vector3(2f, 0f, 0f));
-        Make("D", new Vector3Int(800, 400, 18), new Vector3(3f, 0f, 0f));
+        MakeElement("A", new Vector3Int(800, 400, 18), Vector3.zero);
+        MakeElement("B", new Vector3Int(800, 400, 18), Vector3.right);
+        MakeElement("C", new Vector3Int(800, 400, 18), new Vector3(2f, 0f, 0f));
+        MakeElement("D", new Vector3Int(800, 400, 18), new Vector3(3f, 0f, 0f));
         _handler!.Handle(Req("create_module", new { name = "М1", members = new[] { "A", "B" } }));
         _handler!.Handle(Req("create_module", new { name = "М2", members = new[] { "C", "D" } }));
 
@@ -260,8 +244,8 @@ public class ModuleSystemTests
     [Test]
     public void Module_SurvivesSaveLoad()
     {
-        var a = Make("A", new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
-        var b = Make("B", new Vector3Int(800, 400, 18), new Vector3(1f, 0.2f, 0f));
+        var a = MakeElement("A", new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
+        var b = MakeElement("B", new Vector3Int(800, 400, 18), new Vector3(1f, 0.2f, 0f));
         var g = GroupManager.Link(new List<KitchenElement> { a, b });
         g!.name = "Тумба";
 

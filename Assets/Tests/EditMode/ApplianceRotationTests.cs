@@ -20,10 +20,8 @@ using KitchenDesigner.Core.UI;
 ///     свойств не показываются вовсе (не гасятся — убираются), а MCP отвечает
 ///     отказом, а не молча правит ось.
 /// </summary>
-public class ApplianceRotationTests
+public class ApplianceRotationTests : McpTestFixture
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-    private McpCommandHandler? _handler;
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
 
@@ -33,8 +31,6 @@ public class ApplianceRotationTests
     [SetUp]
     public void SetUp()
     {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
         GroupManager.Clear();
         CommandStack.Clear();
     }
@@ -337,12 +333,6 @@ public class ApplianceRotationTests
     }
 
     // ── MCP ─────────────────────────────────────────────────────────────
-
-    private McpRequest MakeReq(string method, object data)
-    {
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(data);
-        return new McpRequest { id = "test", method = method, Params = JObject.Parse(json) };
-    }
 
     private static string ErrorMessage(McpResponse resp) =>
         JObject.FromObject(resp.data!)["message"]!.Value<string>()!;
