@@ -326,7 +326,7 @@ namespace KitchenDesigner.Core.MCP
                 if (fields.Contains("kind")) row["kind"] = ElementSelector.TypeOf(e);
                 if (fields.Contains("anchorMm")) row["anchorMm"] = new[]
                     { Mathf.RoundToInt(anchor.x / AppConstants.MM_TO_UNITS), Mathf.RoundToInt(anchor.z / AppConstants.MM_TO_UNITS) };
-                if (fields.Contains("sizeMm")) row["sizeMm"] = new[] { e.DimensionsMM.x, e.DimensionsMM.z, e.DimensionsMM.y };
+                if (fields.Contains("sizeMm")) row["sizeMm"] = new[] { e.DimensionsMM.x, e.DimensionsMM.y, e.DimensionsMM.z };
                 if (fields.Contains("rotYDeg")) row["rotYDeg"] = Mathf.Round(e.transform.eulerAngles.y * 10f) / 10f;
                 if (fields.Contains("hasViolations")) row["hasViolations"] = validation != null && validation.violations.Contains(e);
                 if (fields.Contains("module")) row["module"] = GroupManager.GroupOf(e)?.name;

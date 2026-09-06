@@ -164,6 +164,29 @@ public class McpUnitContractTests
             + "красным, пока запись не примет тот же угол, что отдаёт чтение.");
     }
 
+    [Test]
+    public void CompactSize_ListsTheAxes_InTheSameOrderAsEveryOtherTool()
+    {
+        Make("B2_bottom", new Vector3(0.715f, 0.108f, -3.344f), new Vector3Int(564, 16, 552));
+
+        var compact = _handler!.Handle(MakeReq("get",
+            new { names = new[] { "B2_bottom" }, fields = new[] { "sizeMm" } }));
+        Assert.AreEqual("result", compact.type, "get не ответил");
+        var size = JObject.Parse(JsonConvert.SerializeObject(compact.data))
+            ["elements"]![0]!["sizeMm"]!.ToObject<int[]>()!;
+
+        var full = _handler!.Handle(MakeReq("get_elements",
+            new { names = new[] { "B2_bottom" }, summary = true }));
+        var row = JObject.Parse(JsonConvert.SerializeObject(full.data))["elements"]![0]!;
+
+        CollectionAssert.AreEqual(
+            new[] { (int)row["dimXMm"]!, (int)row["dimYMm"]!, (int)row["dimZMm"]! }, size,
+            "get отдавал size как [width, depth, height] — единственное место во всей "
+            + "поверхности, где глубина и высота меняются местами. Значения одного и того же "
+            + "элемента, порядок разный, и ошибка такая же тихая, как с единицами: 16 и 552 "
+            + "оба правдоподобны на своём месте.");
+    }
+
     private static readonly (string method, object oldCall)[] MetreEraCalls =
     {
         ("create_elements", new { items = new[] { new { name = "Ghost", x = 0.715f, y = 0f, z = 0f } } }),

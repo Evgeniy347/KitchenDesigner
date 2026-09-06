@@ -529,7 +529,7 @@ lightSwitch           Light switch only: {isOn, lights, maxLights}. lights are
                       which is why the ceiling is reported next to the list.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
-  {name, kind, anchorMm:[x,z] corner, sizeMm:[width,depth,height], rotYDeg,
+  {name, kind, anchorMm:[x,z] corner, sizeMm:[width,height,depth], rotYDeg,
    hasViolations, module}. Positions are the MIN corner; every number is MM.
    Use it for reasoning about layout; use get_elements for full detail.
 
