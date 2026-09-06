@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public static class WallMeshBuilder
     {
-        public const float MinCellNorm = 0.001f;
+        public const float MinCellNorm = WallCapSpans.MinCellNorm;
 
         public struct WindowCutout
         {
@@ -58,49 +58,37 @@ namespace KitchenDesigner.Core
                 V(s.endBack, y1, back), V(s.endFront, y1, front));
             AddQuad(verts, tris, V(s.startBack, y0, back), V(s.startFront, y0, front),
                 V(s.startFront, y1, front), V(s.startBack, y1, back));
-            AddQuad(verts, tris, V(s.startFront, y1, front), V(s.endFront, y1, front),
-                V(s.endBack, y1, back), V(s.startBack, y1, back));
-            AddBottomCapNorm(verts, tris, cutouts, s, y0, front, back);
+            AddCapNorm(verts, tris, cutouts, s, y1, front, back, true);
+            AddCapNorm(verts, tris, cutouts, s, y0, front, back, false);
         }
 
-        private static void AddBottomCapNorm(List<Vector3> verts, List<int> tris,
-            List<WindowCutout> cutouts, EndShape s, float y0, float front, float back)
+        private static void AddCapNorm(List<Vector3> verts, List<int> tris,
+            List<WindowCutout> cutouts, EndShape s, float y, float front, float back, bool top)
         {
-            foreach (var span in SolidSpansAlongBase(cutouts,
+            var holes = new List<Span>();
+            foreach (var co in cutouts)
+            {
+                var vertical = new Span(co.centerNorm.y - co.halfSizeNorm.y,
+                    co.centerNorm.y + co.halfSizeNorm.y);
+                if (!WallCapSpans.Reaches(vertical, top)) continue;
+                holes.Add(new Span(co.centerNorm.x - co.halfSizeNorm.x,
+                    co.centerNorm.x + co.halfSizeNorm.x));
+            }
+
+            foreach (var span in WallCapSpans.Solid(holes,
                 Mathf.Min(s.startFront, s.startBack), Mathf.Max(s.endFront, s.endBack)))
             {
                 float sb = Mathf.Clamp(span.Min, s.startBack, s.endBack);
                 float eb = Mathf.Clamp(span.Max, s.startBack, s.endBack);
                 float sf = Mathf.Clamp(span.Min, s.startFront, s.endFront);
                 float ef = Mathf.Clamp(span.Max, s.startFront, s.endFront);
-                AddQuad(verts, tris, V(sb, y0, back), V(eb, y0, back),
-                    V(ef, y0, front), V(sf, y0, front));
+                if (top)
+                    AddQuad(verts, tris, V(sf, y, front), V(ef, y, front),
+                        V(eb, y, back), V(sb, y, back));
+                else
+                    AddQuad(verts, tris, V(sb, y, back), V(eb, y, back),
+                        V(ef, y, front), V(sf, y, front));
             }
-        }
-
-        private static List<Span> SolidSpansAlongBase(List<WindowCutout> cutouts,
-            float from, float to)
-        {
-            var spans = new List<Span> { new Span(from, to) };
-
-            foreach (var co in cutouts)
-            {
-                if (co.centerNorm.y - co.halfSizeNorm.y > DoorOpeningLayout.WallBaseNorm + MinCellNorm)
-                    continue;
-
-                float hole0 = co.centerNorm.x - co.halfSizeNorm.x;
-                float hole1 = co.centerNorm.x + co.halfSizeNorm.x;
-                var kept = new List<Span>();
-                foreach (var span in spans)
-                {
-                    if (hole1 <= span.Min || hole0 >= span.Max) { kept.Add(span); continue; }
-                    if (hole0 - span.Min > MinCellNorm) kept.Add(new Span(span.Min, hole0));
-                    if (span.Max - hole1 > MinCellNorm) kept.Add(new Span(hole1, span.Max));
-                }
-                spans = kept;
-            }
-
-            return spans;
         }
 
         private static void AddBoxNorm(List<Vector3> verts, List<int> tris,

@@ -274,6 +274,98 @@ public class DoorThresholdTests : SnapTestBase
             "под окном стена настоящая — в опущенной полоске она обязана остаться сплошной");
     }
 
+    /// <summary>Вторая полоса в том же проёме, и её не видел ни один прежний
+    /// сенсор. Стена рисует ВЕРХНЮЮ крышку одним квадом во всю длину, вырезы
+    /// игнорируя, — как раньше рисовала нижнюю. На полной стене эта плита лежит
+    /// на 2500 мм и не мешает никому; «опустить все стены» сжимает меш по Y до
+    /// 100 мм, и та же плита садится на 100 мм над полом поперёк прохода. Это и
+    /// есть полоса, о которой сообщил пользователь.
+    ///
+    /// Прежние две починки её пропустили, потому что мерили в других плоскостях:
+    /// <c>FrontFaceCovers</c> смотрит переднюю грань (z = +0,5), а
+    /// <c>FloorPlaneCovers</c> — плоскость пола (y = −0,5). Горизонтальная плита
+    /// на y = +0,5 не попадает ни в одну из них.</summary>
+    [Test]
+    public void Wall_Lowered_KeepsNoWallTopAcrossADoorOpening()
+    {
+        var wall = SpawnWall("Wall_LoweredTopCap");
+        var door = SpawnDoor("Door_LoweredTopCap", 1.05f);
+        door.SnapToWall();
+
+        wall.SetLowered(true, WallManager.LoweredHeightMM * MM);
+
+        var mesh = wall.GetComponent<MeshFilter>()!.sharedMesh!;
+        Assert.IsFalse(WallTopPlaneCovers(mesh, 0f, 0f),
+            "на верхней отметке опущенной стены — это 100 мм над полом — внутри "
+            + "дверного проёма осталась горизонтальная плита: та самая полоса");
+        Assert.IsTrue(WallTopPlaneCovers(mesh, 0.3f, 0f),
+            "рядом с проёмом верхняя крышка обязана остаться — иначе сверху видно "
+            + "нутро опущенной стены");
+    }
+
+    /// <summary><c>SetLowered</c> пересобирает меш только на ПЕРЕХОДЕ, и этого
+    /// достаточно: у опущенной стены вырез двери задан
+    /// <see cref="DoorOpeningLayout.FullHeightSpanNorm"/>, а высота стены в
+    /// нормировке берётся из <c>FullScaleY</c> — полной, не опущенной. Ни то, ни
+    /// другое от высоты огрызка не зависит, поэтому повторный вызов с ДРУГОЙ
+    /// высотой обязан оставить и сам объект меша, и проём сквозным.</summary>
+    [Test]
+    public void Wall_LoweredTwiceToDifferentHeights_KeepsTheSameMeshAndAThroughOpening()
+    {
+        var wall = SpawnWall("Wall_LoweredTwice");
+        var door = SpawnDoor("Door_LoweredTwice", 1.05f);
+        door.SnapToWall();
+
+        wall.SetLowered(true, WallManager.LoweredHeightMM * MM);
+        var first = wall.GetComponent<MeshFilter>()!.sharedMesh;
+
+        wall.SetLowered(true, WallManager.LoweredHeightMM * 2f * MM);
+        var second = wall.GetComponent<MeshFilter>()!.sharedMesh;
+
+        Assert.AreSame(first, second,
+            "высота огрызка не входит в меш: пересобирать его на каждое изменение высоты незачем");
+        Assert.IsFalse(WallTopPlaneCovers(second!, 0f, 0f),
+            "и проём обязан остаться сквозным на верхней отметке при любой высоте опускания");
+    }
+
+    /// <summary>Обратная половина пары. Окно до верха стены не доходит, значит
+    /// опущенная полоска под подоконником — сплошная коробка, и её верх тоже
+    /// сплошной. Если резать верхнюю крышку по любому проёму, в полоске появится
+    /// щель там, где на самом деле стена.</summary>
+    [Test]
+    public void Wall_Lowered_KeepsTheWallTopOverAWindow()
+    {
+        var wall = SpawnWall("Wall_LoweredTopSill");
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 1200, WallThickMM), "Win_LoweredTop", new Vector3(0f, 1.2f, 0f));
+        _spawned.Add(winGo);
+        winGo.GetComponent<WindowElement>()!.SnapToWall();
+
+        wall.SetLowered(true, WallManager.LoweredHeightMM * MM);
+
+        var mesh = wall.GetComponent<MeshFilter>()!.sharedMesh!;
+        Assert.IsTrue(WallTopPlaneCovers(mesh, 0f, 0f),
+            "подоконная часть стены настоящая: у опущенной полоски под окном верх "
+            + "обязан быть сплошным");
+    }
+
+    /// <summary>И обычный случай, на который никто не жаловался: стена ПОЛНОЙ
+    /// высоты с дверью. Дверь 2100 мм в стене 2500 мм до верха не достаёт, значит
+    /// верхняя крышка обязана остаться целой над проёмом — иначе правка проделала
+    /// дыру в потолочной кромке всех стен разом.</summary>
+    [Test]
+    public void Wall_FullHeight_KeepsItsTopWholeOverADoor()
+    {
+        var wall = SpawnWall("Wall_FullTopCap");
+        var door = SpawnDoor("Door_FullTopCap", 1.05f);
+        door.SnapToWall();
+
+        var mesh = wall.GetComponent<MeshFilter>()!.sharedMesh!;
+        Assert.IsTrue(WallTopPlaneCovers(mesh, 0f, 0f),
+            "над дверью 2100 мм в стене 2500 мм стоит перемычка, и верх стены над "
+            + "ней обязан быть сплошным");
+    }
+
     private static List<WallMeshBuilder.WindowCutout> CutoutOnTheWallBase() =>
         new List<WallMeshBuilder.WindowCutout>
         {
@@ -331,7 +423,17 @@ public class DoorThresholdTests : SnapTestBase
     /// нормированных координатах меша) над точкой (x, z). Вертикальные щёки проёма
     /// в эту плоскость не попадают целиком, поэтому берутся только треугольники,
     /// у которых в ней ВСЕ три вершины.</summary>
-    private static bool FloorPlaneCovers(Mesh mesh, float x, float z)
+    private static bool FloorPlaneCovers(Mesh mesh, float x, float z) =>
+        HorizontalPlaneCovers(mesh, DoorOpeningLayout.WallBaseNorm, x, z);
+
+    /// <summary>То же самое на ВЕРХНЕЙ отметке стены (y = +0,5). На стене полной
+    /// высоты эта плоскость лежит под потолком и её никто не видит; у опущенной
+    /// стены она садится на 100 мм над полом — ровно там, где пользователь видит
+    /// полосу поперёк дверного прохода.</summary>
+    private static bool WallTopPlaneCovers(Mesh mesh, float x, float z) =>
+        HorizontalPlaneCovers(mesh, WallCapSpans.TopNorm, x, z);
+
+    private static bool HorizontalPlaneCovers(Mesh mesh, float planeY, float x, float z)
     {
         var verts = mesh.vertices;
         var tris = mesh.triangles;
@@ -340,9 +442,9 @@ public class DoorThresholdTests : SnapTestBase
             var a = verts[tris[t]];
             var b = verts[tris[t + 1]];
             var c = verts[tris[t + 2]];
-            if (Mathf.Abs(a.y + 0.5f) > 1e-4f ||
-                Mathf.Abs(b.y + 0.5f) > 1e-4f ||
-                Mathf.Abs(c.y + 0.5f) > 1e-4f) continue;
+            if (Mathf.Abs(a.y - planeY) > 1e-4f ||
+                Mathf.Abs(b.y - planeY) > 1e-4f ||
+                Mathf.Abs(c.y - planeY) > 1e-4f) continue;
             if (PointInTriangle(x, z,
                 new Vector3(a.x, a.z, 0f), new Vector3(b.x, b.z, 0f), new Vector3(c.x, c.z, 0f)))
                 return true;
