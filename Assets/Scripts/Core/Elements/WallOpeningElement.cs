@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core
 
         public void CycleOpenState() => ToggleOpen();
 
-        private const float OpenSeconds = 0.4f;
+        private const float OpenSeconds = AppConstants.OPENING_ANIM_DURATION_SECONDS;
         private const float WallSwitchHysteresisU = 0.05f;
 
         [SerializeField] private DoorMode _mode = DoorMode.HingeFrontLeft;
@@ -78,7 +78,7 @@ namespace KitchenDesigner.Core
         {
             _isOpen = open;
             if (!Mathf.Approximately(_openT, open ? 1f : 0f))
-                FrameRateManager.KeepAwake(OpenSeconds + 0.2f);
+                FrameRateManager.KeepAwake(OpenSeconds + AppConstants.OPENING_KEEP_AWAKE_MARGIN_SECONDS);
         }
 
         public void ToggleOpen() => SetOpen(!_isOpen);

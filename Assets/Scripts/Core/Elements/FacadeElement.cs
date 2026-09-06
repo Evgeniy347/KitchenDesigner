@@ -87,7 +87,7 @@ namespace KitchenDesigner.Core
             into.Add(new OrientedBox(pos + rot * center, rot, half));
         }
 
-        private const float OpenSeconds = 0.4f;
+        private const float OpenSeconds = AppConstants.OPENING_ANIM_DURATION_SECONDS;
 
         [SerializeField] private DoorMode _mode = DoorMode.HingeFrontLeft;
         [SerializeField] private bool _isPassenger;
@@ -134,7 +134,7 @@ namespace KitchenDesigner.Core
             if (open && _doorProgress <= 0f) CaptureClosed();
             _openTarget = open;
             if (!Mathf.Approximately(_doorProgress, open ? 1f : 0f))
-                FrameRateManager.KeepAwake(OpenSeconds + 0.2f);
+                FrameRateManager.KeepAwake(OpenSeconds + AppConstants.OPENING_KEEP_AWAKE_MARGIN_SECONDS);
         }
 
         public void ForceClose()

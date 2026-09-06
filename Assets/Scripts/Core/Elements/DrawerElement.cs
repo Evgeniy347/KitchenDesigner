@@ -343,7 +343,7 @@ namespace KitchenDesigner.Core
             _open = open;
             SyncAttachedFacade();
             if (!Mathf.Approximately(_t, open ? 1f : 0f))
-                FrameRateManager.KeepAwake(OpenSeconds + 0.2f);
+                FrameRateManager.KeepAwake(OpenSeconds + AppConstants.OPENING_KEEP_AWAKE_MARGIN_SECONDS);
         }
 
         public void ToggleOpen() => SetOpen(!_open);

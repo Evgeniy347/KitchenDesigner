@@ -7,8 +7,8 @@ namespace KitchenDesigner.Core
     internal sealed class DropDoor
     {
         public const float OPEN_ANGLE_DEG = 90f;
-        public const float OPEN_SECONDS = 0.4f;
-        public const float KEEP_AWAKE_MARGIN_SECONDS = 0.2f;
+        public const float OPEN_SECONDS = AppConstants.OPENING_ANIM_DURATION_SECONDS;
+        public const float KEEP_AWAKE_MARGIN_SECONDS = AppConstants.OPENING_KEEP_AWAKE_MARGIN_SECONDS;
 
         private readonly ApplianceBoxes _boxes;
         private readonly int _firstChild;

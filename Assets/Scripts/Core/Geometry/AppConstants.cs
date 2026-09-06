@@ -15,6 +15,9 @@ namespace KitchenDesigner.Core
 
         public const int CHAIR_SEAT_HEIGHT_DEFAULT = 450;
 
+        public const float OPENING_ANIM_DURATION_SECONDS = 0.4f;
+        public const float OPENING_KEEP_AWAKE_MARGIN_SECONDS = 0.2f;
+
         public const int ASSEMBLED_FRAME_MM = 100;
         public const int ASSEMBLED_GLASS_DEDUCT_MM = 180;
         public const int GLASS_THICKNESS_MM = 4;
