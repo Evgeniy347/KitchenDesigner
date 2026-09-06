@@ -47,8 +47,6 @@ namespace KitchenDesigner.Core
             Apply(ActiveFps);
         }
 
-        public void OnBrowserActivity() => WakeFor(IdleGraceSeconds);
-
         private void Awake()
         {
             Instance = this;
