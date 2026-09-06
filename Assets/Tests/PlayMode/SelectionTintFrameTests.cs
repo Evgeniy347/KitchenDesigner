@@ -29,21 +29,48 @@ using KitchenDesigner.Tests;
 /// (42029 изменившихся пикселей из ~42400, которые она занимает), а тест
 /// печатал «0,23 из 0,9» и обвинял подсветку: 140 тысяч пикселей пола честно
 /// не менялись и честно считались частью двери. Порог был ни при чём —
-/// сторож мерил не ту вещь. Поэтому перед каждым снимком гасится КАЖДЫЙ
-/// Renderer сцены, кроме тела элемента: заодно из кадра уходят гизмо
-/// перемещения, которые появляются вместе с выделением и закрывают собой
-/// часть элемента — их пиксели «изменились» и записывались в актив
-/// подсветке, ничего о ней не доказывая.
+/// сторож мерил не ту вещь.
 ///
-/// Само это правило сторожа стережёт <c>SilhouetteStaysInsideTheElement</c>
-/// ниже: силуэт обязан помещаться в экранную проекцию габаритов элемента.
-/// Вернись в кадр пол — он вылезет за эту рамку, и красным станет измерение,
-/// а не подсветка (CONVENTIONS.md → «Prove the harness before you trust what
-/// it measures»).</summary>
+/// ЧЕМ элемент отделяется от сцены. Вторая версия перед каждым снимком гасила
+/// каждый посторонний <c>Renderer</c> — и не гасила НИЧЕГО: кадр «со сценой»
+/// и кадр «после гашения» вышли побайтно одинаковыми, с полом и с гизмо.
+/// Список рендереров тут ни при чём, промахнулся сам способ.
+/// <c>CameraController.Update</c> каждый кадр зовёт
+/// <c>UpdateFloorVisibility</c>, а та в <c>ApplyFloorCameraHide</c> пишет
+/// полу, найденному по тегу Floor, <c>renderer.enabled = rendererVisible</c>
+/// (CameraController.cs:317): наш <c>false</c> жил доли кадра и возвращался в
+/// <c>true</c> раньше, чем камера снимала. Гизмо утекали по второй причине:
+/// список посторонних снимался ОДИН раз, а ручки строятся в Update следующего
+/// кадра — то есть уже после того, как их «погасили».
+///
+/// Поэтому изоляция теперь не гасит чужое, а показывает только своё: тело
+/// подопытного уезжает на отдельный слой <c>FrameLayer</c>, а камера кадра
+/// получает <c>cullingMask</c> ровно из этого слоя. Решение принимается в
+/// момент ОТРИСОВКИ и по слою объекта, поэтому его нельзя ни отменить чужим
+/// Update, ни обойти, родившись позже снимка списка. Отобрать слой некому:
+/// во всём Assets/Scripts нет ни одного присваивания <c>.layer</c> или
+/// <c>cullingMask</c>. Единственная дыра маски — рисование через <c>GL</c>
+/// из <c>OnRenderObject</c>: так рисует <c>SpatialGridRenderer</c>, и слой
+/// ему не указ, поэтому пространственная сетка на время кадров выключается
+/// настройкой; влезь в кадр всё-таки чужая линия — её поймает рамка
+/// габаритов.
+///
+/// Само это правило сторожа стережёт
+/// <c>SilhouetteIsTheElementAlone_OrTheShareWouldCountTheFloor</c>: он держит
+/// обе половины — в сцене ЕСТЬ что отсекать, и после отсечения силуэт
+/// помещается в экранную проекцию габаритов элемента. Вернись в кадр пол — он
+/// вылезет за эту рамку, и красным станет измерение, а не подсветка
+/// (CONVENTIONS.md → «Prove the harness before you trust what it measures»).</summary>
 public class SelectionTintFrameTests
 {
     private const int RenderW = 512;
     private const int RenderH = 512;
+
+    /// <summary>Слой, на котором в кадре стоит подопытный, и только он.
+    /// Тридцать первый: в TagManager названы Default, TransparentFX,
+    /// Ignore Raycast, Water и UI — всё, что старше пятого, свободно, а
+    /// продуктовый код слои не назначает вообще.</summary>
+    private const int FrameLayer = 31;
 
     /// <summary>Выделение обязано накрыть элемент ЦЕЛИКОМ. Порог не подобран
     /// под текущую картинку: до правки у стула желтело только сиденье (около
@@ -67,18 +94,24 @@ public class SelectionTintFrameTests
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private Color32[]? _lastPixels;
     private bool _tintWas;
+    private bool _gridWas;
 
     /// <summary>Валидационный тон выключен на время кадра. Он глобальный и
     /// красит КАЖДЫЙ элемент без своего декора — то есть и наши, ещё до того
     /// как их выделят: кадр «до» вышел бы уже перекрашенным, а рендереры,
     /// носившие фабричный декор, перестали бы его носить, и тест про декор
-    /// проверял бы пустой список. Возвращаем как было в TearDown.</summary>
+    /// проверял бы пустой список. Пространственная сетка выключена по другой
+    /// причине: она рисуется через GL из OnRenderObject, а такое рисование
+    /// маску камеры не спрашивает и в изолированный кадр пролезло бы линиями.
+    /// Обе настройки возвращаются как были в TearDown.</summary>
     [UnitySetUp]
     public IEnumerator SetUp()
     {
         PlayModeTestConfig.ConfigureForTests();
         _tintWas = ElementHighlighter.TintEnabled;
         ElementHighlighter.TintEnabled = false;
+        _gridWas = KitchenSettings.Instance.SpatialGrid;
+        KitchenSettings.Instance.SpatialGrid = false;
 
         _mainCamera = new GameObject("Main Camera");
         _mainCamera.tag = "MainCamera";
@@ -100,6 +133,7 @@ public class SelectionTintFrameTests
     {
         if (SelectionManager.Instance != null) SelectionManager.Instance.DeselectAll();
         ElementHighlighter.TintEnabled = _tintWas;
+        KitchenSettings.Instance.SpatialGrid = _gridWas;
 
         foreach (var go in _spawned)
             if (go != null) Object.Destroy(go);
@@ -160,13 +194,16 @@ public class SelectionTintFrameTests
     /// силуэта» осмысленна ровно настолько, насколько силуэт — это элемент.
     ///
     /// Тест снимает один и тот же кадр дважды — со сценой и без неё — и держит
-    /// обе половины правила. Первая: в сцене ЕСТЬ что исключать, иначе гашение
+    /// обе половины правила. Первая: в сцене ЕСТЬ что отсекать, иначе изоляция
     /// ничего не делает и рамка ниже проходит сама собой (в кадре по-прежнему
     /// стоит пол Bootstrap, и он занимает больше самого элемента). Вторая:
-    /// после гашения силуэт помещается в экранную проекцию габаритов элемента.
-    /// Пропусти гашение — и первый кадр показывает, сколько чужого попадало в
-    /// знаменатель: у двери 183410 пикселей «силуэта» против ~42000 её
-    /// собственных, отчего целиком жёлтая дверь и печаталась как 0,23.</summary>
+    /// после изоляции силуэт помещается в экранную проекцию габаритов элемента.
+    /// Ровно этот тест поймал версию, где посторонние рендереры гасились по
+    /// одному: оба кадра вышли побайтно равными, потому что CameraController
+    /// возвращал полу enabled быстрее, чем камера снимала. Пропусти изоляцию —
+    /// и первый кадр показывает, сколько чужого попадало в знаменатель: у
+    /// двери 183410 пикселей «силуэта» против ~42000 её собственных, отчего
+    /// целиком жёлтая дверь и печаталась как 0,23.</summary>
     [UnityTest]
     public IEnumerator SilhouetteIsTheElementAlone_OrTheShareWouldCountTheFloor()
     {
@@ -186,11 +223,11 @@ public class SelectionTintFrameTests
 
         Assert.Greater(withScenery, elementOnly * 2,
             "в кадре нет посторонней геометрии (" + withScenery + " против "
-            + elementOnly + " пикселей): гасить нечего, и рамка ниже пройдёт "
+            + elementOnly + " пикселей): отсекать нечего, и рамка ниже пройдёт "
             + "на любом коде — сторож проверяет пустоту");
 
         AssertSilhouetteInsideBounds(_lastPixels!, cam, door,
-            "после гашения в силуэте обязан остаться только элемент");
+            "после изоляции в силуэте обязан остаться только элемент");
     }
 
     /// <summary>Кадр про декор, а не про подсветку: тот же обход тела решает,
@@ -270,36 +307,50 @@ public class SelectionTintFrameTests
         return cam;
     }
 
-    /// <summary>Гасит всё, кроме тела элемента, — и возвращает погашенное,
-    /// чтобы включить обратно. Гизмо перемещения рождаются вместе с выделением,
-    /// поэтому список собирается заново перед КАЖДЫМ снимком, а не один раз.
-    /// Обход тела берётся из боевого <c>ElementRenderers.BodyOf</c>: своё
-    /// второе описание «что такое элемент» сошлось бы само с собой.</summary>
-    private static List<Renderer> HideEverythingExcept(KitchenElement subject)
+    /// <summary>Уводит тело элемента на кадровый слой и возвращает прежние
+    /// слои, чтобы поставить обратно. Обход тела берётся из боевого
+    /// <c>ElementRenderers.BodyOf</c>: своё второе описание «что такое элемент»
+    /// сошлось бы само с собой. Ручки гизмо — объекты КОРНЯ сцены, а не дети
+    /// элемента, поэтому в тело не попадают и на кадровый слой не едут.</summary>
+    private static List<KeyValuePair<Transform, int>> PutOnFrameLayer(KitchenElement subject)
     {
-        var body = new HashSet<Renderer>();
+        var moved = new List<KeyValuePair<Transform, int>>();
         foreach (var mr in ElementRenderers.BodyOf(subject))
-            if (mr != null) body.Add(mr);
-
-        var hidden = new List<Renderer>();
-        foreach (var renderer in Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
         {
-            if (renderer == null || !renderer.enabled || body.Contains(renderer)) continue;
-            renderer.enabled = false;
-            hidden.Add(renderer);
+            if (mr == null) continue;
+            var node = mr.transform;
+            moved.Add(new KeyValuePair<Transform, int>(node, node.gameObject.layer));
+            node.gameObject.layer = FrameLayer;
         }
-        return hidden;
+
+        Assert.IsNotEmpty(moved,
+            "на кадровый слой не уехало ни одного меша: снимать нечего, "
+            + "и любая доля силуэта считалась бы от пустого кадра");
+        return moved;
     }
 
+    /// <summary>Снимок ОДНОГО элемента: тело на кадровом слое, маска камеры —
+    /// ровно этот слой. Маска решает на каждой отрисовке, поэтому её не
+    /// отменит чужой Update и не обойдёт объект, родившийся между снимком
+    /// списка и кадром, — на этих двух вещах сломалось поштучное гашение
+    /// рендереров.</summary>
     private IEnumerator Shoot(Camera cam, KitchenElement subject, string fileName)
     {
-        var hidden = HideEverythingExcept(subject);
+        var moved = PutOnFrameLayer(subject);
+        cam.cullingMask = 1 << FrameLayer;
+
         yield return Capture(cam, fileName);
-        foreach (var renderer in hidden)
-            if (renderer != null) renderer.enabled = true;
+
+        cam.cullingMask = ~0;
+        foreach (var was in moved)
+            if (was.Key != null) was.Key.gameObject.layer = was.Value;
     }
 
-    private IEnumerator ShootWholeScene(Camera cam, string fileName) => Capture(cam, fileName);
+    private IEnumerator ShootWholeScene(Camera cam, string fileName)
+    {
+        cam.cullingMask = ~0;
+        yield return Capture(cam, fileName);
+    }
 
     private static int CountSilhouette(Color32[] frame, Camera cam)
     {
