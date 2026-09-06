@@ -27,8 +27,21 @@ namespace KitchenDesigner.Core
         private Vector2 _pressMouse;
         private float _pressTime;
 
-        private Material? _dragOriginalMaterial;
-        private Material? _dragTintMaterial;
+        private readonly List<DragPaint> _dragPaint = new List<DragPaint>();
+
+        private sealed class DragPaint
+        {
+            public DragPaint(MeshRenderer renderer, Material material, Material painted)
+            {
+                this.renderer = renderer;
+                this.material = material;
+                this.painted = painted;
+            }
+
+            public readonly MeshRenderer renderer;
+            public readonly Material material;
+            public readonly Material painted;
+        }
 
         private Mesh? _ghostMesh;
         private Material? _ghostMaterial;
@@ -288,7 +301,7 @@ namespace KitchenDesigner.Core
             _dragWall = null;
             _targetIsWallOpening = false;
             RevertMoveSet();
-            RestoreDragMaterial(_target);
+            RestoreDragMaterial();
             IsDragging = false;
             _wasMoved = false;
             _pressed = false;
@@ -351,7 +364,7 @@ namespace KitchenDesigner.Core
 
             if (!computed) return;
 
-            if (_dragTintMaterial == null) SaveDragMaterial(_target!);
+            if (_dragPaint.Count == 0) SaveDragMaterial(_target!);
 
             if (Input.GetKeyDown(KeyCode.X)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.X);
             if (Input.GetKeyDown(KeyCode.Z)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.Z);
@@ -434,7 +447,7 @@ namespace KitchenDesigner.Core
 			}
 
 			_axisLock = DragAxisLock.None;
-			RestoreDragMaterial(_target);
+			RestoreDragMaterial();
 			IsDragging = false;
 			_wasShift = false;
 			_wasCtrl = false;
@@ -493,37 +506,50 @@ namespace KitchenDesigner.Core
 
         internal void SaveDragMaterial(KitchenElement target)
         {
-            var renderer = target.GetComponent<MeshRenderer>();
-            if (renderer == null) return;
+            if (target == null || _dragPaint.Count > 0) return;
 
-            _dragOriginalMaterial = renderer.material;
-            _dragTintMaterial = new Material(_dragOriginalMaterial);
-            _dragTintMaterial.SetFloat("_Surface", 1);
-            _dragTintMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            _dragTintMaterial.renderQueue = 3000;
-            _dragTintMaterial.color = DragGesture.AllowedTint;
-            renderer.material = _dragTintMaterial;
+            foreach (var renderer in ElementRenderers.BodyOf(target))
+            {
+                if (renderer == null) continue;
+                var material = renderer.sharedMaterial;
+                if (material == null) continue;
+
+                var painted = new Material(material);
+                painted.name = ElementTint.DragName;
+                painted.SetFloat("_Surface", 1);
+                painted.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                painted.renderQueue = 3000;
+                painted.color = DragGesture.AllowedTint;
+                renderer.material = painted;
+                _dragPaint.Add(new DragPaint(renderer, material, painted));
+            }
         }
 
         private void UpdateDragTint()
         {
-            if (_dragTintMaterial == null || _target == null) return;
+            if (_dragPaint.Count == 0 || _target == null) return;
 
-            _dragTintMaterial.color = DragGesture.TintFor(MoveSetCausesViolation());
+            var tint = DragGesture.TintFor(MoveSetCausesViolation());
+            foreach (var paint in _dragPaint)
+            {
+                if (paint.painted == null) continue;
+                paint.painted.color = tint;
+            }
         }
 
-        internal void RestoreDragMaterial(KitchenElement? target)
+        internal void RestoreDragMaterial()
         {
-            var renderer = target != null ? target.GetComponent<MeshRenderer>() : null;
-            if (renderer != null && _dragOriginalMaterial != null)
-                renderer.material = _dragOriginalMaterial;
-
-            if (_dragTintMaterial != null)
+            foreach (var paint in _dragPaint)
             {
-                Destroy(_dragTintMaterial);
-                _dragTintMaterial = null;
+                if (paint.renderer == null || paint.material == null) continue;
+                if (!ElementTint.Wears(paint.renderer, paint.painted, ElementTint.DragName)) continue;
+                paint.renderer.material = paint.material;
             }
-            _dragOriginalMaterial = null;
+
+            foreach (var paint in _dragPaint)
+                if (paint.painted != null) Destroy(paint.painted);
+
+            _dragPaint.Clear();
         }
 
         private Plane GetDragPlane(KitchenElement target)

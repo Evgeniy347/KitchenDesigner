@@ -352,15 +352,10 @@ namespace KitchenDesigner.Core
             RefreshHighlight(element);
         }
 
-        internal const string TintMaterialName = "KD Selection Tint";
+        internal const string TintMaterialName = ElementTint.SelectionName;
 
         private static bool WearsOurTint(MeshRenderer renderer, Material? painted)
-        {
-            var current = renderer.sharedMaterial;
-            if (current == null) return false;
-            if (painted != null && ReferenceEquals(current, painted)) return true;
-            return current.name.StartsWith(TintMaterialName, System.StringComparison.Ordinal);
-        }
+            => ElementTint.Wears(renderer, painted, TintMaterialName);
 
         private void HighlightSelected(KitchenElement element, bool isMulti)
         {

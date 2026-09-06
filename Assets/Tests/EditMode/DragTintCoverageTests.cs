@@ -101,7 +101,7 @@ public class DragTintCoverageTests
                 offenders.Add(maker.type.Name + ": без подсветки перетаскивания остались "
                     + missed.Count + " из " + body.Count + " — " + string.Join(", ", missed));
 
-            _mover!.RestoreDragMaterial(element);
+            _mover!.RestoreDragMaterial();
             Reset();
         }
 
@@ -136,7 +136,7 @@ public class DragTintCoverageTests
 
             covered++;
             _mover!.SaveDragMaterial(element);
-            _mover!.RestoreDragMaterial(element);
+            _mover!.RestoreDragMaterial();
 
             var stuck = new List<string>();
             for (int i = 0; i < body.Count; i++)
@@ -204,7 +204,7 @@ public class DragTintCoverageTests
                         + "иначе этот тест проверяет не ту ситуацию, ради которой написан");
             }
 
-            _mover!.RestoreDragMaterial(element);
+            _mover!.RestoreDragMaterial();
 
             var stuck = new List<string>();
             for (int i = 0; i < body.Count; i++)
