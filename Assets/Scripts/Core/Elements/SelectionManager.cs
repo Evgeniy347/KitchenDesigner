@@ -9,8 +9,8 @@ namespace KitchenDesigner.Core
 
         private KitchenElement? _selected;
         private readonly List<KitchenElement> _selectedElements = new List<KitchenElement>();
-        private readonly Dictionary<KitchenElement, SavedMaterial> _savedMaterials
-            = new Dictionary<KitchenElement, SavedMaterial>();
+        private readonly Dictionary<KitchenElement, List<SavedMaterial>> _savedMaterials
+            = new Dictionary<KitchenElement, List<SavedMaterial>>();
 
         public KitchenElement? Selected => _selected;
         public IReadOnlyList<KitchenElement> SelectedElements => _selectedElements;
@@ -20,8 +20,8 @@ namespace KitchenDesigner.Core
 
         private struct SavedMaterial
         {
+            public MeshRenderer renderer;
             public Material material;
-            public Color color;
         }
 
         private void Awake()
@@ -349,36 +349,50 @@ namespace KitchenDesigner.Core
         {
             if (_highlightSuppressed == element) return;
 
-            var renderer = element.GetComponent<MeshRenderer>();
-            var srcMat = renderer != null ? renderer.sharedMaterial : null;
-            if (renderer != null && srcMat != null)
+            if (!_savedMaterials.TryGetValue(element, out var saved))
             {
-                if (!_savedMaterials.ContainsKey(element))
-                {
-                    _savedMaterials[element] = new SavedMaterial
-                    {
-                        material = srcMat,
-                        color = srcMat.GetColor("_BaseColor")
-                    };
-                }
+                saved = CaptureBody(element);
+                if (saved.Count == 0) return;
+                _savedMaterials[element] = saved;
+            }
 
-                if (element.Transparent)
+            if (element.Transparent)
+            {
+                foreach (var entry in saved)
                 {
-                    renderer.material = ElementHighlighter.MakeTransparent(
-                        srcMat.shader, new Color(1f, 0.9f, 0.4f, 0.12f));
-                    ElementOutline.Ensure(element)!.Show(selected: true);
-                    return;
+                    if (entry.renderer == null || entry.material == null) continue;
+                    entry.renderer.material = ElementHighlighter.MakeTransparent(
+                        entry.material.shader, new Color(1f, 0.9f, 0.4f, 0.12f));
                 }
+                ElementOutline.Ensure(element)!.Show(selected: true);
+                return;
+            }
 
-                var mat = new Material(srcMat);
+            float intensity = isMulti ? 0.3f : 0.5f;
+            foreach (var entry in saved)
+            {
+                if (entry.renderer == null || entry.material == null) continue;
+                var mat = new Material(entry.material);
                 mat.EnableKeyword("_EMISSION");
-                float intensity = isMulti ? 0.3f : 0.5f;
                 mat.SetColor("_EmissionColor", new Color(0.8f, 0.7f, 0.1f) * intensity);
                 mat.SetColor("_BaseColor", isMulti
                     ? new Color(1f, 0.97f, 0.7f, 1f)
                     : new Color(1f, 0.95f, 0.6f, 1f));
-                renderer.material = mat;
+                entry.renderer.material = mat;
             }
+        }
+
+        private static List<SavedMaterial> CaptureBody(KitchenElement element)
+        {
+            var saved = new List<SavedMaterial>();
+            foreach (var renderer in ElementRenderers.BodyOf(element))
+            {
+                if (renderer == null) continue;
+                var srcMat = renderer.sharedMaterial;
+                if (srcMat == null) continue;
+                saved.Add(new SavedMaterial { renderer = renderer, material = srcMat });
+            }
+            return saved;
         }
 
         public void RefreshHighlight(KitchenElement element)
@@ -390,11 +404,14 @@ namespace KitchenDesigner.Core
 
         private void RestoreMaterial(KitchenElement element)
         {
-            var renderer = element.GetComponent<MeshRenderer>();
-            if (renderer != null && _savedMaterials.TryGetValue(element, out var saved))
+            if (_savedMaterials.TryGetValue(element, out var saved)
+                && !MaterialManager.HasCustomDecor(element))
             {
-                if (!MaterialManager.HasCustomDecor(element))
-                    renderer.material = saved.material;
+                foreach (var entry in saved)
+                {
+                    if (entry.renderer == null || entry.material == null) continue;
+                    entry.renderer.material = entry.material;
+                }
             }
             _savedMaterials.Remove(element);
 

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -147,8 +148,8 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            var renderer = element.GetComponent<MeshRenderer>();
-            if (renderer == null) return;
+            var body = ElementRenderers.BodyOf(element);
+            if (body.Count == 0) return;
 
             if (KeepsItsOwnMaterialAlways(element)) return;
 
@@ -156,14 +157,14 @@ namespace KitchenDesigner.Core
 
             if (ModuleEditMode.IsActive && !ModuleEditMode.IsEditable(element))
             {
-                PaintFlat(element, renderer, _dimmedMaterial!);
+                PaintBody(element, body, _dimmedMaterial!);
                 ElementOutline.For(element)?.Hide();
                 return;
             }
 
             if (PhotoMode.ResolveTransparent(element.Transparent))
             {
-                PaintFlat(element, renderer, isValid ? _validTransparentMaterial! : _invalidTransparentMaterial!);
+                PaintBody(element, body, isValid ? _validTransparentMaterial! : _invalidTransparentMaterial!);
                 ElementOutline.Ensure(element)?.Show(selected: false);
             }
             else if (ownDecorOnly)
@@ -179,10 +180,18 @@ namespace KitchenDesigner.Core
             }
             else
             {
-                PaintFlat(element, renderer, isValid ? _validMaterial! : _invalidMaterial!,
+                PaintBody(element, body, isValid ? _validMaterial! : _invalidMaterial!,
                     keepAux: true);
                 ElementOutline.For(element)?.Hide();
             }
+        }
+
+        private static void PaintBody(KitchenElement element, List<MeshRenderer> body,
+            Material material, bool keepAux = false)
+        {
+            foreach (var renderer in body)
+                if (renderer != null)
+                    PaintFlat(element, renderer, material, keepAux);
         }
 
         internal void PaintCooktopChildren(CooktopElement cooktop, bool isValid)
