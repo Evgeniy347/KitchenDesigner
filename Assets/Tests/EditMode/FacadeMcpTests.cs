@@ -32,7 +32,11 @@ public class FacadeMcpTests : McpTestFixture
         return f;
     }
 
-    private KitchenElement MakeElement(string name, Vector3Int dims, Vector3 pos)
+    /// <summary>НЕ базовый MakeElement: тот создаёт голый GameObject, а этим тестам нужен
+    /// примитив с MeshFilter/MeshRenderer/BoxCollider — препятствие, которое видит луч и
+    /// геометрия фасада. Имя разное намеренно: одинаковое скрывало базовый метод и валило
+    /// сборку под warnaserror (CS0108).</summary>
+    private KitchenElement MakePrimitiveElement(string name, Vector3Int dims, Vector3 pos)
     {
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         go.name = name;
@@ -68,7 +72,7 @@ public class FacadeMcpTests : McpTestFixture
     public void GetViolations_FacadeWithObstruction_ReturnsFaceObstruction()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
-        MakeElement("Obstacle", new Vector3Int(200, 200, 18), new Vector3(0f, 0f, 0.038f));
+        MakePrimitiveElement("Obstacle", new Vector3Int(200, 200, 18), new Vector3(0f, 0f, 0.038f));
 
         var resp = _handler!.Handle(MakeReq("get_violations", new { }));
         var json = JObject.FromObject(resp.data!);
@@ -91,7 +95,7 @@ public class FacadeMcpTests : McpTestFixture
     [Test]
     public void GetViolations_InwardFacade_ReturnsViolation()
     {
-        var box = MakeElement("Box", new Vector3Int(600, 400, 500), Vector3.zero);
+        var box = MakePrimitiveElement("Box", new Vector3Int(600, 400, 500), Vector3.zero);
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, -0.3f));
         GroupManager.Link(new List<KitchenElement> { box, f });
 
@@ -159,7 +163,7 @@ public class FacadeMcpTests : McpTestFixture
     public void EditElements_SetFacadeMode_ReportsOpeningCollision_InViolations()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
-        MakeElement("Obstacle", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, 0.3f));
+        MakePrimitiveElement("Obstacle", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, 0.3f));
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
