@@ -67,7 +67,7 @@ public class McpRpcRouterTests
             "имя сервера — то же, под которым агенту предлагают его прописать");
         Assert.AreEqual("9.9.9", (string?)result["serverInfo"]!["version"],
             "версия приходит снаружи: роутер не знает про UnityEngine.Application");
-        StringAssert.Contains("MILLIMETERS", (string?)result["instructions"],
+        StringAssert.Contains("MILLIMETRES", (string?)result["instructions"],
             "instructions — та самая шпаргалка про метры и миллиметры, ради которой агент "
             + "перестаёт путать 600 мм с 600 м");
     }

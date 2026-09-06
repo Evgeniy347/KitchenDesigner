@@ -603,7 +603,7 @@ public class DishwasherElementTests
         {
             items = new object[]
             {
-                new { name = "DW-mcp", type = "dishwasher", x = 0f, y = 0f, z = 0f, width = 900 }
+                new { name = "DW-mcp", type = "dishwasher", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f, width = 900 }
             }
         }));
 
@@ -619,7 +619,7 @@ public class DishwasherElementTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name = "DW-fix", type = "dishwasher", x = 0f, y = 0f, z = 0f } }
+            items = new object[] { new { name = "DW-fix", type = "dishwasher", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         var resp = _handler.Handle(MakeReq("edit_elements", new
@@ -638,7 +638,7 @@ public class DishwasherElementTests
         {
             items = new object[]
             {
-                new { name = "Oven-wrong", type = "oven", x = 0f, y = 0f, z = 0f,
+                new { name = "Oven-wrong", type = "oven", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f,
                       model = DishwasherElement.MODEL }
             }
         }));

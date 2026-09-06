@@ -668,7 +668,7 @@ public class OvenElementTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name = "Oven-mcp", type = "oven", x = 0f, y = 0f, z = 0f, width = 900 } }
+            items = new object[] { new { name = "Oven-mcp", type = "oven", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f, width = 900 } }
         }));
 
         Assert.AreEqual("result", resp.type, resp.type == "error" ? ErrorMessage(resp) : "");
@@ -683,7 +683,7 @@ public class OvenElementTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name = "Oven-fix", type = "oven", x = 0f, y = 0f, z = 0f } }
+            items = new object[] { new { name = "Oven-fix", type = "oven", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         var resp = _handler.Handle(MakeReq("edit_elements", new
@@ -702,7 +702,7 @@ public class OvenElementTests
         {
             items = new object[]
             {
-                new { name = "Hob-wrong", type = "cooktop", x = 0f, y = 0f, z = 0f, model = OvenElement.MODEL }
+                new { name = "Hob-wrong", type = "cooktop", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f, model = OvenElement.MODEL }
             }
         }));
 
@@ -715,7 +715,7 @@ public class OvenElementTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name = "Oven-info", type = "oven", x = 0f, y = 0f, z = 0f } }
+            items = new object[] { new { name = "Oven-info", type = "oven", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         var resp = _handler.Handle(MakeReq("get_elements", new { filter = "Oven-info" }));
