@@ -30,7 +30,6 @@ namespace KitchenDesigner.Core.UI
 
         private static readonly Color RowElementColor = new Color(0.16f, 0.17f, 0.21f, 1f);
         private static readonly Color RowGroupColor = new Color(0.22f, 0.24f, 0.30f, 1f);
-        private static readonly Color RowSelectedColor = new Color(0.45f, 0.40f, 0.15f, 1f);
         private static readonly Color RowRootColor = new Color(0.13f, 0.14f, 0.17f, 1f);
 
         private GameObject? _root;
@@ -54,7 +53,7 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorTopRight(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(0, -TopOffsetUnderToolbar);
             _root = panel.gameObject;
-            WindowDrag.Attach(panel.rectTransform, 40f);
+            WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
             UIFactory.CreateLabel("HierTitle", panel.transform, "Сцена", UIStyle.FontWindowTitle,
@@ -148,7 +147,7 @@ namespace KitchenDesigner.Core.UI
             var handle = UIFactory.CreateRect("Handle", sbRect);
             handle.sizeDelta = new Vector2(8, 100);
             var handleImg = handle.gameObject.AddComponent<Image>();
-            handleImg.color = new Color(0.38f, 0.40f, 0.46f, 1f);
+            handleImg.color = UIStyle.ScrollHandle;
             scrollbar.targetGraphic = handleImg;
             scrollbar.handleRect = handle;
             scroll.verticalScrollbar = scrollbar;
@@ -331,7 +330,7 @@ namespace KitchenDesigner.Core.UI
             var mRt = mainBtn.GetComponent<RectTransform>();
             mRt.anchorMin = mRt.anchorMax = mRt.pivot = new Vector2(0, 0.5f);
             mRt.anchoredPosition = new Vector2(mainX, 0);
-            mainBtn.GetComponent<Image>().color = highlighted ? RowSelectedColor : rowColor;
+            mainBtn.GetComponent<Image>().color = highlighted ? UIStyle.RowSelected : rowColor;
 
             var text = mainBtn.GetComponentInChildren<TMP_Text>();
             if (text != null)

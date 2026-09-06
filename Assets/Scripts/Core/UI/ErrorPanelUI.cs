@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
-            WindowDrag.Attach(panel.rectTransform, 40f);
+            WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
             UIFactory.CreateLabel("ErrTitle", panel.transform, "Ошибки", UIStyle.FontTitle,

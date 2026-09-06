@@ -27,7 +27,7 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorTopRight(panel.rectTransform);
             panel.rectTransform.anchoredPosition = LeftOfTheDayNightPanel;
             _root = panel.gameObject;
-            WindowDrag.Attach(panel.rectTransform, 40f);
+            WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
 
             UIFactory.CreateLabel("MeasureTitle", panel.transform, "Замер", UIStyle.FontTitle,
                 new Vector2(0, PanelHeight * 0.5f - 26f), new Vector2(RowWidth, 28f),

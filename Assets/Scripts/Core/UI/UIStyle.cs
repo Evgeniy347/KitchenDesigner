@@ -43,6 +43,7 @@ namespace KitchenDesigner.Core.UI
         public const float CloseBtnSize = 32f;
         public const float CloseBtnInset = 8f;
         public const float DropdownItemMinH = 24f;
+        public const float DragStripHeight = 40f;
 
         public const int FontTitle = 20;
         public const int FontWindowTitle = 24;

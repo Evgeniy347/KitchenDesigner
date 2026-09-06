@@ -30,7 +30,7 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorTopRight(panel.rectTransform);
             panel.rectTransform.anchoredPosition = new Vector2(-10, -60);
             _root = panel.gameObject;
-            WindowDrag.Attach(panel.rectTransform, 40f);
+            WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
             UIFactory.CreateLabel("MuTitle", panel.transform, "Музыка", UIStyle.FontTitle,
