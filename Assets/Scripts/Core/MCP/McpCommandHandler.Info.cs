@@ -18,7 +18,7 @@ namespace KitchenDesigner.Core.MCP
             var lines = spec.lines.Select(l => new SpecLineInfo
             {
                 name = l.name,
-                dimX = l.dimensionsMM.x, dimY = l.dimensionsMM.y, dimZ = l.dimensionsMM.z,
+                dimXMm = l.dimensionsMM.x, dimYMm = l.dimensionsMM.y, dimZMm = l.dimensionsMM.z,
                 count = l.count, areaPerBoardM2 = l.areaPerBoardM2, totalAreaM2 = l.totalAreaM2
             }).ToList();
 
@@ -194,8 +194,8 @@ namespace KitchenDesigner.Core.MCP
             }
             return McpResponse.Result(req.id, new
             {
-                ok = true, path, width = w, height = h,
-                renderWidth = rw, renderHeight = rh, msaa, renders,
+                ok = true, path, widthPx = w, heightPx = h,
+                renderWidthPx = rw, renderHeightPx = rh, msaaSamples = msaa, renders,
                 renderMs = System.Math.Round(renderMs, 2)
             });
         }

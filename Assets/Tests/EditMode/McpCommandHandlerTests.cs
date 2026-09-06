@@ -603,8 +603,8 @@ public class McpCommandHandlerTests
             + "ни формы, ни декоров сиденья");
         Assert.AreEqual("round", info.stool!.shape,
             "форма — производная от радиуса, и агент читает её из ответа, а не пересчитывает");
-        Assert.AreEqual(180, info.cornerRadius,
-            "общее поле cornerRadius обязано отвечать и за табуретку: агент правит её тем же "
+        Assert.AreEqual(180, info.cornerRadiusMm,
+            "общее поле cornerRadiusMm обязано отвечать и за табуретку: агент правит её тем же "
             + "полем corner_radius, что и радиусную полку");
     }
 
@@ -901,7 +901,7 @@ public class McpCommandHandlerTests
         var info = (jObj["elements"] as Newtonsoft.Json.Linq.JArray)![0].ToObject<ElementInfo>()!;
         Assert.IsNotNull(info);
         Assert.AreEqual("Board", info.name);
-        Assert.AreEqual(800, info.dimX);
+        Assert.AreEqual(800, info.dimXMm);
     }
 
     [Test]

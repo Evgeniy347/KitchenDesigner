@@ -304,7 +304,7 @@ namespace KitchenDesigner.Core.MCP
             if (p == null || p.names == null || p.names.Length == 0)
                 return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
             var allowed = new HashSet<string>(new[]
-                { "name", "kind", "anchor", "size", "rotY", "hasViolations", "module", "wallKind" },
+                { "name", "kind", "anchorMm", "sizeMm", "rotYDeg", "hasViolations", "module", "wallKind" },
                 System.StringComparer.OrdinalIgnoreCase);
             var fields = p.fields != null && p.fields.Length > 0
                 ? new HashSet<string>(p.fields, System.StringComparer.OrdinalIgnoreCase) : allowed;
@@ -324,10 +324,10 @@ namespace KitchenDesigner.Core.MCP
                 Vector3 anchor = new Vector3(aabb.minX, aabb.minY, aabb.minZ);
                 if (fields.Contains("name")) row["name"] = e.PartName;
                 if (fields.Contains("kind")) row["kind"] = ElementSelector.TypeOf(e);
-                if (fields.Contains("anchor")) row["anchor"] = new[]
+                if (fields.Contains("anchorMm")) row["anchorMm"] = new[]
                     { Mathf.RoundToInt(anchor.x / AppConstants.MM_TO_UNITS), Mathf.RoundToInt(anchor.z / AppConstants.MM_TO_UNITS) };
-                if (fields.Contains("size")) row["size"] = new[] { e.DimensionsMM.x, e.DimensionsMM.z, e.DimensionsMM.y };
-                if (fields.Contains("rotY")) row["rotY"] = Mathf.Round(e.transform.eulerAngles.y * 10f) / 10f;
+                if (fields.Contains("sizeMm")) row["sizeMm"] = new[] { e.DimensionsMM.x, e.DimensionsMM.z, e.DimensionsMM.y };
+                if (fields.Contains("rotYDeg")) row["rotYDeg"] = Mathf.Round(e.transform.eulerAngles.y * 10f) / 10f;
                 if (fields.Contains("hasViolations")) row["hasViolations"] = validation != null && validation.violations.Contains(e);
                 if (fields.Contains("module")) row["module"] = GroupManager.GroupOf(e)?.name;
                 if (fields.Contains("wallKind")) row["wallKind"] = wall?.Kind;

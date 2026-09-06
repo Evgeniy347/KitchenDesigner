@@ -60,13 +60,13 @@ public class McpBatchToolsTests
     // ── McpJson: округление и отбрасывание null ─────────────────────────
 
     [Test]
-    public void McpJson_RoundsFloatNoise_To4Decimals()
+    public void McpJson_RoundsFloatNoise_ToATenthOfAMillimetre()
     {
-        var json = McpJson.Serialize(new { posY = -0.009000001f, aabbMinY = -0.0180000011f, z = -3.62000012f });
-        StringAssert.Contains("-0.009", json);
-        StringAssert.Contains("-0.018", json);
-        StringAssert.Contains("-3.62", json);
-        StringAssert.DoesNotContain("0000001", json);
+        var json = McpJson.Serialize(new { posYMm = -9.000001f, aabbMinYMm = -18.000001f, zMm = -3620.00012f });
+        StringAssert.Contains("-9", json);
+        StringAssert.Contains("-18", json);
+        StringAssert.Contains("-3620", json);
+        StringAssert.DoesNotContain("00001", json);
     }
 
     [Test]
@@ -147,10 +147,10 @@ public class McpBatchToolsTests
 
         var el = Data(resp)["elements"]![0]!;
         Assert.AreEqual("A", el["name"]!.Value<string>());
-        Assert.AreEqual(500, el["dimX"]!.Value<int>());
-        Assert.AreEqual(1f, el["posX"]!.Value<float>(), 1e-3f);
+        Assert.AreEqual(500, el["dimXMm"]!.Value<int>());
+        Assert.AreEqual(1000f, el["posXMm"]!.Value<float>(), 1e-1f);
         Assert.IsNotNull(el["locked"]);
-        Assert.IsNull(el["aabbMinX"], "summary не несёт AABB");
+        Assert.IsNull(el["aabbMinXMm"], "summary не несёт AABB");
     }
 
     // ── get_violations {names} ───────────────────────────────────────────
@@ -409,10 +409,10 @@ public class McpBatchToolsTests
         var d = Data(resp);
         Assert.IsTrue(d["free"]!.Value<bool>());
         Assert.AreEqual("x", d["separationAxis"]!.Value<string>());
-        Assert.AreEqual(1500, d["sizeMmX"]!.Value<int>());
-        Assert.AreEqual(400, d["sizeMmY"]!.Value<int>());
-        Assert.AreEqual(18, d["sizeMmZ"]!.Value<int>());
-        Assert.AreEqual(1.0f, d["centerX"]!.Value<float>(), 1e-3f);
+        Assert.AreEqual(1500, d["sizeXMm"]!.Value<int>());
+        Assert.AreEqual(400, d["sizeYMm"]!.Value<int>());
+        Assert.AreEqual(18, d["sizeZMm"]!.Value<int>());
+        Assert.AreEqual(1000f, d["centerXMm"]!.Value<float>(), 1e-1f);
     }
 
     [Test]

@@ -81,8 +81,8 @@ namespace KitchenDesigner.Core.MCP
                 results.Add(new ObjectInfo
                 {
                     name = target.name, path = GetGameObjectPath(target),
-                    posX = target.transform.position.x, posY = target.transform.position.y, posZ = target.transform.position.z,
-                    rotX = target.transform.eulerAngles.x, rotY = target.transform.eulerAngles.y, rotZ = target.transform.eulerAngles.z,
+                    posXMm = McpAnchor.ToMm(target.transform.position.x), posYMm = McpAnchor.ToMm(target.transform.position.y), posZMm = McpAnchor.ToMm(target.transform.position.z),
+                    rotXDeg = target.transform.eulerAngles.x, rotYDeg = target.transform.eulerAngles.y, rotZDeg = target.transform.eulerAngles.z,
                     scaleX = target.transform.localScale.x, scaleY = target.transform.localScale.y, scaleZ = target.transform.localScale.z,
                     active = target.activeInHierarchy, components = components, children = children
                 });

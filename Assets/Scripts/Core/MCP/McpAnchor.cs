@@ -43,5 +43,11 @@ namespace KitchenDesigner.Core.MCP
         public static float FromMm(float mm) => mm * AppConstants.MM_TO_UNITS;
 
         public static float ToMm(float worldUnits) => worldUnits / AppConstants.MM_TO_UNITS;
+
+        public static AabbMmInfo ToMmBox(AabbInfo box) => new AabbMmInfo
+        {
+            minXMm = ToMm(box.minX), minYMm = ToMm(box.minY), minZMm = ToMm(box.minZ),
+            maxXMm = ToMm(box.maxX), maxYMm = ToMm(box.maxY), maxZMm = ToMm(box.maxZ)
+        };
     }
 }

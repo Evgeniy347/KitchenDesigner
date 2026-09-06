@@ -20,7 +20,7 @@ public class McpResponseFieldGuideParityTests
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["active"] = "элемент включён; удалённый через MCP остаётся в сцене выключенным",
-            ["cornerRadius"] = "радиус скругления: угол радиусной полки или углы табуретки, иначе 0",
+            ["cornerRadiusMm"] = "радиус скругления: угол радиусной полки или углы табуретки, иначе 0",
             ["grooves"] = "пазы детали «through:top, blind:left»; null, если пазов нет",
             ["textureOverlays"] = "накладки текстур стены/пола «a:oak; b:white@100,200+800x600»; null, если их нет",
             ["edgeBanding"] = "кромковать открытые торцы (только листовая деталь)",
@@ -50,13 +50,18 @@ public class McpResponseFieldGuideParityTests
         typeof(ElementInfo).GetFields(BindingFlags.Public | BindingFlags.Instance)
             .Select(f => f.Name).ToList();
 
-    private static string WithoutAxisOrUnitSuffix(string field)
+    private static readonly string[] UnitSuffixes = { "MM", "Mm", "Deg", "Pct", "Px", "Sec", "M2" };
+
+    private static string StripUnitSuffix(string field)
     {
-        var trimmed = field.TrimEnd('X', 'Y', 'Z');
-        if (trimmed.EndsWith("MM", StringComparison.Ordinal))
-            trimmed = trimmed.Substring(0, trimmed.Length - "MM".Length);
-        return trimmed;
+        foreach (var unit in UnitSuffixes)
+            if (field.Length > unit.Length && field.EndsWith(unit, StringComparison.Ordinal))
+                return field.Substring(0, field.Length - unit.Length);
+        return field;
     }
+
+    private static string WithoutAxisOrUnitSuffix(string field) =>
+        StripUnitSuffix(StripUnitSuffix(field).TrimEnd('X', 'Y', 'Z'));
 
     private static bool GuideExplains(string field)
     {

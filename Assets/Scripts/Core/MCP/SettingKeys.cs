@@ -39,6 +39,8 @@ namespace KitchenDesigner.Core.MCP
     {
         private static KitchenSettings S => KitchenSettings.Instance;
 
+        private const int MM_PER_METRE = 1000;
+
         public static readonly IReadOnlyList<SettingKey> All = new[]
         {
             SettingKey.Flag("snap_enabled", "snapEnabled",
@@ -125,8 +127,8 @@ namespace KitchenDesigner.Core.MCP
                 () => S.PhotoVignettePct, v => S.PhotoVignettePct = (int)v),
             SettingKey.Number("photo_sun_shadow_strength", "photoSunShadowStrengthPct",
                 () => S.PhotoSunShadowStrengthPct, v => S.PhotoSunShadowStrengthPct = (int)v),
-            SettingKey.Number("photo_shadow_distance", "photoShadowDistanceM",
-                () => S.PhotoShadowDistanceM, v => S.PhotoShadowDistanceM = (int)v),
+            SettingKey.Number("photo_shadow_distance_mm", "photoShadowDistanceMm",
+                () => S.PhotoShadowDistanceM * MM_PER_METRE, v => S.PhotoShadowDistanceM = (int)(v / MM_PER_METRE)),
             SettingKey.Number("photo_render_scale", "photoRenderScalePct",
                 () => S.PhotoRenderScalePct, v => S.PhotoRenderScalePct = (int)v),
             SettingKey.Number("photo_shadowmap", "photoShadowMapPx",
@@ -139,8 +141,8 @@ namespace KitchenDesigner.Core.MCP
                 () => S.PhotoAoRadiusMM, v => S.PhotoAoRadiusMM = (int)v),
             SettingKey.Number("photo_ao_direct", "photoAoDirectPct",
                 () => S.PhotoAoDirectPct, v => S.PhotoAoDirectPct = (int)v),
-            SettingKey.Number("photo_ao_falloff", "photoAoFalloffM",
-                () => S.PhotoAoFalloffM, v => S.PhotoAoFalloffM = (int)v),
+            SettingKey.Number("photo_ao_falloff_mm", "photoAoFalloffMm",
+                () => S.PhotoAoFalloffM * MM_PER_METRE, v => S.PhotoAoFalloffM = (int)(v / MM_PER_METRE)),
             SettingKey.Number("photo_ssgi_strength", "photoSsgiStrengthPct",
                 () => S.PhotoSsgiStrengthPct, v => S.PhotoSsgiStrengthPct = (int)v),
             SettingKey.Number("photo_ssgi_radius", "photoSsgiRadiusMM",

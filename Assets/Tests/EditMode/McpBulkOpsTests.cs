@@ -162,7 +162,7 @@ public class McpBulkOpsTests
         var resp = _handler!.Handle(MakeReq("get", new { names = new[] { "turned" } }));
         Assert.AreEqual("result", resp.type);
         var jo = Newtonsoft.Json.Linq.JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(resp.data));
-        var anchor = ((Newtonsoft.Json.Linq.JArray)jo["elements"]![0]!["anchor"]!).ToObject<List<int>>()!;
+        var anchor = ((Newtonsoft.Json.Linq.JArray)jo["elements"]![0]!["anchorMm"]!).ToObject<List<int>>()!;
 
         Assert.AreEqual(950, anchor[0], 1, "x: центр 1000 минус половина толщины 50");
         Assert.AreEqual(1550, anchor[1], 1, "z: центр 2000 минус половина длины 450");
@@ -271,13 +271,13 @@ public class McpBulkOpsTests
     {
         Make("Board", new Vector3(1f, 0.2f, 2f), new Vector3Int(600, 400, 18));
         var response = _handler!.Handle(MakeReq("get", new
-        { names = new[] { "Board" }, fields = new[] { "name", "anchor" } }));
+        { names = new[] { "Board" }, fields = new[] { "name", "anchorMm" } }));
         Assert.AreEqual("result", response.type);
         var jo = Newtonsoft.Json.Linq.JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(response.data));
         var row = jo["elements"]![0]!;
         Assert.AreEqual("Board", row["name"]!.ToString());
-        CollectionAssert.AreEqual(new[] { 700, 1991 }, row["anchor"]!.ToObject<int[]>());
-        Assert.IsNull(row["size"]);
+        CollectionAssert.AreEqual(new[] { 700, 1991 }, row["anchorMm"]!.ToObject<int[]>());
+        Assert.IsNull(row["sizeMm"]);
     }
 
     [Test]

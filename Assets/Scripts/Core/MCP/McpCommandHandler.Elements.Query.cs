@@ -77,9 +77,9 @@ namespace KitchenDesigner.Core.MCP
                     {
                         name = el.PartName,
                         type = el.GetType().Name,
-                        posX = pos.x, posY = pos.y, posZ = pos.z,
-                        dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
-                        rotY = el.transform.eulerAngles.y,
+                        posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z),
+                        dimXMm = el.DimensionsMM.x, dimYMm = el.DimensionsMM.y, dimZMm = el.DimensionsMM.z,
+                        rotYDeg = el.transform.eulerAngles.y,
                         locked = !el.Movable,
                         hasViolations = vr != null && vr.violations.Contains(el)
                     });
@@ -251,8 +251,8 @@ namespace KitchenDesigner.Core.MCP
             return McpResponse.Result(req.id, new
             {
                 name = el.PartName,
-                dimX = dims.x, dimY = dims.y, dimZ = dims.z,
-                posX = pos.x, posY = pos.y, posZ = pos.z,
+                dimXMm = dims.x, dimYMm = dims.y, dimZMm = dims.z,
+                posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z),
                 hasViolations = HasViolations(el)
             });
         }
@@ -347,14 +347,14 @@ namespace KitchenDesigner.Core.MCP
             {
                 free = true,
                 separationAxis = sepAxis == 0 ? "x" : sepAxis == 1 ? "y" : "z",
-                sizeMmX = Mathf.RoundToInt((hi[0] - lo[0]) * toMm),
-                sizeMmY = Mathf.RoundToInt((hi[1] - lo[1]) * toMm),
-                sizeMmZ = Mathf.RoundToInt((hi[2] - lo[2]) * toMm),
-                minX = lo[0], minY = lo[1], minZ = lo[2],
-                maxX = hi[0], maxY = hi[1], maxZ = hi[2],
-                centerX = (lo[0] + hi[0]) * 0.5f,
-                centerY = (lo[1] + hi[1]) * 0.5f,
-                centerZ = (lo[2] + hi[2]) * 0.5f,
+                sizeXMm = Mathf.RoundToInt((hi[0] - lo[0]) * toMm),
+                sizeYMm = Mathf.RoundToInt((hi[1] - lo[1]) * toMm),
+                sizeZMm = Mathf.RoundToInt((hi[2] - lo[2]) * toMm),
+                minXMm = McpAnchor.ToMm(lo[0]), minYMm = McpAnchor.ToMm(lo[1]), minZMm = McpAnchor.ToMm(lo[2]),
+                maxXMm = McpAnchor.ToMm(hi[0]), maxYMm = McpAnchor.ToMm(hi[1]), maxZMm = McpAnchor.ToMm(hi[2]),
+                centerXMm = McpAnchor.ToMm((lo[0] + hi[0]) * 0.5f),
+                centerYMm = McpAnchor.ToMm((lo[1] + hi[1]) * 0.5f),
+                centerZMm = McpAnchor.ToMm((lo[2] + hi[2]) * 0.5f),
                 blockers = blockers.Count > 0 ? blockers : null
             });
         }

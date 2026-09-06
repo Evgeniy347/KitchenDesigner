@@ -81,9 +81,9 @@ public class FacadeMcpTests
         Assert.AreEqual(1, elements!.Count);
         var el = elements[0]!;
         Assert.AreEqual("FacadeElement", el["type"]!.Value<string>());
-        Assert.AreEqual(400, el["dimX"]!.Value<int>());
-        Assert.AreEqual(300, el["dimY"]!.Value<int>());
-        Assert.AreEqual(18, el["dimZ"]!.Value<int>());
+        Assert.AreEqual(400, el["dimXMm"]!.Value<int>());
+        Assert.AreEqual(300, el["dimYMm"]!.Value<int>());
+        Assert.AreEqual(18, el["dimZMm"]!.Value<int>());
     }
 
     [Test]
@@ -169,12 +169,12 @@ public class FacadeMcpTests
         var results = json["results"] as JArray;
         Assert.IsNotNull(results);
         Assert.AreEqual(1, results!.Count);
-        Assert.AreEqual(90f, results[0]!["rotY"]!.Value<float>(), 0.01f);
+        Assert.AreEqual(90f, results[0]!["rotYDeg"]!.Value<float>(), 0.01f);
 
         var info = _handler!.Handle(MakeReq("get_elements", new { names = new[] { "F" } }));
         var infoJson = JObject.FromObject(info.data!);
         var infoElements = infoJson["elements"] as JArray;
-        Assert.AreEqual(90f, infoElements![0]!["rotY"]!.Value<float>(), 0.01f);
+        Assert.AreEqual(90f, infoElements![0]!["rotYDeg"]!.Value<float>(), 0.01f);
     }
 
     [Test]

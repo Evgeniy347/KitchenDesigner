@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core.MCP
 {
     public static class McpJson
     {
-        public const int TenthMillimetreDecimals = 4;
+        public const int TenthMillimetreDecimals = 1;
 
         public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
         {

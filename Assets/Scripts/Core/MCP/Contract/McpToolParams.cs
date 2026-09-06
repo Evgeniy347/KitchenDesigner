@@ -712,16 +712,16 @@ namespace KitchenDesigner.Core.MCP.Contract
             "photo_tonemap",
             "photo_bloom_strength", "photo_bloom_threshold", "photo_bloom_clamp",
             "photo_vignette_strength",
-            "photo_sun_shadow_strength", "photo_shadow_distance", "photo_render_scale",
+            "photo_sun_shadow_strength", "photo_shadow_distance_mm", "photo_render_scale",
             "photo_shadowmap", "photo_lights_per_object",
-            "photo_ao_intensity", "photo_ao_radius", "photo_ao_direct", "photo_ao_falloff",
+            "photo_ao_intensity", "photo_ao_radius", "photo_ao_direct", "photo_ao_falloff_mm",
             "photo_ssgi_strength", "photo_ssgi_radius", "photo_ssgi_samples",
             "photo_ssgi_resolution", "photo_ssgi_blur",
         })]
         public string name = string.Empty;
         [McpParam("New on/off value. Send this for the on/off settings (snap_enabled, grid_enabled, block_on_violation, auto_save, snap_verbose_log, camera_pan_free, and every photo_* key that names a toggle: photo_shadows, photo_soft_shadows, photo_anti_aliasing, photo_supersampling, photo_ambient_occlusion, photo_bloom, photo_vignette, photo_ceiling, photo_ssgi, photo_lamp_shadows, photo_hdr).")]
         public bool? value;
-        [McpParam("New numeric value: snap_threshold and grid_step in MM, auto_save_interval in seconds, edge_partial_threshold in %, mouse_sensitivity / wasd_speed / arrow_speed as a multiplier. Photo mode: photo_quality 0=low 1=medium 2=high 3=custom; photo_ssgi_radius / photo_ao_radius in MM; photo_shadow_distance and photo_ao_falloff in metres; photo_shadowmap in pixels; photo_ssgi_samples and photo_lights_per_object are counts; photo_ssgi_blur in pixels (0 = no denoise); photo_bloom_clamp caps how bright one pixel may contribute to the glow, in % of white — it is what stops an open sky from smearing over the whole frame; everything else in %. Send this instead of value for those keys.")]
+        [McpParam("New numeric value: snap_threshold and grid_step in MM, auto_save_interval in seconds, edge_partial_threshold in %, mouse_sensitivity / wasd_speed / arrow_speed as a multiplier. Photo mode: photo_quality 0=low 1=medium 2=high 3=custom; photo_ssgi_radius / photo_ao_radius / photo_shadow_distance_mm / photo_ao_falloff_mm in MM; photo_shadowmap in pixels; photo_ssgi_samples and photo_lights_per_object are counts; photo_ssgi_blur in pixels (0 = no denoise); photo_bloom_clamp caps how bright one pixel may contribute to the glow, in % of white — it is what stops an open sky from smearing over the whole frame; everything else in %. Send this instead of value for those keys.")]
         public float? number;
     }
 

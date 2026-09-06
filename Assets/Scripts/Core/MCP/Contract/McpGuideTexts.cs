@@ -16,14 +16,14 @@ START HERE:
 UNITS:
 - MILLIMETRES everywhere, in and out. There is no other unit on this wire.
 - Every dimensional field carries its unit in its NAME (anchor_x_mm, offset_x_mm,
-  posXmm, aabbMinXmm); angles carry Deg. Read the name, not this paragraph.
+  posXMm, aabbMinXMm); angles carry Deg. Read the name, not this paragraph.
 - A position is the MINIMUM world corner, never the centre: what get returns in
   anchor[] is exactly what edit_elements takes in anchor_x_mm / anchor_z_mm.
 
 IDENTITY:
 - Every board has a unique text ""name"". Use get_scene_tree to look around, then
   get_elements {filter/names} for detail.
-- dimZ (depth) is the board's LOCAL thickness; worldDimX/Y/Z are the world-axis
+- dimZMm (depth) is the board's LOCAL thickness; worldDim*Mm are the world-axis
   sizes (use those when a board is rotated).
 
 LET THE SERVER DO THE GEOMETRY (do NOT compute centers by hand):
@@ -81,7 +81,7 @@ FIRST CALL OF A SESSION
 UNITS
   MILLIMETRES everywhere, in and out; the unit is in the field NAME.
   A position is the MINIMUM world corner (anchor), never the centre.
-  dimZmm = board thickness (smallest side, usually 18 mm).
+  dimZMm = board thickness (smallest side, usually 18 mm).
 
 READING THE SCENE (cheap -> expensive)
   get_scene_tree                                -> modules, bboxes, type counts
@@ -101,13 +101,13 @@ CHANGING MANY BOARDS AT ONCE — let the server do the arithmetic
   pass one number instead of per-board coordinates. See guide {topic:""bulk""}.
 
 EDITING SINGLE ELEMENTS (every mutation returns element info + ITS violations)
-  edit_elements {ops:[{name:""P1"", x:1.2}, {name:""P2"", width:600, rot_y:90}]}
+  edit_elements {ops:[{name:""P1"", anchor_x_mm:1200}, {name:""P2"", width:600, rot_y:90}]}
      - MANY changes in ONE transactional call, single undo step.
      - dry_run:true = simulate first, nothing is kept.
-  create_elements {items:[{name:""Shelf1"", type:""board"", x:.., width:.., ..}]}
+  create_elements {items:[{name:""Shelf1"", type:""board"", anchor_x_mm:.., width:.., ..}]}
   align_elements {ops:[{name:""Shelf1"", face:""left"", target:""Side_L"",
                        target_face:""right""}]}   - face-to-face, no math
-  clone_elements {ops:[{name:""Shelf1"", count:2, offset_y:0.3}]} -> _2, _3
+  clone_elements {ops:[{name:""Shelf1"", count:2, offset_y_mm:300}]} -> _2, _3
   distribute_evenly {names:[...3+...], axis:""y""}
   convert_elements / delete_elements / select_elements — all batch, all atomic.
 
@@ -120,11 +120,11 @@ CHECKING
 
 STEP-BY-STEP EXAMPLE: three shelves between two panels
   1. get_free_space {between:[""Side_L"",""Side_R""]}   -> inner width/position
-  2. create_elements {items:[{name:""Shelf1"", x:.., y:.., z:.., width:..,
+  2. create_elements {items:[{name:""Shelf1"", anchor_x_mm:.., anchor_y_mm:.., anchor_z_mm:.., width:..,
                               height:.., depth:18}]}
   3. align_elements  {ops:[{name:""Shelf1"", face:""left"", target:""Side_L"",
                             target_face:""right""}]}
-  4. clone_elements  {ops:[{name:""Shelf1"", count:2, offset_y:0.3}]}
+  4. clone_elements  {ops:[{name:""Shelf1"", count:2, offset_y_mm:300}]}
   5. get_violations {names:[""Shelf1"",""Shelf1_2"",""Shelf1_3""]}  -> expect []
 
 SAFETY
@@ -484,15 +484,16 @@ MODULES: named groups that move together (group, create_module, add_to_module,
 
 name                  Unique text id. All tools address elements by exact name.
 type                  Element class - see guide {topic:""elements""}.
-dimX/dimY/dimZ        LOCAL size in MM (dimZ = thickness). Does NOT change when
+dimXMm/dimYMm/dimZMm  LOCAL size in MM (dimZMm = thickness). Does NOT change when
                       the board is rotated.
-worldDimX/Y/Z         WORLD-axis extents in MM (from AABB). USE THESE when the
+worldDim*Mm           WORLD-axis extents in MM (from AABB). USE THESE when the
                       board is rotated: after rot_y=90 a 600x18 board has
-                      worldDimX=18, worldDimZ=600.
-posX/posY/posZ        Center position in METERS (world).
-rotX/rotY/rotZ        Euler angles in DEGREES.
-aabbMin*/aabbMax*     World bounding box in METERS.
-effectiveDim*         dim + gaps (any element that has them). NOT rotation-aware
+                      worldDimXMm=18, worldDimZMm=600.
+posXMm/posYMm/posZMm  Centre position in MM (world). The MIN corner is aabbMin*Mm,
+                      and that is what edit_elements anchor_*_mm takes.
+rotXDeg/rotYDeg/rotZDeg  Euler angles in DEGREES.
+aabbMin*Mm/aabbMax*Mm World bounding box in MM.
+effectiveDim*Mm       dim + gaps (any element that has them). NOT rotation-aware
                       - prefer worldDim* for world-space reasoning.
 locked                true = move/resize/delete will be rejected (edit_elements
                       {locked:false} unlocks).
@@ -528,9 +529,9 @@ lightSwitch           Light switch only: {isOn, lights, maxLights}. lights are
                       which is why the ceiling is reported next to the list.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
-  {name, kind, anchor:[x,z] MM corner, size:[width,depth,height] MM, rotY,
-   hasViolations, module}. Positions are the MIN corner in MM, not the center in
-   meters. Use it for reasoning about layout; use get_elements for full detail.
+  {name, kind, anchorMm:[x,z] corner, sizeMm:[width,depth,height], rotYDeg,
+   hasViolations, module}. Positions are the MIN corner; every number is MM.
+   Use it for reasoning about layout; use get_elements for full detail.
 
 MUTATION RESPONSES (create/edit/align/clone/...) always return:
   { ok, element: <full info above>, violations: [<THIS element's problems>],

@@ -42,15 +42,15 @@ namespace KitchenDesigner.Core.MCP
     {
         public string name = string.Empty;
         public string type = string.Empty;
-        public int dimX;
-        public int dimY;
-        public int dimZ;
-        public float posX;
-        public float posY;
-        public float posZ;
-        public float rotX;
-        public float rotY;
-        public float rotZ;
+        public int dimXMm;
+        public int dimYMm;
+        public int dimZMm;
+        public float posXMm;
+        public float posYMm;
+        public float posZMm;
+        public float rotXDeg;
+        public float rotYDeg;
+        public float rotZDeg;
         public bool active;
         public bool locked;
         public bool transparent;
@@ -58,12 +58,12 @@ namespace KitchenDesigner.Core.MCP
         public string? moduleName;
         public string materialId = string.Empty;
         public bool hasViolations;
-        public float aabbMinX, aabbMinY, aabbMinZ;
-        public float aabbMaxX, aabbMaxY, aabbMaxZ;
-        public int worldDimX, worldDimY, worldDimZ;
-        public int effectiveDimX, effectiveDimY, effectiveDimZ;
+        public float aabbMinXMm, aabbMinYMm, aabbMinZMm;
+        public float aabbMaxXMm, aabbMaxYMm, aabbMaxZMm;
+        public int worldDimXMm, worldDimYMm, worldDimZMm;
+        public int effectiveDimXMm, effectiveDimYMm, effectiveDimZMm;
         public List<AxisGapInfo>? faceGaps;
-        public int cornerRadius;
+        public int cornerRadiusMm;
         public string? grooves;
         public string? textureOverlays;
         public bool? edgeBanding;
@@ -129,7 +129,7 @@ namespace KitchenDesigner.Core.MCP
         public string widthAxis = "x";
         public bool editing;
         public int elementCount;
-        public float[]? boundsCenter;
+        public float[]? boundsCenterMm;
         public int[]? boundsSizeMM;
         public List<ElementInfo> elements = new();
     }
@@ -146,9 +146,9 @@ namespace KitchenDesigner.Core.MCP
     public class SpecLineInfo
     {
         public string name = string.Empty;
-        public int dimX;
-        public int dimY;
-        public int dimZ;
+        public int dimXMm;
+        public int dimYMm;
+        public int dimZMm;
         public int count;
         public float areaPerBoardM2;
         public float totalAreaM2;
@@ -167,12 +167,12 @@ namespace KitchenDesigner.Core.MCP
     {
         public string name = string.Empty;
         public string path = string.Empty;
-        public float posX;
-        public float posY;
-        public float posZ;
-        public float rotX;
-        public float rotY;
-        public float rotZ;
+        public float posXMm;
+        public float posYMm;
+        public float posZMm;
+        public float rotXDeg;
+        public float rotYDeg;
+        public float rotZDeg;
         public float scaleX;
         public float scaleY;
         public float scaleZ;
@@ -201,6 +201,13 @@ namespace KitchenDesigner.Core.MCP
     }
 
     [Serializable]
+    public class AabbMmInfo
+    {
+        public float minXMm, minYMm, minZMm;
+        public float maxXMm, maxYMm, maxZMm;
+    }
+
+    [Serializable]
     public class AabbInfo
     {
         public float minX, minY, minZ;
@@ -210,15 +217,15 @@ namespace KitchenDesigner.Core.MCP
     [Serializable]
     public class FaceInfo
     {
-        public float centerX, centerY, centerZ;
+        public float centerXMm, centerYMm, centerZMm;
         public float normalX, normalY, normalZ;
-        public float sizeX, sizeY;
+        public float sizeXMm, sizeYMm;
     }
 
     [Serializable]
     public class VertexInfo
     {
-        public float x, y, z;
+        public float xMm, yMm, zMm;
     }
 
     [Serializable]
@@ -226,11 +233,11 @@ namespace KitchenDesigner.Core.MCP
     {
         public string name = string.Empty;
         public string type = string.Empty;
-        public AabbInfo? aabb;
+        public AabbMmInfo? aabb;
         public FaceInfo[]? faces;
         public VertexInfo[]? vertices;
-        public int dimX, dimY, dimZ;
-        public int effectiveDimX, effectiveDimY, effectiveDimZ;
+        public int dimXMm, dimYMm, dimZMm;
+        public int effectiveDimXMm, effectiveDimYMm, effectiveDimZMm;
     }
 
     [Serializable]
@@ -266,9 +273,9 @@ namespace KitchenDesigner.Core.MCP
     {
         public string system = string.Empty;
         public string drawerType = string.Empty;
-        public int drawerLength;
+        public int drawerLengthMM;
         public string drawerColor = string.Empty;
-        public int internalWidth;
+        public int internalWidthMM;
         public bool isDouble;
         public bool isUpper;
         public string pairedDrawerName = string.Empty;

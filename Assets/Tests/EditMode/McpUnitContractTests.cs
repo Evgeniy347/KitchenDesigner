@@ -95,10 +95,10 @@ public class McpUnitContractTests
 
     private int[] AnchorMm(string name)
     {
-        var resp = _handler!.Handle(MakeReq("get", new { names = new[] { name }, fields = new[] { "anchor" } }));
+        var resp = _handler!.Handle(MakeReq("get", new { names = new[] { name }, fields = new[] { "anchorMm" } }));
         Assert.AreEqual("result", resp.type, "get не ответил: " + JsonConvert.SerializeObject(resp.data));
         var jo = JObject.Parse(JsonConvert.SerializeObject(resp.data));
-        return jo["elements"]![0]!["anchor"]!.ToObject<int[]>()!;
+        return jo["elements"]![0]!["anchorMm"]!.ToObject<int[]>()!;
     }
 
     [Test]
@@ -207,12 +207,12 @@ public class McpUnitContractTests
             "get_elements не ответил: " + JsonConvert.SerializeObject(resp.data));
         var row = JObject.Parse(JsonConvert.SerializeObject(resp.data))["elements"]![0]!;
 
-        Assert.AreEqual(564, (int)row["dimX"]!, "размер и так в мм — опора проверки");
-        Assert.AreEqual(715f, (float)row["posX"]!, 0.5f,
-            "один плоский объект ответа несёт posX в метрах и dimX в миллиметрах, и ничто в "
-            + "именах полей об этом не говорит. Единицы ответов не описаны нигде, кроме прозы "
-            + "guide {topic:\"fields\"} — то есть читающий агент обязан помнить, какая половина "
-            + "объекта в чём. То же и в get_free_space, где мм-поля суффикс несут (sizeMmX), "
-            + "а метровые (minX, centerX) — нет.");
+        Assert.AreEqual(564, (int)row["dimXMm"]!, "размер и так в мм — опора проверки");
+        Assert.AreEqual(715f, (float)row["posXMm"]!, 0.5f,
+            "один плоский объект ответа нёс posX в метрах и dimX в миллиметрах, и ничто в "
+            + "именах полей об этом не говорило. Единицы ответов не описаны нигде, кроме прозы "
+            + "guide {topic:\"fields\"} — то есть читающий агент обязан был помнить, какая "
+            + "половина объекта в чём. То же было и в get_free_space, где мм-поля суффикс "
+            + "несли (sizeMmX), а метровые (minX, centerX) — нет.");
     }
 }

@@ -36,9 +36,9 @@ namespace KitchenDesigner.Core.MCP
             return new ElementInfo
             {
                 name = el.PartName, type = el.GetType().Name,
-                dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
-                posX = pos.x, posY = pos.y, posZ = pos.z,
-                rotX = t.eulerAngles.x, rotY = t.eulerAngles.y, rotZ = t.eulerAngles.z,
+                dimXMm = el.DimensionsMM.x, dimYMm = el.DimensionsMM.y, dimZMm = el.DimensionsMM.z,
+                posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z),
+                rotXDeg = t.eulerAngles.x, rotYDeg = t.eulerAngles.y, rotZDeg = t.eulerAngles.z,
                 active = el.gameObject.activeInHierarchy,
                 locked = !el.Movable,
                 transparent = el.Transparent,
@@ -48,14 +48,14 @@ namespace KitchenDesigner.Core.MCP
                 moduleName = group != null ? group.name : null,
                 materialId = el.MaterialId,
                 hasViolations = hasViolations,
-                aabbMinX = aabb.minX, aabbMinY = aabb.minY, aabbMinZ = aabb.minZ,
-                aabbMaxX = aabb.maxX, aabbMaxY = aabb.maxY, aabbMaxZ = aabb.maxZ,
-                worldDimX = Mathf.RoundToInt((aabb.maxX - aabb.minX) / AppConstants.MM_TO_UNITS),
-                worldDimY = Mathf.RoundToInt((aabb.maxY - aabb.minY) / AppConstants.MM_TO_UNITS),
-                worldDimZ = Mathf.RoundToInt((aabb.maxZ - aabb.minZ) / AppConstants.MM_TO_UNITS),
-                effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z,
+                aabbMinXMm = McpAnchor.ToMm(aabb.minX), aabbMinYMm = McpAnchor.ToMm(aabb.minY), aabbMinZMm = McpAnchor.ToMm(aabb.minZ),
+                aabbMaxXMm = McpAnchor.ToMm(aabb.maxX), aabbMaxYMm = McpAnchor.ToMm(aabb.maxY), aabbMaxZMm = McpAnchor.ToMm(aabb.maxZ),
+                worldDimXMm = Mathf.RoundToInt((aabb.maxX - aabb.minX) / AppConstants.MM_TO_UNITS),
+                worldDimYMm = Mathf.RoundToInt((aabb.maxY - aabb.minY) / AppConstants.MM_TO_UNITS),
+                worldDimZMm = Mathf.RoundToInt((aabb.maxZ - aabb.minZ) / AppConstants.MM_TO_UNITS),
+                effectiveDimXMm = effDim.x, effectiveDimYMm = effDim.y, effectiveDimZMm = effDim.z,
                 faceGaps = allElements != null ? McpAabb.AxisGaps(el, allElements) : null,
-                cornerRadius = el is RadialShelfElement radial ? radial.CornerRadius : 0,
+                cornerRadiusMm = el is RadialShelfElement radial ? radial.CornerRadius : 0,
                 grooves = el.Grooves.Count > 0 ? McpSpecCodec.FormatGrooves(el) : null,
                 textureOverlays = el.TextureOverlays.Count > 0 ? McpSpecCodec.FormatTextureOverlays(el) : null,
                 edgeBanding = el.SupportsEdges ? el.EdgeBandingEnabled : (bool?)null,
@@ -90,9 +90,9 @@ namespace KitchenDesigner.Core.MCP
             {
                 system = McpWireEnums.Name(drawer.System),
                 drawerType = drawer.Type.ToString(),
-                drawerLength = drawer.NominalLength,
+                drawerLengthMM = drawer.NominalLength,
                 drawerColor = McpWireEnums.Name(drawer.Color),
-                internalWidth = drawer.InternalWidth,
+                internalWidthMM = drawer.InternalWidth,
                 isDouble = drawer.IsDouble,
                 isUpper = drawer.IsUpperDrawer,
                 pairedDrawerName = drawer.PairedDrawerName,
@@ -118,7 +118,7 @@ namespace KitchenDesigner.Core.MCP
 
             For<StoolElement>((info, stool) =>
             {
-                info.cornerRadius = stool.CornerRadiusMM;
+                info.cornerRadiusMm = stool.CornerRadiusMM;
                 info.stool = new StoolInfo
                 {
                     cornerRadiusMM = stool.CornerRadiusMM,
@@ -130,7 +130,7 @@ namespace KitchenDesigner.Core.MCP
 
             For<ChairElement>((info, chair) =>
             {
-                info.cornerRadius = chair.CornerRadiusMM;
+                info.cornerRadiusMm = chair.CornerRadiusMM;
                 info.chair = new ChairInfo
                 {
                     cornerRadiusMM = chair.CornerRadiusMM,
@@ -143,7 +143,7 @@ namespace KitchenDesigner.Core.MCP
 
             For<SofaElement>((info, sofa) =>
             {
-                info.cornerRadius = sofa.CornerRadiusMM;
+                info.cornerRadiusMm = sofa.CornerRadiusMM;
                 info.sofa = new SofaInfo
                 {
                     cornerRadiusMM = sofa.CornerRadiusMM,

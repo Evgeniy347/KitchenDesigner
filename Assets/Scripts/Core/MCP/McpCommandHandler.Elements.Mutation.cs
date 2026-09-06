@@ -82,9 +82,9 @@ namespace KitchenDesigner.Core.MCP
                 results.Add(new
                 {
                     name = el.PartName,
-                    posX = pos.x, posY = pos.y, posZ = pos.z,
-                    dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
-                    rotY = el.transform.eulerAngles.y,
+                    posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z),
+                    dimXMm = el.DimensionsMM.x, dimYMm = el.DimensionsMM.y, dimZMm = el.DimensionsMM.z,
+                    rotYDeg = el.transform.eulerAngles.y,
                     locked = !el.Movable,
                     violations = BuildElementViolations(el, all, vr)
                 });
@@ -269,7 +269,7 @@ namespace KitchenDesigner.Core.MCP
                 var el = FindElementByName(op.name);
                 if (el == null) continue;
                 var pos = el.transform.position;
-                results.Add(new { name = el.PartName, posX = pos.x, posY = pos.y, posZ = pos.z, violations = BuildElementViolations(el, all, vr) });
+                results.Add(new { name = el.PartName, posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z), violations = BuildElementViolations(el, all, vr) });
             }
             Debug.Log($"[MCP] Aligned {commands.Count} elements");
             return McpResponse.Result(req.id, new { ok = true, aligned = results.Count, results, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
@@ -326,7 +326,7 @@ namespace KitchenDesigner.Core.MCP
                 results.Add(new
                 {
                     name = el.PartName,
-                    posX = pos.x, posY = pos.y, posZ = pos.z,
+                    posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z),
                     violations = BuildElementViolations(el, all, vr)
                 });
             }

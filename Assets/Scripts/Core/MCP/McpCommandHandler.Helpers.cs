@@ -197,7 +197,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 Vector3 c = (min + max) * 0.5f;
                 Vector3 s = (max - min) / AppConstants.MM_TO_UNITS;
-                info.boundsCenter = new[] { c.x, c.y, c.z };
+                info.boundsCenterMm = new[] { McpAnchor.ToMm(c.x), McpAnchor.ToMm(c.y), McpAnchor.ToMm(c.z) };
                 info.boundsSizeMM = new[]
                     { Mathf.RoundToInt(s.x), Mathf.RoundToInt(s.y), Mathf.RoundToInt(s.z) };
             }
@@ -261,21 +261,21 @@ namespace KitchenDesigner.Core.MCP
             {
                 faces[i] = new FaceInfo
                 {
-                    centerX = srcFaces[i].center.x, centerY = srcFaces[i].center.y, centerZ = srcFaces[i].center.z,
+                    centerXMm = McpAnchor.ToMm(srcFaces[i].center.x), centerYMm = McpAnchor.ToMm(srcFaces[i].center.y), centerZMm = McpAnchor.ToMm(srcFaces[i].center.z),
                     normalX = srcFaces[i].normal.x, normalY = srcFaces[i].normal.y, normalZ = srcFaces[i].normal.z,
-                    sizeX = srcFaces[i].size.x, sizeY = srcFaces[i].size.y
+                    sizeXMm = McpAnchor.ToMm(srcFaces[i].size.x), sizeYMm = McpAnchor.ToMm(srcFaces[i].size.y)
                 };
             }
             var vertices = new VertexInfo[verts.Length];
             for (int i = 0; i < verts.Length; i++)
-                vertices[i] = new VertexInfo { x = verts[i].x, y = verts[i].y, z = verts[i].z };
+                vertices[i] = new VertexInfo { xMm = McpAnchor.ToMm(verts[i].x), yMm = McpAnchor.ToMm(verts[i].y), zMm = McpAnchor.ToMm(verts[i].z) };
             var effDim = McpAabb.EffectiveDimMM(el);
             return new ElementDebugInfo
             {
                 name = el.PartName, type = el.GetType().Name,
-                aabb = aabb, faces = faces, vertices = vertices,
-                dimX = el.DimensionsMM.x, dimY = el.DimensionsMM.y, dimZ = el.DimensionsMM.z,
-                effectiveDimX = effDim.x, effectiveDimY = effDim.y, effectiveDimZ = effDim.z
+                aabb = McpAnchor.ToMmBox(aabb), faces = faces, vertices = vertices,
+                dimXMm = el.DimensionsMM.x, dimYMm = el.DimensionsMM.y, dimZMm = el.DimensionsMM.z,
+                effectiveDimXMm = effDim.x, effectiveDimYMm = effDim.y, effectiveDimZMm = effDim.z
             };
         }
 

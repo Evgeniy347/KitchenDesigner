@@ -141,11 +141,12 @@ public class ModuleSystemTests
         var m = Newtonsoft.Json.Linq.JObject.FromObject(info.data!)["results"]![0]!
             .ToObject<ModuleInfo>()!;
 
-        Assert.AreEqual(0.291f, m.boundsCenter![0], 0.002f,
-            "boundsCenter — ЮНИТЫ (метры), как posX/posY/posZ: середина между 0 и 0.582 м");
+        Assert.AreEqual(291f, m.boundsCenterMm![0], 2f,
+            "boundsCenterMm — МИЛЛИМЕТРЫ, как и boundsSizeMM рядом: середина между 0 и 582 мм");
         Assert.AreEqual(1082, m.boundsSizeMM![0], 2,
-            "boundsSizeMM — МИЛЛИМЕТРЫ, в одном ответе с метрами центра. Смешение единиц "
-            + "в одном объекте — ошибка №1 клиента, и держит её только этот тест");
+            "обе половины одного объекта в одной единице; пока центр был в метрах, а размер "
+            + "в миллиметрах, различить их можно было только по памяти — и держал это "
+            + "только этот тест");
     }
 
     [Test]
