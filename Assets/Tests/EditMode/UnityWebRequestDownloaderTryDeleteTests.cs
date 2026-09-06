@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.IO;
-using System.Reflection;
 using NUnit.Framework;
 using KitchenDesigner.Core.Update;
 
@@ -14,21 +13,9 @@ using KitchenDesigner.Core.Update;
 /// </summary>
 public class UnityWebRequestDownloaderTryDeleteTests
 {
-    private static readonly MethodInfo TryDeleteMethod =
-        typeof(UnityWebRequestDownloader).GetMethod("TryDelete",
-            BindingFlags.Static | BindingFlags.NonPublic);
-
-    private static void TryDelete(string path)
-    {
-        try
-        {
-            TryDeleteMethod.Invoke(null, new object[] { path });
-        }
-        catch (TargetInvocationException ex) when (ex.InnerException != null)
-        {
-            throw ex.InnerException;
-        }
-    }
+    // Ни рефлексии, ни имени в строке: TryDelete помечен internal, а сборка тестов
+    // видит внутренние члены (AssemblyInfo.cs). Переименование теперь ломает СБОРКУ,
+    // а не зеленит тест на NullReference — PrivateReflectionRatchetTests требует именно этого.
 
     [Test]
     public void LockedFile_DoesNotThrow_AndIsLeftInPlace()
@@ -38,7 +25,7 @@ public class UnityWebRequestDownloaderTryDeleteTests
 
         using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
         {
-            Assert.DoesNotThrow(() => TryDelete(path),
+            Assert.DoesNotThrow(() => UnityWebRequestDownloader.TryDelete(path),
                 "a partial-download cleanup that races an antivirus/indexer file lock must "
                 + "not throw out of the download coroutine");
             Assert.IsTrue(File.Exists(path),
@@ -54,6 +41,6 @@ public class UnityWebRequestDownloaderTryDeleteTests
     {
         var path = Path.Combine(Path.GetTempPath(), "kd-trydelete-missing-" + Guid.NewGuid() + ".tmp");
 
-        Assert.DoesNotThrow(() => TryDelete(path));
+        Assert.DoesNotThrow(() => UnityWebRequestDownloader.TryDelete(path));
     }
 }

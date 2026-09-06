@@ -24,8 +24,9 @@ public class AppConstantsTests
             "ширина рамки A рамочного фасада по каталогу Союз-Фасад, стр. 43");
         Assert.AreEqual(180, AppConstants.ASSEMBLED_GLASS_DEDUCT_MM,
             "вычет под вкладное стекло по тому же каталогу: L-180 и H-180");
-        Assert.AreEqual(4, AppConstants.ASSEMBLED_GLASS_THICKNESS_MM,
-            "толщина вкладного стекла по тому же каталогу");
+        Assert.AreEqual(4, AppConstants.GLASS_THICKNESS_MM,
+            "толщина вкладного стекла по тому же каталогу — она же у окна и двери: "
+            + "это одно физическое стекло, и раздельные константы разъезжались бы молча");
         Assert.AreEqual(5, AppConstants.ASSEMBLED_GROOVE_MM,
             "выемка на перекладине 5x5 мм по тому же каталогу");
     }

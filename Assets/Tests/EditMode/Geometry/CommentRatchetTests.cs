@@ -31,7 +31,6 @@ namespace KitchenDesigner.Tests.Geometry
             ("MCP", 0),
             ("Materials", 0),
             ("Measure", 0),
-            ("Networking", 0),
             ("Persistence", 0),
             ("Platform", 0),
             ("Pure", 0),

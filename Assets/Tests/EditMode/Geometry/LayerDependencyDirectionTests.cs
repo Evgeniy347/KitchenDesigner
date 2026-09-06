@@ -44,7 +44,6 @@ namespace KitchenDesigner.Tests.Geometry
             ("MCP", 0, "MCP отвечает наружу данными и не вправе трогать панели"),
             ("Materials", 0, ""),
             ("Measure", 2, "размерные подписи берут глиф и стиль из UIStyle — долг"),
-            ("Networking", 0, ""),
             ("Persistence", 4, "автосохранение и снимок сцены зовут StatusBarUI и ProjectWindows "
                 + "— самый вредный из долгов: он же и делает Persistence непроверяемым без сцены"),
             ("Platform", 0, ""),
