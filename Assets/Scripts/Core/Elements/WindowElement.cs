@@ -1,50 +1,30 @@
-using System.Collections.Generic;
+using Unity.Profiling;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
     public enum GlassTint { Clear = 0, Tinted = 1 }
 
-    public class WindowElement : KitchenElement, IOpenable, IWallMounted, IPaintsItself
+    public class WindowElement : WallOpeningElement
     {
-        public override bool CanFollowAnAttachParent => false;
-
         public override string DisplayTypeName => "Окно";
 
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
 
-        public bool IsClosedPose => IsDoorClosed;
-
-        public string OpenActionLabel => IsOpen ? OpenLabels.Close : OpenLabels.Open;
-
-        public void CycleOpenState() => ToggleOpen();
-        private const float OpenSeconds = 0.4f;
-
         [SerializeField] private GlassTint _tint = GlassTint.Clear;
         [SerializeField] private int _sillProtrusionMM = AppConstants.WINDOW_SILL_DEFAULT_MM;
-        [SerializeField] private DoorMode _mode = DoorMode.HingeFrontLeft;
-        [SerializeField] private bool _isOpen = false;
-        [SerializeField] private string _attachedWallName = "";
 
         private static Shader? _cachedShader;
         private static Material? _tintedGlassMat;
         private static Material? _clearGlassMat;
         private static Material? _slopeMat;
 
-        private readonly List<GameObject> _children = new List<GameObject>();
         private GameObject? _frameTop, _frameBottom, _frameLeft, _frameRight;
         private GameObject? _glassPane;
         private GameObject? _sillObj;
         private GameObject? _dripObj;
         private GameObject? _slopeTop, _slopeBottom, _slopeLeft, _slopeRight;
         private GameObject? _sashLeft, _sashRight, _sashTop, _sashBottom;
-        private Transform? _staticGroup;
-        private Transform? _sashGroup;
-
-        private float _openT;
-        private Vector3 _sashClosedLocal;
-        private Vector3 _sashHalfExtents;
-        private Vector3 _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
 
         [Undoable]
         public GlassTint Tint
@@ -60,328 +40,45 @@ namespace KitchenDesigner.Core
             set { _sillProtrusionMM = Mathf.Clamp(value, 0, 200); ApplyDimensions(); }
         }
 
-        [Undoable]
-        public DoorMode Mode
+        protected override ProfilerMarker SnapToWallMarker => PerfMarkers.WindowSnapToWall;
+
+        protected override void RegisterOnWall(Wall wall) => wall.RegisterWindow(this);
+        protected override void UnregisterOnWall(Wall wall) => wall.UnregisterWindow(this);
+        protected override bool IsRegisteredOn(Wall wall) => wall.HasWindow(this);
+
+        protected override float AlignedY(int targetY, float toU, float wallHalfH, float wallCenterY)
         {
-            get => _mode;
-            set { _mode = value; ApplyDoorPose(); }
-        }
-
-        public bool IsOpen => _isOpen;
-        public float DoorProgress => _openT;
-
-        [NotUndoable("служебная привязка к стене, вычисляется SnapToWall")]
-        public string AttachedWallName { get => _attachedWallName; set => _attachedWallName = value ?? ""; }
-
-        public Vector3 ClosedPosition => transform.position;
-        public Quaternion ClosedRotation => transform.rotation;
-        public bool IsDoorClosed => !_isOpen && _openT <= 0f;
-
-        private void Start()
-        {
-            SnapToWall();
-        }
-
-        protected override Vector3 EffectiveScale => new Vector3(
-            DimensionsMM.x * AppConstants.MM_TO_UNITS,
-            DimensionsMM.y * AppConstants.MM_TO_UNITS,
-            DimensionsMM.z * AppConstants.MM_TO_UNITS);
-
-        public override void ApplyDimensions()
-        {
-            transform.localScale = Vector3.one;
-            UpdateCollider();
-            EnsureChildren();
-            RebuildGeometry();
-
-            var wall = FindAttachedWall();
-            if (wall != null) wall.RebuildMesh();
-        }
-
-        public void RefreshGeometry()
-        {
-            RebuildGeometry();
-        }
-
-        public void SetOpen(bool open)
-        {
-            _isOpen = open;
-            if (!Mathf.Approximately(_openT, open ? 1f : 0f))
-                FrameRateManager.KeepAwake(OpenSeconds + 0.2f);
-        }
-
-        public void ToggleOpen() => SetOpen(!_isOpen);
-
-        public void ForceClose()
-        {
-            if (_openT <= 0f && !_isOpen) return;
-            _isOpen = false;
-            _openT = 0f;
-            ApplyDoorPose();
-        }
-
-        private void ApplyDoorPose()
-        {
-            if (_sashGroup == null) return;
-            FacadeDoor.Pose(_sashClosedLocal, Quaternion.identity, _sashHalfExtents,
-                _mode, _openT, out var pos, out var rot, HingeKinematics.EdgePivot);
-            _sashGroup.localPosition = pos;
-            _sashGroup.localRotation = rot;
-        }
-
-        private int _lastPoseVersion;
-
-        private void Update()
-        {
-            StepDoor(Time.deltaTime);
-            if (PoseVersion != _lastPoseVersion)
-            {
-                _lastPoseVersion = PoseVersion;
-                SnapToWall();
-            }
-        }
-
-        public void StepDoor(float dt)
-        {
-            float target = _isOpen ? 1f : 0f;
-            if (Mathf.Approximately(_openT, target)) return;
-            float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
-            _openT = Mathf.MoveTowards(_openT, target, step);
-
-            if (_isOpen && _openT > 0f)
-            {
-                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBoxes);
-                if (safe < _openT) _openT = Mathf.Max(_openT - step, safe);
-            }
-
-            ApplyDoorPose();
-        }
-
-        public void GetOpenBoxes(float progress, List<OrientedBox> into)
-        {
-            if (_sashGroup == null || _sashHalfExtents.sqrMagnitude < 1e-12f)
-            {
-                var frame = transform.rotation;
-                var origin = transform.position;
-                into.Add(LocalFrame.ToWorld(LocalFrame.BoundsOf(GetVertices(), origin, frame),
-                    origin, frame));
-                return;
-            }
-
-            FacadeDoor.Pose(_sashClosedLocal, Quaternion.identity, _sashHalfExtents,
-                _mode, progress, out var localPos, out var localRot, HingeKinematics.EdgePivot);
-
-            into.Add(new OrientedBox(transform.TransformPoint(localPos),
-                transform.rotation * localRot, _sashHalfExtents));
-        }
-
-        public void SnapToWall()
-        {
-            using var _ = PerfMarkers.WindowSnapToWall.Auto();
-            var wall = RegisterWithNearestWall();
-            if (wall != null) AlignToWall(wall);
-        }
-
-        public void AttachToWall(Wall wall)
-        {
-            if (wall == null) return;
-            UnregisterFromWall();
-            _attachedWallName = wall.gameObject.name;
-            wall.RegisterWindow(this);
-            _lastCutoutPos = transform.position;
-            AlignToWall(wall);
-        }
-
-        private Wall? RegisterWithNearestWall()
-        {
-            var best = FindNearestWall();
-            if (best == null) return null;
-            if (best.gameObject.name != _attachedWallName || !best.HasWindow(this))
-            {
-                UnregisterFromWall();
-                _attachedWallName = best.gameObject.name;
-                best.RegisterWindow(this);
-                _lastCutoutPos = transform.position;
-            }
-            return best;
-        }
-
-        private const float WallSwitchHysteresisU = 0.05f;
-
-        private Wall? FindNearestWall()
-        {
-            float bestDist = float.MaxValue;
-            float attachedDist = float.MaxValue;
-            Wall? bestWall = null;
-            Wall? attached = null;
-            foreach (var el in PartRegistry.All)
-            {
-                if (el == null || el == this) continue;
-                var wall = el.GetComponent<Wall>();
-                if (wall == null) continue;
-                float dist = DistanceToWall(wall);
-                if (wall.gameObject.name == _attachedWallName) { attached = wall; attachedDist = dist; }
-                if (dist < bestDist) { bestDist = dist; bestWall = wall; }
-            }
-            if (attached != null && bestWall != attached &&
-                attachedDist - bestDist < WallSwitchHysteresisU)
-                return attached;
-            return bestWall;
-        }
-
-        private float DistanceToWall(Wall wall)
-        {
-            var t = wall.transform;
-            Vector3 center = wall.FullPosition;
-            Vector3 half = t.localScale;
-            half.y = wall.FullScaleY;
-            half = new Vector3(Mathf.Abs(half.x), Mathf.Abs(half.y), Mathf.Abs(half.z)) * 0.5f;
-
-            Vector3 local = Quaternion.Inverse(t.rotation) * (transform.position - center);
-            local.x = Mathf.Clamp(local.x, -half.x, half.x);
-            local.y = Mathf.Clamp(local.y, -half.y, half.y);
-            local.z = Mathf.Clamp(local.z, -half.z, half.z);
-            Vector3 closest = center + t.rotation * local;
-            return (closest - transform.position).magnitude;
-        }
-
-        private void AlignToWall(Wall wall)
-        {
-            var wallEl = wall.GetComponent<KitchenElement>();
-            if (wallEl == null) return;
-            var wt = wall.transform;
-            var wallDims = wallEl.DimensionsMM;
-
-            bool thickAlongX = wallDims.x <= wallDims.z;
-            int thicknessMM = Mathf.Min(wallDims.x, wallDims.z);
-
-            Vector3 dir = thickAlongX ? wt.right : wt.forward;
-            dir.y = 0f;
-            if (dir.sqrMagnitude < 1e-8f) return;
-            dir.Normalize();
-            if (Vector3.Dot(transform.forward, dir) < 0f) dir = -dir;
-            Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
-
-            Vector3 local = wt.InverseTransformPoint(transform.position);
-            if (thickAlongX) local.x = 0f; else local.z = 0f;
-            Vector3 targetPos = wt.TransformPoint(local);
-
-            if ((targetPos - transform.position).sqrMagnitude > Tolerance.EpsilonSqr ||
-                Quaternion.Angle(targetRot, transform.rotation) > 0.05f)
-                transform.SetPositionAndRotation(targetPos, targetRot);
-
-            if (wallDims.y <= 0) return;
-            int targetY = Mathf.Min(DimensionsMM.y, wallDims.y);
-            int targetZ = thicknessMM;
-            float toU = AppConstants.MM_TO_UNITS;
-            float wallHalfH = wallDims.y * toU * 0.5f;
-            float wallCenterY = wall.FullPosition.y;
             float targetHalfH = targetY * toU * 0.5f;
-            float clampedY = Mathf.Clamp(transform.position.y,
+            return Mathf.Clamp(transform.position.y,
                 wallCenterY - wallHalfH + targetHalfH,
                 wallCenterY + wallHalfH - targetHalfH);
-            if (Mathf.Abs(clampedY - transform.position.y) > Tolerance.EpsilonUnits)
-            {
-                transform.position = new Vector3(transform.position.x, clampedY, transform.position.z);
-                _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
-            }
-
-            if (DimensionsMM.y != targetY || DimensionsMM.z != targetZ)
-            {
-                DimensionsMM = new Vector3Int(DimensionsMM.x, targetY, targetZ);
-                _lastCutoutPos = transform.position;
-            }
-
-            if (float.IsNaN(_lastCutoutPos.x) ||
-                (transform.position - _lastCutoutPos).sqrMagnitude > Tolerance.EpsilonSqr)
-            {
-                _lastCutoutPos = transform.position;
-                wall.RebuildMesh();
-            }
         }
 
-        private Wall? FindAttachedWall()
+        protected override void EnsureChildren()
         {
-            if (string.IsNullOrEmpty(_attachedWallName)) return null;
-            foreach (var el in PartRegistry.All)
-            {
-                if (el == null) continue;
-                var wall = el.GetComponent<Wall>();
-                if (wall != null && wall.gameObject.name == _attachedWallName)
-                    return wall;
-            }
-            return null;
-        }
+            EnsureChildGroups();
+            EnsureChildCount(15, GetChildName, IsSashChild);
 
-        internal void UnregisterFromWall()
-        {
-            var wall = FindAttachedWall();
-            _attachedWallName = "";
-            if (wall != null) wall.UnregisterWindow(this);
-        }
-
-        private int ComputeHiddenSides() =>
-            OpeningNeighbourSides.HiddenSidesOf(this, FindAttachedWall());
-
-        private void UpdateCollider()
-        {
-            var existing = GetComponent<Collider>();
-            if (existing != null && !(existing is BoxCollider))
-                Object.DestroyImmediate(existing);
-            var box = GetComponent<BoxCollider>();
-            if (box == null) box = gameObject.AddComponent<BoxCollider>();
-            box.size = EffectiveScale;
-        }
-
-        private void EnsureChildren()
-        {
-            if (_staticGroup == null)
-            {
-                var staticGo = new GameObject("_Static");
-                staticGo.transform.SetParent(transform, false);
-                _staticGroup = staticGo.transform;
-            }
-            if (_sashGroup == null)
-            {
-                var sashGo = new GameObject("_Sash");
-                sashGo.transform.SetParent(transform, false);
-                _sashGroup = sashGo.transform;
-            }
-
-            const int needed = 15;
-            while (_children.Count < needed)
-            {
-                int idx = _children.Count;
-                var child = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                child.name = GetChildName(idx);
-                child.transform.SetParent(IsSashChild(idx) ? _sashGroup : _staticGroup, false);
-                var col = child.GetComponent<BoxCollider>();
-                if (col != null) Object.DestroyImmediate(col);
-                var mr = child.GetComponent<MeshRenderer>();
-                if (mr != null) mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                _children.Add(child);
-            }
-
-            _frameLeft   = _children[0];
-            _frameRight  = _children[1];
-            _frameTop    = _children[2];
-            _frameBottom = _children[3];
-            _glassPane   = _children[4];
-            _sillObj     = _children[5];
-            _dripObj     = _children[6];
-            _slopeTop    = _children[7];
-            _slopeBottom = _children[8];
-            _slopeLeft   = _children[9];
-            _slopeRight  = _children[10];
-            _sashLeft    = _children[11];
-            _sashRight   = _children[12];
-            _sashTop     = _children[13];
-            _sashBottom  = _children[14];
+            _frameLeft   = Children[0];
+            _frameRight  = Children[1];
+            _frameTop    = Children[2];
+            _frameBottom = Children[3];
+            _glassPane   = Children[4];
+            _sillObj     = Children[5];
+            _dripObj     = Children[6];
+            _slopeTop    = Children[7];
+            _slopeBottom = Children[8];
+            _slopeLeft   = Children[9];
+            _slopeRight  = Children[10];
+            _sashLeft    = Children[11];
+            _sashRight   = Children[12];
+            _sashTop     = Children[13];
+            _sashBottom  = Children[14];
         }
 
         private static bool IsSashChild(int idx) => idx == 4 || idx >= 11;
 
-        private string GetChildName(int idx) => idx switch
+        private static string GetChildName(int idx) => idx switch
         {
             0 => "FrameLeft", 1 => "FrameRight", 2 => "FrameTop", 3 => "FrameBottom",
             4 => "Glass", 5 => "Sill", 6 => "DripCap",
@@ -390,9 +87,9 @@ namespace KitchenDesigner.Core
             _ => "Child" + idx
         };
 
-        private void RebuildGeometry()
+        protected override void RebuildGeometry()
         {
-            if (_staticGroup == null || _sashGroup == null) return;
+            if (StaticGroup == null || SashGroup == null) return;
             var dims = DimensionsMM;
             float toU = AppConstants.MM_TO_UNITS;
             float frameU = AppConstants.WINDOW_FRAME_MM * toU;
@@ -437,8 +134,8 @@ namespace KitchenDesigner.Core
 
             float sashU = AppConstants.WINDOW_SASH_MM * toU;
             float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, totalD);
-            _sashClosedLocal = new Vector3(0f, 0f, 0f);
-            _sashHalfExtents = new Vector3(innerW * 0.5f, innerH * 0.5f, sashD * 0.5f);
+            SashClosedLocal = new Vector3(0f, 0f, 0f);
+            SashHalfExtents = new Vector3(innerW * 0.5f, innerH * 0.5f, sashD * 0.5f);
 
             if (_sashLeft != null)
             {
@@ -560,21 +257,7 @@ namespace KitchenDesigner.Core
             return _slopeMat;
         }
 
-        private void ApplyMaterialFrame()
-        {
-            var def = MaterialCatalog.Get(MaterialId);
-            if (def == null) return;
-            var mat = MaterialManager.GetSharedMaterial(def);
-            if (mat != null) PaintFrame(mat);
-        }
-
-        public void SetMaterial(Material material)
-        {
-            if (material == null) return;
-            PaintFrame(material);
-        }
-
-        private void PaintFrame(Material material)
+        protected override void PaintFrame(Material material)
         {
             foreach (var go in new[] { _frameLeft, _frameRight, _frameTop, _frameBottom,
                                        _sashLeft, _sashRight, _sashTop, _sashBottom,
@@ -591,37 +274,19 @@ namespace KitchenDesigner.Core
             }
         }
 
-        public override void PrepareForDestruction() => DestroyChildren();
-
-        public void DestroyChildren()
+        protected override void DestroyChildren()
         {
-            foreach (var child in _children)
+            foreach (var child in Children)
                 if (child != null)
                 {
                     if (Application.isPlaying) Object.Destroy(child);
                     else Object.DestroyImmediate(child);
                 }
-            _children.Clear();
+            Children.Clear();
             _frameLeft = _frameRight = _frameTop = _frameBottom = null;
             _glassPane = _sillObj = _dripObj = null;
             _slopeTop = _slopeBottom = _slopeLeft = _slopeRight = null;
             _sashLeft = _sashRight = _sashTop = _sashBottom = null;
-        }
-
-        protected override void OnElementDestroyed()
-        {
-            UnregisterFromWall();
-            DestroyChildren();
-            DestroyGroup(ref _staticGroup);
-            DestroyGroup(ref _sashGroup);
-        }
-
-        private static void DestroyGroup(ref Transform? group)
-        {
-            if (group == null) return;
-            if (Application.isPlaying) Object.Destroy(group.gameObject);
-            else Object.DestroyImmediate(group.gameObject);
-            group = null;
         }
     }
 }
