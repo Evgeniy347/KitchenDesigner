@@ -43,98 +43,51 @@
 
 ---
 
-## Приоритет 2 — чинить попутно, когда правишь рядом
+## Закрыто 2026-09-07 — приоритет 2
 
-### 2.1 Одно значение — несколько независимых констант
+Пять задач параллельно: константы, формулы, проглоченные исключения, дубли в тестах, мелочи UI.
 
-- **18 мм, толщина плиты:** `Geometry/AppConstants.cs:11` (`BOARD_THICKNESS_DEFAULT`),
-  `MCP/ElementSpawners.cs:48` (`BOARD_DEFAULT_THICKNESS_MM`), `Elements/BasePlate.cs:8`
-  (`PLATE_THICKNESS`). Причём `ElementSpawners.cs:67` уже читает первую — то есть файл
-  одновременно пользуется общей константой и своей копией.
-- **4 мм, стекло:** `AppConstants.cs:21` (`ASSEMBLED_GLASS_THICKNESS_MM`) и `:41`
-  (`WINDOW_GLASS_THICKNESS_MM`).
-- **50 мм, порог привязки:** мёртвая `AppConstants.SNAP_THRESHOLD` удалена (`df2b8064`), но
-  значение по-прежнему живёт тремя литералами `50f` — `Pure/Infrastructure/KitchenSettings.cs:13`
-  и `:304`, `Pure/Persistence/KitchenSettingsData.cs:9`. Имени у порога так и нет; заводить его
-  придётся в `Pure`, потому что ссылка из `Pure` в `Geometry` ломает слои.
-- **0,4 с, длительность открывания:** после кампании осталось три места —
-  `WallOpeningElement.cs:17` (дверь и окно слились), `FacadeElement.cs:90`, `DropDoor.cs:10`;
-  плюс одинаковые строки `KeepAwake(OpenSeconds + 0.2f)`. `DrawerElement.cs:32` уже показывает
-  правильный путь — ссылается на `DrawerConstants.DRAWER_ANIM_DURATION`.
+| Было | Стало | Коммиты |
+|---|---|---|
+| 2.1 три константы на 18 мм, две на 4 мм, четыре места с 0,4 с | по одному источнику на каждое значение: `BOARD_THICKNESS_DEFAULT`, `GLASS_THICKNESS_MM`, `OPENING_ANIM_DURATION_SECONDS` + `OPENING_KEEP_AWAKE_MARGIN_SECONDS` | `823594dc`, `69b4b2ad`, `346aca4f` |
+| 2.2 формула половины высоты в 12 файлах; две проекции грани; два `WorldSizeForPixels` | `AppConstants.HalfHeightUnits(mm)` (12 из 16 мест), `ResizeSnap` зовёт `FaceRects.Of`, `MeasureGeometry` строит `PinholeView` и делегирует | `fecd7c64`, `52cc5ce1`, `92b01889` |
+| 2.3 тринадцать пустых `catch` | 10 разобрано: два сужены до конкретного типа С ТЕСТАМИ, шесть оставлены широкими, но заговорили в лог; три не тронуты — контракт исключений у `Abort()` не документирован | `5b3fb87b` |
+| 2.4 `MakeReq` в 14 файлах, фикстура в 19, `MakeElement` в 6 | `McpTestFixture` — общая база; тирдаун шаблонным методом, чтобы наследники добавляли своё, а не расширяли общее | `d4518d3b`, `3ba08076`, `e26ca5fd`, `530869fb` |
+| 2.5 биндинг скругления ×4, `40f` ×7, цвета мимо `UIStyle`, валидатор символа ×3, `LegSet` ×4 | общий `BindCornerRadius`, `UIStyle.DragStripHeight`, `UIStyle.RowSelected`/`ScrollHandle`, `DimensionFieldValidation.Char`, `LegSet.For` | `1a269809`, `b306b9ec`, `a48b9d0c`, `ced0c6e4`, `558ceed0` |
+| 2.6 мёртвая пара `TcpCommandBridge`/`ICommandBridge` | удалена вместе с опустевшим `Core/Networking`; GUID обоих не встречался ни в одной сцене, а порт 9337 держит нынешний `McpHttpBridge` | `673bf8e2` |
 
-### 2.2 Формулы без общего хелпера
+### Главный урок раунда: одинаковое по форме ≠ одинаковое по смыслу
 
-- `0.5f * AppConstants.MM_TO_UNITS` — **16 вхождений в 12 файлах** (`CooktopElement`,
-  `DrawerElement`, `DrawerLinks`, `PillarAutoFit`, `PlacementController`, `ScrewLegAutoFit`,
-  `ScrewLegElement`, `UI/ElementSpawner`, `SinkElement`, `WallSeating`, `BasePlate`). Нужен один
-  `AppConstants.HalfHeightUnits(mm)`.
-- `Geometry/FaceRects.cs:7` и `Geometry/ResizeSnap.cs:96` считают одну и ту же проекцию грани
-  на оси `u`/`v`.
-- ~~`Geometry/ResizeSnap.cs:108` повторяет `Tolerance.IntervalsOverlap`~~ — **НЕ дубль, сводить
-  нельзя.** Эпсилон направлен в противоположные стороны: `Overlap` даёт `left <= right +
-  SnapEpsilon` (касание — это контакт), `IntervalsOverlap` даёт `min1 < max2 - margin`
-  (касание — НЕ пересечение). `ResizeSnapBoundaryTests.MoveAndResize_BothTakeAnEdgeOnly
-  FootprintTouch_AsContact` требует, чтобы стойка торцом у кромки панели прилипала; с общим
-  примитивом он краснеет. Два похожих на вид решения с противоположным смыслом на границе.
-- `Geometry/PinholeView.cs:67` и `Measure/MeasureGeometry.cs:57` — два `WorldSizeForPixels` с
-  одинаковыми орто- и перспективной ветками.
+Три «дубля» из этого списка сводить было НЕЛЬЗЯ, и два из трёх поймали исполнители, а не аудит:
 
-### 2.3 Тринадцать проглоченных исключений
+- **`ResizeSnap.Overlap` и `Tolerance.IntervalsOverlap`** — эпсилон направлен в разные стороны:
+  первый считает касание контактом (`<=` с плюсом), второй — не считает (`<` с минусом).
+  `ResizeSnapBoundaryTests` требует, чтобы стойка торцом у кромки прилипала.
+- **`SnapTestBase` и `Geometry/SnapCoreTestBase`** — разделены границей сборки: второй
+  компилируется и Unity, и `dotnet`. Слияние вернуло бы тесты ядра в Unity-only.
+- **`MakeElement` в `McpTestFixture` и в `FacadeMcpTests`** — базовый создаёт голый
+  `GameObject`, локальный — примитив с коллайдером и рендерером. Одинаковое имя не сводит, а
+  СКРЫВАЕТ: `CS0108` под `warnaserror` уронил сборку EditMode за 20 секунд. Переименован в
+  `MakePrimitiveElement`; удалить его значило бы отдать тестам объект без коллайдера молча.
 
-Пустые `catch {}` в продакшене: `Rendering/PhotoQualityController.cs:350,361,371`,
-`Update/UnityWebRequestDownloader.cs:34,132`, `UI/SettingsMcpTab.cs:37-39` и другие — всего 13.
-Каждый нужно либо сузить до конкретного типа с комментарием в тесте, либо дать логировать.
+Отсюда правило для следующего аудита: находка «эти два места делают одно и то же» — это
+ГИПОТЕЗА, а не задача. Проверяется она на границе (касание, ноль, пустота) и по составу
+объекта, а не по сходству текста.
 
-### 2.4 Дубли в тестах
+### Остаток приоритета 2, сознательно не закрытый
 
-СДЕЛАНО: `Assets/Tests/EditMode/McpTestFixture.cs` — общая база для файлов с MCP-обработчиком.
-Снимает `MakeReq` (было в 14 файлах), `_handler = new McpCommandHandler()` + тирдаун
-`_spawned`/`PartRegistry.Clear()` (было в 19 файлах, 17 сведены — 2 намеренно оставлены, см.
-ниже) и тело `MakeElement` (было идентично в 6 файлах). Тирдаун — шаблонный метод: базовый
-[SetUp]/[TearDown] чистит только то, что было общим БУКВАЛЬНО во всех копиях; каждый наследник,
-которому нужен ещё один сброс (`GroupManager`, `CommandStack`, `ProjectRooms`, ...), объявляет
-СВОЙ [SetUp]/[TearDown] с этой добавкой — NUnit гарантирует порядок база→наследник для SetUp и
-наследник→база для TearDown. Три файла (`ApplianceRotationTests`, `DishwasherElementTests`,
-`OvenElementTests`) сохранили свой полный TearDown как есть (меню/канва, ручной
-`PartRegistry.Unregister`, `ElementFactory.ClearPools()`, `MaterialManager.ClearCache()`) —
-это не подмножество общего шаблона, а другой сценарий, сливать его в общий метод означало бы
-расширить то, что каждый конкретный тест чистит.
-
-НЕ СЛИТО, намеренно:
-- `McpConvertElementsReproTests.cs`, `McpSettingsParityTests.cs` — используют
-  `_handler = new McpCommandHandler()`, но фикстура вокруг него другая (`EveryElementType` +
-  `ProjectLoadStateGuard` в первом, снимок/восстановление `KitchenSettings` во втором); ни
-  `PartRegistry.Clear()`, ни `_spawned` там нет. Заворачивать их в `McpTestFixture` означало бы
-  дописывать поведение, которого раньше не было.
-- `MakeFacade`/`MakeElement`, повторённые ЕЩЁ в ~19 файлах вне семьи MCP-обработчика
-  (`FacadeElementTests`, `SceneTreeTests`, `GroupServiceTests`, `AttachLinksTests` и другие,
-  плюс один в PlayMode) — разные базовые классы, разные тирдауны, не изучены в рамках этого
-  прохода. Общий `ElementTestBase` для них — отдельная задача: проверить фикстуру каждого файла
-  так же внимательно, как здесь, а не механически переименовать методы.
-- `SnapTestBase` (EditMode, сценовый) и `Geometry/SnapCoreTestBase` (снимки `ElementGeometry`,
-  компилируется и Unity, и `dotnet` — см. `agents/TEST-DESIGN.md` → «A test under
-  `Assets/Tests/EditMode/Geometry/` is a CORE test, not a scene test»). Разделены границей
-  сборки: `SnapCoreTestBase` не имеет права видеть `GameObject`/`KitchenSettings`, иначе
-  `tools/mutation-test.ps1 -TestsOnly` и Stryker перестанут её компилировать. Порог `50f`
-  продублирован (`SnapTestBase` берёт его из `KitchenSettings.SnapThreshold`, `SnapCoreTestBase`
-  задаёт как явную константу `Threshold`, с комментарием о причине) — это единственное, что
-  МОЖНО было бы вынести, но общего слоя, который видят обе сборки и куда стоило бы класть тестовую
-  константу (а не производственную), сейчас нет; заводить его ради одного числа — накладнее, чем
-  два раза написать `50f`. Оставлено как есть.
-
-Что делать дальше: `ElementTestBase` для оставшихся ~19 файлов. Работа механическая и
-проверяется командой — кандидат в opencode.
-
-### 2.5 Мелочи UI
-
-- Привязка «Скругление» (`CornerRadiusMM`) продублирована в `ChairFieldsEditor.cs:15`,
-  `SofaFieldsEditor.cs:15`, `StoolFieldsEditor.cs:11`, `PouffeFieldsEditor.cs:25`.
-- Высота полосы перетаскивания окна — литерал `40f` в семи местах (плюс `44f` в
-  `ProjectInstructionsPanelUI.cs:23`, и неясно, опечатка это или намерение).
-- Цвета мимо `UIStyle`: `(0.38, 0.40, 0.46)` в `IssueTableView.cs:26`,
-  `HierarchyPanelUI.cs:151`, `SpecificationPanelUI.cs:116`.
-- `ExpressionParser.IsValidDimensionChar` продублирован трижды.
-- `new LegSet(transform, "Leg")` — четыре одинаковые ленивые инициализации.
+- **Порог привязки 50 мм** тремя литералами в `Pure/Infrastructure/KitchenSettings.cs:13`,
+  `:304` и `Pure/Persistence/KitchenSettingsData.cs:9`. Имя ему нужно заводить в `Pure`:
+  ссылка из `Pure` в `Geometry` ломает слои, и `LayerDependencyDirectionTests` это заметит.
+- **Четыре из шестнадцати** `0.5f * MM_TO_UNITS` остались в `Core/UI/ElementSpawner.cs`
+  (строки 156, 169, 174, 187) — файл был занят другим исполнителем.
+- **`MakeFacade`/`MakeElement` ещё в ~19 файлах** вне семьи MCP-обработчика. Общий
+  `ElementTestBase` — отдельная задача: у каждого файла своя фикстура, и её надо прочесть,
+  а не переименовать методы механически.
+- **Три пустых `catch`** у `Response.Abort()` и `UnityWebRequest.Abort()`: контракт исключений
+  не документирован, а гадать на фоновом потоке слушателя — способ уронить поток целиком.
+- **`44f` в `ProjectInstructionsPanelUI.cs:23`** вместо общей `UIStyle.DragStripHeight = 40f`.
+  Опечатка или намеренно более высокая полоса — вопрос к владельцу, а не к исполнителю.
 
 ---
 
