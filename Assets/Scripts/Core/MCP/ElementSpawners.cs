@@ -45,7 +45,6 @@ namespace KitchenDesigner.Core.MCP
         public const int DOOR_DEFAULT_HEIGHT_MM = 2000;
         public const int BOARD_DEFAULT_WIDTH_MM = 800;
         public const int BOARD_DEFAULT_HEIGHT_MM = 400;
-        public const int BOARD_DEFAULT_THICKNESS_MM = 18;
 
         private static readonly Dictionary<string, Func<CreateItem, Vector3, GameObject>> ByType =
             new Dictionary<string, Func<CreateItem, Vector3, GameObject>>(StringComparer.Ordinal)
@@ -58,7 +57,7 @@ namespace KitchenDesigner.Core.MCP
                 ["assembled_facade"] = (item, pos) => ElementFactory.CreateAssembledFacade(
                     new Vector3Int(item.width ?? ASSEMBLED_FACADE_DEFAULT_WIDTH_MM,
                         item.height ?? ASSEMBLED_FACADE_DEFAULT_HEIGHT_MM,
-                        item.depth ?? BOARD_DEFAULT_THICKNESS_MM),
+                        item.depth ?? AppConstants.BOARD_THICKNESS_DEFAULT),
                     item.name, pos, AssembledFill.Blind),
 
                 ["radial_shelf"] = (item, pos) => ElementFactory.CreateRadialShelf(
@@ -223,7 +222,7 @@ namespace KitchenDesigner.Core.MCP
             var dims = new Vector3Int(
                 item.width ?? BOARD_DEFAULT_WIDTH_MM,
                 item.height ?? BOARD_DEFAULT_HEIGHT_MM,
-                item.depth ?? BOARD_DEFAULT_THICKNESS_MM);
+                item.depth ?? AppConstants.BOARD_THICKNESS_DEFAULT);
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = item.name;
             KitchenElement element = elementType == "facade"

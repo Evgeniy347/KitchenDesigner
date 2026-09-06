@@ -5,7 +5,6 @@ namespace KitchenDesigner.Core
     public class BasePlate : MonoBehaviour
     {
         public const int PLATE_SIZE = 3000;
-        public const int PLATE_THICKNESS = 18;
 
         private KitchenElement? _element;
         public KitchenElement Element => _element!;
@@ -17,8 +16,9 @@ namespace KitchenDesigner.Core
 
             var element = go.AddComponent<KitchenElement>();
             element.PartName = "BasePlate";
-            element.DimensionsMM = new Vector3Int(PLATE_SIZE, PLATE_THICKNESS, PLATE_SIZE);
-            go.transform.position = new Vector3(0, -PLATE_THICKNESS * 0.5f * AppConstants.MM_TO_UNITS, 0);
+            element.DimensionsMM = new Vector3Int(PLATE_SIZE, AppConstants.BOARD_THICKNESS_DEFAULT, PLATE_SIZE);
+            go.transform.position = new Vector3(0,
+                -AppConstants.BOARD_THICKNESS_DEFAULT * 0.5f * AppConstants.MM_TO_UNITS, 0);
 
             var renderer = go.GetComponent<MeshRenderer>();
             var shader = Shader.Find("Universal Render Pipeline/Lit");
