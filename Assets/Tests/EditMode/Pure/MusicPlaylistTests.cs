@@ -8,7 +8,7 @@ using KitchenDesigner.Core.Audio;
 /// не грузится, кнопка «далее» перестаёт работать, и выглядит это как «плеер
 /// завис», а не как выход за границу списка.
 ///
-/// Остаток от отрицательного числа в C# отрицателен (-1 % 6 == -1), поэтому
+/// Остаток от отрицательного числа в C# отрицателен (-1 % 5 == -1), поэтому
 /// «назад» проверяется отдельно от «далее»: обёртка, написанная одним `%`,
 /// проходит вперёд и ломается назад.
 /// </summary>
@@ -37,7 +37,7 @@ public class MusicPlaylistTests
         Assert.AreEqual("Music/track-01", MusicPlaylist.ResourcePath(0),
             "номер в имени файла двузначный: Resources.Load ищет по точному пути, и track-1 "
             + "не нашёлся бы");
-        Assert.AreEqual("Music/track-06", MusicPlaylist.ResourcePath(5));
+        Assert.AreEqual("Music/track-05", MusicPlaylist.ResourcePath(4));
         Assert.AreEqual("Music/track-01", MusicPlaylist.ResourcePath(MusicPlaylist.TRACK_COUNT),
             "путь считается от обёрнутого номера, иначе круг ломался бы на загрузке");
     }
@@ -47,7 +47,28 @@ public class MusicPlaylistTests
     {
         Assert.AreEqual("Трек 1", MusicPlaylist.DisplayName(0),
             "человеку показывается номер с единицы, индекс с нуля — внутреннее дело плейлиста");
-        Assert.AreEqual("Трек 6", MusicPlaylist.DisplayName(5));
+        Assert.AreEqual("Трек 5", MusicPlaylist.DisplayName(4));
+    }
+
+    [Test]
+    public void TrackCount_MatchesTheFilesLyingInResources()
+    {
+        var dir = KitchenDesigner.Tests.Geometry.RepoPaths.Subdir("Assets", "Resources", "Music");
+        var files = System.IO.Directory.GetFiles(dir, "*.mp3");
+
+        Assert.AreEqual(MusicPlaylist.TRACK_COUNT, files.Length,
+            "TRACK_COUNT и папка с треками — две записи об одном и том же, и расходятся они "
+            + "молча: лишний номер в константе делает «далее» тишиной (Resources.Load вернёт "
+            + "null), лишний файл в папке просто никогда не зазвучит. Файлов в " + dir + ": "
+            + files.Length);
+
+        for (int i = 0; i < MusicPlaylist.TRACK_COUNT; i++)
+        {
+            var path = System.IO.Path.Combine(dir, "track-" + (i + 1).ToString("00") + ".mp3");
+            Assert.IsTrue(System.IO.File.Exists(path),
+                "нумерация треков сплошная: " + MusicPlaylist.ResourcePath(i) + " обязан лежать "
+                + "на диске, иначе дыра в середине круга останется незамеченной до нажатия");
+        }
     }
 
     [Test]
