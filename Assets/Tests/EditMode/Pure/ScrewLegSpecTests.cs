@@ -94,11 +94,31 @@ public class ScrewLegSpecTests
         Assert.IsFalse(ScrewLegSpec.NeedsCentring(600f));
     }
 
+    /// <summary>Раньше здесь стоял допуск ±0,5 мм НА ПОЛОЖЕНИЕ, и он не знал ни
+    /// толщины детали, ни диаметра резьбы: на 16-мм царге M6 он запрещал 1,5 мм,
+    /// оставляющие 3,5 мм стенки, и разрешал бы те же 0,5 мм на 8-мм планке, где
+    /// стенки нет вовсе. Правило существует ради МЯСА вокруг футорки — его и
+    /// считаем; допуск на положение был подменой измеряемой величины.</summary>
     [Test]
-    public void Centred_TolerateHalfAMillimetre_AndNoMore()
+    public void TheWallLeftBesideTheInsert_IsWhatIsMeasured()
     {
-        Assert.IsTrue(ScrewLegSpec.IsCentred(0.5f));
-        Assert.IsTrue(ScrewLegSpec.IsCentred(-0.5f));
-        Assert.IsFalse(ScrewLegSpec.IsCentred(0.6f));
+        Assert.AreEqual(5f, ScrewLegSpec.InsertWallMM(0f, 16f, 6f), 0.001f,
+            "M6 ровно по центру 16-мм царги: (16-6)/2 — по 5 мм с каждой стороны");
+        Assert.AreEqual(3.5f, ScrewLegSpec.InsertWallMM(1.5f, 16f, 6f), 0.001f,
+            "смещение съедает стенку с той стороны, куда ушла опора");
+        Assert.AreEqual(3.5f, ScrewLegSpec.InsertWallMM(-1.5f, 16f, 6f), 0.001f,
+            "знак смещения роли не играет — тонкой становится противоположная стенка");
+    }
+
+    [Test]
+    public void ThreeMillimetresOfWall_IsTheLine()
+    {
+        Assert.IsTrue(ScrewLegSpec.InsertHolds(1.5f, 16f, 6f),
+            "1,5 мм от центра 16-мм царги: 3,5 мм стенки — футорке есть за что держаться");
+        Assert.IsTrue(ScrewLegSpec.InsertHolds(2f, 16f, 6f), "ровно 3 мм — граница включительно");
+        Assert.IsFalse(ScrewLegSpec.InsertHolds(4f, 16f, 6f),
+            "4 мм от центра 16-мм торца оставляют 1 мм — футорка выйдет боком");
+        Assert.IsFalse(ScrewLegSpec.InsertHolds(1.5f, 16f, 10f),
+            "та же установка под M10 уже не держит: резьба толще, мяса меньше");
     }
 }

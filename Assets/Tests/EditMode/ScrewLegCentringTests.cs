@@ -101,7 +101,34 @@ public class ScrewLegCentringTests
         var leg = Leg(new Vector3(0.4f * U, 0.020f, 0f));
 
         Assert.IsFalse(ScrewLegCentring.TryFindOffCentre(leg, host, out _),
-            "допуск на попадание — 0,5 мм, иначе предупреждение висело бы вечно "
-            + "от одного округления сетки");
+            "округление сетки не обязано поднимать замечание");
+    }
+
+    /// <summary>Живая сцена пользователя: опора под 16-мм царгой цоколя стоит в
+    /// 1,5 мм от её середины. Прежний допуск ±0,5 мм звал это ошибкой, хотя
+    /// стенки остаётся 3,5 мм — установка правильная. Пара с тестом выше на 4 мм
+    /// держит границу с обеих сторон: правило не «строго по центру», а «футорке
+    /// хватает мяса».</summary>
+    [Test]
+    public void OneAndAHalfMillimetresOffASixteenMillimetreRail_Holds()
+    {
+        var host = Board("Царга", new Vector3(0f, 0.060f, 0f), new Vector3Int(482, 80, 16));
+        var leg = Leg(new Vector3(0f, 0.020f, 1.5f * U));
+
+        Assert.IsFalse(ScrewLegCentring.TryFindOffCentre(leg, host, out var offCentre),
+            "1,5 мм от середины 16-мм царги оставляют 3,5 мм стенки под M6 — "
+            + $"держится: {offCentre.Axis} {offCentre.SpanMM} мм, стенка {offCentre.WallMM} мм");
+    }
+
+    [Test]
+    public void TheReportNamesTheWallThatIsLeft_NotJustTheOffset()
+    {
+        var host = ThinSide();
+        var leg = Leg(new Vector3(4f * U, 0.020f, 0f));
+
+        Assert.IsTrue(ScrewLegCentring.TryFindOffCentre(leg, host, out var offCentre));
+        Assert.AreEqual(1f, offCentre.WallMM, 0.01f,
+            "по этому числу и решают: 16/2 − 4 − 6/2. Без него сообщение называет "
+            + "смещение, а судит по стенке — две разные величины в одном отчёте");
     }
 }

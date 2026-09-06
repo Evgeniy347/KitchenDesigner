@@ -7,12 +7,14 @@ namespace KitchenDesigner.Core
         public readonly string Axis;
         public readonly float SpanMM;
         public readonly float OffsetMM;
+        public readonly float WallMM;
 
-        public ScrewLegOffCentre(string axis, float spanMM, float offsetMM)
+        public ScrewLegOffCentre(string axis, float spanMM, float offsetMM, float wallMM)
         {
             Axis = axis;
             SpanMM = spanMM;
             OffsetMM = offsetMM;
+            WallMM = wallMM;
         }
     }
 
@@ -30,13 +32,15 @@ namespace KitchenDesigner.Core
             var legBox = ElementAabb.Of(leg);
             var hostBox = ElementAabb.Of(host);
 
+            float threadMM = leg.ThreadDiameterMM;
+
             bool found = false;
-            if (Check(AxisX, legBox.minX, legBox.maxX, hostBox.minX, hostBox.maxX, out var onX))
+            if (Check(AxisX, legBox.minX, legBox.maxX, hostBox.minX, hostBox.maxX, threadMM, out var onX))
             {
                 worst = onX;
                 found = true;
             }
-            if (Check(AxisZ, legBox.minZ, legBox.maxZ, hostBox.minZ, hostBox.maxZ, out var onZ)
+            if (Check(AxisZ, legBox.minZ, legBox.maxZ, hostBox.minZ, hostBox.maxZ, threadMM, out var onZ)
                 && (!found || onZ.SpanMM < worst.SpanMM))
             {
                 worst = onZ;
@@ -46,7 +50,7 @@ namespace KitchenDesigner.Core
         }
 
         private static bool Check(string axis, float legMin, float legMax,
-            float hostMin, float hostMax, out ScrewLegOffCentre offCentre)
+            float hostMin, float hostMax, float threadMM, out ScrewLegOffCentre offCentre)
         {
             offCentre = default;
 
@@ -55,9 +59,10 @@ namespace KitchenDesigner.Core
 
             float offsetMM = ((legMin + legMax) - (hostMin + hostMax))
                 * 0.5f / AppConstants.MM_TO_UNITS;
-            if (ScrewLegSpec.IsCentred(offsetMM)) return false;
+            if (ScrewLegSpec.InsertHolds(offsetMM, spanMM, threadMM)) return false;
 
-            offCentre = new ScrewLegOffCentre(axis, spanMM, Mathf.Abs(offsetMM));
+            offCentre = new ScrewLegOffCentre(axis, spanMM, Mathf.Abs(offsetMM),
+                ScrewLegSpec.InsertWallMM(offsetMM, spanMM, threadMM));
             return true;
         }
     }

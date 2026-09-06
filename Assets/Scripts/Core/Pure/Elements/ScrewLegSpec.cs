@@ -27,7 +27,7 @@ namespace KitchenDesigner.Core
 
         public const int CENTRING_REQUIRED_SPAN_MM = 25;
 
-        public const float CENTRE_TOLERANCE_MM = 0.5f;
+        public const float MIN_INSERT_WALL_MM = 3f;
 
         public static int ThreadDiameterMM(string? thread) => thread switch
         {
@@ -83,7 +83,10 @@ namespace KitchenDesigner.Core
         public static bool NeedsCentring(float faceSpanMM) =>
             faceSpanMM < CENTRING_REQUIRED_SPAN_MM;
 
-        public static bool IsCentred(float offsetMM) =>
-            (offsetMM < 0f ? -offsetMM : offsetMM) <= CENTRE_TOLERANCE_MM;
+        public static float InsertWallMM(float offsetMM, float faceSpanMM, float threadDiameterMM) =>
+            faceSpanMM * 0.5f - (offsetMM < 0f ? -offsetMM : offsetMM) - threadDiameterMM * 0.5f;
+
+        public static bool InsertHolds(float offsetMM, float faceSpanMM, float threadDiameterMM) =>
+            InsertWallMM(offsetMM, faceSpanMM, threadDiameterMM) >= MIN_INSERT_WALL_MM;
     }
 }

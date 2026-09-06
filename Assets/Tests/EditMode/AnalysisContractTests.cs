@@ -72,7 +72,7 @@ public class AnalysisContractTests
             IssueCatalog.DishwasherSunk(a, b, 40f),
             IssueCatalog.DishwasherFacadeHeight(a, b, 500),
             IssueCatalog.AttachDetached(a, b),
-            IssueCatalog.ScrewLegOffCentre(a, b, new ScrewLegOffCentre("X", 16f, 4f)),
+            IssueCatalog.ScrewLegOffCentre(a, b, new ScrewLegOffCentre("X", 16f, 4f, 1f)),
         };
     }
 

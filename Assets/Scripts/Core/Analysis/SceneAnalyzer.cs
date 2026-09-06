@@ -351,8 +351,10 @@ namespace KitchenDesigner.Core.Analysis
             ScrewLegOffCentre offCentre) =>
             new AnalysisIssue(IssueLevel.Warning, CodeScrewLegOffCentre,
                 PairDetail(leg, host),
-                $"Опора не по центру: сторона {offCentre.Axis} у {Name(host)} — {offCentre.SpanMM:F1} мм "
-                + $"(меньше {ScrewLegSpec.CENTRING_REQUIRED_SPAN_MM} мм), смещение {offCentre.OffsetMM:F1} мм",
+                $"Футорке не за что держаться: сторона {offCentre.Axis} у {Name(host)} — "
+                + $"{offCentre.SpanMM:F1} мм (тоньше {ScrewLegSpec.CENTRING_REQUIRED_SPAN_MM} мм), "
+                + $"смещение {offCentre.OffsetMM:F1} мм оставило стенку {offCentre.WallMM:F1} мм "
+                + $"вместо {ScrewLegSpec.MIN_INSERT_WALL_MM:F0} мм",
                 leg, host);
 
         private static string Name(KitchenElement? e) =>
