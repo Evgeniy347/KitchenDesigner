@@ -15,6 +15,7 @@ public class WindowStripBugTests
     private const int RenderH = 1024;
     private const float IsoFov = 45f;
 
+    private KitchenSettingsData? _settingsBackup;
     private GameObject? _bootstrap;
     private GameObject? _mainCamera;
     private readonly System.Collections.Generic.List<GameObject> _spawned = new System.Collections.Generic.List<GameObject>();
@@ -39,6 +40,21 @@ public class WindowStripBugTests
 
         yield return null;
         yield return null;
+
+        // Bootstrap открывает демо-проект, а с ним приезжают ЕГО настройки вида.
+        // Этот тест про построение меша, и опускание стен ему безразлично — но не
+        // наоборот: у опущенной стены вырезов окон нет намеренно (полоска в 100 мм
+        // проходит НИЖЕ подоконника, и стена там настоящая). Стоит демо-файлу
+        // приехать с включённым «опускать все стены» — и проверка меряет пустой
+        // короб вместо выреза. Исход теста не имеет права зависеть от того, какие
+        // галочки пользователь сохранил в своём проекте.
+        var settings = KitchenSettings.Instance;
+        _settingsBackup = settings != null ? settings.ToData() : null;
+        if (settings != null)
+        {
+            settings.NormalView.lowerAllWalls = false;
+            settings.NormalView.lowerNearWalls = false;
+        }
     }
 
     [UnityTearDown]
@@ -52,6 +68,10 @@ public class WindowStripBugTests
             if (e != null) Object.Destroy(e.gameObject);
         foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
             if (c != null) Object.Destroy(c.gameObject);
+        var settings = KitchenSettings.Instance;
+        if (settings != null && _settingsBackup != null) settings.ApplyFrom(_settingsBackup);
+        _settingsBackup = null;
+
         if (_bootstrap != null) Object.Destroy(_bootstrap);
         if (_mainCamera != null) Object.Destroy(_mainCamera);
         yield return null;
@@ -128,8 +148,16 @@ public class WindowStripBugTests
         var win2 = ElementFactory.CreateWindow(winDims, "StripWin_Upper", new Vector3(0.3f, 2.032f, 0f));
         _spawned.Add(win2);
 
-        win1.GetComponent<WindowElement>()!.SnapToWall();
-        win2.GetComponent<WindowElement>()!.SnapToWall();
+        // Привязка ЯВНАЯ: SnapToWall берёт ближайшую стену из всей сцены, а Bootstrap
+        // мог загрузить в неё целый проект. Тогда окна уезжают на чужую стену, меш
+        // StripWall остаётся целым, и тест падает со словами «окна не прилипли» —
+        // про порядок тестов, а не про полосу в зоне перекрытия.
+        var wall = wallGo.GetComponent<Wall>()!;
+        win1.GetComponent<WindowElement>()!.AttachToWall(wall);
+        win2.GetComponent<WindowElement>()!.AttachToWall(wall);
+
+        Assert.AreEqual(2, wall.AttachedWindows.Count,
+            "оба окна обязаны висеть на СВОЕЙ стене — иначе проверка меша ничего не значит");
 
         // Даём стене перестроить меш (RebuildMesh вызывается в Update).
         yield return null;

@@ -1452,6 +1452,7 @@ public class IsoScreenshotTests
     {
         KitchenSettings.Instance.NormalView.wallsEnabled = true;
         KitchenSettings.Instance.NormalView.lowerNearWalls = false;
+        KitchenSettings.Instance.NormalView.lowerAllWalls = false;
 
         yield return RenderRoom("iso_room_raised.png");
     }
@@ -1461,6 +1462,9 @@ public class IsoScreenshotTests
     {
         KitchenSettings.Instance.NormalView.wallsEnabled = true;
         KitchenSettings.Instance.NormalView.lowerNearWalls = true;
+        // Кадр называется «опущены БЛИЖНИЕ»: без этой строки он зависел бы от того,
+        // стоит ли «опускать все стены» в демо-проекте, который поднял Bootstrap.
+        KitchenSettings.Instance.NormalView.lowerAllWalls = false;
 
         yield return RenderRoom("iso_room_lowered.png");
     }
