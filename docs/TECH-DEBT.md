@@ -70,8 +70,12 @@
   `AppConstants.HalfHeightUnits(mm)`.
 - `Geometry/FaceRects.cs:7` и `Geometry/ResizeSnap.cs:96` считают одну и ту же проекцию грани
   на оси `u`/`v`.
-- `Geometry/ResizeSnap.cs:108` вручную повторяет `Tolerance.IntervalsOverlap`, которым уже
-  пользуются шесть других мест.
+- ~~`Geometry/ResizeSnap.cs:108` повторяет `Tolerance.IntervalsOverlap`~~ — **НЕ дубль, сводить
+  нельзя.** Эпсилон направлен в противоположные стороны: `Overlap` даёт `left <= right +
+  SnapEpsilon` (касание — это контакт), `IntervalsOverlap` даёт `min1 < max2 - margin`
+  (касание — НЕ пересечение). `ResizeSnapBoundaryTests.MoveAndResize_BothTakeAnEdgeOnly
+  FootprintTouch_AsContact` требует, чтобы стойка торцом у кромки панели прилипала; с общим
+  примитивом он краснеет. Два похожих на вид решения с противоположным смыслом на границе.
 - `Geometry/PinholeView.cs:67` и `Measure/MeasureGeometry.cs:57` — два `WorldSizeForPixels` с
   одинаковыми орто- и перспективной ветками.
 
@@ -83,14 +87,42 @@
 
 ### 2.4 Дубли в тестах
 
-- `MakeReq` — построитель MCP-запроса, скопированный в **14 файлов**.
-- Тирдаун `_spawned` + `PartRegistry.Clear()` — 30+ повторов.
-- `_handler = new McpCommandHandler()` — 19 файлов.
-- `MakeElement`/`MakeFacade` — по 4–5 идентичных тел.
-- Две параллельные базы: `SnapTestBase` и `Geometry/SnapCoreTestBase`, включая одинаковый
-  порог `50f`.
+СДЕЛАНО: `Assets/Tests/EditMode/McpTestFixture.cs` — общая база для файлов с MCP-обработчиком.
+Снимает `MakeReq` (было в 14 файлах), `_handler = new McpCommandHandler()` + тирдаун
+`_spawned`/`PartRegistry.Clear()` (было в 19 файлах, 17 сведены — 2 намеренно оставлены, см.
+ниже) и тело `MakeElement` (было идентично в 6 файлах). Тирдаун — шаблонный метод: базовый
+[SetUp]/[TearDown] чистит только то, что было общим БУКВАЛЬНО во всех копиях; каждый наследник,
+которому нужен ещё один сброс (`GroupManager`, `CommandStack`, `ProjectRooms`, ...), объявляет
+СВОЙ [SetUp]/[TearDown] с этой добавкой — NUnit гарантирует порядок база→наследник для SetUp и
+наследник→база для TearDown. Три файла (`ApplianceRotationTests`, `DishwasherElementTests`,
+`OvenElementTests`) сохранили свой полный TearDown как есть (меню/канва, ручной
+`PartRegistry.Unregister`, `ElementFactory.ClearPools()`, `MaterialManager.ClearCache()`) —
+это не подмножество общего шаблона, а другой сценарий, сливать его в общий метод означало бы
+расширить то, что каждый конкретный тест чистит.
 
-Что делать: один `McpTestFixture` и один общий `ElementTestBase`. Работа механическая и
+НЕ СЛИТО, намеренно:
+- `McpConvertElementsReproTests.cs`, `McpSettingsParityTests.cs` — используют
+  `_handler = new McpCommandHandler()`, но фикстура вокруг него другая (`EveryElementType` +
+  `ProjectLoadStateGuard` в первом, снимок/восстановление `KitchenSettings` во втором); ни
+  `PartRegistry.Clear()`, ни `_spawned` там нет. Заворачивать их в `McpTestFixture` означало бы
+  дописывать поведение, которого раньше не было.
+- `MakeFacade`/`MakeElement`, повторённые ЕЩЁ в ~19 файлах вне семьи MCP-обработчика
+  (`FacadeElementTests`, `SceneTreeTests`, `GroupServiceTests`, `AttachLinksTests` и другие,
+  плюс один в PlayMode) — разные базовые классы, разные тирдауны, не изучены в рамках этого
+  прохода. Общий `ElementTestBase` для них — отдельная задача: проверить фикстуру каждого файла
+  так же внимательно, как здесь, а не механически переименовать методы.
+- `SnapTestBase` (EditMode, сценовый) и `Geometry/SnapCoreTestBase` (снимки `ElementGeometry`,
+  компилируется и Unity, и `dotnet` — см. `agents/TEST-DESIGN.md` → «A test under
+  `Assets/Tests/EditMode/Geometry/` is a CORE test, not a scene test»). Разделены границей
+  сборки: `SnapCoreTestBase` не имеет права видеть `GameObject`/`KitchenSettings`, иначе
+  `tools/mutation-test.ps1 -TestsOnly` и Stryker перестанут её компилировать. Порог `50f`
+  продублирован (`SnapTestBase` берёт его из `KitchenSettings.SnapThreshold`, `SnapCoreTestBase`
+  задаёт как явную константу `Threshold`, с комментарием о причине) — это единственное, что
+  МОЖНО было бы вынести, но общего слоя, который видят обе сборки и куда стоило бы класть тестовую
+  константу (а не производственную), сейчас нет; заводить его ради одного числа — накладнее, чем
+  два раза написать `50f`. Оставлено как есть.
+
+Что делать дальше: `ElementTestBase` для оставшихся ~19 файлов. Работа механическая и
 проверяется командой — кандидат в opencode.
 
 ### 2.5 Мелочи UI
