@@ -225,6 +225,55 @@ public class DoorThresholdTests : SnapTestBase
             "и это те же 10 мм над полом, зазор под дверью");
     }
 
+
+    /// <summary>Опущенная стена — это не «та же стена пониже», а её нижняя полоска
+    /// в 100 мм. Меш при этом СЖИМАЕТСЯ по Y: вырезы заданы в нормированных
+    /// координатах полной стены, и вместе со стеной сжимается перемычка над
+    /// дверью. На экране она садится поперёк проёма ровно как порог — тот самый,
+    /// который дважды убирали в другом месте.
+    ///
+    /// Проверяется передняя грань ВНУТРИ дверного проёма по всей высоте: у двери,
+    /// доходящей до пола, в опущенной стене не должно остаться материала нигде,
+    /// иначе сквозь проём не пройти.</summary>
+    [Test]
+    public void Wall_Lowered_KeepsNoLintelAcrossADoorOpening()
+    {
+        var wall = SpawnWall("Wall_LoweredLintel");
+        var door = SpawnDoor("Door_LoweredLintel", 1.05f);
+        door.SnapToWall();
+
+        wall.SetLowered(true, WallManager.LoweredHeightMM * MM);
+
+        var mesh = wall.GetComponent<MeshFilter>()!.sharedMesh!;
+        var covered = new List<float>();
+        foreach (var y in new[] { -0.45f, -0.25f, 0f, 0.25f, 0.45f })
+            if (FrontFaceCovers(mesh, 0f, y)) covered.Add(y);
+
+        CollectionAssert.IsEmpty(covered,
+            "в опущенной стене проём двери обязан быть сквозным по всей высоте: сжатая "
+            + "перемычка над дверью видна как порог поперёк прохода. Материал остался на "
+            + "высотах (нормированных): " + string.Join(", ", covered));
+    }
+
+    /// <summary>Обратная сторона: подоконная часть стены под окном — настоящая, и
+    /// в опущенной стене она обязана остаться сплошной. Если вырезать окно так же,
+    /// как дверь, в полоске появится дыра там, где на самом деле стена.</summary>
+    [Test]
+    public void Wall_Lowered_KeepsTheWallUnderAWindowSolid()
+    {
+        var wall = SpawnWall("Wall_LoweredSill");
+        var winGo = ElementFactory.CreateWindow(
+            new Vector3Int(900, 1200, WallThickMM), "Win_Lowered", new Vector3(0f, 1.2f, 0f));
+        _spawned.Add(winGo);
+        winGo.GetComponent<WindowElement>()!.SnapToWall();
+
+        wall.SetLowered(true, WallManager.LoweredHeightMM * MM);
+
+        var mesh = wall.GetComponent<MeshFilter>()!.sharedMesh!;
+        Assert.IsTrue(FrontFaceCovers(mesh, 0f, 0f),
+            "под окном стена настоящая — в опущенной полоске она обязана остаться сплошной");
+    }
+
     private static List<WallMeshBuilder.WindowCutout> CutoutOnTheWallBase() =>
         new List<WallMeshBuilder.WindowCutout>
         {

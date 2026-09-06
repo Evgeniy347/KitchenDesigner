@@ -15,6 +15,8 @@ namespace KitchenDesigner.Core
         public static float LeafCentreOffsetMM(int openingHeightMM) =>
             openingHeightMM > LeafFloorGapMM ? LeafFloorGapMM * 0.5f : 0f;
 
+        public static Span FullHeightSpanNorm => new Span(WallBaseNorm, -WallBaseNorm);
+
         public static Span GroundedSpanNorm(float centreNorm, float halfNorm)
         {
             float top = centreNorm + halfNorm;

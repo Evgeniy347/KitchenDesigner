@@ -31,19 +31,22 @@ namespace KitchenDesigner.Core
         {
             if (lower)
             {
-                if (!_lowered)
+                bool became = !_lowered;
+                if (became)
                 {
                     _fullScaleY = transform.localScale.y;
                     _fullPosY = transform.position.y;
                     _lowered = true;
                 }
                 ApplyLowered(loweredHeightUnits);
+                if (became) RebuildMesh();
             }
             else if (_lowered)
             {
                 var sc = transform.localScale; sc.y = _fullScaleY; transform.localScale = sc;
                 var p = transform.position; p.y = _fullPosY; transform.position = p;
                 _lowered = false;
+                RebuildMesh();
             }
         }
 
@@ -175,7 +178,9 @@ namespace KitchenDesigner.Core
                 float halfV = oDims.y * 0.001f * 0.5f / Mathf.Max(0.001f, wallH);
                 if (downToWallBase)
                 {
-                    var span = DoorOpeningLayout.GroundedSpanNorm(v, halfV);
+                    var span = _lowered
+                        ? DoorOpeningLayout.FullHeightSpanNorm
+                        : DoorOpeningLayout.GroundedSpanNorm(v, halfV);
                     halfV = span.Size * 0.5f;
                     v = span.Min + halfV;
                 }
@@ -188,7 +193,8 @@ namespace KitchenDesigner.Core
                 });
             }
 
-            foreach (var w in _attachedWindows) AddCutout(w, false);
+            if (!_lowered)
+                foreach (var w in _attachedWindows) AddCutout(w, false);
             foreach (var d in _attachedDoors) AddCutout(d, true);
 
             if (_customMesh != null)

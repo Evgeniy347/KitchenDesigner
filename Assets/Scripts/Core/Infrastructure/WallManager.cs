@@ -4,7 +4,7 @@ namespace KitchenDesigner.Core
 {
     public class WallManager : MonoBehaviour
     {
-        private const float LoweredHeightMM = 100f;
+        public const float LoweredHeightMM = 100f;
 
         private Camera? _cachedCamera;
 

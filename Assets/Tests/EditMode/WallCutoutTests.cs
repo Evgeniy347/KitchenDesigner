@@ -143,11 +143,18 @@ public class WallCutoutTests : SnapTestBase
             cu: 0.6f / 4f, cv: 0f, hu: 0.45f / 4f, hv: 0.6f / 2.5f, uAxis: 0);
     }
 
-    /// <summary>Опускание стены камерой (WallCutaway) не считается изменением
-    /// геометрии: вырез задан от ПОЛНЫХ размеров, лишний Rebuild каждый кадр
-    /// не нужен.</summary>
+    /// <summary>Опускание МЕНЯЕТ геометрию, и это не оптимизируемая деталь.
+    /// Вырезы заданы в нормированных координатах ПОЛНОЙ стены, а опускание сжимает
+    /// меш по Y — вместе со стеной сжимается перемычка над дверью и садится поперёк
+    /// прохода порогом (см. DoorThresholdTests.Wall_Lowered_KeepsNoLintelAcrossADoorOpening).
+    /// Значит на ПЕРЕХОДЕ меш обязан пересобраться.
+    ///
+    /// Раньше здесь стоял обратный запрет — «лишний Rebuild каждый кадр не нужен» —
+    /// и он закреплял сам дефект. Настоящая забота того теста была про КАЖДЫЙ КАДР:
+    /// WallManager.LateUpdate зовёт SetLowered на каждом кадре, и пересборка там
+    /// действительно недопустима. Она сохранена вторым ассертом.</summary>
     [Test]
-    public void Wall_Lowered_DoesNotRebuildMesh()
+    public void Wall_Lowered_RebuildsOnTheTransition_ButNotOnEveryCall()
     {
         var wallGo = ElementFactory.CreateWall(
             new Vector3Int(3000, 2500, 100), "Wall_Low", new Vector3(0f, 1.25f, -1.5f));
@@ -162,10 +169,16 @@ public class WallCutoutTests : SnapTestBase
         var before = wallGo.GetComponent<MeshFilter>()!.sharedMesh;
 
         wall.SetLowered(true, 0.1f);
-        wall.SyncOpeningsIfChanged();
+        var afterTransition = wallGo.GetComponent<MeshFilter>()!.sharedMesh;
+        Assert.AreNotSame(before, afterTransition,
+            "переход в опущенное состояние обязан пересобрать меш: у опущенной стены "
+            + "другая геометрия проёмов, а не та же самая пониже");
 
-        Assert.AreSame(before, wallGo.GetComponent<MeshFilter>()!.sharedMesh,
-            "меш пересобран из-за опускания стены — лишняя работа каждый кадр");
+        wall.SetLowered(true, 0.1f);
+        wall.SetLowered(true, 0.1f);
+        Assert.AreSame(afterTransition, wallGo.GetComponent<MeshFilter>()!.sharedMesh,
+            "повторный вызов в том же состоянии пересобирать не имеет права — "
+            + "WallManager зовёт SetLowered каждый кадр");
     }
 
     // Зазор между окнами (= Tolerance.EpsilonUnits) меньше порога MinCellNorm —
