@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public enum DoorSashType { Glass = 0, Blind = 1 }
 
-    public class DoorElement : KitchenElement, IOpenable, IWallMounted
+    public class DoorElement : KitchenElement, IOpenable, IWallMounted, IPaintsItself
     {
         public override bool CanFollowAnAttachParent => false;
 
@@ -502,13 +502,27 @@ namespace KitchenDesigner.Core
             var def = MaterialCatalog.Get(MaterialId);
             if (def == null) return;
             var mat = MaterialManager.GetSharedMaterial(def);
-            if (mat == null) return;
+            if (mat != null) PaintFrame(mat);
+        }
+
+        public void SetMaterial(Material material)
+        {
+            if (material == null) return;
+            PaintFrame(material);
+        }
+
+        private void PaintFrame(Material material)
+        {
             foreach (var go in new[] { _frameLeft, _frameRight, _frameTop,
                                        _sashLeft, _sashRight, _sashTop, _sashBottom })
             {
                 var mr = go != null ? go.GetComponent<MeshRenderer>() : null;
-                if (mr != null) mr.sharedMaterial = mat;
+                if (mr != null) mr.sharedMaterial = material;
             }
+
+            if (_sashType != DoorSashType.Blind || _glassPane == null) return;
+            var pane = _glassPane.GetComponent<MeshRenderer>();
+            if (pane != null) pane.sharedMaterial = material;
         }
 
         public override void PrepareForDestruction() => DestroyChildren();

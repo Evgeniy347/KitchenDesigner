@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public enum GlassTint { Clear = 0, Tinted = 1 }
 
-    public class WindowElement : KitchenElement, IOpenable, IWallMounted
+    public class WindowElement : KitchenElement, IOpenable, IWallMounted, IPaintsItself
     {
         public override bool CanFollowAnAttachParent => false;
 
@@ -565,13 +565,23 @@ namespace KitchenDesigner.Core
             var def = MaterialCatalog.Get(MaterialId);
             if (def == null) return;
             var mat = MaterialManager.GetSharedMaterial(def);
-            if (mat == null) return;
+            if (mat != null) PaintFrame(mat);
+        }
+
+        public void SetMaterial(Material material)
+        {
+            if (material == null) return;
+            PaintFrame(material);
+        }
+
+        private void PaintFrame(Material material)
+        {
             foreach (var go in new[] { _frameLeft, _frameRight, _frameTop, _frameBottom,
                                        _sashLeft, _sashRight, _sashTop, _sashBottom,
                                        _slopeTop, _slopeBottom, _slopeLeft, _slopeRight })
             {
                 var mr = go != null ? go.GetComponent<MeshRenderer>() : null;
-                if (mr != null) mr.sharedMaterial = mat;
+                if (mr != null) mr.sharedMaterial = material;
             }
             var slopeMat = SlopeMaterial();
             foreach (var go in new[] { _sillObj, _dripObj })
