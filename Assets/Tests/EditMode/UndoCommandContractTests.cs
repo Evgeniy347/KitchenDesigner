@@ -192,7 +192,8 @@ public class UndoCommandContractTests
         var groove = new GrooveSpec(GrooveKind.Through, GrooveSide.Left);
         var withDuplicate = new List<GrooveSpec> { groove, groove };
 
-        var command = new SetGroovesCommand(board, withDuplicate, new List<GrooveSpec>());
+        var command = new SetListCommand<GrooveSpec>(
+            "Grooves test", withDuplicate, new List<GrooveSpec>(), board.SetGrooves);
         command.Execute();
         Assert.AreEqual(0, board.Grooves.Count, "«после» — пустой набор");
 

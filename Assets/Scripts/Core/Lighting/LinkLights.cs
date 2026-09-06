@@ -39,7 +39,8 @@ namespace KitchenDesigner.Core.Lighting
         {
             var before = new List<string>(source.LightNames);
             if (SameNames(before, after)) return;
-            CommandStack.Execute(new SetSwitchLightsCommand(source, before, after));
+            CommandStack.Execute(new SetListCommand<string>(
+                $"Switch lights {source.PartName}", before, after, source.SetLightNames));
         }
 
         private static bool SameNames(IReadOnlyList<string> a, IReadOnlyList<string> b)

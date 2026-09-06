@@ -169,7 +169,8 @@ namespace KitchenDesigner.Core.UI
         private void Apply(List<GrooveSpec> after)
         {
             if (Target == null) return;
-            CommandStack.Execute(new SetGroovesCommand(Target, Target.Grooves, after));
+            CommandStack.Execute(new SetListCommand<GrooveSpec>(
+                $"Grooves {Target.PartName}", Target.Grooves, after, Target.SetGrooves));
         }
 
         private void AfterChange()

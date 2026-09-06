@@ -222,7 +222,8 @@ namespace KitchenDesigner.Core
             // Возвращаем состояние до драга и проводим итог одной командой —
             // так в undo-стеке лежит один шаг «область накладки», а не сотня.
             el.SetTextureOverlays(_before);
-            CommandStack.Execute(new SetTextureOverlaysCommand(el, _before, after));
+            CommandStack.Execute(new SetListCommand<TextureOverlaySpec>(
+                $"Textures {el.PartName}", _before, after, el.SetTextureOverlays));
             PositionHandles();
         }
 

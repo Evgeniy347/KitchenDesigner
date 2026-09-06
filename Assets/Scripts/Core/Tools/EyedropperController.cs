@@ -69,7 +69,8 @@ namespace KitchenDesigner.Core.Tools
                 var after = new List<TextureOverlaySpec>(element.TextureOverlays);
                 if (after[index].MaterialId == picked) return;
                 after[index] = after[index].WithMaterial(picked);
-                CommandStack.Execute(new SetTextureOverlaysCommand(element, element.TextureOverlays, after));
+                CommandStack.Execute(new SetListCommand<TextureOverlaySpec>(
+                    $"Textures {element.PartName}", element.TextureOverlays, after, element.SetTextureOverlays));
             }
             else
             {

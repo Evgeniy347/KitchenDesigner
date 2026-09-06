@@ -712,7 +712,8 @@ public class TextureOverlayTests
             TextureOverlaySpec.FullFace(OverlaySide.E, "oak"),
         };
 
-        var cmd = new SetTextureOverlaysCommand(wall, before, after);
+        var cmd = new SetListCommand<TextureOverlaySpec>(
+            "Textures test", before, after, wall.SetTextureOverlays);
         cmd.Execute();
         Assert.AreEqual(1, wall.TextureOverlays.Count);
 

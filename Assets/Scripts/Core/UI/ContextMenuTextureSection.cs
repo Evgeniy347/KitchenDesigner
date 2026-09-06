@@ -278,7 +278,8 @@ namespace KitchenDesigner.Core.UI
         private void Apply(List<TextureOverlaySpec> after)
         {
             if (Target == null) return;
-            CommandStack.Execute(new SetTextureOverlaysCommand(Target, Target.TextureOverlays, after));
+            CommandStack.Execute(new SetListCommand<TextureOverlaySpec>(
+                $"Textures {Target.PartName}", Target.TextureOverlays, after, Target.SetTextureOverlays));
         }
 
         private void AfterChange()
