@@ -5,40 +5,18 @@ using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
 using Newtonsoft.Json.Linq;
 
-public class FacadeMcpTests
+public class FacadeMcpTests : McpTestFixture
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-    private McpCommandHandler? _handler;
-
     [SetUp]
     public void Setup()
     {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
         GroupManager.Clear();
     }
 
     [TearDown]
     public void Teardown()
     {
-        foreach (var go in _spawned)
-            if (go != null) Object.DestroyImmediate(go);
-        _spawned.Clear();
-        foreach (var el in PartRegistry.GetAll())
-            if (el != null) Object.DestroyImmediate(el.gameObject);
-        PartRegistry.Clear();
         GroupManager.Clear();
-    }
-
-    private McpRequest MakeReq(string method, object data)
-    {
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(data);
-        return new McpRequest
-        {
-            id = "test",
-            method = method,
-            Params = JObject.Parse(json)
-        };
     }
 
     private FacadeElement MakeFacade(string name, Vector3Int dims, Vector3 pos)

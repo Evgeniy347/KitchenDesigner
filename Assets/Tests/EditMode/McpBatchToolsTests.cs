@@ -12,47 +12,18 @@ using Newtonsoft.Json.Linq;
 /// clone_elements), высокоуровневое размещение (align_elements, distribute_evenly,
 /// get_free_space), epsilon-семантика faceGaps и сериализация McpJson.
 /// </summary>
-public class McpBatchToolsTests
+public class McpBatchToolsTests : McpTestFixture
 {
-    private McpCommandHandler? _handler;
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void Setup()
     {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
         CommandStack.Clear();
     }
 
     [TearDown]
     public void Teardown()
     {
-        foreach (var go in _spawned)
-            if (go != null) Object.DestroyImmediate(go);
-        _spawned.Clear();
-        foreach (var el in PartRegistry.GetAll())
-            if (el != null) Object.DestroyImmediate(el.gameObject);
-        PartRegistry.Clear();
         CommandStack.Clear();
-    }
-
-    private McpRequest MakeReq(string method, object data)
-    {
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(data);
-        return new McpRequest { id = "test", method = method, Params = JObject.Parse(json) };
-    }
-
-    private KitchenElement MakeElement(string name, Vector3Int dims, Vector3 pos)
-    {
-        var go = new GameObject(name);
-        go.transform.position = pos;
-        var e = go.AddComponent<KitchenElement>();
-        e.PartName = name;
-        e.DimensionsMM = dims;
-        PartRegistry.Register(e);
-        _spawned.Add(go);
-        return e;
     }
 
     /// <summary>Якорь MCP — минимальный угол мировой AABB детали, а не её центр.

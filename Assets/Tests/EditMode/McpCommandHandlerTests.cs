@@ -4,53 +4,19 @@ using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
 
-public class McpCommandHandlerTests
+public class McpCommandHandlerTests : McpTestFixture
 {
-    private McpCommandHandler? _handler;
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void Setup()
     {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
         ProjectInstructions.Reset();
     }
 
     [TearDown]
     public void Teardown()
     {
-        foreach (var go in _spawned)
-            if (go != null) Object.DestroyImmediate(go);
-        _spawned.Clear();
-        foreach (var el in PartRegistry.GetAll())
-            if (el != null) Object.DestroyImmediate(el.gameObject);
-        PartRegistry.Clear();
         MaterialCatalog.Reset();
         ProjectInstructions.Reset();
-    }
-
-    private McpRequest MakeReq(string method, object data)
-    {
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(data);
-        return new McpRequest
-        {
-            id = "test",
-            method = method,
-            Params = Newtonsoft.Json.Linq.JObject.Parse(json)
-        };
-    }
-
-    private KitchenElement MakeElement(string name, Vector3Int dims, Vector3 pos)
-    {
-        var go = new GameObject(name);
-        go.transform.position = pos;
-        var e = go.AddComponent<KitchenElement>();
-        e.PartName = name;
-        e.DimensionsMM = dims;
-        PartRegistry.Register(e);
-        _spawned.Add(go);
-        return e;
     }
 
     /// <summary>Якорь MCP — минимальный угол мировой AABB детали, а не её центр.
