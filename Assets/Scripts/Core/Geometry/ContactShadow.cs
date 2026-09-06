@@ -14,6 +14,8 @@ namespace KitchenDesigner.Core
                 return;
             }
 
+            if (Surrounds(neighbour, closed, touchGapUnits)) return;
+
             int first = contactAxis == 0 ? 1 : 0;
             int second = contactAxis == 2 ? 1 : 2;
 
@@ -33,6 +35,15 @@ namespace KitchenDesigner.Core
                 if (gap > widest) { widest = gap; contactAxis = i; }
             }
             return touching;
+        }
+
+        public static bool Surrounds(Bounds outer, Bounds inner, float touchGapUnits)
+        {
+            for (int i = 0; i < 3; i++)
+                if (outer.min[i] > inner.min[i] + touchGapUnits
+                    || outer.max[i] < inner.max[i] - touchGapUnits)
+                    return false;
+            return true;
         }
 
         private static bool SplitOutside(Bounds box, Bounds closed, int axis, List<Bounds> into,

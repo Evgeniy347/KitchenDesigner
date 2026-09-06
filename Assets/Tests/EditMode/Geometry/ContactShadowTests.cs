@@ -49,6 +49,34 @@ public class ContactShadowTests
     }
 
     [Test]
+    public void NeighbourSurroundingTheClosedBox_IsFullyMuted()
+    {
+        // Створка в проёме стены: рама обнимает её по всем трём осям.
+        var sash = Box(Vector3.zero, new Vector3(0.86f, 0.96f, 0.04f));
+        var wall = Box(new Vector3(0f, 0.35f, 0f), new Vector3(3f, 2.5f, 0.1f));
+
+        Assert.AreEqual(0, Pieces(sash, wall).Count,
+            "деталь стоит ВНУТРИ соседа — сосед ей рама целиком, а не четырьмя "
+            + "кусками вокруг проёма. На петле по кромке тыльное ребро створки "
+            + "уходит за линию петли на толщину полотна, и куски рамы ловили бы "
+            + "это как столкновение на первых же градусах");
+    }
+
+    [Test]
+    public void NeighbourCoveringOnlySomeAxes_IsNotTakenForAFrame()
+    {
+        // Боковина высокого модуля накрывает фасад по высоте и по глубине,
+        // но не по толщине: фасад торчит из неё вперёд.
+        var closed = Box(Vector3.zero, new Vector3(0.67f, 0.9f, 0.018f));
+        var side = Box(new Vector3(0.347f, 0f, -0.09f), new Vector3(0.018f, 2.16f, 0.55f));
+
+        Assert.IsFalse(ContactShadow.Surrounds(side, closed, TouchGap),
+            "контроль к предыдущему: «обнимает» — это по ВСЕМ трём осям. Две из "
+            + "трёх здесь совпадают, и приняв это за раму, мы вернули бы фасад "
+            + "к проходу сквозь боковину");
+    }
+
+    [Test]
     public void NeighbourSpillingPastTheShadow_KeepsThatPartAsObstacle()
     {
         var closed = Box(Vector3.zero, new Vector3(0.67f, 0.9f, 0.018f));
