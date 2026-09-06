@@ -76,6 +76,7 @@ namespace KitchenDesigner.Core
         private static TextureOverlayHandles? _instance;
 
         private readonly List<TextureOverlayHandle> _handles = new List<TextureOverlayHandle>();
+        private TextureOverlayHandle? _hovered;
         private Material? _material;
         private ResizeHandleManager.HandleMode _builtMode;
 
@@ -112,6 +113,26 @@ namespace KitchenDesigner.Core
                 BuildHandles();
             }
             if (!_dragging) PositionHandles();
+            if (!_dragging) SetHover(_handles.Count > 0 ? PickHandle() : null);
+        }
+
+        internal TextureOverlayHandle? Hovered => _hovered;
+
+        internal TextureOverlayHandle? SetHover(TextureOverlayHandle? handle)
+        {
+            if (handle == _hovered) return _hovered;
+            Paint(_hovered, false);
+            _hovered = handle;
+            Paint(_hovered, true);
+            return _hovered;
+        }
+
+        private static void Paint(TextureOverlayHandle? handle, bool hovered)
+        {
+            if (handle == null) return;
+            var material = MaterialFor(hovered);
+            foreach (var renderer in handle.GetComponentsInChildren<MeshRenderer>())
+                if (renderer != null) renderer.sharedMaterial = material;
         }
 
         /// <summary>Элемент жив, накладка на месте и сторона всё ещё одна.
@@ -377,6 +398,7 @@ namespace KitchenDesigner.Core
 
         private void ClearHandles()
         {
+            _hovered = null;
             foreach (var h in _handles)
             {
                 if (h == null) continue;
@@ -386,7 +408,10 @@ namespace KitchenDesigner.Core
             _handles.Clear();
         }
 
+        private static Material? MaterialFor(bool hovered) =>
+            HandleMaterials.For(hovered ? UI.UIStyle.MeasureHover : UI.UIStyle.HighlightChanged);
+
         private Material? HandleMaterial() =>
-            _material != null ? _material : (_material = HandleMaterials.For(UI.UIStyle.HighlightChanged));
+            _material != null ? _material : (_material = MaterialFor(false));
     }
 }

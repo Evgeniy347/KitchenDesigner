@@ -227,6 +227,71 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
+        public void ArrowScale_KeepsTheDrawnOverlayArrow_AtOnePixelLength_EverywhereInTheSweep()
+        {
+            foreach (int height in ScreenHeights)
+            foreach (float distance in Distances)
+                Assert.AreEqual(HandleScale.DrawnArrowPixels,
+                    ArrowAt(distance, height).LengthPixels, 0.5f,
+                    $"H={height}, d={distance} м: стрелка накладки поперёк экрана обязана "
+                    + "быть одной и той же пиксельной длины — иначе мера захвата и мера "
+                    + "отрисовки снова расходятся");
+        }
+
+        [Test]
+        public void CubeScale_KeepsTheDrawnCube_AtOnePixelEdge_EverywhereInTheSweep()
+        {
+            foreach (int height in ScreenHeights)
+            foreach (float distance in Distances)
+                Assert.AreEqual(OverlayHandleScale.DrawnCubePixels,
+                    CubeEdgePixelsAt(distance, height), 0.5f,
+                    $"H={height}, d={distance} м: ребро кубика обязано быть одной и той же "
+                    + "пиксельной длины по той же причине, что и стрелка");
+        }
+
+        [Test]
+        public void BothOverlayScales_GrowWithDistance()
+        {
+            var view = View(1080);
+            var near = new Vector3(0f, 0f, 1f);
+            var far = new Vector3(0f, 0f, 10f);
+
+            Assert.Greater(OverlayHandleScale.ArrowScale(view, far, Metrics),
+                OverlayHandleScale.ArrowScale(view, near, Metrics) * 5f,
+                "положительный контроль: верни ArrowScale константу — и оба предыдущих "
+                + "теста станут зелёными на мировой ручке, ради которой всё и затевалось");
+            Assert.Greater(OverlayHandleScale.CubeScale(view, far),
+                OverlayHandleScale.CubeScale(view, near) * 5f,
+                "тот же контроль для кубика: у него своя функция масштаба, и сломать её "
+                + "можно отдельно");
+        }
+
+        [Test]
+        public void CubeScale_DegenerateCamera_FallsBackToTheWorldSizedHandle()
+        {
+            var view = new PinholeView(Vector3.zero, Vector3.forward, Vector3.right,
+                Vector3.up, 0f, 0, 0);
+
+            Assert.AreEqual(HandleScale.WorldSized,
+                OverlayHandleScale.CubeScale(view, new Vector3(0f, 0f, 2f)), 1e-4f,
+                "камера без пикселей и без угла обзора даёт нулевой мировой размер; "
+                + "кубик нулевого размера не видно и не схватить");
+        }
+
+        [Test]
+        public void TheArrowGrabPoint_SitsAtTheMiddleOfTheDrawnSilhouette()
+        {
+            var extent = ArrowAt(3f, 1080);
+            float toRoot = extent.DistanceToGrabPixels(extent.SilhouettePoint(0f, 0f));
+            float toTip = extent.DistanceToGrabPixels(extent.SilhouettePoint(1f, 0f));
+
+            Assert.AreEqual(toRoot, toTip, 0.5f,
+                "точка захвата — СЕРЕДИНА силуэта, а не 0,6 его длины, как было раньше: "
+                + "круг радиуса 26 px, снятый с середины, накрывает фигуру до 48 px, "
+                + "а снятый с 0,6 — только до 41 px, и выбранные 42 в него уже не влезают");
+        }
+
+        [Test]
         public void TheCubeShapeFactors_AreItsOwnDiagonals_NotRoundNumbers()
         {
             Assert.AreEqual(Mathf.Sqrt(3f) * 0.5f, OverlayHandleScale.CubeWorstCornerToEdge,

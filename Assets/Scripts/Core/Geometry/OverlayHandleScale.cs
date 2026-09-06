@@ -12,15 +12,17 @@ namespace KitchenDesigner.Core.Handles
 
         public const float CubeDrawnDiagonalToEdge = 1.4142136f;
 
-        public const float GrabAlongArrowLen = 0.6f;
-
         public static float ArrowScale(in PinholeView view, Vector3 point,
-            in HandleMetrics metrics) => HandleScale.WorldSized;
+            in HandleMetrics metrics) => HandleScale.ForScreen(view, point, metrics);
 
-        public static float CubeScale(in PinholeView view, Vector3 point) =>
-            HandleScale.WorldSized;
+        public static float CubeScale(in PinholeView view, Vector3 point)
+        {
+            float world = view.WorldSizeForPixels(point, DrawnCubePixels);
+            bool degenerateCamera = !(world > 0f) || float.IsInfinity(world);
+            return degenerateCamera ? HandleScale.WorldSized : world / CubeEdgeUnits;
+        }
 
         public static float ArrowGrabAlongAxis(in HandleMetrics metrics, float scale) =>
-            GrabAlongArrowLen * metrics.ArrowLen * scale;
+            metrics.GrabCenterZ * scale;
     }
 }
