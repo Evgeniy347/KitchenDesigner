@@ -134,9 +134,14 @@ if ($null -eq $prev) {
     $stamp = Set-NonRoundSeconds (Get-AllowedTime $now)
 } elseif ((Test-Weekend $now) -or $now.Hour -ge 19) {
     # A weekend, or a weekday evening actually in progress: stamp the real moment.
-    $stamp = $now
+    # git stores whole seconds, but $prev came back from epoch (truncated) while $now
+    # carries a fraction. Two commits inside one second slipped past the -le guard and
+    # landed on the SAME stamp - so truncate before comparing, not after.
+    $stamp = $now.AddTicks(-($now.Ticks % [TimeSpan]::TicksPerSecond))
     if ($stamp -le $prev) { $stamp = $prev.AddSeconds((Get-Random -Minimum 60 -Maximum 601)) }
     $stamp = Set-NonRoundSeconds (Get-AllowedTime $stamp)
+    # Strictly ascending outranks every other rule (see the header): never tie.
+    if ($stamp -le $prev) { $stamp = $prev.AddSeconds(1) }
 } else {
     # Weekday daytime: the day is at most yesterday's evening session.
     $capEnd = $now.Date.AddSeconds(-1)
