@@ -6,7 +6,7 @@ using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
-    internal sealed class ContextMenuTextureSection
+    internal sealed class ContextMenuTextureSection : ContextMenuListSection<TextureOverlaySpec>
     {
         private const float TexSideX = -128f, TexSideW = 76f;
         private const float TexMatX = -13f, TexMatW = 138f;
@@ -19,7 +19,6 @@ namespace KitchenDesigner.Core.UI
 
         private const int PreviewNewRow = -1;
 
-        private readonly IContextMenuHost _host;
         private TMP_Text? _countLabel;
         private TMP_Dropdown? _addSideDropdown, _addMaterialDropdown;
         private readonly TMP_Dropdown?[] _rowSide =
@@ -30,23 +29,20 @@ namespace KitchenDesigner.Core.UI
             new Button?[TextureOverlayGeometry.MAX_PER_ELEMENT];
         private readonly Button?[] _rowDown =
             new Button?[TextureOverlayGeometry.MAX_PER_ELEMENT];
-        private bool _expanded;
-        private int _fingerprint;
         private List<TextureOverlaySpec>? _previewBefore;
         private KitchenElement? _previewTarget;
 
-        public ContextMenuTextureSection(IContextMenuHost host) => _host = host;
+        public ContextMenuTextureSection(IContextMenuHost host) : base(host)
+        {
+        }
 
         public bool PreviewActive => _previewBefore != null;
 
-        private KitchenElement? Target => _host.Target;
+        private KitchenElement? Target => Host.Target;
 
-        public bool Eligible() => Target != null && Target.SupportsTextureOverlays;
+        public override bool Eligible() => Target != null && Target.SupportsTextureOverlays;
 
-        public int Count() => Target != null ? Target.TextureOverlays.Count : 0;
-
-        public bool ChangedOutsideTheMenu() =>
-            Eligible() && Fingerprint(Target!.TextureOverlays) != _fingerprint;
+        protected override IReadOnlyList<TextureOverlaySpec>? CurrentItems() => Target?.TextureOverlays;
 
         public void Build(Transform parent, List<string> matOptions)
         {
@@ -57,7 +53,7 @@ namespace KitchenDesigner.Core.UI
             var headerBtn = UIFactory.CreateButton("CtxTextures", parent, "Текстуры (0)",
                 new Vector2(0, 0), new Vector2(RowWidth, BtnH), Toggle);
             _countLabel = headerBtn.GetComponentInChildren<TMP_Text>();
-            _host.Layout.AddWhen(Eligible, BtnH, RowGap, headerBtn.GetComponent<RectTransform>());
+            Host.Layout.AddWhen(Eligible, BtnH, RowGap, headerBtn.GetComponent<RectTransform>());
 
             for (int i = 0; i < TextureOverlayGeometry.MAX_PER_ELEMENT; i++)
             {
@@ -82,8 +78,8 @@ namespace KitchenDesigner.Core.UI
                 _rowSide[i] = sideDd;
                 _rowMaterial[i] = matDd;
 
-                _host.Layout.AddWhen(
-                    () => Eligible() && _expanded && Count() > index, TexRowH, 4f,
+                Host.Layout.AddWhen(
+                    () => Eligible() && Expanded && Count() > index, TexRowH, 4f,
                     sideDd.GetComponent<RectTransform>(), matDd.GetComponent<RectTransform>(),
                     orderCol, editBtn.GetComponent<RectTransform>(), delBtn.GetComponent<RectTransform>());
             }
@@ -100,7 +96,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(114f, 0), new Vector2(100, TexRowH), AddFromUI);
             AttachSideHover(_addSideDropdown);
 
-            _host.Layout.AddWhen(() => Eligible() && _expanded, TexRowH, ActionGap,
+            Host.Layout.AddWhen(() => Eligible() && Expanded, TexRowH, ActionGap,
                 _addSideDropdown.GetComponent<RectTransform>(),
                 _addMaterialDropdown.GetComponent<RectTransform>(),
                 addBtn.GetComponent<RectTransform>());
@@ -143,15 +139,6 @@ namespace KitchenDesigner.Core.UI
             SideHighlighter.ShowFace(Target, optionIndex);
         }
 
-        public void Collapse() => _expanded = false;
-
-        public void Toggle()
-        {
-            _expanded = !_expanded;
-            Refresh();
-            _host.Relayout();
-        }
-
         private void AddFromUI()
         {
             if (Target == null || _addSideDropdown == null || _addMaterialDropdown == null) return;
@@ -172,7 +159,7 @@ namespace KitchenDesigner.Core.UI
             }
             after.Add(spec);
             Apply(after);
-            _expanded = true;
+            Expanded = true;
             AfterChange();
         }
 
@@ -282,22 +269,13 @@ namespace KitchenDesigner.Core.UI
                 $"Textures {Target.PartName}", Target.TextureOverlays, after, Target.SetTextureOverlays));
         }
 
-        private void AfterChange()
+        protected override void RefreshRows()
         {
-            Refresh();
-            _host.Relayout();
-        }
-
-        public void Refresh()
-        {
-            ConfirmDeleteButton.DisarmAll();
             if (_countLabel != null)
                 _countLabel.text =
-                    $"Текстуры ({Count()})  {(_expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
+                    $"Текстуры ({Count()})  {(Expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
 
-            IReadOnlyList<TextureOverlaySpec>? overlays =
-                Target != null ? Target.TextureOverlays : null;
-            _fingerprint = Fingerprint(overlays);
+            IReadOnlyList<TextureOverlaySpec>? overlays = CurrentItems();
             for (int i = 0; i < _rowSide.Length; i++)
             {
                 if (overlays == null || i >= overlays.Count) continue;
@@ -307,17 +285,6 @@ namespace KitchenDesigner.Core.UI
                 _rowMaterial[i]?.RefreshShownValue();
                 if (_rowUp[i] != null) _rowUp[i]!.interactable = i > 0;
                 if (_rowDown[i] != null) _rowDown[i]!.interactable = i < overlays.Count - 1;
-            }
-        }
-
-        private static int Fingerprint(IReadOnlyList<TextureOverlaySpec>? overlays)
-        {
-            if (overlays == null) return 0;
-            unchecked
-            {
-                int h = 17;
-                foreach (var o in overlays) h = h * 31 + o.GetHashCode();
-                return h;
             }
         }
     }

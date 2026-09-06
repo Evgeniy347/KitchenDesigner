@@ -5,7 +5,7 @@ using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
-    internal sealed class ContextMenuGrooveSection
+    internal sealed class ContextMenuGrooveSection : ContextMenuListSection<GrooveSpec>
     {
         private const float RowHeight = 28f;
         private const float RowSpacing = 4f;
@@ -19,34 +19,29 @@ namespace KitchenDesigner.Core.UI
         private static readonly string[] SideLabels = { "Верх", "Низ", "Лево", "Право" };
         private static readonly string[] KindLabels = { "Сквозной", "Глухой" };
 
-        private readonly IContextMenuHost _host;
         private readonly TMP_Dropdown?[] _rowSide = new TMP_Dropdown?[AppConstants.GROOVE_MAX_PER_PART];
         private readonly TMP_Dropdown?[] _rowKind = new TMP_Dropdown?[AppConstants.GROOVE_MAX_PER_PART];
 
         private TMP_Text? _countLabel;
         private TMP_Dropdown? _newSide, _newKind;
-        private bool _expanded;
-        private int _fingerprint;
 
-        public ContextMenuGrooveSection(IContextMenuHost host) => _host = host;
+        public ContextMenuGrooveSection(IContextMenuHost host) : base(host)
+        {
+        }
 
-        private KitchenElement? Target => _host.Target;
+        private KitchenElement? Target => Host.Target;
 
-        public int Count() => Target != null ? Target.Grooves.Count : 0;
+        public override bool Eligible() => Target != null && Target.SupportsGrooves;
 
-        public void Collapse() => _expanded = false;
-
-        public bool ChangedOutsideTheMenu() =>
-            Target != null && Target.SupportsGrooves
-            && Fingerprint(Target.Grooves) != _fingerprint;
+        protected override IReadOnlyList<GrooveSpec>? CurrentItems() => Target?.Grooves;
 
         public void Build(Transform parent)
         {
             var partOnly = RowVisibility.For(ElementFacet.Part);
-            var expanded = RowVisibility.For(ElementFacet.Part, () => _expanded);
+            var expanded = RowVisibility.For(ElementFacet.Part, () => Expanded);
 
-            _countLabel = _host.Rows.WideButton("CtxGrooves", "Пазы (0)", Toggle, partOnly, RowGap);
-            _host.Rows.Hint("CtxGrooveHint",
+            _countLabel = Host.Rows.WideButton("CtxGrooves", "Пазы (0)", Toggle, partOnly, RowGap);
+            Host.Rows.Hint("CtxGrooveHint",
                 $"Паз: ширина {AppConstants.GROOVE_WIDTH_MM} мм, глубина {AppConstants.GROOVE_DEPTH_MM} мм,"
                 + $" отступ от кромки {AppConstants.GROOVE_OFFSET_MM} мм",
                 HintH, RowSpacing, expanded);
@@ -65,8 +60,8 @@ namespace KitchenDesigner.Core.UI
                     () => Remove(index));
                 _rowSide[i] = sideDd;
                 _rowKind[i] = kindDd;
-                _host.Layout.AddFor(ElementFacet.Part,
-                    () => _expanded && Count() > index, RowHeight, RowSpacing,
+                Host.Layout.AddFor(ElementFacet.Part,
+                    () => Expanded && Count() > index, RowHeight, RowSpacing,
                     sideDd.GetComponent<RectTransform>(),
                     kindDd.GetComponent<RectTransform>(),
                     delBtn.GetComponent<RectTransform>());
@@ -80,17 +75,10 @@ namespace KitchenDesigner.Core.UI
                 _ => { });
             var addBtn = UIFactory.CreateButton("CtxGrooveAdd", parent, "Добавить",
                 new Vector2(AddX, 0), new Vector2(AddW, RowHeight), AddFromUI);
-            _host.Layout.AddFor(ElementFacet.Part, () => _expanded, RowHeight, ActionGap,
+            Host.Layout.AddFor(ElementFacet.Part, () => Expanded, RowHeight, ActionGap,
                 _newSide.GetComponent<RectTransform>(),
                 _newKind.GetComponent<RectTransform>(),
                 addBtn.GetComponent<RectTransform>());
-        }
-
-        public void Toggle()
-        {
-            _expanded = !_expanded;
-            Refresh();
-            _host.Relayout();
         }
 
         internal void AddFromUI()
@@ -112,7 +100,7 @@ namespace KitchenDesigner.Core.UI
             }
             after.Add(spec);
             Apply(after);
-            _expanded = true;
+            Expanded = true;
             AfterChange();
         }
 
@@ -147,15 +135,13 @@ namespace KitchenDesigner.Core.UI
             AfterChange();
         }
 
-        public void Refresh()
+        protected override void RefreshRows()
         {
-            ConfirmDeleteButton.DisarmAll();
             if (_countLabel != null)
                 _countLabel.text =
-                    $"Пазы ({Count()})  {(_expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
+                    $"Пазы ({Count()})  {(Expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
 
-            IReadOnlyList<GrooveSpec>? grooves = Target != null ? Target.Grooves : null;
-            _fingerprint = Fingerprint(grooves);
+            IReadOnlyList<GrooveSpec>? grooves = CurrentItems();
             for (int i = 0; i < _rowSide.Length; i++)
             {
                 if (grooves == null || i >= grooves.Count) continue;
@@ -173,23 +159,10 @@ namespace KitchenDesigner.Core.UI
                 $"Grooves {Target.PartName}", Target.Grooves, after, Target.SetGrooves));
         }
 
-        private void AfterChange()
+        protected override void OnAfterChange()
         {
-            Refresh();
-            _host.Relayout();
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
-        }
-
-        private static int Fingerprint(IReadOnlyList<GrooveSpec>? grooves)
-        {
-            if (grooves == null) return 0;
-            unchecked
-            {
-                int h = 17;
-                foreach (var g in grooves) h = h * 31 + g.GetHashCode();
-                return h;
-            }
         }
     }
 }

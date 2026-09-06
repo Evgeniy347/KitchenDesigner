@@ -7,7 +7,7 @@ using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
-    internal sealed class ContextMenuLightLinkSection
+    internal sealed class ContextMenuLightLinkSection : ContextMenuListSection<string>
     {
         private const float RowDropdownX = -18f, RowDropdownW = 296f;
         private const float AddDropdownX = -66f, AddDropdownW = 200f;
@@ -24,7 +24,6 @@ namespace KitchenDesigner.Core.UI
         public const string AddCaption = "Добавить";
         public const string NoLightsInScene = "нет светильников";
 
-        private readonly IContextMenuHost _host;
         private TMP_Text? _countLabel;
         private TMP_Dropdown? _addDropdown;
         private Button? _pickButton;
@@ -32,27 +31,26 @@ namespace KitchenDesigner.Core.UI
             new TMP_Dropdown?[SwitchLightLinks.MaxLightsPerSwitch];
         private readonly List<string> _options = new List<string>();
         private readonly List<string> _links = new List<string>();
-        private bool _expanded;
-        private int _fingerprint;
 
-        public ContextMenuLightLinkSection(IContextMenuHost host) => _host = host;
+        public ContextMenuLightLinkSection(IContextMenuHost host) : base(host)
+        {
+        }
 
         private ILightSwitch? Target
-            => _host.Target != null ? _host.Target as ILightSwitch : null;
+            => Host.Target != null ? Host.Target as ILightSwitch : null;
 
-        public bool Eligible() => Target != null;
+        public override bool Eligible() => Target != null;
 
-        public int Count() => _links.Count;
+        protected override IReadOnlyList<string>? CurrentItems() => Target?.LightNames;
 
-        public bool ChangedOutsideTheMenu()
-            => Eligible() && Fingerprint(Target!.LightNames) != _fingerprint;
+        public override int Count() => _links.Count;
 
         public void Build(Transform parent)
         {
             var headerBtn = UIFactory.CreateButton(HeaderNode, parent, HeaderCaption,
                 new Vector2(0, 0), new Vector2(RowWidth, BtnH), Toggle);
             _countLabel = headerBtn.GetComponentInChildren<TMP_Text>();
-            _host.Layout.AddWhen(Eligible, BtnH, RowGap, headerBtn.GetComponent<RectTransform>());
+            Host.Layout.AddWhen(Eligible, BtnH, RowGap, headerBtn.GetComponent<RectTransform>());
 
             for (int i = 0; i < SwitchLightLinks.MaxLightsPerSwitch; i++)
             {
@@ -65,8 +63,8 @@ namespace KitchenDesigner.Core.UI
                     new Vector2(TrailingButtonW, LinkRowH), () => Remove(index));
 
                 _rowLight[i] = lightDd;
-                _host.Layout.AddWhen(
-                    () => Eligible() && _expanded && Count() > index, LinkRowH, 4f,
+                Host.Layout.AddWhen(
+                    () => Eligible() && Expanded && Count() > index, LinkRowH, 4f,
                     lightDd.GetComponent<RectTransform>(),
                     delBtn.GetComponent<RectTransform>());
             }
@@ -79,24 +77,21 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(TrailingButtonX, 0), new Vector2(TrailingButtonW, LinkRowH),
                 TogglePicking);
 
-            _host.Layout.AddWhen(() => Eligible() && _expanded, LinkRowH, ActionGap,
+            Host.Layout.AddWhen(() => Eligible() && Expanded, LinkRowH, ActionGap,
                 _addDropdown.GetComponent<RectTransform>(),
                 addBtn.GetComponent<RectTransform>(),
                 _pickButton.GetComponent<RectTransform>());
         }
 
-        public void Collapse()
+        public override void Collapse()
         {
-            _expanded = false;
+            base.Collapse();
             LightPickMode.SetSource(null);
         }
 
-        public void Toggle()
+        protected override void OnToggled()
         {
-            _expanded = !_expanded;
-            if (!_expanded) LightPickMode.SetSource(null);
-            Refresh();
-            _host.Relayout();
+            if (!Expanded) LightPickMode.SetSource(null);
         }
 
         private void TogglePicking()
@@ -122,7 +117,7 @@ namespace KitchenDesigner.Core.UI
             }
 
             LinkLights.Add(Target, _options[index]);
-            _expanded = true;
+            Expanded = true;
             AfterChange();
         }
 
@@ -144,24 +139,16 @@ namespace KitchenDesigner.Core.UI
             AfterChange();
         }
 
-        private void AfterChange()
+        protected override void RefreshRows()
         {
-            Refresh();
-            _host.Relayout();
-        }
-
-        public void Refresh()
-        {
-            ConfirmDeleteButton.DisarmAll();
             RebuildOptions();
 
             _links.Clear();
             if (Target != null) _links.AddRange(LinkLights.Live(Target));
-            _fingerprint = Target != null ? Fingerprint(Target.LightNames) : 0;
 
             if (_countLabel != null)
                 _countLabel.text = $"{HeaderCaption} ({_links.Count})  "
-                    + (_expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed);
+                    + (Expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed);
 
             for (int i = 0; i < _rowLight.Length; i++)
             {
@@ -193,18 +180,6 @@ namespace KitchenDesigner.Core.UI
             dropdown.ClearOptions();
             dropdown.AddOptions(new List<string>(options));
             UIFactory.FitDropdownItems(dropdown);
-        }
-
-        private int Fingerprint() => Target == null ? 0 : Fingerprint(LinkLights.Live(Target));
-
-        private static int Fingerprint(IReadOnlyList<string> names)
-        {
-            unchecked
-            {
-                int h = 17;
-                for (int i = 0; i < names.Count; i++) h = h * 31 + names[i].GetHashCode();
-                return h;
-            }
         }
     }
 }
