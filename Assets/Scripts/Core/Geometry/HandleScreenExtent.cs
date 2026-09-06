@@ -23,14 +23,18 @@ namespace KitchenDesigner.Core.Handles
         public float LengthPixels => (Tip - Root).magnitude;
 
         public static HandleScreenExtent Measure(in PinholeView view, Vector3 basePoint,
-            Vector3 normal, in HandleMetrics metrics, float scale)
+            Vector3 normal, in HandleMetrics metrics, float scale) =>
+            Measure(view, basePoint, normal, metrics, scale, metrics.GrabCenterZ * scale);
+
+        public static HandleScreenExtent Measure(in PinholeView view, Vector3 basePoint,
+            Vector3 normal, in HandleMetrics metrics, float scale, float grabAlongNormal)
         {
             Vector3 n = normal.sqrMagnitude > Tolerance.EpsilonSqr
                 ? normal.normalized : Vector3.forward;
 
             Vector3 rootWorld = basePoint + n * (metrics.Gap * scale);
             Vector3 tipWorld = basePoint + n * (metrics.ArrowLen * scale);
-            Vector3 grabWorld = basePoint + n * (metrics.GrabCenterZ * scale);
+            Vector3 grabWorld = basePoint + n * grabAlongNormal;
 
             Vector3 root = view.WorldToScreen(rootWorld);
             Vector3 tip = view.WorldToScreen(tipWorld);

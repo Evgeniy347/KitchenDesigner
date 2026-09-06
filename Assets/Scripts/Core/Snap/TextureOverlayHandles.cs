@@ -26,8 +26,6 @@ namespace KitchenDesigner.Core
     {
         private const float LiftAboveSurfaceUnits = 0.012f;
 
-        private const float CubeEdgeUnits = 0.05f;
-
         private static readonly HandleMetrics Metrics = HandleMetrics.Overlay;
 
         private static KitchenElement? _element;
@@ -320,7 +318,7 @@ namespace KitchenDesigner.Core
         }
 
         private void BuildCube(Transform parent) =>
-            HandleVisual.BuildCube(parent, HandleMaterial(), CubeEdgeUnits);
+            HandleVisual.BuildCube(parent, HandleMaterial(), OverlayHandleScale.CubeEdgeUnits);
 
         private void BuildArrowAlongLocalZ(Transform parent) =>
             HandleVisual.BuildArrow(parent, HandleMaterial(), Metrics,
@@ -339,17 +337,27 @@ namespace KitchenDesigner.Core
             var n = _face.normal.sqrMagnitude > Tolerance.EpsilonSqr
                 ? _face.normal.normalized : Vector3.forward;
             bool move = _builtMode == ResizeHandleManager.HandleMode.Move;
+            var cam = Camera.main;
+            PinholeView view = cam != null ? HandleView.Of(cam) : default;
 
             foreach (var h in _handles)
             {
                 if (h == null) continue;
                 Vector3 basePoint = EdgeCenterWorld(rect, h.edge) + n * LiftAboveSurfaceUnits;
 
+                float scale = cam == null
+                    ? HandleScale.WorldSized
+                    : (move
+                        ? OverlayHandleScale.ArrowScale(view, basePoint, Metrics)
+                        : OverlayHandleScale.CubeScale(view, basePoint));
+                h.transform.localScale = Vector3.one * scale;
+
                 if (move)
                 {
                     Vector3 dir = OutwardAxisOf(h.edge);
                     h.transform.SetPositionAndRotation(basePoint, Quaternion.LookRotation(dir, n));
-                    h.grabPoint = basePoint + dir * (Metrics.ArrowLen * 0.6f);
+                    h.grabPoint = basePoint
+                        + dir * OverlayHandleScale.ArrowGrabAlongAxis(Metrics, scale);
                 }
                 else
                 {
