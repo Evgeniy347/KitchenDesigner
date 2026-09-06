@@ -34,10 +34,6 @@ namespace KitchenDesigner.Core
         public static bool IsResizingElement(KitchenElement e) =>
             IsResizing && e != null && e == _resizingElement;
 
-        internal const int AxisX = 0;
-        internal const int AxisY = 1;
-        internal const int AxisZ = 2;
-
         internal static readonly HandleMetrics Metrics = HandleMetrics.Resize;
 
         private KitchenElement? _target;
