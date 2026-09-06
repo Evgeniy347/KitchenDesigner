@@ -106,6 +106,23 @@ namespace KitchenDesigner.Core
         public float FloorYUnits =>
             transform.position.y - BodyHeightMM * 0.5f * AppConstants.MM_TO_UNITS;
 
+        public const string ThreadBodySuffix = "/thread";
+
+        public ElementGeometry BaseBody => Body(PartName,
+            (_baseHeightMM - BodyHeightMM) * 0.5f, _baseDiameterMM, _baseHeightMM);
+
+        public ElementGeometry ThreadBody => Body(PartName + ThreadBodySuffix,
+            (BodyHeightMM - _threadLengthMM) * 0.5f, ThreadDiameterMM, _threadLengthMM);
+
+        private ElementGeometry Body(string name, float offsetMM, int diameterMM, int heightMM)
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            return ElementGeometry.Box(name,
+                transform.position + transform.up * (offsetMM * toU),
+                new Vector3(diameterMM, heightMM, diameterMM) * toU,
+                transform.rotation, false, transform.up);
+        }
+
         public void SetHeightAboveFloorMM(int heightMM) =>
             ThreadLengthMM = ScrewLegSpec.ThreadLengthForHeightMM(heightMM, _insertionMM, _baseHeightMM);
 

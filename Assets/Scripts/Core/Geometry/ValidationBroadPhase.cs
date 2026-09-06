@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core
         {
             for (int k = 0; k < all.Count; k++)
             {
-                SolidBoundsIncludingRecessedBody(all[k], out var min, out var max);
+                SolidBoundsIncludingExtraBody(all[k], out var min, out var max);
                 Insert(k, min, max, contactDist);
             }
 
@@ -49,15 +49,15 @@ namespace KitchenDesigner.Core
             return _pairs;
         }
 
-        public static void SolidBoundsIncludingRecessedBody(in ValidationElement e,
+        public static void SolidBoundsIncludingExtraBody(in ValidationElement e,
             out Vector3 min, out Vector3 max)
         {
             min = e.Geometry.Min;
             max = e.Geometry.Max;
-            if (e.HasRecessedBody)
+            if (e.HasExtraBody)
             {
-                min = Vector3.Min(min, e.RecessedBody.Min);
-                max = Vector3.Max(max, e.RecessedBody.Max);
+                min = Vector3.Min(min, e.ExtraBody.Min);
+                max = Vector3.Max(max, e.ExtraBody.Max);
             }
         }
 

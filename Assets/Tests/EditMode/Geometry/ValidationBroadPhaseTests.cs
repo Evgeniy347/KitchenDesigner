@@ -195,7 +195,7 @@ public class ValidationBroadPhaseTests
         var hob = Recessed("Hob", new Vector3(0, 900, 0), new Vector3(400, 20, 400),
             new Vector3(50, 750, 0), new Vector3(600, 300, 500), -1);
 
-        ValidationBroadPhase.SolidBoundsIncludingRecessedBody(hob, out var min, out var max);
+        ValidationBroadPhase.SolidBoundsIncludingExtraBody(hob, out var min, out var max);
 
         Assert.AreEqual(-250f * MM, min.x, 1e-5f,
             "короб шире детали слева — габарит обязан расшириться до него");
@@ -222,7 +222,7 @@ public class ValidationBroadPhaseTests
     {
         var board = Part("B", new Vector3(0, 900, 0), new Vector3(400, 20, 400));
 
-        ValidationBroadPhase.SolidBoundsIncludingRecessedBody(board, out var min, out var max);
+        ValidationBroadPhase.SolidBoundsIncludingExtraBody(board, out var min, out var max);
 
         Assert.AreEqual(-200f * MM, min.x, 1e-5f,
             "у детали без короба габарит равен её собственному: пустой RecessedBody "

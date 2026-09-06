@@ -65,12 +65,12 @@ namespace KitchenDesigner.Core
             var a = all[aIdx];
             var b = all[bIdx];
 
-            if (a.IgnoredInPairs || b.IgnoredInPairs)
-            {
-                CheckRecessedBodyAgainstCarcass(a, aIdx, b, bIdx, contactDist, result);
-                CheckRecessedBodyAgainstCarcass(b, bIdx, a, aIdx, contactDist, result);
-                return;
-            }
+            CheckExtraBodyAgainstNeighbour(a, aIdx, b, bIdx, contactDist, result);
+            CheckExtraBodyAgainstNeighbour(b, bIdx, a, aIdx, contactDist, result);
+
+            if (a.IgnoredInPairs || b.IgnoredInPairs) return;
+
+            if (TryScrewLegContact(a, b, aIdx, bIdx, contactDist, result)) return;
 
             if (!FaceContacts.AABBsIntersect(a.Geometry, b.Geometry, contactDist))
             {
@@ -78,7 +78,6 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            if (TryScrewLegContact(a, b, aIdx, bIdx, result)) return;
             if (SharesSpaceLegitimately(a, b)) return;
             if (TrySeatedGrooveContact(a, b, aIdx, bIdx, result)) return;
 
@@ -93,7 +92,7 @@ namespace KitchenDesigner.Core
         }
 
         private static bool TryScrewLegContact(in ValidationElement a, in ValidationElement b,
-            int aIdx, int bIdx, CoreValidationResult result)
+            int aIdx, int bIdx, float contactDist, CoreValidationResult result)
         {
             bool aLeg = a.Is(ElementKind.ScrewLeg);
             bool bLeg = b.Is(ElementKind.ScrewLeg);
@@ -102,6 +101,8 @@ namespace KitchenDesigner.Core
 
             var leg = aLeg ? a : b;
             var host = aLeg ? b : a;
+            if (!SolidReaches(leg, host.Geometry, contactDist)) return false;
+
             int legFace = FaceContacts.FaceIndexByNormal(leg.Faces, UpNormal);
             int hostFace = FaceContacts.FaceIndexByNormal(host.Faces, -UpNormal);
             float area = LegSectionArea(leg);
@@ -111,6 +112,11 @@ namespace KitchenDesigner.Core
                 : new CoreContact(aIdx, bIdx, hostFace, legFace, area, true));
             return true;
         }
+
+        private static bool SolidReaches(in ValidationElement e, in ElementGeometry other,
+            float contactDist) =>
+            FaceContacts.AABBsIntersect(e.Geometry, other, contactDist)
+            || (e.HasExtraBody && FaceContacts.AABBsIntersect(e.ExtraBody, other, contactDist));
 
         private static readonly Vector3 UpNormal = new Vector3(0f, 1f, 0f);
 
@@ -133,17 +139,22 @@ namespace KitchenDesigner.Core
             return false;
         }
 
-        private static void CheckRecessedBodyAgainstCarcass(in ValidationElement rec, int recIdx,
+        private static void CheckExtraBodyAgainstNeighbour(in ValidationElement owner, int ownerIdx,
             in ValidationElement other, int otherIdx, float contactDist, CoreValidationResult result)
         {
-            if (!rec.HasRecessedBody || rec.HostIndex == otherIdx) return;
-            if (!IsCarcass(other)) return;
-            if (!FaceContacts.AABBsIntersect(rec.RecessedBody, other.Geometry, contactDist)) return;
+            if (!owner.HasExtraBody || owner.HostIndex == otherIdx) return;
+            if (!BlocksExtraBody(owner, other)) return;
+            if (!FaceContacts.AABBsIntersect(owner.ExtraBody, other.Geometry, contactDist)) return;
 
-            MarkOverlapping(recIdx);
+            MarkOverlapping(ownerIdx);
             MarkOverlapping(otherIdx);
-            result.AddDiagnostic(recIdx, otherIdx, ViolationKind.Overlap);
+            result.AddDiagnostic(ownerIdx, otherIdx, ViolationKind.Overlap);
         }
+
+        private static bool BlocksExtraBody(in ValidationElement owner, in ValidationElement other) =>
+            owner.Is(ElementKind.ScrewLeg)
+                ? !other.IgnoredInPairs && !other.Is(ElementKind.Anchor | ElementKind.ScrewLeg)
+                : IsCarcass(other);
 
         private static bool IsCarcass(in ValidationElement e) =>
             !e.Is(ElementKind.Anchor | ElementKind.Opening | ElementKind.Drawer

@@ -11,8 +11,8 @@ namespace KitchenDesigner.Core
         public readonly string? PairedName;
         public readonly Span HeightSpan;
         public readonly int AttachedWallIndex;
-        public readonly ElementGeometry RecessedBody;
-        public readonly bool HasRecessedBody;
+        public readonly ElementGeometry ExtraBody;
+        public readonly bool HasExtraBody;
         public readonly int HostIndex;
 
         public const int NoGroup = 0;
@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core
 
         public ValidationElement(ElementGeometry geometry, Vector3[] vertices, ElementKind kind,
             int groupId, string? pairedName, Span heightSpan, int attachedWallIndex,
-            ElementGeometry recessedBody = default, bool hasRecessedBody = false,
+            ElementGeometry extraBody = default, bool hasExtraBody = false,
             int hostIndex = NoIndex)
         {
             Geometry = geometry;
@@ -30,8 +30,8 @@ namespace KitchenDesigner.Core
             PairedName = pairedName;
             HeightSpan = heightSpan;
             AttachedWallIndex = attachedWallIndex;
-            RecessedBody = recessedBody;
-            HasRecessedBody = hasRecessedBody;
+            ExtraBody = extraBody;
+            HasExtraBody = hasExtraBody;
             HostIndex = hostIndex;
         }
 

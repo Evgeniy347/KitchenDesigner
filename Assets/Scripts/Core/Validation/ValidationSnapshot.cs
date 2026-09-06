@@ -12,17 +12,17 @@ namespace KitchenDesigner.Core
 
             Dictionary<string, int>? wallIndexByName = null;
             Dictionary<string, int>? partIndexByName = null;
-            bool hasRecessed = false;
+            bool hasHosted = false;
             for (int i = 0; i < elements.Count; i++)
             {
                 var e = elements[i];
                 if (e == null) continue;
                 if (e.GetComponent<Wall>() != null)
                     (wallIndexByName ??= new Dictionary<string, int>())[e.gameObject.name] = i;
-                if (e is CooktopElement) hasRecessed = true;
+                if (e is CooktopElement || e is ScrewLegElement) hasHosted = true;
             }
 
-            if (hasRecessed)
+            if (hasHosted)
             {
                 partIndexByName = new Dictionary<string, int>();
                 for (int i = 0; i < elements.Count; i++)
@@ -32,6 +32,35 @@ namespace KitchenDesigner.Core
             foreach (var e in elements)
                 into.Add(Build(e, wallIndexByName, partIndexByName));
         }
+
+        public static ElementGeometry MainBody(KitchenElement e) =>
+            e is ScrewLegElement leg ? leg.BaseBody : e.ToGeometry();
+
+        public static bool TryExtraBody(KitchenElement e, out ElementGeometry extra,
+            out string? hostName)
+        {
+            if (e is ScrewLegElement leg)
+            {
+                extra = leg.ThreadBody;
+                hostName = leg.HostPartName;
+                return true;
+            }
+            if (e is CooktopElement cooktop && cooktop.IsAttached)
+            {
+                extra = ElementGeometry.Box(e.PartName + "/body",
+                    cooktop.BodyCenter, cooktop.BodySize, cooktop.transform.rotation);
+                hostName = cooktop.AttachedPartName;
+                return true;
+            }
+            extra = default;
+            hostName = null;
+            return false;
+        }
+
+        public static ElementGeometry[] SolidBodies(KitchenElement e) =>
+            TryExtraBody(e, out var extra, out _)
+                ? new[] { MainBody(e), extra }
+                : new[] { MainBody(e) };
 
         private static ValidationElement Build(KitchenElement e, Dictionary<string, int>? wallIndexByName,
             Dictionary<string, int>? partIndexByName = null)
@@ -50,29 +79,22 @@ namespace KitchenDesigner.Core
                 && wallIndexByName.TryGetValue(attachedWallName!, out int found))
                 wallIndex = found;
 
-            var recessedBody = default(ElementGeometry);
-            bool hasRecessedBody = false;
+            bool hasExtraBody = TryExtraBody(e, out var extraBody, out string? hostName);
             int hostIndex = -1;
-            if (e is CooktopElement cooktop && cooktop.IsAttached)
-            {
-                recessedBody = ElementGeometry.Box(e.PartName + "/body",
-                    cooktop.BodyCenter, cooktop.BodySize, cooktop.transform.rotation);
-                hasRecessedBody = true;
-                if (partIndexByName != null && !string.IsNullOrEmpty(cooktop.AttachedPartName)
-                    && partIndexByName.TryGetValue(cooktop.AttachedPartName, out int host))
-                    hostIndex = host;
-            }
+            if (hasExtraBody && partIndexByName != null && !string.IsNullOrEmpty(hostName)
+                && partIndexByName.TryGetValue(hostName!, out int host))
+                hostIndex = host;
 
             return new ValidationElement(
-                e.ToGeometry(),
+                MainBody(e),
                 e.GetVertices(),
                 kind,
                 e.GroupId,
                 (e as DrawerElement)?.PairedDrawerName ?? (e as ScrewLegElement)?.HostPartName,
                 heightSpan,
                 wallIndex,
-                recessedBody,
-                hasRecessedBody,
+                extraBody,
+                hasExtraBody,
                 hostIndex);
         }
 

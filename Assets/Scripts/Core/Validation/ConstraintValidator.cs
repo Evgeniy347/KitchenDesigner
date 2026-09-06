@@ -149,28 +149,25 @@ namespace KitchenDesigner.Core
             float toMm = 1f / AppConstants.MM_TO_UNITS;
 
             int n = all.Count;
-            var geo = new ElementGeometry[n];
-            var ok = new bool[n];
+            var bodies = new ElementGeometry[n][];
             for (int i = 0; i < n; i++)
             {
                 var e = all[i];
                 if (e == null || IsAnchor(e) || IsIgnoredInPairs(e)) continue;
-                ok[i] = true;
-                geo[i] = e.ToGeometry();
+                bodies[i] = ValidationSnapshot.SolidBodies(e);
             }
 
             for (int i = 0; i < n; i++)
             {
-                if (!ok[i]) continue;
+                if (bodies[i] == null) continue;
                 for (int j = i + 1; j < n; j++)
                 {
-                    if (!ok[j]) continue;
-                    if (!FaceContacts.AABBsIntersect(geo[i], geo[j], -broadPhase)) continue;
-                    if (FaceContacts.AreInFaceToFaceContact(geo[i].Faces, geo[j].Faces, contactDist)) continue;
+                    if (bodies[j] == null) continue;
+                    if (AnyFaceToFace(bodies[i], bodies[j], contactDist)) continue;
                     if (PanelEngagesGroove(all[i], all[j]) || PanelEngagesGroove(all[j], all[i])) continue;
                     if (IsDishwasherFacadePair(all[i], all[j])) continue;
 
-                    float sum = FaceContacts.SumParallelGaps(geo[i].Faces, geo[j].Faces, contactDist, broadPhase);
+                    float sum = NearestParallelGap(bodies[i], bodies[j], contactDist, broadPhase);
                     if (sum <= 0f) continue;
                     float sumMm = sum * toMm;
                     if (sumMm + GapNoiseMm < minGapMm)
@@ -180,6 +177,30 @@ namespace KitchenDesigner.Core
                 }
             }
             return result;
+        }
+
+        private static bool AnyFaceToFace(ElementGeometry[] a, ElementGeometry[] b, float contactDist)
+        {
+            foreach (var ga in a)
+                foreach (var gb in b)
+                    if (FaceContacts.AreInFaceToFaceContact(ga.Faces, gb.Faces, contactDist))
+                        return true;
+            return false;
+        }
+
+        private static float NearestParallelGap(ElementGeometry[] a, ElementGeometry[] b,
+            float contactDist, float broadPhase)
+        {
+            float best = 0f;
+            foreach (var ga in a)
+                foreach (var gb in b)
+                {
+                    if (!FaceContacts.AABBsIntersect(ga, gb, -broadPhase)) continue;
+                    float sum = FaceContacts.SumParallelGaps(ga.Faces, gb.Faces, contactDist, broadPhase);
+                    if (sum <= 0f) continue;
+                    if (best <= 0f || sum < best) best = sum;
+                }
+            return best;
         }
 
         private static bool IsDishwasherFacadePair(KitchenElement a, KitchenElement b)
