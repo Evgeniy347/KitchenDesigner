@@ -18,10 +18,17 @@ namespace KitchenDesigner.Core
 
         public bool HasSavedMaterialFor(KitchenElement element) => _savedMaterials.ContainsKey(element);
 
-        private struct SavedMaterial
+        private sealed class SavedMaterial
         {
-            public MeshRenderer renderer;
-            public Material material;
+            public SavedMaterial(MeshRenderer renderer, Material material)
+            {
+                this.renderer = renderer;
+                this.material = material;
+            }
+
+            public readonly MeshRenderer renderer;
+            public readonly Material material;
+            public Material? painted;
         }
 
         private void Awake()
@@ -351,7 +358,7 @@ namespace KitchenDesigner.Core
 
             if (!_savedMaterials.TryGetValue(element, out var saved))
             {
-                saved = CaptureBody(element);
+                saved = CaptureBody(element, null);
                 if (saved.Count == 0) return;
                 _savedMaterials[element] = saved;
             }
@@ -361,8 +368,10 @@ namespace KitchenDesigner.Core
                 foreach (var entry in saved)
                 {
                     if (entry.renderer == null || entry.material == null) continue;
-                    entry.renderer.material = ElementHighlighter.MakeTransparent(
+                    var seeThrough = ElementHighlighter.MakeTransparent(
                         entry.material.shader, new Color(1f, 0.9f, 0.4f, 0.12f));
+                    entry.renderer.material = seeThrough;
+                    entry.painted = seeThrough;
                 }
                 ElementOutline.Ensure(element)!.Show(selected: true);
                 return;
@@ -379,37 +388,61 @@ namespace KitchenDesigner.Core
                     ? new Color(1f, 0.97f, 0.7f, 1f)
                     : new Color(1f, 0.95f, 0.6f, 1f));
                 entry.renderer.material = mat;
+                entry.painted = mat;
             }
         }
 
-        private static List<SavedMaterial> CaptureBody(KitchenElement element)
+        private static List<SavedMaterial> CaptureBody(KitchenElement element,
+            List<SavedMaterial>? previous)
         {
             var saved = new List<SavedMaterial>();
             foreach (var renderer in ElementRenderers.BodyOf(element))
             {
                 if (renderer == null) continue;
-                var srcMat = renderer.sharedMaterial;
+                var srcMat = OwnMaterialOf(renderer, previous);
                 if (srcMat == null) continue;
-                saved.Add(new SavedMaterial { renderer = renderer, material = srcMat });
+                saved.Add(new SavedMaterial(renderer, srcMat));
             }
             return saved;
+        }
+
+        private static Material? OwnMaterialOf(MeshRenderer renderer, List<SavedMaterial>? previous)
+        {
+            var current = renderer.sharedMaterial;
+            if (previous == null) return current;
+
+            foreach (var entry in previous)
+            {
+                if (entry.renderer != renderer) continue;
+                if (entry.painted != null && ReferenceEquals(current, entry.painted))
+                    return entry.material;
+            }
+            return current;
         }
 
         public void RefreshHighlight(KitchenElement element)
         {
             if (element == null || !_selectedElements.Contains(element)) return;
+
+            _savedMaterials.TryGetValue(element, out var previous);
             _savedMaterials.Remove(element);
+
+            var fresh = CaptureBody(element, previous);
+            if (fresh.Count > 0) _savedMaterials[element] = fresh;
+
             HighlightSelected(element, _selectedElements.Count > 1);
         }
 
         private void RestoreMaterial(KitchenElement element)
         {
-            if (_savedMaterials.TryGetValue(element, out var saved)
-                && !MaterialManager.HasCustomDecor(element))
+            if (_savedMaterials.TryGetValue(element, out var saved))
             {
                 foreach (var entry in saved)
                 {
                     if (entry.renderer == null || entry.material == null) continue;
+                    if (entry.painted != null
+                        && !ReferenceEquals(entry.renderer.sharedMaterial, entry.painted))
+                        continue;
                     entry.renderer.material = entry.material;
                 }
             }
