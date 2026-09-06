@@ -504,8 +504,11 @@ function Get-DefaultFilter {
 function Get-BudgetSeconds {
     if ($Command -eq 'method') { return 300 }             # сборка плеера
     if ($Filter) { return 60 }                            # прицельный прогон
-    if ($Platform -eq 'PlayMode') { return 180 }
-    return 120                                            # полный EditMode
+    # Измерено 2026-09-06: EditMode 146 с на 4346 тестах, PlayMode 185 с на 216.
+    # Бюджет поднимается ОСОЗНАННО и вместе с числом тестов, которое его оправдало:
+    # предупреждение, срабатывающее каждый раз, перестают читать.
+    if ($Platform -eq 'PlayMode') { return 210 }
+    return 170                                            # полный EditMode
 }
 
 function Report-Time {
