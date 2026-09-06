@@ -387,7 +387,7 @@ public class ApplianceRotationTests
 
         var resp = _handler!.Handle(MakeReq("set_rotation", new
         {
-            ops = new object[] { new { object_path = "Dish-mcp", z = 45f } }
+            ops = new object[] { new { object_path = "Dish-mcp", z_deg = 45f } }
         }));
 
         Assert.AreEqual("error", resp.type);

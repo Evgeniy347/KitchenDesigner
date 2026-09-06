@@ -49,21 +49,57 @@ namespace KitchenDesigner.Core.MCP.Contract
     }
 
     [Serializable]
-    public class TransformOp
+    public class TransformPositionOp
     {
         [McpParam("Object name or path.", Required = true)]
         public string object_path = string.Empty;
 
-        [McpParam("Value for X. Omit to keep current.")] public float? x;
-        [McpParam("Value for Y. Omit to keep current.")] public float? y;
-        [McpParam("Value for Z. Omit to keep current.")] public float? z;
+        [McpParam("Raw world X in MM. Omit to keep current.")] public float? x_mm;
+        [McpParam("Raw world Y in MM. Omit to keep current.")] public float? y_mm;
+        [McpParam("Raw world Z in MM. Omit to keep current.")] public float? z_mm;
     }
 
     [Serializable]
-    public class ParamsTransformOps
+    public class ParamsTransformPositionOps
     {
-        [McpParam("Objects to transform. At least 1.", Required = true, Min = 1)]
-        public TransformOp[] ops = Array.Empty<TransformOp>();
+        [McpParam("Objects to move. At least 1.", Required = true, Min = 1)]
+        public TransformPositionOp[] ops = Array.Empty<TransformPositionOp>();
+    }
+
+    [Serializable]
+    public class TransformRotationOp
+    {
+        [McpParam("Object name or path.", Required = true)]
+        public string object_path = string.Empty;
+
+        [McpParam("Euler rotation around X in DEGREES. Omit to keep current.")] public float? x_deg;
+        [McpParam("Euler rotation around Y in DEGREES. Omit to keep current.")] public float? y_deg;
+        [McpParam("Euler rotation around Z in DEGREES. Omit to keep current.")] public float? z_deg;
+    }
+
+    [Serializable]
+    public class ParamsTransformRotationOps
+    {
+        [McpParam("Objects to rotate. At least 1.", Required = true, Min = 1)]
+        public TransformRotationOp[] ops = Array.Empty<TransformRotationOp>();
+    }
+
+    [Serializable]
+    public class TransformScaleOp
+    {
+        [McpParam("Object name or path.", Required = true)]
+        public string object_path = string.Empty;
+
+        [McpParam("Transform scale along X — a dimensionless multiplier, 1 = unchanged. Omit to keep current.")] public float? x;
+        [McpParam("Transform scale along Y — a dimensionless multiplier, 1 = unchanged. Omit to keep current.")] public float? y;
+        [McpParam("Transform scale along Z — a dimensionless multiplier, 1 = unchanged. Omit to keep current.")] public float? z;
+    }
+
+    [Serializable]
+    public class ParamsTransformScaleOps
+    {
+        [McpParam("Objects to scale. At least 1.", Required = true, Min = 1)]
+        public TransformScaleOp[] ops = Array.Empty<TransformScaleOp>();
     }
 
     [Serializable]

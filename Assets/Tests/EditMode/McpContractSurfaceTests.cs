@@ -23,9 +23,9 @@ public class McpContractSurfaceTests
         {
             ["ParamsLogCount.count"] = "штуки записей, а не физическая величина",
             ["CloneOp.count"] = "штуки копий, а не физическая величина",
-            ["TransformOp.x"] = "общая операция set_position/set_rotation/set_scale: метры или градусы решает описание самого инструмента",
-            ["TransformOp.y"] = "то же самое",
-            ["TransformOp.z"] = "то же самое",
+            ["TransformScaleOp.x"] = "множитель Transform.localScale — безразмерный, единицы у него нет вовсе",
+            ["TransformScaleOp.y"] = "то же самое",
+            ["TransformScaleOp.z"] = "то же самое",
         };
 
     private static readonly string[] DestructiveTools =

@@ -142,7 +142,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetPosition(McpRequest req)
         {
-            var p = req.Params?.ToObjectStrict<ParamsTransformOps>();
+            var p = req.Params?.ToObjectStrict<ParamsTransformPositionOps>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -153,9 +153,13 @@ namespace KitchenDesigner.Core.MCP
                 if (string.IsNullOrEmpty(op.object_path)) { errors.Add("op missing object_path"); continue; }
                 var go = FindGameObject(op.object_path);
                 if (go == null) { errors.Add($"Object not found: {op.object_path}"); continue; }
-                var v = ResolveVec(op.x, op.y, op.z, go.transform.position);
+                var current = go.transform.position;
+                var v = new Vector3(
+                    op.x_mm.HasValue ? McpAnchor.FromMm(op.x_mm.Value) : current.x,
+                    op.y_mm.HasValue ? McpAnchor.FromMm(op.y_mm.Value) : current.y,
+                    op.z_mm.HasValue ? McpAnchor.FromMm(op.z_mm.Value) : current.z);
                 go.transform.position = v;
-                results.Add(new { object_path = op.object_path, ok = true, position = new { x = v.x, y = v.y, z = v.z } });
+                results.Add(new { object_path = op.object_path, ok = true, x_mm = McpAnchor.ToMm(v.x), y_mm = McpAnchor.ToMm(v.y), z_mm = McpAnchor.ToMm(v.z) });
             }
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1,
@@ -166,7 +170,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetRotation(McpRequest req)
         {
-            var p = req.Params?.ToObjectStrict<ParamsTransformOps>();
+            var p = req.Params?.ToObjectStrict<ParamsTransformRotationOps>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -178,14 +182,14 @@ namespace KitchenDesigner.Core.MCP
                 var go = FindGameObject(op.object_path);
                 if (go == null) { errors.Add($"Object not found: {op.object_path}"); continue; }
                 if (FixedSize.IsYawOnly(go.GetComponent<KitchenElement>())
-                    && (op.x.HasValue || op.z.HasValue))
+                    && (op.x_deg.HasValue || op.z_deg.HasValue))
                 {
                     errors.Add($"'{op.object_path}': x/z rotation not settable on a built-in appliance (only y — rotation about the vertical axis)");
                     continue;
                 }
-                var v = ResolveVec(op.x, op.y, op.z, go.transform.eulerAngles);
+                var v = ResolveVec(op.x_deg, op.y_deg, op.z_deg, go.transform.eulerAngles);
                 go.transform.eulerAngles = v;
-                results.Add(new { object_path = op.object_path, ok = true, rotation = new { x = v.x, y = v.y, z = v.z } });
+                results.Add(new { object_path = op.object_path, ok = true, x_deg = v.x, y_deg = v.y, z_deg = v.z });
             }
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1,
@@ -196,7 +200,7 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleSetScale(McpRequest req)
         {
-            var p = req.Params?.ToObjectStrict<ParamsTransformOps>();
+            var p = req.Params?.ToObjectStrict<ParamsTransformScaleOps>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
 
@@ -209,7 +213,7 @@ namespace KitchenDesigner.Core.MCP
                 if (go == null) { errors.Add($"Object not found: {op.object_path}"); continue; }
                 var v = ResolveVec(op.x, op.y, op.z, go.transform.localScale);
                 go.transform.localScale = v;
-                results.Add(new { object_path = op.object_path, ok = true, scale = new { x = v.x, y = v.y, z = v.z } });
+                results.Add(new { object_path = op.object_path, ok = true, scale_x = v.x, scale_y = v.y, scale_z = v.z });
             }
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1,
