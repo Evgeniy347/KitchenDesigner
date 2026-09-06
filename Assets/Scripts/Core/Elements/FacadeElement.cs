@@ -65,23 +65,13 @@ namespace KitchenDesigner.Core
             => GappedBox.CornerUnits(transform.localScale, Data.Gaps,
                 out minX, out maxX, out minY, out maxY, out minZ, out maxZ);
 
-        public (Vector3 min, Vector3 max) GetOpenBounds(float progress)
+        public void GetOpenBoxes(float progress, System.Collections.Generic.List<OrientedBox> into)
         {
             if (_isPassenger)
             {
-                var half = transform.localScale * 0.5f;
-                var c = transform.position;
-                var r = transform.rotation;
-                var corners = new Vector3[8];
-                int n = 0;
-                for (int i = 0; i < 8; i++)
-                {
-                    corners[n++] = c + r * new Vector3(
-                        (i & 1) == 0 ? -half.x : half.x,
-                        (i & 2) == 0 ? -half.y : half.y,
-                        (i & 4) == 0 ? -half.z : half.z);
-                }
-                return OpeningCollision.MinMax(corners);
+                into.Add(new OrientedBox(transform.position, transform.rotation,
+                    transform.localScale * 0.5f));
+                return;
             }
 
             var cp = IsDoorClosed ? transform.position : _closedPos;
@@ -91,18 +81,10 @@ namespace KitchenDesigner.Core
             FacadeDoor.Pose(cp, cr, halfExtents, _mode, progress, out var pos, out var rot);
 
             CornerUnits(out var minX, out var maxX, out var minY, out var maxY, out var minZ, out var maxZ);
-            var localCorners = new Vector3[]
-            {
-                new Vector3(minX, minY, minZ), new Vector3(maxX, minY, minZ),
-                new Vector3(maxX, minY, maxZ), new Vector3(minX, minY, maxZ),
-                new Vector3(minX, maxY, minZ), new Vector3(maxX, maxY, minZ),
-                new Vector3(maxX, maxY, maxZ), new Vector3(minX, maxY, maxZ),
-            };
+            var center = new Vector3(minX + maxX, minY + maxY, minZ + maxZ) * 0.5f;
+            var half = new Vector3(maxX - minX, maxY - minY, maxZ - minZ) * 0.5f;
 
-            var world = new Vector3[8];
-            for (int i = 0; i < 8; i++)
-                world[i] = pos + rot * localCorners[i];
-            return OpeningCollision.MinMax(world);
+            into.Add(new OrientedBox(pos + rot * center, rot, half));
         }
 
         private const float OpenSeconds = 0.4f;
@@ -208,7 +190,7 @@ namespace KitchenDesigner.Core
                     }
                 }
                 exclude.AddRange(AttachLinks.Descendants(this));
-                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBounds, exclude);
+                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
                 if (safe < _doorProgress) _doorProgress = Mathf.Max(_doorProgress - step, safe);
             }
 

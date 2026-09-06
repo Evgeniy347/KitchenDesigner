@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -72,45 +73,30 @@ namespace KitchenDesigner.Core
 
         public Vector3 HingeLocalUnits => _hingeLocalMM() * AppConstants.MM_TO_UNITS;
 
-        public (Vector3 min, Vector3 max) WorldBounds(Transform root, float progress)
+        public void WorldBoxes(Transform root, float progress, List<OrientedBox> into)
         {
             float toU = AppConstants.MM_TO_UNITS;
             var hinge = _hingeLocalMM() * toU;
             var localRot = LocalRotation(progress);
             var parts = _closedParts();
 
-            var world = new Vector3[parts.Length * 8];
-            int n = 0;
             for (int i = 0; i < parts.Length; i++)
             {
                 var closed = parts[i].centerMM * toU;
                 var localPos = hinge + localRot * (closed - hinge);
-                var worldPos = root.TransformPoint(localPos);
-                var worldRot = root.rotation * localRot;
-                var half = parts[i].sizeMM * toU * 0.5f;
-                for (int c = 0; c < 8; c++)
-                    world[n++] = worldPos + worldRot * new Vector3(
-                        (c & 1) == 0 ? -half.x : half.x,
-                        (c & 2) == 0 ? -half.y : half.y,
-                        (c & 4) == 0 ? -half.z : half.z);
+                into.Add(new OrientedBox(root.TransformPoint(localPos), root.rotation * localRot,
+                    parts[i].sizeMM * toU * 0.5f));
             }
-            return OpeningCollision.MinMax(world);
         }
 
-        public static (Vector3 min, Vector3 max) RiderBounds(
+        public static OrientedBox RiderBox(
             Transform root, Quaternion doorRotation, Vector3 hingeLocalUnits,
             Vector3 closedWorldPosition, Quaternion closedWorldRotation, Vector3 halfExtents)
         {
             var (worldPos, worldRot) = RiderPose(
                 root, doorRotation, hingeLocalUnits, closedWorldPosition, closedWorldRotation);
 
-            var corners = new Vector3[8];
-            for (int i = 0; i < 8; i++)
-                corners[i] = worldPos + worldRot * new Vector3(
-                    (i & 1) == 0 ? -halfExtents.x : halfExtents.x,
-                    (i & 2) == 0 ? -halfExtents.y : halfExtents.y,
-                    (i & 4) == 0 ? -halfExtents.z : halfExtents.z);
-            return OpeningCollision.MinMax(corners);
+            return new OrientedBox(worldPos, worldRot, halfExtents);
         }
 
         public static (Vector3 position, Quaternion rotation) RiderPose(

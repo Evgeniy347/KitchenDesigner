@@ -314,7 +314,7 @@ namespace KitchenDesigner.Core
                     var pairFacade = pair.FindAttachedFacade();
                     if (pairFacade != null) exclude.Add(pairFacade);
                 }
-                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBounds, exclude);
+                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
                 if (safe < _t)
                 {
                     _t = Mathf.Max(_t - step, safe);
@@ -326,35 +326,15 @@ namespace KitchenDesigner.Core
             ApplyAnimPose();
         }
 
-        public (Vector3 min, Vector3 max) GetOpenBounds(float progress)
+        public void GetOpenBoxes(float progress, List<OrientedBox> into)
         {
             float eased = 0.5f * (1f - Mathf.Cos(Mathf.PI * progress));
             Vector3 pos = _closedPos + _closedRot * Vector3.forward * (DrawerSlideMeters * eased);
-            Quaternion rot = _closedRot;
 
-            var scale = transform.localScale;
-            var half = scale * 0.5f;
-            var localCorners = new Vector3[]
-            {
-                new Vector3(-half.x, -half.y, -half.z), new Vector3( half.x, -half.y, -half.z),
-                new Vector3( half.x, -half.y,  half.z), new Vector3(-half.x, -half.y,  half.z),
-                new Vector3(-half.x,  half.y, -half.z), new Vector3( half.x,  half.y, -half.z),
-                new Vector3( half.x,  half.y,  half.z), new Vector3(-half.x,  half.y,  half.z),
-            };
-            var world = new Vector3[8];
-            for (int i = 0; i < 8; i++)
-                world[i] = pos + rot * localCorners[i];
-            var (min, max) = OpeningCollision.MinMax(world);
+            into.Add(new OrientedBox(pos, _closedRot, transform.localScale * 0.5f));
 
             var f = FindAttachedFacade();
-            if (f != null)
-            {
-                var (fMin, fMax) = f.GetOpenBounds(progress);
-                min = Vector3.Min(min, fMin);
-                max = Vector3.Max(max, fMax);
-            }
-
-            return (min, max);
+            if (f != null) f.GetOpenBoxes(progress, into);
         }
 
         public void SetOpen(bool open)

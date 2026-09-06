@@ -1090,11 +1090,11 @@ public class DishwasherElementTests
 
     /// <summary>AABB открытого состояния посудомойки учитывает фасад через
     /// ПЕТЛЮ ДВЕРЦЫ, а не собственную петлю фасада. Раньше вызов
-    /// <c>facade.GetOpenBounds</c> использовал <c>FacadeDoor.Pose</c> с модой
+    /// <c>facade.GetOpenBoxes</c> использовал <c>FacadeDoor.Pose</c> с модой
     /// фасада по умолчанию, и проверка коллизий ловила призрак — фасад ехал
     /// вбок, пока дверца шла вниз.</summary>
     [Test]
-    public void GetOpenBounds_AttachedFacade_UsesDishwasherHinge()
+    public void GetOpenBoxes_AttachedFacade_UsesDishwasherHinge()
     {
         var dw = Make("DW-pass5");
         var facade = MakeFacadeFor(dw, "DW_pass5_front");
@@ -1106,12 +1106,12 @@ public class DishwasherElementTests
         dw.StepDoor(0.6f);
         dw.ApplyDoorPose();
 
-        var (min, max) = dw.GetOpenBounds(1f);
+        var (min, max) = OpenBoxAabb.Of(dw.GetOpenBoxes, 1f);
         var half = facade.transform.localScale * 0.5f;
         // Все 8 углов текущего AABB фасада должны входить в AABB открытого
         // состояния — именно это и есть «фасад посчитан через петлю дверцы».
         // Если бы фасад считали по своей петле, его углы уехали бы вбок и
-        // часть из них выпала бы из GetOpenBounds.
+        // часть из них выпала бы из GetOpenBoxes.
         const float eps = 1e-4f;
         var corners = new Vector3[8];
         for (int i = 0; i < 8; i++)
@@ -1202,7 +1202,7 @@ public class DishwasherElementTests
     /// «залипает» на старой <c>_closedPos</c> и считает фасад там, где его
     /// давно нет. Это было критично для посудомойки: пользователь тащит фасад,
     /// а SceneAnalyzer/ConstraintValidator ругаются на старый зазор с соседом.
-    /// Проверяется через <see cref="FacadeElement.GetOpenBounds"/>: для пассажира
+    /// Проверяется через <see cref="FacadeElement.GetOpenBoxes"/>: для пассажира
     /// он строится от текущего трансформа, а не от <c>_closedPos</c>.</summary>
     [Test]
     public void AttachedFacade_ValidationFollowsTransform()
@@ -1215,17 +1215,17 @@ public class DishwasherElementTests
 
         Assert.IsTrue(facade.IsPassenger, "фасад — пассажир посудомойки");
 
-        var (beforeMin, beforeMax) = facade.GetOpenBounds(0f);
+        var (beforeMin, beforeMax) = OpenBoxAabb.Of(facade.GetOpenBoxes, 0f);
         var beforeCenterX = (beforeMin.x + beforeMax.x) * 0.5f;
 
         // Имитируем перетаскивание ручкой: пользователь сдвинул фасад.
         var delta = new Vector3(0.3f, 0f, 0f);
         facade.transform.position += delta;
 
-        var (afterMin, afterMax) = facade.GetOpenBounds(0f);
+        var (afterMin, afterMax) = OpenBoxAabb.Of(facade.GetOpenBoxes, 0f);
         var afterCenterX = (afterMin.x + afterMax.x) * 0.5f;
         Assert.AreEqual(delta.x, afterCenterX - beforeCenterX, 1e-4f,
-            "центр AABB фасада (GetOpenBounds) сдвинулся ровно на дельту — " +
+            "центр AABB фасада (GetOpenBoxes) сдвинулся ровно на дельту — " +
             "валидация следует за transform, а не за _closedPos");
 
         // Round-trip «закрыт → открыт → закрыт» с НОВОГО места: опорная точка
@@ -1240,7 +1240,7 @@ public class DishwasherElementTests
         dw.ApplyDoorPose();
         // Опорная точка петли — там, куда тащили: фасад вернулся в newPos.
         Assert.AreEqual(beforeCenterX + delta.x,
-            (facade.GetOpenBounds(0f).min.x + facade.GetOpenBounds(0f).max.x) * 0.5f,
+            (OpenBoxAabb.Of(facade.GetOpenBoxes, 0f).min.x + OpenBoxAabb.Of(facade.GetOpenBoxes, 0f).max.x) * 0.5f,
             1e-4f,
             "закрытие возвращает фасад в newPos, откуда его тащили");
     }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -212,10 +213,10 @@ namespace KitchenDesigner.Core
             Door.ApplyPose();
         }
 
-        private float MaxSafeDoorProgress() => OpeningCollision.FindMaxProgress(this, GetOpenBounds);
+        private float MaxSafeDoorProgress() => OpeningCollision.FindMaxProgress(this, GetOpenBoxes);
 
-        public (Vector3 min, Vector3 max) GetOpenBounds(float progress) =>
-            Door.WorldBounds(transform, progress);
+        public void GetOpenBoxes(float progress, List<OrientedBox> into) =>
+            Door.WorldBoxes(transform, progress, into);
 
         public override MeshRenderer? DecorRenderer => Boxes.RendererOf(IdxFacade);
 

@@ -5,7 +5,7 @@ using KitchenDesigner.Core;
 
 /// <summary>
 /// Откидная дверца прибора. Духовка и посудомойка вели её каждая своей копией
-/// (SetOpen / ToggleOpen / ForceClose / StepDoor / ApplyDoorPose / GetOpenBounds
+/// (SetOpen / ToggleOpen / ForceClose / StepDoor / ApplyDoorPose / WorldBoxes
 /// / DoorLocalRotation) — теперь копия одна, <see cref="DropDoor"/>. Здесь
 /// проверяется то, что в копиях было комментариями: петля по НИЖНЕЙ кромке,
 /// гашение о препятствие, и что одна и та же функция кормит сцену и расчёт
@@ -138,12 +138,14 @@ public class DropDoorTests
     /// <summary>Габариты открывания и сцена обязаны считаться ОДНОЙ функцией:
     /// разойдись они — коллизия ловила бы призрак.</summary>
     [Test]
-    public void WorldBounds_MatchTheBoxTheSceneActuallyPlaces()
+    public void WorldBoxes_MatchTheBoxTheSceneActuallyPlaces()
     {
         var (root, _, door) = NewDoor();
         StepUntilSettled(door, open: true);
 
-        var (min, max) = door.WorldBounds(root, 1f);
+        var openBoxes = new List<OrientedBox>();
+        door.WorldBoxes(root, 1f, openBoxes);
+        var (min, max) = OpenBoxAabb.Of(openBoxes);
         var panel = root.GetChild(0);
 
         var corners = new List<Vector3>();

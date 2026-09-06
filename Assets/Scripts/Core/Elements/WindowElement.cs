@@ -150,36 +150,29 @@ namespace KitchenDesigner.Core
 
             if (_isOpen && _openT > 0f)
             {
-                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBounds);
+                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBoxes);
                 if (safe < _openT) _openT = Mathf.Max(_openT - step, safe);
             }
 
             ApplyDoorPose();
         }
 
-        public (Vector3 min, Vector3 max) GetOpenBounds(float progress)
+        public void GetOpenBoxes(float progress, List<OrientedBox> into)
         {
             if (_sashGroup == null || _sashHalfExtents.sqrMagnitude < 1e-12f)
-                return OpeningCollision.MinMax(GetVertices());
+            {
+                var frame = transform.rotation;
+                var origin = transform.position;
+                into.Add(LocalFrame.ToWorld(LocalFrame.BoundsOf(GetVertices(), origin, frame),
+                    origin, frame));
+                return;
+            }
 
             FacadeDoor.Pose(_sashClosedLocal, Quaternion.identity, _sashHalfExtents,
                 _mode, progress, out var localPos, out var localRot, HingeKinematics.EdgePivot);
 
-            var worldPos = transform.TransformPoint(localPos);
-            var worldRot = transform.rotation * localRot;
-
-            var half = _sashHalfExtents;
-            var localCorners = new Vector3[]
-            {
-                new Vector3(-half.x, -half.y, -half.z), new Vector3( half.x, -half.y, -half.z),
-                new Vector3( half.x, -half.y,  half.z), new Vector3(-half.x, -half.y,  half.z),
-                new Vector3(-half.x,  half.y, -half.z), new Vector3( half.x,  half.y, -half.z),
-                new Vector3( half.x,  half.y,  half.z), new Vector3(-half.x,  half.y,  half.z),
-            };
-            var world = new Vector3[8];
-            for (int i = 0; i < 8; i++)
-                world[i] = worldPos + worldRot * localCorners[i];
-            return OpeningCollision.MinMax(world);
+            into.Add(new OrientedBox(transform.TransformPoint(localPos),
+                transform.rotation * localRot, _sashHalfExtents));
         }
 
         public void SnapToWall()

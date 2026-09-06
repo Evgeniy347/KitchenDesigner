@@ -284,20 +284,19 @@ namespace KitchenDesigner.Core
             var exclude = new List<KitchenElement>();
             var facade = FindAttachedFacade();
             if (facade != null) exclude.Add(facade);
-            return OpeningCollision.FindMaxProgress(this, GetOpenBounds, exclude);
+            return OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
         }
 
-        public (Vector3 min, Vector3 max) GetOpenBounds(float progress)
+        public void GetOpenBoxes(float progress, List<OrientedBox> into)
         {
-            var (min, max) = Door.WorldBounds(transform, progress);
+            Door.WorldBoxes(transform, progress, into);
 
             var facade = FindAttachedFacade();
-            if (facade == null) return (min, max);
+            if (facade == null) return;
 
-            var (fMin, fMax) = DropDoor.RiderBounds(transform, DropDoor.LocalRotation(progress),
+            into.Add(DropDoor.RiderBox(transform, DropDoor.LocalRotation(progress),
                 Door.HingeLocalUnits, facade.ClosedPosition, facade.ClosedRotation,
-                facade.transform.localScale * 0.5f);
-            return (Vector3.Min(min, fMin), Vector3.Max(max, fMax));
+                facade.transform.localScale * 0.5f));
         }
 
         public override MeshRenderer? DecorRenderer => Boxes.RendererOf(IdxDoor);

@@ -95,45 +95,54 @@ namespace KitchenDesigner.Core
             if (facade == null || all == null || all.Count == 0) return result;
 
             var exclude = BuildExclusionSet(facade);
-            var half = facade.transform.localScale * 0.5f;
-            var closedPos = facade.ClosedPosition;
-            var closedRot = facade.ClosedRotation;
-            var mode = facade.Mode;
-
             var others = new List<KitchenElement>();
             foreach (var other in all)
                 if (other != null && other != facade && !exclude.Contains(other))
                     others.Add(other);
             if (others.Count == 0) return result;
 
-            float toMm = 1f / AppConstants.MM_TO_UNITS;
+            var moving = new List<OrientedBox>();
+            facade.GetOpenBoxes(0f, moving);
+            if (moving.Count == 0) return result;
+
+            var origin = moving[0].Center;
+            var frame = moving[0].Rotation;
+            var closed = LocalFrame.BoundsOf(moving, origin, frame);
+
+            var obstacles = new List<OpeningObstacle>();
+            OpeningCollision.BuildObstacles(closed, origin, frame, others, obstacles);
+            if (obstacles.Count == 0) return result;
+
+            var reported = new HashSet<KitchenElement>();
             float progressStep = 1f / Mathf.Max(1, steps);
 
             for (int i = 1; i <= steps; i++)
             {
                 float progress = i * progressStep;
-                FacadeDoor.Pose(closedPos, closedRot, half, mode, progress, out var pos, out var rot);
-                var sweptAabb = ComputeSweptAABB(closedPos, closedRot, half, pos, rot);
+                moving.Clear();
+                facade.GetOpenBoxes(progress, moving);
 
-                foreach (var other in others)
+                foreach (var obstacle in obstacles)
                 {
-                    var otherAabb = ComputeAABB(other.GetVertices());
-                    if (!AABBsOverlap(sweptAabb, otherAabb)) continue;
+                    if (reported.Contains(obstacle.Owner)) continue;
 
-                    float overlap = AABBOverlapVolume(sweptAabb, otherAabb);
-                    if (overlap * toMm < MinOverlapMm) continue;
+                    float deepestMm = 0f;
+                    foreach (var box in moving)
+                    {
+                        if (!OpeningCollision.Blocks(box, obstacle.Box, out float penetrationMm)) continue;
+                        if (penetrationMm > deepestMm) deepestMm = penetrationMm;
+                    }
+                    if (deepestMm <= 0f) continue;
 
+                    reported.Add(obstacle.Owner);
                     result.Add(new OpeningViolation
                     {
-                        neighbor = other.PartName,
-                        openingMode = ModeSymbol(mode),
+                        neighbor = obstacle.Owner.PartName,
+                        openingMode = ModeSymbol(facade.Mode),
                         collisionAtProgress = progress,
-                        collisionOverlapMm = overlap * toMm
+                        collisionOverlapMm = deepestMm
                     });
-                    others.Remove(other);
-                    break;
                 }
-                if (others.Count == 0) break;
             }
 
             return result;
@@ -252,41 +261,6 @@ namespace KitchenDesigner.Core
             return true;
         }
 
-        private static AABB ComputeSweptAABB(Vector3 aPos, Quaternion aRot, Vector3 aHalf, Vector3 bPos, Quaternion bRot)
-        {
-            var vertsA = TransformedBoxVertices(aPos, aRot, aHalf);
-            var vertsB = TransformedBoxVertices(bPos, bRot, aHalf);
-            return ComputeAABB(vertsA, vertsB);
-        }
-
-        private static Vector3[] TransformedBoxVertices(Vector3 pos, Quaternion rot, Vector3 half)
-        {
-            var local = new Vector3[]
-            {
-                new Vector3(-half.x, -half.y, -half.z),
-                new Vector3( half.x, -half.y, -half.z),
-                new Vector3( half.x, -half.y,  half.z),
-                new Vector3(-half.x, -half.y,  half.z),
-                new Vector3(-half.x,  half.y, -half.z),
-                new Vector3( half.x,  half.y, -half.z),
-                new Vector3( half.x,  half.y,  half.z),
-                new Vector3(-half.x,  half.y,  half.z),
-            };
-            var result = new Vector3[8];
-            for (int i = 0; i < 8; i++)
-                result[i] = pos + rot * local[i];
-            return result;
-        }
-
-        private static AABB ComputeAABB(Vector3[] a, Vector3[] b)
-        {
-            float minX = float.MaxValue, minY = float.MaxValue, minZ = float.MaxValue;
-            float maxX = float.MinValue, maxY = float.MinValue, maxZ = float.MinValue;
-            foreach (var v in a) Expand(v, ref minX, ref minY, ref minZ, ref maxX, ref maxY, ref maxZ);
-            foreach (var v in b) Expand(v, ref minX, ref minY, ref minZ, ref maxX, ref maxY, ref maxZ);
-            return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
-        }
-
         private static AABB ComputeAABB(Vector3[] verts)
         {
             float minX = float.MaxValue, minY = float.MaxValue, minZ = float.MaxValue;
@@ -318,22 +292,6 @@ namespace KitchenDesigner.Core
                 new Vector3(aabb.minX, aabb.maxY, aabb.maxZ),
                 new Vector3(aabb.maxX, aabb.maxY, aabb.maxZ),
             };
-        }
-
-        private static bool AABBsOverlap(AABB a, AABB b)
-        {
-            return a.minX < b.maxX && a.maxX > b.minX &&
-                   a.minY < b.maxY && a.maxY > b.minY &&
-                   a.minZ < b.maxZ && a.maxZ > b.minZ;
-        }
-
-        private static float AABBOverlapVolume(AABB a, AABB b)
-        {
-            float ox = Mathf.Min(a.maxX, b.maxX) - Mathf.Max(a.minX, b.minX);
-            float oy = Mathf.Min(a.maxY, b.maxY) - Mathf.Max(a.minY, b.minY);
-            float oz = Mathf.Min(a.maxZ, b.maxZ) - Mathf.Max(a.minZ, b.minZ);
-            if (ox <= 0f || oy <= 0f || oz <= 0f) return 0f;
-            return Mathf.Min(ox, oy, oz);
         }
 
         private static string ModeSymbol(DoorMode mode)
