@@ -71,12 +71,6 @@ namespace KitchenDesigner.Core
             Build(element, faceIndex, bands: false);
         }
 
-        public static void ShowFaceWithBands(KitchenElement element, int faceIndex)
-        {
-            Hide();
-            Build(element, faceIndex, bands: true);
-        }
-
         internal static int OppositeFaceOf(int faceIndex) =>
             faceIndex % 2 == 0 ? faceIndex + 1 : faceIndex - 1;
 
