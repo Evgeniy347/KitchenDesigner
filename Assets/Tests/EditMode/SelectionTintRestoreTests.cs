@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -145,7 +146,15 @@ public class SelectionTintRestoreTests
     /// Сторож «на рендерере всё ещё наша тонировка?» сравнивал ССЫЛКУ и читал копию
     /// собственной краски как «перекрасил кто-то чужой»: подтащил выделенную деталь,
     /// снял выделение — жёлтый навсегда. Копия нашей тонировки — это наша тонировка,
-    /// поэтому вопрос задаётся материалу (его имени), а не адресу объекта.</summary>
+    /// поэтому вопрос задаётся материалу (его имени), а не адресу объекта.
+    ///
+    /// Копирование здесь провоцируется НАРОЧНО, и в EditMode Unity пишет об этом
+    /// ошибку про утечку материала в сцену — фреймворк валит тест на любом
+    /// необработанном сообщении. Глушить весь тест флагом
+    /// <c>ignoreFailingMessages</c> значило бы заодно проглотить настоящую ошибку,
+    /// если она случится; поэтому ожидается ровно одно сообщение и ровно то.
+    /// Смысл теста держат два <c>Assume</c> ниже: они, а не молчание лога,
+    /// доказывают, что копия сделана и что тонировка подписана.</summary>
     [Test]
     public void Deselect_GivesBackTheMaterial_AfterSomeoneInstantiatedTheTint()
     {
@@ -157,6 +166,8 @@ public class SelectionTintRestoreTests
         _selection!.Select(element);
         var tinted = root.sharedMaterial;
 
+        LogAssert.Expect(LogType.Error,
+            new Regex("Instantiating material due to calling renderer\\.material"));
         var instantiated = root.material;
 
         Assume.That(instantiated, Is.Not.SameAs(tinted),

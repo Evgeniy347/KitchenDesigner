@@ -154,6 +154,102 @@ public class ElementTintCoverageTests
             + "и останется на объекте навсегда.\n", offenders);
     }
 
+    /// <summary>Тот же обход, но вопрос другой: изменился ли ЦВЕТ.
+    ///
+    /// Сторож выше сравнивает материалы ПО ССЫЛКЕ, и это его потолок: он
+    /// зеленеет от любого другого материала на рендерере — от приглушённого
+    /// серого «вне редактируемого модуля», от красного «нарушение», от копии,
+    /// которую Unity сделала сама. «Материал не тот же самый» и «пользователь
+    /// увидел подсветку» — разные утверждения, и второе сильнее.
+    ///
+    /// Кадровый тест в PlayMode задаёт этот вопрос камерой, но всего двум типам
+    /// и ценой запуска Unity в PlayMode. Здесь тот же вопрос задаётся всем
+    /// тридцати и бесплатно: цвет читается прямо с материала. Читается именно с
+    /// <c>sharedMaterial</c> — обращение к <c>renderer.material</c> подменило бы
+    /// материал копией и испортило бы сцену следующему сторожу (CONVENTIONS.md →
+    /// «Reading `renderer.material` is a MUTATION, not an observation»).</summary>
+    [Test]
+    public void SelectingAnElement_ChangesTheCOLOUR_NotOnlyTheMaterialReference()
+    {
+        IgnoreMaterialLeakLog();
+        var offenders = new List<string>();
+        var covered = 0;
+
+        foreach (var maker in EveryElementType.Makers)
+        {
+            var element = EveryElementType.Spawn(maker.type, "цвет-" + maker.type.Name);
+            var body = ElementRenderers.BodyOf(element);
+
+            var watched = new List<MeshRenderer>();
+            var before = new List<Color>();
+            foreach (var renderer in body)
+            {
+                if (!TryReadBaseColor(renderer.sharedMaterial, out var color)) continue;
+                watched.Add(renderer);
+                before.Add(color);
+            }
+
+            if (watched.Count == 0)
+            {
+                Reset();
+                continue;
+            }
+
+            covered++;
+            _selection!.Select(element);
+
+            var pale = new List<string>();
+            for (int i = 0; i < watched.Count; i++)
+            {
+                if (!TryReadBaseColor(watched[i].sharedMaterial, out var now))
+                {
+                    pale.Add(ElementRenderers.PathOf(element, watched[i]) + " (цвет пропал)");
+                    continue;
+                }
+                if (Visibly(before[i], now)) continue;
+                pale.Add(ElementRenderers.PathOf(element, watched[i])
+                    + " " + Describe(before[i]) + " → " + Describe(now));
+            }
+
+            if (pale.Count > 0)
+                offenders.Add(maker.type.Name + ": цвет не изменился на "
+                    + pale.Count + " из " + watched.Count + " — " + string.Join(", ", pale));
+
+            Reset();
+        }
+
+        Assert.Greater(covered, 0,
+            "ни у одного типа не нашлось рендерера с читаемым цветом — сторож "
+            + "проверил пустоту и позеленел бы на любом коде");
+
+        Fail("Выделение обязано менять ЦВЕТ, а не только ссылку на материал.\n"
+            + "Рендерер, получивший другой материал того же цвета, для сторожа по "
+            + "ссылкам неотличим от подсвеченного, а для пользователя — от серого.\n",
+            offenders);
+    }
+
+    private const float MinColorStep = 0.05f;
+
+    private static bool Visibly(Color a, Color b) =>
+        Mathf.Abs(a.r - b.r) > MinColorStep
+        || Mathf.Abs(a.g - b.g) > MinColorStep
+        || Mathf.Abs(a.b - b.b) > MinColorStep;
+
+    private static string Describe(Color c) =>
+        "(" + c.r.ToString("0.00") + " " + c.g.ToString("0.00") + " " + c.b.ToString("0.00") + ")";
+
+    /// <summary>URP-шейдеры держат цвет в <c>_BaseColor</c>, встроенные — в
+    /// <c>_Color</c>. Материал без обоих в счёт не идёт: о его цвете сторож
+    /// ничего сказать не может и врать не должен.</summary>
+    private static bool TryReadBaseColor(Material? material, out Color color)
+    {
+        color = default;
+        if (material == null) return false;
+        if (material.HasProperty("_BaseColor")) { color = material.GetColor("_BaseColor"); return true; }
+        if (material.HasProperty("_Color")) { color = material.GetColor("_Color"); return true; }
+        return false;
+    }
+
     /// <summary>Тот же вопрос про декор: назначенная текстура доходит до
     /// каждого рендерера, а не до первого попавшегося.
     ///
