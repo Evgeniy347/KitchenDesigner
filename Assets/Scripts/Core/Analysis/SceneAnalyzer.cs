@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace KitchenDesigner.Core.Analysis
 {
@@ -364,7 +364,7 @@ namespace KitchenDesigner.Core.Analysis
 
         public static AnalysisIssue ScrewLegShallow(KitchenElement leg, KitchenElement host,
             int insertionMM) =>
-            new AnalysisIssue(IssueLevel.Warning, CodeScrewLegShallow,
+            new AnalysisIssue(IssueLevel.Error, CodeScrewLegShallow,
                 PairDetail(leg, host),
                 $"Резьба вошла в {Name(host)} на {insertionMM} мм — "
                 + $"требуется {ScrewLegSpec.MIN_INSERTION_INTO_HOST_MM} мм",

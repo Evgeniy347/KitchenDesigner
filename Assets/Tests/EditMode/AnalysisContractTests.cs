@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -134,7 +134,7 @@ public class AnalysisContractTests
             ["DWH-03"] = IssueLevel.Warning,
             ["DWH-04"] = IssueLevel.Warning,
             ["LEG-01"] = IssueLevel.Warning,
-            ["LEG-02"] = IssueLevel.Warning,
+            ["LEG-02"] = IssueLevel.Error,
         };
 
         CollectionAssert.AreEquivalent(expected.Keys, byCode.Keys,
