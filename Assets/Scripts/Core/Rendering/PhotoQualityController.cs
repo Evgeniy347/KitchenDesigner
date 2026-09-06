@@ -335,8 +335,9 @@ namespace KitchenDesigner.Core
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.LogWarning($"[PhotoMode] Toggling renderer feature '{typeNameContains}' failed: {ex.Message}");
             }
         }
 
@@ -347,7 +348,10 @@ namespace KitchenDesigner.Core
                 var f = obj.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (f != null && f.GetValue(obj) is int v) return v;
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[PhotoMode] Reading private field '{field}' failed: {ex.Message}");
+            }
             return -1;
         }
 
@@ -358,7 +362,10 @@ namespace KitchenDesigner.Core
                 var f = obj.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
                 f?.SetValue(obj, value);
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[PhotoMode] Writing private field '{field}' failed: {ex.Message}");
+            }
         }
 
         private static void SetPrivateIntField(object obj, string field, int value)
@@ -368,7 +375,10 @@ namespace KitchenDesigner.Core
                 var f = obj.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
                 f?.SetValue(obj, value);
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[PhotoMode] Writing private field '{field}' failed: {ex.Message}");
+            }
         }
 
         private static UniversalRenderPipelineAsset? GetUrpAsset()

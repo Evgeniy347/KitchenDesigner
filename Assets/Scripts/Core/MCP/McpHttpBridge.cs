@@ -89,8 +89,8 @@ namespace KitchenDesigner.Core.MCP
 
             if (_listener != null)
             {
-                try { _listener.Stop(); } catch { }
-                try { _listener.Close(); } catch { }
+                try { _listener.Stop(); } catch (ObjectDisposedException) { }
+                try { _listener.Close(); } catch (ObjectDisposedException) { }
                 _listener = null;
             }
 

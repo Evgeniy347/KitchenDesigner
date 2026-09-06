@@ -85,8 +85,9 @@ namespace KitchenDesigner.Core
             {
                 target.GetType().GetField(name, Hidden)?.SetValue(target, value);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.LogWarning($"[PhotoMode] Writing SSAO setting '{name}' failed: {ex.Message}");
             }
         }
 
@@ -96,8 +97,9 @@ namespace KitchenDesigner.Core
             {
                 target.GetType().GetField(name, Hidden)?.SetValue(target, value);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.LogWarning($"[PhotoMode] Writing SSAO setting '{name}' failed: {ex.Message}");
             }
         }
     }

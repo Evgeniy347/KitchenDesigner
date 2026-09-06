@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
@@ -51,7 +52,10 @@ namespace KitchenDesigner.Core
                     var json = Encoding.UTF8.GetString(buffer, 0, read);
                     OnCommandReceived?.Invoke(json);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"[TcpCommandBridge] Accept/read cycle failed: {ex.Message}");
+                }
             }
         }
 
