@@ -126,7 +126,7 @@ namespace KitchenDesigner.Core
             _startPosition = _target.transform.position;
             _heldDragY = _startPosition.y;
             RecomputeOffset();
-            SaveDragMaterial();
+            SaveDragMaterial(_target!);
         }
 
         private void RecomputeOffset()
@@ -288,7 +288,7 @@ namespace KitchenDesigner.Core
             _dragWall = null;
             _targetIsWallOpening = false;
             RevertMoveSet();
-            RestoreDragMaterial();
+            RestoreDragMaterial(_target);
             IsDragging = false;
             _wasMoved = false;
             _pressed = false;
@@ -351,7 +351,7 @@ namespace KitchenDesigner.Core
 
             if (!computed) return;
 
-            if (_dragTintMaterial == null) SaveDragMaterial();
+            if (_dragTintMaterial == null) SaveDragMaterial(_target!);
 
             if (Input.GetKeyDown(KeyCode.X)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.X);
             if (Input.GetKeyDown(KeyCode.Z)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.Z);
@@ -434,7 +434,7 @@ namespace KitchenDesigner.Core
 			}
 
 			_axisLock = DragAxisLock.None;
-			RestoreDragMaterial();
+			RestoreDragMaterial(_target);
 			IsDragging = false;
 			_wasShift = false;
 			_wasCtrl = false;
@@ -491,9 +491,9 @@ namespace KitchenDesigner.Core
                 ElementHighlighter.Instance.RefreshHighlights();
         }
 
-        private void SaveDragMaterial()
+        internal void SaveDragMaterial(KitchenElement target)
         {
-            var renderer = _target!.GetComponent<MeshRenderer>();
+            var renderer = target.GetComponent<MeshRenderer>();
             if (renderer == null) return;
 
             _dragOriginalMaterial = renderer.material;
@@ -512,9 +512,9 @@ namespace KitchenDesigner.Core
             _dragTintMaterial.color = DragGesture.TintFor(MoveSetCausesViolation());
         }
 
-        private void RestoreDragMaterial()
+        internal void RestoreDragMaterial(KitchenElement? target)
         {
-            var renderer = _target != null ? _target.GetComponent<MeshRenderer>() : null;
+            var renderer = target != null ? target.GetComponent<MeshRenderer>() : null;
             if (renderer != null && _dragOriginalMaterial != null)
                 renderer.material = _dragOriginalMaterial;
 
