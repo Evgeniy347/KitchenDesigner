@@ -210,6 +210,8 @@ $env:GIT_COMMITTER_DATE = $formatted
 try {
     if ($Amend) {
         git commit --amend -m $Message --date $formatted
+    } elseif ($Files -and $Files.Count -gt 0) {
+        git commit -m $Message -- @Files
     } else {
         git commit -m $Message
     }
