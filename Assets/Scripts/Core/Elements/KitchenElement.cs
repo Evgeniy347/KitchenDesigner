@@ -72,6 +72,8 @@ namespace KitchenDesigner.Core
             set => _data.AttachedToName = value;
         }
 
+        public virtual bool AttachIsDerived => false;
+
         private Vector3 _attachRestPos;
         private Quaternion _attachRestRot = Quaternion.identity;
         private bool _attachRidden;

@@ -235,7 +235,7 @@ namespace KitchenDesigner.Core.UI
 
             (_, var attachToDropdown) = _rows.NamedDropdown("CtxAttachTo", AttachToLabelText,
                 new List<string> { AttachToNoneText }, _ => { },
-                RowVisibility.When(() => AttachLinks.CanBeChild(_target)));
+                RowVisibility.When(() => AttachLinks.CanChooseParent(_target)));
             _attachedTo = new NameDropdownBinder(attachToDropdown, AttachToNoneText,
                 () => _target != null ? _target.AttachedToName : "",
                 AttachToCandidateNames, () => AttachLinks.IsDetached(_target), CommitAttachedTo);
@@ -278,7 +278,7 @@ namespace KitchenDesigner.Core.UI
         private IEnumerable<string> AttachToCandidateNames()
         {
             var target = _target;
-            if (target == null || !AttachLinks.CanBeChild(target)) yield break;
+            if (target == null || !AttachLinks.CanChooseParent(target)) yield break;
             var attachedName = target.AttachedToName;
             foreach (var el in PartRegistry.GetAll())
             {
@@ -293,7 +293,7 @@ namespace KitchenDesigner.Core.UI
         private void CommitAttachedTo(string name)
         {
             var target = _target;
-            if (target == null || !AttachLinks.CanBeChild(target)) return;
+            if (target == null || !AttachLinks.CanChooseParent(target)) return;
             if (name == target.AttachedToName) return;
 
             var before = UndoableProperties.Capture(target);

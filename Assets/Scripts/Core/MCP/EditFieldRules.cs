@@ -162,6 +162,12 @@ namespace KitchenDesigner.Core.MCP
             var op = target.op;
             var el = target.el;
             if (op.attached_to_name == null) return;
+            if (el.AttachIsDerived)
+            {
+                errors.Add("attached_to_name (derived from geometry, not settable: the host of a "
+                    + "screw leg is the element its thread is inside)");
+                return;
+            }
             if (!AttachLinks.CanBeChild(el))
             {
                 errors.Add("attached_to_name (this element type cannot be attached: it has its own kinematics or host)");

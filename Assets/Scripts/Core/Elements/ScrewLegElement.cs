@@ -93,6 +93,8 @@ namespace KitchenDesigner.Core
 
         public override bool CanCarryAttachedParts => false;
 
+        public override bool AttachIsDerived => true;
+
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
 
         public override MeshRenderer? DecorRenderer => GetComponent<MeshRenderer>();
