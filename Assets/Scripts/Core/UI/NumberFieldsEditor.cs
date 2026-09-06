@@ -95,6 +95,13 @@ namespace KitchenDesigner.Core.UI
             return binding;
         }
 
+        protected NumberFieldBinding BindCornerRadius<T>(RowVisibility visibility,
+            Func<T, int> read, Action<T, int> write, string? node = null) where T : class
+            => Bind(CornerRadiusRow(visibility, node), read, write, "0");
+
+        protected TMP_InputField CornerRadiusRow(RowVisibility visibility, string? node = null)
+            => Rows.NumberField("Скругление", visibility, "мм", node);
+
         public override IEnumerable<TMP_InputField?> ArithmeticFields()
         {
             foreach (var binding in _bindings) yield return binding.Field;

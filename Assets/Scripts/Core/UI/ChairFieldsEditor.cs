@@ -12,9 +12,8 @@ namespace KitchenDesigner.Core.UI
         public override void Build()
         {
             var visibility = RowVisibility.For(ElementFacet.Chair);
-            Bind<ChairElement>(Rows.NumberField("Скругление", visibility, "мм", CornerRadiusNode),
-                chair => chair.CornerRadiusMM, (chair, value) => chair.CornerRadiusMM = value,
-                "0");
+            BindCornerRadius<ChairElement>(visibility, chair => chair.CornerRadiusMM,
+                (chair, value) => chair.CornerRadiusMM = value, CornerRadiusNode);
             Bind<ChairElement>(
                 Rows.NumberField("Высота сиденья", visibility, "мм", SeatHeightNode),
                 chair => chair.SeatHeightMM, (chair, value) => chair.SeatHeightMM = value, "0");

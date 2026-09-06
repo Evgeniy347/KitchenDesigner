@@ -7,9 +7,7 @@ namespace KitchenDesigner.Core.UI
         public override bool Handles(KitchenElement element) => element is StoolElement;
 
         public override void Build() =>
-            Bind<StoolElement>(
-                Rows.NumberField("Скругление", RowVisibility.For(ElementFacet.Stool)),
-                stool => stool.CornerRadiusMM, (stool, value) => stool.CornerRadiusMM = value,
-                "0");
+            BindCornerRadius<StoolElement>(RowVisibility.For(ElementFacet.Stool),
+                stool => stool.CornerRadiusMM, (stool, value) => stool.CornerRadiusMM = value);
     }
 }

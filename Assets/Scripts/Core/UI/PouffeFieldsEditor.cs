@@ -4,7 +4,6 @@ namespace KitchenDesigner.Core.UI
     {
         public const string CornerRadiusNode = "СкруглениеПуфика";
         public const string SeatThicknessNode = "СидушкаПуфика";
-        public const string CornerRadiusLabel = "Скругление";
         public const string SeatThicknessLabel = "Толщина сидушки";
 
         public PouffeFieldsEditor(IContextMenuHost host) : base(host) { }
@@ -14,8 +13,7 @@ namespace KitchenDesigner.Core.UI
         public override void Build()
         {
             var visibility = RowVisibility.For(ElementFacet.Pouffe);
-            var cornerRadiusRow = Rows.NumberField(CornerRadiusLabel, visibility, "мм",
-                CornerRadiusNode);
+            var cornerRadiusRow = CornerRadiusRow(visibility, CornerRadiusNode);
             var seatThicknessRow = Rows.NumberField(SeatThicknessLabel, visibility, "мм",
                 SeatThicknessNode);
 
