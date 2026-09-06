@@ -53,6 +53,17 @@ public class McpCommandHandlerTests
         return e;
     }
 
+    /// <summary>Якорь MCP — минимальный угол мировой AABB детали, а не её центр.
+    /// Минимум берётся из самой геометрии, чтобы тест не переписывал арифметику
+    /// обработчика второй раз.</summary>
+    private static Vector3 MinCorner(KitchenElement el)
+    {
+        var verts = el.GetVertices();
+        var min = verts[0];
+        for (int i = 1; i < verts.Length; i++) min = Vector3.Min(min, verts[i]);
+        return min;
+    }
+
     [Test]
     public void CreateElement_UsesName()
     {
@@ -301,7 +312,8 @@ public class McpCommandHandlerTests
         MakeWall("W1", new Vector3Int(2000, 2500, 100), Vector3.zero);
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "W2", width = 2000, height = 2500, depth = 100, anchor_x_mm = 0f, anchor_y_mm = 1250f, anchor_z_mm = 0f, type = "wall" } }
+            items = new[] { new { name = "W2", width = 2000, height = 2500, depth = 100,
+                anchor_x_mm = -1000f, anchor_y_mm = -1250f, anchor_z_mm = -50f, type = "wall" } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -816,7 +828,10 @@ public class McpCommandHandlerTests
             ops = new[] { new { name = "Board", anchor_x_mm = 1000f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
         Assert.AreEqual("result", moveResp.type);
-        Assert.AreEqual(new Vector3(1, 0, 0), el.transform.position);
+        var corner = MinCorner(el);
+        Assert.AreEqual(1f, corner.x, 1e-4f, "разблокированная деталь встаёт якорем на 1000 мм");
+        Assert.AreEqual(0f, corner.y, 1e-4f, "то же по Y");
+        Assert.AreEqual(0f, corner.z, 1e-4f, "то же по Z");
     }
 
     // ── Params object format tests ──────────────────────────────────────
@@ -846,7 +861,10 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreEqual(new Vector3(2.5f, 1f, 0.5f), el.transform.position);
+        var corner = MinCorner(el);
+        Assert.AreEqual(2.5f, corner.x, 1e-4f, "объектный формат кладёт якорь туда же, куда строковый");
+        Assert.AreEqual(1f, corner.y, 1e-4f, "то же по Y");
+        Assert.AreEqual(0.5f, corner.z, 1e-4f, "то же по Z");
     }
 
     [Test]
@@ -996,7 +1014,10 @@ public class McpCommandHandlerTests
         }));
 
         Assert.AreEqual("result", resp.type);
-        Assert.AreEqual(new Vector3(5f, 2f, 3f), el.transform.position);
+        Assert.AreEqual(5f, MinCorner(el).x, 1e-4f,
+            "названная ось приходит в якорной системе: минимальный угол на 5000 мм");
+        Assert.AreEqual(2f, el.transform.position.y, 1e-4f, "пропущенная ось осталась как была");
+        Assert.AreEqual(3f, el.transform.position.z, 1e-4f, "то же по Z");
     }
 
     [Test]

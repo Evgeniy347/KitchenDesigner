@@ -104,21 +104,29 @@ public class McpMutationInvariantsTests
     [Test]
     public void EditElements_MovingAHost_CarriesTheAttachedPartAlong()
     {
-        MakeBoard("Host", new Vector3Int(600, 400, 18), Vector3.zero);
+        var host = MakeBoard("Host", new Vector3Int(600, 400, 18), Vector3.zero);
         var child = MakeBoard("Child", new Vector3Int(100, 100, 18), new Vector3(0f, 0.3f, 0f));
 
         _handler!.Handle(MakeReq("edit_elements", new
         {
             ops = new object[] { new { name = "Child", attached_to_name = "Host" } }
         }));
+        var hostBefore = host.transform.position;
+        var childBefore = child.transform.position;
         var resp = _handler.Handle(MakeReq("edit_elements", new
         {
             ops = new object[] { new { name = "Host", anchor_x_mm = 1000f } }
         }));
 
         Assert.AreEqual("result", resp.type, resp.type == "error" ? ErrorMessage(resp) : "");
-        Assert.AreEqual(1f, child.transform.position.x, 1e-4f,
-            "прикреплённая деталь едет за родителем — иначе связь распадается при первом же переносе");
+        var hostDelta = host.transform.position - hostBefore;
+        Assert.AreNotEqual(0f, hostDelta.x,
+            "родитель обязан сдвинуться, иначе проверка ниже сравнивает два нуля");
+        Assert.AreEqual(hostDelta.x, child.transform.position.x - childBefore.x, 1e-4f,
+            "прикреплённая деталь едет за родителем НА ТОТ ЖЕ вектор — иначе связь "
+            + "распадается при первом же переносе. Сравниваем СДВИГИ, а не координаты: "
+            + "anchor_x_mm задаёт минимальный угол родителя, и его центр стоит на "
+            + "пол-габарита дальше, тогда как ребёнок повторяет именно сдвиг");
     }
 
     [Test]

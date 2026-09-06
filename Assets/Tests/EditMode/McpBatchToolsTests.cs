@@ -55,6 +55,17 @@ public class McpBatchToolsTests
         return e;
     }
 
+    /// <summary>Якорь MCP — минимальный угол мировой AABB детали, а не её центр.
+    /// Минимум берётся из самой геометрии, чтобы тест не переписывал арифметику
+    /// обработчика второй раз.</summary>
+    private static Vector3 MinCorner(KitchenElement el)
+    {
+        var verts = el.GetVertices();
+        var min = verts[0];
+        for (int i = 1; i < verts.Length; i++) min = Vector3.Min(min, verts[i]);
+        return min;
+    }
+
     private static JObject Data(McpResponse resp) => JObject.FromObject(resp.data!);
 
     // ── McpJson: округление и отбрасывание null ─────────────────────────
@@ -206,7 +217,9 @@ public class McpBatchToolsTests
         }));
 
         Assert.AreEqual("result", resp.type, "edit failed: " + resp.data);
-        Assert.AreEqual(1.0f, a.transform.position.x, 1e-4f);
+        Assert.AreEqual(1.0f, MinCorner(a).x, 1e-4f,
+            "anchor_x_mm ставит МИНИМАЛЬНЫЙ мировой угол, а не центр: после rot_y = 90° "
+            + "вдоль X у детали лежит толщина 18 мм, и центр стоит на 9 мм дальше якоря");
         Assert.AreEqual(90f, a.transform.eulerAngles.y, 0.01f);
         Assert.AreEqual(600, b.DimensionsMM.x);
         var d = Data(resp);
@@ -225,7 +238,8 @@ public class McpBatchToolsTests
         }));
 
         Assert.AreEqual("result", resp.type, "edit failed: " + resp.data);
-        Assert.AreEqual(3.0f, a.transform.position.x, 1e-4f);
+        Assert.AreEqual(3.0f, MinCorner(a).x, 1e-4f,
+            "названная ось приходит в якорной системе: минимальный угол встаёт ровно на 3000 мм");
         Assert.AreEqual(0.9f, a.transform.position.y, 1e-4f,
             "пропущенная ось — «оставь как есть», а НЕ 0: иначе правка одной координаты "
             + "роняет деталь на пол");
@@ -291,7 +305,8 @@ public class McpBatchToolsTests
             ops = new object[] { new { name = "A", anchor_x_mm = 1000f, locked = false } }
         }));
         Assert.AreEqual("result", unlocked.type);
-        Assert.AreEqual(1.0f, a.transform.position.x, 1e-4f);
+        Assert.AreEqual(1.0f, MinCorner(a).x, 1e-4f,
+            "снятая блокировка пускает перенос: якорь встаёт на 1000 мм");
         Assert.IsTrue(a.Movable, "locked:false снимает блокировку");
     }
 
