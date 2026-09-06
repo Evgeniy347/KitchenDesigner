@@ -9,113 +9,37 @@
 
 ---
 
-## Приоритет 1 — брать в работу
+## Закрыто 2026-09-07 — приоритет 1 целиком
 
-### 1.1 `DoorElement` и `WindowElement` — 414 строк дословной копипасты
+Пять задач раздано параллельно четырём субагентам Claude и одному opencode; guard-файлы и
+прогон Unity — координатора. EditMode после кампании: **4381 тест, Failed: 0**.
 
-`Assets/Scripts/Core/Elements/DoorElement.cs` (560 строк) и `WindowElement.cs` (627 строк).
-
-Проверка: после нормализации `Window→Door`/`window→door` совпадают **414 непустых строк** —
-74 % файла двери. Дублируются целиком `StepDoor`, `ApplyDoorPose`, `GetOpenBoxes`,
-`SnapToWall`, `FindNearestWall`, `DistanceToWall`, `FindAttachedWall`, `UpdateCollider`,
-конечный автомат `SetOpen/ToggleOpen/ForceClose/CycleOpenState`, `ApplyMaterialFrame`,
-`PaintFrame`, приватный `DestroyGroup`. Расходится по существу только Y-подгон в `AlignToWall`.
-
-Что делать: общий базовый класс «проём в стене, который открывается» — состояние, шаг позы,
-поиск и регистрация стены, коллайдер; наследники дают только правило подгонки по высоте и
-свои `PerfMarkers`.
-
-Риск: класс живёт под `-nullable`, компилируется только через координатора (`Elements` не
-входит в быстрый путь). Резать мелкими кусками, каждый — отдельный коммит.
-
-### 1.2 `CooktopElement` и `SinkElement` — общая подсистема выреза продублирована
-
-`CooktopElement.cs:79-485` и `SinkElement.cs:46-307`. Одинаковы ленивая настройка
-`PartMount`, `SnapToPart`, `AttachToPart`, `FindCatchingPart`, `ClampOffsets`, `CutoutRectIn`,
-`DescribeCatch`, `UpdateCollider`, `PrepareForDestruction`. Различаются только источник размера
-выреза и отслеживание рыскания.
-
-Плюс два одинаковых допуска в обоих файлах: `ALIGNED_ROTATION_EPSILON_DEG = 0.05f`
-(`CooktopElement.cs:35`, `SinkElement.cs:26`).
-
-Что делать: общий базовый тип «элемент, врезаемый в деталь», с крючками `YawDeg` и
-`CutoutExtents` у наследников.
-
-### 1.3 Мёртвый код — удалить
-
-Каждая строка проверена: у символа ровно одно вхождение в репозитории — собственное
-объявление, и ни одной ссылки ни из продакшена, ни из тестов, ни из сцен.
-
-| Что | Где | Проверка |
+| Было | Стало | Коммиты |
 |---|---|---|
-| Весь файл: 5 структур событий `ElementCreatedEvent`, `ElementMovedEvent`, `ProjectLoadedEvent`, `SelectionChangedEvent`, `PartRemovedEvent` | `Core/Infrastructure/KitchenEvents.cs` | по 1 вхождению на каждую; никто не публикует и не подписывается |
-| Класс отладочной клавиатуры `InputCapture` | `Core/Infrastructure/InputCapture.cs:5-70` | `MonoBehaviour`, но GUID `ecb5bc37…` не встречается ни в одной сцене, префабе или ассете; ссылок из кода нет |
-| `SideHighlighter.ShowFaceWithBands` | `Core/Rendering/SideHighlighter.cs:74` | 1 вхождение |
-| `ResizeHandleManager.AxisX/AxisY/AxisZ` | `Core/Snap/ResizeHandleManager.cs:37-39` | 3 внутренние константы, 0 ссылок (одноимённые символы в `HandleMaterials` и `ScrewLegCentring` — живые, это не путаница) |
-| `ContextMenuUI.TexturePreviewActive` | `Core/UI/ContextMenuUI.cs:118` | 0 ссылок даже из тестов |
-| `ContextMenuUI.FindDrawerForFacade` | `Core/UI/ContextMenuUI.cs:828` | 0 ссылок даже из тестов |
-| `BuildInfo.FullVersion` | `Core/Infrastructure/BuildInfo.cs:5` | 1 вхождение |
-| `ViewState.VisibilityHash` | `Core/Infrastructure/ViewState.cs:45` | 1 вхождение; рядом самопальная копия в `SceneVisibilityManager.cs:54` |
-| `FrameRateManager.OnBrowserActivity` | `Core/Infrastructure/FrameRateManager.cs:50` | 1 вхождение; в `.jslib`/`.html` тоже не зовётся |
-| `AppConstants.SNAP_THRESHOLD = 50f` | `Core/Geometry/AppConstants.cs:10` | 1 вхождение — см. 2.1, значение живёт тремя литералами |
+| 1.1 `DoorElement` и `WindowElement`: 414 совпадающих строк | общая база `WallOpeningElement`, у наследников — подгон по высоте, своя геометрия, свои `PerfMarkers` | `41bd2be0` |
+| 1.2 `CooktopElement` и `SinkElement`: дублированная врезка | общая база `PartCutoutElement`, крючки `CutoutExtentsMM`/`RimHeightMM`/`AcceptsHost`; публичный API не менялся | `f891189f` |
+| 1.3 десять мёртвых символов | удалены все; `InputCapture.cs` — последним, вместе со строкой в ratchet-таблице, которая его держала | `f0d2b826`, `f087ddb4`, `d14b719a`, `056a2ad4`, `ed716272`, `df2b8064`, `361e8fd3`, `def08692`, `4a5b806d` |
+| 1.4 три клона секций меню с тремя копиями `Fingerprint` | база `ContextMenuListSection<T>`: хэш и раскрытие в базе, у секций — источник данных и рисование строки | `da574e9f` |
+| 1.5 `SetGrooves`/`SetTextureOverlays`/`SetSwitchLights` | один `SetListCommand<T>` | `361e8fd3` |
+| 1.6 лестница типов в `ConstraintValidator` без сторожа | вопросы ушли в `ValidationSnapshot`; заведён `ValidationLadderTests`, сканирующий `Core/Validation` | `1666e323`, `24456736` |
+| 1.7 инструкции звали на `server/` и `deploy.cmd` с чужой ветки | вычищено из `agents/TESTS.md`, `agents/FLEET.md`, `LEAD-AGENT.md` | вне git |
 
-### 1.4 Секции контекстного меню — три клона одного скелета
+Три урока, купленные этой кампанией:
 
-`ContextMenuGrooveSection.cs` (194 строки), `ContextMenuTextureSection.cs` (323),
-`ContextMenuLightLinkSection.cs` (210).
-
-Три независимые приватные реализации `Fingerprint(...)` — `ContextMenuGrooveSection.cs:183`,
-`ContextMenuTextureSection.cs:312`, `ContextMenuLightLinkSection.cs:200` — считающие один и тот
-же хэш «изменился ли список». Плюс общий скелет `_expanded` / `Collapse()` / `Toggle()` /
-`Count()` / `AfterChange()` / `Eligible()` / `Target => _host.Target`.
-
-Что делать: базовый `ContextMenuListSection<T>` с хэшем списка и раскрытием; секции задают
-только источник данных и рисование строки. Тесты секций (6 файлов с одинаковым `Setup()`)
-поедут за базой.
-
-### 1.5 `SetGroovesCommand` и `SetTextureOverlaysCommand` — одна команда, написанная дважды
-
-`diff` двух файлов по 31 строке даёт различия **только** в имени класса, параметре `T` и
-вызываемом сеттере. Рядом такой же `SetSwitchLightsCommand`.
-
-Что делать: один `SetListCommand<T>(element, before, after, setter, description)`.
-
-Смежное: `Core/Commands/UndoableProperties.cs:31` уже умеет отмену через рефлексию (атрибут
-`[Undoable]`), а эти команды пишут before/after руками — две параллельные системы отмены для
-свойств одного и того же элемента. Решить, какая из них главная, — часть этой же задачи.
-
-### 1.6 Лестница типов в `ConstraintValidator` — нарушение правила без сторожа
-
-`Core/Validation/ConstraintValidator.cs` — 8 прямых проверок вида `is XxxElement`
-(строки 210, 211, 242, 280, 294, 343, 372, 395), при том что `agents/SUBSYSTEMS.md:18`
-объявляет `Validation/ValidationSnapshot.cs` **единственным** местом, где такой вопрос
-разрешён.
-
-Ключевое: сторожа нет. `GeometryArchitectureTests` сканирует только `Core/Geometry` и
-`Core/Pure`, `UiElementTypeLadderTests` — только слой UI. `Core/Validation` не сканирует никто,
-поэтому правило нарушалось молча.
-
-Что делать: перенести проверки в флаги `ValidationSnapshot` и **завести
-`ValidationLadderTests`** по образцу двух существующих. Без теста починка протухнет заново —
-`agents/TEST-DESIGN.md` → «дефект, о котором платформа не умеет доложить, невидим, пока не
-построен сенсор».
-
-### 1.7 Инструкции ссылаются на то, чего на ветке нет
-
-Это долг в документах, а не в коде, но стоит он дороже: по этим строкам исполнители выбирают
-команду проверки и получают ошибку вместо результата.
-
-- `agents/TESTS.md:24`, `agents/FLEET.md:15`, `LEAD-AGENT.md:80` предписывают гонять
-  `dotnet test "server\KitchenServer.Tests\KitchenServer.Tests.csproj"`. Каталога `server/` на
-  ветке `develop` нет.
-- `agents/TESTS.md:11-13` описывает `run-webgl.cmd`, `deploy.cmd`, `build-server.cmd`. В
-  `kd-repose/` лежат только `build.cmd`, `clean.cmd`, `run-desktop.cmd`.
-- `LEAD-AGENT.md:29` приводит `server/OPERATIONS.md` как пример узкой инструкции.
-- При этом `agents/DEPLOY.md:10` прямо пишет, что ничего этого нет. То есть два документа
-  свода противоречат друг другу, и побеждает тот, который агент прочитал первым.
-
-Что делать: пометить эти строки как «только ветка `webgl/develop`» либо убрать. Правит
-координатор — файлы общие (`LEAD-AGENT.md` §2).
+- **Сторожа не знали про абстрактные базы.** `ElementTypeCatalog` считал типом элемента всякий
+  класс с цепочкой до `KitchenElement`, поэтому каждый SRP-рефакторинг по образцу 1.1/1.2
+  краснел одинаково: промежуточную базу «не зарегистрировали» в шести реестрах, хотя
+  зарегистрировать её негде — регистрируют то, что можно создать. Теперь абстрактные
+  исключены из ответа, но ОСТАЛИСЬ в цепочке наследования: убери их оттуда — и потомки
+  перестанут доходить до базы, выпав из сторожа молча.
+- **`git-commit.ps1` коммитил весь индекс.** `-Files` только добавлял пути, а `git commit`
+  забирал всё застейдженное, включая чужое. При параллельной работе это значит чужой
+  недописанный файл в твоём коммите. Починено pathspec-коммитом (`779cec4b`); подробности —
+  `agents/FLEET.md` → «The git index is shared too».
+- **Ratchet держит удаление файла.** Мёртвый `InputCapture.cs` нельзя было удалить, пока на
+  него ссылалась строка бюджета в `ToleranceLiteralTests`: удаление файла ломает сторожа,
+  проверяющего, что каждая строка бюджета называет существующий файл. Guard-файл и
+  продакшен-файл уходят ОДНИМ коммитом.
 
 ---
 
@@ -129,13 +53,14 @@
   одновременно пользуется общей константой и своей копией.
 - **4 мм, стекло:** `AppConstants.cs:21` (`ASSEMBLED_GLASS_THICKNESS_MM`) и `:41`
   (`WINDOW_GLASS_THICKNESS_MM`).
-- **50 мм, порог привязки:** именованная `AppConstants.SNAP_THRESHOLD` мертва, а реальное
-  значение — три литерала `50f` в `Pure/Infrastructure/KitchenSettings.cs:13` и `:304` и
-  `Pure/Persistence/KitchenSettingsData.cs:9`.
-- **0,4 с, длительность открывания:** `DoorElement.cs:22`, `FacadeElement.cs:90`,
-  `WindowElement.cs:21`, `DropDoor.cs:10`; плюс четыре одинаковые строки
-  `KeepAwake(OpenSeconds + 0.2f)`. `DrawerElement.cs:32` уже показывает правильный путь —
-  ссылается на `DrawerConstants.DRAWER_ANIM_DURATION`.
+- **50 мм, порог привязки:** мёртвая `AppConstants.SNAP_THRESHOLD` удалена (`df2b8064`), но
+  значение по-прежнему живёт тремя литералами `50f` — `Pure/Infrastructure/KitchenSettings.cs:13`
+  и `:304`, `Pure/Persistence/KitchenSettingsData.cs:9`. Имени у порога так и нет; заводить его
+  придётся в `Pure`, потому что ссылка из `Pure` в `Geometry` ломает слои.
+- **0,4 с, длительность открывания:** после кампании осталось три места —
+  `WallOpeningElement.cs:17` (дверь и окно слились), `FacadeElement.cs:90`, `DropDoor.cs:10`;
+  плюс одинаковые строки `KeepAwake(OpenSeconds + 0.2f)`. `DrawerElement.cs:32` уже показывает
+  правильный путь — ссылается на `DrawerConstants.DRAWER_ANIM_DURATION`.
 
 ### 2.2 Формулы без общего хелпера
 
