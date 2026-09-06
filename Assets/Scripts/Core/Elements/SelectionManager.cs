@@ -352,6 +352,16 @@ namespace KitchenDesigner.Core
             RefreshHighlight(element);
         }
 
+        internal const string TintMaterialName = "KD Selection Tint";
+
+        private static bool WearsOurTint(MeshRenderer renderer, Material? painted)
+        {
+            var current = renderer.sharedMaterial;
+            if (current == null) return false;
+            if (painted != null && ReferenceEquals(current, painted)) return true;
+            return current.name.StartsWith(TintMaterialName, System.StringComparison.Ordinal);
+        }
+
         private void HighlightSelected(KitchenElement element, bool isMulti)
         {
             if (_highlightSuppressed == element) return;
@@ -370,6 +380,7 @@ namespace KitchenDesigner.Core
                     if (entry.renderer == null || entry.material == null) continue;
                     var seeThrough = ElementHighlighter.MakeTransparent(
                         entry.material.shader, new Color(1f, 0.9f, 0.4f, 0.12f));
+                    seeThrough.name = TintMaterialName;
                     entry.renderer.material = seeThrough;
                     entry.painted = seeThrough;
                 }
@@ -382,6 +393,7 @@ namespace KitchenDesigner.Core
             {
                 if (entry.renderer == null || entry.material == null) continue;
                 var mat = new Material(entry.material);
+                mat.name = TintMaterialName;
                 mat.EnableKeyword("_EMISSION");
                 mat.SetColor("_EmissionColor", new Color(0.8f, 0.7f, 0.1f) * intensity);
                 mat.SetColor("_BaseColor", isMulti
@@ -414,7 +426,7 @@ namespace KitchenDesigner.Core
             foreach (var entry in previous)
             {
                 if (entry.renderer != renderer) continue;
-                if (entry.painted != null && ReferenceEquals(current, entry.painted))
+                if (entry.painted != null && WearsOurTint(renderer, entry.painted))
                     return entry.material;
             }
             return current;
@@ -440,8 +452,7 @@ namespace KitchenDesigner.Core
                 foreach (var entry in saved)
                 {
                     if (entry.renderer == null || entry.material == null) continue;
-                    if (entry.painted != null
-                        && !ReferenceEquals(entry.renderer.sharedMaterial, entry.painted))
+                    if (entry.painted != null && !WearsOurTint(entry.renderer, entry.painted))
                         continue;
                     entry.renderer.material = entry.material;
                 }

@@ -28,7 +28,7 @@ public class SelectionTintRestoreTests
     private GameObject? _element;
     private ElementHighlighter? _highlighter;
 
-    /// <summary>Сторож сравнивает материалы ПО ССЫЛКЕ, а живой
+    /// <summary>Тесты сверяют материалы ПО ССЫЛКЕ, а живой
     /// <c>ElementHighlighter</c>, утёкший из соседнего класса, перекрашивает
     /// элемент сразу после возврата — поэтому на время теста его нет.</summary>
     [SetUp]
@@ -135,6 +135,42 @@ public class SelectionTintRestoreTests
         Assert.AreSame(childBefore, child.sharedMaterial,
             "меш, которого перекраска не касалась, обязан отдать жёлтый: старое правило "
             + "судило по элементу целиком и оставляло тонировку на всём, кроме декора");
+    }
+
+    /// <summary>Чтение <c>renderer.material</c> — не наблюдение, а мутация: Unity
+    /// подменяет материал рендерера собственной КОПИЕЙ и возвращает её. Так делает
+    /// <c>ElementMover.SaveDragMaterial</c> в начале каждого перетаскивания, и так
+    /// делает любой тест, который смотрит цвет через <c>.material</c>.
+    ///
+    /// Сторож «на рендерере всё ещё наша тонировка?» сравнивал ССЫЛКУ и читал копию
+    /// собственной краски как «перекрасил кто-то чужой»: подтащил выделенную деталь,
+    /// снял выделение — жёлтый навсегда. Копия нашей тонировки — это наша тонировка,
+    /// поэтому вопрос задаётся материалу (его имени), а не адресу объекта.</summary>
+    [Test]
+    public void Deselect_GivesBackTheMaterial_AfterSomeoneInstantiatedTheTint()
+    {
+        var (element, root, child) = MakeComposite();
+
+        var rootBefore = root.sharedMaterial;
+        var childBefore = child.sharedMaterial;
+
+        _selection!.Select(element);
+        var tinted = root.sharedMaterial;
+
+        var instantiated = root.material;
+
+        Assume.That(instantiated, Is.Not.SameAs(tinted),
+            "Unity не сделала копию — тогда тест зелен и на старом коде, судить нечего");
+        Assume.That(tinted.name, Is.EqualTo(SelectionManager.TintMaterialName),
+            "тонировка обязана быть подписана, иначе копию не отличить от чужого материала");
+
+        _selection.DeselectAll();
+
+        Assert.AreSame(rootBefore, root.sharedMaterial,
+            "жёлтый остался: сторож сравнивал ссылку и принял копию нашей же тонировки "
+            + "за чужую краску");
+        Assert.AreSame(childBefore, child.sharedMaterial,
+            "на дочернем меше копию никто не делал — он обязан вернуться в любом случае");
     }
 
     /// <summary>Повторная тонировка берётся от СОХРАНЁННОГО материала, а не от
