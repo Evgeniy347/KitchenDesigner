@@ -49,8 +49,8 @@ public class McpCreateElementsTests
         {
             items = new object[]
             {
-                new { name = "BatchWall", type = "wall", width = 100, height = 2700, depth = 3000, x = 0f, y = 1.35f, z = 0f },
-                new { name = "BatchWin", type = "window", width = 900, height = 1200, depth = 100, x = 0f, y = 1.2f, z = 0f },
+                new { name = "BatchWall", type = "wall", width = 100, height = 2700, depth = 3000, anchor_x_mm = 0f, anchor_y_mm = 1350f, anchor_z_mm = 0f },
+                new { name = "BatchWin", type = "window", width = 900, height = 1200, depth = 100, anchor_x_mm = 0f, anchor_y_mm = 1200f, anchor_z_mm = 0f },
             }
         }));
 
@@ -67,7 +67,7 @@ public class McpCreateElementsTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name = "Hob", type = "cooktop", model = "Bosch NOT-A-MODEL", x = 0f, y = 0f, z = 0f } }
+            items = new object[] { new { name = "Hob", type = "cooktop", model = "Bosch NOT-A-MODEL", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("error", resp.type,
@@ -83,8 +83,8 @@ public class McpCreateElementsTests
         {
             items = new object[]
             {
-                new { name = "Typo", type = "movnto_drawer", x = 0f, y = 0f, z = 0f },
-                new { name = "Good", type = "panel", x = 0f, y = 0f, z = 0f },
+                new { name = "Typo", type = "movnto_drawer", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f },
+                new { name = "Good", type = "panel", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f },
             }
         }));
 
@@ -107,8 +107,8 @@ public class McpCreateElementsTests
         {
             items = new object[]
             {
-                new { name = "Door1", type = "facade", width = 450, height = 700, depth = 18, x = 0f, y = 0f, z = 0f },
-                new { name = "Wall1", type = "wall", width = 100, height = 2700, depth = 3000, x = 5f, y = 1.35f, z = 0f },
+                new { name = "Door1", type = "facade", width = 450, height = 700, depth = 18, anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f },
+                new { name = "Wall1", type = "wall", width = 100, height = 2700, depth = 3000, anchor_x_mm = 5000f, anchor_y_mm = 1350f, anchor_z_mm = 0f },
             }
         }));
 
@@ -124,7 +124,7 @@ public class McpCreateElementsTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name = "Movento1", type = "movento_drawer", x = 0f, y = 0f, z = 0f } }
+            items = new object[] { new { name = "Movento1", type = "movento_drawer", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type, resp.type == "error" ? ErrorMessage(resp) : "");
@@ -159,7 +159,7 @@ public class McpCreateElementsTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name = "Plain", x = 0f, y = 0f, z = 0f } }
+            items = new object[] { new { name = "Plain", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         var element = Find<KitchenElement>("Plain");

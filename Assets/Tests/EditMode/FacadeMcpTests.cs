@@ -138,7 +138,7 @@ public class FacadeMcpTests
         {
             items = new[]
             {
-                new { name = "Door", type = "facade", width = 400, height = 300, depth = 18, x = 0f, y = 0f, z = 0f }
+                new { name = "Door", type = "facade", width = 400, height = 300, depth = 18, anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f }
             }
         }));
 

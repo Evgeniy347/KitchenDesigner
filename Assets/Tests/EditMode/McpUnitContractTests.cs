@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
 using KitchenDesigner.Core.MCP.Contract;
@@ -149,7 +150,7 @@ public class McpUnitContractTests
 
         var edit = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new[] { new { name = "B2_bottom", x = before[0], z = before[1] } }
+            ops = new[] { new { name = "B2_bottom", anchor_x_mm = before[0], anchor_z_mm = before[1] } }
         }));
         Assert.AreEqual("result", edit.type,
             "edit_elements отказал: " + JsonConvert.SerializeObject(edit.data));
@@ -161,6 +162,39 @@ public class McpUnitContractTests
             + "промахивается и по масштабу, и по началу координат — без единого сообщения об "
             + "ошибке. Перевод одних только единиц чинит половину: этот сторож останется "
             + "красным, пока запись не примет тот же угол, что отдаёт чтение.");
+    }
+
+    private static readonly (string method, object oldCall)[] MetreEraCalls =
+    {
+        ("create_elements", new { items = new[] { new { name = "Ghost", x = 0.715f, y = 0f, z = 0f } } }),
+        ("edit_elements", new { ops = new[] { new { name = "B2_bottom", x = 0.715f } } }),
+        ("clone_elements", new { ops = new[] { new { name = "B2_bottom", count = 1, offset_x = 0.3f } } }),
+        ("snap_diagnose", new { ops = new[] { new { name = "B2_bottom", x = 0.715f } } }),
+        ("set_photo_camera", new { target_x = 0.715f }),
+        ("set_position", new { ops = new[] { new { object_path = "B2_bottom", x = 0.715f } } }),
+    };
+
+    [Test]
+    public void AMetreEraCall_IsRefusedByFieldName_OnEveryToolThatEverTookMetres()
+    {
+        Make("B2_bottom", new Vector3(0.715f, 0.108f, -3.344f), new Vector3Int(564, 16, 552));
+        LogAssert.ignoreFailingMessages = true;
+
+        var accepted = new List<string>();
+        foreach (var (method, oldCall) in MetreEraCalls)
+        {
+            var resp = _handler!.Handle(MakeReq(method, oldCall));
+            var text = JsonConvert.SerializeObject(resp.data);
+            if (resp.type != "error" || !text.Contains("Unknown field"))
+                accepted.Add(method + " -> " + resp.type + " " + text);
+        }
+
+        CollectionAssert.IsEmpty(accepted,
+            "чистое удаление метровых имён безопасно ровно потому, что McpJson.cs:20-24 "
+            + "десериализует со MissingMemberHandling.Error: старый вызов обязан получить "
+            + "отказ ПО ИМЕНИ поля, а не сдвиг на три порядка. Инструмент из списка ниже "
+            + "читает параметры мимо McpJson — там старый вызов пройдёт молча, и удаление "
+            + "имени перестаёт быть громким:\n" + string.Join("\n", accepted));
     }
 
     [Test]

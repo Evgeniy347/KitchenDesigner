@@ -139,7 +139,7 @@ public class McpEditFieldRulesTests
     {
         var created = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name = "Box", type = "drawer", x = 0f, y = 0f, z = 0f } }
+            items = new object[] { new { name = "Box", type = "drawer", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
         Assert.AreEqual("result", created.type, created.type == "error" ? ErrorMessage(created) : "");
         var drawer = PartRegistry.GetAll().Find(e => e.PartName == "Box") as DrawerElement;

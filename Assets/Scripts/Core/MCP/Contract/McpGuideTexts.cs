@@ -13,12 +13,12 @@ START HERE:
 - get_project_instructions — the project's own conventions (wall thicknesses,
   board thickness, gaps, naming). They override any default you might assume.
 
-UNITS — READ FIRST (the most common mistake):
-- Position x/y/z are in METERS (Unity world units). Example: 1.5 = 1.5 m.
-- Size width/height/depth are in MILLIMETERS. Example: 600 = 600 mm.
-- The plan and bulk tools (apply_floorplan, create_walls, create_floor,
-  add_opening, move, set_attr) are MILLIMETRES ONLY — no meters in them.
-- 1 meter = 1000 mm. Never mix them.
+UNITS:
+- MILLIMETRES everywhere, in and out. There is no other unit on this wire.
+- Every dimensional field carries its unit in its NAME (anchor_x_mm, offset_x_mm,
+  posXmm, aabbMinXmm); angles carry Deg. Read the name, not this paragraph.
+- A position is the MINIMUM world corner, never the centre: what get returns in
+  anchor[] is exactly what edit_elements takes in anchor_x_mm / anchor_z_mm.
 
 IDENTITY:
 - Every board has a unique text ""name"". Use get_scene_tree to look around, then
@@ -38,7 +38,7 @@ LET THE SERVER DO THE GEOMETRY (do NOT compute centers by hand):
 HOW TO EDIT SINGLE ELEMENTS (batch-first):
 1. READ:  get_elements {filter:""B4_*"", summary:true} — targeted and compact.
 2. WRITE: edit_elements {ops:[...], dry_run:true} to preview, then without dry_run.
-   One op = name + any of x/y/z (m), width/height/depth (mm), rot_* (deg),
+   One op = name + any of anchor_x_mm/anchor_y_mm/anchor_z_mm, width/height/depth, rot_* (deg),
    locked, material, facade gaps, mode, fill, drawer/table/pillar/window/door params.
    The whole batch is atomic and is ONE undo step.
 3. CREATE: create_elements {items:[...]} — only sets name, type, position, size.
@@ -78,12 +78,10 @@ FIRST CALL OF A SESSION
   get_project_instructions -> the project's own conventions (wall thicknesses,
   board thickness, gaps, naming). They OVERRIDE any default assumption here.
 
-UNITS (the #1 mistake)
-  position x/y/z  = METERS      (1.5 -> 1.5 m)   [element tools]
-  size w/h/d      = MILLIMETERS (600 -> 600 mm)
-  Plan/bulk tools (apply_floorplan, create_walls, create_floor, add_opening,
-  move, set_attr) are MILLIMETRES ONLY — no meters anywhere in them.
-  1 m = 1000 mm.  dimZ = board thickness (smallest side, usually 18 mm).
+UNITS
+  MILLIMETRES everywhere, in and out; the unit is in the field NAME.
+  A position is the MINIMUM world corner (anchor), never the centre.
+  dimZmm = board thickness (smallest side, usually 18 mm).
 
 READING THE SCENE (cheap -> expensive)
   get_scene_tree                                -> modules, bboxes, type counts

@@ -83,9 +83,9 @@ namespace KitchenDesigner.Core.MCP.Contract
             + "and match ^[A-Za-z0-9_-]+$ — latin letters, digits, '-' and '_' only; no spaces, no cyrillic. Omit to keep.")]
         public string? new_name;
 
-        [McpParam("Target X in METERS. Omit to keep.")] public float? x;
-        [McpParam("Target Y in METERS. Omit to keep.")] public float? y;
-        [McpParam("Target Z in METERS. Omit to keep.")] public float? z;
+        [McpParam("Target X of the MINIMUM world corner in MM — the same number get returns in anchor[0]. Omit to keep.")] public float? anchor_x_mm;
+        [McpParam("Target Y of the MINIMUM world corner in MM — the bottom of the element. Omit to keep.")] public float? anchor_y_mm;
+        [McpParam("Target Z of the MINIMUM world corner in MM — the same number get returns in anchor[1]. Omit to keep.")] public float? anchor_z_mm;
         [McpParam("New width (X) in MM. Omit to keep. Rejected for drawers (their size is parametric).", Min = 1)] public int? width;
         [McpIgnore] public int? dimX;
         [McpParam("New height (Y) in MM. Omit to keep. Rejected for drawers.", Min = 1)] public int? height;
@@ -415,9 +415,9 @@ namespace KitchenDesigner.Core.MCP.Contract
             Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch" })]
         public string? type;
 
-        [McpParam("Position X in METERS.")] public float x;
-        [McpParam("Position Y in METERS.")] public float y;
-        [McpParam("Position Z in METERS.")] public float z;
+        [McpParam("X of the MINIMUM world corner in MM — the same number get returns in anchor[0].")] public float anchor_x_mm;
+        [McpParam("Y of the MINIMUM world corner in MM — the bottom of the element.")] public float anchor_y_mm;
+        [McpParam("Z of the MINIMUM world corner in MM — the same number get returns in anchor[1].")] public float anchor_z_mm;
 
         [McpParam("Size along X in MM. Defaults: board 800, assembled facade 450, radial shelf 600, table 2000, window 900, door 900.", Min = 1)]
         public int? width;
@@ -526,9 +526,9 @@ namespace KitchenDesigner.Core.MCP.Contract
     {
         [McpParam("Exact board name to clone.", Required = true)] public string name = string.Empty;
         [McpParam("How many copies (default 1, max 50).", Min = 1, Max = 50)] public int count = 1;
-        [McpParam("X shift between copies in METERS (default 0).")] public float offset_x;
-        [McpParam("Y shift between copies in METERS (default 0).")] public float offset_y;
-        [McpParam("Z shift between copies in METERS (default 0).")] public float offset_z;
+        [McpParam("X shift between copies in MM (default 0).")] public float offset_x_mm;
+        [McpParam("Y shift between copies in MM (default 0).")] public float offset_y_mm;
+        [McpParam("Z shift between copies in MM (default 0).")] public float offset_z_mm;
     }
 
     [Serializable]
@@ -565,9 +565,9 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class SnapDiagnoseOp
     {
         [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
-        [McpParam("Test X in METERS (default: current).")] public float? x;
-        [McpParam("Test Y in METERS (default: current).")] public float? y;
-        [McpParam("Test Z in METERS (default: current).")] public float? z;
+        [McpParam("Test X of the MINIMUM world corner in MM (default: current).")] public float? anchor_x_mm;
+        [McpParam("Test Y of the MINIMUM world corner in MM (default: current).")] public float? anchor_y_mm;
+        [McpParam("Test Z of the MINIMUM world corner in MM (default: current).")] public float? anchor_z_mm;
     }
 
     [Serializable]
@@ -651,12 +651,12 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsPhotoCamera
     {
-        [McpParam("Point the camera looks at, X in METERS. Omit to keep.")] public float? target_x;
-        [McpParam("Point the camera looks at, Y in METERS — eye height above the floor. Omit to keep.")] public float? target_y;
-        [McpParam("Point the camera looks at, Z in METERS. Omit to keep.")] public float? target_z;
+        [McpParam("Point the camera looks at, X in MM. Omit to keep.")] public float? target_x_mm;
+        [McpParam("Point the camera looks at, Y in MM — eye height above the floor. Omit to keep.")] public float? target_y_mm;
+        [McpParam("Point the camera looks at, Z in MM. Omit to keep.")] public float? target_z_mm;
         [McpParam("Pitch in DEGREES: 0 is level, positive looks DOWN, negative looks UP. Omit to keep.")] public float? angle_x;
         [McpParam("Yaw in DEGREES around the vertical axis. Omit to keep.")] public float? angle_y;
-        [McpParam("Distance from the target in METERS. Clamped to the camera's own range. Omit to keep.", Min = 0)] public float? distance;
+        [McpParam("Distance from the target in MM. Clamped to the camera's own range. Omit to keep.", Min = 0)] public float? distance_mm;
     }
 
     [Serializable]

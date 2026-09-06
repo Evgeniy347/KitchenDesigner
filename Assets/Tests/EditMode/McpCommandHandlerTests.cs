@@ -58,7 +58,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "TestBoard", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f } }
+            items = new[] { new { name = "TestBoard", width = 600, height = 400, depth = 18, anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -72,7 +72,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "RoomFloor", type = "floor", width = 3000, height = 18, depth = 4000, x = 0f, y = -0.009f, z = 0f } }
+            items = new[] { new { name = "RoomFloor", type = "floor", width = 3000, height = 18, depth = 4000, anchor_x_mm = 0f, anchor_y_mm = -9f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -90,11 +90,11 @@ public class McpCommandHandlerTests
         // окно к стене (раньше проём не резался — привязка была только мышью).
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "TestWall", type = "wall", width = 100, height = 2700, depth = 3000, x = 0f, y = 1.35f, z = 0f } }
+            items = new[] { new { name = "TestWall", type = "wall", width = 100, height = 2700, depth = 3000, anchor_x_mm = 0f, anchor_y_mm = 1350f, anchor_z_mm = 0f } }
         }));
         var resp = _handler.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "TestWin", type = "window", width = 900, height = 1200, depth = 100, x = 0f, y = 1.2f, z = 0f } }
+            items = new[] { new { name = "TestWin", type = "window", width = 900, height = 1200, depth = 100, anchor_x_mm = 0f, anchor_y_mm = 1200f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -134,7 +134,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "CustomName", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f } }
+            items = new[] { new { name = "CustomName", width = 600, height = 400, depth = 18, anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -148,7 +148,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "WallBoard", width = 2000, height = 2500, depth = 100, x = 0f, y = 1.25f, z = 0f, type = "wall" } }
+            items = new[] { new { name = "WallBoard", width = 2000, height = 2500, depth = 100, anchor_x_mm = 0f, anchor_y_mm = 1250f, anchor_z_mm = 0f, type = "wall" } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -162,7 +162,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "RegularBoard", width = 800, height = 400, depth = 18, x = 0f, y = 0f, z = 0f } }
+            items = new[] { new { name = "RegularBoard", width = 800, height = 400, depth = 18, anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -176,7 +176,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "DefaultBoard", width = 800, height = 400, depth = 18, x = 0f, y = 0f, z = 0f } }
+            items = new[] { new { name = "DefaultBoard", width = 800, height = 400, depth = 18, anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -223,7 +223,7 @@ public class McpCommandHandlerTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "TestWall", width = 2000, height = 2500, depth = 100, x = 0f, y = 1.25f, z = 0f, type = "wall" } }
+            items = new[] { new { name = "TestWall", width = 2000, height = 2500, depth = 100, anchor_x_mm = 0f, anchor_y_mm = 1250f, anchor_z_mm = 0f, type = "wall" } }
         }));
 
         var wall = PartRegistry.GetAll().Find(e => e.PartName == "TestWall");
@@ -271,7 +271,7 @@ public class McpCommandHandlerTests
         MakeWall("Existing", new Vector3Int(2000, 2500, 100), Vector3.zero);
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "Wall2", width = 2000, height = 2500, depth = 100, x = 2.2f, y = 1.25f, z = 0f, type = "wall" } }
+            items = new[] { new { name = "Wall2", width = 2000, height = 2500, depth = 100, anchor_x_mm = 2200f, anchor_y_mm = 1250f, anchor_z_mm = 0f, type = "wall" } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -284,7 +284,7 @@ public class McpCommandHandlerTests
         MakeElement("Existing", new Vector3Int(1000, 1000, 1000), Vector3.zero);
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "Overlap", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f } }
+            items = new[] { new { name = "Overlap", width = 600, height = 400, depth = 18, anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -301,7 +301,7 @@ public class McpCommandHandlerTests
         MakeWall("W1", new Vector3Int(2000, 2500, 100), Vector3.zero);
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "W2", width = 2000, height = 2500, depth = 100, x = 0f, y = 1.25f, z = 0f, type = "wall" } }
+            items = new[] { new { name = "W2", width = 2000, height = 2500, depth = 100, anchor_x_mm = 0f, anchor_y_mm = 1250f, anchor_z_mm = 0f, type = "wall" } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -355,7 +355,7 @@ public class McpCommandHandlerTests
         MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new[] { new { name = "A", x = 1.8f, y = 0f, z = 0f } }
+            ops = new[] { new { name = "A", anchor_x_mm = 1800f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -438,7 +438,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "F1", x = 0f, y = 0f, z = 0f,
+            items = new[] { new { name = "F1", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f,
                 width = 400, height = 300, depth = 18, type = "facade" } }
         }));
 
@@ -455,7 +455,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "F1", x = 0f, y = 0f, z = 0f,
+            items = new[] { new { name = "F1", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f,
                 width = 400, height = 300, depth = 18, type = "facade" } }
         }));
         Assert.AreEqual("result", resp.type);
@@ -481,7 +481,7 @@ public class McpCommandHandlerTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "F2", x = 0f, y = 0f, z = 0f,
+            items = new[] { new { name = "F2", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f,
                 width = 400, height = 300, depth = 18, type = "facade" } }
         }));
 
@@ -502,7 +502,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "RS1", x = 0.5f, y = 0.1f, z = -1f,
+            items = new[] { new { name = "RS1", anchor_x_mm = 500f, anchor_y_mm = 100f, anchor_z_mm = -1000f,
                 width = 600, height = 18, depth = 400, type = "radial_shelf" } }
         }));
 
@@ -527,7 +527,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "RS2", x = 0f, y = 0f, z = 0f, type = "radial_shelf" } }
+            items = new[] { new { name = "RS2", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f, type = "radial_shelf" } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -544,7 +544,7 @@ public class McpCommandHandlerTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "RS4", x = 0f, y = 0f, z = 0f,
+            items = new[] { new { name = "RS4", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f,
                 width = 600, height = 18, depth = 400, type = "radial_shelf" } }
         }));
         _handler!.Handle(MakeReq("edit_elements", new
@@ -567,7 +567,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "ST1", x = 0f, y = 0f, z = 0f, type = "stool" } }
+            items = new[] { new { name = "ST1", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f, type = "stool" } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -586,7 +586,7 @@ public class McpCommandHandlerTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "ST2", x = 0f, y = 0f, z = 0f, type = "stool" } }
+            items = new[] { new { name = "ST2", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f, type = "stool" } }
         }));
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
@@ -613,7 +613,7 @@ public class McpCommandHandlerTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "ST3", x = 0f, y = 0f, z = 0f, type = "stool" } }
+            items = new[] { new { name = "ST3", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f, type = "stool" } }
         }));
         _handler!.Handle(MakeReq("edit_elements", new
         {
@@ -636,7 +636,7 @@ public class McpCommandHandlerTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "ST4", x = 0f, y = 0f, z = 0f, type = "stool" } }
+            items = new[] { new { name = "ST4", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f, type = "stool" } }
         }));
 
         var rejected = _handler!.Handle(MakeReq("edit_elements", new
@@ -674,7 +674,7 @@ public class McpCommandHandlerTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "Part1", x = 0f, y = 0f, z = 0f,
+            items = new[] { new { name = "Part1", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f,
                 width = 400, height = 18, depth = 300 } }
         }));
 
@@ -749,7 +749,7 @@ public class McpCommandHandlerTests
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new[] { new { name = "Board", x = 1f, y = 0f, z = 0f } }
+            ops = new[] { new { name = "Board", anchor_x_mm = 1000f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("error", resp.type);
@@ -813,7 +813,7 @@ public class McpCommandHandlerTests
 
         var moveResp = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new[] { new { name = "Board", x = 1f, y = 0f, z = 0f } }
+            ops = new[] { new { name = "Board", anchor_x_mm = 1000f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
         Assert.AreEqual("result", moveResp.type);
         Assert.AreEqual(new Vector3(1, 0, 0), el.transform.position);
@@ -826,7 +826,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "ObjBoard", width = 600, height = 400, depth = 18, x = 0f, y = 0f, z = 0f } }
+            items = new[] { new { name = "ObjBoard", width = 600, height = 400, depth = 18, anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -842,7 +842,7 @@ public class McpCommandHandlerTests
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new[] { new { name = "Board", x = 2.5f, y = 1.0f, z = 0.5f } }
+            ops = new[] { new { name = "Board", anchor_x_mm = 2500f, anchor_y_mm = 1000f, anchor_z_mm = 500f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -867,7 +867,7 @@ public class McpCommandHandlerTests
     [Test]
     public void ParamsObject_Serialization_DoesNotEscape()
     {
-        var data = new { ops = new[] { new { name = "TestBoard", x = 1.5, y = 0f, z = 0f } } };
+        var data = new { ops = new[] { new { name = "TestBoard", anchor_x_mm = 1500f, anchor_y_mm = 0f, anchor_z_mm = 0f } } };
         var json = Newtonsoft.Json.JsonConvert.SerializeObject(
             new { id = "test", method = "edit_elements", Params = data });
 
@@ -992,7 +992,7 @@ public class McpCommandHandlerTests
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new[] { new { name = "Board", x = 5f } }
+            ops = new[] { new { name = "Board", anchor_x_mm = 5000f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -1079,7 +1079,7 @@ public class McpCommandHandlerTests
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "Asm1", x = 1f, y = 0.5f, z = 2f,
+            items = new[] { new { name = "Asm1", anchor_x_mm = 1000f, anchor_y_mm = 500f, anchor_z_mm = 2000f,
                 width = 450, height = 700, depth = 18, type = "assembled_facade" } }
         }));
 
@@ -1157,7 +1157,7 @@ public class McpCommandHandlerTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "F1", x = 0f, y = 0f, z = 0f,
+            items = new[] { new { name = "F1", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f,
                 width = 400, height = 300, depth = 18, type = "facade" } }
         }));
 
@@ -1271,7 +1271,7 @@ public class McpCommandHandlerTests
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new[] { new { name = "Board", x = 1f, y = 0f, z = 0f } }
+            ops = new[] { new { name = "Board", anchor_x_mm = 1000f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -1318,7 +1318,7 @@ public class McpCommandHandlerTests
 
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "NewBoard", width = 600, height = 400, depth = 18, x = 2f, y = 0f, z = 0f } }
+            items = new[] { new { name = "NewBoard", width = 600, height = 400, depth = 18, anchor_x_mm = 2000f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         Assert.AreEqual("result", resp.type);

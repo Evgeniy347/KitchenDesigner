@@ -269,10 +269,8 @@ namespace KitchenDesigner.Core.MCP
             {
                 var element = FindElementByName(op.name);
                 if (element == null) { missing.Add(op.name); continue; }
-                var pos = element.transform.position;
-                if (op.x.HasValue) pos.x = op.x.Value;
-                if (op.y.HasValue) pos.y = op.y.Value;
-                if (op.z.HasValue) pos.z = op.z.Value;
+                var pos = McpAnchor.PositionForAnchorMm(op.anchor_x_mm, op.anchor_y_mm, op.anchor_z_mm,
+                    McpAnchor.MinCornerOffset(element), element.transform.position);
                 var diagnosis = SnapSystem.Diagnose(element, PartRegistry.GetAll(), pos);
                 results.Add(diagnosis);
             }

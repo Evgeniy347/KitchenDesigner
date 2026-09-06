@@ -113,7 +113,7 @@ public class McpMutationInvariantsTests
         }));
         var resp = _handler.Handle(MakeReq("edit_elements", new
         {
-            ops = new object[] { new { name = "Host", x = 1f } }
+            ops = new object[] { new { name = "Host", anchor_x_mm = 1000f } }
         }));
 
         Assert.AreEqual("result", resp.type, resp.type == "error" ? ErrorMessage(resp) : "");

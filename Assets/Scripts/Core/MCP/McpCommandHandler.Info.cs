@@ -124,12 +124,12 @@ namespace KitchenDesigner.Core.MCP
             if (cam == null) return McpResponse.Error(req.id, -1, "CameraController not found");
 
             var state = cam.GetState();
-            state.photoTargetX = p.target_x ?? state.photoTargetX;
-            state.photoTargetY = p.target_y ?? state.photoTargetY;
-            state.photoTargetZ = p.target_z ?? state.photoTargetZ;
+            state.photoTargetX = p.target_x_mm.HasValue ? McpAnchor.FromMm(p.target_x_mm.Value) : state.photoTargetX;
+            state.photoTargetY = p.target_y_mm.HasValue ? McpAnchor.FromMm(p.target_y_mm.Value) : state.photoTargetY;
+            state.photoTargetZ = p.target_z_mm.HasValue ? McpAnchor.FromMm(p.target_z_mm.Value) : state.photoTargetZ;
             state.photoAngleX = p.angle_x ?? state.photoAngleX;
             state.photoAngleY = p.angle_y ?? state.photoAngleY;
-            state.photoDistance = p.distance ?? state.photoDistance;
+            state.photoDistance = p.distance_mm.HasValue ? McpAnchor.FromMm(p.distance_mm.Value) : state.photoDistance;
             cam.SetState(state);
 
             var applied = cam.GetState();
@@ -137,10 +137,12 @@ namespace KitchenDesigner.Core.MCP
             {
                 ok = true,
                 photoActive = PhotoMode.Active,
-                target = new { x = applied.photoTargetX, y = applied.photoTargetY, z = applied.photoTargetZ },
-                angle_x = applied.photoAngleX,
-                angle_y = applied.photoAngleY,
-                distance = applied.photoDistance
+                target_x_mm = McpAnchor.ToMm(applied.photoTargetX),
+                target_y_mm = McpAnchor.ToMm(applied.photoTargetY),
+                target_z_mm = McpAnchor.ToMm(applied.photoTargetZ),
+                angle_x_deg = applied.photoAngleX,
+                angle_y_deg = applied.photoAngleY,
+                distance_mm = McpAnchor.ToMm(applied.photoDistance)
             });
         }
 

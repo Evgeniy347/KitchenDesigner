@@ -110,7 +110,7 @@ public class McpElementInfoTests
     {
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name = "DW-bare", type = "dishwasher", x = 0f, y = 0f, z = 0f } }
+            items = new object[] { new { name = "DW-bare", type = "dishwasher", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
 
         var resp = _handler.Handle(MakeReq("get_elements", new { names = new[] { "DW-bare" } }));

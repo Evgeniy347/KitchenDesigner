@@ -106,7 +106,7 @@ namespace KitchenDesigner.Core.MCP
                 if (string.IsNullOrEmpty(op.name)) { errors.Add("an op is missing 'name'"); continue; }
                 var el = FindElementByName(op.name);
                 if (el == null) { errors.Add($"Element not found: {op.name}"); continue; }
-                bool geometry = op.x.HasValue || op.y.HasValue || op.z.HasValue
+                bool geometry = op.anchor_x_mm.HasValue || op.anchor_y_mm.HasValue || op.anchor_z_mm.HasValue
                     || op.width.HasValue || op.height.HasValue || op.depth.HasValue
                     || op.rot_x.HasValue || op.rot_y.HasValue || op.rot_z.HasValue;
                 if (geometry && !el.Movable && op.locked != false)
@@ -136,21 +136,24 @@ namespace KitchenDesigner.Core.MCP
             var commands = new List<IUndoCommand>();
             foreach (var (op, el, _, _) in resolved)
             {
-                bool hasPos = op.x.HasValue || op.y.HasValue || op.z.HasValue;
+                bool hasPos = op.anchor_x_mm.HasValue || op.anchor_y_mm.HasValue || op.anchor_z_mm.HasValue;
                 bool hasRot = op.rot_x.HasValue || op.rot_y.HasValue || op.rot_z.HasValue;
                 bool hasDims = op.width.HasValue || op.height.HasValue || op.depth.HasValue;
                 if (!hasPos && !hasRot && !hasDims) continue;
                 var posBefore = el.transform.position;
                 var rotBefore = el.transform.rotation;
-                var posAfter = ResolveVec(op.x, op.y, op.z, posBefore);
                 var rotAfter = hasRot
                     ? Quaternion.Euler(ResolveVec(op.rot_x, op.rot_y, op.rot_z, el.transform.eulerAngles))
                     : rotBefore;
+                var dimsAfter = hasDims
+                    ? ResolveDims(op.width, op.height, op.depth, op.dimX, op.dimY, op.dimZ, el.DimensionsMM)
+                    : el.DimensionsMM;
+                var posAfter = hasPos
+                    ? McpAnchor.PositionForAnchorMm(op.anchor_x_mm, op.anchor_y_mm, op.anchor_z_mm,
+                        McpAnchor.MinCornerOffsetAfter(el, rotAfter, dimsAfter), posBefore)
+                    : posBefore;
                 if (hasDims)
-                {
-                    var dimsAfter = ResolveDims(op.width, op.height, op.depth, op.dimX, op.dimY, op.dimZ, el.DimensionsMM);
                     commands.Add(new ResizeCommand(el, el.DimensionsMM, dimsAfter, posBefore, posAfter, rotBefore, rotAfter));
-                }
                 else commands.Add(new MoveCommand(el, posBefore, posAfter, rotBefore, rotAfter));
                 AttachMove.AppendFollowers(commands, el, posBefore, rotBefore, posAfter, rotAfter);
             }
@@ -185,7 +188,7 @@ namespace KitchenDesigner.Core.MCP
                 var source = FindElementByName(op.name);
                 if (source == null) { errors.Add($"Element not found: {op.name}"); continue; }
                 int count = Mathf.Clamp(op.count <= 0 ? 1 : op.count, 1, 50);
-                var offset = new Vector3(op.offset_x, op.offset_y, op.offset_z);
+                var offset = McpAnchor.FromMm(op.offset_x_mm, op.offset_y_mm, op.offset_z_mm);
                 var basePos = source.transform.position;
                 for (int i = 1; i <= count; i++)
                 {
@@ -398,9 +401,12 @@ namespace KitchenDesigner.Core.MCP
             var created = new List<KitchenElement>();
             foreach (var (item, elementType) in accepted)
             {
-                var go = ElementSpawners.Spawn(elementType, item, new Vector3(item.x, item.y, item.z));
+                var anchorWorld = McpAnchor.FromMm(item.anchor_x_mm, item.anchor_y_mm, item.anchor_z_mm);
+                var go = ElementSpawners.Spawn(elementType, item, anchorWorld);
                 commands.Add(new CreateCommand(go));
-                created.Add(go.GetComponent<KitchenElement>());
+                var spawned = go.GetComponent<KitchenElement>();
+                McpAnchor.PlaceMinCornerAt(spawned, anchorWorld);
+                created.Add(spawned);
             }
 
             if (commands.Count > 0)

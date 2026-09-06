@@ -43,7 +43,7 @@ public class DrawerMcpTests
     {
         return _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name, type = "drawer", x = 0f, y = 0f, z = 0f } }
+            items = new object[] { new { name, type = "drawer", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f } }
         }));
     }
 
@@ -223,7 +223,7 @@ public class DrawerMcpTests
 
         _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new object[] { new { name = "TestFacade", type = "facade", width = 400, height = 86, depth = 18, x = 0f, y = 0f, z = 0.3f } }
+            items = new object[] { new { name = "TestFacade", type = "facade", width = 400, height = 86, depth = 18, anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 300f } }
         }));
         var facadeGo = GameObject.Find("TestFacade");
         if (facadeGo != null) _spawned.Add(facadeGo);

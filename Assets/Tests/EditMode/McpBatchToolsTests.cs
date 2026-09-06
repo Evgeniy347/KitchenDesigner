@@ -200,7 +200,7 @@ public class McpBatchToolsTests
         {
             ops = new object[]
             {
-                new { name = "A", x = 1.0f, rot_y = 90f },
+                new { name = "A", anchor_x_mm = 1000f, rot_y = 90f },
                 new { name = "B", width = 600 }
             }
         }));
@@ -221,7 +221,7 @@ public class McpBatchToolsTests
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new object[] { new { name = "A", x = 3.0f } }
+            ops = new object[] { new { name = "A", anchor_x_mm = 3000f } }
         }));
 
         Assert.AreEqual("result", resp.type, "edit failed: " + resp.data);
@@ -243,8 +243,8 @@ public class McpBatchToolsTests
         {
             ops = new object[]
             {
-                new { name = "A", x = 1.0f },
-                new { name = "Missing", x = 2.0f }
+                new { name = "A", anchor_x_mm = 1000f },
+                new { name = "Missing", anchor_x_mm = 2000f }
             }
         }));
 
@@ -261,7 +261,7 @@ public class McpBatchToolsTests
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
             dry_run = true,
-            ops = new object[] { new { name = "A", x = 2.0f } }
+            ops = new object[] { new { name = "A", anchor_x_mm = 2000f } }
         }));
 
         Assert.AreEqual("result", resp.type);
@@ -281,14 +281,14 @@ public class McpBatchToolsTests
 
         var rejected = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new object[] { new { name = "A", x = 1.0f } }
+            ops = new object[] { new { name = "A", anchor_x_mm = 1000f } }
         }));
         Assert.AreEqual("error", rejected.type);
         StringAssert.Contains("LOCKED", Data(rejected)["message"]!.Value<string>());
 
         var unlocked = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new object[] { new { name = "A", x = 1.0f, locked = false } }
+            ops = new object[] { new { name = "A", anchor_x_mm = 1000f, locked = false } }
         }));
         Assert.AreEqual("result", unlocked.type);
         Assert.AreEqual(1.0f, a.transform.position.x, 1e-4f);
@@ -306,7 +306,7 @@ public class McpBatchToolsTests
         {
             ops = new object[]
             {
-                new { name = "Shelf", count = 2, offset_y = 0.3f }
+                new { name = "Shelf", count = 2, offset_y_mm = 300f }
             }
         }));
 
@@ -487,7 +487,7 @@ public class McpBatchToolsTests
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new object[] { new { name = "A", x = 1f } }
+            ops = new object[] { new { name = "A", anchor_x_mm = 1000f } }
         }));
 
         var d = Data(resp);
@@ -503,7 +503,7 @@ public class McpBatchToolsTests
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new object[] { new { name = "A", x = 1f } }
+            ops = new object[] { new { name = "A", anchor_x_mm = 1000f } }
         }));
 
         Assert.AreEqual("error", resp.type);
