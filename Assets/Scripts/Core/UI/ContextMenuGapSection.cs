@@ -122,8 +122,7 @@ namespace KitchenDesigner.Core.UI
             var field = UIFactory.CreateInputField($"F_gap{side}", parent, "0",
                 new Vector2(x, 0), new Vector2(FieldWidth, FieldHeight));
             field.contentType = TMP_InputField.ContentType.Custom;
-            field.onValidateInput = (text, index, ch) =>
-                ExpressionParser.IsValidDimensionChar(ch) ? ch : '\0';
+            field.onValidateInput = DimensionFieldValidation.Char();
             PointerHover.Attach(field.gameObject,
                 () => Hover(side, true), () => Hover(side, false));
             _fieldsBySide[System.Array.IndexOf(GapSides.All, side)] = field;

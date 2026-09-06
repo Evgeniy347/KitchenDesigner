@@ -133,8 +133,7 @@ namespace KitchenDesigner.Core.UI
                     new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0), new Vector2(ControlW, RowH));
             field.contentType = TMP_InputField.ContentType.Custom;
             bool isDecimal = contentType == TMP_InputField.ContentType.DecimalNumber;
-            field.onValidateInput = (text, idx, ch) =>
-                ExpressionParser.IsValidDimensionChar(ch, allowDecimal: isDecimal) ? ch : '\0';
+            field.onValidateInput = DimensionFieldValidation.Char(allowDecimal: isDecimal);
 
             _cleanValues[field] = cleanValue;
             field.onValueChanged.AddListener(_ => UpdateFieldHighlight(field));

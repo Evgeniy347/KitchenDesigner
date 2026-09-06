@@ -398,15 +398,13 @@ namespace KitchenDesigner.Core.UI
             {
                 if (f == null) continue;
                 f.contentType = TMP_InputField.ContentType.Custom;
-                f.onValidateInput = (text, idx, ch) =>
-                    ExpressionParser.IsValidDimensionChar(ch) ? ch : '\0';
+                f.onValidateInput = DimensionFieldValidation.Char();
             }
             foreach (var f in new[] { _rx, _ry, _rz })
             {
                 if (f == null) continue;
                 f.contentType = TMP_InputField.ContentType.Custom;
-                f.onValidateInput = (text, idx, ch) =>
-                    ExpressionParser.IsValidDimensionChar(ch, allowDecimal: true) ? ch : '\0';
+                f.onValidateInput = DimensionFieldValidation.Char(allowDecimal: true);
             }
             _name!.onValidateInput = (text, charIndex, ch) =>
                 ElementNaming.IsValid(ch.ToString()) ? ch : '\0';
