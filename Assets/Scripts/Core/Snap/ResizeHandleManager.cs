@@ -55,6 +55,7 @@ namespace KitchenDesigner.Core
         private HandleMode _modeAtDragStart;
         private HandleMode _modeHandlesWereBuiltIn;
         private bool _ctrlHeldLastFrame;
+        private Camera? _layoutCamera;
 
         private void Awake() => Instance = this;
 
@@ -102,13 +103,14 @@ namespace KitchenDesigner.Core
             }
             if (!_target.gameObject.activeInHierarchy) { SetTarget(null); return; }
 
+            var cam = Camera.main;
             bool show = HandlesAvailableFor(_target);
             bool needRebuild = show && (_handles.Count == 0 || _modeHandlesWereBuiltIn != Mode) && !IsResizing;
-            if (needRebuild) { ClearHandles(); BuildHandles(); }
+            if (needRebuild) { ClearHandles(); BuildHandles(cam); }
             else if (!show && _handles.Count > 0) { IsResizing = false; ClearHandles(); }
 
-            if (_handles.Count > 0 && !IsResizing) PositionHandles();
-            if (!IsResizing) SetHover(_handles.Count > 0 ? PickHandleUnderCursor() : null);
+            if (_handles.Count > 0 && !IsResizing) PositionHandles(cam);
+            if (!IsResizing) SetHover(_handles.Count > 0 ? PickHandleUnderCursor(cam) : null);
         }
 
         internal ResizeHandle? Hovered => _hovered;
@@ -164,7 +166,7 @@ namespace KitchenDesigner.Core
             if (!Input.GetMouseButtonDown(0)) return;
             if (HandleInput.AltHeld || HandleInput.PointerOverUI()) return;
 
-            var handle = PickHandleUnderCursor();
+            var handle = PickHandleUnderCursor(_layoutCamera);
             if (handle != null) BeginDrag(handle.faceIndex);
         }
 
@@ -176,10 +178,10 @@ namespace KitchenDesigner.Core
 
         /// <summary>Курсор над ручкой ресайза? (для подавления выделения/панорамы камеры).</summary>
         public static bool PointerOverHandle() =>
-            Instance != null && Instance.PickHandleUnderCursor() != null;
+            Instance != null && Instance.PickHandleUnderCursor(Instance._layoutCamera) != null;
 
-        private ResizeHandle? PickHandleUnderCursor() =>
-            PickHandle(HandleInput.MouseScreenPoint, Camera.main, _handles);
+        private ResizeHandle? PickHandleUnderCursor(Camera? camera) =>
+            PickHandle(HandleInput.MouseScreenPoint, camera, _handles);
 
         private void BeginDrag(int faceIndex)
         {
@@ -237,7 +239,7 @@ namespace KitchenDesigner.Core
             _target.transform.position = ResizeMath.CenterForAppliedDims(
                 _centerStart, _normal, _sizeStartUnits, _target.DimensionsMM, _axisIndex);
 
-            PositionHandles();
+            PositionHandles(_layoutCamera);
             if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
         }
 
@@ -272,7 +274,7 @@ namespace KitchenDesigner.Core
             }
 
             _target!.transform.position = newPos;
-            PositionHandles();
+            PositionHandles(_layoutCamera);
             if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
         }
 
@@ -318,7 +320,7 @@ namespace KitchenDesigner.Core
             }
 
             if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
-            PositionHandles();
+            PositionHandles(_layoutCamera);
         }
 
         // Нарушение на самой детали или вплотную к ней (AABB в радиусе
@@ -333,7 +335,7 @@ namespace KitchenDesigner.Core
 
         private float ClosestParamOnNormalMeters()
         {
-            var cam = Camera.main;
+            var cam = _layoutCamera;
             if (cam == null) return float.NaN;
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             Vector3 lineDir = _normal;
@@ -352,7 +354,7 @@ namespace KitchenDesigner.Core
             element != null && !(element is SinkElement) && !(element is CooktopElement)
             && !FixedSize.IsFixed(element);
 
-        private void BuildHandles()
+        private void BuildHandles(Camera? camera)
         {
             _modeHandlesWereBuiltIn = Mode;
             bool widthOnly = Mode == HandleMode.Resize && _target is DrawerElement;
@@ -374,14 +376,14 @@ namespace KitchenDesigner.Core
                     Mode == HandleMode.Move ? HandleTip.Cone : HandleTip.Box);
                 _handles.Add(marker);
             }
-            PositionHandles();
+            PositionHandles(camera);
         }
 
-        private void PositionHandles()
+        internal void PositionHandles(Camera? cam)
         {
+            _layoutCamera = cam;
             if (_target == null) return;
             var faces = _target.GetFaces();
-            var cam = Camera.main;
 
             var box = HandlePlacement.BoxOf(faces);
             int thinAxis = cam != null ? HandlePlacement.ThinAxis(box) : -1;
