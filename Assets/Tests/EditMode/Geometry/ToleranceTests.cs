@@ -8,7 +8,7 @@ namespace KitchenDesigner.Tests.Geometry
     /// ломается прилипание. Тесты пинят каждую границу отдельно.
     ///
     /// Живут в KitchenDesigner.Geometry: исполняются и Unity, и обычным
-    /// dotnet test (см. docs/GEOMETRY-EXTRACTION-PLAN.md).</summary>
+    /// dotnet test.</summary>
     public class ToleranceTests
     {
         // ── IsParallel ────────────────────────────────────────────────────

@@ -197,7 +197,6 @@ Kitchen Designer доступен по **MCP (Model Context Protocol)** — ИИ
 | [docs/UI-GUIDELINES.md](docs/UI-GUIDELINES.md) | Свод правил интерфейса: единицы, отмена операций, глифы, снапшоты |
 | [docs/TEXTURES.md](docs/TEXTURES.md) | Как добавить декор ЛДСП/МДФ/камня в каталог текстур |
 | [docs/APPLIANCES-BRIEF.md](docs/APPLIANCES-BRIEF.md) | Встраиваемая техника Bosch: модели и их фиксированные габариты |
-| [docs/GEOMETRY-EXTRACTION-PLAN.md](docs/GEOMETRY-EXTRACTION-PLAN.md) | Вынос геометрического ядра из Unity и мутационное тестирование |
 | [docs/example.save.json](docs/example.save.json) | Пример проекта — его же открывают генераторы картинок |
 
 ---
