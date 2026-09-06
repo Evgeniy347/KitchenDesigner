@@ -8,54 +8,15 @@ using KitchenDesigner.Core.MCP;
 /// <summary>Какое поле edit_elements какой тип элемента принимает. Таблица
 /// EditFieldRules заменила лестницу `if (el is X)`, и эти тесты держат её
 /// частные случаи — те, что раньше объяснялись комментариями в исходнике.</summary>
-public class McpEditFieldRulesTests
+public class McpEditFieldRulesTests : McpTestFixture
 {
-    private McpCommandHandler? _handler;
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
-    [SetUp]
-    public void Setup()
-    {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
-    }
-
-    [TearDown]
-    public void Teardown()
-    {
-        foreach (var go in _spawned)
-            if (go != null) Object.DestroyImmediate(go);
-        _spawned.Clear();
-        foreach (var el in PartRegistry.GetAll())
-            if (el != null) Object.DestroyImmediate(el.gameObject);
-        PartRegistry.Clear();
-    }
-
-    private McpRequest MakeReq(string method, object data) => new McpRequest
-    {
-        id = "test",
-        method = method,
-        Params = JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data))
-    };
-
     private static string ErrorMessage(McpResponse resp) =>
         JObject.FromObject(resp.data!)["message"]!.Value<string>()!;
-
-    private KitchenElement MakeBoard(string name, Vector3Int dims)
-    {
-        var go = new GameObject(name);
-        _spawned.Add(go);
-        var e = go.AddComponent<KitchenElement>();
-        e.PartName = name;
-        e.DimensionsMM = dims;
-        PartRegistry.Register(e);
-        return e;
-    }
 
     [Test]
     public void EditElements_EdgeBandingTogetherWithAResize_IsAcceptedOnABarThatBecomesASheet()
     {
-        var bar = MakeBoard("Bar", new Vector3Int(18, 18, 800));
+        var bar = MakeElement("Bar", new Vector3Int(18, 18, 800));
         Assert.IsFalse(bar.SupportsEdges,
             "брусок 18x18x800 листом не является — кромок у него сейчас нет");
 
@@ -76,7 +37,7 @@ public class McpEditFieldRulesTests
     [Test]
     public void EditElements_EdgeThicknessOutOfRange_IsRejected()
     {
-        MakeBoard("Shelf", new Vector3Int(800, 18, 400));
+        MakeElement("Shelf", new Vector3Int(800, 18, 400));
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
@@ -110,7 +71,7 @@ public class McpEditFieldRulesTests
     [Test]
     public void EditElements_DrawerSystemOnAPlainBoard_IsRejectedInItsContractPosition()
     {
-        MakeBoard("Shelf", new Vector3Int(800, 18, 400));
+        MakeElement("Shelf", new Vector3Int(800, 18, 400));
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
@@ -159,7 +120,7 @@ public class McpEditFieldRulesTests
     [Test]
     public void EditElements_RejectedBatch_ReportsEveryBadFieldAtOnce()
     {
-        MakeBoard("Shelf", new Vector3Int(800, 18, 400));
+        MakeElement("Shelf", new Vector3Int(800, 18, 400));
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
@@ -221,7 +182,7 @@ public class McpEditFieldRulesTests
     [Test]
     public void EditElements_PillarDiameter_OnAnythingElse_IsRejected()
     {
-        MakeBoard("Shelf", new Vector3Int(800, 18, 400));
+        MakeElement("Shelf", new Vector3Int(800, 18, 400));
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {

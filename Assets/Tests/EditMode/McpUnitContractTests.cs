@@ -19,21 +19,16 @@ using KitchenDesigner.Core.MCP.Contract;
 /// Сторожа здесь читаются как чек-лист миграции «мм — единственная единица внешнего
 /// контракта»: пока они красные, перепутать метры с миллиметрами можно молча, без
 /// отказа валидации, со сдвигом элемента на три порядка.</summary>
-public class McpUnitContractTests
+public class McpUnitContractTests : McpTestFixture
 {
     private const BindingFlags PublicInstance = BindingFlags.Public | BindingFlags.Instance;
 
     private static readonly Regex MetreWord = new Regex(@"\bMET(ER|RE)S?\b", RegexOptions.IgnoreCase);
     private static readonly Regex MetreAbbreviation = new Regex(@"\(m\)");
 
-    private McpCommandHandler? _handler;
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void Setup()
     {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
         GroupManager.Clear();
         CommandStack.Clear();
     }
@@ -41,22 +36,9 @@ public class McpUnitContractTests
     [TearDown]
     public void Teardown()
     {
-        foreach (var go in _spawned)
-            if (go != null) UnityEngine.Object.DestroyImmediate(go);
-        _spawned.Clear();
-        foreach (var e in PartRegistry.GetAll())
-            if (e != null) UnityEngine.Object.DestroyImmediate(e.gameObject);
-        PartRegistry.Clear();
         GroupManager.Clear();
         CommandStack.Clear();
     }
-
-    private static McpRequest MakeReq(string method, object data) => new McpRequest
-    {
-        id = "t",
-        method = method,
-        Params = JObject.Parse(JsonConvert.SerializeObject(data))
-    };
 
     private KitchenElement Make(string name, Vector3 pos, Vector3Int dims)
     {

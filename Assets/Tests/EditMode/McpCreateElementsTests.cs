@@ -10,32 +10,8 @@ using KitchenDesigner.Core.MCP.Contract;
 /// <summary>create_elements: реестр ElementSpawners (тип → фабрика) и то, что
 /// происходит вокруг него — отказ по модели прибора и привязка проёмов после
 /// применения батча.</summary>
-public class McpCreateElementsTests
+public class McpCreateElementsTests : McpTestFixture
 {
-    private McpCommandHandler? _handler;
-
-    [SetUp]
-    public void Setup()
-    {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
-    }
-
-    [TearDown]
-    public void Teardown()
-    {
-        foreach (var el in PartRegistry.GetAll())
-            if (el != null) Object.DestroyImmediate(el.gameObject);
-        PartRegistry.Clear();
-    }
-
-    private McpRequest MakeReq(string method, object data) => new McpRequest
-    {
-        id = "test",
-        method = method,
-        Params = JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data))
-    };
-
     private static string ErrorMessage(McpResponse resp) =>
         JObject.FromObject(resp.data!)["message"]!.Value<string>()!;
 

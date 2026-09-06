@@ -8,55 +8,15 @@ using KitchenDesigner.Core.MCP;
 /// <summary>ElementInfoBuilder и разбор нарушений: то, что MCP ОТДАЁТ про
 /// элемент. Здесь живут причины, стоявшие комментариями в
 /// McpCommandHandler.Helpers.</summary>
-public class McpElementInfoTests
+public class McpElementInfoTests : McpTestFixture
 {
-    private McpCommandHandler? _handler;
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
-    [SetUp]
-    public void Setup()
-    {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
-    }
-
-    [TearDown]
-    public void Teardown()
-    {
-        foreach (var go in _spawned)
-            if (go != null) Object.DestroyImmediate(go);
-        _spawned.Clear();
-        foreach (var el in PartRegistry.GetAll())
-            if (el != null) Object.DestroyImmediate(el.gameObject);
-        PartRegistry.Clear();
-    }
-
-    private McpRequest MakeReq(string method, object data) => new McpRequest
-    {
-        id = "test",
-        method = method,
-        Params = JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data))
-    };
-
     private static JObject Data(McpResponse resp) => JObject.FromObject(resp.data!);
-
-    private KitchenElement MakeBoard(string name, Vector3Int dims, Vector3 pos)
-    {
-        var go = new GameObject(name);
-        _spawned.Add(go);
-        go.transform.position = pos;
-        var e = go.AddComponent<KitchenElement>();
-        e.PartName = name;
-        e.DimensionsMM = dims;
-        PartRegistry.Register(e);
-        return e;
-    }
 
     private string SeverityOfOverlapBetweenTwoBoardsPenetratingBy(float penetrationMm)
     {
         float centreDistanceM = (500f - penetrationMm) * AppConstants.MM_TO_UNITS;
-        MakeBoard("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        MakeBoard("B", new Vector3Int(500, 400, 18), new Vector3(centreDistanceM, 0f, 0f));
+        MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(centreDistanceM, 0f, 0f));
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
@@ -91,8 +51,8 @@ public class McpElementInfoTests
     [Test]
     public void Violations_SubMillimetreContact_IsNotReportedAtAll()
     {
-        MakeBoard("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        MakeBoard("B", new Vector3Int(500, 400, 18),
+        MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        MakeElement("B", new Vector3Int(500, 400, 18),
             new Vector3((500f - 0.2f) * AppConstants.MM_TO_UNITS, 0f, 0f));
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
@@ -111,7 +71,7 @@ public class McpElementInfoTests
     [Test]
     public void GetElements_ScrewLeg_ReportsTheMeasuredInsertion_NotTheStoredField()
     {
-        MakeBoard("Tsarga", new Vector3Int(482, 80, 16), new Vector3(0f, 0.060f, 0f));
+        MakeElement("Tsarga", new Vector3Int(482, 80, 16), new Vector3(0f, 0.060f, 0f));
         var go = ElementFactory.CreateScrewLeg("Opora", new Vector3(0f, 0.029f, 0f));
         _spawned.Add(go);
         var leg = go.GetComponent<ScrewLegElement>();

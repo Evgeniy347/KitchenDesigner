@@ -4,16 +4,11 @@ using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
 
-public class McpBulkOpsTests
+public class McpBulkOpsTests : McpTestFixture
 {
-    private McpCommandHandler? _handler;
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void Setup()
     {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
         GroupManager.Clear();
         CommandStack.Clear();
         ProjectRooms.Reset();
@@ -22,21 +17,9 @@ public class McpBulkOpsTests
     [TearDown]
     public void Teardown()
     {
-        foreach (var go in _spawned)
-            if (go != null) Object.DestroyImmediate(go);
-        _spawned.Clear();
-        foreach (var e in PartRegistry.GetAll())
-            if (e != null) Object.DestroyImmediate(e.gameObject);
-        PartRegistry.Clear();
         GroupManager.Clear();
         CommandStack.Clear();
         ProjectRooms.Reset();
-    }
-
-    private McpRequest MakeReq(string method, object data)
-    {
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(data);
-        return new McpRequest { id = "t", method = method, Params = Newtonsoft.Json.Linq.JObject.Parse(json) };
     }
 
     private KitchenElement Make(string name, Vector3 pos, Vector3Int dims)

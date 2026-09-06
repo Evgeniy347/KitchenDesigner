@@ -32,7 +32,7 @@ using KitchenDesigner.Core.UI;
 /// слепков говорит, какие свойства эта ручка на самом деле меняет. Ни одного
 /// имени свойства в коде теста нет, кроме контрольных образцов и списка
 /// исключений: новый тип элемента и новое свойство попадают под проверку сами.</summary>
-public class McpUiPropertyParityTests
+public class McpUiPropertyParityTests : McpTestFixture
 {
     /// <summary>Имя соседа в сцене. Поля, которые ссылаются на другой элемент
     /// (прикрепить к, фасад ящика, пара ящиков), без него не с чем сравнивать:
@@ -98,20 +98,16 @@ public class McpUiPropertyParityTests
 
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
-    private McpCommandHandler? _handler;
-    private readonly List<GameObject> _spawned = new List<GameObject>();
     private bool _blockOnViolation;
 
     [SetUp]
     public void Setup()
     {
-        PartRegistry.Clear();
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("ParityCanvas");
         var go = new GameObject("CtxMenu");
         _menu = go.AddComponent<ContextMenuUI>();
         _menu.Build(_canvas.transform);
-        _handler = new McpCommandHandler();
         _blockOnViolation = KitchenSettings.Instance.BlockOnViolation;
         KitchenSettings.Instance.BlockOnViolation = false;
     }
@@ -123,19 +119,8 @@ public class McpUiPropertyParityTests
         CommandStack.Clear();
         if (_menu != null) UnityEngine.Object.DestroyImmediate(_menu.gameObject);
         if (_canvas != null) UnityEngine.Object.DestroyImmediate(_canvas.gameObject);
-        DestroySpawned();
         MaterialCatalog.Reset();
         ElementFactory.ClearPools();
-    }
-
-    private void DestroySpawned()
-    {
-        foreach (var go in _spawned)
-            if (go != null) UnityEngine.Object.DestroyImmediate(go);
-        _spawned.Clear();
-        foreach (var el in new List<KitchenElement>(PartRegistry.GetAll()))
-            if (el != null) UnityEngine.Object.DestroyImmediate(el.gameObject);
-        PartRegistry.Clear();
     }
 
     // ---------- образцы ----------

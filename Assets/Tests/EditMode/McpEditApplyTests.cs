@@ -8,36 +8,13 @@ using KitchenDesigner.Core.MCP;
 /// <summary>Что edit_elements ДЕЛАЕТ с элементом помимо геометрии: пазы,
 /// накладки, кромки, прикрепление, переименование. Причины, которые раньше
 /// стояли комментариями внутри ApplyNonGeometryEdits, живут здесь.</summary>
-public class McpEditApplyTests
+public class McpEditApplyTests : McpTestFixture
 {
-    private McpCommandHandler? _handler;
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
-    [SetUp]
-    public void Setup()
-    {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
-    }
-
     [TearDown]
     public void Teardown()
     {
-        foreach (var go in _spawned)
-            if (go != null) Object.DestroyImmediate(go);
-        _spawned.Clear();
-        foreach (var el in PartRegistry.GetAll())
-            if (el != null) Object.DestroyImmediate(el.gameObject);
-        PartRegistry.Clear();
         MaterialCatalog.Reset();
     }
-
-    private McpRequest MakeReq(string method, object data) => new McpRequest
-    {
-        id = "test",
-        method = method,
-        Params = JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data))
-    };
 
     private static string ErrorMessage(McpResponse resp) =>
         JObject.FromObject(resp.data!)["message"]!.Value<string>()!;

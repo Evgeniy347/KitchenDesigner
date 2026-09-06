@@ -4,36 +4,25 @@ using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
 
-public class McpPlanGeometryTests
+public class McpPlanGeometryTests : McpTestFixture
 {
-    private McpCommandHandler _handler = null!;
-
     [SetUp]
     public void Setup()
     {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear(); CommandStack.Clear(); ProjectInstructions.Reset();
+        CommandStack.Clear(); ProjectInstructions.Reset();
     }
 
     [TearDown]
     public void TearDown()
     {
-        foreach (var e in PartRegistry.GetAll())
-            if (e != null) Object.DestroyImmediate(e.gameObject);
-        PartRegistry.Clear(); CommandStack.Clear(); ProjectInstructions.Reset();
+        CommandStack.Clear(); ProjectInstructions.Reset();
     }
-
-    private static McpRequest Req(string method, object data) => new McpRequest
-    {
-        id = "t", method = method,
-        Params = Newtonsoft.Json.Linq.JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data))
-    };
 
     [Test]
     public void CreateWalls_DerivesCenterLengthRotationAndKindFromEndpoints()
     {
         ProjectInstructions.Text = "bearing_wall_thickness_mm: 200\nbearing_wall_material: concrete";
-        var response = _handler.Handle(Req("create_walls", new
+        var response = _handler!.Handle(MakeReq("create_walls", new
         {
             origin_x_mm = 1000, origin_z_mm = -500, base_y_mm = 100,
             segments = new[] { new { name = "W1", from_x = 0, from_z = 0, to_x = 3000, to_z = 4000, kind = "bearing", height = 2700 } }
@@ -55,7 +44,7 @@ public class McpPlanGeometryTests
     [Test]
     public void CreateWalls_MissingThicknessRejectsWholeBatch()
     {
-        var response = _handler.Handle(Req("create_walls", new
+        var response = _handler!.Handle(MakeReq("create_walls", new
         {
             segments = new[] { new { name = "W1", from_x = 0, from_z = 0, to_x = 1000, to_z = 0, kind = "bearing", height = 2700 } }
         }));
@@ -71,8 +60,8 @@ public class McpPlanGeometryTests
         {
             segments = new[] { new { name = "W", from_x = 0, from_z = 0, to_x = length, to_z = 0, kind = "partition", height = 2500 } }
         };
-        _handler.Handle(Req("create_walls", First(2000)));
-        _handler.Handle(Req("create_walls", First(3000)));
+        _handler!.Handle(MakeReq("create_walls", First(2000)));
+        _handler!.Handle(MakeReq("create_walls", First(3000)));
         Assert.AreEqual(1, PartRegistry.GetAll().Count);
         Assert.AreEqual(3000, PartRegistry.GetAll()[0].DimensionsMM.x);
         CommandStack.Undo();
@@ -83,7 +72,7 @@ public class McpPlanGeometryTests
     public void CreateWalls_SharedCornerGetsMiteredEnds()
     {
         ProjectInstructions.Text = "bearing_wall_thickness_mm: 200";
-        var response = _handler.Handle(Req("create_walls", new
+        var response = _handler!.Handle(MakeReq("create_walls", new
         {
             segments = new[]
             {
@@ -104,7 +93,7 @@ public class McpPlanGeometryTests
         var poly = new[] { new { x = 0, z = 0 }, new { x = 3000, z = 0 },
             new { x = 3000, z = 1000 }, new { x = 1000, z = 1000 },
             new { x = 1000, z = 3000 }, new { x = 0, z = 3000 } };
-        var response = _handler.Handle(Req("create_floor", new
+        var response = _handler!.Handle(MakeReq("create_floor", new
         { name = "Floor1", origin_x_mm = 500, origin_z_mm = 700, top_y_mm = 0, thickness_mm = 120, poly }));
         Assert.AreEqual("result", response.type);
         var floor = (FloorElement)PartRegistry.GetAll()[0];
@@ -115,7 +104,7 @@ public class McpPlanGeometryTests
         Assert.AreEqual(6, floor.PolygonLocalMm.Count);
         Assert.Greater(floor.GetComponent<MeshFilter>().sharedMesh.triangles.Length, 0);
 
-        _handler.Handle(Req("create_floor", new
+        _handler!.Handle(MakeReq("create_floor", new
         { name = "Floor1", thickness_mm = 100, poly }));
         Assert.AreEqual(1, PartRegistry.GetAll().Count);
         Assert.AreEqual(100, floor.DimensionsMM.y);
@@ -137,14 +126,14 @@ public class McpPlanGeometryTests
     public void AddOpening_PositionsByWallStart_AttachesAndCutsMesh()
     {
         ProjectInstructions.Text = "bearing_wall_thickness_mm: 200";
-        _handler.Handle(Req("create_walls", new
+        _handler!.Handle(MakeReq("create_walls", new
         {
             segments = new[] { new { name = "WallA", from_x = 0, from_z = 0, to_x = 4000, to_z = 0, kind = "bearing", height = 2700 } }
         }));
         var wall = PartRegistry.GetAll().Find(e => e.PartName == "WallA")!.GetComponent<Wall>();
         int beforeTriangles = wall.GetComponent<MeshFilter>().sharedMesh.triangles.Length;
 
-        var response = _handler.Handle(Req("add_opening", new
+        var response = _handler!.Handle(MakeReq("add_opening", new
         { name = "Win1", wall = "WallA", kind = "window", offset_mm = 1000, width = 1200, height = 1400, sill_mm = 800 }));
         Assert.AreEqual("result", response.type);
         var window = (WindowElement)PartRegistry.GetAll().Find(e => e.PartName == "Win1")!;
@@ -164,14 +153,14 @@ public class McpPlanGeometryTests
     public void AddOpening_RepeatedNameUpdatesWithoutDuplicate()
     {
         ProjectInstructions.Text = "partition_wall_thickness_mm: 100";
-        _handler.Handle(Req("create_walls", new
+        _handler!.Handle(MakeReq("create_walls", new
         {
             segments = new[] { new { name = "W", from_x = 0, from_z = 0, to_x = 3000, to_z = 0, kind = "partition", height = 2500 } }
         }));
         object Opening(int offset) => new
         { name = "D", wall = "W", kind = "door", offset_mm = offset, width = 900, height = 2100, sill_mm = 0 };
-        _handler.Handle(Req("add_opening", Opening(100)));
-        _handler.Handle(Req("add_opening", Opening(500)));
+        _handler!.Handle(MakeReq("add_opening", Opening(100)));
+        _handler!.Handle(MakeReq("add_opening", Opening(500)));
         Assert.AreEqual(2, PartRegistry.GetAll().Count);
         var door = (DoorElement)PartRegistry.GetAll().Find(e => e.PartName == "D")!;
         Assert.AreEqual(0.95f, door.transform.position.x, 0.0001f);
@@ -183,11 +172,11 @@ public class McpPlanGeometryTests
     public void AddOpening_OutOfBoundsRejectsWithoutCreation()
     {
         ProjectInstructions.Text = "bearing_wall_thickness_mm: 200";
-        _handler.Handle(Req("create_walls", new
+        _handler!.Handle(MakeReq("create_walls", new
         {
             segments = new[] { new { name = "W", from_x = 0, from_z = 0, to_x = 1000, to_z = 0, kind = "bearing", height = 2500 } }
         }));
-        var response = _handler.Handle(Req("add_opening", new
+        var response = _handler!.Handle(MakeReq("add_opening", new
         { name = "Bad", wall = "W", kind = "window", offset_mm = 500, width = 800, height = 1000, sill_mm = 800 }));
         Assert.AreEqual("error", response.type);
         Assert.AreEqual(1, PartRegistry.GetAll().Count);

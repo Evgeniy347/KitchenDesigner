@@ -8,50 +8,10 @@ using KitchenDesigner.Core.MCP;
 /// <summary>Инварианты, общие для всех адресных мутаций MCP: результат ложится
 /// на целый миллиметр, прикреплённые детали едут за родителем без ресайза, а
 /// ETag не дёргается от суб-миллиметрового дрейфа.</summary>
-public class McpMutationInvariantsTests
+public class McpMutationInvariantsTests : McpTestFixture
 {
-    private McpCommandHandler? _handler;
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
-    [SetUp]
-    public void Setup()
-    {
-        _handler = new McpCommandHandler();
-        PartRegistry.Clear();
-    }
-
-    [TearDown]
-    public void Teardown()
-    {
-        foreach (var go in _spawned)
-            if (go != null) Object.DestroyImmediate(go);
-        _spawned.Clear();
-        foreach (var el in PartRegistry.GetAll())
-            if (el != null) Object.DestroyImmediate(el.gameObject);
-        PartRegistry.Clear();
-    }
-
-    private McpRequest MakeReq(string method, object data) => new McpRequest
-    {
-        id = "test",
-        method = method,
-        Params = JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(data))
-    };
-
     private static string ErrorMessage(McpResponse resp) =>
         JObject.FromObject(resp.data!)["message"]!.Value<string>()!;
-
-    private KitchenElement MakeBoard(string name, Vector3Int dims, Vector3 pos)
-    {
-        var go = new GameObject(name);
-        _spawned.Add(go);
-        go.transform.position = pos;
-        var e = go.AddComponent<KitchenElement>();
-        e.PartName = name;
-        e.DimensionsMM = dims;
-        PartRegistry.Register(e);
-        return e;
-    }
 
     private static float MinFaceMm(KitchenElement el, int axis)
     {
@@ -64,8 +24,8 @@ public class McpMutationInvariantsTests
     [Test]
     public void AlignElements_FractionalGap_StillLandsTheFaceOnAWholeMillimetre()
     {
-        var a = MakeBoard("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        MakeBoard("B", new Vector3Int(501, 400, 18), new Vector3(2f, 0f, 0f));
+        var a = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        MakeElement("B", new Vector3Int(501, 400, 18), new Vector3(2f, 0f, 0f));
 
         var resp = _handler!.Handle(MakeReq("align_elements", new
         {
@@ -85,9 +45,9 @@ public class McpMutationInvariantsTests
     [Test]
     public void DistributeEvenly_SpanThatDoesNotDivideEvenly_StillLandsFacesOnWholeMillimetres()
     {
-        MakeBoard("A", new Vector3Int(600, 18, 400), Vector3.zero);
-        var middle = MakeBoard("C", new Vector3Int(600, 18, 400), new Vector3(0f, 0.2f, 0f));
-        MakeBoard("B", new Vector3Int(600, 18, 400), new Vector3(0f, 1.001f, 0f));
+        MakeElement("A", new Vector3Int(600, 18, 400), Vector3.zero);
+        var middle = MakeElement("C", new Vector3Int(600, 18, 400), new Vector3(0f, 0.2f, 0f));
+        MakeElement("B", new Vector3Int(600, 18, 400), new Vector3(0f, 1.001f, 0f));
 
         var resp = _handler!.Handle(MakeReq("distribute_evenly", new
         {
@@ -104,8 +64,8 @@ public class McpMutationInvariantsTests
     [Test]
     public void EditElements_MovingAHost_CarriesTheAttachedPartAlong()
     {
-        var host = MakeBoard("Host", new Vector3Int(600, 400, 18), Vector3.zero);
-        var child = MakeBoard("Child", new Vector3Int(100, 100, 18), new Vector3(0f, 0.3f, 0f));
+        var host = MakeElement("Host", new Vector3Int(600, 400, 18), Vector3.zero);
+        var child = MakeElement("Child", new Vector3Int(100, 100, 18), new Vector3(0f, 0.3f, 0f));
 
         _handler!.Handle(MakeReq("edit_elements", new
         {
@@ -132,8 +92,8 @@ public class McpMutationInvariantsTests
     [Test]
     public void EditElements_ResizingAHost_LeavesTheAttachedPartsSizeAlone()
     {
-        MakeBoard("Host", new Vector3Int(600, 400, 18), Vector3.zero);
-        var child = MakeBoard("Child", new Vector3Int(100, 100, 18), new Vector3(0f, 0.3f, 0f));
+        MakeElement("Host", new Vector3Int(600, 400, 18), Vector3.zero);
+        var child = MakeElement("Child", new Vector3Int(100, 100, 18), new Vector3(0f, 0.3f, 0f));
         var childDimsBefore = child.DimensionsMM;
 
         _handler!.Handle(MakeReq("edit_elements", new
@@ -154,7 +114,7 @@ public class McpMutationInvariantsTests
     [Test]
     public void GetAllElements_SubMillimetreDrift_DoesNotChangeTheEtag()
     {
-        var board = MakeBoard("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        var board = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         string? before = _handler!.Handle(MakeReq("get_all_elements", new { })).etag;
 
         board.transform.position += new Vector3(0.00004f, 0f, 0f);
@@ -168,7 +128,7 @@ public class McpMutationInvariantsTests
     [Test]
     public void GetAllElements_RealMove_DoesChangeTheEtag()
     {
-        var board = MakeBoard("A", new Vector3Int(500, 400, 18), Vector3.zero);
+        var board = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
         string? before = _handler!.Handle(MakeReq("get_all_elements", new { })).etag;
 
         board.transform.position += new Vector3(0.1f, 0f, 0f);
