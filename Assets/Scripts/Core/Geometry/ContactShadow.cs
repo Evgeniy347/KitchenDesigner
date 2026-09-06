@@ -19,9 +19,15 @@ namespace KitchenDesigner.Core
             int first = contactAxis == 0 ? 1 : 0;
             int second = contactAxis == 2 ? 1 : 2;
 
-            if (!SplitOutside(neighbour, closed, first, into, out var middle)) return;
-            SplitOutside(middle, closed, second, into, out _);
+            Beside.Clear();
+            if (SplitOutside(neighbour, closed, first, Beside, out var middle))
+                SplitOutside(middle, closed, second, Beside, out _);
+
+            for (int i = 0; i < Beside.Count; i++)
+                SplitOutside(Beside[i], closed, contactAxis, into, out _);
         }
+
+        private static readonly List<Bounds> Beside = new List<Bounds>();
 
         public static bool Touches(Bounds a, Bounds b, float touchGapUnits, out int contactAxis)
         {
