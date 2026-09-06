@@ -23,7 +23,6 @@ namespace KitchenDesigner.Core.UI
         private static readonly Color RowZebra = UIStyle.Field;
         private static readonly Color RowTransparent = new Color(0, 0, 0, 0.01f);
         private static readonly Color ScrollTrack = new Color(0.10f, 0.10f, 0.13f, 0.6f);
-        private static readonly Color ScrollHandle = new Color(0.38f, 0.40f, 0.46f, 1f);
 
         private float _contentW;
         private RectTransform? _content;
@@ -195,7 +194,7 @@ namespace KitchenDesigner.Core.UI
             var handle = UIFactory.CreateRect("Handle", sbRect);
             handle.sizeDelta = new Vector2(8, 100);
             var handleImg = handle.gameObject.AddComponent<Image>();
-            handleImg.color = ScrollHandle;
+            handleImg.color = UIStyle.ScrollHandle;
             scrollbar.targetGraphic = handleImg;
             scrollbar.handleRect = handle;
             scroll.verticalScrollbar = scrollbar;

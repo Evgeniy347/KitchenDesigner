@@ -113,7 +113,7 @@ namespace KitchenDesigner.Core.UI
             handleRect.sizeDelta = new Vector2(ScrollbarWidth, 100);
             handleRect.anchoredPosition = Vector2.zero;
             var handleImage = handleRect.gameObject.AddComponent<Image>();
-            handleImage.color = new Color(0.38f, 0.40f, 0.46f, 1f);
+            handleImage.color = UIStyle.ScrollHandle;
             scrollbar.targetGraphic = handleImage;
             scrollbar.handleRect = handleRect;
             _scrollRect.verticalScrollbar = scrollbar;
