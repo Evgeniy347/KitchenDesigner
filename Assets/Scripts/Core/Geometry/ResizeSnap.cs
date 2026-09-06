@@ -96,13 +96,8 @@ namespace KitchenDesigner.Core
         private static Rect RectFor(Vector3 center, Vector3 u, Vector3 v,
             Vector3 rightAxis, Vector3 upAxis, float sizeX, float sizeY)
         {
-            float cu = Vector3.Dot(center, u);
-            float cv = Vector3.Dot(center, v);
-            float halfU = Mathf.Abs(Vector3.Dot(rightAxis, u)) * sizeX * 0.5f
-                        + Mathf.Abs(Vector3.Dot(upAxis, u)) * sizeY * 0.5f;
-            float halfV = Mathf.Abs(Vector3.Dot(rightAxis, v)) * sizeX * 0.5f
-                        + Mathf.Abs(Vector3.Dot(upAxis, v)) * sizeY * 0.5f;
-            return new Rect(cu - halfU, cv - halfV, halfU * 2f, halfV * 2f);
+            var face = new Face(center, Vector3.zero, new Vector2(sizeX, sizeY), rightAxis, upAxis);
+            return FaceRects.Of(face, u, v);
         }
 
         private static bool Overlap(Rect a, Rect b)
