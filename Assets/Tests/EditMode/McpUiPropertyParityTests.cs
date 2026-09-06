@@ -123,6 +123,22 @@ public class McpUiPropertyParityTests : McpTestFixture
         ElementFactory.ClearPools();
     }
 
+    /// <summary>Ручной сброс сцены МЕЖДУ образцами внутри одного теста — не
+    /// только между тестами: [TearDown] тут не поможет, вызывается явно перед
+    /// следующим слепком. Тело совпадает с McpTestFixture.McpFixtureTearDown,
+    /// но переиспользовать его нельзя: тот вызывается NUnit-ом только один раз
+    /// в конце теста, а этому нужно отрабатывать посреди метода произвольное
+    /// число раз.</summary>
+    private void DestroySpawned()
+    {
+        foreach (var go in _spawned)
+            if (go != null) UnityEngine.Object.DestroyImmediate(go);
+        _spawned.Clear();
+        foreach (var el in new List<KitchenElement>(PartRegistry.GetAll()))
+            if (el != null) UnityEngine.Object.DestroyImmediate(el.gameObject);
+        PartRegistry.Clear();
+    }
+
     // ---------- образцы ----------
 
     /// <summary>По одному живому экземпляру каждого класса элемента. Список
