@@ -7,7 +7,7 @@ namespace KitchenDesigner.Core.Handles
     /// <summary>Ручка под курсором — по расстоянию НА ЭКРАНЕ (см. HandleScreenPickTests).</summary>
     public static class HandleScreenPick
     {
-        public const float DefaultRadiusPixels = 26f;
+        public const float DefaultRadiusPixels = HandleScale.GrabRadiusPixels;
 
         public static T? Nearest<T>(Vector2 screenPoint, Camera? camera,
             IReadOnlyList<T> handles, Func<T, Vector3> grabPoint,

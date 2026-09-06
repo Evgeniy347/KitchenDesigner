@@ -362,9 +362,7 @@ namespace KitchenDesigner.Core
 
             var box = HandlePlacement.BoxOf(faces);
             int thinAxis = cam != null ? HandlePlacement.ThinAxis(box) : -1;
-            Vector3 outOfPlate = thinAxis >= 0
-                ? HandlePlacement.CameraOffset(box, thinAxis, cam!.transform.position, Metrics.Gap)
-                : Vector3.zero;
+            PinholeView view = cam != null ? HandleView.Of(cam) : default;
 
             foreach (var h in _handles)
             {
@@ -374,11 +372,18 @@ namespace KitchenDesigner.Core
                 Vector3 up = Mathf.Abs(Vector3.Dot(n, Vector3.up)) > Tolerance.UpDotThreshold ? Vector3.forward : Vector3.up;
                 Vector3 pos = f.center;
 
+                float scale = cam != null
+                    ? HandleScale.ForScreen(view, pos, Metrics)
+                    : HandleScale.WorldSized;
+
                 bool alreadyOutsideThePlate = h.faceIndex / 2 == thinAxis;
-                if (thinAxis >= 0 && !alreadyOutsideThePlate) pos += outOfPlate;
+                if (thinAxis >= 0 && !alreadyOutsideThePlate)
+                    pos += HandlePlacement.CameraOffset(
+                        box, thinAxis, cam!.transform.position, Metrics.Gap * scale);
 
                 h.transform.SetPositionAndRotation(pos, Quaternion.LookRotation(n, up));
-                h.grabPoint = pos + n * Metrics.TipCenterZ;
+                h.transform.localScale = Vector3.one * scale;
+                h.grabPoint = pos + n * (Metrics.GrabCenterZ * scale);
             }
         }
 

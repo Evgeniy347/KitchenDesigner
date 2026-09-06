@@ -2,9 +2,10 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.Handles
 {
-    /// <summary>Размеры стрелки-ручки в мировых единицах (см. HandleMeshesTests).</summary>
     public readonly struct HandleMetrics
     {
+        public const float TipHalfWidthFactor = 0.7f;
+
         public readonly float Gap;
         public readonly float ShaftLen;
         public readonly float ShaftRad;
@@ -28,6 +29,14 @@ namespace KitchenDesigner.Core.Handles
         public float ShaftCenterZ => Gap + ShaftLen * 0.5f;
 
         public float TipCenterZ => Gap + ShaftLen + TipLen * 0.5f;
+
+        public float DrawnLen => ShaftLen + TipLen;
+
+        public float DrawnCenterZ => Gap + DrawnLen * 0.5f;
+
+        public float GrabCenterZ => TipCenterZ;
+
+        public float MaxRadius => Mathf.Max(ShaftRad, TipSize * TipHalfWidthFactor);
 
         public Vector3 ShaftScale => new Vector3(ShaftRad * 2f, ShaftRad * 2f, ShaftLen);
 

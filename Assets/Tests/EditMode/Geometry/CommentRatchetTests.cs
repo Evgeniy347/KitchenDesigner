@@ -36,7 +36,7 @@ namespace KitchenDesigner.Tests.Geometry
             ("Platform", 0),
             ("Pure", 0),
             ("Rendering", 0),
-            ("Snap", 45),
+            ("Snap", 44),
             ("Tools", 0),
             ("UI", 0),
             ("Update", 0),
