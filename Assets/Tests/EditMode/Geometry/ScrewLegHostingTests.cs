@@ -95,6 +95,38 @@ public class ScrewLegHostingTests
             + "разную связь после пересортировки");
     }
 
+    /// <summary>Заход считается ТЕМ ЖЕ телом резьбы и ТЕМ ЖЕ хозяином, которыми
+    /// выведена связь: иначе у одной величины появилось бы два описания, и они
+    /// разошлись бы — ровно так поле «заход в корпус» показывало 25 мм там, где
+    /// резьба сидела на 38.</summary>
+    [Test]
+    public void TheInsertion_IsMeasuredFromTheHostsLowerFaceUpwards()
+    {
+        Assert.AreEqual(38f, ScrewLegHosting.InsertionMM(Thread(8f, 58f), Box("Царга", 60f, 80f)),
+            0.01f, "царга 20..100, резьба кончается на 58 — внутри 38 мм");
+        Assert.AreEqual(16f, ScrewLegHosting.InsertionMM(Thread(8f, 58f), Box("Царга", 50f, 16f)),
+            0.01f, "резьба прошла 16-мм царгу насквозь: внутри вся её толщина, "
+            + "а торчащий хвост — законный, его считает ProtrusionMM");
+    }
+
+    [Test]
+    public void AHostBelowTheThreadTip_ContributesNoInsertion()
+    {
+        Assert.AreEqual(0f, ScrewLegHosting.InsertionMM(Thread(8f, 45f), Box("Дно", 54f, 18f)),
+            0.01f, "деталь начинается там, где кончается резьба: заход нулевой, "
+            + "и это отличается от «хозяина нет» — там величины нет вовсе");
+        Assert.AreEqual(0f, ScrewLegHosting.InsertionMM(Thread(8f, 45f), default),
+            0.01f, "пустая коробка не даёт захода");
+    }
+
+    [Test]
+    public void AHostSwallowingTheWholeThread_CountsOnlyTheThread()
+    {
+        Assert.AreEqual(37f, ScrewLegHosting.InsertionMM(Thread(8f, 45f), Box("Стойка", 300f, 600f)),
+            0.01f, "хозяин начинается ниже резьбы — внутри она вся, 45−8, "
+            + "а не расстояние до его дна");
+    }
+
     [Test]
     public void ABoardBesideTheThread_IsNotAHost()
     {

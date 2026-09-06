@@ -104,21 +104,71 @@ public class ScrewLegSpecTests
     {
         Assert.AreEqual(5f, ScrewLegSpec.InsertWallMM(0f, 16f, 6f), 0.001f,
             "M6 ровно по центру 16-мм царги: (16-6)/2 — по 5 мм с каждой стороны");
-        Assert.AreEqual(3.5f, ScrewLegSpec.InsertWallMM(1.5f, 16f, 6f), 0.001f,
-            "смещение съедает стенку с той стороны, куда ушла опора");
-        Assert.AreEqual(3.5f, ScrewLegSpec.InsertWallMM(-1.5f, 16f, 6f), 0.001f,
+        Assert.AreEqual(3f, ScrewLegSpec.InsertWallMM(1.5f, 16f, 6f), 0.001f,
+            "смещение съедает стенку с той стороны, куда ушла опора: 3,5 мм, "
+            + "и в меньшую сторону это 3");
+        Assert.AreEqual(3f, ScrewLegSpec.InsertWallMM(-1.5f, 16f, 6f), 0.001f,
             "знак смещения роли не играет — тонкой становится противоположная стенка");
+    }
+
+    /// <summary>Округление ввёл владелец проекта вместо правки самого порога:
+    /// «не порог чинить, а округлять в меньшую сторону». Дробная часть больше
+    /// ничего не решает, и решение всегда падает на безопасную сторону — 3,9 мм
+    /// стенки судятся как 3, а 2,9 как 2. Величина округляется РОВНО ОДНА —
+    /// стенка вокруг футорки, и ровно в одном месте, чтобы правило, панель и
+    /// этот тест читали одно число, а не три похожих.</summary>
+    [Test]
+    public void TheWall_IsRoundedDownToWholeMillimetres_BeforeItIsJudged()
+    {
+        Assert.AreEqual(3f, ScrewLegSpec.InsertWallMM(1.1f, 16f, 6f), 0.001f,
+            "3,9 мм — это 3, а не 4: вверх не округляем никогда");
+        Assert.AreEqual(2f, ScrewLegSpec.InsertWallMM(2.1f, 16f, 6f), 0.001f,
+            "2,9 мм — это 2, и порог 3 мм такую установку не пропустит");
+        Assert.AreEqual(3, ScrewLegSpec.FloorMM(3.9f), "округление живёт в одной функции");
+        Assert.AreEqual(-1, ScrewLegSpec.FloorMM(-0.5f),
+            "отрицательная стенка (резьба вышла за грань) уходит ВНИЗ, а не к нулю");
+    }
+
+    /// <summary>Округление вниз по float опасно ровно на целых числах: 3,0 мм,
+    /// посчитанные из координат сцены, приходят как 2,9999998 и без допуска
+    /// становятся двойкой — правильная установка покраснела бы из-за одной
+    /// седьмой значащей цифры. Поэтому у пола есть свой названный допуск.</summary>
+    [Test]
+    public void FloorMM_DoesNotFallThroughAWholeMillimetre_ArrivedAtByFloatError()
+    {
+        Assert.AreEqual(3, ScrewLegSpec.FloorMM(2.9999998f),
+            "промах в 2e-7 мм — это ошибка вычисления, а не 2 мм стенки");
+        Assert.AreEqual(2, ScrewLegSpec.FloorMM(2.99f),
+            "контроль: настоящие 2,99 мм по-прежнему двойка — допуск не съел десятые");
     }
 
     [Test]
     public void ThreeMillimetresOfWall_IsTheLine()
     {
         Assert.IsTrue(ScrewLegSpec.InsertHolds(1.5f, 16f, 6f),
-            "1,5 мм от центра 16-мм царги: 3,5 мм стенки — футорке есть за что держаться");
+            "1,5 мм от центра 16-мм царги: 3,5 мм стенки, после округления 3 — "
+            + "футорке есть за что держаться");
         Assert.IsTrue(ScrewLegSpec.InsertHolds(2f, 16f, 6f), "ровно 3 мм — граница включительно");
+        Assert.IsFalse(ScrewLegSpec.InsertHolds(2.1f, 16f, 6f),
+            "2,9 мм округляются до 2 — граница проходит по целым миллиметрам");
         Assert.IsFalse(ScrewLegSpec.InsertHolds(4f, 16f, 6f),
             "4 мм от центра 16-мм торца оставляют 1 мм — футорка выйдет боком");
         Assert.IsFalse(ScrewLegSpec.InsertHolds(1.5f, 16f, 10f),
             "та же установка под M10 уже не держит: резьба толще, мяса меньше");
+    }
+
+    /// <summary>Второе правило про то же крепление: мало войти по центру — надо
+    /// ещё войти достаточно глубоко. Порог 5 мм — число владельца проекта.</summary>
+    [Test]
+    public void FiveMillimetresInsideTheHost_IsTheLine()
+    {
+        Assert.AreEqual(5, ScrewLegSpec.MIN_INSERTION_INTO_HOST_MM,
+            "порог назван константой, а не литералом в правиле");
+        Assert.IsTrue(ScrewLegSpec.InsertionHolds(38),
+            "38 мм в 80-мм царге цоколя — так стоит опора в живом проекте");
+        Assert.IsTrue(ScrewLegSpec.InsertionHolds(5), "ровно 5 мм — граница включительно");
+        Assert.IsFalse(ScrewLegSpec.InsertionHolds(4), "4 мм — резьбе не за что держаться");
+        Assert.IsFalse(ScrewLegSpec.InsertionHolds(0),
+            "нулевой заход: опора просто подпирает деталь снизу, а не ввинчена в неё");
     }
 }

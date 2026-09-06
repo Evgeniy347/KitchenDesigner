@@ -277,7 +277,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 thread = leg.Thread,
                 threadLengthMM = leg.ThreadLengthMM,
-                insertionMM = leg.InsertionDepthMM,
+                insertionMM = leg.InsertionIntoHostMM ?? 0,
                 baseDiameterMM = leg.BaseDiameterMM,
                 baseHeightMM = leg.BaseHeightMM,
                 heightAboveFloorMM = leg.HeightAboveFloorMM,

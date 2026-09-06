@@ -29,6 +29,13 @@ namespace KitchenDesigner.Core
 
         public const float MIN_INSERT_WALL_MM = 3f;
 
+        public const int MIN_INSERTION_INTO_HOST_MM = 5;
+
+        public const float MM_ROUNDING_EPSILON = 0.001f;
+
+        public static int FloorMM(float valueMM) =>
+            (int)System.Math.Floor(valueMM + MM_ROUNDING_EPSILON);
+
         public static int ThreadDiameterMM(string? thread) => thread switch
         {
             ThreadM8 => 8,
@@ -84,9 +91,13 @@ namespace KitchenDesigner.Core
             faceSpanMM < CENTRING_REQUIRED_SPAN_MM;
 
         public static float InsertWallMM(float offsetMM, float faceSpanMM, float threadDiameterMM) =>
-            faceSpanMM * 0.5f - (offsetMM < 0f ? -offsetMM : offsetMM) - threadDiameterMM * 0.5f;
+            FloorMM(faceSpanMM * 0.5f - (offsetMM < 0f ? -offsetMM : offsetMM)
+                - threadDiameterMM * 0.5f);
 
         public static bool InsertHolds(float offsetMM, float faceSpanMM, float threadDiameterMM) =>
             InsertWallMM(offsetMM, faceSpanMM, threadDiameterMM) >= MIN_INSERT_WALL_MM;
+
+        public static bool InsertionHolds(int insertionMM) =>
+            insertionMM >= MIN_INSERTION_INTO_HOST_MM;
     }
 }

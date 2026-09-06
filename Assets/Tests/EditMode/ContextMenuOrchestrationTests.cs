@@ -47,6 +47,48 @@ public class ContextMenuOrchestrationTests
         Spawn<KitchenElement>(ElementFactory.CreatePart(
             new Vector3Int(600, 300, 18), name, Vector3.zero));
 
+    private TMP_InputField Insertion() =>
+        Panel().Find("F_Заход в корпус")!.GetComponent<TMP_InputField>();
+
+    /// <summary>«Заход в корпус» больше не вводят — его показывают. Поле в живом
+    /// проекте стояло на заводских 25 мм, пока резьба сидела на 38: два описания
+    /// одной величины разошлись, и сверить их было нечем. Строка осталась на
+    /// месте (её читают), но правит её геометрия.</summary>
+    [Test]
+    public void ScrewLegInsertionRow_ShowsTheMeasuredDepth_AndIsNotEditable()
+    {
+        var host = Spawn<KitchenElement>(ElementFactory.CreatePart(
+            new Vector3Int(482, 80, 16), "Царга", new Vector3(0f, 0.060f, 0f)));
+        var leg = Spawn<ScrewLegElement>(ElementFactory.CreateScrewLeg("Opora",
+            new Vector3(0f, 0.029f, 0f)));
+        ScrewLegHostLink.Apply(leg, PartRegistry.GetAll());
+
+        _menu!.Open(leg);
+
+        Assert.AreEqual(host.PartName, leg.AttachedToName, "предусловие: хозяин вывелся");
+        Assert.AreEqual("38", Insertion().text,
+            "резьба кончается на 58 мм, дно царги — на 20: панель показывает измеренные 38, "
+            + "а не заводские 25 из поля");
+        Assert.IsFalse(Insertion().interactable,
+            "правит эту величину геометрия, а не человек — иначе поле снова разойдётся "
+            + "с тем, что показывает сцена");
+    }
+
+    /// <summary>Тихий ноль здесь запрещён: он неотличим от «вошла на 0 мм».
+    /// У опоры без хозяина величины нет вовсе, и панель говорит именно это.</summary>
+    [Test]
+    public void ScrewLegInsertionRow_WithNoHost_ShowsADash()
+    {
+        var leg = Spawn<ScrewLegElement>(ElementFactory.CreateScrewLeg("Odna",
+            new Vector3(0f, 0.029f, 0f)));
+        ScrewLegHostLink.Apply(leg, PartRegistry.GetAll());
+
+        _menu!.Open(leg);
+
+        Assert.AreEqual("", leg.AttachedToName, "предусловие: опора ни во что не ввинчена");
+        Assert.AreEqual("—", Insertion().text, "нечего мерить — и нуля быть не должно");
+    }
+
     [Test]
     public void SelectingAnotherElement_ThroughDeselectFirst_KeepsThePanelOpen()
     {

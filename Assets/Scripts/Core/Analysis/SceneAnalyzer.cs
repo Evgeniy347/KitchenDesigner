@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core.Analysis
             CollectDrawerFacadeLinks(all, issues);
             CollectAttachLinks(all, issues);
             CollectDishwasherFacadeLinks(all, issues);
-            CollectScrewLegCentring(all, issues);
+            CollectScrewLegMounting(all, issues);
             return issues;
         }
 
@@ -185,7 +185,7 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
-        private static void CollectScrewLegCentring(List<KitchenElement> all, List<AnalysisIssue> issues)
+        private static void CollectScrewLegMounting(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             foreach (var e in all)
             {
@@ -194,6 +194,10 @@ namespace KitchenDesigner.Core.Analysis
                 if (host == null) continue;
                 if (ScrewLegCentring.TryFindOffCentre(leg, host, out var offCentre))
                     issues.Add(IssueCatalog.ScrewLegOffCentre(leg, host, offCentre));
+
+                int insertionMM = leg.InsertionIntoMM(host);
+                if (!ScrewLegSpec.InsertionHolds(insertionMM))
+                    issues.Add(IssueCatalog.ScrewLegShallow(leg, host, insertionMM));
             }
         }
 
@@ -226,6 +230,7 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeDishwasherNoSupport = "DWH-05";
         public const string CodeAttachDetached = "ATT-01";
         public const string CodeScrewLegOffCentre = "LEG-01";
+        public const string CodeScrewLegShallow = "LEG-02";
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {
@@ -355,6 +360,14 @@ namespace KitchenDesigner.Core.Analysis
                 + $"{offCentre.SpanMM:F1} мм (тоньше {ScrewLegSpec.CENTRING_REQUIRED_SPAN_MM} мм), "
                 + $"смещение {offCentre.OffsetMM:F1} мм оставило стенку {offCentre.WallMM:F1} мм "
                 + $"вместо {ScrewLegSpec.MIN_INSERT_WALL_MM:F0} мм",
+                leg, host);
+
+        public static AnalysisIssue ScrewLegShallow(KitchenElement leg, KitchenElement host,
+            int insertionMM) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeScrewLegShallow,
+                PairDetail(leg, host),
+                $"Резьба вошла в {Name(host)} на {insertionMM} мм — "
+                + $"требуется {ScrewLegSpec.MIN_INSERTION_INTO_HOST_MM} мм",
                 leg, host);
 
         private static string Name(KitchenElement? e) =>

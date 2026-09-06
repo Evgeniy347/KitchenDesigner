@@ -175,6 +175,49 @@ public class McpEditFieldRulesTests
             "батч атомарен: одна негодная операция отклоняет весь батч");
     }
 
+    /// <summary>Заход в корпус перестал быть вводимым в панели — значит перестаёт
+    /// быть вводимым и у агента, тем же изменением: поле, закрытое с одной
+    /// стороны, разводит две поверхности над одним свойством
+    /// (McpUiPropertyParityTests). Так же поступили с attached_to_name у опоры.
+    /// Отказ приходит на ЛЮБОМ элементе, включая саму опору, — величина
+    /// измеряется, а не выбирается.</summary>
+    [Test]
+    public void EditElements_ScrewInsertion_IsRejectedEvenOnAScrewLeg()
+    {
+        var go = ElementFactory.CreateScrewLeg("Opora", Vector3.zero);
+        _spawned.Add(go);
+        var leg = go.GetComponent<ScrewLegElement>();
+        int before = leg.InsertionDepthMM;
+
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = leg.PartName, screw_insertion_mm = 40 } }
+        }));
+
+        Assert.AreEqual("error", resp.type, "поле выведенное — принимать его нечем");
+        StringAssert.Contains("screw_insertion_mm", ErrorMessage(resp),
+            "отказ обязан назвать поле: клиент читает список полей, а не догадывается");
+        Assert.AreEqual(before, leg.InsertionDepthMM,
+            "и ничего не применилось — иначе отказ был бы только на словах");
+    }
+
+    [Test]
+    public void EditElements_ScrewThreadLength_IsStillAccepted()
+    {
+        var go = ElementFactory.CreateScrewLeg("Opora", Vector3.zero);
+        _spawned.Add(go);
+        var leg = go.GetComponent<ScrewLegElement>();
+
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = leg.PartName, screw_thread_length_mm = 70 } }
+        }));
+
+        Assert.AreEqual("result", resp.type, resp.type == "error" ? ErrorMessage(resp) : "");
+        Assert.AreEqual(70, leg.ThreadLengthMM,
+            "контроль: у опоры отклонено ОДНО поле, а не весь её набор");
+    }
+
     [Test]
     public void EditElements_PillarDiameter_OnAnythingElse_IsRejected()
     {

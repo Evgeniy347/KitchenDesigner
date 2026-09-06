@@ -22,6 +22,14 @@ namespace KitchenDesigner.Core
             return best;
         }
 
+        public static float InsertionMM(in ElementGeometry thread, in ElementGeometry host)
+        {
+            if (thread.IsEmpty || host.IsEmpty) return 0f;
+            float entry = host.Min.y > thread.Min.y ? host.Min.y : thread.Min.y;
+            float inside = thread.Max.y - entry;
+            return inside <= 0f ? 0f : inside / AppConstants.MM_TO_UNITS;
+        }
+
         public static bool Reaches(in ElementGeometry thread, in ElementGeometry candidate,
             float marginUnits) =>
             !thread.IsEmpty && !candidate.IsEmpty

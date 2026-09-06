@@ -5,6 +5,8 @@ namespace KitchenDesigner.Core.UI
 {
     internal sealed class ScrewLegFieldsEditor : ElementFieldsEditor
     {
+        private const string NoHostText = "—";
+
         private TMP_Dropdown? _thread;
         private TMP_InputField? _threadLength;
         private TMP_InputField? _insertion;
@@ -26,6 +28,8 @@ namespace KitchenDesigner.Core.UI
                 OnThreadSelected, visibility, "CtxScrewThread");
             _threadLength = Rows.NumberField("Длина резьбы", visibility);
             _insertion = Rows.NumberField("Заход в корпус", visibility);
+            _insertion.readOnly = true;
+            _insertion.interactable = false;
             _baseDiameter = Rows.NumberField("Ø основания", visibility);
             _baseHeight = Rows.NumberField("Высота основания", visibility);
         }
@@ -33,7 +37,6 @@ namespace KitchenDesigner.Core.UI
         public override IEnumerable<TMP_InputField?> ArithmeticFields()
         {
             yield return _threadLength;
-            yield return _insertion;
             yield return _baseDiameter;
             yield return _baseHeight;
         }
@@ -43,7 +46,7 @@ namespace KitchenDesigner.Core.UI
             if (!(element is ScrewLegElement leg)) return;
             _thread?.SetValueWithoutNotify(IndexOf(leg.Thread));
             if (_threadLength != null) _threadLength.text = leg.ThreadLengthMM.ToString();
-            if (_insertion != null) _insertion.text = leg.InsertionDepthMM.ToString();
+            ShowInsertion(leg);
             if (_baseDiameter != null) _baseDiameter.text = leg.BaseDiameterMM.ToString();
             if (_baseHeight != null) _baseHeight.text = leg.BaseHeightMM.ToString();
         }
@@ -52,7 +55,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (!(element is ScrewLegElement leg)) return;
             Fields.RefreshUnfocused(_threadLength, leg.ThreadLengthMM.ToString());
-            Fields.RefreshUnfocused(_insertion, leg.InsertionDepthMM.ToString());
+            ShowInsertion(leg);
             Fields.RefreshUnfocused(_baseDiameter, leg.BaseDiameterMM.ToString());
             Fields.RefreshUnfocused(_baseHeight, leg.BaseHeightMM.ToString());
         }
@@ -74,9 +77,6 @@ namespace KitchenDesigner.Core.UI
             else if (_threadLength != null)
                 leg.ThreadLengthMM = Fields.ParseInt(_threadLength, leg.ThreadLengthMM);
 
-            if (_insertion != null)
-                leg.InsertionDepthMM = Fields.ParseInt(_insertion, leg.InsertionDepthMM);
-
             if (height != null) height.text = leg.BodyHeightMM.ToString();
             WriteBack(leg);
         }
@@ -92,9 +92,6 @@ namespace KitchenDesigner.Core.UI
             Fields.Track(_threadLength, leg != null
                 ? leg.ThreadLengthMM.ToString()
                 : ScrewLegSpec.DEFAULT_THREAD_LENGTH_MM.ToString());
-            Fields.Track(_insertion, leg != null
-                ? leg.InsertionDepthMM.ToString()
-                : ScrewLegSpec.DEFAULT_INSERTION_MM.ToString());
             Fields.Track(_baseDiameter, leg != null
                 ? leg.BaseDiameterMM.ToString()
                 : ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM.ToString());
@@ -106,9 +103,17 @@ namespace KitchenDesigner.Core.UI
         private void WriteBack(ScrewLegElement leg)
         {
             if (_threadLength != null) _threadLength.text = leg.ThreadLengthMM.ToString();
-            if (_insertion != null) _insertion.text = leg.InsertionDepthMM.ToString();
+            ShowInsertion(leg);
             if (_baseDiameter != null) _baseDiameter.text = leg.BaseDiameterMM.ToString();
             if (_baseHeight != null) _baseHeight.text = leg.BaseHeightMM.ToString();
+        }
+
+        private void ShowInsertion(ScrewLegElement leg)
+        {
+            if (_insertion == null) return;
+            var insertion = leg.InsertionIntoHostMM;
+            _insertion.SetTextWithoutNotify(
+                insertion.HasValue ? insertion.Value.ToString() : NoHostText);
         }
 
         private static int IndexOf(string thread)

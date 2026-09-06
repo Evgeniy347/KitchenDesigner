@@ -105,6 +105,43 @@ public class McpElementInfoTests
             "0,2 мм — шум координат, а не пересечение: иначе каждая стыкованная пара кричала бы об ошибке");
     }
 
+    /// <summary>Правку захода агенту закрыли вместе с панелью, но ЧИТАТЬ его он
+    /// обязан — и читать то же число, что показывает панель. Пара с тестом ниже:
+    /// без хозяина мерить нечего, и ноль там читается по пустому hostName.</summary>
+    [Test]
+    public void GetElements_ScrewLeg_ReportsTheMeasuredInsertion_NotTheStoredField()
+    {
+        MakeBoard("Tsarga", new Vector3Int(482, 80, 16), new Vector3(0f, 0.060f, 0f));
+        var go = ElementFactory.CreateScrewLeg("Opora", new Vector3(0f, 0.029f, 0f));
+        _spawned.Add(go);
+        var leg = go.GetComponent<ScrewLegElement>();
+        ScrewLegHostLink.Apply(leg, PartRegistry.GetAll());
+
+        var resp = _handler!.Handle(MakeReq("get_elements", new { names = new[] { leg.PartName } }));
+        var info = Data(resp)["elements"]![0]!["screwLeg"]!;
+
+        Assert.AreEqual("Tsarga", info["hostName"]!.Value<string>(), "предусловие: хозяин вывелся");
+        Assert.AreEqual(38, info["insertionMM"]!.Value<int>(),
+            "резьба кончается на 58 мм, дно царги — на 20: внутри 38, а не заводские 25");
+    }
+
+    [Test]
+    public void GetElements_ScrewLegWithNoHost_ReportsZeroInsertionBesideAnEmptyHost()
+    {
+        var go = ElementFactory.CreateScrewLeg("Odna", new Vector3(0f, 0.029f, 0f));
+        _spawned.Add(go);
+        var leg = go.GetComponent<ScrewLegElement>();
+        ScrewLegHostLink.Apply(leg, PartRegistry.GetAll());
+
+        var resp = _handler!.Handle(MakeReq("get_elements", new { names = new[] { leg.PartName } }));
+        var info = Data(resp)["elements"]![0]!["screwLeg"]!;
+
+        Assert.AreEqual("", info["hostName"]!.Value<string>(), "хозяина нет");
+        Assert.AreEqual(0, info["insertionMM"]!.Value<int>(),
+            "ноль здесь читается ТОЛЬКО в паре с пустым hostName — сам по себе он "
+            + "неотличим от «вошла на 0 мм», и в панели вместо него стоит прочерк");
+    }
+
     [Test]
     public void GetElements_DishwasherWithoutAFacade_ReportsZeroPlinth()
     {

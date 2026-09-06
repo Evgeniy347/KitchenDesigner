@@ -396,7 +396,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string? screw_thread;
         [McpParam("Screw leg only: length of the threaded rod in MM (5..1000). The leg re-derives it from the floor when the leg is moved. Omit to keep.", Min = 5, Max = 1000)]
         public int? screw_thread_length_mm;
-        [McpParam("Screw leg only: how deep the thread goes into the part it is screwed to, in MM (1..thread length). Below the part thickness the thread sticks out the other side, which is legal. Omit to keep.", Min = 1, Max = 1000)]
+        [McpParam("NOT settable: how deep the thread sits in the part it is screwed to, in MM, is DERIVED from geometry and reported read-only in ElementInfo (screwLeg.insertionMM, 0 when the leg has no host). Sending it is rejected — move the leg or change screw_thread_length_mm instead.", Min = 1, Max = 1000)]
         public int? screw_insertion_mm;
         [McpParam("Screw leg only: diameter of the foot in MM (5..200) — width and depth are always equal. Omit to keep.", Min = 5, Max = 200)]
         public int? screw_base_diameter_mm;

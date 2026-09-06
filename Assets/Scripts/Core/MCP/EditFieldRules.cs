@@ -124,7 +124,7 @@ namespace KitchenDesigner.Core.MCP
             Unsupported("diameter_mm", o => o.diameter_mm.HasValue, el => el is PillarElement),
             Unsupported("screw_thread", o => o.screw_thread != null, el => el is ScrewLegElement),
             Unsupported("screw_thread_length_mm", o => o.screw_thread_length_mm.HasValue, el => el is ScrewLegElement),
-            Unsupported("screw_insertion_mm", o => o.screw_insertion_mm.HasValue, el => el is ScrewLegElement),
+            RejectDerivedInsertion,
             Unsupported("screw_base_diameter_mm", o => o.screw_base_diameter_mm.HasValue, el => el is ScrewLegElement),
             Unsupported("screw_base_height_mm", o => o.screw_base_height_mm.HasValue, el => el is ScrewLegElement),
             Unsupported("pouffe_seat_thickness", o => o.pouffe_seat_thickness.HasValue,
@@ -155,6 +155,14 @@ namespace KitchenDesigner.Core.MCP
             var target = new EditTarget(op, el, findByName);
             foreach (var check in Checks) check(target, errors);
             return errors;
+        }
+
+        private static void RejectDerivedInsertion(EditTarget target, List<string> errors)
+        {
+            if (!target.op.screw_insertion_mm.HasValue) return;
+            errors.Add("screw_insertion_mm (derived from geometry, not settable: how deep the "
+                + "thread of a screw leg sits in its host is measured, not chosen — move the leg "
+                + "or change screw_thread_length_mm)");
         }
 
         private static void RejectBadAttachment(EditTarget target, List<string> errors)

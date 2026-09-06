@@ -309,6 +309,61 @@ public class SceneAnalyzerTests
             "хозяин уехал на полметра вверх, а имя осталось — связь висит в пустоте");
     }
 
+    /// <summary>Заход в корпус — величина ИЗМЕРЯЕМАЯ: в живом проекте поле
+    /// показывало заводские 25 мм там, где резьба сидела на 38, и сверить их
+    /// было нечем. Считается он тем же телом резьбы и тем же хозяином, которыми
+    /// выведена связь.</summary>
+    [Test]
+    public void TheInsertion_IsMeasured_NotTakenFromTheField()
+    {
+        var leg = PlinthWithALeg();
+
+        Assert.AreEqual(38, leg.InsertionIntoHostMM,
+            "резьба кончается на 58 мм, дно 80-мм царги — на 20: внутри 38 мм");
+        Assert.AreEqual(ScrewLegSpec.DEFAULT_INSERTION_MM, leg.InsertionDepthMM,
+            "контроль: заводское значение поля осталось 25 — измеренное число берётся "
+            + "не из него, иначе тест выше был бы зелёным при любой геометрии");
+    }
+
+    /// <summary>Опора, стоящая на полу и ни во что не ввинченная, величины «заход»
+    /// не имеет вовсе. Ноль тут был бы неотличим от «вошла на 0 мм».</summary>
+    [Test]
+    public void ALegWithNoHost_HasNoInsertionAtAll()
+    {
+        var go = ElementFactory.CreateScrewLeg("odinokaya", new Vector3(2f, 29f * U, 2f));
+        _spawned.Add(go);
+        var leg = go.GetComponent<ScrewLegElement>();
+        ScrewLegHostLink.Apply(leg, PartRegistry.GetAll());
+
+        Assert.IsNull(leg.InsertionIntoHostMM, "хозяина нет — и мерить нечего");
+    }
+
+    /// <summary>LEG-02: мало попасть в середину царги (это LEG-01), надо ещё
+    /// войти достаточно глубоко. Правило впервые заработает на живой сцене, где
+    /// заход 38 мм, — поэтому пара: молчит на 38 и обязана сработать на 3.</summary>
+    [Test]
+    public void ALegBarelyEnteringItsHost_IsReportedAsLeg02()
+    {
+        var leg = PlinthWithALeg();
+        foreach (var e in PartRegistry.GetAll())
+            if (e != null && e.PartName == "inner")
+                e.transform.position += new Vector3(0f, 35f * U, 0f);
+
+        Assert.AreEqual(3, leg.InsertionIntoHostMM,
+            "предусловие: царга поднялась на 35 мм, внутри осталось 3 мм резьбы");
+        Assert.IsTrue(Mentions(SceneAnalyzer.Analyze(), IssueCatalog.CodeScrewLegShallow, leg),
+            "3 мм из требуемых 5 — опоре не за что держаться");
+    }
+
+    [Test]
+    public void ALegScrewedInDeepEnough_IsNotReportedAsLeg02()
+    {
+        var leg = PlinthWithALeg();
+
+        Assert.IsFalse(Mentions(SceneAnalyzer.Analyze(), IssueCatalog.CodeScrewLegShallow, leg),
+            "38 мм захода — правильная установка, и молчать правило обязано именно на ней");
+    }
+
     /// <summary>Живая сцена целиком: у правильно поставленной опоры не должно
     /// остаться НИ ОДНОГО замечания — ни зазора, ни отрыва, ни центровки.</summary>
     [Test]

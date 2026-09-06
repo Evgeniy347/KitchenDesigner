@@ -91,6 +91,19 @@ namespace KitchenDesigner.Core
 
         public string? HostPartName => string.IsNullOrEmpty(AttachedToName) ? null : AttachedToName;
 
+        public int InsertionIntoMM(KitchenElement host) =>
+            host == null ? 0
+                : ScrewLegSpec.FloorMM(ScrewLegHosting.InsertionMM(ThreadBody, host.ToGeometry()));
+
+        public int? InsertionIntoHostMM
+        {
+            get
+            {
+                var host = AttachLinks.Parent(this);
+                return host == null ? (int?)null : InsertionIntoMM(host);
+            }
+        }
+
         public override bool CanCarryAttachedParts => false;
 
         public override bool AttachIsDerived => true;

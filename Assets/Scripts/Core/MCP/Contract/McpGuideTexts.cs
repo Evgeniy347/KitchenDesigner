@@ -406,13 +406,17 @@ ScrewLegElement       Screw-in levelling leg with a threaded insert
                       (type:""screw_leg""). A foot (screw_base_diameter_mm x
                       screw_base_height_mm, 25x8 mm by default) plus a threaded
                       rod (screw_thread M6/M8/M10, screw_thread_length_mm 50 by
-                      default) that goes screw_insertion_mm (25) INTO the part
-                      above it. Drop it under any part: it takes that part as its
-                      host, re-derives the thread length so the foot stands on the
-                      floor, and shares space with the host legally — a thread
-                      poking through a 16 mm board is not a collision. Snapping
-                      centres it on the host; off-centre on a side thinner than
-                      25 mm is reported as LEG-01.
+                      default) that goes INTO the part above it. How deep it goes
+                      is MEASURED, not set: screwLeg.insertionMM in ElementInfo is
+                      derived from the geometry (0 when there is no host), and
+                      screw_insertion_mm is rejected by edit_elements. Drop it
+                      under any part: it takes that part as its host, re-derives
+                      the thread length so the foot stands on the floor, and
+                      shares space with the host legally — a thread poking through
+                      a 16 mm board is not a collision. Snapping centres it on the
+                      host; off-centre on a side thinner than 25 mm is reported as
+                      LEG-01, and less than 5 mm of thread inside the host as
+                      LEG-02.
 SinkElement / CooktopElement
                       Recessed appliances (type:""sink"" / ""cooktop""). They sit
                       on a plain board with a horizontal face (the countertop),
