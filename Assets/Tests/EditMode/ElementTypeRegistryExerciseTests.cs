@@ -97,8 +97,18 @@ public class ElementTypeRegistryExerciseTests
     /// <summary>Зазоры у элемента, который их не поддерживает, ElementCapture пишет
     /// нулями НАМЕРЕННО, а восстановление их не трогает. Условие спрашивает сам
     /// элемент, а не список типов, — поэтому оно не устареет.</summary>
+    /// <summary>Второе такое же исключение, и по той же причине — спрашиваем
+    /// САМ элемент, а не список типов. У типа с AttachIsDerived связь с хозяином
+    /// не хранится, а ВЫВОДИТСЯ из геометрии на каждой загрузке
+    /// (SceneRestorer → ScrewLegHostLink.ApplyAll), поэтому искусственное имя,
+    /// положенное сюда рефлексией, из файла вернуться не может и не должно:
+    /// у одинокой опоры хозяина нет, и правильный ответ — пустая строка.
+    /// Что связь действительно ВОССТАНАВЛИВАЕТСЯ, проверяет
+    /// SceneAnalyzerTests.ADerivedLeg_IsNotReportedAsDetachedFromItsHost —
+    /// на сцене, где хозяин есть.</summary>
     private static bool Applicable(KitchenElement el, PropertyInfo prop) =>
-        el.SupportsGaps || Array.IndexOf(GapProperties, prop.Name) < 0;
+        (el.SupportsGaps || Array.IndexOf(GapProperties, prop.Name) < 0)
+        && !(el.AttachIsDerived && prop.Name == nameof(KitchenElement.AttachedToName));
 
     /// <summary>Главная проверка: КАЖДОЕ свойство, которое пользователь может
     /// изменить (а это ровно множество [Undoable]), обязано пережить сохранение и
