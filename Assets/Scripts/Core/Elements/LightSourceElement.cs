@@ -8,6 +8,8 @@ namespace KitchenDesigner.Core
 
         public override string DisplayTypeName => "Источник света";
 
+        public override bool ParticipatesInGapChecks => false;
+
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
 
         private const float GlowBase = 0.6f;

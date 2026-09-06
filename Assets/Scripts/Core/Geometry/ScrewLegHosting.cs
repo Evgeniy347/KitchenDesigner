@@ -16,11 +16,16 @@ namespace KitchenDesigner.Core
             {
                 var c = candidates[i];
                 if (c.IsEmpty) continue;
-                if (!FaceContacts.AABBsIntersect(thread, c, marginUnits)) continue;
+                if (!Reaches(thread, c, marginUnits)) continue;
                 if (best == NoHost || EntersEarlier(c, candidates[best])) best = i;
             }
             return best;
         }
+
+        public static bool Reaches(in ElementGeometry thread, in ElementGeometry candidate,
+            float marginUnits) =>
+            !thread.IsEmpty && !candidate.IsEmpty
+            && FaceContacts.AABBsIntersect(thread, candidate, marginUnits);
 
         private static bool EntersEarlier(in ElementGeometry candidate, in ElementGeometry best)
         {

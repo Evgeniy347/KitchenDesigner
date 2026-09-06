@@ -218,4 +218,99 @@ public class SceneAnalyzerTests
 
         Assert.IsFalse(Has(SceneAnalyzer.Analyze(), IssueCatalog.CodeDrawerFacadeOrphaned));
     }
+
+    // ── Винтовая опора: пятак не участвует в зазорах, а связь судится резьбой ──
+
+    private const float U = AppConstants.MM_TO_UNITS;
+
+    /// <summary>Цоколь из живого проекта: две 16-мм царги, между ними 13 мм, и
+    /// опора, ввинченная снизу во внутреннюю. Расстояния — из example.save.json.</summary>
+    private ScrewLegElement PlinthWithALeg()
+    {
+        MakeBoard("inner", new Vector3Int(482, 80, 16), new Vector3(0f, 60f * U, 0f));
+        MakeBoard("side", new Vector3Int(432, 92, 16), new Vector3(-25f * U, 50f * U, 29f * U));
+
+        var go = ElementFactory.CreateScrewLeg("opora", new Vector3(141.5f * U, 29f * U, 1.5f * U));
+        _spawned.Add(go);
+        var leg = go.GetComponent<ScrewLegElement>();
+        ScrewLegHostLink.Apply(leg, PartRegistry.GetAll());
+        return leg;
+    }
+
+    private static bool Mentions(List<AnalysisIssue> issues, string code, KitchenElement el) =>
+        issues.Exists(i => i.Code == code && (i.Target == el || i.Secondary == el));
+
+    /// <summary>Пятак Ø25 проходит в 7,0 мм от царги, мимо которой опора спускается
+    /// на пол. Это не стык: опора — крепёж, её контакты — резьба в хозяине и пол,
+    /// а не «недожатый снэп». Резьба Ø6 отстоит от той же царги на 16,5 мм и в
+    /// broad-phase (8 мм) не попадает вовсе — жалобу давал ИМЕННО пятак.</summary>
+    [Test]
+    public void ScrewLegPad_PassingBesideARail_IsNotAMissedJoint()
+    {
+        var leg = PlinthWithALeg();
+
+        var issues = SceneAnalyzer.Analyze();
+        Assert.IsFalse(Mentions(issues, IssueCatalog.CodeNearContactFar, leg),
+            "GAP-02 судит стык двух деталей; пятак опоры мимо царги — не стык");
+        Assert.IsFalse(Mentions(issues, IssueCatalog.CodeNearContact, leg),
+            "и GAP-01 по той же причине");
+    }
+
+    /// <summary>Противоположный вход к тесту выше: та же коробка 25×58×25 на том
+    /// же месте, но обычной деталью — 7,0 мм обязаны дать GAP-02. Иначе первый
+    /// тест был бы зелёным просто оттого, что расстояние вне broad-phase.</summary>
+    [Test]
+    public void APlainBoardInTheSamePlace_StillWarns()
+    {
+        MakeBoard("inner", new Vector3Int(482, 80, 16), new Vector3(0f, 60f * U, 0f));
+        MakeBoard("side", new Vector3Int(432, 92, 16), new Vector3(-25f * U, 50f * U, 29f * U));
+        var stub = MakeBoard("stub", new Vector3Int(25, 58, 25), new Vector3(141.5f * U, 29f * U, 1.5f * U));
+
+        Assert.IsTrue(Mentions(SceneAnalyzer.Analyze(), IssueCatalog.CodeNearContactFar, stub),
+            "7,0 мм между обычными деталями — по-прежнему GAP-02");
+    }
+
+    /// <summary>ATT-01 искал общую ГРАНЬ с родителем — так стоит накладка на
+    /// полке. Опора не стоит на хозяине, она в него ВВИНЧЕНА: общей грани нет
+    /// никогда, и включённый вывод связи зажёг правило на правильной установке.
+    /// Судить связь обязана та же проверка, что её вывела, — резьба достаёт до
+    /// хозяина (ScrewLegHosting.Reaches).</summary>
+    [Test]
+    public void ADerivedLeg_IsNotReportedAsDetachedFromItsHost()
+    {
+        var leg = PlinthWithALeg();
+        Assert.AreEqual("inner", leg.AttachedToName, "предусловие: связь вывелась на внутреннюю царгу");
+
+        Assert.IsFalse(Mentions(SceneAnalyzer.Analyze(), IssueCatalog.CodeAttachDetached, leg),
+            "резьба сидит во внутренней царге — деталь никуда не отходила");
+    }
+
+    /// <summary>И обратный вход: у хозяина, отъехавшего от резьбы, ATT-01 обязан
+    /// сработать — иначе проверка выше зелёная просто потому, что правило
+    /// выключили для опор целиком.</summary>
+    [Test]
+    public void ALegWhoseHostMovedAway_IsStillReportedAsDetached()
+    {
+        var leg = PlinthWithALeg();
+        var host = leg.AttachedToName;
+        foreach (var e in PartRegistry.GetAll())
+            if (e != null && e.PartName == host)
+                e.transform.position += new Vector3(0f, 500f * U, 0f);
+
+        Assert.IsTrue(Mentions(SceneAnalyzer.Analyze(), IssueCatalog.CodeAttachDetached, leg),
+            "хозяин уехал на полметра вверх, а имя осталось — связь висит в пустоте");
+    }
+
+    /// <summary>Живая сцена целиком: у правильно поставленной опоры не должно
+    /// остаться НИ ОДНОГО замечания — ни зазора, ни отрыва, ни центровки.</summary>
+    [Test]
+    public void TheWholePlinth_ReportsNothingAboutTheLeg()
+    {
+        var leg = PlinthWithALeg();
+
+        var about = SceneAnalyzer.Analyze()
+            .FindAll(i => i.Target == leg || i.Secondary == leg)
+            .ConvertAll(i => i.Code + ": " + i.Message);
+        Assert.IsEmpty(about, "опора установлена правильно:\n    " + string.Join("\n    ", about));
+    }
 }

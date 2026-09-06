@@ -74,6 +74,11 @@ namespace KitchenDesigner.Core
 
         public virtual bool AttachIsDerived => false;
 
+        public virtual bool AttachContactHolds(KitchenElement parent) =>
+            ConstraintValidator.AreInFaceToFaceContact(this, parent);
+
+        public virtual bool ParticipatesInGapChecks => true;
+
         private Vector3 _attachRestPos;
         private Quaternion _attachRestRot = Quaternion.identity;
         private bool _attachRidden;

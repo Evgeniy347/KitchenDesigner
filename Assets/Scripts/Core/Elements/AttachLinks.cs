@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core
         public static bool InContact(KitchenElement? child, KitchenElement? parent)
         {
             if (child == null || parent == null) return false;
-            return ConstraintValidator.AreInFaceToFaceContact(child, parent);
+            return child.AttachContactHolds(parent);
         }
 
         public static bool IsDetached(KitchenElement? child)

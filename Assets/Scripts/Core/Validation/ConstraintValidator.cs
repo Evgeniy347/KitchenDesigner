@@ -394,7 +394,6 @@ namespace KitchenDesigner.Core
             e != null && (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null
                 || e is WindowElement || e is DoorElement || e is FloorElement);
 
-        private static bool IsIgnoredInPairs(KitchenElement e) =>
-            e is LightSourceElement || e is SinkElement || e is CooktopElement;
+        private static bool IsIgnoredInPairs(KitchenElement e) => !e.ParticipatesInGapChecks;
     }
 }

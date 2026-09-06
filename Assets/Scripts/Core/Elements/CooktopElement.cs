@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => HasFixedSize ? Model : "Варочная";
 
+        public override bool ParticipatesInGapChecks => false;
+
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
 
         public const int RIM_HEIGHT_MM = 5;

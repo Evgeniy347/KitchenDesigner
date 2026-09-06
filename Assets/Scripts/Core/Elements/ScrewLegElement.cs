@@ -95,6 +95,12 @@ namespace KitchenDesigner.Core
 
         public override bool AttachIsDerived => true;
 
+        public override bool AttachContactHolds(KitchenElement parent) =>
+            parent != null && ScrewLegHosting.Reaches(ThreadBody, parent.ToGeometry(),
+                Tolerance.ContactMm * AppConstants.MM_TO_UNITS);
+
+        public override bool ParticipatesInGapChecks => false;
+
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
 
         public override MeshRenderer? DecorRenderer => GetComponent<MeshRenderer>();

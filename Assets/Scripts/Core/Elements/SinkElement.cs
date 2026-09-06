@@ -6,6 +6,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Мойка";
 
+        public override bool ParticipatesInGapChecks => false;
+
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
 
         public const int MODULE_WIDTH_MM = 600;
