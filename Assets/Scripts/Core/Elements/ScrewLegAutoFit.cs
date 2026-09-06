@@ -16,14 +16,16 @@ namespace KitchenDesigner.Core
             if (leg == null || scene == null) return;
 
             var host = HostAbove(leg, scene);
-            if (host == null) return;
+            if (host != null)
+            {
+                float mountY = ElementAabb.Of(host).minY;
+                float floorY = FloorUnder(leg, host, mountY, scene);
 
-            float mountY = ElementAabb.Of(host).minY;
-            float floorY = FloorUnder(leg, host, mountY, scene);
+                leg.SetHeightAboveFloorMM(HeightMM(mountY - floorY));
+                StandOn(leg, floorY);
+            }
 
-            leg.AttachedToName = host.PartName;
-            leg.SetHeightAboveFloorMM(HeightMM(mountY - floorY));
-            StandOn(leg, floorY);
+            ScrewLegHostLink.Apply(leg, scene);
         }
 
         public static int HeightMM(float heightUnits) =>

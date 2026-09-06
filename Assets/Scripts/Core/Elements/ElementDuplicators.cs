@@ -132,6 +132,7 @@ namespace KitchenDesigner.Core
                      made.BaseHeightMM = src.BaseHeightMM;
                      made.ThreadLengthMM = src.ThreadLengthMM;
                      made.InsertionDepthMM = src.InsertionDepthMM;
+                     ScrewLegHostLink.Apply(made, PartRegistry.GetAll());
                  }
                  CopyMaterial(source, copy);
              }),

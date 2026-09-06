@@ -27,6 +27,7 @@ namespace KitchenDesigner.Core
 
             RestoreProjectState(data);
             SnapElementEdgesToMillimetreGrid(resolved);
+            ScrewLegHostLink.ApplyAll(PartRegistry.GetAll());
 
             CommandStack.Instance.Import(data.undoHistory, data.redoHistory,
                 i => (i >= 0 && i < resolved.Count) ? resolved[i]! : null!);
