@@ -115,8 +115,6 @@ namespace KitchenDesigner.Core.UI
 
         void IContextMenuHost.Relayout() => RelayoutForTarget();
 
-        public bool TexturePreviewActive => _textures.PreviewActive;
-
         public bool MaterialPreviewActive => _materials.PreviewActive;
 
         ElementFacet IContextMenuHost.TargetFacets => _facets;
@@ -824,9 +822,6 @@ namespace KitchenDesigner.Core.UI
             binder.Bind(_rows.WideButton(node, caption, binder.Toggle, visibility, ActionGap));
             _openButtons.Add(binder);
         }
-
-        internal static DrawerElement? FindDrawerForFacade(FacadeElement facade) =>
-            FacadeLinks.FindDrawer(facade);
 
         internal static DishwasherElement? FindDishwasherForFacade(FacadeElement facade) =>
             FacadeLinks.FindDishwasher(facade);
