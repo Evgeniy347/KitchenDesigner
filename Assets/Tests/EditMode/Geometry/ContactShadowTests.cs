@@ -103,6 +103,54 @@ public class ContactShadowTests
                 "куски остаются по свою сторону от оси касания — тень не размазывается");
     }
 
+    /// <summary>Мойка B2 из сцены пользователя, в системе координат двери
+    /// B2_door (541×720×18 с зазорами): она свисает на 6 мм ПРАВЕЕ двери — а
+    /// справа петля — и уходит на 500 мм вглубь корпуса, до 3 мм перед
+    /// плоскостью фасада. Ось касания тут Z (толщина двери), поэтому режется
+    /// сосед по X и по Y, а по Z остаётся целым: боковой кусок шириной 6 мм
+    /// сохраняет всю глубину мойки, в том числе слой ВНУТРИ собственной
+    /// толщины двери.
+    ///
+    /// Именно туда уходит дверь на чашечной петле: ось утоплена внутрь
+    /// полотна, и передняя кромка у петли описывает дугу радиусом 8,5 мм —
+    /// на 2 мм ЗА свою закрытую кромку, оставаясь на своей же глубине. Дверь
+    /// упиралась в этот кусок и вставала на 12°.</summary>
+    [Test]
+    public void NeighbourOverhangingTheHingeEdge_KeepsNothingInsideTheClosedThickness()
+    {
+        var closed = Box(Vector3.zero, new Vector3(0.541f, 0.720f, 0.018f));
+        var sink = Box(new Vector3(0.0265f, 0.400f, -0.238f), new Vector3(0.5f, 0.188f, 0.5f));
+
+        float deepestMm = 0f;
+        foreach (var piece in Pieces(closed, sink))
+        {
+            float inside = Mathf.Min(piece.max.z, closed.max.z) - Mathf.Max(piece.min.z, closed.min.z);
+            if (inside > deepestMm) deepestMm = inside;
+        }
+
+        Assert.AreEqual(0f, deepestMm / AppConstants.MM_TO_UNITS, 0.5f,
+            "кромке у петли нужен зазор в собственном слое двери: активный кусок "
+            + "не имеет права стоять между её передней и тыльной пластями");
+    }
+
+    /// <summary>Контроль к предыдущему: гасится слой, а не сосед. Та же мойка,
+    /// но вылезшая на 100 мм ПЕРЕД фасадом, обязана остаться препятствием —
+    /// иначе «дверь открывается» стало бы неотличимо от «ничего не
+    /// проверяется».</summary>
+    [Test]
+    public void NeighbourOverhangingTheHingeEdge_KeepsWhatSticksOutInFront()
+    {
+        var closed = Box(Vector3.zero, new Vector3(0.541f, 0.720f, 0.018f));
+        var sink = Box(new Vector3(0.0265f, 0.400f, -0.194f), new Vector3(0.5f, 0.188f, 0.5f));
+
+        bool inFront = false;
+        foreach (var piece in Pieces(closed, sink))
+            if (piece.max.z > closed.max.z + Tolerance.EpsilonUnits) inFront = true;
+
+        Assert.IsTrue(inFront,
+            "часть соседа перед плоскостью фасада — препятствие: дверь уезжает именно туда");
+    }
+
     [Test]
     public void ShadowPieces_NeverCoverTheClosedBoxItself()
     {
