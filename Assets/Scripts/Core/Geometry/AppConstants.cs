@@ -11,6 +11,8 @@ namespace KitchenDesigner.Core
         public const int BASE_PLATE_SIZE = 3000;
         public const float MM_TO_UNITS = 0.001f;
 
+        public static float HalfHeightUnits(float mm) => mm * 0.5f * MM_TO_UNITS;
+
         public const int RADIAL_CORNER_RADIUS_DEFAULT = 200;
 
         public const int CHAIR_SEAT_HEIGHT_DEFAULT = 450;

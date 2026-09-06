@@ -18,7 +18,7 @@ namespace KitchenDesigner.Core
             element.PartName = "BasePlate";
             element.DimensionsMM = new Vector3Int(PLATE_SIZE, AppConstants.BOARD_THICKNESS_DEFAULT, PLATE_SIZE);
             go.transform.position = new Vector3(0,
-                -AppConstants.BOARD_THICKNESS_DEFAULT * 0.5f * AppConstants.MM_TO_UNITS, 0);
+                -AppConstants.HalfHeightUnits(AppConstants.BOARD_THICKNESS_DEFAULT), 0);
 
             var renderer = go.GetComponent<MeshRenderer>();
             var shader = Shader.Find("Universal Render Pipeline/Lit");

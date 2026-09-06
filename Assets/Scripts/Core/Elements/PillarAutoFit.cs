@@ -54,7 +54,7 @@ namespace KitchenDesigner.Core
         {
             var p = pillar.transform.position;
             pillar.transform.position = new Vector3(p.x,
-                floorY + pillar.TotalHeightMM * 0.5f * AppConstants.MM_TO_UNITS, p.z);
+                floorY + AppConstants.HalfHeightUnits(pillar.TotalHeightMM), p.z);
         }
 
         private static float? NearestBoardAbove(PillarElement pillar, float floorY,

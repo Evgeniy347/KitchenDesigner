@@ -58,7 +58,7 @@ namespace KitchenDesigner.Core
 
         protected override Vector3 ValidationPositionAt(Vector3 transformPosition) =>
             transformPosition + transform.rotation *
-                new Vector3(0f, RIM_HEIGHT_MM * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+                new Vector3(0f, AppConstants.HalfHeightUnits(RIM_HEIGHT_MM), 0f);
 
         private void Start()
         {

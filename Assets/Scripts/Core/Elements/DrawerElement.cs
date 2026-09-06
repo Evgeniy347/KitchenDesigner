@@ -283,8 +283,8 @@ namespace KitchenDesigner.Core
             var lower = FindPairedDrawer();
             if (lower == null || lower._isUpperDrawer) return;
 
-            float step = (DrawerConstants.GetMinOpeningHeight(lower.Type)
-                        + DrawerConstants.GetMinOpeningHeight(_type)) * 0.5f * AppConstants.MM_TO_UNITS;
+            float step = AppConstants.HalfHeightUnits(DrawerConstants.GetMinOpeningHeight(lower.Type)
+                        + DrawerConstants.GetMinOpeningHeight(_type));
             _closedPos = lower.ClosedPosition + lower.ClosedRotation * Vector3.up * step;
             _closedRot = lower.ClosedRotation;
             ApplyAnimPose();

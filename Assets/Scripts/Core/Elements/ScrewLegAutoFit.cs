@@ -77,7 +77,7 @@ namespace KitchenDesigner.Core
         {
             var p = leg.transform.position;
             leg.transform.position = new Vector3(p.x,
-                floorY + leg.BodyHeightMM * 0.5f * AppConstants.MM_TO_UNITS, p.z);
+                floorY + AppConstants.HalfHeightUnits(leg.BodyHeightMM), p.z);
         }
     }
 }

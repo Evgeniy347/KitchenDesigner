@@ -10,8 +10,8 @@ namespace KitchenDesigner.Core
             if (source.FindPaired() != null) return null;
 
             var upperType = DrawerConstants.UPPER_DRAWER_TYPE;
-            float step = (DrawerConstants.GetMinOpeningHeight(source.Type)
-                        + DrawerConstants.GetMinOpeningHeight(upperType)) * 0.5f * AppConstants.MM_TO_UNITS;
+            float step = AppConstants.HalfHeightUnits(DrawerConstants.GetMinOpeningHeight(source.Type)
+                        + DrawerConstants.GetMinOpeningHeight(upperType));
             var pos = source.ClosedPosition + source.ClosedRotation * Vector3.up * step;
 
             string pairName = UniqueName(source.PartName + "_top");

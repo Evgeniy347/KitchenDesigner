@@ -125,7 +125,7 @@ namespace KitchenDesigner.Core
             + (BodyHeightMM * 0.5f - _insertionMM) * AppConstants.MM_TO_UNITS;
 
         public float FloorYUnits =>
-            transform.position.y - BodyHeightMM * 0.5f * AppConstants.MM_TO_UNITS;
+            transform.position.y - AppConstants.HalfHeightUnits(BodyHeightMM);
 
         public const string ThreadBodySuffix = "/thread";
 

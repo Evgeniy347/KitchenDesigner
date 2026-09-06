@@ -53,7 +53,7 @@ namespace KitchenDesigner.Core
         public static float HalfThicknessUnits(Wall wall)
         {
             var dims = DimensionsOf(wall);
-            return Mathf.Min(dims.x, dims.z) * 0.5f * AppConstants.MM_TO_UNITS;
+            return AppConstants.HalfHeightUnits(Mathf.Min(dims.x, dims.z));
         }
 
         private static Vector3Int DimensionsOf(Wall wall)

@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core
             var normal = WallMountedPose.OutwardNormal(WallProximity.FaceNormal(wall), centre,
                 element.transform.position);
             float standoff = WallProximity.HalfThicknessUnits(wall)
-                + depthMM * 0.5f * AppConstants.MM_TO_UNITS;
+                + AppConstants.HalfHeightUnits(depthMM);
 
             var seated = WallMountedPose.SeatedPosition(element.transform.position, centre,
                 normal, standoff);
