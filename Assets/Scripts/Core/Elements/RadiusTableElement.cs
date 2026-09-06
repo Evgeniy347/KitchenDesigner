@@ -52,7 +52,7 @@ namespace KitchenDesigner.Core
 
         public override Vector2Int DecorSurfaceMM => FurnitureLayout.TopSurfaceMM(DimensionsMM);
 
-        private LegSet Legs => _legSet ??= new LegSet(transform, "Leg");
+        private LegSet Legs => LegSet.For(ref _legSet, transform);
 
         private TabletopSurface Tabletop
             => _tabletop ??= new TabletopSurface(gameObject, AdoptOwnedMesh);

@@ -70,7 +70,7 @@ namespace KitchenDesigner.Core
             set => PrimaryMaterialId = value;
         }
 
-        private LegSet Legs => _legSet ??= new LegSet(transform, "Leg");
+        private LegSet Legs => LegSet.For(ref _legSet, transform);
 
         private TabletopSurface Seat => _seat ??= new TabletopSurface(gameObject, AdoptOwnedMesh);
 

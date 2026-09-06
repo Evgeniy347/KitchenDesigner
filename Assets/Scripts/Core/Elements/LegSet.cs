@@ -16,6 +16,9 @@ namespace KitchenDesigner.Core
             _namePrefix = namePrefix;
         }
 
+        public static LegSet For(ref LegSet? slot, Transform owner) =>
+            slot ??= new LegSet(owner, "Leg");
+
         public void Place(Vector2[] footprint, float centreY, Vector3 legScale)
         {
             Ensure(footprint.Length);
