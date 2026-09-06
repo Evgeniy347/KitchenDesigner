@@ -7,7 +7,6 @@ namespace KitchenDesigner.Core
         public const string DEFAULT_MATERIAL_ID = "default";
         public const int SAVE_FORMAT_VERSION = 1;
         public const int DEFAULT_GRID_STEP = 1;
-        public const float SNAP_THRESHOLD = 50f;
         public const int BOARD_THICKNESS_DEFAULT = 18;
         public const int BASE_PLATE_SIZE = 3000;
         public const float MM_TO_UNITS = 0.001f;
