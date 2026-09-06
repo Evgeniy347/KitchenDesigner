@@ -41,11 +41,5 @@ namespace KitchenDesigner.Core
         };
 
         public bool IsLocked(ViewField field) => (_locked & (1 << (int)field)) != 0;
-
-        public int VisibilityHash =>
-            (WallsEnabled ? 1 : 0) | (LowerNearWalls ? 2 : 0)
-            | (HideOpeningsOnLoweredWalls ? 4 : 0) | (ObjectsVisible ? 8 : 0)
-            | (EdgeOutline ? 16 : 0) | (WallOutline ? 32 : 0) | (HideLightSources ? 64 : 0)
-            | (LowerAllWalls ? 128 : 0);
     }
 }
