@@ -62,7 +62,15 @@ public class HandleMeshesTests
 
         Assert.AreEqual(m.Gap + m.ShaftLen + m.TipLen, m.ArrowLen, 1e-6f);
         Assert.AreEqual(m.Gap + m.ShaftLen + m.TipLen * 0.5f, m.TipCenterZ, 1e-6f,
-            "точка захвата ручки — центр наконечника, и она же центр меша наконечника");
+            "центр меша наконечника");
+        Assert.AreEqual(m.ShaftLen + m.TipLen, m.DrawnLen, 1e-6f,
+            "зазор не нарисован: силуэт стрелки начинается на дальнем краю зазора");
+        Assert.AreEqual((m.Gap + m.ArrowLen) * 0.5f, m.GrabCenterZ, 1e-6f,
+            "точка захвата — середина НАРИСОВАННОЙ фигуры, а не центр наконечника: "
+            + "от центра наконечника до начала штока 0,125 от 0,17 длины стрелки, и "
+            + "круг радиусом 26 px накрывал бы стрелку не длиннее 35 px");
+        Assert.Less(m.GrabCenterZ, m.TipCenterZ,
+            "положительный контроль: обе величины считаются, и они РАЗНЫЕ");
         Assert.AreEqual(0f, HandleMetrics.Overlay.Gap,
             "у ручек накладки стрелка начинается прямо на поверхности, без зазора: "
             + "пресеты намеренно разные, общий здесь код, а не числа");

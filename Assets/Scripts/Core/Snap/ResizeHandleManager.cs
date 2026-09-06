@@ -41,6 +41,7 @@ namespace KitchenDesigner.Core
         internal static readonly HandleMetrics Metrics = HandleMetrics.Resize;
 
         private KitchenElement? _target;
+        private ResizeHandle? _hovered;
         private readonly List<ResizeHandle> _handles = new List<ResizeHandle>();
         private readonly Material?[] _axisMats = new Material?[3];
 
@@ -107,6 +108,28 @@ namespace KitchenDesigner.Core
             else if (!show && _handles.Count > 0) { IsResizing = false; ClearHandles(); }
 
             if (_handles.Count > 0 && !IsResizing) PositionHandles();
+            if (!IsResizing) SetHover(_handles.Count > 0 ? PickHandleUnderCursor() : null);
+        }
+
+        internal ResizeHandle? Hovered => _hovered;
+
+        internal ResizeHandle? SetHover(ResizeHandle? handle)
+        {
+            if (handle == _hovered) return _hovered;
+            Paint(_hovered, false);
+            _hovered = handle;
+            Paint(_hovered, true);
+            return _hovered;
+        }
+
+        private static void Paint(ResizeHandle? handle, bool hovered)
+        {
+            if (handle == null) return;
+            var material = HandleMaterials.For(hovered
+                ? UIStyle.MeasureHover
+                : HandleMaterials.ForAxis(handle.faceIndex / 2));
+            foreach (var renderer in handle.GetComponentsInChildren<MeshRenderer>())
+                if (renderer != null) renderer.sharedMaterial = material;
         }
 
         internal static bool HandlesAvailableFor(KitchenElement? target) =>
@@ -389,6 +412,7 @@ namespace KitchenDesigner.Core
 
         private void ClearHandles()
         {
+            _hovered = null;
             foreach (var h in _handles)
                 if (h != null) Destroy(h.gameObject);
             _handles.Clear();

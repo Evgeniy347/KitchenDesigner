@@ -255,7 +255,11 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && !GizmoPressGuard.BlocksPress(
+                    ResizeHandleManager.IsResizing,
+                    ResizeHandleManager.PointerOverHandle(),
+                    TextureOverlayHandles.Active,
+                    TextureOverlayHandles.PointerOverHandle()))
                 TryBeginPress();
 
             if (_pressed && Input.GetMouseButton(0))

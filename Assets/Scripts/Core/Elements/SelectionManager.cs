@@ -53,8 +53,11 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            if (ResizeHandleManager.IsResizing || ResizeHandleManager.PointerOverHandle()
-                || TextureOverlayHandles.PointerOverHandle())
+            if (GizmoPressGuard.BlocksPress(
+                    ResizeHandleManager.IsResizing,
+                    ResizeHandleManager.PointerOverHandle(),
+                    TextureOverlayHandles.Active,
+                    TextureOverlayHandles.PointerOverHandle()))
                 return;
 
             if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))

@@ -34,7 +34,7 @@ namespace KitchenDesigner.Core.Handles
 
         public float DrawnCenterZ => Gap + DrawnLen * 0.5f;
 
-        public float GrabCenterZ => TipCenterZ;
+        public float GrabCenterZ => DrawnCenterZ;
 
         public float MaxRadius => Mathf.Max(ShaftRad, TipSize * TipHalfWidthFactor);
 
