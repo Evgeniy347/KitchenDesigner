@@ -54,11 +54,12 @@ public class HandleFrameResolutionTests
     {
         PlayModeTestConfig.ConfigureForTests();
 
-        _mainCameraObject = new GameObject("Main Camera");
-        _mainCameraObject!.tag = "MainCamera";
-        _mainCamera = _mainCameraObject!.AddComponent<Camera>();
-        _mainCameraObject!.transform.position = new Vector3(0f, 3f, -5f);
-        _mainCameraObject!.transform.LookAt(Vector3.zero);
+        var mainCameraObject = new GameObject("Main Camera");
+        _mainCameraObject = mainCameraObject;
+        mainCameraObject.tag = "MainCamera";
+        _mainCamera = mainCameraObject.AddComponent<Camera>();
+        mainCameraObject.transform.position = new Vector3(0f, 3f, -5f);
+        mainCameraObject.transform.LookAt(Vector3.zero);
 
         SaveLoadManager.LastPath = "";
         var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
@@ -114,22 +115,25 @@ public class HandleFrameResolutionTests
         yield return null;
         yield return null;
 
-        _renderCameraObject = new GameObject("HandleFrameCam");
-        _renderCamera = _renderCameraObject.AddComponent<Camera>();
-        _renderCamera.clearFlags = CameraClearFlags.SolidColor;
-        _renderCamera.backgroundColor = new Color(0.10f, 0.10f, 0.12f, 1f);
-        _renderCamera.fieldOfView = 45f;
-        _renderCamera.aspect = (float)RenderW / RenderH;
-        _renderCamera.nearClipPlane = 0.01f;
-        _renderCamera.farClipPlane = 100f;
-        _renderCameraObject.transform.position = CameraPos;
-        _renderCameraObject.transform.LookAt(TargetPos);
+        var cameraObject = new GameObject("HandleFrameCam");
+        _renderCameraObject = cameraObject;
+        var camera = cameraObject.AddComponent<Camera>();
+        _renderCamera = camera;
+        camera.clearFlags = CameraClearFlags.SolidColor;
+        camera.backgroundColor = new Color(0.10f, 0.10f, 0.12f, 1f);
+        camera.fieldOfView = 45f;
+        camera.aspect = (float)RenderW / RenderH;
+        camera.nearClipPlane = 0.01f;
+        camera.farClipPlane = 100f;
+        cameraObject.transform.position = CameraPos;
+        cameraObject.transform.LookAt(TargetPos);
 
-        _renderTexture = new RenderTexture(RenderW, RenderH, 24, RenderTextureFormat.ARGB32);
-        _renderCamera.targetTexture = _renderTexture;
+        var texture = new RenderTexture(RenderW, RenderH, 24, RenderTextureFormat.ARGB32);
+        _renderTexture = texture;
+        camera.targetTexture = texture;
         yield return null;
 
-        Assert.AreEqual(RenderH, _renderCamera.pixelHeight,
+        Assert.AreEqual(RenderH, camera.pixelHeight,
             "снимающая камера обязана мерить в кадре 512x512, иначе замер идёт "
             + "в экране батч-прогона — ровно та подмена, ради которой набор написан");
     }
