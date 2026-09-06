@@ -93,7 +93,7 @@ namespace KitchenDesigner.Core
             var dims = DimensionsMM;
             float toU = AppConstants.MM_TO_UNITS;
             float frameU = AppConstants.WINDOW_FRAME_MM * toU;
-            float glassThick = AppConstants.WINDOW_GLASS_THICKNESS_MM * toU;
+            float glassThick = AppConstants.GLASS_THICKNESS_MM * toU;
 
             float totalW = dims.x * toU;
             float totalH = dims.y * toU;

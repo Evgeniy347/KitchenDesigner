@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core
 
         public const int ASSEMBLED_FRAME_MM = 100;
         public const int ASSEMBLED_GLASS_DEDUCT_MM = 180;
-        public const int ASSEMBLED_GLASS_THICKNESS_MM = 4;
+        public const int GLASS_THICKNESS_MM = 4;
         public const int ASSEMBLED_DEFAULT_GROOVES = 1;
         public const int ASSEMBLED_GROOVE_MM = 5;
 
@@ -37,7 +37,6 @@ namespace KitchenDesigner.Core
         public const int WINDOW_DRIP_DEFAULT_MM = 30;
         public const int WINDOW_SILL_DEFAULT_MM = 50;
         public const int WINDOW_SILL_THICKNESS_MM = 40;
-        public const int WINDOW_GLASS_THICKNESS_MM = 4;
         public const int WINDOW_SASH_MM = 50;
         public const int WINDOW_SASH_DEPTH_MM = 40;
 

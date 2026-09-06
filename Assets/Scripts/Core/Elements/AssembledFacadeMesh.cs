@@ -46,7 +46,7 @@ namespace KitchenDesigner.Core
                     dimsMM = new Vector3Int(
                         Mathf.Max(1, L - glassDeductMM),
                         Mathf.Max(1, H - glassDeductMM),
-                        AppConstants.ASSEMBLED_GLASS_THICKNESS_MM),
+                        AppConstants.GLASS_THICKNESS_MM),
                     materialKind = "Стекло"
                 });
             return parts;

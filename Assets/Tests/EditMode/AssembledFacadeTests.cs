@@ -44,7 +44,7 @@ public class AssembledFacadeMeshTests
 
         Assert.AreEqual(5, parts.Count);
         var glass = parts.Find(p => p.suffix == "Стекло");
-        Assert.AreEqual(new Vector3Int(600 - Deduct, 716 - Deduct, AppConstants.ASSEMBLED_GLASS_THICKNESS_MM),
+        Assert.AreEqual(new Vector3Int(600 - Deduct, 716 - Deduct, AppConstants.GLASS_THICKNESS_MM),
             glass.dimsMM, "стекло по формуле L−180 × H−180");
         Assert.AreEqual("Стекло", glass.materialKind);
     }

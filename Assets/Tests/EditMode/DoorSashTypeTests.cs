@@ -69,9 +69,9 @@ public class DoorSashTypeTests
         Assert.AreNotEqual(glassMaterial, blindMaterial, "материал панели меняется вместе с типом");
         Assert.Greater(blindThickness, glassThickness,
             "и толщина тоже: глухая панель занимает всю глубину обвязки, а стекло — "
-            + $"свои {AppConstants.WINDOW_GLASS_THICKNESS_MM} мм. Поменять один только "
+            + $"свои {AppConstants.GLASS_THICKNESS_MM} мм. Поменять один только "
             + "материал значит оставить «глухую» створку толщиной со стекло");
-        Assert.AreEqual(AppConstants.WINDOW_GLASS_THICKNESS_MM * AppConstants.MM_TO_UNITS,
+        Assert.AreEqual(AppConstants.GLASS_THICKNESS_MM * AppConstants.MM_TO_UNITS,
             glassThickness, 1e-5f);
     }
 

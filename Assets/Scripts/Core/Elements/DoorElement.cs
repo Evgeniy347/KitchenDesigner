@@ -180,7 +180,7 @@ namespace KitchenDesigner.Core
             float frameU = AppConstants.WINDOW_FRAME_MM * toU;
             float sashU = AppConstants.WINDOW_SASH_MM * toU;
             float sashD = Mathf.Min(AppConstants.WINDOW_SASH_DEPTH_MM * toU, dims.z * toU);
-            float glassThick = AppConstants.WINDOW_GLASS_THICKNESS_MM * toU;
+            float glassThick = AppConstants.GLASS_THICKNESS_MM * toU;
             float innerW = dims.x * toU - 2f * frameU;
             float innerH = DoorOpeningLayout.LeafHeightMM(dims.y) * toU - frameU;
             float paneThick = _sashType == DoorSashType.Blind ? sashD : glassThick;
