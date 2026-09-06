@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.Handles;
 
 namespace KitchenDesigner.Core.Measure
 {
@@ -57,14 +58,12 @@ namespace KitchenDesigner.Core.Measure
         public static float WorldSizeForPixels(Camera camera, Vector3 worldPoint, float pixels)
         {
             if (camera == null) return 0f;
-            if (camera.orthographic)
-                return pixels * (2f * camera.orthographicSize / Mathf.Max(1, camera.pixelHeight));
-
-            float dist = Vector3.Dot(worldPoint - camera.transform.position, camera.transform.forward);
-            dist = Mathf.Max(dist, Tolerance.EpsilonUnits);
-            float worldPerPixel = 2f * dist * Mathf.Tan(camera.fieldOfView * 0.5f * Mathf.Deg2Rad)
-                                  / Mathf.Max(1, camera.pixelHeight);
-            return pixels * worldPerPixel;
+            var view = new PinholeView(
+                camera.transform.position, camera.transform.forward,
+                camera.transform.right, camera.transform.up,
+                camera.fieldOfView, camera.pixelWidth, camera.pixelHeight,
+                camera.orthographic, camera.orthographicSize);
+            return view.WorldSizeForPixels(worldPoint, pixels);
         }
     }
 }
