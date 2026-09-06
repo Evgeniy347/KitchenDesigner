@@ -225,10 +225,19 @@ public class SceneAnalyzerTests
 
     /// <summary>Цоколь из живого проекта: две 16-мм царги, между ними 13 мм, и
     /// опора, ввинченная снизу во внутреннюю. Расстояния — из example.save.json.</summary>
-    private ScrewLegElement PlinthWithALeg()
+    private void Plinth()
     {
+        var floor = ElementFactory.CreateFloor(new Vector3Int(3000, 100, 3000), "pol",
+            new Vector3(0f, -50f * U, 0f));
+        _spawned.Add(floor);
+
         MakeBoard("inner", new Vector3Int(482, 80, 16), new Vector3(0f, 60f * U, 0f));
         MakeBoard("side", new Vector3Int(432, 92, 16), new Vector3(-25f * U, 50f * U, 29f * U));
+    }
+
+    private ScrewLegElement PlinthWithALeg()
+    {
+        Plinth();
 
         var go = ElementFactory.CreateScrewLeg("opora", new Vector3(141.5f * U, 29f * U, 1.5f * U));
         _spawned.Add(go);
@@ -262,8 +271,7 @@ public class SceneAnalyzerTests
     [Test]
     public void APlainBoardInTheSamePlace_StillWarns()
     {
-        MakeBoard("inner", new Vector3Int(482, 80, 16), new Vector3(0f, 60f * U, 0f));
-        MakeBoard("side", new Vector3Int(432, 92, 16), new Vector3(-25f * U, 50f * U, 29f * U));
+        Plinth();
         var stub = MakeBoard("stub", new Vector3Int(25, 58, 25), new Vector3(141.5f * U, 29f * U, 1.5f * U));
 
         Assert.IsTrue(Mentions(SceneAnalyzer.Analyze(), IssueCatalog.CodeNearContactFar, stub),
