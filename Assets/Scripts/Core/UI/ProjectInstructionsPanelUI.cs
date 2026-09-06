@@ -5,6 +5,8 @@ namespace KitchenDesigner.Core.UI
 {
     public class ProjectInstructionsPanelUI : MonoBehaviour, IProjectWindow
     {
+        private const float DragStripForATallerTitle = 44f;
+
         private GameObject? _root;
         private TMP_InputField? _text;
 
@@ -20,7 +22,7 @@ namespace KitchenDesigner.Core.UI
                 Vector2.zero, new Vector2(640, 560));
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
-            WindowDrag.Attach(panel.rectTransform, 44f);
+            WindowDrag.Attach(panel.rectTransform, DragStripForATallerTitle);
             _root = panel.gameObject;
             ProjectWindows.Register(this);
 
