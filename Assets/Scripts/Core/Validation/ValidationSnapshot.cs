@@ -62,6 +62,19 @@ namespace KitchenDesigner.Core
                 ? new[] { MainBody(e), extra }
                 : new[] { MainBody(e) };
 
+        public static ElementKind KindOf(KitchenElement e) => KindOf(e, e.GetComponent<Wall>());
+
+        public static bool IsAnchor(KitchenElement e) =>
+            e != null && (KindOf(e) & ElementKind.Anchor) != 0;
+
+        public static bool IsPanel(KitchenElement e) => e is PanelElement;
+
+        public static bool IsDecor(KitchenElement e) => e is LightSourceElement;
+
+        public static DishwasherElement? AsDishwasher(KitchenElement e) => e as DishwasherElement;
+
+        public static FacadeElement? AsFacade(KitchenElement e) => e as FacadeElement;
+
         private static ValidationElement Build(KitchenElement e, Dictionary<string, int>? wallIndexByName,
             Dictionary<string, int>? partIndexByName = null)
         {
@@ -72,9 +85,7 @@ namespace KitchenDesigner.Core
             var heightSpan = Span.FromCenter(centerY, e.DimensionsMM.y * AppConstants.MM_TO_UNITS);
 
             int wallIndex = -1;
-            string? attachedWallName = e is WindowElement win ? win.AttachedWallName
-                : e is DoorElement door ? door.AttachedWallName
-                : null;
+            string? attachedWallName = e is WallOpeningElement opening ? opening.AttachedWallName : null;
             if (!string.IsNullOrEmpty(attachedWallName) && wallIndexByName != null
                 && wallIndexByName.TryGetValue(attachedWallName!, out int found))
                 wallIndex = found;
@@ -103,7 +114,7 @@ namespace KitchenDesigner.Core
             var kind = ElementKind.None;
 
             bool isFloor = e.GetComponent<BasePlate>() != null || e is FloorElement;
-            bool isOpening = e is WindowElement || e is DoorElement;
+            bool isOpening = e is WallOpeningElement;
 
             if (isFloor) kind |= ElementKind.FloorAnchor;
             if (isOpening) kind |= ElementKind.Opening;

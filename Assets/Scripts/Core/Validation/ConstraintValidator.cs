@@ -205,13 +205,11 @@ namespace KitchenDesigner.Core
 
         private static bool IsDishwasherFacadePair(KitchenElement a, KitchenElement b)
         {
-            KitchenElement? dishwasher = null;
-            KitchenElement? facade = null;
-            if (a is DishwasherElement && b is FacadeElement) { dishwasher = a; facade = b; }
-            else if (b is DishwasherElement && a is FacadeElement) { dishwasher = b; facade = a; }
+            var dishwasher = ValidationSnapshot.AsDishwasher(a) ?? ValidationSnapshot.AsDishwasher(b);
+            var facade = ValidationSnapshot.AsFacade(a) ?? ValidationSnapshot.AsFacade(b);
             if (dishwasher == null || facade == null) return false;
-            return !string.IsNullOrEmpty(((DishwasherElement)dishwasher).AttachedFacadeName)
-                && ((DishwasherElement)dishwasher).AttachedFacadeName == ((FacadeElement)facade).PartName;
+            return !string.IsNullOrEmpty(dishwasher.AttachedFacadeName)
+                && dishwasher.AttachedFacadeName == facade.PartName;
         }
 
         public readonly struct DishwasherBackGapIssue
@@ -239,7 +237,8 @@ namespace KitchenDesigner.Core
 
             foreach (var e in all)
             {
-                if (!(e is DishwasherElement dw)) continue;
+                var dw = ValidationSnapshot.AsDishwasher(e);
+                if (dw == null) continue;
                 var facade = dw.FindAttachedFacade();
                 if (facade == null) continue;
 
@@ -277,7 +276,8 @@ namespace KitchenDesigner.Core
 
             foreach (var e in all)
             {
-                if (!(e is DishwasherElement dw)) continue;
+                var dw = ValidationSnapshot.AsDishwasher(e);
+                if (dw == null) continue;
 
                 float soleY = dw.SoleCenterWorld.y;
                 var dwGeo = dw.ToGeometry();
@@ -291,7 +291,7 @@ namespace KitchenDesigner.Core
                 {
                     if (other == null || ReferenceEquals(other, e)) continue;
                     if (ReferenceEquals(other, facade)) continue;
-                    if (other is LightSourceElement) continue;
+                    if (ValidationSnapshot.IsDecor(other)) continue;
 
                     var g = other.ToGeometry();
                     if (g.Min.x >= dwGeo.Max.x - eps || g.Max.x <= dwGeo.Min.x + eps) continue;
@@ -340,7 +340,7 @@ namespace KitchenDesigner.Core
 
             foreach (var p in all)
             {
-                if (!(p is PanelElement)) continue;
+                if (!ValidationSnapshot.IsPanel(p)) continue;
                 var pverts = p.GetVertices();
 
                 foreach (var b in all)
@@ -369,7 +369,7 @@ namespace KitchenDesigner.Core
 
         private static bool PanelEngagesGroove(KitchenElement panel, KitchenElement board)
         {
-            if (!(panel is PanelElement) || board == null || board.Grooves.Count == 0) return false;
+            if (!ValidationSnapshot.IsPanel(panel) || board == null || board.Grooves.Count == 0) return false;
 
             var seats = board.GetGrooveSeatFaces();
             if (seats.Length == 0) return false;
@@ -390,9 +390,7 @@ namespace KitchenDesigner.Core
         private static float GrooveDepthUnits(KitchenElement board) =>
             GrooveMesh.DepthFraction(board.DimensionsMM) * board.transform.localScale.z;
 
-        private static bool IsAnchor(KitchenElement e) =>
-            e != null && (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null
-                || e is WindowElement || e is DoorElement || e is FloorElement);
+        private static bool IsAnchor(KitchenElement e) => ValidationSnapshot.IsAnchor(e);
 
         private static bool IsIgnoredInPairs(KitchenElement e) => !e.ParticipatesInGapChecks;
     }
