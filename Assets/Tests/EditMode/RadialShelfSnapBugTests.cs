@@ -38,7 +38,7 @@ public class RadialShelfSnapBugTests : SnapTestBase
         _top = Make("top",
             new Vector3Int(564, 332, 18),
             new Vector3(-0.473f, 2.251f, -3.454f),
-            Quaternion.Euler(90f, 0f, 0f));
+            ManagedRotation.Euler(90f, 0f, 0f));
     }
 
     [Test]
@@ -48,7 +48,7 @@ public class RadialShelfSnapBugTests : SnapTestBase
         var shelf = Make("radial",
             new Vector3Int(314, 18, 332),
             new Vector3(-0.921f, 2.233f, -3.445f),
-            Quaternion.Euler(0f, 270f, 0f));
+            ManagedRotation.Euler(0f, 270f, 0f));
 
         var others = new List<KitchenElement> { _side, _top };
 
@@ -72,7 +72,7 @@ public class RadialShelfSnapBugTests : SnapTestBase
         var shelf = Make("radial",
             new Vector3Int(314, 18, 332),
             new Vector3(-0.921f, 2.233f, -3.445f),
-            Quaternion.Euler(0f, 270f, 0f));
+            ManagedRotation.Euler(0f, 270f, 0f));
 
         var others = new List<KitchenElement> { _side, _top };
 
@@ -93,7 +93,7 @@ public class RadialShelfSnapBugTests : SnapTestBase
         var shelf = Make("radial",
             new Vector3Int(314, 18, 332),
             new Vector3(-0.93f, 2.233f, -3.445f),
-            Quaternion.Euler(0f, 270f, 0f));
+            ManagedRotation.Euler(0f, 270f, 0f));
 
         var result = SnapSystem.TrySnap(shelf, new List<KitchenElement> { _side }, shelf.transform.position);
 
@@ -110,7 +110,7 @@ public class RadialShelfSnapBugTests : SnapTestBase
         var shelf = Make("radial",
             new Vector3Int(314, 18, 332),
             new Vector3(-0.921f, 2.233f, -3.445f),
-            Quaternion.Euler(0f, 270f, 0f));
+            ManagedRotation.Euler(0f, 270f, 0f));
 
         // 5 итераций — все должны дать одинаковый результат
         bool? firstSnapped = null;
@@ -140,7 +140,7 @@ public class RadialShelfSnapBugTests : SnapTestBase
         var shelf = Make("radial",
             new Vector3Int(314, 18, 332),
             new Vector3(-0.921f, 2.233f, -3.445f),
-            Quaternion.Euler(0f, 270f, 0f));
+            ManagedRotation.Euler(0f, 270f, 0f));
 
         var others = new List<KitchenElement> { _side, _top };
 

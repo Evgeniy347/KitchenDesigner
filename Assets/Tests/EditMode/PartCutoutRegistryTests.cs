@@ -44,7 +44,7 @@ public class PartCutoutRegistryTests
         _top = GameObject.CreatePrimitive(PrimitiveType.Cube);
         var el = _top.AddComponent<KitchenElement>();
         el.PartName = "Top";
-        el.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+        el.transform.rotation = ManagedRotation.Euler(-90f, 0f, 0f);
         el.DimensionsMM = new Vector3Int(1200, 650, 38);
         PartRegistry.Register(el);
         return el;

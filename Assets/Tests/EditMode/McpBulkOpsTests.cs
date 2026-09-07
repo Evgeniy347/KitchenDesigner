@@ -140,7 +140,7 @@ public class McpBulkOpsTests : McpTestFixture
         // anchor must be the minimum Z corner regardless of which local corner
         // the rotation happens to send there.
         var e = Make("turned", new Vector3(1f, 0f, 2f), new Vector3Int(900, 1200, 100));
-        e.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        e.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
 
         var resp = _handler!.Handle(MakeReq("get", new { names = new[] { "turned" } }));
         Assert.AreEqual("result", resp.type);

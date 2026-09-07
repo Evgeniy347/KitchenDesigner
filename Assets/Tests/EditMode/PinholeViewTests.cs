@@ -42,7 +42,7 @@ public class PinholeViewTests
     public void WorldToScreen_MatchesTheCameraItWasBuiltFrom()
     {
         var cam = MakeCamera(new Vector3(0.3f, 1.6f, -2f),
-            Quaternion.Euler(12f, 8f, 0f));
+            ManagedRotation.Euler(12f, 8f, 0f));
         var view = HandleView.Of(cam);
 
         foreach (var probe in Probes)

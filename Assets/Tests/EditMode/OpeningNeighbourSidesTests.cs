@@ -77,7 +77,7 @@ public class OpeningNeighbourSidesTests
         try
         {
             wallGo.transform.SetPositionAndRotation(new Vector3(1f, 0f, 2f),
-                Quaternion.Euler(0f, 90f, 0f));
+                ManagedRotation.Euler(0f, 90f, 0f));
             var opening = openingGo.AddComponent<KitchenElement>();
             opening.DimensionsMM = new Vector3Int(800, 1200, 100);
             openingGo.transform.position = wallGo.transform.TransformPoint(new Vector3(0.3f, 1.1f, 0f));

@@ -138,7 +138,7 @@ public class RoundTripTests
     public void Board_AllProperties_RoundTrip()
     {
         var board = MakeBoard("TestBoard", new Vector3Int(800, 400, 18), new Vector3(1.5f, 2.5f, 3.5f));
-        board.transform.rotation = Quaternion.Euler(0, 45, 0);
+        board.transform.rotation = ManagedRotation.Euler(0, 45, 0);
         board.Movable = false;
         board.Transparent = true;
         board.MaterialId = "white";
@@ -172,9 +172,9 @@ public class RoundTripTests
     [Test]
     public void Board_Rotation_90_180_270_Preserved()
     {
-        var rotations = new[] { Quaternion.identity, Quaternion.Euler(0, 90, 0),
-            Quaternion.Euler(0, 180, 0), Quaternion.Euler(0, 270, 0),
-            Quaternion.Euler(45, 30, 15) };
+        var rotations = new[] { Quaternion.identity, ManagedRotation.Euler(0, 90, 0),
+            ManagedRotation.Euler(0, 180, 0), ManagedRotation.Euler(0, 270, 0),
+            ManagedRotation.Euler(45, 30, 15) };
         var elements = new List<KitchenElement>();
 
         for (int i = 0; i < rotations.Length; i++)
@@ -209,7 +209,7 @@ public class RoundTripTests
     {
         var facade = MakeFacade("MyFacade", new Vector3Int(600, 716, 18), new Vector3(0.5f, 0.4f, -2.0f),
             gapLeft: 3, gapRight: 5, gapTop: 2, gapBottom: 2);
-        facade.transform.rotation = Quaternion.Euler(0, 90, 0);
+        facade.transform.rotation = ManagedRotation.Euler(0, 90, 0);
         facade.Mode = DoorMode.HingeFrontRight;
         facade.Movable = false;
         facade.Transparent = true;
@@ -404,7 +404,7 @@ public class RoundTripTests
     {
         var shelf = MakeRadial("RadialShelf", width: 600, depth: 400, thickness: 18,
             cornerRadius: 200, new Vector3(0.5f, 0.01f, -1.0f));
-        shelf.transform.rotation = Quaternion.Euler(0, 90, 0);
+        shelf.transform.rotation = ManagedRotation.Euler(0, 90, 0);
         shelf.Movable = false;
         shelf.MaterialId = "oak";
 
@@ -455,7 +455,7 @@ public class RoundTripTests
     public void Wall_AllProperties_RoundTrip()
     {
         var wall = MakeWall("Wall", new Vector3Int(100, 2700, 3000), new Vector3(-1.6f, 1.35f, 0.0f));
-        wall.transform.rotation = Quaternion.Euler(0, 0, 0);
+        wall.transform.rotation = ManagedRotation.Euler(0, 0, 0);
         wall.Movable = true;
         wall.MaterialId = "concrete";
 

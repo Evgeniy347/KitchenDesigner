@@ -210,7 +210,7 @@ public class SnapEdgeCaseTests : SnapTestBase
         // 18×18 = 324 мм², что составляет 4.5% от min(7200, 21600) = 7200 мм² —
         // ниже порога 30% по площади, но 100% от меньшей полуоси каждой грани.
         var big = Make("big", new Vector3Int(1200, 600, 18), new Vector3(-0.5592f, 0.3f, -0.948f),
-            Quaternion.Euler(90f, 270f, 0f));
+            ManagedRotation.Euler(90f, 270f, 0f));
         var small = Make("small", new Vector3Int(400, 400, 18), Vector3.zero);
 
         // Ожидаемое прилипание: центр small по X = -0.0592 (заподлицо с гранью big),

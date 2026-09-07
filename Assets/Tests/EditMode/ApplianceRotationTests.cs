@@ -72,7 +72,7 @@ public class ApplianceRotationTests : McpTestFixture
         _spawned.Add(go);
         var el = go.AddComponent<KitchenElement>();
         el.PartName = "Countertop";
-        el.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+        el.transform.rotation = ManagedRotation.Euler(-90f, 0f, 0f);
         el.DimensionsMM = new Vector3Int(widthMM, depthMM, TopThicknessMM);
         PartRegistry.Register(el);
         return el;

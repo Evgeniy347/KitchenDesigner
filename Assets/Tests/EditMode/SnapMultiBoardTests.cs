@@ -101,7 +101,7 @@ public class SnapMultiBoardTests : SnapTestBase
     {
         // Горизонтальная деталь лежит плашмя (поворот по X), сверху встаёт вертикальная.
         var horiz = Make("H", new Vector3Int(800, 400, 18), Vector3.zero,
-            Quaternion.AngleAxis(90f, Vector3.right)); // 18 мм толщина по Y, верх на y=0.009
+            ManagedRotation.RotX(90f)); // 18 мм толщина по Y, верх на y=0.009
         // верхняя грань горизонтали на y = 0.009; вертикаль 400 высотой встаёт сверху.
         var vert = Make("V", new Vector3Int(400, 400, 18), Vector3.zero);
         AssertFlushContact(vert, horiz, new Vector3(0f, 0.22f, 0f));

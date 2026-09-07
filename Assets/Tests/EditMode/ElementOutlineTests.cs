@@ -50,7 +50,7 @@ public class BoxWireframeTests
     {
         // деталь 600×360×18 мм, смещённая и повёрнутая на 90° по Y.
         var pos = new Vector3(1f, 0.5f, -2f);
-        var rot = Quaternion.Euler(0f, 90f, 0f);
+        var rot = ManagedRotation.Euler(0f, 90f, 0f);
         var scale = new Vector3(0.6f, 0.36f, 0.018f);
         var m = Matrix4x4.TRS(pos, rot, scale);
 
@@ -90,7 +90,7 @@ public class ElementOutlineTests
         var go = ElementFactory.CreatePart(
             new Vector3Int(600, 360, 18), "OutlinePart", new Vector3(1f, 0.5f, -2f));
         _spawned.Add(go);
-        go.transform.rotation = Quaternion.Euler(0f, 30f, 0f);
+        go.transform.rotation = ManagedRotation.Euler(0f, 30f, 0f);
         part = go.transform;
 
         var outline = ElementOutline.Ensure(go.GetComponent<KitchenElement>()!);

@@ -16,7 +16,7 @@ public class GroovePanelBoxTests
     // ДВП: панель YZ, толщина 3 мм по X, номинальный зазор 1 мм.
     private static readonly Vector3Int PanelDims = new Vector3Int(1369, 861, 3);
     private static readonly Vector3 PanelPos = new Vector3(1.5665f, 1.81f, -2.566f);
-    private static readonly Quaternion PanelRot = Quaternion.Euler(0f, 90f, 0f);
+    private static readonly Quaternion PanelRot = ManagedRotation.Euler(0f, 90f, 0f);
 
     private KitchenElement Make(string name, Vector3Int dims, Vector3 pos, Quaternion rot,
         GrooveSpec? groove)
@@ -33,15 +33,15 @@ public class GroovePanelBoxTests
     }
 
     private KitchenElement Top() => Make("top", new Vector3Int(332, 1372, 18),
-        new Vector3(1.419f, 2.251f, -2.566f), Quaternion.Euler(90f, 0f, 0f),
+        new Vector3(1.419f, 2.251f, -2.566f), ManagedRotation.Euler(90f, 0f, 0f),
         new GrooveSpec(GrooveKind.Through, GrooveSide.Right));
 
     private KitchenElement Bottom() => Make("bottom", new Vector3Int(332, 1372, 18),
-        new Vector3(1.419f, 1.369f, -2.566f), Quaternion.Euler(270f, 0f, 0f),
+        new Vector3(1.419f, 1.369f, -2.566f), ManagedRotation.Euler(270f, 0f, 0f),
         new GrooveSpec(GrooveKind.Through, GrooveSide.Right));
 
     private KitchenElement FrontSide() => Make("front", new Vector3Int(332, 900, 18),
-        new Vector3(1.419f, 1.81f, -1.871f), Quaternion.Euler(0f, 180f, 0f),
+        new Vector3(1.419f, 1.81f, -1.871f), ManagedRotation.Euler(0f, 180f, 0f),
         new GrooveSpec(GrooveKind.Blind, GrooveSide.Left));
 
     private KitchenElement BackSide() => Make("back", new Vector3Int(332, 900, 18),

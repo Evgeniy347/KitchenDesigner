@@ -88,7 +88,7 @@ public class FacadeDoorTests
     public void Pose_Closed_EqualsClosedTransform()
     {
         var cp = new Vector3(1f, 0.5f, -2f);
-        var cr = Quaternion.Euler(0f, 30f, 0f);
+        var cr = ManagedRotation.Euler(0f, 30f, 0f);
         FacadeDoor.Pose(cp, cr, Half, DoorMode.HingeFrontLeft, 0f, out var pos, out var rot);
         Assert.Less(Vector3.Distance(pos, cp), 1e-4f);
         Assert.Less(Quaternion.Angle(rot, cr), 1e-3f);
@@ -98,7 +98,7 @@ public class FacadeDoorTests
     public void Pose_ClosedAtProgressZero_ForEveryMode()
     {
         var cp = new Vector3(1f, 0.5f, -2f);
-        var cr = Quaternion.Euler(10f, 30f, 0f);
+        var cr = ManagedRotation.Euler(10f, 30f, 0f);
         foreach (var m in AllModes())
         {
             FacadeDoor.Pose(cp, cr, Half, m, 0f, out var pos, out var rot);
@@ -142,7 +142,7 @@ public class FacadeDoorTests
     public void Pose_HingeAxis_StaysFixed(DoorMode mode)
     {
         var cp = new Vector3(0.5f, 1f, 0.25f);
-        var cr = Quaternion.Euler(0f, 90f, 0f);
+        var cr = ManagedRotation.Euler(0f, 90f, 0f);
 
         Assert.IsTrue(FacadeDoor.Hinge(mode, Half, out var pivotLocal, out _));
         var pivotClosed = cp + cr * pivotLocal;
@@ -161,7 +161,7 @@ public class FacadeDoorTests
     {
         // Дверь и окно помещения по-прежнему вращаются вокруг собственного ребра.
         var cp = new Vector3(0.5f, 1f, 0.25f);
-        var cr = Quaternion.Euler(0f, 90f, 0f);
+        var cr = ManagedRotation.Euler(0f, 90f, 0f);
 
         Assert.IsTrue(FacadeDoor.Hinge(mode, Half, out var pivotLocal, out _,
             HingeKinematics.EdgePivot));
@@ -320,7 +320,7 @@ public class FacadeDoorTests
     public void Pose_DrawerOut_SlidesTowardViewer_NoRotation()
     {
         var cp = new Vector3(1f, 0.5f, -2f);
-        var cr = Quaternion.Euler(0f, 90f, 0f);
+        var cr = ManagedRotation.Euler(0f, 90f, 0f);
 
         FacadeDoor.Pose(cp, cr, Half, DoorMode.DrawerOut, 1f, out var pos, out var rot);
 
@@ -358,7 +358,7 @@ public class FacadeDoorAnimationTests
         var f = go.AddComponent<FacadeElement>();
         f.DimensionsMM = new Vector3Int(600, 700, 18); // задаёт localScale
         go.transform.position = new Vector3(1f, 0.5f, -2f);
-        go.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        go.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
         _spawned.Add(go);
         return f;
     }

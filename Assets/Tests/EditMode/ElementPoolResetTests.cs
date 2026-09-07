@@ -144,7 +144,7 @@ public class ElementPoolResetTests
                 new[] { TextureOverlaySpec.FullFace(OverlaySide.A, MaterialCatalog.DefaultId) }),
             ["AttachedCutouts"] = el => el.RegisterCutout(new StubCutout()),
             ["IsAttachRidden"] = el => el.BeginAttachRide(new Vector3(9f, 9f, 9f),
-                Quaternion.AngleAxis(37f, Vector3.up)),
+                ManagedRotation.RotY(37f)),
             ["PoseVersion"] = el => el.BumpPoseVersion(),
             ["IsOpen"] = DirtyDoor,
             ["DoorProgress"] = DirtyDoor,

@@ -40,14 +40,14 @@ public class SnapThinSidePanelLineContactTests : SnapTestBase
         _sidePanel = Make("A12_upper_B_side_L",
             new Vector3Int(18, 900, 332),
             new Vector3(1.419f, 1.81f, -1.853f),
-            Quaternion.Euler(0f, 90f, 0f));
+            ManagedRotation.Euler(0f, 90f, 0f));
 
         // Полка: world X=260, Y=18, Z=561. Задняя грань Z=-1.844 (заподлицо с
         // передней гранью боковины по Z). Старт — «покой» ниже боковины.
         _shelf = Make("A34K1_upper_bottom_copy",
             new Vector3Int(260, 561, 18),
             new Vector3(1.455f, 1.350f, -1.5635f),
-            Quaternion.Euler(90f, 0f, 0f));
+            ManagedRotation.Euler(90f, 0f, 0f));
 
         // Стена A справа: полка уже заподлицо с ней по X (right face полки x=1.585).
         // Это полноплощадный X-контакт, как в реальной сцене.

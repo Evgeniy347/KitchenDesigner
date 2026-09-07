@@ -44,7 +44,7 @@ public class SnapInvariantTests : SnapTestBase
     {
         var rng = new System.Random(777);
         var a = MakeStd("A", Vector3.zero);
-        var b = MakeStd("B", Vector3.zero, Quaternion.AngleAxis(90f, Vector3.up));
+        var b = MakeStd("B", Vector3.zero, ManagedRotation.RotY(90f));
         var before = b.transform.rotation;
 
         for (int i = 0; i < 100; i++)

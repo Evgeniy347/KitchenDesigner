@@ -33,7 +33,7 @@ public class GrooveResizeSnapTests
     private KitchenElement MakeFrontSide()
     {
         var el = Make("A34K1_upper_side_L", new Vector3Int(332, 900, 18),
-            new Vector3(1.419f, 1.81f, -1.871f), Quaternion.Euler(0f, 180f, 0f));
+            new Vector3(1.419f, 1.81f, -1.871f), ManagedRotation.Euler(0f, 180f, 0f));
         el.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Left));
         return el;
     }
@@ -41,7 +41,7 @@ public class GrooveResizeSnapTests
     private KitchenElement MakeBackSide()
     {
         var el = Make("A12_upper_A_side (copy)", new Vector3Int(332, 900, 18),
-            new Vector3(1.419f, 1.81f, -3.261f), Quaternion.Euler(0f, 0f, 0f));
+            new Vector3(1.419f, 1.81f, -3.261f), ManagedRotation.Euler(0f, 0f, 0f));
         el.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Right));
         return el;
     }
@@ -52,7 +52,7 @@ public class GrooveResizeSnapTests
 
     private KitchenElement MakeShelf()
         => Make("A34K1_upper_bottom (copy) (copy)", ShelfDims, ShelfCenter,
-            Quaternion.Euler(90f, 0f, 0f));
+            ManagedRotation.Euler(90f, 0f, 0f));
 
     [TearDown]
     public void TearDown()
@@ -131,7 +131,7 @@ public class GrooveResizeSnapTests
     {
         // Те же стойки, но без пазов — детентов на 1.565/1.569 быть не должно.
         var front = Make("front", new Vector3Int(332, 900, 18),
-            new Vector3(1.419f, 1.81f, -1.871f), Quaternion.Euler(0f, 180f, 0f));
+            new Vector3(1.419f, 1.81f, -1.871f), ManagedRotation.Euler(0f, 180f, 0f));
         var back = Make("back", new Vector3Int(332, 900, 18),
             new Vector3(1.419f, 1.81f, -3.261f), Quaternion.identity);
         var others = new List<KitchenElement> { front, back, MakeWall() };

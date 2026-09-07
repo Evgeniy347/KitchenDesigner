@@ -40,7 +40,7 @@ public class PartPlaneTests
     [Test]
     public void Of_BoardLaidFlatByRotation_FindsThicknessAlongItsLocalZ()
     {
-        var top = Part(new Vector3Int(1200, 600, 38), Quaternion.Euler(-90f, 0f, 0f));
+        var top = Part(new Vector3Int(1200, 600, 38), ManagedRotation.Euler(-90f, 0f, 0f));
         var plane = PartPlane.Of(top);
 
         Assert.AreEqual(2, plane.UpAxis,
@@ -66,7 +66,7 @@ public class PartPlaneTests
     [Test]
     public void Of_UpsideDownBoard_KeepsTheAxisButFlipsTheSign()
     {
-        var top = Part(new Vector3Int(1200, 600, 38), Quaternion.Euler(90f, 0f, 0f));
+        var top = Part(new Vector3Int(1200, 600, 38), ManagedRotation.Euler(90f, 0f, 0f));
         var plane = PartPlane.Of(top);
 
         Assert.AreEqual(2, plane.UpAxis);
@@ -79,11 +79,11 @@ public class PartPlaneTests
     [Test]
     public void MeshAxes_FollowTheOrderGrooveMeshExpects()
     {
-        Assert.AreEqual((0, 1), AxesOf(new Vector3Int(1200, 600, 38), Quaternion.Euler(-90f, 0f, 0f)),
+        Assert.AreEqual((0, 1), AxesOf(new Vector3Int(1200, 600, 38), ManagedRotation.Euler(-90f, 0f, 0f)),
             "вырез вдоль Z — сетка в XY, канонический случай GrooveMesh.Build");
         Assert.AreEqual((0, 2), AxesOf(new Vector3Int(1200, 38, 600), Quaternion.identity),
             "вдоль Y — сетка в XZ");
-        Assert.AreEqual((2, 1), AxesOf(new Vector3Int(38, 600, 1200), Quaternion.Euler(0f, 0f, -90f)),
+        Assert.AreEqual((2, 1), AxesOf(new Vector3Int(38, 600, 1200), ManagedRotation.Euler(0f, 0f, -90f)),
             "вдоль X — сетка в ZY");
     }
 
@@ -98,7 +98,7 @@ public class PartPlaneTests
     {
         Assert.IsTrue(PartPlane.Of(Part(new Vector3Int(1200, 38, 600), Quaternion.identity)).IsHorizontal);
         Assert.IsFalse(
-            PartPlane.Of(Part(new Vector3Int(1200, 38, 600), Quaternion.Euler(0f, 0f, 45f))).IsHorizontal,
+            PartPlane.Of(Part(new Vector3Int(1200, 38, 600), ManagedRotation.Euler(0f, 0f, 45f))).IsHorizontal,
             "наклонённая деталь — не столешница: ни одна её ось не смотрит вверх достаточно "
             + "уверенно, и врезать в неё технику нельзя");
     }
@@ -121,7 +121,7 @@ public class PartPlaneTests
     [Test]
     public void SurfacePoint_IsTheInverseOfPoseOf()
     {
-        var top = Part(new Vector3Int(1200, 600, 38), Quaternion.Euler(-90f, 30f, 0f));
+        var top = Part(new Vector3Int(1200, 600, 38), ManagedRotation.Euler(-90f, 30f, 0f));
         var plane = PartPlane.Of(top);
 
         var world = plane.SurfacePoint(150, -80);
@@ -138,11 +138,11 @@ public class PartPlaneTests
         var top = Part(new Vector3Int(1200, 38, 600), Quaternion.identity);
         var plane = PartPlane.Of(top);
 
-        var tiltOnly = Quaternion.AngleAxis(20f, Vector3.right);
+        var tiltOnly = ManagedRotation.RotX(20f);
         Assert.AreEqual(0f, plane.TwistAroundUpDeg(tiltOnly), 0.01f,
             "наклон панель не разворачивает: AlignToPart тут же уложит её обратно в пласть");
 
-        var twistAndTilt = Quaternion.AngleAxis(35f, Vector3.up) * tiltOnly;
+        var twistAndTilt = ManagedRotation.RotY(35f) * tiltOnly;
         Assert.AreEqual(35f, plane.TwistAroundUpDeg(twistAndTilt), 0.5f,
             "из смешанного поворота берётся только компонента вокруг нормали детали");
     }
@@ -162,7 +162,7 @@ public class PartPlaneTests
     public void TwistAngle_IsSigned()
     {
         Assert.AreEqual(-40f,
-            PartPlane.TwistAngleDeg(Quaternion.AngleAxis(-40f, Vector3.up), Vector3.up), 0.5f,
+            PartPlane.TwistAngleDeg(ManagedRotation.RotY(-40f), Vector3.up), 0.5f,
             "знак нужен: иначе разворот копился бы только в одну сторону");
     }
 }

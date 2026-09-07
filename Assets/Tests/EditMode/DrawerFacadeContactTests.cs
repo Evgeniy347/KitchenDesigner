@@ -83,7 +83,7 @@ public class DrawerFacadeContactTests
         var drawer = MakeDrawer("Ящик", new Vector3(0f, 0.043f, 0f));
         var facade = MakeFacade("Фасад", new Vector3(0f, 0.043f, 0.184f));
         // Поворот на 90° вокруг Y — грани больше не параллельны
-        facade.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        facade.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
         Assert.IsFalse(DrawerLinks.IsFacadeInContact(drawer, facade));
     }
 

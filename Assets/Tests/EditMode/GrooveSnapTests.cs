@@ -96,7 +96,7 @@ public class GrooveSnapTests
     private PanelElement MakeSeatedPanel(Face seat, float shortfallM, int gap)
     {
         var panel = MakePanel("двп", new Vector3Int(PanelDepthMM, PanelWidthMM, 3), gap);
-        panel.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        panel.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
 
         // Номинал по направлению посадки = глубина + два зазора.
         float halfNominal = 0.5f * (PanelDepthMM + 2 * gap) * AppConstants.MM_TO_UNITS;
@@ -223,7 +223,7 @@ public class GrooveSnapTests
         board.transform.position = Vector3.zero;
 
         var panel = MakePanel("двп", new Vector3Int(PanelDepthMM, PanelWidthMM, 3));
-        panel.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        panel.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
         panel.transform.position = Vector3.zero; // воткнута в глухую деталь
 
         var result = ConstraintValidator.Validate(new List<KitchenElement> { board, panel });

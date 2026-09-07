@@ -785,7 +785,7 @@ public class DrawerElementTests
     [Test]
     public void DoubleDrawer_WithSharedFacade_BothOpen_BothDrawersFullyOpen()
     {
-        var rot = Quaternion.Euler(0f, 270f, 0f);
+        var rot = ManagedRotation.Euler(0f, 270f, 0f);
 
         // Нижний ящик
         var goL = GameObject.CreatePrimitive(PrimitiveType.Cube);

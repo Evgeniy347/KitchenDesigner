@@ -24,9 +24,9 @@ public class SnapExistingContactTests : SnapTestBase
     {
         MakeFloor();
         _standing = Make("Standing", new Vector3Int(600, 720, 19),
-            new Vector3(-0.8905f, 0.449476f, 0.7418f), Quaternion.Euler(0f, 90f, 180f));
+            new Vector3(-0.8905f, 0.449476f, 0.7418f), ManagedRotation.Euler(0f, 90f, 180f));
         _lying = Make("Lying", new Vector3Int(600, 720, 19),
-            new Vector3(-1.2f, 0.098976f, 1.026f), Quaternion.Euler(270f, 0f, 0f));
+            new Vector3(-1.2f, 0.098976f, 1.026f), ManagedRotation.Euler(270f, 0f, 0f));
         _wall = Make("Wall", new Vector3Int(2800, 2500, 100),
             new Vector3(-0.1f, 1.25f, 1.45f));
     }

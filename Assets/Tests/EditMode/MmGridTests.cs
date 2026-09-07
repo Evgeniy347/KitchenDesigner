@@ -74,7 +74,7 @@ public class MmGridTests
     public void Rotated90_IsSnappedAlongWorldAxes()
     {
         var e = Make(new Vector3Int(1000, 100, 18), new Vector3(0f, 0f, 0f),
-            Quaternion.Euler(0f, 90f, 0f));
+            ManagedRotation.Euler(0f, 90f, 0f));
         e.transform.position = new Vector3(0.0003f, 0.0004f, 0.0007f);
         MmGrid.Snap(e);
 
@@ -88,7 +88,7 @@ public class MmGridTests
     {
         // У детали, повёрнутой на 37°, «грань на мм-сетке» смысла не имеет.
         var e = Make(new Vector3Int(600, 100, 18), new Vector3(0.1234f, 0f, 0.5678f),
-            Quaternion.Euler(0f, 37f, 0f));
+            ManagedRotation.Euler(0f, 37f, 0f));
         var before = e.transform.position;
 
         Assert.IsFalse(MmGrid.Snap(e));

@@ -70,7 +70,7 @@ public class ElementDuplicatorTests
     {
         var top = ElementFactory.CreatePart(new Vector3Int(1600, 650, 38), "Top", Vector3.zero);
         var topEl = top.GetComponent<KitchenElement>();
-        topEl.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+        topEl.transform.rotation = ManagedRotation.Euler(-90f, 0f, 0f);
         topEl.DimensionsMM = new Vector3Int(1600, 650, 38);
 
         var go = ElementFactory.CreateCooktop("Hob", new Vector3(0f, 0.019f + 0.05f, 0f));
@@ -90,7 +90,7 @@ public class ElementDuplicatorTests
     {
         var top = ElementFactory.CreatePart(new Vector3Int(1600, 650, 38), "Top", Vector3.zero);
         var topEl = top.GetComponent<KitchenElement>();
-        topEl.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+        topEl.transform.rotation = ManagedRotation.Euler(-90f, 0f, 0f);
         topEl.DimensionsMM = new Vector3Int(1600, 650, 38);
 
         var go = ElementFactory.CreateSink("Sink", new Vector3(0f, 0.019f + 0.05f, 0f));
@@ -152,7 +152,7 @@ public class ElementDuplicatorTests
     {
         var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "Board", Vector3.zero);
         var source = go.GetComponent<KitchenElement>();
-        source.transform.rotation = Quaternion.Euler(0f, 37f, 0f);
+        source.transform.rotation = ManagedRotation.Euler(0f, 37f, 0f);
 
         var copy = ElementFactory.Duplicate(source);
 

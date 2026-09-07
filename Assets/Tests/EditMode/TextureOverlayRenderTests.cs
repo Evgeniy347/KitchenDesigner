@@ -142,7 +142,7 @@ public class TextureOverlayRenderTests
         Assert.AreEqual(450f, TextureOverlayRenderer.HalfExtentAlong(window, Vector3.right), 1e-2f,
             "невёрнутый проём: половина ширины по X");
 
-        go.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        go.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
 
         Assert.AreEqual(50f, TextureOverlayRenderer.HalfExtentAlong(window, Vector3.right), 1e-2f,
             "после поворота вдоль мировой оси X лежит уже толщина: «ширина проёма ↔ ось грани» "

@@ -72,7 +72,7 @@ public class SnapDiagnoseTests : SnapTestBase
     {
         // Поворот вокруг ДВУХ осей: ни одна грань не остаётся осевой
         // (при повороте вокруг одной оси грани этой оси остаются встречными).
-        var a = MakeStd("A", new Vector3(0f, 0.2f, 0f), Quaternion.Euler(45f, 45f, 0f));
+        var a = MakeStd("A", new Vector3(0f, 0.2f, 0f), ManagedRotation.Euler(45f, 45f, 0f));
         var b = MakeStd("B", new Vector3(0f, 0.2f, 0.4f));
 
         var d = Diagnose(b, a, b.transform.position);
@@ -158,7 +158,7 @@ public class SnapDiagnoseTests : SnapTestBase
         var moved = MakeStd("M", new Vector3(0f, 0.2f, 0f));
         // У повёрнутой детали встречных граней нет, поэтому зазора (gapMM = -1)
         // для неё не существует; стоит она вчетверо дальше встречной.
-        var turned = MakeStd("Повёрнутая", new Vector3(0f, 0.2f, 0.5f), Quaternion.Euler(45f, 45f, 0f));
+        var turned = MakeStd("Повёрнутая", new Vector3(0f, 0.2f, 0.5f), ManagedRotation.Euler(45f, 45f, 0f));
         var facing = MakeStd("Встречная", new Vector3(0f, 0.2f, 0.05f));
 
         var d = SnapSystem.Diagnose(moved, new List<KitchenElement> { turned, facing },

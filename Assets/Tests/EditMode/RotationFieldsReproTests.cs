@@ -69,7 +69,7 @@ public class RotationFieldsReproTests
         var board = go.AddComponent<KitchenElement>();
         board.PartName = "Board";
         board.DimensionsMM = new Vector3Int(800, 400, 18);
-        board.transform.rotation = Quaternion.Euler(euler);
+        board.transform.rotation = ManagedRotation.Euler(euler.x, euler.y, euler.z);
         return board;
     }
 
@@ -145,7 +145,7 @@ public class RotationFieldsReproTests
         Assert.AreEqual(90f, Quaternion.Angle(before, board.transform.rotation), 0.05f,
             "кнопка обязана поворачивать элемент на 90°, а не только править поля");
         Assert.AreEqual(0f, Quaternion.Angle(board.transform.rotation,
-            Quaternion.Euler(Shown("X"), Shown("Y"), Shown("Z"))), 0.05f,
+            ManagedRotation.Euler(Shown("X"), Shown("Y"), Shown("Z"))), 0.05f,
             "поза элемента и показанные углы описывают один и тот же поворот");
     }
 
@@ -169,7 +169,7 @@ public class RotationFieldsReproTests
         _menu!.Open(board);
         Click("CtxRotX");
 
-        board.transform.rotation = Quaternion.Euler(0f, 45f, 0f);
+        board.transform.rotation = ManagedRotation.Euler(0f, 45f, 0f);
         _menu!.RefreshTransformFields();
 
         AssertShown(0f, 45f, 0f,

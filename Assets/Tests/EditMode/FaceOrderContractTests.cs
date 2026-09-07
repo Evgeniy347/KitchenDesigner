@@ -107,7 +107,7 @@ public class FaceOrderContractTests
     [Test]
     public void Contract_SurvivesRotation()
     {
-        var rot = Quaternion.Euler(0f, 90f, 0f);
+        var rot = ManagedRotation.Euler(0f, 90f, 0f);
         var el = MakeBoard(new Vector3Int(600, 400, 18), rot);
         var faces = el.GetFaces();
 

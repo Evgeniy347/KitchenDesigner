@@ -15,7 +15,7 @@ public class HandlePlacementTests
     private KitchenElement Make(Vector3 pos, Vector3Int dims, float yaw = 0f, bool wall = false)
     {
         var go = new GameObject(wall ? "W" : "P");
-        go.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, yaw, 0f));
+        go.transform.SetPositionAndRotation(pos, ManagedRotation.Euler(0f, yaw, 0f));
         var e = go.AddComponent<KitchenElement>();
         e.DimensionsMM = dims;
         if (wall) go.AddComponent<Wall>();

@@ -155,7 +155,7 @@ public class AttachLinksTests
         child.AttachedToName = parent.PartName;
 
         var rotBefore = parent.transform.rotation;
-        var rotAfter = Quaternion.Euler(0f, 90f, 0f);
+        var rotAfter = ManagedRotation.Euler(0f, 90f, 0f);
         var cmd = AttachMove.FollowersCommand(parent, Vector3.zero, rotBefore, Vector3.zero, rotAfter);
         Assert.IsNotNull(cmd);
         parent.transform.rotation = rotAfter;

@@ -375,7 +375,7 @@ public class ConstraintValidatorTests
         // вторая стена перпендикулярно, её торец заходит в тело первой на 80 мм
         var b = ElementFactory.CreateWall(new Vector3Int(2000, 2700, 250), "Wall_B",
             new Vector3(0f, 0f, 0.955f));
-        b.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        b.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
 
         var elements = new List<KitchenElement>
             { a.GetComponent<KitchenElement>(), b.GetComponent<KitchenElement>() };
@@ -452,7 +452,7 @@ public class ConstraintValidatorTests
         var dims = new Vector3Int(3000, 2500, 100);
         var south = ElementFactory.CreateWall(dims, "Rot_S", new Vector3(1.5f, 1.25f, 0f));
         var east = ElementFactory.CreateWall(dims, "Rot_E", new Vector3(3f, 1.25f, 1.5f));
-        east.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        east.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
 
         var elements = new List<KitchenElement>
             { south.GetComponent<KitchenElement>(), east.GetComponent<KitchenElement>() };

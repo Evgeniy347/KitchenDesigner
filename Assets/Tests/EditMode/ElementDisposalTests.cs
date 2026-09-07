@@ -101,7 +101,7 @@ public class ElementDisposalTests
     {
         var top = ElementFactory.CreatePart(new Vector3Int(1200, 650, 38), "Top", Vector3.zero);
         var topEl = top.GetComponent<KitchenElement>();
-        topEl.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+        topEl.transform.rotation = ManagedRotation.Euler(-90f, 0f, 0f);
         topEl.DimensionsMM = new Vector3Int(1200, 650, 38);
 
         var sinkGo = ElementFactory.CreateSink("Sink", new Vector3(0f, 0.019f + 0.05f, 0f));

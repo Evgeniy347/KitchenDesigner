@@ -34,14 +34,14 @@ public class GrooveEdgeSnapTests
         // Поворот Y 180° переводит ЛОКАЛЬНУЮ левую кромку в МИРОВУЮ правую (X=1.585),
         // поэтому паз в сцене задаётся как "left".
         var side = Make("A34K1_upper_side_L", new Vector3Int(332, 900, 18),
-            new Vector3(SideCenterX, 1.81f, -1.871f), Quaternion.Euler(0f, 180f, 0f));
+            new Vector3(SideCenterX, 1.81f, -1.871f), ManagedRotation.Euler(0f, 180f, 0f));
         side.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Left));
         return side;
     }
 
     private KitchenElement MakeShelf(float x)
         => Make("A34K1_upper_bottom", new Vector3Int(254, 1372, 18),
-            new Vector3(x, 1.81f, -2.566f), Quaternion.Euler(90f, 0f, 0f));
+            new Vector3(x, 1.81f, -2.566f), ManagedRotation.Euler(90f, 0f, 0f));
 
     [SetUp]
     public void SetUp() => KitchenSettings.Instance.SnapEnabled = true;

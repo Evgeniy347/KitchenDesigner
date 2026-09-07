@@ -124,10 +124,10 @@ public class CommandStackTests
         var e = Make("M", Vector3.zero);
         var before = new Vector3(0, 0, 0);
         var after = new Vector3(1, 0, 2);
-        var cmd = new MoveCommand(e, before, after, Quaternion.identity, Quaternion.Euler(0, 90, 0));
+        var cmd = new MoveCommand(e, before, after, Quaternion.identity, ManagedRotation.Euler(0, 90, 0));
         cmd.Execute();
         Assert.AreEqual(after, e.transform.position);
-        Assert.AreEqual(Quaternion.Euler(0, 90, 0).eulerAngles.y, e.transform.rotation.eulerAngles.y, 0.01f);
+        Assert.AreEqual(ManagedRotation.Euler(0, 90, 0).eulerAngles.y, e.transform.rotation.eulerAngles.y, 0.01f);
         cmd.Undo();
         Assert.AreEqual(before, e.transform.position);
     }

@@ -101,7 +101,7 @@ public class ModuleResizeTests
     {
         var go = new GameObject("rotated");
         go.transform.position = new Vector3(0.3f, 0.36f, 0f);
-        go.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        go.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
         var e = go.AddComponent<KitchenElement>();
         e.PartName = "rotated";
         e.DimensionsMM = new Vector3Int(600, 720, 18);

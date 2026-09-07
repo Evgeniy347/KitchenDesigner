@@ -68,7 +68,7 @@ public class FacadeValidatorTests
     public void GetFaceNormal_Rotated90Y_PointsToPositiveX()
     {
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
-        f.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        f.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
         var normal = FacadeValidator.GetFaceNormal(f);
         Assert.AreEqual(1f, normal.x, 1e-5f);
         Assert.AreEqual(0f, normal.y, 1e-5f);
@@ -89,7 +89,7 @@ public class FacadeValidatorTests
         // Фасад стоит спереди (z = -0.3), повёрнут на 180° — лицевая грань (+Z локально)
         // смотрит в -Z, то есть наружу от короба.
         var f = MakeFacade("F", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, -0.3f));
-        f.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+        f.transform.rotation = ManagedRotation.Euler(0f, 180f, 0f);
         GroupManager.Link(new List<KitchenElement> { box, f });
         Assert.IsFalse(FacadeValidator.IsFacingInward(f));
     }

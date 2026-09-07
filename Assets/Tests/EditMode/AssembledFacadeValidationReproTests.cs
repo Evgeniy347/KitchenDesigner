@@ -61,7 +61,7 @@ public class AssembledFacadeValidationReproTests
         var bottom = MakeElement("B3_fake_bottom",
             new Vector3Int(564, 540, 16),
             new Vector3(0.127f, 0.108f, -3.35f),
-            Quaternion.Euler(270f, 0f, 0f));
+            ManagedRotation.Euler(270f, 0f, 0f));
 
         var door = MakeAssembledFacade("B3_door",
             new Vector3Int(596, 716, 18),
@@ -115,7 +115,7 @@ public class AssembledFacadeValidationReproTests
         var bottom = MakeElement("B3_fake_bottom",
             new Vector3Int(564, 540, 16),
             new Vector3(0.127f, 0.108f, -3.35f),
-            Quaternion.Euler(270f, 0f, 0f));
+            ManagedRotation.Euler(270f, 0f, 0f));
 
         var door = MakeAssembledFacade("B3_door",
             new Vector3Int(596, 716, 18),
@@ -153,7 +153,7 @@ public class AssembledFacadeValidationReproTests
         MakeElement("B3_fake_bottom",
             new Vector3Int(564, 540, 16),
             new Vector3(0.127f, 0.108f, -3.35f),
-            Quaternion.Euler(270f, 0f, 0f));
+            ManagedRotation.Euler(270f, 0f, 0f));
 
         MakeAssembledFacade("B3_door",
             new Vector3Int(596, 716, 18),
@@ -204,7 +204,7 @@ public class AssembledFacadeValidationReproTests
         MakeElement("B3_fake_bottom",
             new Vector3Int(564, 540, 16),
             new Vector3(0.127f, 0.108f, -3.35f),
-            Quaternion.Euler(270f, 0f, 0f));
+            ManagedRotation.Euler(270f, 0f, 0f));
 
         MakeAssembledFacade("B3_door",
             new Vector3Int(596, 716, 18),
@@ -282,7 +282,7 @@ public class AssembledFacadeValidationReproTests
         MakeElement("B3_fake_bottom",
             new Vector3Int(564, 540, 16),
             new Vector3(0.127f, 0.108f, -3.35f),
-            Quaternion.Euler(270f, 0f, 0f));
+            ManagedRotation.Euler(270f, 0f, 0f));
 
         MakeAssembledFacade("B3_door",
             new Vector3Int(596, 716, 18),
@@ -374,7 +374,7 @@ public class AssembledFacadeValidationReproTests
         var bottom = MakeElement("B3_fake_bottom",
             new Vector3Int(564, 540, 16),
             new Vector3(0.127f, 0.108f, -3.35f),
-            Quaternion.Euler(270f, 0f, 0f));
+            ManagedRotation.Euler(270f, 0f, 0f));
 
         var door = MakeAssembledFacade("B3_door",
             new Vector3Int(596, 716, 18),

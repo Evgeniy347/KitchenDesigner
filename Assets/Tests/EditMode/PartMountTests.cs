@@ -40,7 +40,7 @@ public class PartMountTests
         _spawned.Add(go);
         var el = go.AddComponent<KitchenElement>();
         el.PartName = name;
-        el.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+        el.transform.rotation = ManagedRotation.Euler(-90f, 0f, 0f);
         el.DimensionsMM = new Vector3Int(1200, 650, TopThicknessMM);
         PartRegistry.Register(el);
         return el;

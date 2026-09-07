@@ -38,7 +38,7 @@ public class FacadeOpeningReproTests
             "A34K1_upper_door_L", new Vector3(1.244f, 1.810f, -2.199f), 2, 2, 2, 2);
         _spawned.Add(facadeGo);
         var facade = facadeGo.GetComponent<FacadeElement>();
-        facade.transform.rotation = Quaternion.Euler(0f, -90f, 0f);
+        facade.transform.rotation = ManagedRotation.Euler(0f, -90f, 0f);
         facade.Mode = DoorMode.HingeFrontRight;
 
         var sideGo = ElementFactory.CreatePart(new Vector3Int(552, 2160, 18),
@@ -93,7 +93,7 @@ public class FacadeOpeningReproTests
             "A34K1_upper_door_L", new Vector3(1.244f, 1.810f, -2.199f), 2, 2, 2, 2);
         _spawned.Add(facadeGo);
         var facade = facadeGo.GetComponent<FacadeElement>();
-        facade.transform.rotation = Quaternion.Euler(0f, -90f, 0f);
+        facade.transform.rotation = ManagedRotation.Euler(0f, -90f, 0f);
         facade.Mode = DoorMode.HingeFrontRight;
 
         facade.SetOpen(true);

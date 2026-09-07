@@ -28,7 +28,7 @@ public class GrooveSceneReproTests
     private KitchenElement MakeFrontSide()
     {
         var el = Make("A34K1_upper_side_L", new Vector3Int(332, 900, 18),
-            new Vector3(1.419f, 1.81f, -1.871f), Quaternion.Euler(0f, 180f, 0f));
+            new Vector3(1.419f, 1.81f, -1.871f), ManagedRotation.Euler(0f, 180f, 0f));
         el.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Left));
         return el;
     }
@@ -37,14 +37,14 @@ public class GrooveSceneReproTests
     private KitchenElement MakeBackSide()
     {
         var el = Make("A12_upper_A_side (copy)", new Vector3Int(332, 900, 18),
-            new Vector3(1.419f, 1.81f, -3.261f), Quaternion.Euler(0f, 0f, 0f));
+            new Vector3(1.419f, 1.81f, -3.261f), ManagedRotation.Euler(0f, 0f, 0f));
         el.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Right));
         return el;
     }
 
     private KitchenElement MakeShelf()
         => Make("A34K1_upper_bottom (copy) (copy)", new Vector3Int(254, 1372, 18),
-            new Vector3(1.380f, 1.81f, -2.566f), Quaternion.Euler(90f, 0f, 0f));
+            new Vector3(1.380f, 1.81f, -2.566f), ManagedRotation.Euler(90f, 0f, 0f));
 
     /// <summary>Стена, к которой прижат весь ряд: её внутренняя грань лежит в той
     /// же плоскости X=1.585, что и правая кромка стоек. Именно она перетягивала

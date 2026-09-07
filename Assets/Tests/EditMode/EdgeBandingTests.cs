@@ -688,7 +688,7 @@ public class EdgeBandingTests
     public void EdgeHighlight_BandDepth_UsesPercentOnSmallPart_AndSurvivesRotation()
     {
         var small = CreatePart("Small", new Vector3Int(120, 18, 100));
-        small.transform.rotation = Quaternion.Euler(0f, 37f, 0f);
+        small.transform.rotation = ManagedRotation.Euler(0f, 37f, 0f);
         var layout = EdgeBanding.LayoutOf(small.DimensionsMM);
         var end = small.GetFaces()[layout.FaceIndex(EdgeSide.W1)];
 

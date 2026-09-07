@@ -175,7 +175,7 @@ public class SnapScenarioTests : SnapTestBase
     {
         var a = MakeStd("A", Vector3.zero);
         var b = Make("B", new Vector3Int(400, 400, 18), Vector3.zero,
-            Quaternion.AngleAxis(90f, Vector3.up));
+            ManagedRotation.RotY(90f));
         AssertFlushContact(b, a, new Vector3(0.43f, 0f, 0f));
     }
 
@@ -183,7 +183,7 @@ public class SnapScenarioTests : SnapTestBase
     public void Rotated180AroundY_SnapsLikeUnrotated()
     {
         var a = MakeStd("A", Vector3.zero);
-        var b = MakeStd("B", Vector3.zero, Quaternion.AngleAxis(180f, Vector3.up));
+        var b = MakeStd("B", Vector3.zero, ManagedRotation.RotY(180f));
         // Нормали антипараллельны → |dot|≈1, снэп как у неповёрнутой.
         AssertSnappedAt(b, a, new Vector3(0.83f, 0f, 0f), new Vector3(0.80f, 0f, 0f));
     }
@@ -195,7 +195,7 @@ public class SnapScenarioTests : SnapTestBase
         // Проверяем, что повёрнутая по X деталь всё равно прилипает к полу плоскостью.
         var floor = MakeFloor();
         var b = Make("B", new Vector3Int(800, 400, 18), Vector3.zero,
-            Quaternion.AngleAxis(90f, Vector3.right));
+            ManagedRotation.RotX(90f));
         AssertFlushContact(b, floor, new Vector3(0f, 0.05f, 0f));
     }
 

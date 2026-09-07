@@ -201,8 +201,8 @@ public class ElementMoverTests
     public void MoveCommand_Undo_RestoresPositionAndRotation()
     {
         var e = Make(new Vector3(0, 0, 0));
-        var startRot = Quaternion.Euler(0, 0, 0);
-        var movedRot = Quaternion.Euler(0, 90, 0);
+        var startRot = ManagedRotation.Euler(0, 0, 0);
+        var movedRot = ManagedRotation.Euler(0, 90, 0);
         var cmd = new MoveCommand(e, Vector3.zero, new Vector3(2, 0, 0), startRot, movedRot);
 
         cmd.Execute();

@@ -181,7 +181,7 @@ public class WindowSnapTests : SnapTestBase
 
         // Явный перенос к стене B — привязка переключается.
         winGo.transform.position = new Vector3(-1.5f, 1.2f, 0.5f);
-        winGo.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        winGo.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
         window.SnapToWall();
         Assert.AreEqual("Wall_B", window.AttachedWallName);
     }

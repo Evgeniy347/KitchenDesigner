@@ -124,7 +124,7 @@ public class SnapshotTests
         var go = ElementFactory.CreatePart(new Vector3Int(600, 600, 18), "CustomBoard",
             new Vector3(1.5f, 2.5f, -3.0f));
         var el = Add(go);
-        go.transform.rotation = Quaternion.Euler(0, 45, 0);
+        go.transform.rotation = ManagedRotation.Euler(0, 45, 0);
         el!.Movable = false;
         el!.Transparent = true;
         el!.MaterialId = "oak";
@@ -345,7 +345,7 @@ public class SnapshotTests
         var go = ElementFactory.CreateRadialShelf(450, 450, 18, 450, "BigRadial",
             new Vector3(0.5f, 0.01f, -1.0f));
         var shelf = go.GetComponent<RadialShelfElement>();
-        go.transform.rotation = Quaternion.Euler(0, 90, 0);
+        go.transform.rotation = ManagedRotation.Euler(0, 90, 0);
         shelf.MaterialId = "oak";
         Add(go);
 
@@ -372,7 +372,7 @@ public class SnapshotTests
                 new Vector3Int(600, 800, 100), "TintedWindow",
                 new Vector3(0.5f, 0.4f, -1.0f), GlassTint.Tinted, 70);
             var window = go.GetComponent<WindowElement>();
-            go.transform.rotation = Quaternion.Euler(0, 90, 0);
+            go.transform.rotation = ManagedRotation.Euler(0, 90, 0);
             window.MaterialId = "oak";
             Add(go);
 

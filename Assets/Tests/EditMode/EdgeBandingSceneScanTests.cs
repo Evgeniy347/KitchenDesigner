@@ -202,7 +202,7 @@ public class EdgeBandingSceneScanTests
 
         var side = CreatePart("Side", new Vector3Int(18, 100, 700),
             new Vector3(0.409f, 0f, 0f));
-        side.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        side.transform.rotation = ManagedRotation.Euler(90f, 0f, 0f);
 
         var coverage = EdgeBanding.Coverage(shelf, new List<KitchenElement> { shelf, side });
 
