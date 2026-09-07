@@ -394,6 +394,63 @@ public class EdgeSubstrateTests
     }
 
     [Test]
+    public void SuppressedSide_GivesTheSpecificationOneEdgeLess()
+    {
+        // Красная сторона — это ЯВНОЕ «кромки нет». Проверяется по числу
+        // непустых колонок, а не по конкретной стороне: колонка исчезает ровно
+        // одна, соседние не задеты. Тот же ответ обязаны дать подложка в 3D и
+        // поле edges в MCP — за это отвечает единственный читатель
+        // EdgeBanding.HasEdgeEffective и EdgeStateSingleReaderTests.
+        var shelf = MakePart(new Vector3Int(600, 18, 500));
+        var all = PartRegistry.GetAll();
+
+        int before = NonEmptyEdgeColumns(EdgeColumns.For(shelf, all));
+        Assume.That(before, Is.EqualTo(4), "полка стоит одна — кромка на всех четырёх торцах");
+
+        shelf.SetEdgeState(EdgeSide.W1, EdgeSideState.Suppressed);
+
+        Assert.AreEqual(before - 1, NonEmptyEdgeColumns(EdgeColumns.For(shelf, all)),
+            "«убрать» на открытом торце обязано убрать кромку из раскроя — иначе красный "
+            + "цвет в панели не значит ничего");
+        Assert.AreEqual(0, EdgeSubstrate.BareFaceMask(shelf, all)
+                & ~(1 << EdgeBanding.LayoutOf(shelf.DimensionsMM).FaceIndex(EdgeSide.W1)),
+            "подложка появилась ровно на том же торце и больше нигде");
+    }
+
+    [Test]
+    public void ForcedSide_KeepsTheEdgeOnAnEndTheSceneCovers()
+    {
+        // Обратное решение: торец закрыт соседом, а человек говорит «кромка
+        // здесь есть». Раскрой обязан его услышать — ради этого состояние и
+        // называется присутствием кромки, а не «пропустить проверку».
+        var shelf = MakePart(new Vector3Int(600, 18, 500));
+        float toU = AppConstants.MM_TO_UNITS;
+        var side = MakePart(new Vector3Int(18, 700, 500));
+        side.transform.position = new Vector3((600 + 18) * 0.5f * toU, 0f, 0f);
+        var all = PartRegistry.GetAll();
+
+        var layout = EdgeBanding.LayoutOf(shelf.DimensionsMM);
+        var covered = EdgeStates.All.First(sd =>
+            (EdgeSubstrate.BareFaceMask(shelf, all) & (1 << layout.FaceIndex(sd))) != 0);
+
+        int before = NonEmptyEdgeColumns(EdgeColumns.For(shelf, all));
+        shelf.SetEdgeState(covered, EdgeSideState.Forced);
+
+        Assert.AreEqual(before + 1, NonEmptyEdgeColumns(EdgeColumns.For(shelf, all)),
+            $"{covered}: «принудительно есть» добавляет кромку в раскрой на закрытом торце");
+        Assert.AreEqual(0, EdgeSubstrate.BareFaceMask(shelf, all) & (1 << layout.FaceIndex(covered)),
+            "и подложка с этого торца уходит: 3D и раскрой говорят одно и то же");
+    }
+
+    private static int NonEmptyEdgeColumns(EdgeColumns c)
+    {
+        int n = 0;
+        foreach (var column in new[] { c.l1, c.l2, c.w1, c.w2 })
+            if (!string.IsNullOrEmpty(column)) n++;
+        return n;
+    }
+
+    [Test]
     public void Mask_EdgeBandingOff_NeedsNoNeighbours()
     {
         // Выключатель снят — кромки нет ни на одном торце, и спрашивать соседей
