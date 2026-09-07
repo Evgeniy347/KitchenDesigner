@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -151,6 +152,11 @@ namespace KitchenDesigner.Core.UI
             int totalH = PillarElement.TopHeightMM + midHeightMM + PillarElement.BottomHeightMM;
             PlaceCenteredOnGround(totalH, pos => ElementFactory.CreatePillar(midHeightMM, name, pos));
         }
+
+        public void SpawnPipe(string name) =>
+            PlaceCenteredOnGround(PipeElementSpec.DEFAULT_LENGTH_MM,
+                pos => ElementFactory.CreatePipe(PipeSpec.DEFAULT_SIZE,
+                    PipeElementSpec.DEFAULT_LENGTH_MM, name, pos));
 
         public void SpawnFloor(Vector3Int dims, string name) =>
             PlaceAtHeightUnaffectedByGrid(-dims.y * 0.5f * AppConstants.MM_TO_UNITS,

@@ -481,6 +481,21 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, pillar);
         }
 
+        public GameObject CreatePipe(string sizeId, int lengthMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewCube(name, "Труба", position);
+            ElementRoot.SwapBoxColliderForMeshCollider(go);
+
+            var pipe = go.AddComponent<PipeElement>();
+            pipe.PartName = go.name;
+            pipe.SizeId = sizeId;
+            pipe.LengthMM = lengthMM;
+            pipe.DimensionsMM = new Vector3Int(pipe.SectionMM, pipe.LengthMM, pipe.SectionMM);
+
+            if (DefaultMaterial != null) MaterialManager.ApplyById(pipe, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(go, pipe);
+        }
+
         public GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position)
         {
             var go = ElementRoot.NewCube(name, "Пол", position);

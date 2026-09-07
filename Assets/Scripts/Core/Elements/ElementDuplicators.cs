@@ -101,6 +101,12 @@ namespace KitchenDesigner.Core
                      ((PillarElement)source).DiameterMM),
              CopyMaterial),
 
+            (el => el is PipeElement,
+             (factory, source, pos) =>
+                 factory.CreatePipe(((PipeElement)source).SizeId, ((PipeElement)source).LengthMM,
+                     source.PartName, pos),
+             CopyMaterial),
+
             (el => el is TableElement,
              (factory, source, pos) => factory.CreateTable(source.DimensionsMM, source.PartName, pos),
              (source, copy) =>

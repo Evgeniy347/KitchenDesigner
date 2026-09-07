@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using KitchenDesigner.Core.MCP.Contract;
+using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core.MCP
 {
@@ -131,6 +132,10 @@ namespace KitchenDesigner.Core.MCP
                     item.width ?? PillarElement.DiameterMM_Default),
 
                 ["screw_leg"] = (item, pos) => ElementFactory.CreateScrewLeg(item.name, pos),
+
+                ["pipe"] = (item, pos) => ElementFactory.CreatePipe(
+                    item.pipe_size ?? PipeSpec.DEFAULT_SIZE,
+                    item.height ?? PipeElementSpec.DEFAULT_LENGTH_MM, item.name, pos),
 
                 ["sink"] = (item, pos) => ElementFactory.CreateSink(item.name, pos),
 

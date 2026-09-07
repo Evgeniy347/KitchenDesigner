@@ -56,6 +56,7 @@ namespace KitchenDesigner.Core.UI
         void SpawnScrewLeg(string name);
 
         void SpawnPillar(int midHeightMM, string name);
+        void SpawnPipe(string name);
 
         void SpawnFloor(Vector3Int dims, string name);
 

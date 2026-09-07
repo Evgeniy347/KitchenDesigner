@@ -198,6 +198,9 @@ namespace KitchenDesigner.Core
 		public int screwLegInsertionMM = ScrewLegSpec.DEFAULT_INSERTION_MM;
 		public int screwLegBaseDiameterMM = ScrewLegSpec.DEFAULT_BASE_DIAMETER_MM;
 		public int screwLegBaseHeightMM = ScrewLegSpec.DEFAULT_BASE_HEIGHT_MM;
+		public bool isPipe = false;
+		public string pipeSizeId = KitchenDesigner.Core.Plumbing.PipeSpec.DEFAULT_SIZE;
+		public int pipeLengthMM = PipeElementSpec.DEFAULT_LENGTH_MM;
 
         public ElementData() { }
 

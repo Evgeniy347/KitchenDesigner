@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Tests;
 
 /// <summary>
@@ -1874,6 +1875,30 @@ public class IsoScreenshotTests : ElementFrameTests
             "снимок обязан показывать резьбу по умолчанию — M6");
 
         yield return RenderElementIso(go, "iso_screw_leg_m6x50.png", 2.5f);
+    }
+
+    /// <summary>Труба ДУ 20 длиной 600 мм — ровно то, что даёт сайдбар. Имя кадра
+    /// само и есть планка качества: в нём стоят и условный проход, и длина, поэтому
+    /// кадр, на котором труба другого диаметра или другой длины, читается как
+    /// расхождение сразу, без сверки с кодом.</summary>
+    [UnityTest]
+    public IEnumerator IsoPipe_Dn20_600()
+    {
+        const int lengthMM = 600;
+        Vector3 pos = new Vector3(0f, lengthMM * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreatePipe(PipeSpec.DEFAULT_SIZE, lengthMM, "IsoPipe", pos);
+        _spawned.Add(go);
+        var pipe = go.GetComponent<PipeElement>();
+        Assert.IsNotNull(pipe, "труба обязана быть трубой, а не доской");
+        Assert.AreEqual("3/4\"", pipe!.Designation,
+            "снимок обязан показывать ряд по умолчанию — ДУ 20");
+        Assert.AreEqual(lengthMM, pipe.LengthMM);
+        Assert.AreEqual(27, pipe.DimensionsMM.x,
+            "сечение габарита берётся из наружного диаметра 26,8, а не из введённой ширины");
+        Assert.AreEqual(pipe.DimensionsMM.x, pipe.DimensionsMM.z,
+            "труба круглая: ширина и глубина у неё равны всегда");
+
+        yield return RenderElementIso(go, "iso_pipe_dn20_600.png", 2.5f);
     }
 
     [UnityTest]

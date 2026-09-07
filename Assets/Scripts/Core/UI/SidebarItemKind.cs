@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core.UI
         Pouffe,
         Pillar,
         ScrewLeg,
+        Pipe,
         Sink,
         Cooktop,
         Oven,

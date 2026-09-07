@@ -157,6 +157,10 @@ namespace KitchenDesigner.Core.MCP
                 if (op.mid_height_mm.HasValue) pillar.MidHeightMM = op.mid_height_mm.Value;
                 if (op.diameter_mm.HasValue) pillar.DiameterMM = op.diameter_mm.Value;
             }),
+            For<PipeElement>((op, pipe) =>
+            {
+                if (op.pipe_size != null) pipe.SizeId = op.pipe_size;
+            }),
             For<ScrewLegElement>((op, leg) =>
             {
                 if (op.screw_thread != null) leg.Thread = op.screw_thread;

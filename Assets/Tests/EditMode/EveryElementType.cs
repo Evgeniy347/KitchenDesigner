@@ -44,6 +44,7 @@ public static class EveryElementType
         (typeof(BedElement), n => ElementFactory.CreateBed(new Vector3Int(1607, 503, 2003), false, false, n, Vector3.zero)),
         (typeof(PillarElement), n => ElementFactory.CreatePillar(713, n, Vector3.zero, 87)),
         (typeof(ScrewLegElement), n => ElementFactory.CreateScrewLeg(n, Vector3.zero)),
+        (typeof(PipeElement), n => ElementFactory.CreatePipe(KitchenDesigner.Core.Plumbing.PipeSpec.Dn32, 917, n, Vector3.zero)),
         (typeof(FloorElement), n => ElementFactory.CreateFloor(new Vector3Int(3007, 23, 3011), n, Vector3.zero)),
         (typeof(LightSourceElement), n => ElementFactory.CreateLightSource(n, Vector3.zero)),
         (typeof(SinkElement), n => ElementFactory.CreateSink(n, Vector3.zero)),

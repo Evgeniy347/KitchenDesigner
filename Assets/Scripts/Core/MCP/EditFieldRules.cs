@@ -132,6 +132,7 @@ namespace KitchenDesigner.Core.MCP
             Unsupported("screw_top_mm", o => o.screw_top_mm.HasValue, el => el is ScrewLegElement),
             Unsupported("screw_bottom_mm", o => o.screw_bottom_mm.HasValue, el => el is ScrewLegElement),
             RejectSeatWithoutHost,
+            Unsupported("pipe_size", o => o.pipe_size != null, el => el is PipeElement),
             Unsupported("pouffe_seat_thickness", o => o.pouffe_seat_thickness.HasValue,
                 el => el is PouffeElement),
             Unsupported("bed_double", o => o.bed_double.HasValue, el => el is BedElement),
@@ -142,6 +143,7 @@ namespace KitchenDesigner.Core.MCP
 
             RejectParametricResize,
             RejectFixedApplianceEdits,
+            RejectPipeSection,
             RejectNonVerticalRotation,
             RejectUnparsableGrooves,
             RejectUnparsableTextureOverlays,
@@ -224,6 +226,14 @@ namespace KitchenDesigner.Core.MCP
                 errors.Add("width/height/depth not settable on a fixed appliance model (size is set by the manufacturer)");
             if (op.cutout_width.HasValue || op.cutout_depth.HasValue)
                 errors.Add("cutout_width/cutout_depth not settable on a fixed appliance model");
+        }
+
+        private static void RejectPipeSection(EditTarget target, List<string> errors)
+        {
+            var op = target.op;
+            if (!(target.el is PipeElement)) return;
+            if (op.width.HasValue || op.depth.HasValue)
+                errors.Add("width/depth not settable on a pipe (the section is set by pipe_size)");
         }
 
         private static void RejectNonVerticalRotation(EditTarget target, List<string> errors)

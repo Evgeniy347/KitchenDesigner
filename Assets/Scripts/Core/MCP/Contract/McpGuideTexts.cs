@@ -202,7 +202,7 @@ SELECTOR (a string; space-separated clauses, ALL must match)
   name:PATTERN             same, explicit
   type:board|wall|floor|window|door|drawer|facade|assembled_facade|
        radial_shelf|panel|table|radius_table|stool|chair|sofa|pouffe|bed|pillar|
-       screw_leg|toilet|wall_hung_toilet|bathtub|bath_mixer|
+       screw_leg|pipe|toilet|wall_hung_toilet|bathtub|bath_mixer|
        shower_column|socket|light_switch|light
   module:NAME / group:NAME by module name (mask allowed)
   thickness==18            compare a dimension in MM; also width/height/depth
@@ -427,6 +427,19 @@ ScrewLegElement       Screw-in levelling leg with a threaded insert
                       pair adds up to the host's span, and screw_left_mm /
                       screw_right_mm / screw_top_mm / screw_bottom_mm move the leg
                       by setting one of them.
+PipeElement           Straight water pipe, GOST 3262-75 (type:""pipe""). ONE
+                      editable number and one list: height is the LENGTH of the
+                      run, pipe_size is the nominal bore (dn15..dn50, default
+                      dn20 = 3/4""). Everything else about the section is DERIVED
+                      from pipe_size and reported read-only in ElementInfo
+                      (pipe.outerDiameterMM 26.8, innerDiameterMM 21.2,
+                      wallThicknessMM 2.8 for dn20); width and depth follow the
+                      outer diameter and are REJECTED by edit_elements. The run
+                      goes along the element's own Y, so rotate it to lay it
+                      flat. A run inside a wall or a floor is legal; crossing a
+                      part or a piece of furniture is PIP-03. A free end with no
+                      fitting on it is PIP-01, and two runs of different bore
+                      butted together is PIP-02.
 SinkElement / CooktopElement
                       Recessed appliances (type:""sink"" / ""cooktop""). They sit
                       on a plain board with a horizontal face (the countertop),

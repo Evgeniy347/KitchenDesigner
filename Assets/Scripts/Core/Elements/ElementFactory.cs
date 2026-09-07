@@ -113,6 +113,9 @@ namespace KitchenDesigner.Core
 		public static GameObject CreateScrewLeg(string name, Vector3 position) =>
 			Instance.CreateScrewLeg(name, position);
 
+		public static GameObject CreatePipe(string sizeId, int lengthMM, string name, Vector3 position) =>
+			Instance.CreatePipe(sizeId, lengthMM, name, position);
+
 		public static GameObject CreateOven(string name, Vector3 position) =>
 			Instance.CreateOven(name, position);
 

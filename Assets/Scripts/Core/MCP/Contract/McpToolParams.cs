@@ -415,6 +415,14 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Screw leg only: distance in MM from the CENTRE of the foot to the bottom edge of its host, the opposite of screw_top_mm — the pair adds up to the host's span along that face. Moves the leg. Rejected when the leg has no host. Omit to keep.", Min = 0, Max = 10000)]
         public int? screw_bottom_mm;
 
+        [McpParam("Pipe only: nominal bore of the GOST 3262-75 run. It is the ONLY source of "
+                  + "the section: outer diameter, inner diameter and wall thickness are derived "
+                  + "from it and reported read-only in ElementInfo (pipe.*), and width/depth "
+                  + "follow the outer diameter — sending them is rejected. Length is the height "
+                  + "of the element. Omit to keep.",
+            Enum = new[] { "dn15", "dn20", "dn25", "dn32", "dn40", "dn50" })]
+        public string? pipe_size;
+
         [McpParam("Pouffe only: thickness of the soft seat cushion in MM, clamped to "
                   + "20..height/3. What is left of the height goes to the upholstered box "
                   + "below it — a pouffe has no legs. Omit to keep.", Min = 1)]
@@ -460,7 +468,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "pipe", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch" })]
         public string? type;
 
         [McpParam("X of the MINIMUM world corner in MM — the same number get returns in anchor[0].")] public float anchor_x_mm;
@@ -479,6 +487,12 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "types oven and dishwasher have exactly one model each and need no value here.",
             Enum = new[] { "Bosch PUE611BB5E", "Bosch HBA514BB3", "Bosch SMV25EX02E" })]
         public string? model;
+
+        [McpParam("Pipe only: nominal bore of the GOST 3262-75 run, default dn20 (3/4\"). It sets "
+                  + "the whole section — width and depth follow the outer diameter and are "
+                  + "ignored here; height is the length of the run.",
+            Enum = new[] { "dn15", "dn20", "dn25", "dn32", "dn40", "dn50" })]
+        public string? pipe_size;
     }
 
     [Serializable]
@@ -659,7 +673,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsSetAttr
     {
-        [McpParam("Selector over the scene. Space-separated clauses (AND): name mask 'B4_*', 'name:PAT', 'type:board|wall|floor|window|door|drawer|facade|assembled_facade|radial_shelf|panel|table|pillar|screw_leg|light', 'module:NAME', 'thickness==18' (also width/height/depth with == != >= <= > <), 'all_boards', 'all_modules', '*'.", Required = true)]
+        [McpParam("Selector over the scene. Space-separated clauses (AND): name mask 'B4_*', 'name:PAT', 'type:board|wall|floor|window|door|drawer|facade|assembled_facade|radial_shelf|panel|table|pillar|screw_leg|pipe|light', 'module:NAME', 'thickness==18' (also width/height/depth with == != >= <= > <), 'all_boards', 'all_modules', '*'.", Required = true)]
         public string selector = "";
         [McpParam("New thickness (dimZ) in MM for every matched board (e.g. change all 18 to 16).")] public int? thickness;
         [McpParam("New width (dimX) in MM.")] public int? width;

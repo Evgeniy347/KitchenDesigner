@@ -95,6 +95,7 @@ namespace KitchenDesigner.Core.MCP
 		public BedInfo? bed;
 		public PillarInfo? pillar;
 		public ScrewLegInfo? screwLeg;
+		public PipeInfo? pipe;
 		public CooktopInfo? cooktop;
 		public OvenInfo? oven;
 		public DishwasherInfo? dishwasher;
@@ -448,6 +449,18 @@ namespace KitchenDesigner.Core.MCP
 	{
 		public int midHeightMM;
 		public int diameterMM;
+	}
+
+	[Serializable]
+	public class PipeInfo
+	{
+		public string sizeId = KitchenDesigner.Core.Plumbing.PipeSpec.DEFAULT_SIZE;
+		public string designation = "";
+		public int nominalBoreMM;
+		public int lengthMM;
+		public float outerDiameterMM;
+		public float innerDiameterMM;
+		public float wallThicknessMM;
 	}
 
 	[Serializable]

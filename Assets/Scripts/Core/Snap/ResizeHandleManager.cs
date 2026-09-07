@@ -355,7 +355,8 @@ namespace KitchenDesigner.Core
         {
             _modeHandlesWereBuiltIn = Mode;
             bool widthOnly = Mode == HandleMode.Resize && _target is DrawerElement;
-            bool heightOnly = Mode == HandleMode.Resize && _target is PillarElement;
+            bool heightOnly = Mode == HandleMode.Resize
+                && (_target is PillarElement || _target is PipeElement);
             bool skipDepth = _target is WindowElement || _target is DoorElement;
             if (Mode == HandleMode.Resize && !SupportsHandleResize(_target)) return;
             var faces = _target!.GetFaces();

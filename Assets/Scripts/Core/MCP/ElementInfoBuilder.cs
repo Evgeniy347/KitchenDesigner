@@ -273,6 +273,17 @@ namespace KitchenDesigner.Core.MCP
                 diameterMM = pillar.DiameterMM
             }),
 
+            For<PipeElement>((info, pipe) => info.pipe = new PipeInfo
+            {
+                sizeId = pipe.SizeId,
+                designation = pipe.Designation,
+                nominalBoreMM = pipe.NominalBoreMM,
+                lengthMM = pipe.LengthMM,
+                outerDiameterMM = pipe.OuterDiameterMm,
+                innerDiameterMM = pipe.InnerDiameterMm,
+                wallThicknessMM = pipe.WallThicknessMm
+            }),
+
             For<ScrewLegElement>((info, leg) => info.screwLeg = new ScrewLegInfo
             {
                 thread = leg.Thread,

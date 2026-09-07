@@ -243,6 +243,13 @@ namespace KitchenDesigner.Core
 				d.screwLegBaseHeightMM = screwLeg.BaseHeightMM;
 			}
 
+			if (element is PipeElement pipe)
+			{
+				d.isPipe = true;
+				d.pipeSizeId = pipe.SizeId;
+				d.pipeLengthMM = pipe.LengthMM;
+			}
+
 			var grooveSpecs = element.Grooves;
 			d.grooves = new GrooveEntry[grooveSpecs.Count];
 			for (int i = 0; i < grooveSpecs.Count; i++)

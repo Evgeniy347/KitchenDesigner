@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -254,8 +255,17 @@ namespace KitchenDesigner.Core.UI
                 {
                     ToiletItem("Унитаз"), WallHungToiletItem("Инсталляция"), BathtubItem("Ванна"),
                     BathMixerItem("Смеситель"), ShowerColumnItem("Душевая стойка"),
+                    PipeItem("Труба"),
                 },
             };
+        }
+
+        private static Item PipeItem(string name)
+        {
+            int section = PipeElementSpec.SectionMM(PipeSpec.DEFAULT_SIZE);
+            return new Item(name,
+                new Vector3Int(section, PipeElementSpec.DEFAULT_LENGTH_MM, section),
+                SidebarItemKind.Pipe);
         }
 
         private static Item ToiletItem(string name)

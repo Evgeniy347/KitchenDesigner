@@ -119,6 +119,10 @@ namespace KitchenDesigner.Core
              (factory, d) => factory.CreatePillar(d.midHeightMM, d.name, d.Position, d.Dimensions.x),
              null),
 
+            (d => d.isPipe,
+             (factory, d) => factory.CreatePipe(d.pipeSizeId, d.pipeLengthMM, d.name, d.Position),
+             null),
+
             (d => d.isScrewLeg,
              (factory, d) => factory.CreateScrewLeg(d.name, d.Position),
              (d, el) =>

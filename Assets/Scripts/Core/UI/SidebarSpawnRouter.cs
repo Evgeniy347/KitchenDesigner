@@ -85,6 +85,9 @@ namespace KitchenDesigner.Core.UI
                 case SidebarItemKind.ScrewLeg:
                     spawner.SpawnScrewLeg(item.name);
                     break;
+                case SidebarItemKind.Pipe:
+                    spawner.SpawnPipe(item.name);
+                    break;
                 case SidebarItemKind.Panel:
                     spawner.SpawnPanel(item.dims, item.name,
                         item.gapLeft, item.gapRight, item.gapTop, item.gapBottom);
