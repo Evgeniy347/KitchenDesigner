@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Text;
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,14 +7,13 @@ namespace KitchenDesigner.Core.UI
 {
     public class ConsoleOverlay : MonoBehaviour
     {
-        private const int KeptLines = 300;
         private const int TailLinesShown = 32;
         internal const int AboveEveryOtherCanvas = 200;
+        private const int NothingShownYet = -1;
 
         private GameObject? _root;
         private TMP_Text? _text;
-        private readonly Queue<string> _lines = new Queue<string>();
-        private bool _dirty;
+        private int _shownRevision = NothingShownYet;
 
         private void Start()
         {
@@ -52,42 +50,29 @@ namespace KitchenDesigner.Core.UI
         private void OnEnable() => Application.logMessageReceived += OnLog;
         private void OnDisable() => Application.logMessageReceived -= OnLog;
 
-        private void OnLog(string condition, string stackTrace, LogType type)
+        internal static ConsoleLineKind KindOf(LogType type) => type switch
         {
-            string prefix = type switch
-            {
-                LogType.Error or LogType.Exception => "<!> ",
-                LogType.Warning => "<w> ",
-                _ => ""
-            };
-            _lines.Enqueue(prefix + condition);
-            while (_lines.Count > KeptLines) _lines.Dequeue();
-            _dirty = true;
-        }
+            LogType.Error or LogType.Exception or LogType.Assert => ConsoleLineKind.Error,
+            LogType.Warning => ConsoleLineKind.Warning,
+            _ => ConsoleLineKind.Log,
+        };
+
+        private void OnLog(string condition, string stackTrace, LogType type) =>
+            ConsoleLog.Shared.Append(KindOf(type), condition, DateTime.Now);
 
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.BackQuote) && !CameraController.IsTypingInInputField())
             {
                 _root!.SetActive(!_root.activeSelf);
-                _dirty = true;
+                _shownRevision = NothingShownYet;
             }
 
-            if (_dirty && _root!.activeSelf)
-            {
-                _text!.text = BuildTail();
-                _dirty = false;
-            }
-        }
+            if (!_root!.activeSelf) return;
+            if (_shownRevision == ConsoleLog.Shared.Revision) return;
 
-        private string BuildTail()
-        {
-            var arr = _lines.ToArray();
-            int start = Mathf.Max(0, arr.Length - TailLinesShown);
-            var sb = new StringBuilder();
-            for (int i = start; i < arr.Length; i++)
-                sb.AppendLine(arr[i]);
-            return sb.ToString();
+            _shownRevision = ConsoleLog.Shared.Revision;
+            _text!.text = ConsoleLog.Shared.Tail(TailLinesShown);
         }
     }
 }
