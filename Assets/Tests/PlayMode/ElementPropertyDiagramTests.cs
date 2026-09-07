@@ -219,6 +219,42 @@ public class ElementPropertyDiagramTests
             () => { ContextMenuUI.Instance?.Close(); });
     }
 
+    /// <summary>Кадр РАДИ РАЗЛИЧИМОСТИ: на обычной детали все четыре стороны
+    /// зелёные, и по contextmenu_part.png нельзя проверить ни один из новых
+    /// цветов. Здесь у одной детали разом стоят все четыре состояния:
+    ///
+    ///   L1 (верх)  — «принудительно есть»: жёлтая полоса, заливка сплошная;
+    ///   L2 (низ)   — авто, торец открыт: зелёная полоса, заливка сплошная;
+    ///   W1 (справа)— авто, торец закрыт стойкой: серая полоса С ПРОРЕЗЬЮ
+    ///                («кромки тут нет» читается и без цвета);
+    ///   W2 (слева) — «убрать»: красная полоса, тоже с прорезью.
+    ///
+    /// Расстановка не описана словами, а ПРОВЕРЕНА: если стойка перестанет
+    /// закрывать W1 или низ упрётся в подложку, тест краснеет, а не отдаёт
+    /// кадр, на котором нарисовано не то, что подписано.</summary>
+    [UnityTest]
+    public IEnumerator ContextMenu_EdgeStates_AllFourAtOnce_SavesPng()
+    {
+        var el = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "Деталь_кромки",
+            new Vector3(1f, 0.5f, 0f)).GetComponent<KitchenElement>();
+        ElementFactory.CreatePart(new Vector3Int(18, 720, 400), "Стойка_справа",
+            new Vector3(1.409f, 0.5f, 0f));
+        Assert.IsTrue(el.SupportsEdges, "лист 800x400x18 кромкуется");
+
+        var coverage = EdgeBanding.Coverage(el, PartRegistry.GetAll());
+        Assert.IsFalse(coverage.HasEdge(EdgeSide.W1),
+            "правый торец обязан быть закрыт стойкой — иначе серого состояния на кадре нет");
+        Assert.IsTrue(coverage.HasEdge(EdgeSide.L2),
+            "нижний торец обязан быть открыт — иначе зелёного состояния на кадре нет");
+
+        el.SetEdgeState(EdgeSide.L1, EdgeSideState.Forced);
+        el.SetEdgeState(EdgeSide.W2, EdgeSideState.Suppressed);
+
+        yield return CapturePanel("ContextMenu", "contextmenu_edge_states.png",
+            () => { ContextMenuUI.Instance!.Open(el); },
+            () => { ContextMenuUI.Instance?.Close(); });
+    }
+
     [UnityTest]
     public IEnumerator ContextMenu_Facade_SavesPng()
     {
