@@ -256,8 +256,23 @@ namespace KitchenDesigner.Core.UI
                     ToiletItem("Унитаз"), WallHungToiletItem("Инсталляция"), BathtubItem("Ванна"),
                     BathMixerItem("Смеситель"), ShowerColumnItem("Душевая стойка"),
                     PipeItem("Труба"),
+                    FittingItem(PipeNodeKind.Elbow, SidebarItemKind.PipeElbow),
+                    FittingItem(PipeNodeKind.Coupling, SidebarItemKind.PipeCoupling),
+                    FittingItem(PipeNodeKind.Tee, SidebarItemKind.PipeTee),
+                    FittingItem(PipeNodeKind.Cap, SidebarItemKind.PipeCap),
+                    FittingItem(PipeNodeKind.Supply, SidebarItemKind.PipeSupply),
+                    FittingItem(PipeNodeKind.Return, SidebarItemKind.PipeReturn),
                 },
             };
+        }
+
+        private static Item FittingItem(PipeNodeKind kind, SidebarItemKind itemKind)
+        {
+            string sizeId = PipeSpec.DEFAULT_SIZE;
+            return new Item(PipeFittingNames.Title(kind), new Vector3Int(
+                PipeFittingSpec.RoundedMm(PipeFittingSpec.WidthMm(kind, sizeId)),
+                PipeFittingSpec.RoundedMm(PipeFittingSpec.HeightMm(kind, sizeId)),
+                PipeFittingSpec.RoundedMm(PipeFittingSpec.DepthMm(kind, sizeId))), itemKind);
         }
 
         private static Item PipeItem(string name)

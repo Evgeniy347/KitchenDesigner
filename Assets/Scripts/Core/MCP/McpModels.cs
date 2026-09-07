@@ -96,6 +96,7 @@ namespace KitchenDesigner.Core.MCP
 		public PillarInfo? pillar;
 		public ScrewLegInfo? screwLeg;
 		public PipeInfo? pipe;
+		public PipeFittingInfo? pipeFitting;
 		public CooktopInfo? cooktop;
 		public OvenInfo? oven;
 		public DishwasherInfo? dishwasher;
@@ -461,6 +462,14 @@ namespace KitchenDesigner.Core.MCP
 		public float outerDiameterMM;
 		public float innerDiameterMM;
 		public float wallThicknessMM;
+	}
+
+	[Serializable]
+	public class PipeFittingInfo
+	{
+		public string kind = "";
+		public int portCount;
+		public string[] bores = new string[0];
 	}
 
 	[Serializable]

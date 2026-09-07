@@ -44,6 +44,12 @@ namespace KitchenDesigner.Core
 		GameObject CreateCooktop(string name, Vector3 position, string model = "");
 		GameObject CreateScrewLeg(string name, Vector3 position);
 		GameObject CreatePipe(string sizeId, int lengthMM, string name, Vector3 position);
+		GameObject CreatePipeElbow(string name, Vector3 position);
+		GameObject CreatePipeCoupling(string name, Vector3 position);
+		GameObject CreatePipeTee(string name, Vector3 position);
+		GameObject CreatePipeCap(string name, Vector3 position);
+		GameObject CreatePipeSupply(string name, Vector3 position);
+		GameObject CreatePipeReturn(string name, Vector3 position);
 
 		GameObject CreateOven(string name, Vector3 position);
 		GameObject CreateDishwasher(string name, Vector3 position);

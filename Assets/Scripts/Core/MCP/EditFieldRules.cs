@@ -144,6 +144,7 @@ namespace KitchenDesigner.Core.MCP
             RejectParametricResize,
             RejectFixedApplianceEdits,
             RejectPipeSection,
+            RejectFittingSize,
             RejectNonVerticalRotation,
             RejectUnparsableGrooves,
             RejectUnparsableTextureOverlays,
@@ -234,6 +235,14 @@ namespace KitchenDesigner.Core.MCP
             if (!(target.el is PipeElement)) return;
             if (op.width.HasValue || op.depth.HasValue)
                 errors.Add("width/depth not settable on a pipe (the section is set by pipe_size)");
+        }
+
+        private static void RejectFittingSize(EditTarget target, List<string> errors)
+        {
+            var op = target.op;
+            if (!(target.el is PipeFittingElement)) return;
+            if (op.width.HasValue || op.height.HasValue || op.depth.HasValue)
+                errors.Add("width/height/depth not settable on a pipe fitting (its size follows the bore of the runs butted onto its ports)");
         }
 
         private static void RejectNonVerticalRotation(EditTarget target, List<string> errors)

@@ -349,7 +349,7 @@ namespace KitchenDesigner.Core
 
         public static bool SupportsHandleResize(KitchenElement? element) =>
             element != null && !(element is SinkElement) && !(element is CooktopElement)
-            && !FixedSize.IsFixed(element);
+            && !(element is PipeFittingElement) && !FixedSize.IsFixed(element);
 
         private void BuildHandles(Camera? camera)
         {

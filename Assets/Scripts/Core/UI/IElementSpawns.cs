@@ -1,4 +1,5 @@
 using UnityEngine;
+using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -57,6 +58,8 @@ namespace KitchenDesigner.Core.UI
 
         void SpawnPillar(int midHeightMM, string name);
         void SpawnPipe(string name);
+
+        void SpawnPipeFitting(PipeNodeKind kind, string name);
 
         void SpawnFloor(Vector3Int dims, string name);
 

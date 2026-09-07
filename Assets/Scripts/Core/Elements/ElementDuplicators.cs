@@ -107,6 +107,30 @@ namespace KitchenDesigner.Core
                      source.PartName, pos),
              CopyMaterial),
 
+            (el => el is PipeElbowElement,
+             (factory, source, pos) => factory.CreatePipeElbow(source.PartName, pos),
+             CopyMaterial),
+
+            (el => el is PipeCouplingElement,
+             (factory, source, pos) => factory.CreatePipeCoupling(source.PartName, pos),
+             CopyMaterial),
+
+            (el => el is PipeTeeElement,
+             (factory, source, pos) => factory.CreatePipeTee(source.PartName, pos),
+             CopyMaterial),
+
+            (el => el is PipeCapElement,
+             (factory, source, pos) => factory.CreatePipeCap(source.PartName, pos),
+             CopyMaterial),
+
+            (el => el is PipeSupplyElement,
+             (factory, source, pos) => factory.CreatePipeSupply(source.PartName, pos),
+             CopyMaterial),
+
+            (el => el is PipeReturnElement,
+             (factory, source, pos) => factory.CreatePipeReturn(source.PartName, pos),
+             CopyMaterial),
+
             (el => el is TableElement,
              (factory, source, pos) => factory.CreateTable(source.DimensionsMM, source.PartName, pos),
              (source, copy) =>

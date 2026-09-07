@@ -1901,6 +1901,71 @@ public class IsoScreenshotTests : ElementFrameTests
         yield return RenderElementIso(go, "iso_pipe_dn20_600.png", 2.5f);
     }
 
+    /// <summary>Шесть фитингов трассы. Кадр здесь — единственная проверка ФОРМЫ:
+    /// арифметика ног и габаритного ящика проверена под dotnet в
+    /// PipeFittingSpecTests, а вот сходится ли меш с этим ящиком, видно только
+    /// на картинке — RenderElementIso строит рамку по объединённым границам
+    /// рендереров и падает, если хоть один угол ящика вылез из кадра.
+    ///
+    /// Число портов проверяется тут же, рядом с кадром: отвод и муфта на
+    /// снимке легко перепутать (обе — две трубки), и порт, потерянный по
+    /// дороге, картинкой не ловится вовсе.</summary>
+    private IEnumerator RenderFitting(GameObject go, PipeNodeKind kind, string file)
+    {
+        _spawned.Add(go);
+        var fitting = go.GetComponent<PipeFittingElement>();
+        Assert.IsNotNull(fitting, "фитинг обязан быть фитингом, а не доской");
+        Assert.AreEqual(kind, fitting!.NodeKind, "фабрика собрала фитинг другого вида");
+        Assert.AreEqual(PipeNodePorts.CountOf(kind), fitting.PortCount,
+            "число портов у элемента разошлось с тем, по которому судят правила PIP-01/02");
+        Assert.AreEqual(fitting.NominalDimensionsMM, fitting.DimensionsMM,
+            "габарит фитинга вычисляемый: он обязан совпадать с выведенным из ног");
+
+        yield return RenderElementIso(go, file, 2.5f);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoPipeElbow_Dn20()
+    {
+        yield return RenderFitting(ElementFactory.CreatePipeElbow("IsoElbow", Vector3.zero),
+            PipeNodeKind.Elbow, "iso_pipe_elbow_dn20.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoPipeCoupling_Dn20()
+    {
+        yield return RenderFitting(ElementFactory.CreatePipeCoupling("IsoCoupling", Vector3.zero),
+            PipeNodeKind.Coupling, "iso_pipe_coupling_dn20.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoPipeTee_Dn20()
+    {
+        yield return RenderFitting(ElementFactory.CreatePipeTee("IsoTee", Vector3.zero),
+            PipeNodeKind.Tee, "iso_pipe_tee_dn20.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoPipeCap_Dn20()
+    {
+        yield return RenderFitting(ElementFactory.CreatePipeCap("IsoCap", Vector3.zero),
+            PipeNodeKind.Cap, "iso_pipe_cap_dn20.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoPipeSupply_Dn20()
+    {
+        yield return RenderFitting(ElementFactory.CreatePipeSupply("IsoSupply", Vector3.zero),
+            PipeNodeKind.Supply, "iso_pipe_supply_dn20.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoPipeReturn_Dn20()
+    {
+        yield return RenderFitting(ElementFactory.CreatePipeReturn("IsoReturn", Vector3.zero),
+            PipeNodeKind.Return, "iso_pipe_return_dn20.png");
+    }
+
     [UnityTest]
     public IEnumerator IsoAssembledFacade_Blind()
     {

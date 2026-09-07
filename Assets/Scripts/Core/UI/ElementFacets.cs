@@ -18,6 +18,12 @@ namespace KitchenDesigner.Core.UI
             if (element is PillarElement) facets |= ElementFacet.Pillar;
             if (element is ScrewLegElement) facets |= ElementFacet.ScrewLeg;
             if (element is PipeElement) facets |= ElementFacet.Pipe;
+            if (element is PipeFittingElement fitting)
+            {
+                facets |= ElementFacet.PipeFitting;
+                if (fitting.PortCount >= 2) facets |= ElementFacet.PipeFittingSecondPort;
+                if (fitting.PortCount >= 3) facets |= ElementFacet.PipeFittingThirdPort;
+            }
             if (element is WindowElement || element is DoorElement) facets |= ElementFacet.Window;
             if (element is DoorElement) facets |= ElementFacet.Door;
             if (element is LightSourceElement) facets |= ElementFacet.Light;

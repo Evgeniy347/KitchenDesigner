@@ -143,6 +143,12 @@ namespace KitchenDesigner.Core.Bulk
             if (e is PillarElement) return "pillar";
             if (e is ScrewLegElement) return "screw_leg";
             if (e is PipeElement) return "pipe";
+            if (e is PipeElbowElement) return Plumbing.PipeFittingNames.TypeId(Plumbing.PipeNodeKind.Elbow);
+            if (e is PipeCouplingElement) return Plumbing.PipeFittingNames.TypeId(Plumbing.PipeNodeKind.Coupling);
+            if (e is PipeTeeElement) return Plumbing.PipeFittingNames.TypeId(Plumbing.PipeNodeKind.Tee);
+            if (e is PipeCapElement) return Plumbing.PipeFittingNames.TypeId(Plumbing.PipeNodeKind.Cap);
+            if (e is PipeSupplyElement) return Plumbing.PipeFittingNames.TypeId(Plumbing.PipeNodeKind.Supply);
+            if (e is PipeReturnElement) return Plumbing.PipeFittingNames.TypeId(Plumbing.PipeNodeKind.Return);
             if (e is LightSourceElement) return "light";
             if (e is SinkElement) return "sink";
             if (e is CooktopElement) return "cooktop";

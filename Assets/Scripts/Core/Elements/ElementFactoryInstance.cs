@@ -496,6 +496,52 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, pipe);
         }
 
+        public GameObject CreatePipeElbow(string name, Vector3 position) =>
+            CreatePipeFitting(Plumbing.PipeNodeKind.Elbow, name, position);
+
+        public GameObject CreatePipeCoupling(string name, Vector3 position) =>
+            CreatePipeFitting(Plumbing.PipeNodeKind.Coupling, name, position);
+
+        public GameObject CreatePipeTee(string name, Vector3 position) =>
+            CreatePipeFitting(Plumbing.PipeNodeKind.Tee, name, position);
+
+        public GameObject CreatePipeCap(string name, Vector3 position) =>
+            CreatePipeFitting(Plumbing.PipeNodeKind.Cap, name, position);
+
+        public GameObject CreatePipeSupply(string name, Vector3 position) =>
+            CreatePipeFitting(Plumbing.PipeNodeKind.Supply, name, position);
+
+        public GameObject CreatePipeReturn(string name, Vector3 position) =>
+            CreatePipeFitting(Plumbing.PipeNodeKind.Return, name, position);
+
+        private GameObject CreatePipeFitting(Plumbing.PipeNodeKind kind, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewCube(name, Plumbing.PipeFittingNames.Title(kind), position);
+            ElementRoot.SwapBoxColliderForMeshCollider(go);
+
+            var fitting = AddFitting(go, kind);
+            fitting.PartName = go.name;
+            fitting.DimensionsMM = fitting.NominalDimensionsMM;
+            fitting.ApplyDimensions();
+
+            if (DefaultMaterial != null) MaterialManager.ApplyById(fitting, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(go, fitting);
+        }
+
+        private static PipeFittingElement AddFitting(GameObject go, Plumbing.PipeNodeKind kind)
+        {
+            switch (kind)
+            {
+                case Plumbing.PipeNodeKind.Elbow: return go.AddComponent<PipeElbowElement>();
+                case Plumbing.PipeNodeKind.Coupling: return go.AddComponent<PipeCouplingElement>();
+                case Plumbing.PipeNodeKind.Tee: return go.AddComponent<PipeTeeElement>();
+                case Plumbing.PipeNodeKind.Cap: return go.AddComponent<PipeCapElement>();
+                case Plumbing.PipeNodeKind.Supply: return go.AddComponent<PipeSupplyElement>();
+                case Plumbing.PipeNodeKind.Return: return go.AddComponent<PipeReturnElement>();
+                default: return go.AddComponent<PipeCouplingElement>();
+            }
+        }
+
         public GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position)
         {
             var go = ElementRoot.NewCube(name, "Пол", position);

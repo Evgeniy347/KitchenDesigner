@@ -1,3 +1,5 @@
+using KitchenDesigner.Core.Plumbing;
+
 namespace KitchenDesigner.Core.UI
 {
     internal static class SidebarSpawnRouter
@@ -87,6 +89,24 @@ namespace KitchenDesigner.Core.UI
                     break;
                 case SidebarItemKind.Pipe:
                     spawner.SpawnPipe(item.name);
+                    break;
+                case SidebarItemKind.PipeElbow:
+                    spawner.SpawnPipeFitting(PipeNodeKind.Elbow, item.name);
+                    break;
+                case SidebarItemKind.PipeCoupling:
+                    spawner.SpawnPipeFitting(PipeNodeKind.Coupling, item.name);
+                    break;
+                case SidebarItemKind.PipeTee:
+                    spawner.SpawnPipeFitting(PipeNodeKind.Tee, item.name);
+                    break;
+                case SidebarItemKind.PipeCap:
+                    spawner.SpawnPipeFitting(PipeNodeKind.Cap, item.name);
+                    break;
+                case SidebarItemKind.PipeSupply:
+                    spawner.SpawnPipeFitting(PipeNodeKind.Supply, item.name);
+                    break;
+                case SidebarItemKind.PipeReturn:
+                    spawner.SpawnPipeFitting(PipeNodeKind.Return, item.name);
                     break;
                 case SidebarItemKind.Panel:
                     spawner.SpawnPanel(item.dims, item.name,

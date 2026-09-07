@@ -219,6 +219,15 @@ public class McpUiPropertyParityTests : McpTestFixture
         yield return ("LightSourceElement", () => ElementFactory.CreateLightSource(PROBE, Vector3.zero));
         yield return ("PipeElement", () => ElementFactory.CreatePipe(
             PipeSpec.Dn20, PipeElementSpec.DEFAULT_LENGTH_MM, PROBE, Vector3.zero));
+        yield return ("PipeElbowElement", () => ElementFactory.CreatePipeElbow(PROBE, Vector3.zero));
+        yield return ("PipeCouplingElement",
+            () => ElementFactory.CreatePipeCoupling(PROBE, Vector3.zero));
+        yield return ("PipeTeeElement", () => ElementFactory.CreatePipeTee(PROBE, Vector3.zero));
+        yield return ("PipeCapElement", () => ElementFactory.CreatePipeCap(PROBE, Vector3.zero));
+        yield return ("PipeSupplyElement",
+            () => ElementFactory.CreatePipeSupply(PROBE, Vector3.zero));
+        yield return ("PipeReturnElement",
+            () => ElementFactory.CreatePipeReturn(PROBE, Vector3.zero));
     }
 
     private KitchenElement Spawn(Func<GameObject> make)

@@ -137,6 +137,24 @@ namespace KitchenDesigner.Core.MCP
                     item.pipe_size ?? PipeSpec.DEFAULT_SIZE,
                     item.height ?? PipeElementSpec.DEFAULT_LENGTH_MM, item.name, pos),
 
+                [PipeFittingNames.TypeId(PipeNodeKind.Elbow)] = (item, pos) =>
+                    ElementFactory.CreatePipeElbow(item.name, pos),
+
+                [PipeFittingNames.TypeId(PipeNodeKind.Coupling)] = (item, pos) =>
+                    ElementFactory.CreatePipeCoupling(item.name, pos),
+
+                [PipeFittingNames.TypeId(PipeNodeKind.Tee)] = (item, pos) =>
+                    ElementFactory.CreatePipeTee(item.name, pos),
+
+                [PipeFittingNames.TypeId(PipeNodeKind.Cap)] = (item, pos) =>
+                    ElementFactory.CreatePipeCap(item.name, pos),
+
+                [PipeFittingNames.TypeId(PipeNodeKind.Supply)] = (item, pos) =>
+                    ElementFactory.CreatePipeSupply(item.name, pos),
+
+                [PipeFittingNames.TypeId(PipeNodeKind.Return)] = (item, pos) =>
+                    ElementFactory.CreatePipeReturn(item.name, pos),
+
                 ["sink"] = (item, pos) => ElementFactory.CreateSink(item.name, pos),
 
                 ["cooktop"] = (item, pos) => ElementFactory.CreateCooktop(item.name, pos, item.model ?? ""),

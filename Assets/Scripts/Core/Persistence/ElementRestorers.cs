@@ -123,6 +123,30 @@ namespace KitchenDesigner.Core
              (factory, d) => factory.CreatePipe(d.pipeSizeId, d.pipeLengthMM, d.name, d.Position),
              null),
 
+            (d => IsFitting(d, Plumbing.PipeNodeKind.Elbow),
+             (factory, d) => factory.CreatePipeElbow(d.name, d.Position),
+             null),
+
+            (d => IsFitting(d, Plumbing.PipeNodeKind.Coupling),
+             (factory, d) => factory.CreatePipeCoupling(d.name, d.Position),
+             null),
+
+            (d => IsFitting(d, Plumbing.PipeNodeKind.Tee),
+             (factory, d) => factory.CreatePipeTee(d.name, d.Position),
+             null),
+
+            (d => IsFitting(d, Plumbing.PipeNodeKind.Cap),
+             (factory, d) => factory.CreatePipeCap(d.name, d.Position),
+             null),
+
+            (d => IsFitting(d, Plumbing.PipeNodeKind.Supply),
+             (factory, d) => factory.CreatePipeSupply(d.name, d.Position),
+             null),
+
+            (d => IsFitting(d, Plumbing.PipeNodeKind.Return),
+             (factory, d) => factory.CreatePipeReturn(d.name, d.Position),
+             null),
+
             (d => d.isScrewLeg,
              (factory, d) => factory.CreateScrewLeg(d.name, d.Position),
              (d, el) =>
@@ -333,6 +357,11 @@ namespace KitchenDesigner.Core
             if (data.cooktopCutoutDepthMM > 0)
                 cooktop.CutoutDepthMM = data.cooktopCutoutDepthMM;
         }
+
+        private static bool IsFitting(ElementData data, Plumbing.PipeNodeKind kind) =>
+            data.isPipeFitting
+            && Plumbing.PipeFittingNames.TryParseTypeId(data.pipeFittingType, out var stored)
+            && stored == kind;
 
         private static void RestoreLamp(ElementData data, KitchenElement el)
         {

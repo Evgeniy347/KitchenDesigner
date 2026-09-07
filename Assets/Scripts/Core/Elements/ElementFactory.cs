@@ -116,6 +116,25 @@ namespace KitchenDesigner.Core
 		public static GameObject CreatePipe(string sizeId, int lengthMM, string name, Vector3 position) =>
 			Instance.CreatePipe(sizeId, lengthMM, name, position);
 
+		public static GameObject CreatePipeElbow(string name, Vector3 position) =>
+			Instance.CreatePipeElbow(name, position);
+
+		public static GameObject CreatePipeCoupling(string name, Vector3 position) =>
+			Instance.CreatePipeCoupling(name, position);
+
+		public static GameObject CreatePipeTee(string name, Vector3 position) =>
+			Instance.CreatePipeTee(name, position);
+
+		public static GameObject CreatePipeCap(string name, Vector3 position) =>
+			Instance.CreatePipeCap(name, position);
+
+		public static GameObject CreatePipeSupply(string name, Vector3 position) =>
+			Instance.CreatePipeSupply(name, position);
+
+		public static GameObject CreatePipeReturn(string name, Vector3 position) =>
+			Instance.CreatePipeReturn(name, position);
+
+
 		public static GameObject CreateOven(string name, Vector3 position) =>
 			Instance.CreateOven(name, position);
 

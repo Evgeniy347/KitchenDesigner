@@ -250,6 +250,12 @@ namespace KitchenDesigner.Core
 				d.pipeLengthMM = pipe.LengthMM;
 			}
 
+			if (element is PipeFittingElement fitting)
+			{
+				d.isPipeFitting = true;
+				d.pipeFittingType = Plumbing.PipeFittingNames.TypeId(fitting.NodeKind);
+			}
+
 			var grooveSpecs = element.Grooves;
 			d.grooves = new GrooveEntry[grooveSpecs.Count];
 			for (int i = 0; i < grooveSpecs.Count; i++)

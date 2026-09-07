@@ -202,7 +202,8 @@ SELECTOR (a string; space-separated clauses, ALL must match)
   name:PATTERN             same, explicit
   type:board|wall|floor|window|door|drawer|facade|assembled_facade|
        radial_shelf|panel|table|radius_table|stool|chair|sofa|pouffe|bed|pillar|
-       screw_leg|pipe|toilet|wall_hung_toilet|bathtub|bath_mixer|
+       screw_leg|pipe|pipe_elbow|pipe_coupling|pipe_tee|pipe_cap|
+       pipe_supply|pipe_return|toilet|wall_hung_toilet|bathtub|bath_mixer|
        shower_column|socket|light_switch|light
   module:NAME / group:NAME by module name (mask allowed)
   thickness==18            compare a dimension in MM; also width/height/depth
@@ -440,6 +441,19 @@ PipeElement           Straight water pipe, GOST 3262-75 (type:""pipe""). ONE
                       part or a piece of furniture is PIP-03. A free end with no
                       fitting on it is PIP-01, and two runs of different bore
                       butted together is PIP-02.
+Pipe fittings         Elbow, coupling, tee, cap, supply and return
+                      (type:""pipe_elbow"" / ""pipe_coupling"" / ""pipe_tee"" /
+                      ""pipe_cap"" / ""pipe_supply"" / ""pipe_return""). A fitting has
+                      NO editable numbers at all: width, height, depth and
+                      pipe_size are all REJECTED by edit_elements. Its bore is
+                      not stored anywhere — it is READ from the runs actually
+                      butted onto its ports, and reported per port in
+                      pipeFitting.bores[] (a port with nothing on it reads
+                      ""—""). Port count is fixed by the kind: 1 for a cap, a
+                      supply and a return, 2 for a coupling (coaxial) and an
+                      elbow (at a right angle), 3 for a tee. Position and
+                      rotation are the only things to set: put a port where a
+                      run ends and PIP-01 goes quiet there.
 SinkElement / CooktopElement
                       Recessed appliances (type:""sink"" / ""cooktop""). They sit
                       on a plain board with a horizontal face (the countertop),

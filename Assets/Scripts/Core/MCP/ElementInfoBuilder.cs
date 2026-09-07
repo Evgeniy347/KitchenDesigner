@@ -284,6 +284,13 @@ namespace KitchenDesigner.Core.MCP
                 wallThicknessMM = pipe.WallThicknessMm
             }),
 
+            For<PipeFittingElement>((info, fitting) => info.pipeFitting = new PipeFittingInfo
+            {
+                kind = Plumbing.PipeFittingNames.TypeId(fitting.NodeKind),
+                portCount = fitting.PortCount,
+                bores = BoresOf(fitting)
+            }),
+
             For<ScrewLegElement>((info, leg) => info.screwLeg = new ScrewLegInfo
             {
                 thread = leg.Thread,
@@ -380,6 +387,15 @@ namespace KitchenDesigner.Core.MCP
             var copy = new string[names.Count];
             for (int i = 0; i < names.Count; i++) copy[i] = names[i];
             return copy;
+        }
+
+        private static string[] BoresOf(PipeFittingElement fitting)
+        {
+            var sizes = Analysis.ScenePipeSurvey.SizesOf(fitting);
+            var bores = new string[fitting.PortCount];
+            for (int i = 0; i < bores.Length; i++)
+                bores[i] = Analysis.ScenePipeSurvey.DesignationAt(sizes, i);
+            return bores;
         }
 
         private static Detail For<T>(Action<ElementInfo, T> fill) where T : class

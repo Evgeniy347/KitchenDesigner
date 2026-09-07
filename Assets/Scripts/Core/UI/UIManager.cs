@@ -197,6 +197,9 @@ namespace KitchenDesigner.Core.UI
 
         public void SpawnPipe(string name) => Spawner.SpawnPipe(name);
 
+        public void SpawnPipeFitting(Plumbing.PipeNodeKind kind, string name) =>
+            Spawner.SpawnPipeFitting(kind, name);
+
         public void SpawnScrewLeg(string name) => Spawner.SpawnScrewLeg(name);
 
         private Vector3 GroundPointInFrontOfCamera()

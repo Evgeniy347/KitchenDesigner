@@ -158,6 +158,23 @@ namespace KitchenDesigner.Core.UI
                 pos => ElementFactory.CreatePipe(PipeSpec.DEFAULT_SIZE,
                     PipeElementSpec.DEFAULT_LENGTH_MM, name, pos));
 
+        public void SpawnPipeFitting(PipeNodeKind kind, string name) =>
+            PlaceCenteredOnGround(
+                PipeFittingSpec.RoundedMm(PipeFittingSpec.HeightMm(kind, PipeSpec.DEFAULT_SIZE)),
+                pos => CreateFitting(kind, name, pos));
+
+        private static GameObject CreateFitting(PipeNodeKind kind, string name, Vector3 pos) =>
+            kind switch
+            {
+                PipeNodeKind.Elbow => ElementFactory.CreatePipeElbow(name, pos),
+                PipeNodeKind.Coupling => ElementFactory.CreatePipeCoupling(name, pos),
+                PipeNodeKind.Tee => ElementFactory.CreatePipeTee(name, pos),
+                PipeNodeKind.Cap => ElementFactory.CreatePipeCap(name, pos),
+                PipeNodeKind.Supply => ElementFactory.CreatePipeSupply(name, pos),
+                PipeNodeKind.Return => ElementFactory.CreatePipeReturn(name, pos),
+                _ => ElementFactory.CreatePipeCoupling(name, pos),
+            };
+
         public void SpawnFloor(Vector3Int dims, string name) =>
             PlaceAtHeightUnaffectedByGrid(-dims.y * 0.5f * AppConstants.MM_TO_UNITS,
                 pos => ElementFactory.CreateFloor(dims, name, pos));

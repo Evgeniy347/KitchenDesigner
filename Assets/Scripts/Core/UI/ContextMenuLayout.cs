@@ -27,6 +27,9 @@ namespace KitchenDesigner.Core.UI
         Bed = 1 << 16,
         Pouffe = 1 << 17,
         Pipe = 1 << 18,
+        PipeFitting = 1 << 19,
+        PipeFittingSecondPort = 1 << 20,
+        PipeFittingThirdPort = 1 << 21,
     }
 
     internal sealed class ContextMenuLayout

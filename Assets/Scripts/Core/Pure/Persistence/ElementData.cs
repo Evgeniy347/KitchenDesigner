@@ -201,6 +201,9 @@ namespace KitchenDesigner.Core
 		public bool isPipe = false;
 		public string pipeSizeId = KitchenDesigner.Core.Plumbing.PipeSpec.DEFAULT_SIZE;
 		public int pipeLengthMM = PipeElementSpec.DEFAULT_LENGTH_MM;
+		public bool isPipeFitting = false;
+		public string pipeFittingType = KitchenDesigner.Core.Plumbing.PipeFittingNames.TypeId(
+			KitchenDesigner.Core.Plumbing.PipeNodeKind.Elbow);
 
         public ElementData() { }
 

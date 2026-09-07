@@ -17,6 +17,7 @@ namespace KitchenDesigner.Core.Analysis
             {
                 if (e == null) continue;
                 if (e is PipeElement pipe) AddRun(pipe);
+                else if (e is PipeFittingElement fitting) AddFitting(fitting);
                 else _obstacles.Add(new PipeObstacle(e.PartName, KindOf(e), BoxOf(e)));
             }
         }
@@ -45,6 +46,20 @@ namespace KitchenDesigner.Core.Analysis
                 AxisOf(-along), pipe.SizeId));
             _ports.Add(new PipePort(pipe.PartName, PipeNodeKind.Pipe, 1, b,
                 AxisOf(along), pipe.SizeId));
+        }
+
+        private void AddFitting(PipeFittingElement fitting)
+        {
+            var hub = ToMm(fitting.HubPositionUnits);
+            float body = PipeFittingSpec.BodyDiameterMm(fitting.NominalSizeId);
+
+            for (int i = 0; i < fitting.PortCount; i++)
+            {
+                var mouth = ToMm(fitting.PortPositionUnits(i));
+                _ports.Add(new PipePort(fitting.PartName, fitting.NodeKind, i, mouth,
+                    AxisOf(fitting.PortDirection(i))));
+                _segments.Add(new PipeRunSegment(fitting.PartName, hub, mouth, body));
+            }
         }
 
         private static PipeAxis AxisOf(Vector3 direction) =>

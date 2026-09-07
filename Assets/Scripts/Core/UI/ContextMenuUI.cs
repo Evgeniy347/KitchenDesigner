@@ -47,6 +47,7 @@ namespace KitchenDesigner.Core.UI
         private readonly PillarFieldsEditor _pillarFields;
         private readonly ScrewLegFieldsEditor _screwLegFields;
         private readonly PipeFieldsEditor _pipeFields;
+        private readonly PipeFittingFieldsEditor _pipeFittingFields;
         private readonly TableLegFieldsEditor _tableFields;
         private readonly StoolFieldsEditor _stoolFields;
         private readonly ChairFieldsEditor _chairFields;
@@ -83,6 +84,7 @@ namespace KitchenDesigner.Core.UI
             _pillarFields = new PillarFieldsEditor(this);
             _screwLegFields = new ScrewLegFieldsEditor(this);
             _pipeFields = new PipeFieldsEditor(this);
+            _pipeFittingFields = new PipeFittingFieldsEditor(this);
             _tableFields = new TableLegFieldsEditor(this);
             _stoolFields = new StoolFieldsEditor(this);
             _chairFields = new ChairFieldsEditor(this);
@@ -100,7 +102,7 @@ namespace KitchenDesigner.Core.UI
             _editors = new ElementFieldsEditor[]
             {
                 _radialFields, _cooktopFields, _drawerFields, _pillarFields, _screwLegFields,
-                _pipeFields,
+                _pipeFields, _pipeFittingFields,
                 _tableFields, _stoolFields, _chairFields, _sofaFields, _bedFields,
                 _pouffeFields, _toiletFields, _bathtubFields, _bathMixerFields,
                 _showerColumnFields, _wallDeviceFields, _openingFields, _lights,
@@ -326,6 +328,7 @@ namespace KitchenDesigner.Core.UI
             _pillarFields.Build();
             _screwLegFields.Build();
             _pipeFields.Build();
+            _pipeFittingFields.Build();
         }
 
         private void BuildPositionSection(Transform parent)
