@@ -40,6 +40,13 @@ using KitchenDesigner.Core;
 /// NO-SNAP. С закоммиченной версией того же файла тест зелёный — в коде не было
 /// ничего.
 ///
+/// Ровно «200 ошибок» пришло потом ещё раз, и причина была другая — свип
+/// требовал от винтовой опоры прилипания граней, которых отбор у неё не берёт
+/// (см. SnapPullsAlongFace). Двести — это был ПОТОЛОК списка, а не счёт, и
+/// потому две разные болезни выглядели одинаково. Потолка больше нет, а сводка
+/// печатает разбивку по деталям: одно имя на весь список — код, много разных
+/// имён — фикстура.
+///
 /// Поэтому: покраснел перебор — СНАЧАЛА сверьте `git status
 /// docs/example.save.json`. И НИКОГДА не откатывайте этот файл, чтобы тест
 /// позеленел: это работа пользователя, у `git checkout --` нет отмены.
@@ -53,12 +60,15 @@ public class SnapMutationTests
     private const int BigStepMm = 200;
     private const int SweepMaxMm = 200;
     private const int SweepStepMm = 1;
-    private const int MaxErrors = 200;
 
     private string _json = "";
     private readonly List<string> _errors = new();
     private readonly List<string> _warnings = new();
     private ProjectLoadStateGuard? _guard;
+
+    /// <summary>Ось крепления текущей детали — снимается один раз на деталь:
+    /// поворот внутри свипа восстанавливается, а ToGeometry() строит грани.</summary>
+    private Vector3 _mountNormal;
 
     private readonly Dictionary<KitchenElement, Face[]> _faceCache = new();
 
@@ -204,6 +214,7 @@ public class SnapMutationTests
             var savedPos = moved.transform.position;
             var savedDims = moved.DimensionsMM;
             var savedRot = moved.transform.rotation;
+            _mountNormal = MountNormalOf(moved);
             float threshold = KitchenSettings.Instance.SnapThreshold;
             var allOthers = allElements.Where(e => e != moved && e != null && e.gameObject.activeInHierarchy).ToList();
 
@@ -315,17 +326,19 @@ public class SnapMutationTests
             foreach (var g in _warnings.GroupBy(w => w.Split(':')[0]))
                 foreach (var w in g.Take(3)) report.AppendLine($"  {w}");
 
-            DumpWarnings();
+            report.AppendLine($"  полный список: {DumpFindings("snap-warnings.log", _warnings)}");
         }
 
+        string errorsPath = DumpFindings("snap-errors.log", _errors);
         TestContext.WriteLine(report.ToString());
 
         if (_errors.Count > 0)
-            Assert.Fail($"Snap mutation errors ({_errors.Count}):\n{string.Join("\n", _errors.Take(50))}");
+            Assert.Fail(ErrorSummary(errorsPath));
         else
             Assert.Pass($"All snap mutation tests passed. " +
                 $"Events: existing={totalSnapOk}, bigResize={totalBigResizeOk}, bigMove={totalBigMoveOk}, " +
-                $"sweep={totalSweepSnapEvents}, warnings={_warnings.Count}, time={swTotal.Elapsed.TotalSeconds:F1}s.");
+                $"sweep={totalSweepSnapEvents}, warnings={_warnings.Count}, time={swTotal.Elapsed.TotalSeconds:F1}s. " +
+                $"Пустой список находок: {errorsPath}.");
     }
 
     /// <summary>Для пары деталей из исходной сцены проверяет, что встречные грани
@@ -338,7 +351,15 @@ public class SnapMutationTests
     /// (зазор 51 при пороге 50) — после чего свип требовал прилипания, которого
     /// быть не должно. Отказ кода правильный и закреплён в
     /// `SnapCoreEdgeCaseTests.Threshold_51mm_NoSnap`; ошибкой был сам свип.
-    /// Пара, у которой отвод выносит за порог, пропускается.</summary>
+    /// Пара, у которой отвод выносит за порог, пропускается.
+    ///
+    /// Второй такой случай — винтовая опора. Оракул здесь — SnapSystem.Diagnose,
+    /// а он знает ровно одно правило: «встречные грани, зазор в пределах порога,
+    /// перекрытие не меньше 30% ⇒ обязано прилипнуть». Для центрующейся детали
+    /// это правило неверно (SnapPullsAlongFace объясняет, почему), и отвод здесь
+    /// делается ВДОЛЬ НОРМАЛИ — то есть ровно по той оси, по которой посадка
+    /// опоры не двигает её вовсе. Требование заменено на встречное: снэп не
+    /// имеет права утащить опору вдоль такой грани (MOUNT-PULL).</summary>
     private void TestExistingPairAttraction(KitchenElement moved, KitchenElement target,
         Vector3 savedPos, Vector3Int savedDims, ref int snapOk)
     {
@@ -356,6 +377,7 @@ public class SnapMutationTests
             if (r.movedFaceIndex < 0 || r.movedFaceIndex >= faces.Length) continue;
             var normal = faces[r.movedFaceIndex].normal;
             float snapThreshold = KitchenSettings.Instance.SnapThreshold;
+            bool pullsAlongThisFace = SnapPullsAlongFace(_mountNormal, normal);
 
             if (r.wouldSnap)
             {
@@ -365,6 +387,20 @@ public class SnapMutationTests
                 Vector3 awayPos = savedPos - normal * (moveAwayMm * 0.001f);
 
                 var snapRes = SnapSystem.TrySnap(moved, new List<KitchenElement> { target }, awayPos);
+
+                if (!pullsAlongThisFace)
+                {
+                    float pulledMm = snapRes.snapped
+                        ? Vector3.Dot(snapRes.position - awayPos, normal) / AppConstants.MM_TO_UNITS
+                        : 0f;
+                    if (Mathf.Abs(pulledMm) > 0.5f)
+                        AddError($"MOUNT-PULL: {moved.PartName}[f{r.movedFaceIndex}]" +
+                            $"↔{target.PartName}[f{r.otherFaceIndex}] " +
+                            $"gap={r.gapMM:F1}mm ovl={r.overlapRatio:P0} " +
+                            $"утащило на {pulledMm:F1}mm вдоль грани, которую отбор не берёт");
+                    continue;
+                }
+
                 if (!snapRes.snapped)
                     AddError($"NO-SNAP: {moved.PartName}[f{r.movedFaceIndex}]" +
                         $"↔{target.PartName}[f{r.otherFaceIndex}] " +
@@ -379,7 +415,7 @@ public class SnapMutationTests
                     snapOk++;
                 }
             }
-            else if (r.overlapRatio >= Tolerance.MinSupportOverlap)
+            else if (pullsAlongThisFace && r.overlapRatio >= Tolerance.MinSupportOverlap)
             {
                 float testOffMm = Mathf.Clamp(r.gapMM * 0.5f + 5f, 5f, snapThreshold - r.gapMM);
                 Vector3 toward = savedPos + normal * (testOffMm * 0.001f);
@@ -749,19 +785,108 @@ public class SnapMutationTests
         return GetNeighborsWithin(moved, others, distanceMm).Count > 0;
     }
 
-    /// <summary>Полный список предупреждений — в файл рядом с результатами тестов.
-    /// В консоль печатать бессмысленно: их десятки тысяч.</summary>
-    private void DumpWarnings()
+    /// <summary>Полные списки находок — в файлы рядом с результатами тестов.
+    /// В консоль печатать бессмысленно: предупреждений десятки тысяч.
+    ///
+    /// Ошибки не доезжали до читателя ДВАЖДЫ: AddError переставал их складывать
+    /// после двухсотой, а Assert.Fail печатал первые пятьдесят из уже обрезанного
+    /// списка — до заказчика прогона доехали ПЯТЬ строк. Прогон стоит 245 с, и
+    /// каждая такая обрезка покупается лишним кругом: «а какие ещё детали в
+    /// списке?» — это ещё четыре минуты. Теперь копится всё, а в сообщение теста
+    /// идёт сводка (см. ErrorSummary) с путём к файлу.
+    ///
+    /// Файл пишется ВСЕГДА, в том числе пустой на зелёном прогоне: оставшийся с
+    /// прошлой красноты файл — ровно та же ловушка, что и перезаписываемый
+    /// TestResults.xml (AGENTS.md → «The run's report survives exactly until the
+    /// next run»).</summary>
+    private static string DumpFindings(string fileName, IEnumerable<string> lines)
     {
         var dir = Path.Combine(Application.dataPath, "../test-results");
         Directory.CreateDirectory(dir);
-        File.WriteAllLines(Path.Combine(dir, "snap-warnings.log"), _warnings);
+        var path = Path.Combine(dir, fileName);
+        File.WriteAllLines(path, lines);
+        return path;
     }
 
-    private void AddError(string message)
+    private static string TagOf(string message)
     {
-        if (_errors.Count < MaxErrors)
-            _errors.Add(message);
+        int colon = message.IndexOf(':');
+        return colon > 0 ? message.Substring(0, colon) : message;
+    }
+
+    private static readonly char[] SubjectStops = { ' ', '[', '↔' };
+
+    private static string SubjectOf(string message)
+    {
+        int colon = message.IndexOf(':');
+        if (colon < 0 || colon + 1 >= message.Length) return "?";
+        string rest = message.Substring(colon + 1).Trim();
+        int cut = rest.IndexOfAny(SubjectStops);
+        return cut > 0 ? rest.Substring(0, cut) : rest;
+    }
+
+    /// <summary>Сводка вместо простыни: сколько всего, по видам, по деталям и по
+    /// два примера на вид. Разбивка по ДЕТАЛИ — не украшение: двести ошибок с
+    /// одной подписью и одним именем детали читаются как одна причина, а двести
+    /// разных имён — как разъехавшаяся фикстура.</summary>
+    private string ErrorSummary(string path)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"Snap mutation errors: {_errors.Count}. Полный список: {path}");
+        sb.AppendLine("по виду:");
+        foreach (var g in _errors.GroupBy(TagOf).OrderByDescending(g => g.Count()))
+            sb.AppendLine($"  {g.Key}: {g.Count()}");
+        sb.AppendLine("по детали (первые 10):");
+        foreach (var g in _errors.GroupBy(SubjectOf).OrderByDescending(g => g.Count()).Take(10))
+            sb.AppendLine($"  {g.Key}: {g.Count()}");
+        sb.AppendLine("примеры, по два на вид:");
+        foreach (var g in _errors.GroupBy(TagOf))
+            foreach (var e in g.Take(2)) sb.AppendLine($"  {e}");
+        return sb.ToString();
+    }
+
+    private void AddError(string message) => _errors.Add(message);
+
+    /// <summary>Ось крепления детали — из того же снимка, который читает
+    /// SnapCandidateCollector. Спрашивать здесь «это винтовая опора?» нельзя:
+    /// тогда у теста и у продакшена было бы два описания одного правила, и на
+    /// следующем центрующемся типе они разошлись бы молча.</summary>
+    private static Vector3 MountNormalOf(KitchenElement e) => e.ToGeometry().MountNormal;
+
+    /// <summary>Правило продакшена, без которого оракулы этого свипа врут: у
+    /// центрующейся детали (винтовая опора) снэп тянет её ВДОЛЬ НОРМАЛИ грани
+    /// только тогда, когда грань вообще участвует в отборе и не является гранью
+    /// крепления.
+    ///
+    ///  • SnapCandidateCollector.CollectAgainst выбрасывает у такой детали все
+    ///    грани, кроме лежащих на оси крепления (21ca342f). Боковых контактов у
+    ///    круглой пятки Ø25 не бывает: пока они участвовали, бок выигрывал по
+    ///    сдвигу у единственной осмысленной посадки и уносил опору с середины
+    ///    царги на её пласть — в сцене это был прыжок −1856 → −1814 мимо −1835.
+    ///  • AddCentringContact двигает опору ТОЛЬКО в плоскости грани крепления
+    ///    (du·u + dv·v). Высоту она добирает длиной резьбы после отпускания, а
+    ///    не съезжая вниз при перетаскивании.
+    ///
+    /// Пятка — грань, ПРОТИВОПОЛОЖНАЯ крепёжной, — под исключение не попадает:
+    /// её контакт с полом обычный, и требование прилипания для неё остаётся.
+    /// У обычной детали MountNormal нулевой, и правило не срабатывает вовсе.
+    ///
+    /// Пока этого правила здесь не было, свип требовал прилипания ровно там, где
+    /// его по построению не бывает. Прогон 2026-09-08 упёрся в потолок ошибок, и
+    /// все доехавшие строки были про опору — обе формы, [f2] против грани
+    /// крепления и [f4] против бока. Сколько их было на самом деле, тот прогон
+    /// сказать уже не мог: см. DumpFindings. Ослабления тут нет — обе строки
+    /// заменены на встречные проверки: MOUNT-PULL ниже и два теста в
+    /// SnapCoreScrewLegCentreTests
+    /// (ASideFaceOfTheLeg_IsNotOfferedEvenAtFullOverlap и
+    /// LoweredUnderThePlinth_TheLegIsNotPulledBackUpAlongItsThread), которые
+    /// краснеют, если отбор снова начнёт брать эти грани.</summary>
+    private static bool SnapPullsAlongFace(Vector3 mountNormal, Vector3 faceNormal)
+    {
+        if (mountNormal == Vector3.zero) return true;
+        float alignment = Vector3.Dot(faceNormal, mountNormal);
+        if (Mathf.Abs(alignment) < Tolerance.ParallelDot) return false;
+        return alignment < Tolerance.ParallelDot;
     }
 
     private readonly struct ResizeTarget
@@ -833,7 +958,11 @@ public class SnapMutationTests
     ///  • деталь глубоко внутри соседа — снэп не имеет права загонять центр внутрь
     ///    габарита (та же проверка, что в Collect);
     ///  • контакт с нулевым зазором — тогда TrySnap возвращает подтверждение
-    ///    контакта и snapped уже true, сюда мы просто не попадаем.</summary>
+    ///    контакта и snapped уже true, сюда мы просто не попадаем;
+    ///  • грань центрующейся детали, вдоль нормали которой снэп по построению не
+    ///    тянет — см. SnapPullsAlongFace. Без этой строки свип требовал от
+    ///    винтовой опоры прилипания её боками и её крепёжной гранью и давал сотни
+    ///    MOVE-NOSNAP на здоровом коде.</summary>
     private List<ResizeTarget> FindMoveTargets(KitchenElement moved, List<KitchenElement> others,
         Vector3 testPos, float thresholdMm)
     {
@@ -855,6 +984,7 @@ public class SnapMutationTests
             foreach (var of in GetFacesCached(o))
                 foreach (var mf in movedFaces)
                 {
+                    if (!SnapPullsAlongFace(_mountNormal, mf.normal)) continue;
                     if (Vector3.Dot(of.normal, mf.normal) > -Tolerance.ParallelDot) continue;
 
                     float gap = Vector3.Dot(of.center - mf.center, mf.normal);

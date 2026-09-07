@@ -131,4 +131,46 @@ public class SnapCoreScrewLegCentreTests : SnapCoreTestBase
         Assert.AreEqual(0f, result.position.z, Tol,
             "подходя с другой стороны, опора приходит на ту же середину");
     }
+
+    // ─ Почему брутфорс SnapMutationTests молчит про эти две грани ───────────
+    //
+    // Перебор пар граней требует одного: встречные нормали, зазор в пределах
+    // порога, перекрытие не меньше 30% — значит обязано прилипнуть. Для опоры
+    // это требование неверно дважды, и оба раза оно давало NO-SNAP на здоровом
+    // коде. Тесты ниже говорят, что верно ВМЕСТО него, и краснеют, если отбор
+    // снова начнёт брать эти грани.
+
+    private static ElementGeometry BoardBesideTheLeg() =>
+        At(Make("Board", new Vector3Int(482, 80, 16)), new Vector3(0f, 60f * MM, 0f));
+
+    [Test]
+    public void ASideFaceOfTheLeg_IsNotOfferedEvenAtFullOverlap()
+    {
+        var result = Snap(FloorLeg(), BoardBesideTheLeg(), new Vector3(0f, LegCentreY, -52.5f * MM));
+
+        Assert.IsFalse(result.snapped,
+            "бок пятки Ø25 стоит в 32 мм от пласти доски и перекрывает её на 66% — "
+            + "по правилу «встречные грани в пределах порога» опора обязана была бы прилипнуть. "
+            + "У круглой пятки боковых контактов не бывает: в отборе участвуют только грани оси "
+            + "крепления, иначе бок выигрывает по сдвигу у посадки и уносит опору с середины "
+            + "царги на её пласть. Сними это правило — и здесь появится снэп, а брутфорс "
+            + "перестанет отличать его от исправного");
+    }
+
+    [Test]
+    public void LoweredUnderThePlinth_TheLegIsNotPulledBackUpAlongItsThread()
+    {
+        var testPos = new Vector3(0f, LegCentreY - 7f * MM, -5f * MM);
+        var result = Snap(FloorLeg(), Plinth(), testPos);
+
+        Assert.IsTrue(result.snapped,
+            "по толщине цоколя посадка есть: опора смещена с середины на 5 мм");
+        Assert.AreEqual(0f, result.position.z, Tol,
+            "и в плоскости крепления посадка возвращает её на середину");
+        Assert.AreEqual(testPos.y, result.position.y, Tol,
+            "а вдоль оси крепления не двигает вовсе: опущенную на 7 мм опору снэп обратно к "
+            + "пласти цоколя не тянет — высоту она добирает длиной резьбы уже после отпускания. "
+            + "Именно этого требовал брутфорс строкой «Vintovaya_opora_1[f2]↔A4_side_L[f3] "
+            + "gap=42,0mm ovl=100% away=7mm», и требовал напрасно");
+    }
 }
