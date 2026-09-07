@@ -18,7 +18,7 @@ namespace KitchenDesigner.Core
 
         public bool basePlateValid = false;
 
-        public ElementData? basePlate = null;
+        public ElementData? basePlate = ElementData.OfCurrentFormat();
 
         public CommandRecord[] undoHistory = new CommandRecord[0];
         public CommandRecord[] redoHistory = new CommandRecord[0];

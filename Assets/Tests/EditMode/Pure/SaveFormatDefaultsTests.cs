@@ -28,8 +28,6 @@ public class SaveFormatDefaultsTests
     private static readonly Dictionary<string, string> IntentionallyNull =
         new Dictionary<string, string>
         {
-            ["ProjectData.basePlate"] =
-                "отсутствие подложки — это null, а не пустой ElementData: basePlateValid отвечает за наличие",
             ["ProjectData.settings"] =
                 "null отличает проект, сохранённый до появления блока настроек; сам блок восстанавливает KitchenSettings.ApplyFrom",
             ["KitchenSettingsData.viewNormal"] =
@@ -179,6 +177,37 @@ public class SaveFormatDefaultsTests
         Assert.AreEqual(EdgeStates.Unmigrated, new ElementData().edgeSuppressedMask,
             "ноль — законная маска «ничего не убрано», и по нему миграцию от уже"
             + " перенесённого файла не отличить");
+    }
+
+    /// <summary>Сигнальное значение обязано остаться привилегией СТАРОГО файла.
+    /// JsonUtility пишет вложенный объект в файл даже тогда, когда поле нулевое:
+    /// проект без подложки всё равно уносит с собой полный блок basePlate. Пока
+    /// это поле было null, блок писался конструктором по умолчанию — то есть с
+    /// «−1», хотя записал его СЕГОДНЯШНИЙ код. Именно это «−1» и лезло в 26
+    /// эталонов из 27: у full_project_data подложка в сцене была, и блок
+    /// приходил из ElementCapture с нулём.
+    ///
+    /// Цена сигнала в чужом блоке — не косметика: миграция читает его как
+    /// «файл старый, перенеси состояния торцов по расчёту», и запись, которую
+    /// никто не переносил, будет мигрироваться при КАЖДОЙ загрузке.</summary>
+    [Test]
+    public void EveryElementDataFieldOfTheFormat_StartsAlreadyMigrated()
+    {
+        var carrying = new List<string>();
+        foreach (var type in SaveFormatTypes)
+        {
+            var fresh = Activator.CreateInstance(type);
+            foreach (var f in PersistedFields(type))
+            {
+                if (f.FieldType != typeof(ElementData)) continue;
+                if (f.GetValue(fresh) is ElementData d && d.edgeSuppressedMask == EdgeStates.Unmigrated)
+                    carrying.Add(type.Name + "." + f.Name);
+            }
+        }
+        CollectionAssert.IsEmpty(carrying,
+            "запись, которую пишет СЕГОДНЯШНИЙ код, не имеет права нести сигнал «файл старый»: "
+            + "миграция прочитает его как «перенеси состояния торцов по расчёту» и будет делать "
+            + "это при каждой загрузке проекта");
     }
 
     [Test]

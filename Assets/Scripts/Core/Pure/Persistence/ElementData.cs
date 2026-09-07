@@ -201,6 +201,9 @@ namespace KitchenDesigner.Core
 
         public ElementData() { }
 
+        public static ElementData OfCurrentFormat() =>
+            new ElementData { edgeSuppressedMask = 0 };
+
         public List<GrooveSpec> GrooveSpecs()
         {
             var result = new List<GrooveSpec>();
