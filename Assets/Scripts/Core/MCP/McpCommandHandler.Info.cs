@@ -252,7 +252,7 @@ namespace KitchenDesigner.Core.MCP
         private McpResponse HandleReloadTextures(McpRequest req)
         {
             int n = TextureLibrary.Reload();
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
 
             Debug.Log($"[MCP] reload_textures: {n} decors from {TextureLibrary.DirectoryPath}");
             return McpResponse.Result(req.id, new

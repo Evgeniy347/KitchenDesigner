@@ -23,7 +23,13 @@ namespace KitchenDesigner.Core
                 any = true;
             }
 
-            if (any) SceneRevision.Bump();
+            if (any) SettleDerivedLinks();
+        }
+
+        public static void SettleDerivedLinks()
+        {
+            ScrewLegHostLink.ApplyAll(PartRegistry.All);
+            SceneRevision.Bump();
         }
     }
 }

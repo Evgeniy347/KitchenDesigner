@@ -169,13 +169,15 @@ namespace KitchenDesigner.Core.MCP
             if (p.dry_run)
             {
                 composite.Execute();
+                SceneChangeTracker.SettleDerivedLinks();
                 var (dryResults, drySceneCount) = DescribeBatch(resolved);
                 composite.Undo();
+                SceneChangeTracker.SettleDerivedLinks();
                 return McpResponse.Result(req.id, new { ok = true, dryRun = true, applied = false, results = dryResults, sceneViolationCount = drySceneCount });
             }
             if (commands.Count > 0) CommandStack.Execute(composite);
             ApplyNonGeometryEdits(resolved);
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
             var (results, sceneCount) = DescribeBatch(resolved);
             Debug.Log($"[MCP] edit_elements: {resolved.Count} ops, {commands.Count} geometry");
             return McpResponse.Result(req.id, new { ok = true, dryRun = false, applied = true, results, sceneViolationCount = sceneCount });
@@ -213,7 +215,7 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -1, "clone_elements rejected: " + string.Join(" | ", errors));
 
             CommandStack.Execute(new CompositeCommand($"MCP clone_elements x{allClones.Count}", commands));
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
             var all = PartRegistry.GetAll();
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
             var created = new List<string>();
@@ -268,7 +270,7 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -1, "align_elements rejected: " + string.Join(" | ", errors));
 
             CommandStack.Execute(new CompositeCommand($"MCP align_elements ({commands.Count} moves)", commands));
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
             var all = PartRegistry.GetAll();
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
             var results = new List<object>();
@@ -323,7 +325,7 @@ namespace KitchenDesigner.Core.MCP
                 AttachMove.AppendFollowers(commands, el, before, rot, after, rot, resolved);
             }
             CommandStack.Execute(new CompositeCommand($"MCP distribute {resolved.Count} elements", commands));
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
 
             var all = PartRegistry.GetAll();
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
@@ -421,7 +423,7 @@ namespace KitchenDesigner.Core.MCP
                 CommandStack.Execute(new CompositeCommand($"MCP create_elements x{commands.Count}", commands));
 
             SnapOpeningsOnceEveryWallOfTheBatchIsRegistered(created);
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
             var all = PartRegistry.GetAll();
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
             var elements = new List<ElementInfo>();
@@ -462,7 +464,7 @@ namespace KitchenDesigner.Core.MCP
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1, "convert_elements rejected: " + string.Join(" | ", errors));
 
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
             var all = PartRegistry.GetAll();
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
             var elements = new List<ElementInfo>();
@@ -493,7 +495,7 @@ namespace KitchenDesigner.Core.MCP
 
             var deletedNames = p.names.ToList();
             CommandStack.Execute(new CompositeCommand($"MCP delete_elements x{commands.Count}", commands));
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
             var allAfter = PartRegistry.GetAll();
             var vrAfter = allAfter != null && allAfter.Count > 0 ? ConstraintValidator.Validate(allAfter) : null;
             Debug.Log($"[MCP] Deleted {commands.Count} elements");
@@ -544,7 +546,7 @@ namespace KitchenDesigner.Core.MCP
                 dimsBefore, dimsAfter,
                 posBefore, posBefore,
                 rotBefore, rotBefore));
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
 
             Debug.Log($"[MCP] Resized floor to ({w}, {h}, {d})mm");
             return McpResponse.Result(req.id, BuildMutationResult(el));

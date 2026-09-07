@@ -406,7 +406,7 @@ namespace KitchenDesigner.Core.MCP
         private McpResponse PlanMutationResult(McpRequest req, List<string> created, int updated,
             List<KitchenElement> affected)
         {
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
             var all = PartRegistry.GetAll();
             var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
             var violations = new List<object>();

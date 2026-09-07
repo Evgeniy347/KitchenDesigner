@@ -287,8 +287,9 @@ namespace KitchenDesigner.Core.MCP
                 "Unlock it with set_element_lock {locked:false} — but ONLY if the user explicitly allowed editing this element.");
         }
 
-        private static void RefreshElementHighlights()
+        private static void SettleSceneAfterMutation()
         {
+            SceneChangeTracker.SettleDerivedLinks();
             var hl = Object.FindAnyObjectByType<ElementHighlighter>();
             if (hl != null)
                 hl.RefreshHighlights();

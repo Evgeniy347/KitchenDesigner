@@ -45,7 +45,7 @@ namespace KitchenDesigner.Core.MCP
 
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP set_attr x{commands.Count}", commands));
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
             return TerseResult(req, matched.Count, updated);
         }
 
@@ -70,7 +70,7 @@ namespace KitchenDesigner.Core.MCP
 
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP move x{commands.Count}", commands));
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
             return TerseResult(req, matched.Count, commands.Count);
         }
 
@@ -103,7 +103,7 @@ namespace KitchenDesigner.Core.MCP
 
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP resize_module '{p.module}' x{commands.Count}", commands));
-            RefreshElementHighlights();
+            SettleSceneAfterMutation();
             return TerseResult(req, members.Count, commands.Count);
         }
 
