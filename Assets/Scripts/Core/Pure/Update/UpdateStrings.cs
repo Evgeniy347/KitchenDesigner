@@ -28,5 +28,5 @@ namespace KitchenDesigner.Core.Update
         public const string RetryAttempt = "Повторная попытка {0} из {1}…";
     }
 
-    public enum StatusLevel { Info, Success, Error }
+    public enum StatusLevel { Info, Success, Warning, Error }
 }

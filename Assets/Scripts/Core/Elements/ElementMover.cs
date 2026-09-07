@@ -381,7 +381,7 @@ namespace KitchenDesigner.Core
                 bool wasOn = globalSnap;
                 UI.StatusBarUI.Instance?.ShowTransient(
                     wasOn ? "Прилипание отключено (Ctrl)" : "Прилипание включено (Ctrl)",
-                    UIStyle.TextSecondary);
+                    Update.StatusLevel.Info);
                 _wasCtrl = CtrlHeld;
             }
             var snap = effectiveSnap

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using KitchenDesigner.Core.Update;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,7 +14,7 @@ namespace KitchenDesigner.Core.UI
         private struct Message
         {
             public string Text;
-            public Color Color;
+            public StatusLevel Level;
             public float ExpiresAt;
         }
 
@@ -68,7 +69,24 @@ namespace KitchenDesigner.Core.UI
             lRt.offsetMin = new Vector2(10, 0); lRt.offsetMax = Vector2.zero;
         }
 
-        public void ShowTransient(string text, Color color, float seconds = DefaultSeconds)
+        public static Color ColorFor(StatusLevel level) => level switch
+        {
+            StatusLevel.Success => UIStyle.HighlightOk,
+            StatusLevel.Warning => UIStyle.HighlightWarning,
+            StatusLevel.Error => UIStyle.HighlightError,
+            _ => UIStyle.TextSecondary,
+        };
+
+        internal static ConsoleLineKind ConsoleKindOf(StatusLevel level) => level switch
+        {
+            StatusLevel.Success => ConsoleLineKind.StatusSuccess,
+            StatusLevel.Warning => ConsoleLineKind.StatusWarning,
+            StatusLevel.Error => ConsoleLineKind.StatusError,
+            _ => ConsoleLineKind.Status,
+        };
+
+        public void ShowTransient(string text, StatusLevel level,
+            float seconds = DefaultSeconds)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -78,12 +96,14 @@ namespace KitchenDesigner.Core.UI
                 return;
             }
 
+            ConsoleLog.Shared.Append(ConsoleKindOf(level), text, DateTime.Now);
+
             if (seconds < MinSeconds && !float.IsPositiveInfinity(seconds)) seconds = MinSeconds;
 
             var msg = new Message
             {
                 Text = text,
-                Color = color,
+                Level = level,
                 ExpiresAt = float.IsPositiveInfinity(seconds)
                     ? float.PositiveInfinity
                     : _nowProvider() + seconds,
@@ -105,7 +125,7 @@ namespace KitchenDesigner.Core.UI
         }
 
         private bool SameAsActive(Message msg) =>
-            _active!.Value.Text == msg.Text && _active!.Value.Color == msg.Color;
+            _active!.Value.Text == msg.Text && _active!.Value.Level == msg.Level;
 
         public void Tick()
         {
@@ -126,8 +146,9 @@ namespace KitchenDesigner.Core.UI
             {
                 ShowChip(true);
                 var msg = _active.Value;
+                var color = ColorFor(msg.Level);
                 if (_label.text != msg.Text) _label.text = msg.Text;
-                if (_label.color != msg.Color) _label.color = msg.Color;
+                if (_label.color != color) _label.color = color;
                 FitChip(msg.Text);
                 return;
             }

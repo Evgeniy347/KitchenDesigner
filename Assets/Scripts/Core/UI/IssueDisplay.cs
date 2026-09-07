@@ -22,6 +22,13 @@ namespace KitchenDesigner.Core.UI
             _ => UIStyle.Text,
         };
 
+        public static Update.StatusLevel StatusLevelOf(IssueLevel level) => level switch
+        {
+            IssueLevel.Error => Update.StatusLevel.Error,
+            IssueLevel.Warning => Update.StatusLevel.Warning,
+            _ => Update.StatusLevel.Info,
+        };
+
         public static string FormatRowForCopy(AnalysisIssue iss) => string.Concat(
             LevelName(iss.Level), "\t",
             iss.Code ?? "", "\t",

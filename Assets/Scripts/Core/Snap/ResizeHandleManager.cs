@@ -244,7 +244,7 @@ namespace KitchenDesigner.Core
             if (CtrlHeld == _ctrlHeldLastFrame) return;
             UI.StatusBarUI.Instance?.ShowTransient(
                 globalSnap ? "Прилипание отключено (Ctrl)" : "Прилипание включено (Ctrl)",
-                UIStyle.TextSecondary);
+                Update.StatusLevel.Info);
             _ctrlHeldLastFrame = CtrlHeld;
         }
 

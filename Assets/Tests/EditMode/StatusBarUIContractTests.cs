@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Core.Update;
 
 public class StatusBarUIContractTests
 {
@@ -27,7 +28,7 @@ public class StatusBarUIContractTests
     [Test]
     public void StatusBar_InfiniteMessage_NeverExpires_AndHoldsTheQueueBehindIt()
     {
-        _bar.ShowTransient("подключение…", Color.white, float.PositiveInfinity);
+        _bar.ShowTransient("подключение…", StatusLevel.Info, float.PositiveInfinity);
 
         _fakeTime = 10_000f;
         _bar.Tick();
@@ -35,7 +36,7 @@ public class StatusBarUIContractTests
             "seconds == +бесконечность значит «висит постоянно»: минимальный таймаут не "
             + "должен подменять бесконечность");
 
-        _bar.ShowTransient("готово", Color.white, 5f);
+        _bar.ShowTransient("готово", StatusLevel.Info, 5f);
         _fakeTime = 20_000f;
         _bar.Tick();
 
@@ -45,7 +46,7 @@ public class StatusBarUIContractTests
             + "строка; полагаться на «постоянно до следующего ShowTransient» нельзя");
         Assert.AreEqual(1, _bar.QueuedCount, "и очередь копится за ним");
 
-        _bar.ShowTransient("", Color.white);
+        _bar.ShowTransient("", StatusLevel.Info);
         Assert.IsFalse(_bar.HasActive, "пустая строка очищает и активное, и очередь");
         Assert.AreEqual(0, _bar.QueuedCount);
     }

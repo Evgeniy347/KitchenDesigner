@@ -239,7 +239,7 @@ namespace KitchenDesigner.Core.UI
                 IssueDisplay.RevealIssue(iss);
                 StatusBarUI.Instance?.ShowTransient(
                     $"{iss.Code} · {iss.Detail} · {iss.Message}",
-                    IssueDisplay.LevelColor(iss.Level), 3f);
+                    IssueDisplay.StatusLevelOf(iss.Level), 3f);
                 return;
             }
         }

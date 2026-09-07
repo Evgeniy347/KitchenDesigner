@@ -53,6 +53,7 @@ namespace KitchenDesigner.Core.UI
         private static void Toast(string msg) => ToastNotification.ShowIfAvailable(msg);
 
         private static void ShowSaved(string name) =>
-            StatusBarUI.Instance?.ShowTransient("Сохранено: " + name, UIStyle.HighlightOk, 3f);
+            StatusBarUI.Instance?.ShowTransient("Сохранено: " + name,
+                Update.StatusLevel.Success, 3f);
     }
 }
