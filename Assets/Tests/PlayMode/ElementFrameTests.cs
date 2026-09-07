@@ -67,14 +67,19 @@ public abstract class ElementFrameTests
     /// Коды COL-* — ровно те правила, которые красят
     /// (<c>ElementHighlighter.ApplyMaterial</c> берёт цвет из
     /// <c>ConstraintValidator.Validate(...).violations</c>); остальные (GAP-*,
-    /// DRW-*, DWH-*, LEG-*) сцену не красят и идут в сообщение справкой.</summary>
-    /// <param name="overlapIsByDesign">Причина, по которой нарушение в этом
-    /// кадре ЗАДУМАНО. Не «отключить проверку»: с причиной утверждение
-    /// переворачивается и требует, чтобы нарушение действительно БЫЛО. Иначе
-    /// исключение, пережившее свою причину, осталось бы зелёным навсегда — а
-    /// так оно краснеет в тот день, когда расстановку починят.</param>
-    protected static void AssertFrameShowsMaterialNotViolationTint(string frame,
-        string? overlapIsByDesign)
+    /// DRW-*, DWH-*, LEG-*) сцену не красят и идут в сообщение справкой.
+    ///
+    /// Оговорки «нарушение задумано» здесь нет намеренно. Параметр
+    /// <c>overlapIsByDesign</c> заводился ради комнатных кадров, где четыре
+    /// стены законно перекрывались на углах; после того как валидация
+    /// научилась прощать угол (<c>WallCentreline.MeetAtSharedCorner</c>), у
+    /// него не осталось ни одного вызывающего с непустой причиной. Ветка,
+    /// которую ничто не зовёт, ничем и не проверяется, а готовая площадка —
+    /// это то, что следующий агент применит не подумав: увидев красный кадр,
+    /// он объявит нарушение задуманным вместо того, чтобы чинить
+    /// расстановку. Понадобится снова — завести заново в тот же день, вместе
+    /// с кадром, который её использует.</summary>
+    protected static void AssertFrameShowsMaterialNotViolationTint(string frame)
     {
         var lines = new List<string>();
         var tinting = new List<string>();
@@ -86,40 +91,25 @@ public abstract class ElementFrameTests
             if (issue.Code.StartsWith(CollisionCodePrefix)) tinting.Add(line);
         }
 
-        if (overlapIsByDesign == null)
-        {
-            Assert.IsEmpty(tinting,
-                frame + ": расстановка в кадре нарушает правило валидации.\n"
-                + "Правило: кадровый тест снимает МАТЕРИАЛ элемента, поэтому "
-                + "валидационный тон в нём выключен — покрасневший элемент больше "
-                + "не видно глазами, и регрессию расстановки сторожит только эта "
-                + "проверка. Чинить надо расстановку в самом тесте (опору, высоту, "
-                + "зазоры), а не проверку; если пересечение в этом кадре задумано — "
-                + "передать причину в CaptureFramePng, и утверждение перевернётся в "
-                + "требование, что нарушение есть. Разрешения на это не нужно, это "
-                + "часть той же правки.\n"
-                + "Нарушения сцены:\n" + string.Join("\n", lines));
-            return;
-        }
-
-        Assert.IsNotEmpty(tinting,
-            frame + ": кадр объявлен исключением — «" + overlapIsByDesign + "» — а "
-            + "нарушений COL-* в сцене нет. Значит причина исключения пережила саму "
-            + "себя: расстановку в этом кадре починили, и оговорку надо снять, иначе "
-            + "она молча прикроет следующую регрессию.\n"
+        Assert.IsEmpty(tinting,
+            frame + ": расстановка в кадре нарушает правило валидации.\n"
+            + "Правило: кадровый тест снимает МАТЕРИАЛ элемента, поэтому "
+            + "валидационный тон в нём выключен — покрасневший элемент больше "
+            + "не видно глазами, и регрессию расстановки сторожит только эта "
+            + "проверка. Чинить надо расстановку в самом тесте (опору, высоту, "
+            + "зазоры), а не проверку: оговорки «так задумано» здесь нет и "
+            + "заводить её задним числом ради одного красного кадра нельзя. "
+            + "Разрешения на правку расстановки не нужно, это часть той же "
+            + "правки.\n"
             + "Нарушения сцены:\n" + string.Join("\n", lines));
     }
 
     /// <summary>Снять кадр в файл. Единственная точка, где кадровый набор
     /// получает пиксели, — и потому единственное место, где выключается тон и
     /// задаётся вопрос про нарушения.</summary>
-    protected IEnumerator CaptureFramePng(Camera cam, string png, int width, int height) =>
-        CaptureFramePng(cam, png, width, height, null);
-
-    protected IEnumerator CaptureFramePng(Camera cam, string png, int width, int height,
-        string? overlapIsByDesign)
+    protected IEnumerator CaptureFramePng(Camera cam, string png, int width, int height)
     {
-        AssertFrameShowsMaterialNotViolationTint(png, overlapIsByDesign);
+        AssertFrameShowsMaterialNotViolationTint(png);
         DisableValidationTint();
 
         var rt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
@@ -213,7 +203,7 @@ public class ElementFrameCoverageTests
 
         string fixture = File.ReadAllText(
             Path.Combine(Application.dataPath, SuiteDir, nameof(ElementFrameTests) + ".cs"));
-        int assertAt = fixture.IndexOf("AssertFrameShowsMaterialNotViolationTint(png,",
+        int assertAt = fixture.IndexOf("AssertFrameShowsMaterialNotViolationTint(png)",
             System.StringComparison.Ordinal);
         int disableAt = fixture.IndexOf("DisableValidationTint();", System.StringComparison.Ordinal);
         Assert.Greater(assertAt, 0,

@@ -123,18 +123,14 @@ public class IsoScreenshotTests : ElementFrameTests
         new Vector3(mm.x, mm.y, mm.z) * AppConstants.MM_TO_UNITS;
 
     private IEnumerator RenderToPng(Camera cam, string fileName) =>
-        RenderToPng(cam, fileName, Path.GetFileNameWithoutExtension(fileName) + ".json", null);
-
-    private IEnumerator RenderToPng(Camera cam, string fileName, string? panelSnapshotFile) =>
-        RenderToPng(cam, fileName, panelSnapshotFile, null);
+        RenderToPng(cam, fileName, Path.GetFileNameWithoutExtension(fileName) + ".json");
 
     /// <summary>panelSnapshotFile == null — снять только 3D-кадр, без эталона
     /// панели. Нужно там, где один тест рисует НЕСКОЛЬКО кадров одной и той же
     /// сцены: панель от кадра к кадру не меняется, и каждый лишний эталон —
     /// это ещё один файл, который придётся принимать вручную после любой
     /// правки сайдбара.</summary>
-    private IEnumerator RenderToPng(Camera cam, string fileName, string? panelSnapshotFile,
-        string? overlapIsByDesign)
+    private IEnumerator RenderToPng(Camera cam, string fileName, string? panelSnapshotFile)
     {
         // Окно «Сцена» наполняется не по событию создания элемента, а дешёвым
         // поллингом раз в 0.5 с (HierarchyPanelUI.Update). В батч-прогоне кадры
@@ -149,7 +145,7 @@ public class IsoScreenshotTests : ElementFrameTests
             yield return null;
         }
 
-        yield return CaptureFramePng(cam, fileName, RenderW, RenderH, overlapIsByDesign);
+        yield return CaptureFramePng(cam, fileName, RenderW, RenderH);
 
         var canvas = UIManager.Instance?.Canvas;
         if (canvas != null && panelSnapshotFile != null)
