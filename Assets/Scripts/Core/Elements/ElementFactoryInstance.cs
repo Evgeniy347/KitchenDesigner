@@ -66,11 +66,19 @@ namespace KitchenDesigner.Core
                     go.SetActive(false);
                     go.name = PooledName;
                     RemoveCustomComponents(go);
+                    RestoreBoxCollider(go);
                     ResetComponent(go);
                 },
                 actionOnDestroy: go => Object.DestroyImmediate(go),
                 defaultCapacity: capacity,
                 maxSize: maxSize);
+
+        private void RestoreBoxCollider(GameObject go)
+        {
+            var mesh = go.GetComponent<MeshCollider>();
+            if (mesh != null) Object.DestroyImmediate(mesh);
+            if (go.GetComponent<BoxCollider>() == null) go.AddComponent<BoxCollider>();
+        }
 
         private void RemoveCustomComponents(GameObject go)
         {

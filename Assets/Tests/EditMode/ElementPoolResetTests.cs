@@ -25,6 +25,12 @@ using KitchenDesigner.Core;
 /// поле PartData получает свой умолчательный вид из того же инициализатора, что и сброс,
 /// поэтому под сброс попадает само, без единой правки здесь.
 ///
+/// Позу пул терял половинами. Позицию пулуемому объекту переставляла фабрика при выдаче,
+/// поворот не переставлял никто — и AttachRestRotation с ClosedRotation, оба производные
+/// от transform.rotation, приезжали к следующему фасаду от предыдущего. Поэтому позу
+/// ставит ОДИН вызов SetPositionAndRotation: половины у него не бывает, а фабрика больше
+/// не участвует в сбросе случайно.
+///
 /// У MonoBehaviour-подкласса своего PartData нет и `new` ему запрещён, поэтому остаток —
 /// собственные поля FacadeElement и три поля базы вне PartData — закрывает хук
 /// OnResetToPristineState. Хук — это опять список, и держит его честным сторож ниже:
@@ -225,6 +231,31 @@ public class ElementPoolResetTests
             second.GetComponent<KitchenElement>().MaterialId,
             "Декор предыдущей жизни пережил возврат в пул. " + Rule);
         ElementFactory.DestroyPart(second);
+    }
+
+    /// <summary>Тот же дефект, но в железе сцены, а не в полях. GameObject стены собран
+    /// не из примитива: у него MeshCollider по мешу стены и BoxCollider отсутствует вовсе.
+    /// Тип стены — ровно typeof(KitchenElement), поэтому её объект уходит в пул ДЕТАЛЕЙ, а
+    /// выдача из пула умеет только ВКЛЮЧИТЬ BoxCollider — включать нечего. Следующая доска
+    /// приходит с коллайдером формы стены: клик, снэп и подсветка меряют чужую геометрию,
+    /// хотя меш уже перестроен и выглядит доской.</summary>
+    [Test]
+    public void Pool_WallReleased_NextBoardComesBackWithItsOwnBoxCollider()
+    {
+        var wall = ElementFactory.CreateWall(ProbeDims, "Стена", ProbePos);
+        ElementFactory.DestroyElement(wall);
+
+        var board = ElementFactory.CreatePart(ProbeDims, "Новая доска", ProbePos);
+
+        Assert.IsTrue(board.GetComponent<MeshCollider>() == null,
+            "Доска из пула несёт MeshCollider стены — коллайдер прежней жизни. " + Rule);
+
+        var box = board.GetComponent<BoxCollider>();
+        Assert.IsTrue(box != null && box.enabled,
+            "У доски из пула нет включённого BoxCollider: чужой коллайдер сняли, а свой "
+            + "не вернули, и деталь стала неосязаемой. " + Rule);
+
+        ElementFactory.DestroyPart(board);
     }
 
     // ---------------------------------------------------------------- сторож

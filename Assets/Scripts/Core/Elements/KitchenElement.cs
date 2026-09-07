@@ -180,6 +180,7 @@ namespace KitchenDesigner.Core
             _attachRestRot = Quaternion.identity;
             _attachRidden = false;
             PoseVersion = 0;
+            transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             OnResetToPristineState();
             ApplyDimensions();
             RebuildGrooveMesh();
