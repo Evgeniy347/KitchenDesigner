@@ -27,6 +27,8 @@ namespace KitchenDesigner.Core
 
         public const int CENTRING_REQUIRED_SPAN_MM = 25;
 
+        public const int MOUNT_DETENT_FROM_EDGE_MM = 60;
+
         public const float MIN_INSERT_WALL_MM = 3f;
 
         public const int MIN_INSERTION_INTO_HOST_MM = 5;
@@ -35,6 +37,9 @@ namespace KitchenDesigner.Core
 
         public static int FloorMM(float valueMM) =>
             (int)System.Math.Floor(valueMM + MM_ROUNDING_EPSILON);
+
+        public static int RoundMM(float valueMM) =>
+            (int)System.Math.Floor(valueMM + 0.5f + MM_ROUNDING_EPSILON);
 
         public static int ThreadDiameterMM(string? thread) => thread switch
         {

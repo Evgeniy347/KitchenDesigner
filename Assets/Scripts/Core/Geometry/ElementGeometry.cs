@@ -21,13 +21,16 @@ namespace KitchenDesigner.Core
 
         public readonly Vector3 MountNormal;
 
+        public readonly float MountEdgeDetentUnits;
+
         public bool CentresOnTarget =>
             MountNormal.x != 0f || MountNormal.y != 0f || MountNormal.z != 0f;
 
         public ElementGeometry(int id, string name, Face[] faces, Face[] grooveSeatFaces,
             Face[] grooveWallFaces, Vector3 min, Vector3 max, bool isPanel,
-            Vector3 mountNormal = default)
+            Vector3 mountNormal = default, float mountEdgeDetentUnits = 0f)
         {
+            MountEdgeDetentUnits = mountEdgeDetentUnits;
             Id = id;
             Name = name;
             Faces = faces;
@@ -53,11 +56,14 @@ namespace KitchenDesigner.Core
         }
 
         public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
-            bool isPanel = false, Vector3 mountNormal = default)
-            => Box(name, center, sizeUnits, Quaternion.identity, isPanel, mountNormal);
+            bool isPanel = false, Vector3 mountNormal = default,
+            float mountEdgeDetentUnits = 0f)
+            => Box(name, center, sizeUnits, Quaternion.identity, isPanel, mountNormal,
+                mountEdgeDetentUnits);
 
         public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
-            Quaternion rotation, bool isPanel = false, Vector3 mountNormal = default)
+            Quaternion rotation, bool isPanel = false, Vector3 mountNormal = default,
+            float mountEdgeDetentUnits = 0f)
         {
             var half = sizeUnits * 0.5f;
             var axes = new[]
@@ -100,7 +106,7 @@ namespace KitchenDesigner.Core
 
             var empty = System.Array.Empty<Face>();
             return new ElementGeometry(name.GetHashCode(), name, faces, empty, empty,
-                min, max, isPanel, mountNormal);
+                min, max, isPanel, mountNormal, mountEdgeDetentUnits);
         }
     }
 }

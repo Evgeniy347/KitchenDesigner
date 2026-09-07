@@ -102,10 +102,10 @@ namespace KitchenDesigner.Core
             Vector3 v = mf.upAxis;
             Rect mRect = FaceRects.Of(mf, u, v);
             Rect oRect = FaceRects.Of(of, u, v);
-            float du = EdgeDetents.CentreDelta(mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax,
-                part.MaxDist);
-            float dv = EdgeDetents.CentreDelta(mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax,
-                part.MaxDist);
+            float du = MountDetent(part, mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax,
+                out string labelU);
+            float dv = MountDetent(part, mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax,
+                out string labelV);
 
             Vector3 snapPos = part.BasePos + du * u + dv * v;
             float dist = Vector3.Distance(snapPos, part.BasePos);
@@ -131,10 +131,24 @@ namespace KitchenDesigner.Core
                 dv = dv,
                 hasLineContact = hasLineContact,
                 log = part.Verbose
-                    ? $"[Snap] {part.Geometry.Name} → {other.Name} | центровка под деталью " +
-                      $"m{i}/o{j} du={du * 1000f:F2}мм dv={dv * 1000f:F2}мм"
+                    ? $"[Snap] {part.Geometry.Name} → {other.Name} | посадка под деталью " +
+                      $"m{i}/o{j} оси[u:{labelU} v:{labelV}] " +
+                      $"du={du * 1000f:F2}мм dv={dv * 1000f:F2}мм"
                     : null
             });
+        }
+
+        private static float MountDetent(in MovedPart part, float aMin, float aMax,
+            float bMin, float bMax, out string label)
+        {
+            if (bMax - bMin < aMax - aMin + Tolerance.EpsilonUnits)
+            {
+                label = EdgeDetents.CentreLabel;
+                return EdgeDetents.CentreDelta(aMin, aMax, bMin, bMax, part.MaxDist);
+            }
+
+            return EdgeDetents.MountDetentDelta(aMin, aMax, bMin, bMax, part.MaxDist,
+                part.Geometry.MountEdgeDetentUnits, out label);
         }
 
         private static void AddFarEdgeAlignment(in MovedPart part, in ElementGeometry other,
