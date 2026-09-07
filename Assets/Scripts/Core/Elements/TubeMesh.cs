@@ -94,8 +94,8 @@ namespace KitchenDesigner.Core
         {
             for (int i = 0; i < sides; i++)
             {
-                target.AddTriangle(lower + i, upper + i, lower + i + 1);
-                target.AddTriangle(lower + i + 1, upper + i, upper + i + 1);
+                target.AddTriangle(lower + i, lower + i + 1, upper + i);
+                target.AddTriangle(lower + i + 1, upper + i + 1, upper + i);
             }
         }
 
@@ -120,9 +120,9 @@ namespace KitchenDesigner.Core
 
             for (int i = 0; i < sides; i++)
                 if (forward)
-                    target.AddTriangle(centreIndex, ring + i + 1, ring + i);
-                else
                     target.AddTriangle(centreIndex, ring + i, ring + i + 1);
+                else
+                    target.AddTriangle(centreIndex, ring + i + 1, ring + i);
         }
     }
 }
