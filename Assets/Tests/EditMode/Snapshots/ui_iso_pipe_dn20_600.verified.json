@@ -13,12 +13,7 @@
     },
     {
       "type": "Button",
-      "text": "IsoShowerColumn",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "IsoShowerColumnWall",
+      "text": "IsoPipe",
       "position": [20, 0]
     },
     {
@@ -58,7 +53,7 @@
     },
     {
       "type": "Button",
-      "text": "Ошибки",
+      "text": "Ошибки <color=#E64040>(#)</color>",
       "position": [260, -6]
     },
     {

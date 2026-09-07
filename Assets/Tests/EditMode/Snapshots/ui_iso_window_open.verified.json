@@ -316,48 +316,83 @@
     },
     {
       "type": "Button",
+      "text": "Труба",
+      "position": [22, -1014]
+    },
+    {
+      "type": "Button",
+      "text": "Отвод 90°",
+      "position": [22, -1043]
+    },
+    {
+      "type": "Button",
+      "text": "Переходная муфта",
+      "position": [22, -1072]
+    },
+    {
+      "type": "Button",
+      "text": "Тройник",
+      "position": [22, -1101]
+    },
+    {
+      "type": "Button",
+      "text": "Заглушка",
+      "position": [22, -1130]
+    },
+    {
+      "type": "Button",
+      "text": "Подача",
+      "position": [22, -1159]
+    },
+    {
+      "type": "Button",
+      "text": "Обратка",
+      "position": [22, -1188]
+    },
+    {
+      "type": "Button",
       "text": "▼  Помещение",
-      "position": [8, -1014]
+      "position": [8, -1217]
     },
     {
       "type": "Button",
       "text": "Короб",
-      "position": [22, -1048]
+      "position": [22, -1251]
     },
     {
       "type": "Button",
       "text": "Стена",
-      "position": [22, -1077]
+      "position": [22, -1280]
     },
     {
       "type": "Button",
       "text": "Окно",
-      "position": [22, -1106]
+      "position": [22, -1309]
     },
     {
       "type": "Button",
       "text": "Дверь",
-      "position": [22, -1135]
+      "position": [22, -1338]
     },
     {
       "type": "Button",
       "text": "Пол",
-      "position": [22, -1164]
+      "position": [22, -1367]
     },
     {
       "type": "Button",
       "text": "Источник света",
-      "position": [22, -1193]
+      "position": [22, -1396]
     },
     {
       "type": "Button",
       "text": "Розетка",
-      "position": [22, -1222]
+      "position": [22, -1425]
     },
     {
       "type": "Button",
       "text": "Выключатель",
-      "position": [22, -1251]
+      "position": [22, -1454]
     }
   ]
 }
