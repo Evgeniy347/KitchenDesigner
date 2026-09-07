@@ -123,6 +123,7 @@ namespace KitchenDesigner.Core
             if (e is DrawerElement) kind |= ElementKind.Drawer;
             if (e is ScrewLegElement) kind |= ElementKind.ScrewLeg;
             if (e is LightSourceElement) kind |= ElementKind.Decor;
+            if (e is DishwasherElement) kind |= ElementKind.SelfSupported;
             if (e is SinkElement || e is CooktopElement) kind |= ElementKind.Recessed;
             if (e is FacadeElement fe)
             {

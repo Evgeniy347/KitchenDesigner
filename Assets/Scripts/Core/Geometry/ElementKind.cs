@@ -15,5 +15,6 @@ namespace KitchenDesigner.Core
         FloatingFacade = 1 << 6,
         Facade = 1 << 7,
         ScrewLeg = 1 << 8,
+        SelfSupported = 1 << 9,
     }
 }

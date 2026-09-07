@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 using KitchenDesigner.Tests;
+using KitchenDesigner.Core.Analysis;
 
 /// <summary>
 /// PlayMode: собирает короб 540×720×600 и вставляет два ящика Movento —
@@ -81,7 +82,11 @@ public class MoventoDrawerSceneTests
         const int W = 600, H = 720, D = 540, t = 16;
         const int lw = W - 2 * t; // 568
         const int nl = 500;
-        int halfX = W / 2 - t;    // центр боковины по X
+        // Центр боковины: W/2 − t/2. Было W/2 − t, и боковины стояли на 8 мм
+        // внутри проёма — каждая пересекала каждый ящик, отчего кадр и был
+        // розовым (COL-01, «детали пересекаются в объёме»). Дно и крышка
+        // оставались зелёными, и это ровно та подсказка, которую видно на PNG.
+        float halfX = W / 2f - t / 2f;
 
         // Каркас: дно, крышка, две боковины.
         Part("Дно_корпуса",   new Vector3Int(W, t, D),          new Vector3(0, t / 2f, 0));
@@ -125,6 +130,24 @@ public class MoventoDrawerSceneTests
                 $"каждая позиция — деталь короба с суффиксом: {line.name}");
         Assert.IsTrue(spec.lines.Any(l => l.name.EndsWith("·" + MoventoDrawerMesh.SUFFIX_BOTTOM)), "есть дно");
         Assert.IsTrue(spec.lines.Any(l => l.name.EndsWith("·" + MoventoDrawerMesh.SUFFIX_SIDE)), "есть боковины");
+
+        // ── Валидатор ────────────────────────────────────────────
+        // Розовый на изометрическом кадре — не декор, а тинт нарушения
+        // (ElementHighlighter: невалидное красится InvalidTintColor). Пока
+        // список ошибок не пуст, снимок показывает ошибку расстановки вместо
+        // короба, и полгода он показывал именно её. Красное обязано НАЗЫВАТЬ
+        // правило, поэтому в сообщение идут коды с деталями, а не «кадр
+        // розовый».
+        var issues = SceneAnalyzer.Analyze()
+            .Select(i => i.Level + " " + i.Code + " " + i.Detail + " — " + i.Message)
+            .ToList();
+        var tinting = SceneAnalyzer.Analyze()
+            .Where(i => i.Code.StartsWith("COL-"))
+            .Select(i => i.Code + " " + i.Detail)
+            .ToList();
+        CollectionAssert.IsEmpty(tinting,
+            "короб в кадре нарушает правило расстановки, и снимок показывает тинт "
+            + "нарушения вместо мебели.\nНарушения сцены:\n" + string.Join("\n", issues));
 
         // ── Скриншот ─────────────────────────────────────────────
         KitchenSettings.Instance.NormalView.edgeOutline = true;

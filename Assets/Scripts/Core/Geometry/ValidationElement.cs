@@ -43,6 +43,7 @@ namespace KitchenDesigner.Core
         public bool IgnoredInPairs => Is(ElementKind.Decor | ElementKind.Recessed);
 
         public bool NeedsNoSupport => Is(ElementKind.Anchor | ElementKind.Drawer
+            | ElementKind.SelfSupported
             | ElementKind.Decor | ElementKind.Recessed | ElementKind.FloatingFacade);
 
         public bool SharesModuleWith(in ValidationElement other) =>

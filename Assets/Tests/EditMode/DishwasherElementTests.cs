@@ -1349,6 +1349,37 @@ public class DishwasherElementTests : McpTestFixture
             "машина стоит на полу — опора есть");
     }
 
+    /// <summary>Тот же зазор, но с другой стороны. COL-02 («деталь не имеет
+    /// опоры») задаёт прибору вопрос, на который его коробка ответить НЕ МОЖЕТ:
+    /// объём валидации начинается на 90 мм выше подошвы, под ним всегда пусто —
+    /// и правильно поставленная машина краснела бы ВСЕГДА. На полу, на
+    /// подставке и в нише между боковинами тоже: ниша 600 против корпуса 598,
+    /// касания нет и там. Опору прибора судит DWH-05 — он знает и про ножки, и
+    /// про их ход, и про утопление в пол.
+    ///
+    /// Поэтому посудомойка помечена ElementKind.SelfSupported и выведена из
+    /// COL-02. Это подавление с записанной причиной, а не глушение правила, и
+    /// граница подавления проверяется тут же: доска в воздухе обязана остаться
+    /// красной. Симптом, с которого началось, — iso_dishwasher.png розовый
+    /// целиком, при том что DWH-05 на той же сцене молчал.</summary>
+    [Test]
+    public void Dishwasher_OnTheFloor_IsNotReportedUnsupported_ThoughItsVolumeTouchesNothing()
+    {
+        var dw = Make("Posudomoyka");
+        FloorUnder(dw);
+
+        CollectionAssert.IsEmpty(IssuesWithCode("COL-02"),
+            "низ объёма отдан цоколю, поэтому опору судит DWH-05, а не COL-02");
+
+        Board("Visyachaya_doska", new Vector3(2000f, 1500f, 0f), new Vector3Int(600, 18, 300));
+
+        var floating = IssuesWithCode("COL-02");
+        Assert.AreEqual(1, floating.Count,
+            "выведена ОДНА машина, а не само правило: доска в воздухе обязана краснеть");
+        Assert.AreNotSame(dw, floating[0].Target,
+            "и краснеть обязана именно доска");
+    }
+
     [Test]
     public void Dishwasher_WithNothingUnderneath_FiresDwh05()
     {
