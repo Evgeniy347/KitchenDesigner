@@ -106,7 +106,10 @@ namespace KitchenDesigner.Core
                 wallIndex,
                 extraBody,
                 hasExtraBody,
-                hostIndex);
+                hostIndex,
+                wall != null
+                    ? WallCentreline.Of(wall.FullPosition, e.transform.rotation, e.DimensionsMM)
+                    : default);
         }
 
         private static ElementKind KindOf(KitchenElement e, Wall? wall)

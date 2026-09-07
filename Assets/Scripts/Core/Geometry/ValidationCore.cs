@@ -162,7 +162,8 @@ namespace KitchenDesigner.Core
 
         private static bool IsLegitAnchorPair(in ValidationElement a, in ValidationElement b) =>
             a.Is(ElementKind.FloorAnchor) || b.Is(ElementKind.FloorAnchor) ||
-            a.Is(ElementKind.Opening) || b.Is(ElementKind.Opening);
+            a.Is(ElementKind.Opening) || b.Is(ElementKind.Opening) ||
+            WallCentreline.MeetAtSharedCorner(a.Centreline, b.Centreline);
 
         private static void AddFaceContacts(int aIdx, int bIdx, Face[] facesA, Face[] facesB,
             float contactDist, CoreValidationResult result)

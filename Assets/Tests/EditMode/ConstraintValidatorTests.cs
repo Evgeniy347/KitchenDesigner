@@ -407,4 +407,63 @@ public class ConstraintValidatorTests
         Object.DestroyImmediate(wall);
         Object.DestroyImmediate(floor);
     }
+
+    /// <summary>Сенсор на ПРОВОДКУ осевой линии из сцены в ядро. Само правило
+    /// про углы живёт на быстром пути (<c>WallCornerJointTests</c>), но там
+    /// осевая задаётся руками; здесь стены строит настоящая фабрика, а линию
+    /// выводит <c>ValidationSnapshot</c> — если он перестанет её заводить, ядро
+    /// молча вернёт четыре COL-01 на каждое замкнутое помещение, как было до
+    /// правки, и ни один тест ядра этого не заметит.</summary>
+    [Test]
+    public void Validate_RoomOfFourWalls_CornersAreNotViolations()
+    {
+        const float half = 1.5f;
+        var alongX = new Vector3Int(3000, 2500, 100);
+        var alongZ = new Vector3Int(100, 2500, 3000);
+        var north = ElementFactory.CreateWall(alongX, "Room_N", new Vector3(0f, 1.25f, -half));
+        var south = ElementFactory.CreateWall(alongX, "Room_S", new Vector3(0f, 1.25f, half));
+        var west = ElementFactory.CreateWall(alongZ, "Room_W", new Vector3(-half, 1.25f, 0f));
+        var east = ElementFactory.CreateWall(alongZ, "Room_E", new Vector3(half, 1.25f, 0f));
+
+        var elements = new List<KitchenElement>
+        {
+            north.GetComponent<KitchenElement>(), south.GetComponent<KitchenElement>(),
+            west.GetComponent<KitchenElement>(), east.GetComponent<KitchenElement>(),
+        };
+        var result = ConstraintValidator.Validate(elements);
+
+        Assert.IsEmpty(result.violations,
+            "четыре стены по периметру перекрываются на углах на полтолщины — это ус, а не "
+            + "дефект: осевые сходятся в общих точках. Помеченными оказались: "
+            + string.Join(", ", result.violations.ConvertAll(e => e.PartName)));
+
+        Object.DestroyImmediate(north);
+        Object.DestroyImmediate(south);
+        Object.DestroyImmediate(west);
+        Object.DestroyImmediate(east);
+    }
+
+    /// <summary>Тот же угол, но стены повёрнуты — так их и ставит
+    /// <c>create_walls</c>, считая позу из пары точек. Осевая обязана считаться
+    /// от ПОВОРОТА элемента, а не от мировых осей.</summary>
+    [Test]
+    public void Validate_RotatedWallsMeetingAtACorner_IsNotAViolation()
+    {
+        var dims = new Vector3Int(3000, 2500, 100);
+        var south = ElementFactory.CreateWall(dims, "Rot_S", new Vector3(1.5f, 1.25f, 0f));
+        var east = ElementFactory.CreateWall(dims, "Rot_E", new Vector3(3f, 1.25f, 1.5f));
+        east.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+
+        var elements = new List<KitchenElement>
+            { south.GetComponent<KitchenElement>(), east.GetComponent<KitchenElement>() };
+        var result = ConstraintValidator.Validate(elements);
+
+        Assert.IsEmpty(result.violations,
+            "осевые обеих стен упираются в точку (3000, 0): угол сложен верно, и поворот "
+            + "элемента обязан участвовать в выводе линии. Помеченными оказались: "
+            + string.Join(", ", result.violations.ConvertAll(e => e.PartName)));
+
+        Object.DestroyImmediate(south);
+        Object.DestroyImmediate(east);
+    }
 }

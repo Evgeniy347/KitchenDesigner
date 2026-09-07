@@ -162,8 +162,8 @@ namespace KitchenDesigner.Core
             var el = GetComponent<KitchenElement>();
             var dims = el != null ? el.DimensionsMM : new Vector3Int(100, 2500, 2000);
 
-            bool thickAlongX = dims.x <= dims.z;
-            float wallW = (thickAlongX ? dims.z : dims.x) * 0.001f;
+            bool thickAlongX = WallCentreline.ThicknessAlongX(dims);
+            float wallW = WallCentreline.LengthMM(dims) * 0.001f;
             float wallH = FullScaleY > 0.001f ? FullScaleY : dims.y * 0.001f;
 
             var cutouts = new List<WallMeshBuilder.WindowCutout>();

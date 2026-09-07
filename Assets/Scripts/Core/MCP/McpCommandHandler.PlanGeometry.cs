@@ -213,9 +213,9 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -32602,
                     $"door sill must be 0, got {p.sill_mm}: a door opening starts at the floor");
             var wallDims = wallElement.DimensionsMM;
-            bool thicknessAlongX = wallDims.x <= wallDims.z;
-            int wallLength = thicknessAlongX ? wallDims.z : wallDims.x;
-            int wallThickness = thicknessAlongX ? wallDims.x : wallDims.z;
+            bool thicknessAlongX = WallCentreline.ThicknessAlongX(wallDims);
+            int wallLength = WallCentreline.LengthMM(wallDims);
+            int wallThickness = WallCentreline.ThicknessMM(wallDims);
             if (p.offset_mm + p.width > wallLength)
                 return McpResponse.Error(req.id, -32602,
                     $"Opening exceeds wall length: offset {p.offset_mm} + width {p.width} > {wallLength} mm");

@@ -14,6 +14,7 @@ namespace KitchenDesigner.Core
         public readonly ElementGeometry ExtraBody;
         public readonly bool HasExtraBody;
         public readonly int HostIndex;
+        public readonly WallCentreline Centreline;
 
         public const int NoGroup = 0;
         public const int NoIndex = -1;
@@ -21,8 +22,9 @@ namespace KitchenDesigner.Core
         public ValidationElement(ElementGeometry geometry, Vector3[] vertices, ElementKind kind,
             int groupId, string? pairedName, Span heightSpan, int attachedWallIndex,
             ElementGeometry extraBody = default, bool hasExtraBody = false,
-            int hostIndex = NoIndex)
+            int hostIndex = NoIndex, WallCentreline centreline = default)
         {
+            Centreline = centreline;
             Geometry = geometry;
             Vertices = vertices;
             Kind = kind;
