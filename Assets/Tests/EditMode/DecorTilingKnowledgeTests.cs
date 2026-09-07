@@ -152,10 +152,26 @@ public class DecorTilingKnowledgeTests
     [Test]
     public void ResolveTexture_OfANotYetLoadedDecor_IsItselfTheRequest()
     {
-        var def = MaterialCatalog.Get("oak");
-        Assume.That(def.HasTextureFile, Is.True, "у дуба есть файл картинки");
-        Assume.That(def.textureState, Is.EqualTo(TextureState.NotRequested),
-            "картинка ещё не запрошена");
+        MaterialCatalog.Reset();
+
+        MaterialDef? withPicture = null;
+        foreach (var d in MaterialCatalog.All)
+            if (d.HasTextureFile) { withPicture = d; break; }
+
+        Assert.IsNotNull(withPicture,
+            "в каталоге нет ни одного декора с картинкой — ленивую загрузку "
+            + "проверять не на чем, и это дефект каталога, а не повод пропустить "
+            + "тест. Раньше здесь стоял Assume про «oak»; дуб в index.json стал "
+            + "чисто цветовым (запись без file), Assume начал срабатывать, и тест "
+            + "молча уходил в Inconclusive — не проверяя НИЧЕГО ни на исправном "
+            + "коде, ни на сломанном. Декор поэтому берётся из каталога, а не по "
+            + "имени: переименование одной записи больше не выключает проверку");
+
+        var def = withPicture!;
+        Assert.AreEqual(TextureState.NotRequested, def.textureState,
+            "каталог перечитан строкой выше, и до первого обращения картинку никто "
+            + "не запрашивает — в этом и состоит ленивость. Декор, приехавший уже "
+            + "загруженным, оставил бы проверке ниже пустое место");
 
         var tex = MaterialManager.ResolveTexture(def);
 
@@ -163,7 +179,9 @@ public class DecorTilingKnowledgeTests
             "картинки грузятся лениво, и обращение к декору — единственный повод "
             + "их затребовать. Если ResolveTexture перестанет звать TextureLibrary, "
             + "декор навсегда останется на цвете-заглушке");
-        Assert.AreEqual(TextureState.Loaded, def.textureState);
+        Assert.AreEqual(TextureState.Loaded, def.textureState,
+            "состояние обязано смениться в том же вызове: на нём стоит защёлка "
+            + "TextureLibrary.Request от повторного чтения файла");
     }
 
     [Test]
