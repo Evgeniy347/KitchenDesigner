@@ -27,7 +27,7 @@ using KitchenDesigner.Core;
 /// …_red_button.png отделяет «кнопка плохо построена» от «кнопки нет в
 /// кадре». Габарит в имя не идёт: он у смесителя ВЫЧИСЛЯЕТСЯ из формы, и
 /// первая же правка носика переименовала бы все пять файлов.</summary>
-public class BathMixerViewpointTests
+public class BathMixerViewpointTests : ElementFrameTests
 {
     private const int RenderW = 512;
     private const int RenderH = 512;
@@ -236,12 +236,10 @@ public class BathMixerViewpointTests
             "посадка сдвинула смеситель: стена стоит не на том расстоянии, и кадр "
             + png + " снят не там, где заявлено");
 
-        var element = go.GetComponent<KitchenElement>();
-        var validation = ConstraintValidator.Validate(PartRegistry.GetAll());
-        Assert.IsFalse(validation.violations.Contains(element),
-            png + " снят в тинте ошибки валидации, а не в собственном материале: "
-            + "прибор остался без опоры (COL-02), значит контакта со стеной нет");
-
+        // «Прибор не в списке нарушителей» здесь больше не спрашивается: тот же
+        // вопрос задаёт съёмка перед каждым кадром без исключения — см.
+        // ElementFrameTests.CaptureFramePng. Двух формулировок одного вопроса в
+        // проекте было две, и это ровно та пара, которую свели в один хелпер.
         var bounds = RendererBoundsOf(go);
         var worldDir = (TurnedToCamera * localDir).normalized;
         float distance = Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z))
@@ -263,7 +261,7 @@ public class BathMixerViewpointTests
 
         AssertFitsInFrame(cam, bounds, png, shows);
 
-        yield return RenderToPng(cam, png);
+        yield return CaptureFramePng(cam, png, RenderW, RenderH);
 
         Assert.AreEqual(0f, (station - camGo.transform.position).magnitude, 1e-4f,
             "камера уехала за время съёмки: у Camera.main в этой сцене висит "
@@ -313,30 +311,4 @@ public class BathMixerViewpointTests
             + string.Join("\n", outside));
     }
 
-    private static IEnumerator RenderToPng(Camera cam, string png)
-    {
-        var rt = new RenderTexture(RenderW, RenderH, 24, RenderTextureFormat.ARGB32);
-        cam.targetTexture = rt;
-        yield return null;
-        yield return null;
-
-        var tex = new Texture2D(RenderW, RenderH, TextureFormat.RGBA32, false);
-        RenderTexture.active = rt;
-        tex.ReadPixels(new Rect(0, 0, RenderW, RenderH), 0, 0);
-        tex.Apply();
-
-        string dir = Path.Combine(Application.dataPath, "..", "test-results");
-        Directory.CreateDirectory(dir);
-        string path = Path.Combine(dir, png);
-        File.WriteAllBytes(path, tex.EncodeToPNG());
-
-        Assert.IsTrue(File.Exists(path), "PNG не создан: " + path);
-        Assert.IsTrue(new FileInfo(path).Length > 0, "PNG пустой: " + path);
-        Debug.Log("[ISO] Saved: " + path);
-
-        RenderTexture.active = null;
-        cam.targetTexture = null;
-        Object.DestroyImmediate(rt);
-        Object.DestroyImmediate(tex);
-    }
 }

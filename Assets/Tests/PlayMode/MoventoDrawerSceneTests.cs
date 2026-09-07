@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 using KitchenDesigner.Tests;
-using KitchenDesigner.Core.Analysis;
 
 /// <summary>
 /// PlayMode: собирает короб 540×720×600 и вставляет два ящика Movento —
@@ -15,7 +14,7 @@ using KitchenDesigner.Core.Analysis;
 /// структуру (3 короба Movento, пара связана), раскладку спецификации на
 /// детали и сохраняет изометрический скриншот сцены.
 /// </summary>
-public class MoventoDrawerSceneTests
+public class MoventoDrawerSceneTests : ElementFrameTests
 {
     private const int RenderW = 640;
     private const int RenderH = 640;
@@ -131,25 +130,11 @@ public class MoventoDrawerSceneTests
         Assert.IsTrue(spec.lines.Any(l => l.name.EndsWith("·" + MoventoDrawerMesh.SUFFIX_BOTTOM)), "есть дно");
         Assert.IsTrue(spec.lines.Any(l => l.name.EndsWith("·" + MoventoDrawerMesh.SUFFIX_SIDE)), "есть боковины");
 
-        // ── Валидатор ────────────────────────────────────────────
-        // Розовый на изометрическом кадре — не декор, а тинт нарушения
-        // (ElementHighlighter: невалидное красится InvalidTintColor). Пока
-        // список ошибок не пуст, снимок показывает ошибку расстановки вместо
-        // короба, и полгода он показывал именно её. Красное обязано НАЗЫВАТЬ
-        // правило, поэтому в сообщение идут коды с деталями, а не «кадр
-        // розовый».
-        var issues = SceneAnalyzer.Analyze()
-            .Select(i => i.Level + " " + i.Code + " " + i.Detail + " — " + i.Message)
-            .ToList();
-        var tinting = SceneAnalyzer.Analyze()
-            .Where(i => i.Code.StartsWith("COL-"))
-            .Select(i => i.Code + " " + i.Detail)
-            .ToList();
-        CollectionAssert.IsEmpty(tinting,
-            "короб в кадре нарушает правило расстановки, и снимок показывает тинт "
-            + "нарушения вместо мебели.\nНарушения сцены:\n" + string.Join("\n", issues));
-
         // ── Скриншот ─────────────────────────────────────────────
+        // Про нарушения расстановки спрашивает сама съёмка: валидационный тон в
+        // кадровых наборах выключен (ElementFrameTests), поэтому «кадр вышел
+        // розовым» больше не сигнал, и вопрос валидатору задан ПЕРЕД каждым
+        // кадром без исключения — см. ElementFrameTests.CaptureFramePng.
         KitchenSettings.Instance.NormalView.edgeOutline = true;
         yield return RenderIso(new Vector3(0, H / 2f, 0) * Mm,
             new Vector3(W, H, D) * Mm, "iso_movento_double_540x720x600.png");
@@ -171,26 +156,6 @@ public class MoventoDrawerSceneTests
         camGo.transform.position = center + isoDir * Mathf.Max(maxDim * 2.2f, 0.5f);
         camGo.transform.LookAt(center);
 
-        var rt = new RenderTexture(RenderW, RenderH, 24, RenderTextureFormat.ARGB32);
-        cam.targetTexture = rt;
-        yield return null;
-        yield return null;
-
-        var tex = new Texture2D(RenderW, RenderH, TextureFormat.RGBA32, false);
-        RenderTexture.active = rt;
-        tex.ReadPixels(new Rect(0, 0, RenderW, RenderH), 0, 0);
-        tex.Apply();
-
-        string dir = Path.Combine(Application.dataPath, "..", "test-results");
-        Directory.CreateDirectory(dir);
-        string path = Path.Combine(dir, fileName);
-        File.WriteAllBytes(path, tex.EncodeToPNG());
-        Assert.IsTrue(File.Exists(path) && new FileInfo(path).Length > 0, "скриншот сохранён");
-        Debug.Log($"[MOVENTO] Saved: {path}");
-
-        RenderTexture.active = null;
-        cam.targetTexture = null;
-        Object.DestroyImmediate(rt);
-        Object.DestroyImmediate(tex);
+        yield return CaptureFramePng(cam, fileName, RenderW, RenderH);
     }
 }

@@ -24,7 +24,7 @@ using KitchenDesigner.Tests;
 /// не правкой общего IsoDir: правка вектора пересняла бы каждый чужой эталон.
 /// Связку держит IsoCamera_StandsOnTheSameSideAsTheBackOfFurniture.
 /// </summary>
-public class IsoScreenshotTests
+public class IsoScreenshotTests : ElementFrameTests
 {
     private const int RenderW = 512;
     private const int RenderH = 512;
@@ -123,14 +123,18 @@ public class IsoScreenshotTests
         new Vector3(mm.x, mm.y, mm.z) * AppConstants.MM_TO_UNITS;
 
     private IEnumerator RenderToPng(Camera cam, string fileName) =>
-        RenderToPng(cam, fileName, Path.GetFileNameWithoutExtension(fileName) + ".json");
+        RenderToPng(cam, fileName, Path.GetFileNameWithoutExtension(fileName) + ".json", null);
+
+    private IEnumerator RenderToPng(Camera cam, string fileName, string? panelSnapshotFile) =>
+        RenderToPng(cam, fileName, panelSnapshotFile, null);
 
     /// <summary>panelSnapshotFile == null — снять только 3D-кадр, без эталона
     /// панели. Нужно там, где один тест рисует НЕСКОЛЬКО кадров одной и той же
     /// сцены: панель от кадра к кадру не меняется, и каждый лишний эталон —
     /// это ещё один файл, который придётся принимать вручную после любой
     /// правки сайдбара.</summary>
-    private IEnumerator RenderToPng(Camera cam, string fileName, string? panelSnapshotFile)
+    private IEnumerator RenderToPng(Camera cam, string fileName, string? panelSnapshotFile,
+        string? overlapIsByDesign)
     {
         // Окно «Сцена» наполняется не по событию создания элемента, а дешёвым
         // поллингом раз в 0.5 с (HierarchyPanelUI.Update). В батч-прогоне кадры
@@ -145,33 +149,14 @@ public class IsoScreenshotTests
             yield return null;
         }
 
-        var rt = new RenderTexture(RenderW, RenderH, 24, RenderTextureFormat.ARGB32);
-        cam.targetTexture = rt;
-        yield return null;
-        yield return null;
-
-        var tex = new Texture2D(RenderW, RenderH, TextureFormat.RGBA32, false);
-        RenderTexture.active = rt;
-        tex.ReadPixels(new Rect(0, 0, RenderW, RenderH), 0, 0);
-        tex.Apply();
-
-        string dir = Path.Combine(Application.dataPath, "..", "test-results");
-        Directory.CreateDirectory(dir);
-        string path = Path.Combine(dir, fileName);
-        File.WriteAllBytes(path, tex.EncodeToPNG());
-
-        Assert.IsTrue(File.Exists(path), $"PNG was not created at {path}");
-        Assert.IsTrue(new FileInfo(path).Length > 0, "PNG file is empty");
-        Debug.Log($"[ISO] Saved: {path}");
+        yield return CaptureFramePng(cam, fileName, RenderW, RenderH, overlapIsByDesign);
 
         var canvas = UIManager.Instance?.Canvas;
         if (canvas != null && panelSnapshotFile != null)
+        {
+            string dir = Path.Combine(Application.dataPath, "..", "test-results");
             UiSnapshotEngine.CaptureVerified(canvas.gameObject, Path.Combine(dir, panelSnapshotFile));
-
-        RenderTexture.active = null;
-        cam.targetTexture = null;
-        Object.DestroyImmediate(rt);
-        Object.DestroyImmediate(tex);
+        }
     }
 
     // ── Spawn helpers ────────────────────────────────────────
@@ -217,25 +202,6 @@ public class IsoScreenshotTests
         element.transform.position += new Vector3(0f, -minY, 0f);
     }
 
-    /// <summary>Кадр обязан показывать декор, а не тинт нарушения. Пока правило
-    /// не названо, чинить нечего — поэтому падение печатает КОД нарушения и его
-    /// участников по всей сцене, а не только имя розового элемента.</summary>
-    private static void AssertFrameShowsDecorNotViolationTint(KitchenElement element, string frame)
-    {
-        var result = ConstraintValidator.Validate(PartRegistry.GetAll());
-        if (!result.violations.Contains(element)) return;
-
-        var lines = new List<string>();
-        if (result.diagnostics != null)
-            foreach (var d in result.diagnostics)
-                lines.Add(d.other != null
-                    ? $"{d.kind}: {d.element.PartName} + {d.other.PartName}"
-                    : $"{d.kind}: {d.element.PartName}");
-
-        Assert.Fail($"{frame}: элемент окрашен розовым тинтом нарушения, а не декором. "
-            + $"Нарушения сцены: {string.Join("; ", lines)}");
-    }
-
     [UnityTest]
     public IEnumerator IsoFacade_AllDoorModes()
     {
@@ -265,8 +231,6 @@ public class IsoScreenshotTests
             fe.SetOpen(true);
             fe.StepDoor(1f); // dt=1 > OpenSeconds(0.4) → прогресс доходит до 1
             yield return null;
-
-            AssertFrameShowsDecorNotViolationTint(facade!, $"iso_facade_{i:D2}");
 
             // Режим дверцы меняет 3D-модель, а не панель: все восемнадцать
             // эталонов UI были байт-в-байт одним файлом (один md5 на
@@ -920,8 +884,6 @@ public class IsoScreenshotTests
         Assert.AreEqual(centreAboveFloorMM, device.transform.position.y / toU, 0.5f,
             "и остаться на монтажной высоте: посадка двигает прибор только поперёк стены");
 
-        AssertFrameSceneHasNoCollisions(png);
-
         var bounds = RendererBoundsOf(go);
         var (camGo, cam) = CreateCloseUpCamera(bounds.center,
             Mathf.Max(device.DimensionsMM.x, device.DimensionsMM.y) * WallDeviceFrameSpan);
@@ -933,30 +895,6 @@ public class IsoScreenshotTests
             : RenderToPng(cam, png, null);
 
         Object.DestroyImmediate(camGo);
-    }
-
-    /// <summary>Кадр обязан снимать ИЗДЕЛИЕ, а не тинт нарушения: невалидный
-    /// элемент ElementHighlighter красит розовым поверх любого декора, и
-    /// отличить это от материала на PNG нельзя. Поэтому кадр спрашивает
-    /// валидатор прямо здесь — и красное НАЗЫВАЕТ правило кодом, а не жалуется
-    /// на цвет. Коды COL-* — ровно те нарушения, которые дают тинт; остальные
-    /// (GAP-*, DRW-*, DWH-*) сцену не красят и идут в сообщение справкой.</summary>
-    private static void AssertFrameSceneHasNoCollisions(string png)
-    {
-        var all = KitchenDesigner.Core.Analysis.SceneAnalyzer.Analyze();
-        var lines = new List<string>();
-        var tinting = new List<string>();
-        foreach (var issue in all)
-        {
-            string line = issue.Level + " " + issue.Code + " " + issue.Detail + " — " + issue.Message;
-            lines.Add(line);
-            if (issue.Code.StartsWith("COL-")) tinting.Add(line);
-        }
-
-        Assert.IsEmpty(tinting,
-            png + ": элемент в кадре нарушает правило расстановки, и снимок показывает "
-            + "розовый тинт нарушения вместо изделия.\nНарушения сцены:\n"
-            + string.Join("\n", lines));
     }
 
     private IEnumerator RenderIsoFrame(Vector3 pos, Vector3Int dims, string png,
@@ -1395,35 +1333,18 @@ public class IsoScreenshotTests
             name + ": прибор выше стены — тот же обрыв опоры, только по вертикали");
     }
 
-    /// <summary>Сенсор читает ТОТ ЖЕ источник, что и краска: ElementHighlighter
-    /// решает, красить ли элемент _invalidMaterial, по
-    /// ConstraintValidator.Validate(PartRegistry.GetAll()).violations. Спрашивать
-    /// что-то другое означало бы мерить не то, что нарисовано.</summary>
-    private static void AssertSeatedOnTheWallAndValidated(KitchenElement fitting,
+    /// <summary>Спрашивает ровно об одном: прибор остался там, куда его
+    /// поставили. Вторая половина этого хелпера — «и он не в списке
+    /// нарушителей» — переехала в общую съёмку
+    /// (<c>ElementFrameTests.CaptureFramePng</c>): валидационный тон в кадре
+    /// теперь выключен, поэтому вопрос валидатору задаётся ПЕРЕД каждым кадром
+    /// без исключения, а не в тех тестах, где о нём вспомнили.</summary>
+    private static void AssertSeatedOnTheWall(KitchenElement fitting,
         Vector3 spawnedAt, string png)
     {
         Assert.AreEqual(0f, (spawnedAt - fitting.transform.position).magnitude, 1e-4f,
             png + ": посадка на стену сдвинула прибор уже после того, как камера "
             + "наведена — стена стоит не на том расстоянии");
-
-        var result = ConstraintValidator.Validate(PartRegistry.GetAll());
-        Assert.IsFalse(result.violations.Contains(fitting),
-            png + " снят в тинте ошибки валидации, а не в собственном материале. "
-            + "Нарушения сцены:\n" + ViolationReport(result));
-    }
-
-    private static string ViolationReport(ValidationResult result)
-    {
-        if (result.diagnostics == null || result.diagnostics.Count == 0)
-            return "(диагностики нет — нарушение пришло из проверки связности)";
-
-        var lines = new List<string>();
-        foreach (var d in result.diagnostics)
-        {
-            var issue = KitchenDesigner.Core.Analysis.IssueCatalog.FromViolation(d);
-            lines.Add(issue.Code + " " + issue.Message + " — " + issue.Detail);
-        }
-        return string.Join("\n", lines);
     }
 
     private IEnumerator RenderBathMixer(BathMixerSpec spec, string name, string png,
@@ -1436,7 +1357,7 @@ public class IsoScreenshotTests
 
         yield return RenderIsoFrame(pos, dims, png, capturePanel);
 
-        AssertSeatedOnTheWallAndValidated(mixer, pos, png);
+        AssertSeatedOnTheWall(mixer, pos, png);
     }
 
     private IEnumerator RenderBathMixerCloseUp(BathMixerSpec spec, string name,
@@ -1452,7 +1373,7 @@ public class IsoScreenshotTests
 
         yield return RenderCloseUp(WorldFromLayoutMM(pos, bounds, detailMM), spanMM, png);
 
-        AssertSeatedOnTheWallAndValidated(mixer, pos, png);
+        AssertSeatedOnTheWall(mixer, pos, png);
     }
 
     private static Vector3 MixerPosition(BathMixerSpec spec) =>
@@ -1485,7 +1406,7 @@ public class IsoScreenshotTests
 
         yield return RenderIsoFrame(pos, dims, png, capturePanel);
 
-        AssertSeatedOnTheWallAndValidated(column, pos, png);
+        AssertSeatedOnTheWall(column, pos, png);
     }
 
     private IEnumerator RenderShowerColumnCloseUp(ShowerColumnSpec spec, string name,
@@ -1501,7 +1422,7 @@ public class IsoScreenshotTests
 
         yield return RenderCloseUp(WorldFromLayoutMM(pos, bounds, detailMM), spanMM, png);
 
-        AssertSeatedOnTheWallAndValidated(column, pos, png);
+        AssertSeatedOnTheWall(column, pos, png);
     }
 
     private static Vector3 ColumnPosition(ShowerColumnSpec spec) =>
@@ -1748,7 +1669,18 @@ public class IsoScreenshotTests
         yield return null;
         yield return null;
 
-        yield return RenderToPng(cam, fileName);
+        // Единственный кадр набора, снятый С нарушением, и оно задумано: четыре
+        // стены по периметру перекрываются на углах на свою толщину (100×100 мм),
+        // и ValidationCore выписывает на каждый угол COL-01 — два якоря, ни один
+        // из которых не пол и не проём, законной парой не считаются. Сам кадр от
+        // этого не краснел никогда: стена красится своим декором раньше, чем
+        // доходит до тона (ElementHighlighter.TintedOnlyByItsOwnDecor), — то есть
+        // ГЛАЗАМИ этого нарушения не видно и не было видно. Бейдж ошибок в
+        // ui_iso_room_*.verified.json — единственный его след, и оговорка ниже
+        // требует, чтобы нарушение БЫЛО: починят стыковку стен — кадр покраснеет
+        // и оговорку снимут.
+        yield return RenderToPng(cam, fileName, Path.GetFileNameWithoutExtension(fileName) + ".json",
+            "стены помещения стыкуются на углах внахлёст на свою толщину");
 
         camGo.tag = "Untagged";
         _mainCamera!.SetActive(true);
@@ -1929,7 +1861,6 @@ public class IsoScreenshotTests
         Assert.IsNotNull(panel,
             "ХДФ-задник обязан быть панелью, а не обычной доской");
         StandOnFloor(panel!);
-        AssertFrameShowsDecorNotViolationTint(panel!, "iso_panel_500x716");
 
         yield return RenderElementIso(go, "iso_panel_500x716.png", 2.5f);
     }
@@ -1985,7 +1916,6 @@ public class IsoScreenshotTests
         Assert.AreEqual(before, facade!.transform.position.y, 1e-6f,
             "сборный фасад без зазоров уже стоит на плите: ненулевой сдвиг означал бы, "
             + "что фабрика начала выдавать зазоры и кадр надо пересматривать");
-        AssertFrameShowsDecorNotViolationTint(facade!, png);
 
         yield return RenderElementIso(go, png, 2.5f);
     }
@@ -2030,9 +1960,8 @@ public class IsoScreenshotTests
         // Кадр был розовым целиком. Опору прибора судит DWH-05, а не COL-02:
         // объём валидации начинается на 90 мм выше подошвы, и под ним пусто
         // при ЛЮБОЙ правильной установке — см. DishwasherElementTests,
-        // «Dishwasher_OnTheFloor_IsNotReportedUnsupported…».
-        AssertFrameSceneHasNoCollisions("iso_dishwasher.png");
-
+        // «Dishwasher_OnTheFloor_IsNotReportedUnsupported…». Что нарушений нет,
+        // спрашивает сама съёмка (ElementFrameTests.CaptureFramePng).
         yield return RenderElementIso(go, "iso_dishwasher.png", 3f);
     }
 
@@ -2054,8 +1983,6 @@ public class IsoScreenshotTests
         // из покраски, и ElementKind.Decor выводит его из парных проверок и из
         // опоры. Правило под мебель до светильника не дотягивается, и кадр это
         // фиксирует, чтобы следующий замер цвета не отправил чинить исправное.
-        AssertFrameSceneHasNoCollisions("iso_light_source.png");
-
         yield return RenderElementIso(go, "iso_light_source.png", 3f);
     }
 }

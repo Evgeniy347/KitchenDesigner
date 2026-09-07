@@ -36,7 +36,7 @@ using KitchenDesigner.Core;
 /// объекта, а не выключением чужих рендереров: чужой Update возвращает
 /// enabled обратно до кадра (agents/TEST-DESIGN.md).
 /// </summary>
-public class ShowerColumnViewpointTests
+public class ShowerColumnViewpointTests : ElementFrameTests
 {
     private const int RenderW = 512;
     private const int RenderH = 512;
@@ -287,7 +287,8 @@ public class ShowerColumnViewpointTests
             ("чашка держателя", WorldOf(go, bounds, holderMM)),
         });
 
-        yield return RenderToPng(cam, "shower_column_side_closeup_hand_shower_in_holder.png");
+        yield return CaptureFramePng(cam, "shower_column_side_closeup_hand_shower_in_holder.png",
+            RenderW, RenderH);
 
         Object.DestroyImmediate(camGo);
     }
@@ -310,7 +311,7 @@ public class ShowerColumnViewpointTests
 
         AssertBoundsFitInFrame(cam, bounds);
 
-        yield return RenderToPng(cam, png);
+        yield return CaptureFramePng(cam, png, RenderW, RenderH);
 
         Object.DestroyImmediate(camGo);
     }
@@ -389,12 +390,10 @@ public class ShowerColumnViewpointTests
             "меш стойки строится в миллиметрах и живёт при единичном масштабе: любой "
             + "другой означал бы двойное масштабирование и кадр не по габариту");
 
-        var element = go.GetComponent<KitchenElement>();
-        var validation = ConstraintValidator.Validate(PartRegistry.GetAll());
-        Assert.IsFalse(validation.violations.Contains(element),
-            "стойка помечена нарушителем (COL-02 «Деталь не имеет опоры»): контакта "
-            + "гранью со стеной нет, и кадр выйдет розовым — тинтом ошибки вместо "
-            + "собственного материала");
+        // «Стойка не в списке нарушителей» здесь больше не спрашивается: тот же
+        // вопрос — и с полным перечнем кодов в красном — задаёт съёмка перед
+        // КАЖДЫМ кадром, см. ElementFrameTests.CaptureFramePng. Там же выключен
+        // валидационный тон, из-за которого кадр показывал индикатор, а не хром.
     }
 
     private static void SetLayerRecursively(GameObject go, int layer)
@@ -474,30 +473,4 @@ public class ShowerColumnViewpointTests
             + "за дефект модели. Вне кадра:\n" + string.Join("\n", outside));
     }
 
-    private IEnumerator RenderToPng(Camera cam, string fileName)
-    {
-        var rt = new RenderTexture(RenderW, RenderH, 24, RenderTextureFormat.ARGB32);
-        cam.targetTexture = rt;
-        yield return null;
-        yield return null;
-
-        var tex = new Texture2D(RenderW, RenderH, TextureFormat.RGBA32, false);
-        RenderTexture.active = rt;
-        tex.ReadPixels(new Rect(0, 0, RenderW, RenderH), 0, 0);
-        tex.Apply();
-
-        string dir = Path.Combine(Application.dataPath, "..", "test-results");
-        Directory.CreateDirectory(dir);
-        string path = Path.Combine(dir, fileName);
-        File.WriteAllBytes(path, tex.EncodeToPNG());
-
-        Assert.IsTrue(File.Exists(path), $"PNG не создан: {path}");
-        Assert.IsTrue(new FileInfo(path).Length > 0, "PNG пустой");
-        Debug.Log($"[ISO] Saved: {path}");
-
-        RenderTexture.active = null;
-        cam.targetTexture = null;
-        Object.DestroyImmediate(rt);
-        Object.DestroyImmediate(tex);
-    }
 }
