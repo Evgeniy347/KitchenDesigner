@@ -160,7 +160,10 @@
             "screwLegThreadLengthMM": 90,
             "screwLegInsertionMM": 18,
             "screwLegBaseDiameterMM": 40,
-            "screwLegBaseHeightMM": 12
+            "screwLegBaseHeightMM": 12,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         }
     ],
     "groups": [],
@@ -343,7 +346,10 @@
         "screwLegThreadLengthMM": 50,
         "screwLegInsertionMM": 25,
         "screwLegBaseDiameterMM": 25,
-        "screwLegBaseHeightMM": 8
+        "screwLegBaseHeightMM": 8,
+        "isPipe": false,
+        "pipeSizeId": "dn20",
+        "pipeLengthMM": 600
     },
     "undoHistory": [],
     "redoHistory": [],

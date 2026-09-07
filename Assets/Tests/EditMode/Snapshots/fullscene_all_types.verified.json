@@ -160,7 +160,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Facade_A",
@@ -321,7 +324,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Assembled_A",
@@ -482,7 +488,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Radial_A",
@@ -643,7 +652,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Wall_A",
@@ -809,7 +821,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         }
     ],
     "groups": [],
@@ -992,7 +1007,10 @@
         "screwLegThreadLengthMM": 50,
         "screwLegInsertionMM": 25,
         "screwLegBaseDiameterMM": 25,
-        "screwLegBaseHeightMM": 8
+        "screwLegBaseHeightMM": 8,
+        "isPipe": false,
+        "pipeSizeId": "dn20",
+        "pipeLengthMM": 600
     },
     "undoHistory": [],
     "redoHistory": [],

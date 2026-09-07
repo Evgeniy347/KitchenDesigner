@@ -160,7 +160,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_1",
@@ -321,7 +324,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_2",
@@ -482,7 +488,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_3",
@@ -643,7 +652,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_4",
@@ -804,7 +816,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_5",
@@ -965,7 +980,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_6",
@@ -1126,7 +1144,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_7",
@@ -1287,7 +1308,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_8",
@@ -1448,7 +1472,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_9",
@@ -1609,7 +1636,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_10",
@@ -1770,7 +1800,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_11",
@@ -1931,7 +1964,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_12",
@@ -2092,7 +2128,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_13",
@@ -2253,7 +2292,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_14",
@@ -2414,7 +2456,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_15",
@@ -2575,7 +2620,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_16",
@@ -2736,7 +2784,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         },
         {
             "name": "Mode_17",
@@ -2897,7 +2948,10 @@
             "screwLegThreadLengthMM": 50,
             "screwLegInsertionMM": 25,
             "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600
         }
     ],
     "groups": [],
@@ -3080,7 +3134,10 @@
         "screwLegThreadLengthMM": 50,
         "screwLegInsertionMM": 25,
         "screwLegBaseDiameterMM": 25,
-        "screwLegBaseHeightMM": 8
+        "screwLegBaseHeightMM": 8,
+        "isPipe": false,
+        "pipeSizeId": "dn20",
+        "pipeLengthMM": 600
     },
     "undoHistory": [],
     "redoHistory": [],
