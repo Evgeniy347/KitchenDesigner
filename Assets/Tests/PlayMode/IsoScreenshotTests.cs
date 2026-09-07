@@ -1901,15 +1901,49 @@ public class IsoScreenshotTests : ElementFrameTests
         yield return RenderElementIso(go, "iso_pipe_dn20_600.png", 2.5f);
     }
 
+    /// <summary>Во сколько раз кадр шире фитинга. Фитинг ДУ 20 — это ящик от
+    /// 34 до 80 мм, а у общей камеры стоит пол дистанции MinCameraDistance,
+    /// то есть её кадр не бывает уже ~414 мм: тройник занял бы в нём пятую
+    /// часть высоты, а муфта — двенадцатую часть ширины. Снимок, по которому
+    /// тройник не узнаётся тройником, не делает того, ради чего снят, поэтому
+    /// фитинги идут через CreateCloseUpCamera, как узлы смесителя.</summary>
+    private const float PipeFittingFrameSpan = 2f;
+
+    /// <summary>Высота кадра в миллиметрах: CreateCloseUpCamera строит
+    /// дистанцию так, что spanMM и есть высота кадра. Берётся наибольшее из
+    /// ТРЁХ измерений — у отвода и тройника ящик шире, чем выше, и рамка по
+    /// одной высоте резала бы боковой раструб.</summary>
+    private static float FittingFrameSpanMM(PipeNodeKind kind)
+    {
+        string size = PipeSpec.DEFAULT_SIZE;
+        float widest = Mathf.Max(PipeFittingSpec.WidthMm(kind, size),
+            Mathf.Max(PipeFittingSpec.HeightMm(kind, size),
+                PipeFittingSpec.DepthMm(kind, size)));
+        return widest * PipeFittingFrameSpan;
+    }
+
     /// <summary>Шесть фитингов трассы. Кадр здесь — единственная проверка ФОРМЫ:
     /// арифметика ног и габаритного ящика проверена под dotnet в
     /// PipeFittingSpecTests, а вот сходится ли меш с этим ящиком, видно только
-    /// на картинке — RenderElementIso строит рамку по объединённым границам
-    /// рендереров и падает, если хоть один угол ящика вылез из кадра.
+    /// на картинке — рамка строится по объединённым границам рендереров и
+    /// падает, если хоть один угол ящика вылез из кадра.
     ///
     /// Число портов проверяется тут же, рядом с кадром: отвод и муфта на
     /// снимке легко перепутать (обе — две трубки), и порт, потерянный по
-    /// дороге, картинкой не ловится вовсе.</summary>
+    /// дороге, картинкой не ловится вовсе.
+    ///
+    /// Все шесть создавались в начале координат — то есть НАПОЛОВИНУ ВНУТРИ
+    /// опорной плиты (BasePlate занимает y от −18 до 0), и валидатор выписывал
+    /// каждому COL-01 «детали пересекаются в объёме» с плитой. Ровно та же
+    /// история, что уже была у розетки и выключателя, и лечится тем же:
+    /// поставить на плиту по коробке ВАЛИДАЦИИ, а не по половине физической
+    /// высоты. Тинт в кадровых наборах выключен, так что глазами этого не
+    /// видно — красным становится только утверждение в CaptureFramePng.
+    ///
+    /// Эталон панели тут не снимается (третий аргумент null): шесть кадров
+    /// одной и той же сцены дали бы шесть почти одинаковых ui_*-эталонов,
+    /// каждый из которых пришлось бы принимать вручную после любой правки
+    /// сайдбара. Свойства фитингов закреплены снапшотом pipe_fittings_all.</summary>
     private IEnumerator RenderFitting(GameObject go, PipeNodeKind kind, string file)
     {
         _spawned.Add(go);
@@ -1921,7 +1955,51 @@ public class IsoScreenshotTests : ElementFrameTests
         Assert.AreEqual(fitting.DerivedDimensionsMM, fitting.DimensionsMM,
             "габарит фитинга вычисляемый: он обязан совпадать с выведенным из ног");
 
-        yield return RenderElementIso(go, file, 2.5f);
+        yield return null;
+
+        StandOnFloor(fitting!);
+        Assert.AreEqual(fitting!.DimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS,
+            fitting!.transform.position.y, 1e-6f,
+            "коробка фитинга центрирована на pivot и зазоров не имеет, поэтому подъём на "
+            + "плиту обязан дать ровно половину высоты. Разъедься меш с коробкой или "
+            + "заведись у фитинга зазор — и фитинг снова окажется в плите, то есть в COL-01");
+
+        var bounds = RendererBoundsOf(go);
+        var (camGo, cam) = CreateCloseUpCamera(bounds.center, FittingFrameSpanMM(kind));
+        _spawned.Add(camGo);
+        AssertFitsInFrame(cam, bounds, go.name);
+
+        yield return RenderToPng(cam, file, null);
+
+        Object.DestroyImmediate(camGo);
+    }
+
+    /// <summary>Почему фитинги нельзя снимать общей камерой. Тест краснеет с
+    /// обеих сторон: раздуй кадр до размеров, которые общая камера и так
+    /// умеет, — и он скажет, что крупный план перестал быть крупным; сожми
+    /// его теснее самого фитинга — и он скажет, что кадр режет предмет.</summary>
+    [Test]
+    public void PipeFittingFrames_AreTighterThanTheSharedCameraCanEverBe()
+    {
+        int checkedKinds = 0;
+        foreach (var kind in PipeNodePorts.Kinds)
+        {
+            if (!PipeFittingSpec.IsFitting(kind)) continue;
+            checkedKinds++;
+
+            float spanMM = FittingFrameSpanMM(kind);
+            Assert.Less(spanMM * AppConstants.MM_TO_UNITS * CloseUpDistanceScale,
+                MinCameraDistance,
+                kind + ": кадр фитинга обязан быть теснее пола дистанции общей камеры — "
+                + "иначе ДУ 20 занимает несколько процентов снимка и тройник от муфты "
+                + "на нём не отличить");
+            Assert.Greater(spanMM,
+                PipeFittingSpec.HeightMm(kind, PipeSpec.DEFAULT_SIZE),
+                kind + ": но не теснее самого фитинга — кадр обязан вмещать его целиком");
+        }
+
+        Assert.AreEqual(6, checkedKinds,
+            "фитингов шесть; посчитай их меньше — и проверка выше прошла бы на пустоте");
     }
 
     [UnityTest]
