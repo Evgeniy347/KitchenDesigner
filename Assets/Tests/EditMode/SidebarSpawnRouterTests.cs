@@ -4,6 +4,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.UI;
 
 /// <summary>Путь от кнопки сайдбара до фабрики. Раньше он не проверялся
@@ -107,6 +108,9 @@ public class SidebarSpawnRouterTests
         public void SpawnPillar(int midHeightMM, string name) => Put(nameof(SpawnPillar), midHeightMM, name);
 
         public void SpawnPipe(string name) => Put(nameof(SpawnPipe), name);
+
+        public void SpawnPipeFitting(PipeNodeKind kind, string name) =>
+            Put(nameof(SpawnPipeFitting), kind, name);
 
         public void SpawnFloor(Vector3Int dims, string name) => Put(nameof(SpawnFloor), dims, name);
 
