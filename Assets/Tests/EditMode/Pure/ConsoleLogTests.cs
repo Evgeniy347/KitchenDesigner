@@ -80,7 +80,7 @@ public class ConsoleLogTests
         log.Append(ConsoleLineKind.StatusSuccess, "Сохранено", At(1));
 
         Assert.AreEqual(2, log.Count,
-            "совпал текст, но не источник: строка состояния и Debug.Log — разные события, "
+            "совпал текст, но не источник: строка состояния и журнал движка — разные события, "
             + "и сворачивание их в одну строку соврало бы про оба");
     }
 
