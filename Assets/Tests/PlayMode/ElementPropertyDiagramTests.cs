@@ -486,6 +486,21 @@ public class ElementPropertyDiagramTests
             () => { ContextMenuUI.Instance?.Close(); });
     }
 
+    /// <summary>Духовка: габарит задан моделью, поэтому все три строки размеров
+    /// нередактируемы. Кадр нужен именно ради ПОДПИСЕЙ: и «Ширина/Высота/Глубина»,
+    /// и значения в полях обязаны быть погашены (docs/UI-GUIDELINES.md → §9
+    /// «Нередактируемая строка гаснет ЦЕЛИКОМ»), а «Название» рядом — яркой.</summary>
+    [UnityTest]
+    public IEnumerator ContextMenu_Oven_SavesPng()
+    {
+        var go = ElementFactory.CreateOven("Духовка", new Vector3(0f, 0.9f, 0f));
+        var el = go.GetComponent<KitchenElement>();
+        Assert.IsNotNull(el);
+        yield return CapturePanel("ContextMenu", "contextmenu_oven.png",
+            () => { ContextMenuUI.Instance!.Open(el); },
+            () => { ContextMenuUI.Instance?.Close(); });
+    }
+
     /// <summary>Окно свойств замера: обе точки в мм, длина и красная «Удалить».
     /// Открывается выбором отрезка в MeasureStore, как это делает рулетка.</summary>
     [UnityTest]
