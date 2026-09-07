@@ -1,21 +1,23 @@
-using UnityEngine;
-
 namespace KitchenDesigner.Core
 {
     public class PanelElement : KitchenElement
     {
+        public const int DEFAULT_GAP_MM = PanelBody.DEFAULT_GAP_MM;
 
-        public override string DisplayTypeName => "ДВП/ХДФ";
+        public override string DisplayTypeName => PanelBody.DISPLAY_TYPE_NAME;
 
-        public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.AlignsCutout;
-        public const int DEFAULT_GAP_MM = 1;
+        public override CutoutNeighbourRole CutoutRole => PanelBody.CUTOUT_ROLE;
 
-        public override bool SupportsGaps => true;
+        public override bool SupportsGaps => PanelBody.SUPPORTS_GAPS;
+
+        public PanelBody Body =>
+            new PanelBody(Data.DimensionsMM, Data.Gaps,
+                ValidationPositionAt(transform.position), ValidationRotation);
 
         public void SetUniformGap(int gapMM)
         {
-            int g = Mathf.Max(0, gapMM);
-            foreach (var side in GapSides.All) Data.SetGap(side, g);
+            var gaps = PanelBody.UniformGaps(gapMM);
+            foreach (var side in GapSides.All) Data.SetGap(side, gaps.Of(side));
             ApplyDimensions();
         }
     }

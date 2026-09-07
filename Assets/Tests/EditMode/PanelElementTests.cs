@@ -3,8 +3,22 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
-/// <summary>ДВП/ХДФ: зазоры входят в ГАБАРИТ (как у фасада), но не в физический
-/// меш. В паз заходит номинал, а технологический зазор остаётся внутри детали.</summary>
+/// <summary>Что осталось СЦЕНОВЫМ у ДВП/ХДФ после выноса модели в PanelBody.
+///
+/// Геометрия зазоров уехала в PanelBodyTests и считается под dotnet. Здесь —
+/// то, что без сцены не проверяется:
+/// 1) оболочка не разошлась с моделью (зеркало: компонент и его Body дают
+///    одни и те же вершины, грани и признаки) — в покое и во время attach-ride,
+///    когда transform несёт анимированную позу, а не логическую (см.
+///    AttachRider.cs); Body обязан идти через тот же парный API
+///    ValidationPositionAt/ValidationRotation, что и GetVerticesAt/GetFacesAt,
+///    а не читать transform напрямую — первая версия делала именно это и молча
+///    расходилась со сценой на ridden-элементе, потому что мирорный тест выше
+///    не ставил панель в ridden-состояние;
+/// 2) способность «иметь паз» вычисляется базовым классом через тип и
+///    GetComponent, то есть по сцене, а не по данным панели;
+/// 3) круговой рейс через ElementData: JsonUtility под CoreCLR не компилируется
+///    вовсе (он в UnityEngine.JSONSerializeModule), поэтому остаётся здесь.</summary>
 public class PanelElementTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
@@ -28,79 +42,74 @@ public class PanelElementTests
         _spawned.Clear();
     }
 
+    /// <summary>Шов держится, только пока компонент и модель дают одно и то же.
+    /// Оболочка берёт масштаб из transform.localScale, модель — из миллиметров;
+    /// эти два источника обязаны совпадать, иначе быстрые тесты меряют не то,
+    /// что рисует приложение.</summary>
     [Test]
-    public void Panel_DefaultGap_IsOneMillimetre()
+    public void Panel_MirrorsItsBody_InVerticesAndFaces()
     {
-        var panel = MakePanel(new Vector3Int(383, 376, 3));
-        Assert.AreEqual(1, PanelElement.DEFAULT_GAP_MM);
-        Assert.AreEqual(1, panel.GapLeft);
-        Assert.AreEqual(6, panel.GapMM, "сумма шести зазоров по 1 мм");
+        var panel = MakePanel(new Vector3Int(383, 376, 3), gap: 2);
+        panel.transform.SetPositionAndRotation(
+            new Vector3(1.5665f, 1.81f, -2.566f), ManagedRotation.Euler(0f, 90f, 0f));
+
+        var body = panel.Body;
+
+        var fromScene = panel.GetVertices();
+        var fromModel = body.Vertices();
+        Assert.AreEqual(fromScene.Length, fromModel.Length);
+        for (int i = 0; i < fromScene.Length; i++)
+            Assert.AreEqual(0f, Vector3.Distance(fromScene[i], fromModel[i]), 1e-5f,
+                $"вершина {i}: компонент и модель разошлись");
+
+        var sceneFaces = panel.GetFaces();
+        var modelFaces = body.Faces();
+        Assert.AreEqual(sceneFaces.Length, modelFaces.Length);
+        for (int i = 0; i < sceneFaces.Length; i++)
+        {
+            Assert.AreEqual(0f, Vector3.Distance(sceneFaces[i].center, modelFaces[i].center), 1e-5f,
+                $"центр грани {i}");
+            Assert.AreEqual(0f, Vector2.Distance(sceneFaces[i].size, modelFaces[i].size), 1e-5f,
+                $"размер грани {i}");
+        }
+    }
+
+    /// <summary>«Riding» means transform.position/rotation carry the ANIMATED pose
+    /// while GetVerticesAt/GetFacesAt read the logical rest pose instead (see
+    /// AttachRider.cs and KitchenElement.ValidationPositionAt/ValidationRotation).
+    /// Body must resolve through that same pair, not through raw transform — else the
+    /// mirror above only holds because it never rides.</summary>
+    [Test]
+    public void Panel_WhileAttachRidden_StillMirrorsGetVerticesAt_NotRawTransform()
+    {
+        var panel = MakePanel(new Vector3Int(383, 376, 3), gap: 2);
+        var restPos = new Vector3(1.5665f, 1.81f, -2.566f);
+        var restRot = ManagedRotation.Euler(0f, 90f, 0f);
+        panel.transform.SetPositionAndRotation(restPos, restRot);
+
+        panel.BeginAttachRide(restPos, restRot);
+        panel.transform.SetPositionAndRotation(
+            restPos + new Vector3(0.4f, 0f, 0f), Quaternion.identity);
+
+        var fromScene = panel.GetVertices();
+        var fromModel = panel.Body.Vertices();
+        Assert.AreEqual(fromScene.Length, fromModel.Length);
+        for (int i = 0; i < fromScene.Length; i++)
+            Assert.AreEqual(0f, Vector3.Distance(fromScene[i], fromModel[i]), 1e-5f,
+                $"вершина {i}: во время attach-ride Body обязан читать rest-позу, а не transform");
     }
 
     [Test]
-    public void Panel_BoundingBox_IsBiggerThanMeshByGaps()
+    public void Panel_MirrorsItsBody_InGapsAndTraits()
     {
         var panel = MakePanel(new Vector3Int(383, 376, 3), gap: 1);
-        var verts = panel.GetVertices();
 
-        float minX = float.MaxValue, maxX = float.MinValue;
-        float minY = float.MaxValue, maxY = float.MinValue;
-        foreach (var v in verts)
-        {
-            minX = Mathf.Min(minX, v.x); maxX = Mathf.Max(maxX, v.x);
-            minY = Mathf.Min(minY, v.y); maxY = Mathf.Max(maxY, v.y);
-        }
-
-        // Номинал = физический размер + зазоры с обеих сторон.
-        Assert.AreEqual(383 + 2, (maxX - minX) / AppConstants.MM_TO_UNITS, 1e-2f);
-        Assert.AreEqual(376 + 2, (maxY - minY) / AppConstants.MM_TO_UNITS, 1e-2f);
-    }
-
-    [Test]
-    public void Panel_Thickness_GrowsByFrontAndBackGaps()
-    {
-        var panel = MakePanel(new Vector3Int(383, 376, 3), gap: 5);
-        var verts = panel.GetVertices();
-
-        float minZ = float.MaxValue, maxZ = float.MinValue;
-        foreach (var v in verts)
-        {
-            minZ = Mathf.Min(minZ, v.z); maxZ = Mathf.Max(maxZ, v.z);
-        }
-        Assert.AreEqual(3 + 5 + 5, (maxZ - minZ) / AppConstants.MM_TO_UNITS, 1e-2f,
-            "зазор спереди и сзади входит в габарит так же, как боковой");
-    }
-
-    /// <summary>Только боковые зазоры толщину по-прежнему не трогают: панель
-    /// сидит в пазу по пласти, и правка ширины зазора не должна её распирать.</summary>
-    [Test]
-    public void Panel_SideGaps_LeaveThicknessAlone()
-    {
-        var panel = MakePanel(new Vector3Int(383, 376, 3), gap: 0);
-        panel.GapLeft = 5;
-        panel.GapRight = 5;
-        panel.GapTop = 5;
-        panel.GapBottom = 5;
-
-        float minZ = float.MaxValue, maxZ = float.MinValue;
-        foreach (var v in panel.GetVertices())
-        {
-            minZ = Mathf.Min(minZ, v.z); maxZ = Mathf.Max(maxZ, v.z);
-        }
-        Assert.AreEqual(3, (maxZ - minZ) / AppConstants.MM_TO_UNITS, 1e-2f);
-    }
-
-    [Test]
-    public void Panel_HasSixFaces_SizedByNominal()
-    {
-        var panel = MakePanel(new Vector3Int(383, 376, 3), gap: 1);
-        var faces = panel.GetFaces();
-
-        Assert.AreEqual(6, faces.Length);
-        // Грань, нормальная к Z (пласть), имеет размеры номинала 385×378.
-        var front = faces[4];
-        Assert.AreEqual(385, front.size.x / AppConstants.MM_TO_UNITS, 1e-2f);
-        Assert.AreEqual(378, front.size.y / AppConstants.MM_TO_UNITS, 1e-2f);
+        Assert.AreEqual(PanelBody.DEFAULT_GAP_MM, PanelElement.DEFAULT_GAP_MM);
+        Assert.AreEqual(PanelBody.DISPLAY_TYPE_NAME, panel.DisplayTypeName);
+        Assert.AreEqual(PanelBody.CUTOUT_ROLE, panel.CutoutRole);
+        Assert.AreEqual(PanelBody.SUPPORTS_GAPS, panel.SupportsGaps);
+        Assert.AreEqual(panel.GapMM, panel.Body.GapMM);
+        Assert.AreEqual(panel.DimensionsMM, panel.Body.DimensionsMM);
     }
 
     [Test]
