@@ -162,14 +162,14 @@ public class EdgeStateMigrationTests
     [Test]
     public void Migration_SplitsTheOldManualBit_ByWhatTheSceneSays()
     {
-        var shelf = ElementFactory.CreatePart(new Vector3Int(800, 18, 400), "Полка", Vector3.zero)
-            .GetComponent<KitchenElement>();
-        ElementFactory.CreatePart(new Vector3Int(18, 720, 400), "Стойка",
-            new Vector3(0.409f, 0f, 0f));
+        var shelf = ShelfWithACoveredEnd(out var post);
+        var shelfName = shelf.PartName;
 
         var coverage = EdgeBanding.Coverage(shelf, PartRegistry.GetAll());
-        Assume.That(coverage.HasEdge(EdgeSide.W1), Is.False, "торец W1 упирается в стойку");
-        Assume.That(coverage.HasEdge(EdgeSide.W2), Is.True, "торец W2 открыт");
+        Assert.IsFalse(coverage.HasEdge(EdgeSide.W1),
+            $"торец W1 обязан упираться в стойку {post.PartName} — иначе тест меряет не то, "
+            + "ради чего заведён: перенос по расчёту различает ЗАКРЫТЫЙ торец и открытый");
+        Assert.IsTrue(coverage.HasEdge(EdgeSide.W2), "торец W2 открыт");
 
         var project = SaveLoadManager.CaptureScene(PartRegistry.GetAll());
         foreach (var ed in project.elements)
@@ -180,9 +180,7 @@ public class EdgeStateMigrationTests
         var json = SaveLoadManager.Serialize(project);
 
         ClearScene();
-        var restored = SaveLoadManager.RestoreScene(SaveLoadManager.Deserialize(json)!)
-            .Select(g => g.GetComponent<KitchenElement>())
-            .First(e => e != null && e.PartName == "Полка")!;
+        var restored = Restore(json, shelfName);
 
         Assert.AreEqual(EdgeSideState.Suppressed, restored.EdgeStateOf(EdgeSide.W1),
             "жёлтый на СЕРОМ торце значил «кромки тут нет, не ругайся» — это и есть новый красный");
@@ -193,22 +191,50 @@ public class EdgeStateMigrationTests
     [Test]
     public void Migration_DoesNotTouchAFileThatAlreadyCarriesTheSecondMask()
     {
-        var shelf = ElementFactory.CreatePart(new Vector3Int(800, 18, 400), "Полка", Vector3.zero)
-            .GetComponent<KitchenElement>();
-        ElementFactory.CreatePart(new Vector3Int(18, 720, 400), "Стойка",
-            new Vector3(0.409f, 0f, 0f));
+        var shelf = ShelfWithACoveredEnd(out _);
+        var shelfName = shelf.PartName;
         shelf.SetEdgeState(EdgeSide.W1, EdgeSideState.Forced);
 
         var json = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(PartRegistry.GetAll()));
         ClearScene();
-        var restored = SaveLoadManager.RestoreScene(SaveLoadManager.Deserialize(json)!)
-            .Select(g => g.GetComponent<KitchenElement>())
-            .First(e => e != null && e.PartName == "Полка")!;
+        var restored = Restore(json, shelfName);
 
         Assert.AreEqual(EdgeSideState.Forced, restored.EdgeStateOf(EdgeSide.W1),
             "у СВОЕГО файла вторая маска записана (пусть и нулём), и перенос его не трогает: "
             + "иначе «принудительно есть» на закрытом торце — законный выбор человека — "
             + "переворачивалось бы в «убрать» на каждой загрузке");
+    }
+
+    /// <summary>Полка, у которой торец W1 закрыт стойкой, а W2 открыт — та самая
+    /// пара, на которой перенос обязан разойтись: жёлтый бит на закрытом торце
+    /// становится «убрать», на открытом — «принудительно есть».
+    ///
+    /// Имена деталей возвращаются вызывающему, а не пишутся в тесте строкой:
+    /// фабрика прогоняет имя через <see cref="ElementNaming.Normalize"/>, и
+    /// «Полка» превращается в «Polka». Поиск по кириллическому имени после
+    /// перезагрузки не находил НИЧЕГО, и оба теста падали на
+    /// «Sequence contains no matching element» — не на сути, а на имени.</summary>
+    private static KitchenElement ShelfWithACoveredEnd(out KitchenElement post)
+    {
+        var shelf = ElementFactory.CreatePart(new Vector3Int(800, 18, 400), "Полка", Vector3.zero)
+            .GetComponent<KitchenElement>();
+        post = ElementFactory.CreatePart(new Vector3Int(18, 720, 400), "Стойка",
+            new Vector3(0.409f, 0f, 0f)).GetComponent<KitchenElement>();
+        return shelf;
+    }
+
+    private static KitchenElement Restore(string json, string partName)
+    {
+        var restored = SaveLoadManager.RestoreScene(SaveLoadManager.Deserialize(json)!)
+            .Select(g => g.GetComponent<KitchenElement>())
+            .Where(e => e != null)
+            .ToList();
+
+        var found = restored.FirstOrDefault(e => e!.PartName == partName);
+        Assert.IsNotNull(found,
+            $"после перезагрузки в сцене нет детали «{partName}»; есть: "
+            + string.Join(", ", restored.Select(e => e!.PartName)));
+        return found!;
     }
 
     private static int CountBits(int mask)
