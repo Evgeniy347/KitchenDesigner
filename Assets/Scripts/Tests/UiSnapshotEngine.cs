@@ -15,12 +15,8 @@ namespace KitchenDesigner.Tests
     {
         public static void Capture(GameObject root, string outputPath)
         {
-            var snapshot = BuildSnapshot(root);
-            var json = SerializeSnapshot(snapshot);
-            var dir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(dir))
-                Directory.CreateDirectory(dir);
-            File.WriteAllText(outputPath, json, Encoding.UTF8);
+            var json = SerializeSnapshot(BuildSnapshot(root));
+            SnapshotFile.Write(outputPath, Normalize(json));
             Debug.Log($"[UISNAPSHOT] Saved: {outputPath}");
         }
 
@@ -33,10 +29,7 @@ namespace KitchenDesigner.Tests
         {
             var json = SerializeSnapshot(BuildSnapshot(root));
 
-            var dir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(dir))
-                Directory.CreateDirectory(dir);
-            File.WriteAllText(outputPath, json, Encoding.UTF8);
+            SnapshotFile.Write(outputPath, Normalize(json));
             Debug.Log($"[UISNAPSHOT] Saved: {outputPath}");
 
             var testName = Path.GetFileNameWithoutExtension(outputPath);
@@ -481,13 +474,8 @@ namespace KitchenDesigner.Tests
                 $"  Candidate: {candidatePath}");
         }
 
-        private static void WriteGolden(string path, string json)
-        {
-            var dir = Path.GetDirectoryName(path);
-            if (!string.IsNullOrEmpty(dir))
-                Directory.CreateDirectory(dir);
-            File.WriteAllText(path, Normalize(json), Encoding.UTF8);
-        }
+        private static void WriteGolden(string path, string json) =>
+            SnapshotFile.Write(path, Normalize(json));
 
         private static string SanitizeName(string name)
         {

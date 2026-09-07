@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using KitchenDesigner.Tests;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -81,13 +82,8 @@ namespace KitchenDesigner.Core
             return File.Exists(Path.Combine(SnapshotDir, cleanName + ".verified.json"));
         }
 
-        private static void WriteFile(string path, string json)
-        {
-            var dir = Path.GetDirectoryName(path);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-            File.WriteAllText(path, NormalizeJson(json), Encoding.UTF8);
-        }
+        private static void WriteFile(string path, string json) =>
+            SnapshotFile.Write(path, NormalizeJson(json));
 
         private static string NormalizeJson(string json)
         {
