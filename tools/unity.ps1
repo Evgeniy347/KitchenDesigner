@@ -550,8 +550,9 @@ function Invoke-TestsCore {
 
     $x = [xml](Get-Content $ResultPath)
     $total = $x.'test-run'.total; $passed = $x.'test-run'.passed; $failed = $x.'test-run'.failed
+    $inconclusive = $x.'test-run'.inconclusive
 
-    Write-Host ("  Total: {0} | Passed: {1} | Failed: {2}" -f $total, $passed, $failed)
+    Write-Host ("  Total: {0} | Passed: {1} | Failed: {2} | Inconclusive: {3}" -f $total, $passed, $failed, $inconclusive)
     Show-Slowest
     Remove-TestSceneJunk
 
@@ -568,6 +569,17 @@ function Invoke-TestsCore {
 
     if ([int]$failed -gt 0) {
         Show-Failures
+        return 1
+    }
+
+    # Inconclusive — тоже НЕ успех.
+    #
+    # Сработавший `Assume` уводит тест в Inconclusive, и в «Failed: 0» этого не
+    # видно: DecorTilingKnowledgeTests так молча не проверял ленивую загрузку
+    # ни на исправном коде, ни на сломанном — месяцами, при зелёном прогоне.
+    if ([int]$inconclusive -gt 0) {
+        Write-Host "  ТЕСТЫ, КОТОРЫЕ НИЧЕГО НЕ ПРОВЕРИЛИ (Inconclusive): $inconclusive" -ForegroundColor Red
+        Show-Inconclusive
         return 1
     }
     return 0
@@ -622,6 +634,17 @@ function Show-Failures {
             Write-Host ("  [{0}] {1}" -f $_.result, $_.fullname) -ForegroundColor Red
             $msg = $_.failure.message.'#cdata-section'
             if ($msg) { ($msg -split "`n" | Select-Object -First 3) | ForEach-Object { Write-Host "      $_" } }
+        }
+}
+
+function Show-Inconclusive {
+    if (-not (Test-Path $ResultPath)) { return }
+    $x = [xml](Get-Content $ResultPath)
+    $x.SelectNodes('//test-case') | Where-Object { $_.result -eq 'Inconclusive' } | Select-Object -First 20 |
+        ForEach-Object {
+            Write-Host ("  [Inconclusive] {0}" -f $_.fullname) -ForegroundColor Red
+            $msg = $_.reason.message.'#cdata-section'
+            if ($msg) { ($msg -split "`n" | Select-Object -First 2) | ForEach-Object { Write-Host "      $_" } }
         }
 }
 
