@@ -3,6 +3,7 @@ using System.IO;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Plumbing;
 
 /// <summary>
 /// Полный round-trip всех типов элементов через capture → serialize → file → deserialize → restore.
@@ -1072,5 +1073,50 @@ public class RoundTripTests
         Assert.AreEqual(35.9f, r!.InnerDiameterMm, 0.001f, "внутренний Ø тоже");
         Assert.AreEqual(new Vector3Int(42, 1450, 42), r!.DimensionsMM,
             "габарит: сечение по наружному диаметру, высота — длина трассы");
+    }
+
+    /// <summary>У фитинга в файл едет ОДНО поле — какого он вида. Всё
+    /// остальное вычисляемое: габарит выводится из ног, диаметры читаются со
+    /// сцены. Поэтому проверка круга здесь не про числа, а про то, что вид не
+    /// потерялся: шесть классов сериализуются одним флагом isPipeFitting плюс
+    /// строка, и перепутанная строка вернёт из файла НЕ ТОТ фитинг — тройник
+    /// вместо заглушки, с тремя портами вместо одного, и правило PIP-01
+    /// замолчит там, где обязано было ругаться.</summary>
+    [Test]
+    public void EveryFittingKind_ComesBackAsItsOwnKind_NotAsTheFirstOneInTheLadder()
+    {
+        var made = new List<(string name, PipeNodeKind kind)>
+        {
+            ("FitElbow", PipeNodeKind.Elbow),
+            ("FitCoupling", PipeNodeKind.Coupling),
+            ("FitTee", PipeNodeKind.Tee),
+            ("FitCap", PipeNodeKind.Cap),
+            ("FitSupply", PipeNodeKind.Supply),
+            ("FitReturn", PipeNodeKind.Return),
+        };
+
+        GetElement(ElementFactory.CreatePipeElbow("FitElbow", new Vector3(0f, 0.5f, 0f)));
+        GetElement(ElementFactory.CreatePipeCoupling("FitCoupling", new Vector3(1f, 0.5f, 0f)));
+        GetElement(ElementFactory.CreatePipeTee("FitTee", new Vector3(2f, 0.5f, 0f)));
+        GetElement(ElementFactory.CreatePipeCap("FitCap", new Vector3(3f, 0.5f, 0f)));
+        GetElement(ElementFactory.CreatePipeSupply("FitSupply", new Vector3(4f, 0.5f, 0f)));
+        GetElement(ElementFactory.CreatePipeReturn("FitReturn", new Vector3(5f, 0.5f, 0f)));
+
+        FullRoundTrip();
+
+        var restored = Object.FindObjectsByType<KitchenElement>();
+        foreach (var (name, kind) in made)
+        {
+            PipeFittingElement? found = null;
+            foreach (var el in restored)
+                if (el is PipeFittingElement fitting && fitting.PartName == name) found = fitting;
+
+            Assert.IsNotNull(found, name + " не пережил круг — вернулась доска");
+            Assert.AreEqual(kind, found!.NodeKind, name + ": вид фитинга подменён");
+            Assert.AreEqual(PipeNodePorts.CountOf(kind), found!.PortCount,
+                name + ": число портов не то, а по нему судят PIP-01");
+            Assert.AreEqual(found!.NominalDimensionsMM, found!.DimensionsMM,
+                name + ": габарит вычисляемый и обязан пересчитаться при загрузке");
+        }
     }
 }

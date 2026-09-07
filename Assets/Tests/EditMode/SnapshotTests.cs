@@ -303,6 +303,33 @@ public class SnapshotTests
         Snapshot.Match(json, "pipe_custom");
     }
 
+    /// <summary>Все шесть фитингов в одном снимке — ровно потому, что писать в
+    /// файл им почти нечего: вид и место. Отдельные снимки на каждый различались
+    /// бы одной строкой, а одним общим сразу видно, что шесть записей РАЗНЫЕ, и
+    /// подмена вида в ElementCapture красит эталон целиком.</summary>
+    [Test]
+    public void Snapshot_PipeFittings_AllSixKinds()
+    {
+        var made = new[]
+        {
+            ElementFactory.CreatePipeElbow("SnapElbow", new Vector3(0f, 0.5f, 0f)),
+            ElementFactory.CreatePipeCoupling("SnapCoupling", new Vector3(1f, 0.5f, 0f)),
+            ElementFactory.CreatePipeTee("SnapTee", new Vector3(2f, 0.5f, 0f)),
+            ElementFactory.CreatePipeCap("SnapCap", new Vector3(3f, 0.5f, 0f)),
+            ElementFactory.CreatePipeSupply("SnapSupply", new Vector3(4f, 0.5f, 0f)),
+            ElementFactory.CreatePipeReturn("SnapReturn", new Vector3(5f, 0.5f, 0f)),
+        };
+
+        var elements = new KitchenElement[made.Length];
+        for (int i = 0; i < made.Length; i++)
+        {
+            Add(made[i]);
+            elements[i] = made[i].GetComponent<KitchenElement>();
+        }
+
+        Snapshot.Match(CaptureJson(elements), "pipe_fittings_all");
+    }
+
     [Test]
     public void Snapshot_RadialShelf_Default()
     {

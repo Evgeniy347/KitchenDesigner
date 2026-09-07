@@ -111,6 +111,66 @@ public class ScenePipeSnapshotTests
             "ДУ 20 и ДУ 32 состыкованы напрямую — без переходника такой стык не собрать");
     }
 
+    private PipeFittingElement Fitting(GameObject go)
+    {
+        _spawned.Add(go);
+        return go.GetComponent<PipeFittingElement>();
+    }
+
+    private static float UnitsMm(float mm) => mm * AppConstants.MM_TO_UNITS;
+
+    /// <summary>На сколько первый порт фитинга отстоит от его центра по оси Y.
+    /// Взято из той же арифметики, что строит меш и считает порты: выпиши сюда
+    /// число руками — и тест зафиксирует СВОЁ представление о размере фитинга,
+    /// а на разъехавшейся геометрии просто позеленеет, ничего не состыковав.
+    /// Знак снят намеренно: у заглушки порт смотрит вверх, у муфты первый —
+    /// вниз, а нужна тут длина, а не направление.</summary>
+    private static float PortReachMm(PipeNodeKind kind) =>
+        Mathf.Abs(PipeFittingSpec.PortOffsetMm(kind, PipeSpec.Dn20, 0).YMm);
+
+    [Test]
+    public void ACapUnderARun_ClosesThatEnd_AndLeavesTheOtherOneOpen()
+    {
+        var pipe = Pipe("Riser", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
+        var cap = Fitting(ElementFactory.CreatePipeCap("Plug",
+            new Vector3(0f, -UnitsMm(PortReachMm(PipeNodeKind.Cap)), 0f)));
+
+        var openEnds = Of(Findings(pipe, cap), PipeIssueCatalog.CodeOpenEnd);
+
+        Assert.AreEqual(1, openEnds.Count,
+            "заглушка встала ровно на нижний конец — там PIP-01 обязан замолчать, а верхний "
+            + "конец остаётся свободным и обязан ругаться дальше");
+        Assert.AreEqual("Riser", openEnds[0].ElementId,
+            "PIP-01 остался у трубы: сам по себе фитинг открытых концов не имеет — "
+            + "свободный порт фитинга это не «трасса не закончена», а «сюда ещё не подвели»");
+    }
+
+    [Test]
+    public void ACouplingSwallowingTwoDifferentBores_IsPip02_AndOneBoreIsNot()
+    {
+        float reach = PortReachMm(PipeNodeKind.Coupling);
+
+        PipeElement Lower() => Pipe("Lower", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
+        PipeFittingElement Sleeve() => Fitting(ElementFactory.CreatePipeCoupling("Sleeve",
+            new Vector3(0f, Units(600) + UnitsMm(reach), 0f)));
+        PipeElement Upper(string sizeId) => Pipe("Upper", 600,
+            new Vector3(0f, Units(600) + UnitsMm(2f * reach) + Units(300), 0f), sizeId);
+
+        var mismatches = Of(Findings(Lower(), Sleeve(), Upper(PipeSpec.Dn32)),
+            PipeIssueCatalog.CodeSizeMismatch);
+
+        Assert.AreEqual(1, mismatches.Count,
+            "муфта не переходник: свести на ней ДУ 20 и ДУ 32 нельзя, и это ровно тот стык, "
+            + "ради которого PIP-02 и написан");
+        Assert.AreEqual("Sleeve", mismatches[0].ElementId,
+            "виноват фитинг, а не трубы: они между собой не стыкуются вовсе");
+
+        Assert.IsEmpty(Of(Findings(Lower(), Sleeve(), Upper(PipeSpec.Dn20)),
+                PipeIssueCatalog.CodeSizeMismatch),
+            "контроль: тот же стык одним диаметром обязан молчать — иначе правило ругается "
+            + "на саму муфту, а не на разнобой диаметров");
+    }
+
     [Test]
     public void APipeCrossingABoard_IsPip03()
     {

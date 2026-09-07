@@ -3,6 +3,7 @@ using NUnit.Framework;
 using TMPro;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.UI;
 
 public class ElementFieldsEditorTests
@@ -917,5 +918,80 @@ public class ElementFieldsEditorTests
         Assert.AreEqual("3.5", Text(Field("Толщина стенки")));
         Assert.AreEqual(PipeElementSpec.DEFAULT_LENGTH_MM, pipe.LengthMM,
             "смена диаметра не имеет права трогать длину: это разные величины");
+    }
+
+    private PipeFittingElement Elbow() =>
+        Spawn<PipeFittingElement>(ElementFactory.CreatePipeElbow("Otvod", Vector3.zero));
+
+    private PipeFittingElement Tee() =>
+        Spawn<PipeFittingElement>(ElementFactory.CreatePipeTee("Troynik", Vector3.zero));
+
+    private PipeFittingElement Cap() =>
+        Spawn<PipeFittingElement>(ElementFactory.CreatePipeCap("Zaglushka", Vector3.zero));
+
+    /// <summary>Фитинг, к которому ничего не подведено. Диаметр у него не
+    /// «пока не задан», а НЕИЗВЕСТЕН: его неоткуда взять, пока в порт не пришла
+    /// труба. Показать здесь ДУ 20 по умолчанию — худшее из возможного: человек
+    /// прочитает число, которого сцена не утверждала, и закажет по нему.
+    /// Поэтому прочерк, и поэтому строка остаётся на месте (§9): исчезнувшая
+    /// строка не отличима от «у этого фитинга диаметров не бывает».</summary>
+    [Test]
+    public void Fitting_WithNothingConnected_ShowsADashInsteadOfADefaultBore()
+    {
+        _menu!.Open(Elbow());
+
+        Assert.IsTrue(Field("Диаметр 1").gameObject.activeInHierarchy,
+            "строка диаметра обязана остаться на экране даже пустой");
+        Assert.AreEqual(PipeSpec.NoValue, Text(Field("Диаметр 1")),
+            "к порту ничего не подведено — значение брать неоткуда");
+        Assert.AreEqual(PipeSpec.NoValue, Text(Field("Диаметр 2")));
+    }
+
+    [Test]
+    public void Fitting_BoreRows_AreLocked_AndTheirLabelsAreDimmedWithThem()
+    {
+        _menu!.Open(Tee());
+
+        foreach (var row in new[] { "Диаметр 1", "Диаметр 2", "Диаметр 3" })
+        {
+            Assert.IsFalse(Field(row).interactable,
+                $"«{row}» читается с трассы: поле, в которое человек впишет свой диаметр, — "
+                + "это второй писатель той же величины, и он разойдётся с PipeSurvey");
+            Assert.IsTrue(Field(row).readOnly, $"и печатать в «{row}» тоже нельзя");
+            Assert.AreEqual(UIStyle.TextDisabled, Label(row).color,
+                $"яркая подпись у мёртвого поля читается как «сюда можно печатать» — «{row}»");
+        }
+    }
+
+    /// <summary>Число строк равно числу портов, и это НЕ то же самое, что
+    /// «строку прячут, когда в ней пусто». У заглушки второго диаметра не
+    /// существует вовсе, а у тройника третий существует и просто пуст — первый
+    /// случай строку убирает, второй обязан её оставить с прочерком.</summary>
+    [Test]
+    public void Fitting_ShowsOneBoreRowPerPort_NotOnePerFilledValue()
+    {
+        _menu!.Open(Cap());
+        Assert.IsTrue(Field("Диаметр 1").gameObject.activeInHierarchy,
+            "у заглушки один порт — и ровно одна строка диаметра");
+        Assert.IsFalse(Field("Диаметр 2").gameObject.activeInHierarchy,
+            "второго диаметра у заглушки не бывает: пустая строка соврала бы, что бывает");
+
+        _menu!.Open(Tee());
+        Assert.IsTrue(Field("Диаметр 3").gameObject.activeInHierarchy,
+            "у тройника три порта, и третья строка обязана появиться — пустой, но появиться");
+    }
+
+    [Test]
+    public void Fitting_SizeRows_AreAllLocked_BecauseNothingAboutItIsTyped()
+    {
+        var elbow = Elbow();
+        _menu!.Open(elbow);
+
+        foreach (var row in new[] { "Ширина", "Высота", "Глубина" })
+            Assert.IsFalse(Field(row).interactable,
+                $"габарит фитинга выводится из диаметра трассы, а не печатается в «{row}»");
+
+        Assert.AreEqual(elbow.NominalDimensionsMM, elbow.DimensionsMM,
+            "и он обязан совпадать с вычисленным, а не жить своей жизнью");
     }
 }
