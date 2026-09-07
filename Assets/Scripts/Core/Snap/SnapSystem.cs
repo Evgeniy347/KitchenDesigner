@@ -87,7 +87,7 @@ namespace KitchenDesigner.Core
 
             float maxDist = report.thresholdMM * AppConstants.MM_TO_UNITS + ThresholdEpsilon;
 
-            Face[] movedFaces = moved.GetFacesAt(testPosition);
+            ElementGeometry movedGeo = moved.ToGeometryAt(testPosition);
             Vector3[] movedVerts = moved.GetVerticesAt(testPosition);
 
             foreach (var other in others)
@@ -95,66 +95,26 @@ namespace KitchenDesigner.Core
                 if (other == moved || other == null) continue;
                 if (!other.gameObject.activeInHierarchy) continue;
 
+                var facts = SnapNeighbourFacts.Of(movedGeo, testPosition, other.ToGeometry(), maxDist);
+
                 var n = new SnapNeighborReport
                 {
                     name = other.PartName,
                     centerDistanceMM = Vector3.Distance(testPosition, other.transform.position) / AppConstants.MM_TO_UNITS,
                     intersects = ElementsIntersectAt(moved, movedVerts, other),
-                    bestDot = 1f,
+                    bestDot = facts.bestDot,
+                    hasFacingFaces = facts.hasFacingFaces,
+                    movedFaceIndex = facts.movedFaceIndex,
+                    otherFaceIndex = facts.otherFaceIndex,
+                    gapMM = facts.distanceUnits >= 0f
+                        ? facts.distanceUnits / AppConstants.MM_TO_UNITS
+                        : -1f,
+                    overlapRatio = facts.overlapRatio,
+                    withinThreshold = facts.withinThreshold,
+                    overlapEnough = facts.overlapEnough,
+                    wouldSnap = facts.wouldSnap,
                 };
-
-                Face[] otherFaces = FaceCache.GetFaces(other);
-
-                Face[] seatFaces = moved is PanelElement
-                    ? other.GetGrooveSeatFaces()
-                    : System.Array.Empty<Face>();
-
-                int bestRank = int.MaxValue;
-                float bestGap = float.MaxValue;
-
-                for (int i = 0; i < 6; i++)
-                {
-                    for (int j = 0; j < 6 + seatFaces.Length; j++)
-                    {
-                        bool isGroove = j >= 6;
-                        var of = isGroove ? seatFaces[j - 6] : otherFaces[j];
-
-                        float dot = Vector3.Dot(movedFaces[i].normal, of.normal);
-                        n.bestDot = Mathf.Min(n.bestDot, dot);
-                        if (!Tolerance.IsParallel(dot) || dot > 0) continue;
-
-                        var mf = movedFaces[i];
-                        if (!isGroove && GrooveSeating.SeatSupersedesFace(mf, of, seatFaces)) continue;
-                        n.hasFacingFaces = true;
-
-                        float gap = Mathf.Abs(Vector3.Dot(of.center - mf.center, mf.normal));
-                        bool hasOverlap = FaceContacts.OverlapAllowingEdgeTouch(mf, of, out float ratio, out _);
-                        bool within = gap <= maxDist;
-                        bool enough = hasOverlap && ratio >= Tolerance.MinSupportOverlap;
-
-                        int rank = (within && enough) ? 0 : (hasOverlap ? 1 : 2);
-                        bool betterPair = rank < bestRank || (rank == bestRank && gap < bestGap);
-                        if (betterPair)
-                        {
-                            bestRank = rank;
-                            bestGap = gap;
-                            n.movedFaceIndex = i;
-                            n.otherFaceIndex = j;
-                            n.gapMM = gap / AppConstants.MM_TO_UNITS;
-                            n.overlapRatio = hasOverlap ? ratio : 0f;
-                            n.withinThreshold = within;
-                            n.overlapEnough = enough;
-                        }
-                    }
-                }
-
-                n.wouldSnap = n.hasFacingFaces && n.withinThreshold && n.overlapEnough;
-                n.verdict =
-                    !n.hasFacingFaces ? $"нет встречных параллельных граней (лучший dot={n.bestDot:F3}) — деталь повёрнута?"
-                    : !n.withinThreshold ? $"зазор {n.gapMM:F1} мм больше порога {report.thresholdMM:F0} мм"
-                    : !n.overlapEnough ? $"перекрытие граней {n.overlapRatio:P0} меньше минимума 30%"
-                    : n.intersects ? "AABB пересекаются из-за поворота, но снэп сработает (разведёт детали заподлицо)"
-                    : "OK — прилипнет";
+                n.verdict = Verdict(n, facts, report.thresholdMM);
 
                 report.neighbors.Add(n);
             }
@@ -165,6 +125,48 @@ namespace KitchenDesigner.Core
 
             return report;
         }
+
+        private static string Verdict(SnapNeighborReport n, in SnapNeighbourFacts facts,
+            float thresholdMM)
+        {
+            if (!n.hasFacingFaces)
+                return $"нет встречных параллельных граней (лучший dot={n.bestDot:F3}) — деталь повёрнута?";
+            if (!facts.hasCandidateFaces)
+                return NotConsidered(facts.exclusion);
+            if (!n.withinThreshold)
+                return $"зазор {n.gapMM:F1} мм больше порога {thresholdMM:F0} мм";
+            if (!n.overlapEnough)
+                return $"перекрытие граней {n.overlapRatio:P0} меньше минимума 30%";
+            if (!n.wouldSnap)
+                return Blocked(facts);
+            if (n.intersects)
+                return "AABB пересекаются из-за поворота, но снэп сработает (разведёт детали заподлицо)";
+            return "OK — прилипнет";
+        }
+
+        private static string NotConsidered(SnapPairRejection why) => why switch
+        {
+            SnapPairRejection.OffTheMountAxis =>
+                "встречные грани есть, но у центрующейся детали отбор берёт только грани оси "
+                + "крепления — по этой паре снэпа не будет",
+            SnapPairRejection.SupersededByGrooveSeat =>
+                "грань перекрыта посадочной гранью паза — снэп идёт по пазу, а не по ней",
+            SnapPairRejection.CoDirectionalMount =>
+                "сонаправленная грань у центрующейся детали в отборе не участвует",
+            SnapPairRejection.CoDirectionalGrooveSeat =>
+                "сонаправленная грань паза в отборе не участвует",
+            _ => "встречные грани есть, но отбор кандидатов их не рассматривает",
+        };
+
+        private static string Blocked(in SnapNeighbourFacts facts) => facts.rejection switch
+        {
+            SnapPairRejection.LandsInsideNeighbour =>
+                "снэп загнал бы деталь внутрь соседа — такой кандидат отбрасывается",
+            SnapPairRejection.AlreadyInPlace => facts.role == SnapPairRole.Centring
+                ? "посадка уже выполнена: деталь стоит по центру, сдвига не будет"
+                : "деталь уже стоит заподлицо по этой грани — сдвига не будет",
+            _ => "отбор кандидатов эту пару не принял",
+        };
 
         private static float SortKeyMM(SnapNeighborReport n)
             => n.gapMM >= 0 ? n.gapMM : n.centerDistanceMM;

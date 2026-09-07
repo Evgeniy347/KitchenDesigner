@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public static class SnapCandidateCollector
     {
-        public const float ZeroShiftEpsilon = Tolerance.EpsilonUnits;
+        public const float ZeroShiftEpsilon = SnapPairOffer.ZeroShiftEpsilon;
 
         private readonly struct MovedPart
         {
@@ -52,210 +52,75 @@ namespace KitchenDesigner.Core
             {
                 for (int j = 0; j < Face.BoxFaceCount + seatFaces.Length; j++)
                 {
-                    bool isGroove = j >= Face.BoxFaceCount;
-                    Face of = isGroove ? seatFaces[j - Face.BoxFaceCount] : other.Faces[j];
+                    bool isGrooveSeat = j >= Face.BoxFaceCount;
+                    Face of = isGrooveSeat ? seatFaces[j - Face.BoxFaceCount] : other.Faces[j];
                     Face mf = part.Faces[i];
 
-                    if (!isGroove && GrooveSeating.SeatSupersedesFace(mf, of, seatFaces)) continue;
-                    if (part.Geometry.CentresOnTarget
-                        && !LiesOnTheMountAxis(part.Geometry, mf)) continue;
+                    var offer = SnapPairOffer.For(part.Geometry, part.BasePos, other, mf, of,
+                        isGrooveSeat, seatFaces, wallFaces, part.MaxDist);
+                    if (offer.role == SnapPairRole.NotACandidate) continue;
 
-                    float dot = Vector3.Dot(mf.normal, of.normal);
-                    if (!Tolerance.IsParallel(dot)) continue;
+                    if (offer.role == SnapPairRole.FarEdgeAlignment && offer.alreadyInPlace)
+                    {
+                        if (part.IsPrimaryPass) into.AlreadyAlignedNormals.Add(mf.normal);
+                        continue;
+                    }
 
-                    bool coDirectional = dot > 0;
-                    if (isGroove && coDirectional) continue;
-                    if (coDirectional && part.Geometry.CentresOnTarget) continue;
+                    if (offer.rejection == SnapPairRejection.LandsInsideNeighbour) continue;
 
-                    Vector3 offset = of.center - mf.center;
-                    float planeDist = Mathf.Abs(Vector3.Dot(offset, mf.normal));
-                    if (planeDist > part.MaxDist) continue;
+                    if (offer.role == SnapPairRole.Flush && offer.alreadyInPlace)
+                        RecordExistingFlushContact(part, Offered(other, offer, mf, of, j),
+                            LogFor(part, other, offer, i, j), mf.normal, into);
 
-                    if (!FaceContacts.OverlapAllowingEdgeTouch(mf, of,
-                            out float overlapRatio, out bool hasLineContact)) continue;
-                    if (overlapRatio < Tolerance.MinSupportOverlap) continue;
+                    if (!offer.accepted) continue;
 
-                    float planeShift = Vector3.Dot(offset, mf.normal);
-
-                    if (IsTheMountFace(part.Geometry, mf))
-                        AddCentringContact(part, other, mf, of, i, j, hasLineContact, into);
-                    else if (coDirectional)
-                        AddFarEdgeAlignment(part, other, mf, of, i, j, planeShift, hasLineContact, into);
-                    else
-                        AddFlushContact(part, other, wallFaces, mf, of, i, j, isGroove,
-                            planeDist, planeShift, overlapRatio, hasLineContact, into);
+                    into.Candidates.Add(new SnapCandidate
+                    {
+                        dist = offer.dist,
+                        result = Offered(other, offer, mf, of, j),
+                        normal = mf.normal,
+                        planeShift = offer.shift,
+                        u = offer.u,
+                        v = offer.v,
+                        du = offer.du,
+                        dv = offer.dv,
+                        hasLineContact = offer.hasLineContact,
+                        log = LogFor(part, other, offer, i, j),
+                    });
                 }
             }
         }
 
-        private static bool LiesOnTheMountAxis(in ElementGeometry moved, in Face face) =>
-            Mathf.Abs(Vector3.Dot(face.normal, moved.MountNormal)) >= Tolerance.ParallelDot;
-
-        private static bool IsTheMountFace(in ElementGeometry moved, in Face face) =>
-            moved.CentresOnTarget
-            && Vector3.Dot(face.normal, moved.MountNormal) >= Tolerance.ParallelDot;
-
-        private static void AddCentringContact(in MovedPart part, in ElementGeometry other,
-            in Face mf, in Face of, int i, int j, bool hasLineContact, SnapCandidates into)
-        {
-            Vector3 u = mf.rightAxis;
-            Vector3 v = mf.upAxis;
-            Rect mRect = FaceRects.Of(mf, u, v);
-            Rect oRect = FaceRects.Of(of, u, v);
-            float du = MountDetent(part, mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax,
-                out string labelU);
-            float dv = MountDetent(part, mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax,
-                out string labelV);
-
-            Vector3 snapPos = part.BasePos + du * u + dv * v;
-            float dist = Vector3.Distance(snapPos, part.BasePos);
-            if (dist <= ZeroShiftEpsilon) return;
-
-            into.Candidates.Add(new SnapCandidate
-            {
-                dist = dist,
-                result = new SnapResult
-                {
-                    snapped = true,
-                    position = snapPos,
-                    targetName = other.Name,
-                    faceIndex = j,
-                    snapPoint = mf.center,
-                    targetPoint = of.center
-                },
-                normal = mf.normal,
-                planeShift = 0f,
-                u = u,
-                v = v,
-                du = du,
-                dv = dv,
-                hasLineContact = hasLineContact,
-                log = part.Verbose
-                    ? $"[Snap] {part.Geometry.Name} → {other.Name} | посадка под деталью " +
-                      $"m{i}/o{j} оси[u:{labelU} v:{labelV}] " +
-                      $"du={du * 1000f:F2}мм dv={dv * 1000f:F2}мм"
-                    : null
-            });
-        }
-
-        private static float MountDetent(in MovedPart part, float aMin, float aMax,
-            float bMin, float bMax, out string label)
-        {
-            if (bMax - bMin < aMax - aMin + Tolerance.EpsilonUnits)
-            {
-                label = EdgeDetents.CentreLabel;
-                return EdgeDetents.CentreDelta(aMin, aMax, bMin, bMax, part.MaxDist);
-            }
-
-            return EdgeDetents.MountDetentDelta(aMin, aMax, bMin, bMax, part.MaxDist,
-                part.Geometry.MountEdgeDetentUnits, out label);
-        }
-
-        private static void AddFarEdgeAlignment(in MovedPart part, in ElementGeometry other,
-            in Face mf, in Face of, int i, int j, float planeShift, bool hasLineContact,
-            SnapCandidates into)
-        {
-            if (Mathf.Abs(planeShift) <= ZeroShiftEpsilon)
-            {
-                if (part.IsPrimaryPass) into.AlreadyAlignedNormals.Add(mf.normal);
-                return;
-            }
-
-            Vector3 alignShift = planeShift * mf.normal;
-            if (WouldLandInsideNeighbour(part.Geometry, alignShift, other)) return;
-
-            into.Candidates.Add(new SnapCandidate
-            {
-                dist = Mathf.Abs(planeShift),
-                result = new SnapResult
-                {
-                    snapped = true,
-                    position = part.BasePos + alignShift,
-                    targetName = other.Name,
-                    faceIndex = j,
-                    snapPoint = mf.center,
-                    targetPoint = of.center
-                },
-                normal = mf.normal,
-                planeShift = planeShift,
-                u = mf.rightAxis,
-                v = mf.upAxis,
-                du = 0f,
-                dv = 0f,
-                hasLineContact = hasLineContact,
-                log = part.Verbose
-                    ? $"[Snap] {part.Geometry.Name} → {other.Name} | выравнивание " +
-                      $"по дальней кромке m{i}/o{j} сдвиг={planeShift * 1000f:F2}мм"
-                    : null
-            });
-        }
-
-        private static bool WouldLandInsideNeighbour(in ElementGeometry moved, Vector3 shift,
-            in ElementGeometry other) =>
-            Tolerance.IntervalsOverlap(moved.Min.x + shift.x, moved.Max.x + shift.x, other.Min.x, other.Max.x) &&
-            Tolerance.IntervalsOverlap(moved.Min.y + shift.y, moved.Max.y + shift.y, other.Min.y, other.Max.y) &&
-            Tolerance.IntervalsOverlap(moved.Min.z + shift.z, moved.Max.z + shift.z, other.Min.z, other.Max.z);
-
-        private static bool CentreWouldLandInsideNeighbour(Vector3 snapPos, in ElementGeometry other)
-        {
-            foreach (var f in other.Faces)
-                if (Vector3.Dot(snapPos - f.center, f.normal) >= 0f) return false;
-            return true;
-        }
-
-        private static void AddFlushContact(in MovedPart part, in ElementGeometry other,
-            Face[] wallFaces, in Face mf, in Face of, int i, int j, bool isGroove,
-            float planeDist, float planeShift, float overlapRatio, bool hasLineContact,
-            SnapCandidates into)
-        {
-            Vector3 u = mf.rightAxis;
-            Vector3 v = mf.upAxis;
-            Rect mRect = FaceRects.Of(mf, u, v);
-            Rect oRect = FaceRects.Of(of, u, v);
-            float du = EdgeDetents.NearestDetentDelta(mRect.xMin, mRect.xMax, oRect.xMin, oRect.xMax,
-                part.MaxDist, EdgeDetents.GrooveWallCoordsAlong(wallFaces, u), out string labelU);
-            float dv = EdgeDetents.NearestDetentDelta(mRect.yMin, mRect.yMax, oRect.yMin, oRect.yMax,
-                part.MaxDist, EdgeDetents.GrooveWallCoordsAlong(wallFaces, v), out string labelV);
-
-            Vector3 snapPos = part.BasePos + planeShift * mf.normal + du * u + dv * v;
-
-            if (!isGroove && CentreWouldLandInsideNeighbour(snapPos, other)) return;
-
-            float dist = Vector3.Distance(snapPos, part.BasePos);
-            var result = new SnapResult
+        private static SnapResult Offered(in ElementGeometry other, in SnapPairOffer offer,
+            in Face mf, in Face of, int j) => new SnapResult
             {
                 snapped = true,
-                position = snapPos,
+                position = offer.snapPos,
                 targetName = other.Name,
                 faceIndex = j,
                 snapPoint = mf.center,
-                targetPoint = of.center
+                targetPoint = of.center,
             };
-            string? log = part.Verbose
-                ? $"[Snap] {part.Geometry.Name} → {other.Name} | грань m{i}/o{j} " +
-                  $"зазор={planeDist * 1000f:F2}мм перекр={overlapRatio:P0} " +
-                  $"оси[u:{labelU} v:{labelV}] → поз {snapPos.x:F3},{snapPos.y:F3},{snapPos.z:F3}"
-                : null;
 
-            if (Mathf.Abs(planeShift) <= ZeroShiftEpsilon)
-                RecordExistingFlushContact(part, result, log, mf.normal, into);
+        private static string? LogFor(in MovedPart part, in ElementGeometry other,
+            in SnapPairOffer offer, int i, int j)
+        {
+            if (!part.Verbose) return null;
 
-            if (dist > ZeroShiftEpsilon)
-            {
-                into.Candidates.Add(new SnapCandidate
-                {
-                    dist = dist,
-                    result = result,
-                    normal = mf.normal,
-                    planeShift = planeShift,
-                    u = u,
-                    v = v,
-                    du = du,
-                    dv = dv,
-                    hasLineContact = hasLineContact,
-                    log = log
-                });
-            }
+            string head = $"[Snap] {part.Geometry.Name} → {other.Name} | ";
+            if (offer.role == SnapPairRole.Centring)
+                return head + $"посадка под деталью m{i}/o{j} " +
+                       $"оси[u:{offer.detentU} v:{offer.detentV}] " +
+                       $"du={offer.du * 1000f:F2}мм dv={offer.dv * 1000f:F2}мм";
+
+            if (offer.role == SnapPairRole.FarEdgeAlignment)
+                return head + $"выравнивание по дальней кромке m{i}/o{j} " +
+                       $"сдвиг={offer.shift * 1000f:F2}мм";
+
+            return head + $"грань m{i}/o{j} зазор={offer.planeDist * 1000f:F2}мм " +
+                   $"перекр={offer.overlapRatio:P0} " +
+                   $"оси[u:{offer.detentU} v:{offer.detentV}] → " +
+                   $"поз {offer.snapPos.x:F3},{offer.snapPos.y:F3},{offer.snapPos.z:F3}";
         }
 
         private static void RecordExistingFlushContact(in MovedPart part, SnapResult result,
