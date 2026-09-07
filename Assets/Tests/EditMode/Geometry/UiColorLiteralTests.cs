@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -60,7 +60,7 @@ namespace KitchenDesigner.Tests.Geometry
             ("ToolbarUI.cs", 2,
                 "Color.white как «текстура вместо цвета» в свотче пипетки и ToHtmlStringRGB "
                 + "для TMP-разметки бейджа: разметке нужен именно hex, а не Color"),
-            ("UIFactory.cs", 8,
+            ("UIFactory.cs", 7,
                 "ColorBlock кнопок (умножители hover/pressed/disabled) и заливка ползунка: "
                 + "в UIStyle нет ни блока состояний, ни цвета заполнения"),
             ("WindowDrag.cs", 1,
