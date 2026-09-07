@@ -532,6 +532,7 @@ public class McpUiPropertyParityTests : McpTestFixture
         {
             case "new_name": yield return "Probe2"; break;
             case "grooves": yield return "through:top"; break;
+            case "edge_sides": yield return "L1:on; W1:off"; break;
             case "screw_thread":
                 foreach (var thread in ScrewLegSpec.Threads) yield return thread;
                 break;
