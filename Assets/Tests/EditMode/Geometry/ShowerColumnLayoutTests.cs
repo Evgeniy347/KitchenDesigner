@@ -355,14 +355,56 @@ namespace KitchenDesigner.Tests.Geometry
                 + "на изометрии виден с ребра и превращается в палку поперёк рукоятки");
         }
 
+        /// <summary>Тот самый «леденец», ради которого правка и делалась.
+        ///
+        /// Головка строилась по той же оси, что и рукоятка: диск сидел на конце
+        /// палки соосно, лицом с форсунками ВВЕРХ, вдоль рукоятки. На рендерах
+        /// это читалось грибом на ножке, а на виде сверху — кружком на палке.
+        /// На референсе диск развёрнут поперёк: лицо смотрит от стены и чуть
+        /// вниз, то есть нормаль лица составляет с осью рукоятки ПРЯМОЙ угол.
+        ///
+        /// Проверять это глазами по кадру нельзя — угол возвращается к нулю
+        /// одной строчкой (заменой HeadAxisDirection на AxisDirection), и на
+        /// быстром пути это не краснеет ничем, кроме вот этой проверки: цепочка
+        /// деталей от такой замены не рвётся, радиусы сходятся, габарит стойки
+        /// меняется на сантиметры, и все остальные тесты остаются зелёными.</summary>
+        [Test]
+        public void ShowerColumnHandShower_Head_TurnsAcrossTheGripInsteadOfCappingIt()
+        {
+            var spec = ShowerColumnSpec.Default;
+            var grip = ShowerColumnHandShower.Grip(spec);
+            var face = ShowerColumnHandShower.HeadFace(spec);
+
+            Assert.AreEqual(ShowerColumnHandShower.HeadTurnDeg,
+                Vector3.Angle(grip.Direction, face.Direction), 1e-2f,
+                "нормаль лица головки развёрнута к оси рукоятки ровно на 90°: соосная "
+                + "головка — это леденец на палочке, а не лейка");
+            Assert.Greater(face.Direction.z, 0f,
+                "и лицо смотрит ОТ стены, в душ, а не в плитку");
+            Assert.Less(face.Direction.y, 0f,
+                "и слегка вниз — ровно на угол наклона рукоятки, как на референсе");
+            Assert.Less(Mathf.Abs(face.Direction.x), Tol,
+                "поворот лежит в плоскости наклона рукоятки: уведи его вбок — и лейка "
+                + "начнёт косить мимо душа");
+        }
+
         [Test]
         public void ShowerColumnHandShower_Parts_FormOneUnbrokenChain()
         {
             var spec = ShowerColumnSpec.Default;
             var parts = ShowerColumnHandShower.Parts(spec);
 
+            // Стык шейки с головкой (parts[1] → parts[2]) из цепочки выпадает:
+            // там прямой угол, и держится он нахлёстом — см. соседний тест.
+            const int headJoint = 2;
+
             for (int i = 1; i < parts.Length; i++)
             {
+                if (i == headJoint)
+                {
+                    continue;
+                }
+
                 Assert.AreEqual(parts[i - 1].ToMM, parts[i].FromMM,
                     "рукоятка, шейка и головка идут встык: разрыв между ними — это дырка "
                     + "в лейке, а нахлёст — тот самый комок вместо детали");
@@ -371,11 +413,33 @@ namespace KitchenDesigner.Tests.Geometry
             }
         }
 
+        /// <summary>Стык шейки с развёрнутой головкой встык не сходится — там
+        /// прямой угол, и два торца касались бы по одной точке, оставив щель.
+        /// Держится он НАХЛЁСТОМ: верхушка шейки сидит ВНУТРИ диска, между его
+        /// спинкой и лицом, а сама спинка отодвинута назад ровно на раструб.
+        /// Убери нахлёст — и на кадре у лейки отвалится голова.</summary>
+        [Test]
+        public void ShowerColumnHandShower_Head_SwallowsTheTopOfTheNeck()
+        {
+            var spec = ShowerColumnSpec.Default;
+            var neckTop = ShowerColumnHandShower.NeckTopMM(spec);
+            var axis = ShowerColumnHandShower.HeadAxisDirection;
+            float back = Vector3.Dot(neckTop - ShowerColumnHandShower.HeadBackMM(spec), axis);
+            float front = Vector3.Dot(ShowerColumnHandShower.HeadFaceMM(spec) - neckTop, axis);
+
+            Assert.Greater(back, 0f, "конец шейки лежит ГЛУБЖЕ спинки диска");
+            Assert.Greater(front, 0f, "и не пробивает лицо насквозь");
+            Assert.Less((ShowerColumnHandShower.HeadRimMM(spec) - neckTop).magnitude, Tol,
+                "а самая широкая точка раструба приходится ровно на конец шейки: диск "
+                + "садится на неё серединой, а не свисает с торца");
+        }
+
         [Test]
         public void ShowerColumnHandShower_StaysClearOfTheRainHead()
         {
             var spec = ShowerColumnSpec.Default;
-            float handTop = ShowerColumnHandShower.HeadFaceMM(spec).y
+            float handTop = Mathf.Max(ShowerColumnHandShower.HeadFaceMM(spec).y,
+                    ShowerColumnHandShower.HeadRimMM(spec).y)
                 + spec.HandShowerDiameterMM * 0.5f;
 
             Assert.Less(handTop, ShowerColumnRainHead.BottomYMM(spec),
