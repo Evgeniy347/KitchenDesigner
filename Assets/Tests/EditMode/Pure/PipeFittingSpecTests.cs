@@ -18,6 +18,8 @@ public class PipeFittingSpecTests
 {
     private const float Eps = 1e-3f;
 
+    private const string Frame = PipeSpec.DEFAULT_SIZE;
+
     private static readonly PipeNodeKind[] Fittings =
     {
         PipeNodeKind.Elbow, PipeNodeKind.Coupling, PipeNodeKind.Tee,
@@ -41,13 +43,20 @@ public class PipeFittingSpecTests
     /// <summary>Габарит, выведенный из тех же ног, из которых строится меш:
     /// цилиндр вокруг каждой ноги плюс, у подачи и обратки, фланцевый диск у
     /// ступицы. Второе описание того же контура — если оно разойдётся с
-    /// объявленным, элемент будет нарисован не в своём ящике.</summary>
-    private static (Extent x, Extent y, Extent z) DerivedBox(PipeNodeKind kind, string sizeId)
+    /// объявленным, элемент будет нарисован не в своём ящике.
+    ///
+    /// Рама (положение ступицы и длина ног) считается по frameSizeId, тело — по
+    /// boreSizeId. Это НЕ два способа сказать одно и то же: устья фитинга — его
+    /// монтажный контракт, и стоит им поехать вслед за выведенным диаметром, как
+    /// стык, из которого этот диаметр и выведен, разойдётся, диаметр пропадёт,
+    /// рама вернётся назад — и так каждый кадр.</summary>
+    private static (Extent x, Extent y, Extent z) DerivedBox(PipeNodeKind kind,
+        string frameSizeId, string boreSizeId)
     {
-        var hub = PipeFittingSpec.HubOffsetMm(kind, sizeId);
-        float radius = PipeFittingSpec.BodyDiameterMm(sizeId) * 0.5f;
+        var hub = PipeFittingSpec.HubOffsetMm(kind, frameSizeId);
+        float radius = PipeFittingSpec.BodyDiameterMm(boreSizeId) * 0.5f;
         float flange = PipeFittingSpec.HasFlange(kind)
-            ? PipeFittingSpec.FlangeDiameterMm(sizeId) * 0.5f
+            ? PipeFittingSpec.FlangeDiameterMm(boreSizeId) * 0.5f
             : radius;
 
         var xs = new List<float>();
@@ -65,7 +74,7 @@ public class PipeFittingSpecTests
         }
 
         for (int i = 0; i < PipeFittingSpec.PortCount(kind); i++)
-            Cylinder(hub, PipeFittingSpec.PortOffsetMm(kind, sizeId, i),
+            Cylinder(hub, PipeFittingSpec.PortOffsetMm(kind, frameSizeId, i),
                 PipeFittingSpec.PortAxis(kind, i), radius);
 
         if (PipeFittingSpec.HasFlange(kind))
@@ -75,6 +84,12 @@ public class PipeFittingSpecTests
         return (new Extent(Min(xs), Max(xs)), new Extent(Min(ys), Max(ys)),
             new Extent(Min(zs), Max(zs)));
     }
+
+    private static (Extent x, Extent y, Extent z) DerivedBox(PipeNodeKind kind, string sizeId) =>
+        DerivedBox(kind, sizeId, sizeId);
+
+    private static float Reach(in Extent extent) =>
+        2f * Math.Max(Math.Abs(extent.Min), Math.Abs(extent.Max));
 
     private static float Min(List<float> values)
     {
@@ -247,5 +262,68 @@ public class PipeFittingSpecTests
             "половина округляется ОТ нуля: банковское округление дало бы 34 здесь и 32 "
             + "у 32,5, и габариты соседних типоразмеров разъехались бы без причины");
         Assert.AreEqual(3, PipeFittingSpec.RoundedMm(2.5f));
+    }
+
+    /// <summary>Тело фитинга следует за ВЫВЕДЕННЫМ диаметром, а рама остаётся
+    /// номинальной. Ящик поэтому определён как наименьший ЦЕНТРИРОВАННЫЙ на точке
+    /// элемента ящик, который накрывает геометрию: KitchenElement строит контур
+    /// вокруг своей точки, и «плотный, но смещённый» ящик рисовал бы фитинг
+    /// наполовину снаружи выделения.</summary>
+    [Test]
+    public void EveryBoxAtAnyDerivedBore_IsTheSmallestPivotCentredBoxThatCoversTheBody()
+    {
+        foreach (var bore in PipeSpec.Sizes)
+            foreach (var kind in Fittings)
+            {
+                var box = DerivedBox(kind, Frame, bore);
+                string what = kind + " @ рама " + Frame + ", проход " + bore;
+
+                Assert.AreEqual(Reach(box.x), PipeFittingSpec.WidthMm(kind, Frame, bore), Eps,
+                    "ширина ящика разошлась с телом: " + what);
+                Assert.AreEqual(Reach(box.y), PipeFittingSpec.HeightMm(kind, Frame, bore), Eps,
+                    "высота ящика разошлась с телом: " + what);
+                Assert.AreEqual(Reach(box.z), PipeFittingSpec.DepthMm(kind, Frame, bore), Eps,
+                    "глубина ящика разошлась с телом: " + what);
+            }
+    }
+
+    /// <summary>Тело обязано расти вслед за проходом — иначе отвод «на глаз
+    /// двадцатый» стоит на трубе ДУ 50 и читается как ошибка чертежа. Обратная
+    /// половина утверждения — что устья при этом не двигаются — проверяется на
+    /// элементе сцены (PipeFittingBoreTests), потому что только там диаметр
+    /// действительно ВЫВОДИТСЯ, и только там расхождение может закольцеваться.</summary>
+    [Test]
+    public void TheBodyFollowsTheDerivedBore_NotTheNominalFrame()
+    {
+        foreach (var kind in Fittings)
+        {
+            Assert.Greater(PipeFittingSpec.DepthMm(kind, Frame, PipeSpec.Dn50),
+                PipeFittingSpec.DepthMm(kind, Frame, PipeSpec.Dn15),
+                kind + ": тело замерло на номинале и на подведённую трубу не смотрит");
+            Assert.AreEqual(PipeFittingSpec.DepthMm(kind, Frame),
+                PipeFittingSpec.DepthMm(kind, Frame, Frame), Eps,
+                kind + ": проход, равный раме, обязан давать ровно номинальный габарит");
+        }
+
+        Assert.AreEqual(PipeFittingSpec.HeightMm(PipeNodeKind.Coupling, Frame, PipeSpec.Dn15),
+            PipeFittingSpec.HeightMm(PipeNodeKind.Coupling, Frame, PipeSpec.Dn50), Eps,
+            "а вот длина муфты — это её рама: она от прохода не зависит вовсе, иначе "
+            + "устья уехали бы вместе с ней");
+    }
+
+    /// <summary>Число, на котором держится вся конструкция: рама зафиксирована на
+    /// номинале, и её нога обязана быть длиннее радиуса САМОГО ТОЛСТОГО тела,
+    /// какое на неё может встать. Иначе ступица вылезет за собственное устье, и
+    /// стык окажется внутри тела фитинга.</summary>
+    [Test]
+    public void TheNominalLeg_IsLongerThanTheWidestBodyItWillEverCarry()
+    {
+        float widest = 0f;
+        foreach (var sizeId in PipeSpec.Sizes)
+            widest = Math.Max(widest, PipeFittingSpec.BodyDiameterMm(sizeId) * 0.5f);
+
+        Assert.Greater(PipeFittingSpec.LegLengthMm(Frame), widest,
+            "нога номинальной рамы короче радиуса самого толстого прохода: ступица вылезла "
+            + "бы за собственное устье, а высота тройника перестала бы быть двумя ногами");
     }
 }

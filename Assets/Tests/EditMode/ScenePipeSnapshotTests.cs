@@ -145,8 +145,15 @@ public class ScenePipeSnapshotTests
             + "свободный порт фитинга это не «трасса не закончена», а «сюда ещё не подвели»");
     }
 
+    /// <summary>Обе стороны PIP-02 на настоящей сцене, одними и теми же трубами.
+    ///
+    /// Переходная муфта — это и есть железка, которой сводят разные ДУ: два порта
+    /// соосно, диаметры сторон независимы и оба выводятся с подведённых труб. Так
+    /// что стык ДУ 20 с ДУ 32 ЧЕРЕЗ неё законен, а он же напрямую — отказ. Порознь
+    /// эти половины ничего не стоят: правило, которое всегда молчит, пройдёт
+    /// первую, а правило, которое всегда ругается, — вторую.</summary>
     [Test]
-    public void ACouplingSwallowingTwoDifferentBores_IsPip02_AndOneBoreIsNot()
+    public void ATransitionCoupling_SilencesPip02_WhileTheSameTwoPipesButtedDirectlyDoNot()
     {
         float reach = PortReachMm(PipeNodeKind.Coupling);
 
@@ -156,19 +163,45 @@ public class ScenePipeSnapshotTests
         PipeElement Upper(string sizeId) => Pipe("Upper", 600,
             new Vector3(0f, Units(600) + UnitsMm(2f * reach) + Units(300), 0f), sizeId);
 
-        var mismatches = Of(Findings(Lower(), Sleeve(), Upper(PipeSpec.Dn32)),
-            PipeIssueCatalog.CodeSizeMismatch);
-
-        Assert.AreEqual(1, mismatches.Count,
-            "муфта не переходник: свести на ней ДУ 20 и ДУ 32 нельзя, и это ровно тот стык, "
-            + "ради которого PIP-02 и написан");
-        Assert.AreEqual("Sleeve", mismatches[0].ElementId,
-            "виноват фитинг, а не трубы: они между собой не стыкуются вовсе");
+        Assert.IsEmpty(Of(Findings(Lower(), Sleeve(), Upper(PipeSpec.Dn32)),
+                PipeIssueCatalog.CodeSizeMismatch),
+            "переходная муфта для того и стоит: ДУ 20 и ДУ 32 сведены на ней законно");
 
         Assert.IsEmpty(Of(Findings(Lower(), Sleeve(), Upper(PipeSpec.Dn20)),
                 PipeIssueCatalog.CodeSizeMismatch),
-            "контроль: тот же стык одним диаметром обязан молчать — иначе правило ругается "
-            + "на саму муфту, а не на разнобой диаметров");
+            "контроль: одним диаметром через ту же муфту тоже молчит — иначе первая "
+            + "половина зелена просто потому, что правило перестало срабатывать вообще");
+
+        var direct = Of(Findings(
+                Pipe("Lower", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20),
+                Pipe("Upper", 600, new Vector3(0f, Units(900), 0f), PipeSpec.Dn32)),
+            PipeIssueCatalog.CodeSizeMismatch);
+
+        Assert.AreEqual(1, direct.Count,
+            "а без переходника те же ДУ 20 и ДУ 32 напрямую не собрать — ровно ради "
+            + "этого стыка PIP-02 и написан");
+    }
+
+    /// <summary>И вторая половина решения: диаметры сторон переходной муфты
+    /// действительно РАЗНЫЕ и оба доезжают до её свойств. Одно число здесь
+    /// означало бы, что муфта опять соосная и одноразмерная.</summary>
+    [Test]
+    public void ATransitionCoupling_CarriesBothBoresIntoItsProperties()
+    {
+        float reach = PortReachMm(PipeNodeKind.Coupling);
+
+        var lower = Pipe("Lower", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
+        var sleeve = Fitting(ElementFactory.CreatePipeCoupling("Sleeve",
+            new Vector3(0f, Units(600) + UnitsMm(reach), 0f)));
+        var upper = Pipe("Upper", 600,
+            new Vector3(0f, Units(600) + UnitsMm(2f * reach) + Units(300), 0f), PipeSpec.Dn32);
+
+        KitchenDesigner.Core.Analysis.PipeFittingSizeLink.ApplyAll(
+            new KitchenElement[] { lower, sleeve, upper });
+
+        CollectionAssert.AreEqual(new[] { PipeSpec.Dn20, PipeSpec.Dn32 }, sleeve.BoreSizeIds,
+            "«если трубы разного диаметра подводят к сгону — в свойствах должны быть "
+            + "написаны диаметры»: их два, и они разные");
     }
 
     [Test]

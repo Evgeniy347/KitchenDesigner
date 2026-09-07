@@ -3,14 +3,14 @@ using KitchenDesigner.Core.Plumbing;
 
 /// <summary>Выводимые диаметры фитингов.
 ///
-/// У фитинга нет своего диаметра: он читается с подведённых труб, и переходник
+/// У фитинга нет своего диаметра: он читается с подведённых труб, и переходная муфта
 /// честно показывает ДВА разных числа. Неподключённый порт даёт прочерк — не
 /// «3/4 по умолчанию»: иначе в спецификацию уедет размер, которого никто не
 /// задавал. Пересчёт делает ОДНА функция PipeSurvey.Of, её адаптер зовёт на
 /// каждом поводе; второго писателя у этих полей нет.</summary>
 public class PipeSurveyTests
 {
-    private static PipeTestScene Reducer()
+    private static PipeTestScene ThroughACoupling()
     {
         var start = PipeTestScene.At(0f, 0f, 0f);
         var jointIn = PipeTestScene.At(1000f, 0f, 0f);
@@ -20,13 +20,13 @@ public class PipeSurveyTests
         return new PipeTestScene()
             .Pipe("thin", start, jointIn, PipeSpec.Dn20)
             .Pipe("thick", jointOut, end, PipeSpec.Dn25)
-            .Fitting("r", PipeNodeKind.Reducer, (jointIn, PipeAxis.Left), (jointOut, PipeAxis.Right));
+            .Fitting("r", PipeNodeKind.Coupling, (jointIn, PipeAxis.Left), (jointOut, PipeAxis.Right));
     }
 
     [Test]
-    public void PipeSurvey_SizesOfElement_ShowBothPipesOnAReducer()
+    public void PipeSurvey_SizesOfElement_ShowBothPipesOnATransitionCoupling()
     {
-        var survey = Reducer().Survey();
+        var survey = ThroughACoupling().Survey();
         CollectionAssert.AreEqual(new[] { PipeSpec.Dn20, PipeSpec.Dn25 },
             survey.SizesOfElement("r"),
             "к переходной муфте подошли 3/4\" и 1\" — ровно это и должно быть в её свойствах");
@@ -35,7 +35,7 @@ public class PipeSurveyTests
     [Test]
     public void PipeSurvey_SizesOfElement_AreOrderedByPortIndex()
     {
-        var scene = Reducer();
+        var scene = ThroughACoupling();
         var survey = scene.Survey();
         Assert.AreEqual(PipeSpec.Dn20, survey.SizeOf(scene.IndexOf("r", 0)));
         Assert.AreEqual(PipeSpec.Dn25, survey.SizeOf(scene.IndexOf("r", 1)));

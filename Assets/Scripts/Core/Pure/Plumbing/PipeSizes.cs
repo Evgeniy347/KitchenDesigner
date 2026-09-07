@@ -22,5 +22,23 @@ namespace KitchenDesigner.Core.Plumbing
 
             return sizes;
         }
+
+        public static string Widest(IReadOnlyList<string?>? sizes)
+        {
+            if (sizes == null) return PipeSpec.DEFAULT_SIZE;
+
+            string? widest = null;
+            float widestMm = 0f;
+            foreach (var id in sizes)
+            {
+                if (id == null) continue;
+                float outer = PipeSpec.Get(id).OuterDiameterMm;
+                if (widest != null && outer <= widestMm) continue;
+                widest = PipeSpec.NormalizeSize(id);
+                widestMm = outer;
+            }
+
+            return widest ?? PipeSpec.DEFAULT_SIZE;
+        }
     }
 }

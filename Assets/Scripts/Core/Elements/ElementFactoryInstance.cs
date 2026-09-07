@@ -521,7 +521,7 @@ namespace KitchenDesigner.Core
 
             var fitting = AddFitting(go, kind);
             fitting.PartName = go.name;
-            fitting.DimensionsMM = fitting.NominalDimensionsMM;
+            fitting.DimensionsMM = fitting.DerivedDimensionsMM;
             fitting.ApplyDimensions();
 
             if (DefaultMaterial != null) MaterialManager.ApplyById(fitting, MaterialCatalog.DefaultId);

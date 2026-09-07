@@ -1115,7 +1115,7 @@ public class RoundTripTests
             Assert.AreEqual(kind, found!.NodeKind, name + ": вид фитинга подменён");
             Assert.AreEqual(PipeNodePorts.CountOf(kind), found!.PortCount,
                 name + ": число портов не то, а по нему судят PIP-01");
-            Assert.AreEqual(found!.NominalDimensionsMM, found!.DimensionsMM,
+            Assert.AreEqual(found!.DerivedDimensionsMM, found!.DimensionsMM,
                 name + ": габарит вычисляемый и обязан пересчитаться при загрузке");
         }
     }

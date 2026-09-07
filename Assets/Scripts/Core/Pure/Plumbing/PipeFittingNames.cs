@@ -23,19 +23,17 @@ namespace KitchenDesigner.Core.Plumbing
             PipeNodeKind.Cap => "pipe_cap",
             PipeNodeKind.Supply => "pipe_supply",
             PipeNodeKind.Return => "pipe_return",
-            PipeNodeKind.Reducer => "pipe_reducer",
             _ => "pipe",
         };
 
         public static string Title(PipeNodeKind kind) => kind switch
         {
             PipeNodeKind.Elbow => "Отвод 90°",
-            PipeNodeKind.Coupling => "Муфта",
+            PipeNodeKind.Coupling => "Переходная муфта",
             PipeNodeKind.Tee => "Тройник",
             PipeNodeKind.Cap => "Заглушка",
             PipeNodeKind.Supply => "Подача",
             PipeNodeKind.Return => "Обратка",
-            PipeNodeKind.Reducer => "Переходник",
             _ => "Труба",
         };
 

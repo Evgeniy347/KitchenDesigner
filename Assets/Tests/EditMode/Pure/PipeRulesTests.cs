@@ -104,17 +104,31 @@ public class PipeRulesTests
             "отвод бывает только одного диаметра — свести на нём два размера нельзя");
     }
 
+    /// <summary>Обе стороны одного правила в одном тесте: те же две трубы, тот
+    /// же стык. Без переходной муфты PIP-02 обязан сработать, с ней — молчать.
+    /// Порознь эти утверждения ничего не стоят: правило, которое всегда молчит,
+    /// пройдёт вторую половину, а правило, которое всегда ругается, — первую.</summary>
     [Test]
-    public void PipeRules_SizeMismatch_IsSilent_WhenAReducerJoinsTwoDiameters()
+    public void PipeRules_SizeMismatch_FiresWithoutATransitionCoupling_AndIsSilentWithOne()
     {
-        var scene = new PipeTestScene()
+        var direct = new PipeTestScene()
+            .Pipe("thin", Start, Joint, PipeSpec.Dn20)
+            .Pipe("thick", Joint, End, PipeSpec.Dn25);
+
+        Assert.AreEqual(1, WithCode(PipeRules.Collect(direct),
+                PipeIssueCatalog.CodeSizeMismatch).Count,
+            "3/4\" и 1\" сведены напрямую — переходника между ними нет, и это отказ");
+
+        var through = new PipeTestScene()
             .Pipe("thin", Start, Joint, PipeSpec.Dn20)
             .Pipe("thick", JointOut, End, PipeSpec.Dn25)
-            .Fitting("r", PipeNodeKind.Reducer, (Joint, PipeAxis.Left), (JointOut, PipeAxis.Right));
+            .Fitting("sleeve", PipeNodeKind.Coupling,
+                (Joint, PipeAxis.Left), (JointOut, PipeAxis.Right));
 
         CollectionAssert.IsEmpty(
-            WithCode(PipeRules.Collect(scene), PipeIssueCatalog.CodeSizeMismatch),
-            "переходник для того и стоит: два диаметра на нём законны");
+            WithCode(PipeRules.Collect(through), PipeIssueCatalog.CodeSizeMismatch),
+            "переходная муфта для того и стоит: два диаметра на ней законны, "
+            + "и в её свойствах пишут оба");
     }
 
     [Test]

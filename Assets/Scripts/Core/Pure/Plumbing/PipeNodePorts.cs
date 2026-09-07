@@ -7,7 +7,6 @@ namespace KitchenDesigner.Core.Plumbing
             PipeNodeKind.Pipe,
             PipeNodeKind.Elbow,
             PipeNodeKind.Coupling,
-            PipeNodeKind.Reducer,
             PipeNodeKind.Tee,
             PipeNodeKind.Cap,
             PipeNodeKind.Supply,
@@ -19,7 +18,6 @@ namespace KitchenDesigner.Core.Plumbing
             PipeNodeKind.Pipe => 2,
             PipeNodeKind.Elbow => 2,
             PipeNodeKind.Coupling => 2,
-            PipeNodeKind.Reducer => 2,
             PipeNodeKind.Tee => 3,
             PipeNodeKind.Cap => 1,
             PipeNodeKind.Supply => 1,
@@ -31,8 +29,7 @@ namespace KitchenDesigner.Core.Plumbing
             kind == PipeNodeKind.Pipe;
 
         public static bool RequiresOneSize(PipeNodeKind kind) =>
-            kind == PipeNodeKind.Elbow || kind == PipeNodeKind.Coupling
-            || kind == PipeNodeKind.Tee;
+            kind == PipeNodeKind.Elbow || kind == PipeNodeKind.Tee;
 
         public static bool ClosesAnEnd(PipeNodeKind kind) =>
             kind != PipeNodeKind.Pipe;

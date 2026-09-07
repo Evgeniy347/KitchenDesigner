@@ -10,11 +10,12 @@ namespace KitchenDesigner.Core
 
         public const float ParallelReferenceLimit = 0.9f;
 
-        public static Mesh Build(PipeNodeKind kind, string sizeId)
+        public static Mesh Build(PipeNodeKind kind, string frameSizeId,
+            IReadOnlyList<string?>? boreSizeIds)
         {
             float toU = AppConstants.MM_TO_UNITS;
-            float radius = PipeFittingSpec.BodyDiameterMm(sizeId) * 0.5f * toU;
-            var hub = ToUnits(PipeFittingSpec.HubOffsetMm(kind, sizeId));
+            string widest = PipeSizes.Widest(boreSizeIds);
+            var hub = ToUnits(PipeFittingSpec.HubOffsetMm(kind, frameSizeId));
 
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
@@ -22,13 +23,20 @@ namespace KitchenDesigner.Core
             var triangles = new List<int>();
 
             for (int i = 0; i < PipeFittingSpec.PortCount(kind); i++)
+            {
+                string bore = boreSizeIds != null && i < boreSizeIds.Count
+                    && boreSizeIds[i] != null
+                    ? boreSizeIds[i]!
+                    : widest;
                 AddTube(vertices, normals, uvs, triangles, hub,
-                    ToUnits(PipeFittingSpec.PortOffsetMm(kind, sizeId, i)), radius);
+                    ToUnits(PipeFittingSpec.PortOffsetMm(kind, frameSizeId, i)),
+                    PipeFittingSpec.BodyDiameterMm(bore) * 0.5f * toU);
+            }
 
             if (PipeFittingSpec.HasFlange(kind))
                 AddTube(vertices, normals, uvs, triangles, hub,
                     hub + Vector3.down * (PipeFittingSpec.FlangeThicknessMm * toU),
-                    PipeFittingSpec.FlangeDiameterMm(sizeId) * 0.5f * toU);
+                    PipeFittingSpec.FlangeDiameterMm(widest) * 0.5f * toU);
 
             var mesh = new Mesh
             {

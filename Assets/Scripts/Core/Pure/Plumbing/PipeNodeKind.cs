@@ -5,7 +5,6 @@ namespace KitchenDesigner.Core.Plumbing
         Pipe,
         Elbow,
         Coupling,
-        Reducer,
         Tee,
         Cap,
         Supply,

@@ -22,7 +22,6 @@ namespace KitchenDesigner.Core.Plumbing
         {
             PipeNodeKind.Elbow => TwoWayCorner,
             PipeNodeKind.Coupling => TwoWayStraight,
-            PipeNodeKind.Reducer => TwoWayStraight,
             PipeNodeKind.Tee => ThreeWay,
             PipeNodeKind.Cap => OneWay,
             PipeNodeKind.Supply => OneWay,
@@ -44,11 +43,10 @@ namespace KitchenDesigner.Core.Plumbing
 
         public static int PortCount(PipeNodeKind kind) => Legs(kind).Count;
 
-        public static PointMm HubOffsetMm(PipeNodeKind kind, string? sizeId)
+        public static PointMm HubOffsetMm(PipeNodeKind kind, string? frameSizeId)
         {
-            float leg = LegLengthMm(sizeId);
-            float radius = BodyDiameterMm(sizeId) * 0.5f;
-            float inset = (leg - radius) * 0.5f;
+            float leg = LegLengthMm(frameSizeId);
+            float inset = HubInsetMm(frameSizeId);
 
             return kind switch
             {
@@ -67,50 +65,55 @@ namespace KitchenDesigner.Core.Plumbing
             return portIndex >= 0 && portIndex < legs.Count ? legs[portIndex] : PipeAxis.Up;
         }
 
-        public static PointMm PortOffsetMm(PipeNodeKind kind, string? sizeId, int portIndex) =>
-            HubOffsetMm(kind, sizeId).Shifted(PortAxis(kind, portIndex), LegLengthMm(sizeId));
+        public static PointMm PortOffsetMm(PipeNodeKind kind, string? frameSizeId, int portIndex) =>
+            HubOffsetMm(kind, frameSizeId)
+                .Shifted(PortAxis(kind, portIndex), LegLengthMm(frameSizeId));
 
-        public static PipeFittingLeg[] LegsMm(PipeNodeKind kind, string? sizeId)
+        public static PipeFittingLeg[] LegsMm(PipeNodeKind kind, string? frameSizeId)
         {
             var axes = Legs(kind);
-            float leg = LegLengthMm(sizeId);
+            float leg = LegLengthMm(frameSizeId);
             var result = new PipeFittingLeg[axes.Count];
             for (int i = 0; i < axes.Count; i++)
                 result[i] = new PipeFittingLeg(axes[i], leg);
             return result;
         }
 
-        public static float WidthMm(PipeNodeKind kind, string? sizeId)
+        public static float WidthMm(PipeNodeKind kind, string? frameSizeId,
+            string? boreSizeId = null)
         {
-            float leg = LegLengthMm(sizeId);
-            float radius = BodyDiameterMm(sizeId) * 0.5f;
+            float leg = LegLengthMm(frameSizeId);
+            float inset = HubInsetMm(frameSizeId);
+            float radius = BodyRadiusMm(frameSizeId, boreSizeId);
             return kind switch
             {
-                PipeNodeKind.Elbow => leg + radius,
-                PipeNodeKind.Tee => leg + radius,
-                PipeNodeKind.Supply => FlangeDiameterMm(sizeId),
-                PipeNodeKind.Return => FlangeDiameterMm(sizeId),
+                PipeNodeKind.Elbow => Cover(inset + radius, leg - inset),
+                PipeNodeKind.Tee => Cover(inset + radius, leg - inset),
+                PipeNodeKind.Supply => FlangeDiameterMm(boreSizeId ?? frameSizeId),
+                PipeNodeKind.Return => FlangeDiameterMm(boreSizeId ?? frameSizeId),
                 _ => radius * 2f,
             };
         }
 
-        public static float DepthMm(PipeNodeKind kind, string? sizeId) => kind switch
+        public static float DepthMm(PipeNodeKind kind, string? frameSizeId,
+            string? boreSizeId = null) => kind switch
         {
-            PipeNodeKind.Supply => FlangeDiameterMm(sizeId),
-            PipeNodeKind.Return => FlangeDiameterMm(sizeId),
-            _ => BodyDiameterMm(sizeId),
+            PipeNodeKind.Supply => FlangeDiameterMm(boreSizeId ?? frameSizeId),
+            PipeNodeKind.Return => FlangeDiameterMm(boreSizeId ?? frameSizeId),
+            _ => BodyRadiusMm(frameSizeId, boreSizeId) * 2f,
         };
 
-        public static float HeightMm(PipeNodeKind kind, string? sizeId)
+        public static float HeightMm(PipeNodeKind kind, string? frameSizeId,
+            string? boreSizeId = null)
         {
-            float leg = LegLengthMm(sizeId);
-            float radius = BodyDiameterMm(sizeId) * 0.5f;
+            float leg = LegLengthMm(frameSizeId);
+            float inset = HubInsetMm(frameSizeId);
+            float radius = BodyRadiusMm(frameSizeId, boreSizeId);
             return kind switch
             {
-                PipeNodeKind.Elbow => leg + radius,
+                PipeNodeKind.Elbow => Cover(leg - inset, inset + radius),
                 PipeNodeKind.Coupling => leg * 2f,
-                PipeNodeKind.Reducer => leg * 2f,
-                PipeNodeKind.Tee => leg * 2f,
+                PipeNodeKind.Tee => Cover(leg, radius),
                 PipeNodeKind.Cap => leg,
                 PipeNodeKind.Supply => leg + FlangeThicknessMm,
                 PipeNodeKind.Return => leg + FlangeThicknessMm,
@@ -120,6 +123,15 @@ namespace KitchenDesigner.Core.Plumbing
 
         public static int RoundedMm(float valueMm) =>
             (int)Math.Round(valueMm, MidpointRounding.AwayFromZero);
+
+        private static float HubInsetMm(string? frameSizeId) =>
+            (LegLengthMm(frameSizeId) - BodyDiameterMm(frameSizeId) * 0.5f) * 0.5f;
+
+        private static float BodyRadiusMm(string? frameSizeId, string? boreSizeId) =>
+            BodyDiameterMm(boreSizeId ?? frameSizeId) * 0.5f;
+
+        private static float Cover(float reachA, float reachB) =>
+            2f * Math.Max(reachA, reachB);
 
         private static PointMm FlangedHubMm(float legLengthMm) =>
             new PointMm(0f, -(legLengthMm + FlangeThicknessMm) * 0.5f + FlangeThicknessMm, 0f);

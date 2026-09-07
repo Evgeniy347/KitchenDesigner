@@ -1918,7 +1918,7 @@ public class IsoScreenshotTests : ElementFrameTests
         Assert.AreEqual(kind, fitting!.NodeKind, "фабрика собрала фитинг другого вида");
         Assert.AreEqual(PipeNodePorts.CountOf(kind), fitting.PortCount,
             "число портов у элемента разошлось с тем, по которому судят правила PIP-01/02");
-        Assert.AreEqual(fitting.NominalDimensionsMM, fitting.DimensionsMM,
+        Assert.AreEqual(fitting.DerivedDimensionsMM, fitting.DimensionsMM,
             "габарит фитинга вычисляемый: он обязан совпадать с выведенным из ног");
 
         yield return RenderElementIso(go, file, 2.5f);

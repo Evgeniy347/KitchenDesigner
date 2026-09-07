@@ -6,7 +6,14 @@ using KitchenDesigner.Core.Plumbing;
 /// Число портов — это форма железки: у отвода и муфты два, у тройника три, у
 /// заглушки, подачи и обратки один. Диаметр объявляет ТОЛЬКО труба; у фитинга он
 /// выводится из подведённых труб, поэтому DeclaresOwnSize для него ложно — иначе
-/// в свойствах фитинга появится диаметр по умолчанию, которого никто не задавал.</summary>
+/// в свойствах фитинга появится диаметр по умолчанию, которого никто не задавал.
+///
+/// RequiresOneSize отвечает на другой вопрос: какой фитинг обязан свести всё к
+/// ОДНОМУ диаметру. Отвод и тройник — обязаны, их не бывает переходными. Муфта
+/// здесь ПЕРЕХОДНАЯ: два её порта соосны, а диаметры сторон независимы, и разные
+/// ДУ на ней — норма монтажа, а не нарушение. Отдельного вида «переходник» больше
+/// нет: два имени для одной железки разъезжаются, и одно из них молча остаётся
+/// без элемента, без кнопки и без ветки в фабрике.</summary>
 public class PipeNodePortsTests
 {
     [Test]
@@ -15,7 +22,6 @@ public class PipeNodePortsTests
         Assert.AreEqual(2, PipeNodePorts.CountOf(PipeNodeKind.Pipe));
         Assert.AreEqual(2, PipeNodePorts.CountOf(PipeNodeKind.Elbow));
         Assert.AreEqual(2, PipeNodePorts.CountOf(PipeNodeKind.Coupling));
-        Assert.AreEqual(2, PipeNodePorts.CountOf(PipeNodeKind.Reducer));
         Assert.AreEqual(3, PipeNodePorts.CountOf(PipeNodeKind.Tee));
         Assert.AreEqual(1, PipeNodePorts.CountOf(PipeNodeKind.Cap));
         Assert.AreEqual(1, PipeNodePorts.CountOf(PipeNodeKind.Supply));
@@ -30,6 +36,18 @@ public class PipeNodePortsTests
             "новый вид узла обязан попасть в таблицу портов тем же изменением, что заводит его");
         foreach (PipeNodeKind kind in all)
             CollectionAssert.Contains(PipeNodePorts.Kinds, kind);
+    }
+
+    [Test]
+    public void PipeNodePorts_EveryKindOtherThanThePipe_IsOfferedAsAFitting()
+    {
+        foreach (var kind in PipeNodePorts.Kinds)
+        {
+            if (kind == PipeNodeKind.Pipe) continue;
+            CollectionAssert.Contains(PipeFittingNames.Kinds, kind,
+                kind + ": вид узла, которому не соответствует ни одна кнопка и ни один "
+                + "элемент сцены, — это второе имя для чего-то уже существующего");
+        }
     }
 
     [Test]
@@ -48,10 +66,9 @@ public class PipeNodePortsTests
     public void PipeNodePorts_RequiresOneSize_HoldsForFittingsThatDoNotChangeDiameter()
     {
         Assert.IsTrue(PipeNodePorts.RequiresOneSize(PipeNodeKind.Elbow));
-        Assert.IsTrue(PipeNodePorts.RequiresOneSize(PipeNodeKind.Coupling));
         Assert.IsTrue(PipeNodePorts.RequiresOneSize(PipeNodeKind.Tee));
-        Assert.IsFalse(PipeNodePorts.RequiresOneSize(PipeNodeKind.Reducer),
-            "переходник существует ровно для того, чтобы свести два разных диаметра");
+        Assert.IsFalse(PipeNodePorts.RequiresOneSize(PipeNodeKind.Coupling),
+            "переходная муфта существует ровно для того, чтобы свести два разных диаметра");
         Assert.IsFalse(PipeNodePorts.RequiresOneSize(PipeNodeKind.Pipe));
     }
 

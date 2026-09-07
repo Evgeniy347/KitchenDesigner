@@ -8,7 +8,8 @@ namespace KitchenDesigner.Core.Analysis
     {
         private readonly List<PipePort> _ports = new List<PipePort>();
         private readonly List<PipeRunSegment> _segments = new List<PipeRunSegment>();
-        private readonly List<PipeObstacle> _obstacles = new List<PipeObstacle>();
+        private readonly List<KitchenElement> _blockers = new List<KitchenElement>();
+        private List<PipeObstacle>? _obstacles;
 
         public ScenePipeSnapshot(IReadOnlyList<KitchenElement> scene)
         {
@@ -18,7 +19,7 @@ namespace KitchenDesigner.Core.Analysis
                 if (e == null) continue;
                 if (e is PipeElement pipe) AddRun(pipe);
                 else if (e is PipeFittingElement fitting) AddFitting(fitting);
-                else _obstacles.Add(new PipeObstacle(e.PartName, KindOf(e), BoxOf(e)));
+                else _blockers.Add(e);
             }
         }
 
@@ -26,13 +27,21 @@ namespace KitchenDesigner.Core.Analysis
 
         public IReadOnlyList<PipeRunSegment> Segments() => _segments;
 
-        public IReadOnlyList<PipeObstacle> Obstacles() => _obstacles;
+        public IReadOnlyList<PipeObstacle> Obstacles() => _obstacles ??= BuildObstacles();
 
         public static PipeObstacleKind KindOf(KitchenElement e)
         {
             if (e.GetComponent<Wall>() != null) return PipeObstacleKind.Wall;
             if (e.GetComponent<BasePlate>() != null || e is FloorElement) return PipeObstacleKind.Floor;
             return PipeObstacleKind.Part;
+        }
+
+        private List<PipeObstacle> BuildObstacles()
+        {
+            var built = new List<PipeObstacle>(_blockers.Count);
+            foreach (var e in _blockers)
+                built.Add(new PipeObstacle(e.PartName, KindOf(e), BoxOf(e)));
+            return built;
         }
 
         private void AddRun(PipeElement pipe)
@@ -51,7 +60,7 @@ namespace KitchenDesigner.Core.Analysis
         private void AddFitting(PipeFittingElement fitting)
         {
             var hub = ToMm(fitting.HubPositionUnits);
-            float body = PipeFittingSpec.BodyDiameterMm(fitting.NominalSizeId);
+            float body = PipeFittingSpec.BodyDiameterMm(fitting.BoreSizeId);
 
             for (int i = 0; i < fitting.PortCount; i++)
             {

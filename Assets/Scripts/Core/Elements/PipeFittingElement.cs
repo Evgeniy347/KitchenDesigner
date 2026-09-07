@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using KitchenDesigner.Core.Plumbing;
 
@@ -7,18 +9,27 @@ namespace KitchenDesigner.Core
     {
         private readonly RebuildGuard _rebuild = new RebuildGuard();
 
+        private string?[] _boreSizeIds = new string?[0];
+
         public abstract PipeNodeKind NodeKind { get; }
 
         public override string DisplayTypeName => PipeFittingNames.Title(NodeKind);
 
-        public string NominalSizeId => PipeSpec.DEFAULT_SIZE;
+        public string PortFrameSizeId => PipeSpec.DEFAULT_SIZE;
+
+        public IReadOnlyList<string?> BoreSizeIds => _boreSizeIds;
+
+        public string BoreSizeId => PipeSizes.Widest(_boreSizeIds);
 
         public int PortCount => PipeFittingSpec.PortCount(NodeKind);
 
-        public Vector3Int NominalDimensionsMM => new Vector3Int(
-            PipeFittingSpec.RoundedMm(PipeFittingSpec.WidthMm(NodeKind, NominalSizeId)),
-            PipeFittingSpec.RoundedMm(PipeFittingSpec.HeightMm(NodeKind, NominalSizeId)),
-            PipeFittingSpec.RoundedMm(PipeFittingSpec.DepthMm(NodeKind, NominalSizeId)));
+        public Vector3Int DerivedDimensionsMM => new Vector3Int(
+            PipeFittingSpec.RoundedMm(
+                PipeFittingSpec.WidthMm(NodeKind, PortFrameSizeId, BoreSizeId)),
+            PipeFittingSpec.RoundedMm(
+                PipeFittingSpec.HeightMm(NodeKind, PortFrameSizeId, BoreSizeId)),
+            PipeFittingSpec.RoundedMm(
+                PipeFittingSpec.DepthMm(NodeKind, PortFrameSizeId, BoreSizeId)));
 
         public Vector3 HubPositionUnits => transform.TransformPoint(LocalHubUnits);
 
@@ -30,8 +41,8 @@ namespace KitchenDesigner.Core
 
         public override Vector2Int DecorSurfaceMM => new Vector2Int(
             Mathf.Max(1, PipeFittingSpec.RoundedMm(
-                PipeFittingSpec.BodyDiameterMm(NominalSizeId) * Mathf.PI)),
-            Mathf.Max(1, NominalDimensionsMM.y));
+                PipeFittingSpec.BodyDiameterMm(BoreSizeId) * Mathf.PI)),
+            Mathf.Max(1, DerivedDimensionsMM.y));
 
         public override MeshRenderer? DecorRenderer => GetComponent<MeshRenderer>();
 
@@ -43,11 +54,35 @@ namespace KitchenDesigner.Core
 
         public override void ApplyDimensions() => _rebuild.Run(Rebuild);
 
-        private Vector3 LocalHubUnits =>
-            ToUnits(PipeFittingSpec.HubOffsetMm(NodeKind, NominalSizeId));
+        public bool TakeBoreSizes(IReadOnlyList<string?>? sizes)
+        {
+            int count = PortCount;
+            var taken = new string?[count];
+            for (int i = 0; i < count; i++)
+                taken[i] = sizes != null && i < sizes.Count ? sizes[i] : null;
 
-        private Vector3 LocalPortUnits(int portIndex) =>
-            ToUnits(PipeFittingSpec.PortOffsetMm(NodeKind, NominalSizeId, portIndex));
+            if (_boreSizeIds.Length == count)
+            {
+                bool same = true;
+                for (int i = 0; i < count; i++)
+                    if (!string.Equals(_boreSizeIds[i], taken[i], StringComparison.Ordinal))
+                    {
+                        same = false;
+                        break;
+                    }
+
+                if (same) return false;
+            }
+
+            _boreSizeIds = taken;
+            return true;
+        }
+
+        private Vector3 LocalHubUnits => ToUnits(
+            PipeFittingSpec.HubOffsetMm(NodeKind, PortFrameSizeId));
+
+        private Vector3 LocalPortUnits(int portIndex) => ToUnits(
+            PipeFittingSpec.PortOffsetMm(NodeKind, PortFrameSizeId, portIndex));
 
         private static Vector3 ToUnits(in PointMm offset)
         {
@@ -63,12 +98,12 @@ namespace KitchenDesigner.Core
 
         private void Rebuild()
         {
-            Data.DimensionsMM = NominalDimensionsMM;
+            Data.DimensionsMM = DerivedDimensionsMM;
 
             transform.localScale = Vector3.one;
             if (SuppressVisualRebuild) return;
 
-            var mesh = PipeFittingMesh.Build(NodeKind, NominalSizeId);
+            var mesh = PipeFittingMesh.Build(NodeKind, PortFrameSizeId, _boreSizeIds);
             AdoptOwnedMesh(mesh);
 
             var filter = GetComponent<MeshFilter>();

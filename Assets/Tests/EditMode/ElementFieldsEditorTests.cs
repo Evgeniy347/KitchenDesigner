@@ -991,7 +991,7 @@ public class ElementFieldsEditorTests
             Assert.IsFalse(Field(row).interactable,
                 $"габарит фитинга выводится из диаметра трассы, а не печатается в «{row}»");
 
-        Assert.AreEqual(elbow.NominalDimensionsMM, elbow.DimensionsMM,
+        Assert.AreEqual(elbow.DerivedDimensionsMM, elbow.DimensionsMM,
             "и он обязан совпадать с вычисленным, а не жить своей жизнью");
     }
 }

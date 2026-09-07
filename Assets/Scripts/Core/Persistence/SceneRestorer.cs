@@ -27,7 +27,7 @@ namespace KitchenDesigner.Core
 
             RestoreProjectState(data);
             SnapElementEdgesToMillimetreGrid(resolved);
-            ScrewLegHostLink.ApplyAll(PartRegistry.GetAll());
+            SceneChangeTracker.SettleDerivedLinks();
 
             MigrateEdgeStates(data, resolved);
 
