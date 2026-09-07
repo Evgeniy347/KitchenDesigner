@@ -42,6 +42,24 @@ public class ElementSpawnerPlacementTests
         KitchenSettings.Instance.GridStep = _gridStepBefore;
     }
 
+    /// <summary>Округление не дефект: <see cref="GridManager.SnapToGrid"/> — одна утилита
+    /// на все три оси, XZ и Y в ней не разделены, поэтому «высота, затем сетка» округляет
+    /// высоту так же честно, как X и Z.
+    ///
+    /// Сегодня этого никто не видит. <see cref="ElementSpawner.BeginPlacement"/> при живом
+    /// <see cref="PlacementController"/> сразу зовёт <see cref="PlacementController.Begin"/>,
+    /// а тот в первом же кадре — <c>MoveToCursor</c>: он пересчитывает Y заново из точной
+    /// половины высоты плюс юбка зазора (<c>AppConstants.HalfHeightUnits</c> +
+    /// <c>GappedBox.BottomSkirtUnits</c>) и снапит только X/Z (<c>SnapToGridXZ</c>), не Y.
+    /// Округлённое здесь значение живёт меньше кадра и никогда не долетает до пользователя.
+    ///
+    /// Дефектом это станет в тот день, когда появится путь создания БЕЗ курсора — то есть
+    /// без <see cref="PlacementController"/>. Он уже существует наполовину:
+    /// <see cref="ElementSpawner.BeginPlacement"/> проваливается в
+    /// <c>CommitImmediate</c>, когда переданный конструктору callback возвращает null —
+    /// ровно так, как это делает <see cref="SetUp"/> этого класса. Прямое создание элемента
+    /// через MCP или headless-сценарий, которое пойдёт по <c>CommitImmediate</c>, поставит
+    /// объект на 300 мм вместо 297,5 — и это будет молча ошибочная высота, а не дизайн.</summary>
     [Test]
     public void CenteredOnGroundPoint_RoundsTheHeightToTheGridStep()
     {
