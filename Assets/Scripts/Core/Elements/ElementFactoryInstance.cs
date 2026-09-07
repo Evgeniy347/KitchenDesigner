@@ -12,7 +12,6 @@ namespace KitchenDesigner.Core
         private const int FacadePoolCapacity = 10;
         private const int FacadePoolMaxSize = 50;
 
-        private static readonly Vector3Int PooledPartDimensionsMM = new Vector3Int(800, 400, 18);
         private const string PooledName = "(pooled)";
 
         private Material? _defaultMaterial;
@@ -87,17 +86,8 @@ namespace KitchenDesigner.Core
         {
             var el = go.GetComponent<KitchenElement>();
             if (el == null) return;
-            el.PartName = PooledName;
-            el.DimensionsMM = PooledPartDimensionsMM;
-            el.Movable = true;
-            el.GroupId = 0;
-            el.ClearCutouts();
-            el.ClearGrooves();
-            el.EdgeBandingEnabled = true;
-            el.EdgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
-            el.EdgeForcedMask = 0;
-            el.EdgeSuppressedMask = 0;
             PartRegistry.Unregister(el);
+            el.ResetToPristineState();
         }
 
         public GameObject CreatePart(Vector3Int dimensionsMM, string name, Vector3 position)

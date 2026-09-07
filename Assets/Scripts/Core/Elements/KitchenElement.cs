@@ -171,6 +171,23 @@ namespace KitchenDesigner.Core
 
         public virtual void PrepareForDestruction() { }
 
+        internal void ResetToPristineState()
+        {
+            _data = new PartData();
+            _cutouts.Clear();
+            _bareFaceMask = 0;
+            _attachRestPos = Vector3.zero;
+            _attachRestRot = Quaternion.identity;
+            _attachRidden = false;
+            PoseVersion = 0;
+            OnResetToPristineState();
+            ApplyDimensions();
+            RebuildGrooveMesh();
+            EdgeSubstrate.Sync(this);
+        }
+
+        protected virtual void OnResetToPristineState() { }
+
         public virtual KitchenElement InspectedElement => this;
 
         private Mesh? _ownedMesh;

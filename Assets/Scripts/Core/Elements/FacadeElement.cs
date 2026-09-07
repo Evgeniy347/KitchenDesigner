@@ -210,5 +210,15 @@ namespace KitchenDesigner.Core
             _closedPos += worldDelta;
             ApplyDoor();
         }
+
+        protected override void OnResetToPristineState()
+        {
+            _mode = DoorMode.HingeFrontLeft;
+            _isPassenger = false;
+            _openTarget = false;
+            _doorProgress = 0f;
+            _closedPos = Vector3.zero;
+            _closedRot = Quaternion.identity;
+        }
     }
 }
