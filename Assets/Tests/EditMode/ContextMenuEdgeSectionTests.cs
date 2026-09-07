@@ -78,14 +78,16 @@ public class ContextMenuEdgeSectionTests
 
         Strip("CtxEdgeW1").GetComponent<Button>().onClick.Invoke();
 
-        Assert.AreEqual(EdgeSideState.Suppressed, board.EdgeStateOf(EdgeSide.W1),
-            "порядок цикла: авто → убрать → есть → авто. Красная сторона — ЯВНОЕ «кромки нет»: "
-            + "её видит спецификация, 3D и get_element, а EDG-01 по ней молчит");
+        Assert.AreEqual(EdgeSideState.Forced, board.EdgeStateOf(EdgeSide.W1),
+            "порядок цикла: авто → есть → убрать → авто. Первый клик добавляет кромку — "
+            + "именно это делал жёлтый бит до передела, и мышечная память у человека на него");
         Assert.AreEqual(EdgeSideState.Auto, board.EdgeStateOf(EdgeSide.W2),
             "соседние стороны клик не задевает");
 
         Strip("CtxEdgeW1").GetComponent<Button>().onClick.Invoke();
-        Assert.AreEqual(EdgeSideState.Forced, board.EdgeStateOf(EdgeSide.W1));
+        Assert.AreEqual(EdgeSideState.Suppressed, board.EdgeStateOf(EdgeSide.W1),
+            "второй клик — ЯВНОЕ «кромки нет»: красную сторону видит спецификация, 3D и "
+            + "get_element, а EDG-01 по ней молчит");
 
         Strip("CtxEdgeW1").GetComponent<Button>().onClick.Invoke();
         Assert.AreEqual(EdgeSideState.Auto, board.EdgeStateOf(EdgeSide.W1),

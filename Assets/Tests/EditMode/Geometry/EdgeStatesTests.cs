@@ -27,13 +27,15 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void EdgeStates_Next_CyclesForcedAutoSuppressedAndBack()
+        public void EdgeStates_Next_CyclesAutoForcedSuppressedAndBack()
         {
-            Assert.AreEqual(EdgeSideState.Auto, EdgeStates.Next(EdgeSideState.Forced),
-                "с «принудительно есть» клик уводит в «авто» — человек снимает своё решение, а не заменяет его противоположным");
-            Assert.AreEqual(EdgeSideState.Suppressed, EdgeStates.Next(EdgeSideState.Auto),
-                "порядок цикла задан заданием: принудительно есть → авто → убрать → и по кругу");
-            Assert.AreEqual(EdgeSideState.Forced, EdgeStates.Next(EdgeSideState.Suppressed),
+            Assert.AreEqual(EdgeSideState.Forced, EdgeStates.Next(EdgeSideState.Auto),
+                "первый клик по стороне ДОБАВЛЯЕТ кромку: так было до передела (жёлтый с первого "
+                + "клика), и разворачивать эту мышечную память без нужды незачем");
+            Assert.AreEqual(EdgeSideState.Suppressed, EdgeStates.Next(EdgeSideState.Forced),
+                "порядок цикла решён владельцем: авто → есть → убрать → и по кругу; он читается "
+                + "как «добавить → убрать → вернуть автомат»");
+            Assert.AreEqual(EdgeSideState.Auto, EdgeStates.Next(EdgeSideState.Suppressed),
                 "цикл замкнут: три клика по полосе возвращают сторону туда, откуда начали");
         }
 

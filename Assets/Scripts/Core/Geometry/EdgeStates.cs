@@ -43,9 +43,9 @@ namespace KitchenDesigner.Core
 
         public static EdgeSideState Next(EdgeSideState state) => state switch
         {
-            EdgeSideState.Forced => EdgeSideState.Auto,
-            EdgeSideState.Auto => EdgeSideState.Suppressed,
-            _ => EdgeSideState.Forced,
+            EdgeSideState.Auto => EdgeSideState.Forced,
+            EdgeSideState.Forced => EdgeSideState.Suppressed,
+            _ => EdgeSideState.Auto,
         };
 
         public static bool HasEdge(EdgeSideState state, bool autoHasEdge) => state switch

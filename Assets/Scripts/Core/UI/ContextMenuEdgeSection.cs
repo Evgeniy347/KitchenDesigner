@@ -46,7 +46,7 @@ namespace KitchenDesigner.Core.UI
             _host.Layout.AddFor(ElementFacet.Part, Shown, DiagramH, RowGap, _diagram);
 
             _thickness = _host.Rows.NumberField("Толщина кромки", shown, "мм", "EdgeThickness");
-            _host.Rows.Hint("CtxEdgeHint", "Клик по стороне: авто → убрать → есть", HintH, ActionGap,
+            _host.Rows.Hint("CtxEdgeHint", "Клик по стороне: авто → есть → убрать", HintH, ActionGap,
                 shown, TextAnchor.MiddleCenter);
         }
 
