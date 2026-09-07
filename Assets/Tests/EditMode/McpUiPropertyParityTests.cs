@@ -391,9 +391,24 @@ public class McpUiPropertyParityTests : McpTestFixture
         yield return clean + "2";
     }
 
+    /// <summary>Сколько раз подряд опыт жмёт одну и ту же кнопку. Кнопка бывает
+    /// ЦИКЛИЧЕСКОЙ: полоса-торец в секции кромок перещёлкивает сторону по кругу
+    /// «авто → есть → убрать», и первый клик правит одну маску, а второй —
+    /// другую. Остановка на первой удавшейся попытке (она права для текстового
+    /// поля, где кандидаты — разные способы сделать ОДНО и то же) объявила бы
+    /// половину такой ручки несуществующей: guard увидел кликом только
+    /// EdgeSuppressedMask и записал EdgeForcedMask в «умеет только MCP», хотя
+    /// человек правит его тем же самым виджетом, вторым нажатием.
+    ///
+    /// Три — длина полного круга: третий клик возвращает сторону в исходное
+    /// состояние, и продолжать нечего.</summary>
+    private const int ButtonPresses = 3;
+
     /// <summary>Один виджет — несколько попыток. Возвращает действия, а не
-    /// делает их: снаружи попытки идут до первой, которая что-то изменила.</summary>
-    private static IEnumerable<Action> Attempts(Transform widget)
+    /// делает их: снаружи попытки идут до первой, которая что-то изменила —
+    /// кроме помеченных <c>cycling</c>, где следующее нажатие не «другой способ
+    /// сделать то же», а следующий шаг круга.</summary>
+    private static IEnumerable<(Action act, bool cycling)> Attempts(Transform widget)
     {
         var input = widget.GetComponent<TMP_InputField>();
         if (input != null)
@@ -402,7 +417,7 @@ public class McpUiPropertyParityTests : McpTestFixture
             foreach (var text in TextAttempts(input.text))
             {
                 var value = text;
-                yield return () => { input.text = value; input.onEndEdit.Invoke(value); };
+                yield return (() => { input.text = value; input.onEndEdit.Invoke(value); }, false);
             }
             yield break;
         }
@@ -414,7 +429,7 @@ public class McpUiPropertyParityTests : McpTestFixture
             for (int i = 0; i < dropdown.options.Count; i++)
             {
                 var index = i;
-                yield return () => { if (dropdown.value != index) dropdown.value = index; };
+                yield return (() => { if (dropdown.value != index) dropdown.value = index; }, false);
             }
             yield break;
         }
@@ -422,12 +437,14 @@ public class McpUiPropertyParityTests : McpTestFixture
         var toggle = widget.GetComponent<Toggle>();
         if (toggle != null)
         {
-            if (toggle.interactable) yield return () => toggle.isOn = !toggle.isOn;
+            if (toggle.interactable) yield return (() => toggle.isOn = !toggle.isOn, false);
             yield break;
         }
 
         var button = widget.GetComponent<Button>();
-        if (button != null && button.interactable) yield return () => button.onClick.Invoke();
+        if (button == null || !button.interactable) yield break;
+        for (int i = 0; i < ButtonPresses; i++)
+            yield return (() => button.onClick.Invoke(), true);
     }
 
     /// <summary>Панель применяет правку текстовых полей не чаще одного раза за
@@ -461,14 +478,14 @@ public class McpUiPropertyParityTests : McpTestFixture
             if (widget == null || !widget.gameObject.activeInHierarchy) { DestroySpawned(); continue; }
 
             var before = Snapshot(element);
-            foreach (var attempt in Attempts(widget))
+            foreach (var (attempt, cycling) in Attempts(widget))
             {
                 ForgetPreviousApply();
                 attempt();
+                if (element == null) break;
                 var changed = Changed(before, Snapshot(element)).ToList();
-                if (changed.Count == 0) continue;
                 foreach (var property in changed) written.Add(property);
-                break;
+                if (changed.Count > 0 && !cycling) break;
             }
 
             DestroySpawned();
