@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\Assets\Tests\EditMode\Geometry\**\*.cs" />
+    <Compile Include="ParallelAssemblyInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>
