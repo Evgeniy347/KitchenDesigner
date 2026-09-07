@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using KitchenDesigner.Core;
+using UnityEngine;
 using KitchenDesigner.Core.Plumbing;
 using NUnit.Framework;
 
@@ -80,6 +82,14 @@ public class PipeFittingSpecTests
         if (PipeFittingSpec.HasFlange(kind))
             Cylinder(hub, hub.Shifted(PipeAxis.Down, PipeFittingSpec.FlangeThicknessMm),
                 PipeAxis.Down, flange);
+
+        if (kind == PipeNodeKind.Cap)
+        {
+            float crown = PipeFittingSpec.CapCrownRadiusMm(boreSizeId);
+            Cylinder(hub, hub.Shifted(PipeAxis.Down, PipeFittingSpec.CapCollarThicknessMm
+                    + crown * PipeFittingSpec.CapDomeRiseFactor),
+                PipeAxis.Down, crown);
+        }
 
         return (new Extent(Min(xs), Max(xs)), new Extent(Min(ys), Max(ys)),
             new Extent(Min(zs), Max(zs)));
@@ -325,5 +335,124 @@ public class PipeFittingSpecTests
         Assert.Greater(PipeFittingSpec.LegLengthMm(Frame), widest,
             "нога номинальной рамы короче радиуса самого толстого прохода: ступица вылезла "
             + "бы за собственное устье, а высота тройника перестала бы быть двумя ногами");
+    }
+
+    /// <summary>Заглушка обязана читаться заглушкой, а не обрезком трубы. Смысл
+    /// детали ровно один — ГЛУХОЙ торец, и на кадре iso_pipe_cap_dn20.png было
+    /// видно, что его нет: в цилиндр смотрели насквозь, а по силуэту заглушка не
+    /// отличалась от муфты. Поэтому у неё есть буртик с куполом, и он сидит на
+    /// СТОРОНЕ, ПРОТИВОПОЛОЖНОЙ устью: закрытый конец — тот, которым деталь ни к
+    /// чему не присоединяется.
+    ///
+    /// Проверка «шире тела» — не украшение: буртик уже тела не виден в силуэте
+    /// вовсе, и заглушка снова стала бы куском трубы.</summary>
+    [Test]
+    public void TheCap_CarriesABlindEnd_OppositeItsOnlyMouth()
+    {
+        foreach (var sizeId in PipeSpec.Sizes)
+        {
+            var parts = PipeFittingLayout.PartsMM(PipeNodeKind.Cap, sizeId, null);
+            float body = PipeFittingSpec.BodyDiameterMm(sizeId) * 0.5f;
+            float crown = PipeFittingSpec.CapCrownRadiusMm(sizeId);
+            var hub = PipeFittingSpec.HubOffsetMm(PipeNodeKind.Cap, sizeId);
+            var mouth = PipeFittingSpec.PortOffsetMm(PipeNodeKind.Cap, sizeId, 0);
+
+            Assert.Greater(crown, body,
+                sizeId + ": буртик уже тела — в силуэте его нет, и заглушка снова "
+                + "неотличима от обрезка трубы");
+
+            float lowest = float.MaxValue;
+            foreach (var part in parts)
+                lowest = Math.Min(lowest, Math.Min(part.FromMM.y, part.ToMM.y));
+
+            Assert.Less(lowest, hub.YMm - Eps,
+                sizeId + ": ниже ступицы у заглушки ничего нет, то есть торец так и "
+                + "остался открытым кольцом");
+            Assert.Greater(mouth.YMm, hub.YMm,
+                sizeId + ": устье и глухой торец оказались с одной стороны");
+
+            Assert.AreEqual(2f * crown, PipeFittingSpec.WidthMm(PipeNodeKind.Cap, sizeId), Eps,
+                sizeId + ": ящик заглушки перестал накрывать её буртик");
+            Assert.Greater(PipeFittingSpec.WidthMm(PipeNodeKind.Cap, sizeId),
+                PipeFittingSpec.WidthMm(PipeNodeKind.Coupling, sizeId),
+                sizeId + ": заглушка и муфта одной ширины — с первого взгляда их не "
+                + "различить, а это ровно то, ради чего буртик и появился");
+        }
+    }
+
+    private static PipeSegment[] FlowMarksOf(PipeNodeKind kind, string sizeId)
+    {
+        var marks = new List<PipeSegment>();
+        foreach (var part in PipeFittingLayout.PartsMM(kind, sizeId, null))
+            if (Math.Abs(part.FromMM.x) > Eps || Math.Abs(part.ToMM.x) > Eps)
+                marks.Add(part);
+        return marks.ToArray();
+    }
+
+    /// <summary>Подача и обратка — ОДНА железка: у них совпадают нога, фланец и
+    /// ступица, и врать формой корпуса ради различимости нельзя. Различает их
+    /// маркировка — стрелка потока на теле и цвет (цвет живёт на элементе, здесь
+    /// проверяется геометрия). Стрелка обязательна: если бы смысл нёс только цвет,
+    /// деталь исчезала бы для дальтоника и на чёрно-белой печати.
+    ///
+    /// Стрелка сидит в юбке фланца, поэтому маркировка не стоит ни миллиметра
+    /// габарита — что и стережёт EveryDeclaredBox_MatchesTheGeometryItsLegsDescribe:
+    /// он строит ящик по ногам и фланцу, ничего не зная о стрелке, и разошёлся бы
+    /// с объявленным, стоит ей вылезти наружу.</summary>
+    [Test]
+    public void SupplyAndReturn_AreOneCasting_MarkedWithOppositeArrows()
+    {
+        foreach (var sizeId in PipeSpec.Sizes)
+        {
+            Assert.AreEqual(PipeFittingSpec.WidthMm(PipeNodeKind.Supply, sizeId),
+                PipeFittingSpec.WidthMm(PipeNodeKind.Return, sizeId), Eps,
+                sizeId + ": корпус подачи и обратки обязан совпадать — в жизни это "
+                + "одна деталь, и разводить их формой значит врать чертежом");
+            Assert.AreEqual(PipeFittingSpec.HeightMm(PipeNodeKind.Supply, sizeId),
+                PipeFittingSpec.HeightMm(PipeNodeKind.Return, sizeId), Eps, sizeId);
+
+            var supply = FlowMarksOf(PipeNodeKind.Supply, sizeId);
+            var back = FlowMarksOf(PipeNodeKind.Return, sizeId);
+
+            Assert.AreEqual(4, supply.Length,
+                sizeId + ": стрелок нет вовсе — подача и обратка снова различаются "
+                + "только цветом, то есть не различаются на чёрно-белом кадре");
+            Assert.AreEqual(supply.Length, back.Length, sizeId);
+
+            Assert.Greater(Tip(supply).y, Tail(supply).y,
+                sizeId + ": стрелка подачи обязана смотреть ОТ фланца — по контуру "
+                + "отопления подача уходит в стояк");
+            Assert.Less(Tip(back).y, Tail(back).y,
+                sizeId + ": стрелка обратки обязана смотреть К фланцу");
+
+            float flange = PipeFittingSpec.FlangeDiameterMm(sizeId) * 0.5f;
+            float body = PipeFittingSpec.BodyDiameterMm(sizeId) * 0.5f;
+            foreach (var mark in supply)
+            {
+                float reach = Math.Abs(mark.FromMM.x)
+                    + Math.Max(mark.FromRadiusMM, mark.ToRadiusMM);
+                Assert.LessOrEqual(reach, flange,
+                    sizeId + ": стрелка вылезла за юбку фланца и стала габаритом — "
+                    + "метка обязана быть меткой, а не второй деталью");
+                Assert.Greater(Math.Abs(mark.FromMM.x), body,
+                    sizeId + ": стрелка утонула в теле и в силуэте её не видно");
+            }
+        }
+    }
+
+    private static Vector3 Tip(PipeSegment[] marks)
+    {
+        var tip = marks[0].ToMM;
+        foreach (var mark in marks)
+            if (mark.ToRadiusMM < mark.FromRadiusMM) tip = mark.ToMM;
+        return tip;
+    }
+
+    private static Vector3 Tail(PipeSegment[] marks)
+    {
+        var tail = marks[0].FromMM;
+        foreach (var mark in marks)
+            if (mark.FromRadiusMM == mark.ToRadiusMM) tail = mark.FromMM;
+        return tail;
     }
 }

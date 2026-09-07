@@ -5,7 +5,7 @@ using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core
 {
-    public abstract class PipeFittingElement : KitchenElement
+    public abstract class PipeFittingElement : KitchenElement, IPaintsItself
     {
         private readonly RebuildGuard _rebuild = new RebuildGuard();
 
@@ -23,13 +23,19 @@ namespace KitchenDesigner.Core
 
         public int PortCount => PipeFittingSpec.PortCount(NodeKind);
 
-        public Vector3Int DerivedDimensionsMM => new Vector3Int(
-            PipeFittingSpec.RoundedMm(
-                PipeFittingSpec.WidthMm(NodeKind, PortFrameSizeId, BoreSizeId)),
-            PipeFittingSpec.RoundedMm(
-                PipeFittingSpec.HeightMm(NodeKind, PortFrameSizeId, BoreSizeId)),
-            PipeFittingSpec.RoundedMm(
-                PipeFittingSpec.DepthMm(NodeKind, PortFrameSizeId, BoreSizeId)));
+        public Vector3Int DerivedDimensionsMM
+        {
+            get
+            {
+                var cover = PipeFittingLayout.CoverSizeMM(NodeKind, PortFrameSizeId, _boreSizeIds);
+                return new Vector3Int(
+                    PipeFittingSpec.RoundedMm(cover.x),
+                    PipeFittingSpec.RoundedMm(cover.y),
+                    PipeFittingSpec.RoundedMm(cover.z));
+            }
+        }
+
+        public virtual Material FactoryMaterial => SanitaryMaterials.Chrome;
 
         public Vector3 HubPositionUnits => transform.TransformPoint(LocalHubUnits);
 
@@ -110,10 +116,27 @@ namespace KitchenDesigner.Core
             if (filter == null) filter = gameObject.AddComponent<MeshFilter>();
             filter.sharedMesh = mesh;
 
-            if (GetComponent<MeshRenderer>() == null) gameObject.AddComponent<MeshRenderer>();
+            var renderer = GetComponent<MeshRenderer>();
+            if (renderer == null) renderer = gameObject.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = Skin();
 
             ElementRoot.UseMeshCollider(gameObject, mesh);
             MaterialManager.RefreshTiling(this);
+        }
+
+        public void SetMaterial(Material material)
+        {
+            var renderer = GetComponent<MeshRenderer>();
+            if (renderer == null) return;
+            renderer.sharedMaterial =
+                SanitaryDecor.ChosenOrFactory(MaterialId, material, FactoryMaterial);
+        }
+
+        private Material Skin()
+        {
+            if (SanitaryDecor.IsFactoryLook(MaterialId)) return FactoryMaterial;
+            var decor = MaterialManager.GetSharedMaterial(MaterialCatalog.Get(MaterialId));
+            return decor != null ? decor! : FactoryMaterial;
         }
     }
 }
