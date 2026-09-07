@@ -110,7 +110,7 @@ namespace KitchenDesigner.Core
             result.Contacts.Add(aLeg
                 ? new CoreContact(aIdx, bIdx, legFace, hostFace, area, true)
                 : new CoreContact(aIdx, bIdx, hostFace, legFace, area, true));
-            return true;
+            return !FaceContacts.AABBsIntersect(leg.Geometry, host.Geometry, contactDist);
         }
 
         private static bool SolidReaches(in ValidationElement e, in ElementGeometry other,
@@ -128,8 +128,7 @@ namespace KitchenDesigner.Core
 
         private static bool SharesSpaceLegitimately(in ValidationElement a, in ValidationElement b)
         {
-            if (a.Is(ElementKind.ScrewLeg) || b.Is(ElementKind.ScrewLeg))
-                return a.IsPairedWith(b) || b.IsPairedWith(a);
+            if (a.Is(ElementKind.ScrewLeg) || b.Is(ElementKind.ScrewLeg)) return false;
 
             bool aDrawer = a.Is(ElementKind.Drawer);
             bool bDrawer = b.Is(ElementKind.Drawer);

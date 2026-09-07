@@ -74,6 +74,8 @@ public class AnalysisContractTests
             IssueCatalog.AttachDetached(a, b),
             IssueCatalog.ScrewLegOffCentre(a, b, new ScrewLegOffCentre("X", 16f, 4f, 1f)),
             IssueCatalog.ScrewLegShallow(a, b, 3),
+            IssueCatalog.ScrewLegNoFooting(a, new ScrewLegSupport(b, 25f)),
+            IssueCatalog.ScrewLegNoFooting(a, new ScrewLegSupport(null, 0f)),
         };
     }
 
@@ -89,7 +91,7 @@ public class AnalysisContractTests
             "EDG-01",
             "FAC-01",
             "GAP-01", "GAP-02",
-            "LEG-01", "LEG-02",
+            "LEG-01", "LEG-02", "LEG-03",
             "SEAT-01",
         };
 
@@ -135,6 +137,7 @@ public class AnalysisContractTests
             ["DWH-04"] = IssueLevel.Warning,
             ["LEG-01"] = IssueLevel.Warning,
             ["LEG-02"] = IssueLevel.Error,
+            ["LEG-03"] = IssueLevel.Warning,
         };
 
         CollectionAssert.AreEquivalent(expected.Keys, byCode.Keys,

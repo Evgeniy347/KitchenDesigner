@@ -411,12 +411,15 @@ ScrewLegElement       Screw-in levelling leg with a threaded insert
                       derived from the geometry (0 when there is no host), and
                       screw_insertion_mm is rejected by edit_elements. Drop it
                       under any part: it takes that part as its host, re-derives
-                      the thread length so the foot stands on the floor, and
-                      shares space with the host legally — a thread poking through
-                      a 16 mm board is not a collision. Snapping centres it on the
+                      the thread length so the foot stands on the floor, and the
+                      THREAD shares space with the host legally — a thread poking
+                      through a 16 mm board is not a collision. The FOOT does not:
+                      it is the pad the leg stands on, so a foot inside the host
+                      is COL-01 like any other part. Snapping centres it on the
                       host; off-centre on a side thinner than 25 mm is reported as
-                      LEG-01, and less than 5 mm of thread inside the host as
-                      LEG-02. Where it sits ON the host is
+                      LEG-01, less than 5 mm of thread inside the host as
+                      LEG-02, and a foot touching nothing below it as LEG-03.
+                      Where it sits ON the host is
                       screwLeg.leftInHostMM / rightInHostMM / topInHostMM /
                       bottomInHostMM — the distances from the centre of the foot
                       to the edges of the host face the thread enters, measured

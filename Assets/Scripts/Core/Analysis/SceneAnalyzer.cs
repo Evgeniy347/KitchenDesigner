@@ -29,6 +29,7 @@ namespace KitchenDesigner.Core.Analysis
             CollectAttachLinks(all, issues);
             CollectDishwasherFacadeLinks(all, issues);
             CollectScrewLegMounting(all, issues);
+            CollectScrewLegFooting(all, issues);
             return issues;
         }
 
@@ -201,6 +202,16 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
+        private static void CollectScrewLegFooting(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var e in all)
+            {
+                if (!(e is ScrewLegElement leg)) continue;
+                if (!ScrewLegFooting.TryFindUnsupported(leg, all, out var below)) continue;
+                issues.Add(IssueCatalog.ScrewLegNoFooting(leg, below));
+            }
+        }
+
         private static FacadeElement? FindFacade(List<KitchenElement> all, string name)
         {
             foreach (var e in all)
@@ -231,6 +242,7 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeAttachDetached = "ATT-01";
         public const string CodeScrewLegOffCentre = "LEG-01";
         public const string CodeScrewLegShallow = "LEG-02";
+        public const string CodeScrewLegNoFooting = "LEG-03";
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {
@@ -369,6 +381,19 @@ namespace KitchenDesigner.Core.Analysis
                 $"Резьба вошла в {Name(host)} на {insertionMM} мм — "
                 + $"требуется {ScrewLegSpec.MIN_INSERTION_INTO_HOST_MM} мм",
                 leg, host);
+
+        public static AnalysisIssue ScrewLegNoFooting(KitchenElement leg, ScrewLegSupport below) =>
+            below.Nearest != null
+                ? new AnalysisIssue(IssueLevel.Warning, CodeScrewLegNoFooting,
+                    PairDetail(leg, below.Nearest),
+                    $"Опоре не на чем стоять: от низа пятака до {Name(below.Nearest)} "
+                    + $"{below.GapMM:F1} мм — низ опоры обязан касаться пола или детали "
+                    + $"(допуск {Tolerance.ContactMm:F1} мм)",
+                    leg, below.Nearest)
+                : new AnalysisIssue(IssueLevel.Warning, CodeScrewLegNoFooting,
+                    Name(leg),
+                    "Опоре не на чем стоять: под пятаком нет ни пола, ни детали",
+                    leg);
 
         private static string Name(KitchenElement? e) =>
             e != null && !string.IsNullOrEmpty(e.PartName) ? e.PartName : "—";
