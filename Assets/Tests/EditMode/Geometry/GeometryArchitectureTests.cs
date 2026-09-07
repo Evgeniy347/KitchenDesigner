@@ -198,5 +198,157 @@ namespace KitchenDesigner.Tests.Geometry
                 Assert.IsNotEmpty(why, "у записи " + file + " нет причины");
             }
         }
+
+        /// <summary>Тип общей изменяемой коллекции, из которой обычно строят
+        /// скрэтч-буфер обхода. Список нарочно короткий: восемь существующих
+        /// буферов покрывают ровно эти пять типов.</summary>
+        private static readonly string[] MutableCollectionKinds =
+            { "List", "Dictionary", "HashSet", "Stack", "Queue" };
+
+        private static readonly Regex StaticMutableFieldPattern = new Regex(
+            @"(private|internal)\s+static\s+(readonly\s+)?("
+            + string.Join("|", MutableCollectionKinds) + @")<.*>\??\s+(_?\w+)\s*(;|=(?!>))");
+
+        /// <summary>Поля, которым названный общий статик разрешён, с причиной.
+        /// <see cref="MutableStaticAllowList_NamesOnlyFieldsThatExist"/> проверяет, что
+        /// каждая запись всё ещё указывает на существующее поле — иначе запись переживёт
+        /// поле и начнёт освобождать следующее с тем же именем в том же файле.</summary>
+        private static readonly (string file, string field, string why)[] AllowedMutableStatics =
+        {
+            ("EventBus.cs", "_events",
+                "настоящий разделяемый реестр подписок процесса, а не буфер обхода одного "
+                + "вызова: живёт под lock и обязан быть общим для всех потоков, а не отдельным "
+                + "на каждый"),
+        };
+
+        /// <summary>Одна строка исходника → 0 или 1 нарушение. Вынесено из
+        /// <see cref="MutableStaticViolations"/> отдельной функцией, чтобы тест ниже мог
+        /// подать её синтетическую строку и доказать, что скан вообще что-то ловит —
+        /// без того, чтобы держать нарушение в реальном исходнике.</summary>
+        private static IEnumerable<string> LineViolations(string fileName, int lineNumber, string line)
+        {
+            var trimmed = line.TrimStart();
+            if (trimmed.StartsWith("//") || trimmed.StartsWith("///")
+                || trimmed.StartsWith("*") || trimmed.StartsWith("/*")) yield break;
+
+            if (line.Contains("[ThreadStatic]")) yield break;
+
+            var match = StaticMutableFieldPattern.Match(line);
+            if (!match.Success) yield break;
+
+            string field = match.Groups[4].Value;
+            if (Array.Exists(AllowedMutableStatics, a => a.file == fileName && a.field == field))
+                yield break;
+
+            yield return fileName + ":" + lineNumber + " — " + trimmed;
+        }
+
+        private static List<string> MutableStaticViolations(IEnumerable<string> files)
+        {
+            var violations = new List<string>();
+            foreach (var file in files)
+            {
+                var lines = File.ReadAllLines(file);
+                for (int i = 0; i < lines.Length; i++)
+                    violations.AddRange(LineViolations(Path.GetFileName(file), i + 1, lines[i]));
+            }
+            return violations;
+        }
+
+        /// <summary>Сторож девятого общего статика. `[assembly: Parallelizable]` гоняет
+        /// EditMode на нескольких потоках сразу, и статическое изменяемое поле без
+        /// `[ThreadStatic]` в этот момент разделяется между ними — восемь буферов обхода
+        /// (`ContactShadow._besidePerThread`, `ValidationBroadPhase._gridPerThread` и
+        /// соседи, `ValidationCore._overlappingPerThread` и соседи) уже расшиты именно
+        /// поэтому, и без расшивки давали плавающие красные, которые пропадали при
+        /// одиночном запуске — самый дорогой вид флака.</summary>
+        [Test]
+        public void ScratchBufferSources_UseThreadStaticOrAreExplained()
+        {
+            var files = ScannedFiles(GeometrySourceDir())
+                .Concat(ScannedFiles(PureSourceDir())).ToList();
+            Assert.IsNotEmpty(files, "источников ядра и чистого слоя не найдено — тест бесполезен");
+
+            var violations = MutableStaticViolations(files);
+            Assert.IsEmpty(violations,
+                "ПРАВИЛО: `[assembly: Parallelizable]` запускает тесты на нескольких потоках "
+                + "одновременно; статическое поле изменяемой коллекции (List/Dictionary/HashSet/"
+                + "Stack/Queue) без [ThreadStatic] в этот момент читается и пишется из разных "
+                + "потоков одновременно, и итог зависит от того, кто первым успел — плавающие "
+                + "красные то есть, то нет. ЧТО СЛОМАНО: поле ниже — девятый такой общий статик, "
+                + "новый и незащищённый. ЧТО СДЕЛАТЬ: если это буфер обхода одного вызова — "
+                + "пометить [ThreadStatic], как остальные восемь. Если это ДЕЙСТВИТЕЛЬНО общий "
+                + "на весь процесс реестр (а не буфер) — завести под lock, как "
+                + "EventBus._events, и добавить в AllowedMutableStatics с причиной. Найдено:\n"
+                + string.Join("\n", violations));
+        }
+
+        [Test]
+        public void MutableStaticAllowList_NamesOnlyFieldsThatExist()
+        {
+            var sources = ScannedFiles(GeometrySourceDir()).Concat(ScannedFiles(PureSourceDir()));
+            var byFileName = sources.ToLookup(Path.GetFileName);
+
+            foreach (var (file, field, why) in AllowedMutableStatics)
+            {
+                Assert.IsNotEmpty(why, "у записи " + file + "." + field + " нет причины");
+
+                var matches = byFileName[file].ToList();
+                Assert.IsNotEmpty(matches,
+                    "белый список освобождает " + file + "." + field + " (" + why + "), но такого "
+                    + "файла больше нет — запись переживёт файл и начнёт освобождать следующий "
+                    + "с этим именем");
+
+                bool fieldStillThere = matches.Any(f => File.ReadAllLines(f).Any(l => l.Contains(field)));
+                Assert.IsTrue(fieldStillThere,
+                    "белый список освобождает поле " + field + " в " + file + " (" + why + "), но "
+                    + "такого поля в файле больше нет — запись начнёт молча освобождать следующее "
+                    + "поле с этим именем");
+            }
+        }
+
+        [Test]
+        public void ScratchBufferScan_ActuallyFindsTheKnownThreadStaticFields()
+        {
+            var names = ScannedFileNames(GeometrySourceDir());
+            CollectionAssert.Contains(names, "ValidationCore.cs",
+                "скан обязан видеть файлы с реальными [ThreadStatic]-буферами — иначе он "
+                + "проверяет пустоту и молча зеленеет");
+            CollectionAssert.Contains(names, "ContactShadow.cs");
+            CollectionAssert.Contains(names, "ValidationBroadPhase.cs");
+        }
+
+        /// <summary>«Подсади статик и покажи, что видел красным» — в отличие от
+        /// временной правки реального исходника, эта проверка подсаживает нарушение
+        /// синтетической строкой на каждом прогоне: сравнение красноты не нужно делать
+        /// руками один раз, оно доказано механически и навсегда.</summary>
+        [Test]
+        public void MutableStaticScan_FlagsAPlantedStaticField()
+        {
+            var violations = LineViolations("PlantedFixture.cs", 1,
+                "        private static List<int> _plantedScratchBuffer;").ToList();
+
+            Assert.AreEqual(1, violations.Count,
+                "сканер обязан ловить голый статический List без [ThreadStatic] и без записи "
+                + "в белом списке — если это не так, девятый общий статик проскочит точно так "
+                + "же, как проскочил бы восьмой, не будь он расшит");
+        }
+
+        [Test]
+        public void MutableStaticScan_DoesNotFlagThreadStaticOrAllowListedFields()
+        {
+            var threadStatic = LineViolations("Whatever.cs", 1,
+                "        [ThreadStatic] private static List<int> _scratchPerThread;").ToList();
+            Assert.IsEmpty(threadStatic,
+                "поле с [ThreadStatic] — это ровно то, что сканер обязан пропускать; если он "
+                + "ловит и его, сторож будет краснеть на каждом уже расшитом буфере");
+
+            var allowListed = LineViolations("EventBus.cs", 1,
+                "        private static readonly Dictionary<Type, Delegate> _events = "
+                + "new Dictionary<Type, Delegate>();").ToList();
+            Assert.IsEmpty(allowListed,
+                "EventBus._events — записанное в белом списке исключение; если сканер его "
+                + "тоже ловит, белый список не работает и AllowedMutableStatics бесполезен");
+        }
     }
 }
