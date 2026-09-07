@@ -109,8 +109,7 @@ namespace KitchenDesigner.Core.UI
                     spawner.SpawnPipeFitting(PipeNodeKind.Return, item.name);
                     break;
                 case SidebarItemKind.Panel:
-                    spawner.SpawnPanel(item.dims, item.name,
-                        item.gapLeft, item.gapRight, item.gapTop, item.gapBottom);
+                    spawner.SpawnPanel(item.dims, item.name);
                     break;
                 case SidebarItemKind.RadialShelf:
                     spawner.SpawnRadialShelf(item.dims, item.name);
@@ -119,8 +118,7 @@ namespace KitchenDesigner.Core.UI
                     spawner.SpawnAssembledFacade(item.dims, item.name, AssembledFill.Blind);
                     break;
                 case SidebarItemKind.Facade:
-                    spawner.SpawnFacade(item.dims, item.name,
-                        item.gapLeft, item.gapRight, item.gapTop, item.gapBottom);
+                    spawner.SpawnFacade(item.dims, item.name);
                     break;
                 case SidebarItemKind.Wall:
                     spawner.SpawnWall(item.dims, item.name);

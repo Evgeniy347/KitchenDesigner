@@ -26,10 +26,9 @@ namespace KitchenDesigner.Core.UI
         public void SpawnBoard(Vector3Int dims, string name) =>
             BeginPlacement(CreateBoardGo(dims, name));
 
-        public void SpawnFacade(Vector3Int dims, string name,
-            int gapLeft, int gapRight, int gapTop, int gapBottom) =>
+        public void SpawnFacade(Vector3Int dims, string name) =>
             PlaceCenteredOnGround(dims.y, pos =>
-                ElementFactory.CreateFacade(dims, name, pos, gapLeft, gapRight, gapTop, gapBottom));
+                ElementFactory.CreateFacade(dims, name, pos));
 
         public void SpawnAssembledFacade(Vector3Int dims, string name, AssembledFill fill) =>
             PlaceCenteredOnGround(dims.y, pos =>
@@ -124,10 +123,9 @@ namespace KitchenDesigner.Core.UI
                     * AppConstants.MM_TO_UNITS,
                 pos => ElementFactory.CreateShowerColumn(ShowerColumnSpec.Default, name, pos));
 
-        public void SpawnPanel(Vector3Int dims, string name,
-            int gapLeft, int gapRight, int gapTop, int gapBottom) =>
+        public void SpawnPanel(Vector3Int dims, string name) =>
             PlaceCenteredOnGround(dims.y, pos =>
-                ElementFactory.Instance.CreatePanel(dims, name, pos, gapLeft, gapRight, gapTop, gapBottom));
+                ElementFactory.Instance.CreatePanel(dims, name, pos));
 
         public void SpawnRadialShelf(Vector3Int dims, string name) =>
             PlaceCenteredOnGround(dims.y, pos =>
@@ -176,7 +174,7 @@ namespace KitchenDesigner.Core.UI
             };
 
         public void SpawnFloor(Vector3Int dims, string name) =>
-            PlaceAtHeightUnaffectedByGrid(-dims.y * 0.5f * AppConstants.MM_TO_UNITS,
+            PlaceAtHeightUnaffectedByGrid(-AppConstants.HalfHeightUnits(dims.y),
                 pos => ElementFactory.CreateFloor(dims, name, pos));
 
         public void SpawnSink(string name) =>
@@ -189,12 +187,12 @@ namespace KitchenDesigner.Core.UI
 
         public void SpawnOven(string name) =>
             PlaceAtHeightUnaffectedByGrid(
-                OvenElement.ModelDimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS,
+                AppConstants.HalfHeightUnits(OvenElement.ModelDimensionsMM.y),
                 pos => ElementFactory.CreateOven(name, pos));
 
         public void SpawnDishwasher(string name) =>
             PlaceAtHeightUnaffectedByGrid(
-                DishwasherElement.ModelDimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS,
+                AppConstants.HalfHeightUnits(DishwasherElement.ModelDimensionsMM.y),
                 pos => ElementFactory.CreateDishwasher(name, pos));
 
         public void SpawnLightSource(string name) =>
@@ -207,7 +205,7 @@ namespace KitchenDesigner.Core.UI
         internal Vector3 CenteredOnGroundPoint(int heightMM)
         {
             Vector3 pos = _groundPointInFrontOfCamera();
-            pos.y = heightMM * 0.5f * AppConstants.MM_TO_UNITS;
+            pos.y = AppConstants.HalfHeightUnits(heightMM);
             return GridManager.SnapToGrid(pos);
         }
 

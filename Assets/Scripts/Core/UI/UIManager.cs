@@ -142,9 +142,8 @@ namespace KitchenDesigner.Core.UI
 
         public void SpawnBoard(Vector3Int dims, string name) => Spawner.SpawnBoard(dims, name);
 
-        public void SpawnFacade(Vector3Int dims, string name,
-            int gapLeft = 2, int gapRight = 2, int gapTop = 2, int gapBottom = 2) =>
-            Spawner.SpawnFacade(dims, name, gapLeft, gapRight, gapTop, gapBottom);
+        public void SpawnFacade(Vector3Int dims, string name) =>
+            Spawner.SpawnFacade(dims, name);
 
         public void SpawnAssembledFacade(Vector3Int dims, string name,
             AssembledFill fill = AssembledFill.Blind) =>
@@ -182,10 +181,8 @@ namespace KitchenDesigner.Core.UI
 
         public void SpawnLightSwitch(string name) => Spawner.SpawnLightSwitch(name);
 
-        public void SpawnPanel(Vector3Int dims, string name,
-            int gapLeft = PanelElement.DEFAULT_GAP_MM, int gapRight = PanelElement.DEFAULT_GAP_MM,
-            int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM) =>
-            Spawner.SpawnPanel(dims, name, gapLeft, gapRight, gapTop, gapBottom);
+        public void SpawnPanel(Vector3Int dims, string name) =>
+            Spawner.SpawnPanel(dims, name);
 
         public void SpawnRadialShelf(Vector3Int dims, string name) => Spawner.SpawnRadialShelf(dims, name);
 

@@ -149,11 +149,13 @@ public class FacadeFloorSinkReproTests
     [Test]
     public void AFacadeFromTheSidebar_StandsOnTheFloor_NotInIt()
     {
-        var facade = SpawnFromSidebar(s => s.SpawnFacade(new Vector3Int(350, 716, 18),
-            "Фасад", FacadeElement.DEFAULT_GAP_MM, FacadeElement.DEFAULT_GAP_MM,
-            FacadeElement.DEFAULT_GAP_MM, FacadeElement.DEFAULT_GAP_MM));
+        var facade = SpawnFromSidebar(s => s.SpawnFacade(new Vector3Int(350, 716, 18), "Фасад"));
 
         Assert.IsInstanceOf<FacadeElement>(facade, "кнопка фасада обязана родить фасад");
+        Assert.AreEqual(FacadeElement.DEFAULT_GAP_MM, ((FacadeElement)facade).GapBottom,
+            "зазоры сайдбар больше не передаёт: их единственный источник — "
+            + "FacadeElement.DEFAULT_GAP_MM через умолчание фабрики. Ноль здесь значит, что "
+            + "по дороге зазор потеряли, и проверка утопания ниже стала бы зелёной на пустом");
         AssertSitsOnFloor(facade, "фасад из сайдбара");
     }
 

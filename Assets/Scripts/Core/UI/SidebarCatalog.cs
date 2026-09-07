@@ -6,7 +6,6 @@ namespace KitchenDesigner.Core.UI
 {
     public static class SidebarCatalog
     {
-        public const int DefaultGapMM = FacadeElement.DEFAULT_GAP_MM;
         public const string DefaultDrawerType = "A";
         public const int DefaultDrawerLengthMM = 350;
         public const string DefaultDrawerColor = "Anthracite";
@@ -26,19 +25,11 @@ namespace KitchenDesigner.Core.UI
             public string drawerColor;
             public int drawerWidth;
             public string drawerSystem;
-            public int gapLeft;
-            public int gapRight;
-            public int gapTop;
-            public int gapBottom;
 
             public Item(string name, Vector3Int dims,
-                SidebarItemKind kind = SidebarItemKind.Board,
-                int gapLeft = DefaultGapMM, int gapRight = DefaultGapMM,
-                int gapTop = DefaultGapMM, int gapBottom = DefaultGapMM)
+                SidebarItemKind kind = SidebarItemKind.Board)
             {
                 this.name = name; this.dims = dims; this.kind = kind;
-                this.gapLeft = gapLeft; this.gapRight = gapRight;
-                this.gapTop = gapTop; this.gapBottom = gapBottom;
                 applianceModel = "";
                 pillarMidHeightMM = PillarElement.MidHeightMM_Default;
                 drawerType = DefaultDrawerType;
@@ -157,9 +148,7 @@ namespace KitchenDesigner.Core.UI
             var regular = new Item("Полка", new Vector3Int(600, 400, 16));
             var radial = new Item("Радиусная полка", new Vector3Int(600, 400, 16),
                 SidebarItemKind.RadialShelf);
-            var panel = new Item("ДВП/ХДФ", new Vector3Int(600, 400, 3), SidebarItemKind.Panel,
-                gapLeft: PanelElement.DEFAULT_GAP_MM, gapRight: PanelElement.DEFAULT_GAP_MM,
-                gapTop: PanelElement.DEFAULT_GAP_MM, gapBottom: PanelElement.DEFAULT_GAP_MM);
+            var panel = new Item("ДВП/ХДФ", new Vector3Int(600, 400, 3), SidebarItemKind.Panel);
             return new Group { title = "детали", shortLabel = "Д", items = new List<Item> { regular, radial, panel } };
         }
 
@@ -172,11 +161,9 @@ namespace KitchenDesigner.Core.UI
                 items = new List<Item>
                 {
                     new Item("Фасад щитовой", new Vector3Int(600, 716, 18),
-                        SidebarItemKind.Facade, DefaultGapMM, DefaultGapMM,
-                        DefaultGapMM, DefaultGapMM),
+                        SidebarItemKind.Facade),
                     new Item("Фасад сборный", new Vector3Int(600, 716, 18),
-                        SidebarItemKind.AssembledFacade, DefaultGapMM, DefaultGapMM,
-                        DefaultGapMM, DefaultGapMM),
+                        SidebarItemKind.AssembledFacade),
                 }
             };
         }

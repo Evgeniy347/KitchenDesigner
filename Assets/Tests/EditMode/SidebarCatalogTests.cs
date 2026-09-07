@@ -56,7 +56,7 @@ public class SidebarCatalogTests
     }
 
     [Test]
-    public void BoardGroup_PanelItem_IsThinWithOneMillimetreGaps()
+    public void BoardGroup_PanelItem_IsThin()
     {
         var panel = SidebarCatalog.Build()[0].items[2];
 
@@ -64,11 +64,13 @@ public class SidebarCatalogTests
         Assert.IsTrue(panel.isPanel);
         Assert.IsFalse(panel.isFacade, "ДВП не фасад — она не открывается");
         Assert.AreEqual(3, panel.dims.z, "тонкая панель");
-        // Технологический зазор: в паз заходит номинал, зазор остаётся в детали.
-        Assert.AreEqual(PanelElement.DEFAULT_GAP_MM, panel.gapLeft);
-        Assert.AreEqual(PanelElement.DEFAULT_GAP_MM, panel.gapRight);
-        Assert.AreEqual(PanelElement.DEFAULT_GAP_MM, panel.gapTop);
-        Assert.AreEqual(PanelElement.DEFAULT_GAP_MM, panel.gapBottom);
+
+        // Технологический зазор (в паз заходит номинал, зазор остаётся в детали) задан
+        // ОДИН раз — на PanelElement.DEFAULT_GAP_MM, и приезжает через умолчание фабрики.
+        // Копии этого числа в каталоге были мертвы у сборного фасада и живы у щитового:
+        // одно и то же поле то доезжало, то нет. Что зазор доезжает до готовой панели,
+        // держит FacadeFloorSinkReproTests; что каталог не заводит собственных чисел,
+        // держит SidebarSpawnRouterTests.EveryFieldOfACatalogItem_ReachesTheSpawner.
     }
 
     [Test]

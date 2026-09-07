@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -52,9 +53,8 @@ public class SidebarSpawnRouterTests
 
         public void SpawnBoard(Vector3Int dims, string name) => Put(nameof(SpawnBoard), dims, name);
 
-        public void SpawnFacade(Vector3Int dims, string name,
-            int gapLeft, int gapRight, int gapTop, int gapBottom) =>
-            Put(nameof(SpawnFacade), dims, name, gapLeft, gapRight, gapTop, gapBottom);
+        public void SpawnFacade(Vector3Int dims, string name) =>
+            Put(nameof(SpawnFacade), dims, name);
 
         public void SpawnAssembledFacade(Vector3Int dims, string name, AssembledFill fill) =>
             Put(nameof(SpawnAssembledFacade), dims, name, fill);
@@ -93,9 +93,8 @@ public class SidebarSpawnRouterTests
 
         public void SpawnLightSwitch(string name) => Put(nameof(SpawnLightSwitch), name);
 
-        public void SpawnPanel(Vector3Int dims, string name,
-            int gapLeft, int gapRight, int gapTop, int gapBottom) =>
-            Put(nameof(SpawnPanel), dims, name, gapLeft, gapRight, gapTop, gapBottom);
+        public void SpawnPanel(Vector3Int dims, string name) =>
+            Put(nameof(SpawnPanel), dims, name);
 
         public void SpawnRadialShelf(Vector3Int dims, string name) => Put(nameof(SpawnRadialShelf), dims, name);
 
@@ -252,6 +251,127 @@ public class SidebarSpawnRouterTests
             CollectionAssert.Contains(Route(item).Args, DrawerSystem.Movento,
                 "ящик Movento приехал системой GTV. Строка вида системы в каталоге сверяется с "
                 + "образцом, и опечатка в ней отказа не даёт — даёт другой ящик: " + item.name);
+    }
+
+    /// <summary>Мутация поля каталога: значение подменяется на заведомо другое
+    /// того же типа. Новый тип поля обязан приехать сюда явно — иначе механизм
+    /// молча перестал бы проверять новое поле, а это ровно тот вид молчания,
+    /// против которого он написан.</summary>
+    private static object? MutatedValue(object? value)
+    {
+        switch (value)
+        {
+            case string s: return s + "*";
+            case int i: return i + 137;
+            case Vector3Int v: return v + new Vector3Int(7, 11, 13);
+            case SidebarItemKind k:
+                return k == SidebarItemKind.Sofa ? SidebarItemKind.Board : SidebarItemKind.Sofa;
+            default: return null;
+        }
+    }
+
+    private static SidebarCatalog.Item WithField(SidebarCatalog.Item item, FieldInfo field,
+        object value)
+    {
+        object boxed = item;
+        field.SetValue(boxed, value);
+        return (SidebarCatalog.Item)boxed;
+    }
+
+    /// <summary>Что именно маршрутизатор передал: метод и все аргументы. Сравнение
+    /// двух таких строк отвечает на единственный вопрос механизма ниже — видно ли
+    /// поле каталога с той стороны вообще.</summary>
+    private static string Signature(SidebarCatalog.Item item)
+    {
+        var recorder = Route(item);
+        return recorder.Method + "(" + string.Join(", ",
+            recorder.Args.Select(a => a == null ? "null" : a.ToString() ?? "null")) + ")";
+    }
+
+    private static FieldInfo[] ItemFields() =>
+        typeof(SidebarCatalog.Item).GetFields(BindingFlags.Public | BindingFlags.Instance);
+
+    /// <summary>Механизм против мёртвого числа в каталоге. Поле Item, которое
+    /// маршрутизатор не передаёт НИ ДЛЯ ОДНОЙ записи, — это настройка, которая
+    /// выглядит настройкой и ни на что не влияет: следующий человек поправит её
+    /// и не поймёт, почему ничего не изменилось.
+    ///
+    /// Так и было: у сборного фасада запись каталога объявляла четыре зазора, а
+    /// SpawnAssembledFacade их не принимал. Проверка одной записи тут не годится —
+    /// щитовой фасад те же зазоры передавал, и «поле живое» было правдой ровно
+    /// наполовину. Поэтому спрашиваем не про запись, а про ПОЛЕ, и спрашиваем
+    /// подменой: значение меняется на заведомо другое, и если после этого
+    /// маршрутизатор зовёт ровно то же самое — поле не доезжает никуда.
+    ///
+    /// Перебор идёт рефлексией, поэтому новое поле попадает под проверку само;
+    /// добавить мёртвое число молча больше нельзя.</summary>
+    [Test]
+    public void EveryFieldOfACatalogItem_ReachesTheSpawner()
+    {
+        var items = CatalogItems().ToList();
+        var fields = ItemFields();
+        var unknownType = new List<string>();
+        var dead = new List<string>();
+
+        foreach (var field in fields)
+        {
+            bool observed = false;
+            foreach (var item in items)
+            {
+                object? mutated = MutatedValue(field.GetValue(item));
+                if (mutated == null) { unknownType.Add(field.Name); break; }
+                if (Signature(WithField(item, field, mutated)) != Signature(item))
+                {
+                    observed = true;
+                    break;
+                }
+            }
+            if (!observed && !unknownType.Contains(field.Name)) dead.Add(field.Name);
+        }
+
+        Assert.IsEmpty(unknownType,
+            "механизм не умеет подменять значение поля такого типа, поэтому проверить его "
+            + "не может и молча пропустил бы: допишите тип в MutatedValue. Поля: "
+            + string.Join(", ", unknownType));
+
+        Assert.IsEmpty(dead,
+            McpUiParityRule.Rule
+            + "ЧТО СЛОМАНО: поле каталога сайдбара не доезжает до спауна ни для одной "
+            + "записи. Оно выглядит настройкой и ею не является: следующий человек "
+            + "поправит число и не поймёт, почему объект не изменился. Так уже было с "
+            + "зазорами сборного фасада. "
+            + "ЧТО СДЕЛАТЬ: либо протянуть значение через IElementSpawns/ElementSpawner/"
+            + "ElementFactory и принять его в SidebarSpawnRouter.Route, либо убрать поле из "
+            + "SidebarCatalog.Item и оставить одно место, где величина задаётся — константу "
+            + "на самом элементе (FacadeElement.DEFAULT_GAP_MM и подобные). "
+            + "Мёртвые поля: " + string.Join(", ", dead));
+    }
+
+    /// <summary>Сторож механизма выше. Он весь стоит на сравнении двух подписей,
+    /// и обе его половины могут быть сломаны молча: сравнение, которое ВСЕГДА
+    /// показывает разницу, объявит живыми любые поля, а сравнение, которое
+    /// НИКОГДА её не показывает, объявит мёртвыми все. Плюс перебор полей: пустой
+    /// список полей — это зелёный ноль мёртвых полей.</summary>
+    [Test]
+    public void TheDeadFieldScan_SeesTheFields_AndItsComparisonWorksBothWays()
+    {
+        var fields = ItemFields();
+        Assert.GreaterOrEqual(fields.Length, 8,
+            "у записи каталога около десятка полей; меньше — значит рефлексия читает не тот "
+            + "тип, и перебор по полям проверяет пустоту: " + string.Join(", ",
+                fields.Select(f => f.Name)));
+
+        var drawer = CatalogItems().First(i => i.kind == SidebarItemKind.Drawer);
+
+        Assert.AreEqual(Signature(drawer), Signature(drawer),
+            "одна и та же запись обязана давать одну и ту же подпись — иначе сравнение "
+            + "показывает разницу всегда, и ни одно поле не может быть признано мёртвым");
+
+        var name = fields.First(f => f.Name == "name");
+        Assert.AreNotEqual(Signature(drawer),
+            Signature(WithField(drawer, name, MutatedValue(drawer.name)!)),
+            "имя доезжает до спауна во ВСЕХ ветках, поэтому его подмена обязана менять "
+            + "подпись — если не меняет, сравнение слепо и объявит мёртвыми все поля");
     }
 
     /// <summary>Сторож сторожа. Запись — это подставной приёмник, и он может

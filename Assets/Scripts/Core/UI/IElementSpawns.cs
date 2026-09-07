@@ -7,8 +7,7 @@ namespace KitchenDesigner.Core.UI
     {
         void SpawnBoard(Vector3Int dims, string name);
 
-        void SpawnFacade(Vector3Int dims, string name,
-            int gapLeft, int gapRight, int gapTop, int gapBottom);
+        void SpawnFacade(Vector3Int dims, string name);
 
         void SpawnAssembledFacade(Vector3Int dims, string name, AssembledFill fill);
 
@@ -45,8 +44,7 @@ namespace KitchenDesigner.Core.UI
 
         void SpawnLightSwitch(string name);
 
-        void SpawnPanel(Vector3Int dims, string name,
-            int gapLeft, int gapRight, int gapTop, int gapBottom);
+        void SpawnPanel(Vector3Int dims, string name);
 
         void SpawnRadialShelf(Vector3Int dims, string name);
 
