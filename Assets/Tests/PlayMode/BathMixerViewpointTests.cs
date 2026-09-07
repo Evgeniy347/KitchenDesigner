@@ -177,24 +177,70 @@ public class BathMixerViewpointTests
     public IEnumerator IsoBathMixer_FromBelow_HoseNippleAndSpoutUnderside() =>
         RenderViewpoint(4);
 
+    /// <summary>Стена, на которой висит смеситель. Без неё прибор висит в
+    /// воздухе — и это не фигура речи, а ровно то, что говорит ядро:
+    /// ConstraintValidator не находит у него ни одного контакта гранью с
+    /// якорем сцены и выдаёт COL-02 «Деталь не имеет опоры», после чего
+    /// ElementHighlighter красит его _invalidMaterial. Все пять кадров этого
+    /// набора до правки сняты розовыми — то есть показывали не хром, а тинт
+    /// ошибки.
+    ///
+    /// Стена ставится так, чтобы посадка (Start → SnapToWall) НЕ двигала
+    /// прибор: её передняя плоскость приходится ровно на заднюю грань его
+    /// габарита. Тогда позиция остаётся заявленной, а разворот, который
+    /// посадка задаёт сама, совпадает с FrontTowardsCameraDeg — и проверка
+    /// ниже впервые становится проверкой, а не тавтологией про пустую
+    /// сцену.</summary>
+    private const int WallWidthMM = 3000;
+    private const int WallHeightMM = 2500;
+    private const int WallThicknessMM = 100;
+
+    private void SpawnWallBehind(string name, Vector3Int fittingDims, Vector3 fittingPos)
+    {
+        KitchenSettings.Instance.NormalView.wallsEnabled = true;
+        KitchenSettings.Instance.NormalView.lowerNearWalls = false;
+        KitchenSettings.Instance.NormalView.lowerAllWalls = false;
+
+        float standoff = AppConstants.HalfHeightUnits(fittingDims.z)
+            + AppConstants.HalfHeightUnits(WallThicknessMM);
+
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(WallWidthMM, WallHeightMM, WallThicknessMM), name,
+            new Vector3(fittingPos.x, AppConstants.HalfHeightUnits(WallHeightMM),
+                fittingPos.z + standoff));
+        _spawned.Add(wallGo);
+    }
+
     private IEnumerator RenderViewpoint(int index)
     {
         var (png, localDir, shows) = Viewpoints[index];
         var spec = BathMixerSpec.Default;
+        var dims = BathMixerLayout.DimensionsMM(spec);
         var pos = new Vector3(0f,
             BathMixerLayout.CentreAboveFloorMM(spec) * AppConstants.MM_TO_UNITS, 0f);
+
+        SpawnWallBehind("ViewpointWall" + index, dims, pos);
 
         var go = ElementFactory.CreateBathMixer(spec, "Viewpoint" + index, pos);
         _spawned.Add(go);
         go.transform.rotation = TurnedToCamera;
 
-        // Меш строится в ApplyDimensions, а Start ещё и сажает элемент на
-        // ближайшую стену — до кадра ни того, ни другого на сцене нет.
+        // Меш строится в ApplyDimensions, а Start сажает прибор на ближайшую
+        // стену — до этого кадра ни того, ни другого на сцене нет.
         yield return null;
 
         Assert.AreEqual(0f, Quaternion.Angle(TurnedToCamera, go.transform.rotation), 0.05f,
             "элемент развернулся сам: посадка на стену перебила разворот к камере, и "
             + "кадр " + png + " снимает затылок");
+        Assert.AreEqual(0f, (pos - go.transform.position).magnitude, 1e-4f,
+            "посадка сдвинула смеситель: стена стоит не на том расстоянии, и кадр "
+            + png + " снят не там, где заявлено");
+
+        var element = go.GetComponent<KitchenElement>();
+        var validation = ConstraintValidator.Validate(PartRegistry.GetAll());
+        Assert.IsFalse(validation.violations.Contains(element),
+            png + " снят в тинте ошибки валидации, а не в собственном материале: "
+            + "прибор остался без опоры (COL-02), значит контакта со стеной нет");
 
         var bounds = RendererBoundsOf(go);
         var worldDir = (TurnedToCamera * localDir).normalized;

@@ -199,20 +199,59 @@ public class IsoScreenshotTests
 
     // ── Facade isometric screenshots (18 DoorModes, door OPEN) ─
 
+    /// <summary>Поставить элемент на плиту ПО ТОЙ ЖЕ коробке, которую читает
+    /// валидатор. У фасада и ХДФ-панели зазоры не сжимают коробку, а РАСШИРЯЮТ
+    /// её (GappedBox.CornerUnits: minY = -h/2 - gapBottom), поэтому элемент,
+    /// посаженный по половине ФИЗИЧЕСКОЙ высоты, тонет в опорной плите ровно на
+    /// нижний зазор — 2 мм у фасада, 1 мм у панели. И то и другое больше
+    /// Tolerance.ContactMm, так что ValidationCore видит Overlap с плитой, а
+    /// ElementHighlighter красит элемент розовым _invalidMaterial. Восемнадцать
+    /// кадров фасада и кадр панели месяцами показывали не декор, а тинт
+    /// нарушения. Сдвиг считается по GetVertices() — тому же источнику, что и
+    /// сама проверка: выписанное отдельно число разошлось бы с зазорами по
+    /// умолчанию при первой же их правке.</summary>
+    private static void StandOnFloor(KitchenElement element)
+    {
+        float minY = float.MaxValue;
+        foreach (var v in element.GetVertices()) minY = Mathf.Min(minY, v.y);
+        element.transform.position += new Vector3(0f, -minY, 0f);
+    }
+
+    /// <summary>Кадр обязан показывать декор, а не тинт нарушения. Пока правило
+    /// не названо, чинить нечего — поэтому падение печатает КОД нарушения и его
+    /// участников по всей сцене, а не только имя розового элемента.</summary>
+    private static void AssertFrameShowsDecorNotViolationTint(KitchenElement element, string frame)
+    {
+        var result = ConstraintValidator.Validate(PartRegistry.GetAll());
+        if (!result.violations.Contains(element)) return;
+
+        var lines = new List<string>();
+        if (result.diagnostics != null)
+            foreach (var d in result.diagnostics)
+                lines.Add(d.other != null
+                    ? $"{d.kind}: {d.element.PartName} + {d.other.PartName}"
+                    : $"{d.kind}: {d.element.PartName}");
+
+        Assert.Fail($"{frame}: элемент окрашен розовым тинтом нарушения, а не декором. "
+            + $"Нарушения сцены: {string.Join("; ", lines)}");
+    }
+
     [UnityTest]
     public IEnumerator IsoFacade_AllDoorModes()
     {
         var dims = new Vector3Int(350, 556, 18);
-        // Поднимаем фасад на половину высоты — стоит на полу, центр на y = h/2.
+        // Половина ФИЗИЧЕСКОЙ высоты — только черновая посадка: коробка
+        // валидации шире меша на зазоры, и на пол фасад ставит StandOnFloor.
         Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
         var facade = SpawnFacadeAt("IsoFacade", dims, pos);
         Assert.IsNotNull(facade);
         var fe = facade as FacadeElement;
         Assert.IsNotNull(fe);
+        StandOnFloor(facade!);
 
         // Камера смотрит на центр фасада.
         Vector3 size = MmToUnits(dims);
-        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        var (camGo, cam) = CreateIsoCamera(facade!.transform.position, size, 2.5f);
         _spawned.Add(camGo);
 
         for (int i = 0; i < FacadeDoor.Count; i++)
@@ -226,6 +265,8 @@ public class IsoScreenshotTests
             fe.SetOpen(true);
             fe.StepDoor(1f); // dt=1 > OpenSeconds(0.4) → прогресс доходит до 1
             yield return null;
+
+            AssertFrameShowsDecorNotViolationTint(facade!, $"iso_facade_{i:D2}");
 
             // Режим дверцы меняет 3D-модель, а не панель: все восемнадцать
             // эталонов UI были байт-в-байт одним файлом (один md5 на
@@ -791,10 +832,40 @@ public class IsoScreenshotTests
             "iso_light_switch_80x80x10.png");
     }
 
+    /// <summary>Стена под прибор. Розетка и выключатель — НАСТЕННЫЕ приборы:
+    /// без стены рядом <c>Start → SnapToWall</c> не находит, к чему сесть, и
+    /// молча оставляет прибор там, где его создали.
+    ///
+    /// Именно это и было на трёх кадрах. Прибор стоял в начале координат, то
+    /// есть на 40 мм ВНУТРИ плиты пола, и валидатор красил его целиком: COL-01
+    /// («детали пересекаются в объёме») с BasePlate и COL-02 («деталь не имеет
+    /// опоры»), потому что опереться было не на что. На PNG это читалось как
+    /// декор, а не как ошибка: доля розового по кадру 2–3 %, но не оттого, что
+    /// тинта мало, а оттого, что сам прибор в кадре занимал 2–3 % — камера
+    /// упиралась в пол дистанции MinCameraDistance (см. CreateCloseUpCamera).
+    ///
+    /// Стена стоит ЗА прибором, лицевой плоскостью на z = 0. Посадка
+    /// разворачивает прибор по наружной нормали стены, то есть лицом в −Z —
+    /// туда, где стоит камера. До этого все три кадра снимались со спины.</summary>
+    private void SpawnWallBehindDevices(string name)
+    {
+        SpawnWallAt(name + "_Wall", new Vector3Int(1200, 2500, WallBehindThicknessMM),
+            new Vector3(0f, 1.25f, WallBehindThicknessMM * 0.5f * AppConstants.MM_TO_UNITS));
+    }
+
+    private const int WallBehindThicknessMM = 100;
+
+    /// <summary>Во сколько раз кадр шире прибора. 80-миллиметровая розетка в
+    /// кадре 512×512 обязана быть предметом, а не точкой.</summary>
+    private const float WallDeviceFrameSpan = 2f;
+
     private IEnumerator RenderSocket(WallDeviceSpec spec, string name, string png,
         bool capturePanel = true)
     {
-        var go = ElementFactory.CreateSocket(spec, name, Vector3.zero);
+        SpawnWallBehindDevices(name);
+
+        var go = ElementFactory.CreateSocket(spec, name,
+            MountPosition(WallDeviceLayout.SocketCentreAboveFloorMM));
         _spawned.Add(go);
 
         var socket = go.GetComponent<SocketElement>();
@@ -806,13 +877,17 @@ public class IsoScreenshotTests
             "габарит ВЫЧИСЛЯЕТСЯ из формы: разойдись он с раскладкой, камера кадрировала "
             + "бы не то, что построено");
 
-        yield return RenderIsoFrame(Vector3.zero, spec.DimensionsMM, png, capturePanel);
+        yield return RenderWallDevice(go, socket, png, capturePanel,
+            WallDeviceLayout.SocketCentreAboveFloorMM);
     }
 
     private IEnumerator RenderLightSwitch(WallDeviceSpec spec, string name, string png,
         bool capturePanel = true)
     {
-        var go = ElementFactory.CreateLightSwitch(spec, true, null, name, Vector3.zero);
+        SpawnWallBehindDevices(name);
+
+        var go = ElementFactory.CreateLightSwitch(spec, true, null, name,
+            MountPosition(WallDeviceLayout.SwitchCentreAboveFloorMM));
         _spawned.Add(go);
 
         var source = go.GetComponent<LightSwitchElement>();
@@ -820,7 +895,68 @@ public class IsoScreenshotTests
         Assert.AreEqual(spec.DimensionsMM, source!.DimensionsMM,
             "габарит ВЫЧИСЛЯЕТСЯ из формы, как и у розетки");
 
-        yield return RenderIsoFrame(Vector3.zero, spec.DimensionsMM, png, capturePanel);
+        yield return RenderWallDevice(go, source, png, capturePanel,
+            WallDeviceLayout.SwitchCentreAboveFloorMM);
+    }
+
+    /// <summary>Прибор создаётся ПЕРЕД стеной (z &lt; 0) и на монтажной высоте:
+    /// сторона решает, какую из двух граней стены посадка сочтёт наружной, а
+    /// высота — та, что объявлена в раскладке, а не «где получилось».</summary>
+    private static Vector3 MountPosition(int centreAboveFloorMM) =>
+        new Vector3(0f, centreAboveFloorMM * AppConstants.MM_TO_UNITS,
+            -0.01f);
+
+    private IEnumerator RenderWallDevice(GameObject go, KitchenElement device, string png,
+        bool capturePanel, int centreAboveFloorMM)
+    {
+        yield return null;
+
+        float toU = AppConstants.MM_TO_UNITS;
+        Assert.AreEqual(0f, (device.transform.position.z + device.DimensionsMM.z * 0.5f * toU) / toU,
+            0.01f,
+            "прибор обязан сесть задней гранью на плоскость стены z=0. Не севший прибор "
+            + "висит там, где его создали, и кадр показывает тинт нарушения вместо "
+            + "изделия — с этого и начался разбор");
+        Assert.AreEqual(centreAboveFloorMM, device.transform.position.y / toU, 0.5f,
+            "и остаться на монтажной высоте: посадка двигает прибор только поперёк стены");
+
+        AssertFrameSceneHasNoCollisions(png);
+
+        var bounds = RendererBoundsOf(go);
+        var (camGo, cam) = CreateCloseUpCamera(bounds.center,
+            Mathf.Max(device.DimensionsMM.x, device.DimensionsMM.y) * WallDeviceFrameSpan);
+        _spawned.Add(camGo);
+        AssertFitsInFrame(cam, bounds, go.name);
+
+        yield return capturePanel
+            ? RenderToPng(cam, png)
+            : RenderToPng(cam, png, null);
+
+        Object.DestroyImmediate(camGo);
+    }
+
+    /// <summary>Кадр обязан снимать ИЗДЕЛИЕ, а не тинт нарушения: невалидный
+    /// элемент ElementHighlighter красит розовым поверх любого декора, и
+    /// отличить это от материала на PNG нельзя. Поэтому кадр спрашивает
+    /// валидатор прямо здесь — и красное НАЗЫВАЕТ правило кодом, а не жалуется
+    /// на цвет. Коды COL-* — ровно те нарушения, которые дают тинт; остальные
+    /// (GAP-*, DRW-*, DWH-*) сцену не красят и идут в сообщение справкой.</summary>
+    private static void AssertFrameSceneHasNoCollisions(string png)
+    {
+        var all = KitchenDesigner.Core.Analysis.SceneAnalyzer.Analyze();
+        var lines = new List<string>();
+        var tinting = new List<string>();
+        foreach (var issue in all)
+        {
+            string line = issue.Level + " " + issue.Code + " " + issue.Detail + " — " + issue.Message;
+            lines.Add(line);
+            if (issue.Code.StartsWith("COL-")) tinting.Add(line);
+        }
+
+        Assert.IsEmpty(tinting,
+            png + ": элемент в кадре нарушает правило расстановки, и снимок показывает "
+            + "розовый тинт нарушения вместо изделия.\nНарушения сцены:\n"
+            + string.Join("\n", lines));
     }
 
     private IEnumerator RenderIsoFrame(Vector3 pos, Vector3Int dims, string png,
@@ -1191,32 +1327,138 @@ public class IsoScreenshotTests
         Object.DestroyImmediate(camGo);
     }
 
+    /// <summary>Стена, на которой висит арматура. Настенный прибор без стены —
+    /// это НЕ «прибор в пустой сцене», а прибор, висящий в воздухе, и ядро
+    /// говорит об этом прямо: ConstraintValidator.CheckConnectivity не находит
+    /// у него ни одного контакта гранью с якорем и выдаёт COL-02 «Деталь не
+    /// имеет опоры». ElementHighlighter красит нарушителя _invalidMaterial —
+    /// розовым. Все кадры смесителя и стойки до этой правки сняты в тинте
+    /// ошибки: на них не было ни хрома, ни собственного материала, один
+    /// сигнал «красное».
+    ///
+    /// Стена лечит это по-настоящему, а не глушит проверку. Она разом
+    /// закрывает три вещи: прибор получает опору (правило перестаёт
+    /// срабатывать, потому что расстановка стала верной), Start → SnapToWall
+    /// сажает его вплотную к плоскости стены, и он же разворачивает его лицом
+    /// от стены — то есть к объективу, стоящему на -Z.</summary>
+    private const int FittingWallWidthMM = 3000;
+    private const int FittingWallHeightMM = 2500;
+    private const int FittingWallThicknessMM = 100;
+
+    /// <summary>Стена ставится так, чтобы посадка НЕ двигала прибор: её
+    /// передняя плоскость приходится ровно на заднюю грань габарита в той
+    /// позиции, куда прибор уже поставлен. Иначе Start сдвинул бы его ПОСЛЕ
+    /// того, как камера наведена (камера создаётся до первого кадра), и кадр
+    /// уехал бы мимо — сдвиг на полглубины выглядел бы как ошибка модели.
+    ///
+    /// Полное отображение стены включается здесь же. Это не косметика:
+    /// опущенная стена ужимается по Y вместе с transform, а валидация читает
+    /// ТОТ ЖЕ transform — под опущенной стеной прибор снова остаётся без
+    /// опоры и снова краснеет.</summary>
+    private void SpawnWallBehindFitting(string name, Vector3Int fittingDims, Vector3 fittingPos)
+    {
+        KitchenSettings.Instance.NormalView.wallsEnabled = true;
+        KitchenSettings.Instance.NormalView.lowerNearWalls = false;
+        KitchenSettings.Instance.NormalView.lowerAllWalls = false;
+
+        float standoff = AppConstants.HalfHeightUnits(fittingDims.z)
+            + AppConstants.HalfHeightUnits(FittingWallThicknessMM);
+
+        var wall = SpawnWallAt(name,
+            new Vector3Int(FittingWallWidthMM, FittingWallHeightMM, FittingWallThicknessMM),
+            new Vector3(fittingPos.x,
+                AppConstants.HalfHeightUnits(FittingWallHeightMM),
+                fittingPos.z + standoff));
+
+        AssertWallCoversTheBackOfTheFitting(wall, fittingDims, fittingPos, name);
+    }
+
+    /// <summary>Контакт гранью засчитывается только при перекрытии не меньше
+    /// Tolerance.MinSupportOverlap. Стена шире и выше прибора, поэтому доля
+    /// равна единице — но ровно до тех пор, пока задняя грань прибора целиком
+    /// лежит внутри стены. Вылези она за верх (стойка тянется к 2,25 м) — и
+    /// опора пропадёт, а кадр снова выйдет розовым, ничего об этом не
+    /// сказав.</summary>
+    private static void AssertWallCoversTheBackOfTheFitting(KitchenElement wall,
+        Vector3Int fittingDims, Vector3 fittingPos, string name)
+    {
+        float halfW = AppConstants.HalfHeightUnits(fittingDims.x);
+        float halfH = AppConstants.HalfHeightUnits(fittingDims.y);
+        var wallPos = wall.transform.position;
+
+        Assert.LessOrEqual(Mathf.Abs(fittingPos.x - wallPos.x) + halfW,
+            AppConstants.HalfHeightUnits(FittingWallWidthMM),
+            name + ": прибор шире стены — задняя грань выходит за её край, доля "
+            + "перекрытия падает ниже Tolerance.MinSupportOverlap и опоры не будет");
+        Assert.LessOrEqual(Mathf.Abs(fittingPos.y - wallPos.y) + halfH,
+            AppConstants.HalfHeightUnits(FittingWallHeightMM),
+            name + ": прибор выше стены — тот же обрыв опоры, только по вертикали");
+    }
+
+    /// <summary>Сенсор читает ТОТ ЖЕ источник, что и краска: ElementHighlighter
+    /// решает, красить ли элемент _invalidMaterial, по
+    /// ConstraintValidator.Validate(PartRegistry.GetAll()).violations. Спрашивать
+    /// что-то другое означало бы мерить не то, что нарисовано.</summary>
+    private static void AssertSeatedOnTheWallAndValidated(KitchenElement fitting,
+        Vector3 spawnedAt, string png)
+    {
+        Assert.AreEqual(0f, (spawnedAt - fitting.transform.position).magnitude, 1e-4f,
+            png + ": посадка на стену сдвинула прибор уже после того, как камера "
+            + "наведена — стена стоит не на том расстоянии");
+
+        var result = ConstraintValidator.Validate(PartRegistry.GetAll());
+        Assert.IsFalse(result.violations.Contains(fitting),
+            png + " снят в тинте ошибки валидации, а не в собственном материале. "
+            + "Нарушения сцены:\n" + ViolationReport(result));
+    }
+
+    private static string ViolationReport(ValidationResult result)
+    {
+        if (result.diagnostics == null || result.diagnostics.Count == 0)
+            return "(диагностики нет — нарушение пришло из проверки связности)";
+
+        var lines = new List<string>();
+        foreach (var d in result.diagnostics)
+        {
+            var issue = KitchenDesigner.Core.Analysis.IssueCatalog.FromViolation(d);
+            lines.Add(issue.Code + " " + issue.Message + " — " + issue.Detail);
+        }
+        return string.Join("\n", lines);
+    }
+
     private IEnumerator RenderBathMixer(BathMixerSpec spec, string name, string png,
         bool capturePanel = true)
     {
         var dims = BathMixerLayout.DimensionsMM(spec);
         Vector3 pos = MixerPosition(spec);
-        SpawnBathMixer(spec, name, pos);
+        SpawnWallBehindFitting(name + "Wall", dims, pos);
+        var mixer = SpawnBathMixer(spec, name, pos);
 
         yield return RenderIsoFrame(pos, dims, png, capturePanel);
+
+        AssertSeatedOnTheWallAndValidated(mixer, pos, png);
     }
 
     private IEnumerator RenderBathMixerCloseUp(BathMixerSpec spec, string name,
         Vector3 detailMM, float spanMM, string png)
     {
+        var dims = BathMixerLayout.DimensionsMM(spec);
         Vector3 pos = MixerPosition(spec);
-        SpawnBathMixer(spec, name, pos);
+        SpawnWallBehindFitting(name + "Wall", dims, pos);
+        var mixer = SpawnBathMixer(spec, name, pos);
 
         var bounds = BathMixerLayout.BoundsMM(spec);
         AssertDetailIsOnTheModel(bounds, detailMM, png);
 
         yield return RenderCloseUp(WorldFromLayoutMM(pos, bounds, detailMM), spanMM, png);
+
+        AssertSeatedOnTheWallAndValidated(mixer, pos, png);
     }
 
     private static Vector3 MixerPosition(BathMixerSpec spec) =>
         new Vector3(0f, BathMixerLayout.CentreAboveFloorMM(spec) * AppConstants.MM_TO_UNITS, 0f);
 
-    private void SpawnBathMixer(BathMixerSpec spec, string name, Vector3 pos)
+    private KitchenElement SpawnBathMixer(BathMixerSpec spec, string name, Vector3 pos)
     {
         var go = ElementFactory.CreateBathMixer(spec, name, pos);
         _spawned.Add(go);
@@ -1230,6 +1472,7 @@ public class IsoScreenshotTests
         Assert.AreEqual(BathMixerLayout.DimensionsMM(spec), mixer.DimensionsMM,
             "габарит смесителя ВЫЧИСЛЯЕТСЯ из формы: разойдись он с раскладкой, камера "
             + "кадрировала бы не то, что построено");
+        return mixer;
     }
 
     private IEnumerator RenderShowerColumn(ShowerColumnSpec spec, string name, string png,
@@ -1237,28 +1480,35 @@ public class IsoScreenshotTests
     {
         var dims = ShowerColumnLayout.DimensionsMM(spec);
         Vector3 pos = ColumnPosition(spec);
-        SpawnShowerColumn(spec, name, pos);
+        SpawnWallBehindFitting(name + "Wall", dims, pos);
+        var column = SpawnShowerColumn(spec, name, pos);
 
         yield return RenderIsoFrame(pos, dims, png, capturePanel);
+
+        AssertSeatedOnTheWallAndValidated(column, pos, png);
     }
 
     private IEnumerator RenderShowerColumnCloseUp(ShowerColumnSpec spec, string name,
         Vector3 detailMM, float spanMM, string png)
     {
+        var dims = ShowerColumnLayout.DimensionsMM(spec);
         Vector3 pos = ColumnPosition(spec);
-        SpawnShowerColumn(spec, name, pos);
+        SpawnWallBehindFitting(name + "Wall", dims, pos);
+        var column = SpawnShowerColumn(spec, name, pos);
 
         var bounds = ShowerColumnLayout.BoundsMM(spec);
         AssertDetailIsOnTheModel(bounds, detailMM, png);
 
         yield return RenderCloseUp(WorldFromLayoutMM(pos, bounds, detailMM), spanMM, png);
+
+        AssertSeatedOnTheWallAndValidated(column, pos, png);
     }
 
     private static Vector3 ColumnPosition(ShowerColumnSpec spec) =>
         new Vector3(0f,
             ShowerColumnLayout.CentreAboveFloorMM(spec) * AppConstants.MM_TO_UNITS, 0f);
 
-    private void SpawnShowerColumn(ShowerColumnSpec spec, string name, Vector3 pos)
+    private KitchenElement SpawnShowerColumn(ShowerColumnSpec spec, string name, Vector3 pos)
     {
         var go = ElementFactory.CreateShowerColumn(spec, name, pos);
         _spawned.Add(go);
@@ -1272,6 +1522,7 @@ public class IsoScreenshotTests
         Assert.AreEqual(ShowerColumnLayout.DimensionsMM(spec), column.DimensionsMM,
             "габарит стойки ВЫЧИСЛЯЕТСЯ из формы вместе с петлёй шланга: разойдись он с "
             + "раскладкой, камера кадрировала бы не то, что построено");
+        return column;
     }
 
     // ─ Radial shelf isometric screenshot ───────────────────
@@ -1674,8 +1925,11 @@ public class IsoScreenshotTests
         Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
         var go = ElementFactory.CreatePanel(dims, "IsoPanel", pos);
         _spawned.Add(go);
-        Assert.IsNotNull(go.GetComponent<PanelElement>(),
+        var panel = go.GetComponent<PanelElement>();
+        Assert.IsNotNull(panel,
             "ХДФ-задник обязан быть панелью, а не обычной доской");
+        StandOnFloor(panel!);
+        AssertFrameShowsDecorNotViolationTint(panel!, "iso_panel_500x716");
 
         yield return RenderElementIso(go, "iso_panel_500x716.png", 2.5f);
     }
@@ -1722,6 +1976,17 @@ public class IsoScreenshotTests
             "снимок обязан показывать то заполнение, которое заказали: два снимка с "
             + "одинаковой картинкой не отличили бы глухую вставку от стекла");
 
+        // Положительный контроль к StandOnFloor: у сборного фасада фабрика не
+        // ставит зазоров вовсе, коробка валидации совпадает с физической, и
+        // сдвиг обязан оказаться нулевым. Именно этим сборный фасад и отличался
+        // от обычного — не сборкой, а нулевыми зазорами.
+        float before = facade!.transform.position.y;
+        StandOnFloor(facade!);
+        Assert.AreEqual(before, facade!.transform.position.y, 1e-6f,
+            "сборный фасад без зазоров уже стоит на плите: ненулевой сдвиг означал бы, "
+            + "что фабрика начала выдавать зазоры и кадр надо пересматривать");
+        AssertFrameShowsDecorNotViolationTint(facade!, png);
+
         yield return RenderElementIso(go, png, 2.5f);
     }
 
@@ -1760,6 +2025,13 @@ public class IsoScreenshotTests
         _spawned.Add(go);
         Assert.IsNotNull(go.GetComponent<DishwasherElement>(),
             "посудомойка обязана быть посудомойкой, а не доской");
+        yield return null;
+
+        // Кадр был розовым целиком. Опору прибора судит DWH-05, а не COL-02:
+        // объём валидации начинается на 90 мм выше подошвы, и под ним пусто
+        // при ЛЮБОЙ правильной установке — см. DishwasherElementTests,
+        // «Dishwasher_OnTheFloor_IsNotReportedUnsupported…».
+        AssertFrameSceneHasNoCollisions("iso_dishwasher.png");
 
         yield return RenderElementIso(go, "iso_dishwasher.png", 3f);
     }
@@ -1774,6 +2046,15 @@ public class IsoScreenshotTests
         Assert.IsNotNull(go.GetComponentInChildren<Light>(),
             "светильник без источника света — просто шар: снимок обязан показывать "
             + "включённую лампу");
+        yield return null;
+
+        // Замер доли «розового» по кадру объявил этот снимок нарушением на 33 %.
+        // Это не тинт: светильник ЖЁЛТЫЙ, а тинта на нём не бывает вовсе —
+        // ElementHighlighter.KeepsItsOwnMaterialAlways выводит LightSourceElement
+        // из покраски, и ElementKind.Decor выводит его из парных проверок и из
+        // опоры. Правило под мебель до светильника не дотягивается, и кадр это
+        // фиксирует, чтобы следующий замер цвета не отправил чинить исправное.
+        AssertFrameSceneHasNoCollisions("iso_light_source.png");
 
         yield return RenderElementIso(go, "iso_light_source.png", 3f);
     }

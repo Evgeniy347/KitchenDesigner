@@ -6,9 +6,6 @@ namespace KitchenDesigner.Core
     {
         public const float TiltDeg = 20f;
 
-        /// <summary>Поворот головки поперёк рукоятки. Диск лейки сидит на шейке
-        /// НЕ соосно рукоятке, а развёрнутым на прямой угол: лицо с форсунками
-        /// смотрит от стены и чуть вниз, а не вверх вдоль палки.</summary>
         public const float HeadTurnDeg = 90f;
 
         public const float GripLengthRatio = 2.2f;
@@ -27,8 +24,6 @@ namespace KitchenDesigner.Core
         public static Vector3 AxisDirection =>
             new Vector3(0f, Mathf.Cos(TiltDeg * Mathf.Deg2Rad), Mathf.Sin(TiltDeg * Mathf.Deg2Rad));
 
-        /// <summary>Ось головки: <see cref="AxisDirection"/>, повёрнутая на
-        /// <see cref="HeadTurnDeg"/> в плоскости наклона рукоятки.</summary>
         public static Vector3 HeadAxisDirection =>
             new Vector3(0f, -Mathf.Sin(TiltDeg * Mathf.Deg2Rad), Mathf.Cos(TiltDeg * Mathf.Deg2Rad));
 

@@ -388,6 +388,52 @@ namespace KitchenDesigner.Tests.Geometry
                 + "начнёт косить мимо душа");
         }
 
+        /// <summary>Сюда переехали два комментария из
+        /// <c>Core/Geometry/ShowerColumnHandShower.cs</c> — правка ручной лейки
+        /// оставила их в продакшен-коде, а по CONVENTIONS.md → «Comments live in
+        /// tests» объяснение живёт в тесте (случай (b): комментарий снят, а тест,
+        /// который его заменяет, написан здесь же).
+        ///
+        /// Первый объяснял КОНСТАНТУ <c>HeadTurnDeg = 90</c>: диск лейки сидит на
+        /// шейке не соосно рукоятке, а развёрнутым на прямой угол, лицом от стены
+        /// и чуть вниз — а не вверх вдоль палки. Второй объяснял ПРОИЗВОДНУЮ
+        /// <c>HeadAxisDirection</c>: это ось рукоятки, повёрнутая на те же
+        /// <c>HeadTurnDeg</c> в плоскости наклона.
+        ///
+        /// Соседний тест <c>…_TurnsAcrossTheGripInsteadOfCappingIt</c> уже держит
+        /// первую половину, но меряет её по ГОТОВЫМ отрезкам трубы. Здесь угол
+        /// перевыводится из самих констант: развяжи <c>HeadAxisDirection</c> с
+        /// <c>HeadTurnDeg</c> — например, вбей туда 90° литералом или наклони на
+        /// свой угол — и отрезки по-прежнему сойдутся друг с другом, а связь
+        /// «повёрнута РОВНО на HeadTurnDeg» тихо исчезнет. Краснеет здесь.</summary>
+        [Test]
+        public void ShowerColumnHandShower_HeadAxis_IsTheGripAxisTurnedByHeadTurnDeg()
+        {
+            var grip = ShowerColumnHandShower.AxisDirection;
+            var head = ShowerColumnHandShower.HeadAxisDirection;
+
+            float turn = ShowerColumnHandShower.HeadTurnDeg * Mathf.Deg2Rad;
+            float cos = Mathf.Cos(turn);
+            float sin = Mathf.Sin(turn);
+            var turned = new Vector3(grip.x,
+                grip.y * cos - grip.z * sin,
+                grip.y * sin + grip.z * cos);
+
+            Assert.Less((head - turned).magnitude, Tol,
+                "ось головки обязана БЫТЬ осью рукоятки, повёрнутой на HeadTurnDeg в "
+                + "плоскости YZ: стойка вся построена в этой плоскости, и поворот в ней — "
+                + "единственный, который не уводит лейку вбок. Разъедься эти две величины — "
+                + "и смена HeadTurnDeg перестала бы что-либо значить");
+            Assert.AreEqual(0f, Vector3.Dot(grip, head), Tol,
+                "а раз угол прямой — оси ортогональны: соосная головка это леденец "
+                + "на палочке, а не лейка");
+            Assert.Greater(head.z, 0f,
+                "лицо с форсунками смотрит ОТ стены, в душ: у раскладки стойки +Z — это "
+                + "комната, z = 0 — плоскость стены");
+            Assert.Less(head.y, 0f,
+                "и чуть ВНИЗ, а не вверх вдоль палки — ровно на угол наклона рукоятки");
+        }
+
         [Test]
         public void ShowerColumnHandShower_Parts_FormOneUnbrokenChain()
         {

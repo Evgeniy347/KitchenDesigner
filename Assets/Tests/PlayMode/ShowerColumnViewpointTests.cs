@@ -315,10 +315,42 @@ public class ShowerColumnViewpointTests
         Object.DestroyImmediate(camGo);
     }
 
+    /// <summary>Стена, на которой висит стойка. Её в кадре НЕТ — съёмка идёт
+    /// по cullingMask приватного слоя, а стена остаётся на слое по умолчанию.
+    /// Стоит она не ради вида, а ради валидации: без стены стойка висит в
+    /// воздухе, ConstraintValidator не находит у неё ни одного контакта
+    /// гранью с якорем сцены, выдаёт COL-02 «Деталь не имеет опоры», и
+    /// ElementHighlighter красит её _invalidMaterial. Все пять кадров этого
+    /// набора до правки сняты розовыми — то есть показывали не материал
+    /// стойки, а тинт ошибки.
+    ///
+    /// Здесь стойка НЕ разворачивается (ColumnYawDeg = 0), поэтому задняя
+    /// грань габарита смотрит в −Z, и стена уходит туда же — за спину камерам,
+    /// которые все стоят со стороны комнаты.</summary>
+    private const int WallWidthMM = 3000;
+    private const int WallHeightMM = 2500;
+    private const int WallThicknessMM = 100;
+
+    private void SpawnWallBehindColumn(string name, Vector3Int dims, Vector3 pos)
+    {
+        KitchenSettings.Instance.NormalView.wallsEnabled = true;
+        KitchenSettings.Instance.NormalView.lowerNearWalls = false;
+        KitchenSettings.Instance.NormalView.lowerAllWalls = false;
+
+        float standoff = AppConstants.HalfHeightUnits(dims.z)
+            + AppConstants.HalfHeightUnits(WallThicknessMM);
+
+        var wallGo = ElementFactory.CreateWall(
+            new Vector3Int(WallWidthMM, WallHeightMM, WallThicknessMM), name,
+            new Vector3(pos.x, AppConstants.HalfHeightUnits(WallHeightMM), pos.z - standoff));
+        _spawned.Add(wallGo);
+    }
+
     private GameObject SpawnColumn(ShowerColumnSpec spec, string name)
     {
         var pos = new Vector3(0f,
             ShowerColumnLayout.CentreAboveFloorMM(spec) * AppConstants.MM_TO_UNITS, 0f);
+        SpawnWallBehindColumn(name + "Wall", ShowerColumnLayout.DimensionsMM(spec), pos);
         var go = ElementFactory.CreateShowerColumn(spec, name, pos);
         _spawned.Add(go);
         go.transform.rotation = Quaternion.Euler(0f, ColumnYawDeg, 0f);
@@ -332,23 +364,37 @@ public class ShowerColumnViewpointTests
         return go;
     }
 
-    /// <summary>Стойка — IWallMounted, и её Start зовёт SnapToWall. Стен в
-    /// сцене нет, поэтому посадка обязана быть пустой операцией — но если
-    /// сцена когда-нибудь обзаведётся стеной, элемент уедет и развернётся
-    /// между созданием и кадром, а имя ракурса будет врать молча.</summary>
+    /// <summary>Стойка — IWallMounted, и её Start зовёт SnapToWall. Стена в
+    /// сцене теперь ЕСТЬ, и поставлена она ровно так, чтобы посадка ничего не
+    /// сдвинула: передняя плоскость стены приходится на заднюю грань габарита,
+    /// а разворот, который посадка задаёт сама, равен ColumnYawDeg. Проверка
+    /// от этого не ослабла, а усилилась — раньше она сторожила пустоту, теперь
+    /// сторожит арифметику расстояния до стены.
+    ///
+    /// Заодно спрашивается сама валидация, и спрашивается ТОТ ЖЕ источник, из
+    /// которого ElementHighlighter берёт цвет: элемент в violations — значит на
+    /// кадре не материал стойки, а розовый тинт ошибки.</summary>
     private static void AssertColumnStayedWhereItWasPut(GameObject go, ShowerColumnSpec spec)
     {
-        float expectedY =
-            ShowerColumnLayout.CentreAboveFloorMM(spec) * AppConstants.MM_TO_UNITS;
+        var pos = new Vector3(0f,
+            ShowerColumnLayout.CentreAboveFloorMM(spec) * AppConstants.MM_TO_UNITS, 0f);
 
-        Assert.AreEqual(expectedY, go.transform.position.y, 1e-3f,
-            "стойка уехала по высоте между созданием и кадром: SnapToWall нашёл стену");
+        Assert.AreEqual(0f, (pos - go.transform.position).magnitude, 1e-3f,
+            "стойка уехала между созданием и кадром: стена стоит не на том расстоянии, "
+            + "и посадка сдвинула её после того, как камера наведена");
         Assert.AreEqual(ColumnYawDeg, go.transform.eulerAngles.y, 1e-2f,
             "стойку кто-то развернул между созданием и кадром — имена ракурсов после "
             + "этого врут: «вид сбоку» показывает не бок");
         Assert.AreEqual(Vector3.one, go.transform.localScale,
             "меш стойки строится в миллиметрах и живёт при единичном масштабе: любой "
             + "другой означал бы двойное масштабирование и кадр не по габариту");
+
+        var element = go.GetComponent<KitchenElement>();
+        var validation = ConstraintValidator.Validate(PartRegistry.GetAll());
+        Assert.IsFalse(validation.violations.Contains(element),
+            "стойка помечена нарушителем (COL-02 «Деталь не имеет опоры»): контакта "
+            + "гранью со стеной нет, и кадр выйдет розовым — тинтом ошибки вместо "
+            + "собственного материала");
     }
 
     private static void SetLayerRecursively(GameObject go, int layer)
