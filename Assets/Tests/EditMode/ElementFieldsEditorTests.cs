@@ -66,6 +66,11 @@ public class ElementFieldsEditorTests
     private PillarElement Pillar() =>
         Spawn<PillarElement>(ElementFactory.CreatePillar(PillarElement.MidHeightMM_Default, "Опора", Vector3.zero));
 
+    private PipeElement Pipe() =>
+        Spawn<PipeElement>(ElementFactory.CreatePipe(
+            KitchenDesigner.Core.Plumbing.PipeSpec.DEFAULT_SIZE,
+            PipeElementSpec.DEFAULT_LENGTH_MM, "Труба", Vector3.zero));
+
     private DrawerElement Drawer() =>
         Spawn<DrawerElement>(ElementFactory.CreateDrawer(
             DrawerType.A, 350, DrawerColor.Anthracite, 400, "Ящик", Vector3.zero));
@@ -819,5 +824,98 @@ public class ElementFieldsEditorTests
         Type("Глубина", "999");
         Assert.AreEqual(depthBefore, window.DimensionsMM.z,
             "поле Г у окна игнорируется даже когда значение туда попало");
+    }
+
+    private TMP_Text Label(string label) =>
+        Panel().Find($"L_{label}")!.GetComponent<TMP_Text>();
+
+    private static readonly string[] PipeDerivedRows =
+        { "Наружный Ø", "Внутренний Ø", "Толщина стенки" };
+
+    /// <summary>Строки трубы, которые ЧИТАЮТ: диаметры и толщина стенки. Прятать
+    /// их нельзя — они идут в заказ, а править нельзя — их считает ГОСТ по
+    /// условному проходу (docs/UI-GUIDELINES.md §9).</summary>
+    [Test]
+    public void Pipe_DerivedRows_StayOnScreen_AndShowTheTableValues()
+    {
+        _menu!.Open(Pipe());
+
+        foreach (var row in PipeDerivedRows)
+            Assert.IsTrue(Field(row).gameObject.activeInHierarchy,
+                $"строка «{row}» обязана остаться на экране: её читают, а не печатают в неё");
+
+        Assert.AreEqual("26.8", Text(Field("Наружный Ø")), "ДУ 20 по ГОСТ 3262-75");
+        Assert.AreEqual("21.2", Text(Field("Внутренний Ø")));
+        Assert.AreEqual("2.8", Text(Field("Толщина стенки")));
+    }
+
+    [Test]
+    public void Pipe_DerivedRows_AreLocked_AndTheirLabelsAreDimmedWithThem()
+    {
+        _menu!.Open(Pipe());
+
+        foreach (var row in PipeDerivedRows)
+        {
+            Assert.IsFalse(Field(row).interactable,
+                $"«{row}» считает геометрия: поле, в которое человек правит ту же величину, — "
+                + "это второе её описание, и они разойдутся");
+            Assert.IsTrue(Field(row).readOnly, $"и печатать в «{row}» тоже нельзя");
+            Assert.AreEqual(UIStyle.TextDisabled, Label(row).color,
+                $"яркая подпись у мёртвого поля читается как «сюда можно печатать» — «{row}»");
+        }
+    }
+
+    [Test]
+    public void Pipe_WidthAndDepthRows_AreLocked_BecauseTheBoreOwnsThem()
+    {
+        var pipe = Pipe();
+        _menu!.Open(pipe);
+
+        foreach (var row in new[] { "Ширина", "Глубина" })
+        {
+            Assert.IsFalse(Field(row).interactable,
+                $"сечение трубы задаёт условный проход, а не «{row}»");
+            Assert.IsTrue(Field(row).readOnly);
+            Assert.AreEqual(pipe.SectionMM.ToString(), Text(Field(row)),
+                "габаритная строка обязана показывать то же сечение, что и геометрия");
+        }
+
+        Assert.IsTrue(Field("Высота").interactable,
+            "длина трубы — единственный её размер, и править его можно");
+    }
+
+    [Test]
+    public void Pipe_HeightRow_IsTheLengthOfTheRun()
+    {
+        var pipe = Pipe();
+        _menu!.Open(pipe);
+
+        Type("Высота", "1450");
+
+        Assert.AreEqual(1450, pipe.LengthMM, "у трубы «высота» — это длина трассы");
+        Assert.AreEqual(1450, pipe.DimensionsMM.y);
+    }
+
+    /// <summary>Выпадающий список — ЕДИНСТВЕННЫЙ писатель сечения. Одна правка
+    /// обязана прокатиться по всем трём производным строкам И по габариту: строка,
+    /// оставшаяся со старым числом, — это ровно тот случай, ради которого §9
+    /// запрещает второе поле для одной величины.</summary>
+    [Test]
+    public void Pipe_BoreDropdown_MovesEveryDerivedRowAndTheSection_AtOnce()
+    {
+        var pipe = Pipe();
+        _menu!.Open(pipe);
+
+        Dropdown("CtxPipeSize").value =
+            PipeElementSpec.IndexOf(KitchenDesigner.Core.Plumbing.PipeSpec.Dn40);
+
+        Assert.AreEqual(KitchenDesigner.Core.Plumbing.PipeSpec.Dn40, pipe.SizeId);
+        Assert.AreEqual(48, pipe.DimensionsMM.x, "ДУ 40 — наружный 48,0");
+        Assert.AreEqual(48, pipe.DimensionsMM.z);
+        Assert.AreEqual("48", Text(Field("Наружный Ø")));
+        Assert.AreEqual("41", Text(Field("Внутренний Ø")), "48,0 − 2 × 3,5");
+        Assert.AreEqual("3.5", Text(Field("Толщина стенки")));
+        Assert.AreEqual(PipeElementSpec.DEFAULT_LENGTH_MM, pipe.LengthMM,
+            "смена диаметра не имеет права трогать длину: это разные величины");
     }
 }

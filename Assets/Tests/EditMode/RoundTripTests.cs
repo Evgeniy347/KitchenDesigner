@@ -1048,4 +1048,29 @@ public class RoundTripTests
         Assert.AreEqual(new Vector3Int(30, 80, 30), r!.DimensionsMM,
             "габарит опоры — пятка плюс вся резьба");
     }
+
+    /// <summary>Труба сохраняет ИСТОЧНИК ИСТИНЫ и только его: условный проход и
+    /// длину. Наружный, внутренний и толщина стенки в файл не попадают — их
+    /// пересчитывают из ДУ при загрузке, поэтому проверять их надо ПОСЛЕ
+    /// круга: значение, записанное в файл, пережило бы даже правку таблицы
+    /// ГОСТ, а вычисленное — нет (conventions/SERIALIZATION.md → «Golden rule:
+    /// serialize SOURCE OF TRUTH»).</summary>
+    [Test]
+    public void Pipe_KeepsItsBoreAndLength_AndRederivesEveryDiameter()
+    {
+        var go = ElementFactory.CreatePipe(KitchenDesigner.Core.Plumbing.PipeSpec.Dn32, 1450,
+            "Стояк1", new Vector3(0.4f, 0.725f, -1.2f));
+        Assert.IsNotNull(GetElement(go));
+
+        FullRoundTrip();
+
+        var r = Object.FindObjectsByType<KitchenElement>()[0] as PipeElement;
+        Assert.IsNotNull(r, "восстановиться обязана именно труба, а не доска");
+        Assert.AreEqual(KitchenDesigner.Core.Plumbing.PipeSpec.Dn32, r!.SizeId, "условный проход");
+        Assert.AreEqual(1450, r!.LengthMM, "длина");
+        Assert.AreEqual(42.3f, r!.OuterDiameterMm, 0.001f, "наружный Ø выведен из ДУ 32");
+        Assert.AreEqual(35.9f, r!.InnerDiameterMm, 0.001f, "внутренний Ø тоже");
+        Assert.AreEqual(new Vector3Int(42, 1450, 42), r!.DimensionsMM,
+            "габарит: сечение по наружному диаметру, высота — длина трассы");
+    }
 }

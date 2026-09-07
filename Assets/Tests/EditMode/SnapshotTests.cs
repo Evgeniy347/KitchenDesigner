@@ -281,6 +281,28 @@ public class SnapshotTests
         Snapshot.Match(json, "screw_leg_custom");
     }
 
+    // ── Pipe snapshots ───────────────────────────────────────────────────
+
+    [Test]
+    public void Snapshot_Pipe_Default()
+    {
+        var go = ElementFactory.CreatePipe(KitchenDesigner.Core.Plumbing.PipeSpec.DEFAULT_SIZE,
+            PipeElementSpec.DEFAULT_LENGTH_MM, "DefaultPipe", Vector3.zero);
+        Add(go);
+        var json = CaptureJson(new[] { go.GetComponent<KitchenElement>() });
+        Snapshot.Match(json, "pipe_default");
+    }
+
+    [Test]
+    public void Snapshot_Pipe_Custom()
+    {
+        var go = ElementFactory.CreatePipe(KitchenDesigner.Core.Plumbing.PipeSpec.Dn40, 1250,
+            "CustomPipe", new Vector3(0.4f, 0.625f, -1.0f));
+        Add(go);
+        var json = CaptureJson(new[] { go.GetComponent<KitchenElement>() });
+        Snapshot.Match(json, "pipe_custom");
+    }
+
     [Test]
     public void Snapshot_RadialShelf_Default()
     {
