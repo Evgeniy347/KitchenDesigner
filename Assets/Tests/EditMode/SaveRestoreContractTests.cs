@@ -160,7 +160,7 @@ public class SaveRestoreContractTests
     }
 
     [Test]
-    public void Restore_EdgeManualMask_WinsOverTheLegacyFlag()
+    public void Restore_EdgeForcedMask_WinsOverTheLegacyFlag()
     {
         var data = BareBoardData("PerSideEdges");
         data.edgeSkipValidation = true;

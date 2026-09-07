@@ -370,6 +370,14 @@ public class ContextMenuLayoutTests
             Assert.AreEqual(UIStyle.EdgePresent,
                 panel.Find($"CtxEdgeDiagram/CtxEdge{side}").GetComponent<Image>().color,
                 $"торец {side} открыт — кромка есть");
+
+        // Цвет продублирован формой (UI-GUIDELINES правило 10): сторона С кромкой
+        // залита сплошь, сторона БЕЗ кромки — пустой контур. Иначе жёлтый,
+        // зелёный и красный неразличимы при дальтонизме и в оттенках серого.
+        foreach (var side in new[] { "L1", "L2", "W1", "W2" })
+            Assert.IsFalse(panel.Find($"CtxEdgeDiagram/CtxEdge{side}/CtxEdge{side}Hole")
+                .GetComponent<Image>().enabled,
+                $"торец {side} с кромкой залит сплошь, а не нарисован контуром");
     }
 
     [Test]
