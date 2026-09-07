@@ -11,6 +11,7 @@ using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
 using KitchenDesigner.Core.MCP.Contract;
+using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.UI;
 
 /// <summary>Расхождение между тем, что человек правит в панели свойств, и тем,
@@ -216,6 +217,8 @@ public class McpUiPropertyParityTests : McpTestFixture
             new Vector3Int(FloorElement.DEFAULT_SIZE_MM, FloorElement.DEFAULT_THICKNESS_MM,
                 FloorElement.DEFAULT_SIZE_MM), PROBE, Vector3.zero));
         yield return ("LightSourceElement", () => ElementFactory.CreateLightSource(PROBE, Vector3.zero));
+        yield return ("PipeElement", () => ElementFactory.CreatePipe(
+            PipeSpec.Dn20, PipeElementSpec.DEFAULT_LENGTH_MM, PROBE, Vector3.zero));
     }
 
     private KitchenElement Spawn(Func<GameObject> make)
