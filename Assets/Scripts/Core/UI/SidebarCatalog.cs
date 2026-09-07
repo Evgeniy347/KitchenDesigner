@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core.UI
 {
     public static class SidebarCatalog
     {
-        public const int DefaultGapMM = 2;
+        public const int DefaultGapMM = FacadeElement.DEFAULT_GAP_MM;
         public const string DefaultDrawerType = "A";
         public const int DefaultDrawerLengthMM = 350;
         public const string DefaultDrawerColor = "Anthracite";
@@ -174,7 +174,8 @@ namespace KitchenDesigner.Core.UI
                         SidebarItemKind.Facade, DefaultGapMM, DefaultGapMM,
                         DefaultGapMM, DefaultGapMM),
                     new Item("Фасад сборный", new Vector3Int(600, 716, 18),
-                        SidebarItemKind.AssembledFacade, 0, 0, 0, 0),
+                        SidebarItemKind.AssembledFacade, DefaultGapMM, DefaultGapMM,
+                        DefaultGapMM, DefaultGapMM),
                 }
             };
         }

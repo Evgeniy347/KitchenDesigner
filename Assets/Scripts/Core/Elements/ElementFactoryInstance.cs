@@ -225,6 +225,12 @@ namespace KitchenDesigner.Core
             var facade = go.AddComponent<AssembledFacadeElement>();
             facade.PartName = go.name;
             facade.DimensionsMM = dimensionsMM;
+            facade.GapLeft = FacadeElement.DEFAULT_GAP_MM;
+            facade.GapRight = FacadeElement.DEFAULT_GAP_MM;
+            facade.GapTop = FacadeElement.DEFAULT_GAP_MM;
+            facade.GapBottom = FacadeElement.DEFAULT_GAP_MM;
+            facade.GapFront = 0;
+            facade.GapBack = 0;
             facade.Fill = fill;
             MaterialManager.ApplyById(facade, facade.MaterialId);
 

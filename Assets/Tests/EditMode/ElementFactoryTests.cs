@@ -113,6 +113,36 @@ public class ElementFactoryTests
     }
 
     [Test]
+    public void CreateAssembledFacade_CarriesTheDefaultFacadeGaps_AndTheValidationBoxGrowsByThem()
+    {
+        var dims = new Vector3Int(600, 716, 18);
+        var go = ElementFactory.CreateAssembledFacade(dims, "AssembledDefaults", Vector3.zero);
+        var facade = go.GetComponent<AssembledFacadeElement>();
+
+        Assert.IsNotNull(facade, "фабрика обязана вернуть сборный фасад");
+        Assert.AreEqual(FacadeElement.DEFAULT_GAP_MM, facade!.GapLeft,
+            "притвор слева берётся из той же константы, что и у щитового фасада: "
+            + "второе число 2, живущее отдельно, разъедется при первой же правке");
+        Assert.AreEqual(FacadeElement.DEFAULT_GAP_MM, facade!.GapRight, "притвор справа");
+        Assert.AreEqual(FacadeElement.DEFAULT_GAP_MM, facade!.GapTop, "притвор сверху");
+        Assert.AreEqual(FacadeElement.DEFAULT_GAP_MM, facade!.GapBottom, "притвор снизу");
+        Assert.AreEqual(0, facade!.GapFront,
+            "по глубине притвора нет: фасад не расходится с соседом вдоль своей толщины");
+        Assert.AreEqual(0, facade!.GapBack, "по глубине притвора нет и сзади");
+
+        float minY = float.MaxValue;
+        foreach (var v in facade!.GetVertices()) minY = Mathf.Min(minY, v.y);
+        Assert.AreEqual(
+            -(dims.y * 0.5f + FacadeElement.DEFAULT_GAP_MM) * AppConstants.MM_TO_UNITS,
+            minY, 1e-6f,
+            "зазор РАСШИРЯЕТ коробку валидации, а не сжимает её: её низ уходит на "
+            + "DEFAULT_GAP_MM ниже физического низа, поэтому постановка сборного фасада "
+            + "на плиту по GetVertices поднимает его ровно на эти же миллиметры");
+
+        ElementFactory.DestroyPart(go);
+    }
+
+    [Test]
     public void Duplicate_AssembledFacade_PreservesGaps()
     {
         // Регрессия: фабрика CreateAssembledFacade не принимает зазоры, и дубль
