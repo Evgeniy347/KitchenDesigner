@@ -52,12 +52,18 @@ namespace KitchenDesigner.Core.UI
 
         private readonly Transform _parent;
         private readonly ContextMenuLayout _layout;
+        private readonly UIRowRegistry _registered = new();
 
         public ContextMenuRowFactory(Transform parent, ContextMenuLayout layout)
         {
             _parent = parent;
             _layout = layout;
         }
+
+        public void SyncEnabledState() => _registered.Sync();
+
+        public IEnumerable<(TMP_Text? label, Selectable? control)> LabelledRows =>
+            _registered.Rows;
 
         public TMP_InputField NumberField(string label, RowVisibility visibility, string unit = "мм",
             string? nodeSuffix = null)
@@ -67,6 +73,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
             var field = UIFactory.CreateNumberField("F_" + node, _parent, "",
                 new Vector2(FieldX, 0), new Vector2(FieldW, FieldH), unit);
+            _registered.Add(lbl, field);
             visibility.Register(_layout, RowH, RowGap,
                 lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
@@ -78,6 +85,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(NameLabelX, 0), new Vector2(NameLabelW, LabelH));
             var field = UIFactory.CreateInputField("F_Название", _parent, "",
                 new Vector2(NameFieldX, 0), new Vector2(NameFieldW, FieldH));
+            _registered.Add(lbl, field);
             _layout.Add(RowH, RowGap, lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
@@ -88,6 +96,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(columnX, 0), new Vector2(TriLabelW, TriLabelH), TextAnchor.MiddleCenter);
             var field = UIFactory.CreateInputField("F_" + label, _parent, "",
                 new Vector2(columnX, 0), new Vector2(TriFieldW, FieldH));
+            _registered.Add(lbl, field);
             _layout.AddTriColumn(lbl.rectTransform, field.GetComponent<RectTransform>());
             return field;
         }
@@ -99,6 +108,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(DropdownLabelX, 0), new Vector2(DropdownLabelW, LabelH));
             var dd = UIFactory.CreateDropdown(nodeName ?? ("Dd_" + label), _parent, options,
                 new Vector2(DropdownX, 0), new Vector2(DropdownW, DropdownH), onChanged);
+            _registered.Add(lbl, dd);
             visibility.Register(_layout, DropdownH, RowGap,
                 lbl.rectTransform, dd.GetComponent<RectTransform>());
             return dd;
@@ -112,6 +122,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(DropdownLabelX, 0), new Vector2(DropdownLabelW, LabelH));
             var dd = UIFactory.CreateDropdown(nodeName, _parent, options,
                 new Vector2(DropdownX, 0), new Vector2(DropdownW, DropdownH), onChanged);
+            _registered.Add(lbl, dd);
             visibility.Register(_layout, DropdownH, RowGap,
                 lbl.rectTransform, dd.GetComponent<RectTransform>());
             return (lbl, dd);

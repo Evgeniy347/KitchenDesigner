@@ -125,6 +125,8 @@ namespace KitchenDesigner.Core.UI
 
         internal ContextMenuTextureSection Textures => _textures;
 
+        internal ContextMenuRowFactory RowFactory => _rows;
+
         internal ContextMenuGrooveSection Grooves => _grooves;
 
         internal ContextMenuGapSection Gaps => _gaps;
@@ -605,6 +607,8 @@ namespace KitchenDesigner.Core.UI
                 _fields.ClearHighlights();
                 TrackAllFields();
 
+                _rows.SyncEnabledState();
+
                 _root!.transform.SetAsLastSibling();
                 _root.SetActive(true);
             }
@@ -725,6 +729,8 @@ namespace KitchenDesigner.Core.UI
 
             _fields.ClearHighlights();
             TrackAllFields();
+
+            _rows.SyncEnabledState();
 
             _fields.ShowRejections();
         }

@@ -160,25 +160,21 @@ namespace KitchenDesigner.Core.UI
         public void SetFieldEnabled(TMP_InputField? field, string labelKey, bool enabled)
         {
             if (field == null) return;
-            field.interactable = enabled;
-            if (field.textComponent != null)
-                field.textComponent.color = enabled ? UIStyle.Text : UIStyle.TextDisabled;
+            UIRowEnabled.SetControlEnabled(field, enabled);
             SetLabelEnabled(labelKey, enabled);
         }
 
         public void SetToggleEnabled(Toggle? toggle, string labelKey, bool enabled)
         {
             if (toggle == null) return;
-            toggle.interactable = enabled;
-            if (toggle.graphic != null)
-                toggle.graphic.color = enabled ? UIStyle.Accent : UIStyle.TextDisabled;
+            UIRowEnabled.SetControlEnabled(toggle, enabled);
             SetLabelEnabled(labelKey, enabled);
         }
 
         public void SetLabelEnabled(string labelKey, bool enabled)
         {
-            if (_rowLabels.TryGetValue(labelKey, out var lbl) && lbl != null)
-                lbl.color = enabled ? UIStyle.Text : UIStyle.TextDisabled;
+            if (_rowLabels.TryGetValue(labelKey, out var lbl))
+                UIRowEnabled.SetLabelEnabled(lbl, enabled);
         }
 
         public static RectTransform CreateRow(string name, Transform parent, float y)
