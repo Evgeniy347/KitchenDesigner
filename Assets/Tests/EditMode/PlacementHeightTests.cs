@@ -15,12 +15,18 @@ using KitchenDesigner.Core;
 /// Розетка и выключатель падали ровно так же и с тем же кодом. Их этого
 /// никто не заметил: розетка высотой 80 мм, поставленная на пол вместо 850,
 /// выглядит просто «низковато», а не сломанно. Поэтому проверка тут не одна
-/// на смеситель, а на все четыре типа сразу — симптом у них общий, и чинится
+/// на смеситель, а на все типы сразу — симптом у них общий, и чинится
 /// он в одном месте.
 ///
-/// Второй тест — обратный, и без него первый бесполезен: обычная доска
-/// ОБЯЗАНА лечь на пол. Разреши сохранять высоту всем — и первые четыре
-/// проверки останутся зелёными, а вся мебель начнёт висеть в воздухе там,
+/// Пятой оказалась плита пола, и она — обратный случай: её заводят НИЖЕ
+/// нулевой отметки, на −h/2, чтобы верхняя грань легла ровно на пол, а
+/// PlacementController поднимал её на +h/2. Ошибка на всю толщину плиты,
+/// и наверх, а не вниз, — поэтому её проверка не может пользоваться общим
+/// помощником: тот требует высоту БОЛЬШЕ половины габарита.
+///
+/// Последний тест — обратный, и без него остальные бесполезны: обычная доска
+/// ОБЯЗАНА лечь на пол. Разреши сохранять высоту всем — и проверки выше
+/// останутся зелёными, а вся мебель начнёт висеть в воздухе там,
 /// где её отпустили.</summary>
 public class PlacementHeightTests
 {
@@ -92,6 +98,33 @@ public class PlacementHeightTests
             go => ElementFactory.CreateShowerColumn(ShowerColumnSpec.Default, "Стойка", go),
             ShowerColumnLayout.CentreAboveFloorMM(ShowerColumnSpec.Default),
             "стойка длиннее человека, и уроненная на пол она уходит лейкой под потолок");
+    }
+
+    [Test]
+    public void AFloorSlabOnTheCursor_KeepsItsTopFaceAtTheGround()
+    {
+        var dims = new Vector3Int(FloorElement.DEFAULT_SIZE_MM,
+            FloorElement.DEFAULT_THICKNESS_MM, FloorElement.DEFAULT_SIZE_MM);
+        float spawnCentreUnits = -dims.y * 0.5f * AppConstants.MM_TO_UNITS;
+
+        var go = ElementFactory.CreateFloor(dims, "Пол",
+            new Vector3(0f, spawnCentreUnits, 0f));
+        _spawned.Add(go);
+        var floor = go.GetComponent<FloorElement>();
+        Assert.IsNotNull(floor, "фабрика обязана вернуть плиту пола");
+        Assert.IsInstanceOf<IKeepsPlacementHeight>(floor!,
+            "плиту заводят на своей высоте — значит она обязана нести "
+            + "IKeepsPlacementHeight, иначе PlacementController перебьёт −h/2 на +h/2");
+
+        _placement.Begin(floor!);
+
+        Assert.AreEqual(spawnCentreUnits, go.transform.position.y, Tol,
+            "плита лежит ПОД нулевой отметкой: верхняя грань — это и есть пол, по "
+            + "которому стоит мебель. Поднять её на +h/2 значит утопить в ней все "
+            + "цоколи на всю толщину плиты");
+        Assert.Less(go.transform.position.y, 0f,
+            "и знак тут несущий: у плиты нулевой толщины −h/2 и +h/2 совпали бы, "
+            + "и проверка выше прошла бы на сломанном коде");
     }
 
     [Test]

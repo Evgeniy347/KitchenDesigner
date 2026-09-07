@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class FloorElement : KitchenElement
+    public class FloorElement : KitchenElement, IKeepsPlacementHeight
     {
         public override bool CanFollowAnAttachParent => false;
 
