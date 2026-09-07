@@ -29,6 +29,8 @@ namespace KitchenDesigner.Core
             SnapElementEdgesToMillimetreGrid(resolved);
             ScrewLegHostLink.ApplyAll(PartRegistry.GetAll());
 
+            MigrateEdgeStates(data, resolved);
+
             CommandStack.Instance.Import(data.undoHistory, data.redoHistory,
                 i => (i >= 0 && i < resolved.Count) ? resolved[i]! : null!);
 
@@ -36,6 +38,13 @@ namespace KitchenDesigner.Core
                 ElementHighlighter.Instance.RefreshHighlights();
 
             return created;
+        }
+
+        private static void MigrateEdgeStates(ProjectData data, List<KitchenElement?> resolved)
+        {
+            int migrated = EdgeStateMigration.Apply(data.elements, resolved);
+            if (migrated > 0)
+                Debug.Log($"[Кромки] Явные состояния торцов перенесены по расчёту: {migrated} дет.");
         }
 
         private static void RestoreGroups(GroupData[]? groups)
