@@ -24,6 +24,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _edgeBanding = true;
         [SerializeField] private float _edgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
         [SerializeField] private int _edgeManualMask;
+        [SerializeField] private int _edgeSuppressedMask;
 
         public string PartName
         {
@@ -135,16 +136,34 @@ namespace KitchenDesigner.Core
                 AppConstants.EDGE_THICKNESS_MIN_MM, AppConstants.EDGE_THICKNESS_MAX_MM);
         }
 
-        public int EdgeManualMask
+        public int EdgeForcedMask
         {
             get => _edgeManualMask;
-            set => _edgeManualMask = value & EdgeManual.AllMask;
+            set
+            {
+                _edgeManualMask = value & EdgeManual.AllMask;
+                _edgeSuppressedMask &= ~_edgeManualMask;
+            }
         }
 
-        public bool IsEdgeManual(EdgeSide side) => EdgeManual.Has(_edgeManualMask, side);
+        public int EdgeSuppressedMask
+        {
+            get => _edgeSuppressedMask;
+            set
+            {
+                _edgeSuppressedMask = value & EdgeManual.AllMask;
+                _edgeManualMask &= ~_edgeSuppressedMask;
+            }
+        }
 
-        public void SetEdgeManual(EdgeSide side, bool manual) =>
-            _edgeManualMask = EdgeManual.With(_edgeManualMask, side, manual);
+        public EdgeSideState EdgeStateOf(EdgeSide side) =>
+            EdgeStates.Of(_edgeManualMask, _edgeSuppressedMask, side);
+
+        public void SetEdgeState(EdgeSide side, EdgeSideState state)
+        {
+            _edgeManualMask = EdgeStates.ForcedMaskWith(_edgeManualMask, side, state);
+            _edgeSuppressedMask = EdgeStates.SuppressedMaskWith(_edgeSuppressedMask, side, state);
+        }
 
         public List<GrooveSpec> Grooves => _grooves ??= new List<GrooveSpec>();
 

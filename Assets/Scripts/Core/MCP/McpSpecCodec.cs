@@ -85,6 +85,10 @@ namespace KitchenDesigner.Core.MCP
 
         public const char OVERLAY_ITEM_SEPARATOR = ';';
 
+        public const char EDGE_ITEM_SEPARATOR = ';';
+
+        private static readonly char[] EDGE_ITEM_SEPARATORS = { ';', ',' };
+
         public static bool TryParseTextureOverlays(string spec,
             out List<TextureOverlaySpec> result, out string error)
         {
@@ -194,14 +198,74 @@ namespace KitchenDesigner.Core.MCP
             return string.Join(OVERLAY_ITEM_SEPARATOR + " ", parts);
         }
 
+        public static bool TryParseEdgeSides(string spec,
+            out List<(EdgeSide side, EdgeSideState state)> result, out string error)
+        {
+            result = new List<(EdgeSide, EdgeSideState)>();
+            error = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(spec)) return true;
+
+            foreach (var rawItem in spec.Split(EDGE_ITEM_SEPARATORS))
+            {
+                var item = rawItem.Trim();
+                if (item.Length == 0) continue;
+
+                var parts = item.Split(':');
+                if (parts.Length != 2)
+                {
+                    error = $"'{item}' is not \"side:state\" (e.g. \"L1:on\")";
+                    return false;
+                }
+
+                EdgeSide side;
+                switch (parts[0].Trim().ToUpperInvariant())
+                {
+                    case "L1": side = EdgeSide.L1; break;
+                    case "L2": side = EdgeSide.L2; break;
+                    case "W1": side = EdgeSide.W1; break;
+                    case "W2": side = EdgeSide.W2; break;
+                    default:
+                        error = $"unknown side '{parts[0].Trim()}' in '{item}' (expected L1|L2|W1|W2)";
+                        return false;
+                }
+
+                EdgeSideState state;
+                switch (parts[1].Trim().ToLowerInvariant())
+                {
+                    case "on": state = EdgeSideState.Forced; break;
+                    case "off": state = EdgeSideState.Suppressed; break;
+                    case "auto": state = EdgeSideState.Auto; break;
+                    default:
+                        error = $"unknown state '{parts[1].Trim()}' in '{item}' (expected on|off|auto)";
+                        return false;
+                }
+
+                result.Add((side, state));
+            }
+            return true;
+        }
+
+        public static string FormatEdgeSides(KitchenElement el)
+        {
+            var parts = new List<string>(4);
+            foreach (EdgeSide side in EdgeStates.All)
+            {
+                var state = el.EdgeStateOf(side);
+                if (state == EdgeSideState.Auto) continue;
+                parts.Add($"{side}:{(state == EdgeSideState.Forced ? "on" : "off")}");
+            }
+            return string.Join(EDGE_ITEM_SEPARATOR + " ", parts);
+        }
+
         public static string FormatBandedEdgesRecomputedFromScene(KitchenElement el, List<KitchenElement> all)
         {
             if (!el.EdgeBandingEnabled) return string.Empty;
 
             var coverage = EdgeBanding.Coverage(el, all);
             var sides = new List<string>(4);
-            foreach (EdgeSide side in Enum.GetValues(typeof(EdgeSide)))
-                if (coverage.HasEdge(side)) sides.Add(side.ToString());
+            foreach (EdgeSide side in EdgeStates.All)
+                if (EdgeBanding.HasEdgeEffective(el, coverage, side)) sides.Add(side.ToString());
             return string.Join(",", sides);
         }
     }

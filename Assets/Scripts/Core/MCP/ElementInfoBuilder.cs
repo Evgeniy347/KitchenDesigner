@@ -60,8 +60,8 @@ namespace KitchenDesigner.Core.MCP
                 textureOverlays = el.TextureOverlays.Count > 0 ? McpSpecCodec.FormatTextureOverlays(el) : null,
                 edgeBanding = el.SupportsEdges ? el.EdgeBandingEnabled : (bool?)null,
                 edgeThicknessMM = el.SupportsEdges ? el.EdgeThicknessMM : (float?)null,
-                edgeSkipValidation = el.SupportsEdges && el.EdgeManualMask == EdgeManual.AllMask
-                    ? true : (bool?)null,
+                edgeSides = el.SupportsEdges && McpSpecCodec.FormatEdgeSides(el).Length > 0
+                    ? McpSpecCodec.FormatEdgeSides(el) : null,
                 edges = el.EdgeBandingEnabled && allElements != null
                     ? McpSpecCodec.FormatBandedEdgesRecomputedFromScene(el, allElements) : null,
                 facadeMode = el is FacadeElement facade ? FacadeDoor.WireName(facade.Mode) : null,

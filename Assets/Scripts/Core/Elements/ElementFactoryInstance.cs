@@ -95,7 +95,8 @@ namespace KitchenDesigner.Core
             el.ClearGrooves();
             el.EdgeBandingEnabled = true;
             el.EdgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
-            el.EdgeManualMask = 0;
+            el.EdgeForcedMask = 0;
+            el.EdgeSuppressedMask = 0;
             PartRegistry.Unregister(el);
         }
 

@@ -255,8 +255,10 @@ namespace KitchenDesigner.Core
 
 			d.edgeBanding = element.Data.EdgeBanding;
 			d.edgeThicknessMM = element.Data.EdgeThicknessMM;
-			d.edgeManualMask = element.Data.EdgeManualMask;
-			d.edgeSkipValidation = d.edgeManualMask == EdgeManual.AllMask;
+			d.edgeManualMask = element.Data.EdgeForcedMask;
+			d.edgeSuppressedMask = element.Data.EdgeSuppressedMask;
+			d.edgeSkipValidation =
+				(d.edgeManualMask | d.edgeSuppressedMask) == EdgeManual.AllMask;
 
 			d.groupId = element.GroupId;
             d.materialId = element.MaterialId;

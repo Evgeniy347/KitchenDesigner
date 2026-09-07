@@ -101,7 +101,8 @@ namespace KitchenDesigner.Core
 
             result.EdgeBandingEnabled = edges.enabled;
             result.EdgeThicknessMM = edges.thicknessMM;
-            result.EdgeManualMask = edges.manualMask;
+            result.EdgeForcedMask = edges.forcedMask;
+            result.EdgeSuppressedMask = edges.suppressedMask;
 
             if (result.SupportsGaps)
             {

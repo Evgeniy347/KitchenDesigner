@@ -332,7 +332,8 @@ namespace KitchenDesigner.Core
                 var edges = EdgeBandingState.Of(source);
                 made.EdgeBandingEnabled = edges.enabled;
                 made.EdgeThicknessMM = edges.thicknessMM;
-                made.EdgeManualMask = edges.manualMask;
+                made.EdgeForcedMask = edges.forcedMask;
+                made.EdgeSuppressedMask = edges.suppressedMask;
             }
 
             if (made.SupportsTextureOverlays)

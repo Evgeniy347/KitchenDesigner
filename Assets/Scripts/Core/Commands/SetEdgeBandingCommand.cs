@@ -25,7 +25,8 @@ namespace KitchenDesigner.Core
             if (_element == null) return;
             _element.EdgeBandingEnabled = state.enabled;
             _element.EdgeThicknessMM = state.thicknessMM;
-            _element.EdgeManualMask = state.manualMask;
+            _element.EdgeForcedMask = state.forcedMask;
+            _element.EdgeSuppressedMask = state.suppressedMask;
         }
     }
 
@@ -33,25 +34,33 @@ namespace KitchenDesigner.Core
     {
         public readonly bool enabled;
         public readonly float thicknessMM;
-        public readonly int manualMask;
+        public readonly int forcedMask;
+        public readonly int suppressedMask;
 
-        public EdgeBandingState(bool enabled, float thicknessMM, int manualMask)
+        public EdgeBandingState(bool enabled, float thicknessMM, int forcedMask, int suppressedMask = 0)
         {
             this.enabled = enabled;
             this.thicknessMM = thicknessMM;
-            this.manualMask = manualMask;
+            this.forcedMask = forcedMask & ~suppressedMask;
+            this.suppressedMask = suppressedMask;
         }
 
         public static EdgeBandingState Of(KitchenElement element) =>
             new EdgeBandingState(element.Data.EdgeBanding, element.Data.EdgeThicknessMM,
-                element.Data.EdgeManualMask);
+                element.Data.EdgeForcedMask, element.Data.EdgeSuppressedMask);
 
-        public EdgeBandingState WithManual(EdgeSide side, bool manual) =>
-            new EdgeBandingState(enabled, thicknessMM, EdgeManual.With(manualMask, side, manual));
+        public EdgeSideState StateOf(EdgeSide side) =>
+            EdgeStates.Of(forcedMask, suppressedMask, side);
+
+        public EdgeBandingState WithState(EdgeSide side, EdgeSideState state) =>
+            new EdgeBandingState(enabled, thicknessMM,
+                EdgeStates.ForcedMaskWith(forcedMask, side, state),
+                EdgeStates.SuppressedMaskWith(suppressedMask, side, state));
 
         public bool Equals(EdgeBandingState other) =>
             enabled == other.enabled
             && UnityEngine.Mathf.Approximately(thicknessMM, other.thicknessMM)
-            && manualMask == other.manualMask;
+            && forcedMask == other.forcedMask
+            && suppressedMask == other.suppressedMask;
     }
 }

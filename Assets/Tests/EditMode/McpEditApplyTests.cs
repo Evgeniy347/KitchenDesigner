@@ -63,35 +63,65 @@ public class McpEditApplyTests : McpTestFixture
         Assert.AreEqual(0, board.Grooves.Count, "пустая строка снимает все пазы");
     }
 
+    /// <summary>Три состояния присутствия кромки по сторонам булевым полем не
+    /// выражаются, поэтому контракт носит строку в стиле grooves и texture_overlays.
+    /// Стороны, которых в строке нет, остаются как были.</summary>
     [Test]
-    public void EditElements_EdgeSkipValidation_MarksEveryOneOfTheFourSidesManual()
+    public void EditElements_EdgeSides_SetsForcedAndSuppressedPerSide()
     {
         var shelf = Make<KitchenElement>("Shelf", new Vector3Int(800, 18, 400));
 
-        Edit(new { name = "Shelf", edge_skip_validation = true });
+        Edit(new { name = "Shelf", edge_sides = "L1:on; W1:off" });
 
-        Assert.AreEqual(EdgeManual.AllMask, shelf.EdgeManualMask,
-            "кромки давно правятся по сторонам, но поле контракта осталось на всю деталь: " +
-            "true обязан означать «все четыре стороны ручные», иначе проверка кромок " +
-            "продолжит ругаться на деталь, которую агент уже пометил как ручную");
-
-        Edit(new { name = "Shelf", edge_skip_validation = false });
-
-        Assert.AreEqual(0, shelf.EdgeManualMask, "false снимает ручной режим со всех сторон");
+        Assert.AreEqual(EdgeSideState.Forced, shelf.EdgeStateOf(EdgeSide.L1),
+            "on — кромка на этой стороне ЕСТЬ, даже если сцена торец закрывает");
+        Assert.AreEqual(EdgeSideState.Suppressed, shelf.EdgeStateOf(EdgeSide.W1),
+            "off — кромки НЕТ, даже если торец открыт: спецификация обязана увидеть "
+            + "на одну кромку меньше");
+        Assert.AreEqual(EdgeSideState.Auto, shelf.EdgeStateOf(EdgeSide.L2),
+            "сторону, которую строка не называет, правка не задевает");
     }
 
     [Test]
-    public void GetElements_EdgeSkipValidation_IsNullWhenOnlySomeSidesAreManual()
+    public void EditElements_EdgeSides_EmptyString_PutsEveryEndBackToAuto()
     {
         var shelf = Make<KitchenElement>("Shelf", new Vector3Int(800, 18, 400));
-        shelf.EdgeManualMask = EdgeManual.Bit(EdgeSide.L1);
+        Edit(new { name = "Shelf", edge_sides = "L1:on; W1:off" });
+
+        Edit(new { name = "Shelf", edge_sides = "" });
+
+        foreach (EdgeSide side in EdgeStates.All)
+            Assert.AreEqual(EdgeSideState.Auto, shelf.EdgeStateOf(side),
+                $"{side}: пустая строка снимает все явные решения — как 'grooves = \"\"' снимает пазы");
+    }
+
+    [Test]
+    public void GetElements_EdgeSides_MirrorsWhatEditAccepts()
+    {
+        var shelf = Make<KitchenElement>("Shelf", new Vector3Int(800, 18, 400));
+        shelf.SetEdgeState(EdgeSide.L1, EdgeSideState.Forced);
+        shelf.SetEdgeState(EdgeSide.W1, EdgeSideState.Suppressed);
 
         var resp = _handler!.Handle(MakeReq("get_elements", new { names = new[] { "Shelf" } }));
         var payload = JObject.FromObject(resp.data!);
         var element = payload["elements"]![0]!;
 
-        Assert.IsTrue(element["edgeSkipValidation"] == null || element["edgeSkipValidation"]!.Type == JTokenType.Null,
-            "частичный набор ручных сторон в контракте MCP не выражается — поле молчит, а не врёт true");
+        Assert.AreEqual("L1:on; W1:off", element["edgeSides"]!.ToString(),
+            "ответ обязан читаться тем же кодеком, что и запрос — иначе агент не может "
+            + "вернуть прочитанное обратно");
+    }
+
+    [Test]
+    public void GetElements_EdgeSides_IsNullWhenEveryEndIsAuto()
+    {
+        Make<KitchenElement>("Shelf", new Vector3Int(800, 18, 400));
+
+        var resp = _handler!.Handle(MakeReq("get_elements", new { names = new[] { "Shelf" } }));
+        var payload = JObject.FromObject(resp.data!);
+        var element = payload["elements"]![0]!;
+
+        Assert.IsTrue(element["edgeSides"] == null || element["edgeSides"]!.Type == JTokenType.Null,
+            "деталь без единого решения человека поле не несёт — умолчание не шумит в ответе");
     }
 
     [Test]

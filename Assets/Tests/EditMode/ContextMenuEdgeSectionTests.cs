@@ -70,7 +70,7 @@ public class ContextMenuEdgeSectionTests
     }
 
     [Test]
-    public void StripClick_MakesThatSideManual()
+    public void StripClick_CyclesThatSideThroughTheThreeStates()
     {
         var board = Board("Полка", new Vector3Int(600, 300, 18), Vector3.zero);
         _menu!.Open(board);
@@ -78,11 +78,18 @@ public class ContextMenuEdgeSectionTests
 
         Strip("CtxEdgeW1").GetComponent<Button>().onClick.Invoke();
 
-        Assert.IsTrue(board.IsEdgeManual(EdgeSide.W1),
-            "клик по полосе переводит СТОРОНУ в ручной режим — автоматическая проверка "
-            + "«торец перекрыт частично» на неё больше не смотрит");
-        Assert.IsFalse(board.IsEdgeManual(EdgeSide.W2),
+        Assert.AreEqual(EdgeSideState.Suppressed, board.EdgeStateOf(EdgeSide.W1),
+            "порядок цикла: авто → убрать → есть → авто. Красная сторона — ЯВНОЕ «кромки нет»: "
+            + "её видит спецификация, 3D и get_element, а EDG-01 по ней молчит");
+        Assert.AreEqual(EdgeSideState.Auto, board.EdgeStateOf(EdgeSide.W2),
             "соседние стороны клик не задевает");
+
+        Strip("CtxEdgeW1").GetComponent<Button>().onClick.Invoke();
+        Assert.AreEqual(EdgeSideState.Forced, board.EdgeStateOf(EdgeSide.W1));
+
+        Strip("CtxEdgeW1").GetComponent<Button>().onClick.Invoke();
+        Assert.AreEqual(EdgeSideState.Auto, board.EdgeStateOf(EdgeSide.W1),
+            "три клика возвращают сторону туда, откуда начали");
     }
 
     [Test]
@@ -92,10 +99,10 @@ public class ContextMenuEdgeSectionTests
         _menu!.Open(board);
 
         Strip("CtxEdgeL1").GetComponent<Button>().onClick.Invoke();
-        Assume.That(board.IsEdgeManual(EdgeSide.L1), Is.True);
+        Assume.That(board.EdgeStateOf(EdgeSide.L1), Is.Not.EqualTo(EdgeSideState.Auto));
 
         CommandStack.Undo();
-        Assert.IsFalse(board.IsEdgeManual(EdgeSide.L1),
+        Assert.AreEqual(EdgeSideState.Auto, board.EdgeStateOf(EdgeSide.L1),
             "любая мутация кромки идёт через CommandStack (правило 2 UI-GUIDELINES)");
     }
 

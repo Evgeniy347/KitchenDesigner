@@ -518,14 +518,15 @@ public class ElementConverterTests
     {
         var src = Make<FacadeElement>("F1", new Vector3Int(600, 700, 18), Vector3.zero);
         src.EdgeThicknessMM = 2f;
-        src.SetEdgeManual(EdgeSide.L1, true);
+        src.SetEdgeState(EdgeSide.L1, EdgeSideState.Forced);
 
         var result = ElementConverter.Convert(src, ElementConverter.TargetType.Part);
 
         Assert.IsTrue(result.SupportsEdges, "деталь-лист кромкуется");
         Assert.IsTrue(result.EdgeBandingEnabled);
         Assert.AreEqual(2f, result.EdgeThicknessMM, 1e-4f);
-        Assert.IsTrue(result.IsEdgeManual(EdgeSide.L1));
+        Assert.AreEqual(EdgeSideState.Forced, result.EdgeStateOf(EdgeSide.L1),
+            "явное решение по стороне переживает смену типа — иначе раскрой поедет молча");
     }
 
     [Test]
@@ -666,7 +667,8 @@ public class ElementConverterTests
         // его нет, после конвертации ближайший кадр выставит его заново.
         "IsAttachRidden", "AttachRestPosition", "AttachRestRotation",
         "SupportsGrooves", "Grooves", "AttachedCutouts", "CutoutHoleAxis",
-        "SupportsEdges", "EdgeBandingEnabled", "EdgeThicknessMM", "EdgeManualMask",
+        "SupportsEdges", "EdgeBandingEnabled", "EdgeThicknessMM",
+        "EdgeForcedMask", "EdgeSuppressedMask",
         // Накладки текстур принадлежат стене и полу, а конвертация ходит только
         // между структурными типами (деталь ↔ фасад ↔ полка) — переносить их
         // некуда и не из чего, см. TextureOverlayTests.

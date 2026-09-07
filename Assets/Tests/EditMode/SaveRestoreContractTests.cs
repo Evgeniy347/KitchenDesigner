@@ -153,7 +153,7 @@ public class SaveRestoreContractTests
         var el = RestoreOne(data);
         _spawned.Add(el.gameObject);
 
-        Assert.AreEqual(EdgeManual.AllMask, el.EdgeManualMask,
+        Assert.AreEqual(EdgeManual.AllMask, el.EdgeForcedMask,
             "в проектах старше сторон-по-отдельности общий флаг «не проверять кромки» "
             + "равнозначен «все четыре стороны ручные»; иначе такой проект после загрузки "
             + "внезапно начинает сыпать ошибками кромок");
@@ -169,7 +169,7 @@ public class SaveRestoreContractTests
         var el = RestoreOne(data);
         _spawned.Add(el.gameObject);
 
-        Assert.AreEqual(EdgeManual.Bit(EdgeSide.L1), el.EdgeManualMask,
+        Assert.AreEqual(EdgeManual.Bit(EdgeSide.L1), el.EdgeForcedMask,
             "новое поле точнее старого флага: маска сторон обязана пережить загрузку целиком");
     }
 

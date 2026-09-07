@@ -244,7 +244,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (op.edge_banding.HasValue) errors.Add("edge_banding (plain boards only)");
                 if (op.edge_thickness_mm.HasValue) errors.Add("edge_thickness_mm (plain boards only)");
-                if (op.edge_skip_validation.HasValue) errors.Add("edge_skip_validation (plain boards only)");
+                if (op.edge_sides != null) errors.Add("edge_sides (plain boards only)");
                 return;
             }
             if (op.edge_thickness_mm.HasValue

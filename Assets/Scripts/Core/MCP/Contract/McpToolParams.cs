@@ -351,9 +351,13 @@ namespace KitchenDesigner.Core.MCP.Contract
         public bool? edge_banding;
         [McpParam("Sheet board only: edge banding tape thickness in MM (0.1..5, fractional). Omit to keep.")]
         public float? edge_thickness_mm;
-        [McpParam("Sheet board only: suppress the EDG-01 error about an end that is only PARTIALLY covered " +
-                  "by another part. Omit to keep.")]
-        public bool? edge_skip_validation;
+        [McpParam("Sheet board only: force the banding decision on named ends, \"side:state\" items " +
+                  "separated by ';' — side = L1|L2|W1|W2, state = on|off|auto (e.g. \"L1:on; W1:off\"). " +
+                  "on = there IS banding on that end even though the scene covers it; off = there is NONE " +
+                  "even though the end is open; auto = let the scene decide (the default). Both explicit " +
+                  "states also silence EDG-01 on that end. An empty string puts every end back to auto. " +
+                  "Ends not named are left alone. Omit to keep.")]
+        public string? edge_sides;
 
         [McpParam("Drawer only: runner system — gtv (bought metal box, one spec line) or " +
             "movento (wooden box exploded into separate spec parts). Omit to keep.",

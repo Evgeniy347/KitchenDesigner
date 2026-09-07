@@ -39,8 +39,16 @@ namespace KitchenDesigner.Core.MCP
             if (!el.SupportsGrooves) return;
             if (op.edge_banding.HasValue) el.EdgeBandingEnabled = op.edge_banding.Value;
             if (op.edge_thickness_mm.HasValue) el.EdgeThicknessMM = op.edge_thickness_mm.Value;
-            if (op.edge_skip_validation.HasValue)
-                el.EdgeManualMask = op.edge_skip_validation.Value ? EdgeManual.AllMask : 0;
+            if (op.edge_sides != null
+                && McpSpecCodec.TryParseEdgeSides(op.edge_sides, out var parsedSides, out _))
+            {
+                if (op.edge_sides.Trim().Length == 0)
+                {
+                    el.EdgeForcedMask = 0;
+                    el.EdgeSuppressedMask = 0;
+                }
+                foreach (var (side, state) in parsedSides) el.SetEdgeState(side, state);
+            }
         }
 
         private void ApplyNonGeometryEdits(

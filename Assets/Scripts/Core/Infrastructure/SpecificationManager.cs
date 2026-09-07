@@ -43,10 +43,10 @@ namespace KitchenDesigner.Core
             var coverage = EdgeBanding.Coverage(element, all);
             string t = EdgeBanding.FormatThickness(element.EdgeThicknessMM);
             return new EdgeColumns(
-                coverage.HasEdge(EdgeSide.L1) ? t : "",
-                coverage.HasEdge(EdgeSide.L2) ? t : "",
-                coverage.HasEdge(EdgeSide.W1) ? t : "",
-                coverage.HasEdge(EdgeSide.W2) ? t : "");
+                EdgeBanding.HasEdgeEffective(element, coverage, EdgeSide.L1) ? t : "",
+                EdgeBanding.HasEdgeEffective(element, coverage, EdgeSide.L2) ? t : "",
+                EdgeBanding.HasEdgeEffective(element, coverage, EdgeSide.W1) ? t : "",
+                EdgeBanding.HasEdgeEffective(element, coverage, EdgeSide.W2) ? t : "");
         }
     }
 

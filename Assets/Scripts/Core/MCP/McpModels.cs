@@ -68,7 +68,7 @@ namespace KitchenDesigner.Core.MCP
         public string? textureOverlays;
         public bool? edgeBanding;
         public float? edgeThicknessMM;
-        public bool? edgeSkipValidation;
+        public string? edgeSides;
         public string? edges;
         public string? attachedToName;
         public bool? attachDetached;

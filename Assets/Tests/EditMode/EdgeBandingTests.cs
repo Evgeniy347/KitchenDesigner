@@ -477,10 +477,10 @@ public class EdgeBandingTests
     }
 
     [Test]
-    public void Analyze_ManualSide_SuppressesError()
+    public void Analyze_ForcedSide_SuppressesError()
     {
         var shelf = CreatePart("Shelf", ShelfDims);
-        shelf.SetEdgeManual(EdgeSide.W1, true);
+        shelf.SetEdgeState(EdgeSide.W1, EdgeSideState.Forced);
         var side = SidePanelAtW1(200, zOffset: 0.1f);
         PartRegistry.Register(shelf);
         PartRegistry.Register(side);
@@ -489,6 +489,25 @@ public class EdgeBandingTests
 
         Assert.IsFalse(issues.Exists(i => i.Code == IssueCatalog.CodeEdgePartialCover
                                           && i.Target == shelf));
+    }
+
+    /// <summary>EDG-01 существует потому, что частично перекрытый торец
+    /// НЕОДНОЗНАЧЕН. Явное решение человека неоднозначность снимает — обоими
+    /// способами, а не только «принудительно есть».</summary>
+    [Test]
+    public void Analyze_SuppressedSide_SuppressesError()
+    {
+        var shelf = CreatePart("Shelf", ShelfDims);
+        shelf.SetEdgeState(EdgeSide.W1, EdgeSideState.Suppressed);
+        var side = SidePanelAtW1(200, zOffset: 0.1f);
+        PartRegistry.Register(shelf);
+        PartRegistry.Register(side);
+
+        var issues = SceneAnalyzer.Analyze();
+
+        Assert.IsFalse(issues.Exists(i => i.Code == IssueCatalog.CodeEdgePartialCover
+                                          && i.Target == shelf),
+            "«убрать» — тоже явный ответ человека на тот же вопрос");
     }
 
     [Test]
@@ -513,18 +532,20 @@ public class EdgeBandingTests
         var part = CreatePart("Board", ShelfDims);
         part.EdgeBandingEnabled = false;
         part.EdgeThicknessMM = 2.0f;
-        part.SetEdgeManual(EdgeSide.L1, true);
-        part.SetEdgeManual(EdgeSide.W2, true);
+        part.SetEdgeState(EdgeSide.L1, EdgeSideState.Forced);
+        part.SetEdgeState(EdgeSide.W2, EdgeSideState.Suppressed);
 
         var json = JsonUtility.ToJson(ElementCapture.FromElement(part));
         var restored = JsonUtility.FromJson<ElementData>(json);
 
         Assert.IsFalse(restored.edgeBanding);
         Assert.AreEqual(2.0f, restored.edgeThicknessMM, 1e-4f);
-        Assert.AreEqual(EdgeManual.Bit(EdgeSide.L1) | EdgeManual.Bit(EdgeSide.W2),
-            restored.edgeManualMask);
+        Assert.AreEqual(EdgeManual.Bit(EdgeSide.L1), restored.edgeManualMask,
+            "старый ключ несёт теперь только «принудительно есть» — файл читаем прежней версией");
+        Assert.AreEqual(EdgeManual.Bit(EdgeSide.W2), restored.edgeSuppressedMask,
+            "«убрать» живёт во ВТОРОЙ маске: два бита на сторону сделали бы JSON нечитаемым");
         Assert.IsFalse(restored.edgeSkipValidation,
-            "устаревший флаг взводится только когда ручные ВСЕ четыре стороны");
+            "устаревший флаг взводится только когда явны ВСЕ четыре стороны");
     }
 
     /// <summary>Проект, сделанный до сторон-по-отдельности, несёт общий флаг
@@ -542,6 +563,9 @@ public class EdgeBandingTests
             ? legacy.edgeManualMask
             : (legacy.edgeSkipValidation ? EdgeManual.AllMask : 0);
         Assert.AreEqual(EdgeManual.AllMask, migrated);
+        Assert.AreEqual(EdgeStates.Unmigrated, legacy.edgeSuppressedMask,
+            "вторая маска в старом файле отсутствует — по этому и видно, что стороны"
+            + " ещё надо разложить на «есть» и «убрать» по расчёту");
     }
 
     [Test]
@@ -566,13 +590,13 @@ public class EdgeBandingTests
         command.Execute();
         Assert.IsFalse(part.EdgeBandingEnabled);
         Assert.AreEqual(2.0f, part.EdgeThicknessMM, 1e-4f);
-        Assert.IsTrue(part.IsEdgeManual(EdgeSide.W1));
-        Assert.IsFalse(part.IsEdgeManual(EdgeSide.W2), "соседние стороны не задеты");
+        Assert.AreEqual(EdgeSideState.Forced, part.EdgeStateOf(EdgeSide.W1));
+        Assert.AreEqual(EdgeSideState.Auto, part.EdgeStateOf(EdgeSide.W2), "соседние стороны не задеты");
 
         command.Undo();
         Assert.IsTrue(part.EdgeBandingEnabled);
         Assert.AreEqual(AppConstants.EDGE_THICKNESS_DEFAULT_MM, part.EdgeThicknessMM, 1e-4f);
-        Assert.IsFalse(part.IsEdgeManual(EdgeSide.W1));
+        Assert.AreEqual(EdgeSideState.Auto, part.EdgeStateOf(EdgeSide.W1));
     }
 
     /// <summary>Подсветка стороны на детали: сам торец плюс полоса на каждой из

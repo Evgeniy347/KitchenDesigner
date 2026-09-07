@@ -10,7 +10,7 @@ namespace KitchenDesigner.Core.UI
         public const int RecomputeEveryNFrames = 15;
 
         private const float DiagramH = 140f;
-        private const float BoardW = 200f, BoardH = 110f, StripW = 10f;
+        private const float BoardW = 200f, BoardH = 110f, StripW = 10f, StripBorder = 2f;
         private const float BoardX = -50f, BoardY = -10f;
         private const float SideLabelOffsetY = 36f, SideLabelOffsetX = 76f;
         private const float HintH = 20f;
@@ -22,6 +22,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_InputField? _thickness;
         private RectTransform? _diagram;
         private Image? _stripL1, _stripL2, _stripW1, _stripW2;
+        private Image? _holeL1, _holeL2, _holeW1, _holeW2;
         private TMP_Text? _lengthLabel, _widthLabel;
 
         public ContextMenuEdgeSection(IContextMenuHost host) => _host = host;
@@ -45,7 +46,7 @@ namespace KitchenDesigner.Core.UI
             _host.Layout.AddFor(ElementFacet.Part, Shown, DiagramH, RowGap, _diagram);
 
             _thickness = _host.Rows.NumberField("Толщина кромки", shown, "мм", "EdgeThickness");
-            _host.Rows.Hint("CtxEdgeHint", "Клик по стороне — кромка вручную", HintH, ActionGap,
+            _host.Rows.Hint("CtxEdgeHint", "Клик по стороне: авто → убрать → есть", HintH, ActionGap,
                 shown, TextAnchor.MiddleCenter);
         }
 
@@ -68,7 +69,7 @@ namespace KitchenDesigner.Core.UI
             var after = new EdgeBandingState(before.enabled,
                 _host.Fields.ParseDecimalInRange(_thickness, before.thicknessMM,
                     AppConstants.EDGE_THICKNESS_MIN_MM, AppConstants.EDGE_THICKNESS_MAX_MM),
-                before.manualMask);
+                before.forcedMask, before.suppressedMask);
             if (!after.Equals(before))
                 CommandStack.Execute(new SetEdgeBandingCommand(target, before, after));
             _thickness.text = EdgeBanding.FormatThickness(target.EdgeThicknessMM);
@@ -90,10 +91,10 @@ namespace KitchenDesigner.Core.UI
             if (_widthLabel != null) _widthLabel.text = $"{layout.WidthMM} мм";
 
             var coverage = EdgeBanding.Coverage(Target, PartRegistry.GetAll());
-            PaintStrip(_stripL1, coverage, EdgeSide.L1);
-            PaintStrip(_stripL2, coverage, EdgeSide.L2);
-            PaintStrip(_stripW1, coverage, EdgeSide.W1);
-            PaintStrip(_stripW2, coverage, EdgeSide.W2);
+            PaintStrip(_stripL1, _holeL1, coverage, EdgeSide.L1);
+            PaintStrip(_stripL2, _holeL2, coverage, EdgeSide.L2);
+            PaintStrip(_stripW1, _holeW1, coverage, EdgeSide.W1);
+            PaintStrip(_stripW2, _holeW2, coverage, EdgeSide.W2);
         }
 
         private RectTransform BuildDiagram(Transform parent)
@@ -104,13 +105,13 @@ namespace KitchenDesigner.Core.UI
             UIFactory.CreatePanel("CtxEdgeBoard", root, new Vector2(BoardX, BoardY),
                 new Vector2(BoardW, BoardH), UIStyle.EdgeBoard);
 
-            _stripL1 = BuildStrip(root, "CtxEdgeL1", EdgeSide.L1,
+            (_stripL1, _holeL1) = BuildStrip(root, "CtxEdgeL1", EdgeSide.L1,
                 new Vector2(BoardX, BoardY + (BoardH - StripW) * 0.5f), new Vector2(BoardW, StripW));
-            _stripL2 = BuildStrip(root, "CtxEdgeL2", EdgeSide.L2,
+            (_stripL2, _holeL2) = BuildStrip(root, "CtxEdgeL2", EdgeSide.L2,
                 new Vector2(BoardX, BoardY - (BoardH - StripW) * 0.5f), new Vector2(BoardW, StripW));
-            _stripW1 = BuildStrip(root, "CtxEdgeW1", EdgeSide.W1,
+            (_stripW1, _holeW1) = BuildStrip(root, "CtxEdgeW1", EdgeSide.W1,
                 new Vector2(BoardX + (BoardW - StripW) * 0.5f, BoardY), new Vector2(StripW, BoardH));
-            _stripW2 = BuildStrip(root, "CtxEdgeW2", EdgeSide.W2,
+            (_stripW2, _holeW2) = BuildStrip(root, "CtxEdgeW2", EdgeSide.W2,
                 new Vector2(BoardX - (BoardW - StripW) * 0.5f, BoardY), new Vector2(StripW, BoardH));
 
             SideLabel(root, "CtxEdgeLblL1", "L1", new Vector2(BoardX, BoardY + SideLabelOffsetY));
@@ -130,10 +131,15 @@ namespace KitchenDesigner.Core.UI
             return root;
         }
 
-        private Image BuildStrip(Transform parent, string name, EdgeSide side, Vector2 pos, Vector2 size)
+        private (Image strip, Image hole) BuildStrip(Transform parent, string name, EdgeSide side,
+            Vector2 pos, Vector2 size)
         {
             var strip = UIFactory.CreatePanel(name, parent, pos, size, UIStyle.EdgeAbsent);
             strip.raycastTarget = true;
+
+            var hole = UIFactory.CreatePanel(name + "Hole", strip.transform, Vector2.zero,
+                new Vector2(size.x - StripBorder * 2f, size.y - StripBorder * 2f), UIStyle.EdgeBoard);
+            hole.raycastTarget = false;
 
             var button = strip.gameObject.AddComponent<Button>();
             button.transition = Selectable.Transition.None;
@@ -141,7 +147,7 @@ namespace KitchenDesigner.Core.UI
 
             PointerHover.Attach(strip.gameObject,
                 () => OnStripHover(side, true), () => OnStripHover(side, false));
-            return strip;
+            return (strip, hole);
         }
 
         private static void SideLabel(Transform parent, string name, string text, Vector2 pos)
@@ -156,14 +162,15 @@ namespace KitchenDesigner.Core.UI
         {
             if (Target == null || !Target.SupportsEdges) return;
             var before = EdgeBandingState.Of(Target);
-            ApplyState(before, new EdgeBandingState(on, before.thicknessMM, before.manualMask));
+            ApplyState(before, new EdgeBandingState(on, before.thicknessMM,
+                before.forcedMask, before.suppressedMask));
         }
 
         internal void OnStripClicked(EdgeSide side)
         {
             if (Target == null || !Target.SupportsEdges) return;
             var before = EdgeBandingState.Of(Target);
-            ApplyState(before, before.WithManual(side, !Target.IsEdgeManual(side)));
+            ApplyState(before, before.WithState(side, EdgeStates.Next(Target.EdgeStateOf(side))));
         }
 
         internal void OnStripHover(EdgeSide side, bool entered)
@@ -181,12 +188,18 @@ namespace KitchenDesigner.Core.UI
             _host.Relayout();
         }
 
-        private void PaintStrip(Image? strip, EdgeCoverage coverage, EdgeSide side)
+        private void PaintStrip(Image? strip, Image? hole, EdgeCoverage coverage, EdgeSide side)
         {
             if (strip == null || Target == null) return;
-            strip.color = Target.IsEdgeManual(side) ? UIStyle.EdgeManualSide
-                : coverage.HasEdge(side) ? UIStyle.EdgePresent
-                : UIStyle.EdgeAbsent;
+            var state = Target.EdgeStateOf(side);
+            bool hasEdge = EdgeBanding.HasEdgeEffective(Target, coverage, side);
+            strip.color = state switch
+            {
+                EdgeSideState.Forced => UIStyle.EdgeForcedSide,
+                EdgeSideState.Suppressed => UIStyle.EdgeSuppressedSide,
+                _ => hasEdge ? UIStyle.EdgePresent : UIStyle.EdgeAbsent,
+            };
+            if (hole != null) hole.enabled = !hasEdge;
         }
     }
 }

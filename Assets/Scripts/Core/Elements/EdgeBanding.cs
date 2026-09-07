@@ -170,6 +170,11 @@ namespace KitchenDesigner.Core
             || other is OvenElement || other is DishwasherElement || other is PillarElement
             || other is FacadeElement || other is DrawerElement;
 
+        public static bool HasEdgeEffective(KitchenElement? element, in EdgeCoverage coverage, EdgeSide side) =>
+            element == null
+                ? coverage.HasEdge(side)
+                : EdgeStates.HasEdge(element.EdgeStateOf(side), coverage.HasEdge(side));
+
         public static EdgeCoverage Coverage(KitchenElement element, IReadOnlyList<KitchenElement> others)
             => Coverage(element, SceneFaces.Of(others));
 

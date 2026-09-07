@@ -25,19 +25,16 @@ namespace KitchenDesigner.Core
                      | (1 << layout.FaceIndex(EdgeSide.W1))
                      | (1 << layout.FaceIndex(EdgeSide.W2));
 
+
             if (scene == null) return 0;
 
             var coverage = EdgeBanding.Coverage(element, scene);
             int mask = 0;
-            foreach (EdgeSide side in AllSides)
-                if (!coverage.HasEdge(side)) mask |= 1 << layout.FaceIndex(side);
+            foreach (EdgeSide side in EdgeStates.All)
+                if (!EdgeBanding.HasEdgeEffective(element, coverage, side))
+                    mask |= 1 << layout.FaceIndex(side);
             return mask;
         }
-
-        private static readonly EdgeSide[] AllSides =
-        {
-            EdgeSide.L1, EdgeSide.L2, EdgeSide.W1, EdgeSide.W2,
-        };
 
         public static void Sync(KitchenElement? element)
         {

@@ -62,7 +62,7 @@ namespace KitchenDesigner.Core.Analysis
 
                 foreach (EdgeSide side in System.Enum.GetValues(typeof(EdgeSide)))
                 {
-                    if (e.IsEdgeManual(side)) continue;
+                    if (EdgeStates.IsExplicit(e.EdgeStateOf(side))) continue;
                     if (!coverage.IsPartial(side)) continue;
                     if (coverage.Ratio(side) < minReportedCoverageRatio) continue;
                     partiallyCoveredSides.Add($"{side} {coverage.Ratio(side) * 100f:F0}%");

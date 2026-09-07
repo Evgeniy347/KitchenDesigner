@@ -226,15 +226,22 @@ namespace KitchenDesigner.Core
         }
 
         [NotUndoable("см. EdgeBandingEnabled — SetEdgeBandingCommand")]
-        public int EdgeManualMask
+        public int EdgeForcedMask
         {
-            get => _data.EdgeManualMask;
-            set => _data.EdgeManualMask = value;
+            get => _data.EdgeForcedMask;
+            set => _data.EdgeForcedMask = value;
         }
 
-        public bool IsEdgeManual(EdgeSide side) => _data.IsEdgeManual(side);
+        [NotUndoable("см. EdgeBandingEnabled — SetEdgeBandingCommand")]
+        public int EdgeSuppressedMask
+        {
+            get => _data.EdgeSuppressedMask;
+            set => _data.EdgeSuppressedMask = value;
+        }
 
-        public void SetEdgeManual(EdgeSide side, bool manual) => _data.SetEdgeManual(side, manual);
+        public EdgeSideState EdgeStateOf(EdgeSide side) => _data.EdgeStateOf(side);
+
+        public void SetEdgeState(EdgeSide side, EdgeSideState state) => _data.SetEdgeState(side, state);
 
         private readonly List<IPartCutout> _cutouts = new List<IPartCutout>();
 
