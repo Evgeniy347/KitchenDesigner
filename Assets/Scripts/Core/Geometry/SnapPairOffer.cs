@@ -46,17 +46,18 @@ namespace KitchenDesigner.Core
 
             offer.planeShift = Vector3.Dot(otherFace.center - movedFace.center, movedFace.normal);
             offer.planeDist = Mathf.Abs(offer.planeShift);
-            if (offer.planeDist > maxDist)
-            {
-                offer.rejection = SnapPairRejection.BeyondThreshold;
-                return offer;
-            }
 
             bool hasOverlap = FaceContacts.OverlapAllowingEdgeTouch(movedFace, otherFace,
                 out float overlapRatio, out bool hasLineContact);
             offer.hasOverlap = hasOverlap;
             offer.overlapRatio = hasOverlap ? overlapRatio : 0f;
             offer.hasLineContact = hasLineContact;
+
+            if (offer.planeDist > maxDist)
+            {
+                offer.rejection = SnapPairRejection.BeyondThreshold;
+                return offer;
+            }
             if (!hasOverlap)
             {
                 offer.rejection = SnapPairRejection.NoOverlap;

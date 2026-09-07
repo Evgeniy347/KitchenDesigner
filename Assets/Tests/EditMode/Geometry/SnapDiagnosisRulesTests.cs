@@ -112,6 +112,52 @@ public class SnapDiagnosisRulesTests : SnapCoreTestBase
     }
 
     [Test]
+    public void AFaceWithoutOverlap_NeverOutranksAFacingPairThatIsMerelyTooFar()
+    {
+        // Две обычные детали 800×400×18 в 100 мм друг от друга по Z при пороге 50.
+        var target = Std("A", new Vector3(0f, 0.2f, 0f));
+        var moved = MakeStd("B");
+        var pos = new Vector3(0f, 0.2f, 118f * MM);
+        var facts = Facts(moved, target, pos);
+
+        Assert.IsFalse(Snap(moved, target, pos).snapped, "прилипания здесь нет");
+        Assert.IsFalse(facts.wouldSnap, "и диагноз это подтверждает");
+
+        Assert.AreEqual(2, facts.movedFaceIndex / 2,
+            "докладывать надо про пару по Z — единственную, чьи грани смотрят друг "
+            + "на друга. Пары ±X и ±Y у этих деталей ЛЕЖАТ В ОДНОЙ ПЛОСКОСТИ "
+            + "(сдвиг по нормали ровно 0) и не перекрываются вовсе: их «зазор» — "
+            + "не зазор, а совпадение плоскостей. Отбор до них не доходит, но в "
+            + "отчёте они выигрывали по расстоянию 0 мм");
+        Assert.IsFalse(facts.withinThreshold,
+            "зазор больше порога — это и есть причина отказа");
+        Assert.AreEqual(100f, facts.distanceUnits / MM, 0.5f,
+            "и зазор назван настоящий: 118 мм между центрами минус 18 мм толщины");
+        Assert.AreEqual(1f, facts.overlapRatio, 1e-3f,
+            "грани по Z совпадают полностью — именно перекрытие и отличает их от "
+            + "соплоскостных боковых, а раньше у отвергнутой по порогу пары оно "
+            + "не считалось вовсе и она падала в тот же ранг, что и они");
+    }
+
+    [Test]
+    public void APairWithinTheThreshold_StillOutranksTheFarOne_EvenWithTinyOverlap()
+    {
+        // Противоположный вход: если предпочесть «дальнюю, но перекрытую» пару
+        // безусловно, красным станет этот тест, а соседний останется зелёным.
+        var target = Std("A", new Vector3(0f, 0.2f, 0f));
+        var moved = MakeStd("B");
+        var pos = new Vector3(760f * MM, 0.2f, 28f * MM);
+        var facts = Facts(moved, target, pos);
+
+        Assert.IsFalse(facts.wouldSnap, "перекрытие мало — прилипания нет");
+        Assert.IsTrue(facts.withinThreshold,
+            "но причина не в пороге: до встречной грани 10 мм из 50");
+        Assert.AreEqual(SnapPairRejection.OverlapTooSmall, facts.rejection,
+            "докладывать надо про перекрытие");
+        Assert.AreEqual(10f, facts.distanceUnits / MM, 0.5f, "зазор именно у этой пары");
+    }
+
+    [Test]
     public void TheDiagnosis_AgreesWithTrySnap_AsTheLegPassesThePlinth()
     {
         var plinth = Plinth();
