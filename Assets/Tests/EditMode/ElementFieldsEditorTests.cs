@@ -718,14 +718,33 @@ public class ElementFieldsEditorTests
     }
 
     [Test]
-    public void Pillar_WidthAndDepthRows_AreHidden()
+    public void Pillar_WidthAndDepthRows_StayOnScreen_AndShowTheDiameter()
     {
-        _menu!.Open(Pillar());
-        Assert.IsFalse(Field("Ширина").gameObject.activeInHierarchy,
-            "у опоры сечение задаётся диаметром: строке ширины в панели делать нечего");
-        Assert.IsFalse(Field("Глубина").gameObject.activeInHierarchy, "и глубине тоже");
+        var pillar = Pillar();
+        _menu!.Open(pillar);
+
+        Assert.IsTrue(Field("Ширина").gameObject.activeInHierarchy,
+            "габарит колонны идёт в спецификацию: строку ширины прячут — прочитать её негде");
+        Assert.IsTrue(Field("Глубина").gameObject.activeInHierarchy, "и глубину тоже");
+        Assert.AreEqual(pillar.DiameterMM.ToString(), Text(Field("Ширина")),
+            "ширина колонны = диаметр: строка обязана показывать ту же величину, что и геометрия");
+        Assert.AreEqual(pillar.DiameterMM.ToString(), Text(Field("Глубина")), "и глубина тоже");
         Assert.IsTrue(Field("Высота").interactable, "высоту опоры править можно");
         Assert.IsTrue(Field("Диаметр").gameObject.activeInHierarchy, "а диаметр — вот он");
+    }
+
+    [Test]
+    public void Pillar_WidthAndDepthRows_AreLocked_BecauseTheDiameterOwnsThem()
+    {
+        _menu!.Open(Pillar());
+
+        foreach (var row in new[] { "Ширина", "Глубина" })
+        {
+            Assert.IsFalse(Field(row).interactable,
+                $"сечение колонны задаёт диаметр: поле «{row}» — второе описание той же величины, "
+                + "править его нельзя");
+            Assert.IsTrue(Field(row).readOnly, $"и печатать в «{row}» тоже нельзя");
+        }
     }
 
     [Test]

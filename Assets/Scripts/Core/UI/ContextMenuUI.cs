@@ -197,11 +197,9 @@ namespace KitchenDesigner.Core.UI
         {
             _name = _rows.NameField();
             _rows.SectionHeader("CtxSecDims", "Размеры");
-            _w = _size.Width = _rows.NumberField("Ширина",
-                RowVisibility.ForExcept(ElementFacet.None, ElementFacet.Pillar));
+            _w = _size.Width = _rows.NumberField("Ширина", RowVisibility.Always);
             _h = _size.Height = _rows.NumberField("Высота", RowVisibility.Always);
-            _d = _size.Depth = _rows.NumberField("Глубина",
-                RowVisibility.ForExcept(ElementFacet.None, ElementFacet.Pillar));
+            _d = _size.Depth = _rows.NumberField("Глубина", RowVisibility.Always);
             _radialFields.Build();
             _cooktopFields.Build();
         }

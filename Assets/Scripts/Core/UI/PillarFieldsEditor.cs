@@ -17,6 +17,10 @@ namespace KitchenDesigner.Core.UI
 
         public override bool HeightShownFromDimensions => false;
 
+        public override bool WidthEditable => false;
+
+        public override bool DepthEditable => false;
+
         public override void Build()
         {
             _diameter = Rows.NumberField("Диаметр", RowVisibility.For(ElementFacet.Pillar));
