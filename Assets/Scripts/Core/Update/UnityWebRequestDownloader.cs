@@ -30,8 +30,7 @@ namespace KitchenDesigner.Core.Update
 
         private void AbortEvenIfTheRequestAlreadyFinished()
         {
-            try { _active?.Abort(); }
-            catch (Exception) { }
+            _active?.Abort();
         }
 
         private System.Collections.IEnumerator Run(string url, string targetPath,

@@ -10,7 +10,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _gridStep = 18;
         [SerializeField] private bool _gridEnabled = true;
         [SerializeField] private bool _snapEnabled = true;
-        [SerializeField] private float _snapThreshold = 50f;
+        [SerializeField] private float _snapThreshold = SNAP_THRESHOLD_DEFAULT_MM;
         [SerializeField] private bool _blockOnViolation = true;
         [SerializeField] private bool _autoSave = true;
         [SerializeField] private int _autoSaveInterval = 60;
@@ -90,6 +90,8 @@ namespace KitchenDesigner.Core
             get => _snapEnabled;
             set => _snapEnabled = value;
         }
+
+        public const float SNAP_THRESHOLD_DEFAULT_MM = 50f;
 
         public float SnapThreshold
         {
@@ -301,7 +303,7 @@ namespace KitchenDesigner.Core
             _gridStep = 18;
             _gridEnabled = true;
             _snapEnabled = true;
-            _snapThreshold = 50f;
+            _snapThreshold = SNAP_THRESHOLD_DEFAULT_MM;
             _blockOnViolation = true;
             _autoSave = true;
             _autoSaveInterval = 60;

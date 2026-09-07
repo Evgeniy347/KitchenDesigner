@@ -115,7 +115,12 @@ namespace KitchenDesigner.Core.MCP
                 catch (Exception ex)
                 {
                     Debug.LogError($"[MCP] Request failed: {ex.Message}");
-                    try { context.Response.Abort(); } catch { }
+                    try { context.Response.Abort(); }
+                    catch (Exception abortEx)
+                    {
+                        Debug.LogError("[MCP] Response.Abort() after a failed request threw "
+                            + $"{abortEx.GetType().Name}: {abortEx.Message}");
+                    }
                 }
             }
         }

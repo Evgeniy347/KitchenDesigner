@@ -221,6 +221,53 @@ public class UpdateDownloaderTests
         }
     }
 
+    // Пара к Cancel_BeforeAnythingStarted: там _active ещё null, и `?.` гасит
+    // вызов сам — тест зелёный при ЛЮБОЙ реализации Abort(). Здесь запрос
+    // реально был и уже завершился, то есть проверяется именно то, чем метод
+    // назван (AbortEvenIfTheRequestAlreadyFinished). Раньше эту ветку прикрывал
+    // пустой `catch (Exception) { }`: он не давал ни отменить, ни узнать, что
+    // отмена не сработала. Catch снят, и его отсутствие держит этот тест — если
+    // Unity когда-нибудь начнёт бросать из Abort() по завершённому запросу,
+    // обработчик кнопки «Отмена» вынесет наружу, и упадёт здесь, а не у
+    // пользователя.
+    [UnityTest]
+    public IEnumerator Cancel_AfterDownloadCompleted_DoesNotThrow()
+    {
+        var src = TempPath("kd-update-src-");
+        var dst = TempPath("kd-update-dst-");
+        File.WriteAllBytes(src, new byte[4096]);
+
+        var go = new GameObject("downloader");
+        try
+        {
+            var downloader = go.AddComponent<UnityWebRequestDownloader>();
+
+            bool done = false, failed = false;
+            downloader.BeginDownload(new Uri(src).AbsoluteUri, dst,
+                _ => { }, (_, _) => { }, () => done = true, (_, _) => failed = true);
+
+            float elapsed = 0f;
+            while (!done && !failed && elapsed < TimeoutSeconds)
+            {
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            Assert.IsTrue(done, $"скачивание не завершилось за {TimeoutSeconds} с");
+            Assert.DoesNotThrow(() => downloader.Cancel(),
+                "«Отмена» после того, как загрузка уже закончилась — обычный порядок "
+                + "кликов, а не редкость: Abort() по завершённому запросу обязан быть "
+                + "безвредным, иначе кнопка отмены роняет UI");
+            Assert.DoesNotThrow(() => downloader.Cancel());
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(go);
+            try { File.Delete(src); } catch (IOException) { }
+            try { if (File.Exists(dst)) File.Delete(dst); } catch (IOException) { }
+        }
+    }
+
     [Test]
     public void Cancel_BeforeAnythingStarted_DoesNotThrow()
     {

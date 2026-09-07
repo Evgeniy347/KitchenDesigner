@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
         public int gridStep = 18;
         public bool gridEnabled = true;
         public bool snapEnabled = true;
-        public float snapThreshold = 50f;
+        public float snapThreshold = KitchenSettings.SNAP_THRESHOLD_DEFAULT_MM;
         public bool blockOnViolation = true;
         public bool autoSave = true;
         public int autoSaveInterval = 60;

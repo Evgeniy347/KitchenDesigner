@@ -8,7 +8,7 @@ using KitchenDesigner.Core.MCP;
 
 /// <summary>
 /// Общая база для EditMode-тестов MCP-обработчика. Снимает три копии, найденные
-/// в 14-19 файлах (docs/TECH-DEBT.md → 2.4): построение <see cref="McpRequest"/>
+/// аудитом 2026-09-07 в 14-19 файлах: построение <see cref="McpRequest"/>
 /// (MakeReq), сам <see cref="_handler"/> и утилизацию заспавненных GameObject
 /// вместе с <see cref="PartRegistry"/>.
 ///
