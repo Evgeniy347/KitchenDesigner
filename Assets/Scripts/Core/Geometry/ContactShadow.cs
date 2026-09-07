@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,7 +28,9 @@ namespace KitchenDesigner.Core
                 SplitOutside(Beside[i], closed, contactAxis, into, out _);
         }
 
-        private static readonly List<Bounds> Beside = new List<Bounds>();
+        [ThreadStatic] private static List<Bounds>? _besidePerThread;
+
+        private static List<Bounds> Beside => _besidePerThread ??= new List<Bounds>();
 
         public static bool Touches(Bounds a, Bounds b, float touchGapUnits, out int contactAxis)
         {

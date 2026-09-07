@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,9 +6,16 @@ namespace KitchenDesigner.Core
 {
     public static class ValidationCore
     {
-        private static readonly List<int> _overlapping = new List<int>();
-        private static readonly HashSet<int> _overlappingSet = new HashSet<int>();
-        private static readonly HashSet<int> _anchorsInIllegalOverlap = new HashSet<int>();
+        [ThreadStatic] private static List<int>? _overlappingPerThread;
+        [ThreadStatic] private static HashSet<int>? _overlappingSetPerThread;
+        [ThreadStatic] private static HashSet<int>? _anchorsInIllegalOverlapPerThread;
+
+        private static List<int> Overlapping => _overlappingPerThread ??= new List<int>();
+
+        private static HashSet<int> OverlappingSet => _overlappingSetPerThread ??= new HashSet<int>();
+
+        private static HashSet<int> AnchorsInIllegalOverlap =>
+            _anchorsInIllegalOverlapPerThread ??= new HashSet<int>();
 
         public static CoreValidationResult Validate(IReadOnlyList<ValidationElement> all)
         {
@@ -37,9 +45,9 @@ namespace KitchenDesigner.Core
             CheckConnectivity(all!, result);
             CheckWallHeightConstraints(all!, result);
 
-            foreach (int i in _overlapping)
+            foreach (int i in Overlapping)
             {
-                if (all![i].Is(ElementKind.Anchor) && !_anchorsInIllegalOverlap.Contains(i)) continue;
+                if (all![i].Is(ElementKind.Anchor) && !AnchorsInIllegalOverlap.Contains(i)) continue;
                 if (!result.Violations.Contains(i))
                     result.Violations.Add(i);
             }
@@ -49,14 +57,14 @@ namespace KitchenDesigner.Core
         private static void ClearScratch()
         {
             ValidationBroadPhase.Clear();
-            _overlapping.Clear();
-            _overlappingSet.Clear();
-            _anchorsInIllegalOverlap.Clear();
+            Overlapping.Clear();
+            OverlappingSet.Clear();
+            AnchorsInIllegalOverlap.Clear();
         }
 
         private static void MarkOverlapping(int index)
         {
-            if (_overlappingSet.Add(index)) _overlapping.Add(index);
+            if (OverlappingSet.Add(index)) Overlapping.Add(index);
         }
 
         private static void ProcessPair(IReadOnlyList<ValidationElement> all,
@@ -87,8 +95,8 @@ namespace KitchenDesigner.Core
             if (a.Is(ElementKind.Anchor) && b.Is(ElementKind.Anchor) && IsLegitAnchorPair(a, b)) return;
 
             result.AddDiagnostic(aIdx, bIdx, ViolationKind.Overlap);
-            if (a.Is(ElementKind.Anchor)) _anchorsInIllegalOverlap.Add(aIdx);
-            if (b.Is(ElementKind.Anchor)) _anchorsInIllegalOverlap.Add(bIdx);
+            if (a.Is(ElementKind.Anchor)) AnchorsInIllegalOverlap.Add(aIdx);
+            if (b.Is(ElementKind.Anchor)) AnchorsInIllegalOverlap.Add(bIdx);
         }
 
         private static bool TryScrewLegContact(in ValidationElement a, in ValidationElement b,

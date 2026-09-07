@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,10 +12,22 @@ namespace KitchenDesigner.Core
 
         private const int BitsPerAxis = 21;
 
-        private static readonly Dictionary<long, List<int>> _grid = new Dictionary<long, List<int>>();
-        private static readonly Stack<List<int>> _cellPool = new Stack<List<int>>();
-        private static readonly HashSet<long> _seenPairs = new HashSet<long>();
-        private static readonly List<(int lo, int hi)> _pairs = new List<(int lo, int hi)>();
+        [ThreadStatic] private static Dictionary<long, List<int>>? _gridPerThread;
+        [ThreadStatic] private static Stack<List<int>>? _cellPoolPerThread;
+        [ThreadStatic] private static HashSet<long>? _seenPairsPerThread;
+        [ThreadStatic] private static List<(int lo, int hi)>? _pairsPerThread;
+
+        private static Dictionary<long, List<int>> Grid =>
+            _gridPerThread ??= new Dictionary<long, List<int>>();
+
+        private static Stack<List<int>> CellPool =>
+            _cellPoolPerThread ??= new Stack<List<int>>();
+
+        private static HashSet<long> SeenPairs =>
+            _seenPairsPerThread ??= new HashSet<long>();
+
+        private static List<(int lo, int hi)> Pairs =>
+            _pairsPerThread ??= new List<(int lo, int hi)>();
 
         public static long CellKey(int cx, int cy, int cz) =>
             ((long)(cx + CellsPerAxisFromOrigin) << (BitsPerAxis * 2))
@@ -25,14 +38,14 @@ namespace KitchenDesigner.Core
 
         public static void Clear()
         {
-            foreach (var kv in _grid)
+            foreach (var kv in Grid)
             {
                 kv.Value.Clear();
-                _cellPool.Push(kv.Value);
+                CellPool.Push(kv.Value);
             }
-            _grid.Clear();
-            _seenPairs.Clear();
-            _pairs.Clear();
+            Grid.Clear();
+            SeenPairs.Clear();
+            Pairs.Clear();
         }
 
         public static List<(int lo, int hi)> CandidatePairsInNestedLoopOrder(
@@ -45,8 +58,9 @@ namespace KitchenDesigner.Core
             }
 
             CollectPairs();
-            _pairs.Sort((p, q) => p.lo != q.lo ? p.lo.CompareTo(q.lo) : p.hi.CompareTo(q.hi));
-            return _pairs;
+            var pairs = Pairs;
+            pairs.Sort((p, q) => p.lo != q.lo ? p.lo.CompareTo(q.lo) : p.hi.CompareTo(q.hi));
+            return pairs;
         }
 
         public static void SolidBoundsIncludingExtraBody(in ValidationElement e,
@@ -74,7 +88,9 @@ namespace KitchenDesigner.Core
 
         private static void CollectPairs()
         {
-            foreach (var kv in _grid)
+            var seen = SeenPairs;
+            var pairs = Pairs;
+            foreach (var kv in Grid)
             {
                 var cell = kv.Value;
                 int count = cell.Count;
@@ -87,8 +103,8 @@ namespace KitchenDesigner.Core
                         int b = cell[y];
                         int lo = a < b ? a : b;
                         int hi = a < b ? b : a;
-                        if (!_seenPairs.Add((long)lo << 32 | (uint)hi)) continue;
-                        _pairs.Add((lo, hi));
+                        if (!seen.Add((long)lo << 32 | (uint)hi)) continue;
+                        pairs.Add((lo, hi));
                     }
                 }
             }
@@ -97,10 +113,12 @@ namespace KitchenDesigner.Core
         private static List<int> GridCell(int cx, int cy, int cz)
         {
             long key = CellKey(cx, cy, cz);
-            if (!_grid.TryGetValue(key, out var list))
+            var grid = Grid;
+            if (!grid.TryGetValue(key, out var list))
             {
-                list = _cellPool.Count > 0 ? _cellPool.Pop() : new List<int>();
-                _grid[key] = list;
+                var pool = CellPool;
+                list = pool.Count > 0 ? pool.Pop() : new List<int>();
+                grid[key] = list;
             }
             return list;
         }
