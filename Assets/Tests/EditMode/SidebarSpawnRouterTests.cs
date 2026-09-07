@@ -106,6 +106,8 @@ public class SidebarSpawnRouterTests
 
         public void SpawnPillar(int midHeightMM, string name) => Put(nameof(SpawnPillar), midHeightMM, name);
 
+        public void SpawnPipe(string name) => Put(nameof(SpawnPipe), name);
+
         public void SpawnFloor(Vector3Int dims, string name) => Put(nameof(SpawnFloor), dims, name);
 
         public void SpawnSink(string name) => Put(nameof(SpawnSink), name);
