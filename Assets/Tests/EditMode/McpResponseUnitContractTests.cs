@@ -82,6 +82,9 @@ public class McpResponseUnitContractTests
             ["ElementInfoBuilder.cs :: fixedSize"] = "флаг «размер задан производителем»",
             ["ElementInfoBuilder.cs :: maxLights"] = "потолок числа ламп — штуки",
             ["ElementInfoBuilder.cs :: size"] = "bed.SizeName — строка «160x200», а не число",
+            ["ElementInfoBuilder.cs :: sizeId"] = "pipe.SizeId — идентификатор строки ГОСТ "
+                + "3262-75 («dn20»), а не длина: сами размеры трубы уходят рядом и с "
+                + "единицей — nominalBoreMM, outerDiameterMM, wallThicknessMM",
             ["McpCommandHandler.Bulk.cs :: widthAxis"] = "ось ширины модуля — буква x или z",
             ["McpCommandHandler.Helpers.cs :: widthAxis"] = "то же самое",
             ["McpCommandHandler.Elements.Query.cs :: gaps"] = "список AxisGapInfo",
