@@ -1360,8 +1360,6 @@ public class McpCommandHandlerTests : McpTestFixture
     [Test]
     public void GetSettings_CarriesTheProjectSettings_ButNoViewSettings()
     {
-        Assume.That(KitchenSettings.Instance, Is.Not.Null, "нужен Resources/KitchenSettings");
-
         var resp = _handler!.Handle(MakeReq("get_settings", new { }));
 
         Assert.AreEqual("result", resp.type);
@@ -1387,8 +1385,6 @@ public class McpCommandHandlerTests : McpTestFixture
     [Test]
     public void SetSetting_RefusesASettingItDoesNotAdvertise()
     {
-        Assume.That(KitchenSettings.Instance, Is.Not.Null, "нужен Resources/KitchenSettings");
-
         var resp = _handler!.Handle(MakeReq("set_setting", new { name = "chandelier_sparkle", value = true }));
 
         Assert.AreEqual("error", resp.type,

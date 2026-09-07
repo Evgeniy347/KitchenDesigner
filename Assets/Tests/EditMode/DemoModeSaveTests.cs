@@ -33,7 +33,6 @@ public class DemoModeSaveTests
     [SetUp]
     public void SetUp()
     {
-        Assume.That(KitchenSettings.Instance, Is.Not.Null, "нужен Resources/KitchenSettings");
         _prevAutoSave = KitchenSettings.Instance.AutoSave;
         _prevLastPath = SaveLoadManager.LastPath;
 

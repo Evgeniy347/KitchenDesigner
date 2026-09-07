@@ -49,7 +49,6 @@ public class McpSettingsParityTests
     [SetUp]
     public void Setup()
     {
-        Assume.That(KitchenSettings.Instance, Is.Not.Null, "нужен Resources/KitchenSettings");
         _saved = new KitchenSettings();
         _saved.ApplyFrom(KitchenSettings.Instance.ToData());
         _savedVerbose = SnapSystem.VerboseLog;

@@ -38,7 +38,6 @@ public class FacadeFloorSinkReproTests
     [SetUp]
     public void SetUp()
     {
-        Assume.That(KitchenSettings.Instance, Is.Not.Null, "нужен Resources/KitchenSettings");
         _gridEnabledBefore = KitchenSettings.Instance.GridEnabled;
         KitchenSettings.Instance.GridEnabled = false;
 

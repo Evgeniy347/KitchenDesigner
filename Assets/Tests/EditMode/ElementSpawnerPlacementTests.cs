@@ -26,7 +26,6 @@ public class ElementSpawnerPlacementTests
     [SetUp]
     public void SetUp()
     {
-        Assume.That(KitchenSettings.Instance, Is.Not.Null, "нужен Resources/KitchenSettings");
         _gridEnabledBefore = KitchenSettings.Instance.GridEnabled;
         _gridStepBefore = KitchenSettings.Instance.GridStep;
         KitchenSettings.Instance.GridEnabled = true;
