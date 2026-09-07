@@ -62,7 +62,7 @@ namespace KitchenDesigner.Core.UI
             c.highlightedColor = new Color(1.22f, 1.22f, 1.22f, 1f);
             c.selectedColor = Color.white;
             c.pressedColor = new Color(0.78f, 0.78f, 0.78f, 1f);
-            c.disabledColor = new Color(0.55f, 0.55f, 0.55f, 0.7f);
+            c.disabledColor = UIStyle.DisabledTint;
             return c;
         }
 

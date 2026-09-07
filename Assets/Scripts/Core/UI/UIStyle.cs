@@ -12,6 +12,7 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color Text = new Color(0.92f, 0.92f, 0.92f, 1f);
         public static readonly Color TextSecondary = new Color(0.60f, 0.62f, 0.66f, 1f);
         public static readonly Color TextDisabled = new Color(0.55f, 0.55f, 0.55f, 1f);
+        public static readonly Color DisabledTint = new Color(0.55f, 0.55f, 0.55f, 0.7f);
         public static readonly Color HighlightChanged = new Color(1f, 0.84f, 0.0f, 1f);
         public static readonly Color HighlightError = new Color(0.90f, 0.25f, 0.25f, 1f);
         public static readonly Color HighlightWarning = new Color(1f, 0.55f, 0.1f, 1f);
