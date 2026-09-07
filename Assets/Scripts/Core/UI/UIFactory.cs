@@ -165,7 +165,7 @@ namespace KitchenDesigner.Core.UI
             var img = rect.gameObject.AddComponent<Image>();
             img.color = ButtonColor;
 
-            var button = rect.gameObject.AddComponent<Button>();
+            var button = rect.gameObject.AddComponent<UIButton>();
             button.colors = InteractiveColors();
             if (onClick != null)
                 button.onClick.AddListener(() => onClick());
@@ -245,7 +245,7 @@ namespace KitchenDesigner.Core.UI
             var bg = rect.gameObject.AddComponent<Image>();
             bg.color = ButtonColor;
 
-            var button = rect.gameObject.AddComponent<Button>();
+            var button = rect.gameObject.AddComponent<UIButton>();
             button.colors = InteractiveColors();
             if (onClick != null)
                 button.onClick.AddListener(() => onClick());

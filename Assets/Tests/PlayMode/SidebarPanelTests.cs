@@ -284,8 +284,10 @@ public class SidebarPanelTests
         Assert.IsFalse(shelf.interactable,
             "в режиме помещения обычные детали не добавляются — кнопка не только "
             + "серая, но и некликабельная");
-        AssertSameColor(UIStyle.TextSecondary, shelfLabel.color,
-            "недоступный пункт обязан выглядеть недоступным, а не просто молчать в ответ");
+        AssertSameColor(UIStyle.TextDisabled, shelfLabel.color,
+            "недоступный пункт обязан выглядеть недоступным, а не просто молчать в ответ; "
+            + "цвет именно TextDisabled, а не TextSecondary: погашенное во всём продукте "
+            + "гаснет одной краской (docs/UI-GUIDELINES.md §9)");
         Assert.IsTrue(wall.interactable);
         Assert.IsTrue(korob.interactable, "короб доступен в любом режиме");
 

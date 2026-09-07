@@ -51,8 +51,6 @@ namespace KitchenDesigner.Core.UI
         private class ModeStyledItem
         {
             public Button button = null!;
-            public TMP_Text? label;
-            public Color baseColor;
             public EditModeManager.Category cat;
         }
         private readonly List<ModeStyledItem> _modeStyledItems = new List<ModeStyledItem>();
@@ -157,15 +155,14 @@ namespace KitchenDesigner.Core.UI
                     gu.itemHeights.Add(h);
 
                     var style = new ModeStyledItem { button = btn, cat = ItemCategory(it) };
-                    style.label = btn.GetComponentInChildren<TMP_Text>();
-                    if (style.label != null)
+                    var itemLabel = btn.GetComponentInChildren<TMP_Text>();
+                    if (itemLabel != null)
                     {
-                        style.label.fontSize = ItemFont;
-                        style.label.alignment = TextAlignmentOptions.Left;
-                        style.label.enableWordWrapping = true;
-                        style.label.overflowMode = TextOverflowModes.Truncate;
-                        style.label.margin = new Vector4(ItemPadH, 2f, ItemPadH, 2f);
-                        style.baseColor = style.label.color;
+                        itemLabel.fontSize = ItemFont;
+                        itemLabel.alignment = TextAlignmentOptions.Left;
+                        itemLabel.enableWordWrapping = true;
+                        itemLabel.overflowMode = TextOverflowModes.Truncate;
+                        itemLabel.margin = new Vector4(ItemPadH, 2f, ItemPadH, 2f);
                     }
                     TooltipUI.Attach(btn.gameObject, it.name);
                     _modeStyledItems.Add(style);
@@ -193,12 +190,7 @@ namespace KitchenDesigner.Core.UI
         private void ApplyModeStyling()
         {
             foreach (var s in _modeStyledItems)
-            {
-                bool active = EditModeManager.IsCategoryActive(s.cat);
-                s.button.interactable = active;
-                if (s.label != null)
-                    s.label.color = active ? s.baseColor : UIStyle.TextSecondary;
-            }
+                s.button.interactable = EditModeManager.IsCategoryActive(s.cat);
         }
 
         private void RelayoutFull()
