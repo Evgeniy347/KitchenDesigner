@@ -127,6 +127,11 @@ namespace KitchenDesigner.Core.MCP
             RejectDerivedInsertion,
             Unsupported("screw_base_diameter_mm", o => o.screw_base_diameter_mm.HasValue, el => el is ScrewLegElement),
             Unsupported("screw_base_height_mm", o => o.screw_base_height_mm.HasValue, el => el is ScrewLegElement),
+            Unsupported("screw_left_mm", o => o.screw_left_mm.HasValue, el => el is ScrewLegElement),
+            Unsupported("screw_right_mm", o => o.screw_right_mm.HasValue, el => el is ScrewLegElement),
+            Unsupported("screw_top_mm", o => o.screw_top_mm.HasValue, el => el is ScrewLegElement),
+            Unsupported("screw_bottom_mm", o => o.screw_bottom_mm.HasValue, el => el is ScrewLegElement),
+            RejectSeatWithoutHost,
             Unsupported("pouffe_seat_thickness", o => o.pouffe_seat_thickness.HasValue,
                 el => el is PouffeElement),
             Unsupported("bed_double", o => o.bed_double.HasValue, el => el is BedElement),
@@ -163,6 +168,19 @@ namespace KitchenDesigner.Core.MCP
             errors.Add("screw_insertion_mm (derived from geometry, not settable: how deep the "
                 + "thread of a screw leg sits in its host is measured, not chosen — move the leg "
                 + "or change screw_thread_length_mm)");
+        }
+
+        private static void RejectSeatWithoutHost(EditTarget target, List<string> errors)
+        {
+            var op = target.op;
+            if (!op.screw_left_mm.HasValue && !op.screw_right_mm.HasValue
+                && !op.screw_top_mm.HasValue && !op.screw_bottom_mm.HasValue) return;
+            if (!(target.el is ScrewLegElement leg)) return;
+            if (ScrewLegSeat.Of(leg).HasHost) return;
+            errors.Add("screw_left_mm/screw_right_mm/screw_top_mm/screw_bottom_mm (this leg has "
+                + "no host: the numbers are measured from the part the thread is inside, and "
+                + "there is none — move the leg into a part first, with anchor_x_mm/anchor_y_mm/"
+                + "anchor_z_mm)");
         }
 
         private static void RejectBadAttachment(EditTarget target, List<string> errors)

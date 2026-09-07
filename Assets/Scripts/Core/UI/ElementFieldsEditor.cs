@@ -38,6 +38,8 @@ namespace KitchenDesigner.Core.UI
 
         public virtual void Apply(KitchenElement element) { }
 
+        public virtual void ApplyAfterPosition(KitchenElement element) { }
+
         public virtual void Refresh(KitchenElement element) { }
 
         public virtual void Track(KitchenElement element) { }

@@ -104,6 +104,36 @@ namespace KitchenDesigner.Core
             }
         }
 
+        public ScrewLegMargins MarginsInHost => ScrewLegSeat.Of(this);
+
+        [Undoable]
+        public int LeftInHostMM
+        {
+            get => ScrewLegSeat.LeftMM(MarginsInHost);
+            set => ScrewLegSeat.SetLeftMM(this, value);
+        }
+
+        [Undoable]
+        public int RightInHostMM
+        {
+            get => ScrewLegSeat.RightMM(MarginsInHost);
+            set => ScrewLegSeat.SetRightMM(this, value);
+        }
+
+        [Undoable]
+        public int TopInHostMM
+        {
+            get => ScrewLegSeat.TopMM(MarginsInHost);
+            set => ScrewLegSeat.SetTopMM(this, value);
+        }
+
+        [Undoable]
+        public int BottomInHostMM
+        {
+            get => ScrewLegSeat.BottomMM(MarginsInHost);
+            set => ScrewLegSeat.SetBottomMM(this, value);
+        }
+
         public override bool CanCarryAttachedParts => false;
 
         public override bool AttachIsDerived => true;

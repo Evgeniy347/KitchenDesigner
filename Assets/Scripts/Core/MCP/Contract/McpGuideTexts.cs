@@ -416,7 +416,14 @@ ScrewLegElement       Screw-in levelling leg with a threaded insert
                       a 16 mm board is not a collision. Snapping centres it on the
                       host; off-centre on a side thinner than 25 mm is reported as
                       LEG-01, and less than 5 mm of thread inside the host as
-                      LEG-02.
+                      LEG-02. Where it sits ON the host is
+                      screwLeg.leftInHostMM / rightInHostMM / topInHostMM /
+                      bottomInHostMM — the distances from the centre of the foot
+                      to the edges of the host face the thread enters, measured
+                      along that face's own axes, so they turn with the host. Each
+                      pair adds up to the host's span, and screw_left_mm /
+                      screw_right_mm / screw_top_mm / screw_bottom_mm move the leg
+                      by setting one of them.
 SinkElement / CooktopElement
                       Recessed appliances (type:""sink"" / ""cooktop""). They sit
                       on a plain board with a horizontal face (the countertop),

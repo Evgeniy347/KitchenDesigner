@@ -692,6 +692,8 @@ namespace KitchenDesigner.Core.UI
 
             if (target is IWallMounted wallMounted) wallMounted.SnapToWall();
 
+            foreach (var editor in _editors) editor.ApplyAfterPosition(target);
+
             if (KitchenSettings.Instance.BlockOnViolation && WouldCauseViolation())
             {
                 target.DimensionsMM = oldDims;

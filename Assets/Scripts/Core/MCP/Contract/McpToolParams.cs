@@ -406,6 +406,14 @@ namespace KitchenDesigner.Core.MCP.Contract
         public int? screw_base_diameter_mm;
         [McpParam("Screw leg only: height of the foot in MM (1..200). Omit to keep.", Min = 1, Max = 200)]
         public int? screw_base_height_mm;
+        [McpParam("Screw leg only: distance in MM from the CENTRE of the foot to the left edge of its host, measured on the host face the thread enters, along that face's right axis (it turns with the host). Moves the leg; screw_right_mm is the rest of the host span and follows. Rejected when the leg has no host. Omit to keep.", Min = 0, Max = 10000)]
+        public int? screw_left_mm;
+        [McpParam("Screw leg only: distance in MM from the CENTRE of the foot to the right edge of its host, the opposite of screw_left_mm — the pair adds up to the host's span across that face. Moves the leg. Rejected when the leg has no host. Omit to keep.", Min = 0, Max = 10000)]
+        public int? screw_right_mm;
+        [McpParam("Screw leg only: distance in MM from the CENTRE of the foot to the top edge of its host, measured along the up axis of the host face the thread enters (it turns with the host). Moves the leg; screw_bottom_mm follows. Rejected when the leg has no host. Omit to keep.", Min = 0, Max = 10000)]
+        public int? screw_top_mm;
+        [McpParam("Screw leg only: distance in MM from the CENTRE of the foot to the bottom edge of its host, the opposite of screw_top_mm — the pair adds up to the host's span along that face. Moves the leg. Rejected when the leg has no host. Omit to keep.", Min = 0, Max = 10000)]
+        public int? screw_bottom_mm;
 
         [McpParam("Pouffe only: thickness of the soft seat cushion in MM, clamped to "
                   + "20..height/3. What is left of the height goes to the upholstered box "

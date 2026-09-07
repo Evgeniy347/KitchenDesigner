@@ -281,6 +281,10 @@ namespace KitchenDesigner.Core.MCP
                 baseDiameterMM = leg.BaseDiameterMM,
                 baseHeightMM = leg.BaseHeightMM,
                 heightAboveFloorMM = leg.HeightAboveFloorMM,
+                leftInHostMM = leg.LeftInHostMM,
+                rightInHostMM = leg.RightInHostMM,
+                topInHostMM = leg.TopInHostMM,
+                bottomInHostMM = leg.BottomInHostMM,
                 hostName = leg.HostPartName ?? ""
             }),
 

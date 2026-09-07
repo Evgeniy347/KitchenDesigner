@@ -459,6 +459,10 @@ namespace KitchenDesigner.Core.MCP
 		public int baseDiameterMM;
 		public int baseHeightMM;
 		public int heightAboveFloorMM;
+		public int leftInHostMM;
+		public int rightInHostMM;
+		public int topInHostMM;
+		public int bottomInHostMM;
 		public string hostName = "";
 	}
 

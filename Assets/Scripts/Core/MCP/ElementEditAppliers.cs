@@ -163,6 +163,10 @@ namespace KitchenDesigner.Core.MCP
                 if (op.screw_base_diameter_mm.HasValue) leg.BaseDiameterMM = op.screw_base_diameter_mm.Value;
                 if (op.screw_base_height_mm.HasValue) leg.BaseHeightMM = op.screw_base_height_mm.Value;
                 if (op.screw_thread_length_mm.HasValue) leg.ThreadLengthMM = op.screw_thread_length_mm.Value;
+                if (op.screw_left_mm.HasValue) leg.LeftInHostMM = op.screw_left_mm.Value;
+                if (op.screw_right_mm.HasValue) leg.RightInHostMM = op.screw_right_mm.Value;
+                if (op.screw_top_mm.HasValue) leg.TopInHostMM = op.screw_top_mm.Value;
+                if (op.screw_bottom_mm.HasValue) leg.BottomInHostMM = op.screw_bottom_mm.Value;
             }),
             For<WindowElement>((op, window) =>
             {

@@ -473,6 +473,30 @@ public class ElementPropertyDiagramTests
             () => { ContextMenuUI.Instance?.Close(); });
     }
 
+    /// <summary>Винтовая опора, вкрученная в дно 600×18×500. Кадр нужен ради
+    /// подменю «Корпус»: подпись, нередактируемый «Заход в корпус» и две строки
+    /// по два поля — «Слева / справа, мм» и «Сверху / снизу, мм». Опора стоит
+    /// посреди дна, поэтому в них обязаны стоять 300/300 и 250/250, а не
+    /// прочерки: прочерк здесь означал бы, что хозяин не вывелся.</summary>
+    [UnityTest]
+    public IEnumerator ContextMenu_ScrewLeg_SavesPng()
+    {
+        var bottom = ElementFactory.CreatePart(new Vector3Int(600, 18, 500), "Дно",
+            new Vector3(0f, 159f * AppConstants.MM_TO_UNITS, 0f))
+            .GetComponent<KitchenElement>();
+        Assert.IsNotNull(bottom);
+        var go = ElementFactory.CreateScrewLeg("Опора", new Vector3(0f, 0.1f, 0f));
+        var leg = go.GetComponent<ScrewLegElement>();
+        Assert.IsNotNull(leg);
+        leg.SeatAfterMove(PartRegistry.GetAll());
+        SceneChangeTracker.SettleDerivedLinks();
+        Assert.AreEqual(bottom.PartName, leg.HostPartName,
+            "без хозяина секция «Корпус» покажет прочерки, и кадр перестанет быть о ней");
+        yield return CapturePanel("ContextMenu", "contextmenu_screwleg.png",
+            () => { ContextMenuUI.Instance!.Open(leg); },
+            () => { ContextMenuUI.Instance?.Close(); });
+    }
+
     /// <summary>Варочная: ширина/глубина/высота описывают верхнюю плиту (высота —
     /// общая), плюс две строки выреза — короба, уходящего в столешницу.</summary>
     [UnityTest]

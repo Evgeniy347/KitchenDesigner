@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
@@ -28,6 +29,38 @@ namespace KitchenDesigner.Core
             float entry = host.Min.y > thread.Min.y ? host.Min.y : thread.Min.y;
             float inside = thread.Max.y - entry;
             return inside <= 0f ? 0f : inside / AppConstants.MM_TO_UNITS;
+        }
+
+        public static ScrewLegMargins Margins(Vector3 legCentre,
+            Vector3 mountNormal, in ElementGeometry host)
+        {
+            if (host.IsEmpty) return default;
+
+            var face = host.Faces[EntryFace(host, mountNormal)];
+            var toCentre = legCentre - face.center;
+            float across = Vector3.Dot(toCentre, face.rightAxis);
+            float along = Vector3.Dot(toCentre, face.upAxis);
+            float halfAcross = face.size.x * 0.5f;
+            float halfAlong = face.size.y * 0.5f;
+            float toMM = 1f / AppConstants.MM_TO_UNITS;
+
+            return new ScrewLegMargins(face.rightAxis, face.upAxis,
+                (halfAcross + across) * toMM, (halfAcross - across) * toMM,
+                (halfAlong - along) * toMM, (halfAlong + along) * toMM);
+        }
+
+        public static int EntryFace(in ElementGeometry host, Vector3 mountNormal)
+        {
+            int best = 0;
+            float bestDot = float.MaxValue;
+            for (int i = 0; i < host.Faces.Length; i++)
+            {
+                float dot = Vector3.Dot(host.Faces[i].normal, mountNormal);
+                if (dot >= bestDot) continue;
+                bestDot = dot;
+                best = i;
+            }
+            return best;
         }
 
         public static bool Reaches(in ElementGeometry thread, in ElementGeometry candidate,

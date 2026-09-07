@@ -5,15 +5,15 @@ namespace KitchenDesigner.Core.UI
 {
     internal sealed class ScrewLegFieldsEditor : ElementFieldsEditor
     {
-        private const string NoHostText = "—";
+        private readonly ScrewLegHostSection _hostSection;
 
         private TMP_Dropdown? _thread;
         private TMP_InputField? _threadLength;
-        private TMP_InputField? _insertion;
         private TMP_InputField? _baseDiameter;
         private TMP_InputField? _baseHeight;
 
-        public ScrewLegFieldsEditor(IContextMenuHost host) : base(host) { }
+        public ScrewLegFieldsEditor(IContextMenuHost host) : base(host) =>
+            _hostSection = new ScrewLegHostSection(host);
 
         public override bool Handles(KitchenElement element) => element is ScrewLegElement;
 
@@ -27,11 +27,9 @@ namespace KitchenDesigner.Core.UI
             _thread = Rows.Dropdown("Резьба", new List<string>(ScrewLegSpec.Threads),
                 OnThreadSelected, visibility, "CtxScrewThread");
             _threadLength = Rows.NumberField("Длина резьбы", visibility);
-            _insertion = Rows.NumberField("Заход в корпус", visibility);
-            _insertion.readOnly = true;
-            _insertion.interactable = false;
             _baseDiameter = Rows.NumberField("Ø основания", visibility);
             _baseHeight = Rows.NumberField("Высота основания", visibility);
+            _hostSection.Build();
         }
 
         public override IEnumerable<TMP_InputField?> ArithmeticFields()
@@ -39,6 +37,7 @@ namespace KitchenDesigner.Core.UI
             yield return _threadLength;
             yield return _baseDiameter;
             yield return _baseHeight;
+            foreach (var field in _hostSection.ArithmeticFields()) yield return field;
         }
 
         public override void Show(KitchenElement element)
@@ -46,18 +45,18 @@ namespace KitchenDesigner.Core.UI
             if (!(element is ScrewLegElement leg)) return;
             _thread?.SetValueWithoutNotify(IndexOf(leg.Thread));
             if (_threadLength != null) _threadLength.text = leg.ThreadLengthMM.ToString();
-            ShowInsertion(leg);
             if (_baseDiameter != null) _baseDiameter.text = leg.BaseDiameterMM.ToString();
             if (_baseHeight != null) _baseHeight.text = leg.BaseHeightMM.ToString();
+            _hostSection.WriteFrom(leg);
         }
 
         public override void Refresh(KitchenElement element)
         {
             if (!(element is ScrewLegElement leg)) return;
             Fields.RefreshUnfocused(_threadLength, leg.ThreadLengthMM.ToString());
-            ShowInsertion(leg);
             Fields.RefreshUnfocused(_baseDiameter, leg.BaseDiameterMM.ToString());
             Fields.RefreshUnfocused(_baseHeight, leg.BaseHeightMM.ToString());
+            _hostSection.RefreshFrom(leg);
         }
 
         public override void Apply(KitchenElement element)
@@ -81,6 +80,11 @@ namespace KitchenDesigner.Core.UI
             WriteBack(leg);
         }
 
+        public override void ApplyAfterPosition(KitchenElement element)
+        {
+            if (element is ScrewLegElement leg) _hostSection.ApplyTo(leg);
+        }
+
         public override void AfterApply(KitchenElement element)
         {
             if (element is ScrewLegElement leg) WriteBack(leg);
@@ -98,22 +102,15 @@ namespace KitchenDesigner.Core.UI
             Fields.Track(_baseHeight, leg != null
                 ? leg.BaseHeightMM.ToString()
                 : ScrewLegSpec.DEFAULT_BASE_HEIGHT_MM.ToString());
+            _hostSection.Track(leg);
         }
 
         private void WriteBack(ScrewLegElement leg)
         {
             if (_threadLength != null) _threadLength.text = leg.ThreadLengthMM.ToString();
-            ShowInsertion(leg);
             if (_baseDiameter != null) _baseDiameter.text = leg.BaseDiameterMM.ToString();
             if (_baseHeight != null) _baseHeight.text = leg.BaseHeightMM.ToString();
-        }
-
-        private void ShowInsertion(ScrewLegElement leg)
-        {
-            if (_insertion == null) return;
-            var insertion = leg.InsertionIntoHostMM;
-            _insertion.SetTextWithoutNotify(
-                insertion.HasValue ? insertion.Value.ToString() : NoHostText);
+            _hostSection.WriteFrom(leg);
         }
 
         private static int IndexOf(string thread)
