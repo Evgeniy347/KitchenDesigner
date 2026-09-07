@@ -1,4 +1,4 @@
-{
+﻿{
     "version": 1,
     "elements": [
         {
@@ -159,6 +159,7 @@
             "edgeThicknessMM": 1.0,
             "edgeSkipValidation": false,
             "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
             "isScrewLeg": false,
             "screwLegThread": "M6",
             "screwLegThreadLengthMM": 50,
@@ -341,6 +342,7 @@
         "edgeThicknessMM": 1.0,
         "edgeSkipValidation": false,
         "edgeManualMask": 0,
+        "edgeSuppressedMask": 0,
         "isScrewLeg": false,
         "screwLegThread": "M6",
         "screwLegThreadLengthMM": 50,

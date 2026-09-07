@@ -63,7 +63,7 @@
     },
     {
       "type": "Label",
-      "text": "Деталь — Detal_800x400",
+      "text": "Деталь — Detal_kromki",
       "position": [0, -12]
     },
     {
@@ -95,7 +95,7 @@
     {
       "type": "InputField",
       "label": "Название",
-      "value": "Detal_800x400",
+      "value": "Detal_kromki",
       "interactable": true,
       "position": [38, -83]
     },
@@ -175,7 +175,7 @@
     },
     {
       "type": "Dropdown",
-      "options": ["(не прикреплено)"],
+      "options": ["(не прикреплено)", "Stoyka_sprava"],
       "selected": 0,
       "position": [65, -541]
     },
@@ -204,7 +204,7 @@
     {
       "type": "InputField",
       "label": "Y, мм",
-      "value": "200",
+      "value": "500",
       "interactable": true,
       "position": [0, -621]
     },
