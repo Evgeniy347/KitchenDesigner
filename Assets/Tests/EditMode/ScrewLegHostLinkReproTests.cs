@@ -17,7 +17,19 @@ using KitchenDesigner.Core;
 /// отработать кадровому опросу <c>SceneChangeTracker.Poll</c> — той самой функции,
 /// в которую упирается и мышиный драг, и мутация через MCP
 /// (см. CONVENTIONS.md → «Not only the guard — every READER of a state must ask
-/// through one function»).</summary>
+/// through one function»).
+///
+/// Опрос ходит по <c>PartRegistry</c>, а не по списку, собранному тестом, поэтому
+/// деталь, не попавшая в реестр, для него не существует. В EditMode Unity НЕ зовёт
+/// <c>Awake</c> у добавленного компонента, и саморегистрация
+/// <c>KitchenElement.Awake</c> не срабатывает — стенд обязан звать
+/// <c>PartRegistry.Register</c> сам. Пока он этого не делал, весь класс уходил в
+/// Inconclusive на <c>Assume</c> и не проверял НИЧЕГО: ни на сломанном коде, ни на
+/// починенном. Отсюда два правила ниже — реестр проверяется явно
+/// (<see cref="AssertPolled"/>), а предусловия стоят на <c>Assert</c>, а не на
+/// <c>Assume</c>: неверная исходная посадка — это часть проверяемого поведения,
+/// и она обязана краснеть (CONVENTIONS.md → «Prove the harness before you trust
+/// what it measures», «If a test would not go red, DELETE it»).</summary>
 public class ScrewLegHostLinkReproTests
 {
     private const float U = AppConstants.MM_TO_UNITS;
@@ -44,7 +56,19 @@ public class ScrewLegHostLinkReproTests
         e.PartName = name;
         e.DimensionsMM = dims;
         e.ApplyDimensions();
+        PartRegistry.Register(e);
         return e;
+    }
+
+    /// <summary>Первое утверждение стенда — про сам стенд: то, что мы двигаем,
+    /// действительно лежит в реестре, по которому ходит кадровый опрос.</summary>
+    private static void AssertPolled(params KitchenElement[] scene)
+    {
+        var registered = PartRegistry.GetAll();
+        foreach (var e in scene)
+            Assert.That(registered, Has.Member(e),
+                $"«{e.PartName}» нет в PartRegistry — кадровый опрос её не увидит, "
+                + "и всё, что тест измерит дальше, будет измерением пустой сцены");
     }
 
     /// <summary>Дно корпуса: панель 600×18×500, нижняя грань на заданной высоте.</summary>
@@ -69,11 +93,15 @@ public class ScrewLegHostLinkReproTests
         var left = BottomPanel("ДноЛевое", 0f, 150f);
         var right = BottomPanel("ДноПравое", 1f, 160f);
         var leg = Leg(new Vector3(0f, 0.100f, 0f));
+        AssertPolled(left, right, leg);
+
         leg.SeatAfterMove(PartRegistry.GetAll());
         Frame();
 
-        Assume.That(leg.HostPartName, Is.EqualTo("ДноЛевое"), "исходная посадка");
-        Assume.That(leg.InsertionIntoHostMM, Is.EqualTo(25), "исходный заход — 25 мм");
+        Assert.AreEqual("ДноЛевое", leg.HostPartName,
+            "исходная посадка: неверный хозяин ДО перемещения обесценивает всё, "
+            + "что тест измерит после, — это часть предмета теста, а не внешняя помеха");
+        Assert.AreEqual(25, leg.InsertionIntoHostMM, "исходный заход — 25 мм");
         return (left, right, leg);
     }
 
@@ -125,8 +153,10 @@ public class ScrewLegHostLinkReproTests
     {
         var leg = Leg(new Vector3(0f, 0.029f, 0f));
         var board = BottomPanel("Дно", 2f, 50f);
+        AssertPolled(leg, board);
+
         Frame();
-        Assume.That(leg.HostPartName, Is.Null, "пока деталь в стороне, хозяина нет");
+        Assert.IsNull(leg.HostPartName, "пока деталь в стороне, хозяина нет");
 
         DragTo(board, new Vector3(0f, board.transform.position.y, 0f));
 
@@ -142,7 +172,7 @@ public class ScrewLegHostLinkReproTests
     {
         var (left, _, leg) = TwoBoardsAndASeatedLeg();
         DragTo(leg, new Vector3(0.200f, leg.transform.position.y, 0f));
-        Assume.That(leg.HostPartName, Is.EqualTo("ДноЛевое"), "200 мм ещё под деталью 600 мм");
+        Assert.AreEqual("ДноЛевое", leg.HostPartName, "200 мм ещё под деталью 600 мм");
 
         var pos = left.transform.position;
         var rot = left.transform.rotation;
@@ -190,8 +220,10 @@ public class ScrewLegHostLinkReproTests
     {
         var (_, _, leg) = TwoBoardsAndASeatedLeg();
         var stranger = BottomPanel("Чужая", 0f, 170f);
+        AssertPolled(stranger);
+
         Frame();
-        Assume.That(leg.HostPartName, Is.EqualTo("ДноЛевое"), "хозяином остаётся тот, кто ниже");
+        Assert.AreEqual("ДноЛевое", leg.HostPartName, "хозяином остаётся тот, кто ниже");
 
         var result = ConstraintValidator.Validate(PartRegistry.GetAll());
 
