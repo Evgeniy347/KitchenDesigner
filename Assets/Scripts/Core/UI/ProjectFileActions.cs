@@ -1,3 +1,5 @@
+using KitchenDesigner.Core.Update;
+
 namespace KitchenDesigner.Core.UI
 {
     public sealed class ProjectFileActions
@@ -54,6 +56,6 @@ namespace KitchenDesigner.Core.UI
 
         private static void ShowSaved(string name) =>
             StatusBarUI.Instance?.ShowTransient("Сохранено: " + name,
-                Update.StatusLevel.Success, 3f);
+                StatusLevel.Success, 3f);
     }
 }

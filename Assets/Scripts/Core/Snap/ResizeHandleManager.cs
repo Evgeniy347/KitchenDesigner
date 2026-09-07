@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using KitchenDesigner.Core.Handles;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Core.Update;
 
 namespace KitchenDesigner.Core
 {
@@ -244,7 +245,7 @@ namespace KitchenDesigner.Core
             if (CtrlHeld == _ctrlHeldLastFrame) return;
             UI.StatusBarUI.Instance?.ShowTransient(
                 globalSnap ? "Прилипание отключено (Ctrl)" : "Прилипание включено (Ctrl)",
-                Update.StatusLevel.Info);
+                StatusLevel.Info);
             _ctrlHeldLastFrame = CtrlHeld;
         }
 

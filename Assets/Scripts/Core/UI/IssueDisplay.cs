@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using KitchenDesigner.Core.Analysis;
 using UnityEngine;
+using KitchenDesigner.Core.Update;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -22,11 +23,11 @@ namespace KitchenDesigner.Core.UI
             _ => UIStyle.Text,
         };
 
-        public static Update.StatusLevel StatusLevelOf(IssueLevel level) => level switch
+        public static StatusLevel StatusLevelOf(IssueLevel level) => level switch
         {
-            IssueLevel.Error => Update.StatusLevel.Error,
-            IssueLevel.Warning => Update.StatusLevel.Warning,
-            _ => Update.StatusLevel.Info,
+            IssueLevel.Error => StatusLevel.Error,
+            IssueLevel.Warning => StatusLevel.Warning,
+            _ => StatusLevel.Info,
         };
 
         public static string FormatRowForCopy(AnalysisIssue iss) => string.Concat(

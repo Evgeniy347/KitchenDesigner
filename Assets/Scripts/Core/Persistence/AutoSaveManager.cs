@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using KitchenDesigner.Core.Update;
 
 namespace KitchenDesigner.Core
 {
@@ -62,7 +63,7 @@ namespace KitchenDesigner.Core
                     _lastSavedJson = current;
                     UI.StatusBarUI.Instance?.ShowTransient(
                         "Сохранено: " + System.DateTime.Now.ToString("HH:mm:ss"),
-                        Update.StatusLevel.Success);
+                        StatusLevel.Success);
                 }
             }
         }

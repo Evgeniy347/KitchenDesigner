@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Core.Update;
 
 namespace KitchenDesigner.Core
 {
@@ -381,7 +382,7 @@ namespace KitchenDesigner.Core
                 bool wasOn = globalSnap;
                 UI.StatusBarUI.Instance?.ShowTransient(
                     wasOn ? "Прилипание отключено (Ctrl)" : "Прилипание включено (Ctrl)",
-                    Update.StatusLevel.Info);
+                    StatusLevel.Info);
                 _wasCtrl = CtrlHeld;
             }
             var snap = effectiveSnap

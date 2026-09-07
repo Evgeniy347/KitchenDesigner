@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using KitchenDesigner.Core.Analysis;
+using KitchenDesigner.Core.Update;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
