@@ -169,6 +169,18 @@ public class SaveFormatDefaultsTests
         Assert.IsTrue(d.edgeBanding, "кромка включена по умолчанию: старый проект её не выключал");
     }
 
+    /// <summary>Ключа новой маски в старом файле нет, и JsonUtility оставляет
+    /// значение инициализатора — по нему загрузка узнаёт, что явные состояния
+    /// торцов ещё надо перенести ПО РАСЧЁТУ (жёлтый на зелёном торце → «есть»,
+    /// жёлтый на сером → «убрать»). Ноль означал бы «перенос уже сделан».</summary>
+    [Test]
+    public void ElementData_EdgeSuppressedMask_DefaultsToUnmigrated_NotToZero()
+    {
+        Assert.AreEqual(EdgeStates.Unmigrated, new ElementData().edgeSuppressedMask,
+            "ноль — законная маска «ничего не убрано», и по нему миграцию от уже"
+            + " перенесённого файла не отличить");
+    }
+
     [Test]
     public void ProjectData_Version_IsTheSaveFormatVersion()
     {

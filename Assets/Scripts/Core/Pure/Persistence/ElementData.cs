@@ -191,6 +191,7 @@ namespace KitchenDesigner.Core
 		public float edgeThicknessMM = AppConstants.EDGE_THICKNESS_DEFAULT_MM;
 		public bool edgeSkipValidation = false;
 		public int edgeManualMask = 0;
+		public int edgeSuppressedMask = EdgeStates.Unmigrated;
 		public bool isScrewLeg = false;
 		public string screwLegThread = ScrewLegSpec.DEFAULT_THREAD;
 		public int screwLegThreadLengthMM = ScrewLegSpec.DEFAULT_THREAD_LENGTH_MM;

@@ -3,26 +3,6 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public enum EdgeSide
-    {
-        L1,
-        L2,
-        W1,
-        W2,
-    }
-
-    public static class EdgeManual
-    {
-        public static int Bit(EdgeSide side) => 1 << (int)side;
-
-        public const int AllMask = 0b1111;
-
-        public static bool Has(int mask, EdgeSide side) => (mask & Bit(side)) != 0;
-
-        public static int With(int mask, EdgeSide side, bool manual) =>
-            manual ? mask | Bit(side) : mask & ~Bit(side);
-    }
-
     public readonly struct EdgeLayout
     {
         public readonly bool IsValid;
