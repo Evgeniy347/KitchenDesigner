@@ -19,7 +19,14 @@ using KitchenDesigner.Core.Plumbing;
 ///    оттенок: труба в стене — норма монтажа, труба в столешнице — брак.
 /// 3. Свободный конец трубы — PIP-01 у КАЖДОГО конца, а состыкованные концы
 ///    молчат. Пока фитингов нет, это единственный способ отличить «трасса не
-///    закончена» от «трасса собрана».</summary>
+///    закончена» от «трасса собрана».
+///
+/// Имена элементов здесь ЛАТИНСКИЕ, и это не вкус: <c>ElementNaming.Rule</c>
+/// разрешает в PartName только латиницу, цифры, '-' и '_', а фабрика прогоняет
+/// любое имя через <c>ElementNaming.Normalize</c>. Кириллическое «Стояк»
+/// доезжает до отчёта как «Stoyak», поэтому сверять ElementId с кириллическим
+/// литералом — значит проверять не переходник, а транслитерацию: тест краснел
+/// на разнице длин 5 и 6 при полностью исправном коде.</summary>
 public class ScenePipeSnapshotTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
@@ -66,7 +73,7 @@ public class ScenePipeSnapshotTests
     [Test]
     public void ASinglePipe_ReportsBothOfItsEndsAsOpen_AndNothingElse()
     {
-        var pipe = Pipe("Труба", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
+        var pipe = Pipe("Run", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
 
         var findings = Findings(pipe);
 
@@ -80,8 +87,8 @@ public class ScenePipeSnapshotTests
     [Test]
     public void TwoPipesButtedEndToEnd_HaveNoOpenEndAtTheJoint_AndDoNotCrossEachOther()
     {
-        var lower = Pipe("Низ", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
-        var upper = Pipe("Верх", 600, new Vector3(0f, Units(900), 0f), PipeSpec.Dn20);
+        var lower = Pipe("Lower", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
+        var upper = Pipe("Upper", 600, new Vector3(0f, Units(900), 0f), PipeSpec.Dn20);
 
         var findings = Findings(lower, upper);
 
@@ -95,8 +102,8 @@ public class ScenePipeSnapshotTests
     [Test]
     public void TwoPipesOfDifferentBore_ButtedTogether_AreReportedAsPip02()
     {
-        var lower = Pipe("Низ", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
-        var upper = Pipe("Верх", 600, new Vector3(0f, Units(900), 0f), PipeSpec.Dn32);
+        var lower = Pipe("Lower", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
+        var upper = Pipe("Upper", 600, new Vector3(0f, Units(900), 0f), PipeSpec.Dn32);
 
         var mismatches = Of(Findings(lower, upper), PipeIssueCatalog.CodeSizeMismatch);
 
@@ -107,23 +114,23 @@ public class ScenePipeSnapshotTests
     [Test]
     public void APipeCrossingABoard_IsPip03()
     {
-        var pipe = Pipe("Стояк", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
-        var board = Board("Столешница", new Vector3Int(600, 400, 18), Vector3.zero);
+        var pipe = Pipe("Riser", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
+        var board = Board("Countertop", new Vector3Int(600, 400, 18), Vector3.zero);
 
         var crossings = Of(Findings(pipe, board), PipeIssueCatalog.CodeObstacleCrossed);
 
         Assert.AreEqual(1, crossings.Count,
             "труба проходит сквозь деталь — под неё сверлят отверстие, а не топят её в пласти");
-        Assert.AreEqual("Стояк", crossings[0].ElementId);
-        Assert.AreEqual("Столешница", crossings[0].OtherElementId,
+        Assert.AreEqual("Riser", crossings[0].ElementId);
+        Assert.AreEqual("Countertop", crossings[0].OtherElementId,
             "в отчёте обязаны стоять ОБА участника: по одному имени виновника не найти");
     }
 
     [Test]
     public void APipeInsideAWall_IsLegal_BecauseThatIsHowPipesAreLaid()
     {
-        var pipe = Pipe("Стояк", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
-        var wall = Wall("Стена", new Vector3Int(2000, 2500, 100),
+        var pipe = Pipe("Riser", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
+        var wall = Wall("Partition", new Vector3Int(2000, 2500, 100),
             new Vector3(0f, Units(1250), 0f));
 
         Assert.IsEmpty(Of(Findings(pipe, wall), PipeIssueCatalog.CodeObstacleCrossed),
@@ -134,8 +141,8 @@ public class ScenePipeSnapshotTests
     [Test]
     public void APipeInsideTheFloorSlab_IsLegalToo()
     {
-        var pipe = Pipe("Разводка", 600, new Vector3(0f, Units(-50), 0f), PipeSpec.Dn20);
-        var go = ElementFactory.CreateFloor(new Vector3Int(3000, 200, 3000), "Пол",
+        var pipe = Pipe("Underfloor", 600, new Vector3(0f, Units(-50), 0f), PipeSpec.Dn20);
+        var go = ElementFactory.CreateFloor(new Vector3Int(3000, 200, 3000), "Floor",
             new Vector3(0f, Units(-100), 0f));
         _spawned.Add(go);
         var floor = go.GetComponent<KitchenElement>();
@@ -147,12 +154,12 @@ public class ScenePipeSnapshotTests
     [Test]
     public void ObstacleKind_SplitsTheSceneIntoWhatMayBeCrossedAndWhatMayNot()
     {
-        var board = Board("Полка", new Vector3Int(600, 18, 300), Vector3.zero);
-        var table = ElementFactory.CreateTable(new Vector3Int(1200, 750, 700), "Стол",
+        var board = Board("Shelf", new Vector3Int(600, 18, 300), Vector3.zero);
+        var table = ElementFactory.CreateTable(new Vector3Int(1200, 750, 700), "Table",
             new Vector3(3f, 0f, 0f));
         _spawned.Add(table);
-        var wall = Wall("Стена", new Vector3Int(2000, 2500, 100), new Vector3(6f, 0f, 0f));
-        var floorGo = ElementFactory.CreateFloor(new Vector3Int(3000, 200, 3000), "Пол",
+        var wall = Wall("Partition", new Vector3Int(2000, 2500, 100), new Vector3(6f, 0f, 0f));
+        var floorGo = ElementFactory.CreateFloor(new Vector3Int(3000, 200, 3000), "Floor",
             new Vector3(9f, 0f, 0f));
         _spawned.Add(floorGo);
 
