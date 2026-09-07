@@ -673,7 +673,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsSetAttr
     {
-        [McpParam("Selector over the scene. Space-separated clauses (AND): name mask 'B4_*', 'name:PAT', 'type:board|wall|floor|window|door|drawer|facade|assembled_facade|radial_shelf|panel|table|pillar|screw_leg|pipe|light', 'module:NAME', 'thickness==18' (also width/height/depth with == != >= <= > <), 'all_boards', 'all_modules', '*'.", Required = true)]
+        [McpParam("Selector over the scene. Space-separated clauses (AND): name mask 'B4_*', 'name:PAT', 'type:board|wall|floor|window|door|drawer|facade|assembled_facade|radial_shelf|panel|table|pillar|screw_leg|pipe|pipe_elbow|pipe_coupling|pipe_tee|pipe_cap|pipe_supply|pipe_return|light', 'module:NAME', 'thickness==18' (also width/height/depth with == != >= <= > <), 'all_boards', 'all_modules', '*'.", Required = true)]
         public string selector = "";
         [McpParam("New thickness (dimZ) in MM for every matched board (e.g. change all 18 to 16).")] public int? thickness;
         [McpParam("New width (dimX) in MM.")] public int? width;
