@@ -5,6 +5,7 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Analysis;
+using KitchenDesigner.Core.Plumbing;
 
 /// <summary>Контракт каталога проблем: набор кодов, уровень каждого кода и
 /// колонка «Деталь». Эти сведения раньше были комментариями в
@@ -36,6 +37,17 @@ public class AnalysisContractTests
         el.DimensionsMM = new Vector3Int(600, 400, 18);
         return el;
     }
+
+    private static PipePort PipeEnd(KitchenElement e) =>
+        new PipePort(e.PartName, PipeNodeKind.Pipe, 0, new PointMm(0f, 0f, 0f),
+            PipeAxis.Up, PipeSpec.DEFAULT_SIZE);
+
+    private static PipeSegment PipeRun(KitchenElement e) =>
+        new PipeSegment(e.PartName, new PointMm(0f, 0f, 0f), new PointMm(0f, 600f, 0f), 26.8f);
+
+    private static PipeObstacle Blocking(KitchenElement e) =>
+        new PipeObstacle(e.PartName, PipeObstacleKind.Part,
+            new BoxMm(new PointMm(-100f, 0f, -100f), new PointMm(100f, 400f, 100f)));
 
     private static string[] DeclaredCodes() =>
         typeof(IssueCatalog)
@@ -76,6 +88,12 @@ public class AnalysisContractTests
             IssueCatalog.ScrewLegShallow(a, b, 3),
             IssueCatalog.ScrewLegNoFooting(a, new ScrewLegSupport(b, 25f)),
             IssueCatalog.ScrewLegNoFooting(a, new ScrewLegSupport(null, 0f)),
+            IssueCatalog.FromPipeFinding(PipeIssueCatalog.OpenEnd(PipeEnd(a)), a, null),
+            IssueCatalog.FromPipeFinding(
+                PipeIssueCatalog.DirectSizeMismatch(PipeEnd(a), PipeEnd(b),
+                    PipeSpec.Dn20, PipeSpec.Dn32), a, b),
+            IssueCatalog.FromPipeFinding(
+                PipeIssueCatalog.ObstacleCrossed(PipeRun(a), Blocking(b)), a, b),
         };
     }
 
@@ -92,6 +110,7 @@ public class AnalysisContractTests
             "FAC-01",
             "GAP-01", "GAP-02",
             "LEG-01", "LEG-02", "LEG-03",
+            "PIP-01", "PIP-02", "PIP-03",
             "SEAT-01",
         };
 
@@ -138,6 +157,9 @@ public class AnalysisContractTests
             ["LEG-01"] = IssueLevel.Warning,
             ["LEG-02"] = IssueLevel.Error,
             ["LEG-03"] = IssueLevel.Warning,
+            ["PIP-01"] = IssueLevel.Error,
+            ["PIP-02"] = IssueLevel.Error,
+            ["PIP-03"] = IssueLevel.Error,
         };
 
         CollectionAssert.AreEquivalent(expected.Keys, byCode.Keys,

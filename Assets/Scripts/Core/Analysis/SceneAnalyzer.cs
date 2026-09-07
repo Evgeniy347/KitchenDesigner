@@ -30,6 +30,7 @@ namespace KitchenDesigner.Core.Analysis
             CollectDishwasherFacadeLinks(all, issues);
             CollectScrewLegMounting(all, issues);
             CollectScrewLegFooting(all, issues);
+            CollectPipeRuns(all, issues);
             return issues;
         }
 
@@ -212,6 +213,21 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
+        private static void CollectPipeRuns(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var finding in Plumbing.PipeRules.Collect(new ScenePipeSnapshot(all)))
+                issues.Add(IssueCatalog.FromPipeFinding(finding,
+                    FindByName(all, finding.ElementId), FindByName(all, finding.OtherElementId)));
+        }
+
+        private static KitchenElement? FindByName(List<KitchenElement> all, string? name)
+        {
+            if (string.IsNullOrEmpty(name)) return null;
+            foreach (var e in all)
+                if (e != null && e.PartName == name) return e;
+            return null;
+        }
+
         private static FacadeElement? FindFacade(List<KitchenElement> all, string name)
         {
             foreach (var e in all)
@@ -243,6 +259,9 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeScrewLegOffCentre = "LEG-01";
         public const string CodeScrewLegShallow = "LEG-02";
         public const string CodeScrewLegNoFooting = "LEG-03";
+        public const string CodePipeOpenEnd = "PIP-01";
+        public const string CodePipeSizeMismatch = "PIP-02";
+        public const string CodePipeObstacleCrossed = "PIP-03";
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {
@@ -394,6 +413,12 @@ namespace KitchenDesigner.Core.Analysis
                     Name(leg),
                     "Опоре не на чем стоять: под пятаком нет ни пола, ни детали",
                     leg);
+
+        public static AnalysisIssue FromPipeFinding(Plumbing.PipeFinding finding,
+            KitchenElement? element, KitchenElement? other) =>
+            new AnalysisIssue(
+                finding.Level == Plumbing.PipeFindingLevel.Error ? IssueLevel.Error : IssueLevel.Warning,
+                finding.Code, PairDetail(element, other), finding.Message, element, other);
 
         private static string Name(KitchenElement? e) =>
             e != null && !string.IsNullOrEmpty(e.PartName) ? e.PartName : "—";

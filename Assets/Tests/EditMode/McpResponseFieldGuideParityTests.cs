@@ -37,6 +37,7 @@ public class McpResponseFieldGuideParityTests
             ["openingViolations"] = "детали, пересекающие траекторию открывания",
             ["pillar"] = "свойства опоры, только для PillarElement",
             ["screwLeg"] = "свойства винтовой опоры, только для ScrewLegElement",
+            ["pipe"] = "свойства трубы, только для PipeElement: ДУ, обозначение, длина и выводимые из ДУ диаметры и толщина стенки",
             ["cooktop"] = "свойства варочной, только для CooktopElement",
             ["oven"] = "свойства духовки, только для OvenElement",
             ["dishwasher"] = "свойства посудомойки, только для DishwasherElement",
