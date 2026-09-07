@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core.Plumbing
     {
         IReadOnlyList<PipePort> Ports();
 
-        IReadOnlyList<PipeSegment> Segments();
+        IReadOnlyList<PipeRunSegment> Segments();
 
         IReadOnlyList<PipeObstacle> Obstacles();
     }

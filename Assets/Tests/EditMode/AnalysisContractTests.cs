@@ -42,8 +42,8 @@ public class AnalysisContractTests
         new PipePort(e.PartName, PipeNodeKind.Pipe, 0, new PointMm(0f, 0f, 0f),
             PipeAxis.Up, PipeSpec.DEFAULT_SIZE);
 
-    private static PipeSegment PipeRun(KitchenElement e) =>
-        new PipeSegment(e.PartName, new PointMm(0f, 0f, 0f), new PointMm(0f, 600f, 0f), 26.8f);
+    private static PipeRunSegment PipeRun(KitchenElement e) =>
+        new PipeRunSegment(e.PartName, new PointMm(0f, 0f, 0f), new PointMm(0f, 600f, 0f), 26.8f);
 
     private static PipeObstacle Blocking(KitchenElement e) =>
         new PipeObstacle(e.PartName, PipeObstacleKind.Part,

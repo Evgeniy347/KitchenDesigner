@@ -12,7 +12,7 @@ namespace KitchenDesigner.Core.Plumbing
             Collect(PipeSurvey.Of(scene.Ports()), scene.Segments(), scene.Obstacles());
 
         public static IReadOnlyList<PipeFinding> Collect(PipeSurvey survey,
-            IReadOnlyList<PipeSegment> segments, IReadOnlyList<PipeObstacle> obstacles)
+            IReadOnlyList<PipeRunSegment> segments, IReadOnlyList<PipeObstacle> obstacles)
         {
             var findings = new List<PipeFinding>();
             CollectOpenEnds(survey, findings);
@@ -83,7 +83,7 @@ namespace KitchenDesigner.Core.Plumbing
             return false;
         }
 
-        private static void CollectObstacles(IReadOnlyList<PipeSegment> segments,
+        private static void CollectObstacles(IReadOnlyList<PipeRunSegment> segments,
             IReadOnlyList<PipeObstacle> obstacles, List<PipeFinding> findings)
         {
             foreach (var segment in segments)

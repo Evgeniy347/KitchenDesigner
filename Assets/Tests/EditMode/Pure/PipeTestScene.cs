@@ -10,7 +10,7 @@ using KitchenDesigner.Core.Plumbing;
 internal sealed class PipeTestScene : IPipeSceneSnapshot
 {
     private readonly List<PipePort> _ports = new List<PipePort>();
-    private readonly List<PipeSegment> _segments = new List<PipeSegment>();
+    private readonly List<PipeRunSegment> _segments = new List<PipeRunSegment>();
     private readonly List<PipeObstacle> _obstacles = new List<PipeObstacle>();
 
     public static PointMm At(float xMm, float yMm, float zMm) => new PointMm(xMm, yMm, zMm);
@@ -20,7 +20,7 @@ internal sealed class PipeTestScene : IPipeSceneSnapshot
 
     public IReadOnlyList<PipePort> Ports() => _ports;
 
-    public IReadOnlyList<PipeSegment> Segments() => _segments;
+    public IReadOnlyList<PipeRunSegment> Segments() => _segments;
 
     public IReadOnlyList<PipeObstacle> Obstacles() => _obstacles;
 
@@ -38,7 +38,7 @@ internal sealed class PipeTestScene : IPipeSceneSnapshot
     {
         _ports.Add(new PipePort(id, PipeNodeKind.Pipe, 0, from, Towards(to, from), sizeId));
         _ports.Add(new PipePort(id, PipeNodeKind.Pipe, 1, to, Towards(from, to), sizeId));
-        _segments.Add(new PipeSegment(id, from, to, PipeSpec.Get(sizeId).OuterDiameterMm));
+        _segments.Add(new PipeRunSegment(id, from, to, PipeSpec.Get(sizeId).OuterDiameterMm));
         return this;
     }
 

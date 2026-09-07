@@ -7,7 +7,7 @@ namespace KitchenDesigner.Core.Analysis
     public sealed class ScenePipeSnapshot : IPipeSceneSnapshot
     {
         private readonly List<PipePort> _ports = new List<PipePort>();
-        private readonly List<PipeSegment> _segments = new List<PipeSegment>();
+        private readonly List<PipeRunSegment> _segments = new List<PipeRunSegment>();
         private readonly List<PipeObstacle> _obstacles = new List<PipeObstacle>();
 
         public ScenePipeSnapshot(IReadOnlyList<KitchenElement> scene)
@@ -23,7 +23,7 @@ namespace KitchenDesigner.Core.Analysis
 
         public IReadOnlyList<PipePort> Ports() => _ports;
 
-        public IReadOnlyList<PipeSegment> Segments() => _segments;
+        public IReadOnlyList<PipeRunSegment> Segments() => _segments;
 
         public IReadOnlyList<PipeObstacle> Obstacles() => _obstacles;
 
@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core.Analysis
             var b = ToMm(pipe.EndBUnits);
             var along = pipe.RunAxis;
 
-            _segments.Add(new PipeSegment(pipe.PartName, a, b, pipe.OuterDiameterMm));
+            _segments.Add(new PipeRunSegment(pipe.PartName, a, b, pipe.OuterDiameterMm));
             _ports.Add(new PipePort(pipe.PartName, PipeNodeKind.Pipe, 0, a,
                 AxisOf(-along), pipe.SizeId));
             _ports.Add(new PipePort(pipe.PartName, PipeNodeKind.Pipe, 1, b,

@@ -1,13 +1,13 @@
 namespace KitchenDesigner.Core.Plumbing
 {
-    public readonly struct PipeSegment
+    public readonly struct PipeRunSegment
     {
         public readonly string ElementId;
         public readonly PointMm AMm;
         public readonly PointMm BMm;
         public readonly float OuterDiameterMm;
 
-        public PipeSegment(string elementId, in PointMm aMm, in PointMm bMm, float outerDiameterMm)
+        public PipeRunSegment(string elementId, in PointMm aMm, in PointMm bMm, float outerDiameterMm)
         {
             ElementId = elementId;
             AMm = aMm;

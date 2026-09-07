@@ -19,7 +19,7 @@ namespace KitchenDesigner.Core.Plumbing
             new PipeFinding(PipeFindingLevel.Error, CodeSizeMismatch, elementId, null,
                 $"Фитинг сводит разные диаметры: {PipeSpec.DesignationOrDash(sizeA)} и {PipeSpec.DesignationOrDash(sizeB)} — нужен переходник");
 
-        public static PipeFinding ObstacleCrossed(in PipeSegment segment, in PipeObstacle obstacle) =>
+        public static PipeFinding ObstacleCrossed(in PipeRunSegment segment, in PipeObstacle obstacle) =>
             new PipeFinding(PipeFindingLevel.Error, CodeObstacleCrossed, segment.ElementId,
                 obstacle.ElementId,
                 "Трасса пересекает деталь — прокладка допустима только внутри стены или пола");
