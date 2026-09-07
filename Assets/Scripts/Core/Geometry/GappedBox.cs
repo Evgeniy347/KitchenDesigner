@@ -4,6 +4,9 @@ namespace KitchenDesigner.Core
 {
     public static class GappedBox
     {
+        public static float BottomSkirtUnits(BoxGaps gaps) =>
+            gaps.Bottom * AppConstants.MM_TO_UNITS;
+
         public static void CornerUnits(Vector3 physical, BoxGaps gaps,
             out float minX, out float maxX, out float minY, out float maxY,
             out float minZ, out float maxZ)
@@ -11,7 +14,7 @@ namespace KitchenDesigner.Core
             float gl = gaps.Left * AppConstants.MM_TO_UNITS;
             float gr = gaps.Right * AppConstants.MM_TO_UNITS;
             float gt = gaps.Top * AppConstants.MM_TO_UNITS;
-            float gb = gaps.Bottom * AppConstants.MM_TO_UNITS;
+            float gb = BottomSkirtUnits(gaps);
             float gf = gaps.Front * AppConstants.MM_TO_UNITS;
             float gk = gaps.Back * AppConstants.MM_TO_UNITS;
             minX = -physical.x * 0.5f - gl;

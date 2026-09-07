@@ -196,13 +196,23 @@ namespace KitchenDesigner.Core.UI
         }
 
         private void PlaceCenteredOnGround(int heightMM, Func<Vector3, GameObject> create) =>
-            BeginPlacement(create(CenteredOnGroundPoint(heightMM)));
+            BeginPlacement(LiftByBottomSkirt(create(CenteredOnGroundPoint(heightMM))));
+
+        private static GameObject LiftByBottomSkirt(GameObject go)
+        {
+            var element = go.GetComponent<KitchenElement>();
+            if (element != null)
+                element.transform.position += new Vector3(0f,
+                    GappedBox.BottomSkirtUnits(element.Gaps), 0f);
+            return go;
+        }
 
         private void PlaceAtHeightUnaffectedByGrid(float centerYMeters, Func<Vector3, GameObject> create) =>
             BeginPlacement(create(GroundPointAtHeightUnaffectedByGrid(centerYMeters)));
 
         private GameObject CreateBoardGo(Vector3Int dims, string name) =>
-            ElementFactory.CreatePart(dims, name, CenteredOnGroundPoint(dims.y));
+            LiftByBottomSkirt(ElementFactory.CreatePart(dims, name,
+                CenteredOnGroundPoint(dims.y)));
 
         private void BeginPlacement(GameObject go)
         {

@@ -60,7 +60,8 @@ namespace KitchenDesigner.Core
             point.y = pending is LightSourceElement || pending is SinkElement
                 || pending is CooktopElement || pending is IKeepsPlacementHeight
                 ? pending.transform.position.y
-                : AppConstants.HalfHeightUnits(pending.DimensionsMM.y);
+                : AppConstants.HalfHeightUnits(pending.DimensionsMM.y)
+                    + GappedBox.BottomSkirtUnits(pending.Gaps);
 
             Vector3 pos = GridManager.SnapToGridXZ(point);
 
