@@ -163,7 +163,9 @@
             "screwLegBaseHeightMM": 8,
             "isPipe": false,
             "pipeSizeId": "dn20",
-            "pipeLengthMM": 600
+            "pipeLengthMM": 600,
+            "isPipeFitting": false,
+            "pipeFittingType": "pipe_elbow"
         }
     ],
     "groups": [],
@@ -349,7 +351,9 @@
         "screwLegBaseHeightMM": 8,
         "isPipe": false,
         "pipeSizeId": "dn20",
-        "pipeLengthMM": 600
+        "pipeLengthMM": 600,
+        "isPipeFitting": false,
+        "pipeFittingType": "pipe_elbow"
     },
     "undoHistory": [
         {
