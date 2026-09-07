@@ -53,7 +53,7 @@
     },
     {
       "type": "Button",
-      "text": "Ошибки <color=#E64040>(#)</color>",
+      "text": "Ошибки",
       "position": [260, -6]
     },
     {

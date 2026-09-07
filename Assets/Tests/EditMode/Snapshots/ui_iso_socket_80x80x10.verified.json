@@ -18,6 +18,11 @@
     },
     {
       "type": "Button",
+      "text": "IsoSocket_Wall",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
       "text": "«",
       "position": [4, -4]
     },
