@@ -73,9 +73,17 @@ public class ScrewLegHostSectionTests
         return leg;
     }
 
-    private ScrewLegElement SeatedLeg()
+    /// <summary>Дробную часть носит ХОЗЯИН, а не опора. Панель применяет ВСЮ
+    /// форму сразу, и строка «X» отдаёт координату целыми миллиметрами
+    /// (<c>ContextMenuUI.ToMM</c>): опора, поставленная на 0,3 мм, приезжала бы
+    /// на круглое число при первом же Enter — и тест мерил бы это округление,
+    /// а не то, ради чего написан. Сдвинутый хозяин даёт ту же дробность в
+    /// ИЗМЕРЕНИИ («слева» = 299,7 мм при показанных 300), не трогая координату
+    /// опоры.</summary>
+    private ScrewLegElement SeatedLeg(float hostOffsetMM = 0f)
     {
         var bottom = Bottom();
+        bottom.transform.position += new Vector3(hostOffsetMM * U, 0f, 0f);
         var leg = Leg(new Vector3(0f, 0.100f, 0f));
         Assert.That(PartRegistry.GetAll(), Has.Member(bottom).And.Member(leg),
             "обе детали обязаны быть в реестре: кадровый опрос ходит по нему, "
@@ -180,14 +188,14 @@ public class ScrewLegHostSectionTests
     }
 
     /// <summary>Ввод того же числа не двигает опору ни на микрон. Числа целые, а
-    /// геометрия дробная: если бы сдвиг считался от ПОКАЗАННОГО (округлённого)
-    /// значения, опора уползала бы на пол-миллиметра за каждое подтверждение.</summary>
+    /// геометрия дробная: хозяин сдвинут на 0,3 мм, поэтому «слева» на самом деле
+    /// 299,7 мм, а в поле стоит 300. Если бы сдвиг считался от ПОКАЗАННОГО
+    /// (округлённого) значения, опора уползала бы на 0,3 мм за каждое
+    /// подтверждение — за три Enter почти на миллиметр.</summary>
     [Test]
     public void RetypingTheSameNumber_LeavesTheLegExactlyWhereItWas()
     {
-        var leg = SeatedLeg();
-        leg.transform.position += new Vector3(0.3f * U, 0f, 0f);
-        SceneChangeTracker.Poll();
+        var leg = SeatedLeg(0.3f);
         _menu!.Open(leg);
 
         float before = leg.transform.position.x;

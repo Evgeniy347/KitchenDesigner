@@ -49,6 +49,13 @@ namespace KitchenDesigner.Core.UI
         private const float DropdownH = 28f;
         private const float SectionHeaderH = 18f;
         private const float ToggleH = 26f;
+        private const float PairFieldW = 45f;
+        private const float PairGap = 4f;
+        private const float PairFirstX = FieldX - 27f;
+        private const float PairLabelW = 140f;
+        private const float PairLabelH = 20f;
+        private const int PairLabelFont = 13;
+        private const float PairFieldH = 22f;
 
         private readonly Transform _parent;
         private readonly ContextMenuLayout _layout;
@@ -76,6 +83,30 @@ namespace KitchenDesigner.Core.UI
             _registered.Add(lbl, field);
             visibility.Register(_layout, RowH, RowGap,
                 lbl.rectTransform, field.GetComponent<RectTransform>());
+            return field;
+        }
+
+        public (TMP_InputField first, TMP_InputField second) PairField(string label,
+            string firstNode, string secondNode, string initial, RowVisibility visibility)
+        {
+            var lbl = UIFactory.CreateLabel("L_" + firstNode + "_" + secondNode, _parent, label,
+                PairLabelFont, new Vector2(LabelX, 0), new Vector2(PairLabelW, PairLabelH),
+                TextAnchor.MiddleLeft);
+            var first = PairInput(firstNode, initial, PairFirstX);
+            var second = PairInput(secondNode, initial, PairFirstX + PairFieldW + PairGap);
+            _registered.Add(lbl, first);
+            _registered.Add(lbl, second);
+            visibility.Register(_layout, FieldH, PairGap, lbl.rectTransform,
+                first.GetComponent<RectTransform>(), second.GetComponent<RectTransform>());
+            return (first, second);
+        }
+
+        private TMP_InputField PairInput(string node, string initial, float x)
+        {
+            var field = UIFactory.CreateInputField("F_" + node, _parent, initial,
+                new Vector2(x, 0), new Vector2(PairFieldW, PairFieldH));
+            field.contentType = TMP_InputField.ContentType.Custom;
+            field.onValidateInput = DimensionFieldValidation.Char();
             return field;
         }
 

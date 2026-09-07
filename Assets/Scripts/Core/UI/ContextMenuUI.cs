@@ -159,7 +159,7 @@ namespace KitchenDesigner.Core.UI
             BuildDimensions();
             _grooves.Build(panel.transform);
             _edges.Build(panel.transform);
-            _gaps.Build(panel.transform);
+            _gaps.Build();
             BuildFacadeSection();
             BuildDrawerSection();
             BuildWindowSection();

@@ -1,5 +1,4 @@
 using TMPro;
-using UnityEngine;
 using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
@@ -8,13 +7,6 @@ namespace KitchenDesigner.Core.UI
     {
         public const string NoHostText = "—";
 
-        private const float FieldWidth = 45f;
-        private const float FieldSpacing = 4f;
-        private const float FirstFieldX = FieldX - 27f;
-        private const float LabelWidth = 140f;
-        private const float LabelHeight = 20f;
-        private const int LabelFontSize = 13;
-        private const float FieldHeight = 22f;
         private const float CaptionHeight = 18f;
 
         private readonly IContextMenuHost _host;
@@ -31,18 +23,15 @@ namespace KitchenDesigner.Core.UI
         {
             var visibility = RowVisibility.For(ElementFacet.ScrewLeg);
 
-            var caption = _host.Rows.Hint("CtxSecScrewHost", "Корпус",
-                CaptionHeight, RowGap, visibility);
+            _host.Rows.Hint("CtxSecScrewHost", "Корпус", CaptionHeight, RowGap, visibility);
 
             _insertion = _host.Rows.NumberField("Заход в корпус", visibility);
-            _insertion.readOnly = true;
-            _insertion.interactable = false;
+            UIRowEnabled.SetControlEnabled(_insertion, false);
 
-            var parent = caption.transform.parent;
-            BuildPair(parent, visibility, "Слева / справа, мм",
-                out _left, "screwLeft", out _right, "screwRight");
-            BuildPair(parent, visibility, "Сверху / снизу, мм",
-                out _top, "screwTop", out _bottom, "screwBottom");
+            (_left, _right) = _host.Rows.PairField("Слева / справа, мм",
+                "screwLeft", "screwRight", NoHostText, visibility);
+            (_top, _bottom) = _host.Rows.PairField("Сверху / снизу, мм",
+                "screwTop", "screwBottom", NoHostText, visibility);
         }
 
         public System.Collections.Generic.IEnumerable<TMP_InputField?> ArithmeticFields()
@@ -118,7 +107,7 @@ namespace KitchenDesigner.Core.UI
         private void Refresh(TMP_InputField? field, int valueMM, bool hasHost)
         {
             if (field == null) return;
-            field.interactable = hasHost;
+            UIRowEnabled.SetControlEnabled(field, hasHost);
             if (!hasHost) { field.SetTextWithoutNotify(NoHostText); return; }
             _host.Fields.RefreshUnfocused(field, valueMM.ToString());
         }
@@ -130,28 +119,6 @@ namespace KitchenDesigner.Core.UI
         {
             if (field == null) return;
             field.SetTextWithoutNotify(valueMM.HasValue ? valueMM.Value.ToString() : NoHostText);
-        }
-
-        private void BuildPair(Transform parent, RowVisibility visibility, string label,
-            out TMP_InputField first, string firstNode,
-            out TMP_InputField second, string secondNode)
-        {
-            var lbl = UIFactory.CreateLabel("L_" + firstNode, parent, label, LabelFontSize,
-                new Vector2(LabelX, 0), new Vector2(LabelWidth, LabelHeight), TextAnchor.MiddleLeft);
-            first = BuildField(parent, firstNode, FirstFieldX);
-            second = BuildField(parent, secondNode, FirstFieldX + FieldWidth + FieldSpacing);
-
-            visibility.Register(_host.Layout, FieldHeight, FieldSpacing, lbl.rectTransform,
-                first.GetComponent<RectTransform>(), second.GetComponent<RectTransform>());
-        }
-
-        private static TMP_InputField BuildField(Transform parent, string node, float x)
-        {
-            var field = UIFactory.CreateInputField("F_" + node, parent, NoHostText,
-                new Vector2(x, 0), new Vector2(FieldWidth, FieldHeight));
-            field.contentType = TMP_InputField.ContentType.Custom;
-            field.onValidateInput = DimensionFieldValidation.Char();
-            return field;
         }
     }
 }

@@ -21,6 +21,10 @@ namespace KitchenDesigner.Core.UI
 
         public override bool HeightShownFromDimensions => false;
 
+        public override bool WidthEditable => false;
+
+        public override bool DepthEditable => false;
+
         public override void Build()
         {
             var visibility = RowVisibility.For(ElementFacet.ScrewLeg);
@@ -77,7 +81,7 @@ namespace KitchenDesigner.Core.UI
                 leg.ThreadLengthMM = Fields.ParseInt(_threadLength, leg.ThreadLengthMM);
 
             if (height != null) height.text = leg.BodyHeightMM.ToString();
-            WriteBack(leg);
+            WriteOwnFields(leg);
         }
 
         public override void ApplyAfterPosition(KitchenElement element)
@@ -107,10 +111,15 @@ namespace KitchenDesigner.Core.UI
 
         private void WriteBack(ScrewLegElement leg)
         {
+            WriteOwnFields(leg);
+            _hostSection.WriteFrom(leg);
+        }
+
+        private void WriteOwnFields(ScrewLegElement leg)
+        {
             if (_threadLength != null) _threadLength.text = leg.ThreadLengthMM.ToString();
             if (_baseDiameter != null) _baseDiameter.text = leg.BaseDiameterMM.ToString();
             if (_baseHeight != null) _baseHeight.text = leg.BaseHeightMM.ToString();
-            _hostSection.WriteFrom(leg);
         }
 
         private static int IndexOf(string thread)

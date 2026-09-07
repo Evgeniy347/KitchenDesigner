@@ -1,19 +1,10 @@
 using TMPro;
-using UnityEngine;
 using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
     internal sealed class ContextMenuGapSection
     {
-        private const float FieldWidth = 45f;
-        private const float FieldSpacing = 4f;
-        private const float FirstFieldX = FieldX - 27f;
-        private const float LabelWidth = 140f;
-        private const float LabelHeight = 20f;
-        private const int LabelFontSize = 13;
-        private const float FieldHeight = 22f;
-
         private readonly IContextMenuHost _host;
         private readonly TMP_InputField?[] _fieldsBySide = new TMP_InputField?[GapSides.All.Length];
 
@@ -32,14 +23,14 @@ namespace KitchenDesigner.Core.UI
 
         public void Collapse() => _expanded = false;
 
-        public void Build(Transform parent)
+        public void Build()
         {
             _countLabel = _host.Rows.WideButton("CtxGaps", "Зазоры (0)", Toggle,
                 RowVisibility.When(Eligible), RowGap);
 
-            BuildRow(parent, "Слева / справа, мм", GapSide.Left, GapSide.Right);
-            BuildRow(parent, "Сверху / снизу, мм", GapSide.Top, GapSide.Bottom);
-            BuildRow(parent, "Спереди / сзади, мм", GapSide.Front, GapSide.Back);
+            BuildRow("Слева / справа, мм", GapSide.Left, GapSide.Right);
+            BuildRow("Сверху / снизу, мм", GapSide.Top, GapSide.Bottom);
+            BuildRow("Спереди / сзади, мм", GapSide.Front, GapSide.Back);
         }
 
         public void Toggle()
@@ -105,28 +96,19 @@ namespace KitchenDesigner.Core.UI
             return false;
         }
 
-        private void BuildRow(Transform parent, string label, GapSide first, GapSide second)
+        private void BuildRow(string label, GapSide first, GapSide second)
         {
-            var lbl = UIFactory.CreateLabel($"L_Gap_{first}{second}", parent, label, LabelFontSize,
-                new Vector2(LabelX, 0), new Vector2(LabelWidth, LabelHeight), TextAnchor.MiddleLeft);
-            var firstField = BuildField(parent, first, FirstFieldX);
-            var secondField = BuildField(parent, second, FirstFieldX + FieldWidth + FieldSpacing);
-
-            _host.Layout.AddWhen(Expanded, FieldH, FieldSpacing, lbl.rectTransform,
-                firstField.GetComponent<RectTransform>(),
-                secondField.GetComponent<RectTransform>());
+            var (firstField, secondField) = _host.Rows.PairField(label,
+                $"gap{first}", $"gap{second}", "0", RowVisibility.When(Expanded));
+            Remember(firstField, first);
+            Remember(secondField, second);
         }
 
-        private TMP_InputField BuildField(Transform parent, GapSide side, float x)
+        private void Remember(TMP_InputField field, GapSide side)
         {
-            var field = UIFactory.CreateInputField($"F_gap{side}", parent, "0",
-                new Vector2(x, 0), new Vector2(FieldWidth, FieldHeight));
-            field.contentType = TMP_InputField.ContentType.Custom;
-            field.onValidateInput = DimensionFieldValidation.Char();
             PointerHover.Attach(field.gameObject,
                 () => Hover(side, true), () => Hover(side, false));
             _fieldsBySide[System.Array.IndexOf(GapSides.All, side)] = field;
-            return field;
         }
 
         internal void Hover(GapSide side, bool entered)
