@@ -47,7 +47,7 @@
       "label": "Название",
       "value": "Sbornyy_450x700",
       "interactable": true,
-      "position": [40, -83]
+      "position": [38, -83]
     },
     {
       "type": "Label",
@@ -87,7 +87,7 @@
     },
     {
       "type": "Button",
-      "text": "Зазоры (0)  ►",
+      "text": "Зазоры (4)  ►",
       "position": [0, -232]
     },
     {
