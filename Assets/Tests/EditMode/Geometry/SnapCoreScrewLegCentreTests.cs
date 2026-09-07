@@ -173,4 +173,47 @@ public class SnapCoreScrewLegCentreTests : SnapCoreTestBase
             + "Именно этого требовал брутфорс строкой «Vintovaya_opora_1[f2]↔A4_side_L[f3] "
             + "gap=42,0mm ovl=100% away=7mm», и требовал напрасно");
     }
+
+    // ─ На чём стоят два допущения оракула свипа ─────────────────────────────
+    //
+    // SnapMutationTests больше не зовёт INTERSECT-AFTER-SNAP на посадке
+    // (SeatedIntoIt) и не считает грань крепления участником спора за ось
+    // (MOVE-COMPETITION): прогон 2026-09-08 дал 565 и 78 таких строк, и все они
+    // были про три винтовые опоры под цоколем. Оба допущения держатся на двух
+    // фактах ниже. Сломай любой — и красным станет здесь, а не тихо нигде.
+
+    [Test]
+    public void TheSeatedLeg_ThreadsIntoThePlinth_AndThatOverlapIsTheSeating()
+    {
+        var result = Snap(FloorLeg(), PlinthScene(), LegOnFloorAt(-12f * MM));
+
+        Assert.IsTrue(result.snapped, "опора подошла под цоколь — посадка обязана быть");
+
+        float legTopY = result.position.y + 29f * MM;
+        Assert.Greater(legTopY, PlinthBottomY + Tol,
+            "резьба ушла В цоколь: коробки опоры и цоколя ПЕРЕСЕКАЮТСЯ, и это и есть "
+            + "посадка, а не столкновение. Свип освобождён от проверки пересечения ровно "
+            + "на этот случай; перестанет посадка заводить опору внутрь — освобождение "
+            + "станет прикрытием, и красной обязана быть эта строка");
+        Assert.Less(legTopY, PlinthBottomY + 80f * MM - Tol,
+            "но насквозь не проходит: 58 мм роста от пола против дна цоколя на 20 мм и "
+            + "его же верха на 100 мм");
+    }
+
+    [Test]
+    public void LiftedOffTheFloor_TheLegComesBackDown_TheCarcassDoesNotTakeIt()
+    {
+        var result = Snap(FloorLeg(), PlinthScene(),
+            new Vector3(0f, LegCentreY + 24f * MM, 0f));
+
+        Assert.IsTrue(result.snapped, "пол в 24 мм под пяткой — это внутри порога");
+        Assert.AreEqual(LegCentreY, result.position.y, Tol,
+            "поднятая опора возвращается пяткой на ПОЛ. Свип звал это ошибкой выбора — "
+            + "«выбран Pol_1 gap=24,0мм, но ближе A4_side_L gap=18,0мм» — сравнивая две "
+            + "разные величины: у грани крепления зазор по плоскости не значит ничего, "
+            + "вдоль оси крепления посадка не двигает деталь вовсе, и единственный "
+            + "кандидат, который вообще меняет высоту, — пол");
+        Assert.AreEqual(0f, result.position.z, Tol,
+            "а поперёк её не уносит: она уже на середине толщины цоколя");
+    }
 }

@@ -70,6 +70,11 @@ public class SnapMutationTests
     /// поворот внутри свипа восстанавливается, а ToGeometry() строит грани.</summary>
     private Vector3 _mountNormal;
 
+    /// <summary>Индекс грани крепления у текущей детали, −1 у всех остальных:
+    /// грани детали внутри свипа не меняются, поворот и размер восстанавливаются
+    /// на каждом шаге.</summary>
+    private int _mountFaceIndex = -1;
+
     private readonly Dictionary<KitchenElement, Face[]> _faceCache = new();
 
     /// <summary>Соседи текущей детали по имени. Свип ищет цель снэпа по имени на
@@ -215,6 +220,7 @@ public class SnapMutationTests
             var savedDims = moved.DimensionsMM;
             var savedRot = moved.transform.rotation;
             _mountNormal = MountNormalOf(moved);
+            _mountFaceIndex = MountFaceIndexOf(moved, _mountNormal);
             float threshold = KitchenSettings.Instance.SnapThreshold;
             var allOthers = allElements.Where(e => e != moved && e != null && e.gameObject.activeInHierarchy).ToList();
 
@@ -410,7 +416,8 @@ public class SnapMutationTests
                     moved.transform.position = snapRes.position;
                     // Панели (задники/ДВП) встают в пазы — их AABB пересекает корпус,
                     // это валидно, не считаем ошибкой.
-                    if (!IsPanel(moved) && SnapSystem.ElementsIntersect(moved, target))
+                    if (!IsPanel(moved) && !SeatedIntoIt(moved, target)
+                        && SnapSystem.ElementsIntersect(moved, target))
                         AddError($"INTERSECT: {moved.PartName}↔{target.PartName} after snap-back");
                     snapOk++;
                 }
@@ -493,7 +500,8 @@ public class SnapMutationTests
         {
             moved.transform.position = snap.position;
             var snapTarget = others.FirstOrDefault(o => o.PartName == snap.targetName);
-            if (snapTarget != null && !IsPanel(moved) && SnapSystem.ElementsIntersect(moved, snapTarget))
+            if (snapTarget != null && !IsPanel(moved) && !SeatedIntoIt(moved, snapTarget)
+                && SnapSystem.ElementsIntersect(moved, snapTarget))
                 AddError($"INTERSECT-AFTER-SNAP: {label} → {snap.targetName}");
             snapOk++;
         }
@@ -655,7 +663,8 @@ public class SnapMutationTests
             _countPosSet++;
             var swI = System.Diagnostics.Stopwatch.StartNew();
             var snapTarget = OtherByName(snap.targetName);
-            bool intersects = snapTarget != null && !IsPanel(moved) && SnapSystem.ElementsIntersect(moved, snapTarget);
+            bool intersects = snapTarget != null && !IsPanel(moved) && !SeatedIntoIt(moved, snapTarget)
+                && SnapSystem.ElementsIntersect(moved, snapTarget);
             _ticksIntersect += swI.ElapsedTicks;
             _countIntersect++;
             if (intersects)
@@ -682,6 +691,19 @@ public class SnapMutationTests
             // между кандидатами. Коллизии по условию задачи не рассматриваем.
             if (chosen.intersects) continue;
 
+            // Грань крепления не спорит за ось. Посадка двигает деталь ПОПЕРЁК
+            // неё (du/dv по граням цели), а вдоль неё — ровно на ноль:
+            // SnapCandidateCollector.AddCentringContact не трогает planeShift.
+            // Diagnose этого правила не знает и меряет той же грани зазор по
+            // плоскости, так что свип сравнивал сдвиг посадки с зазором до пола
+            // как две величины одной оси. Все 78 MOVE-COMPETITION прогона
+            // 2026-09-08 — этот случай: опора поднята на d мм, пол внизу на d мм,
+            // низ бока A4_side_L — на |42−d| мм, и «ближе» всегда оказывался тот,
+            // кого выбор и не рассматривал. Что верно ВМЕСТО этого, требуют
+            // SnapCoreScrewLegCentreTests: посадка не меняет высоту, а поднятая
+            // опора возвращается пяткой на пол, а не уезжает к царге.
+            if (_mountFaceIndex >= 0 && chosen.movedFaceIndex == _mountFaceIndex) continue;
+
             int axis = chosen.movedFaceIndex / 2;
 
             // По оси, где деталь УЖЕ стоит заподлицо, конкуренции нет: любой сдвиг
@@ -694,7 +716,8 @@ public class SnapMutationTests
             if (axisAlreadyInContact) continue;
 
             var rivals = diag.neighbors
-                .Where(n => n.wouldSnap && n.gapMM > 0.5f && n.movedFaceIndex / 2 == axis)
+                .Where(n => n.wouldSnap && n.gapMM > 0.5f && n.movedFaceIndex / 2 == axis
+                            && (_mountFaceIndex < 0 || n.movedFaceIndex != _mountFaceIndex))
                 .ToList();
             if (rivals.Count > 1)
             {
@@ -852,6 +875,59 @@ public class SnapMutationTests
     /// тогда у теста и у продакшена было бы два описания одного правила, и на
     /// следующем центрующемся типе они разошлись бы молча.</summary>
     private static Vector3 MountNormalOf(KitchenElement e) => e.ToGeometry().MountNormal;
+
+    /// <summary>Индекс грани крепления в GetFaces(). Порядок граней — контракт
+    /// (index/2 = ось, чётный индекс = положительное направление), но брать
+    /// индекс готовым нельзя: нормаль крепления живёт в мировых координатах и
+    /// зависит от поворота детали.</summary>
+    private static int MountFaceIndexOf(KitchenElement e, Vector3 mountNormal)
+    {
+        if (mountNormal == Vector3.zero) return -1;
+        var faces = e.GetFaces();
+        for (int i = 0; i < faces.Length; i++)
+            if (Vector3.Dot(faces[i].normal, mountNormal) >= Tolerance.ParallelDot) return i;
+        return -1;
+    }
+
+    /// <summary>Деталь ВКРУЧЕНА в цель: её грань крепления лежит внутри толщи
+    /// цели вдоль оси крепления. Это посадка, а не столкновение — тот же случай,
+    /// что панель в пазу (IsPanel рядом), и записан он через геометрию, а не
+    /// через «это винтовая опора»: на следующем центрующемся типе правило
+    /// сработает само.
+    ///
+    /// Числа сцены. Опора 14×58×14 стоит пяткой на полу (центр y=29 мм), цоколь
+    /// A4_plint_drawer_L_inner 382×80×18 висит дном на 20 мм: верх опоры (58 мм)
+    /// сидит в его толще на 38 мм ЕЩЁ ДО любой мутации — их AABB пересекаются в
+    /// покое. Прогон 2026-09-08 дал 565 INTERSECT-AFTER-SNAP, и все 565 — про три
+    /// эти опоры и три доски над ними (A4_plint_drawer_L_inner, ..._bottom,
+    /// A4_side_L); чужих пар нет ни одной. Проверка требовала «после снэпа не
+    /// пересекать», хотя вкрученная опора обязана пересекать.
+    ///
+    /// Ослабления тут нет. Посадкой считается ТОЛЬКО уход грани крепления внутрь
+    /// цели: опора, загнанная пяткой в пол, под правило не попадает (пол снизу,
+    /// грань крепления сверху), и любая деталь без оси крепления — тоже.
+    /// Встречные проверки — в SnapCoreScrewLegCentreTests:
+    /// TheSeatedLeg_ThreadsIntoThePlinth_AndThatOverlapIsTheSeating краснеет,
+    /// если посадка перестанет заводить опору в цоколь.</summary>
+    private bool SeatedIntoIt(KitchenElement moved, KitchenElement target)
+    {
+        if (_mountNormal == Vector3.zero || target == null) return false;
+
+        float mountFace = float.MinValue;
+        foreach (var v in moved.GetVertices())
+            mountFace = Mathf.Max(mountFace, Vector3.Dot(v, _mountNormal));
+
+        float min = float.MaxValue, max = float.MinValue;
+        foreach (var v in target.GetVertices())
+        {
+            float d = Vector3.Dot(v, _mountNormal);
+            min = Mathf.Min(min, d);
+            max = Mathf.Max(max, d);
+        }
+
+        return mountFace > min + Tolerance.EpsilonUnits
+            && mountFace < max - Tolerance.EpsilonUnits;
+    }
 
     /// <summary>Правило продакшена, без которого оракулы этого свипа врут: у
     /// центрующейся детали (винтовая опора) снэп тянет её ВДОЛЬ НОРМАЛИ грани
