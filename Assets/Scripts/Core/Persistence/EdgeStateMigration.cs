@@ -24,8 +24,8 @@ namespace KitchenDesigner.Core
                 foreach (EdgeSide side in EdgeStates.All)
                 {
                     if (el.EdgeStateOf(side) != EdgeSideState.Forced) continue;
-                    el.SetEdgeState(side, EdgeSideState.Auto);
-                    el.SetEdgeState(side, EdgeBanding.HasEdgeEffective(el, coverage, side)
+                    el.Data.SetEdgeState(side, EdgeSideState.Auto);
+                    el.Data.SetEdgeState(side, EdgeBanding.HasEdgeEffective(el, coverage, side)
                         ? EdgeSideState.Forced
                         : EdgeSideState.Suppressed);
                 }

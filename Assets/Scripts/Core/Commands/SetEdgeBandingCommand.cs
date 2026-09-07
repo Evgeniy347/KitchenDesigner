@@ -49,9 +49,6 @@ namespace KitchenDesigner.Core
             new EdgeBandingState(element.Data.EdgeBanding, element.Data.EdgeThicknessMM,
                 element.Data.EdgeForcedMask, element.Data.EdgeSuppressedMask);
 
-        public EdgeSideState StateOf(EdgeSide side) =>
-            EdgeStates.Of(forcedMask, suppressedMask, side);
-
         public EdgeBandingState WithState(EdgeSide side, EdgeSideState state) =>
             new EdgeBandingState(enabled, thicknessMM,
                 EdgeStates.ForcedMaskWith(forcedMask, side, state),

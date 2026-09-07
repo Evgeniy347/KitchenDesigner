@@ -25,7 +25,6 @@ namespace KitchenDesigner.Core
                      | (1 << layout.FaceIndex(EdgeSide.W1))
                      | (1 << layout.FaceIndex(EdgeSide.W2));
 
-
             if (scene == null) return 0;
 
             var coverage = EdgeBanding.Coverage(element, scene);

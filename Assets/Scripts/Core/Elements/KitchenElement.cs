@@ -229,19 +229,34 @@ namespace KitchenDesigner.Core
         public int EdgeForcedMask
         {
             get => _data.EdgeForcedMask;
-            set => _data.EdgeForcedMask = value;
+            set
+            {
+                if (_data.EdgeForcedMask == value) return;
+                _data.EdgeForcedMask = value;
+                if (!SuppressVisualRebuild) EdgeSubstrate.Sync(this);
+            }
         }
 
         [NotUndoable("см. EdgeBandingEnabled — SetEdgeBandingCommand")]
         public int EdgeSuppressedMask
         {
             get => _data.EdgeSuppressedMask;
-            set => _data.EdgeSuppressedMask = value;
+            set
+            {
+                if (_data.EdgeSuppressedMask == value) return;
+                _data.EdgeSuppressedMask = value;
+                if (!SuppressVisualRebuild) EdgeSubstrate.Sync(this);
+            }
         }
 
         public EdgeSideState EdgeStateOf(EdgeSide side) => _data.EdgeStateOf(side);
 
-        public void SetEdgeState(EdgeSide side, EdgeSideState state) => _data.SetEdgeState(side, state);
+        public void SetEdgeState(EdgeSide side, EdgeSideState state)
+        {
+            if (_data.EdgeStateOf(side) == state) return;
+            _data.SetEdgeState(side, state);
+            if (!SuppressVisualRebuild) EdgeSubstrate.Sync(this);
+        }
 
         private readonly List<IPartCutout> _cutouts = new List<IPartCutout>();
 

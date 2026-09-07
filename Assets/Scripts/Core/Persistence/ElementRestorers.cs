@@ -279,10 +279,10 @@ namespace KitchenDesigner.Core
             {
                 el.EdgeBandingEnabled = data.edgeBanding;
                 el.EdgeThicknessMM = data.edgeThicknessMM;
-                el.EdgeForcedMask = data.edgeManualMask != 0
+                el.Data.EdgeForcedMask = data.edgeManualMask != 0
                     ? data.edgeManualMask
                     : (data.edgeSkipValidation ? EdgeManual.AllMask : 0);
-                el.EdgeSuppressedMask =
+                el.Data.EdgeSuppressedMask =
                     data.edgeSuppressedMask > 0 ? data.edgeSuppressedMask : 0;
             }
 
