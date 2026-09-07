@@ -245,4 +245,86 @@ public class ScrewLegHostLinkReproTests
             "никто ничего не двигал — связь обязана остаться прежней");
         Assert.AreEqual(25, leg.InsertionIntoHostMM);
     }
+
+    /// <summary>Удаление детали — такой же повод пересчитать выведенное поле, как и её
+    /// перемещение, но поз при нём никто не трогает, и покадровый опрос по
+    /// <c>transform.hasChanged</c> его не видит: удалённой детали в реестре уже нет,
+    /// а у оставшихся ничего не сдвинулось. Опора остаётся с именем детали, которой в
+    /// сцене больше нет.
+    ///
+    /// Прочерк в панели этого не выдаёт: <c>AttachLinks.Parent</c> не находит
+    /// исчезнувшую деталь, и <c>InsertionIntoHostMM</c> возвращает null на устаревшем
+    /// имени тоже. Поэтому проверять надо ИМЯ (<c>HostPartName</c>), а не мерку —
+    /// на мерке тест был бы зелёным против сломанного кода. Цена устаревшего имени
+    /// платится позже: первая же деталь с тем же именем получит и прощение объёма,
+    /// и заход, которых не заслужила, а сохранение проекта унесёт битую связь на диск
+    /// (CONVENTIONS.md → «A derived field needs ONE writer and one occasion to call
+    /// it»).
+    ///
+    /// Удаление идёт через <c>DeleteCommand</c>, а не через <c>DestroyImmediate</c>:
+    /// это дорога пользователя, и только она проходит через реестр гарантированно —
+    /// в EditMode Unity не зовёт у добавленного компонента ни <c>Awake</c>, ни
+    /// <c>OnDestroy</c>, так что саморегистрация и саморазрегистрация тут не
+    /// работают.</summary>
+    [Test]
+    public void HostDeleted_ClearsTheLegsLink()
+    {
+        var (left, _, leg) = TwoBoardsAndASeatedLeg();
+
+        CommandStack.Execute(new DeleteCommand(left.gameObject));
+        Frame();
+
+        Assert.IsNull(leg.HostPartName,
+            "деталь удалили, а опора всё ещё числит её хозяином: имя пережило саму "
+            + "деталь и ждёт тёзку, чтобы отдать ей чужую связь");
+    }
+
+    /// <summary>Парная к предыдущей: повод «элемент вышел из реестра» обязан
+    /// ПЕРЕСЧИТЫВАТЬ связь, а не гасить её. Без этой проверки дыру выше можно было бы
+    /// «закрыть», очищая хозяина на любом удалении, и она осталась бы зелёной.</summary>
+    [Test]
+    public void ABystanderDeleted_LeavesTheLegOnItsHost()
+    {
+        var (left, right, leg) = TwoBoardsAndASeatedLeg();
+
+        CommandStack.Execute(new DeleteCommand(right.gameObject));
+        Frame();
+
+        Assert.AreEqual(left.PartName, leg.HostPartName,
+            "удалили деталь, под которой опора не стояла, — связь трогать не за что");
+        Assert.AreEqual(25, leg.InsertionIntoHostMM,
+            "и заход у прежнего хозяина остался прежним");
+    }
+
+    /// <summary>Обратный повод той же дыры: деталь ВОШЛА в реестр, и опять без единого
+    /// сдвига трансформа — отмена удаления возвращает деталь ровно туда, где она
+    /// стояла. Сценарий выбран так, чтобы связь была обязана ПОЯВИТЬСЯ, а не
+    /// сохраниться: опору сначала увозят из-под всех, деталь удаляют, опору возвращают
+    /// на пустое место (хозяина нет и быть не может), и только потом отменяют
+    /// удаление. Последний кадр не двигает ничего — весь повод в том, что состав сцены
+    /// изменился.</summary>
+    [Test]
+    public void HostBroughtBackByUndo_TakesTheLegAgain()
+    {
+        var (left, _, leg) = TwoBoardsAndASeatedLeg();
+
+        DragTo(leg, new Vector3(3f, leg.transform.position.y, 0f));
+        Assert.IsNull(leg.HostPartName, "опора отъехала от всех деталей");
+
+        CommandStack.Execute(new DeleteCommand(left.gameObject));
+        Frame();
+
+        DragTo(leg, new Vector3(0f, leg.transform.position.y, 0f));
+        Assert.IsNull(leg.HostPartName,
+            "опора вернулась на прежнее место, но детали на нём больше нет");
+
+        CommandStack.Undo();
+        Frame();
+
+        Assert.AreEqual("ДноЛевое", leg.HostPartName,
+            "отмена вернула деталь в реестр прямо над опорой — связь обязана появиться "
+            + "так же, как если бы деталь пододвинули");
+        Assert.AreEqual(25, leg.InsertionIntoHostMM,
+            "и заход считается по вернувшейся детали, а не остаётся прочерком");
+    }
 }

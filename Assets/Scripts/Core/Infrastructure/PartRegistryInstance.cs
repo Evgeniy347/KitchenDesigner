@@ -23,13 +23,17 @@ namespace KitchenDesigner.Core
         {
             if (element == null || _all.Contains(element)) return;
             _all.Add(element);
+            SceneChangeTracker.NoteMembershipChanged();
             SceneRevision.Bump();
             SceneVisibilityManager.Invalidate();
         }
 
         public void Unregister(KitchenElement element)
         {
-            if (_all.Remove(element)) { SceneRevision.Bump(); SceneVisibilityManager.Invalidate(); }
+            if (!_all.Remove(element)) return;
+            SceneChangeTracker.NoteMembershipChanged();
+            SceneRevision.Bump();
+            SceneVisibilityManager.Invalidate();
         }
 
         public List<KitchenElement> GetAll()
@@ -45,6 +49,7 @@ namespace KitchenDesigner.Core
         {
             if (_all.Count == 0) return;
             _all.Clear();
+            SceneChangeTracker.NoteMembershipChanged();
             SceneRevision.Bump();
         }
     }
