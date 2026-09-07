@@ -196,7 +196,7 @@ public class DecorTilingKnowledgeTests
         MaterialManager.ApplyById(e, "decor_that_is_not_here_yet");
 
         Assert.AreEqual("decor_that_is_not_here_yet", e.MaterialId,
-            "декора нет в каталоге (в WebGL индекс приезжает корутиной уже после "
+            "декора нет в каталоге (индекс приезжает корутиной уже после "
             + "восстановления сцены; папку текстур могли временно подменить). "
             + "Показываем серый, но ЗАПОМНЕННЫЙ id не теряем: потеряв его, "
             + "следующее сохранение запишет вместо выбранной текстуры «default» — "

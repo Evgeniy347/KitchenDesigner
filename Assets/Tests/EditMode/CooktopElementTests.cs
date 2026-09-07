@@ -616,7 +616,8 @@ public class CooktopElementTests
     {
         var cooktop = CreateCooktop(Vector3.zero);
 
-        // Каталог ещё не приехал (WebGL) — декора с таким id в нём нет.
+        // Каталог ещё не приехал: индекс декоров может читаться корутиной, а
+        // сцена восстанавливается раньше — декора с таким id в нём пока нет.
         MaterialManager.ApplyById(cooktop, "decor-from-save");
 
         Assert.AreEqual("decor-from-save", cooktop.MaterialId,

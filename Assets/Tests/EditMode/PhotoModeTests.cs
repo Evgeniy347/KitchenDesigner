@@ -184,7 +184,7 @@ public class PhotoModeTests
         int medium = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.Medium).EnabledCount;
         int high = PhotoQualityPresetTable.Resolve(PhotoQualityPreset.High).EnabledCount;
 
-        Assert.Less(low, medium, "Low рассчитан на слабое железо и WebGL: он обязан быть легче Medium");
+        Assert.Less(low, medium, "Low рассчитан на слабое железо: он обязан быть легче Medium");
         Assert.Less(medium, high, "High включает всё, включая супер-сэмплинг");
     }
 
