@@ -140,6 +140,8 @@ namespace KitchenDesigner.Core.UI
 
         internal ElementTypeConverter Types => _types;
 
+        internal ElementFieldsEditor[] Editors => _editors;
+
         private void Awake()
         {
             Instance = this;
