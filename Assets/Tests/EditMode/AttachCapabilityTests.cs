@@ -102,6 +102,37 @@ public class AttachCapabilityTests
     }
 
     [Test]
+    public void PlumbingParts_NeitherRideNorCarry_LinksLiveOnPorts()
+    {
+        var cases = new (string why, KitchenElement element)[]
+        {
+            ("труба стыкуется портами, а не полем «Прикрепить к»",
+                Adopt<PipeElement>(ElementFactory.CreatePipe(
+                    KitchenDesigner.Core.Plumbing.PipeSpec.DEFAULT_SIZE, 500, "Труба", Vector3.zero))),
+            ("отвод стыкуется портами, а не полем «Прикрепить к»",
+                Adopt<PipeElbowElement>(ElementFactory.CreatePipeElbow("Отвод", Vector3.zero))),
+            ("муфта стыкуется портами, а не полем «Прикрепить к»",
+                Adopt<PipeCouplingElement>(ElementFactory.CreatePipeCoupling("Муфта", Vector3.zero))),
+            ("тройник стыкуется портами, а не полем «Прикрепить к»",
+                Adopt<PipeTeeElement>(ElementFactory.CreatePipeTee("Тройник", Vector3.zero))),
+            ("заглушка стыкуется портами, а не полем «Прикрепить к»",
+                Adopt<PipeCapElement>(ElementFactory.CreatePipeCap("Заглушка", Vector3.zero))),
+            ("подача стыкуется портами, а не полем «Прикрепить к»",
+                Adopt<PipeSupplyElement>(ElementFactory.CreatePipeSupply("Подача", Vector3.zero))),
+            ("обратка стыкуется портами, а не полем «Прикрепить к»",
+                Adopt<PipeReturnElement>(ElementFactory.CreatePipeReturn("Обратка", Vector3.zero))),
+        };
+
+        foreach (var (why, element) in cases)
+        {
+            Assert.IsFalse(AttachLinks.CanBeChild(element),
+                $"{element.GetType().Name}: {why}");
+            Assert.IsFalse(AttachLinks.CanBeParent(element),
+                $"{element.GetType().Name}: {why} — и в родители тоже не годится");
+        }
+    }
+
+    [Test]
     public void WallAndBasePlate_AreNotPartsOfAnAssembly()
     {
         var wall = Adopt<KitchenElement>(

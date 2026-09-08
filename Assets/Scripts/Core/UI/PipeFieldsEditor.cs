@@ -21,6 +21,8 @@ namespace KitchenDesigner.Core.UI
 
         public override bool DepthEditable => false;
 
+        public override string HeightLabel => "Длина";
+
         public override void Build()
         {
             var visibility = RowVisibility.For(ElementFacet.Pipe);

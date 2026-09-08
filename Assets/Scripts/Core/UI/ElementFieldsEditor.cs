@@ -12,6 +12,8 @@ namespace KitchenDesigner.Core.UI
 
     internal abstract class ElementFieldsEditor
     {
+        public const string DefaultHeightLabel = "Высота";
+
         protected ElementFieldsEditor(IContextMenuHost host) => Host = host;
 
         protected IContextMenuHost Host { get; }
@@ -33,6 +35,8 @@ namespace KitchenDesigner.Core.UI
         public virtual bool DepthEditable => true;
 
         public virtual bool HeightShownFromDimensions => true;
+
+        public virtual string HeightLabel => DefaultHeightLabel;
 
         public virtual void Show(KitchenElement element) { }
 

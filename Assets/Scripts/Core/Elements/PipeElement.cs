@@ -7,6 +7,10 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Труба";
 
+        public override bool CanFollowAnAttachParent => false;
+
+        public override bool CanCarryAttachedParts => false;
+
         [SerializeField] private string _sizeId = PipeSpec.DEFAULT_SIZE;
         [SerializeField] private int _lengthMM = PipeElementSpec.DEFAULT_LENGTH_MM;
 

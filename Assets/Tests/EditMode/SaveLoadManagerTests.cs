@@ -5,6 +5,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Plumbing;
 
 public class SaveLoadManagerTests
 {
@@ -365,5 +366,51 @@ public class SaveLoadManagerTests
         Assert.AreEqual(7, restoredFacade.GapTop);
         Assert.AreEqual(9, restoredFacade.GapBottom);
         Assert.AreEqual(new Vector3Int(600, 400, 18), restoredFacade.DimensionsMM);
+    }
+
+    /// <summary>Старый сейв может нести attachedToName от трубы к фитингу (так
+    /// хранилось до того, как «Прикрепить к» убрали у сантехники — связи
+    /// трубопровода держатся на устьях портов, а не на этом поле). Восстановление
+    /// такого файла обязано пройти БЕЗ исключения и БЕЗ LogError (Unity валит тест
+    /// сама на неожиданный LogError — второй Assert тут не нужен), а поле —
+    /// молча ничего не значить: труба не годится в родители сантехнике теперь,
+    /// поэтому AttachLinks.Parent обязан вернуть null, даже когда имя совпало.</summary>
+    [Test]
+    public void RestoreScene_PipeFittingWithStaleAttachedToName_LoadsSilently_LinkIsIgnored()
+    {
+        var pipe = new ElementData
+        {
+            name = "Truba",
+            dimensionsMM = new[] { 57, 500, 57 },
+            position = new[] { 0f, 0f, 0f },
+            rotation = new[] { 0f, 0f, 0f, 1f },
+            isPipe = true,
+        };
+        var elbow = new ElementData
+        {
+            name = "Otvod_92",
+            dimensionsMM = new[] { 57, 57, 57 },
+            position = new[] { 0.5f, 0f, 0f },
+            rotation = new[] { 0f, 0f, 0f, 1f },
+            isPipeFitting = true,
+            pipeFittingType = PipeFittingNames.TypeId(PipeNodeKind.Elbow),
+            attachedToName = "Truba",
+        };
+        var data = new ProjectData(new[] { pipe, elbow });
+
+        var created = SaveLoadManager.RestoreScene(data);
+
+        Assert.AreEqual(2, created.Count, "оба элемента обязаны создаться, а не отброситься");
+        var pipeEl = created[0].GetComponent<PipeElement>();
+        var fittingEl = created[1].GetComponent<PipeFittingElement>();
+        Assert.IsNotNull(pipeEl);
+        Assert.IsNotNull(fittingEl);
+
+        Assert.AreEqual("Truba", fittingEl.AttachedToName,
+            "значение из файла сохраняется как данные — его не обязаны стирать при загрузке");
+        Assert.IsNull(AttachLinks.Parent(fittingEl),
+            "но действовать оно не должно: труба CanCarryAttachedParts=false, "
+            + "«Прикрепить к» у сантехники отключено");
+        Assert.IsFalse(AttachLinks.CanBeChild(fittingEl));
     }
 }

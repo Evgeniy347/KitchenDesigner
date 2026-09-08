@@ -15,6 +15,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _titleLabel;
 
         private TMP_InputField? _name, _w, _h, _d, _x, _y, _z, _rx, _ry, _rz;
+        private TMP_Text? _heightLabel;
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
@@ -201,7 +202,8 @@ namespace KitchenDesigner.Core.UI
             _name = _rows.NameField();
             _rows.SectionHeader("CtxSecDims", "Размеры");
             _w = _size.Width = _rows.NumberField("Ширина", RowVisibility.Always);
-            _h = _size.Height = _rows.NumberField("Высота", RowVisibility.Always);
+            _h = _size.Height = _rows.NumberField(ElementFieldsEditor.DefaultHeightLabel, RowVisibility.Always);
+            _heightLabel = FindLabelFor(_h);
             _d = _size.Depth = _rows.NumberField("Глубина", RowVisibility.Always);
             _radialFields.Build();
             _cooktopFields.Build();
@@ -812,6 +814,15 @@ namespace KitchenDesigner.Core.UI
             _size.SetEditable(_w, unlocked && (editor?.WidthEditable ?? true));
             _size.SetEditable(_h, unlocked && (editor?.HeightEditable ?? true));
             _size.SetEditable(_d, unlocked && (editor?.DepthEditable ?? true));
+            if (_heightLabel != null)
+                _heightLabel.text = editor?.HeightLabel ?? ElementFieldsEditor.DefaultHeightLabel;
+        }
+
+        private TMP_Text? FindLabelFor(Selectable? control)
+        {
+            foreach (var (label, ctrl) in _rows.LabelledRows)
+                if (ReferenceEquals(ctrl, control)) return label;
+            return null;
         }
 
         internal void SyncOpenLabels()

@@ -16,6 +16,10 @@ namespace KitchenDesigner.Core
 
         public override string DisplayTypeName => PipeFittingNames.Title(NodeKind);
 
+        public override bool CanFollowAnAttachParent => false;
+
+        public override bool CanCarryAttachedParts => false;
+
         public string PortFrameSizeId => PipeSpec.DEFAULT_SIZE;
 
         public IReadOnlyList<string?> BoreSizeIds => _boreSizeIds;

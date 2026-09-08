@@ -920,6 +920,53 @@ public class ElementFieldsEditorTests
             "смена диаметра не имеет права трогать длину: это разные величины");
     }
 
+    /// <summary>PipeElement хранит длину трассы в DimensionsMM.y — том же поле,
+    /// что у обычной детали держит высоту. Подпись строки обязана меняться
+    /// вместе со смыслом поля, а не только у трубы: у любой другой детали
+    /// (и после закрытия трубы) она обязана вернуться к «Высота».</summary>
+    [Test]
+    public void Pipe_HeightRowLabel_ReadsLength_NotHeight()
+    {
+        _menu!.Open(Pipe());
+        Assert.AreEqual("Длина", Label("Высота").text,
+            "у трубы Y-размер DimensionsMM — это длина трассы, а не высота");
+    }
+
+    [Test]
+    public void OrdinaryElement_HeightRowLabel_StaysHeight_EvenAfterAPipeWasShown()
+    {
+        _menu!.Open(Pipe());
+        _menu!.Open(Board());
+
+        Assert.AreEqual("Высота", Label("Высота").text,
+            "переключение с трубы на обычную деталь обязано вернуть подпись «Высота» — "
+            + "иначе ярлык одной детали протекает в панель другой");
+    }
+
+    /// <summary>«Прикрепить к» — общий механизм «деталь едет за родителем». У трубы и
+    /// фитингов связи держатся на устьях портов (SnapPortAt), а не на этом поле — оно
+    /// показывало бы список соседей и путало.</summary>
+    [Test]
+    public void Pipe_AndFitting_HaveNoAttachToRow()
+    {
+        _menu!.Open(Pipe());
+        Assert.IsFalse(Panel().Find("CtxAttachTo")!.gameObject.activeInHierarchy,
+            "у трубы связи держатся на устьях портов, а не на поле «Прикрепить к»");
+
+        _menu!.Open(Elbow());
+        Assert.IsFalse(Panel().Find("CtxAttachTo")!.gameObject.activeInHierarchy,
+            "у отвода — тоже: он стыкуется портами, как и труба");
+    }
+
+    [Test]
+    public void OrdinaryElement_HasAnAttachToRow()
+    {
+        _menu!.Open(Board());
+        Assert.IsTrue(Panel().Find("CtxAttachTo")!.gameObject.activeInHierarchy,
+            "обычная деталь по-прежнему может ехать за родителем через «Прикрепить к» — "
+            + "это не отключено везде, а только у сантехники");
+    }
+
     private PipeFittingElement Elbow() =>
         Spawn<PipeFittingElement>(ElementFactory.CreatePipeElbow("Otvod", Vector3.zero));
 
