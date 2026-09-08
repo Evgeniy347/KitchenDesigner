@@ -5,12 +5,15 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
-/// <summary>Мойка на НАСТОЯЩЕЙ сцене: docs/example.save.json целиком, со всеми
-/// модулями, боковинами и ящиками. Синтетическая пара «столешница + мойка» такие
-/// поломки не ловит — здесь мойку окружает больше сотни деталей.</summary>
+/// <summary>Мойка на НАСТОЯЩЕЙ сцене: ЗАМОРОЖЕННАЯ копия
+/// Fixtures/pipe-gap-scene.save.json целиком, со всеми модулями, боковинами и
+/// ящиками — не живой docs/example.save.json, тот меняется под пользователем
+/// каждый день (agents/TESTS.md → «docs/example.save.json — NEVER TOUCH IT»).
+/// Синтетическая пара «столешница + мойка» такие поломки не ловит — здесь
+/// мойку окружает больше сотни деталей.</summary>
 public class SinkRealSceneTests
 {
-    private const string SaveFileName = "example.save.json";
+    private const string SaveFileName = "Fixtures/pipe-gap-scene.save.json";
     private string _json = "";
     private ProjectLoadStateGuard? _guard;
 
@@ -20,7 +23,7 @@ public class SinkRealSceneTests
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        var fullPath = Path.Combine(Application.dataPath, "../docs", SaveFileName);
+        var fullPath = Path.Combine(Application.dataPath, "Tests/EditMode", SaveFileName);
         Assert.IsTrue(File.Exists(fullPath), $"Save file not found: {fullPath}");
         _json = File.ReadAllText(fullPath);
     }

@@ -315,16 +315,18 @@ public class EdgeSubstrateTests
     [Test]
     public void RealScene_TopPanel_BareAgainstTheWall_BandedTowardsTheFacade()
     {
-        // A12_upper_A_top из docs/example.save.json: задний торец упирается в
-        // стену (перекрыт целиком → кромки нет → голая плита), передний открыт
-        // под фасад (кромка есть → декор). Именно этот случай синтетика не
-        // ловит: «перекрыт» тут не сосед-деталь, а СТЕНА, и увидеть торец можно —
-        // стену сносит и разрез, и режим обзора.
+        // A12_upper_A_top из ЗАМОРОЖЕННОЙ Fixtures/pipe-gap-scene.save.json (не
+        // из живого docs/example.save.json — тот меняется под пользователем,
+        // agents/TESTS.md → «docs/example.save.json — NEVER TOUCH IT»): задний
+        // торец упирается в стену (перекрыт целиком → кромки нет → голая
+        // плита), передний открыт под фасад (кромка есть → декор). Именно этот
+        // случай синтетика не ловит: «перекрыт» тут не сосед-деталь, а СТЕНА, и
+        // увидеть торец можно — стену сносит и разрез, и режим обзора.
         var guard = ProjectLoadStateGuard.Capture();
         try
         {
             var json = File.ReadAllText(
-                Path.Combine(Application.dataPath, "../docs", "example.save.json"));
+                Path.Combine(Application.dataPath, "Tests/EditMode/Fixtures", "pipe-gap-scene.save.json"));
             var data = SaveLoadManager.Deserialize(json);
             var all = SaveLoadManager.RestoreScene(data!)
                 .Select(g => g.GetComponent<KitchenElement>())
