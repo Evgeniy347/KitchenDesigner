@@ -124,3 +124,17 @@ There is a second, unrelated hang: roughly 4% of batch runs finish all their wor
 `-Filter`. If a run goes quiet after the report is already on disk, it is this; the report is
 valid and the process can be killed.
 
+
+## «Только один разок, маленьким фильтром» — это тоже второй Unity
+
+The rule «Unity runs belong to the coordinator» reads to a worker like a queueing convention, so
+one of them ran `unity.ps1 tests -Filter PipeFitting` «just to check myself» while the coordinator
+was running mutation checks. It survived — the gateway lock serialised them — but the lock lives
+in one project's `Library/`, and the licensing client is MACHINE-wide: the very failure this rule
+exists to prevent is invisible to that lock. A filtered run is not a smaller version of a run,
+it is a second Unity.
+
+So the wording in a task is «do not run Unity, not even a filtered one», and a worker that wants
+a targeted run asks for it — naming the filter and what must be green. That costs one line in a
+report and saves the 35-minute licensing loop that no watchdog catches, because the log keeps
+growing while it fails.
