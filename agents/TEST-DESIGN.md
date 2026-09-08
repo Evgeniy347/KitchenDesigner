@@ -70,6 +70,25 @@ a call there, ask whether the object can already be destroyed — and prefer fix
 three points (guard the delegate, unsubscribe on replace, make the new API a no-op on a dead
 object) rather than the one that happens to be red.
 
+**A `MissingReferenceException` in a class that never destroys anything is a state leak from
+SOME OTHER class, not a bug in the one that crashed.** `PipeEndFittingsMaximizeLinksTests` died on
+`e.gameObject` for an element pulled from `PartRegistry.GetAll()` — a static singleton that lives
+for the WHOLE EditMode run, not per class. Reading `PipeEndFittings.Set`/`CommandStack` end to end
+showed only `SetActive` + `Register`/`Unregister`, never `DestroyImmediate` — two workers patched
+that file anyway and neither patch helped, because the defect wasn't there. It was
+`SnapTestBase.BaseTeardown`: it destroyed every spawned `GameObject` directly and never called
+`PartRegistry.Unregister` first, so any class that creates elements through `ElementFactory.Create*`
+(which DOES register them) and relies only on that shared teardown — no `PartRegistry.Clear()` of
+its own — leaves a destroyed-but-registered element sitting in the registry for whichever class
+runs next in the same process. Four classes matched that exact shape (`DoorSnapTests`,
+`DoorThresholdTests`, `WallCutoutTests`, `WindowSnapTests`). The fix is `Unregister` before
+`Destroy` in the ONE shared teardown, not a guard in the class that happened to trip on it —
+and `PartRegistryTests` now carries the opposite-input pair (`Unregister`-then-destroy leaves no
+dead reference; destroy-without-`Unregister` does) so the shape stays caught if it comes back.
+Same lesson as the `SettingsViewTab` leak above, one layer up: when a crash names a static
+collection and the class holding it is innocent, suspect every OTHER class that populates that
+collection, not the one reading it.
+
 ## A defect the platform cannot report stays invisible until you build the sensor
 
 Twice in one session the same shape of bug: content silently grew past the window it lives in —

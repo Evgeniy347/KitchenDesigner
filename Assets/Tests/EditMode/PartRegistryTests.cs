@@ -109,4 +109,57 @@ public class PartRegistryTests
             "кэшировать его на момент Register — иначе элемент, зарегистрированный " +
             "раньше своего имени (как это делает Awake), был бы ненаходим по имени");
     }
+
+    /// <summary>Сенсор задачи C (PipeEndFittingsMaximizeLinksTests →
+    /// MissingReferenceException): PartRegistry — статический синглтон на весь прогон
+    /// EditMode, так что элемент, уничтоженный через DestroyImmediate БЕЗ
+    /// предварительного Unregister, переживает границу тестового класса и валит
+    /// СЛЕДУЮЩИЙ тест, который трогает GetAll() без `!= null`
+    /// (agents/TEST-DESIGN.md → «`!= null` before touching a scene object is
+    /// load-bearing, not style»). Ровно этот порядок раньше был у
+    /// <c>SnapTestBase.BaseTeardown</c>: DestroyImmediate без Unregister. Тест
+    /// воспроизводит правильный порядок (Unregister ПЕРЕД DestroyImmediate) и
+    /// проверяет заявленным Unity-инвариантом — <c>e == null</c> для
+    /// уничтоженного объекта не бросает, а корректно возвращает true — что после
+    /// него в реестре не остаётся мёртвых ссылок.</summary>
+    [Test]
+    public void UnregisterBeforeDestroy_LeavesNoDeadReferenceInRegistry()
+    {
+        PartRegistry.Clear();
+        var e = Make();
+        PartRegistry.Register(e);
+
+        PartRegistry.Unregister(e);
+        Object.DestroyImmediate(e.gameObject);
+        _spawned.Remove(e.gameObject);
+
+        foreach (var survivor in PartRegistry.GetAll())
+            Assert.IsFalse(survivor == null,
+                "уничтоженный элемент не должен остаться в реестре — Unregister обязан " +
+                "идти ПЕРЕД DestroyImmediate, а не после (или не идти вовсе)");
+    }
+
+    /// <summary>Противоположный вход: то же самое, но БЕЗ Unregister вовсе — ровно
+    /// то, что раньше делал SnapTestBase.BaseTeardown (DestroyImmediate и ничего
+    /// больше). Доказывает, что тест выше действительно ловит регрессию, а не
+    /// проходит при любом порядке операций.</summary>
+    [Test]
+    public void DestroyWithoutUnregister_LeavesADeadReferenceInRegistry()
+    {
+        PartRegistry.Clear();
+        var e = Make();
+        PartRegistry.Register(e);
+
+        Object.DestroyImmediate(e.gameObject);
+        _spawned.Remove(e.gameObject);
+
+        bool anyDead = false;
+        foreach (var survivor in PartRegistry.GetAll())
+            if (survivor == null) anyDead = true;
+
+        Assert.IsTrue(anyDead,
+            "стенд обязан доказать сам себя: уничтожение БЕЗ Unregister обязано оставить " +
+            "мёртвую ссылку в реестре — иначе он ничего не проверяет");
+        PartRegistry.Clear();
+    }
 }

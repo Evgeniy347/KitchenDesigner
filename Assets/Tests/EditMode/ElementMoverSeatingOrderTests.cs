@@ -6,29 +6,28 @@ using KitchenDesigner.Core;
 using KitchenDesigner.Core.Analysis;
 using KitchenDesigner.Core.Plumbing;
 
-/// <summary>Задача A: почему порядок операций в <c>ElementMover.FinishDrag</c> важен.
+/// <summary>Задача A: почему порядок операций в <c>ElementMover.FinishDrag</c> важен —
+/// и что из этого правила осталось верным после того, как труба перестала быть
+/// подопечной мм-сетки.
 ///
-/// Первая версия этого стенда округляла УГОЛОК после посадки и не смогла
-/// воспроизвести разрыв (осталась 1 связь вместо ожидаемых 0) — замер на реальной
-/// сцене пользователя (<c>PipeGapSensorTests</c>) показал, что настоящий разрыв
-/// стыка живёт не в порядке вызовов <c>ElementMover.FinishDrag</c>, а в том, что
-/// <c>SceneRestorer.Restore</c> округляет КАЖДУЮ деталь сцены по отдельности при
-/// ЗАГРУЗКЕ проекта, ни разу не переспрашивая, остался ли стык закрыт (см.
-/// <c>ScenePipeJointGridRepairTests</c> — там и диагноз, и починка).
+/// Раньше здесь стоял тест, доказывавший, что округление ТРУБЫ ПОСЛЕ посадки рвёт
+/// только что закрытый стык, а округление ДО посадки — нет. Первая версия стенда
+/// округляла УГОЛОК после посадки и не смогла воспроизвести разрыв (осталась 1 связь
+/// вместо ожидаемых 0) — замер на реальной сцене пользователя (<c>PipeGapSensorTests</c>)
+/// показал, что настоящий разрыв стыка жил не в порядке вызовов
+/// <c>ElementMover.FinishDrag</c>, а в том, что <c>SceneRestorer.Restore</c> округляла
+/// КАЖДУЮ деталь сцены по отдельности при ЗАГРУЗКЕ проекта, ни разу не переспрашивая,
+/// остался ли стык закрыт (см. <c>ScenePipeJointGridRepairTests</c> — там и диагноз, и
+/// починка). Починкой стало то, что <c>MmGrid.OffsetToGrid</c> вовсе перестал трогать
+/// детали с <c>ISnapPorts</c> (трубы и фитинги) — «округление ПОСЛЕ посадки» больше не
+/// существует как операция, так что доказывать про её порядок больше нечего:
+/// <see cref="PipeWithPorts_IsLeftAloneByTheGrid_UnlikeAnOrdinaryPart"/> утверждает это
+/// напрямую, противоположным входом к обычной детали без устьев.
 ///
-/// Округление именно ТРУБЫ, а не фитинга, воспроизводит разрыв надёжно: сечение
-/// dn20-трубы — 27 мм, половина (13.5 мм) ВСЕГДА дробная, так что
-/// <c>MmGrid.Snap</c> почти для любой позиции сдвигает минимальную вершину меша на
-/// 0.5 мм по каждой поперечной оси — совместно ~0.71 мм, что больше
-/// <c>JoinToleranceMm</c> = 0.5 мм. У фитинга дробность зависит от его конкретной
-/// геометрии и позиции и не гарантирована — потому первая версия и не увидела
-/// разрыва.
-///
-/// Оба теста двигают ОДИН и тот же уголок-трубу ОДНИМ и тем же путём
-/// (<c>IAutoSeated.SeatAfterMove</c>, как <c>PipeFittingDockSceneTests</c>) и
-/// отличаются только порядком, в котором зовут <c>MmGrid.Snap</c> — это и есть
-/// правило, которое соблюдает <c>ElementMover.FinishDrag</c>: сетка округляет
-/// СНАЧАЛА, посадка устье-в-устье выполняется ПОСЛЕДНЕЙ.</summary>
+/// <see cref="GridRoundingOfThePipeBeforeSeating_LeavesTheJointClosed"/> остаётся:
+/// он доказывает, что фактический порядок <c>ElementMover.FinishDrag</c> (сетка —
+/// СНАЧАЛА, посадка устье-в-устье — ПОСЛЕДНЕЙ) не рвёт стык, даже когда для трубы
+/// сетка — no-op.</summary>
 public class ElementMoverSeatingOrderTests : SnapTestBase
 {
     private const int PipeLengthMm = 600;
@@ -63,25 +62,39 @@ public class ElementMoverSeatingOrderTests : SnapTestBase
     private static int JoinedLinks(params KitchenElement[] scene) =>
         PipeNetwork.Build(new ScenePipeSnapshot(scene).Ports()).Links.Count;
 
+    /// <summary>Действующее правило, с противоположным входом (agents/TEST-DESIGN.md →
+    /// «Two questions need OPPOSITE inputs»): труба несёт <c>ISnapPorts</c> и мм-сетка обязана
+    /// оставить её позицию нетронутой, а обычная деталь без устьев — как и раньше,
+    /// сеткой двигается. Без второй половины пары «сетка ничего не делает» было бы
+    /// неотличимо от «сетка сломана и не делает ничего вообще».</summary>
     [Test]
-    public void GridRoundingOfThePipeAfterSeating_BreaksTheJointItJustClosed()
+    public void PipeWithPorts_IsLeftAloneByTheGrid_UnlikeAnOrdinaryPart()
     {
         var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Run");
-        var elbow = ElbowBroughtUpTo(pipe);
+        var before = pipe.transform.position;
 
-        elbow.SeatAfterMove(new List<KitchenElement> { pipe, elbow });
-        Assume.That(JoinedLinks(pipe, elbow), Is.EqualTo(1),
-            "стенд обязан доказать сам себя: посадка закрыла стык");
+        Assert.IsFalse(MmGrid.Snap(pipe),
+            "у dn20-трубы сечение 27 мм — половина всегда дробная, так что мимо мм-сетки "
+            + "она гарантированно стоит; MmGrid обязан её не заметить именно потому, что "
+            + "несёт ISnapPorts, а не потому, что случайно уже на сетке");
+        Assert.AreEqual(before, pipe.transform.position, "позицию трубы сетка не тронула");
 
-        bool rounded = MmGrid.Snap(pipe);
-        Assume.That(rounded, Is.True,
-            "у dn20-трубы сечение 27 мм — половина всегда дробная, сетке обязано "
-            + "найтись что округлять, иначе стенд ничего не доказывает");
+        var ordinary = OrdinaryPartOffGrid();
+        Assert.IsTrue(MmGrid.Snap(ordinary),
+            "деталь без устьев мимо мм-сетки обязана сдвинуться — иначе OffsetToGrid "
+            + "перестал бы округлять вообще всё, а не только детали с устьями");
+    }
 
-        Assert.AreEqual(0, JoinedLinks(pipe, elbow),
-            "округление ПОСЛЕ посадки откатывает дробную деталь и рвёт только что "
-            + "закрытый стык — тот же баг, что при загрузке проекта "
-            + "(ScenePipeJointGridRepairTests) рвёт стыки пользователя");
+    private KitchenElement OrdinaryPartOffGrid()
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.transform.position = new Vector3(0f, 1.35f, 1.2005f);
+        var e = go.AddComponent<KitchenElement>();
+        e.PartName = "Боковина";
+        e.DimensionsMM = new Vector3Int(600, 2700, 16);
+        PartRegistry.Register(e);
+        _spawned.Add(go);
+        return e;
     }
 
     [Test]

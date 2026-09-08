@@ -63,6 +63,31 @@ public class PipeEndFittingsMaximizeLinksTests : SnapTestBase
     private static PipeFittingElement? FittingOn(PipeElement pipe, int end) =>
         PipeEndFittings.NeighbourAt(pipe, end, PartRegistry.GetAll()) as PipeFittingElement;
 
+    /// <summary>Сенсор задачи C: <c>PartRegistry</c> — статический синглтон на весь
+    /// прогон EditMode, и раньше сюда попадала уничтоженная-но-зарегистрированная
+    /// деталь, оставленная ДРУГИМ классом (см. фикс в <c>SnapTestBase.BaseTeardown</c>).
+    /// Голое <c>e.gameObject</c> на такой записи роняло тест
+    /// <c>MissingReferenceException</c> — читать «не наш код виноват», а сцена грязная —
+    /// было нечем: exception не называет ни находку, ни источник. Явная проверка
+    /// <c>e == null</c> (Unity-семантика: true для уничтоженного нативного объекта, без
+    /// исключения) превращает крах в читаемое сообщение, а regression — в красный тест
+    /// с именем виновника, а не разрыв стека где попало.</summary>
+    private void AdoptSurvivingRegistryEntries()
+    {
+        var stale = new System.Collections.Generic.List<string>();
+        foreach (var e in PartRegistry.GetAll())
+        {
+            if (e == null) { stale.Add("(destroyed, PartName недоступен)"); continue; }
+            if (!_spawned.Contains(e.gameObject)) _spawned.Add(e.gameObject);
+        }
+
+        Assert.IsEmpty(stale,
+            $"PartRegistry держит {stale.Count} уничтоженную деталь(и): "
+            + string.Join(", ", stale) + ". Это утечка состояния между тестовыми классами — "
+            + "какой-то другой класс уничтожил GameObject через DestroyImmediate, не вызвав "
+            + "PartRegistry.Unregister сначала (см. SnapTestBase.BaseTeardown).");
+    }
+
     [Test]
     public void ChoosingAnElbow_AlsoClosesABonusLink_WhenItsSecondArmCanReachTheNeighbour()
     {
@@ -72,8 +97,7 @@ public class PipeEndFittingsMaximizeLinksTests : SnapTestBase
         PodachaFacing(target, Vector3.forward);
 
         var outcome = PipeEndFittings.Set(pipe, LowerEnd, PipeNodeKind.Elbow, PartRegistry.GetAll());
-        foreach (var e in PartRegistry.GetAll())
-            if (!_spawned.Contains(e.gameObject)) _spawned.Add(e.gameObject);
+        AdoptSurvivingRegistryEntries();
 
         Assert.AreEqual(PipeEndEdit.Changed, outcome);
         var elbow = FittingOn(pipe, LowerEnd);
@@ -94,8 +118,7 @@ public class PipeEndFittingsMaximizeLinksTests : SnapTestBase
         PodachaFacing(target, Vector3.back);
 
         var outcome = PipeEndFittings.Set(pipe, LowerEnd, PipeNodeKind.Elbow, PartRegistry.GetAll());
-        foreach (var e in PartRegistry.GetAll())
-            if (!_spawned.Contains(e.gameObject)) _spawned.Add(e.gameObject);
+        AdoptSurvivingRegistryEntries();
 
         Assert.AreEqual(PipeEndEdit.Changed, outcome);
         Assert.AreEqual(1, JoinedLinks(),

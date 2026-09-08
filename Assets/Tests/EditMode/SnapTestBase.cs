@@ -38,11 +38,29 @@ public abstract class SnapTestBase
     /// <summary>Доп. настройка в наследниках (необязательно).</summary>
     protected virtual void OnSetup() { }
 
+    /// <summary>Разрегистрировать ПЕРЕД уничтожением, а не полагаться на то, что
+    /// наследник сам вызовет PartRegistry.Clear(): DestroyImmediate убивает
+    /// нативный объект, а PartRegistry — статический синглтон на весь прогон
+    /// EditMode, так что уничтоженная-но-зарегистрированная деталь переживает
+    /// границу класса и валит следующий тест, который трогает
+    /// PartRegistry.GetAll() без `!= null` (agents/TEST-DESIGN.md → «`!= null`
+    /// before touching a scene object is load-bearing, not style»). Именно так
+    /// падал PipeEndFittingsMaximizeLinksTests: не из-за своего кода, а из-за
+    /// объектов, оставленных DoorSnapTests/DoorThresholdTests/WallCutoutTests/
+    /// WindowSnapTests — они создают элементы через ElementFactory.Create*
+    /// (который регистрирует через ElementRoot.Publish), но своего
+    /// PartRegistry.Clear() в TearDown не делают, полагаясь ровно на этот
+    /// метод.</summary>
     [TearDown]
     public void BaseTeardown()
     {
         foreach (var go in _spawned)
-            if (go != null) Object.DestroyImmediate(go);
+        {
+            if (go == null) continue;
+            var element = go.GetComponent<KitchenElement>();
+            if (element != null) PartRegistry.Unregister(element);
+            Object.DestroyImmediate(go);
+        }
         _spawned.Clear();
         SnapSystem.VerboseLog = _prevVerbose;
     }

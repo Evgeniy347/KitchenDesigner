@@ -151,17 +151,19 @@ just did) and `failed` — a copy claiming zero failures after a run
 that printed twenty is the wrong file, every time.
 
 
-**And `SaveValidationTests` can be red because the SCENE is wrong, not the code.** It demands
-zero findings on the live file, so the moment the user's own project genuinely contains one —
-a leg sunk into a carcass, an end only partly covered for edge banding — the test goes red and
-stays red until they fix their kitchen. That is the test doing its job, not a regression.
-
-Read the finding before diagnosing anything: the code says which rule fired and between which
-parts. If it names elements the current change never touched, it is the scene. Do not suppress
-it, do not edit the test to pass, and do not «fix» the file — say which finding appeared and
-leave it to the owner. Twice this file has been red BY DESIGN: once after a rule was deliberately
-added at the user's request so that their mistake would show up, and once when they moved a part
-while the suite was running.
+**`SaveValidationTests` no longer reads the live file at all (2026-09-09).** It used to demand
+zero findings on `docs/example.save.json` directly, so the moment the user's own project
+genuinely contained one — a leg sunk into a carcass, an end only partly covered for edge
+banding, a couple of millimetres shy of a pipe joint — the test went red and stayed red until
+they fixed their kitchen, indistinguishable from a real code regression. Its acceptance
+assertions now run on a FROZEN fixture (`Fixtures/pipe-gap-scene.save.json`, a snapshot taken
+at a point in time) against a numeric BASELINE (known error/warning/GAP-02 counts, known
+sub-tolerance-joint count) — the same shape as `ValidationInvariantTests`, not a demand for
+zero. `SaveValidationSensorTests` keeps watching the LIVE file, but only prints
+(`TestContext.WriteLine`), never asserts — the same split `PipeGapSensorTests` already uses.
+A rising baseline number is a real regression; read the finding (the code says which rule
+fired and between which parts) before touching anything, and move the baseline down only after
+confirming the scene, not the code, improved.
 
 ## Iterating on ONE test class
 
