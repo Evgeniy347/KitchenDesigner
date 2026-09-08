@@ -26,6 +26,9 @@ namespace KitchenDesigner.Core
         public int otherPortIndex = -1;
         public bool portSeatOffered;
         public bool alignmentLandsInsideNeighbour;
+        public bool dockOffered;
+        public float dockRotationDegrees = -1f;
+        public float dockCursorDistanceMM = -1f;
         public string verdict = string.Empty;
     }
 
@@ -41,6 +44,13 @@ namespace KitchenDesigner.Core
         public float portSeatShiftMM = -1f;
         public int portSeatMovedPortIndex = -1;
         public int portSeatOtherPortIndex = -1;
+        public bool cursorKnown;
+        public bool dockWins;
+        public string? dockTarget;
+        public int dockMovedPortIndex = -1;
+        public int dockOtherPortIndex = -1;
+        public float dockRotationDegrees = -1f;
+        public float dockCursorDistanceMM = -1f;
         public List<SnapNeighborReport> neighbors = new List<SnapNeighborReport>();
     }
 
@@ -81,10 +91,14 @@ namespace KitchenDesigner.Core
 
         public static SnapDiagnosis Diagnose(KitchenElement moved, List<KitchenElement> others,
             Vector3 testPosition, int maxNeighbors = 5)
-            => Diagnose(moved, others, testPosition, null, maxNeighbors);
+            => Diagnose(moved, others, testPosition, null, maxNeighbors, SnapCursor.None);
 
         public static SnapDiagnosis Diagnose(KitchenElement moved, List<KitchenElement> others,
             Vector3 testPosition, SnapResult? knownSnap, int maxNeighbors = 5)
+            => Diagnose(moved, others, testPosition, knownSnap, maxNeighbors, SnapCursor.None);
+
+        public static SnapDiagnosis Diagnose(KitchenElement moved, List<KitchenElement> others,
+            Vector3 testPosition, SnapResult? knownSnap, int maxNeighbors, SnapCursor cursor)
         {
             var settings = KitchenSettings.Instance;
             var report = new SnapDiagnosis
@@ -120,6 +134,21 @@ namespace KitchenDesigner.Core
                 : -1f;
             report.portSeatMovedPortIndex = winner.movedPort;
             report.portSeatOtherPortIndex = winner.otherPort;
+
+            var movedPorted = PortedPart.Of(movedGeo);
+            var scenePorted = new List<PortedPart>(scene.Count);
+            foreach (var geometry in scene) scenePorted.Add(PortedPart.Of(geometry));
+
+            var dock = SnapPortDock.Best(movedPorted, scenePorted, maxDist, cursor);
+            report.cursorKnown = cursor.Present;
+            report.dockWins = dock.taken;
+            report.dockTarget = dock.taken ? dock.targetName : null;
+            report.dockMovedPortIndex = dock.movedPort;
+            report.dockOtherPortIndex = dock.otherPort;
+            report.dockRotationDegrees = dock.taken ? dock.rotationDegrees : -1f;
+            report.dockCursorDistanceMM = dock.taken && cursor.Present
+                ? dock.cursorDistanceUnits / AppConstants.MM_TO_UNITS
+                : -1f;
 
             for (int index = 0; index < neighbours.Count; index++)
             {
@@ -157,8 +186,15 @@ namespace KitchenDesigner.Core
                     otherPortIndex = facts.portSeat.otherPort,
                     alignmentLandsInsideNeighbour = facts.alignmentLandsInsideNeighbour,
                 };
+                var pairDock = SnapPortDock.For(movedPorted, scenePorted[index], maxDist, cursor);
+                n.dockOffered = pairDock.taken;
+                n.dockRotationDegrees = pairDock.taken ? pairDock.rotationDegrees : -1f;
+                n.dockCursorDistanceMM = pairDock.taken && cursor.Present
+                    ? pairDock.cursorDistanceUnits / AppConstants.MM_TO_UNITS
+                    : -1f;
                 if (winner.taken) n.wouldSnap = IsTheWinner(n, winner);
-                n.verdict = Verdict(n, facts, report.thresholdMM, winner);
+                n.verdict = Verdict(n, facts, report.thresholdMM, winner)
+                    + DockTail(n, pairDock, dock, cursor.Present);
 
                 report.neighbors.Add(n);
             }
@@ -203,6 +239,27 @@ namespace KitchenDesigner.Core
                 return "AABB пересекаются из-за поворота, но снэп сработает (разведёт детали заподлицо)" + PortTail(n);
             return "OK — прилипнет" + PortTail(n);
         }
+
+        private static string DockTail(SnapNeighborReport n, in SnapPortDock pair,
+            in SnapPortDock winner, bool cursorKnown)
+        {
+            if (!pair.taken) return string.Empty;
+
+            if (winner.taken && winner.targetId == pair.targetId
+                && winner.movedPort == pair.movedPort && winner.otherPort == pair.otherPort)
+                return $" | при отпускании кнопки деталь довернётся на "
+                       + $"{pair.rotationDegrees:F0}° и сядет устьем {pair.movedPort} на устье "
+                       + $"{pair.otherPort}" + CursorTail(cursorKnown, n.dockCursorDistanceMM);
+
+            return $" | доворотом сюда деталь тоже села бы, но посадку заберёт "
+                   + $"{winner.targetName}" + CursorTail(cursorKnown, n.dockCursorDistanceMM);
+        }
+
+        private static string CursorTail(bool cursorKnown, float cursorDistanceMM) =>
+            cursorKnown
+                ? $" (устье в {cursorDistanceMM:F0} мм от луча курсора)"
+                : " (курсор не передан: конкуренцию за доворот решил зазор между устьями, "
+                  + "а в приложении её решает ближайшая к указателю мыши деталь)";
 
         private static bool IsTheWinner(SnapNeighborReport n, in SnapPortSeat winner) =>
             winner.taken && winner.targetName == n.name

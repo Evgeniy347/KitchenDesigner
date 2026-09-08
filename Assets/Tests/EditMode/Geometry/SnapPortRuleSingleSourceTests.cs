@@ -36,7 +36,8 @@ namespace KitchenDesigner.Tests.Geometry
             new Regex(@"PortOffsetMm|\.PortAxis\s*\(");
 
         private static readonly Regex SeatRule =
-            new Regex(@"\b(SnapPortSeat|SnapPortAt|SnapPortCount|ISnapPorts|HasPorts|SnapPort)\b");
+            new Regex(@"\b(SnapPortSeat|SnapPortDock|PortedPart|SnapPortAt|SnapPortCount"
+                      + @"|ISnapPorts|HasPorts|SnapPort)\b");
 
         private static readonly (string file, string why)[] MayComputeAMouth =
         {
@@ -48,6 +49,8 @@ namespace KitchenDesigner.Tests.Geometry
         {
             ("SnapPort.cs", "устье как ДАННЫЕ — точка и направление, решений не принимает"),
             ("SnapPortSeat.cs", "здесь правило и живёт: пара устьев, ранг встречности, сдвиг"),
+            ("SnapPortDock.cs", "вторая половина того же правила — ДОВОРОТ: то же устье в устье, но с поворотом и с конкуренцией по курсору; отдельный файл потому, что покадровый путь его не платит, а посадка при отпускании кнопки платит"),
+            ("PortedPart.cs", "часть сцены, у которой есть устья, как ДАННЫЕ: доворот читает только устья и не строит ни граней, ни габаритов"),
             ("ElementGeometry.cs", "снимок объявляет устья как данные"),
             ("ElementGeometryExtensions.cs", "единственный переводчик сцены в снимок: тут решается, у кого устья вообще есть"),
             ("ISnapPorts.cs", "объявляет устья как СПОСОБНОСТЬ элемента — так правило не превращается в лестницу типов"),
