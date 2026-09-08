@@ -169,3 +169,22 @@ Snapshots serialize GLOBAL state (`KitchenSettings`, `ResizeHandleManager.Mode`)
 that mutates those must reset them in `[SetUp]` and restore in `[TearDown]`. Acceptance test:
 `-testFilter SnapshotTests` alone and the full run MUST give the same result.
 
+
+## A sweep can demand a defect — check that its requirement is still the product's
+
+A brute-force sweep encodes a requirement, and a requirement ages. `SnapMutationTests` asked
+«facing faces + gap within threshold + overlap ⇒ must snap», which was true when it was written.
+Then the oracle it reads got BETTER — `Diagnose` learned the collector's own rules and began
+reporting the best pair rather than only the head-on ones — and the sweep started seeing
+co-directed pairs at zero gap and demanding they snap. They must not: a window and a door are
+nested inside the wall's box, and that «snap» is a far-edge alignment that drives the wall into
+the window, which `SnapCoreContractTests` explicitly forbids. Twenty-eight findings, every one of
+them the sweep demanding a defect.
+
+Two things follow. A sweep that goes red after an ORACLE improvement is suspect before the code
+is: ask what the oracle started seeing that it could not see before. And the fix is never to
+silence the pair — it is to measure the reason in the same function that decides (here
+`landsInsideNeighbour`, computed before the «already in place» exit) and to invert the
+requirement into its opposite: the sweep now fails if the snap DOES drag such a part
+(`ALIGN-PULL`), the same shape the screw leg got as `MOUNT-PULL`. A silenced pair is a sensor
+deleted; an inverted one is a sensor kept.

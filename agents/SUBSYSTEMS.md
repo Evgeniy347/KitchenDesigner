@@ -152,5 +152,20 @@ The diagnosis did care, and got the one genuinely facing pair with «no overlap�
 to the same rank as two coplanar side faces whose plane distance is 0 — and those won the
 tie-break on a «gap» that is not a gap. `snap_diagnose` then reported «0 mm apart, too little
 overlap» about parts standing 100 mm from each other, while `TrySnap` was right the whole time.
-Measure first, reject after: an early exit that starves the report costs more than the branch it
-saves (0,93 → 1,26 ms over 200 parts, against a 64 ms budget).
+Measure first, reject after — **for the ORACLE**. That was first written as one rule for one
+function, and it turned out to be two: the report needs every measurement, the per-frame path
+does not, and on this scene 80% of the candidate pairs (1914 of 2388) are rejected by the
+threshold before anyone looks at their overlap. So the same decision gets two entrances — `For`,
+which measures everything, and `ForSelection`, which skips what the threshold has already
+refused — and what keeps them honest is not discipline but three tests: an equivalence check
+comparing role, rejection, gap, shift and resulting position across all 7164 pairs of a whole
+scene; a test that the oracle still names the overlap on a pair the threshold rejected; and a
+scan forbidding anyone but the collector to use the cheaper entrance, so the report cannot go
+blind again by someone «optimising» it.
+
+The cost, measured rather than assumed: the port-seat rule added almost nothing to the face
+arithmetic (0,636 → 0,659 ms over 200 parts). What it did add was **scene snapshots** — three
+builds of the moved part's geometry instead of two, and `Diagnose` building the whole scene three
+times, or 2N when it already knows the snap. That is where a 64% slowdown of the brute-force
+sweep came from: not from the new rule, from re-walking the scene to feed it. Count the
+snapshots, not the branches.
