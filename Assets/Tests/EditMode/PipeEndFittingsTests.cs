@@ -245,8 +245,14 @@ public class PipeEndFittingsTests : SnapTestBase
             "труба ветки не сдвинута — рвётся только связь с муфтой, а не её положение");
         Assert.AreEqual(branchCapPositionBefore, branchCap.transform.position,
             "дальний конец ветки тем более не тронут");
-        Assert.AreEqual(1, JoinedLinks(),
-            "у заглушки один порт — второй порт муфты она не воспроизводит, связь с веткой рвётся");
+        Assert.IsNull(PipeEndFittings.NeighbourAt(branch, LowerEnd, PartRegistry.GetAll()),
+            "у заглушки один порт — второй порт муфты она не воспроизводит, связь ветки с "
+            + "трубой рвётся: нижний конец ветки становится свободным");
+        Assert.AreEqual(branchCap, FittingOn(branch, UpperEnd),
+            "а дальняя связь ветки с её собственной заглушкой этой правки не касается");
+        Assert.AreEqual(2, JoinedLinks(),
+            "две связи на всю сцену: труба-заглушка (новая) и ветка-её собственная заглушка "
+            + "(нетронутая) — связь муфты с веткой пропала, а не заменилась третьей");
         Assert.AreEqual(undoBefore + 1, CommandStack.UndoCount, "замена — один шаг отмены");
 
         CommandStack.Undo();
