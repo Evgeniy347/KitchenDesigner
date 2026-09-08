@@ -126,12 +126,6 @@ mcp-server/dist/
 mcp-server/node_modules/
 /Build2
 
-# ===========================
-# AI Agent Instructions
-# ===========================
-/AGENTS.md
-/todo*.md
-
 # Build counter
 build_count.txt
 

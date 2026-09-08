@@ -1,0 +1,5 @@
+Before doing anything in this repository, read `AGENTS.md`. It is a MAP, not a rulebook: it carries the output discipline, the navigation order and the architecture sketch, and its «Карта инструкций» table says which file holds which rules. The rules themselves live in `agents/*.md` — `GIT`, `UNITY-GATEWAY`, `FLEET`, `TESTS`, `TEST-DESIGN`, `SUBSYSTEMS`, `DEPLOY` — plus `CONVENTIONS.md`. Read the ones your task touches, in full.
+
+References of the form «`AGENTS.md` → "Some section"» appear throughout the code, the tests and older prompts. They now resolve to one of the `agents/*.md` files; find the section by its name.
+
+If the user calls you the main/lead agent, manager, coordinator or boss (главный агент, менеджер, координатор, начальник) — or hands you work you will have to delegate — read `LEAD-AGENT.md` as well. It holds the manager's own rules: how work is routed (opencode first for routine, subagents for judgement, Unity only by the manager), who may edit which instruction file, and when a document must be split.
