@@ -13,9 +13,9 @@ namespace KitchenDesigner.Core
         public override Quaternion AttachRestRotation => ClosedRotation;
 
 
-        public override string DisplayTypeName => "Фасад";
+        public override string DisplayTypeName => FacadeBody.DISPLAY_TYPE_NAME;
 
-        public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.AlignsCutout;
+        public override CutoutNeighbourRole CutoutRole => FacadeBody.CUTOUT_ROLE;
 
         public override ElementDisposal Disposal =>
             GetType() == typeof(FacadeElement) ? ElementDisposal.FacadePool : ElementDisposal.Destroy;
@@ -50,9 +50,13 @@ namespace KitchenDesigner.Core
             else host.CycleOpenState();
         }
 
-        public const int DEFAULT_GAP_MM = 2;
+        public const int DEFAULT_GAP_MM = FacadeBody.DEFAULT_GAP_MM;
 
-        public override bool SupportsGaps => true;
+        public override bool SupportsGaps => FacadeBody.SUPPORTS_GAPS;
+
+        public FacadeBody Body =>
+            new FacadeBody(Data.DimensionsMM, Data.Gaps,
+                ValidationPositionAt(transform.position), ValidationRotation);
 
         protected override Vector3 ValidationPosition => _isPassenger ? transform.position : ClosedPosition;
 
