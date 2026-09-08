@@ -26,7 +26,7 @@ public class FieldsEditorRegistrationParityTests
     [TearDown]
     public void Teardown()
     {
-        if (_go != null) Object.DestroyImmediate(_go);
+        if (_go != null) UnityEngine.Object.DestroyImmediate(_go);
     }
 
     private static List<Type> ConcreteEditorTypesOnDisk() =>

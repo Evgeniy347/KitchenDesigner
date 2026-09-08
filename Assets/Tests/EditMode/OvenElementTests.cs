@@ -585,10 +585,10 @@ public class OvenElementTests : McpTestFixture
 
         Assert.AreEqual(4, group.items.Count, "общая варочная, модельная варочная, духовка, посудомойка");
         var oven = group.items[2];
-        Assert.IsTrue(oven.isOven, "духовка — третий пункт «Техники»");
+        Assert.AreEqual(SidebarItemKind.Oven, oven.kind, "духовка — третий пункт «Техники»");
         Assert.AreEqual(OvenElement.MODEL, oven.applianceModel);
         Assert.AreEqual(new Vector3Int(594, 595, 568), oven.dims, "в каталоге размеры производителя");
-        Assert.IsFalse(oven.isCooktop, "духовка не варочная — иначе SidebarUI.Spawn ушёл бы не туда");
+        Assert.AreNotEqual(SidebarItemKind.Cooktop, oven.kind, "духовка не варочная — иначе SidebarUI.Spawn ушёл бы не туда");
     }
 
     // ── Сериализация ────────────────────────────────────────────────────
