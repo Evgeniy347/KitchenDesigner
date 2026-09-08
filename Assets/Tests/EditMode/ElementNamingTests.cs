@@ -9,10 +9,8 @@ using KitchenDesigner.Core;
 /// поэтому отдельный блок тестов стережёт перенос ссылок при загрузке проекта
 /// со старыми (кириллическими и дублирующимися) именами.
 /// </summary>
-public class ElementNamingTests
+public class ElementNamingTests : ElementTestBase
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void Setup()
     {
@@ -165,12 +163,8 @@ public class ElementNamingTests
 
     // ── Дубликат: материал ─────────────────────────────────────────────
 
-    private FacadeElement MakeFacade(string name)
-    {
-        var go = ElementFactory.CreateFacade(new Vector3Int(600, 400, 18), name, Vector3.zero, 2, 2, 2, 2);
-        _spawned.Add(go);
-        return go.GetComponent<FacadeElement>();
-    }
+    private FacadeElement MakeFacade(string name) =>
+        MakeFactoryFacade(name, new Vector3Int(600, 400, 18), Vector3.zero);
 
     [Test]
     public void Duplicate_Part_PreservesMaterial()

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -10,10 +9,8 @@ using KitchenDesigner.Core;
 /// подменяем позу ТОЛЬКО у пассажира и ТОЛЬКО пока хозяин сдвинут; в остальных
 /// случаях подмена холостая, а у закрытой машины ещё и вредная — «фасад
 /// оторвали» перестало бы находиться.</summary>
-public class FacadeClosedProbeTests
+public class FacadeClosedProbeTests : ElementTestBase
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void SetUp() => PartRegistry.Clear();
 
@@ -27,12 +24,8 @@ public class FacadeClosedProbeTests
         PartRegistry.Clear();
     }
 
-    private FacadeElement MakeFacade(Vector3 pos)
-    {
-        var go = ElementFactory.CreateFacade(new Vector3Int(600, 700, 18), "Фасад", pos, 2, 2, 2, 2);
-        _spawned.Add(go);
-        return go.GetComponent<FacadeElement>();
-    }
+    private FacadeElement MakeFacade(Vector3 pos) =>
+        MakeFactoryFacade("Фасад", new Vector3Int(600, 700, 18), pos);
 
     [Test]
     public void DisplacedPassenger_IsProbedAtItsClosedPose_AndPutBackAfterwards()

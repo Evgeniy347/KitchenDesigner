@@ -1,12 +1,9 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
-public class OpeningCollisionTests
+public class OpeningCollisionTests : ElementTestBase
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void Setup()
     {
@@ -34,11 +31,8 @@ public class OpeningCollisionTests
         return go.GetComponent<KitchenElement>();
     }
 
-    private FacadeElement MakeFacade(string name, Vector3 pos, int w = 600, int h = 716, int d = 18)
-    {
-        var go = Spawn(ElementFactory.CreateFacade(new Vector3Int(w, h, d), name, pos, 2, 2, 2, 2));
-        return go.GetComponent<FacadeElement>();
-    }
+    private FacadeElement MakeFacade(string name, Vector3 pos, int w = 600, int h = 716, int d = 18) =>
+        MakeFactoryFacade(name, new Vector3Int(w, h, d), pos);
 
     private DrawerElement MakeDrawer(string name, Vector3 pos, int width = 400)
     {

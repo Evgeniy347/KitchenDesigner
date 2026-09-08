@@ -29,10 +29,8 @@ using KitchenDesigner.Core;
 ///
 /// Табурет в первом тесте — контрольный образец: он всегда жил на базовой
 /// реализации, и теперь стол обязан вести себя так же.</summary>
-public class TableAttachRideGeometryTests
+public class TableAttachRideGeometryTests : ElementTestBase
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void SetUp() => PartRegistry.Clear();
 
@@ -47,12 +45,8 @@ public class TableAttachRideGeometryTests
         CommandStack.Clear();
     }
 
-    private FacadeElement MakeFacade(string name, Vector3 pos)
-    {
-        var go = ElementFactory.CreateFacade(new Vector3Int(600, 716, 18), name, pos, 2, 2, 2, 2);
-        _spawned.Add(go);
-        return go.GetComponent<FacadeElement>();
-    }
+    private FacadeElement MakeFacade(string name, Vector3 pos) =>
+        MakeFactoryFacade(name, new Vector3Int(600, 716, 18), pos);
 
     private TableElement MakeTable(string name, Vector3 pos)
     {

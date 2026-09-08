@@ -1,12 +1,9 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
-public class DrawerFacadeContactTests
+public class DrawerFacadeContactTests : ElementTestBase
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void Setup()
     {
@@ -31,12 +28,8 @@ public class DrawerFacadeContactTests
         return go.GetComponent<DrawerElement>();
     }
 
-    private FacadeElement MakeFacade(string name, Vector3 pos, int width = 400, int height = 86, int depth = 18)
-    {
-        var go = ElementFactory.CreateFacade(new Vector3Int(width, height, depth), name, pos, 2, 2, 2, 2);
-        _spawned.Add(go);
-        return go.GetComponent<FacadeElement>();
-    }
+    private FacadeElement MakeFacade(string name, Vector3 pos, int width = 400, int height = 86, int depth = 18) =>
+        MakeFactoryFacade(name, new Vector3Int(width, height, depth), pos);
 
     // ── Фасад в контакте с фронтом ящика ────────────────────────────────
     // Ящик Type A: 400×86×350 мм. Фронтальная грань (+Z) в z=0.175.

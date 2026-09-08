@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -10,10 +9,8 @@ using KitchenDesigner.Core;
 /// закрытая поза — источник истины (иначе после загрузки открытый ящик улетает
 /// от нуля), выдвинутый ящик за трансформом не идёт, ящик анимирует свой фасад
 /// сам и потому снимает с него режим пассажира.</summary>
-public class DrawerElementContractTests
+public class DrawerElementContractTests : ElementTestBase
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void Setup() => PartRegistry.Clear();
 
@@ -34,12 +31,8 @@ public class DrawerElementContractTests
         return go.GetComponent<DrawerElement>();
     }
 
-    private FacadeElement MakeFacade(string name, Vector3 pos)
-    {
-        var go = ElementFactory.CreateFacade(new Vector3Int(400, 86, 18), name, pos, 2, 2, 2, 2);
-        _spawned.Add(go);
-        return go.GetComponent<FacadeElement>();
-    }
+    private FacadeElement MakeFacade(string name, Vector3 pos) =>
+        MakeFactoryFacade(name, new Vector3Int(400, 86, 18), pos);
 
     private (DrawerElement lower, DrawerElement upper) MakePair()
     {

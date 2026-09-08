@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -8,10 +7,8 @@ using KitchenDesigner.Core.Analysis;
 /// Прикрепление дощечек (<see cref="AttachLinks"/>): кто кому может быть
 /// родителем, кто за кем едет, и когда сборка объявляется разъехавшейся.
 /// </summary>
-public class AttachLinksTests
+public class AttachLinksTests : ElementTestBase
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void Setup()
     {
@@ -38,12 +35,8 @@ public class AttachLinksTests
         return go.GetComponent<KitchenElement>();
     }
 
-    private FacadeElement MakeFacade(string name, Vector3 pos)
-    {
-        var go = ElementFactory.CreateFacade(new Vector3Int(600, 716, 18), name, pos, 2, 2, 2, 2);
-        _spawned.Add(go);
-        return go.GetComponent<FacadeElement>();
-    }
+    private FacadeElement MakeFacade(string name, Vector3 pos) =>
+        MakeFactoryFacade(name, new Vector3Int(600, 716, 18), pos);
 
     // ── Роли ────────────────────────────────────────────────────────────
 

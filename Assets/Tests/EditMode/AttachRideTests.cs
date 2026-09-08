@@ -11,10 +11,8 @@ using KitchenDesigner.Core;
 /// запоминается на первом кадре езды, иначе ошибка копится; кольцо в связях
 /// обязано останавливать обход, а не вешать кадр; в мультивыделении родитель и
 /// ребёнок могут быть выбраны оба, и второй сдвиг увёз бы ребёнка вдвое.</summary>
-public class AttachRideTests
+public class AttachRideTests : ElementTestBase
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void SetUp() => PartRegistry.Clear();
 
@@ -36,12 +34,8 @@ public class AttachRideTests
         return go.GetComponent<KitchenElement>();
     }
 
-    private FacadeElement MakeFacade(string name, Vector3 pos)
-    {
-        var go = ElementFactory.CreateFacade(new Vector3Int(600, 716, 18), name, pos, 2, 2, 2, 2);
-        _spawned.Add(go);
-        return go.GetComponent<FacadeElement>();
-    }
+    private FacadeElement MakeFacade(string name, Vector3 pos) =>
+        MakeFactoryFacade(name, new Vector3Int(600, 716, 18), pos);
 
     [Test]
     public void RidingBackAndForth_ManyTimes_LeavesNoDrift()

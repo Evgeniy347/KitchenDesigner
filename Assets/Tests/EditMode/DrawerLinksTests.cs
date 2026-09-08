@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -8,10 +7,8 @@ using KitchenDesigner.Core;
 /// создание пары, переименование с обновлением обратных ссылок, синхронизацию
 /// фасада с анимацией ящика и очистку связей при дублировании.
 /// </summary>
-public class DrawerLinksTests
+public class DrawerLinksTests : ElementTestBase
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void Setup()
     {
@@ -36,12 +33,8 @@ public class DrawerLinksTests
         return go.GetComponent<DrawerElement>();
     }
 
-    private FacadeElement MakeFacade(string name, Vector3 pos)
-    {
-        var go = ElementFactory.CreateFacade(new Vector3Int(400, 86, 18), name, pos, 2, 2, 2, 2);
-        _spawned.Add(go);
-        return go.GetComponent<FacadeElement>();
-    }
+    private FacadeElement MakeFacade(string name, Vector3 pos) =>
+        MakeFactoryFacade(name, new Vector3Int(400, 86, 18), pos);
 
     // ── CreatePair ──────────────────────────────────────────────────────
 
