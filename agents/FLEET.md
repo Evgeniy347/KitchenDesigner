@@ -203,3 +203,18 @@ interpretation first, then run.
   had already read the rule about `unity.ps1` and did not generalise it. Applies to scratch
   scripts too — those are exactly the ones written without care.
 
+
+## A worker's abandoned background process is nobody's job to notice
+
+The liveness rule above watches the free model, because a hung `opencode` never exits and so never
+reports. There is a quieter version of the same waste: a subagent starts something in the
+background, finds the answer another way, and walks off. One did — `find / -maxdepth 6`, looking
+for a package it then located directly in `Library/PackageCache`; the disk walk ran for three
+hours after its task had finished and been committed. Nothing was broken, nothing was reported,
+and it surfaced only because the USER noticed a stale entry in the task list.
+
+So: a worker that backgrounds a command owns it until it ends — kill it when the answer arrives
+from elsewhere, and say in the report that you did. And when you start a broad filesystem search
+on Windows, reach for the narrow path first: `Library/PackageCache` and the package manifest
+answer «which version of this package is here» in milliseconds, while `find /` answers it in
+hours.
