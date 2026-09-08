@@ -69,9 +69,19 @@ gaps, textures, mounting), `ContextMenuUI` (906, with 22 editors listed by hand 
 constructor), `ElementMover` (603: dragging, ghost mesh, tinting, duplication, deletion). A
 dedicated campaign against them is expensive and risky — half of it does not compile without
 Unity, and a big rewrite of a class this central is exactly where a silent behaviour change
-hides. So the bar is not «the class is decomposed» but: **after any edit to one of these files,
-exactly one named zone has left it, and that zone's tests left with it** — into `Core/Pure` in
-the same commit, per the fast-path rule below. One slice per visit, no visit without a slice.
+hides. So the bar is not «the class is decomposed» but: **after a substantive edit to one of
+these files, exactly one named zone has left it, and that zone's tests left with it** — into
+`Core/Pure` in the same commit, per the fast-path rule below.
+
+«Substantive» is the load-bearing word, and it was added after the rule misfired. A worker
+threading a cursor through `ElementMover` — three lines: a field, a hand-off, a missing rotation
+on revert — declined to also split a 603-line class it could not compile, and was right: the
+rule exists to stop a risky campaign, so making it fire on a three-line pass-through would push
+people to bundle unrelated work just to pay the toll, which is the risk it was written against.
+The honest form is to name the zone you did NOT take and why, as that worker did (the drag ghost
+— `_ghostMesh`, `_ghostMaterial`, `_ghostPosition`, `CreateGhostMaterial`, `OnRenderObject` —
+pure rendering, touching none of the other fields). A named debt with an owner is not a skipped
+rule; a silent one is.
 
 This is a rule and not an item on a debt list on purpose: a task saying «split the god classes»
 gets postponed forever and then crossed off unread, while a rule fires on the next person who
