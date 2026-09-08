@@ -8,93 +8,103 @@
     },
     {
       "type": "Button",
-      "text": "Спецификация",
+      "text": "Spec",
       "position": [8, -6]
     },
     {
       "type": "Button",
-      "text": "Сцена",
-      "position": [164, -6]
+      "text": "Hierarchy",
+      "position": [54, -6]
     },
     {
       "type": "Button",
-      "text": "Ошибки",
-      "position": [260, -6]
+      "text": "Errors",
+      "position": [100, -6]
     },
     {
       "type": "Button",
       "text": "GotoIssue",
-      "position": [376, -6]
+      "position": [146, -6]
     },
     {
       "type": "Button",
-      "text": "Инструкции",
-      "position": [422, -6]
+      "text": "ProjectInstructions",
+      "position": [192, -6]
     },
     {
       "type": "Button",
       "text": "Settings",
-      "position": [564, -6]
+      "position": [254, -6]
     },
     {
       "type": "Button",
       "text": "Save",
-      "position": [610, -6]
+      "position": [300, -6]
     },
     {
       "type": "Button",
       "text": "SaveAs",
-      "position": [656, -6]
+      "position": [346, -6]
     },
     {
       "type": "Button",
       "text": "Load",
-      "position": [702, -6]
+      "position": [392, -6]
     },
     {
       "type": "Button",
       "text": "Undo",
-      "position": [764, -6]
+      "position": [454, -6]
     },
     {
       "type": "Button",
       "text": "Redo",
-      "position": [810, -6]
+      "position": [500, -6]
     },
     {
       "type": "Button",
-      "text": "Ручки: растяжение",
-      "position": [872, -6]
+      "text": "HandleMode",
+      "position": [562, -6]
     },
     {
       "type": "Button",
       "text": "MeasureToggle",
-      "position": [1054, -6]
+      "position": [608, -6]
     },
     {
       "type": "Button",
       "text": "Eyedropper",
-      "position": [1100, -6]
+      "position": [654, -6]
     },
     {
       "type": "Button",
-      "text": "Тонировка",
-      "position": [1162, -6]
+      "text": "TintToggle",
+      "position": [716, -6]
     },
     {
       "type": "Button",
       "text": "LightsToggle",
-      "position": [1278, -6]
+      "position": [762, -6]
     },
     {
       "type": "Button",
       "text": "DayNight",
-      "position": [1324, -6]
+      "position": [808, -6]
     },
     {
       "type": "Button",
-      "text": "Режим: обычный",
-      "position": [1386, -6]
+      "text": "Обычный",
+      "position": [870, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Помещение",
+      "position": [976, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Фото",
+      "position": [1102, -6]
     }
   ]
 }
