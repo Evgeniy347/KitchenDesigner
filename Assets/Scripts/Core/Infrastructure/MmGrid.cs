@@ -26,6 +26,7 @@ namespace KitchenDesigner.Core
 
             if (!element.PoseFollowsTransform) return Vector3.zero;
             if (!IsAxisAligned(element.transform.rotation)) return Vector3.zero;
+            if (element.GetComponent<ISnapPorts>() != null) return Vector3.zero;
 
             var wall = element.GetComponent<Wall>();
             if (wall != null && wall.IsLowered) return Vector3.zero;

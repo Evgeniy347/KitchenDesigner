@@ -158,7 +158,15 @@ public class SaveValidationTests
     /// <summary>Проверяется координата ГРАНИ, а не центра: у детали 1967 мм центр
     /// обязан лежать на .5 — это норма, а вот боковина 16 мм с центром 1200.5 мм
     /// стоит гранями на 1192.5 и 1208.5, и в такой проём ни одна целочисленная
-    /// деталь уже не встанет. Именно так родился зазор 0.5 мм в цоколе.</summary>
+    /// деталь уже не встанет. Именно так родился зазор 0.5 мм в цоколе.
+    ///
+    /// Детали с устьями (<c>ISnapPorts</c> — трубы и фитинги) сюда не входят: у
+    /// dn20-трубы сечение 27 мм даёт центр на .5 по обеим поперечным осям для ЛЮБОЙ
+    /// позиции устья, так что грани мимо целого мм — их нормальное геометрическое
+    /// состояние, а не дефект. Это и есть причина, по которой <c>MmGrid.OffsetToGrid</c>
+    /// перестал округлять такие детали вовсе (см. <c>ScenePipeJointGridRepairTests</c>) —
+    /// посылка «любая деталь стоит гранями на мм» была верна ровно до этого класса
+    /// деталей и здесь устарела.</summary>
     [Test]
     public void Geometry_ExampleSave_FacesOnMillimeterGrid()
     {
@@ -171,7 +179,7 @@ public class SaveValidationTests
         var found = new List<(string category, float devMm, string line)>();
         foreach (var e in elements)
         {
-            if (e == null) continue;
+            if (e == null || e is ISnapPorts) continue;
             bool axisAligned = IsAxisAligned(e.transform);
             var (min, max) = WorldBoundsMm(e);
             for (int axis = 0; axis < 3; axis++)

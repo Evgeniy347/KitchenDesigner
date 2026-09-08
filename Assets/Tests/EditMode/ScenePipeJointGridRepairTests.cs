@@ -70,6 +70,12 @@ public class ScenePipeJointGridRepairTests : SnapTestBase
     [Test]
     public void RepairJointAfterGridSnap_RestoresTheJointThatIndependentRoundingBroke()
     {
+        // MmGrid.OffsetToGrid больше не трогает элементы с устьями (ISnapPorts) вовсе —
+        // это и есть настоящее лечение задачи A, так что MmGrid.Snap(pipe) сейчас всегда
+        // no-op и разорвать стык этим путём уже нельзя. Но RepairJointAfterGridSnap
+        // остаётся страховкой для ФАЙЛОВ, сохранённых ДО этого исправления — они несут
+        // унаследованное independent-rounding смещение на полмиллиметра по каждой
+        // поперечной оси. Имитируем ровно это смещение напрямую, не через MmGrid.
         var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Run");
         var elbow = ElbowBroughtUpTo(pipe);
         var scene = new List<KitchenElement> { pipe, elbow };
@@ -78,17 +84,16 @@ public class ScenePipeJointGridRepairTests : SnapTestBase
         Assume.That(JoinedLinks(pipe, elbow), Is.EqualTo(1),
             "стенд обязан доказать сам себя: посадка закрыла стык");
 
-        Assume.That(MmGrid.Snap(pipe), Is.True,
-            "у dn20-трубы сечение всегда дробное — сетке обязано найтись что округлять");
+        pipe.transform.position += new Vector3(Units(0.475f), Units(0.275f), Units(-0.5f));
         Assume.That(JoinedLinks(pipe, elbow), Is.EqualTo(0),
-            "стенд обязан доказать сам себя: независимое округление рвёт стык — это и "
-            + "есть баг, который чинит RepairJointAfterGridSnap");
+            "стенд обязан доказать сам себя: унаследованное смещение рвёт стык — это и "
+            + "есть легаси-состояние, которое чинит RepairJointAfterGridSnap");
 
         pipe.RepairJointAfterGridSnap(scene);
 
         Assert.AreEqual(1, JoinedLinks(pipe, elbow),
             "RepairJointAfterGridSnap обязан вернуть максимум связей после того, как "
-            + "независимое округление их разорвало");
+            + "унаследованное округление их разорвало");
     }
 
     [Test]
