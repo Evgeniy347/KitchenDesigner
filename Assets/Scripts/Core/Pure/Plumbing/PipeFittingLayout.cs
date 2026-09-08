@@ -60,6 +60,35 @@ namespace KitchenDesigner.Core.Plumbing
             return radii;
         }
 
+        public static Vector3[] ElbowBodyMM(string? frameSizeId, IReadOnlyList<string?>? boreSizeIds)
+        {
+            var knee = KneeArcMM(PipeNodeKind.Elbow, frameSizeId, boreSizeIds);
+            if (knee.Length == 0) return knee;
+
+            var axes = PipeFittingSpec.Legs(PipeNodeKind.Elbow);
+            var hub = HubMM(PipeNodeKind.Elbow, frameSizeId);
+            float leg = PipeFittingSpec.LegLengthMm(frameSizeId);
+
+            var body = new Vector3[knee.Length + 2];
+            body[0] = hub + DirectionOf(axes[0]) * leg;
+            for (int i = 0; i < knee.Length; i++) body[i + 1] = knee[i];
+            body[body.Length - 1] = hub + DirectionOf(axes[1]) * leg;
+            return body;
+        }
+
+        public static float[] ElbowBodyRadiiMM(string? frameSizeId,
+            IReadOnlyList<string?>? boreSizeIds)
+        {
+            var arcRadii = KneeArcRadiiMM(PipeNodeKind.Elbow, frameSizeId, boreSizeIds);
+            if (arcRadii.Length == 0) return arcRadii;
+
+            var radii = new float[arcRadii.Length + 2];
+            radii[0] = arcRadii[0];
+            for (int i = 0; i < arcRadii.Length; i++) radii[i + 1] = arcRadii[i];
+            radii[radii.Length - 1] = arcRadii[arcRadii.Length - 1];
+            return radii;
+        }
+
         private static Vector3[] RawKneeArcMM(PipeNodeKind kind, string? frameSizeId)
         {
             var axes = PipeFittingSpec.Legs(kind);
