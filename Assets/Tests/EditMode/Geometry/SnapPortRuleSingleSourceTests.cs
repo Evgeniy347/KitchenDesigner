@@ -35,6 +35,9 @@ namespace KitchenDesigner.Tests.Geometry
         private static readonly Regex MouthArithmetic =
             new Regex(@"PortOffsetMm|\.PortAxis\s*\(");
 
+        private static readonly Regex SeatTakesTheCursor =
+            new Regex(@"SeatAfterMove\s*\([^;\r\n]*_dragCursor");
+
         private static readonly Regex SeatRule =
             new Regex(@"\b(SnapPortSeat|SnapPortDock|PortedPart|SnapPortAt|SnapPortCount"
                       + @"|ISnapPorts|HasPorts|SnapPort)\b");
@@ -61,6 +64,7 @@ namespace KitchenDesigner.Tests.Geometry
             ("SnapNeighbourFacts.cs", "оракул зовёт ТУ ЖЕ функцию: иначе snap_diagnose начнёт врать раньше, чем сломается код"),
             ("ResizeSnap.cs", "вторая реализация той же геометрии зовёт ту же функцию"),
             ("SnapSystem.cs", "перекладывает замер посадки в поля отчёта snap_diagnose"),
+            ("PipeRunFollow.cs", "обратное направление той же связи: не устье едет к трубе, а труба тянется за устьем. Устья он ЧИТАЕТ (SnapPortAt) и ни одного условия посадки не повторяет — кто с кем соединён, спрашивает у PipeSurvey"),
         };
 
         private static string CoreSourceDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
@@ -152,9 +156,15 @@ namespace KitchenDesigner.Tests.Geometry
                 + "получит SnapCursor.None, отбор молча вернётся к «ближайшая по зазору», "
                 + "и ни один тест правила не покраснеет — оно само по себе останется "
                 + "верным");
-            StringAssert.Contains("SeatAfterMove(PartRegistry.GetAll(), _dragCursor)", text,
+            Assert.IsTrue(SeatTakesTheCursor.IsMatch(text),
                 "и передавать его обязана именно посадка при отпускании кнопки: "
-                + "необязательный параметр SnapCursor компилируется и без аргумента");
+                + "необязательный параметр SnapCursor компилируется и без аргумента. "
+                + "Сторож спрашивает про АРГУМЕНТ, а не про выражение рядом с ним: "
+                + "список сцены для посадки перестал быть просто PartRegistry.GetAll() "
+                + "(трубы, поехавшие за прикреплённым фитингом, из него убираются — "
+                + "иначе посадка утащила бы фитинг обратно на торец), и сторож, "
+                + "замороживший ВЕСЬ вызов, краснел бы на изменении, к курсору "
+                + "отношения не имеющем");
         }
 
         [Test]

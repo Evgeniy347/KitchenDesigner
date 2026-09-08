@@ -24,6 +24,7 @@ namespace KitchenDesigner.Core
         private Wall? _dragWall;
         private bool _targetIsWallOpening;
         private SnapCursor _dragCursor;
+        private readonly List<PipeRunHold> _pipeHold = new List<PipeRunHold>();
 
         private bool _pressed;
         private Vector2 _pressMouse;
@@ -140,8 +141,26 @@ namespace KitchenDesigner.Core
             BuildMoveSet();
             _startPosition = _target.transform.position;
             _heldDragY = _startPosition.y;
+            HoldAttachedPipes();
             RecomputeOffset();
             SaveDragMaterial(_target!);
+        }
+
+        private void HoldAttachedPipes()
+        {
+            _pipeHold.Clear();
+            if (!(_target is PipeFittingElement fitting)) return;
+
+            var scene = PartRegistry.GetAll();
+            scene.RemoveAll(e => e != _target && _moveSet.Contains(e));
+            PipeRunFollow.Hold(fitting, scene, _pipeHold);
+        }
+
+        private int FollowHeldPipes(List<KitchenElement>? followed = null)
+        {
+            if (_pipeHold.Count == 0) return 0;
+            if (!(_target is PipeFittingElement fitting)) return 0;
+            return PipeRunFollow.FollowAll(fitting, _pipeHold, followed);
         }
 
         private void RecomputeOffset()
@@ -193,6 +212,7 @@ namespace KitchenDesigner.Core
 
         private void RevertMoveSet()
         {
+            PipeRunFollow.Release(_pipeHold);
             if (_target != null) _target.transform.rotation = _startRotation;
 
             if (_moveSet.Count == 0)
@@ -305,6 +325,7 @@ namespace KitchenDesigner.Core
             _dragWall = null;
             _targetIsWallOpening = false;
             RevertMoveSet();
+            _pipeHold.Clear();
             RestoreDragMaterial();
             IsDragging = false;
             _wasMoved = false;
@@ -397,6 +418,8 @@ namespace KitchenDesigner.Core
             if (_moveSet.Count > 1)
                 ApplyDelta(_moveSet, _moveStart, _target.transform.position - _startPosition);
 
+            FollowHeldPipes();
+
             if (DragGesture.GhostIsWorthShowing(snap.snapped, snap.position, newPos))
             {
                 _showGhost = true;
@@ -428,7 +451,7 @@ namespace KitchenDesigner.Core
 				{
 					seatedDimsBefore = _target.DimensionsMM;
 					seatedPosBefore = _target.transform.position;
-					seatedBefore.SeatAfterMove(PartRegistry.GetAll(), _dragCursor);
+					seatedBefore.SeatAfterMove(SceneWithoutTheFollowingPipes(), _dragCursor);
 				}
 
 				if (_moveSet.Count <= 1 && _target is IStandsOnFloor standing)
@@ -436,6 +459,8 @@ namespace KitchenDesigner.Core
 
 				foreach (var m in _moveSet)
 					if (m != null) MmGrid.Snap(m);
+
+				FollowHeldPipes();
 
 				if (KitchenSettings.Instance.BlockOnViolation && MoveSetCausesViolation())
 				{
@@ -451,6 +476,7 @@ namespace KitchenDesigner.Core
 				RevertMoveSet();
 			}
 
+			_pipeHold.Clear();
 			_axisLock = DragAxisLock.None;
 			RestoreDragMaterial();
 			IsDragging = false;
@@ -461,6 +487,17 @@ namespace KitchenDesigner.Core
 			_movingSet.Clear();
 			RefreshHighlights();
 		}
+
+        private List<KitchenElement> SceneWithoutTheFollowingPipes()
+        {
+            var scene = PartRegistry.GetAll();
+            if (_pipeHold.Count == 0) return scene;
+
+            var following = new List<KitchenElement>();
+            FollowHeldPipes(following);
+            if (following.Count > 0) scene.RemoveAll(e => following.Contains(e));
+            return scene;
+        }
 
         private bool MoveSetCausesViolation()
         {
@@ -487,6 +524,16 @@ namespace KitchenDesigner.Core
                 if (m == null) continue;
                 var rotBefore = m == _target ? _startRotation : m.transform.rotation;
                 cmds.Add(new MoveCommand(m, _moveStart[i], m.transform.position, rotBefore, m.transform.rotation));
+            }
+
+            for (int i = 0; i < _pipeHold.Count; i++)
+            {
+                var hold = _pipeHold[i];
+                if (hold.Pipe == null || !hold.Stirred) continue;
+                var rotation = hold.Pipe.transform.rotation;
+                cmds.Add(new ResizeCommand(hold.Pipe, hold.DimensionsBeforeMM,
+                    hold.Pipe.DimensionsMM, hold.PositionBefore, hold.Pipe.transform.position,
+                    rotation, rotation));
             }
 
             if (seatedDimsBefore.HasValue && _target is IAutoSeated)
