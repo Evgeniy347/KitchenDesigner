@@ -26,7 +26,6 @@ namespace KitchenDesigner.Core.Plumbing
             var ports = survey.Ports;
             for (int i = 0; i < ports.Count; i++)
             {
-                if (ports[i].OwnerKind != PipeNodeKind.Pipe) continue;
                 if (!survey.Network.IsFree(i)) continue;
                 findings.Add(PipeIssueCatalog.OpenEnd(ports[i]));
             }

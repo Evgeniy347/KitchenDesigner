@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core.Plumbing
 
         public static PipeFinding OpenEnd(in PipePort port) =>
             new PipeFinding(PipeFindingLevel.Error, CodeOpenEnd, port.ElementId, null,
-                $"Свободный конец трубы (порт {port.PortIndex}) — нужна заглушка, фитинг, подача или обратка");
+                $"{PipeFittingNames.Title(port.OwnerKind)}: порт {port.PortIndex} не соединён — нужна заглушка, фитинг, подача или обратка");
 
         public static PipeFinding DirectSizeMismatch(in PipePort a, in PipePort b,
             string? sizeA, string? sizeB) =>
