@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using KitchenDesigner.Editor;
 
 public class BuildInfoGeneratorTests
@@ -246,5 +247,55 @@ public class BuildInfoGeneratorTests
         int result = BuildInfoGenerator.ReadAndIncrementCounter();
 
         Assert.AreEqual(1, result);
+    }
+
+    // ── Silent-catch contract (docs/TODO.md #1) ──────────────
+    // These pin the exception TYPES the three former bare `catch {}` blocks now
+    // narrow to. If the BCL ever throws something else for these operations,
+    // one of these goes red before the production catch quietly stops catching.
+
+    [Test]
+    public void TryGetGitCommitCount_WhenExecutableDoesNotExist_ReturnsZero_AndLogsWhichExecutableFailed()
+    {
+        LogAssert.Expect(LogType.Warning, new Regex(@"\[BuildInfoGenerator\] could not run 'definitely-not-a-real-git-binary-xyz'"));
+
+        int count = BuildInfoGenerator.TryGetGitCommitCount(
+            "definitely-not-a-real-git-binary-xyz", Path.GetTempPath());
+
+        Assert.AreEqual(0, count,
+            "a missing git executable must throw System.ComponentModel.Win32Exception on Windows; "
+            + "if the runtime ever throws something else here, the narrowed catch stops catching it "
+            + "and Generate() aborts instead of falling back to build_count.txt");
+    }
+
+    [Test]
+    public void ReadAndIncrementCounter_WhenCounterPathIsADirectory_FallsBackToZero_AndLogsBothFailures()
+    {
+        File.Delete(_counterPath!);
+        Directory.CreateDirectory(_counterPath!);
+
+        try
+        {
+            LogAssert.Expect(LogType.Warning, new Regex(@"\[BuildInfoGenerator\] could not read build_count\.txt"));
+            LogAssert.Expect(LogType.Error, new Regex(@"\[BuildInfoGenerator\] FAILED to persist build_count\.txt=1"));
+
+            int result = BuildInfoGenerator.ReadAndIncrementCounter();
+
+            Assert.AreEqual(1, result,
+                "a directory in place of the counter file must throw UnauthorizedAccessException on both "
+                + "read and write; the read failure is treated as count 0, then incremented once");
+        }
+        finally
+        {
+            Directory.Delete(_counterPath!);
+        }
+    }
+
+    [Test]
+    public void GetVersion_AlwaysLogsWhichVersionAndSourceWereTaken()
+    {
+        LogAssert.Expect(LogType.Log, new Regex(@"\[BuildInfoGenerator\] version taken: 0\.\d+ \(source: "));
+
+        BuildInfoGenerator.GetVersion();
     }
 }
