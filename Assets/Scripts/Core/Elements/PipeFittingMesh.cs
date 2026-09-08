@@ -11,6 +11,11 @@ namespace KitchenDesigner.Core
         {
             var builder = new PlumbingMesh(Vector3.zero);
             builder.AddSegments(PipeFittingLayout.PartsMM(kind, frameSizeId, boreSizeIds));
+
+            var knee = PipeFittingLayout.KneeArcMM(kind, frameSizeId, boreSizeIds);
+            if (knee.Length > 0)
+                builder.AddTube(knee, PipeFittingLayout.KneeArcRadiiMM(kind, frameSizeId, boreSizeIds));
+
             return builder.Build();
         }
     }

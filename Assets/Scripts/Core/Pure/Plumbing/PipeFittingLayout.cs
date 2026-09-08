@@ -33,6 +33,44 @@ namespace KitchenDesigner.Core.Plumbing
 
         public static string?[] UniformBores(string? boreSizeId) => new[] { boreSizeId };
 
+        public static Vector3[] KneeArcMM(PipeNodeKind kind, string? frameSizeId,
+            IReadOnlyList<string?>? boreSizeIds)
+        {
+            if (kind != PipeNodeKind.Elbow) return new Vector3[0];
+
+            var hub = HubMM(kind, frameSizeId);
+            var raw = RawKneeArcMM(kind, frameSizeId);
+            for (int i = 0; i < raw.Length; i++) raw[i] += hub;
+            return raw;
+        }
+
+        public static float[] KneeArcRadiiMM(PipeNodeKind kind, string? frameSizeId,
+            IReadOnlyList<string?>? boreSizeIds)
+        {
+            if (kind != PipeNodeKind.Elbow) return new float[0];
+
+            string widest = WidestBore(boreSizeIds, frameSizeId);
+            float fromRadius = PipeFittingSpec.BodyDiameterMm(BoreOf(boreSizeIds, 0, widest)) * 0.5f;
+            float toRadius = PipeFittingSpec.BodyDiameterMm(BoreOf(boreSizeIds, 1, widest)) * 0.5f;
+
+            int count = PipePath.DefaultArcSegments;
+            var radii = new float[count + 1];
+            for (int i = 0; i <= count; i++)
+                radii[i] = Mathf.Lerp(fromRadius, toRadius, i / (float)count);
+            return radii;
+        }
+
+        private static Vector3[] RawKneeArcMM(PipeNodeKind kind, string? frameSizeId)
+        {
+            var axes = PipeFittingSpec.Legs(kind);
+            Vector3 fromLeg = DirectionOf(axes[0]);
+            Vector3 toLeg = DirectionOf(axes[1]);
+            float bend = PipeFittingSpec.ElbowBendRadiusMm(frameSizeId);
+            Vector3 centre = bend * (fromLeg + toLeg);
+
+            return PipePath.Arc(centre, -toLeg, -fromLeg, bend, 90f, PipePath.DefaultArcSegments);
+        }
+
         private static float PivotCentredReach(float min, float max) =>
             2f * Mathf.Max(Mathf.Abs(min), Mathf.Abs(max));
 

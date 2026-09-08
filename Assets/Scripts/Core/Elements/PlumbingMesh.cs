@@ -28,19 +28,28 @@ namespace KitchenDesigner.Core
 
         public void AddTube(IReadOnlyList<Vector3> pointsMM, float radiusMM)
         {
+            var radii = new float[pointsMM.Count];
+            for (int i = 0; i < radii.Length; i++) radii[i] = radiusMM;
+            AddTube(pointsMM, radii);
+        }
+
+        public void AddTube(IReadOnlyList<Vector3> pointsMM, IReadOnlyList<float> radiiMM)
+        {
             if (pointsMM.Count < 2) return;
             float toU = AppConstants.MM_TO_UNITS;
 
             var points = new Vector3[pointsMM.Count];
             var radii = new float[pointsMM.Count];
+            float maxRadiusMM = 0f;
             for (int i = 0; i < pointsMM.Count; i++)
             {
                 points[i] = Local(pointsMM[i]);
-                radii[i] = radiusMM * toU;
+                radii[i] = radiiMM[i] * toU;
+                maxRadiusMM = Mathf.Max(maxRadiusMM, radiiMM[i]);
             }
 
             TubeMesh.Append(_target, points, radii,
-                PipeTessellation.RadialSegmentsFor(radiusMM));
+                PipeTessellation.RadialSegmentsFor(maxRadiusMM));
         }
 
         public void AddRoundedBox(Vector3 centreMM, Vector3 sizeMM, float cornerRadiusMM)

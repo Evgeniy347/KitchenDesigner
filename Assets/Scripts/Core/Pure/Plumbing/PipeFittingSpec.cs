@@ -7,6 +7,7 @@ namespace KitchenDesigner.Core.Plumbing
     {
         public const float BodyDiameterFactor = 1.25f;
         public const float LegLengthFactor = 1.5f;
+        public const float ElbowBendRadiusFactor = 1f;
         public const float FlangeThicknessMm = 6f;
         public const float FlangeDiameterFactor = 2f;
 
@@ -60,6 +61,9 @@ namespace KitchenDesigner.Core.Plumbing
 
         public static float LegLengthMm(string? sizeId) =>
             PipeSpec.Get(sizeId).OuterDiameterMm * LegLengthFactor;
+
+        public static float ElbowBendRadiusMm(string? sizeId) =>
+            PipeSpec.Get(sizeId).OuterDiameterMm * ElbowBendRadiusFactor;
 
         public static int PortCount(PipeNodeKind kind) => Legs(kind).Count;
 
