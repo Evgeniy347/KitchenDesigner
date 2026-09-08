@@ -2,6 +2,7 @@ using System;
 using KitchenDesigner.Core.Lighting;
 using KitchenDesigner.Core.Measure;
 using KitchenDesigner.Core.Tools;
+using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
@@ -30,7 +31,10 @@ namespace KitchenDesigner.Core
         internal static void Enter()
         {
             CloseToolsThatDrawOverlays();
-            SelectionManager.Instance?.DeselectAll();
+            if (SelectionManager.Instance != null)
+                SelectionManager.Instance.DeselectAll();
+            else
+                Debug.LogWarning("PhotoMode.Enter: SelectionManager.Instance is null — cannot clear the selection highlight before entering Photo mode.");
             _prevTintEnabled = ElementHighlighter.TintEnabled;
             ElementHighlighter.TintEnabled = false;
             RefreshHighlights();

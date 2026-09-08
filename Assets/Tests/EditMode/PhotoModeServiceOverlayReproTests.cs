@@ -8,12 +8,23 @@ public class PhotoModeServiceOverlayReproTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private bool _tintBefore;
+    private ElementHighlighter? _highlighterBefore;
 
     [SetUp]
     public void SetUp()
     {
         LogAssert.ignoreFailingMessages = true;
         _tintBefore = ElementHighlighter.TintEnabled;
+        // SelectionTintRestoreTests уже документирует этот риск: живой
+        // ElementHighlighter.Instance, оставшийся от СОСЕДНЕГО класса в общем
+        // прогоне, репэйнтит элемент сразу после того, как DeselectAll вернул
+        // его собственный материал (RestoreMaterial безусловно зовёт
+        // ApplyForElement на актуальном Instance). Этот файл не создаёт
+        // Highlighter в тестах на Select/DeselectAll и поэтому ничем не защищён
+        // от такого чужого Instance — нейтрализуем его на время теста тем же
+        // приёмом, которым уже пользуется SelectionTintRestoreTests.
+        _highlighterBefore = ElementHighlighter.Instance;
+        ElementHighlighter.Instance = null;
         PartRegistry.Clear();
         EditModeManager.Reset();
     }
@@ -23,6 +34,7 @@ public class PhotoModeServiceOverlayReproTests
     {
         EditModeManager.Reset();
         ElementHighlighter.TintEnabled = _tintBefore;
+        ElementHighlighter.Instance = _highlighterBefore;
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         PartRegistry.Clear();
@@ -158,19 +170,77 @@ public class PhotoModeServiceOverlayReproTests
     public void Select_BeforeEnteringPhotoMode_HighlightIsRemovedOnEntry_AndSelectionIsCleared()
     {
         var e = MakePart(new Vector3Int(400, 300, 18), "Board");
-        var ownDecor = e.GetComponent<MeshRenderer>().sharedMaterial;
+        var renderer = e.GetComponent<MeshRenderer>();
+        var ownDecor = renderer.sharedMaterial;
 
         var sm = Spawn(new GameObject("SelectionManager")).AddComponent<SelectionManager>();
+        SelectionManager.Instance = sm;
+        try
+        {
+            // ── СЕНСОР: кто, в каком порядке и на какой объект ставит/снимает
+            // материал по пути «объект выделен → вход в фоторежим». Каждая строка —
+            // факт, а не гипотеза: имя материала на РЕНДЕРЕРЕ детали и то, жив ли
+            // в этот момент ElementHighlighter.Instance (утёкший экземпляр —
+            // задокументированный риск, см. SelectionTintRestoreTests), а также
+            // на КАКОЙ SelectionManager указывает статический Instance — прямой
+            // вызов на sm и вызов через Instance (как это делает EditModeManager)
+            // не одно и то же, если Instance null или указывает на чужой объект.
+            void Log(string step) => TestContext.WriteLine(
+                $"[sensor] {step}: material='{renderer.sharedMaterial?.name}' "
+                + $"refEqualsOwnDecor={ReferenceEquals(renderer.sharedMaterial, ownDecor)} "
+                + $"selected={(sm.Selected != null ? sm.Selected.PartName : "null")} "
+                + $"ElementHighlighter.Instance={(ElementHighlighter.Instance != null ? "alive" : "null")} "
+                + $"SelectionManager.Instance={(SelectionManager.Instance == null ? "null" : ReferenceEquals(SelectionManager.Instance, sm) ? "sm" : "other")}");
 
-        sm.Select(e);
-        Assume.That(e.GetComponent<MeshRenderer>().sharedMaterial, Is.Not.EqualTo(ownDecor),
-            "предпосылка: выделение реально перекрашивает деталь");
+            Log("00 до выделения");
 
-        EditModeManager.SetMode(EditMode.Photo);
+            sm.Select(e);
+            Assume.That(renderer.sharedMaterial, Is.Not.EqualTo(ownDecor),
+                "предпосылка: выделение реально перекрашивает деталь");
+            Log("01 после Select, до входа в фоторежим");
 
-        Assert.AreEqual(ownDecor, e.GetComponent<MeshRenderer>().sharedMaterial,
-            "вход в фоторежим с уже выделенным объектом обязан снять подсветку до кадра");
-        Assert.IsNull(sm.Selected,
-            "выделение снимается целиком — это не «то же самое, но другим цветом»");
+            // Проверка «очевидного, чего никто не проверил»: DeselectAll обязан
+            // снять именно МАТЕРИАЛ с рендерера, а не только ссылку sm.Selected.
+            // Зовём его тут напрямую (а не через SetMode), чтобы отделить работу
+            // DeselectAll от всего остального, что делает вход в фоторежим.
+            sm.DeselectAll();
+            Log("02 сразу после прямого DeselectAll (ДО фоторежима)");
+            Assert.AreSame(ownDecor, renderer.sharedMaterial,
+                "DeselectAll сам по себе обязан вернуть материал на рендерер — если это уже "
+                + "не так ДО входа в фоторежим, дефект живёт в SelectionManager, а не в PhotoMode");
+            Assert.IsNull(sm.Selected, "и ссылку на выделенный объект тоже обязан снять");
+
+            // Возвращаем репродукцию к заявленному сценарию: объект выделен СНОВА,
+            // теперь входим в фоторежим уже выделенным.
+            sm.Select(e);
+            Assume.That(renderer.sharedMaterial, Is.Not.EqualTo(ownDecor),
+                "предпосылка: повторное выделение снова красит деталь");
+            Log("03 повторно выделили — сценарий репро восстановлен");
+
+            void OnSelectionChanged(KitchenElement? _) => Log("04 SelectionManager.OnSelectionChanged (внутри DeselectAll, вызванного SetMode)");
+            void OnPhotoChanged() => Log("05 PhotoMode.Changed (после Enter() и второго DeselectAll в SetMode)");
+            sm.OnSelectionChanged += OnSelectionChanged;
+            PhotoMode.Changed += OnPhotoChanged;
+            try
+            {
+                EditModeManager.SetMode(EditMode.Photo);
+            }
+            finally
+            {
+                sm.OnSelectionChanged -= OnSelectionChanged;
+                PhotoMode.Changed -= OnPhotoChanged;
+            }
+
+            Log("06 в конце, после SetMode(Photo)");
+
+            Assert.AreEqual(ownDecor, renderer.sharedMaterial,
+                "вход в фоторежим с уже выделенным объектом обязан снять подсветку до кадра");
+            Assert.IsNull(sm.Selected,
+                "выделение снимается целиком — это не «то же самое, но другим цветом»");
+        }
+        finally
+        {
+            SelectionManager.Instance = null;
+        }
     }
 }
