@@ -59,8 +59,23 @@ Rules that follow from it:
 - Extracted sections are plain C# classes, not `MonoBehaviour`s, owned by the component.
 - Still in force: one method one job (~40 lines max).
 
-`ContextMenuUI` at 3580 lines, with a 480-line `Build()` and a `Layout()` taking 11
-booleans, is the anti-example this section exists to prevent.
+`ContextMenuUI` was the anti-example this section exists to prevent: 3580 lines, a 480-line
+`Build()`, a `Layout()` taking 11 booleans. It is 906 lines today, and it got there by the rule
+below rather than by a refactoring campaign.
+
+**The classes already over the line are cut a slice at a time, while you are in them for another
+reason.** Three of them stand out — `KitchenElement` (621 lines: grooves, cutouts, edge banding,
+gaps, textures, mounting), `ContextMenuUI` (906, with 22 editors listed by hand in its
+constructor), `ElementMover` (603: dragging, ghost mesh, tinting, duplication, deletion). A
+dedicated campaign against them is expensive and risky — half of it does not compile without
+Unity, and a big rewrite of a class this central is exactly where a silent behaviour change
+hides. So the bar is not «the class is decomposed» but: **after any edit to one of these files,
+exactly one named zone has left it, and that zone's tests left with it** — into `Core/Pure` in
+the same commit, per the fast-path rule below. One slice per visit, no visit without a slice.
+
+This is a rule and not an item on a debt list on purpose: a task saying «split the god classes»
+gets postponed forever and then crossed off unread, while a rule fires on the next person who
+opens the file for any reason at all.
 
 ## A class without a scene lives on the fast path
 

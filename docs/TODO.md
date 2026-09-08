@@ -52,22 +52,7 @@
 
 ---
 
-## 3. God-классы: резать по кусочку, когда правишь по другому поводу
-
-**Где.** `KitchenElement` — 621 строка (пазы, вырезы, кромка, зазоры, текстуры, подвес),
-`ContextMenuUI` — 906 (22 редактора в конструкторе), `ElementMover` — 603 (перетаскивание +
-призрачный меш + подкраска + дублирование/удаление).
-
-**Почему важно.** Формально это нарушение `conventions/STRUCTURE.md`. Отдельный заход дорог и
-рискован: половина не компилируется без Unity.
-
-**Что считается сделанным.** Не «класс разобран», а «после каждой правки этих файлов из них
-уехала ровно одна названная зона, и её тесты уехали с ней»; новый чистый класс идёт в
-`Core/Pure` тем же коммитом.
-
----
-
-## 4. `SidebarCatalog` — 30 булевых свойств `is*` вместо таблицы данных
+## 3. `SidebarCatalog` — 30 булевых свойств `is*` вместо таблицы данных
 
 **Где.** `SidebarCatalog.cs:51-110`.
 
@@ -81,7 +66,7 @@ layer», пункт 5 списка «How to remove a type ladder». Искать
 
 ---
 
-## 5. Бойлерплейт `*FieldsEditor` — список редакторов и набор классов расходятся молча
+## 4. Бойлерплейт `*FieldsEditor` — список редакторов и набор классов расходятся молча
 
 **Где.** 24 класса `*FieldsEditor` на диске, 22 перечислены руками в конструкторе
 `ContextMenuUI.cs:102`.
@@ -95,7 +80,7 @@ twin in the contract» из `conventions/STRUCTURE.md`, и разойтись о
 
 ---
 
-## 6. Test-only API в `ContextMenuUI`
+## 5. Test-only API в `ContextMenuUI`
 
 **Где.** `MaterialPreviewActive`, `ToggleTextures`, `FindDishwasherForFacade` — живут только ради
 `MaterialPreviewTests`, `DishwasherElementTests`, `ElementPropertyDiagramTests`.
@@ -109,7 +94,7 @@ twin in the contract» из `conventions/STRUCTURE.md`, и разойтись о
 
 ---
 
-## 7. Мусор выше репозитория, ничем не упоминаемый
+## 6. Мусор выше репозитория, ничем не упоминаемый
 
 **Что.** `kitchen-plan.md`, `dns-induction-p1.md` (3439 строк дампа DOM),
 `tmp-scripts/scrape_lmdf.ps1` и байт-в-байт дубль `GTV AXIS PRO.md` = `GTV/GTV AXIS PRO.md`
@@ -123,7 +108,7 @@ twin in the contract» из `conventions/STRUCTURE.md`, и разойтись о
 
 ---
 
-## 8. Рефлексивные стражи смотрят на список типов, набранный руками
+## 7. Рефлексивные стражи смотрят на список типов, набранный руками
 
 **Где.** `ElementConverterTests.Reflection_AllPublicProperties_AreCovered` перебирает
 `KitchenElement, FacadeElement, AssembledFacadeElement, RadialShelfElement`;
