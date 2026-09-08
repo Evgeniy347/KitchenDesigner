@@ -249,7 +249,7 @@ public class BuildInfoGeneratorTests
         Assert.AreEqual(1, result);
     }
 
-    // ── Silent-catch contract (docs/TODO.md #1) ──────────────
+    // ── Silent-catch contract: a swallowed failure here makes the build number lie ──
     // These pin the exception TYPES the three former bare `catch {}` blocks now
     // narrow to. If the BCL ever throws something else for these operations,
     // one of these goes red before the production catch quietly stops catching.

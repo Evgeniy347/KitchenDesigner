@@ -5,7 +5,7 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core.UI;
 
-/// <summary>Сторож docs/TODO.md пункт 5: список `*FieldsEditor` в конструкторе
+/// <summary>Сторож паритета: список `*FieldsEditor` в конструкторе
 /// ContextMenuUI и набор конкретных классов на диске — таблица возможностей и
 /// её двойник в контракте (STRUCTURE.md), и они уже расходились: табуретка
 /// получила класс редактора, но не строку в массиве `_editors`, и поле молча
