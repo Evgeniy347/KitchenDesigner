@@ -67,6 +67,8 @@ namespace KitchenDesigner.Core.UI
             _layout = layout;
         }
 
+        public Transform Parent => _parent;
+
         public void SyncEnabledState() => _registered.Sync();
 
         public IEnumerable<(TMP_Text? label, Selectable? control)> LabelledRows =>

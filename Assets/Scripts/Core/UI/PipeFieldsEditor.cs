@@ -5,12 +5,15 @@ namespace KitchenDesigner.Core.UI
 {
     internal sealed class PipeFieldsEditor : ElementFieldsEditor
     {
+        private readonly PipeEndsDiagram _ends;
+
         private TMP_Dropdown? _size;
         private TMP_InputField? _outer;
         private TMP_InputField? _inner;
         private TMP_InputField? _wall;
 
-        public PipeFieldsEditor(IContextMenuHost host) : base(host) { }
+        public PipeFieldsEditor(IContextMenuHost host) : base(host) =>
+            _ends = new PipeEndsDiagram(host, () => Host.Target as PipeElement);
 
         public override bool Handles(KitchenElement element) => element is PipeElement;
 
@@ -27,6 +30,7 @@ namespace KitchenDesigner.Core.UI
             _outer = ReadOnlyField("Наружный Ø", visibility);
             _inner = ReadOnlyField("Внутренний Ø", visibility);
             _wall = ReadOnlyField("Толщина стенки", visibility);
+            _ends.Build(Rows.Parent);
         }
 
         public override void Show(KitchenElement element)
@@ -34,16 +38,21 @@ namespace KitchenDesigner.Core.UI
             if (!(element is PipeElement pipe)) return;
             _size?.SetValueWithoutNotify(PipeElementSpec.IndexOf(pipe.SizeId));
             WriteDerived(pipe);
+            _ends.Show(pipe);
         }
 
         public override void Refresh(KitchenElement element)
         {
-            if (element is PipeElement pipe) WriteDerived(pipe);
+            if (!(element is PipeElement pipe)) return;
+            WriteDerived(pipe);
+            _ends.Tick(pipe);
         }
 
         public override void AfterApply(KitchenElement element)
         {
-            if (element is PipeElement pipe) WriteDerived(pipe);
+            if (!(element is PipeElement pipe)) return;
+            WriteDerived(pipe);
+            _ends.Show(pipe);
         }
 
         private TMP_InputField ReadOnlyField(string label, RowVisibility visibility)

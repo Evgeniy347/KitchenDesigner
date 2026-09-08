@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.UI;
 using KitchenDesigner.Tests;
 
@@ -494,6 +495,27 @@ public class ElementPropertyDiagramTests
             "без хозяина секция «Корпус» покажет прочерки, и кадр перестанет быть о ней");
         yield return CapturePanel("ContextMenu", "contextmenu_screwleg.png",
             () => { ContextMenuUI.Instance!.Open(leg); },
+            () => { ContextMenuUI.Instance?.Close(); });
+    }
+
+    /// <summary>Труба: условный проход, три погашенные строки (диаметры и стенка) и
+    /// схема концов — статическая картинка трубы с двумя торцами и списком деталей
+    /// под каждым. Один конец заглушен нарочно: кадр обязан показать ОБА состояния
+    /// торца сразу — залитый (занят) и пустой контур (свободен), — иначе форма как
+    /// носитель смысла (docs/UI-GUIDELINES.md §10) на снимке не проверяется.</summary>
+    [UnityTest]
+    public IEnumerator ContextMenu_Pipe_SavesPng()
+    {
+        var go = ElementFactory.CreatePipe(PipeSpec.DEFAULT_SIZE, 600, "Труба",
+            new Vector3(0f, 0.3f, 0f));
+        var pipe = go.GetComponent<PipeElement>();
+        Assert.IsNotNull(pipe);
+        var cap = ElementFactory.CreatePipeCap("Zaglushka", pipe.EndBUnits)
+            .GetComponent<PipeFittingElement>();
+        Assert.IsNotNull(cap);
+        cap.SeatOnPipeEnd(pipe, 1);
+        yield return CapturePanel("ContextMenu", "contextmenu_pipe.png",
+            () => { ContextMenuUI.Instance!.Open(pipe); },
             () => { ContextMenuUI.Instance?.Close(); });
     }
 
