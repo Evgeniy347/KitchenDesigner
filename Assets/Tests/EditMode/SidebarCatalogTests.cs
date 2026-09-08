@@ -299,22 +299,53 @@ public class SidebarCatalogTests
             "то же для подвесного");
     }
 
+    /// <summary>Раньше каждый предмет сантехники нёс свой уникальный `kind`, и
+    /// сравнения хватало. Фитинги трубы теперь — ОДИН `kind`
+    /// (<see cref="SidebarItemKind.PipeFitting"/>) с шестью разными пресетами
+    /// (<c>fittingKind</c>), и это осознанно: маршрутизатор ветвится по kind
+    /// РОВНО один раз для всех шести, а дальше решает пресет. Идентичность
+    /// кнопки — теперь пара (kind, fittingKind при kind == PipeFitting), а не
+    /// голый kind: тест сравнивает эту пару, а не только вид.</summary>
     [Test]
-    public void SanitaryGroup_GivesEveryItemItsOwnKind()
+    public void SanitaryGroup_GivesEveryItemItsOwnRoutingIdentity()
     {
         var items = SidebarCatalog.Build()[SanitaryIndex].items;
-        var seen = new Dictionary<SidebarItemKind, string>();
+        var seen = new Dictionary<string, string>();
 
         foreach (var item in items)
         {
-            string clash = seen.TryGetValue(item.kind, out var other) ? other : "";
+            string identity = item.kind == SidebarItemKind.PipeFitting
+                ? item.kind + ":" + item.fittingKind
+                : item.kind.ToString();
+            string clash = seen.TryGetValue(identity, out var other) ? other : "";
             Assert.IsEmpty(clash,
-                "два предмета сантехники с одним видом — «" + item.name + "» и «" + clash
-                + "». Маршрутизатор на это не отказывает, он просто зовёт спаун чужого "
-                + "вида, и кнопка заводит не тот объект. Это и есть свойство, ради "
-                + "которого тест существует, и оно не про КОЛИЧЕСТВО предметов в группе");
-            seen[item.kind] = item.name;
+                "два предмета сантехники с одной и той же парой (вид, пресет) — «" + item.name
+                + "» и «" + clash + "». Маршрутизатор на это не отказывает, он просто зовёт "
+                + "спаун чужого вида или пресета, и кнопка заводит не тот объект. Это и есть "
+                + "свойство, ради которого тест существует, и оно не про КОЛИЧЕСТВО предметов "
+                + "в группе");
+            seen[identity] = item.name;
         }
+    }
+
+    /// <summary>Шесть фитингов — один тип (<see cref="SidebarItemKind.PipeFitting"/>),
+    /// различённый пресетом <c>fittingKind</c> (<see cref="PipeNodeKind"/>), а
+    /// не шестью отдельными видами. Это и есть разделение «тип vs пресет» из
+    /// todo_evolution.md §2.1: до правки у каждого фитинга был собственный
+    /// <c>SidebarItemKind</c> и собственная ветка в SidebarSpawnRouter.</summary>
+    [Test]
+    public void SanitaryGroup_FittingsShareOneKind_DistinguishedByFittingKindPreset()
+    {
+        var fittings = SidebarCatalog.Build()[SanitaryIndex].items
+            .FindAll(i => i.kind == SidebarItemKind.PipeFitting);
+
+        Assert.AreEqual(6, fittings.Count,
+            "шесть фитингов одной трубы: колено, муфта, тройник, заглушка, подача, обратка");
+
+        var presets = fittings.ConvertAll(i => i.fittingKind);
+        CollectionAssert.AllItemsAreUnique(presets,
+            "каждый фитинг обязан нести свой PipeNodeKind — иначе два разных фитинга "
+            + "заведут одну и ту же деталь");
     }
 
     [Test]

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using KitchenDesigner.Core.Plumbing;
 
@@ -10,8 +11,8 @@ namespace KitchenDesigner.Core.UI
         public const int DefaultDrawerLengthMM = 350;
         public const string DefaultDrawerColor = "Anthracite";
         public const int DefaultDrawerWidthMM = 400;
-        public const string DefaultDrawerSystem = "gtv";
-        public const string MoventoDrawerSystem = "movento";
+        public const string DefaultDrawerSystem = SidebarPresetResolution.DefaultDrawerSystem;
+        public const string MoventoDrawerSystem = SidebarPresetResolution.MoventoDrawerSystem;
 
         public struct Item
         {
@@ -25,6 +26,7 @@ namespace KitchenDesigner.Core.UI
             public string drawerColor;
             public int drawerWidth;
             public string drawerSystem;
+            public PipeNodeKind fittingKind;
 
             public Item(string name, Vector3Int dims,
                 SidebarItemKind kind = SidebarItemKind.Board)
@@ -37,6 +39,7 @@ namespace KitchenDesigner.Core.UI
                 drawerColor = DefaultDrawerColor;
                 drawerWidth = DefaultDrawerWidthMM;
                 drawerSystem = DefaultDrawerSystem;
+                fittingKind = PipeNodeKind.Coupling;
             }
 
             public string DisplayName => !string.IsNullOrEmpty(applianceModel) && name.EndsWith(applianceModel)
@@ -61,77 +64,120 @@ namespace KitchenDesigner.Core.UI
             public List<Item> items;
         }
 
+        private readonly struct GroupMeta
+        {
+            public readonly SidebarGroupKey key;
+            public readonly string title;
+            public readonly string shortLabel;
+            public readonly Sprite icon;
+
+            public GroupMeta(SidebarGroupKey key, string title, string shortLabel, Sprite icon)
+            {
+                this.key = key; this.title = title; this.shortLabel = shortLabel; this.icon = icon;
+            }
+        }
+
+        private static IEnumerable<GroupMeta> GroupTable() => new[]
+        {
+            new GroupMeta(SidebarGroupKey.Board, "Детали", "Д", IconFactory.Shelf),
+            new GroupMeta(SidebarGroupKey.Facade, "Фасады", "Ф", IconFactory.Facade),
+            new GroupMeta(SidebarGroupKey.Drawer, "Ящики", "Я", IconFactory.Drawer),
+            new GroupMeta(SidebarGroupKey.Furniture, "Мебель", "М", IconFactory.Furniture),
+            new GroupMeta(SidebarGroupKey.Appliance, "Техника", "Т", IconFactory.Appliance),
+            new GroupMeta(SidebarGroupKey.Sanitary, "Сантехника", "С", IconFactory.Faucet),
+            new GroupMeta(SidebarGroupKey.Room, "Помещение", "П", IconFactory.Room),
+        };
+
         public static List<Group> Build()
         {
-            return new List<Group>
+            var rows = Rows().ToList();
+            return GroupTable().Select(meta => new Group
             {
-                BoardGroup(),
-                FacadeGroup(),
-                DrawerGroup(),
-                FurnitureGroup(),
-                ApplianceGroup(),
-                SanitaryGroup(),
-                new Group
-                {
-                    title = "Помещение",
-                    shortLabel = "П",
-                    icon = IconFactory.Room,
-                    items = new List<Item>
-                    {
-                        new Item("Короб", new Vector3Int(600, 600, 600)),
-                        new Item("Стена", new Vector3Int(2000, 2500, 100),
-                            SidebarItemKind.Wall),
-                        new Item("Окно", new Vector3Int(900, 1200, 100),
-                            SidebarItemKind.Window),
-                        new Item("Дверь", new Vector3Int(900, 2000, 100),
-                            SidebarItemKind.Door),
-                        new Item("Пол", new Vector3Int(
-                            FloorElement.DEFAULT_SIZE_MM,
-                            FloorElement.DEFAULT_THICKNESS_MM,
-                            FloorElement.DEFAULT_SIZE_MM), SidebarItemKind.Floor),
-                        LightSourceItem("Источник света"),
-                        SocketItem("Розетка"),
-                        LightSwitchItem("Выключатель"),
-                    }
-                },
-            };
+                title = meta.title,
+                shortLabel = meta.shortLabel,
+                icon = meta.icon,
+                items = rows.Where(r => r.Group == meta.key).Select(r => r.Item).ToList(),
+            }).ToList();
         }
 
-        private static Group BoardGroup()
+        private static IEnumerable<(SidebarGroupKey Group, Item Item)> Rows()
         {
-            var regular = new Item("Полка", new Vector3Int(600, 400, 16));
-            var radial = new Item("Радиусная полка", new Vector3Int(600, 400, 16),
-                SidebarItemKind.RadialShelf);
-            var panel = new Item("ДВП/ХДФ", new Vector3Int(600, 400, 3), SidebarItemKind.Panel);
-            return new Group { title = "Детали", shortLabel = "Д", icon = IconFactory.Shelf,
-                items = new List<Item> { regular, radial, panel } };
-        }
+            yield return (SidebarGroupKey.Board,
+                new Item("Полка", new Vector3Int(600, 400, 16)));
+            yield return (SidebarGroupKey.Board,
+                new Item("Радиусная полка", new Vector3Int(600, 400, 16), SidebarItemKind.RadialShelf));
+            yield return (SidebarGroupKey.Board,
+                new Item("ДВП/ХДФ", new Vector3Int(600, 400, 3), SidebarItemKind.Panel));
 
-        private static Group FacadeGroup()
-        {
-            return new Group
-            {
-                title = "Фасады",
-                shortLabel = "Ф",
-                icon = IconFactory.Facade,
-                items = new List<Item>
-                {
-                    new Item("Фасад щитовой", new Vector3Int(600, 716, 18),
-                        SidebarItemKind.Facade),
-                    new Item("Фасад сборный", new Vector3Int(600, 716, 18),
-                        SidebarItemKind.AssembledFacade),
-                }
-            };
-        }
+            yield return (SidebarGroupKey.Facade,
+                new Item("Фасад щитовой", new Vector3Int(600, 716, 18), SidebarItemKind.Facade));
+            yield return (SidebarGroupKey.Facade,
+                new Item("Фасад сборный", new Vector3Int(600, 716, 18), SidebarItemKind.AssembledFacade));
 
-        private static Group DrawerGroup()
-        {
-            var gtv = DrawerItem("Ящик GTV", DefaultDrawerType, DefaultDrawerLengthMM,
-                DefaultDrawerSystem);
-            var movento = DrawerItem("Ящик Movento", DefaultDrawerType, 500,
-                MoventoDrawerSystem);
-            return new Group { title = "Ящики", shortLabel = "Я", icon = IconFactory.Drawer,
-                items = new List<Item> { gtv, movento } };
+            yield return (SidebarGroupKey.Drawer,
+                DrawerItem("Ящик GTV", DefaultDrawerType, DefaultDrawerLengthMM, DefaultDrawerSystem));
+            yield return (SidebarGroupKey.Drawer,
+                DrawerItem("Ящик Movento", DefaultDrawerType, 500, MoventoDrawerSystem));
+
+            yield return (SidebarGroupKey.Furniture,
+                new Item("Прямоугольный стол", new Vector3Int(2000, 750, 1000), SidebarItemKind.Table));
+            yield return (SidebarGroupKey.Furniture,
+                new Item("Радиусный стол", new Vector3Int(2000, 750, 1000), SidebarItemKind.RadiusTable));
+            yield return (SidebarGroupKey.Furniture,
+                new Item("Табуретка", new Vector3Int(StoolElement.DefaultWidthMM,
+                    StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM), SidebarItemKind.Stool));
+            yield return (SidebarGroupKey.Furniture,
+                new Item("Стул", new Vector3Int(ChairElement.DefaultWidthMM,
+                    ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM), SidebarItemKind.Chair));
+            yield return (SidebarGroupKey.Furniture,
+                new Item("Диван", new Vector3Int(SofaElement.DefaultWidthMM,
+                    SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM), SidebarItemKind.Sofa));
+            yield return (SidebarGroupKey.Furniture,
+                new Item("Пуфик", new Vector3Int(PouffeElement.DefaultWidthMM,
+                    PouffeElement.DefaultHeightMM, PouffeElement.DefaultDepthMM), SidebarItemKind.Pouffe));
+            yield return (SidebarGroupKey.Furniture,
+                new Item("Кровать", new Vector3Int(BedElement.DefaultWidthMM,
+                    BedElement.DefaultHeightMM, BedElement.DefaultDepthMM), SidebarItemKind.Bed));
+            yield return (SidebarGroupKey.Furniture, PillarItem("Ножка", PillarElement.MidHeightMM_Default));
+            yield return (SidebarGroupKey.Furniture, ScrewLegItem("Винтовая опора"));
+            yield return (SidebarGroupKey.Furniture, SinkItem("Мойка"));
+
+            yield return (SidebarGroupKey.Appliance, CooktopItem("Варочная поверхность"));
+            yield return (SidebarGroupKey.Appliance,
+                CooktopModelItem("Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E,
+                    CooktopElement.MODEL_BOSCH_PUE611BB5E));
+            yield return (SidebarGroupKey.Appliance, OvenItem("Духовка " + OvenElement.MODEL));
+            yield return (SidebarGroupKey.Appliance,
+                DishwasherItem("Посудомойка " + DishwasherElement.MODEL));
+
+            yield return (SidebarGroupKey.Sanitary, ToiletItem("Унитаз"));
+            yield return (SidebarGroupKey.Sanitary, WallHungToiletItem("Инсталляция"));
+            yield return (SidebarGroupKey.Sanitary, BathtubItem("Ванна"));
+            yield return (SidebarGroupKey.Sanitary, BathMixerItem("Смеситель"));
+            yield return (SidebarGroupKey.Sanitary, ShowerColumnItem("Душевая стойка"));
+            yield return (SidebarGroupKey.Sanitary, PipeItem("Труба"));
+            yield return (SidebarGroupKey.Sanitary, FittingItem(PipeNodeKind.Elbow));
+            yield return (SidebarGroupKey.Sanitary, FittingItem(PipeNodeKind.Coupling));
+            yield return (SidebarGroupKey.Sanitary, FittingItem(PipeNodeKind.Tee));
+            yield return (SidebarGroupKey.Sanitary, FittingItem(PipeNodeKind.Cap));
+            yield return (SidebarGroupKey.Sanitary, FittingItem(PipeNodeKind.Supply));
+            yield return (SidebarGroupKey.Sanitary, FittingItem(PipeNodeKind.Return));
+
+            yield return (SidebarGroupKey.Room, new Item("Короб", new Vector3Int(600, 600, 600)));
+            yield return (SidebarGroupKey.Room,
+                new Item("Стена", new Vector3Int(2000, 2500, 100), SidebarItemKind.Wall));
+            yield return (SidebarGroupKey.Room,
+                new Item("Окно", new Vector3Int(900, 1200, 100), SidebarItemKind.Window));
+            yield return (SidebarGroupKey.Room,
+                new Item("Дверь", new Vector3Int(900, 2000, 100), SidebarItemKind.Door));
+            yield return (SidebarGroupKey.Room,
+                new Item("Пол", new Vector3Int(
+                    FloorElement.DEFAULT_SIZE_MM,
+                    FloorElement.DEFAULT_THICKNESS_MM,
+                    FloorElement.DEFAULT_SIZE_MM), SidebarItemKind.Floor));
+            yield return (SidebarGroupKey.Room, LightSourceItem("Источник света"));
+            yield return (SidebarGroupKey.Room, SocketItem("Розетка"));
+            yield return (SidebarGroupKey.Room, LightSwitchItem("Выключатель"));
         }
 
         private static Item DrawerItem(string name, string drawerType, int length,
@@ -148,77 +194,16 @@ namespace KitchenDesigner.Core.UI
             return item;
         }
 
-        private static Group FurnitureGroup()
-        {
-            var table = new Item("Прямоугольный стол", new Vector3Int(2000, 750, 1000),
-                SidebarItemKind.Table);
-            var radiusTable = new Item("Радиусный стол", new Vector3Int(2000, 750, 1000),
-                SidebarItemKind.RadiusTable);
-            var stool = new Item("Табуретка", new Vector3Int(StoolElement.DefaultWidthMM,
-                StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM),
-                SidebarItemKind.Stool);
-            var chair = new Item("Стул", new Vector3Int(ChairElement.DefaultWidthMM,
-                ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM),
-                SidebarItemKind.Chair);
-            var sofa = new Item("Диван", new Vector3Int(SofaElement.DefaultWidthMM,
-                SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM),
-                SidebarItemKind.Sofa);
-            var bed = new Item("Кровать", new Vector3Int(BedElement.DefaultWidthMM,
-                BedElement.DefaultHeightMM, BedElement.DefaultDepthMM),
-                SidebarItemKind.Bed);
-            var pouffe = new Item("Пуфик", new Vector3Int(PouffeElement.DefaultWidthMM,
-                PouffeElement.DefaultHeightMM, PouffeElement.DefaultDepthMM),
-                SidebarItemKind.Pouffe);
-            var pillar = PillarItem("Ножка", PillarElement.MidHeightMM_Default);
-            var screwLeg = ScrewLegItem("Винтовая опора");
-            var sink = SinkItem("Мойка");
-            return new Group { title = "Мебель", shortLabel = "М", icon = IconFactory.Furniture,
-                items = new List<Item> { table, radiusTable, stool, chair, sofa, pouffe, bed, pillar, screwLeg, sink } };
-        }
-
-        private static Group ApplianceGroup()
-        {
-            var genericCooktop = CooktopItem("Варочная поверхность");
-            var modelCooktop = CooktopModelItem("Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E,
-                CooktopElement.MODEL_BOSCH_PUE611BB5E);
-            var oven = OvenItem("Духовка " + OvenElement.MODEL);
-            var dishwasher = DishwasherItem("Посудомойка " + DishwasherElement.MODEL);
-            return new Group
-            {
-                title = "Техника", shortLabel = "Т", icon = IconFactory.Appliance,
-                items = new List<Item> { genericCooktop, modelCooktop, oven, dishwasher },
-            };
-        }
-
-        private static Group SanitaryGroup()
-        {
-            return new Group
-            {
-                title = "Сантехника",
-                shortLabel = "С",
-                icon = IconFactory.Faucet,
-                items = new List<Item>
-                {
-                    ToiletItem("Унитаз"), WallHungToiletItem("Инсталляция"), BathtubItem("Ванна"),
-                    BathMixerItem("Смеситель"), ShowerColumnItem("Душевая стойка"),
-                    PipeItem("Труба"),
-                    FittingItem(PipeNodeKind.Elbow, SidebarItemKind.PipeElbow),
-                    FittingItem(PipeNodeKind.Coupling, SidebarItemKind.PipeCoupling),
-                    FittingItem(PipeNodeKind.Tee, SidebarItemKind.PipeTee),
-                    FittingItem(PipeNodeKind.Cap, SidebarItemKind.PipeCap),
-                    FittingItem(PipeNodeKind.Supply, SidebarItemKind.PipeSupply),
-                    FittingItem(PipeNodeKind.Return, SidebarItemKind.PipeReturn),
-                },
-            };
-        }
-
-        private static Item FittingItem(PipeNodeKind kind, SidebarItemKind itemKind)
+        private static Item FittingItem(PipeNodeKind kind)
         {
             string sizeId = PipeSpec.DEFAULT_SIZE;
-            return new Item(PipeFittingNames.Title(kind), new Vector3Int(
+            var item = new Item(PipeFittingNames.Title(kind), new Vector3Int(
                 PipeFittingSpec.RoundedMm(PipeFittingSpec.WidthMm(kind, sizeId)),
                 PipeFittingSpec.RoundedMm(PipeFittingSpec.HeightMm(kind, sizeId)),
-                PipeFittingSpec.RoundedMm(PipeFittingSpec.DepthMm(kind, sizeId))), itemKind);
+                PipeFittingSpec.RoundedMm(PipeFittingSpec.DepthMm(kind, sizeId))),
+                SidebarItemKind.PipeFitting);
+            item.fittingKind = kind;
+            return item;
         }
 
         private static Item PipeItem(string name)

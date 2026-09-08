@@ -268,6 +268,8 @@ public class SidebarSpawnRouterTests
             case Vector3Int v: return v + new Vector3Int(7, 11, 13);
             case SidebarItemKind k:
                 return k == SidebarItemKind.Sofa ? SidebarItemKind.Board : SidebarItemKind.Sofa;
+            case PipeNodeKind p:
+                return p == PipeNodeKind.Coupling ? PipeNodeKind.Tee : PipeNodeKind.Coupling;
             default: return null;
         }
     }

@@ -62,7 +62,7 @@
 |---------|-------------|-------|------|
 | Context menu | ContextMenuUI | ContextMenuLayoutTests, ContextMenuRefreshBugTests | UI/ |
 | Main UI | UIManager, UIFactory | — | UI/ |
-| Sidebar | SidebarUI, SidebarCatalog, SidebarSpawnRouter | SidebarCatalogTests, SidebarSpawnRouterTests | UI/ |
+| Sidebar | SidebarUI, SidebarCatalog (данные: одна таблица Rows() + SidebarGroupKey), SidebarSpawnRouter, SidebarPresetResolution (Pure) | SidebarCatalogTests, SidebarSpawnRouterTests, SidebarPresetResolutionTests (Pure) | UI/, Pure/UI/ |
 | Settings | SettingsPanelUI, KitchenSettings | SettingsPanelUITests, KitchenSettingsTests, McpSettingsParityTests | UI/, Infrastructure/ |
 | Floor settings | FloorSettingsUI | FloorSettingsLayoutTests | UI/ |
 | Help/Icons | HelpUI, IconFactory | — | UI/ |

@@ -40,19 +40,8 @@ namespace KitchenDesigner.Core.UI
         public void SpawnDrawer(string drawerType, int length, string colorName, int width,
             string name, DrawerSystem system)
         {
-            var type = drawerType switch
-            {
-                "B" => DrawerType.B,
-                "C" => DrawerType.C,
-                "D" => DrawerType.D,
-                _ => DrawerType.A
-            };
-            var color = colorName.ToLowerInvariant() switch
-            {
-                "white" => DrawerColor.White,
-                "black" => DrawerColor.Black,
-                _ => DrawerColor.Anthracite
-            };
+            var type = SidebarPresetResolution.DrawerTypeOf(drawerType);
+            var color = SidebarPresetResolution.DrawerColorOf(colorName);
             PlaceCenteredOnGround(DrawerConstants.GetMinOpeningHeight(type), pos =>
                 ElementFactory.CreateDrawer(type, length, color, width,
                     DrawerLinks.UniqueName(name), pos, system));

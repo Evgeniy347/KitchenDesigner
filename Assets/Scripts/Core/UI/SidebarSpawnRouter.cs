@@ -29,9 +29,7 @@ namespace KitchenDesigner.Core.UI
                 case SidebarItemKind.Drawer:
                     spawner.SpawnDrawer(item.drawerType, item.drawerLength, item.drawerColor,
                         item.drawerWidth, item.name,
-                        item.drawerSystem == SidebarCatalog.MoventoDrawerSystem
-                            ? DrawerSystem.Movento
-                            : DrawerSystem.Gtv);
+                        SidebarPresetResolution.DrawerSystemOf(item.drawerSystem));
                     break;
                 case SidebarItemKind.Window:
                     spawner.SpawnWindow(item.dims, item.name);
@@ -90,23 +88,8 @@ namespace KitchenDesigner.Core.UI
                 case SidebarItemKind.Pipe:
                     spawner.SpawnPipe(item.name);
                     break;
-                case SidebarItemKind.PipeElbow:
-                    spawner.SpawnPipeFitting(PipeNodeKind.Elbow, item.name);
-                    break;
-                case SidebarItemKind.PipeCoupling:
-                    spawner.SpawnPipeFitting(PipeNodeKind.Coupling, item.name);
-                    break;
-                case SidebarItemKind.PipeTee:
-                    spawner.SpawnPipeFitting(PipeNodeKind.Tee, item.name);
-                    break;
-                case SidebarItemKind.PipeCap:
-                    spawner.SpawnPipeFitting(PipeNodeKind.Cap, item.name);
-                    break;
-                case SidebarItemKind.PipeSupply:
-                    spawner.SpawnPipeFitting(PipeNodeKind.Supply, item.name);
-                    break;
-                case SidebarItemKind.PipeReturn:
-                    spawner.SpawnPipeFitting(PipeNodeKind.Return, item.name);
+                case SidebarItemKind.PipeFitting:
+                    spawner.SpawnPipeFitting(item.fittingKind, item.name);
                     break;
                 case SidebarItemKind.Panel:
                     spawner.SpawnPanel(item.dims, item.name);
