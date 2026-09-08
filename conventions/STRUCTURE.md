@@ -239,7 +239,7 @@ Every `.csproj` outside `Assets/` goes in with `git add -f`. The check:
 
 ### Build strictness is inherited, not optional
 
-A new project outside Unity either inherits `server/Directory.Build.props` or declares its own:
+A new project outside Unity either inherits `geometry/Directory.Build.props` or declares its own:
 `TreatWarningsAsErrors` and `Nullable` are mandatory. A project that compiles files LINKED from
 `Assets/` must carry the same switches as `csc.rsp`, or the identical defect is an error in Unity
 and a warning next door. `KitchenServer.McpContract` opted out of nullable and hid 52 warnings
@@ -248,7 +248,8 @@ and three real defects that way.
 ### Generated artefacts go stale silently
 
 A file produced by a generator is not covered by the compiler and not covered by the tests, so
-nothing forces anyone to regenerate it. `mcp-server/src/tools.generated.ts`, emitted from
+nothing forces anyone to regenerate it. `mcp-server/src/tools.generated.ts` (that whole server is
+since deleted — see `agents/DEPLOY.md`), emitted from
 `Assets/Scripts/Core/MCP/Contract/**`, stayed three commits behind the contract without a single
 red light. Any change under a contract directory MUST end with the generator run, and the parity
 between generator output and the committed file belongs in a test — not in a `prebuild` step that

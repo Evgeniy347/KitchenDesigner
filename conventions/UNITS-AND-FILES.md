@@ -77,7 +77,8 @@ A finished plan is deleted, not archived (`893437de` deleted `HARDENING-PLAN.md`
 numbers into the rules), but every pointer at it dies with it. Both halves of this have already
 been paid for: that deletion left a dangling `docs/HARDENING-PLAN.md` in `UNITY-GATEWAY.md` for
 weeks, and deleting `mcp-v2/PLAN.md` would have orphaned the anchor convention this very file
-pointed at. So before deleting: `grep -rn '<filename>' --include=*.md --include=*.cs .`, and
+pointed at. That plan HAS since been deleted, and correctly: the convention had already been
+moved up into this file (§«Units», the minimum-corner anchor), so nothing was left pointing at it. So before deleting: `grep -rn '<filename>' --include=*.md --include=*.cs .`, and
 decide for each hit whether the pointer goes away or the KNOWLEDGE moves here. A reference to a
 file that no longer exists is worse than no reference: it reads as "the answer is written down
 somewhere" and sends the next agent looking for it.

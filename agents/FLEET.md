@@ -102,13 +102,16 @@ Three rules that make it work:
   commands, then print the report" — and have it print the report to stdout instead of writing a
   file: a model that spends its whole budget reading produces nothing at all.
 - **opencode cannot read ABOVE `kd-repose`, and it exits 0 when it gives up.** Its permission
-  covers the repository only, so `AGENTS.md`, `agents/*.md` and `conventions/*.md` — the map and
-  every rule — are outside its reach. A run told to "read `AGENTS.md` first" auto-denied those
-  reads and returned **exit 0 having changed nothing**: the cheapest possible lie, a green code
-  over an empty commit. Two consequences. Inline the rules the task needs INTO the prompt
-  instead of pointing at a file it cannot open, and keep the whole task inside the repo. And
-  judge the result by `git log --oneline` or a `grep` for what should have changed — never by the
-  exit code.
+  covers the repository only. That used to hide the whole corpus from it: `AGENTS.md`,
+  `agents/*.md` and `conventions/*.md` lived one level UP, outside the repo, and a run told to
+  "read `AGENTS.md` first" auto-denied those reads and returned **exit 0 having changed
+  nothing** — the cheapest possible lie, a green code over an empty commit. The corpus moved
+  INSIDE the repository on 2026-09-08, so a pointer at a rule file now resolves; naming the
+  exact file and section is worth more than naming the map. Three things outlive the move.
+  Keep the whole task inside the repo — anything above `kd-repose/` is still unreadable and
+  still fails silently. Inline the few lines the task actually turns on rather than making a
+  free model read a 250-line file to find them. And judge the result by `git log --oneline` or
+  a `grep` for what should have changed — never by the exit code.
 - **Two failures on the same area end the free path — escalate to a Claude subagent.** Cost
   order still holds, but a model that has burned its budget twice on one area will burn it a
   third time. The free models handle a directory whose debt is visible locally — the same

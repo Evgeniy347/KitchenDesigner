@@ -52,8 +52,11 @@ picture, not a verdict».
 
 ## MCP bridge
 
-- Connect: «подключись к кухне» → remote MCP `unity-kitchen` at `kitchendesigner.duckdns.org:8081` — нужен `authenticate` с project key
-- Connect: «подключись к кухне локально» → приложение САМО говорит по MCP Streamable HTTP,
+- **Удалённого MCP на этой ветке НЕТ.** Здесь когда-то стоял `kitchendesigner.duckdns.org:8081`
+  с `authenticate` и project key; ни хоста, ни `server/`, ни единого упоминания в дереве не
+  осталось — `agents/DEPLOY.md` → «There is nothing to deploy from this branch». Адрес, который
+  агент «помнит», отсюда не обслуживается: «подключись к кухне» = локальная петля ниже.
+- Connect: «подключись к кухне» (и «локально» тоже) → приложение САМО говорит по MCP Streamable HTTP,
   посредник не нужен: запусти desktop через `run-desktop.cmd`, затем
   `claude mcp add --transport http unity-kitchen http://127.0.0.1:9337/mcp`.
   **Аутентификации нет**, слушает только петлю. Эндпоинт — `McpHttpBridge` +
@@ -69,7 +72,8 @@ When adding a new property/parameter to an element type:
    lines to a class that already exists, or lands in a class that already owns a separate
    zone for this feature, extract that zone into its own class FIRST, then add the property.
    See CONVENTIONS.md → "Class responsibility (SRP)". Appending to a class that is already
-   doing several jobs is how ContextMenuUI reached 3580 lines.
+   doing several jobs is how ContextMenuUI reached 3580 lines (901 today; the current sizes and
+   the one-slice rule live in `conventions/STRUCTURE.md` → «Class responsibility (SRP)»).
 
 1. **Element class** — `[SerializeField]` field + property with `ApplyDimensions()` trigger.
    The property MUST carry `[Undoable]` or `[NotUndoable("reason")]` — `UndoableCoverageTests`
@@ -102,7 +106,7 @@ a red one is an instruction, not a question to escalate:
 | `McpSettingsParityTests` | is every setting the panel changes also settable through `set_setting` |
 
 Neither surface is derived from the other — the panel row is hand-written in a `*FieldsEditor`,
-the wire field is hand-written in the contract — so both guards take both surfaces by EXPERIMENT:
+the wire field is hand-written in the contract — so the guards take both surfaces by EXPERIMENT:
 they drive one widget, or send one wire field, and diff the element's properties before and after.
 Nothing in them is a list of property names, which is why a new property and a new element type
 fall under the check by themselves. See CONVENTIONS.md → "Adding a new setting" for the settings

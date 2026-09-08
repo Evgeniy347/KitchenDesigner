@@ -2,7 +2,8 @@
 
 ## Comments live in tests
 
-Production source (`Assets/Scripts/**`, `Assets/Editor/**`, `server/**`, `mcp-server/**`)
+Production source (`Assets/Scripts/**`, `Assets/Editor/**`, and any non-Unity project under
+`geometry/` — `server/` and `mcp-server/` are gone from this branch)
 contains NO comments. Not `//`, not `///`, not `/* */`.
 
 **A ratchet's ceiling drops in the same commit as the cleanup — unless someone else owns the
