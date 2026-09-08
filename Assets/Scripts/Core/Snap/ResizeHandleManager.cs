@@ -136,7 +136,8 @@ namespace KitchenDesigner.Core
             && target.Transformable
             && ModuleEditMode.IsEditable(target)
             && !Tools.ToolMode.MouseCaptured
-            && !TextureOverlayHandles.Active;
+            && !TextureOverlayHandles.Active
+            && !PhotoMode.Active;
 
         private void Update()
         {

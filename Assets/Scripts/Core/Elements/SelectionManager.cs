@@ -360,6 +360,7 @@ namespace KitchenDesigner.Core
         private void HighlightSelected(KitchenElement element, bool isMulti)
         {
             if (_highlightSuppressed == element) return;
+            if (PhotoMode.Active) return;
 
             if (!_savedMaterials.TryGetValue(element, out var saved))
             {

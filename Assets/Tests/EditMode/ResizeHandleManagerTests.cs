@@ -85,6 +85,24 @@ public class ResizeHandleManagerTests
     }
 
     [Test]
+    public void HandlesAvailableFor_PhotoModeActive_IsFalse()
+    {
+        var board = Make(Vector3.zero, new Vector3Int(600, 400, 18));
+        Assume.That(ResizeHandleManager.HandlesAvailableFor(board), Is.True);
+
+        EditModeManager.SetMode(EditMode.Photo);
+        try
+        {
+            Assert.IsFalse(ResizeHandleManager.HandlesAvailableFor(board),
+                "D11: стрелка ресайза/перемещения — служебный гизмо, он не должен попадать в кадр фото");
+        }
+        finally { EditModeManager.Reset(); }
+
+        Assert.IsTrue(ResizeHandleManager.HandlesAvailableFor(board),
+            "после выхода из фоторежима ручки возвращаются как обычно");
+    }
+
+    [Test]
     public void HandlesAvailableFor_AnImmovableElement_IsFalse()
     {
         var board = Make(Vector3.zero, new Vector3Int(600, 400, 18));

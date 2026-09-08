@@ -115,7 +115,8 @@ namespace KitchenDesigner.Core
             foreach (var element in list)
             {
                 if (element == null) continue;
-                if (SelectionManager.Instance != null && SelectionManager.Instance.Selected == element)
+                if (!PhotoMode.Active && SelectionManager.Instance != null
+                    && SelectionManager.Instance.Selected == element)
                     continue;
 
                 bool isValid = !result.violations.Contains(element);
@@ -173,7 +174,7 @@ namespace KitchenDesigner.Core
                 ElementOutline.For(element)?.Hide();
                 SelectionManager.Instance?.RefreshHighlight(element);
             }
-            else if (isValid && (!TintEnabled || MaterialManager.HasCustomDecor(element)))
+            else if (!TintEnabled || (isValid && MaterialManager.HasCustomDecor(element)))
             {
                 MaterialManager.ApplyOwnDecor(element);
                 ElementOutline.For(element)?.Hide();

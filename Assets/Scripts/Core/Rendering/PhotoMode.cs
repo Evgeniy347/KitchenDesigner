@@ -42,6 +42,7 @@ namespace KitchenDesigner.Core
             LightPickMode.SetSource(null);
             EyedropperMode.SetActive(false);
             TextureOverlayHandles.End();
+            SideHighlighter.Hide();
         }
 
         internal static void Exit()
