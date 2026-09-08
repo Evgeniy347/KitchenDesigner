@@ -52,7 +52,8 @@ namespace KitchenDesigner.Core
             var seatedOrigin = dock.targetMouthUnits - turn * (dock.movedMouthUnits - poseOrigin);
             var position = element.transform.position + (seatedOrigin - poseOrigin);
 
-            if ((position - element.transform.position).sqrMagnitude <= Tolerance.EpsilonSqr
+            float alreadySeatedSqr = Tolerance.SnapEpsilon * Tolerance.SnapEpsilon;
+            if ((position - element.transform.position).sqrMagnitude <= alreadySeatedSqr
                 && Quaternion.Angle(rotation, element.transform.rotation)
                    <= RotationEpsilonDegrees)
                 return;
