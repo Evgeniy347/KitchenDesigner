@@ -120,13 +120,9 @@ namespace KitchenDesigner.Core.UI
 
         void IContextMenuHost.Relayout() => RelayoutForTarget();
 
-        public bool MaterialPreviewActive => _materials.PreviewActive;
-
         ElementFacet IContextMenuHost.TargetFacets => _facets;
 
         DimensionFields IContextMenuHost.SizeFields => _size;
-
-        public void ToggleTextures() => _textures.Toggle();
 
         internal ContextMenuTextureSection Textures => _textures;
 
@@ -833,9 +829,6 @@ namespace KitchenDesigner.Core.UI
             binder.Bind(_rows.WideButton(node, caption, binder.Toggle, visibility, ActionGap));
             _openButtons.Add(binder);
         }
-
-        internal static DishwasherElement? FindDishwasherForFacade(FacadeElement facade) =>
-            FacadeLinks.FindDishwasher(facade);
 
         private void Duplicate()
         {

@@ -314,7 +314,7 @@ public class ElementPropertyDiagramTests
             () =>
             {
                 ContextMenuUI.Instance!.Open(el);
-                ContextMenuUI.Instance!.ToggleTextures();
+                ContextMenuUI.Instance!.Textures.Toggle();
             },
             () => { ContextMenuUI.Instance?.Close(); });
     }

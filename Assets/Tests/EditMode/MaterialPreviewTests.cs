@@ -239,7 +239,7 @@ public class MaterialPreviewTests
 
         Assert.AreEqual("oak", _element!.MaterialId,
             "BUG: наведение на пункт не показало декор на объекте");
-        Assert.IsTrue(_ctx!.MaterialPreviewActive);
+        Assert.IsTrue(_ctx!.Materials.PreviewActive);
     }
 
     [Test]
@@ -251,7 +251,7 @@ public class MaterialPreviewTests
 
         Assert.AreEqual("white", _element!.MaterialId,
             "BUG: курсор ушёл с пункта, а показанный декор остался");
-        Assert.IsFalse(_ctx!.MaterialPreviewActive);
+        Assert.IsFalse(_ctx!.Materials.PreviewActive);
     }
 
     [Test]
@@ -306,7 +306,7 @@ public class MaterialPreviewTests
 
         Assert.AreEqual("wenge", _element!.MaterialId,
             "BUG: выбранный декор откатился уходом курсора после клика");
-        Assert.IsFalse(_ctx!.MaterialPreviewActive);
+        Assert.IsFalse(_ctx!.Materials.PreviewActive);
     }
 
     [Test]
@@ -330,7 +330,7 @@ public class MaterialPreviewTests
 
         Assert.AreEqual("white", _element!.MaterialId,
             "BUG: меню закрыли с раскрытым списком — показанный декор пережил закрытие");
-        Assert.IsFalse(_ctx!.MaterialPreviewActive);
+        Assert.IsFalse(_ctx!.Materials.PreviewActive);
     }
 
     [Test]

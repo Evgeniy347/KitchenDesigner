@@ -1177,7 +1177,7 @@ public class DishwasherElementTests : McpTestFixture
 
         // Имитируем выбор фасада + «E»: путь один и тот же, что в
         // CameraController.ActivateSelected — открыть хост, не фасад.
-        var host = KitchenDesigner.Core.UI.ContextMenuUI.FindDishwasherForFacade(facade);
+        var host = KitchenDesigner.Core.FacadeLinks.FindDishwasher(facade);
         Assert.IsNotNull(host, "фасад обязан находиться среди хостов посудомойки");
         host!.ToggleOpen();
 
