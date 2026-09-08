@@ -30,6 +30,7 @@ namespace KitchenDesigner.Core
         internal static void Enter()
         {
             CloseToolsThatDrawOverlays();
+            SelectionManager.Instance?.DeselectAll();
             _prevTintEnabled = ElementHighlighter.TintEnabled;
             ElementHighlighter.TintEnabled = false;
             RefreshHighlights();

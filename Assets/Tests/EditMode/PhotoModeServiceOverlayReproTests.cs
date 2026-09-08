@@ -99,6 +99,16 @@ public class PhotoModeServiceOverlayReproTests
         MakeFacade("B", new Vector3Int(400, 300, 18), new Vector3(0.003f, 0f, 0f));
         Assume.That(ConstraintValidator.Validate(PartRegistry.GetAll()).violations.Contains(a), Is.True,
             "нарушение обязано существовать — иначе непонятно, что именно проверяется");
+
+        // Деталь без собственного декора ничего не доказывает: ApplyOwnDecor всё равно
+        // резолвит дефолтный MaterialDef через MaterialManager и получает СВЕЖИЙ материал
+        // из кэша — он не обязан оказаться тем же объектом, что примитив нёс до захвата.
+        // Декор нужен настоящий, чтобы "свой материал" был не абстракцией, а конкретным
+        // экземпляром, который можно узнать по ссылке до и после прохода фоторежима.
+        MaterialManager.ApplyById(a, "oak");
+        Assume.That(MaterialManager.HasCustomDecor(a), Is.True,
+            "предпосылка: у детали должен быть НАЗНАЧЕННЫЙ декор — иначе ветка ApplyOwnDecor "
+            + "работает с дефолтом, и сравнение по ссылке ничего не проверяет");
         var ownDecor = a.GetComponent<MeshRenderer>().sharedMaterial;
 
         EditModeManager.SetMode(EditMode.Photo);
