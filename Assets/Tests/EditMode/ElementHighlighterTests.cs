@@ -134,6 +134,63 @@ public class ElementHighlighterTests
     }
 
     [Test]
+    public void RefreshHighlights_AssembledFacadeGrooveSubmesh_SensorPrintsSlotsAcrossTintCycle()
+    {
+        var facade = Spawn(ElementFactory.CreateAssembledFacade(
+            new Vector3Int(600, 716, 18), "Facade", Vector3.zero));
+        var facadeElement = facade.GetComponent<AssembledFacadeElement>()!;
+        var renderer = facade.GetComponent<MeshRenderer>()!;
+
+        Assume.That(renderer.sharedMaterials.Length, Is.EqualTo(2),
+            "у сборного фасада два слота: 0=тело, 1=паз (AssembledFacadeMesh.Build)");
+        var grooveOriginal = renderer.sharedMaterials[1].GetColor("_BaseColor");
+        var bodyOriginal = renderer.sharedMaterials[0].GetColor("_BaseColor");
+
+        var blocker = Spawn(ElementFactory.CreateAssembledFacade(
+            new Vector3Int(600, 716, 18), "Blocker", Vector3.zero));
+
+        _highlighter!.RefreshHighlights();
+        var invalid = ConstraintValidator.Validate(PartRegistry.GetAll());
+        Assume.That(invalid.violations.Contains(facadeElement), Is.True,
+            "деталь должна получить нарушение (полный наезд второй), иначе тест ничего не проверяет");
+
+        var afterTint = renderer.sharedMaterials;
+        TestContext.WriteLine($"submeshCount={afterTint.Length}");
+        for (int i = 0; i < afterTint.Length; i++)
+            TestContext.WriteLine($"после тонировки (invalid) slot[{i}] _BaseColor={afterTint[i].GetColor("_BaseColor")}");
+
+        Assert.AreNotEqual(bodyOriginal, afterTint[0].GetColor("_BaseColor"),
+            "пласть (слот 0) обязана покраснеть — иначе тонировка вообще не сработала и тест пуст");
+        Assert.AreEqual(grooveOriginal, afterTint[1].GetColor("_BaseColor"),
+            "паз (слот 1) обязан остаться тёмным при тонировке пласти валидностью");
+
+        Object.DestroyImmediate(blocker);
+        _highlighter!.RefreshHighlights();
+        var valid = ConstraintValidator.Validate(PartRegistry.GetAll());
+        Assume.That(valid.violations.Contains(facadeElement), Is.False,
+            "после удаления второй детали нарушение обязано снять, иначе снятие тонировки не проверено");
+
+        var afterUntint = renderer.sharedMaterials;
+        for (int i = 0; i < afterUntint.Length; i++)
+            TestContext.WriteLine($"после снятия тонировки (valid) slot[{i}] _BaseColor={afterUntint[i].GetColor("_BaseColor")}");
+
+        Assert.AreEqual(grooveOriginal, afterUntint[1].GetColor("_BaseColor"),
+            "после снятия тонировки паз обязан вернуться к исходному тёмному материалу");
+
+        var blocker2 = Spawn(ElementFactory.CreateAssembledFacade(
+            new Vector3Int(600, 716, 18), "Blocker2", Vector3.zero));
+        _highlighter!.RefreshHighlights();
+        _highlighter!.RefreshHighlights();
+        var retinted = renderer.sharedMaterials;
+        for (int i = 0; i < retinted.Length; i++)
+            TestContext.WriteLine($"после повторной тонировки поверх уже тонированной slot[{i}] "
+                + $"_BaseColor={retinted[i].GetColor("_BaseColor")}");
+
+        Assert.AreEqual(grooveOriginal, retinted[1].GetColor("_BaseColor"),
+            "паз обязан остаться тёмным и при повторной тонировке поверх уже тонированной детали");
+    }
+
+    [Test]
     public void Cooktop_Invalid_TurnsRedThroughItsChildren_BecauseTheRootCarriesNoRenderer()
     {
         var go = Spawn(ElementFactory.CreateCooktop("CooktopTint", Vector3.zero));

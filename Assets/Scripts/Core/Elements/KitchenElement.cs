@@ -391,7 +391,7 @@ namespace KitchenDesigner.Core
             RefreshSubmeshMaterials();
         }
 
-        public void RefreshSubmeshMaterials()
+        public virtual void RefreshSubmeshMaterials()
         {
             if (!SupportsGrooves || _ownedMesh == null) return;
             var meshRenderer = GetComponent<MeshRenderer>();

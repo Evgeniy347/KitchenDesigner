@@ -56,6 +56,18 @@ namespace KitchenDesigner.Core
             UpdateGlassInsert();
         }
 
+        public override void RefreshSubmeshMaterials()
+        {
+            if (_renderer == null) _renderer = GetComponent<MeshRenderer>();
+            if (_renderer == null) return;
+
+            var slots = _renderer.sharedMaterials;
+            if (slots.Length < 2) return;
+
+            slots[1] = GrooveMaterial();
+            _renderer.sharedMaterials = slots;
+        }
+
         private void UpdateGlassInsert()
         {
             if (_fill == AssembledFill.Glass)
