@@ -11,12 +11,14 @@ namespace KitchenDesigner.Core.UI
         private const float ColW = 250f;
         private const float ColH = 305f;
         private const float ColD = 360f;
-        private const float ColCount = 420f;
-        private const float ColArea = 490f;
-        private const float ContentWidth = 540f;
+        private const float ColMaterial = 420f;
+        private const float ColCount = 545f;
+        private const float ColArea = 615f;
+        private const float ContentWidth = 660f;
         private const float ViewportHeight = 480f;
         private const float ViewportCenterY = -30f;
         private const int MaxNameChars = 22;
+        private const int MaxMaterialChars = 14;
         internal const float ScrollbarWidth = 8f;
 
         private GameObject? _root;
@@ -26,7 +28,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("SpecPanel", canvas, Vector2.zero, new Vector2(560, 640));
+            var panel = UIFactory.CreatePanel("SpecPanel", canvas, Vector2.zero, new Vector2(680, 640));
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
@@ -58,6 +60,7 @@ namespace KitchenDesigner.Core.UI
             headerText.text =
                 $"№<pos={ColName}>Название" +
                 $"<pos={ColW}>Ш<pos={ColH}>В<pos={ColD}>Г, мм" +
+                $"<pos={ColMaterial}>Материал" +
                 $"<pos={ColCount}>Кол-во" +
                 $"<pos={ColArea}>S, м²";
         }
@@ -104,7 +107,7 @@ namespace KitchenDesigner.Core.UI
 
             var scrollbarRect = UIFactory.CreateRect("SpecScrollbar", parent);
             scrollbarRect.sizeDelta = new Vector2(ScrollbarWidth, ViewportHeight);
-            scrollbarRect.anchoredPosition = new Vector2(282, ViewportCenterY);
+            scrollbarRect.anchoredPosition = new Vector2(ContentWidth / 2f + 12f, ViewportCenterY);
             var scrollbarImage = scrollbarRect.gameObject.AddComponent<Image>();
             scrollbarImage.color = new Color(0.10f, 0.10f, 0.13f, 0.6f);
             var scrollbar = scrollbarRect.gameObject.AddComponent<Scrollbar>();
@@ -167,6 +170,7 @@ namespace KitchenDesigner.Core.UI
                           $"<pos={ColW}>{line.dimensionsMM.x}" +
                           $"<pos={ColH}>{line.dimensionsMM.y}" +
                           $"<pos={ColD}>{line.dimensionsMM.z}" +
+                          $"<pos={ColMaterial}>{Trim(line.material, MaxMaterialChars)}" +
                           $"<pos={ColCount}>{line.count}" +
                           $"<pos={ColArea}>{line.totalAreaM2:F2}");
                 sb.AppendLine();

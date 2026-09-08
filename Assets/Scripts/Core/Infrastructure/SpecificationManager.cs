@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -155,6 +156,11 @@ namespace KitchenDesigner.Core
                 result.totalCount += line.count;
                 result.totalAreaM2 += line.totalAreaM2;
             }
+
+            result.lines = result.lines
+                .OrderBy(l => l.material, System.StringComparer.Ordinal)
+                .ToList();
+
             return result;
         }
 
@@ -184,7 +190,7 @@ namespace KitchenDesigner.Core
                     name = name,
                     dimensionsMM = dims,
                     count = 0,
-                    areaPerBoardM2 = SurfaceAreaM2(dims),
+                    areaPerBoardM2 = BoardFaceArea.FaceAreaM2(dims),
                     material = material,
                     grooves = grooves,
                     edgeL1 = edges.l1,
