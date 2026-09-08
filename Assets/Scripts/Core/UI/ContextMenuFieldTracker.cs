@@ -121,6 +121,13 @@ namespace KitchenDesigner.Core.UI
 
         internal void ForgetLastApplyFrame() => _lastApplyFrame = -1;
 
+        public bool IsDirty(TMP_InputField? field)
+        {
+            if (field == null) return false;
+            var clean = _cleanValues.TryGetValue(field, out var v) ? v : field.text;
+            return field.text != clean;
+        }
+
         public void UpdateHighlight(TMP_InputField field)
         {
             if (field == null) return;

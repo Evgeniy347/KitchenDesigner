@@ -680,9 +680,9 @@ namespace KitchenDesigner.Core.UI
             _edges.ApplyThickness(target);
 
             target.transform.position = new Vector3(
-                _fields.ParseMillimetresAsMetres(_x, oldPos.x),
-                _fields.ParseMillimetresAsMetres(_y, oldPos.y),
-                _fields.ParseMillimetresAsMetres(_z, oldPos.z));
+                _fields.IsDirty(_x) ? _fields.ParseMillimetresAsMetres(_x, oldPos.x) : oldPos.x,
+                _fields.IsDirty(_y) ? _fields.ParseMillimetresAsMetres(_y, oldPos.y) : oldPos.y,
+                _fields.IsDirty(_z) ? _fields.ParseMillimetresAsMetres(_z, oldPos.z) : oldPos.z);
 
             if (!(target is IWallMounted))
             {
@@ -756,17 +756,14 @@ namespace KitchenDesigner.Core.UI
             if (FixedSize.IsYawOnly(_target) && axis != RotationAxis.Y) return;
             var oldRot = _target.transform.rotation;
             var oldPos = _target.transform.position;
-            var pipeFitting = _target as PipeFittingElement;
-            var connectedMouths = pipeFitting != null
-                ? PipeDocking.ConnectedMouths(pipeFitting, PartRegistry.GetAll())
-                : null;
+            var reseatable = _target as IReseatsPortsAfterRotation;
+            var capturedLinks = reseatable?.CaptureLinksForRotation(PartRegistry.GetAll());
 
             var stepped = RotationSteps.Step(_rotationDisplay.For(oldRot), axis, angle);
             _target.transform.rotation = Quaternion.Euler(stepped);
             _rotationDisplay.Remember(stepped);
             if (_target is IWallMounted wallMounted) wallMounted.SnapToWall();
-            if (pipeFitting != null && connectedMouths != null)
-                PipeDocking.ReseatAfterRotation(pipeFitting, connectedMouths);
+            reseatable?.ReseatAfterRotation(capturedLinks);
 
             var rotCmds = new List<IUndoCommand>
             {
