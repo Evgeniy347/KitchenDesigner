@@ -17,10 +17,18 @@ namespace KitchenDesigner.Core
         }
 #endif
 
-        public IReadOnlyList<KitchenElement> All => _all;
+        public IReadOnlyList<KitchenElement> All
+        {
+            get
+            {
+                PurgeDead();
+                return _all;
+            }
+        }
 
         public void Register(KitchenElement element)
         {
+            PurgeDead();
             if (element == null || _all.Contains(element)) return;
             _all.Add(element);
             SceneChangeTracker.NoteMembershipChanged();
@@ -42,6 +50,7 @@ namespace KitchenDesigner.Core
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _getAllCalls++;
 #endif
+            PurgeDead();
             return new List<KitchenElement>(_all);
         }
 
@@ -51,6 +60,15 @@ namespace KitchenDesigner.Core
             _all.Clear();
             SceneChangeTracker.NoteMembershipChanged();
             SceneRevision.Bump();
+        }
+
+        private void PurgeDead()
+        {
+            int removed = _all.RemoveAll(e => e == null);
+            if (removed == 0) return;
+            SceneChangeTracker.NoteMembershipChanged();
+            SceneRevision.Bump();
+            SceneVisibilityManager.Invalidate();
         }
     }
 }
