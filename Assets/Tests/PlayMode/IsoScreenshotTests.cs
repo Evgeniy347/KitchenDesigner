@@ -151,8 +151,41 @@ public class IsoScreenshotTests : ElementFrameTests
         var canvas = UIManager.Instance?.Canvas;
         if (canvas != null && panelSnapshotFile != null)
         {
+            // Значок «Ошибки» в тулбаре не пересчитывается каждый кадр —
+            // ToolbarUI.RefreshIssueBadge ждёт SceneSettleThrottle (0,25 с
+            // РЕАЛЬНОГО времени тишины ревизии сцены), иначе создание десятка
+            // элементов пересчитывало бы валидацию на каждом промежуточном
+            // кадре. FrameRateManager раньше держал батч-прогон на 10 fps
+            // (100 мс/кадр), и пара `yield return null` перед снимком случайно
+            // перекрывала эти 0,25 с. После починки утечки (PlayModeTestConfig)
+            // кадр стал быстрым, и то же ожидание по числу кадров перестало
+            // покрывать интервал — снимок стал попадать ДО пересчёта, счётчик
+            // пропадал. Ждём по УСЛОВИЮ (ревизия значка догнала ревизию сцены),
+            // а не по кадрам и не по времени: IssueBadgeRevision — тот же
+            // источник, что читает сама панель.
+            yield return WaitForIssueBadgeToCatchUpWithScene();
+
             string dir = Path.Combine(Application.dataPath, "..", "test-results");
             UiSnapshotEngine.CaptureVerified(canvas.gameObject, Path.Combine(dir, panelSnapshotFile));
+        }
+    }
+
+    /// <summary>Сенсор: ToolbarUI.IssueBadgeRevision — ревизия сцены, для
+    /// которой значок «Ошибки» в последний раз пересчитан (обновляется в
+    /// ToolbarUI.RefreshIssueBadge). Ждём, пока она не догонит SceneRevision
+    /// текущей сцены — то самое условие, от которого зависит текст панели, а
+    /// не число кадров и не отрезок времени.</summary>
+    private static IEnumerator WaitForIssueBadgeToCatchUpWithScene()
+    {
+        int targetRevision = SceneRevision.Version;
+        float deadline = Time.realtimeSinceStartup + 5f;
+        while (UIManager.Instance!.IssueBadgeRevision != targetRevision)
+        {
+            Assert.Less(Time.realtimeSinceStartup, deadline,
+                "значок «Ошибки» не догнал ревизию сцены за 5 секунд реального времени: "
+                + "либо SceneSettleThrottle сломан, либо UIManager.Update перестал вызываться "
+                + "в этом прогоне");
+            yield return null;
         }
     }
 

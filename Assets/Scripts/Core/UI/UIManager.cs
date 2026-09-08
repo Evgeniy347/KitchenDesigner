@@ -25,6 +25,7 @@ namespace KitchenDesigner.Core.UI
         private ProjectFileActions? _fileActions;
 
         public Canvas? Canvas => _canvas;
+        public int IssueBadgeRevision => _toolbar.IssueBadgeRevision;
         public const string QuickSaveName = ProjectFileActions.QuickSaveName;
 
         private void Awake()

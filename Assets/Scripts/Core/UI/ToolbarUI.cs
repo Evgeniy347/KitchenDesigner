@@ -29,6 +29,9 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _handleModeLabel;
         private TMP_Text? _editModeLabel;
         private TMP_Text? _issueCountLabel;
+        private int _issueBadgeRevision = -1;
+
+        public int IssueBadgeRevision => _issueBadgeRevision;
 
         public void Build(Transform canvas, IToolbarHost host)
         {
@@ -209,6 +212,8 @@ namespace KitchenDesigner.Core.UI
 
         private void RefreshIssueBadge()
         {
+            _issueBadgeRevision = SceneRevision.Version;
+
             int errors = 0, warnings = 0;
             foreach (var iss in SceneAnalyzer.Analyze())
             {
