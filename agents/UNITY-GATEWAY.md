@@ -14,8 +14,10 @@ is slower and reproducible: one state instead of three, and no "for some reason
 it's different this time".
 
 Measured on this project, cold (re-measured 2026-09-04): one test class
-**~11 s**, full EditMode (4237 tests) **~130 s**, full PlayMode (207 tests) **~180 s**,
-WinDebug player ~3 min. The suites have roughly doubled since 2026-09-01, when the same
+**~11 s**, full EditMode (4744 tests) **~167 s**, full PlayMode (254 tests) **~113 s**,
+WinDebug player ~3 min. (EditMode re-counted 2026-09-08; PlayMode fell from 220 s that day when
+`FrameRateManager` stopped leaving the batch run at 10 fps — `agents/TESTS.md` → «Running all
+tests».) The suites have roughly doubled since 2026-09-01, when the same
 runs were 73 s / 91 s at 2860 / 92 tests — the per-test cost did not move, the count did.
 The fixed start before the first test is **~10 s**, not the
 60–90 s this file used to claim: licence and engine 2,4 s, two domain reloads, asset
@@ -57,7 +59,7 @@ Rules that matter:
   that crept in until "everything got slow" a week later.
 - **`dotnet` FIRST, Unity LAST.** The core AND the scene-free layer compile a second time under
   plain `dotnet` (`Assets/Scripts/Core/Geometry` + `Assets/Scripts/Core/Pure`, with their test
-  directories): `.\tools\mutation-test.ps1 -TestsOnly` runs 380 tests in **0.3 s**. Anything you
+  directories): `.\tools\mutation-test.ps1 -TestsOnly` runs 1361 tests in **~2 s**. Anything you
   extract that does not need a scene belongs there — CONVENTIONS.md → "A class without a scene
   lives on the fast path". A cold Unity batch still costs ~10 s of fixed overhead — licence,
   engine, two domain reloads, asset refresh, test collection — *before the first test runs*,
@@ -66,8 +68,9 @@ Rules that matter:
 - **The cold start has been dissected; do NOT re-measure it.** Of ~11 s for a filtered run:
   licensing **2,4–2,8 s** (fully blocking — the engine starts only after it), engine 0,2 s,
   domain reload #1 1,0 s, asset refresh ~3,0 s (reload #2 1,7 s inside it), «project loaded»
-  0,5 s, TestRunner start and collecting 3400 tests 1,6 s, the tests themselves 0,9 s. An empty
-  project of the same Unity version has an 8,1 s floor, so almost none of this is ours to remove.
+  0,5 s, TestRunner start and collecting the suite (3400 tests at the time of the measurement)
+  1,6 s, the tests themselves 0,9 s. An empty project of the same Unity version has an 8,1 s
+  floor, so almost none of this is ours to remove.
   Licensing is the largest single hole and nothing known touches it.
 - **Already measured and REFUTED — spending the machine on these again is waste:**
   `indexOnEditorStartup=false` (indexing starts after the run and lives on a worker), `-nographics`,

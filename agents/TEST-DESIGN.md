@@ -137,7 +137,7 @@ different diagnoses look identical. `SnapMutationTests` printed «Snap mutation 
 — and 200 was the ceiling of `MaxErrors`, not a count. One defective part filled the list before
 the sweep reached anything else, so «200 violations» and «one part violating 200 times» read the
 same, and the obvious next question — is this the code or the fixture? — could not be answered
-without running the 245-second set again.
+without running the 335-second set again.
 
 So: the full list goes to a file under `test-results/`, uncapped, and the test message
 carries a SUMMARY — the count, the breakdown by kind, and the breakdown **by subject**. That last

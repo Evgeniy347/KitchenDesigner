@@ -2,7 +2,7 @@
 
 ## Build & run scripts
 
-All in ``, Windows `.cmd`:
+All in the repository ROOT (`F:\repos\KitchenDesigner2\kd-repose\`), Windows `.cmd`:
 
 | Script | Purpose |
 |--------|---------|
@@ -18,9 +18,9 @@ target here, and nothing on this branch is deployed anywhere — see `DEPLOY.md`
 
 | Suite | Command | Tests | Time |
 |-------|---------|-------|------|
-| `dotnet` (core + pure) | `.\tools\mutation-test.ps1 -TestsOnly` | 380 | **0,3 s** |
-| EditMode | `build.cmd -RunTests` | 4237 | **~130 s** |
-| PlayMode | `build.cmd -RunPlayMode` | 207 | **~180 s** |
+| `dotnet` (core + pure) | `.\tools\mutation-test.ps1 -TestsOnly` | 1361 (867 + 494) | **~2 s** тестов, ~9 s стены |
+| EditMode | `build.cmd -RunTests` | 4744 | **~167 s** |
+| PlayMode | `build.cmd -RunPlayMode` | 254 | **~113 s** |
 
 The `dotnet` row is not a fourth suite — those files are compiled twice, by Unity and by
 `geometry/*.csproj`. It is the inner loop; the three below are the gate.
@@ -40,7 +40,14 @@ cd F:\repos\KitchenDesigner2\kd-repose
 > **Note:** EditMode runs first, then PlayMode; a failure stops the rest. No player is
 > built — ask for that separately. Each suite is its own cold Unity, so each pays the
 > fixed ~10 s start; the numbers above include it and were measured, not guessed.
-> Under three minutes for the pair is normal — use a `-Filter` while iterating on one class.
+> Under five minutes for the pair is normal — use a `-Filter` while iterating on one class.
+>
+> **PlayMode halved on 2026-09-08 (220 s → 113 s) by fixing a LEAKED GLOBAL, not by cutting tests.**
+> `FrameRateManager` drops `Application.targetFrameRate` to its idle value (10) after 0,7 s without
+> input and never restored it in `OnDestroy`; in batch there is never any input, so the first test
+> that idled put the WHOLE remaining run at 10 fps and every later `yield return null` cost 100 ms.
+> A suite that is mysteriously slow end-to-end is the signature: look for a component that writes a
+> global engine setting and does not put it back.
 
 ## Four things the normal run does NOT include — ASK before running them
 
@@ -50,7 +57,7 @@ edit→check cycle while answering a question nobody was asking at that moment.
 
 | What | Cost | Run it with |
 |------|------|-------------|
-| `SnapMutationTests` — brute-force sweep over every face pair | **79 s** (was 69% of all EditMode) | `unity.ps1 tests -Platform EditMode -Filter SnapMutationTests` |
+| `SnapMutationTests` — brute-force sweep over every face pair | **335 s** (79 s before the port-seat rule; was 69% of all EditMode) | `unity.ps1 tests -Platform EditMode -Filter SnapMutationTests` |
 | `PerfProfileTests` — 660 profiler frames | **72 s** | `tools\artifacts.ps1 -Only perf` |
 | `ProjectLoadPerfTests` — разбивка времени открытия проекта | **12 s** | `unity.ps1 tests -Platform EditMode -Filter ProjectLoadPerfTests` |
 | `DrawerAnimationGifTests`, `OverviewScreenshotTests`, `GapsScreenshotTests` — draw `docs/*.png`, `docs/*.gif` | **88 s** | `tools\artifacts.ps1` |
@@ -136,8 +143,9 @@ $x=[xml](Get-Content test-results\round1\EditMode-round1.xml -Raw)
 $x.SelectNodes("//test-case[@result='Failed']") | ForEach-Object { $_.fullname }
 ```
 
-Two cheap checks that catch the swap before anyone reads it: the root's `testcasecount` (4334 for
-EditMode, 213 for PlayMode right now) and `failed` — a copy claiming zero failures after a run
+Two cheap checks that catch the swap before anyone reads it: the root's `testcasecount` (4744 for
+EditMode, 254 for PlayMode on 2026-09-08 — the suites grow weekly, so compare against the run you
+just did) and `failed` — a copy claiming zero failures after a run
 that printed twenty is the wrong file, every time.
 
 
@@ -155,7 +163,7 @@ while the suite was running.
 
 ## Iterating on ONE test class
 
-Use the gateway with a filter — **~11 s against ~73 s** for the whole suite. Filtering now
+Use the gateway with a filter — **~11 s against ~167 s** for the whole suite. Filtering now
 pays for itself: the fixed start is ~10 s, and a filtered run additionally turns Burst
 compilation off (worth 2,3 s, and only there — on a full run it buys exactly nothing).
 Still run the FULL suite before committing.
@@ -173,7 +181,7 @@ It prints the summary and the first failures itself; the full report stays in
 `.failure.message.'#cdata-section'`).
 
 Faster still: if the code under test lives in `Assets/Scripts/Core/Geometry/` or
-`Assets/Scripts/Core/Pure/`, run it outside Unity — 354 tests in 0.25 s:
+`Assets/Scripts/Core/Pure/`, run it outside Unity — 1361 tests in ~2 s:
 
 ```powershell
 .\tools\mutation-test.ps1 -TestsOnly
@@ -184,8 +192,8 @@ prints nothing.
 ## Быстрый путь: что уже опробовано и ОТКЛОНЕНО
 
 Мерено 2026-09-08, шесть ядер, тёплая сборка. Стена `mutation-test.ps1 -TestsOnly` —
-**8,7 с**, из них тесты только **2,3 с** (`Geometry.Tests` 830 за 2,0 с, `Pure.Tests`
-491 за 0,28 с). Остальные 6,4 с — msbuild и хост vstest, а НЕ тесты. Это константа: она
+**8,7 с**, из них тесты только **2,3 с** (`Geometry.Tests` 867 за 2,0 с, `Pure.Tests`
+494 за 0,28 с). Остальные 6,4 с — msbuild и хост vstest, а НЕ тесты. Это константа: она
 не растёт с числом тестов и к цели «20 000 быстрых тестов» отношения не имеет. Три
 попытки её срезать провалились — не повторять без нового аргумента:
 
@@ -194,7 +202,7 @@ prints nothing.
   двух отдельных прогонов. Но два `dotnet build`, которые для этого нужны, съедают ровно
   этот выигрыш: стена стала **9,0–10,3 с против 8,7 с**. Хуже. Откачено.
 - **`ParallelScope.All` вместо `ParallelScope.Fixtures`** в `geometry/tests`. Зелено
-  (830/830, три прогона), но не быстрее: 2–3 с против 2 с. На шести ядрах фикстурный
+  (867/867, три прогона), но не быстрее: 2–3 с против 2 с. На шести ядрах фикстурный
   параллелизм уже даёт 4,3× (8,58 с CPU при 2,0 с стены) — потолок близко, и тесты
   внутри одной фикстуры делят её поля, так что риск есть, а выигрыша нет.
 - **Общий кэш дерева исходников для архитектурных сторожей** (предложен в

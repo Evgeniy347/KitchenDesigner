@@ -60,13 +60,13 @@ Rules that follow from it:
 - Still in force: one method one job (~40 lines max).
 
 `ContextMenuUI` was the anti-example this section exists to prevent: 3580 lines, a 480-line
-`Build()`, a `Layout()` taking 11 booleans. It is 906 lines today, and it got there by the rule
+`Build()`, a `Layout()` taking 11 booleans. It is 901 lines today, and it got there by the rule
 below rather than by a refactoring campaign.
 
 **The classes already over the line are cut a slice at a time, while you are in them for another
 reason.** Three of them stand out — `KitchenElement` (621 lines: grooves, cutouts, edge banding,
-gaps, textures, mounting), `ContextMenuUI` (906, with 22 editors listed by hand in its
-constructor), `ElementMover` (603: dragging, ghost mesh, tinting, duplication, deletion). A
+gaps, textures, mounting), `ContextMenuUI` (901, with 22 editors listed by hand in its
+constructor), `ElementMover` (607: dragging, ghost mesh, tinting, duplication, deletion). A
 dedicated campaign against them is expensive and risky — half of it does not compile without
 Unity, and a big rewrite of a class this central is exactly where a silent behaviour change
 hides. So the bar is not «the class is decomposed» but: **after a substantive edit to one of
@@ -75,7 +75,7 @@ these files, exactly one named zone has left it, and that zone's tests left with
 
 «Substantive» is the load-bearing word, and it was added after the rule misfired. A worker
 threading a cursor through `ElementMover` — three lines: a field, a hand-off, a missing rotation
-on revert — declined to also split a 603-line class it could not compile, and was right: the
+on revert — declined to also split a 607-line class it could not compile, and was right: the
 rule exists to stop a risky campaign, so making it fire on a three-line pass-through would push
 people to bundle unrelated work just to pay the toll, which is the risk it was written against.
 The honest form is to name the zone you did NOT take and why, as that worker did (the drag ghost
@@ -102,8 +102,8 @@ what makes the rule cheap to follow.
 The inner loop is then:
 
 ```powershell
-.\tools\mutation-test.ps1 -TestsOnly   # core + pure, 354 tests, 0.25 s
-.\build.cmd -RunTests                  # everything, ~80 s, before committing
+.\tools\mutation-test.ps1 -TestsOnly   # core + pure, 1361 tests, ~2 s
+.\build.cmd -RunTests                  # everything, ~167 s, before committing
 ```
 
 What "no scene dependency" means, exactly — the second build runs under CoreCLR, where
