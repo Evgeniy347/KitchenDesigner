@@ -15,6 +15,13 @@ namespace KitchenDesigner.Core.UI
         private const float ButtonH = 40f;
         private const float ButtonGap = 6f;
         private const float SwatchSize = 14f;
+        private const float TextButtonPad = 20f;
+
+        private static readonly string[] HandleModeCaptions =
+        {
+            "Ручки: растяжение",
+            "Ручки: перенос",
+        };
 
         private readonly List<(Button button, Func<bool> pressed)> _toggles = new();
         private readonly SceneSettleThrottle _issueBadgeThrottle = new();
@@ -27,7 +34,7 @@ namespace KitchenDesigner.Core.UI
         private RawImage? _eyedropperSwatch;
         private string _swatchMaterialId = string.Empty;
         private TMP_Text? _handleModeLabel;
-        private TMP_Text? _editModeLabel;
+        private Image? _errorsIcon;
         private TMP_Text? _issueCountLabel;
         private int _issueBadgeRevision = -1;
 
@@ -42,15 +49,18 @@ namespace KitchenDesigner.Core.UI
 
             float x = 8f;
 
-            AddPanelToggle(bar.transform, "Spec", "Спецификация", ToolbarPanel.Specification, ref x, 150);
-            AddPanelToggle(bar.transform, "Hierarchy", "Сцена", ToolbarPanel.Hierarchy, ref x, 90);
-            var errorsButton = AddPanelToggle(bar.transform, "Errors", "Ошибки", ToolbarPanel.Errors, ref x, 110);
-            _issueCountLabel = errorsButton.GetComponentInChildren<TMP_Text>();
+            AddPanelToggle(bar.transform, "Spec", "Спецификация", ToolbarPanel.Specification, ref x);
+            AddPanelToggle(bar.transform, "Hierarchy", "Сцена", ToolbarPanel.Hierarchy, ref x);
+            var errorsButton = AddIconButton(bar.transform, "Errors", IconFactory.Warning,
+                ref x, () => _host!.TogglePanel(ToolbarPanel.Errors), "Ошибки");
+            _toggles.Add((errorsButton, () => _host!.IsPanelVisible(ToolbarPanel.Errors)));
+            _errorsIcon = errorsButton.transform.Find("Errors_Icon")?.GetComponent<Image>();
+            _issueCountLabel = AddBadge(errorsButton.transform);
             _gotoIssueButton = AddIconButton(bar.transform, "GotoIssue", IconFactory.Warning,
                 ref x, GotoFirstIssue, "Перейти к первой проблеме");
             _gotoIssueIcon = _gotoIssueButton.transform.Find("GotoIssue_Icon")?.GetComponent<Image>();
             AddPanelToggle(bar.transform, "ProjectInstructions", "Инструкции",
-                ToolbarPanel.ProjectInstructions, ref x, 120);
+                ToolbarPanel.ProjectInstructions, ref x);
             AddSeparator(bar.transform, ref x);
 
             AddPanelToggle(bar.transform, "Settings", IconFactory.Gear, ToolbarPanel.Settings, ref x, "Настройки");
@@ -63,7 +73,8 @@ namespace KitchenDesigner.Core.UI
             _redoButton = AddIconButton(bar.transform, "Redo", IconFactory.Redo, ref x, Redo, "Повторить");
             AddSeparator(bar.transform, ref x);
 
-            var modeBtn = AddBarButton(bar.transform, "HandleMode", HandleModeLabel(), ref x, 176, ToggleHandleMode);
+            var modeBtn = AddBarButton(bar.transform, "HandleMode", HandleModeLabel(), ref x, ToggleHandleMode,
+                HandleModeCaptions);
             _handleModeLabel = modeBtn.GetComponentInChildren<TMP_Text>();
             var measureButton = AddIconButton(bar.transform, "MeasureToggle", IconFactory.Ruler,
                 ref x, Measure.MeasureMode.Toggle, "Рулетка");
@@ -74,7 +85,7 @@ namespace KitchenDesigner.Core.UI
             _eyedropperSwatch = AddSwatch(eyedropperButton.transform);
             AddSeparator(bar.transform, ref x);
 
-            var tintButton = AddBarButton(bar.transform, "TintToggle", "Тонировка", ref x, 110, ToggleTint);
+            var tintButton = AddBarButton(bar.transform, "TintToggle", "Тонировка", ref x, ToggleTint);
             _toggles.Add((tintButton, () => ElementHighlighter.TintEnabled));
             var lightsButton = AddIconButton(bar.transform, "LightsToggle", IconFactory.Bulb,
                 ref x, ToggleLights, "Свет");
@@ -82,16 +93,19 @@ namespace KitchenDesigner.Core.UI
             AddPanelToggle(bar.transform, "DayNight", IconFactory.Sun, ToolbarPanel.DayNight, ref x, "Солнце");
             AddSeparator(bar.transform, ref x);
 
-            var editModeBtn = AddBarButton(bar.transform, "EditMode",
-                EditModeManager.Label(EditModeManager.Mode), ref x, 190, EditModeManager.Cycle);
-            _editModeLabel = editModeBtn.GetComponentInChildren<TMP_Text>();
+            var normalModeButton = AddBarButton(bar.transform, "ModeNormal", "Обычный", ref x,
+                () => EditModeManager.SetMode(EditMode.Normal));
+            _toggles.Add((normalModeButton, () => EditModeManager.LastNonPhotoMode == EditMode.Normal));
+            var roomModeButton = AddBarButton(bar.transform, "ModeRoom", "Помещение", ref x,
+                () => EditModeManager.SetMode(EditMode.Room));
+            _toggles.Add((roomModeButton, () => EditModeManager.LastNonPhotoMode == EditMode.Room));
+            var photoModeButton = AddBarButton(bar.transform, "ModePhoto", "Фото", ref x, PhotoMode.Toggle);
+            _toggles.Add((photoModeButton, () => PhotoMode.Active));
 
             AddRightPanelToggle(bar.transform, "Music", IconFactory.Note, ToolbarPanel.Music, "Музыка");
-
-            EditModeManager.Changed += RefreshEditModeLabel;
         }
 
-        public void Dispose() => EditModeManager.Changed -= RefreshEditModeLabel;
+        public void Dispose() { }
 
         public void Refresh()
         {
@@ -108,9 +122,9 @@ namespace KitchenDesigner.Core.UI
         }
 
         private Button AddPanelToggle(Transform parent, string name, string label,
-            ToolbarPanel panel, ref float x, float w)
+            ToolbarPanel panel, ref float x)
         {
-            var btn = AddBarButton(parent, name, label, ref x, w, () => _host!.TogglePanel(panel));
+            var btn = AddBarButton(parent, name, label, ref x, () => _host!.TogglePanel(panel));
             _toggles.Add((btn, () => _host!.IsPanelVisible(panel)));
             return btn;
         }
@@ -138,15 +152,28 @@ namespace KitchenDesigner.Core.UI
         }
 
         private static Button AddBarButton(Transform parent, string name, string label,
-            ref float x, float w, Action onClick)
+            ref float x, Action onClick, params string[] extraWidthCandidates)
         {
             var btn = UIFactory.CreateButton(name, parent, label, new Vector2(x, ButtonY),
-                new Vector2(w, ButtonH), onClick);
-            UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
-            btn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, ButtonY);
+                new Vector2(ButtonH, ButtonH), onClick);
+            var caption = btn.GetComponentInChildren<TMP_Text>();
+
+            float w = TextButtonPad + PreferredCaptionWidth(caption, label);
+            foreach (var candidate in extraWidthCandidates)
+                w = Mathf.Max(w, TextButtonPad + PreferredCaptionWidth(caption, candidate));
+
+            var rect = btn.GetComponent<RectTransform>();
+            UIFactory.AnchorTopLeft(rect);
+            rect.sizeDelta = new Vector2(w, ButtonH);
+            rect.anchoredPosition = new Vector2(x, ButtonY);
             x += w + ButtonGap;
             return btn;
         }
+
+        private static float PreferredCaptionWidth(TMP_Text? caption, string text) =>
+            caption != null && caption.font != null
+                ? caption.GetPreferredValues(text).x
+                : text.Length * 9f;
 
         private static Button AddIconButton(Transform parent, string name, Sprite icon,
             ref float x, Action onClick, string tooltip)
@@ -190,6 +217,16 @@ namespace KitchenDesigner.Core.UI
             return img;
         }
 
+        private static TMP_Text AddBadge(Transform button)
+        {
+            var label = UIFactory.CreateLabel("Badge", button, string.Empty, 11,
+                new Vector2(-1f, -1f), new Vector2(18f, 14f), TextAnchor.MiddleCenter);
+            label.rectTransform.anchorMin = label.rectTransform.anchorMax = label.rectTransform.pivot
+                = new Vector2(1, 1);
+            label.raycastTarget = false;
+            return label;
+        }
+
         private void RefreshEyedropperSwatch()
         {
             if (_eyedropperSwatch == null) return;
@@ -226,11 +263,12 @@ namespace KitchenDesigner.Core.UI
 
             if (_issueCountLabel != null)
             {
-                _issueCountLabel.text = total == 0
-                    ? "Ошибки"
-                    : $"Ошибки <color=#{ColorUtility.ToHtmlStringRGB(color)}>({total})</color>";
+                _issueCountLabel.text = total == 0 ? string.Empty : total.ToString();
+                _issueCountLabel.color = color;
+                _issueCountLabel.gameObject.SetActive(total > 0);
             }
 
+            if (_errorsIcon != null) _errorsIcon.color = total == 0 ? UIStyle.TextDisabled : color;
             if (_gotoIssueButton != null) _gotoIssueButton.interactable = total > 0;
             if (_gotoIssueIcon != null)
                 _gotoIssueIcon.color = total == 0 ? UIStyle.TextDisabled : color;
@@ -252,19 +290,13 @@ namespace KitchenDesigner.Core.UI
 
         private static string HandleModeLabel() =>
             ResizeHandleManager.Mode == ResizeHandleManager.HandleMode.Resize
-                ? "Ручки: растяжение"
-                : "Ручки: перенос";
+                ? HandleModeCaptions[0]
+                : HandleModeCaptions[1];
 
         private void ToggleHandleMode()
         {
             ResizeHandleManager.ToggleMode();
             if (_handleModeLabel != null) _handleModeLabel.text = HandleModeLabel();
-        }
-
-        private void RefreshEditModeLabel()
-        {
-            if (_editModeLabel != null)
-                _editModeLabel.text = EditModeManager.Label(EditModeManager.Mode);
         }
 
         private static void ToggleTint()

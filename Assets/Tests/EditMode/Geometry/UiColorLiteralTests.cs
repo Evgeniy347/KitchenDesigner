@@ -57,9 +57,9 @@ namespace KitchenDesigner.Tests.Geometry
                 "разделитель; полоса прокрутки ушла в UIStyle.ScrollHandle: 4 -> 3"),
             ("StatusBarUI.cs", 1,
                 "красный индикатор выключенного автосохранения — просится в UIStyle.HighlightError"),
-            ("ToolbarUI.cs", 2,
-                "Color.white как «текстура вместо цвета» в свотче пипетки и ToHtmlStringRGB "
-                + "для TMP-разметки бейджа: разметке нужен именно hex, а не Color"),
+            ("ToolbarUI.cs", 1,
+                "Color.white как «текстура вместо цвета» в свотче пипетки. Бейдж счётчика ошибок "
+                + "перестал собирать TMP-разметку с hex и красит TMP_Text.color напрямую: 2 -> 1"),
             ("UIFactory.cs", 7,
                 "ColorBlock кнопок (умножители hover/pressed/disabled) и заливка ползунка: "
                 + "в UIStyle нет ни блока состояний, ни цвета заполнения"),

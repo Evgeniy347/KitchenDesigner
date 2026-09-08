@@ -7,17 +7,9 @@ namespace KitchenDesigner.Core
     {
         public static EditMode Mode { get; private set; } = EditMode.Normal;
 
-        public static event Action? Changed;
+        public static EditMode LastNonPhotoMode { get; private set; } = EditMode.Normal;
 
-        public static void Cycle()
-        {
-            SetMode(Mode switch
-            {
-                EditMode.Photo => EditMode.Room,
-                EditMode.Room => EditMode.Normal,
-                _ => EditMode.Photo,
-            });
-        }
+        public static event Action? Changed;
 
         public static void SetMode(EditMode mode)
         {
@@ -26,6 +18,7 @@ namespace KitchenDesigner.Core
             bool isPhoto = mode == EditMode.Photo;
 
             Mode = mode;
+            if (!isPhoto) LastNonPhotoMode = mode;
 
             if (isPhoto && !wasPhoto) PhotoMode.Enter();
             else if (!isPhoto && wasPhoto) PhotoMode.Exit();
@@ -39,13 +32,6 @@ namespace KitchenDesigner.Core
         }
 
         public static void Reset() => SetMode(EditMode.Normal);
-
-        public static string Label(EditMode mode) => mode switch
-        {
-            EditMode.Room => "Режим: помещение",
-            EditMode.Photo => "Режим: фото",
-            _ => "Режим: обычный",
-        };
 
         public enum Category
         {
