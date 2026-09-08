@@ -49,6 +49,10 @@ namespace KitchenDesigner.Core
             PipeDocking.Seat(this, ValidationPositionAt(transform.position), ValidationRotation,
                 scene, cursor);
 
+        public void SeatOnPipeEnd(PipeElement pipe, int end) =>
+            PipeDocking.SeatPort(this, 0, ValidationPositionAt(transform.position),
+                ValidationRotation, pipe.SnapPortAt(end, pipe.transform.position));
+
         public Vector3 HubPositionUnits =>
             ValidationPositionAt(transform.position) + ValidationRotation * LocalHubUnits;
 

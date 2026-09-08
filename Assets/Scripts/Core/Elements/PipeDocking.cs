@@ -36,5 +36,21 @@ namespace KitchenDesigner.Core
 
             element.transform.SetPositionAndRotation(position, rotation);
         }
+
+        public static void SeatPort(KitchenElement element, int portIndex, Vector3 poseOrigin,
+            Quaternion poseRotation, in SnapPort mouth)
+        {
+            if (element == null || !(element is ISnapPorts ported)) return;
+            if (portIndex < 0 || portIndex >= ported.SnapPortCount) return;
+
+            var mine = ported.SnapPortAt(portIndex, element.transform.position);
+            SnapPortDock.TurnOnto(mine.Outward, -mouth.Outward, out Vector3 axis,
+                out float degrees);
+
+            var turn = Quaternion.AngleAxis(degrees, axis);
+            var seatedOrigin = mouth.Position - turn * (mine.Position - poseOrigin);
+            element.transform.SetPositionAndRotation(
+                element.transform.position + (seatedOrigin - poseOrigin), turn * poseRotation);
+        }
     }
 }
