@@ -211,7 +211,10 @@ if ($All) {
 $env:GIT_AUTHOR_DATE = $formatted
 $env:GIT_COMMITTER_DATE = $formatted
 try {
-    if ($Amend) {
+    if ($Amend -and $Files -and $Files.Count -gt 0) {
+        git commit --amend -m $Message --date $formatted -- @Files
+    } elseif ($Amend) {
+        Write-Warning '-Amend without -Files takes the WHOLE index, including a neighbour''s staged work.'
         git commit --amend -m $Message --date $formatted
     } elseif ($Files -and $Files.Count -gt 0) {
         git commit -m $Message -- @Files

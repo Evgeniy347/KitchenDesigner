@@ -233,3 +233,18 @@ keeps its cross-checks. So: **before deleting a public or internal member, grep 
 for it**, including files you are forbidden to edit, and put what you found in the report. You
 are not being asked to fix the neighbour's file; you are being asked not to leave a hole nobody
 knows about.
+
+## Never `--amend` or `reset` in a shared tree
+
+Two incidents in one session, same root. A worker ran `git-commit.ps1 -Amend` with `-Files` and
+the helper committed the WHOLE index anyway, sweeping in a neighbour's unfinished files — the
+`-Amend` branch had no pathspec, the gap that `779cec4b` had already closed for the normal path.
+Another worker went further: `git reset HEAD~1` plus `commit --amend` on the shared index moved a
+NEIGHBOUR'S COMMIT off the branch entirely. Its changes survived in the working tree and were
+re-committed, but only because the owner noticed.
+
+The helper now passes a pathspec on `-Amend` too, and warns when `-Amend` is used without
+`-Files`. The discipline stands regardless: **in a shared tree you only ever add commits.**
+Rewriting history — `--amend`, `reset`, `rebase` — is the coordinator's, and even then not while
+others are working. A commit that is wrong gets a second commit on top; that is what history is
+for. If you think you need `--amend`, you need a new commit.
