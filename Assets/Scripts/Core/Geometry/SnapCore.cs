@@ -19,7 +19,9 @@ namespace KitchenDesigner.Core
             float maxDist = threshold + ThresholdEpsilon;
             bool verbose = logSink != null;
 
-            var seat = SnapPortSeat.BestOf(moved.At(testPosition), others, maxDist);
+            ElementGeometry movedNow = moved.At(testPosition);
+
+            var seat = SnapPortSeat.BestOf(movedNow, others, maxDist);
             if (seat.taken)
             {
                 if (verbose) logSink?.Invoke(PortSeatLog(seat));
@@ -27,7 +29,7 @@ namespace KitchenDesigner.Core
             }
 
             var collected = new SnapCandidates();
-            SnapCandidateCollector.Collect(moved, others, testPosition, maxDist, verbose,
+            SnapCandidateCollector.Collect(movedNow, others, testPosition, maxDist, verbose,
                 isPrimaryPass: true, collected);
 
             var initialLineContacts = new HashSet<string>();

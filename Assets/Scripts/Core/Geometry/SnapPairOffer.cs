@@ -10,6 +10,7 @@ namespace KitchenDesigner.Core
         public SnapPairRejection rejection;
         public bool accepted;
         public bool alreadyInPlace;
+        public bool landsInsideNeighbour;
         public float planeDist;
         public float planeShift;
         public float shift;
@@ -28,6 +29,19 @@ namespace KitchenDesigner.Core
         public static SnapPairOffer For(in ElementGeometry moved, Vector3 basePos,
             in ElementGeometry other, in Face movedFace, in Face otherFace,
             bool isGrooveSeat, Face[] seatFaces, Face[] grooveWallFaces, float maxDist)
+            => Build(moved, basePos, other, movedFace, otherFace, isGrooveSeat, seatFaces,
+                grooveWallFaces, maxDist, measureBeyondThreshold: true);
+
+        public static SnapPairOffer ForSelection(in ElementGeometry moved, Vector3 basePos,
+            in ElementGeometry other, in Face movedFace, in Face otherFace,
+            bool isGrooveSeat, Face[] seatFaces, Face[] grooveWallFaces, float maxDist)
+            => Build(moved, basePos, other, movedFace, otherFace, isGrooveSeat, seatFaces,
+                grooveWallFaces, maxDist, measureBeyondThreshold: false);
+
+        private static SnapPairOffer Build(in ElementGeometry moved, Vector3 basePos,
+            in ElementGeometry other, in Face movedFace, in Face otherFace,
+            bool isGrooveSeat, Face[] seatFaces, Face[] grooveWallFaces, float maxDist,
+            bool measureBeyondThreshold)
         {
             var offer = new SnapPairOffer
             {
@@ -47,23 +61,20 @@ namespace KitchenDesigner.Core
             offer.planeShift = Vector3.Dot(otherFace.center - movedFace.center, movedFace.normal);
             offer.planeDist = Mathf.Abs(offer.planeShift);
 
-            bool hasOverlap = FaceContacts.OverlapAllowingEdgeTouch(movedFace, otherFace,
-                out float overlapRatio, out bool hasLineContact);
-            offer.hasOverlap = hasOverlap;
-            offer.overlapRatio = hasOverlap ? overlapRatio : 0f;
-            offer.hasLineContact = hasLineContact;
-
             if (offer.planeDist > maxDist)
             {
                 offer.rejection = SnapPairRejection.BeyondThreshold;
+                if (measureBeyondThreshold) offer.MeasureOverlap(movedFace, otherFace);
                 return offer;
             }
-            if (!hasOverlap)
+
+            offer.MeasureOverlap(movedFace, otherFace);
+            if (!offer.hasOverlap)
             {
                 offer.rejection = SnapPairRejection.NoOverlap;
                 return offer;
             }
-            if (overlapRatio < Tolerance.MinSupportOverlap)
+            if (offer.overlapRatio < Tolerance.MinSupportOverlap)
             {
                 offer.rejection = SnapPairRejection.OverlapTooSmall;
                 return offer;
@@ -85,13 +96,15 @@ namespace KitchenDesigner.Core
             {
                 offer.shift = offer.planeShift;
                 offer.Land(basePos, movedFace.normal);
+                offer.landsInsideNeighbour =
+                    WouldLandInsideNeighbour(moved, offer.shift * movedFace.normal, other);
                 if (offer.planeDist <= ZeroShiftEpsilon)
                 {
                     offer.alreadyInPlace = true;
                     offer.rejection = SnapPairRejection.AlreadyInPlace;
                     return offer;
                 }
-                if (WouldLandInsideNeighbour(moved, offer.shift * movedFace.normal, other))
+                if (offer.landsInsideNeighbour)
                 {
                     offer.rejection = SnapPairRejection.LandsInsideNeighbour;
                     return offer;
@@ -110,7 +123,9 @@ namespace KitchenDesigner.Core
                 offer.shift = offer.planeShift;
                 offer.Land(basePos, movedFace.normal);
 
-                if (!isGrooveSeat && CentreWouldLandInsideNeighbour(offer.snapPos, other))
+                offer.landsInsideNeighbour =
+                    !isGrooveSeat && CentreWouldLandInsideNeighbour(offer.snapPos, other);
+                if (offer.landsInsideNeighbour)
                 {
                     offer.rejection = SnapPairRejection.LandsInsideNeighbour;
                     return offer;
@@ -126,6 +141,14 @@ namespace KitchenDesigner.Core
 
             offer.accepted = true;
             return offer;
+        }
+
+        private void MeasureOverlap(in Face movedFace, in Face otherFace)
+        {
+            hasOverlap = FaceContacts.OverlapAllowingEdgeTouch(movedFace, otherFace,
+                out float ratio, out bool lineContact);
+            overlapRatio = hasOverlap ? ratio : 0f;
+            hasLineContact = lineContact;
         }
 
         private void Land(Vector3 basePos, Vector3 normal)

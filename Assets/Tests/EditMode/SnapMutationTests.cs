@@ -365,7 +365,22 @@ public class SnapMutationTests
     /// это правило неверно (SnapPullsAlongFace объясняет, почему), и отвод здесь
     /// делается ВДОЛЬ НОРМАЛИ — то есть ровно по той оси, по которой посадка
     /// опоры не двигает её вовсе. Требование заменено на встречное: снэп не
-    /// имеет права утащить опору вдоль такой грани (MOUNT-PULL).</summary>
+    /// имеет права утащить опору вдоль такой грани (MOUNT-PULL).
+    ///
+    /// Третий такой случай — ВЛОЖЕННЫЕ детали: окно и дверь стоят внутри
+    /// габарита стены, их плоскости совпадают, и лучшая пара граней у них
+    /// сонаправленная (FarEdgeAlignment), а не встречная. Отбор такую пару
+    /// отбрасывает намеренно — выравнивание по дальней кромке загнало бы стену
+    /// внутрь двери (SnapCoreContractTests.FarEdgeAlignment_ThatWouldDrive-
+    /// ThePartIntoTheNeighbour_IsRejected: «так низ короба уезжал в стену»).
+    /// До того как оракул научился судить по правилам отбора, сонаправленные
+    /// пары он вовсе не показывал, и свип их не видел; увидев — стал требовать
+    /// прилипания, которого продукт запрещает, и выдал 28 находок EDGE-NOSNAP
+    /// на стенах, дверях и окнах. Признак приходит из ТОЙ ЖЕ функции, что
+    /// принимает решение (SnapPairOffer.landsInsideNeighbour → SnapNeighbourFacts
+    /// → SnapNeighborReport.alignmentLandsInsideNeighbour), а требование снова
+    /// заменено на встречное: снэп не имеет права утащить деталь таким
+    /// выравниванием (ALIGN-PULL).</summary>
     private void TestExistingPairAttraction(KitchenElement moved, KitchenElement target,
         Vector3 savedPos, Vector3Int savedDims, ref int snapOk)
     {
@@ -427,6 +442,21 @@ public class SnapMutationTests
                 float testOffMm = Mathf.Clamp(r.gapMM * 0.5f + 5f, 5f, snapThreshold - r.gapMM);
                 Vector3 toward = savedPos + normal * (testOffMm * 0.001f);
                 var edgeRes = SnapSystem.TrySnap(moved, new List<KitchenElement> { target }, toward);
+
+                if (r.alignmentLandsInsideNeighbour)
+                {
+                    float pulledMm = edgeRes.snapped
+                        ? Vector3.Dot(edgeRes.position - toward, normal) / AppConstants.MM_TO_UNITS
+                        : 0f;
+                    if (Mathf.Abs(pulledMm) > 0.5f)
+                        AddError($"ALIGN-PULL: {moved.PartName}[f{r.movedFaceIndex}]" +
+                            $"↔{target.PartName}[f{r.otherFaceIndex}] " +
+                            $"gap={r.gapMM:F1}mm ovl={r.overlapRatio:P0} " +
+                            $"утащило на {pulledMm:F1}mm выравниванием, которое загоняет " +
+                            "деталь внутрь соседа");
+                    continue;
+                }
+
                 if (!edgeRes.snapped)
                     AddError($"EDGE-NOSNAP: {moved.PartName}[f{r.movedFaceIndex}]" +
                         $"↔{target.PartName}[f{r.otherFaceIndex}] " +

@@ -30,8 +30,12 @@ namespace KitchenDesigner.Core
 
         public static void Collect(IPosedGeometry moved, IReadOnlyList<ElementGeometry> others,
             Vector3 basePos, float maxDist, bool verbose, bool isPrimaryPass, SnapCandidates into)
+            => Collect(moved.At(basePos), others, basePos, maxDist, verbose, isPrimaryPass, into);
+
+        public static void Collect(in ElementGeometry moved, IReadOnlyList<ElementGeometry> others,
+            Vector3 basePos, float maxDist, bool verbose, bool isPrimaryPass, SnapCandidates into)
         {
-            var part = new MovedPart(moved.At(basePos), basePos, maxDist, verbose, isPrimaryPass);
+            var part = new MovedPart(moved, basePos, maxDist, verbose, isPrimaryPass);
 
             foreach (var other in others)
             {
@@ -56,8 +60,8 @@ namespace KitchenDesigner.Core
                     Face of = isGrooveSeat ? seatFaces[j - Face.BoxFaceCount] : other.Faces[j];
                     Face mf = part.Faces[i];
 
-                    var offer = SnapPairOffer.For(part.Geometry, part.BasePos, other, mf, of,
-                        isGrooveSeat, seatFaces, wallFaces, part.MaxDist);
+                    var offer = SnapPairOffer.ForSelection(part.Geometry, part.BasePos, other,
+                        mf, of, isGrooveSeat, seatFaces, wallFaces, part.MaxDist);
                     if (offer.role == SnapPairRole.NotACandidate) continue;
 
                     if (offer.role == SnapPairRole.FarEdgeAlignment && offer.alreadyInPlace)

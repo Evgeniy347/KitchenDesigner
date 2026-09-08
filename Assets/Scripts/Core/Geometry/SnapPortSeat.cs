@@ -36,11 +36,10 @@ namespace KitchenDesigner.Core
             var seat = Empty();
             seat.targetName = other.Name;
 
+            if (!moved.HasPorts || !other.HasPorts) return seat;
+
             var mine = moved.Ports;
             var theirs = other.Ports;
-            if (mine == null || theirs == null || mine.Length == 0 || theirs.Length == 0)
-                return seat;
-
             seat.bothSidesCarryPorts = true;
 
             int bestRank = int.MaxValue;
@@ -80,7 +79,7 @@ namespace KitchenDesigner.Core
             IReadOnlyList<ElementGeometry> others, float maxDist)
         {
             var best = Empty();
-            if (moved.IsEmpty || others == null) return best;
+            if (moved.IsEmpty || others == null || !moved.HasPorts) return best;
 
             int bestRank = int.MaxValue;
             float bestGap = float.MaxValue;

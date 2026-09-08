@@ -25,6 +25,7 @@ namespace KitchenDesigner.Core
         public int movedPortIndex = -1;
         public int otherPortIndex = -1;
         public bool portSeatOffered;
+        public bool alignmentLandsInsideNeighbour;
         public string verdict = string.Empty;
     }
 
@@ -93,7 +94,16 @@ namespace KitchenDesigner.Core
             };
             if (moved == null || others == null) return report;
 
-            var snap = knownSnap ?? TrySnap(moved, others, testPosition);
+            var neighbours = new List<KitchenElement>(others.Count);
+            var scene = new List<ElementGeometry>(others.Count);
+            foreach (var other in others)
+            {
+                if (other == null || !other.gameObject.activeInHierarchy) continue;
+                neighbours.Add(other);
+                scene.Add(other.ToGeometry());
+            }
+
+            var snap = knownSnap ?? TrySnap(moved, scene, testPosition);
             report.wouldSnap = snap.snapped;
             report.snapTarget = snap.snapped ? snap.targetName : null;
 
@@ -102,7 +112,7 @@ namespace KitchenDesigner.Core
             ElementGeometry movedGeo = moved.ToGeometryAt(testPosition);
             Vector3[] movedVerts = moved.GetVerticesAt(testPosition);
 
-            var winner = SnapPortSeat.BestOf(movedGeo, others.ToGeometry(), maxDist);
+            var winner = SnapPortSeat.BestOf(movedGeo, scene, maxDist);
             report.portSeatWins = winner.taken;
             report.portSeatTarget = winner.taken ? winner.targetName : null;
             report.portSeatShiftMM = winner.taken
@@ -111,12 +121,12 @@ namespace KitchenDesigner.Core
             report.portSeatMovedPortIndex = winner.movedPort;
             report.portSeatOtherPortIndex = winner.otherPort;
 
-            foreach (var other in others)
+            for (int index = 0; index < neighbours.Count; index++)
             {
-                if (other == moved || other == null) continue;
-                if (!other.gameObject.activeInHierarchy) continue;
+                var other = neighbours[index];
+                if (other == moved) continue;
 
-                var facts = SnapNeighbourFacts.Of(movedGeo, testPosition, other.ToGeometry(), maxDist);
+                var facts = SnapNeighbourFacts.Of(movedGeo, testPosition, scene[index], maxDist);
 
                 var n = new SnapNeighborReport
                 {
@@ -145,6 +155,7 @@ namespace KitchenDesigner.Core
                     portsFaceEachOther = facts.portSeat.opposed,
                     movedPortIndex = facts.portSeat.movedPort,
                     otherPortIndex = facts.portSeat.otherPort,
+                    alignmentLandsInsideNeighbour = facts.alignmentLandsInsideNeighbour,
                 };
                 if (winner.taken) n.wouldSnap = IsTheWinner(n, winner);
                 n.verdict = Verdict(n, facts, report.thresholdMM, winner);
@@ -222,7 +233,11 @@ namespace KitchenDesigner.Core
                 "снэп загнал бы деталь внутрь соседа — такой кандидат отбрасывается",
             SnapPairRejection.AlreadyInPlace => facts.role == SnapPairRole.Centring
                 ? "посадка уже выполнена: деталь стоит по центру, сдвига не будет"
-                : "деталь уже стоит заподлицо по этой грани — сдвига не будет",
+                : facts.alignmentLandsInsideNeighbour
+                    ? "плоскости совпадают, но габариты деталей вложены друг в друга — "
+                      + "выравнивание по этой грани загнало бы деталь внутрь соседа, "
+                      + "поэтому снэпа по ней не будет ни сейчас, ни после сдвига"
+                    : "деталь уже стоит заподлицо по этой грани — сдвига не будет",
             _ => "отбор кандидатов эту пару не принял",
         };
 

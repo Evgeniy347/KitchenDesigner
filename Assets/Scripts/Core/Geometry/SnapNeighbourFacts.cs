@@ -17,6 +17,7 @@ namespace KitchenDesigner.Core
         public bool withinThreshold;
         public bool overlapEnough;
         public bool wouldSnap;
+        public bool alignmentLandsInsideNeighbour;
         public SnapPortSeat portSeat;
 
         public static SnapNeighbourFacts Of(in ElementGeometry moved, Vector3 basePos,
@@ -89,6 +90,7 @@ namespace KitchenDesigner.Core
                     facts.withinThreshold = offer.rejection != SnapPairRejection.BeyondThreshold;
                     facts.overlapEnough = offer.hasOverlap
                         && offer.overlapRatio >= Tolerance.MinSupportOverlap;
+                    facts.alignmentLandsInsideNeighbour = offer.landsInsideNeighbour;
                     facts.wouldSnap = offers;
                 }
             }
