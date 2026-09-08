@@ -84,4 +84,29 @@ public class PartRegistryTests
         PartRegistry.Clear();
         Assert.AreEqual(0, PartRegistry.GetAll().Count);
     }
+
+    // В Play Mode KitchenElement.Awake зовёт PartRegistry.Register синхронно при
+    // AddComponent — раньше, чем фабрика следующей строкой присваивает PartName
+    // (см. ElementFactoryInstance.CreateWall и соседей: el.PartName = go.name идёт
+    // ПОСЛЕ AddComponent<KitchenElement>()). Реестр хранит только ссылку на
+    // элемент и не кэширует имя на момент Register — Register(e) здесь имитирует
+    // именно этот ранний вызов, до переименования.
+    [Test]
+    public void Register_BeforePartNameAssigned_LiveNameLookupStillFindsElement()
+    {
+        PartRegistry.Clear();
+        var e = Make();
+        PartRegistry.Register(e);
+
+        e.PartName = "RenamedAfterRegister";
+
+        KitchenElement? found = null;
+        foreach (var el in PartRegistry.All)
+            if (el.PartName == "RenamedAfterRegister") { found = el; break; }
+
+        Assert.AreSame(e, found,
+            "PartRegistry должен читать PartName живьём при каждом поиске, а не " +
+            "кэшировать его на момент Register — иначе элемент, зарегистрированный " +
+            "раньше своего имени (как это делает Awake), был бы ненаходим по имени");
+    }
 }
