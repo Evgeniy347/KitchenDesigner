@@ -114,32 +114,69 @@ public class SidebarPanelTests
             "свёрнутая группа прячет свои пункты");
     }
 
+    /// <summary>D7/D8: вторая строка кнопки отдана габаритам, а не переносу
+    /// длинного имени — имя теперь ровно одна строка и обрезается многоточием,
+    /// когда не влезает, вместо того чтобы то одно-, то двухстрочно раздувать
+    /// ритм списка.</summary>
     [Test]
-    public void ItemLabels_WrapByWords_AndTruncateWhatDoesNotFit()
+    public void ItemNameLabel_NeverWraps_ItTruncatesWhatDoesNotFit()
     {
-        var label = Item("детали", "Полка").GetComponentInChildren<TMP_Text>();
+        var shortName = Item("Детали", "Полка").GetComponentInChildren<TMP_Text>();
+        var longName = Item("Техника", "Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E)
+            .GetComponentInChildren<TMP_Text>();
 
-        Assert.IsTrue(label.enableWordWrapping,
-            "длинное название переносится по словам — иначе оно уезжает за кнопку");
-        Assert.AreEqual(TextOverflowModes.Truncate, label.overflowMode,
-            "оценка ширины приблизительная: если TMP возьмёт строку сверх расчёта, "
-            + "лишнее обязано обрезаться ВНУТРИ кнопки, а не наехать на соседний пункт");
+        Assert.IsFalse(shortName.enableWordWrapping,
+            "имя не переносится по словам — вторая строка занята габаритами");
+        Assert.AreEqual(TextOverflowModes.Truncate, shortName.overflowMode);
+        Assert.IsFalse(longName.enableWordWrapping,
+            "длинное имя (с моделью прибора) ведёт себя так же: обрезается, а не переносится");
+        Assert.AreEqual(TextOverflowModes.Truncate, longName.overflowMode);
+    }
+
+    /// <summary>D8: габариты каталога (Ш×В×Г, мм) видны под именем пункта без
+    /// спауна — раньше их можно было узнать только заспавнив элемент.</summary>
+    [Test]
+    public void ItemButtons_ShowDimensionsInMillimetres_BelowTheName()
+    {
+        var shelf = Item("Детали", "Полка");
+        var shelfDims = Child(shelf, "SbItemDims_Детали_Полка").GetComponent<TMP_Text>();
+        Assert.AreEqual(SidebarUI.FormatDims(new Vector3Int(600, 400, 16)), shelfDims.text);
+
+        var table = Item("Мебель", "Прямоугольный стол");
+        var tableDims = Child(table, "SbItemDims_Мебель_Прямоугольный стол").GetComponent<TMP_Text>();
+        Assert.AreEqual(SidebarUI.FormatDims(new Vector3Int(2000, 750, 1000)), tableDims.text);
+    }
+
+    /// <summary>D7: модель прибора («Bosch PUE611BB5E») больше не печатается в
+    /// списке — она делает кнопку двухстрочной без всякой пользы (модель нужна
+    /// в паспорте элемента, не в перечне). Подпись кнопки — короткий тип
+    /// прибора; полное имя с моделью остаётся в tooltip.</summary>
+    [Test]
+    public void ApplianceButtons_ShowShortName_NotTheModel()
+    {
+        var cooktop = Item("Техника", "Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E)
+            .GetComponentInChildren<TMP_Text>();
+
+        Assert.AreEqual("Варочная", cooktop.text,
+            "в списке — короткий тип прибора без модели");
+        StringAssert.DoesNotContain(CooktopElement.MODEL_BOSCH_PUE611BB5E, cooktop.text);
     }
 
     [Test]
-    public void Items_AreLaidOutByTheirActualHeight_SoATwoLineItemDoesNotOverlap()
+    public void Items_AreLaidOutByTheirActualHeight_SoOneItemNeverOverlapsTheNext()
     {
-        var appliances = SidebarCatalog.Build()[4].items;
-        var tall = Item("Техника", appliances[1].name).GetComponent<RectTransform>();
-        var next = Item("Техника", appliances[2].name).GetComponent<RectTransform>();
+        foreach (var g in SidebarCatalog.Build())
+            for (int i = 0; i + 1 < g.items.Count; i++)
+            {
+                var current = Item(g.title, g.items[i].name).GetComponent<RectTransform>();
+                var next = Item(g.title, g.items[i + 1].name).GetComponent<RectTransform>();
 
-        Assume.That(SidebarUI.ItemLines(appliances[1].name), Is.EqualTo(2),
-            "для проверки нужен пункт, который реально занимает две строки");
-
-        float step = tall.anchoredPosition.y - next.anchoredPosition.y;
-        Assert.GreaterOrEqual(step, tall.sizeDelta.y,
-            "шаг раскладки берётся по ФАКТИЧЕСКОЙ высоте пункта: с постоянным "
-            + "шагом двухстрочная кнопка накрыла бы следующую");
+                float step = current.anchoredPosition.y - next.anchoredPosition.y;
+                Assert.GreaterOrEqual(step, current.sizeDelta.y,
+                    $"«{g.items[i].name}» в группе «{g.title}» накрывает следующий пункт "
+                    + $"«{g.items[i + 1].name}»: шаг раскладки обязан браться по фактической "
+                    + "высоте пункта");
+            }
     }
 
     /// <summary>Каждый пункт каталога обязан доехать до содержимого панели.
@@ -273,7 +310,7 @@ public class SidebarPanelTests
     [Test]
     public void RoomMode_GraysOutRegularItems_ButKeepsWallsAndAlwaysItems()
     {
-        var shelf = Item("детали", "Полка").GetComponent<Button>();
+        var shelf = Item("Детали", "Полка").GetComponent<Button>();
         var wall = Item("Помещение", "Стена").GetComponent<Button>();
         var korob = Item("Помещение", EditModeManager.KorobName).GetComponent<Button>();
         var shelfLabel = shelf.GetComponentInChildren<TMP_Text>();

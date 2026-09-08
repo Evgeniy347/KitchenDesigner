@@ -23,7 +23,7 @@ public class SidebarCatalogTests
 
         Assert.AreEqual(7, groups.Count,
             "шестой встала «Сантехника» — перед «Помещением», чтобы комната осталась последней");
-        Assert.AreEqual("детали", groups[0].title);
+        Assert.AreEqual("Детали", groups[0].title);
         Assert.AreEqual("Фасады", groups[1].title);
         Assert.AreEqual("Ящики", groups[2].title);
         Assert.AreEqual("Мебель", groups[3].title);
@@ -424,24 +424,20 @@ public class SidebarCatalogTests
             }
     }
 
+    /// <summary>D7: имена с моделью (Bosch) длинные, но больше не переносятся —
+    /// вторая строка кнопки отдана габаритам (D8), а не переносу длинного
+    /// имени. Короткое и длинное имя обязаны занимать одну строку текста
+    /// одинаково: разницу между ними теперь несёт не число строк, а обрезка
+    /// многоточием.</summary>
     [Test]
-    public void ItemHeight_LongApplianceNamesTakeTwoRows()
+    public void ItemLines_NeverWrapsPastOneRow_RegardlessOfNameLength()
     {
-        // Имена с моделью (Bosch) длинные и обязаны переноситься и быть выше
-        // однострочных; общая «Варочная поверхность» помещается в одну строку.
         foreach (var name in SidebarCatalog.Build()[4].items.ConvertAll(it => it.name))
         {
-            bool longName = name.Length > 20;
-            if (longName)
-            {
-                Assert.AreEqual(2, SidebarUI.ItemLines(name), $"«{name}» не влезает в одну строку панели");
-                Assert.Greater(SidebarUI.ItemHeight(name), 26f, $"кнопка «{name}» должна быть выше однострочной");
-            }
-            else
-            {
-                Assert.AreEqual(1, SidebarUI.ItemLines(name), $"короткое «{name}» в одну строку");
-                Assert.AreEqual(26f, SidebarUI.ItemHeight(name), $"короткая кнопка «{name}» однострочная");
-            }
+            Assert.AreEqual(1, SidebarUI.ItemLines(name),
+                $"«{name}» перенёсся на вторую строку — вторая строка отведена габаритам");
+            Assert.AreEqual(26f, SidebarUI.ItemHeight(name),
+                $"однострочная высота кнопки не зависит от длины имени: «{name}»");
         }
     }
 
@@ -450,6 +446,21 @@ public class SidebarCatalogTests
     {
         Assert.AreEqual(1, SidebarUI.ItemLines("Полка"));
         Assert.AreEqual(26f, SidebarUI.ItemHeight("Полка"), "короткое имя не делает список выше");
+    }
+
+    /// <summary>D8: каждая кнопка каталога получает вторую строку с габаритами
+    /// поверх строки имени — RowHeight обязана быть выше ItemHeight ровно на
+    /// одну строку текста, и для короткого, и для длинного имени.</summary>
+    [Test]
+    public void RowHeight_IsTallerThanTheBareNameRow_ToFitTheDimensionsLine()
+    {
+        foreach (var name in new[] { "Полка", "Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E })
+        {
+            float extra = SidebarUI.RowHeight(name) - SidebarUI.ItemHeight(name);
+            Assert.GreaterOrEqual(extra, SidebarUI.ItemFont,
+                $"«{name}»: RowHeight обязана быть выше ItemHeight минимум на строку текста — "
+                + "иначе строке габаритов негде поместиться");
+        }
     }
 
     [Test]

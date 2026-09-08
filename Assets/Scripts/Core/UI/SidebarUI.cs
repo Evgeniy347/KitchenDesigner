@@ -21,8 +21,9 @@ namespace KitchenDesigner.Core.UI
         public const int ItemFont = UIStyle.FontSmall;
 
         private const float ItemPadH = 8f;
-        private const int ItemMaxLines = 2;
+        private const int ItemMaxLines = 1;
         private const float ItemGlyphReserve = 2f;
+        private const string RoomModeHint = "Доступно в режиме «Помещение»";
 
         private RectTransform? _panel;
         private ScrollArea? _full;
@@ -124,6 +125,12 @@ namespace KitchenDesigner.Core.UI
             return DropdownItemFit.LinesFor(name, textW, ItemFont, ItemMaxLines);
         }
 
+        public static float RowHeight(string displayName)
+            => SidebarLayout.ItemHeight(ItemLines(displayName) + 1, ItemFont,
+                DropdownItemFit.LineHeightFactor);
+
+        public static string FormatDims(Vector3Int dims) => $"{dims.x} × {dims.y} × {dims.z}";
+
         private void BuildFull()
         {
             foreach (var g in SidebarCatalog.Build())
@@ -147,24 +154,45 @@ namespace KitchenDesigner.Core.UI
 
                 foreach (var it in g.items)
                 {
-                    float h = ItemHeight(it.name);
+                    float h = RowHeight(it.DisplayName);
                     var btn = UIFactory.CreateButton("SbItem_" + g.title + "_" + it.name, _full.Content,
-                        it.name, Vector2.zero, new Vector2(ItemW, h), () => Spawn(it));
+                        it.DisplayName, Vector2.zero, new Vector2(ItemW, h), () => Spawn(it));
                     UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
                     gu.items.Add(btn.GetComponent<RectTransform>());
                     gu.itemHeights.Add(h);
 
-                    var style = new ModeStyledItem { button = btn, cat = ItemCategory(it) };
+                    var cat = ItemCategory(it);
+                    var style = new ModeStyledItem { button = btn, cat = cat };
                     var itemLabel = btn.GetComponentInChildren<TMP_Text>();
                     if (itemLabel != null)
                     {
                         itemLabel.fontSize = ItemFont;
                         itemLabel.alignment = TextAlignmentOptions.Left;
-                        itemLabel.enableWordWrapping = true;
+                        itemLabel.enableWordWrapping = false;
                         itemLabel.overflowMode = TextOverflowModes.Truncate;
                         itemLabel.margin = new Vector4(ItemPadH, 2f, ItemPadH, 2f);
+                        var lr = itemLabel.rectTransform;
+                        lr.anchorMin = new Vector2(0f, 0.5f);
+                        lr.anchorMax = Vector2.one;
+                        lr.offsetMin = Vector2.zero;
+                        lr.offsetMax = Vector2.zero;
                     }
-                    TooltipUI.Attach(btn.gameObject, it.name);
+
+                    var dimsLabel = UIFactory.CreateLabel("SbItemDims_" + g.title + "_" + it.name,
+                        btn.transform, FormatDims(it.dims), ItemFont, Vector2.zero, Vector2.zero,
+                        TextAnchor.MiddleLeft);
+                    dimsLabel.color = UIStyle.TextSecondary;
+                    dimsLabel.enableWordWrapping = false;
+                    dimsLabel.overflowMode = TextOverflowModes.Truncate;
+                    dimsLabel.margin = new Vector4(ItemPadH, 2f, ItemPadH, 2f);
+                    dimsLabel.raycastTarget = false;
+                    var dr = dimsLabel.rectTransform;
+                    dr.anchorMin = Vector2.zero;
+                    dr.anchorMax = new Vector2(1f, 0.5f);
+                    dr.offsetMin = Vector2.zero;
+                    dr.offsetMax = Vector2.zero;
+
+                    TooltipUI.Attach(btn.gameObject, ItemTooltipText(it, cat));
                     _modeStyledItems.Add(style);
                 }
                 _groups.Add(gu);
@@ -178,6 +206,9 @@ namespace KitchenDesigner.Core.UI
             string glyph = gu.open ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed;
             gu.headerLabel.text = $"{glyph}  {title}";
         }
+
+        internal static string ItemTooltipText(SidebarCatalog.Item it, EditModeManager.Category cat)
+            => cat == EditModeManager.Category.Room ? $"{it.name}\n{RoomModeHint}" : it.name;
 
         internal static EditModeManager.Category ItemCategory(SidebarCatalog.Item it)
         {

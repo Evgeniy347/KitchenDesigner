@@ -39,6 +39,10 @@ namespace KitchenDesigner.Core.UI
                 drawerSystem = DefaultDrawerSystem;
             }
 
+            public string DisplayName => !string.IsNullOrEmpty(applianceModel) && name.EndsWith(applianceModel)
+                ? name.Substring(0, name.Length - applianceModel.Length).TrimEnd()
+                : name;
+
             public EditModeManager.Category Category => kind switch
             {
                 SidebarItemKind.Window => EditModeManager.Category.Always,
@@ -97,7 +101,7 @@ namespace KitchenDesigner.Core.UI
             var radial = new Item("Радиусная полка", new Vector3Int(600, 400, 16),
                 SidebarItemKind.RadialShelf);
             var panel = new Item("ДВП/ХДФ", new Vector3Int(600, 400, 3), SidebarItemKind.Panel);
-            return new Group { title = "детали", shortLabel = "Д", items = new List<Item> { regular, radial, panel } };
+            return new Group { title = "Детали", shortLabel = "Д", items = new List<Item> { regular, radial, panel } };
         }
 
         private static Group FacadeGroup()

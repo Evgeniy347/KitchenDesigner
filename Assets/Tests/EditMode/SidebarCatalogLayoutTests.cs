@@ -23,7 +23,7 @@ public class SidebarCatalogLayoutTests
         foreach (var g in SidebarCatalog.Build())
         {
             var heights = new List<float>();
-            foreach (var it in g.items) heights.Add(SidebarUI.ItemHeight(it.name));
+            foreach (var it in g.items) heights.Add(SidebarUI.RowHeight(it.DisplayName));
             metrics.Add(new SidebarGroupMetrics(true, heights));
         }
         return metrics;

@@ -37,4 +37,43 @@ public class SidebarUITests
         Assert.AreEqual(EditModeManager.Category.Regular,
             SidebarUI.ItemCategory(groups[0].items[0]));
     }
+
+    [Test]
+    public void ItemTooltipText_ExplainsRoomOnlyItems_ButNotRegularOnes()
+    {
+        var groups = SidebarCatalog.Build();
+        var wall = groups.Find(g => g.title == RoomGroupTitle).items.Find(
+            i => i.kind == SidebarItemKind.Wall);
+        var shelf = groups[0].items[0];
+
+        string wallTooltip = SidebarUI.ItemTooltipText(wall, SidebarUI.ItemCategory(wall));
+        string shelfTooltip = SidebarUI.ItemTooltipText(shelf, SidebarUI.ItemCategory(shelf));
+
+        StringAssert.Contains("Помещение", wallTooltip,
+            "«Стена» доступна только в режиме «Помещение», и это обязано быть сказано "
+            + "прямо, а не угадываться по серому цвету кнопки (D3)");
+        Assert.AreEqual(shelf.name, shelfTooltip,
+            "обычный пункт доступен в любом режиме — tooltip не добавляет пояснений про режим");
+    }
+
+    [Test]
+    public void ItemTooltipText_CarriesTheFullNameWithModel_EvenThoughTheButtonDoesNot()
+    {
+        var modelCooktop = SidebarCatalog.Build()[4].items[1];
+
+        string tooltip = SidebarUI.ItemTooltipText(modelCooktop, SidebarUI.ItemCategory(modelCooktop));
+
+        StringAssert.Contains(CooktopElement.MODEL_BOSCH_PUE611BB5E, tooltip,
+            "модель прибора убрана из подписи кнопки (D7), но обязана остаться доступной "
+            + "через tooltip — иначе узнать её в списке стало неоткуда");
+    }
+
+    [Test]
+    public void GroupTitles_AllStartWithAnUppercaseLetter()
+    {
+        foreach (var g in SidebarCatalog.Build())
+            Assert.IsTrue(char.IsUpper(g.title[0]),
+                $"заголовок группы «{g.title}» начинается со строчной буквы — "
+                + "docs/UI-GUIDELINES.md §5 требует прописную (D6)");
+    }
 }
