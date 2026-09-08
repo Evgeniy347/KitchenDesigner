@@ -1,12 +1,9 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
-public class FacadeElementTests
+public class FacadeElementTests : ElementTestBase
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void Setup()
     {
@@ -24,6 +21,10 @@ public class FacadeElementTests
         PartRegistry.Clear();
     }
 
+    /// <summary>НЕ базовый MakePrimitiveFacade: тот оставляет зазоры нулевыми, а
+    /// здесь ими управляет каждый тест — на них считается видимая грань дверцы.
+    /// Имя разное намеренно: одинаковое скрывало бы разницу вместо того, чтобы
+    /// её показать.</summary>
     private FacadeElement MakeFacade(string name, Vector3Int dims, Vector3 pos,
         int gapL = 2, int gapR = 2, int gapT = 2, int gapB = 2)
     {
@@ -40,19 +41,6 @@ public class FacadeElementTests
         PartRegistry.Register(f);
         _spawned.Add(go);
         return f;
-    }
-
-    private KitchenElement MakeElement(string name, Vector3Int dims, Vector3 pos)
-    {
-        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name = name;
-        go.transform.position = pos;
-        var e = go.AddComponent<KitchenElement>();
-        e.PartName = name;
-        e.DimensionsMM = dims;
-        PartRegistry.Register(e);
-        _spawned.Add(go);
-        return e;
     }
 
     /// <summary>Открытая дверца строит габарит от замороженной закрытой позы, и

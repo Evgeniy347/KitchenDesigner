@@ -19,40 +19,10 @@ public class FacadeMcpTests : McpTestFixture
         GroupManager.Clear();
     }
 
-    private FacadeElement MakeFacade(string name, Vector3Int dims, Vector3 pos)
-    {
-        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name = name;
-        go.transform.position = pos;
-        var f = go.AddComponent<FacadeElement>();
-        f.PartName = name;
-        f.DimensionsMM = dims;
-        PartRegistry.Register(f);
-        _spawned.Add(go);
-        return f;
-    }
-
-    /// <summary>НЕ базовый MakeElement: тот создаёт голый GameObject, а этим тестам нужен
-    /// примитив с MeshFilter/MeshRenderer/BoxCollider — препятствие, которое видит луч и
-    /// геометрия фасада. Имя разное намеренно: одинаковое скрывало базовый метод и валило
-    /// сборку под warnaserror (CS0108).</summary>
-    private KitchenElement MakePrimitiveElement(string name, Vector3Int dims, Vector3 pos)
-    {
-        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name = name;
-        go.transform.position = pos;
-        var e = go.AddComponent<KitchenElement>();
-        e.PartName = name;
-        e.DimensionsMM = dims;
-        PartRegistry.Register(e);
-        _spawned.Add(go);
-        return e;
-    }
-
     [Test]
     public void GetElements_Facade_ReturnsTypeAndDimensions()
     {
-        var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
+        var f = MakePrimitiveFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         var resp = _handler!.Handle(MakeReq("get_elements", new { names = new[] { "F" } }));
         Assert.AreEqual("result", resp.type);
 
@@ -71,7 +41,7 @@ public class FacadeMcpTests : McpTestFixture
     [Test]
     public void GetViolations_FacadeWithObstruction_ReturnsFaceObstruction()
     {
-        var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
+        var f = MakePrimitiveFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         MakePrimitiveElement("Obstacle", new Vector3Int(200, 200, 18), new Vector3(0f, 0f, 0.038f));
 
         var resp = _handler!.Handle(MakeReq("get_violations", new { }));
@@ -96,7 +66,7 @@ public class FacadeMcpTests : McpTestFixture
     public void GetViolations_InwardFacade_ReturnsViolation()
     {
         var box = MakePrimitiveElement("Box", new Vector3Int(600, 400, 500), Vector3.zero);
-        var f = MakeFacade("F", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, -0.3f));
+        var f = MakePrimitiveFacade("F", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, -0.3f));
         GroupManager.Link(new List<KitchenElement> { box, f });
 
         var resp = _handler!.Handle(MakeReq("get_violations", new { }));
@@ -139,7 +109,7 @@ public class FacadeMcpTests : McpTestFixture
     [Test]
     public void EditElements_RotateFacade_ReturnsRotY()
     {
-        var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
+        var f = MakePrimitiveFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
             ops = new[] { new { name = "F", rot_y = 90f } }
@@ -162,7 +132,7 @@ public class FacadeMcpTests : McpTestFixture
     [Test]
     public void EditElements_SetFacadeMode_ReportsOpeningCollision_InViolations()
     {
-        var f = MakeFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
+        var f = MakePrimitiveFacade("F", new Vector3Int(400, 300, 18), Vector3.zero);
         MakePrimitiveElement("Obstacle", new Vector3Int(400, 300, 18), new Vector3(0f, 0f, 0.3f));
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new

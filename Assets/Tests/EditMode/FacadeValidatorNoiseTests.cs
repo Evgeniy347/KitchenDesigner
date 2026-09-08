@@ -10,10 +10,8 @@ using KitchenDesigner.Core;
 /// встречались «коллизии» в 0.0002 мм), и без порога каждая такая пара
 /// сообщалась пользователю как ошибка. Плюс исключение потомков фасада: стекло
 /// и ручка стоят перед его лицевой гранью по определению.</summary>
-public class FacadeValidatorNoiseTests
+public class FacadeValidatorNoiseTests : ElementTestBase
 {
-    private readonly List<GameObject> _spawned = new List<GameObject>();
-
     [SetUp]
     public void SetUp()
     {
@@ -32,43 +30,17 @@ public class FacadeValidatorNoiseTests
         GroupManager.Clear();
     }
 
-    private FacadeElement MakeFacade(string name, Vector3Int dims, Vector3 pos)
-    {
-        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name = name;
-        go.transform.position = pos;
-        var f = go.AddComponent<FacadeElement>();
-        f.PartName = name;
-        f.DimensionsMM = dims;
-        PartRegistry.Register(f);
-        _spawned.Add(go);
-        return f;
-    }
-
-    private KitchenElement MakeElement(string name, Vector3Int dims, Vector3 pos)
-    {
-        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name = name;
-        go.transform.position = pos;
-        var e = go.AddComponent<KitchenElement>();
-        e.PartName = name;
-        e.DimensionsMM = dims;
-        PartRegistry.Register(e);
-        _spawned.Add(go);
-        return e;
-    }
-
     private static List<KitchenElement> All() => PartRegistry.GetAll();
 
     [Test]
     public void NeighbourOverlappingByAHairsBreadth_IsNotAnObstruction()
     {
-        var facade = MakeFacade("Фасад", new Vector3Int(400, 300, 18), Vector3.zero);
+        var facade = MakePrimitiveFacade("Фасад", new Vector3Int(400, 300, 18), Vector3.zero);
         float toU = AppConstants.MM_TO_UNITS;
         float sliverMM = FacadeValidator.MinOverlapMm * 0.5f;
         float sideOffset = (200f + 100f - sliverMM) * toU;
 
-        MakeElement("Сосед", new Vector3Int(200, 200, 18),
+        MakePrimitiveElement("Сосед", new Vector3Int(200, 200, 18),
             new Vector3(sideOffset, 0f, 0.038f));
 
         Assert.IsEmpty(FacadeValidator.FindFaceObstructions(facade, All()),
@@ -80,12 +52,12 @@ public class FacadeValidatorNoiseTests
     [Test]
     public void TheSameNeighbourSlidBackByAMillimetre_IsAnObstruction()
     {
-        var facade = MakeFacade("Фасад", new Vector3Int(400, 300, 18), Vector3.zero);
+        var facade = MakePrimitiveFacade("Фасад", new Vector3Int(400, 300, 18), Vector3.zero);
         float toU = AppConstants.MM_TO_UNITS;
         float overlapMM = FacadeValidator.MinOverlapMm + 1f;
         float sideOffset = (200f + 100f - overlapMM) * toU;
 
-        MakeElement("Сосед", new Vector3Int(200, 200, 18),
+        MakePrimitiveElement("Сосед", new Vector3Int(200, 200, 18),
             new Vector3(sideOffset, 0f, 0.038f));
 
         var obstructions = FacadeValidator.FindFaceObstructions(facade, All());
@@ -99,7 +71,7 @@ public class FacadeValidatorNoiseTests
     [Test]
     public void ChildrenOfTheFacade_AreNeverItsOwnObstruction()
     {
-        var facade = MakeFacade("Фасад", new Vector3Int(400, 300, 18), Vector3.zero);
+        var facade = MakePrimitiveFacade("Фасад", new Vector3Int(400, 300, 18), Vector3.zero);
 
         var handleGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
         handleGo.name = "Ручка";

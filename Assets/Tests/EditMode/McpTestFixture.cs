@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using Newtonsoft.Json;
@@ -21,10 +20,12 @@ using KitchenDesigner.Core.MCP;
 /// про SnapIntegrationTests, падавший только в полном PlayMode-прогоне именно
 /// по этой причине. Здесь вынесено только то, что было БУКВАЛЬНО идентично во
 /// всех копиях.
+///
+/// Сам список <see cref="_spawned"/> и постройка примитивов переехали ещё уровнем
+/// ниже, в <see cref="ElementTestBase"/>: те же тела нашлись и вне MCP-семейства.
 /// </summary>
-public abstract class McpTestFixture
+public abstract class McpTestFixture : ElementTestBase
 {
-    protected readonly List<GameObject> _spawned = new List<GameObject>();
     protected McpCommandHandler? _handler;
 
     [SetUp]
