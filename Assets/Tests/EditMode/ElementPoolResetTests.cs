@@ -132,6 +132,9 @@ public class ElementPoolResetTests
         ["OpenActionLabel"] = "подпись пункта меню, считается из IsOpen и хозяина фасада",
         ["ClosedPosition"] = "производное от transform и IsDoorClosed",
         ["ClosedRotation"] = "производное от transform и IsDoorClosed",
+        ["Body"] = "readonly struct FacadeBody, целиком выводится из DimensionsMM, Gaps и позы "
+            + "через ValidationPositionAt/ValidationRotation — ту же пару, что уже даёт "
+            + "ClosedPosition/ClosedRotation выше; сама ничего не хранит",
     };
 
     /// <summary>Свойства, которые состояние хранят, но пишутся не сеттером, а методом.
