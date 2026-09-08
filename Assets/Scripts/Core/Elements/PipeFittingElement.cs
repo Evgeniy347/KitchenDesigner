@@ -6,7 +6,7 @@ using KitchenDesigner.Core.Plumbing;
 namespace KitchenDesigner.Core
 {
     public abstract class PipeFittingElement : KitchenElement, IPaintsItself, ISnapPorts,
-        IAutoSeated
+        IAutoSeated, IReseatsPortsAfterRotation
     {
         private readonly RebuildGuard _rebuild = new RebuildGuard();
 
@@ -58,6 +58,14 @@ namespace KitchenDesigner.Core
 
         public void SeatOnPipeEnd(PipeElement pipe, int end, IReadOnlyList<KitchenElement> scene) =>
             PipeDocking.SeatFittingOnPipeEnd(this, pipe, end, scene);
+
+        public object? CaptureLinksForRotation(IReadOnlyList<KitchenElement> scene) =>
+            PipeDocking.ConnectedMouths(this, scene);
+
+        public void ReseatAfterRotation(object? capturedLinks)
+        {
+            if (capturedLinks is List<PipePort> mouths) PipeDocking.ReseatAfterRotation(this, mouths);
+        }
 
         public Vector3 HubPositionUnits =>
             ValidationPositionAt(transform.position) + ValidationRotation * LocalHubUnits;
