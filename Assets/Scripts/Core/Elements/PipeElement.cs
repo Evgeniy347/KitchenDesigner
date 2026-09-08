@@ -75,6 +75,10 @@ namespace KitchenDesigner.Core
             PipeDocking.Seat(this, ValidationPositionAt(transform.position), ValidationRotation,
                 scene, cursor);
 
+        public void RepairJointAfterGridSnap(
+            System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
+            PipeDocking.RepairAfterGridSnap(this, scene);
+
         public Vector3 EndAUnits => SnapPortAt(0, transform.position).Position;
 
         public Vector3 EndBUnits => SnapPortAt(1, transform.position).Position;

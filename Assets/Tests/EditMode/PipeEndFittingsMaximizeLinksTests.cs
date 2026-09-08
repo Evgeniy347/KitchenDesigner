@@ -21,12 +21,16 @@ public class PipeEndFittingsMaximizeLinksTests : SnapTestBase
     private const int PipeLengthMm = 600;
     private const int LowerEnd = 0;
 
+    [SetUp]
+    public void ClearFaceCacheBeforeTest() => FaceCache.Clear();
+
     [TearDown]
     public void ClearScene()
     {
         CommandStack.Clear();
         PartRegistry.Clear();
         ElementFactory.ClearPools();
+        FaceCache.Clear();
     }
 
     private static float Units(float mm) => mm * AppConstants.MM_TO_UNITS;
@@ -97,7 +101,8 @@ public class PipeEndFittingsMaximizeLinksTests : SnapTestBase
         Assert.AreEqual(1, JoinedLinks(),
             "порт соседа стоит в ТОЙ ЖЕ точке, что и в предыдущем тесте, но смотрит В ТУ ЖЕ "
             + "сторону, что и плечо отвода — это наложение, а не стык, и бонус не засчитывается");
-        Assert.AreEqual(2, OpenEnds(),
-            "и верхний конец трубы, и второе плечо отвода остаются открытыми");
+        Assert.AreEqual(3, OpenEnds(),
+            "открыты верхний конец трубы, второе плечо отвода — И порт Podacha: без "
+            + "бонусного стыка её единственный порт тоже никуда не подключён");
     }
 }

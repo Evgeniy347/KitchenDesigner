@@ -186,6 +186,10 @@ namespace KitchenDesigner.Core
             SnapCursor cursor = default) =>
             ScrewLegAutoFit.Seat(this, scene);
 
+        public void RepairJointAfterGridSnap(
+            System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
+            ScrewLegAutoFit.Seat(this, scene);
+
         private void SyncDimensions() =>
             Data.DimensionsMM = new Vector3Int(_baseDiameterMM, BodyHeightMM, _baseDiameterMM);
 

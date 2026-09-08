@@ -27,6 +27,7 @@ namespace KitchenDesigner.Core
 
             RestoreProjectState(data);
             SnapElementEdgesToMillimetreGrid(resolved);
+            RepairAutoSeatedJointsAfterGridSnap(resolved);
             SceneChangeTracker.SettleDerivedLinks();
 
             MigrateEdgeStates(data, resolved);
@@ -90,6 +91,16 @@ namespace KitchenDesigner.Core
                 if (el != null && MmGrid.Snap(el)) snapped++;
             if (snapped > 0)
                 Debug.Log($"[MmGrid] Выровнено по миллиметровой сетке: {snapped} дет.");
+        }
+
+        private static void RepairAutoSeatedJointsAfterGridSnap(List<KitchenElement?> elements)
+        {
+            var scene = new List<KitchenElement>(elements.Count);
+            foreach (var el in elements)
+                if (el != null) scene.Add(el);
+
+            foreach (var el in scene)
+                if (el is IAutoSeated seated) seated.RepairJointAfterGridSnap(scene);
         }
 
         private static void RestoreBasePlate(ElementData data)

@@ -9,6 +9,8 @@ namespace KitchenDesigner.Core
     {
         public const float RotationEpsilonDegrees = WallSeating.RotationEpsilonDegrees;
 
+        public const float GridRepairMaxDistMm = 2f;
+
         public static void Seat(KitchenElement element, Vector3 poseOrigin,
             Quaternion poseRotation, IReadOnlyList<KitchenElement> scene, in SnapCursor cursor)
         {
@@ -17,11 +19,30 @@ namespace KitchenDesigner.Core
             var settings = KitchenSettings.Instance;
             if (settings == null || !settings.SnapEnabled) return;
 
-            var moved = element.ToPortedPart(element.transform.position);
-            if (!moved.HasPorts) return;
-
             float maxDist = settings.SnapThreshold * AppConstants.MM_TO_UNITS
                             + Tolerance.SnapEpsilon;
+
+            SeatWithinDistance(element, poseOrigin, poseRotation, scene, cursor, maxDist);
+        }
+
+        public static void RepairAfterGridSnap(KitchenElement element,
+            IReadOnlyList<KitchenElement> scene)
+        {
+            if (element == null) return;
+
+            float maxDist = GridRepairMaxDistMm * AppConstants.MM_TO_UNITS;
+            SeatWithinDistance(element, element.transform.position, element.transform.rotation,
+                scene, default, maxDist);
+        }
+
+        private static void SeatWithinDistance(KitchenElement element, Vector3 poseOrigin,
+            Quaternion poseRotation, IReadOnlyList<KitchenElement> scene, in SnapCursor cursor,
+            float maxDist)
+        {
+            if (element == null || scene == null) return;
+
+            var moved = element.ToPortedPart(element.transform.position);
+            if (!moved.HasPorts) return;
 
             var dock = SnapPortDock.Best(moved, scene.ToPortedParts(), maxDist, cursor);
             if (!dock.taken) return;
@@ -123,8 +144,7 @@ namespace KitchenDesigner.Core
 
                     var mouthPosUnits = new Vector3(mouth.PositionMm.XMm, mouth.PositionMm.YMm,
                         mouth.PositionMm.ZMm) * AppConstants.MM_TO_UNITS;
-                    Vector3 candidatePos = fitting.transform.position
-                        + (mouthPosUnits - portNow.Position);
+                    Vector3 candidatePos = mouthPosUnits - portNow.Position;
 
                     int links = LinksAt(fitting, candidatePos, rememberedMouths, toMm);
                     if (links > bestLinks)

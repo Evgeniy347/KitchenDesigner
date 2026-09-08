@@ -8,16 +8,26 @@ using KitchenDesigner.Core.Plumbing;
 
 /// <summary>Задача A: почему порядок операций в <c>ElementMover.FinishDrag</c> важен.
 ///
-/// <c>MmGrid.Snap</c> округляет координату МИНИМАЛЬНОЙ вершины меша до целого
-/// миллиметра — разумно для мебели, но фитинги dn20 дробные по построению (Ø26.8,
-/// корпус Ø33.5, нога 40.2 мм), так что округление почти всегда находит, что
-/// сдвинуть. <c>JoinToleranceMm</c> = 0.5 мм: сдвиг на округление легко превышает
-/// допуск и рвёт только что закрытый стык.
+/// Первая версия этого стенда округляла УГОЛОК после посадки и не смогла
+/// воспроизвести разрыв (осталась 1 связь вместо ожидаемых 0) — замер на реальной
+/// сцене пользователя (<c>PipeGapSensorTests</c>) показал, что настоящий разрыв
+/// стыка живёт не в порядке вызовов <c>ElementMover.FinishDrag</c>, а в том, что
+/// <c>SceneRestorer.Restore</c> округляет КАЖДУЮ деталь сцены по отдельности при
+/// ЗАГРУЗКЕ проекта, ни разу не переспрашивая, остался ли стык закрыт (см.
+/// <c>ScenePipeJointGridRepairTests</c> — там и диагноз, и починка).
 ///
-/// Оба теста двигают ОДИН и тот же уголок ОДНИМ и тем же путём
+/// Округление именно ТРУБЫ, а не фитинга, воспроизводит разрыв надёжно: сечение
+/// dn20-трубы — 27 мм, половина (13.5 мм) ВСЕГДА дробная, так что
+/// <c>MmGrid.Snap</c> почти для любой позиции сдвигает минимальную вершину меша на
+/// 0.5 мм по каждой поперечной оси — совместно ~0.71 мм, что больше
+/// <c>JoinToleranceMm</c> = 0.5 мм. У фитинга дробность зависит от его конкретной
+/// геометрии и позиции и не гарантирована — потому первая версия и не увидела
+/// разрыва.
+///
+/// Оба теста двигают ОДИН и тот же уголок-трубу ОДНИМ и тем же путём
 /// (<c>IAutoSeated.SeatAfterMove</c>, как <c>PipeFittingDockSceneTests</c>) и
 /// отличаются только порядком, в котором зовут <c>MmGrid.Snap</c> — это и есть
-/// правило, которое теперь соблюдает <c>ElementMover.FinishDrag</c>: сетка округляет
+/// правило, которое соблюдает <c>ElementMover.FinishDrag</c>: сетка округляет
 /// СНАЧАЛА, посадка устье-в-устье выполняется ПОСЛЕДНЕЙ.</summary>
 public class ElementMoverSeatingOrderTests : SnapTestBase
 {
@@ -54,7 +64,7 @@ public class ElementMoverSeatingOrderTests : SnapTestBase
         PipeNetwork.Build(new ScenePipeSnapshot(scene).Ports()).Links.Count;
 
     [Test]
-    public void GridRoundingAfterSeating_BreaksTheJointItJustClosed()
+    public void GridRoundingOfThePipeAfterSeating_BreaksTheJointItJustClosed()
     {
         var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Run");
         var elbow = ElbowBroughtUpTo(pipe);
@@ -63,27 +73,28 @@ public class ElementMoverSeatingOrderTests : SnapTestBase
         Assume.That(JoinedLinks(pipe, elbow), Is.EqualTo(1),
             "стенд обязан доказать сам себя: посадка закрыла стык");
 
-        bool rounded = MmGrid.Snap(elbow);
+        bool rounded = MmGrid.Snap(pipe);
         Assume.That(rounded, Is.True,
-            "у dn20 дробная геометрия — сетке обязано найтись что округлять, иначе стенд "
-            + "ничего не доказывает");
+            "у dn20-трубы сечение 27 мм — половина всегда дробная, сетке обязано "
+            + "найтись что округлять, иначе стенд ничего не доказывает");
 
         Assert.AreEqual(0, JoinedLinks(pipe, elbow),
-            "это и есть баг задачи A: округление ПОСЛЕ посадки откатывает дробную деталь "
-            + "и рвёт только что закрытый стык");
+            "округление ПОСЛЕ посадки откатывает дробную деталь и рвёт только что "
+            + "закрытый стык — тот же баг, что при загрузке проекта "
+            + "(ScenePipeJointGridRepairTests) рвёт стыки пользователя");
     }
 
     [Test]
-    public void GridRoundingBeforeSeating_LeavesTheJointClosed()
+    public void GridRoundingOfThePipeBeforeSeating_LeavesTheJointClosed()
     {
         var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Run");
         var elbow = ElbowBroughtUpTo(pipe);
 
-        MmGrid.Snap(elbow);
+        MmGrid.Snap(pipe);
         elbow.SeatAfterMove(new List<KitchenElement> { pipe, elbow });
 
         Assert.AreEqual(1, JoinedLinks(pipe, elbow),
-            "тот же уголок, тот же порядок, что теперь идёт в ElementMover.FinishDrag: "
+            "та же труба, тот же порядок, что идёт в ElementMover.FinishDrag: "
             + "сетка округляет СНАЧАЛА, посадка — ПОСЛЕДНЕЙ, и ничего дальше её не откатывает");
     }
 }

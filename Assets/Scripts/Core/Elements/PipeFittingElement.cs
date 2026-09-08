@@ -53,6 +53,9 @@ namespace KitchenDesigner.Core
             PipeDocking.Seat(this, ValidationPositionAt(transform.position), ValidationRotation,
                 scene, cursor);
 
+        public void RepairJointAfterGridSnap(IReadOnlyList<KitchenElement> scene) =>
+            PipeDocking.RepairAfterGridSnap(this, scene);
+
         public void SeatOnPipeEnd(PipeElement pipe, int end, IReadOnlyList<KitchenElement> scene) =>
             PipeDocking.SeatFittingOnPipeEnd(this, pipe, end, scene);
 

@@ -227,23 +227,34 @@ public class PipeFittingSnapSceneProbeTests : SnapTestBase
     }
 
     [Test]
-    public void PipeAndFitting_MayBeAttachedToEachOther_ButSnappingLinksNothing()
+    public void PipeAndFitting_CannotUseAttachToEachOther_ConnectionsLiveOnPortsOnly()
     {
         var pipe = StandingPipe();
         var coupling = CouplingUnderThePipe();
 
-        Assert.IsTrue(AttachLinks.CanAttach(coupling, pipe),
-            "механизм «прикреплённая деталь едет за хозяином» для пары «фитинг на трубе» "
-            + "годится как есть: ни PipeElement, ни PipeFittingElement не запрещают себе "
-            + "ни быть ребёнком, ни быть родителем");
-        Assert.IsTrue(AttachLinks.CanChooseParent(coupling),
-            "и связь у фитинга НЕ производная — в отличие от винтовой опоры, у которой "
-            + "хозяин вычисляется сам. Значит, автопривязку при посадке придётся заводить");
+        Assert.IsFalse(AttachLinks.CanBeChild(coupling),
+            "по прямому требованию пользователя (коммит 007e63a7) у трубы и всех шести "
+            + "фитингов убрано поле «Прикрепить к»: PipeFittingElement.CanFollowAnAttachParent "
+            + "= false, так что муфта не может быть ребёнком ни в чьей привязке");
+        Assert.IsFalse(AttachLinks.CanBeParent(pipe),
+            "и труба не может быть хозяином — PipeElement.CanCarryAttachedParts = false. "
+            + "Связи трассы держатся на устьях (PipeNetwork/PipeJoint), а не на этом поле");
+        Assert.IsFalse(AttachLinks.CanAttach(coupling, pipe),
+            "как следствие двух проверок выше — «прикреплённая деталь едет за хозяином» "
+            + "для пары «фитинг на трубе» не годится вообще, ни в одну сторону");
+
+        var boardChild = MakeStd("BoardChild", new Vector3(5f, 5f, 5f));
+        var boardParent = MakeStd("BoardParent", new Vector3(6f, 6f, 6f));
+        Assert.IsTrue(AttachLinks.CanAttach(boardChild, boardParent),
+            "положительный контроль: обычная деталь по-прежнему может быть и ребёнком, и "
+            + "хозяином — правило запрещает привязку именно трубам/фитингам, а не сломано "
+            + "вообще");
 
         coupling.transform.position = SnapOnto(coupling, pipe).position;
 
         Assert.IsTrue(string.IsNullOrEmpty(coupling.AttachedToName),
-            "прилипание само по себе связи НЕ создаёт: AttachedToName остаётся пустым, и "
-            + "передвинутая труба уедет из-под муфты, оставив её висеть");
+            "прилипание само по себе связи через AttachedToName не создаёт и не может "
+            + "создать — механизм для этой пары элементов отключён на уровне типа, а не "
+            + "просто не вызван");
     }
 }

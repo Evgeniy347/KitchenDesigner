@@ -6,19 +6,23 @@ using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Plumbing;
 
-/// <summary>Сенсор задачи A/B: печатает и проверяет ФАКТИЧЕСКИЙ зазор устье-в-устье
-/// между трубой и обоими отводами на реальной сцене пользователя (замороженная копия
+/// <summary>Сенсор задачи A/B: печатает ФАКТИЧЕСКИЙ зазор устье-в-устье между трубой
+/// и обоими отводами на реальной сцене пользователя (замороженная копия
 /// <c>docs/example.save.json</c>, снятая для этой задачи — сам файл этот тест не
-/// трогает, agents/TESTS.md → «NEVER TOUCH IT»), а не на придуманном стенде.
+/// трогает, agents/TESTS.md → «NEVER TOUCH IT»).
 ///
-/// Диагноз задачи A был: <c>MmGrid.Snap</c>, вызванный СРАЗУ ПОСЛЕ посадки устье в
-/// устье при отпускании кнопки (<c>ElementMover.FinishDrag</c>), откатывает только
-/// что севшую дробную деталь на целый миллиметр и рвёт стык. Этот тест не пересказывает
-/// диагноз, а меряет ЧИСЛО: зазор либо укладывается в допуск стыка
-/// (<c>PipeJoint.JoinToleranceMm</c> = <c>Tolerance.ContactMm</c> = 0.5 мм), либо нет.
-/// Сцена статична — тест не перетаскивает деталь заново, а читает то, что уже лежит в
-/// файле; правка ElementMover.FinishDrag на этот тест не влияет и не обязана влиять,
-/// это отдельная проверка того же факта на живых координатах пользователя.</summary>
+/// Эти два теста на замороженной сцене — СЕНСОР, а не критерий приёмки: они меряют и
+/// печатают число (<c>TestContext.WriteLine</c>), но ничего не утверждают о нём.
+/// Первая версия ставила сюда <c>Assert.LessOrEqual</c> — стык на сцене пользователя
+/// был разомкнут на момент заморозки фикстуры, так что тест был красным вне
+/// зависимости от качества починки, и стал бы снова красным при следующей заморозке
+/// с любым другим случайным зазором. Критерий приёмки обязан стоять на сцене, которую
+/// тест сажает САМ (<c>MouthToMouthGap_OnASelfSeatedScene_IsWithinTheProjectJoinTolerance</c>
+/// ниже) — agents/TEST-DESIGN.md → «Snapshot baselines» и «A brute-force sweep...».
+///
+/// Настоящая причина разомкнутого стыка нашлась не в порядке операций
+/// <c>ElementMover.FinishDrag</c> (он уже верный), а в <c>SceneRestorer.Restore</c>:
+/// диагноз и починка — <c>ScenePipeJointGridRepairTests</c>.</summary>
 public class PipeGapSensorTests
 {
     private const string SaveFileName = "Fixtures/pipe-gap-scene.save.json";
@@ -101,8 +105,8 @@ public class PipeGapSensorTests
         return best;
     }
 
-    private static void AssertGapWithinTolerance(List<KitchenElement> elements,
-        string pipeName, string fittingName)
+    private static void ReportGap(List<KitchenElement> elements, string pipeName,
+        string fittingName)
     {
         var pipe = elements.FirstOrDefault(e => e.PartName == pipeName);
         var fitting = elements.FirstOrDefault(e => e.PartName == fittingName);
@@ -115,24 +119,51 @@ public class PipeGapSensorTests
         TestContext.WriteLine($"{pipeName} <-> {fittingName}: зазор устье-в-устье = "
             + $"{gapMm:F4} мм (допуск PipeJoint.JoinToleranceMm = "
             + $"{PipeJoint.JoinToleranceMm} мм)");
+    }
+
+    [Test]
+    public void MouthToMouthGap_TrubaToOtvod92_OnTheFrozenUserScene()
+    {
+        var elements = RestoreScene();
+        ReportGap(elements, "Truba", "Otvod_92");
+    }
+
+    [Test]
+    public void MouthToMouthGap_TrubaToOtvod91_OnTheFrozenUserScene()
+    {
+        var elements = RestoreScene();
+        ReportGap(elements, "Truba", "Otvod_91");
+    }
+
+    [Test]
+    public void MouthToMouthGap_OnASelfSeatedScene_IsWithinTheProjectJoinTolerance()
+    {
+        var s = KitchenSettings.Instance;
+        Assert.IsNotNull(s);
+        s.SnapEnabled = true;
+        s.SnapThreshold = 50f;
+
+        float toU = AppConstants.MM_TO_UNITS;
+        var pipeGo = ElementFactory.CreatePipe(PipeSpec.DEFAULT_SIZE, 600, "SensorPipe",
+            new Vector3(0f, 300f * toU, 0f));
+        var pipe = pipeGo.GetComponent<PipeElement>();
+        var elbowGo = ElementFactory.CreatePipeElbow("SensorElbow", Vector3.zero);
+        var elbow = elbowGo.GetComponent<PipeFittingElement>();
+        elbow.transform.position += pipe.EndAUnits + new Vector3(0f, -20f * toU, 0f)
+            - elbow.PortPositionUnits(0);
+
+        var scene = new List<KitchenElement> { pipe, elbow };
+        elbow.SeatAfterMove(scene);
+
+        float gapMm = MinMouthGapMm(pipe, elbow);
+        TestContext.WriteLine($"SensorPipe <-> SensorElbow (сцена, посаженная тестом): "
+            + $"зазор устье-в-устье = {gapMm:F4} мм (допуск PipeJoint.JoinToleranceMm = "
+            + $"{PipeJoint.JoinToleranceMm} мм)");
 
         Assert.LessOrEqual(gapMm, PipeJoint.JoinToleranceMm,
-            $"зазор {gapMm:F4} мм между {pipeName} и {fittingName} больше допуска стыка "
-            + $"({PipeJoint.JoinToleranceMm} мм) — PipeJoint.Connects не признает их "
-            + "соединёнными, и схема концов трубы покажет «нет» на этом торце");
-    }
-
-    [Test]
-    public void MouthToMouthGap_TrubaToOtvod92_IsWithinTheProjectJoinTolerance()
-    {
-        var elements = RestoreScene();
-        AssertGapWithinTolerance(elements, "Truba", "Otvod_92");
-    }
-
-    [Test]
-    public void MouthToMouthGap_TrubaToOtvod91_IsWithinTheProjectJoinTolerance()
-    {
-        var elements = RestoreScene();
-        AssertGapWithinTolerance(elements, "Truba", "Otvod_91");
+            $"IAutoSeated.SeatAfterMove обязан закрыть стык устье-в-устье в допуск "
+            + $"({PipeJoint.JoinToleranceMm} мм) на детерминированной сцене, которую сажает "
+            + "сам тест — это критерий приёмки, который не зависит от конкретного "
+            + "разомкнутого файла пользователя");
     }
 }
