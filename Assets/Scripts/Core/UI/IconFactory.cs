@@ -9,11 +9,13 @@ namespace KitchenDesigner.Core.UI
         private static readonly Color Ink2 = new Color(0.62f, 0.66f, 0.78f, 1f);
         private static readonly Color Accent = new Color(0.45f, 0.85f, 0.5f, 1f);
         private static readonly Color Clear = new Color(0, 0, 0, 0);
+        private static readonly Color TintedByCaller = Color.white;
 
         private static Sprite? _gear, _floppy, _floppyPlus, _folder, _undo, _redo, _pin, _warning, _pencil;
         private static Sprite? _caretUp, _caretDown;
         private static Sprite? _ruler, _bulb, _sun, _eyedropper, _crosshair;
         private static Sprite? _note, _play, _pause, _trackNext, _trackPrev;
+        private static Sprite? _findIssue, _document, _sceneTree, _book, _resizeHandles, _moveHandles, _tintDrop;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -36,6 +38,13 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Pause => _pause ??= BuildPause();
         public static Sprite TrackNext => _trackNext ??= BuildSkip(true);
         public static Sprite TrackPrev => _trackPrev ??= BuildSkip(false);
+        public static Sprite FindIssue => _findIssue ??= BuildFindIssue();
+        public static Sprite Document => _document ??= BuildDocument();
+        public static Sprite SceneTree => _sceneTree ??= BuildSceneTree();
+        public static Sprite Book => _book ??= BuildBook();
+        public static Sprite ResizeHandles => _resizeHandles ??= BuildResizeHandles();
+        public static Sprite MoveHandles => _moveHandles ??= BuildMoveHandles();
+        public static Sprite TintDrop => _tintDrop ??= BuildTintDrop();
 
         private static Sprite BuildGear()
         {
@@ -106,6 +115,111 @@ namespace KitchenDesigner.Core.UI
 
         private static void DrawFolderFoldLine(Color32[] px) => Rect(px, 7, 40, 57, 43, Ink2);
 
+        private static Sprite BuildDocument()
+        {
+            var px = NewCanvas();
+            DrawDocumentPage(px);
+            DrawDocumentFoldedCorner(px);
+            DrawDocumentLines(px);
+            return Finish(px);
+        }
+
+        private static void DrawDocumentPage(Color32[] px) => Rect(px, 14, 8, 50, 56, Ink);
+
+        private static void DrawDocumentFoldedCorner(Color32[] px)
+        {
+            Rect(px, 42, 46, 50, 56, Clear);
+            Rect(px, 42, 46, 50, 50, Ink2);
+            Rect(px, 42, 50, 46, 56, Ink2);
+        }
+
+        private static void DrawDocumentLines(Color32[] px)
+        {
+            Rect(px, 20, 13, 44, 17, Ink2);
+            Rect(px, 20, 23, 44, 27, Ink2);
+            Rect(px, 20, 33, 38, 37, Ink2);
+        }
+
+        private static Sprite BuildSceneTree()
+        {
+            var px = NewCanvas();
+            DrawSceneTreeRoot(px);
+            DrawSceneTreeConnectors(px);
+            DrawSceneTreeChildren(px);
+            return Finish(px);
+        }
+
+        private static void DrawSceneTreeRoot(Color32[] px) => Rect(px, 8, 24, 20, 36, Ink);
+
+        private static void DrawSceneTreeConnectors(Color32[] px)
+        {
+            Rect(px, 20, 14, 24, 46, Ink2);
+            Rect(px, 20, 42, 34, 46, Ink2);
+            Rect(px, 20, 14, 34, 18, Ink2);
+        }
+
+        private static void DrawSceneTreeChildren(Color32[] px)
+        {
+            Rect(px, 34, 40, 48, 52, Ink);
+            Rect(px, 34, 8, 48, 20, Ink);
+        }
+
+        private static Sprite BuildBook()
+        {
+            var px = NewCanvas();
+            DrawBookCover(px);
+            DrawBookSpine(px);
+            DrawBookPageEdges(px);
+            return Finish(px);
+        }
+
+        private static void DrawBookCover(Color32[] px) => Rect(px, 14, 10, 50, 54, Ink);
+
+        private static void DrawBookSpine(Color32[] px) => Rect(px, 14, 10, 20, 54, Ink2);
+
+        private static void DrawBookPageEdges(Color32[] px)
+        {
+            Rect(px, 44, 42, 50, 46, Ink2);
+            Rect(px, 44, 30, 50, 34, Ink2);
+            Rect(px, 44, 18, 50, 22, Ink2);
+        }
+
+        private static Sprite BuildResizeHandles()
+        {
+            var px = NewCanvas();
+            Line(px, 18, 18, 46, 46, 3, Ink2);
+            Rect(px, 10, 10, 22, 22, Ink);
+            Rect(px, 42, 42, 54, 54, Ink);
+            return Finish(px);
+        }
+
+        private static Sprite BuildMoveHandles()
+        {
+            var px = NewCanvas();
+            TriangleUp(px, 32, 32, 50, 8, Ink);
+            TriangleDown(px, 32, 32, 14, 8, Ink);
+            TriangleRight(px, 32, 50, 32, 8, Ink);
+            TriangleLeft(px, 14, 32, 32, 8, Ink);
+            Disc(px, 32, 32, 5, Ink2);
+            return Finish(px);
+        }
+
+        private static Sprite BuildTintDrop()
+        {
+            var px = NewCanvas();
+            DrawTintDropBody(px);
+            DrawTintDropGloss(px);
+            return Finish(px);
+        }
+
+        private static void DrawTintDropBody(Color32[] px)
+        {
+            TriangleUp(px, 32, 30, 50, 5, Ink);
+            Disc(px, 32, 24, 15, Ink);
+        }
+
+        private static void DrawTintDropGloss(Color32[] px) => Disc(px, 26, 20, 3, Ink2);
+
         private static Sprite BuildCircularArrow(bool redo)
         {
             const int arrowheadOnTheLeft = 17, arrowheadOnTheRight = 47;
@@ -133,9 +247,8 @@ namespace KitchenDesigner.Core.UI
 
         private static Sprite BuildWarning()
         {
-            var tintedByTheCallerThroughImageColor = Color.white;
             var px = NewCanvas();
-            TriangleUp(px, 32, 8, 48, 27, tintedByTheCallerThroughImageColor);
+            TriangleUp(px, 32, 8, 48, 27, TintedByCaller);
             PunchExclamationMark(px);
             return Finish(px);
         }
@@ -145,6 +258,22 @@ namespace KitchenDesigner.Core.UI
             Rect(px, 30, 24, 35, 40, Clear);
             Disc(px, 32, 19, 3, Clear);
         }
+
+        private static Sprite BuildFindIssue()
+        {
+            var px = NewCanvas();
+            DrawMagnifierLens(px, TintedByCaller);
+            DrawMagnifierHandle(px, TintedByCaller);
+            return Finish(px);
+        }
+
+        private static void DrawMagnifierLens(Color32[] px, Color col)
+        {
+            Disc(px, 32, 54, 9, col);
+            Disc(px, 32, 54, 5, Clear);
+        }
+
+        private static void DrawMagnifierHandle(Color32[] px, Color col) => Line(px, 38, 50, 54, 38, 5, col);
 
         private static Sprite BuildPencil()
         {
@@ -395,6 +524,17 @@ namespace KitchenDesigner.Core.UI
             for (int y = baseY; y <= apexY; y++)
             {
                 int half = Mathf.RoundToInt(halfW * (1f - (y - baseY) / (float)h));
+                Rect(px, cx - half, y, cx + half + 1, y + 1, col);
+            }
+        }
+
+        private static void TriangleDown(Color32[] px, int cx, int baseY, int apexY, int halfW, Color col)
+        {
+            int h = baseY - apexY;
+            if (h <= 0) return;
+            for (int y = apexY; y <= baseY; y++)
+            {
+                int half = Mathf.RoundToInt(halfW * (y - apexY) / (float)h);
                 Rect(px, cx - half, y, cx + half + 1, y + 1, col);
             }
         }

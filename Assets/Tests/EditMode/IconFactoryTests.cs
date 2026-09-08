@@ -41,6 +41,49 @@ public class IconFactoryTests
     }
 
     [Test]
+    public void IconFactory_FindIssue_IsDrawnWhite_SoTheCallerCanTintIt()
+    {
+        var px = Pixels(IconFactory.FindIssue);
+        var tinted = px.Where(p => p.a > 0)
+            .Where(p => p.r != 255 || p.g != 255 || p.b != 255)
+            .ToList();
+
+        Assert.IsNotEmpty(px.Where(p => p.a > 0).ToList(), "иконка пустая — тест бы зеленел впустую");
+        Assert.IsEmpty(tinted,
+            "«Перейти к первой проблеме» перекрашивается тем же способом, что и «Ошибки» — "
+            + "красным при ошибках, оранжевым при предупреждениях, серым когда неактивна — "
+            + "поэтому рисуется белым, а не своим цветом");
+    }
+
+    [Test]
+    public void IconFactory_Warning_And_FindIssue_AreDifferentSilhouettes()
+    {
+        var warningInk = new HashSet<(int x, int y)>(InkPixels(IconFactory.Warning));
+        var findIssueInk = InkPixels(IconFactory.FindIssue).ToList();
+
+        int overlap = findIssueInk.Count(p => warningInk.Contains(p));
+
+        Assert.Less(overlap, findIssueInk.Count / 2,
+            "«Ошибки» и «Перейти к первой проблеме» раньше делили один и тот же треугольник и "
+            + "отличались только tooltip'ом и бейджем — теперь форма обязана их различать сама "
+            + "(доступность, LEAD-AGENT.md §2): треугольник предупреждения против лупы поиска");
+    }
+
+    [Test]
+    public void IconFactory_HandleModeIcons_AreDifferentShapes_NotJustColor()
+    {
+        var resizeInk = new HashSet<(int x, int y)>(InkPixels(IconFactory.ResizeHandles));
+        var moveInk = InkPixels(IconFactory.MoveHandles).ToList();
+
+        int overlap = moveInk.Count(p => resizeInk.Contains(p));
+
+        Assert.Less(overlap, moveInk.Count / 2,
+            "«Ручки: растяжение» (квадраты-хваталки по диагонали) и «Ручки: перенос» "
+            + "(четырёхлучевая стрелка) обязаны различаться формой — с уходом текста именно "
+            + "форма теперь несёт режим");
+    }
+
+    [Test]
     public void IconFactory_Undo_PutsTheArrowheadOnTheLeft_Redo_OnTheRight()
     {
         const int aboveTheArc = 21, belowTheArc = 27;

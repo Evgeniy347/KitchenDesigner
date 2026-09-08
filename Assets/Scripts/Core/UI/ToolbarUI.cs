@@ -4,6 +4,7 @@ using KitchenDesigner.Core.Analysis;
 using KitchenDesigner.Core.Update;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
@@ -17,7 +18,7 @@ namespace KitchenDesigner.Core.UI
         private const float SwatchSize = 14f;
         private const float TextButtonPad = 20f;
 
-        private static readonly string[] HandleModeCaptions =
+        private static readonly string[] HandleModeTooltips =
         {
             "Ручки: растяжение",
             "Ручки: перенос",
@@ -33,7 +34,8 @@ namespace KitchenDesigner.Core.UI
         private Image? _gotoIssueIcon;
         private RawImage? _eyedropperSwatch;
         private string _swatchMaterialId = string.Empty;
-        private TMP_Text? _handleModeLabel;
+        private Button? _handleModeButton;
+        private Image? _handleModeIcon;
         private Image? _errorsIcon;
         private TMP_Text? _issueCountLabel;
         private int _issueBadgeRevision = -1;
@@ -49,18 +51,20 @@ namespace KitchenDesigner.Core.UI
 
             float x = 8f;
 
-            AddPanelToggle(bar.transform, "Spec", "Спецификация", ToolbarPanel.Specification, ref x);
-            AddPanelToggle(bar.transform, "Hierarchy", "Сцена", ToolbarPanel.Hierarchy, ref x);
+            AddPanelToggle(bar.transform, "Spec", IconFactory.Document, ToolbarPanel.Specification, ref x,
+                "Спецификация");
+            AddPanelToggle(bar.transform, "Hierarchy", IconFactory.SceneTree, ToolbarPanel.Hierarchy, ref x,
+                "Сцена");
             var errorsButton = AddIconButton(bar.transform, "Errors", IconFactory.Warning,
                 ref x, () => _host!.TogglePanel(ToolbarPanel.Errors), "Ошибки");
             _toggles.Add((errorsButton, () => _host!.IsPanelVisible(ToolbarPanel.Errors)));
             _errorsIcon = errorsButton.transform.Find("Errors_Icon")?.GetComponent<Image>();
             _issueCountLabel = AddBadge(errorsButton.transform);
-            _gotoIssueButton = AddIconButton(bar.transform, "GotoIssue", IconFactory.Warning,
+            _gotoIssueButton = AddIconButton(bar.transform, "GotoIssue", IconFactory.FindIssue,
                 ref x, GotoFirstIssue, "Перейти к первой проблеме");
             _gotoIssueIcon = _gotoIssueButton.transform.Find("GotoIssue_Icon")?.GetComponent<Image>();
-            AddPanelToggle(bar.transform, "ProjectInstructions", "Инструкции",
-                ToolbarPanel.ProjectInstructions, ref x);
+            AddPanelToggle(bar.transform, "ProjectInstructions", IconFactory.Book,
+                ToolbarPanel.ProjectInstructions, ref x, "Инструкции");
             AddSeparator(bar.transform, ref x);
 
             AddPanelToggle(bar.transform, "Settings", IconFactory.Gear, ToolbarPanel.Settings, ref x, "Настройки");
@@ -73,9 +77,9 @@ namespace KitchenDesigner.Core.UI
             _redoButton = AddIconButton(bar.transform, "Redo", IconFactory.Redo, ref x, Redo, "Повторить");
             AddSeparator(bar.transform, ref x);
 
-            var modeBtn = AddBarButton(bar.transform, "HandleMode", HandleModeLabel(), ref x, ToggleHandleMode,
-                HandleModeCaptions);
-            _handleModeLabel = modeBtn.GetComponentInChildren<TMP_Text>();
+            _handleModeButton = AddIconButton(bar.transform, "HandleMode", HandleModeIcon(), ref x,
+                ToggleHandleMode, HandleModeTooltip());
+            _handleModeIcon = _handleModeButton.transform.Find("HandleMode_Icon")?.GetComponent<Image>();
             var measureButton = AddIconButton(bar.transform, "MeasureToggle", IconFactory.Ruler,
                 ref x, Measure.MeasureMode.Toggle, "Рулетка");
             _toggles.Add((measureButton, () => Measure.MeasureMode.Active));
@@ -85,7 +89,8 @@ namespace KitchenDesigner.Core.UI
             _eyedropperSwatch = AddSwatch(eyedropperButton.transform);
             AddSeparator(bar.transform, ref x);
 
-            var tintButton = AddBarButton(bar.transform, "TintToggle", "Тонировка", ref x, ToggleTint);
+            var tintButton = AddIconButton(bar.transform, "TintToggle", IconFactory.TintDrop, ref x,
+                ToggleTint, "Тонировка");
             _toggles.Add((tintButton, () => ElementHighlighter.TintEnabled));
             var lightsButton = AddIconButton(bar.transform, "LightsToggle", IconFactory.Bulb,
                 ref x, ToggleLights, "Свет");
@@ -119,14 +124,6 @@ namespace KitchenDesigner.Core.UI
 
             if (_issueBadgeThrottle.DueAfterSceneSettled(SceneRevision.Version, Time.unscaledTime))
                 RefreshIssueBadge();
-        }
-
-        private Button AddPanelToggle(Transform parent, string name, string label,
-            ToolbarPanel panel, ref float x)
-        {
-            var btn = AddBarButton(parent, name, label, ref x, () => _host!.TogglePanel(panel));
-            _toggles.Add((btn, () => _host!.IsPanelVisible(panel)));
-            return btn;
         }
 
         private Button AddPanelToggle(Transform parent, string name, Sprite icon,
@@ -288,15 +285,26 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        private static string HandleModeLabel() =>
-            ResizeHandleManager.Mode == ResizeHandleManager.HandleMode.Resize
-                ? HandleModeCaptions[0]
-                : HandleModeCaptions[1];
+        private static bool IsResizeMode() => ResizeHandleManager.Mode == ResizeHandleManager.HandleMode.Resize;
+
+        private static Sprite HandleModeIcon() =>
+            IsResizeMode() ? IconFactory.ResizeHandles : IconFactory.MoveHandles;
+
+        private static string HandleModeTooltip() =>
+            IsResizeMode() ? HandleModeTooltips[0] : HandleModeTooltips[1];
 
         private void ToggleHandleMode()
         {
             ResizeHandleManager.ToggleMode();
-            if (_handleModeLabel != null) _handleModeLabel.text = HandleModeLabel();
+            if (_handleModeIcon != null) _handleModeIcon.sprite = HandleModeIcon();
+            if (_handleModeButton != null) ReattachTooltip(_handleModeButton.gameObject, HandleModeTooltip());
+        }
+
+        private static void ReattachTooltip(GameObject target, string tooltip)
+        {
+            var trigger = target.GetComponent<EventTrigger>();
+            if (trigger != null) trigger.triggers.Clear();
+            TooltipUI.Attach(target, tooltip);
         }
 
         private static void ToggleTint()

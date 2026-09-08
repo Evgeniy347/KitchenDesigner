@@ -6,10 +6,12 @@ using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
-/// <summary>D9 + D10: режим правки и вид «Фото» больше не делят одну кнопку с
+/// <summary>D9 + D10 + D10.1: режим правки и вид «Фото» больше не делят одну кнопку с
 /// трёхшаговым циклом, а панели тулбара приведены к одному правилу — иконка с
-/// tooltip, текстом остаются только режимы. Ширина проверяется прямым замером
-/// построенного UI, а не константой на глаз.</summary>
+/// tooltip, текстом остаются только режимы. D10.1 дорисовала недостающие иконки
+/// («Спецификация», «Сцена», «Инструкции», «Ручки», «Тонировка») и перевела на них
+/// последние пять текстовых кнопок. Ширина проверяется прямым замером построенного
+/// UI, а не константой на глаз.</summary>
 public class ToolbarModeAndWidthTests
 {
     private sealed class FakeToolbarHost : IToolbarHost
@@ -103,6 +105,23 @@ public class ToolbarModeAndWidthTests
             "иконная кнопка обязана иметь tooltip — UI-GUIDELINES §5");
     }
 
+    [TestCase("Spec")]
+    [TestCase("Hierarchy")]
+    [TestCase("ProjectInstructions")]
+    [TestCase("TintToggle")]
+    public void FormerlyTextPanelButtons_AreNowIconsWithTooltip_D10Point1(string buttonName)
+    {
+        var btn = _bar.Find(buttonName)!;
+
+        Assert.IsNotNull(btn.Find(buttonName + "_Icon"),
+            $"«{buttonName}» не из чего было сделать иконку раньше — D10.1 дорисовала недостающий "
+            + "значок в IconFactory, и кнопка обязана его использовать");
+        Assert.IsNull(btn.GetComponentInChildren<TMP_Text>(),
+            "текст должен уйти целиком — иначе кнопка несёт и иконку, и подпись разом");
+        Assert.IsNotNull(btn.GetComponent<EventTrigger>(),
+            "иконная кнопка обязана иметь tooltip — UI-GUIDELINES §5");
+    }
+
     [Test]
     public void ModeButtons_StayText_AsTheOneNamedExceptionToTheIconRule()
     {
@@ -115,27 +134,36 @@ public class ToolbarModeAndWidthTests
     [Test]
     public void TextButtons_WidthTracksItsOwnLabel_NotASharedMagicNumber()
     {
-        var spec = (RectTransform)_bar.Find("Spec")!;
-        var hierarchy = (RectTransform)_bar.Find("Hierarchy")!;
+        var normal = (RectTransform)_bar.Find("ModeNormal")!;
+        var room = (RectTransform)_bar.Find("ModeRoom")!;
 
-        Assert.Greater(spec.sizeDelta.x, hierarchy.sizeDelta.x,
-            "«Спецификация» длиннее «Сцены» — авторазмер обязан это отразить, а не тащить "
-            + "общую фиксированную ширину, как было раньше");
+        Assert.Greater(room.sizeDelta.x, normal.sizeDelta.x,
+            "«Помещение» длиннее «Обычный» — авторазмер обязан это отразить, а не тащить "
+            + "общую фиксированную ширину. Это единственная пара, что осталась текстом после "
+            + "D10.1 — «Спецификация»/«Сцена» стали иконками");
     }
 
     [Test]
-    public void HandleModeButton_WidthFitsBothCaptions_AndNeverResizesOnToggle()
+    public void HandleModeButton_IsAnIconWithTooltip_SwapsShapeWithMode_NeverResizes()
     {
         var handleBtn = (RectTransform)_bar.Find("HandleMode")!;
+        var icon = handleBtn.Find("HandleMode_Icon")!.GetComponent<Image>();
+        Assert.IsNotNull(handleBtn.GetComponent<EventTrigger>(),
+            "иконная кнопка обязана иметь tooltip — UI-GUIDELINES §5");
+
         float widthBefore = handleBtn.sizeDelta.x;
+        var spriteBefore = icon.sprite;
 
         handleBtn.GetComponent<Button>().onClick.Invoke();
-        float widthAfterToggle = handleBtn.sizeDelta.x;
-        handleBtn.GetComponent<Button>().onClick.Invoke();
 
-        Assert.AreEqual(widthBefore, widthAfterToggle, 0.01f,
-            "ширина зафиксирована по ХУДШЕЙ из двух подписей заранее — иначе переключение "
-            + "«Ручки: растяжение» ↔ «Ручки: перенос» сдвигало бы все кнопки правее");
+        Assert.AreNotEqual(spriteBefore, icon.sprite,
+            "«растяжение» и «перенос» читаются теперь по ФОРМЕ значка (доступность — "
+            + "LEAD-AGENT.md §2), а не по тексту, значит клик обязан её сменить");
+        Assert.AreEqual(widthBefore, handleBtn.sizeDelta.x, 0.01f,
+            "иконная кнопка фиксированной ширины не имеет права дрожать при переключении");
+
+        handleBtn.GetComponent<Button>().onClick.Invoke();
+        Assert.AreEqual(spriteBefore, icon.sprite, "второй клик обязан вернуть исходную иконку");
     }
 
     // ── D10: помещается на 1366px ноутбука, и не разъезжается на 1920 ──
