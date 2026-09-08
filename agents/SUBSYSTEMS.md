@@ -10,6 +10,18 @@ divergence shows up as «растягивается, но не перетаск�
 Face order is a contract: index/2 = axis (0=X, 1=Y, 2=Z), even index = positive direction.
 Any `GetFaces()` override MUST keep it — `ResizeHandleManager` derives the resize axis from it.
 
+**A part with mouths (`ISnapPorts`) has no whole millimetre, and the mm grid must leave it
+alone.** dn20 is Ø 26.8 mm, a fitting body 33.5, a leg 40.2 — so `MmGrid`, which puts the box's
+MINIMUM VERTEX on whole millimetres, moved a freshly seated elbow by 0.571 mm while the joint
+tolerance is 0.5. That is the whole of "I drag it, it connects, I let go and it jumps back".
+The bug hid for a while because a pipe whose centre sits on a whole millimetre only drifts
+0.276 mm — the opposite input (centre on .5) is the one that fails, and a test without it says
+nothing. Two more places rounded the same part behind the seat: the properties panel rewrote
+`transform.position` from its whole-mm fields on EVERY Apply, even for axes the user never
+touched, and `SceneRestorer` rounded every element independently on load. Anything that touches
+scene geometry wholesale — grid, restore, serialisation — must ask for this capability and skip
+such parts, and nothing may run after a successful mouth-to-mouth seat and undo it.
+
 ## Validation — rules live in the core, not in the scene
 
 `Core/Geometry/ValidationCore.cs` holds the rules (overlap, contacts, connectivity, opening

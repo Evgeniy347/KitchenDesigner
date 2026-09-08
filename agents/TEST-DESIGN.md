@@ -71,23 +71,16 @@ three points (guard the delegate, unsubscribe on replace, make the new API a no-
 object) rather than the one that happens to be red.
 
 **A `MissingReferenceException` in a class that never destroys anything is a state leak from
-SOME OTHER class, not a bug in the one that crashed.** `PipeEndFittingsMaximizeLinksTests` died on
-`e.gameObject` for an element pulled from `PartRegistry.GetAll()` — a static singleton that lives
-for the WHOLE EditMode run, not per class. Reading `PipeEndFittings.Set`/`CommandStack` end to end
-showed only `SetActive` + `Register`/`Unregister`, never `DestroyImmediate` — two workers patched
-that file anyway and neither patch helped, because the defect wasn't there. It was
-`SnapTestBase.BaseTeardown`: it destroyed every spawned `GameObject` directly and never called
-`PartRegistry.Unregister` first, so any class that creates elements through `ElementFactory.Create*`
-(which DOES register them) and relies only on that shared teardown — no `PartRegistry.Clear()` of
-its own — leaves a destroyed-but-registered element sitting in the registry for whichever class
-runs next in the same process. Four classes matched that exact shape (`DoorSnapTests`,
-`DoorThresholdTests`, `WallCutoutTests`, `WindowSnapTests`). The fix is `Unregister` before
-`Destroy` in the ONE shared teardown, not a guard in the class that happened to trip on it —
-and `PartRegistryTests` now carries the opposite-input pair (`Unregister`-then-destroy leaves no
-dead reference; destroy-without-`Unregister` does) so the shape stays caught if it comes back.
-Same lesson as the `SettingsViewTab` leak above, one layer up: when a crash names a static
-collection and the class holding it is innocent, suspect every OTHER class that populates that
-collection, not the one reading it.
+SOME OTHER class, and the cure belongs in the shared collection, not in either class.**
+`PipeEndFittingsMaximizeLinksTests` died on an element pulled from `PartRegistry` — a static
+singleton that lives for the WHOLE EditMode run. Two workers patched the crashing class; neither
+patch helped, because the defect was never there. Nor was one leaker: a sensor built to name the
+dead entries counted **43** of them, from several classes at once. Tidying up after each of them
+would have been thirty teardowns and one forgotten. What worked was making `PartRegistry` itself
+refuse to hand out or keep a destroyed object, so no consumer has to remember. When a crash names
+a collection that outlives its readers, build the sensor that COUNTS the bad entries before
+choosing a fix — the count tells you whether you are hunting one caller or an invariant.
+Same lesson as the `SettingsViewTab` leak above, one layer up.
 
 ## A defect the platform cannot report stays invisible until you build the sensor
 
