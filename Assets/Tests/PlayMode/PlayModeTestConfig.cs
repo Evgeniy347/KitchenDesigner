@@ -25,6 +25,14 @@ public static class PlayModeTestConfig
         // Даже если тест случайно создаст UpdateService — проверка обновлений
         // (сеть на GitHub) не должна запускаться.
         KitchenDesigner.Core.Update.UpdateService.StartupCheckEnabled = false;
+
+        // Bootstrap поднимает FrameRateManager, а тот через 0,7 с без ввода ставит
+        // ГЛОБАЛЬНЫЙ Application.targetFrameRate = 10 и не возвращает его в OnDestroy.
+        // В batch-режиме ввода нет никогда, поэтому первый же тест роняет весь
+        // оставшийся прогон на 10 кадров в секунду: каждый `yield return null`
+        // начинает стоить 100 мс. Отсюда и пол PlayMode в 0,1 с на кадр.
+        KitchenDesigner.Core.FrameRateManager.IdleFpsDefault = -1;
+        Application.targetFrameRate = -1;
     }
 }
 

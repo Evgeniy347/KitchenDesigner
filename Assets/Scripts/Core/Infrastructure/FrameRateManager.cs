@@ -21,9 +21,11 @@ namespace KitchenDesigner.Core
             return -1;
         }
 
+        public static int IdleFpsDefault = 10;
+
         private static int DefaultIdleFps()
         {
-            return 10;
+            return IdleFpsDefault;
         }
 
         public void MarkActive(float now, float graceSeconds)
