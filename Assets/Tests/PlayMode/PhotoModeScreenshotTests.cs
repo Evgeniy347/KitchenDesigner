@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 
-/// <summary>PlayMode: загружает example.save.json, входит в фоторежим и рендерит
+/// <summary>PlayMode: загружает замороженную копию сцены, входит в фоторежим и рендерит
 /// интерьер в test-results/photo_mode.png. Используется для визуальной проверки
 /// освещения/SSGI (картинку смотрим глазами, не снапшот).</summary>
 public class PhotoModeScreenshotTests
@@ -71,7 +71,8 @@ public class PhotoModeScreenshotTests
     [UnityTest]
     public IEnumerator CapturePhotoMode()
     {
-        string savePath = Path.Combine(Application.dataPath, "..", "docs", "example.save.json");
+        string savePath = Path.Combine(Application.dataPath, "Tests", "EditMode", "Fixtures",
+            "pipe-gap-scene.save.json");
         Assert.IsTrue(File.Exists(savePath), $"Save file not found: {savePath}");
 
         var data = SaveLoadManager.LoadFromFile(savePath);

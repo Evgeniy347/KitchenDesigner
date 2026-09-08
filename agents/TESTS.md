@@ -165,6 +165,18 @@ A rising baseline number is a real regression; read the finding (the code says w
 fired and between which parts) before touching anything, and move the baseline down only after
 confirming the scene, not the code, improved.
 
+**The audit that followed (2026-09-09): NOTHING in the ordinary gate asserts on the live file
+any more.** Twenty-seven files referenced it. Two more asserted about NAMED parts of the user's
+kitchen — `EdgeSubstrateTests.RealScene_TopPanel_...` (`A12_upper_A_top`) and
+`SinkRealSceneTests` (`Moyka` on `Countertop_B`) — and moved to the frozen fixture;
+`PhotoModeScreenshotTests` was the last gate test loading the live file at all and moved too.
+What still reads the live file is exactly two kinds, both harmless: SENSORS that only print
+(`SaveValidationSensorTests`, the live half of `PipeGapSensorTests`) and `[Explicit]`
+generators that are SUPPOSED to picture the real kitchen (`SnapMutationTests`,
+`PerfProfileTests`, the `docs/*.png`/`*.gif` makers). The rule that came out of it: a test may
+name a part of the user's scene only when the scene is frozen — on the live file, name
+nothing and assert nothing.
+
 ## Iterating on ONE test class
 
 Use the gateway with a filter — **~11 s against ~167 s** for the whole suite. Filtering now
