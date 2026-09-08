@@ -755,16 +755,25 @@ namespace KitchenDesigner.Core.UI
             if (_target == null) return;
             if (FixedSize.IsYawOnly(_target) && axis != RotationAxis.Y) return;
             var oldRot = _target.transform.rotation;
+            var oldPos = _target.transform.position;
+            var pipeFitting = _target as PipeFittingElement;
+            var connectedMouths = pipeFitting != null
+                ? PipeDocking.ConnectedMouths(pipeFitting, PartRegistry.GetAll())
+                : null;
+
             var stepped = RotationSteps.Step(_rotationDisplay.For(oldRot), axis, angle);
             _target.transform.rotation = Quaternion.Euler(stepped);
             _rotationDisplay.Remember(stepped);
             if (_target is IWallMounted wallMounted) wallMounted.SnapToWall();
+            if (pipeFitting != null && connectedMouths != null)
+                PipeDocking.ReseatAfterRotation(pipeFitting, connectedMouths);
+
             var rotCmds = new List<IUndoCommand>
             {
-                new MoveCommand(_target, _target.transform.position, _target.transform.position,
+                new MoveCommand(_target, oldPos, _target.transform.position,
                     oldRot, _target.transform.rotation)
             };
-            AttachMove.AppendFollowers(rotCmds, _target, _target.transform.position,
+            AttachMove.AppendFollowers(rotCmds, _target, oldPos,
                 oldRot, _target.transform.position, _target.transform.rotation);
             CommandStack.Execute(rotCmds.Count == 1
                 ? rotCmds[0]
