@@ -48,6 +48,7 @@ source carries no comments at all — see CONVENTIONS.md → "Comments live in t
 | `CONVENTIONS.md` | **тоже карта** — правила кода лежат в `conventions/*.md`: `STRUCTURE` (SRP, быстрый путь, проверки типа), `COMMENTS`, `SERIALIZATION`, `TEST-NAMING`, `SHAPE-AND-SCREENSHOTS`, `UNITS-AND-FILES`, `CORRECTNESS` | перед правкой любого класса — как минимум `STRUCTURE` и `COMMENTS` |
 | `FEATURES.md` | карта фича → классы → тесты | в начале задачи по фиче |
 | `docs/TEXTURES.md` | текстуры декоров: физический размер, бесшовность, импорт | перед любой правкой текстур |
+| `docs/APPLIANCES-BRIEF.md` | бриф встраиваемой техники Bosch: габариты, вырезы, ниши | при работе с варочной, духовкой, посудомойкой |
 | `docs/UI-GUIDELINES.md` | правила UI, `UIStyle`, §12 гизмо, §9 выделение и декор | перед правкой панелей, окон и гизмо |
 | `docs/DEVELOPMENT.md` | сборка и окружение | при проблемах со сборкой |
 | `installer/PUBLISH.md` | публикация релиза/инсталлятора | когда просят выложить релиз |
@@ -71,7 +72,9 @@ source carries no comments at all — see CONVENTIONS.md → "Comments live in t
 ## Architecture (quick reference)
 
 ```
-Assets/Scripts/Core/
+Assets/Scripts/Core/            (сокращённо; полный список — `ls Assets/Scripts/Core`)
+├── Geometry/      ← ValidationCore, снэп-геометрия — БЕЗ Unity, второй сборкой `geometry/core`
+├── Pure/          ← слой без сцены — второй сборкой `geometry/pure`; быстрый путь живёт здесь
 ├── Elements/      ← KitchenElement, FacadeElement, Wall, Drawer, Table…
 ├── Snap/          ← SnapSystem, FaceContact, ResizeSnap
 ├── Commands/      ← CommandStack, UndoHandler

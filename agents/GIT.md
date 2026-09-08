@@ -34,7 +34,9 @@ Body paragraph, free to span lines and contain (parentheses), "quotes" and $sign
 .\tools\git-commit.ps1 -Message "feat: something" -Files Assets/Scripts/Core/Foo.cs, Assets/Scripts/Core/Foo.cs.meta
 # -All            stage every tracked change instead of a file list
 # -DryRun         print the timestamp it would use and stop
-# -Amend          re-time the current HEAD commit
+# -Amend          re-time the current HEAD commit (NOT in a shared tree — `agents/FLEET.md`
+#                 → «Never `--amend` or `reset` in a shared tree»; a wrong commit gets a
+#                 second commit on top, and history is rewritten by the coordinator alone)
 # -Now <datetime> override "now" in the anchor calculation (scenario testing)
 ```
 

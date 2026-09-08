@@ -98,7 +98,9 @@ the repo writes there; all other references only read.
 **`git-commit.ps1 -All` sweeps it into your commit.** The file is dirty almost all the time,
 so `-All` quietly adds 40 000 changed lines of the user's project to a refactoring commit —
 this happened on 2026-08-31 and had to be undone with `git reset HEAD~1 -- docs/example.save.json`
-plus an amend, keeping a copy of the working-tree version aside first. **Use `-Files`**, or
+plus an amend, keeping a copy of the working-tree version aside first. **That remedy is now
+forbidden** — `agents/FLEET.md` → «Never `--amend` or `reset` in a shared tree»; a wrong commit
+gets a second commit on top, and only the coordinator rewrites history. **Use `-Files`**, or
 check `git status` before reaching for `-All`.
 
 And a dozen tests read it as a fixture. That combination is the trap, and it has already
@@ -172,7 +174,8 @@ Still run the FULL suite before committing.
 .\tools\unity.ps1 tests -Platform EditMode -Filter "MyTests"
 ```
 
-A filter that matches NOTHING is now an error, not a green run: `-Filter SnapCoreTests`
+A filter that matches NOTHING is an error, not a green run — the reason and the rest of the
+gateway's rules are in `agents/UNITY-GATEWAY.md`: `-Filter SnapCoreTests`
 (no such class) used to print `Total: 0 | Failed: 0` and exit 0 — a typo that looked like
 a passing check.
 

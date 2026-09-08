@@ -50,6 +50,15 @@ Assets/Scenes/TestScene.unity → Play
 
 То же самое из сборки: `build.cmd -RunTests` (EditMode) и `-RunPlayMode`.
 
+Быстрый путь — ядро и слой без сцены собираются вторым разом обычным `dotnet`
+(`geometry/*.csproj`) и гоняются вне Unity за секунды:
+
+```powershell
+.\tools\mutation-test.ps1 -TestsOnly
+```
+
+Сколько какой набор стоит и что в обычный прогон НЕ входит — `agents/TESTS.md`.
+
 ## Картинки для документации
 
 Картинки в `docs/` рисуют PlayMode-генераторы. Это не тесты: тест СРАВНИВАЕТ с
