@@ -218,3 +218,18 @@ from elsewhere, and say in the report that you did. And when you start a broad f
 on Windows, reach for the narrow path first: `Library/PackageCache` and the package manifest
 answer «which version of this package is here» in milliseconds, while `find /` answers it in
 hours.
+
+## Removing a member: your files and its callers are two different sets
+
+A worker's boundaries are written in terms of files it may EDIT. The callers of a member it
+deletes live outside those boundaries by definition, and it will not look there. Two agents
+crossed this way in one session: thirty `is*` flags left `SidebarCatalog`, and a test in another
+agent's territory still read three of them — the build stopped for everyone until someone
+noticed.
+
+The compiler caught that one. It would not have caught a member read through reflection, a name
+in a serialized asset, or a string in a guide text — and those are exactly where this project
+keeps its cross-checks. So: **before deleting a public or internal member, grep the WHOLE tree
+for it**, including files you are forbidden to edit, and put what you found in the report. You
+are not being asked to fix the neighbour's file; you are being asked not to leave a hole nobody
+knows about.
