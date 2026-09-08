@@ -61,7 +61,7 @@ namespace KitchenDesigner.Core.MCP
             var elementIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var edges = new Dictionary<string, CompiledPlanWall>(StringComparer.OrdinalIgnoreCase);
             foreach (var w in d.walls ?? Array.Empty<FloorplanWall>())
-                AddWall(c, w?.id, w?.from, w?.to, w?.kind, w?.height ?? 0, w?.thickness_mm, elementIds, edges);
+                AddWall(c, w?.id, w?.from, w?.to, w?.kind, w?.height_mm ?? 0, w?.thickness_mm, elementIds, edges);
             foreach (var f in d.floors ?? Array.Empty<FloorplanFloor>())
             {
                 if (f == null) continue;
@@ -101,7 +101,7 @@ namespace KitchenDesigner.Core.MCP
                 if (!openingIds.Add(o.id)) { c.errors.Add($"Duplicate opening '{o.id}'"); continue; }
                 if (!HasWall(c, o.wall)) c.errors.Add($"Opening '{o.id}' references unknown wall '{o.wall}'");
                 if (o.kind != "window" && o.kind != "door") c.errors.Add($"Opening '{o.id}' has invalid kind '{o.kind}'");
-                if (o.offset_mm < 0 || o.width <= 0 || o.height <= 0 || o.sill_mm < 0)
+                if (o.offset_mm < 0 || o.width_mm <= 0 || o.height_mm <= 0 || o.sill_mm < 0)
                     c.errors.Add($"Opening '{o.id}' has invalid dimensions/offset");
                 if (o.kind == "door" && o.sill_mm != 0)
                     c.errors.Add($"Door '{o.id}' must have sill_mm 0: a door opening starts at the floor");
@@ -143,7 +143,7 @@ namespace KitchenDesigner.Core.MCP
                 if (w == null) continue;
                 var a = c.points[w.from]; var b = c.points[w.to];
                 var d = ((Vector2)(b - a)).normalized;
-                Vector2 p1 = (Vector2)a + d * o.offset_mm, p2 = p1 + d * o.width;
+                Vector2 p1 = (Vector2)a + d * o.offset_mm, p2 = p1 + d * o.width_mm;
                 sb.AppendFormat(CultureInfo.InvariantCulture,
                     "<line data-id=\"{0}\" x1=\"{1:0.###}\" y1=\"{2:0.###}\" x2=\"{3:0.###}\" y2=\"{4:0.###}\" stroke=\"#fff\" stroke-width=\"55\"/>\n",
                     SecurityElement.Escape(o.id), p1.x, -p1.y, p2.x, -p2.y);

@@ -333,7 +333,7 @@ namespace KitchenDesigner.Core.MCP
                     failedStep = "add opening " + o.id;
                     failed = HandleAddOpening(InternalRequest(req.id, new ParamsAddOpening
                     { name = o.id, wall = o.wall, kind = o.kind, offset_mm = o.offset_mm,
-                        width = o.width, height = o.height, sill_mm = o.sill_mm }));
+                        width = o.width_mm, height = o.height_mm, sill_mm = o.sill_mm }));
                     if (failed.type == "error") throw new InvalidOperationException();
                 }
 

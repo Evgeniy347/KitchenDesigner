@@ -40,7 +40,7 @@ public class FloorplanCompilerTests
         },
         openings = new[]
         {
-            new FloorplanOpening { id="Door1", wall="wall_B_E", kind="door", offset_mm=500, width=900, height=2100 }
+            new FloorplanOpening { id="Door1", wall="wall_B_E", kind="door", offset_mm=500, width_mm=900, height_mm=2100 }
         }
     };
 
@@ -153,10 +153,10 @@ public class FloorplanCompilerTests
             },
             walls = new[]
             {
-                new FloorplanWall { id = "Cross", from = "A", to = "B", kind = "bearing", height = 2700 },
-                new FloorplanWall { id = "Facade", from = "B", to = "C", kind = "bearing", height = 2700, thickness_mm = 150 },
+                new FloorplanWall { id = "Cross", from = "A", to = "B", kind = "bearing", height_mm = 2700 },
+                new FloorplanWall { id = "Facade", from = "B", to = "C", kind = "bearing", height_mm = 2700, thickness_mm = 150 },
                 // partition thickness is NOT in the instructions — the override stands in for it
-                new FloorplanWall { id = "Light", from = "A", to = "C", kind = "partition", height = 2700, thickness_mm = 125 },
+                new FloorplanWall { id = "Light", from = "A", to = "C", kind = "partition", height_mm = 2700, thickness_mm = 125 },
             },
         };
         var response = new McpCommandHandler().Handle(new McpRequest

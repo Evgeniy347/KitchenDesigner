@@ -839,7 +839,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("End point id.", Required = true)] public string to = "";
         [McpParam("Wall kind.", Required = true, Enum = new[] { "bearing", "partition" })]
         public string kind = "";
-        [McpParam("Height in MM.", Required = true, Min = 1)] public int height;
+        [McpParam("Height in MM.", Required = true, Min = 1)] public int height_mm;
         [McpParam("Thickness in MM, overriding the kind's project instruction. Use for walls that " +
             "do not match the project default (e.g. a 150 mm facade in a 250/125 project).", Min = 1)]
         public int? thickness_mm;
@@ -862,8 +862,8 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Opening kind.", Required = true, Enum = new[] { "window", "door" })]
         public string kind = "";
         [McpParam("Offset from wall start in MM.", Required = true, Min = 0)] public int offset_mm;
-        [McpParam("Width in MM.", Required = true, Min = 1)] public int width;
-        [McpParam("Height in MM.", Required = true, Min = 1)] public int height;
+        [McpParam("Width in MM.", Required = true, Min = 1)] public int width_mm;
+        [McpParam("Height in MM.", Required = true, Min = 1)] public int height_mm;
         [McpParam("Sill height from wall base in MM. Must be 0 for a door: a door opening starts at the floor.", Min = 0)] public int sill_mm;
     }
 

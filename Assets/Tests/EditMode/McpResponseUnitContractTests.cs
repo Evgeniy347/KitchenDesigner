@@ -103,9 +103,11 @@ public class McpResponseUnitContractTests
             ["McpCommandHandler.Elements.Query.cs :: maxY"] = "то же самое",
             ["McpCommandHandler.Elements.Query.cs :: maxZ"] = "то же самое",
             ["McpCommandHandler.PlanGeometry.cs :: width"] = "не ответ, а сборка параметров "
-                + "add_opening внутри apply_floorplan. Долг записан и не благословлён: "
-                + "плановая декларация до сих пор пишет width/height без _mm, и её "
-                + "переименование — своя правка, а не побочный эффект этой",
+                + "ParamsAddOpening/WallSegmentMm внутри apply_floorplan. FloorplanWall.height_mm "
+                + "и FloorplanOpening.width_mm/height_mm (плановая декларация) уже переименованы; "
+                + "долг остался у самих ParamsAddOpening.width/height и WallSegmentMm.height "
+                + "(инструменты add_opening/create_walls) — их переименование своя правка, а не "
+                + "побочный эффект этой",
             ["McpCommandHandler.PlanGeometry.cs :: height"] = "то же самое",
             ["FloorplanCompiler.cs :: height"] = "поле скомпилированного плана, внутренняя "
                 + "структура компилятора, наружу не уходит",
