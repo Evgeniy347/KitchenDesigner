@@ -20,10 +20,10 @@ public class ElementConverterTests
     public void Teardown()
     {
         foreach (var go in _spawned)
-            if (go != null) Object.DestroyImmediate(go);
+            if (go != null) UnityEngine.Object.DestroyImmediate(go);
         _spawned.Clear();
         foreach (var el in PartRegistry.GetAll())
-            if (el != null) Object.DestroyImmediate(el.gameObject);
+            if (el != null) UnityEngine.Object.DestroyImmediate(el.gameObject);
         PartRegistry.Clear();
     }
 
@@ -509,7 +509,7 @@ public class ElementConverterTests
 
         Assert.AreEqual(0, result.AttachedCutouts.Count, "у фасада проёма под мойку нет");
         Assert.AreEqual(2, result.CutoutHoleAxis, "без моек ось выреза каноническая");
-        Object.DestroyImmediate(sinkGo);
+        UnityEngine.Object.DestroyImmediate(sinkGo);
     }
 
     // ── Кромкование ───────────────────────────────────────────────────
@@ -632,11 +632,11 @@ public class ElementConverterTests
         Assert.IsNotNull(mf.sharedMesh, "mesh built");
         Assert.AreNotEqual("Cube", mf.sharedMesh.name, "radial mesh is not a cube");
 
-        Object.DestroyImmediate(shelf);
+        UnityEngine.Object.DestroyImmediate(shelf);
 
         Assert.That(mf.sharedMesh == null || mf.sharedMesh.name == "",
             "mesh is destroyed or invalid — radial mesh was cleaned up");
-        Object.DestroyImmediate(go);
+        UnityEngine.Object.DestroyImmediate(go);
     }
 
     // ── Reflection: every public property is covered ──────────────────

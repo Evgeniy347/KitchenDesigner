@@ -497,11 +497,11 @@ public class DishwasherElementTests : McpTestFixture
 
         Assert.AreEqual(4, group.items.Count, "общая варочная, модельная варочная, духовка, посудомойка");
         var dw = group.items[3];
-        Assert.IsTrue(dw.isDishwasher, "посудомойка — четвёртый пункт «Техники»");
+        Assert.AreEqual(SidebarItemKind.Dishwasher, dw.kind, "посудомойка — четвёртый пункт «Техники»");
         Assert.AreEqual(DishwasherElement.MODEL, dw.applianceModel);
         Assert.AreEqual(new Vector3Int(598, 815, 550), dw.dims);
-        Assert.IsFalse(dw.isOven, "иначе SidebarUI.Spawn ушёл бы не туда");
-        Assert.IsFalse(dw.isCooktop);
+        Assert.AreNotEqual(SidebarItemKind.Oven, dw.kind, "иначе SidebarUI.Spawn ушёл бы не туда");
+        Assert.AreNotEqual(SidebarItemKind.Cooktop, dw.kind);
     }
 
     // ── Сериализация ────────────────────────────────────────────────────
