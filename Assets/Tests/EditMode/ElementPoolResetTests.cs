@@ -270,8 +270,18 @@ public class ElementPoolResetTests
     [Test]
     public void EveryPublicProperty_OfAPooledType_IsWritable_OrDirtiable_OrDeclaredDerived()
     {
+        var pooledTypes = PooledTypes();
+
+        // Доказательство, что PooledTypes() действительно сканирует сборку, а не молчит:
+        // пустой или укоротившийся против прежнего списка (доска, фасад) результат — провал
+        // теста, а не пропуск проверки (docs/TODO.md → пункт 8).
+        Assert.GreaterOrEqual(pooledTypes.Count, 2,
+            "PooledTypes() построен рефлексией через Disposal по всем типам сборки и обязан "
+            + "находить как минимум два пулуемых типа (доска, фасад). Нашёл " + pooledTypes.Count
+            + " — сканирование сломано, и остальная часть этого теста ничего не проверяет.");
+
         var orphans = new List<string>();
-        foreach (var type in PooledTypes())
+        foreach (var type in pooledTypes)
             foreach (var p in StateProperties(type))
             {
                 if (p.CanWrite && p.SetMethod != null && p.SetMethod.IsPublic) continue;
@@ -286,7 +296,7 @@ public class ElementPoolResetTests
             + string.Join(", ", orphans));
 
         var strangers = Derived.Keys.Concat(Dirtiers.Keys)
-            .Where(n => !PooledTypes().SelectMany(StateProperties).Any(p => p.Name == n))
+            .Where(n => !pooledTypes.SelectMany(StateProperties).Any(p => p.Name == n))
             .ToList();
         Assert.IsEmpty(strangers, Rule
             + "В списках Derived/Dirtiers остались имена, которых у пулуемых типов больше "
@@ -373,10 +383,24 @@ public class ElementPoolResetTests
     private static string SixGaps(KitchenElement el) =>
         $"{el.GapLeft}/{el.GapRight}/{el.GapTop}/{el.GapBottom}/{el.GapFront}/{el.GapBack}";
 
-    private static IEnumerable<Type> PooledTypes()
+    /// <summary>Типы, которые реально возвращаются в пул, а не список, набранный руками:
+    /// прогоняет Disposal — то же поле, по которому решает сама фабрика — по КАЖДОМУ типу
+    /// из сборки (EveryElementType.Declared(), тот же список, что и у остальных сторожей
+    /// по типам). Тип входит сюда, если хотя бы один живой экземпляр вернул
+    /// ElementDisposal.PartPool или .FacadePool; PanelElement, RadialShelfElement и
+    /// остальные, чей Disposal — Destroy, сюда не попадают и пул им не грозит.</summary>
+    private static List<Type> PooledTypes()
     {
-        yield return typeof(KitchenElement);
-        yield return typeof(FacadeElement);
+        var result = new List<Type>();
+        foreach (var type in EveryElementType.Declared())
+        {
+            EveryElementType.ClearScene();
+            var el = EveryElementType.Spawn(type, "ПулТип" + type.Name);
+            if (el.Disposal == ElementDisposal.PartPool || el.Disposal == ElementDisposal.FacadePool)
+                result.Add(type);
+        }
+        EveryElementType.ClearScene();
+        return result;
     }
 
     private static List<PropertyInfo> StateProperties(Type type)

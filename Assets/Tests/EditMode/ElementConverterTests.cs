@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -734,12 +735,44 @@ public class ElementConverterTests
         "CornerRadius"
     };
 
+    /// <summary>Типы, которые ElementConverter реально конвертирует, взятые не списком
+    /// руками, а прогоном настоящего гейта (CanConvert) по КАЖДОМУ типу из сборки —
+    /// том же EveryElementType.Declared(), что и остальные сторожи по типам. Новый тип,
+    /// который гейт впустит, попадёт сюда сам; тип, который гейт не пускает (панель,
+    /// ящик, окно, дверь…), в проверку публичных свойств ниже не входит — конвертация
+    /// его не трогает, и свойств переносить некуда (см. TheGate_AcceptsExactlyTheFourTypes_
+    /// TheToolDescriptionPromises в McpConvertElementsReproTests, тот же гейт тем же
+    /// способом).</summary>
+    private static List<Type> ConvertibleTypes()
+    {
+        var result = new List<Type>();
+        foreach (var type in EveryElementType.Declared())
+        {
+            EveryElementType.ClearScene();
+            var el = EveryElementType.Spawn(type, "КонвТип" + type.Name);
+            if (ElementConverter.CanConvert(el)) result.Add(type);
+        }
+        EveryElementType.ClearScene();
+        return result;
+    }
+
     [Test]
     public void Reflection_AllPublicProperties_AreCovered()
     {
+        var types = ConvertibleTypes();
+
+        // Доказательство, что сканирование сборки нашло типы, а не отвалилось молча:
+        // пустой или укоротившийся против прежнего списка результат — провал теста,
+        // а не пропуск проверки (docs/TODO.md → пункт 8).
+        Assert.GreaterOrEqual(types.Count, 4,
+            "ConvertibleTypes() построен рефлексией через ElementConverter.CanConvert по всем "
+            + "типам сборки и обязан находить как минимум четыре конвертируемых типа "
+            + "(доска/фасад/сборный фасад/радиальная полка). Нашёл " + types.Count
+            + " — сканирование сломано, и остальная часть этого теста ничего не проверяет.");
+
         var declared = new HashSet<string>();
 
-        foreach (var type in new[] { typeof(KitchenElement), typeof(FacadeElement), typeof(AssembledFacadeElement), typeof(RadialShelfElement) })
+        foreach (var type in types)
         {
             var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
             foreach (var p in props)
