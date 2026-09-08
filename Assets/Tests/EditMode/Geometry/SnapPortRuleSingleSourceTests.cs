@@ -65,6 +65,7 @@ namespace KitchenDesigner.Tests.Geometry
             ("ResizeSnap.cs", "вторая реализация той же геометрии зовёт ту же функцию"),
             ("SnapSystem.cs", "перекладывает замер посадки в поля отчёта snap_diagnose"),
             ("PipeRunFollow.cs", "обратное направление той же связи: не устье едет к трубе, а труба тянется за устьем. Устья он ЧИТАЕТ (SnapPortAt) и ни одного условия посадки не повторяет — кто с кем соединён, спрашивает у PipeSurvey"),
+            ("PipeEndFittings.cs", "смена вида детали в списке обязана посадить новую деталь на связь, которую сохраняет PipeKindSwap.AnchorPortIndex; порт соседа он читает через ISnapPorts.SnapPortAt и передаёт готовое устье в PipeDocking.SeatPort — само правило доворота не пишет"),
         };
 
         private static string CoreSourceDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");

@@ -213,29 +213,119 @@ public class PipeEndFittingsTests : SnapTestBase
             + "начнёт отменять то, чего пользователь не делал");
     }
 
-    /// <summary>За фитингом на конце висит ещё труба. Молча снести чужую работу
-    /// нельзя, поэтому правка ОТКЛОНЯЕТСЯ целиком: ни удаления, ни шага отмены.
-    /// Разбирать ветку человек будет с дальнего конца.</summary>
+    /// <summary>За фитингом на конце висит целая ветка — труба и заглушка на её дальнем
+    /// конце. Правка больше не отказывает: она заменяет деталь ВСЕГДА, ветку не удаляет
+    /// и не двигает, а связь, для которой у нового вида не нашлось порта, просто рвётся.
+    /// Разбирать или воссоединять ветку — дело пользователя, а не этой правки.</summary>
     [Test]
-    public void AnEndCarryingAWholeBranch_IsRefused_AndNothingIsLost()
+    public void AnEndCarryingAWholeBranch_SwapsAnyway_AndTheBranchStaysWholeAndInPlace()
     {
         var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Run");
         Choose(pipe, UpperEnd, PipeNodeKind.Coupling);
         var coupling = FittingOn(pipe, UpperEnd)!;
 
-        var second = PipeWithItsLowerEndAt(coupling.PortPositionUnits(1), "Next");
-        Assume.That(JoinedLinks(), Is.EqualTo(2),
-            "стенд обязан доказать сам себя: за муфтой действительно висит вторая труба");
+        var branch = PipeWithItsLowerEndAt(coupling.PortPositionUnits(1), "Branch");
+        Choose(branch, UpperEnd, PipeNodeKind.Cap);
+        var branchCap = FittingOn(branch, UpperEnd)!;
+        Assume.That(JoinedLinks(), Is.EqualTo(3),
+            "стенд обязан доказать сам себя: за муфтой висит труба, а на её дальнем конце — заглушка");
+        Vector3 branchPositionBefore = branch.transform.position;
+        Vector3 branchCapPositionBefore = branchCap.transform.position;
         int undoBefore = CommandStack.UndoCount;
 
         var outcome = Choose(pipe, UpperEnd, PipeNodeKind.Cap);
 
-        Assert.AreEqual(PipeEndEdit.OccupiedByBranch, outcome);
+        Assert.AreEqual(PipeEndEdit.Changed, outcome,
+            "занятый веткой конец больше не блокирует замену");
+        Assert.AreEqual(PipeNodeKind.Cap, FittingOn(pipe, UpperEnd)!.NodeKind,
+            "деталь на редактируемом конце заменена");
+        Assert.IsTrue(branch.gameObject.activeInHierarchy, "труба ветки не удалена");
+        Assert.IsTrue(branchCap.gameObject.activeInHierarchy, "и заглушка на её дальнем конце тоже");
+        Assert.AreEqual(branchPositionBefore, branch.transform.position,
+            "труба ветки не сдвинута — рвётся только связь с муфтой, а не её положение");
+        Assert.AreEqual(branchCapPositionBefore, branchCap.transform.position,
+            "дальний конец ветки тем более не тронут");
+        Assert.AreEqual(1, JoinedLinks(),
+            "у заглушки один порт — второй порт муфты она не воспроизводит, связь с веткой рвётся");
+        Assert.AreEqual(undoBefore + 1, CommandStack.UndoCount, "замена — один шаг отмены");
+
+        CommandStack.Undo();
+
         Assert.AreEqual(PipeNodeKind.Coupling, FittingOn(pipe, UpperEnd)!.NodeKind,
-            "муфта осталась на месте");
-        Assert.IsTrue(second.gameObject.activeInHierarchy, "и труба за ней тоже");
-        Assert.AreEqual(undoBefore, CommandStack.UndoCount,
-            "отклонённая правка не оставляет шага отмены");
+            "одна отмена возвращает муфту");
+        Assert.AreEqual(3, JoinedLinks(), "...и связь с веткой вместе с ней");
+    }
+
+    /// <summary>Муфта соединяет две обычные трубы. У заглушки один порт — она
+    /// воспроизводит только связь с трубой, чей конец редактировали, вторая рвётся, а
+    /// сосед остаётся на месте: ничего не удаляется и не двигается.</summary>
+    [Test]
+    public void CouplingToCap_SeversTheOtherLink_AndLeavesTheNeighbourInPlace()
+    {
+        var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Run");
+        Choose(pipe, UpperEnd, PipeNodeKind.Coupling);
+        var coupling = FittingOn(pipe, UpperEnd)!;
+
+        var other = PipeWithItsLowerEndAt(coupling.PortPositionUnits(1), "Other");
+        Assume.That(JoinedLinks(), Is.EqualTo(2));
+        Vector3 otherPositionBefore = other.transform.position;
+
+        var outcome = Choose(pipe, UpperEnd, PipeNodeKind.Cap);
+
+        Assert.AreEqual(PipeEndEdit.Changed, outcome);
+        Assert.AreEqual(PipeNodeKind.Cap, FittingOn(pipe, UpperEnd)!.NodeKind);
+        Assert.AreEqual(1, JoinedLinks(), "муфта→заглушка: ровно одна связь рвётся");
+        Assert.IsTrue(other.gameObject.activeInHierarchy);
+        Assert.AreEqual(otherPositionBefore, other.transform.position,
+            "сосед не двигается — он просто теряет соединение");
+    }
+
+    /// <summary>Муфта соединяет две обычные трубы. У тройника три порта — оба прежних
+    /// воспроизводятся, третий остаётся свободным и загорается PIP-01.</summary>
+    [Test]
+    public void CouplingToTee_KeepsBothLinks_AndOpensTheSideBranch()
+    {
+        var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Run");
+        Choose(pipe, UpperEnd, PipeNodeKind.Coupling);
+        var coupling = FittingOn(pipe, UpperEnd)!;
+
+        var above = PipeWithItsLowerEndAt(coupling.PortPositionUnits(1), "Above");
+        Assume.That(JoinedLinks(), Is.EqualTo(2));
+        int openBefore = OpenEnds();
+
+        var outcome = Choose(pipe, UpperEnd, PipeNodeKind.Tee);
+
+        Assert.AreEqual(PipeEndEdit.Changed, outcome);
+        Assert.AreEqual(PipeNodeKind.Tee, FittingOn(pipe, UpperEnd)!.NodeKind);
+        Assert.AreEqual(2, JoinedLinks(), "у тройника остаются ОБЕ прежние связи");
+        Assert.IsTrue(above.gameObject.activeInHierarchy);
+        Assert.AreEqual(openBefore + 1, OpenEnds(),
+            "третий, боковой порт тройника свободен — это новый открытый конец");
+    }
+
+    /// <summary>Муфта соединяет две обычные трубы. У отвода второе плечо смотрит вбок,
+    /// а не туда, откуда шла прежняя связь — сохранить обе можно было бы только сдвинув
+    /// соседа, а замена соседей не двигает.</summary>
+    [Test]
+    public void CouplingToElbow_SeversTheTurnedLeg_AndLeavesTheNeighbourInPlace()
+    {
+        var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Run");
+        Choose(pipe, UpperEnd, PipeNodeKind.Coupling);
+        var coupling = FittingOn(pipe, UpperEnd)!;
+
+        var above = PipeWithItsLowerEndAt(coupling.PortPositionUnits(1), "Above");
+        Assume.That(JoinedLinks(), Is.EqualTo(2));
+        Vector3 abovePositionBefore = above.transform.position;
+
+        var outcome = Choose(pipe, UpperEnd, PipeNodeKind.Elbow);
+
+        Assert.AreEqual(PipeEndEdit.Changed, outcome);
+        Assert.AreEqual(PipeNodeKind.Elbow, FittingOn(pipe, UpperEnd)!.NodeKind);
+        Assert.AreEqual(1, JoinedLinks(),
+            "у отвода второе плечо смотрит не туда, где стояла труба Above — связь рвётся");
+        Assert.IsTrue(above.gameObject.activeInHierarchy);
+        Assert.AreEqual(abovePositionBefore, above.transform.position,
+            "сосед остаётся ровно там, где стоял");
     }
 
     [Test]

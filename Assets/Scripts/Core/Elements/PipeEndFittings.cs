@@ -10,7 +10,6 @@ namespace KitchenDesigner.Core
     {
         Unchanged,
         Changed,
-        OccupiedByBranch,
         OccupiedByOther,
     }
 
@@ -59,16 +58,18 @@ namespace KitchenDesigner.Core
             if (neighbour != null && seated == null) return PipeEndEdit.OccupiedByOther;
 
             if (seated == null && !kind.HasValue) return PipeEndEdit.Unchanged;
-            if (seated != null)
-            {
-                if (kind.HasValue && seated.NodeKind == kind.Value) return PipeEndEdit.Unchanged;
-                if (CarriesMore(survey, partner)) return PipeEndEdit.OccupiedByBranch;
-            }
+            if (seated != null && kind.HasValue && seated.NodeKind == kind.Value)
+                return PipeEndEdit.Unchanged;
 
             CommandStack.BeginCapture();
             if (seated != null) CommandStack.Execute(new DeleteCommand(seated.gameObject));
             if (kind.HasValue)
-                CommandStack.Execute(new CreateCommand(Spawn(pipe, end, kind.Value)));
+            {
+                var spawned = seated != null
+                    ? Replace(survey, seated, kind.Value, scene)
+                    : Spawn(pipe, end, kind.Value);
+                CommandStack.Execute(new CreateCommand(spawned));
+            }
             CommandStack.EndCapture($"Конец трубы {pipe.PartName}", commit: true);
 
             if (ElementHighlighter.Instance != null)
@@ -83,6 +84,56 @@ namespace KitchenDesigner.Core
             var fitting = go.GetComponent<PipeFittingElement>();
             if (fitting != null) fitting.SeatOnPipeEnd(pipe, end);
             return go;
+        }
+
+        private static GameObject Replace(PipeSurvey survey, PipeFittingElement seated,
+            PipeNodeKind kind, IReadOnlyList<KitchenElement> scene)
+        {
+            var go = Create(kind, seated.PartName + "_" + PipeFittingNames.TypeId(kind),
+                seated.transform.position);
+            var fitting = go.GetComponent<PipeFittingElement>();
+            if (fitting == null) return go;
+
+            var neighbourPorts = NeighbourPortsOf(survey, seated);
+            int anchor = PipeKindSwap.AnchorPortIndex(neighbourPorts);
+            if (anchor == PipeKindSwap.NoPort) return go;
+
+            var atAnchor = neighbourPorts[anchor];
+            var mouth = atAnchor.HasValue ? AnchorMouth(atAnchor.Value, scene) : null;
+            if (mouth == null) return go;
+
+            int newPort = Math.Min(anchor, fitting.PortCount - 1);
+            PipeDocking.SeatPort(fitting, newPort, fitting.transform.position,
+                fitting.transform.rotation, mouth.Value);
+            return go;
+        }
+
+        private static PipePort?[] NeighbourPortsOf(PipeSurvey survey, PipeFittingElement seated)
+        {
+            var ports = new PipePort?[seated.PortCount];
+            for (int i = 0; i < ports.Length; i++)
+            {
+                int index = IndexOfPort(survey, seated.PartName, i);
+                int partner = index < 0 ? PipeNetwork.NoPartner : survey.Network.PartnerOf(index);
+                ports[i] = partner == PipeNetwork.NoPartner ? (PipePort?)null : survey.Ports[partner];
+            }
+            return ports;
+        }
+
+        private static SnapPort? AnchorMouth(in PipePort neighbour,
+            IReadOnlyList<KitchenElement> scene)
+        {
+            for (int i = 0; i < scene.Count; i++)
+            {
+                var candidate = scene[i];
+                if (candidate == null) continue;
+                if (!string.Equals(candidate.PartName, neighbour.ElementId, StringComparison.Ordinal))
+                    continue;
+                if (!(candidate is ISnapPorts ported)) continue;
+                if (neighbour.PortIndex < 0 || neighbour.PortIndex >= ported.SnapPortCount) continue;
+                return ported.SnapPortAt(neighbour.PortIndex, candidate.transform.position);
+            }
+            return null;
         }
 
         private static GameObject Create(PipeNodeKind kind, string name, Vector3 position) =>
@@ -122,20 +173,6 @@ namespace KitchenDesigner.Core
                     && string.Equals(scene[i].PartName, owner, StringComparison.Ordinal))
                     return scene[i];
             return null;
-        }
-
-        private static bool CarriesMore(PipeSurvey survey, int facingPort)
-        {
-            var ports = survey.Ports;
-            var owner = ports[facingPort].ElementId;
-            for (int i = 0; i < ports.Count; i++)
-            {
-                if (i == facingPort) continue;
-                if (!string.Equals(ports[i].ElementId, owner, StringComparison.Ordinal)) continue;
-                if (!survey.Network.IsFree(i)) return true;
-            }
-
-            return false;
         }
     }
 }

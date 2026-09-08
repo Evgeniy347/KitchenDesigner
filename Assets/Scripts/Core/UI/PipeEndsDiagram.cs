@@ -101,9 +101,7 @@ namespace KitchenDesigner.Core.UI
                 : PipeEndFittings.Kinds[option - 1];
 
             var outcome = PipeEndFittings.Set(pipe, end, kind, PartRegistry.GetAll());
-            if (outcome == PipeEndEdit.OccupiedByBranch)
-                Refuse("Конец трубы держит ветку — разберите её с дальнего конца");
-            else if (outcome == PipeEndEdit.OccupiedByOther)
+            if (outcome == PipeEndEdit.OccupiedByOther)
                 Refuse("Конец трубы занят другой деталью");
 
             Show(pipe);
