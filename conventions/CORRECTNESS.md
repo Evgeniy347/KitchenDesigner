@@ -118,7 +118,9 @@ none can quietly grow; what a ratchet cannot express is written here.
   `PillarElement.MidHeightMM_Default` that the pure build cannot reference because the constant
   sits on a `MonoBehaviour`. Nothing pins the two together; the cure is a pure `PillarSpec` beside
   `LampSpec`.
-- **30 layer→UI references**, ceilinged per layer by `LayerDependencyDirectionTests`.
+- **28 layer→UI references**, ceilinged per layer by `LayerDependencyDirectionTests` (that test
+  is the source of truth, not this line: its budgets only ever fall, and the biggest is
+  `Rendering` at 9).
 - **`GameContext` cannot move to the fast path**, and the reason is not its construction — that
   was inverted. Five service interfaces speak in scene types (`KitchenElement` in four of them,
   `GameObject` and concrete element types in `IElementFactory`, 25 mentions). Moving the class

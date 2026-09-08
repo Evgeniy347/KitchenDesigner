@@ -389,4 +389,4 @@ UV в миллиметрах; пока не сделано — не считай
 - регрессия ресайза — `Resize_RecomputesTiling_DecorDoesNotStretch`.
 
 Проверь, что новый тест умеет краснеть: временно убери исправление и убедись,
-что он падает (см. AGENTS.md).
+что он падает (`agents/TEST-DESIGN.md` → «A test that cannot fail is worthless»).

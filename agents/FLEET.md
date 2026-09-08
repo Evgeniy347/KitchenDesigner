@@ -50,11 +50,11 @@ and never make a foreign fix that could change behaviour.
   plausible meanings — hand it back even though others are waiting. That came up once: the owner
   solved it a third way, by changing the signature so the bad state became unrepresentable, and
   neither of the two "obvious" fixes would have been right.
-- **Say what you expect to be red before the run.** It costs a line and saves the coordinator a
-  diagnosis. And relay foreign reds by name — a worker who cannot tell its own failures from a
-  neighbour's will "fix" the neighbour's code.
+- **Say what you expect to be red before the run** — and what result would mean you were wrong;
+  the whole rule is «Say what you expect to be red» below. And relay foreign reds by name — a
+  worker who cannot tell its own failures from a neighbour's will "fix" the neighbour's code.
 - Спавня субагентов, передавай им уроки, оплаченные сегодня, а не только задачу: список в этом
-  файле и в CONVENTIONS.md существует ровно для того, чтобы каждый следующий агент не покупал их
+  файле и в `conventions/*.md` существует ровно для того, чтобы каждый следующий агент не покупал их
   заново.
 
 ## Routine work goes to opencode, not to this session's context
@@ -82,7 +82,7 @@ mass-applying a pattern already agreed here. What does NOT: anything whose accep
 judgement call — design, naming a new abstraction, deciding what a test should assert. Those
 cost more to specify than to do.
 
-Three rules that make it work:
+Rules that make it work (they were three; the list grew as the free path was used):
 
 - **The task text is self-contained.** opencode has not seen this conversation. Paths, the
   exact repo, what "done" looks like, and **the command that proves it** all go in the prompt.
@@ -174,6 +174,7 @@ I aimed at". Agents that did this were right about eight reds out of eight, and 
 
 A result that is only interpreted after the fact can always be read as success. State the
 interpretation first, then run.
+
 ## When several agents share the tree
 
 - `Total:` stops being a constant — others are adding tests. Judge by `Failed: 0`, and sort the

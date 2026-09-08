@@ -155,7 +155,7 @@
 
 - **Подпись не красят по месту: цвет подписи ВЫВОДИТСЯ из состояния контрола.**
   У производной величины один писатель и один повод его позвать
-  (`CONVENTIONS.md` → «A derived field needs ONE writer and one occasion to call
+  (`conventions/CORRECTNESS.md` → «A derived field needs ONE writer and one occasion to call
   it»). Пара «подпись—контрол» регистрируется там же, где строка рождается —
   в `ContextMenuRowFactory`, — а `ContextMenuUI` зовёт `SyncEnabledState()`
   дважды: при открытии панели и после применения правки. Поэтому редактор

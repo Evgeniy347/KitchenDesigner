@@ -5,7 +5,8 @@
 - **File deletions**: NEVER `rm -rf` / `Remove-Item -Force`. See CONVENTIONS.md → "CRITICAL: File operations"
 - **NEVER revert a user's working-tree file** — `git checkout -- <path>`, `git restore`,
   `git stash` and friends destroy uncommitted work with no undo. This applies especially to
-  `docs/example.save.json` (see below), and to anything else the user is editing. If a test
+  `docs/example.save.json` (the whole rule is in `agents/TESTS.md` → «`docs/example.save.json` —
+  NEVER TOUCH IT»), and to anything else the user is editing. If a test
   needs a different input, give the TEST a frozen copy; never rewind the user's file.
 
 ## Commit message
