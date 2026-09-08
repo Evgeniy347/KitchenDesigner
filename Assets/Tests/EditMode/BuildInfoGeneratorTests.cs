@@ -269,21 +269,20 @@ public class BuildInfoGeneratorTests
     }
 
     [Test]
-    public void ReadAndIncrementCounter_WhenCounterPathIsADirectory_FallsBackToZero_AndLogsBothFailures()
+    public void ReadAndIncrementCounter_WhenCounterPathIsADirectory_CountsFromZero_AndTheWriteFailureIsLoud()
     {
         File.Delete(_counterPath!);
         Directory.CreateDirectory(_counterPath!);
 
         try
         {
-            LogAssert.Expect(LogType.Warning, new Regex(@"\[BuildInfoGenerator\] could not read build_count\.txt"));
             LogAssert.Expect(LogType.Error, new Regex(@"\[BuildInfoGenerator\] FAILED to persist build_count\.txt=1"));
 
             int result = BuildInfoGenerator.ReadAndIncrementCounter();
 
             Assert.AreEqual(1, result,
-                "a directory in place of the counter file must throw UnauthorizedAccessException on both "
-                + "read and write; the read failure is treated as count 0, then incremented once");
+                "File.Exists is false for a directory, so the read finds no counter and starts at 0 "
+                + "without complaining; the write is what cannot succeed, and it says so as an Error");
         }
         finally
         {
