@@ -1,0 +1,288 @@
+{
+  "root": "ContextMenu",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Начало",
+      "position": [-84, 46]
+    },
+    {
+      "type": "Label",
+      "text": "Конец",
+      "position": [84, 46]
+    },
+    {
+      "type": "Label",
+      "text": "Размеры",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Материал",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Положение",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Труба — Truba",
+      "position": [0, -12]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["нет", "Отвод 90°", "Переходная муфта", "Тройник", "Заглушка", "Подача", "Обратка"],
+      "selected": 0,
+      "position": [-84, -14]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["нет", "Отвод 90°", "Переходная муфта", "Тройник", "Заглушка", "Подача", "Обратка"],
+      "selected": 4,
+      "position": [84, -14]
+    },
+    {
+      "type": "Label",
+      "text": "Название",
+      "position": [-134, -48]
+    },
+    {
+      "type": "InputField",
+      "label": "Название",
+      "value": "Truba",
+      "interactable": true,
+      "position": [38, -48]
+    },
+    {
+      "type": "Label",
+      "text": "Ширина",
+      "position": [-80, -104]
+    },
+    {
+      "type": "InputField",
+      "label": "Ширина",
+      "value": "27",
+      "interactable": false,
+      "position": [100, -104]
+    },
+    {
+      "type": "Label",
+      "text": "Высота",
+      "position": [-80, -135]
+    },
+    {
+      "type": "InputField",
+      "label": "Высота",
+      "value": "600",
+      "interactable": true,
+      "position": [100, -135]
+    },
+    {
+      "type": "Label",
+      "text": "Глубина",
+      "position": [-80, -166]
+    },
+    {
+      "type": "InputField",
+      "label": "Глубина",
+      "value": "27",
+      "interactable": false,
+      "position": [100, -166]
+    },
+    {
+      "type": "Label",
+      "text": "Условный проход",
+      "position": [-103, -197]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["15 (1/2\")", "20 (3/4\")", "25 (1\")", "32 (1 1/4\")", "40 (1 1/2\")", "50 (2\")"],
+      "selected": 1,
+      "position": [65, -197]
+    },
+    {
+      "type": "Label",
+      "text": "Наружный Ø",
+      "position": [-80, -232]
+    },
+    {
+      "type": "InputField",
+      "label": "Наружный Ø",
+      "value": "26.8",
+      "interactable": false,
+      "position": [100, -232]
+    },
+    {
+      "type": "Label",
+      "text": "Внутренний Ø",
+      "position": [-80, -263]
+    },
+    {
+      "type": "InputField",
+      "label": "Внутренний Ø",
+      "value": "21.2",
+      "interactable": false,
+      "position": [100, -263]
+    },
+    {
+      "type": "Label",
+      "text": "Толщина стенки",
+      "position": [-80, -294]
+    },
+    {
+      "type": "InputField",
+      "label": "Толщина стенки",
+      "value": "2.8",
+      "interactable": false,
+      "position": [100, -294]
+    },
+    {
+      "type": "Label",
+      "text": "Выбор детали ставит её на конец трубы устье в устье",
+      "position": [0, -448]
+    },
+    {
+      "type": "Label",
+      "text": "Прикрепить к",
+      "position": [-103, -476]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["(не прикреплено)", "Zaglushka"],
+      "selected": 0,
+      "position": [65, -476]
+    },
+    {
+      "type": "Label",
+      "text": "X, мм",
+      "position": [-110, -536]
+    },
+    {
+      "type": "Label",
+      "text": "Y, мм",
+      "position": [0, -536]
+    },
+    {
+      "type": "Label",
+      "text": "Z, мм",
+      "position": [110, -536]
+    },
+    {
+      "type": "InputField",
+      "label": "X, мм",
+      "value": "0",
+      "interactable": true,
+      "position": [-110, -556]
+    },
+    {
+      "type": "InputField",
+      "label": "Y, мм",
+      "value": "300",
+      "interactable": true,
+      "position": [0, -556]
+    },
+    {
+      "type": "InputField",
+      "label": "Z, мм",
+      "value": "0",
+      "interactable": true,
+      "position": [110, -556]
+    },
+    {
+      "type": "Label",
+      "text": "X, °",
+      "position": [-110, -587]
+    },
+    {
+      "type": "Label",
+      "text": "Y, °",
+      "position": [0, -587]
+    },
+    {
+      "type": "Label",
+      "text": "Z, °",
+      "position": [110, -587]
+    },
+    {
+      "type": "InputField",
+      "label": "X, °",
+      "value": "0,0",
+      "interactable": true,
+      "position": [-110, -607]
+    },
+    {
+      "type": "InputField",
+      "label": "Y, °",
+      "value": "0,0",
+      "interactable": true,
+      "position": [0, -607]
+    },
+    {
+      "type": "InputField",
+      "label": "Z, °",
+      "value": "0,0",
+      "interactable": true,
+      "position": [110, -607]
+    },
+    {
+      "type": "Label",
+      "text": "Повернуть на 90°:",
+      "position": [0, -638]
+    },
+    {
+      "type": "Button",
+      "text": "X 90°",
+      "position": [-112, -664]
+    },
+    {
+      "type": "Button",
+      "text": "Y 90°",
+      "position": [0, -664]
+    },
+    {
+      "type": "Button",
+      "text": "Z 90°",
+      "position": [112, -664]
+    },
+    {
+      "type": "Label",
+      "text": "Текстура",
+      "position": [-103, -725]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Серый", "Белый", "Дуб сонома", "Венге", "Бетон", "теплый медовый дуб", "Дуб европейский", "Дуб европейский тонированный", "Сосна", "Дуб европейский тонированный 3", "ЛМДФ Белая гладкая (СвиссКроно)", "ЛМДФ Белая гладкая (Kastamonu F)", "ЛМДФ Белый премиум филвуд (W1000 ST38)", "ЛМДФ Лес чёрный филвуд (U998 ST38)", "ЛМДФ Дуб галифакс белый (H1176 ST37)", "ЛМДФ Дуб галифакс натуральный (H1180 ST37)", "ЛМДФ Дуб галифакс олово (H3176 ST37)", "ЛМДФ Дуб галифакс табак (H1181 ST37)", "ЛМДФ Дуб гладстоун песочный (H3309 ST28)", "ЛМДФ Дуб гладстоун табак (H3325 ST28)", "ЛМДФ Дуб давенпорт натуральный светлый (H3359 ST32)", "ЛМДФ Дуб кунео коричневый (H3317 ST28)", "ЛМДФ Дуб каселла каштановый (H1369 ST40)", "ЛМДФ Дуб каселла коричневый (H1386 ST40)", "ЛМДФ Дуб каселла натуральный светлый (H1367 ST40)", "ЛМДФ Дуб каселла натуральный (H1385 ST40)", "ЛМДФ Дуб сакраменто коричневый (H1142 ST36)", "ЛМДФ Дуб чарльстон тёмно-коричневый (H3154 ST36)", "ЛМДФ Дуб шерман антрацит (H1346 ST32)", "ЛМДФ Дуб шерман коньяк коричневый (H1344 ST32)", "ЛМДФ Ясень наварра (H1250 ST36)", "ЛХДФ Дуб сонома шагрень (3025 РЕ, Кроношпан)", "ЛХДФ Антрацит шагрень (164 РЕ, Кроношпан)", "ХДФ Нешлифованная (Кроношпан)", "ЛХДФ Белый (0101 РЕ, Кроношпан)", "ЛХДФ Белый (101 РЕ, Княжпогост)", "ЛХДФ Белая шагрень (101 РЕ, Кроношпан СМ)", "ЛХДФ Бежевый (0522 РЕ, Кроношпан)", "ЛХДФ Серый камень (0112 РЕ, Кроношпан)", "ЛХДФ Чёрный (0190 РЕ, Кроношпан)", "Антрацит (GTV)", "Белый (GTV)", "Чёрный (GTV)", "abrikos ba 03 cd", "bambuk horizontal caramel", "buk belyy 99q", "МДФ шлифованная"],
+      "selected": 0,
+      "position": [65, -725]
+    },
+    {
+      "type": "Toggle",
+      "label": "Прозрачный",
+      "isOn": false,
+      "position": [0, -760]
+    },
+    {
+      "type": "Toggle",
+      "label": "Закрепить",
+      "isOn": false,
+      "position": [0, -793]
+    },
+    {
+      "type": "Button",
+      "text": "Дублировать",
+      "position": [-91, -835]
+    },
+    {
+      "type": "Button",
+      "text": "Удалить",
+      "position": [91, -835]
+    }
+  ]
+}
