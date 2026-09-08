@@ -23,12 +23,17 @@ namespace KitchenDesigner.Core
 
         public readonly float MountEdgeDetentUnits;
 
+        public readonly SnapPort[] Ports;
+
         public bool CentresOnTarget =>
             MountNormal.x != 0f || MountNormal.y != 0f || MountNormal.z != 0f;
 
+        public bool HasPorts => Ports != null && Ports.Length > 0;
+
         public ElementGeometry(int id, string name, Face[] faces, Face[] grooveSeatFaces,
             Face[] grooveWallFaces, Vector3 min, Vector3 max, bool isPanel,
-            Vector3 mountNormal = default, float mountEdgeDetentUnits = 0f)
+            Vector3 mountNormal = default, float mountEdgeDetentUnits = 0f,
+            SnapPort[]? ports = null)
         {
             MountEdgeDetentUnits = mountEdgeDetentUnits;
             Id = id;
@@ -40,6 +45,7 @@ namespace KitchenDesigner.Core
             Max = max;
             IsPanel = isPanel;
             MountNormal = mountNormal;
+            Ports = ports ?? System.Array.Empty<SnapPort>();
         }
 
         public bool IsEmpty => Faces == null || Faces.Length == 0;
@@ -57,13 +63,13 @@ namespace KitchenDesigner.Core
 
         public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
             bool isPanel = false, Vector3 mountNormal = default,
-            float mountEdgeDetentUnits = 0f)
+            float mountEdgeDetentUnits = 0f, SnapPort[]? ports = null)
             => Box(name, center, sizeUnits, Quaternion.identity, isPanel, mountNormal,
-                mountEdgeDetentUnits);
+                mountEdgeDetentUnits, ports);
 
         public static ElementGeometry Box(string name, Vector3 center, Vector3 sizeUnits,
             Quaternion rotation, bool isPanel = false, Vector3 mountNormal = default,
-            float mountEdgeDetentUnits = 0f)
+            float mountEdgeDetentUnits = 0f, SnapPort[]? ports = null)
         {
             var half = sizeUnits * 0.5f;
             var axes = new[]
@@ -106,7 +112,7 @@ namespace KitchenDesigner.Core
 
             var empty = System.Array.Empty<Face>();
             return new ElementGeometry(name.GetHashCode(), name, faces, empty, empty,
-                min, max, isPanel, mountNormal, mountEdgeDetentUnits);
+                min, max, isPanel, mountNormal, mountEdgeDetentUnits, ports);
         }
     }
 }

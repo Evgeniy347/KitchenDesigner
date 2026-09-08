@@ -19,6 +19,13 @@ namespace KitchenDesigner.Core
             float maxDist = threshold + ThresholdEpsilon;
             bool verbose = logSink != null;
 
+            var seat = SnapPortSeat.BestOf(moved.At(testPosition), others, maxDist);
+            if (seat.taken)
+            {
+                if (verbose) logSink?.Invoke(PortSeatLog(seat));
+                return Seated(seat, testPosition);
+            }
+
             var collected = new SnapCandidates();
             SnapCandidateCollector.Collect(moved, others, testPosition, maxDist, verbose,
                 isPrimaryPass: true, collected);
@@ -72,5 +79,20 @@ namespace KitchenDesigner.Core
             if (collected.ConfirmedContactLog != null) logSink?.Invoke(collected.ConfirmedContactLog);
             return collected.ConfirmedContact;
         }
+
+        private static SnapResult Seated(in SnapPortSeat seat, Vector3 testPosition) => new SnapResult
+        {
+            snapped = true,
+            position = seat.alreadySeated ? testPosition : testPosition + seat.delta,
+            targetName = seat.targetName,
+            faceIndex = -1,
+            snapPoint = seat.mouthUnits,
+            targetPoint = seat.targetMouthUnits,
+        };
+
+        private static string PortSeatLog(in SnapPortSeat seat) =>
+            $"[Snap] → {seat.targetName} | устье {seat.movedPort} на устье {seat.otherPort} "
+            + $"сдвиг={seat.delta.magnitude / AppConstants.MM_TO_UNITS:F2}мм "
+            + $"встречные={(seat.opposed ? "да" : "нет")}";
     }
 }

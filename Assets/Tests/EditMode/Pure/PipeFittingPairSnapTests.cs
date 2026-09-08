@@ -35,6 +35,14 @@ using KitchenDesigner.Tests.Geometry;
 /// с этой позицией сделает снэп. Ответ «сдвинул» — это и есть отказ: снэп уводит
 /// деталь С правильного места.
 ///
+/// ЧТО ИЗМЕНИЛОСЬ. Замер 2026-09-08 давал: коробки прилипают в 100 парах из 100,
+/// а портами сходится 31, и эта 31 — случайность округления габарита. Теперь устье
+/// порта — полноправная геометрия элемента (`ElementGeometry.Ports`, источник —
+/// `ISnapPorts` у самого элемента), и отбор кандидатов сажает деталь устьем в устье
+/// ДО того, как посмотрит на грани (`SnapPortSeat` в `SnapCore.TrySnap`). Числа
+/// приёмки: разомкнутых 0 из 100, соединённых 100, худший зазор устьев — доли
+/// микрона вместо 0,46 мм. Форма коробки в стык больше не входит вообще.
+///
 /// `AGENTS.md` → «Prove the harness before you trust what it measures»:
 /// `Harness_...` ниже доказывает, что идеальная позиция действительно даёт
 /// соединение, иначе все остальные числа были бы про ошибку стенда.</summary>
@@ -205,7 +213,7 @@ public class PipeFittingPairSnapTests
     }
 
     [Test]
-    public void FittingPairs_BoxSnapSucceeds_ButMostPairsStayOpenForPipeJoint()
+    public void FittingPairs_EveryPair_ClosesItsJointAfterTheSnap()
     {
         var rows = Measure();
 
@@ -216,16 +224,16 @@ public class PipeFittingPairSnapTests
         Assert.That(rows.Count, Is.EqualTo(100),
             "шесть фитингов дают 100 встречных пар «порт ↔ порт»; изменилось число — "
             + "изменился состав фитингов или их портов, и таблицу замера надо перечитать");
-        Assert.That(stuckButOpen.Count, Is.EqualTo(69),
-            "замер на 2026-09-08: коробки прилипают в 100 парах из 100, а портами в допуске "
-            + "Tolerance.ContactMm сходится только 31 — остальные 69 для PipeJoint/PipeNetwork "
-            + "разомкнуты, и PIP-01 продолжит считать конец открытым на собранной НА ВИД "
-            + "трассе. Когда появится привязка по ОСИ трубы, это число обязано стать нулём — "
-            + "тест здесь и должен покраснеть: " + Summary(stuckButOpen));
+        Assert.That(stuckButOpen.Count, Is.EqualTo(0),
+            "было 69 разомкнутых из 100: снэп ровнял КОРОБКИ, и устья сходились только там, "
+            + "где порт случайно попадал в центр грани. Теперь отбор кандидатов знает про "
+            + "устья (SnapPortSeat) и сажает деталь точкой в точку, поэтому разомкнутых "
+            + "не остаётся ни одной. Красный здесь означает, что посадка по устьям снова "
+            + "проиграла граневому детенту: " + Summary(stuckButOpen));
     }
 
     [Test]
-    public void FittingPairs_ThePairsThatDoJoin_JoinOnlyByRoundingLuck()
+    public void FittingPairs_ThatJoin_KeepAlmostTheWholeContactTolerance()
     {
         var rows = Measure();
 
@@ -238,20 +246,49 @@ public class PipeFittingPairSnapTests
             if (r.PortGapAfterDriftMm > worstJoined) worstJoined = r.PortGapAfterDriftMm;
         }
 
-        Assert.That(joined, Is.EqualTo(31),
-            "столько пар сегодня сходятся портами — и ни одна из них не сходится потому, "
-            + "что снэп совмещает оси: у них просто совпали центры граней коробок");
-        Assert.That(worstJoined, Is.GreaterThan(Tolerance.ContactMm * 0.75f),
-            $"худшая из «соединённых» пар держится на {worstJoined:F2} мм при допуске "
-            + $"{Tolerance.ContactMm} мм — это остаток от округления габарита фитинга до "
-            + "целых миллиметров (PipeFittingSpec.RoundedMm), а не результат привязки. "
-            + "Запас меньше четверти допуска: любое изменение диаметра или коэффициента "
-            + "ножки выбьет эти пары из соединения так же молча, как сейчас разомкнуты "
-            + "остальные");
+        Assert.That(joined, Is.EqualTo(100),
+            "сходятся все 100 пар, и сходятся ПО ПРАВИЛУ: посадка совмещает устья, а не "
+            + "центры граней коробок");
+        Assert.That(worstJoined, Is.LessThan(Tolerance.ContactMm * 0.02f),
+            $"худшая из соединённых пар держится на {worstJoined:F4} мм при допуске "
+            + $"{Tolerance.ContactMm} мм. Это и есть цена вопроса про округление: "
+            + "PipeFittingSpec.RoundedMm округляет ГАБАРИТ, а посадка идёт по устью, "
+            + "которое считается по PortOffsetMm без округления — округление вышло из "
+            + "бюджета допуска целиком. Раньше здесь оставалось 0,04 мм запаса из 0,5, и "
+            + "смена диаметра выбила бы пары из соединения молча");
     }
 
     [Test]
-    public void ElbowOnSupply_PlacedMouthToMouth_SnapPushesTheElbowOffTheAxis()
+    public void ElbowOnSupply_BroughtInBesideTheSupplyMouth_IsPulledOntoIt()
+    {
+        Assert.That(TryFaceTowards(PipeNodeKind.Supply, 0, PipeNodeKind.Elbow, 0,
+            out var rot, out _), Is.True);
+
+        var mouth = PortWorldUnits(PipeNodeKind.Supply, Quaternion.identity, Vector3.zero, 0);
+        var ideal = mouth - rot * PortLocalUnits(PipeNodeKind.Elbow, 0);
+        var supply = GeometryOf("Подача", PipeNodeKind.Supply, Quaternion.identity, Vector3.zero);
+        var elbow = new PosedFitting("Уголок", PipeNodeKind.Elbow, rot);
+        var start = ideal + new Vector3(9f * ToU, 7f * ToU, 5f * ToU);
+
+        var snap = SnapCore.TrySnap(elbow, new List<ElementGeometry> { supply }, start,
+            ThresholdUnits);
+        var portAfter = PortWorldUnits(PipeNodeKind.Elbow, rot, snap.position, 0);
+
+        Assert.That(snap.snapped, Is.True,
+            "жалоба пользователя буквально: «не могу уголок подсоединить к подаче». "
+            + "Уголок поднесён мимо на 12,4 мм — снэп обязан сработать");
+        Assert.That(mouth.MmDistanceTo(portAfter), Is.LessThanOrEqualTo(Tolerance.ContactMm),
+            $"и обязан вывести устье уголка НА устье подачи: сейчас "
+            + $"{mouth.MmDistanceTo(portAfter):F3} мм при допуске {Tolerance.ContactMm} мм. "
+            + "Раньше побеждал детент кромки коробки, и устья расходились на 6,7 мм");
+        Assert.That(Vector3.Distance(snap.position, ideal) / ToU,
+            Is.LessThanOrEqualTo(Tolerance.ContactMm),
+            "деталь встаёт ровно в ту позицию, которую даёт совмещение устьев, а не рядом "
+            + "с ней");
+    }
+
+    [Test]
+    public void ElbowOnSupply_PlacedMouthToMouth_IsLeftExactlyWhereItIs()
     {
         Assert.That(TryFaceTowards(PipeNodeKind.Supply, 0, PipeNodeKind.Elbow, 0,
             out var rot, out string orientation), Is.True,
@@ -272,15 +309,14 @@ public class PipeFittingPairSnapTests
         var portAfter = PortWorldUnits(PipeNodeKind.Elbow, rot, snap.position, 0);
 
         Assert.That(snap.snapped, Is.True,
-            "снэп срабатывает — коробка уголка находит грань подачи, так что «не прилипает» "
-            + "в буквальном смысле неверно: прилипает, но не туда");
-        Assert.That(movedMm, Is.GreaterThan(Tolerance.ContactMm),
-            $"замер на 2026-09-08: уголок поставлен УСТЬЕМ В УСТЬЕ подачи, и снэп уводит его "
-            + $"на {movedMm:F2} мм — детент кромки коробки ближе, чем правильная позиция. "
-            + "Это и есть «не стыкуется»: правильная позиция снэпом не удерживается");
-        Assert.That(mouth.MmDistanceTo(portAfter), Is.GreaterThan(Tolerance.ContactMm),
-            $"после снэпа устья разошлись на {mouth.MmDistanceTo(portAfter):F2} мм при допуске "
-            + $"{Tolerance.ContactMm} мм — PipeJoint такую пару соединённой не считает");
+            "снэп срабатывает — но теперь потому, что нашёл устье, а не грань коробки");
+        Assert.That(movedMm, Is.LessThanOrEqualTo(Tolerance.ContactMm),
+            $"уголок поставлен УСТЬЕМ В УСТЬЕ подачи, и снэп обязан оставить его на месте: "
+            + $"сейчас сдвиг {movedMm:F3} мм. Раньше детент кромки коробки утаскивал деталь "
+            + "с правильной позиции на 6,73 мм — это и было «не стыкуется»");
+        Assert.That(mouth.MmDistanceTo(portAfter), Is.LessThanOrEqualTo(Tolerance.ContactMm),
+            $"устья остаются совмещёнными: {mouth.MmDistanceTo(portAfter):F3} мм при допуске "
+            + $"{Tolerance.ContactMm} мм — PipeJoint считает такую пару соединённой");
     }
 
     [Test]
@@ -305,11 +341,15 @@ public class PipeFittingPairSnapTests
 
         Assert.That(elbow.CentresOnTarget, Is.False,
             "механизм центровки на цели (ElementGeometry.CentresOnTarget + SnapMountSeat) "
-            + "включается только ненулевым MountNormal, а его в ElementGeometryExtensions "
-            + "выдаёт лестница типов, где стоит один ScrewLegElement. Фитинг центровку "
-            + "не получает — поэтому работает обычный детент кромок");
+            + "фитингу не нужен и не выдаётся: ось крепления объявляет сам элемент через "
+            + "IMountsOnTarget, и её объявляет только винтовая опора. У фитинга своя "
+            + "геометрия посадки — устье порта");
         Assert.That(elbow.MountEdgeDetentUnits, Is.EqualTo(0f),
-            "и отступа от кромки у фитинга тоже нет — вся посадка идёт по граням коробки");
+            "и отступа от кромки у фитинга тоже нет");
+        Assert.That(elbow.HasPorts, Is.True,
+            "зато у него есть устья — та самая геометрия, по которой его теперь сажают. "
+            + "Положительный контроль к двум отрицаниям выше: если бы порты не доехали "
+            + "до снимка, оба Is.False остались бы зелёными на полностью нерабочей посадке");
     }
 
     private static List<PairMeasurement> Measure()
@@ -401,7 +441,8 @@ public class PipeFittingPairSnapTests
         ElementGeometry.BoundsOf(GappedBox.Vertices(size, gaps, position, rotation),
             out var min, out var max);
         var empty = Array.Empty<Face>();
-        return new ElementGeometry(name.GetHashCode(), name, faces, empty, empty, min, max, false);
+        return new ElementGeometry(name.GetHashCode(), name, faces, empty, empty, min, max, false,
+            default, 0f, PipeSnapPorts.OfFitting(kind, rotation, position));
     }
 
     private static Vector3 BoxUnits(PipeNodeKind kind)

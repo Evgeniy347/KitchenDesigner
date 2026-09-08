@@ -2,9 +2,14 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class ScrewLegElement : KitchenElement, IAutoSeated
+    public class ScrewLegElement : KitchenElement, IAutoSeated, IMountsOnTarget
     {
         public override string DisplayTypeName => "Винтовая опора";
+
+        public Vector3 MountNormal => transform.up;
+
+        public float MountEdgeDetentUnits =>
+            ScrewLegSpec.MOUNT_DETENT_FROM_EDGE_MM * AppConstants.MM_TO_UNITS;
 
         [SerializeField] private string _thread = ScrewLegSpec.DEFAULT_THREAD;
         [SerializeField] private int _threadLengthMM = ScrewLegSpec.DEFAULT_THREAD_LENGTH_MM;

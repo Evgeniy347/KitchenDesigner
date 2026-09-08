@@ -18,6 +18,13 @@ namespace KitchenDesigner.Core
         public bool withinThreshold;
         public bool overlapEnough;
         public bool wouldSnap;
+        public bool bothCarryPorts;
+        public float portGapMM = -1f;
+        public float portSeatShiftMM = -1f;
+        public bool portsFaceEachOther;
+        public int movedPortIndex = -1;
+        public int otherPortIndex = -1;
+        public bool portSeatOffered;
         public string verdict = string.Empty;
     }
 
@@ -28,6 +35,11 @@ namespace KitchenDesigner.Core
         public float thresholdMM;
         public bool wouldSnap;
         public string? snapTarget;
+        public bool portSeatWins;
+        public string? portSeatTarget;
+        public float portSeatShiftMM = -1f;
+        public int portSeatMovedPortIndex = -1;
+        public int portSeatOtherPortIndex = -1;
         public List<SnapNeighborReport> neighbors = new List<SnapNeighborReport>();
     }
 
@@ -90,6 +102,15 @@ namespace KitchenDesigner.Core
             ElementGeometry movedGeo = moved.ToGeometryAt(testPosition);
             Vector3[] movedVerts = moved.GetVerticesAt(testPosition);
 
+            var winner = SnapPortSeat.BestOf(movedGeo, others.ToGeometry(), maxDist);
+            report.portSeatWins = winner.taken;
+            report.portSeatTarget = winner.taken ? winner.targetName : null;
+            report.portSeatShiftMM = winner.taken
+                ? winner.delta.magnitude / AppConstants.MM_TO_UNITS
+                : -1f;
+            report.portSeatMovedPortIndex = winner.movedPort;
+            report.portSeatOtherPortIndex = winner.otherPort;
+
             foreach (var other in others)
             {
                 if (other == moved || other == null) continue;
@@ -113,8 +134,20 @@ namespace KitchenDesigner.Core
                     withinThreshold = facts.withinThreshold,
                     overlapEnough = facts.overlapEnough,
                     wouldSnap = facts.wouldSnap,
+                    bothCarryPorts = facts.portSeat.bothSidesCarryPorts,
+                    portSeatOffered = facts.portSeat.taken,
+                    portGapMM = facts.portSeat.mouthGapUnits >= 0f
+                        ? facts.portSeat.mouthGapUnits / AppConstants.MM_TO_UNITS
+                        : -1f,
+                    portSeatShiftMM = facts.portSeat.taken
+                        ? facts.portSeat.delta.magnitude / AppConstants.MM_TO_UNITS
+                        : -1f,
+                    portsFaceEachOther = facts.portSeat.opposed,
+                    movedPortIndex = facts.portSeat.movedPort,
+                    otherPortIndex = facts.portSeat.otherPort,
                 };
-                n.verdict = Verdict(n, facts, report.thresholdMM);
+                if (winner.taken) n.wouldSnap = IsTheWinner(n, winner);
+                n.verdict = Verdict(n, facts, report.thresholdMM, winner);
 
                 report.neighbors.Add(n);
             }
@@ -127,22 +160,47 @@ namespace KitchenDesigner.Core
         }
 
         private static string Verdict(SnapNeighborReport n, in SnapNeighbourFacts facts,
-            float thresholdMM)
+            float thresholdMM, in SnapPortSeat winner)
         {
+            if (facts.portSeat.taken && IsTheWinner(n, winner))
+                return facts.portSeat.alreadySeated
+                    ? $"OK — устья {n.movedPortIndex} и {n.otherPortIndex} уже совмещены, "
+                      + "сдвига не будет"
+                    : $"OK — сядет устьем {n.movedPortIndex} на устье {n.otherPortIndex}, "
+                      + $"сдвиг {n.portSeatShiftMM:F2} мм"
+                      + (n.portsFaceEachOther ? string.Empty : " (оси устьев не встречные)");
+
+            if (facts.portSeat.taken)
+                return $"устья сходятся за {n.portSeatShiftMM:F2} мм, но посадку заберёт "
+                       + $"{winner.targetName}: там устье в устье ближе";
+
+            if (winner.taken)
+                return $"снэп сядет устьем на устье с {winner.targetName}, грани этой пары "
+                       + "в отборе не участвуют" + PortTail(n);
+
             if (!n.hasFacingFaces)
-                return $"нет встречных параллельных граней (лучший dot={n.bestDot:F3}) — деталь повёрнута?";
+                return $"нет встречных параллельных граней (лучший dot={n.bestDot:F3}) — деталь повёрнута?" + PortTail(n);
             if (!facts.hasCandidateFaces)
-                return NotConsidered(facts.exclusion);
+                return NotConsidered(facts.exclusion) + PortTail(n);
             if (!n.withinThreshold)
-                return $"зазор {n.gapMM:F1} мм больше порога {thresholdMM:F0} мм";
+                return $"зазор {n.gapMM:F1} мм больше порога {thresholdMM:F0} мм" + PortTail(n);
             if (!n.overlapEnough)
-                return $"перекрытие граней {n.overlapRatio:P0} меньше минимума 30%";
+                return $"перекрытие граней {n.overlapRatio:P0} меньше минимума 30%" + PortTail(n);
             if (!n.wouldSnap)
-                return Blocked(facts);
+                return Blocked(facts) + PortTail(n);
             if (n.intersects)
-                return "AABB пересекаются из-за поворота, но снэп сработает (разведёт детали заподлицо)";
-            return "OK — прилипнет";
+                return "AABB пересекаются из-за поворота, но снэп сработает (разведёт детали заподлицо)" + PortTail(n);
+            return "OK — прилипнет" + PortTail(n);
         }
+
+        private static bool IsTheWinner(SnapNeighborReport n, in SnapPortSeat winner) =>
+            winner.taken && winner.targetName == n.name
+            && winner.movedPort == n.movedPortIndex && winner.otherPort == n.otherPortIndex;
+
+        private static string PortTail(SnapNeighborReport n) =>
+            !n.bothCarryPorts
+                ? string.Empty
+                : $" | устья: ближайшие в {n.portGapMM:F2} мм, посадки по устьям не будет";
 
         private static string NotConsidered(SnapPairRejection why) => why switch
         {
@@ -169,7 +227,8 @@ namespace KitchenDesigner.Core
         };
 
         private static float SortKeyMM(SnapNeighborReport n)
-            => n.gapMM >= 0 ? n.gapMM : n.centerDistanceMM;
+            => n.portSeatOffered ? n.portSeatShiftMM
+                : n.gapMM >= 0 ? n.gapMM : n.centerDistanceMM;
 
         public static bool ElementsIntersect(KitchenElement a, KitchenElement b)
             => ElementsIntersectAt(a, a.GetVertices(), b);

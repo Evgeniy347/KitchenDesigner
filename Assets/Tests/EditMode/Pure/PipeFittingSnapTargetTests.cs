@@ -4,23 +4,22 @@ using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Plumbing;
 
-/// <summary>ТРЕБОВАНИЕ, которого сегодня нет: «поднёс — повернулось — соединилось».
-///
-/// Соседний файл <c>PipeFittingSnapProbeTests</c> измеряет то, что есть, и потому
-/// зелёный. Этот — описывает то, что нужно, и потому помечен <c>[Ignore]</c>: он не
-/// падение сборки, а ЗАДАНИЕ. Снимите <c>[Ignore]</c> вместе с работой, которая его
-/// закрывает; удалять тест, чтобы стало тихо, нельзя — тогда следующему агенту
-/// придётся заново выяснять, почему муфта «как-то держится», а уголок нет.
+/// <summary>ТРЕБОВАНИЕ «поднёс — соединилось», записанное раньше кода и теперь
+/// закрытое: <c>[Ignore]</c> снят вместе с посадкой по устьям (<c>SnapPortSeat</c>).
 ///
 /// Требование сформулировано через ПОРТЫ, а не через коробки, и это главное. Снэп
-/// сегодня ровняет габаритные коробки, и совпадение портов у муфты — побочный
-/// эффект того, что её устье случайно попало в центр грани. Правило, записанное
+/// раньше ровнял габаритные коробки, и совпадение портов у муфты было побочным
+/// эффектом того, что её устье случайно попадало в центр грани. Правило, записанное
 /// здесь, от формы коробки не зависит вовсе: сошлись устья — стык есть, не сошлись —
 /// нет, и никакое «выглядит прижатым» этого не заменяет.
 ///
-/// Проверять надо на УГОЛКЕ, а не на муфте. Муфта проходит уже сегодня, и тест на
-/// ней был бы зелёным при полностью нерабочей посадке — ровно тот случай, про
-/// который CONVENTIONS.md → «If a test would not go red, DELETE it».</summary>
+/// Проверяется УГОЛОК, а не муфта. Муфта проходила и до работы, и тест на ней был бы
+/// зелёным при полностью нерабочей посадке — ровно тот случай, про который
+/// CONVENTIONS.md → «If a test would not go red, DELETE it». Уголок же не соединялся
+/// НИКОГДА и ни при каком повороте: промах был 11,73 мм при допуске 0,5 мм.
+///
+/// Стенд обязан отдавать устья: коробка без портов вернула бы старое поведение, и оба
+/// теста снова стали бы красными — это и есть их доказательство красноты.</summary>
 public class PipeFittingSnapTargetTests
 {
     private const float ToU = AppConstants.MM_TO_UNITS;
@@ -29,12 +28,14 @@ public class PipeFittingSnapTargetTests
 
     private static readonly PointMm PipeLowEndMm = new PointMm(0f, 0f, 0f);
 
-    private sealed class PosedBox : IPosedGeometry
+    private sealed class PosedElbow : IPosedGeometry
     {
         private readonly Vector3 _sizeUnits;
-        public PosedBox(Vector3 sizeUnits) => _sizeUnits = sizeUnits;
+        public PosedElbow(Vector3 sizeUnits) => _sizeUnits = sizeUnits;
         public ElementGeometry At(Vector3 position) =>
-            ElementGeometry.Box("Fit", position, _sizeUnits);
+            ElementGeometry.Box("Fit", position, _sizeUnits, Quaternion.identity, false,
+                default, 0f,
+                PipeSnapPorts.OfFitting(PipeNodeKind.Elbow, Quaternion.identity, position));
     }
 
     private static Vector3 PipeBoxUnits => new Vector3(
@@ -54,11 +55,13 @@ public class PipeFittingSnapTargetTests
 
     private static SnapResult SnapElbowUnderThePipe(float startXMm)
     {
-        var pipe = ElementGeometry.Box("Run", new Vector3(0f, PipeLengthMm * 0.5f * ToU, 0f),
-            PipeBoxUnits);
+        var pipeCentre = new Vector3(0f, PipeLengthMm * 0.5f * ToU, 0f);
+        var pipe = ElementGeometry.Box("Run", pipeCentre, PipeBoxUnits, Quaternion.identity,
+            false, default, 0f,
+            PipeSnapPorts.OfPipe(PipeLengthMm, Quaternion.identity, pipeCentre));
         var box = ElbowBoxUnits();
         var start = new Vector3(startXMm * ToU, -(box.y * 0.5f) - 10f * ToU, 0f);
-        return SnapCore.TrySnap(new PosedBox(box), new List<ElementGeometry> { pipe }, start,
+        return SnapCore.TrySnap(new PosedElbow(box), new List<ElementGeometry> { pipe }, start,
             KitchenSettings.SNAP_THRESHOLD_DEFAULT_MM * ToU);
     }
 
@@ -79,9 +82,6 @@ public class PipeFittingSnapTargetTests
     }
 
     [Test]
-    [Ignore("Требование, а не регресс: посадки фитинга по портам в проекте пока нет. "
-        + "Измерение сегодняшнего поведения — PipeFittingSnapProbeTests. Снять вместе "
-        + "с работой, которая заводит посадку по портам.")]
     public void Elbow_BroughtToAPipeEnd_PutsOneOfItsPortsOnThatEnd()
     {
         var snap = SnapElbowUnderThePipe(0f);
@@ -90,12 +90,11 @@ public class PipeFittingSnapTargetTests
         Assert.LessOrEqual(NearestElbowPortGapMm(snap.position), PipeJoint.JoinToleranceMm,
             "после посадки хотя бы одно устье уголка обязано лежать на торце трубы в "
             + "пределах допуска стыка: иначе PIP-01 продолжит считать конец открытым, а "
-            + "пользователь будет видеть собранную трассу. Сегодня здесь 11,7 мм");
+            + "пользователь будет видеть собранную трассу. До посадки по устьям здесь "
+            + "было 11,7 мм при любом повороте");
     }
 
     [Test]
-    [Ignore("Требование, а не регресс: снэп выбирает засечку по кромкам коробок и про "
-        + "ось трубы не знает. Снять вместе с работой, которая заводит посадку по портам.")]
     public void Elbow_BroughtInWellOffTheAxis_IsStillPulledOntoThePipeAxis()
     {
         var snap = SnapElbowUnderThePipe(12f);

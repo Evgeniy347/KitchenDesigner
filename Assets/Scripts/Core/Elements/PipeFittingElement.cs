@@ -5,7 +5,7 @@ using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core
 {
-    public abstract class PipeFittingElement : KitchenElement, IPaintsItself
+    public abstract class PipeFittingElement : KitchenElement, IPaintsItself, ISnapPorts
     {
         private readonly RebuildGuard _rebuild = new RebuildGuard();
 
@@ -37,13 +37,20 @@ namespace KitchenDesigner.Core
 
         public virtual Material FactoryMaterial => SanitaryMaterials.Chrome;
 
-        public Vector3 HubPositionUnits => transform.TransformPoint(LocalHubUnits);
+        public int SnapPortCount => PortCount;
+
+        public SnapPort SnapPortAt(int index, Vector3 transformPosition) => new SnapPort(
+            ValidationPositionAt(transformPosition) + ValidationRotation * LocalPortUnits(index),
+            ValidationRotation * LocalPortAxis(index));
+
+        public Vector3 HubPositionUnits =>
+            ValidationPositionAt(transform.position) + ValidationRotation * LocalHubUnits;
 
         public Vector3 PortPositionUnits(int portIndex) =>
-            transform.TransformPoint(LocalPortUnits(portIndex));
+            SnapPortAt(portIndex, transform.position).Position;
 
         public Vector3 PortDirection(int portIndex) =>
-            transform.TransformDirection(LocalPortAxis(portIndex)).normalized;
+            SnapPortAt(portIndex, transform.position).Outward;
 
         public override Vector2Int DecorSurfaceMM => new Vector2Int(
             Mathf.Max(1, PipeFittingSpec.RoundedMm(

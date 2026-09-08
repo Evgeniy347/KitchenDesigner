@@ -34,6 +34,8 @@ namespace KitchenDesigner.Tests.Geometry
             ("ElementGeometryExtensions.cs", "единственный переводчик сцены в снимок: тут решается, у кого ось крепления вообще есть"),
             ("SnapFacePairRules.cs", "здесь правило и живёт — допуск пары к отбору"),
             ("SnapMountSeat.cs", "детент посадки: вторая половина того же правила, отдельным именем"),
+            ("IMountsOnTarget.cs", "объявляет ось крепления как СПОСОБНОСТЬ элемента; решений не принимает"),
+            ("ScrewLegElement.cs", "единственный элемент с осью крепления — он же её и называет; так лестница типов ушла из геометрии"),
         };
 
         private static string CoreSourceDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");

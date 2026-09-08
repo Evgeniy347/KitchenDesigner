@@ -17,6 +17,7 @@ namespace KitchenDesigner.Core
         public bool withinThreshold;
         public bool overlapEnough;
         public bool wouldSnap;
+        public SnapPortSeat portSeat;
 
         public static SnapNeighbourFacts Of(in ElementGeometry moved, Vector3 basePos,
             in ElementGeometry other, float maxDist)
@@ -29,8 +30,11 @@ namespace KitchenDesigner.Core
                 distanceUnits = -1f,
                 overlapRatio = -1f,
                 role = SnapPairRole.NotACandidate,
+                portSeat = SnapPortSeat.Empty(),
             };
             if (moved.IsEmpty || other.IsEmpty) return facts;
+
+            facts.portSeat = SnapPortSeat.Best(moved, other, maxDist);
 
             Face[] seatFaces = moved.IsPanel ? other.GrooveSeatFaces : System.Array.Empty<Face>();
             Face[] wallFaces = other.GrooveWallFaces;

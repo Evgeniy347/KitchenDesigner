@@ -3,7 +3,7 @@ using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core
 {
-    public class PipeElement : KitchenElement
+    public class PipeElement : KitchenElement, ISnapPorts
     {
         public override string DisplayTypeName => "Труба";
 
@@ -54,11 +54,23 @@ namespace KitchenDesigner.Core
 
         public int SectionMM => PipeElementSpec.SectionMM(_sizeId);
 
-        public Vector3 EndAUnits => transform.position - HalfRun;
+        public int SnapPortCount => PipeNodePorts.CountOf(PipeNodeKind.Pipe);
 
-        public Vector3 EndBUnits => transform.position + HalfRun;
+        public SnapPort SnapPortAt(int index, Vector3 transformPosition)
+        {
+            var along = ValidationRotation * Vector3.up;
+            var half = along * (_lengthMM * 0.5f * AppConstants.MM_TO_UNITS);
+            var centre = ValidationPositionAt(transformPosition);
+            return index == 0
+                ? new SnapPort(centre - half, -along)
+                : new SnapPort(centre + half, along);
+        }
 
-        public Vector3 RunAxis => transform.up;
+        public Vector3 EndAUnits => SnapPortAt(0, transform.position).Position;
+
+        public Vector3 EndBUnits => SnapPortAt(1, transform.position).Position;
+
+        public Vector3 RunAxis => SnapPortAt(1, transform.position).Outward;
 
         public override Vector2Int DecorSurfaceMM => new Vector2Int(
             Mathf.Max(1, Mathf.RoundToInt(OuterDiameterMm * Mathf.PI)), _lengthMM);
@@ -72,8 +84,6 @@ namespace KitchenDesigner.Core
         protected override Vector3 EffectiveScale => FurnitureLayout.PhysicalScale(DimensionsMM);
 
         public override void ApplyDimensions() => _rebuild.Run(Rebuild);
-
-        private Vector3 HalfRun => transform.up * (_lengthMM * 0.5f * AppConstants.MM_TO_UNITS);
 
         private void SyncDimensions() =>
             Data.DimensionsMM = new Vector3Int(SectionMM, _lengthMM, SectionMM);

@@ -13,6 +13,8 @@ namespace KitchenDesigner.Core
         {
             gap = 0f;
             if (others == null) return false;
+            if (SnapPortSeat.TryAlongNormal(self, faceCenter, normal, others,
+                    threshold + ThresholdEpsilon, out gap)) return true;
 
             Rect mRect = RectFor(faceCenter, uAxis, vAxis, uAxis, vAxis, faceSize.x, faceSize.y);
             float bestAbs = float.MaxValue;
