@@ -10,6 +10,10 @@ namespace KitchenDesigner.Core
 		public void SeatAfterMove(System.Collections.Generic.IReadOnlyList<KitchenElement> scene,
 			SnapCursor cursor = default) =>
 			PillarAutoFit.Seat(this, scene);
+
+		public void RepairJointAfterGridSnap(
+			System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
+			PillarAutoFit.Seat(this, scene);
 		public const int DiameterMM_Default = 50;
 		public const int DiameterMM_Min = 20;
 		public const int DiameterMM_Max = 200;
