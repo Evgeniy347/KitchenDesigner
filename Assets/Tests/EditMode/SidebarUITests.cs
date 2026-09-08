@@ -27,13 +27,13 @@ public class SidebarUITests
             "короб доступен в любом режиме — так же его классифицирует "
             + "EditModeManager.Categorize уже в сцене");
         Assert.AreEqual(EditModeManager.Category.Always,
-            SidebarUI.ItemCategory(room.Find(i => i.isWindow)));
+            SidebarUI.ItemCategory(room.Find(i => i.kind == SidebarItemKind.Window)));
         Assert.AreEqual(EditModeManager.Category.Always,
-            SidebarUI.ItemCategory(room.Find(i => i.isDoor)));
+            SidebarUI.ItemCategory(room.Find(i => i.kind == SidebarItemKind.Door)));
         Assert.AreEqual(EditModeManager.Category.Room,
-            SidebarUI.ItemCategory(room.Find(i => i.isWall)));
+            SidebarUI.ItemCategory(room.Find(i => i.kind == SidebarItemKind.Wall)));
         Assert.AreEqual(EditModeManager.Category.Room,
-            SidebarUI.ItemCategory(room.Find(i => i.isFloor)));
+            SidebarUI.ItemCategory(room.Find(i => i.kind == SidebarItemKind.Floor)));
         Assert.AreEqual(EditModeManager.Category.Regular,
             SidebarUI.ItemCategory(groups[0].items[0]));
     }

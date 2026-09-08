@@ -181,10 +181,8 @@ namespace KitchenDesigner.Core.UI
 
         internal static EditModeManager.Category ItemCategory(SidebarCatalog.Item it)
         {
-            if (it.isWindow || it.isDoor) return EditModeManager.Category.Always;
             if (it.name == EditModeManager.KorobName) return EditModeManager.Category.Always;
-            if (it.isWall || it.isFloor) return EditModeManager.Category.Room;
-            return EditModeManager.Category.Regular;
+            return it.Category;
         }
 
         private void ApplyModeStyling()

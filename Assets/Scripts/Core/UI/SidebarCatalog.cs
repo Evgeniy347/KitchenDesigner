@@ -39,66 +39,14 @@ namespace KitchenDesigner.Core.UI
                 drawerSystem = DefaultDrawerSystem;
             }
 
-            public bool isWall => kind == SidebarItemKind.Wall;
-
-            public bool isFacade => kind == SidebarItemKind.Facade
-                                    || kind == SidebarItemKind.AssembledFacade;
-
-            public bool isAssembled => kind == SidebarItemKind.AssembledFacade;
-
-            public bool isPanel => kind == SidebarItemKind.Panel;
-
-            public bool isDrawer => kind == SidebarItemKind.Drawer;
-
-            public bool isRadialShelf => kind == SidebarItemKind.RadialShelf;
-
-            public bool isFurniture => kind == SidebarItemKind.Table;
-
-            public bool isRadiusTable => kind == SidebarItemKind.RadiusTable;
-
-            public bool isStool => kind == SidebarItemKind.Stool;
-
-            public bool isChair => kind == SidebarItemKind.Chair;
-
-            public bool isSofa => kind == SidebarItemKind.Sofa;
-
-            public bool isBed => kind == SidebarItemKind.Bed;
-
-            public bool isPouffe => kind == SidebarItemKind.Pouffe;
-
-            public bool isPillar => kind == SidebarItemKind.Pillar;
-
-            public bool isScrewLeg => kind == SidebarItemKind.ScrewLeg;
-
-            public bool isSink => kind == SidebarItemKind.Sink;
-
-            public bool isCooktop => kind == SidebarItemKind.Cooktop;
-
-            public bool isOven => kind == SidebarItemKind.Oven;
-
-            public bool isDishwasher => kind == SidebarItemKind.Dishwasher;
-
-            public bool isToilet => kind == SidebarItemKind.Toilet;
-
-            public bool isWallHungToilet => kind == SidebarItemKind.WallHungToilet;
-
-            public bool isBathtub => kind == SidebarItemKind.Bathtub;
-
-            public bool isBathMixer => kind == SidebarItemKind.BathMixer;
-
-            public bool isShowerColumn => kind == SidebarItemKind.ShowerColumn;
-
-            public bool isSocket => kind == SidebarItemKind.Socket;
-
-            public bool isLightSwitch => kind == SidebarItemKind.LightSwitch;
-
-            public bool isFloor => kind == SidebarItemKind.Floor;
-
-            public bool isLightSource => kind == SidebarItemKind.LightSource;
-
-            public bool isWindow => kind == SidebarItemKind.Window;
-
-            public bool isDoor => kind == SidebarItemKind.Door;
+            public EditModeManager.Category Category => kind switch
+            {
+                SidebarItemKind.Window => EditModeManager.Category.Always,
+                SidebarItemKind.Door => EditModeManager.Category.Always,
+                SidebarItemKind.Wall => EditModeManager.Category.Room,
+                SidebarItemKind.Floor => EditModeManager.Category.Room,
+                _ => EditModeManager.Category.Regular,
+            };
         }
 
         public struct Group

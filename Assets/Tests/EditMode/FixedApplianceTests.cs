@@ -224,7 +224,7 @@ public class FixedApplianceTests
 
         Assert.AreEqual("Т", group.shortLabel);
         var item = group.items.Find(i => i.applianceModel == CooktopElement.MODEL_BOSCH_PUE611BB5E);
-        Assert.IsTrue(item.isCooktop, "пункт «Техники» — варочная поверхность");
+        Assert.IsTrue(item.kind == SidebarItemKind.Cooktop, "пункт «Техники» — варочная поверхность");
         Assert.AreEqual(new Vector3Int(592, 51, 522), item.dims, "в каталоге размеры производителя");
     }
 
@@ -235,7 +235,7 @@ public class FixedApplianceTests
         var item = group.items.Find(i => i.name == "Варочная поверхность");
 
         Assert.IsNotNull(item, "общая варочная переехала из «Мебели» в «Технику»");
-        Assert.IsTrue(item.isCooktop, "общая варочная помечена как isCooktop");
+        Assert.IsTrue(item.kind == SidebarItemKind.Cooktop, "общая варочная помечена как Cooktop");
         Assert.AreEqual("", item.applianceModel, "у общей варочной нет модели — модель только у Bosch-пункта");
     }
 

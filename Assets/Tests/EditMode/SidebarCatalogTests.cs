@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -46,13 +48,13 @@ public class SidebarCatalogTests
         var regular = groups[0].items[0];
         Assert.AreEqual("Полка", regular.name);
         Assert.AreEqual(new Vector3Int(600, 400, 16), regular.dims);
-        Assert.IsFalse(regular.isRadialShelf);
-        Assert.IsFalse(regular.isPanel);
+        Assert.IsFalse(regular.kind == SidebarItemKind.RadialShelf);
+        Assert.IsFalse(regular.kind == SidebarItemKind.Panel);
 
         var radial = groups[0].items[1];
         Assert.AreEqual("Радиусная полка", radial.name);
         Assert.AreEqual(new Vector3Int(600, 400, 16), radial.dims);
-        Assert.IsTrue(radial.isRadialShelf);
+        Assert.IsTrue(radial.kind == SidebarItemKind.RadialShelf);
     }
 
     [Test]
@@ -61,8 +63,9 @@ public class SidebarCatalogTests
         var panel = SidebarCatalog.Build()[0].items[2];
 
         Assert.AreEqual("ДВП/ХДФ", panel.name);
-        Assert.IsTrue(panel.isPanel);
-        Assert.IsFalse(panel.isFacade, "ДВП не фасад — она не открывается");
+        Assert.IsTrue(panel.kind == SidebarItemKind.Panel);
+        Assert.IsFalse(panel.kind == SidebarItemKind.Facade
+            || panel.kind == SidebarItemKind.AssembledFacade, "ДВП не фасад — она не открывается");
         Assert.AreEqual(3, panel.dims.z, "тонкая панель");
 
         // Технологический зазор (в паз заходит номинал, зазор остаётся в детали) задан
@@ -81,19 +84,20 @@ public class SidebarCatalogTests
         Assert.AreEqual(2, groups[1].items.Count);
         foreach (var it in groups[1].items)
         {
-            Assert.IsTrue(it.isFacade, "элемент группы «Фасады» помечен как фасад");
+            Assert.IsTrue(it.kind == SidebarItemKind.Facade || it.kind == SidebarItemKind.AssembledFacade,
+                "элемент группы «Фасады» помечен как фасад");
             Assert.AreEqual(18, it.dims.z, "толщина фасада 18 мм");
         }
 
         var plain = groups[1].items.Find(it => it.name == "Фасад щитовой");
-        Assert.IsFalse(plain.isAssembled, "щитовой фасад — не сборный");
+        Assert.IsFalse(plain.kind == SidebarItemKind.AssembledFacade, "щитовой фасад — не сборный");
         Assert.AreEqual(new Vector3Int(600, 716, 18), plain.dims, "размеры щитового по умолчанию");
 
         var assembled = groups[1].items.Find(it => it.name == "Фасад сборный");
-        Assert.IsTrue(assembled.isAssembled, "сборный фасад помечен как сборный");
+        Assert.IsTrue(assembled.kind == SidebarItemKind.AssembledFacade, "сборный фасад помечен как сборный");
         Assert.AreEqual(new Vector3Int(600, 716, 18), assembled.dims);
 
-        Assert.AreEqual(1, groups[1].items.FindAll(it => it.isAssembled).Count, "1 сборный фасад");
+        Assert.AreEqual(1, groups[1].items.FindAll(it => it.kind == SidebarItemKind.AssembledFacade).Count, "1 сборный фасад");
     }
 
     [Test]
@@ -103,13 +107,13 @@ public class SidebarCatalogTests
         Assert.AreEqual(2, groups[2].items.Count, "два ящика: GTV и Movento");
 
         var gtv = groups[2].items[0];
-        Assert.IsTrue(gtv.isDrawer);
+        Assert.IsTrue(gtv.kind == SidebarItemKind.Drawer);
         Assert.AreEqual("gtv", gtv.drawerSystem);
         Assert.AreEqual("A", gtv.drawerType);
         Assert.AreEqual(350, gtv.drawerLength);
 
         var movento = groups[2].items[1];
-        Assert.IsTrue(movento.isDrawer);
+        Assert.IsTrue(movento.kind == SidebarItemKind.Drawer);
         Assert.AreEqual("movento", movento.drawerSystem);
         Assert.AreEqual("Ящик Movento", movento.name);
     }
@@ -122,7 +126,7 @@ public class SidebarCatalogTests
             "девятой в «Мебели» встала кровать, десятым — пуфик");
         var it = groups[3].items.Find(i => i.name == "Прямоугольный стол");
         Assert.IsNotNull(it);
-        Assert.IsTrue(it.isFurniture);
+        Assert.IsTrue(it.kind == SidebarItemKind.Table);
         Assert.AreEqual(new Vector3Int(2000, 750, 1000), it.dims);
     }
 
@@ -133,8 +137,8 @@ public class SidebarCatalogTests
         var it = groups[3].items.Find(i => i.name == "Стул");
         Assert.IsNotNull(it, "стул обязан быть в сайдбаре: иначе завести его можно только "
             + "через MCP");
-        Assert.IsTrue(it.isChair,
-            "и именно флагом стула: SidebarUI ветвится по этим флагам, и стул с флагом "
+        Assert.IsTrue(it.kind == SidebarItemKind.Chair,
+            "и именно видом «стул»: SidebarSpawnRouter ветвится по kind, и стул с видом "
             + "табуретки завёлся бы табуреткой");
         Assert.AreEqual(new Vector3Int(ChairElement.DefaultWidthMM,
             ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM), it.dims,
@@ -149,8 +153,8 @@ public class SidebarCatalogTests
         var it = groups[3].items.Find(i => i.name == "Диван");
         Assert.IsNotNull(it, "диван обязан быть в сайдбаре: иначе завести его можно только "
             + "через MCP");
-        Assert.IsTrue(it.isSofa,
-            "и именно флагом дивана: SidebarUI ветвится по этим флагам, и диван с флагом "
+        Assert.IsTrue(it.kind == SidebarItemKind.Sofa,
+            "и именно видом «диван»: SidebarSpawnRouter ветвится по kind, и диван с видом "
             + "стула завёлся бы стулом — без подушек и без основания");
         Assert.AreEqual(new Vector3Int(SofaElement.DefaultWidthMM,
             SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM), it.dims,
@@ -165,9 +169,9 @@ public class SidebarCatalogTests
         var it = groups[3].items.Find(i => i.name == "Кровать");
         Assert.IsNotNull(it, "кровать обязана быть в сайдбаре: иначе завести её можно "
             + "только через MCP");
-        Assert.IsTrue(it.isBed,
-            "и именно флагом кровати: SidebarUI ветвится по этим флагам, и кровать с чужим "
-            + "флагом завелась бы другим типом — без матраса, подушек и спинки");
+        Assert.IsTrue(it.kind == SidebarItemKind.Bed,
+            "и именно видом «кровать»: SidebarSpawnRouter ветвится по kind, и кровать с чужим "
+            + "видом завелась бы другим типом — без матраса, подушек и спинки");
         Assert.AreEqual(new Vector3Int(BedElement.DefaultWidthMM,
             BedElement.DefaultHeightMM, BedElement.DefaultDepthMM), it.dims,
             "габариты кровати в каталоге обязаны совпадать с её собственными значениями "
@@ -181,9 +185,9 @@ public class SidebarCatalogTests
         var it = groups[3].items.Find(i => i.name == "Пуфик");
         Assert.IsNotNull(it, "пуфик обязан быть в сайдбаре: иначе завести его можно "
             + "только через MCP");
-        Assert.IsTrue(it.isPouffe,
-            "и именно своим флагом: SidebarUI ветвится по этим флагам, и пуфик с чужим "
-            + "флагом завёлся бы табуреткой — на ножках и с жёстким сиденьем");
+        Assert.IsTrue(it.kind == SidebarItemKind.Pouffe,
+            "и именно своим видом: SidebarSpawnRouter ветвится по kind, и пуфик с чужим "
+            + "видом завёлся бы табуреткой — на ножках и с жёстким сиденьем");
         Assert.AreEqual(new Vector3Int(PouffeElement.DefaultWidthMM,
             PouffeElement.DefaultHeightMM, PouffeElement.DefaultDepthMM), it.dims,
             "габариты пуфика в каталоге обязаны совпадать с его собственными значениями "
@@ -204,7 +208,7 @@ public class SidebarCatalogTests
         var groups = SidebarCatalog.Build();
         var it = groups[3].items.Find(i => i.name == "Радиусный стол");
         Assert.IsNotNull(it);
-        Assert.IsTrue(it.isRadiusTable);
+        Assert.IsTrue(it.kind == SidebarItemKind.RadiusTable);
         Assert.AreEqual(new Vector3Int(2000, 750, 1000), it.dims);
     }
 
@@ -214,7 +218,7 @@ public class SidebarCatalogTests
         var groups = SidebarCatalog.Build();
         var it = groups[3].items.Find(i => i.name == "Табуретка");
         Assert.IsNotNull(it);
-        Assert.IsTrue(it.isStool);
+        Assert.IsTrue(it.kind == SidebarItemKind.Stool);
         Assert.AreEqual(new Vector3Int(StoolElement.DefaultWidthMM,
             StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM), it.dims,
             "габариты табуретки в каталоге обязаны совпадать с её собственными "
@@ -227,7 +231,7 @@ public class SidebarCatalogTests
         var groups = SidebarCatalog.Build();
         var it = groups[3].items.Find(i => i.name == "Ножка");
         Assert.IsNotNull(it);
-        Assert.IsTrue(it.isPillar);
+        Assert.IsTrue(it.kind == SidebarItemKind.Pillar);
         Assert.AreEqual(PillarElement.MidHeightMM_Default, it.pillarMidHeightMM);
     }
 
@@ -236,7 +240,7 @@ public class SidebarCatalogTests
     {
         var groups = SidebarCatalog.Build();
         var it = groups[3].items.Find(i => i.name == "Мойка");
-        Assert.IsTrue(it.isSink, "элемент «Мойка» помечен как мойка");
+        Assert.IsTrue(it.kind == SidebarItemKind.Sink, "элемент «Мойка» помечен как мойка");
         Assert.AreEqual(new Vector3Int(
             SinkElement.OUTER_WIDTH_MM, SinkElement.TotalHeightMM, SinkElement.OUTER_DEPTH_MM), it.dims);
     }
@@ -261,7 +265,7 @@ public class SidebarCatalogTests
             + "и такой тест перестаёт значить что-либо, потому что его чинят цифрой");
 
         var compact = items.Find(i => i.name == "Унитаз");
-        Assert.IsTrue(compact.isToilet,
+        Assert.IsTrue(compact.kind == SidebarItemKind.Toilet,
             "напольный унитаз обязан нести свой вид: с чужим он завёлся бы другим объектом, "
             + "а маршрутизатор не отказывает, он просто зовёт другой спаун");
         Assert.AreEqual(ToiletElement.ModelDimensionsMM, compact.dims,
@@ -269,7 +273,7 @@ public class SidebarCatalogTests
             + "сайдбар и MCP заводят разные унитазы");
 
         var wallHung = items.Find(i => i.name == "Инсталляция");
-        Assert.IsTrue(wallHung.isWallHungToilet,
+        Assert.IsTrue(wallHung.kind == SidebarItemKind.WallHungToilet,
             "подвесной унитаз обязан нести свой вид, а не вид напольного: у них разные "
             + "габариты и разное поведение у стены");
         Assert.AreEqual(WallHungToiletElement.ModelDimensionsMM, wallHung.dims,
@@ -300,14 +304,14 @@ public class SidebarCatalogTests
         var items = SidebarCatalog.Build()[SanitaryIndex].items;
 
         var mixer = items.Find(i => i.name == "Смеситель");
-        Assert.IsTrue(mixer.isBathMixer, "смеситель обязан нести свой вид");
+        Assert.IsTrue(mixer.kind == SidebarItemKind.BathMixer, "смеситель обязан нести свой вид");
         Assert.AreEqual(BathMixerLayout.DimensionsMM(BathMixerSpec.Default), mixer.dims,
             "габарит в каталоге обязан быть ВЫЧИСЛЕННЫМ из умолчательной раскладки: "
             + "у смесителя размер выводится из формы, и вписанное руками число разошлось "
             + "бы с тем, что реально заводит фабрика, при первой же правке умолчаний");
 
         var column = items.Find(i => i.name == "Душевая стойка");
-        Assert.IsTrue(column.isShowerColumn, "душевая стойка обязана нести свой вид");
+        Assert.IsTrue(column.kind == SidebarItemKind.ShowerColumn, "душевая стойка обязана нести свой вид");
         Assert.AreEqual(ShowerColumnLayout.DimensionsMM(ShowerColumnSpec.Default), column.dims,
             "то же для стойки, и тут расхождение было бы особенно грубым: её габарит на "
             + "четверть метра выше самой стойки из-за петли шланга");
@@ -334,7 +338,7 @@ public class SidebarCatalogTests
 
         Assert.AreEqual("Короб", korob.name);
         Assert.AreEqual(new Vector3Int(600, 600, 600), korob.dims);
-        Assert.IsFalse(korob.isWall);
+        Assert.IsFalse(korob.kind == SidebarItemKind.Wall);
     }
 
     [Test]
@@ -344,7 +348,7 @@ public class SidebarCatalogTests
         var room = groups[RoomIndex];
         var wall = room.items.Find(it => it.name == "Стена");
 
-        Assert.IsTrue(wall.isWall, "элемент «Стена» помечен как стена");
+        Assert.IsTrue(wall.kind == SidebarItemKind.Wall, "элемент «Стена» помечен как стена");
         Assert.AreEqual(new Vector3Int(2000, 2500, 100), wall.dims);
     }
 
@@ -364,7 +368,7 @@ public class SidebarCatalogTests
         var room = groups[RoomIndex];
         var floor = room.items.Find(it => it.name == "Пол");
 
-        Assert.IsTrue(floor.isFloor, "элемент «Пол» помечен как пол");
+        Assert.IsTrue(floor.kind == SidebarItemKind.Floor, "элемент «Пол» помечен как пол");
         Assert.AreEqual(new Vector3Int(
             FloorElement.DEFAULT_SIZE_MM,
             FloorElement.DEFAULT_THICKNESS_MM,
@@ -378,7 +382,7 @@ public class SidebarCatalogTests
         var room = groups[RoomIndex];
         var lamp = room.items.Find(it => it.name == "Источник света");
 
-        Assert.IsTrue(lamp.isLightSource, "элемент «Источник света» помечен как источник света");
+        Assert.IsTrue(lamp.kind == SidebarItemKind.LightSource, "элемент «Источник света» помечен как источник света");
     }
 
     /// <summary>Розетка и выключатель — электрика, и живут они в «Помещении»
@@ -394,8 +398,8 @@ public class SidebarCatalogTests
         var socket = room.items.Find(it => it.name == "Розетка");
         var lightSwitch = room.items.Find(it => it.name == "Выключатель");
 
-        Assert.IsTrue(socket.isSocket, "розетка обязана нести свой вид");
-        Assert.IsTrue(lightSwitch.isLightSwitch, "выключатель обязан нести свой вид");
+        Assert.IsTrue(socket.kind == SidebarItemKind.Socket, "розетка обязана нести свой вид");
+        Assert.IsTrue(lightSwitch.kind == SidebarItemKind.LightSwitch, "выключатель обязан нести свой вид");
         Assert.AreNotEqual(socket.kind, lightSwitch.kind,
             "два вида на одну кнопку маршрутизатор не отвергает — он просто зовёт чужой "
             + "спаун, и кнопка заводит не тот объект");
@@ -454,7 +458,7 @@ public class SidebarCatalogTests
         var items = SidebarCatalog.Build()[4].items;
 
         Assert.AreEqual(4, items.Count);
-        Assert.IsTrue(items[0].isCooktop);
+        Assert.IsTrue(items[0].kind == SidebarItemKind.Cooktop);
         Assert.AreEqual("", items[0].applianceModel,
             "варочная свободного размера идёт первой и модели не имеет: её габариты "
             + "пользователь правит сам");
@@ -499,5 +503,36 @@ public class SidebarCatalogTests
         Assert.IsEmpty(unknownModels,
             "пункт каталога ссылается на модель, которой нет в ApplianceModels.All — "
             + "фиксированный размер для неё не сработает: " + string.Join(", ", unknownModels));
+    }
+
+    /// <summary>Страж против возврата 30 булевых свойств `is*` (`SidebarCatalog.cs:51-110`
+    /// до правки — `docs/TODO.md` пункт 4). Ловушка была в том, что новый вид
+    /// (`SidebarItemKind`) требовал ещё одной строки-свойства, и найти это
+    /// перечислением по прошлому реестру не удавалось: свойства называются со
+    /// строчной буквы и не попадают в обычный поиск по типам.
+    ///
+    /// Это МЕХАНИЗМ, а не список имён: рефлексия перебирает ВСЕ публичные
+    /// свойства <see cref="SidebarCatalog.Item"/> и ловит любое, чьё имя начинается
+    /// с «is» + заглавная буква — тем же шаблоном, каким были названы все 30
+    /// удалённых (`isWall`, `isPipe`, …). Новое свойство такой формы падает
+    /// само, без правки этого теста. Свойства другой формы (например, вычисляемая
+    /// `Category` с заглавной буквы) тест не трогает: описанная в TODO ловушка —
+    /// именно в лестнице `is*`, а не в любом производном свойстве вообще.</summary>
+    [Test]
+    public void ItemType_NeverGrowsALowercaseIsProperty()
+    {
+        var suspects = typeof(SidebarCatalog.Item)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Select(p => p.Name)
+            .Where(name => name.Length > 2 && name.StartsWith("is") && char.IsUpper(name[2]))
+            .ToList();
+
+        Assert.IsEmpty(suspects,
+            "SidebarCatalog.Item снова обзавёлся булевым свойством `is*` — "
+            + "docs/TODO.md пункт 4 закрывал ровно эту лестницу типов: каждый новый "
+            + "SidebarItemKind требовал ещё одной такой строки. Вид отвечает за себя "
+            + "через kind (и, где нужно, через собственное вычисляемое свойство без "
+            + "префикса is), а не через накопление флагов. Свойства: "
+            + string.Join(", ", suspects));
     }
 }
