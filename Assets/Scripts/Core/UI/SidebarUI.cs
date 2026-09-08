@@ -253,13 +253,14 @@ namespace KitchenDesigner.Core.UI
             for (int i = 0; i < groups.Count; i++)
             {
                 int index = i;
-                var btn = UIFactory.CreateButton("SbMini_" + groups[i].title, _mini!.Content,
-                    groups[i].shortLabel, Vector2.zero,
+                var btn = UIFactory.CreateIconButton("SbMini_" + groups[i].title, _mini!.Content,
+                    groups[i].icon, Vector2.zero,
                     new Vector2(CollapsedW - 2f * SidebarLayout.MiniPad, SidebarLayout.MiniButtonH),
                     () => OpenGroup(index));
                 var rt = btn.GetComponent<RectTransform>();
                 UIFactory.AnchorTopLeft(rt);
                 rt.anchoredPosition = new Vector2(SidebarLayout.MiniPad, SidebarLayout.MiniItemY(i));
+                TooltipUI.Attach(btn.gameObject, groups[i].title);
             }
             _mini!.ContentHeight = SidebarLayout.MiniContentHeight(groups.Count);
         }

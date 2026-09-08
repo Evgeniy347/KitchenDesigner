@@ -16,6 +16,7 @@ namespace KitchenDesigner.Core.UI
         private static Sprite? _ruler, _bulb, _sun, _eyedropper, _crosshair;
         private static Sprite? _note, _play, _pause, _trackNext, _trackPrev;
         private static Sprite? _findIssue, _document, _sceneTree, _book, _resizeHandles, _moveHandles, _tintDrop;
+        private static Sprite? _shelf, _facade, _drawer, _furniture, _appliance, _faucet, _room;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -45,6 +46,13 @@ namespace KitchenDesigner.Core.UI
         public static Sprite ResizeHandles => _resizeHandles ??= BuildResizeHandles();
         public static Sprite MoveHandles => _moveHandles ??= BuildMoveHandles();
         public static Sprite TintDrop => _tintDrop ??= BuildTintDrop();
+        public static Sprite Shelf => _shelf ??= BuildShelf();
+        public static Sprite Facade => _facade ??= BuildFacade();
+        public static Sprite Drawer => _drawer ??= BuildDrawer();
+        public static Sprite Furniture => _furniture ??= BuildFurniture();
+        public static Sprite Appliance => _appliance ??= BuildAppliance();
+        public static Sprite Faucet => _faucet ??= BuildFaucet();
+        public static Sprite Room => _room ??= BuildRoom();
 
         private static Sprite BuildGear()
         {
@@ -219,6 +227,73 @@ namespace KitchenDesigner.Core.UI
         }
 
         private static void DrawTintDropGloss(Color32[] px) => Disc(px, 26, 20, 3, Ink2);
+
+        private static Sprite BuildShelf()
+        {
+            var px = NewCanvas();
+            Rect(px, 8, 8, 16, 56, Ink2);
+            Rect(px, 8, 36, 26, 44, Ink);
+            Line(px, 16, 36, 24, 20, 3, Ink2);
+            return Finish(px);
+        }
+
+        private static Sprite BuildFacade()
+        {
+            var px = NewCanvas();
+            Rect(px, 42, 4, 58, 28, Ink);
+            Rect(px, 53, 10, 56, 20, Ink2);
+            return Finish(px);
+        }
+
+        private static Sprite BuildDrawer()
+        {
+            var px = NewCanvas();
+            Rect(px, 20, 34, 40, 58, Ink);
+            Rect(px, 20, 42, 40, 44, Ink2);
+            Rect(px, 20, 50, 40, 52, Ink2);
+            Rect(px, 28, 36, 32, 39, Ink2);
+            Rect(px, 28, 46, 32, 49, Ink2);
+            Rect(px, 28, 54, 32, 57, Ink2);
+            return Finish(px);
+        }
+
+        private static Sprite BuildFurniture()
+        {
+            var px = NewCanvas();
+            Rect(px, 10, 42, 54, 50, Ink);
+            Rect(px, 14, 10, 19, 42, Ink2);
+            Rect(px, 45, 10, 50, 42, Ink2);
+            return Finish(px);
+        }
+
+        private static Sprite BuildAppliance()
+        {
+            var px = NewCanvas();
+            Rect(px, 20, 4, 40, 28, Ink);
+            Disc(px, 30, 16, 9, Ink2);
+            Disc(px, 30, 16, 5, Clear);
+            Rect(px, 22, 6, 38, 9, Ink2);
+            return Finish(px);
+        }
+
+        private static Sprite BuildFaucet()
+        {
+            var px = NewCanvas();
+            Rect(px, 49, 32, 59, 35, Ink2);
+            Disc(px, 57, 38, 3, Ink);
+            Rect(px, 42, 44, 58, 54, Ink);
+            Rect(px, 49, 54, 53, 58, Ink2);
+            return Finish(px);
+        }
+
+        private static Sprite BuildRoom()
+        {
+            var px = NewCanvas();
+            Rect(px, 24, 6, 40, 20, Ink2);
+            TriangleUp(px, 32, 20, 54, 18, Ink);
+            Rect(px, 30, 6, 34, 14, Clear);
+            return Finish(px);
+        }
 
         private static Sprite BuildCircularArrow(bool redo)
         {

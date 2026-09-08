@@ -144,6 +144,46 @@ public class IconFactoryTests
     }
 
     [Test]
+    public void IconFactory_SidebarGroupIcons_AreAllNonEmpty()
+    {
+        foreach (var (name, icon) in SidebarGroupIcons())
+            Assert.IsNotEmpty(InkPixels(icon).ToList(), name + " — иконка группы не должна быть пустой");
+    }
+
+    /// <summary>Пять из семи иконок ниже намеренно занимают РАЗНЫЕ углы холста
+    /// 64×64, а не общий прямоугольник «корпус» посередине: при общей рамке
+    /// силуэты почти целиком совпадают и этот тест красит любую пару.</summary>
+    [Test]
+    public void IconFactory_SidebarGroupIcons_AreDistinctSilhouettes()
+    {
+        var icons = SidebarGroupIcons();
+        for (int i = 0; i < icons.Count; i++)
+        {
+            var inkA = new HashSet<(int x, int y)>(InkPixels(icons[i].icon));
+            for (int j = i + 1; j < icons.Count; j++)
+            {
+                var inkB = InkPixels(icons[j].icon).ToList();
+                int overlap = inkB.Count(p => inkA.Contains(p));
+                Assert.Less(overlap, inkB.Count / 2,
+                    $"«{icons[i].name}» и «{icons[j].name}» — рейка категорий сайдбара рисует "
+                    + "буквы иконками (docs/todo_evolution.md, дефект D5): каждая обязана "
+                    + "различаться формой, а не только оттенком чернил");
+            }
+        }
+    }
+
+    private static List<(string name, Sprite icon)> SidebarGroupIcons() => new()
+    {
+        ("Детали", IconFactory.Shelf),
+        ("Фасады", IconFactory.Facade),
+        ("Ящики", IconFactory.Drawer),
+        ("Мебель", IconFactory.Furniture),
+        ("Техника", IconFactory.Appliance),
+        ("Сантехника", IconFactory.Faucet),
+        ("Помещение", IconFactory.Room),
+    };
+
+    [Test]
     public void IconFactory_Pencil_IsDrawn_BecauseThePencilGlyphIsOutsideWgl4()
     {
         Assert.IsFalse(Wgl4CharSet.Contains('✎'),

@@ -33,6 +33,25 @@ public class SidebarCatalogTests
     }
 
     [Test]
+    public void EveryGroup_HasAnIconForTheCollapsedRail()
+    {
+        var groups = SidebarCatalog.Build();
+
+        foreach (var g in groups)
+            Assert.IsNotNull(g.icon,
+                $"свёрнутый сайдбар рисует группу «{g.title}» иконкой, а не буквой "
+                + "(docs/UI-GUIDELINES.md §4, дефект D5) — у каждой группы обязана быть своя");
+
+        Assert.AreEqual(IconFactory.Shelf, groups[0].icon);
+        Assert.AreEqual(IconFactory.Facade, groups[1].icon);
+        Assert.AreEqual(IconFactory.Drawer, groups[2].icon);
+        Assert.AreEqual(IconFactory.Furniture, groups[3].icon);
+        Assert.AreEqual(IconFactory.Appliance, groups[4].icon);
+        Assert.AreEqual(IconFactory.Faucet, groups[SanitaryIndex].icon);
+        Assert.AreEqual(IconFactory.Room, groups[RoomIndex].icon);
+    }
+
+    [Test]
     public void ApplianceGroup_ShortLabelIsT()
     {
         var groups = SidebarCatalog.Build();

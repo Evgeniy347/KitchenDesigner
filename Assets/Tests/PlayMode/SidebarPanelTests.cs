@@ -3,13 +3,15 @@ using System.Text;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
 /// <summary>Левая палитра объектов: заголовки-аккордеоны, раскладка пунктов по
-/// их фактической высоте, свёрнутый режим с буквами групп, серые пункты
-/// в режиме помещения и — с тех пор как каталог перерос экран — прокрутка.
+/// их фактической высоте, свёрнутый режим с иконками групп (docs/todo_evolution.md,
+/// дефект D5 — буквы «Д Ф Я М Т С П» не читались и запрещены §4 UI-GUIDELINES),
+/// серые пункты в режиме помещения и — с тех пор как каталог перерос экран — прокрутка.
 ///
 /// PlayMode, и это не вкусовщина: сайдбар подписывается на статическое событие
 /// EditModeManager.Changed и отписывается в OnDestroy, а вне Play mode Unity
@@ -271,7 +273,7 @@ public class SidebarPanelTests
     }
 
     [Test]
-    public void Collapsed_ShowsShortLabelsAndHidesThePin()
+    public void Collapsed_ShowsGroupIconsAndHidesThePin()
     {
         var pin = Child(Panel, "SbPin");
         Assume.That(pin.gameObject.activeSelf, Is.True);
@@ -282,8 +284,16 @@ public class SidebarPanelTests
         var mini = Child(Panel, "SbMini");
         Assert.IsTrue(mini.gameObject.activeSelf);
         var strip = Child(mini, "SbMiniContent");
-        Assert.AreEqual("Т", Child(strip, "SbMini_Техника").GetComponentInChildren<TMP_Text>().text,
-            "в узкой полосе группа подписана своей буквой из каталога");
+        var techBtn = Child(strip, "SbMini_Техника");
+
+        Assert.IsNull(techBtn.GetComponentInChildren<TMP_Text>(),
+            "буквы-псевдоиконки запрещены (docs/UI-GUIDELINES.md §4, дефект D5) — "
+            + "в узкой полосе группа рисуется иконкой, а не текстом");
+        var icon = Child(techBtn, "SbMini_Техника_Icon").GetComponent<Image>();
+        Assert.AreEqual(IconFactory.Appliance, icon.sprite,
+            "«Техника» рисуется своей иконкой из IconFactory, той же, что в каталоге группы");
+        Assert.IsNotNull(techBtn.gameObject.GetComponent<EventTrigger>(),
+            "иконная кнопка обязана иметь tooltip — UI-GUIDELINES §5");
         Assert.IsFalse(pin.gameObject.activeSelf,
             "булавка видна только в развёрнутом сайдбаре: в полосе шириной 52 px "
             + "её некуда поставить, а закреплять свёрнутую панель незачем");

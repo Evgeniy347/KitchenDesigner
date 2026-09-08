@@ -57,6 +57,7 @@ namespace KitchenDesigner.Core.UI
         {
             public string title;
             public string shortLabel;
+            public Sprite icon;
             public List<Item> items;
         }
 
@@ -74,6 +75,7 @@ namespace KitchenDesigner.Core.UI
                 {
                     title = "Помещение",
                     shortLabel = "П",
+                    icon = IconFactory.Room,
                     items = new List<Item>
                     {
                         new Item("Короб", new Vector3Int(600, 600, 600)),
@@ -101,7 +103,8 @@ namespace KitchenDesigner.Core.UI
             var radial = new Item("Радиусная полка", new Vector3Int(600, 400, 16),
                 SidebarItemKind.RadialShelf);
             var panel = new Item("ДВП/ХДФ", new Vector3Int(600, 400, 3), SidebarItemKind.Panel);
-            return new Group { title = "Детали", shortLabel = "Д", items = new List<Item> { regular, radial, panel } };
+            return new Group { title = "Детали", shortLabel = "Д", icon = IconFactory.Shelf,
+                items = new List<Item> { regular, radial, panel } };
         }
 
         private static Group FacadeGroup()
@@ -110,6 +113,7 @@ namespace KitchenDesigner.Core.UI
             {
                 title = "Фасады",
                 shortLabel = "Ф",
+                icon = IconFactory.Facade,
                 items = new List<Item>
                 {
                     new Item("Фасад щитовой", new Vector3Int(600, 716, 18),
@@ -126,7 +130,8 @@ namespace KitchenDesigner.Core.UI
                 DefaultDrawerSystem);
             var movento = DrawerItem("Ящик Movento", DefaultDrawerType, 500,
                 MoventoDrawerSystem);
-            return new Group { title = "Ящики", shortLabel = "Я", items = new List<Item> { gtv, movento } };
+            return new Group { title = "Ящики", shortLabel = "Я", icon = IconFactory.Drawer,
+                items = new List<Item> { gtv, movento } };
         }
 
         private static Item DrawerItem(string name, string drawerType, int length,
@@ -167,7 +172,8 @@ namespace KitchenDesigner.Core.UI
             var pillar = PillarItem("Ножка", PillarElement.MidHeightMM_Default);
             var screwLeg = ScrewLegItem("Винтовая опора");
             var sink = SinkItem("Мойка");
-            return new Group { title = "Мебель", shortLabel = "М", items = new List<Item> { table, radiusTable, stool, chair, sofa, pouffe, bed, pillar, screwLeg, sink } };
+            return new Group { title = "Мебель", shortLabel = "М", icon = IconFactory.Furniture,
+                items = new List<Item> { table, radiusTable, stool, chair, sofa, pouffe, bed, pillar, screwLeg, sink } };
         }
 
         private static Group ApplianceGroup()
@@ -179,7 +185,7 @@ namespace KitchenDesigner.Core.UI
             var dishwasher = DishwasherItem("Посудомойка " + DishwasherElement.MODEL);
             return new Group
             {
-                title = "Техника", shortLabel = "Т",
+                title = "Техника", shortLabel = "Т", icon = IconFactory.Appliance,
                 items = new List<Item> { genericCooktop, modelCooktop, oven, dishwasher },
             };
         }
@@ -190,6 +196,7 @@ namespace KitchenDesigner.Core.UI
             {
                 title = "Сантехника",
                 shortLabel = "С",
+                icon = IconFactory.Faucet,
                 items = new List<Item>
                 {
                     ToiletItem("Унитаз"), WallHungToiletItem("Инсталляция"), BathtubItem("Ванна"),
