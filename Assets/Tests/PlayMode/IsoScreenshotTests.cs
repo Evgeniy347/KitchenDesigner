@@ -83,15 +83,14 @@ public class IsoScreenshotTests : ElementFrameTests
     /// <summary>Направление камеры: 3/4 справа-сверху со стороны -Z (~30°).
     /// Спинка мебели по соглашению смотрит туда же, поэтому такой элемент
     /// попадает в кадр СО СПИНЫ — см. сводку класса.</summary>
-    private static readonly Vector3 IsoDir =
-        new Vector3(0.5f, 0.5f, -0.866f).normalized;
+    private static readonly Vector3 IsoDir = IsoCameraRig.IsoDir;
 
     /// <summary>Пол дистанции: мелкий объект не подпускается к объективу
     /// ближе полуметра, иначе винтовая опора занимала бы весь кадр без
     /// единого ориентира вокруг. Для КРУПНЫХ ПЛАНОВ это ровно наоборот —
     /// там пол не даёт кадру стать меньше ~414 мм, и узел, ради которого
     /// кадр снимают, тонет в общем виде. См. CreateCloseUpCamera.</summary>
-    private const float MinCameraDistance = 0.5f;
+    private const float MinCameraDistance = IsoCameraRig.MinDistance;
 
     /// <summary>Создать камеру для изометрического рендера объекта.
     /// Расстояние вычисляется из размера объекта так, чтобы он занимал
@@ -111,10 +110,7 @@ public class IsoScreenshotTests : ElementFrameTests
         cam.nearClipPlane = 0.01f;
         cam.farClipPlane = 100f;
 
-        float maxDim = Mathf.Max(size.x, size.y, size.z);
-        float distance = Mathf.Max(maxDim * distanceScale, MinCameraDistance);
-
-        camGo.transform.position = center + IsoDir * distance;
+        camGo.transform.position = IsoCameraRig.Position(center, size, distanceScale);
         camGo.transform.LookAt(center);
 
         return (camGo, cam);

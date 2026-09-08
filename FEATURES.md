@@ -32,6 +32,7 @@
 | Edge banding | EdgeBanding (HasEdgeEffective — единственный читатель), EdgeStates (три состояния торца), SetEdgeBandingCommand, SceneAnalyzer (EDG-01) | EdgeBandingTests, EdgeStatesTests, EdgeStateSingleReaderTests | Geometry/, Elements/, Commands/, Analysis/ |
 | Перенос состояний кромки при загрузке | EdgeStateMigration, SceneRestorer | EdgeStateMigrationTests | Persistence/ |
 | Подложка торца (кромки нет → голая плита) | EdgeSubstrate, GrooveMesh.SubmeshLayout, KitchenElement.RefreshSubmeshMaterials | EdgeSubstrateTests | Materials/, Elements/ |
+| Миниатюры элементов для каталога | ThumbnailRenderer (спавн через фабрику + изокамера на слое 31 → RenderTexture, без ReadPixels/PNG), IsoCameraRig (общая с IsoScreenshotTests математика ракурса 3/4), ElementFactorySandbox (флаг «песочницы»: ElementRoot.Publish не регистрирует элемент в PartRegistry — тем самым не трогает валидацию/спецификацию/автосохранение, все они читают PartRegistry) | ThumbnailRendererTests (снапшоты плиток в test-results/thumbnails, непустота по доле закрашенных пикселей), ElementFactorySandboxTests (противоположный вход: обычный спавн в реестре есть — песочный нет, без мёртвых записей), ElementFactorySandboxScopeTests (дотнет, вложенность/Dispose счётчика) | Rendering/, Pure/Elements/, Pure/Rendering/ |
 
 ## Persistence
 

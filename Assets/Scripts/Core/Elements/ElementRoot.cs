@@ -47,6 +47,8 @@ namespace KitchenDesigner.Core
 
         public static GameObject Publish(GameObject go, KitchenElement element)
         {
+            if (ElementFactorySandbox.IsActive) return go;
+
             PartRegistry.Register(element);
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
