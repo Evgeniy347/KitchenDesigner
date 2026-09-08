@@ -122,7 +122,8 @@ public class SpecificationManagerTests
 
         Assert.AreEqual(9, result.totalCount);
         Assert.AreEqual(3.58f, result.totalAreaM2, 0.005f, "новое число из ТЗ");
-        Assert.AreNotEqual(7.57f, result.totalAreaM2, 0.05f, "старое (вдвое большее) число не должно вернуться");
+        Assert.That(result.totalAreaM2, Is.Not.EqualTo(7.57f).Within(0.05f),
+            "старое (вдвое большее) число не должно вернуться");
 
         foreach (var e in elements) Object.DestroyImmediate(e.gameObject);
     }
