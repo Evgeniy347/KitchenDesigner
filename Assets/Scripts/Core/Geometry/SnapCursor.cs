@@ -12,9 +12,10 @@ namespace KitchenDesigner.Core
 
         private SnapCursor(Vector3 origin, Vector3 direction)
         {
-            Present = direction.sqrMagnitude > Tolerance.EpsilonSqr;
+            bool aimed = direction.sqrMagnitude > Tolerance.EpsilonSqr;
+            Present = aimed;
             Origin = origin;
-            Direction = Present ? direction.normalized : Vector3.zero;
+            Direction = aimed ? direction.normalized : Vector3.zero;
         }
 
         public static SnapCursor None => default;

@@ -56,6 +56,26 @@ namespace KitchenDesigner.Core
             return ports;
         }
 
+        public static PortedPart ToPortedPart(this KitchenElement element, Vector3 position) =>
+            element == null
+                ? default
+                : new PortedPart(element.GetInstanceID(), element.PartName,
+                    PortsOf(element, position));
+
+        public static List<PortedPart> ToPortedParts(this IEnumerable<KitchenElement> elements)
+        {
+            var result = new List<PortedPart>();
+            if (elements == null) return result;
+
+            foreach (var e in elements)
+            {
+                if (e == null || !e.gameObject.activeInHierarchy) continue;
+                var part = e.ToPortedPart(e.transform.position);
+                if (part.HasPorts) result.Add(part);
+            }
+            return result;
+        }
+
         private static Vector3 MountNormalOf(KitchenElement element) =>
             element is IMountsOnTarget mount ? mount.MountNormal : Vector3.zero;
 

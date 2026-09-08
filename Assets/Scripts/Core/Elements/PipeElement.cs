@@ -3,7 +3,7 @@ using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core
 {
-    public class PipeElement : KitchenElement, ISnapPorts
+    public class PipeElement : KitchenElement, ISnapPorts, IAutoSeated
     {
         public override string DisplayTypeName => "Труба";
 
@@ -65,6 +65,11 @@ namespace KitchenDesigner.Core
                 ? new SnapPort(centre - half, -along)
                 : new SnapPort(centre + half, along);
         }
+
+        public void SeatAfterMove(System.Collections.Generic.IReadOnlyList<KitchenElement> scene,
+            SnapCursor cursor = default) =>
+            PipeDocking.Seat(this, ValidationPositionAt(transform.position), ValidationRotation,
+                scene, cursor);
 
         public Vector3 EndAUnits => SnapPortAt(0, transform.position).Position;
 

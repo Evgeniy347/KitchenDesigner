@@ -51,6 +51,7 @@ namespace KitchenDesigner.Tests.Geometry
             ("SnapPortSeat.cs", "здесь правило и живёт: пара устьев, ранг встречности, сдвиг"),
             ("SnapPortDock.cs", "вторая половина того же правила — ДОВОРОТ: то же устье в устье, но с поворотом и с конкуренцией по курсору; отдельный файл потому, что покадровый путь его не платит, а посадка при отпускании кнопки платит"),
             ("PortedPart.cs", "часть сцены, у которой есть устья, как ДАННЫЕ: доворот читает только устья и не строит ни граней, ни габаритов"),
+            ("PipeDocking.cs", "единственный переводчик доворота в позу сцены: ось и угол из ядра превращаются в SetPositionAndRotation"),
             ("ElementGeometry.cs", "снимок объявляет устья как данные"),
             ("ElementGeometryExtensions.cs", "единственный переводчик сцены в снимок: тут решается, у кого устья вообще есть"),
             ("ISnapPorts.cs", "объявляет устья как СПОСОБНОСТЬ элемента — так правило не превращается в лестницу типов"),
@@ -133,6 +134,27 @@ namespace KitchenDesigner.Tests.Geometry
             StringAssert.Contains("PortPositionUnits", text,
                 "и он обязан читать устье у элемента: тогда снэп и трасса видят ОДНУ "
                 + "точку по построению, а не по совпадению");
+        }
+
+        [Test]
+        public void TheDragCursor_ReachesTheSeat_FromTheMover()
+        {
+            string? path = Sources().FirstOrDefault(p =>
+                Path.GetFileName(p) == "ElementMover.cs");
+            Assert.IsNotNull(path, "перетаскивание исчезло — сторож остался бы зелёным ни о чём");
+
+            string text = File.ReadAllText(path!);
+
+            StringAssert.Contains("SnapCursor", text,
+                "конкуренцию за доворот решает КУРСОР, и взять его негде, кроме мыши: "
+                + "экранных координат не видит ни SnapSystem, ни SnapCore. Если "
+                + "ElementMover перестанет его передавать, IAutoSeated.SeatAfterMove "
+                + "получит SnapCursor.None, отбор молча вернётся к «ближайшая по зазору», "
+                + "и ни один тест правила не покраснеет — оно само по себе останется "
+                + "верным");
+            StringAssert.Contains("SeatAfterMove(PartRegistry.GetAll(), _dragCursor)", text,
+                "и передавать его обязана именно посадка при отпускании кнопки: "
+                + "необязательный параметр SnapCursor компилируется и без аргумента");
         }
 
         [Test]

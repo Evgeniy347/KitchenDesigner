@@ -7,7 +7,8 @@ namespace KitchenDesigner.Core
 
         public override string DisplayTypeName => "Опора";
 
-		public void SeatAfterMove(System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
+		public void SeatAfterMove(System.Collections.Generic.IReadOnlyList<KitchenElement> scene,
+			SnapCursor cursor = default) =>
 			PillarAutoFit.Seat(this, scene);
 		public const int DiameterMM_Default = 50;
 		public const int DiameterMM_Min = 20;

@@ -4,6 +4,6 @@ namespace KitchenDesigner.Core
 {
     public interface IAutoSeated
     {
-        void SeatAfterMove(IReadOnlyList<KitchenElement> scene);
+        void SeatAfterMove(IReadOnlyList<KitchenElement> scene, SnapCursor cursor = default);
     }
 }

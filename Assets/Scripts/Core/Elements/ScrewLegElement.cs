@@ -182,7 +182,8 @@ namespace KitchenDesigner.Core
         public void SetHeightAboveFloorMM(int heightMM) =>
             ThreadLengthMM = ScrewLegSpec.ThreadLengthForHeightMM(heightMM, _insertionMM, _baseHeightMM);
 
-        public void SeatAfterMove(System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
+        public void SeatAfterMove(System.Collections.Generic.IReadOnlyList<KitchenElement> scene,
+            SnapCursor cursor = default) =>
             ScrewLegAutoFit.Seat(this, scene);
 
         private void SyncDimensions() =>

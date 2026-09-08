@@ -5,7 +5,8 @@ using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core
 {
-    public abstract class PipeFittingElement : KitchenElement, IPaintsItself, ISnapPorts
+    public abstract class PipeFittingElement : KitchenElement, IPaintsItself, ISnapPorts,
+        IAutoSeated
     {
         private readonly RebuildGuard _rebuild = new RebuildGuard();
 
@@ -42,6 +43,11 @@ namespace KitchenDesigner.Core
         public SnapPort SnapPortAt(int index, Vector3 transformPosition) => new SnapPort(
             ValidationPositionAt(transformPosition) + ValidationRotation * LocalPortUnits(index),
             ValidationRotation * LocalPortAxis(index));
+
+        public void SeatAfterMove(IReadOnlyList<KitchenElement> scene,
+            SnapCursor cursor = default) =>
+            PipeDocking.Seat(this, ValidationPositionAt(transform.position), ValidationRotation,
+                scene, cursor);
 
         public Vector3 HubPositionUnits =>
             ValidationPositionAt(transform.position) + ValidationRotation * LocalHubUnits;

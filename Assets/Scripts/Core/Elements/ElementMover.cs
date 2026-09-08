@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core
         private DragAxisLock _axisLock = DragAxisLock.None;
         private Wall? _dragWall;
         private bool _targetIsWallOpening;
+        private SnapCursor _dragCursor;
 
         private bool _pressed;
         private Vector2 _pressMouse;
@@ -192,6 +193,8 @@ namespace KitchenDesigner.Core
 
         private void RevertMoveSet()
         {
+            if (_target != null) _target.transform.rotation = _startRotation;
+
             if (_moveSet.Count == 0)
             {
                 if (_target != null) _target.transform.position = _startPosition;
@@ -314,6 +317,7 @@ namespace KitchenDesigner.Core
         private void UpdateDrag()
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            _dragCursor = SnapCursor.AlongRay(ray.origin, ray.direction);
             Vector3 newPos = _target!.transform.position;
             bool computed = false;
 
@@ -424,7 +428,7 @@ namespace KitchenDesigner.Core
 				{
 					seatedDimsBefore = _target.DimensionsMM;
 					seatedPosBefore = _target.transform.position;
-					seatedBefore.SeatAfterMove(PartRegistry.GetAll());
+					seatedBefore.SeatAfterMove(PartRegistry.GetAll(), _dragCursor);
 				}
 
 				if (_moveSet.Count <= 1 && _target is IStandsOnFloor standing)
