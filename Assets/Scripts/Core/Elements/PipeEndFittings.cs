@@ -67,7 +67,7 @@ namespace KitchenDesigner.Core
             {
                 var spawned = seated != null
                     ? Replace(survey, seated, kind.Value, scene)
-                    : Spawn(pipe, end, kind.Value);
+                    : Spawn(pipe, end, kind.Value, scene);
                 CommandStack.Execute(new CreateCommand(spawned));
             }
             CommandStack.EndCapture($"Конец трубы {pipe.PartName}", commit: true);
@@ -77,12 +77,13 @@ namespace KitchenDesigner.Core
             return PipeEndEdit.Changed;
         }
 
-        private static GameObject Spawn(PipeElement pipe, int end, PipeNodeKind kind)
+        private static GameObject Spawn(PipeElement pipe, int end, PipeNodeKind kind,
+            IReadOnlyList<KitchenElement> scene)
         {
             var go = Create(kind, pipe.PartName + "_" + PipeFittingNames.TypeId(kind),
                 pipe.transform.position);
             var fitting = go.GetComponent<PipeFittingElement>();
-            if (fitting != null) fitting.SeatOnPipeEnd(pipe, end);
+            if (fitting != null) fitting.SeatOnPipeEnd(pipe, end, scene);
             return go;
         }
 

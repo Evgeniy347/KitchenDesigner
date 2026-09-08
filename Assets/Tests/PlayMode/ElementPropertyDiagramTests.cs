@@ -513,7 +513,7 @@ public class ElementPropertyDiagramTests
         var cap = ElementFactory.CreatePipeCap("Zaglushka", pipe.EndBUnits)
             .GetComponent<PipeFittingElement>();
         Assert.IsNotNull(cap);
-        cap.SeatOnPipeEnd(pipe, 1);
+        cap.SeatOnPipeEnd(pipe, 1, PartRegistry.GetAll());
         yield return CapturePanel("ContextMenu", "contextmenu_pipe.png",
             () => { ContextMenuUI.Instance!.Open(pipe); },
             () => { ContextMenuUI.Instance?.Close(); });

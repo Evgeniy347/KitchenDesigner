@@ -46,6 +46,7 @@ namespace KitchenDesigner.Tests.Geometry
         {
             ("PipeFittingSpec.cs", "чистые числа фитинга: смещение устья и ось ножки — это и есть источник"),
             ("PipeFittingElement.cs", "единственный элемент, переводящий эти числа в позу; отсюда читают и снимок сцены, и снимок геометрии"),
+            ("PipeFittingSeatChoice.cs", "перебирает КАНДИДАТОВ посадки (порт × доворот на 90°) ДО того, как один из них выбран и применён: чтобы посчитать, сколько ссылок даст каждый кандидат, обязан знать те же смещения устьев, что и сам элемент — читает их через PipeFittingSpec.PortOffsetMm, а не выводит заново своей арифметикой"),
         };
 
         private static readonly (string file, string why)[] MayKnowTheSeatRule =
