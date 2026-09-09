@@ -504,6 +504,15 @@ public class SidebarPanelTests
     [UnityTest]
     public IEnumerator TileTooltip_ReflectsTheCurrentlySelectedPreset_NotTheOneAtBuildTime()
     {
+        // Группы стартуют свёрнутыми (ResetLastUsedGroupForTests в [SetUp]), и плитка
+        // свёрнутой группы неактивна в иерархии: наведение на неё — сценарий, которого
+        // не бывает у реального пользователя (нельзя навести курсор на невидимую плитку),
+        // и без раскрытия группы TooltipUI.EnsureOnCanvasOf не находит Canvas через
+        // GetComponentInParent (он не видит неактивных предков), узел «Tooltip» не
+        // создаётся вовсе, а следующий Find(...) молча возвращает null и валит тест
+        // NullReferenceException'ом вместо содержательного Assert.
+        _sidebar.ExpandAllGroupsForTests();
+
         var tile = Tile("Сантехника", "Фитинг");
         var presets = Child(tile, "Presets");
 
@@ -585,7 +594,7 @@ public class SidebarPanelTests
             + "прямо сейчас поле получило бы его в довесок");
 
         yield return null;
-        yield return new WaitForEndOfFrame();
+        yield return null;
 
         Assert.IsTrue(search.isFocused,
             "на следующем кадре поле поиска обязано получить фокус");
