@@ -17,6 +17,7 @@ namespace KitchenDesigner.Core.UI
         private static Sprite? _note, _play, _pause, _trackNext, _trackPrev;
         private static Sprite? _findIssue, _document, _sceneTree, _book, _resizeHandles, _moveHandles, _tintDrop;
         private static Sprite? _shelf, _facade, _drawer, _furniture, _appliance, _faucet, _room;
+        private static Sprite? _search, _tileStub;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -53,6 +54,8 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Appliance => _appliance ??= BuildAppliance();
         public static Sprite Faucet => _faucet ??= BuildFaucet();
         public static Sprite Room => _room ??= BuildRoom();
+        public static Sprite Search => _search ??= BuildSearch();
+        public static Sprite TileStub => _tileStub ??= BuildTileStub();
 
         private static Sprite BuildGear()
         {
@@ -444,6 +447,26 @@ namespace KitchenDesigner.Core.UI
                     32 + Mathf.RoundToInt(cos * 27), 32 + Mathf.RoundToInt(sin * 27),
                     2, Ink);
             }
+        }
+
+        private static Sprite BuildSearch()
+        {
+            var px = NewCanvas();
+            Disc(px, 26, 38, 15, Ink);
+            Disc(px, 26, 38, 11, Clear);
+            Line(px, 36, 28, 50, 14, 4, Ink);
+            return Finish(px);
+        }
+
+        private static Sprite BuildTileStub()
+        {
+            var px = NewCanvas();
+            Rect(px, 8, 8, 56, 56, Ink2);
+            Rect(px, 11, 11, 53, 53, Clear);
+            Disc(px, 22, 40, 5, Ink2);
+            TriangleUp(px, 34, 18, 34, 14, Ink2);
+            Rect(px, 11, 11, 53, 20, Ink2);
+            return Finish(px);
         }
 
         private static Sprite BuildCrosshair()

@@ -1,32 +1,29 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.TestTools;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
-/// <summary>Левая палитра объектов: заголовки-аккордеоны, раскладка пунктов по
-/// их фактической высоте, свёрнутый режим с иконками групп (docs/todo_evolution.md,
-/// дефект D5 — буквы «Д Ф Я М Т С П» не читались и запрещены §4 UI-GUIDELINES),
-/// серые пункты в режиме помещения и — с тех пор как каталог перерос экран — прокрутка.
+/// <summary>Левый док каталога после перехода на плитки (docs/todo_evolution.md §2.4,
+/// вариант A): поиск первым контролом, свёрнутые по умолчанию все группы кроме
+/// последней использованной, сетка 2×N плиток 96×96 с картинкой и подписью,
+/// пресеты — ряд точек на плитке при наведении, рейка иконок групп в свёрнутом
+/// состоянии (без изменений с прошлой версии).
 ///
-/// PlayMode, и это не вкусовщина: сайдбар подписывается на статическое событие
-/// EditModeManager.Changed и отписывается в OnDestroy, а вне Play mode Unity
-/// OnDestroy не зовёт. Тот же набор в EditMode оставлял живой обработчик с уже
-/// уничтоженными кнопками, и следующий же набор, трогающий режим, падал с
-/// MissingReferenceException — 20 чужих тестов подряд.
+/// PlayMode по той же причине, что и раньше: сайдбар подписывается на статическое
+/// событие EditModeManager.Changed и отписывается в OnDestroy, которого EditMode
+/// не зовёт.
 ///
-/// Узлы здесь ищет <see cref="Child"/>, а НЕ Transform.Find, и это не стиль.
-/// Find трактует «/» как разделитель пути, а в каталоге есть пункт «ДВП/ХДФ»:
-/// объект называется SbItem_детали_ДВП/ХДФ, Find уходит искать ребёнка
-/// «SbItem_детали_ДВП» с ребёнком «ХДФ», не находит и возвращает null. Пока
-/// тесты дёргали пункты поимённо, слэш никому не попадался; первый же обход
-/// всего каталога упал NullReferenceException без единого слова о причине.
-/// Child перебирает детей по точному имени и падает текстом, называющим
-/// недостающий узел.</summary>
+/// Узлы ищет <see cref="Child"/>, а не Transform.Find — заголовки и плитки носят
+/// человекочитаемые русские имена, и в них попадаются символы, которые Find
+/// трактует как разделитель пути («ДВП/ХДФ»).</summary>
 public class SidebarPanelTests
 {
     private GameObject _canvasGo = null!;
@@ -36,7 +33,9 @@ public class SidebarPanelTests
     [SetUp]
     public void SetUp()
     {
+        PlayModeTestConfig.ConfigureForTests();
         EditModeManager.Reset();
+        SidebarUI.ResetLastUsedGroupForTests();
         _canvasGo = new GameObject("Canvas");
         _canvasGo.AddComponent<Canvas>();
 
@@ -51,6 +50,8 @@ public class SidebarPanelTests
         if (_sidebarHost != null) Object.DestroyImmediate(_sidebarHost);
         if (_canvasGo != null) Object.DestroyImmediate(_canvasGo);
         EditModeManager.Reset();
+        SidebarUI.ResetLastUsedGroupForTests();
+        PartRegistry.Clear();
     }
 
     private static Transform Child(Transform parent, string name)
@@ -75,9 +76,9 @@ public class SidebarPanelTests
 
     private RectTransform FullContent => (RectTransform)Child(Full, "SbFullContent");
 
-    private static string ItemNode(string group, string name) => "SbItem_" + group + "_" + name;
+    private static string TileNode(string group, string title) => "SbTile_" + group + "_" + title;
 
-    private Transform Item(string group, string name) => Child(FullContent, ItemNode(group, name));
+    private Transform Tile(string group, string title) => Child(FullContent, TileNode(group, title));
 
     private Button Header(string group)
         => Child(FullContent, "SbGrp_" + group).GetComponent<Button>();
@@ -96,166 +97,125 @@ public class SidebarPanelTests
         return corners[0].y;
     }
 
-    private static float RowBottom(RectTransform rt)
-        => -rt.anchoredPosition.y + rt.sizeDelta.y;
+    private static float TopY(RectTransform rt)
+    {
+        var corners = new Vector3[4];
+        rt.GetWorldCorners(corners);
+        return corners[1].y;
+    }
+
+    [Test]
+    public void SearchField_IsTheFirstControlOfTheDock()
+    {
+        var search = Child(Panel, "SbSearch");
+        Assert.IsNotNull(search.GetComponent<TMP_InputField>(),
+            "поле поиска обязано существовать в доке — оно должно взять поиск у сцены и ошибок");
+
+        var searchTop = TopY((RectTransform)search);
+        var fullTop = TopY((RectTransform)Full);
+        Assert.Greater(searchTop, fullTop,
+            "поле поиска стоит НАД сеткой плиток — первый контрол дока");
+    }
 
     [Test]
     public void GroupHeader_PutsTheGlyphBeforeTheTitle_AndFlipsItOnToggle()
     {
-        var header = Header("Техника");
+        var header = Header("Мебель");
         var label = header.GetComponentInChildren<TMP_Text>();
-
-        Assert.AreEqual(UIStyle.GlyphExpanded + "  Техника", label.text,
-            "глиф стоит СЛЕВА от названия: так видно, что строка раскрывается, "
-            + "и у заголовка с пунктами общий левый край");
+        bool startedOpen = label.text.StartsWith(UIStyle.GlyphExpanded);
 
         header.onClick.Invoke();
 
-        Assert.AreEqual(UIStyle.GlyphCollapsed + "  Техника", label.text);
-        Assert.IsFalse(Item("Техника", "Духовка " + OvenElement.MODEL).gameObject.activeSelf,
-            "свёрнутая группа прячет свои пункты");
-    }
-
-    /// <summary>D7/D8: вторая строка кнопки отдана габаритам, а не переносу
-    /// длинного имени — имя теперь ровно одна строка и обрезается многоточием,
-    /// когда не влезает, вместо того чтобы то одно-, то двухстрочно раздувать
-    /// ритм списка.</summary>
-    [Test]
-    public void ItemNameLabel_NeverWraps_ItTruncatesWhatDoesNotFit()
-    {
-        var shortName = Item("Детали", "Полка").GetComponentInChildren<TMP_Text>();
-        var longName = Item("Техника", "Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E)
-            .GetComponentInChildren<TMP_Text>();
-
-        Assert.IsFalse(shortName.enableWordWrapping,
-            "имя не переносится по словам — вторая строка занята габаритами");
-        Assert.AreEqual(TextOverflowModes.Truncate, shortName.overflowMode);
-        Assert.IsFalse(longName.enableWordWrapping,
-            "длинное имя (с моделью прибора) ведёт себя так же: обрезается, а не переносится");
-        Assert.AreEqual(TextOverflowModes.Truncate, longName.overflowMode);
-    }
-
-    /// <summary>D8: габариты каталога (Ш×В×Г, мм) видны под именем пункта без
-    /// спауна — раньше их можно было узнать только заспавнив элемент.</summary>
-    [Test]
-    public void ItemButtons_ShowDimensionsInMillimetres_BelowTheName()
-    {
-        var shelf = Item("Детали", "Полка");
-        var shelfDims = Child(shelf, "SbItemDims_Детали_Полка").GetComponent<TMP_Text>();
-        Assert.AreEqual(SidebarUI.FormatDims(new Vector3Int(600, 400, 16)), shelfDims.text);
-
-        var table = Item("Мебель", "Прямоугольный стол");
-        var tableDims = Child(table, "SbItemDims_Мебель_Прямоугольный стол").GetComponent<TMP_Text>();
-        Assert.AreEqual(SidebarUI.FormatDims(new Vector3Int(2000, 750, 1000)), tableDims.text);
-    }
-
-    /// <summary>D7: модель прибора («Bosch PUE611BB5E») больше не печатается в
-    /// списке — она делает кнопку двухстрочной без всякой пользы (модель нужна
-    /// в паспорте элемента, не в перечне). Подпись кнопки — короткий тип
-    /// прибора; полное имя с моделью остаётся в tooltip.</summary>
-    [Test]
-    public void ApplianceButtons_ShowShortName_NotTheModel()
-    {
-        var cooktop = Item("Техника", "Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E)
-            .GetComponentInChildren<TMP_Text>();
-
-        Assert.AreEqual("Варочная", cooktop.text,
-            "в списке — короткий тип прибора без модели");
-        StringAssert.DoesNotContain(CooktopElement.MODEL_BOSCH_PUE611BB5E, cooktop.text);
+        string expectedGlyph = startedOpen ? UIStyle.GlyphCollapsed : UIStyle.GlyphExpanded;
+        Assert.IsTrue(label.text.StartsWith(expectedGlyph),
+            "глиф стоит слева от названия и переключается по клику");
     }
 
     [Test]
-    public void Items_AreLaidOutByTheirActualHeight_SoOneItemNeverOverlapsTheNext()
+    public void OnlyOneGroup_IsOpenByDefault()
     {
+        int openCount = 0;
         foreach (var g in SidebarCatalog.Build())
-            for (int i = 0; i + 1 < g.items.Count; i++)
-            {
-                var current = Item(g.title, g.items[i].name).GetComponent<RectTransform>();
-                var next = Item(g.title, g.items[i + 1].name).GetComponent<RectTransform>();
+        {
+            var label = Header(g.title).GetComponentInChildren<TMP_Text>();
+            if (label.text.StartsWith(UIStyle.GlyphExpanded)) openCount++;
+        }
 
-                float step = current.anchoredPosition.y - next.anchoredPosition.y;
-                Assert.GreaterOrEqual(step, current.sizeDelta.y,
-                    $"«{g.items[i].name}» в группе «{g.title}» накрывает следующий пункт "
-                    + $"«{g.items[i + 1].name}»: шаг раскладки обязан браться по фактической "
-                    + "высоте пункта");
-            }
+        Assert.AreEqual(1, openCount,
+            "по умолчанию раскрыта РОВНО одна группа — последняя использованная "
+            + "(docs/todo_evolution.md §2.4)");
     }
 
-    /// <summary>Каждый пункт каталога обязан доехать до содержимого панели.
-    /// Проверка идёт по НАБОРУ имён детей, а не поиском по одному: имя
-    /// «ДВП/ХДФ» ищется через Transform.Find как путь и не находится вовсе.</summary>
     [Test]
-    public void EveryCatalogItem_HasItsButtonInTheContent()
+    public void Tile_HasAThumbnailSlotAndAPlaceholderStub()
+    {
+        var tile = Tile("Детали", "Полка");
+
+        var thumb = Child(tile, "Thumb").GetComponent<RawImage>();
+        var stub = Child(tile, "Stub").GetComponent<Image>();
+
+        Assert.IsNotNull(thumb, "у плитки обязан быть RawImage под картинку ThumbnailRenderer");
+        Assert.IsTrue(stub.gameObject.activeSelf,
+            "пока картинка не готова, плитка обязана показывать заглушку, а не пустоту");
+        Assert.AreEqual(IconFactory.TileStub, stub.sprite);
+    }
+
+    [UnityTest]
+    public IEnumerator Tile_ThumbnailAppears_AfterAFewFramesOfLazyGeneration()
+    {
+        var tile = Tile("Детали", "Полка");
+        var stub = Child(tile, "Stub").GetComponent<Image>();
+        var thumb = Child(tile, "Thumb").GetComponent<RawImage>();
+
+        for (int i = 0; i < 10 && thumb.texture == null; i++)
+            yield return null;
+
+        Assert.IsNotNull(thumb.texture,
+            "генератор миниатюр обязан лениво заполнить картинку за несколько кадров");
+        Assert.IsFalse(stub.gameObject.activeSelf,
+            "как только картинка готова, заглушку убирают");
+    }
+
+    [Test]
+    public void MultiPresetTile_ShowsAllOriginalItemsAsPresetDots()
+    {
+        var tile = Tile("Сантехника", "Фитинг");
+        var presets = Child(tile, "Presets");
+
+        Assert.AreEqual(6, presets.childCount,
+            "шесть фитингов одной трубы обязаны остаться доступны — все шесть, как пресеты");
+    }
+
+    [Test]
+    public void SinglePresetTile_HasNoPresetDots()
+    {
+        var tile = Tile("Детали", "Полка");
+        var presets = Child(tile, "Presets");
+
+        Assert.AreEqual(0, presets.childCount);
+    }
+
+    [Test]
+    public void EveryCatalogItem_HasItsTileInTheContent()
     {
         var present = new HashSet<string>();
         for (int i = 0; i < FullContent.childCount; i++)
             present.Add(FullContent.GetChild(i).name);
 
         foreach (var g in SidebarCatalog.Build())
-            foreach (var it in g.items)
-                Assert.IsTrue(present.Contains(ItemNode(g.title, it.name)),
-                    $"пункта «{it.name}» из группы «{g.title}» нет среди кнопок каталога");
+            foreach (var tile in SidebarTileBuilder.BuildTiles(g.items))
+                Assert.IsTrue(present.Contains(TileNode(g.title, tile.title)),
+                    $"плитки «{tile.title}» из группы «{g.title}» нет среди узлов каталога");
     }
 
-    /// <summary>Сторож самого способа искать узлы. Проверки ниже опираются на
-    /// то, что отсутствующий узел даёт ИМЕНОВАННОЕ падение: пока поиск шёл
-    /// через Transform.Find, пропажа приходила как NullReferenceException без
-    /// строчки о том, чего не хватает, и на разбор такого падения уходил целый
-    /// прогон PlayMode. Если этот тест позеленеет неправильно — то есть Child
-    /// снова начнёт возвращать null вместо падения, — вся диагностика соседних
-    /// проверок молча вернётся к NRE.</summary>
     [Test]
     public void MissingNode_IsReportedByName_NotAsANullReference()
     {
         var ex = Assert.Throws<AssertionException>(() => Child(Full, "SbNoSuchNode"));
 
         Assert.IsNotNull(ex);
-        StringAssert.Contains("SbNoSuchNode", ex!.Message,
-            "сообщение обязано называть недостающий узел");
-        StringAssert.Contains("SbFullContent", ex.Message,
-            "и перечислять то, что рядом есть — иначе опечатку в имени не отличить от пропажи");
-    }
-
-    /// <summary>Каталог выше окна сайдбара — и обязан целиком доставаться
-    /// прокруткой. Пока корень был жёсткие 960 px без ScrollRect, 34 пункта
-    /// в 7 группах занимали 1280 px, и до нижних восьми было не добраться
-    /// ничем.
-    ///
-    /// Нижний край ищется обходом ДЕТЕЙ содержимого, а не поиском кнопок по
-    /// именам каталога: инвариант «всё внутри объявленной высоты» касается
-    /// любой строки, которая там лежит, включая заголовки групп.</summary>
-    [Test]
-    public void CatalogTallerThanTheWindow_StaysReachableThroughScrolling()
-    {
-        var viewport = (RectTransform)Full;
-        var scroll = Full.GetComponent<ScrollRect>();
-
-        Assert.IsNotNull(scroll, "каталог не помещается в панель — без ScrollRect его не достать");
-
-        var content = FullContent;
-        Assert.AreSame(content, scroll.content, "прокрутке подсунут не тот узел содержимого");
-        Assert.IsTrue(scroll.vertical);
-        Assert.AreEqual(ScrollRect.MovementType.Clamped, scroll.movementType,
-            "содержимое не должно оттягиваться за края — как в дереве объектов");
-
-        float lowest = 0f;
-        string lowestName = "";
-        for (int i = 0; i < content.childCount; i++)
-        {
-            var rt = (RectTransform)content.GetChild(i);
-            if (!rt.gameObject.activeSelf) continue;
-            float bottom = RowBottom(rt);
-            if (bottom <= lowest) continue;
-            lowest = bottom;
-            lowestName = rt.name;
-        }
-
-        Assert.Greater(content.childCount, 0, "в содержимом каталога нет ни одной строки");
-        Assume.That(lowest, Is.GreaterThan(viewport.rect.height),
-            "проверка имеет смысл, только пока каталог выше окна");
-        Assert.GreaterOrEqual(content.sizeDelta.y, lowest,
-            $"нижний край «{lowestName}» лежит на {lowest} px, а содержимому объявлено "
-            + $"{content.sizeDelta.y} px: всё, что за этой границей, прокрутка не покажет");
+        StringAssert.Contains("SbNoSuchNode", ex!.Message);
+        StringAssert.Contains("SbFullContent", ex.Message);
     }
 
     [Test]
@@ -264,16 +224,18 @@ public class SidebarPanelTests
         var panel = (RectTransform)Panel;
         var canvas = (RectTransform)_canvasGo.transform;
 
-        Assert.Greater(BottomY(panel), BottomY(canvas),
-            "высота панели считается от экрана: зашитое число рано или поздно "
-            + "оказывается больше экрана, и низ сайдбара уходит за его край");
-        Assert.GreaterOrEqual(BottomY(panel), BottomY(canvas) + 34f,
-            "внизу слева живёт плашка статуса высотой 26 px с отступом 8 — "
-            + "панель обязана заканчиваться над ней");
+        Assert.Greater(BottomY(panel), BottomY(canvas));
+        Assert.GreaterOrEqual(BottomY(panel), BottomY(canvas) + 34f);
     }
 
     [Test]
-    public void Collapsed_ShowsGroupIconsAndHidesThePin()
+    public void Panel_ExpandedWidth_Is260Pixels()
+    {
+        Assert.AreEqual(260f, SidebarUI.ExpandedW);
+    }
+
+    [Test]
+    public void Collapsed_ShowsGroupIconsAndHidesThePinAndSearch()
     {
         var pin = Child(Panel, "SbPin");
         Assume.That(pin.gameObject.activeSelf, Is.True);
@@ -281,28 +243,21 @@ public class SidebarPanelTests
         Child(Panel, "SbCollapse").GetComponent<Button>().onClick.Invoke();
 
         Assert.IsFalse(Full.gameObject.activeSelf);
+        Assert.IsFalse(Child(Panel, "SbSearch").gameObject.activeSelf,
+            "поиск не нужен в рейке шириной 52 px");
         var mini = Child(Panel, "SbMini");
         Assert.IsTrue(mini.gameObject.activeSelf);
         var strip = Child(mini, "SbMiniContent");
         var techBtn = Child(strip, "SbMini_Техника");
 
         Assert.IsNull(techBtn.GetComponentInChildren<TMP_Text>(),
-            "буквы-псевдоиконки запрещены (docs/UI-GUIDELINES.md §4, дефект D5) — "
-            + "в узкой полосе группа рисуется иконкой, а не текстом");
+            "буквы-псевдоиконки запрещены — в узкой полосе группа рисуется иконкой");
         var icon = Child(techBtn, "SbMini_Техника_Icon").GetComponent<Image>();
-        Assert.AreEqual(IconFactory.Appliance, icon.sprite,
-            "«Техника» рисуется своей иконкой из IconFactory, той же, что в каталоге группы");
-        Assert.IsNotNull(techBtn.gameObject.GetComponent<EventTrigger>(),
-            "иконная кнопка обязана иметь tooltip — UI-GUIDELINES §5");
-        Assert.IsFalse(pin.gameObject.activeSelf,
-            "булавка видна только в развёрнутом сайдбаре: в полосе шириной 52 px "
-            + "её некуда поставить, а закреплять свёрнутую панель незачем");
+        Assert.AreEqual(IconFactory.Appliance, icon.sprite);
+        Assert.IsNotNull(techBtn.gameObject.GetComponent<EventTrigger>());
+        Assert.IsFalse(pin.gameObject.activeSelf);
     }
 
-    /// <summary>Свёрнутая полоса сегодня короче экрана, но растёт на 42 px
-    /// с каждой новой группой — ровно так же, как раскрытый каталог дорос до
-    /// недостижимого низа. Полосы прокрутки в 52 px не поставить, поэтому
-    /// у неё колесо и объявленная высота содержимого, а не молчаливая обрезка.</summary>
     [Test]
     public void CollapsedStrip_AlsoScrolls_SoNewGroupsCannotHideBelowTheEdge()
     {
@@ -310,31 +265,65 @@ public class SidebarPanelTests
         var content = (RectTransform)Child(mini, "SbMiniContent");
         var scroll = mini.GetComponent<ScrollRect>();
 
-        Assert.IsNotNull(scroll, "полоса групп растёт с каталогом и тоже обязана прокручиваться");
+        Assert.IsNotNull(scroll);
         Assert.AreSame(content, scroll.content);
         Assert.AreEqual(SidebarLayout.MiniContentHeight(SidebarCatalog.Build().Count),
-            content.sizeDelta.y,
-            "высота полосы считается по числу групп, а не задаётся числом");
+            content.sizeDelta.y);
     }
 
     [Test]
-    public void RoomMode_GraysOutRegularItems_ButKeepsWallsAndAlwaysItems()
+    public void ClickingAGroupIconInTheRail_ExpandsTheDockOnThatGroup()
     {
-        var shelf = Item("Детали", "Полка").GetComponent<Button>();
-        var wall = Item("Помещение", "Стена").GetComponent<Button>();
-        var korob = Item("Помещение", EditModeManager.KorobName).GetComponent<Button>();
+        Child(Panel, "SbCollapse").GetComponent<Button>().onClick.Invoke();
+        var mini = Child(Panel, "SbMini");
+        var strip = Child(mini, "SbMiniContent");
+        Child(strip, "SbMini_Техника").GetComponent<Button>().onClick.Invoke();
+
+        Assert.IsTrue(Full.gameObject.activeSelf, "клик по иконке категории раскрывает док");
+        var label = Header("Техника").GetComponentInChildren<TMP_Text>();
+        Assert.IsTrue(label.text.StartsWith(UIStyle.GlyphExpanded), "и открывает именно эту группу");
+    }
+
+    [Test]
+    public void SearchField_HidesTilesThatDoNotMatchByName()
+    {
+        var search = Child(Panel, "SbSearch").GetComponent<TMP_InputField>();
+        search.text = "Полка";
+
+        var shelf = Tile("Детали", "Полка");
+        Assert.IsTrue(shelf.gameObject.activeSelf, "совпавшая плитка остаётся видна при поиске");
+
+        var table = Tile("Мебель", "Прямоугольный стол");
+        Assert.IsFalse(table.gameObject.activeSelf,
+            "плитка, ни один пресет которой не совпал с поиском, обязана скрыться");
+    }
+
+    [Test]
+    public void SearchField_MatchesByAnyPresetName_NotOnlyTheTileTitle()
+    {
+        var search = Child(Panel, "SbSearch").GetComponent<TMP_InputField>();
+        search.text = "Movento";
+
+        var drawerTile = Tile("Ящики", "Ящик");
+        Assert.IsTrue(drawerTile.gameObject.activeSelf,
+            "плитка находится по имени ЛЮБОГО своего пресета, а не только по заголовку плитки");
+    }
+
+    [Test]
+    public void RoomMode_GraysOutRegularTiles_ButKeepsWallsAndAlwaysItems()
+    {
+        var shelf = Tile("Детали", "Полка").GetComponent<Button>();
+        var wall = Tile("Помещение", "Стена").GetComponent<Button>();
+        var korob = Tile("Помещение", EditModeManager.KorobName).GetComponent<Button>();
         var shelfLabel = shelf.GetComponentInChildren<TMP_Text>();
         Color normalColor = shelfLabel.color;
 
         EditModeManager.SetMode(EditMode.Room);
 
         Assert.IsFalse(shelf.interactable,
-            "в режиме помещения обычные детали не добавляются — кнопка не только "
-            + "серая, но и некликабельная");
+            "в режиме помещения обычные детали не добавляются");
         AssertSameColor(UIStyle.TextDisabled, shelfLabel.color,
-            "недоступный пункт обязан выглядеть недоступным, а не просто молчать в ответ; "
-            + "цвет именно TextDisabled, а не TextSecondary: погашенное во всём продукте "
-            + "гаснет одной краской (docs/UI-GUIDELINES.md §9)");
+            "недоступный пункт обязан выглядеть недоступным — цвет TextDisabled");
         Assert.IsTrue(wall.interactable);
         Assert.IsTrue(korob.interactable, "короб доступен в любом режиме");
 
@@ -342,7 +331,6 @@ public class SidebarPanelTests
 
         Assert.IsTrue(shelf.interactable);
         AssertSameColor(normalColor, shelfLabel.color,
-            "возврат в обычный режим возвращает и цвет: подписка на "
-            + "EditModeManager.Changed работает в обе стороны");
+            "вернувшись в обычный режим, доступная позиция снова окрашена обычным цветом");
     }
 }

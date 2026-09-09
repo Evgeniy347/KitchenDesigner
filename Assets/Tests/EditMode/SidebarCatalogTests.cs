@@ -459,60 +459,6 @@ public class SidebarCatalogTests
             "габарит выключателя — тем же порядком");
     }
 
-    /// <summary>Высота кнопки палитры обязана вмещать все строки её названия.
-    /// Пока высота была жёстко 26 px, длинные имена техники переносились по
-    /// словам и рисовались ЗА кнопкой, налезая на соседний пункт.</summary>
-    [Test]
-    public void ItemHeight_FitsEveryCatalogName()
-    {
-        foreach (var g in SidebarCatalog.Build())
-            foreach (var it in g.items)
-            {
-                float need = SidebarUI.ItemLines(it.name) * SidebarUI.ItemFont * DropdownItemFit.LineHeightFactor;
-                Assert.GreaterOrEqual(SidebarUI.ItemHeight(it.name), need,
-                    $"пункт «{it.name}» ниже своего текста — вторая строка вылезет наружу");
-            }
-    }
-
-    /// <summary>D7: имена с моделью (Bosch) длинные, но больше не переносятся —
-    /// вторая строка кнопки отдана габаритам (D8), а не переносу длинного
-    /// имени. Короткое и длинное имя обязаны занимать одну строку текста
-    /// одинаково: разницу между ними теперь несёт не число строк, а обрезка
-    /// многоточием.</summary>
-    [Test]
-    public void ItemLines_NeverWrapsPastOneRow_RegardlessOfNameLength()
-    {
-        foreach (var name in SidebarCatalog.Build()[4].items.ConvertAll(it => it.name))
-        {
-            Assert.AreEqual(1, SidebarUI.ItemLines(name),
-                $"«{name}» перенёсся на вторую строку — вторая строка отведена габаритам");
-            Assert.AreEqual(26f, SidebarUI.ItemHeight(name),
-                $"однострочная высота кнопки не зависит от длины имени: «{name}»");
-        }
-    }
-
-    [Test]
-    public void ItemHeight_ShortNameStaysSingleRow()
-    {
-        Assert.AreEqual(1, SidebarUI.ItemLines("Полка"));
-        Assert.AreEqual(26f, SidebarUI.ItemHeight("Полка"), "короткое имя не делает список выше");
-    }
-
-    /// <summary>D8: каждая кнопка каталога получает вторую строку с габаритами
-    /// поверх строки имени — RowHeight обязана быть выше ItemHeight ровно на
-    /// одну строку текста, и для короткого, и для длинного имени.</summary>
-    [Test]
-    public void RowHeight_IsTallerThanTheBareNameRow_ToFitTheDimensionsLine()
-    {
-        foreach (var name in new[] { "Полка", "Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E })
-        {
-            float extra = SidebarUI.RowHeight(name) - SidebarUI.ItemHeight(name);
-            Assert.GreaterOrEqual(extra, SidebarUI.ItemFont,
-                $"«{name}»: RowHeight обязана быть выше ItemHeight минимум на строку текста — "
-                + "иначе строке габаритов негде поместиться");
-        }
-    }
-
     [Test]
     public void ApplianceGroup_ItemsInOrder_GenericCooktop_Model_Oven_Dishwasher()
     {

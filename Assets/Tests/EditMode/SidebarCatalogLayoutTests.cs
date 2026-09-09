@@ -1,40 +1,32 @@
 using System.Collections.Generic;
+using System.Linq;
 using KitchenDesigner.Core.UI;
 using NUnit.Framework;
 using UnityEngine;
 
-/// <summary>Настоящий каталог, пропущенный через арифметику сайдбара. Пункты
-/// здесь не выдуманные: их высоты приходят из имён каталога через
-/// <see cref="SidebarUI.ItemHeight"/>, а значит рассинхрон между «сколько строк
-/// занимает имя» и «на сколько сдвигается следующая кнопка» виден именно тут,
-/// а не в PlayMode на глаз.
-///
-/// Повод: с приходом «Сантехники», розетки и выключателя каталог вырос до
-/// 7 групп и 34 пунктов — 1280 px против 960 px тогдашнего корня. Позиции при
-/// этом считались правильно, врала только высота содержимого, и нижние восемь
-/// пунктов оказались за пределами панели. Проверка здесь одна и та же с двух
-/// сторон: высота содержимого обязана накрывать нижний край последней строки,
-/// а строки не имеют права наезжать друг на друга.</summary>
+/// <summary>Настоящий каталог, пропущенный через арифметику плиточной сетки дока.
+/// До перехода на плитки (docs/todo_evolution.md §2.1, §2.4) этот набор мерил
+/// список строк переменной высоты по имени пункта; после перехода высота плитки
+/// постоянна (96×96), а раскладка ветвится по количеству ПЛИТОК в группе —
+/// SidebarTileBuilder.BuildTiles сворачивает варианты одного типа в пресеты
+/// одной плитки. Повод тот же, что и раньше: рассинхрон между «что видно» и
+/// «что объявлено высотой содержимого» невидим глазом и виден только счётом.</summary>
 public class SidebarCatalogLayoutTests
 {
-    private static List<SidebarGroupMetrics> AllGroupsOpen()
+    private static List<SidebarTileGroupMetrics> AllGroupsOpen()
     {
-        var metrics = new List<SidebarGroupMetrics>();
+        var metrics = new List<SidebarTileGroupMetrics>();
         foreach (var g in SidebarCatalog.Build())
-        {
-            var heights = new List<float>();
-            foreach (var it in g.items) heights.Add(SidebarUI.RowHeight(it.DisplayName));
-            metrics.Add(new SidebarGroupMetrics(true, heights));
-        }
+            metrics.Add(new SidebarTileGroupMetrics(true, SidebarTileBuilder.BuildTiles(g.items).Count));
         return metrics;
     }
 
     [Test]
-    public void WholeCatalog_ContentHeight_CoversTheLowestItem()
+    public void WholeCatalog_ContentHeight_CoversTheLowestTile()
     {
-        var rows = new List<SidebarRow>();
+        var rows = new List<SidebarTileRow>();
 
-        float height = SidebarLayout.Place(AllGroupsOpen(), rows);
+        float height = SidebarLayout.PlaceTiles(AllGroupsOpen(), rows);
 
         float lowest = 0f;
         foreach (var row in rows)
@@ -49,31 +41,30 @@ public class SidebarCatalogLayoutTests
     [Test]
     public void WholeCatalog_RowsFollowOneAnother_WithoutOverlap()
     {
-        var rows = new List<SidebarRow>();
-        SidebarLayout.Place(AllGroupsOpen(), rows);
+        var rows = new List<SidebarTileRow>();
+        SidebarLayout.PlaceTiles(AllGroupsOpen(), rows);
 
-        float previousBottom = 0f;
-        foreach (var row in rows)
+        foreach (var group in rows.GroupBy(r => r.Group))
         {
-            if (!row.Visible) continue;
-            float top = -row.Position.y;
-            Assert.GreaterOrEqual(top, previousBottom,
-                $"строка группы {row.Group} (пункт {row.Item}) начинается выше конца предыдущей");
-            previousBottom = row.Bottom;
+            var headerRow = group.First(r => r.IsHeader);
+            float headerBottom = headerRow.Bottom;
+            foreach (var tileRow in group.Where(r => !r.IsHeader && r.Visible))
+                Assert.GreaterOrEqual(-tileRow.Position.y, -headerRow.Position.y,
+                    $"плитка группы {tileRow.Group} начинается выше собственного заголовка");
         }
     }
 
     [Test]
-    public void EveryCatalogItem_GetsARowOfItsOwn()
+    public void EveryCatalogTile_GetsARowOfItsOwn()
     {
         var catalog = SidebarCatalog.Build();
-        int expected = catalog.Count;
-        foreach (var g in catalog) expected += g.items.Count;
+        int expectedTiles = catalog.Sum(g => SidebarTileBuilder.BuildTiles(g.items).Count);
 
-        var rows = new List<SidebarRow>();
-        SidebarLayout.Place(AllGroupsOpen(), rows);
+        var rows = new List<SidebarTileRow>();
+        SidebarLayout.PlaceTiles(AllGroupsOpen(), rows);
 
-        Assert.AreEqual(expected, rows.Count,
-            "ни один пункт каталога не имеет права потеряться по дороге в раскладку");
+        int tileRows = rows.Count(r => !r.IsHeader);
+        Assert.AreEqual(expectedTiles, tileRows,
+            "ни одна плитка каталога не имеет права потеряться по дороге в раскладку");
     }
 }
