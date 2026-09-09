@@ -7,8 +7,6 @@ namespace KitchenDesigner.Core
     {
         public override bool CanFollowAnAttachParent => false;
 
-        public override bool IsFlatBoardElement => false;
-
         public override string DisplayTypeName => MODEL;
 
         public bool IsClosedPose => !IsOpen && !IsAnimating;

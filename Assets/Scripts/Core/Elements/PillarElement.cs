@@ -7,8 +7,6 @@ namespace KitchenDesigner.Core
 
         public override string DisplayTypeName => "Опора";
 
-        public override bool IsFlatBoardElement => false;
-
 		public void SeatAfterMove(System.Collections.Generic.IReadOnlyList<KitchenElement> scene,
 			SnapCursor cursor = default) =>
 			PillarAutoFit.Seat(this, scene);

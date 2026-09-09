@@ -444,14 +444,20 @@ public class SpecificationManagerTests
 
     // ── Дефект 8356a589: список точных типов в SpecificationManager, не самоописание элемента ──
 
-    /// <summary>Тест-элемент только для этого файла: наследник обычной доскообразной детали,
-    /// продакшн-класс не меняется. Старый код проверял `e.GetType() == typeof(KitchenElement)` —
-    /// точное совпадение типа, поэтому ЛЮБОЙ наследник `KitchenElement` (новый доскообразный тип)
-    /// тихо выпадал из ведомости раскроя. Этот тест поймал бы тот дефект.</summary>
-    private class FakeBoardDescendant : KitchenElement { }
+    /// <summary>Тест-элемент только для этого файла: наследник, который явно ЗАЯВЛЯЕТ себя
+    /// доскообразным (как `FacadeElement`/`PanelElement`/`DrawerElement` в продакшне), продакшн-
+    /// класс не меняется. Раньше (дефект 8356a589) старый код проверял
+    /// `e.GetType() == typeof(KitchenElement)` — точное совпадение типа, поэтому ЛЮБОЙ наследник
+    /// `KitchenElement` тихо выпадал из ведомости раскроя, даже настоящая доска. Теперь default —
+    /// НЕ доска (см. следующий тест), и настоящая доска обязана попасть, но только объявив себя
+    /// явно через override => true — вот что доказывает этот тест.</summary>
+    private class FakeBoardDescendant : KitchenElement
+    {
+        public override bool IsFlatBoardElement => true;
+    }
 
     [Test]
-    public void Build_DescendantOfKitchenElement_IsIncludedAsBoard()
+    public void Build_DescendantOfKitchenElement_DeclaringItself_IsIncludedAsBoard()
     {
         var go = new GameObject("CustomBoard");
         var element = go.AddComponent<FakeBoardDescendant>();
@@ -461,9 +467,34 @@ public class SpecificationManagerTests
         var result = SpecificationManager.Build(new List<KitchenElement> { element });
 
         Assert.AreEqual(1, result.lines.Count,
-            "наследник KitchenElement — тоже доскообразная деталь, обязан попасть в ведомость");
+            "наследник, объявивший себя доской (IsFlatBoardElement => true), обязан попасть в ведомость");
         Assert.AreEqual(1, result.totalCount);
         Assert.AreEqual("CustomBoard", result.lines[0].name);
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ── Умолчание перевёрнуто: не доска, пока не заявлено обратное (карта §3.2, часть 3) ──
+
+    /// <summary>Противоположный вход к тесту выше: наследник `KitchenElement`, который НИЧЕГО о
+    /// себе не объявил (ни `IsFlatBoardElement`, ни `IQuantifies`, ни `ISpecificationParts`) —
+    /// ровно форма будущего фундамента/стены-пирога/кровли из части 3. Он обязан просто не
+    /// попасть в спецификацию, а не тихо посчитаться в квадратных метрах пласти, как если бы был
+    /// доской ЛДСП. Это тест, который поймал бы будущий фундамент.</summary>
+    private class FakeUndeclaredElement : KitchenElement { }
+
+    [Test]
+    public void Build_DescendantOfKitchenElement_DeclaringNothing_IsDroppedNotCountedAsBoard()
+    {
+        var go = new GameObject("FutureFoundation");
+        var element = go.AddComponent<FakeUndeclaredElement>();
+        element.PartName = "FutureFoundation";
+        element.DimensionsMM = new Vector3Int(500, 300, 18);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { element });
+
+        Assert.AreEqual(0, result.lines.Count,
+            "наследник, ничего не заявивший о себе, не умеет считать себя сам — не должен стать доской ЛДСП по умолчанию");
 
         Object.DestroyImmediate(go);
     }

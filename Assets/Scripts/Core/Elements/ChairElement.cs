@@ -6,8 +6,6 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Стул";
 
-        public override bool IsFlatBoardElement => false;
-
         public const int DefaultWidthMM = 400;
         public const int DefaultHeightMM = 900;
         public const int DefaultDepthMM = 400;

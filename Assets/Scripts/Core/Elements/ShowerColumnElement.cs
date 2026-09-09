@@ -7,8 +7,6 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Душевая стойка";
 
-        public override bool IsFlatBoardElement => false;
-
         public override bool CanFollowAnAttachParent => false;
 
         public override bool CanCarryAttachedParts => false;

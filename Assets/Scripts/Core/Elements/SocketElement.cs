@@ -7,8 +7,6 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Розетка";
 
-        public override bool IsFlatBoardElement => false;
-
         public const int DefaultWidthMM = WallDeviceLayout.DefaultPlateWidthMM;
         public const int DefaultHeightMM = WallDeviceLayout.DefaultPlateHeightMM;
         public const int DefaultDepthMM = WallDeviceLayout.DefaultProtrusionMM;

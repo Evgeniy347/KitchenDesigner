@@ -4,6 +4,8 @@ namespace KitchenDesigner.Core
     {
         public const int DEFAULT_GAP_MM = PanelBody.DEFAULT_GAP_MM;
 
+        public override bool IsFlatBoardElement => true;
+
         public override string DisplayTypeName => PanelBody.DISPLAY_TYPE_NAME;
 
         public override CutoutNeighbourRole CutoutRole => PanelBody.CUTOUT_ROLE;

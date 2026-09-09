@@ -160,7 +160,9 @@ namespace KitchenDesigner.Core
         public virtual string DisplayTypeName => "Деталь";
 
         public virtual bool IsFlatBoardElement =>
-            GetComponent<Wall>() == null && GetComponent<BasePlate>() == null;
+            GetType() == typeof(KitchenElement)
+            && GetComponent<Wall>() == null
+            && GetComponent<BasePlate>() == null;
 
         public virtual CutoutNeighbourRole CutoutRole =>
             GetComponent<BasePlate>() == null ? CutoutNeighbourRole.Carcass : CutoutNeighbourRole.None;

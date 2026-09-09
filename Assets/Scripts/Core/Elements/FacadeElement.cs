@@ -4,6 +4,8 @@ namespace KitchenDesigner.Core
 {
     public class FacadeElement : KitchenElement, IOpenable
     {
+        public override bool IsFlatBoardElement => true;
+
         public override bool CanFollowAnAttachParent => false;
 
         public override bool CanCarryAttachedParts => true;

@@ -5,6 +5,8 @@ namespace KitchenDesigner.Core
 {
     public class DrawerElement : KitchenElement, IFacadeHost, IOpenable
     {
+        public override bool IsFlatBoardElement => true;
+
         public override bool CanFollowAnAttachParent => false;
 
         public override Vector3 AttachRestPosition => ClosedPosition;
