@@ -41,6 +41,36 @@ public class PipeSurveyTests
         Assert.AreEqual(PipeSpec.Dn25, survey.SizeOf(scene.IndexOf("r", 1)));
     }
 
+    private static PipeTestScene PipeIntoElbowIntoADeadEndCap()
+    {
+        var jointA = PipeTestScene.At(1000f, 0f, 0f);
+        var jointB = PipeTestScene.At(1050f, 0f, 0f);
+
+        return new PipeTestScene()
+            .Pipe("p", PipeTestScene.At(0f, 0f, 0f), jointA, PipeSpec.Dn20)
+            .Fitting("e", PipeNodeKind.Elbow, (jointA, PipeAxis.Left), (jointB, PipeAxis.Right))
+            .Fitting("c", PipeNodeKind.Cap, (jointB, PipeAxis.Left));
+    }
+
+    /// <summary>ScenePipeJointGridRepairTests.RepairAfterLoad_..., «Диаметр 2» отвода читал
+    /// прочерк даже после того, как сеть честно считала оба стыка сомкнутыми: Resolve
+    /// смотрел только на ПРЯМОГО партнёра порта, а у ноги, упирающейся в заглушку, партнёр
+    /// (заглушка) сам диаметра не знает. Отвод — RequiresOneSize (обе ноги ОБЯЗАНЫ быть
+    /// одного размера), так что нога, упирающаяся в безразмерную заглушку, обязана взять
+    /// размер у СОСЕДНЕЙ ноги того же отвода, а не молчать.</summary>
+    [Test]
+    public void PipeSurvey_SizesOfElement_PropagateThroughADeadEndFittingWithNoSizeOfItsOwn()
+    {
+        var survey = PipeIntoElbowIntoADeadEndCap().Survey();
+
+        CollectionAssert.AreEqual(new[] { PipeSpec.Dn20, PipeSpec.Dn20 },
+            survey.SizesOfElement("e"),
+            "у отвода обе ноги одного диаметра (RequiresOneSize) — нога у заглушки не обязана "
+            + "остаться без размера только потому, что сама заглушка его не объявляет");
+        CollectionAssert.AreEqual(new[] { PipeSpec.Dn20 }, survey.SizesOfElement("c"),
+            "заглушка подключена к вполне определённой трубе через отвод — прочерка тут быть не должно");
+    }
+
     [Test]
     public void PipeSurvey_UnconnectedFittingPort_HasNoSizeAtAll()
     {

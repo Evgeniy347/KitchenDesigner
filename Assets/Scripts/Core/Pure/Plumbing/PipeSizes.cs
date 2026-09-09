@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace KitchenDesigner.Core.Plumbing
@@ -8,19 +9,45 @@ namespace KitchenDesigner.Core.Plumbing
         {
             var sizes = new string?[ports.Count];
             for (int i = 0; i < ports.Count; i++)
-            {
-                var own = ports[i].DeclaredSizeId;
-                if (own != null)
-                {
-                    sizes[i] = own;
-                    continue;
-                }
+                sizes[i] = ports[i].DeclaredSizeId;
 
-                int partner = network.PartnerOf(i);
-                sizes[i] = partner == PipeNetwork.NoPartner ? null : ports[partner].DeclaredSizeId;
+            bool changed = true;
+            while (changed)
+            {
+                changed = false;
+                for (int i = 0; i < ports.Count; i++)
+                {
+                    if (sizes[i] != null) continue;
+
+                    int partner = network.PartnerOf(i);
+                    if (partner == PipeNetwork.NoPartner) continue;
+
+                    if (sizes[partner] != null)
+                    {
+                        sizes[i] = sizes[partner];
+                        changed = true;
+                        continue;
+                    }
+
+                    if (!PipeNodePorts.RequiresOneSize(ports[i].OwnerKind)) continue;
+                    sizes[i] = SiblingSizeOf(ports, sizes, i);
+                    if (sizes[i] != null) changed = true;
+                }
             }
 
             return sizes;
+        }
+
+        private static string? SiblingSizeOf(IReadOnlyList<PipePort> ports, string?[] sizes, int i)
+        {
+            for (int j = 0; j < ports.Count; j++)
+            {
+                if (j == i || sizes[j] == null) continue;
+                if (!string.Equals(ports[j].ElementId, ports[i].ElementId, StringComparison.Ordinal))
+                    continue;
+                return sizes[j];
+            }
+            return null;
         }
 
         public static string Widest(IReadOnlyList<string?>? sizes)

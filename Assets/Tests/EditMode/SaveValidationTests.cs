@@ -43,20 +43,24 @@ public class SaveValidationTests
     private const string SaveFileName = "Fixtures/pipe-gap-scene.save.json";
     private const string ReportFileName = "save-validation.log";
 
-    /// <summary>Известный на момент заморозки фикстуры baseline теста 1: сцена
-    /// пользователя несёт реальные COL-01 (что-то физически пересекается) и
-    /// GAP-02 (зазор 2..4 мм — «почти касание») — обе находки о РАССТАНОВКЕ
-    /// мебели, не о трубопроводе и не о коде. PIP-01 (открытый порт трубы) в
-    /// это число не входит: та проблема (8 портов) уже закрыта отдельно.</summary>
-    private const int BaselineIssueErrors = 2;
+    /// <summary>Baseline теста 1, снижен 2026-09-10: обе прежние COL-01-ошибки
+    /// закрылись сами — это была недосомкнутая пара стыков трубопровода
+    /// (ScenePipeJointGridRepairTests чинит тот же класс дефекта), не ослабление
+    /// теста. Три предупреждения GAP-02 остались как были: они о зазоре 5 мм под
+    /// тремя ножками (B2/B4 ↔ Leg_*) — расстановка мебели, не трубопровод.</summary>
+    private const int BaselineIssueErrors = 0;
     private const int BaselineIssueWarnings = 3;
     private const int BaselineIssueGap02 = 3;
 
-    /// <summary>Известный на момент заморозки baseline теста 3: остаточные
-    /// микро-зазоры/микро-врезания (≤0.1 мм) на стыках трубопровода после
-    /// починки port-seat — geometрический шум округления, а не разомкнутый
-    /// стык (PIP-01 те же места уже не поднимает).</summary>
-    private const int BaselineSubToleranceJoints = 6;
+    /// <summary>Baseline теста 3, снижен 2026-09-10: два стыка трубопровод-трубопровод,
+    /// что несли реальный разомкнутый зазор, сомкнулись той же починкой (baseline 6 → 4).
+    /// Остаток — четыре записи, все геометрический шум ≤0.075 мм, на порядок меньше
+    /// Tolerance.ContactMm (0.5 мм): Truba↔Otvod_91 и Truba↔Otvod_92 по 0.025 мм
+    /// (остаточная погрешность посадки порта), и Pol_1 (пол, кратен мм-сетке) ↔
+    /// Obratka (фитинг, ISnapPorts — MmGrid его сознательно НЕ трогает, см.
+    /// PipeDocking) по 0.075 мм — независимое округление двух систем, а не
+    /// разомкнутый стык; тем же путём объяснена dn20-погрешность в SUBSYSTEMS.md.</summary>
+    private const int BaselineSubToleranceJoints = 4;
 
     /// <summary>Сколько строк каждой категории печатать в консоль (остальное — в файл).</summary>
     private const int ConsoleSamples = 5;
