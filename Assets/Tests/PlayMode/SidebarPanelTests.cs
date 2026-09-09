@@ -585,6 +585,7 @@ public class SidebarPanelTests
             + "прямо сейчас поле получило бы его в довесок");
 
         yield return null;
+        yield return new WaitForEndOfFrame();
 
         Assert.IsTrue(search.isFocused,
             "на следующем кадре поле поиска обязано получить фокус");
