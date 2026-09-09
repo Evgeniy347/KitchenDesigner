@@ -6,6 +6,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Винтовая опора";
 
+        public override bool IsFlatBoardElement => false;
+
         public Vector3 MountNormal => transform.up;
 
         public float MountEdgeDetentUnits =>

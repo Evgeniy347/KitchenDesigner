@@ -6,6 +6,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Пуфик";
 
+        public override bool IsFlatBoardElement => false;
+
         public const int DefaultWidthMM = PouffeLayout.DefaultWidthMM;
         public const int DefaultHeightMM = PouffeLayout.DefaultHeightMM;
         public const int DefaultDepthMM = PouffeLayout.DefaultDepthMM;

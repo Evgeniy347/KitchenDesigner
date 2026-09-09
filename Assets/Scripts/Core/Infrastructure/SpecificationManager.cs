@@ -198,7 +198,7 @@ namespace KitchenDesigner.Core
                     continue;
                 }
 
-                if (!IsFlatBoardElement(e)) continue;
+                if (!e.IsFlatBoardElement) continue;
 
                 Accumulate(groups, order, e.PartName, e.DimensionsMM,
                     MaterialCatalog.Get(e.MaterialId).displayName, GroovesLabel(e),
@@ -224,15 +224,6 @@ namespace KitchenDesigner.Core
             result.totalsByUnit = SpecTotals.ByUnit(result.lines.Select(l => (l.unit, l.qtyTotal)));
 
             return result;
-        }
-
-        private static bool IsFlatBoardElement(KitchenElement e)
-        {
-            if (e.GetComponent<Wall>() != null || e.GetComponent<BasePlate>() != null) return false;
-            return e.GetType() == typeof(KitchenElement)
-                || e is PanelElement
-                || e is FacadeElement
-                || e is DrawerElement;
         }
 
         public static string GroovesLabel(KitchenElement element)

@@ -6,6 +6,8 @@ namespace KitchenDesigner.Core
     {
         public override bool CanFollowAnAttachParent => false;
 
+        public override bool IsFlatBoardElement => false;
+
         public override string DisplayTypeName => "Источник света";
 
         public override bool ParticipatesInGapChecks => false;

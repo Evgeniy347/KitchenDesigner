@@ -8,6 +8,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Унитаз подвесной";
 
+        public override bool IsFlatBoardElement => false;
+
         public const int DefaultWidthMM = WallHungToiletLayout.WidthMM;
         public const int DefaultHeightMM = WallHungToiletLayout.HeightMM;
         public const int DefaultDepthMM = WallHungToiletLayout.DepthMM;

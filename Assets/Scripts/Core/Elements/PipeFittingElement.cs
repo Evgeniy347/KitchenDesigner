@@ -8,6 +8,8 @@ namespace KitchenDesigner.Core
     public abstract class PipeFittingElement : KitchenElement, IPaintsItself, ISnapPorts,
         IAutoSeated, IReseatsPortsAfterRotation
     {
+        public override bool IsFlatBoardElement => false;
+
         private readonly RebuildGuard _rebuild = new RebuildGuard();
 
         private string?[] _boreSizeIds = new string?[0];

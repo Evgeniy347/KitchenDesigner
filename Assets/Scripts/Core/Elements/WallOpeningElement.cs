@@ -8,6 +8,8 @@ namespace KitchenDesigner.Core
     {
         public override bool CanFollowAnAttachParent => false;
 
+        public override bool IsFlatBoardElement => false;
+
         public bool IsClosedPose => IsDoorClosed;
 
         public string OpenActionLabel => IsOpen ? OpenLabels.Close : OpenLabels.Open;

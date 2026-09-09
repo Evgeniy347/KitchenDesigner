@@ -6,6 +6,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Диван";
 
+        public override bool IsFlatBoardElement => false;
+
         public const int DefaultWidthMM = SofaLayout.DefaultWidthMM;
         public const int DefaultHeightMM = SofaLayout.DefaultHeightMM;
         public const int DefaultDepthMM = SofaLayout.DefaultDepthMM;

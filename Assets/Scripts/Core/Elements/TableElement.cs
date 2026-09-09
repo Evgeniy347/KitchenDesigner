@@ -5,6 +5,8 @@ namespace KitchenDesigner.Core
     public class TableElement : KitchenElement, IHasTwoDecorSlots
     {
 
+        public override bool IsFlatBoardElement => false;
+
         public override string DisplayTypeName => "Стол";
         public const int LegCrossSectionMM = 50;
         public const int TabletopThicknessMM = 30;

@@ -6,6 +6,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Кровать";
 
+        public override bool IsFlatBoardElement => false;
+
         public const int DefaultWidthMM = BedLayout.DoubleWidthMM;
         public const int DefaultHeightMM = BedLayout.DefaultHeightWithHeadboardMM;
         public const int DefaultDepthMM = BedLayout.LengthMM;

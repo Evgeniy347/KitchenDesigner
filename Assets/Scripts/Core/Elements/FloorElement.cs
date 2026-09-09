@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
     {
         public override bool CanFollowAnAttachParent => false;
 
+        public override bool IsFlatBoardElement => false;
+
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
 
         public const int DEFAULT_SIZE_MM = 3000;

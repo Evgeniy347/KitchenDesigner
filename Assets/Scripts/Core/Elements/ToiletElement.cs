@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Унитаз-компакт";
 
+        public override bool IsFlatBoardElement => false;
+
         public const int DefaultWidthMM = ToiletLayout.WidthMM;
         public const int DefaultHeightMM = ToiletLayout.HeightMM;
         public const int DefaultDepthMM = ToiletLayout.DepthMM;

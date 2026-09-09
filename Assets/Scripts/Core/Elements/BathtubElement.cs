@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Ванна";
 
+        public override bool IsFlatBoardElement => false;
+
         public const int DefaultWidthMM = BathtubLayout.DefaultWidthMM;
         public const int DefaultHeightMM = BathtubLayout.DefaultHeightMM;
         public const int DefaultDepthMM = BathtubLayout.DefaultDepthMM;

@@ -441,4 +441,30 @@ public class SpecificationManagerTests
         Object.DestroyImmediate(board.gameObject);
         Object.DestroyImmediate(block.gameObject);
     }
+
+    // ── Дефект 8356a589: список точных типов в SpecificationManager, не самоописание элемента ──
+
+    /// <summary>Тест-элемент только для этого файла: наследник обычной доскообразной детали,
+    /// продакшн-класс не меняется. Старый код проверял `e.GetType() == typeof(KitchenElement)` —
+    /// точное совпадение типа, поэтому ЛЮБОЙ наследник `KitchenElement` (новый доскообразный тип)
+    /// тихо выпадал из ведомости раскроя. Этот тест поймал бы тот дефект.</summary>
+    private class FakeBoardDescendant : KitchenElement { }
+
+    [Test]
+    public void Build_DescendantOfKitchenElement_IsIncludedAsBoard()
+    {
+        var go = new GameObject("CustomBoard");
+        var element = go.AddComponent<FakeBoardDescendant>();
+        element.PartName = "CustomBoard";
+        element.DimensionsMM = new Vector3Int(500, 300, 18);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { element });
+
+        Assert.AreEqual(1, result.lines.Count,
+            "наследник KitchenElement — тоже доскообразная деталь, обязан попасть в ведомость");
+        Assert.AreEqual(1, result.totalCount);
+        Assert.AreEqual("CustomBoard", result.lines[0].name);
+
+        Object.DestroyImmediate(go);
+    }
 }

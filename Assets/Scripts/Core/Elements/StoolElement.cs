@@ -6,6 +6,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Табуретка";
 
+        public override bool IsFlatBoardElement => false;
+
         public const int DefaultWidthMM = 360;
         public const int DefaultHeightMM = 450;
         public const int DefaultDepthMM = 360;

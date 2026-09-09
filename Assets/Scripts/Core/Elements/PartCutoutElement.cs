@@ -4,6 +4,8 @@ namespace KitchenDesigner.Core
 {
     public abstract class PartCutoutElement : KitchenElement, IPartCutout
     {
+        public override bool IsFlatBoardElement => false;
+
         public const int SNAP_CATCH_MM = 100;
         public const int SNAP_RELEASE_MM = 60;
 
