@@ -22,5 +22,12 @@ namespace KitchenDesigner.Core.UI
         }
 
         public static bool AutoCollapsesAt(float screenHeight) => screenHeight <= 800f;
+
+        public static bool CollapsesAfterSpawn(SidebarDockChoice choice, float screenHeight)
+        {
+            if (choice == SidebarDockChoice.Docked) return false;
+            if (choice == SidebarDockChoice.Rail) return true;
+            return AutoCollapsesAt(screenHeight);
+        }
     }
 }

@@ -24,6 +24,8 @@ namespace KitchenDesigner.Core.UI
         private const float PresetDotSize = 16f;
         private const float PresetDotGap = 3f;
 
+        private static readonly Color ActiveToggleColor = new Color(0.30f, 0.55f, 0.34f, 1f);
+
         private static string? _lastUsedGroupTitle;
 
         private RectTransform? _panel;
@@ -33,11 +35,14 @@ namespace KitchenDesigner.Core.UI
         private GameObject? _miniRoot;
         private TMP_Text? _collapseLabel;
         private Image? _pinBg;
+        private Image? _dockModeBg;
+        private TMP_Text? _dockModeLabel;
         private TMP_InputField? _searchField;
         private TMP_Text? _searchHint;
 
         private bool _expanded = true;
         private bool _pinned = true;
+        private SidebarDockChoice _dockChoice = SidebarDockChoice.Unset;
 
         private readonly List<RenderTexture> _ownedTextures = new List<RenderTexture>();
         private readonly List<TileUI> _pendingThumbnails = new List<TileUI>();
@@ -77,15 +82,22 @@ namespace KitchenDesigner.Core.UI
         }
         private readonly List<ModeStyledTile> _modeStyledTiles = new List<ModeStyledTile>();
 
-        private static bool AutoCollapseMode => SidebarDockBudget.AutoCollapsesAt(Screen.height);
-
         public static void ResetLastUsedGroupForTests() => _lastUsedGroupTitle = null;
 
         public void SetExpandedForTests(bool expanded) => SetExpanded(expanded);
 
+        internal void SetDockChoiceForTests(SidebarDockChoice choice)
+        {
+            _dockChoice = choice;
+            ApplyState();
+        }
+
+        internal void CollapseAfterSpawnForTests() => CollapseAfterSpawnIfDockModeSaysSo();
+
         public void Build(Transform canvas)
         {
-            _expanded = !AutoCollapseMode;
+            _dockChoice = SidebarDockPreference.Load();
+            _expanded = !SidebarDockBudget.CollapsesAfterSpawn(_dockChoice, Screen.height);
 
             var panel = UIFactory.CreatePanel("Sidebar", canvas, Vector2.zero,
                 new Vector2(ExpandedW, 0f));
@@ -103,6 +115,17 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorTopLeft(pinBtn.GetComponent<RectTransform>());
             pinBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(46, -4);
             _pinBg = pinBtn.GetComponent<Image>();
+
+            var dockModeBtn = UIFactory.CreateButton("SbDockMode", _panel, "",
+                new Vector2(78, -4), new Vector2(28, 28), ToggleDockMode);
+            UIFactory.AnchorTopLeft(dockModeBtn.GetComponent<RectTransform>());
+            dockModeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(78, -4);
+            _dockModeBg = dockModeBtn.GetComponent<Image>();
+            _dockModeLabel = dockModeBtn.GetComponentInChildren<TMP_Text>();
+            TooltipUI.Attach(dockModeBtn.gameObject,
+                "Раскрытый док остаётся открытым после установки детали.\n"
+                + "Рейка иконок сворачивается после установки.\n"
+                + "Клик переключает и запоминается для следующего запуска.");
 
             BuildSearchField(_panel);
 
@@ -535,7 +558,12 @@ namespace KitchenDesigner.Core.UI
             SidebarSpawnRouter.Route(item, UIManager.Instance.Spawner);
             _lastUsedGroupTitle = tile.groupTitle;
 
-            if (AutoCollapseMode) SetExpanded(false);
+            CollapseAfterSpawnIfDockModeSaysSo();
+        }
+
+        private void CollapseAfterSpawnIfDockModeSaysSo()
+        {
+            if (SidebarDockBudget.CollapsesAfterSpawn(_dockChoice, Screen.height)) SetExpanded(false);
         }
 
         private void SetExpanded(bool expanded)
@@ -548,6 +576,14 @@ namespace KitchenDesigner.Core.UI
         {
             _pinned = !_pinned;
             ApplyState();
+        }
+
+        private void ToggleDockMode()
+        {
+            bool collapsesAfterSpawn = SidebarDockBudget.CollapsesAfterSpawn(_dockChoice, Screen.height);
+            _dockChoice = collapsesAfterSpawn ? SidebarDockChoice.Docked : SidebarDockChoice.Rail;
+            SidebarDockPreference.Save(_dockChoice);
+            SetExpanded(_dockChoice == SidebarDockChoice.Docked);
         }
 
         private void ApplyState()
@@ -563,7 +599,18 @@ namespace KitchenDesigner.Core.UI
             if (_pinBg != null)
             {
                 _pinBg.gameObject.SetActive(_expanded);
-                _pinBg.color = _pinned ? new Color(0.30f, 0.55f, 0.34f, 1f) : UIFactory.ButtonColor;
+                _pinBg.color = _pinned ? ActiveToggleColor : UIFactory.ButtonColor;
+            }
+            if (_dockModeBg != null)
+            {
+                _dockModeBg.gameObject.SetActive(_expanded);
+                _dockModeBg.color = _dockChoice != SidebarDockChoice.Unset
+                    ? ActiveToggleColor : UIFactory.ButtonColor;
+            }
+            if (_dockModeLabel != null)
+            {
+                bool collapsesAfterSpawn = SidebarDockBudget.CollapsesAfterSpawn(_dockChoice, Screen.height);
+                _dockModeLabel.text = collapsesAfterSpawn ? "Р" : "Д";
             }
         }
 

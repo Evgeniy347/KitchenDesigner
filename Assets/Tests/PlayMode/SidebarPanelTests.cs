@@ -340,4 +340,90 @@ public class SidebarPanelTests
         AssertSameColor(normalColor, shelfLabel.color,
             "вернувшись в обычный режим, доступная позиция снова окрашена обычным цветом");
     }
+
+    [Test]
+    public void Docked_StaysExpanded_AfterAnElementIsSpawned()
+    {
+        _sidebar.SetExpandedForTests(true);
+        _sidebar.SetDockChoiceForTests(SidebarDockChoice.Docked);
+
+        _sidebar.CollapseAfterSpawnForTests();
+
+        Assert.IsTrue(Full.gameObject.activeSelf,
+            "пользователь выбрал раскрытый док — после установки детали каталог обязан "
+            + "остаться раскрытым, чтобы можно было поставить подряд десять полок");
+    }
+
+    [Test]
+    public void Rail_CollapsesBackToTheIconStrip_AfterAnElementIsSpawned()
+    {
+        _sidebar.SetExpandedForTests(true);
+        _sidebar.SetDockChoiceForTests(SidebarDockChoice.Rail);
+
+        _sidebar.CollapseAfterSpawnForTests();
+
+        Assert.IsFalse(Full.gameObject.activeSelf,
+            "пользователь выбрал рейку иконок — после установки детали каталог обязан "
+            + "свернуться обратно, как закрывается палитра по вызову");
+        var mini = Child(Panel, "SbMini");
+        Assert.IsTrue(mini.gameObject.activeSelf);
+    }
+
+    [Test]
+    public void DockModeButton_TogglesTheChoice_AndPersistsItForTheNextLaunch()
+    {
+        bool hadPrevValue = PlayerPrefs.HasKey("KitchenSidebarDockChoice");
+        int prevValue = PlayerPrefs.GetInt("KitchenSidebarDockChoice", 0);
+        try
+        {
+            _sidebar.SetExpandedForTests(true);
+            _sidebar.SetDockChoiceForTests(SidebarDockChoice.Rail);
+
+            Child(Panel, "SbDockMode").GetComponent<Button>().onClick.Invoke();
+
+            Assert.IsTrue(Full.gameObject.activeSelf,
+                "переключатель обязан немедленно раскрыть каталог, выбрав «раскрытый док»");
+            Assert.AreEqual(SidebarDockChoice.Docked, SidebarDockPreference.Load(),
+                "выбор обязан лечь в PlayerPrefs сразу по клику — иначе следующий запуск "
+                + "программы снова спросит высоту экрана");
+        }
+        finally
+        {
+            if (hadPrevValue) PlayerPrefs.SetInt("KitchenSidebarDockChoice", prevValue);
+            else PlayerPrefs.DeleteKey("KitchenSidebarDockChoice");
+            PlayerPrefs.Save();
+        }
+    }
+
+    [Test]
+    public void UserChoice_SurvivesARestart_ThroughTheSamePlayerPrefsKey_NotInTheProjectFile()
+    {
+        bool hadPrevValue = PlayerPrefs.HasKey("KitchenSidebarDockChoice");
+        int prevValue = PlayerPrefs.GetInt("KitchenSidebarDockChoice", 0);
+        var restartedCanvasGo = new GameObject("CanvasAfterRestart");
+        var restartedHost = new GameObject("SidebarHostAfterRestart");
+        try
+        {
+            SidebarDockPreference.Save(SidebarDockChoice.Rail);
+
+            restartedCanvasGo.AddComponent<Canvas>();
+            var restarted = restartedHost.AddComponent<SidebarUI>();
+            restarted.Build(restartedCanvasGo.transform);
+
+            var restartedFull = Child(Child(restartedCanvasGo.transform, "Sidebar"), "SbFull");
+            Assert.IsFalse(restartedFull.gameObject.activeSelf,
+                "«перезапуск» — это просто новый экземпляр SidebarUI, читающий тот же ключ "
+                + "PlayerPrefs, а не файл проекта: он обязан стартовать свёрнутым в рейку, "
+                + "как и было выбрано ДО перезапуска, независимо от высоты экрана тестового "
+                + "раннера");
+        }
+        finally
+        {
+            Object.DestroyImmediate(restartedHost);
+            Object.DestroyImmediate(restartedCanvasGo);
+            if (hadPrevValue) PlayerPrefs.SetInt("KitchenSidebarDockChoice", prevValue);
+            else PlayerPrefs.DeleteKey("KitchenSidebarDockChoice");
+            PlayerPrefs.Save();
+        }
+    }
 }

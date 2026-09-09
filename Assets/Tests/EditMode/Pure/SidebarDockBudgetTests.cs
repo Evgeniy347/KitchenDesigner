@@ -49,4 +49,51 @@ public class SidebarDockBudgetTests
         Assert.IsFalse(SidebarDockBudget.AutoCollapsesAt(801f));
         Assert.IsFalse(SidebarDockBudget.AutoCollapsesAt(1080f));
     }
+
+    [Test]
+    public void CollapsesAfterSpawn_Unset_FollowsScreenHeight_Like768()
+    {
+        Assert.IsTrue(SidebarDockBudget.CollapsesAfterSpawn(SidebarDockChoice.Unset, 768f),
+            "без выбора пользователя низкий экран сворачивает док в рейку после установки — "
+            + "прежнее поведение SidebarDockBudget.AutoCollapsesAt не должно измениться");
+    }
+
+    [Test]
+    public void CollapsesAfterSpawn_Unset_FollowsScreenHeight_Like1080()
+    {
+        Assert.IsFalse(SidebarDockBudget.CollapsesAfterSpawn(SidebarDockChoice.Unset, 1080f),
+            "без выбора пользователя высокий экран оставляет док раскрытым после установки");
+    }
+
+    [Test]
+    public void CollapsesAfterSpawn_Docked_NeverCollapses_OnAShortScreen()
+    {
+        Assert.IsFalse(SidebarDockBudget.CollapsesAfterSpawn(SidebarDockChoice.Docked, 768f),
+            "пользователь выбрал раскрытый док — низкий экран, который раньше сворачивал бы "
+            + "панель, больше не решает");
+    }
+
+    [Test]
+    public void CollapsesAfterSpawn_Docked_NeverCollapses_OnATallScreen()
+    {
+        Assert.IsFalse(SidebarDockBudget.CollapsesAfterSpawn(SidebarDockChoice.Docked, 1080f),
+            "раскрытый док остаётся раскрытым и на большом экране — это ожидаемо, но обязано "
+            + "оставаться верным ПОСЛЕ выбора, а не только по умолчанию");
+    }
+
+    [Test]
+    public void CollapsesAfterSpawn_Rail_AlwaysCollapses_OnATallScreen()
+    {
+        Assert.IsTrue(SidebarDockBudget.CollapsesAfterSpawn(SidebarDockChoice.Rail, 1080f),
+            "пользователь выбрал рейку иконок — большой экран, который раньше оставлял бы "
+            + "панель раскрытой, больше не решает");
+    }
+
+    [Test]
+    public void CollapsesAfterSpawn_Rail_AlwaysCollapses_OnAShortScreen()
+    {
+        Assert.IsTrue(SidebarDockBudget.CollapsesAfterSpawn(SidebarDockChoice.Rail, 768f),
+            "рейка сворачивается и на маленьком экране — тот же результат, что и по умолчанию, "
+            + "но теперь он идёт от явного выбора, а не от высоты");
+    }
 }
