@@ -34,6 +34,23 @@ public class ElementFactorySandboxTests
     }
 
     [Test]
+    public void NormalSpawn_ReusingPooledObject_StillRegistersInPartRegistry()
+    {
+        var first = ElementFactory.CreatePart(new Vector3Int(600, 400, 18), "First", Vector3.zero);
+        ElementFactory.DestroyPart(first);
+        Assert.AreEqual(0, PartRegistry.GetAll().Count,
+            "первый спавн должен был снять себя с учёта при возврате в пул");
+
+        var second = ElementFactory.CreatePart(new Vector3Int(600, 400, 18), "Second", Vector3.zero);
+
+        Assert.AreEqual(1, PartRegistry.GetAll().Count,
+            "второй спавн переиспользует объект из пула — Awake на нём уже не сработает, " +
+            "регистрация обязана произойти на месте вызова (ElementRoot.Publish), а не только в Awake");
+
+        ElementFactory.DestroyPart(second);
+    }
+
+    [Test]
     public void SandboxSpawn_DoesNotRegister_DoesNotBumpSceneRevision_AndLeavesNoDeadEntry()
     {
         int before = SceneRevision.Version;

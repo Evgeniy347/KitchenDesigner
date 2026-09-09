@@ -49,6 +49,7 @@ namespace KitchenDesigner.Core
         {
             if (ElementFactorySandbox.IsActive) return go;
 
+            PartRegistry.Register(element);
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
             return go;
