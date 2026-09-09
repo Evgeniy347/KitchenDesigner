@@ -124,6 +124,7 @@ public class ElementPoolResetTests
         ["BlocksCutout"] = "производное от CutoutRole",
         ["AlignsCutout"] = "производное от CutoutRole",
         ["Disposal"] = "константа типа",
+        ["IsFlatBoardElement"] = "константа типа",
         ["InspectedElement"] = "ссылка на себя или на хозяина, не поле",
         ["CutoutHoleAxis"] = "производное от AttachedCutouts",
         ["BareFaceMask"] = "производная от соседей по сцене; пересчитывается EdgeSubstrate.Sync",

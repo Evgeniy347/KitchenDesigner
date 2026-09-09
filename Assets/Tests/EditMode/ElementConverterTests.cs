@@ -724,6 +724,9 @@ public class ElementConverterTests
         // Роль соседа для врезной техники: чистая функция от типа
         // (см. CutoutNeighbourRoleTests), после конвертации её даёт новый класс.
         "CutoutRole", "BlocksCutout", "AlignsCutout",
+        // Листовая деталь для спецификации: чистая функция от типа (GetType()),
+        // как Disposal/CutoutRole выше — после конвертации её даёт новый класс.
+        "IsFlatBoardElement",
         // Тело фасада: readonly struct, целиком выводится из Data.DimensionsMM,
         // Data.Gaps и позы через ValidationPositionAt/ValidationRotation — ту же
         // пару, что уже даёт ClosedPosition/ClosedRotation выше. Ничего своего не
