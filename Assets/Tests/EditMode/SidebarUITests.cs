@@ -52,8 +52,13 @@ public class SidebarUITests
         StringAssert.Contains("Помещение", wallTooltip,
             "«Стена» доступна только в режиме «Помещение», и это обязано быть сказано "
             + "прямо, а не угадываться по серому цвету кнопки (D3)");
-        Assert.AreEqual(shelf.name, shelfTooltip,
-            "обычный пункт доступен в любом режиме — tooltip не добавляет пояснений про режим");
+        StringAssert.Contains(SidebarUI.FormatDims(wall.dims), wallTooltip,
+            "габариты (D8) обязаны быть в tooltip даже у комнатных пунктов, не только "
+            + "у обычных");
+        Assert.AreEqual($"{shelf.name}\n{SidebarUI.FormatDims(shelf.dims)}", shelfTooltip,
+            "обычный пункт доступен в любом режиме — tooltip не добавляет пояснений про режим, "
+            + "но обязан нести габариты (D8): в плитке 96×96 подписи «600 × 400 × 16» уже "
+            + "негде поместиться, и tooltip — единственное место, откуда их теперь узнать");
     }
 
     [Test]

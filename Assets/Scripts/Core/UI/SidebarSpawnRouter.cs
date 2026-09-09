@@ -97,11 +97,11 @@ namespace KitchenDesigner.Core.UI
                 case SidebarItemKind.RadialShelf:
                     spawner.SpawnRadialShelf(item.dims, item.name);
                     break;
-                case SidebarItemKind.AssembledFacade:
-                    spawner.SpawnAssembledFacade(item.dims, item.name, AssembledFill.Blind);
-                    break;
                 case SidebarItemKind.Facade:
-                    spawner.SpawnFacade(item.dims, item.name);
+                    if (item.facadeAssembled)
+                        spawner.SpawnAssembledFacade(item.dims, item.name, AssembledFill.Blind);
+                    else
+                        spawner.SpawnFacade(item.dims, item.name);
                     break;
                 case SidebarItemKind.Wall:
                     spawner.SpawnWall(item.dims, item.name);

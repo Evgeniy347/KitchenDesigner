@@ -237,8 +237,15 @@ public class SidebarPanelTests
     [Test]
     public void Collapsed_ShowsGroupIconsAndHidesThePinAndSearch()
     {
+        // The dock starts expanded or collapsed depending on Screen.height
+        // (SidebarDockBudget.AutoCollapsesAt), which the Test Runner's window size can flip
+        // between an isolated run and a full-suite run — the test used to Assume the pin was
+        // visible first and went Inconclusive whenever the ambient screen happened to be short
+        // enough to auto-collapse. Force the expanded state so the premise always holds.
+        _sidebar.SetExpandedForTests(true);
         var pin = Child(Panel, "SbPin");
-        Assume.That(pin.gameObject.activeSelf, Is.True);
+        Assert.IsTrue(pin.gameObject.activeSelf,
+            "распахнутый док обязан показывать булавку — иначе клик по «свернуть» ниже ничего не проверяет");
 
         Child(Panel, "SbCollapse").GetComponent<Button>().onClick.Invoke();
 

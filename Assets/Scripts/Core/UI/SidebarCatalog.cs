@@ -27,6 +27,7 @@ namespace KitchenDesigner.Core.UI
             public int drawerWidth;
             public string drawerSystem;
             public PipeNodeKind fittingKind;
+            public bool facadeAssembled;
 
             public Item(string name, Vector3Int dims,
                 SidebarItemKind kind = SidebarItemKind.Board)
@@ -40,6 +41,7 @@ namespace KitchenDesigner.Core.UI
                 drawerWidth = DefaultDrawerWidthMM;
                 drawerSystem = DefaultDrawerSystem;
                 fittingKind = PipeNodeKind.Coupling;
+                facadeAssembled = false;
             }
 
             public string DisplayName => !string.IsNullOrEmpty(applianceModel) && name.EndsWith(applianceModel)
@@ -111,8 +113,7 @@ namespace KitchenDesigner.Core.UI
 
             yield return (SidebarGroupKey.Facade,
                 new Item("Фасад щитовой", new Vector3Int(600, 716, 18), SidebarItemKind.Facade));
-            yield return (SidebarGroupKey.Facade,
-                new Item("Фасад сборный", new Vector3Int(600, 716, 18), SidebarItemKind.AssembledFacade));
+            yield return (SidebarGroupKey.Facade, AssembledFacadeItem("Фасад сборный"));
 
             yield return (SidebarGroupKey.Drawer,
                 DrawerItem("Ящик GTV", DefaultDrawerType, DefaultDrawerLengthMM, DefaultDrawerSystem));
@@ -191,6 +192,13 @@ namespace KitchenDesigner.Core.UI
             item.drawerColor = DefaultDrawerColor;
             item.drawerWidth = DefaultDrawerWidthMM;
             item.drawerSystem = system;
+            return item;
+        }
+
+        private static Item AssembledFacadeItem(string name)
+        {
+            var item = new Item(name, new Vector3Int(600, 716, 18), SidebarItemKind.Facade);
+            item.facadeAssembled = true;
             return item;
         }
 

@@ -5,7 +5,6 @@ namespace KitchenDesigner.Core.UI
         Board,
         Wall,
         Facade,
-        AssembledFacade,
         Panel,
         Drawer,
         RadialShelf,

@@ -199,19 +199,39 @@ public class SidebarSpawnRouterTests
     /// <summary>Регрессия на ловушку, ради которой всё это писалось. У сборного
     /// фасада раньше были истинны оба флага каталога (`isFacade` и
     /// `isAssembled`), и до извлечения ветвления порядок двух строк решал,
-    /// каким он окажется. Флаги `is*` удалены вместе с самой возможностью
-    /// завести такую ловушку: маршрутизатор решает по `kind`, а `kind` у
-    /// одной записи ровно один. Тест остаётся как страж на будущее — если
-    /// кто-то снова заведёт булев признак и ветвление по нему, он должен
-    /// упасть здесь же.</summary>
+    /// каким он окажется. Флаги `is*` были удалены вместе с самой возможностью
+    /// завести такую ловушку — но `AssembledFacade` тогда ещё был ОТДЕЛЬНЫМ
+    /// `SidebarItemKind`, а не пресетом внутри `Facade` (сведение — см.
+    /// docs/todo_evolution.md §2.1, тот же приём, что уже применён к
+    /// фитингам трубы и к системе ящика). Сведение вернуло РОВНО ту форму
+    /// ветвления, от которой уходили: `kind == Facade` плюс булев признак
+    /// `facadeAssembled` поверх него. Разница с прежней ловушкой в том, что
+    /// признак теперь ровно один, а не два конкурирующих — но проверить,
+    /// что он всё ещё решает исход, а не молча теряется по дороге (как это
+    /// было с зазорами сборного фасада), обязан именно этот тест.</summary>
     [Test]
     public void TheAssembledFacade_StaysAssembled_AndDoesNotDegradeToAPlainFacade()
     {
-        var item = ItemOfKind(SidebarItemKind.AssembledFacade);
+        var item = ItemOfKind(SidebarItemKind.Facade);
+        item.facadeAssembled = true;
 
         Assert.AreEqual(nameof(Recorder.SpawnAssembledFacade), Route(item).Method,
-            "сборный фасад приехал щитовым. Так выглядит ветвление по признакам, где ветка "
-            + "щитового стоит выше ветки сборного: оба признака истинны, выигрывает первая");
+            "сборный фасад (facadeAssembled = true) приехал щитовым — признак из каталога "
+            + "не долетел до маршрутизатора");
+    }
+
+    /// <summary>Обратный вход к тесту выше: без признака та же самая запись
+    /// обязана остаться щитовой. Один тест на «true» ничего не доказывает,
+    /// если маршрутизатор на самом деле всегда зовёт SpawnAssembledFacade —
+    /// нужны оба значения признака, дающие РАЗНЫЕ методы.</summary>
+    [Test]
+    public void ThePlainFacade_DoesNotBecomeAssembled_WhenTheFlagIsFalse()
+    {
+        var item = ItemOfKind(SidebarItemKind.Facade);
+        item.facadeAssembled = false;
+
+        Assert.AreEqual(nameof(Recorder.SpawnFacade), Route(item).Method,
+            "щитовой фасад (facadeAssembled = false) приехал сборным");
     }
 
     /// <summary>Аргументы теряются так же тихо, как ветки. У варочной
@@ -270,6 +290,7 @@ public class SidebarSpawnRouterTests
                 return k == SidebarItemKind.Sofa ? SidebarItemKind.Board : SidebarItemKind.Sofa;
             case PipeNodeKind p:
                 return p == PipeNodeKind.Coupling ? PipeNodeKind.Tee : PipeNodeKind.Coupling;
+            case bool b: return !b;
             default: return null;
         }
     }

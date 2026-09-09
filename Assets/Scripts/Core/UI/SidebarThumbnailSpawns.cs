@@ -13,8 +13,6 @@ namespace KitchenDesigner.Core.UI
                 { SidebarItemKind.Board, () => ElementFactory.CreatePart(new Vector3Int(600, 400, 18), "Board", Vector3.zero) },
                 { SidebarItemKind.Wall, () => ElementFactory.CreateWall(new Vector3Int(2000, 2500, 100), "Wall", Vector3.zero) },
                 { SidebarItemKind.Facade, () => ElementFactory.CreateFacade(new Vector3Int(600, 720, 18), "Facade", Vector3.zero) },
-                { SidebarItemKind.AssembledFacade, () => ElementFactory.CreateAssembledFacade(new Vector3Int(600, 720, 18),
-                    "AssembledFacade", Vector3.zero, AssembledFill.Blind) },
                 { SidebarItemKind.Panel, () => ElementFactory.CreatePanel(new Vector3Int(600, 720, 18), "Panel", Vector3.zero) },
                 { SidebarItemKind.RadialShelf, () => ElementFactory.CreateRadialShelf(600, 350, 18, 50, "RadialShelf", Vector3.zero) },
                 { SidebarItemKind.Drawer, () => ElementFactory.CreateDrawer(DrawerType.B, 400, DrawerColor.White, 500,
@@ -75,6 +73,9 @@ namespace KitchenDesigner.Core.UI
         {
             if (item.kind == SidebarItemKind.PipeFitting)
                 return ByFitting.TryGetValue(item.fittingKind, out var byFitting) ? byFitting : null;
+            if (item.kind == SidebarItemKind.Facade && item.facadeAssembled)
+                return () => ElementFactory.CreateAssembledFacade(new Vector3Int(600, 720, 18),
+                    "AssembledFacade", Vector3.zero, AssembledFill.Blind);
             return ByKind.TryGetValue(item.kind, out var byKind) ? byKind : null;
         }
     }

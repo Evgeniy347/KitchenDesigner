@@ -83,8 +83,7 @@ public class SidebarCatalogTests
 
         Assert.AreEqual("ДВП/ХДФ", panel.name);
         Assert.IsTrue(panel.kind == SidebarItemKind.Panel);
-        Assert.IsFalse(panel.kind == SidebarItemKind.Facade
-            || panel.kind == SidebarItemKind.AssembledFacade, "ДВП не фасад — она не открывается");
+        Assert.IsFalse(panel.kind == SidebarItemKind.Facade, "ДВП не фасад — она не открывается");
         Assert.AreEqual(3, panel.dims.z, "тонкая панель");
 
         // Технологический зазор (в паз заходит номинал, зазор остаётся в детали) задан
@@ -103,20 +102,44 @@ public class SidebarCatalogTests
         Assert.AreEqual(2, groups[1].items.Count);
         foreach (var it in groups[1].items)
         {
-            Assert.IsTrue(it.kind == SidebarItemKind.Facade || it.kind == SidebarItemKind.AssembledFacade,
+            Assert.IsTrue(it.kind == SidebarItemKind.Facade,
                 "элемент группы «Фасады» помечен как фасад");
             Assert.AreEqual(18, it.dims.z, "толщина фасада 18 мм");
         }
 
         var plain = groups[1].items.Find(it => it.name == "Фасад щитовой");
-        Assert.IsFalse(plain.kind == SidebarItemKind.AssembledFacade, "щитовой фасад — не сборный");
+        Assert.IsFalse(plain.facadeAssembled, "щитовой фасад — не сборный");
         Assert.AreEqual(new Vector3Int(600, 716, 18), plain.dims, "размеры щитового по умолчанию");
 
         var assembled = groups[1].items.Find(it => it.name == "Фасад сборный");
-        Assert.IsTrue(assembled.kind == SidebarItemKind.AssembledFacade, "сборный фасад помечен как сборный");
+        Assert.IsTrue(assembled.facadeAssembled, "сборный фасад помечен как сборный");
         Assert.AreEqual(new Vector3Int(600, 716, 18), assembled.dims);
 
-        Assert.AreEqual(1, groups[1].items.FindAll(it => it.kind == SidebarItemKind.AssembledFacade).Count, "1 сборный фасад");
+        Assert.AreEqual(1, groups[1].items.FindAll(it => it.facadeAssembled).Count, "1 сборный фасад");
+    }
+
+    /// <summary>Два вида фасада делят один <see cref="SidebarItemKind.Facade"/>
+    /// с 2026-09-09 (docs/todo_evolution.md §2.1) — тот же приём «тип vs
+    /// пресет», что уже применён к фитингам трубы (<c>fittingKind</c>) и к
+    /// системе ящика (<c>drawerSystem</c>): один тип — одна плитка, вариант —
+    /// пресет внутри неё. До правки у щитового и сборного были РАЗНЫЕ kind,
+    /// и это был последний оставшийся резерв консолидации первого уровня
+    /// каталога.</summary>
+    [Test]
+    public void FacadeGroup_SharesOneKind_DistinguishedByFacadeAssembledPreset()
+    {
+        var facades = SidebarCatalog.Build()[1].items;
+
+        Assert.AreEqual(2, facades.Count, "щитовой и сборный — два пресета одного фасада");
+        Assert.IsTrue(facades.TrueForAll(f => f.kind == SidebarItemKind.Facade),
+            "у обоих пресетов фасада обязан быть один и тот же kind — иначе они разъедутся "
+            + "по разным плиткам (SidebarTileBuilder группирует ПОСЛЕДОВАТЕЛЬНЫЕ записи "
+            + "одного kind в одну плитку)");
+
+        var flags = facades.ConvertAll(f => f.facadeAssembled);
+        CollectionAssert.AllItemsAreUnique(flags,
+            "оба значения признака обязаны встретиться — иначе один из вариантов недостижим "
+            + "с одним и тем же kind");
     }
 
     [Test]

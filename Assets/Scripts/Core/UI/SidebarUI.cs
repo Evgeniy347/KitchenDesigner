@@ -81,6 +81,8 @@ namespace KitchenDesigner.Core.UI
 
         public static void ResetLastUsedGroupForTests() => _lastUsedGroupTitle = null;
 
+        public void SetExpandedForTests(bool expanded) => SetExpanded(expanded);
+
         public void Build(Transform canvas)
         {
             _expanded = !AutoCollapseMode;
@@ -353,7 +355,10 @@ namespace KitchenDesigner.Core.UI
         }
 
         internal static string ItemTooltipText(SidebarCatalog.Item it, EditModeManager.Category cat)
-            => cat == EditModeManager.Category.Room ? $"{it.name}\n{RoomModeHint}" : it.name;
+        {
+            string text = $"{it.name}\n{FormatDims(it.dims)}";
+            return cat == EditModeManager.Category.Room ? $"{text}\n{RoomModeHint}" : text;
+        }
 
         public static string FormatDims(Vector3Int dims) => $"{dims.x} × {dims.y} × {dims.z}";
 
