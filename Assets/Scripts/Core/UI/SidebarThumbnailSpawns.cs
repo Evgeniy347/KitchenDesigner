@@ -4,139 +4,157 @@ using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core.UI
 {
+    /// <summary>Тот же switch на тех же полях каталога, что и в ElementSpawner,
+    /// только вместо постановки на пол/курсор — просто GameObject в нуле
+    /// координат, для картинки на плитке. Расхождения между двумя реализациями
+    /// одного интерфейса больше не может быть НА УРОВНЕ СИГНАТУРЫ — обе читают
+    /// один и тот же <see cref="SidebarCatalog.Item"/>, а не набор параметров,
+    /// который мог собраться по-разному на входе в каждую.</summary>
     internal sealed class SidebarThumbnailSpawns : IElementSpawns
     {
         private GameObject? _spawned;
 
-        public static Func<GameObject> For(SidebarCatalog.Item item) => () => Spawn(item);
-
-        internal static GameObject Spawn(SidebarCatalog.Item item)
+        public static Func<GameObject> For(SidebarCatalog.Item item) => () =>
         {
             var spawns = new SidebarThumbnailSpawns();
-            SidebarSpawnRouter.Route(item, spawns);
+            spawns.Spawn(item);
             return spawns._spawned!;
-        }
+        };
 
-        public void SpawnBoard(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreatePart(dims, name, Vector3.zero);
-
-        public void SpawnFacade(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateFacade(dims, name, Vector3.zero);
-
-        public void SpawnAssembledFacade(Vector3Int dims, string name, AssembledFill fill) =>
-            _spawned = ElementFactory.CreateAssembledFacade(dims, name, Vector3.zero, fill);
-
-        public void SpawnWall(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateWall(dims, name, Vector3.zero);
-
-        public void SpawnDrawer(string drawerType, int length, string colorName, int width,
-            string name, DrawerSystem system)
+        public void Spawn(SidebarCatalog.Item item)
         {
-            var type = SidebarPresetResolution.DrawerTypeOf(drawerType);
-            var color = SidebarPresetResolution.DrawerColorOf(colorName);
-            _spawned = ElementFactory.CreateDrawer(type, length, color, width, name, Vector3.zero, system);
-        }
-
-        public void SpawnTable(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateTable(dims, name, Vector3.zero);
-
-        public void SpawnRadiusTable(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateRadiusTable(dims, name, Vector3.zero);
-
-        public void SpawnStool(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateStool(dims, 0, name, Vector3.zero);
-
-        public void SpawnChair(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateChair(dims, 0, AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT,
-                name, Vector3.zero);
-
-        public void SpawnSofa(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateSofa(dims, SofaElement.DefaultCornerRadiusMM,
-                SofaElement.DefaultSeatHeightMM, name, Vector3.zero);
-
-        public void SpawnBed(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateBed(dims, true, true, name, Vector3.zero);
-
-        public void SpawnPouffe(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreatePouffe(dims, PouffeElement.DefaultCornerRadiusMM,
-                PouffeElement.DefaultSeatThicknessMM, name, Vector3.zero);
-
-        public void SpawnToilet(string name) =>
-            _spawned = ElementFactory.CreateToilet(ToiletElement.DefaultSeatHeightMM, name, Vector3.zero);
-
-        public void SpawnWallHungToilet(string name) =>
-            _spawned = ElementFactory.CreateWallHungToilet(WallHungToiletElement.DefaultSeatHeightMM,
-                WallHungToiletElement.DefaultFlushPlateHeightMM, name, Vector3.zero);
-
-        public void SpawnBathtub(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateBathtub(dims, BathtubElement.DefaultRimWidthMM,
-                BathtubElement.DefaultBowlDepthMM, BathtubElement.DefaultBowlRadiusMM,
-                BathtubElement.DefaultBowlFilletMM, name, Vector3.zero);
-
-        public void SpawnBathMixer(string name) =>
-            _spawned = ElementFactory.CreateBathMixer(BathMixerSpec.Default, name, Vector3.zero);
-
-        public void SpawnShowerColumn(string name) =>
-            _spawned = ElementFactory.CreateShowerColumn(ShowerColumnSpec.Default, name, Vector3.zero);
-
-        public void SpawnSocket(string name) =>
-            _spawned = ElementFactory.CreateSocket(WallDeviceSpec.Default, name, Vector3.zero);
-
-        public void SpawnLightSwitch(string name) =>
-            _spawned = ElementFactory.CreateLightSwitch(WallDeviceSpec.Default, true, null,
-                name, Vector3.zero);
-
-        public void SpawnPanel(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.Instance.CreatePanel(dims, name, Vector3.zero);
-
-        public void SpawnRadialShelf(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateRadialShelf(dims.x, dims.z, dims.y,
-                AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, name, Vector3.zero);
-
-        public void SpawnWindow(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateWindow(dims, name, Vector3.zero);
-
-        public void SpawnDoor(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateDoor(dims, name, Vector3.zero);
-
-        public void SpawnScrewLeg(string name) =>
-            _spawned = ElementFactory.CreateScrewLeg(name, Vector3.zero);
-
-        public void SpawnPillar(int midHeightMM, string name) =>
-            _spawned = ElementFactory.CreatePillar(midHeightMM, name, Vector3.zero);
-
-        public void SpawnPipe(string name) =>
-            _spawned = ElementFactory.CreatePipe(PipeSpec.DEFAULT_SIZE,
-                PipeElementSpec.DEFAULT_LENGTH_MM, name, Vector3.zero);
-
-        public void SpawnPipeFitting(PipeNodeKind kind, string name) =>
-            _spawned = kind switch
+            switch (item.kind)
             {
-                PipeNodeKind.Elbow => ElementFactory.CreatePipeElbow(name, Vector3.zero),
-                PipeNodeKind.Coupling => ElementFactory.CreatePipeCoupling(name, Vector3.zero),
-                PipeNodeKind.Tee => ElementFactory.CreatePipeTee(name, Vector3.zero),
-                PipeNodeKind.Cap => ElementFactory.CreatePipeCap(name, Vector3.zero),
-                PipeNodeKind.Supply => ElementFactory.CreatePipeSupply(name, Vector3.zero),
-                PipeNodeKind.Return => ElementFactory.CreatePipeReturn(name, Vector3.zero),
-                _ => ElementFactory.CreatePipeCoupling(name, Vector3.zero),
-            };
-
-        public void SpawnFloor(Vector3Int dims, string name) =>
-            _spawned = ElementFactory.CreateFloor(dims, name, Vector3.zero);
-
-        public void SpawnSink(string name) =>
-            _spawned = ElementFactory.CreateSink(name, Vector3.zero);
-
-        public void SpawnCooktop(string name, string model) =>
-            _spawned = ElementFactory.CreateCooktop(name, Vector3.zero, model);
-
-        public void SpawnOven(string name) =>
-            _spawned = ElementFactory.CreateOven(name, Vector3.zero);
-
-        public void SpawnDishwasher(string name) =>
-            _spawned = ElementFactory.CreateDishwasher(name, Vector3.zero);
-
-        public void SpawnLightSource(string name) =>
-            _spawned = ElementFactory.CreateLightSource(name, Vector3.zero);
+                case SidebarItemKind.Floor:
+                    _spawned = ElementFactory.CreateFloor(item.dims, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.LightSource:
+                    _spawned = ElementFactory.CreateLightSource(item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Sink:
+                    _spawned = ElementFactory.CreateSink(item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Cooktop:
+                    _spawned = ElementFactory.CreateCooktop(item.name, Vector3.zero,
+                        item.preset.applianceModel);
+                    break;
+                case SidebarItemKind.Oven:
+                    _spawned = ElementFactory.CreateOven(item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Dishwasher:
+                    _spawned = ElementFactory.CreateDishwasher(item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Drawer:
+                {
+                    var type = SidebarPresetResolution.DrawerTypeOf(item.preset.drawerType);
+                    var color = SidebarPresetResolution.DrawerColorOf(item.preset.drawerColor);
+                    var system = SidebarPresetResolution.DrawerSystemOf(item.preset.drawerSystem);
+                    _spawned = ElementFactory.CreateDrawer(type, item.preset.drawerLength, color,
+                        item.preset.drawerWidth, item.name, Vector3.zero, system);
+                    break;
+                }
+                case SidebarItemKind.Window:
+                    _spawned = ElementFactory.CreateWindow(item.dims, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Door:
+                    _spawned = ElementFactory.CreateDoor(item.dims, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.RadiusTable:
+                    _spawned = ElementFactory.CreateRadiusTable(item.dims, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Stool:
+                    _spawned = ElementFactory.CreateStool(item.dims, 0, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Chair:
+                    _spawned = ElementFactory.CreateChair(item.dims, 0,
+                        AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Sofa:
+                    _spawned = ElementFactory.CreateSofa(item.dims, SofaElement.DefaultCornerRadiusMM,
+                        SofaElement.DefaultSeatHeightMM, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Bed:
+                    _spawned = ElementFactory.CreateBed(item.dims, true, true, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Pouffe:
+                    _spawned = ElementFactory.CreatePouffe(item.dims, PouffeElement.DefaultCornerRadiusMM,
+                        PouffeElement.DefaultSeatThicknessMM, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Toilet:
+                    _spawned = ElementFactory.CreateToilet(ToiletElement.DefaultSeatHeightMM,
+                        item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.WallHungToilet:
+                    _spawned = ElementFactory.CreateWallHungToilet(
+                        WallHungToiletElement.DefaultSeatHeightMM,
+                        WallHungToiletElement.DefaultFlushPlateHeightMM, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Bathtub:
+                    _spawned = ElementFactory.CreateBathtub(item.dims, BathtubElement.DefaultRimWidthMM,
+                        BathtubElement.DefaultBowlDepthMM, BathtubElement.DefaultBowlRadiusMM,
+                        BathtubElement.DefaultBowlFilletMM, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.BathMixer:
+                    _spawned = ElementFactory.CreateBathMixer(BathMixerSpec.Default, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.ShowerColumn:
+                    _spawned = ElementFactory.CreateShowerColumn(ShowerColumnSpec.Default, item.name,
+                        Vector3.zero);
+                    break;
+                case SidebarItemKind.Socket:
+                    _spawned = ElementFactory.CreateSocket(WallDeviceSpec.Default, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.LightSwitch:
+                    _spawned = ElementFactory.CreateLightSwitch(WallDeviceSpec.Default, true, null,
+                        item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Table:
+                    _spawned = ElementFactory.CreateTable(item.dims, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Pillar:
+                    _spawned = ElementFactory.CreatePillar(item.preset.pillarMidHeightMM, item.name,
+                        Vector3.zero);
+                    break;
+                case SidebarItemKind.ScrewLeg:
+                    _spawned = ElementFactory.CreateScrewLeg(item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Pipe:
+                    _spawned = ElementFactory.CreatePipe(PipeSpec.DEFAULT_SIZE,
+                        PipeElementSpec.DEFAULT_LENGTH_MM, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.PipeFitting:
+                    _spawned = item.preset.fittingKind switch
+                    {
+                        PipeNodeKind.Elbow => ElementFactory.CreatePipeElbow(item.name, Vector3.zero),
+                        PipeNodeKind.Coupling => ElementFactory.CreatePipeCoupling(item.name, Vector3.zero),
+                        PipeNodeKind.Tee => ElementFactory.CreatePipeTee(item.name, Vector3.zero),
+                        PipeNodeKind.Cap => ElementFactory.CreatePipeCap(item.name, Vector3.zero),
+                        PipeNodeKind.Supply => ElementFactory.CreatePipeSupply(item.name, Vector3.zero),
+                        PipeNodeKind.Return => ElementFactory.CreatePipeReturn(item.name, Vector3.zero),
+                        _ => ElementFactory.CreatePipeCoupling(item.name, Vector3.zero),
+                    };
+                    break;
+                case SidebarItemKind.Panel:
+                    _spawned = ElementFactory.Instance.CreatePanel(item.dims, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.RadialShelf:
+                    _spawned = ElementFactory.CreateRadialShelf(item.dims.x, item.dims.z, item.dims.y,
+                        AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Facade:
+                    _spawned = item.preset.facadeAssembled
+                        ? ElementFactory.CreateAssembledFacade(item.dims, item.name, Vector3.zero,
+                            AssembledFill.Blind)
+                        : ElementFactory.CreateFacade(item.dims, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Wall:
+                    _spawned = ElementFactory.CreateWall(item.dims, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Board:
+                default:
+                    _spawned = ElementFactory.CreatePart(item.dims, item.name, Vector3.zero);
+                    break;
+            }
+        }
     }
 }
