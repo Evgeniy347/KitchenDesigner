@@ -150,6 +150,27 @@ public class PipeRunFollowSceneTests : SnapTestBase
     }
 
     [Test]
+    public void Coupling_DraggedAlongTheRun_StillLengthensThePipe_WithTheInteractiveMagnetOff()
+    {
+        var run = SeatedOnOnePipe(PipeNodeKind.Coupling);
+        KitchenSettings.Instance.SnapEnabled = false;
+        run.Holds.Clear();
+        PipeRunFollow.Hold(run.Fitting, run.Scene, run.Holds);
+
+        Assert.AreEqual(1, run.Holds.Count,
+            "удержание существующего стыка — не интерактивный магнит, а целостность "
+            + "данных: PipeDocking.RepairAfterGridSnap, ConnectedMouths и "
+            + "ReseatAfterRotation все работают независимо от SnapEnabled, и Hold обязан "
+            + "быть таким же — иначе выключенный магнит превращает 'труба тянется за "
+            + "муфтой' в 'муфта просто слетает', что и было жалобой пользователя");
+
+        run.Drag(new Vector3(0f, Units(100f), 0f));
+
+        Assert.AreEqual(PipeLengthMm + 100, run.Lower.LengthMM,
+            "труба обязана удлиниться и при выключенном SnapEnabled");
+    }
+
+    [Test]
     public void Coupling_DraggedAlongTheRun_DoesNotOpenAJoint()
     {
         var run = SeatedOnOnePipe(PipeNodeKind.Coupling);

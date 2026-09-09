@@ -48,9 +48,6 @@ namespace KitchenDesigner.Core
             holds.Clear();
             if (fitting == null || scene == null) return;
 
-            var settings = KitchenSettings.Instance;
-            if (settings == null || !settings.SnapEnabled) return;
-
             var survey = ScenePipeSurvey.Of(scene);
             var ports = survey.Ports;
             for (int i = 0; i < ports.Count; i++)
