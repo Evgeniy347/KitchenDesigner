@@ -99,18 +99,31 @@ public class ThumbnailRendererTests
         return (float)painted / pixels.Length;
     }
 
+    // Сенсор кадрирования: печатает по каждому типу габарит Renderer.bounds,
+    // которым IsoCameraRig считает дистанцию, саму дистанцию и итоговую долю
+    // закрашенных пикселей. Без этого «пусто/не пусто» ничего не говорит о
+    // ПРИЧИНЕ — маленький Bounds, огромный Bounds или дистанция, которая не
+    // зависит от Bounds вовсе (упёрлась в пол). Один список печатается всегда,
+    // а не только при провале: сравнение винтовой опоры с соседями по этому
+    // же логу — единственный способ увидеть, чем она отличается количественно.
     [UnityTest]
     public IEnumerator EveryKind_RendersNonEmptyTexture()
     {
         var empty = new List<string>();
+        var log = new List<string>();
         foreach (var (name, spawn) in Kinds)
         {
-            var rt = ThumbnailRenderer.Render(spawn);
+            var rt = ThumbnailRenderer.Render(spawn, ThumbnailRenderer.DefaultSize, out var framing);
             float painted = NonBackgroundFraction(rt);
+            log.Add(string.Format(
+                "{0,-16} bounds={1} maxDim={2:F4} camDist={3:F4} painted={4:P2}",
+                name, framing.Bounds.size, framing.MaxDimension, framing.CameraDistance, painted));
             if (painted < 0.01f) empty.Add(name + " (" + painted.ToString("P1") + ")");
             UnityEngine.Object.DestroyImmediate(rt);
             yield return null;
         }
+
+        Debug.Log("ThumbnailRenderer framing sensor:\n" + string.Join("\n", log));
 
         Assert.IsEmpty(empty,
             "ThumbnailRenderer вернул пустую (прозрачную) текстуру для типов: "

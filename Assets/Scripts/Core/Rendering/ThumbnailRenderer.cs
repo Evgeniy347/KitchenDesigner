@@ -3,6 +3,20 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
+    public readonly struct ThumbnailFraming
+    {
+        public readonly Bounds Bounds;
+        public readonly float MaxDimension;
+        public readonly float CameraDistance;
+
+        public ThumbnailFraming(Bounds bounds, float maxDimension, float cameraDistance)
+        {
+            Bounds = bounds;
+            MaxDimension = maxDimension;
+            CameraDistance = cameraDistance;
+        }
+    }
+
     public static class ThumbnailRenderer
     {
         public const int DefaultSize = 128;
@@ -10,11 +24,18 @@ namespace KitchenDesigner.Core
         private const float Fov = 45f;
         private const float DistanceScale = 2.5f;
 
-        public static RenderTexture Render(Func<GameObject> spawn, int size = DefaultSize)
+        private const float ContextFreeMinDistanceUnits = 0.01f;
+
+        public static RenderTexture Render(Func<GameObject> spawn, int size = DefaultSize) =>
+            Render(spawn, size, out _);
+
+        public static RenderTexture Render(Func<GameObject> spawn, int size,
+            out ThumbnailFraming framing)
         {
             if (spawn == null) throw new ArgumentNullException(nameof(spawn));
 
             var rt = new RenderTexture(size, size, 16, RenderTextureFormat.ARGB32);
+            framing = default;
 
             using (ElementFactorySandbox.Enter())
             {
@@ -27,6 +48,10 @@ namespace KitchenDesigner.Core
 
                     SetLayerRecursively(go, IsolationLayer);
                     var bounds = RendererBoundsOf(go);
+                    float distance = IsoCameraRig.Distance(
+                        bounds.size, DistanceScale, ContextFreeMinDistanceUnits);
+                    framing = new ThumbnailFraming(bounds,
+                        Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z)), distance);
 
                     camGo = new GameObject("ThumbnailCam");
                     var cam = camGo.AddComponent<Camera>();
@@ -39,7 +64,8 @@ namespace KitchenDesigner.Core
                     cam.farClipPlane = 100f;
                     cam.cullingMask = 1 << IsolationLayer;
 
-                    camGo.transform.position = IsoCameraRig.Position(bounds.center, bounds.size, DistanceScale);
+                    camGo.transform.position = IsoCameraRig.Position(
+                        bounds.center, bounds.size, DistanceScale, ContextFreeMinDistanceUnits);
                     camGo.transform.LookAt(bounds.center);
 
                     cam.targetTexture = rt;
