@@ -4,6 +4,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Analysis;
 using KitchenDesigner.Core.Plumbing;
 
 /// <summary>Сенсор задачи A/B: печатает ФАКТИЧЕСКИЙ зазор устье-в-устье между трубой
@@ -11,8 +12,8 @@ using KitchenDesigner.Core.Plumbing;
 /// <c>docs/example.save.json</c>, снятая для этой задачи — сам файл этот тест не
 /// трогает, agents/TESTS.md → «NEVER TOUCH IT»).
 ///
-/// Эти два теста на замороженной сцене — СЕНСОР, а не критерий приёмки: они меряют и
-/// печатают число (<c>TestContext.WriteLine</c>), но ничего не утверждают о нём.
+/// Тесты на замороженной сцене — СЕНСОР, а не критерий приёмки: они меряют и
+/// печатают числа (<c>TestContext.WriteLine</c>), но ничего не утверждают о них.
 /// Первая версия ставила сюда <c>Assert.LessOrEqual</c> — стык на сцене пользователя
 /// был разомкнут на момент заморозки фикстуры, так что тест был красным вне
 /// зависимости от качества починки, и стал бы снова красным при следующей заморозке
@@ -119,6 +120,77 @@ public class PipeGapSensorTests
         TestContext.WriteLine($"{pipeName} <-> {fittingName}: зазор устье-в-устье = "
             + $"{gapMm:F4} мм (допуск PipeJoint.JoinToleranceMm = "
             + $"{PipeJoint.JoinToleranceMm} мм)");
+    }
+
+    private static readonly string[] AllFiveNames =
+        { "Truba", "Otvod_92", "Otvod_91", "Podacha", "Obratka" };
+
+    /// <summary>Печатает по КАЖДОМУ устью каждого из пяти элементов задачи: позицию,
+    /// ось, найденного партнёра (по сети <c>PipeNetwork</c>, тот же путь, которым
+    /// пользуется <c>PipeFittingSizeLink</c>/<c>PipeFittingFieldsEditor</c>) и
+    /// ФАКТИЧЕСКИЙ зазор устье-в-устье до БЛИЖАЙШЕГО порта с противоположной осью во
+    /// всей сцене — даже когда сеть считает стык разомкнутым. Ничего не утверждает
+    /// (agents/TEST-DESIGN.md → «Snapshot baselines»): это сенсор, а не критерий
+    /// приёмки.</summary>
+    [Test]
+    public void PrintEveryPortOfAllFiveElements_OnTheFrozenUserScene()
+    {
+        var elements = RestoreScene();
+        var survey = ScenePipeSurvey.Of(elements);
+
+        foreach (var name in AllFiveNames)
+        {
+            var el = elements.FirstOrDefault(e => e.PartName == name);
+            Assert.IsNotNull(el, $"в сцене обязан быть элемент {name}");
+            Assert.IsInstanceOf<ISnapPorts>(el, $"{name} обязан нести устья");
+            var ported = (ISnapPorts)el!;
+
+            for (int i = 0; i < ported.SnapPortCount; i++)
+            {
+                var mouth = ported.SnapPortAt(i, el!.transform.position);
+
+                int myPortIndex = -1;
+                for (int p = 0; p < survey.Ports.Count; p++)
+                    if (string.Equals(survey.Ports[p].ElementId, name, System.StringComparison.Ordinal)
+                        && survey.Ports[p].PortIndex == i) { myPortIndex = p; break; }
+
+                string partnerLine = "нет кандидата с противоположной осью";
+                if (myPortIndex >= 0)
+                {
+                    int networkPartner = survey.Network.PartnerOf(myPortIndex);
+                    var mine = survey.Ports[myPortIndex];
+
+                    int nearestOpposite = -1;
+                    float nearestGapMm = float.MaxValue;
+                    for (int p = 0; p < survey.Ports.Count; p++)
+                    {
+                        if (p == myPortIndex) continue;
+                        if (string.Equals(survey.Ports[p].ElementId, name,
+                                System.StringComparison.Ordinal)) continue;
+                        if (!PipeAxis.AreOpposite(mine.OutwardAxis, survey.Ports[p].OutwardAxis))
+                            continue;
+                        float g = mine.PositionMm.DistanceMmTo(survey.Ports[p].PositionMm);
+                        if (g < nearestGapMm) { nearestGapMm = g; nearestOpposite = p; }
+                    }
+
+                    if (nearestOpposite >= 0)
+                    {
+                        var found = survey.Ports[nearestOpposite];
+                        bool network = networkPartner == nearestOpposite;
+                        partnerLine = $"ближайший противоположный = {found.ElementId}"
+                            + $"[устье {found.PortIndex}], зазор = {nearestGapMm:F4} мм"
+                            + $" (сеть считает стык {(network ? "СОМКНУТЫМ" : "РАЗОМКНУТЫМ")}"
+                            + $", допуск {PipeJoint.JoinToleranceMm} мм)";
+                    }
+                }
+
+                TestContext.WriteLine($"{name}[устье {i}]: позиция = "
+                    + $"({mouth.Position.x / AppConstants.MM_TO_UNITS:F4}, "
+                    + $"{mouth.Position.y / AppConstants.MM_TO_UNITS:F4}, "
+                    + $"{mouth.Position.z / AppConstants.MM_TO_UNITS:F4}) мм, ось = "
+                    + $"{mouth.Outward}, {partnerLine}");
+            }
+        }
     }
 
     [Test]

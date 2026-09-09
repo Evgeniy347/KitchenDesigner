@@ -93,14 +93,31 @@ namespace KitchenDesigner.Core
                 Debug.Log($"[MmGrid] Выровнено по миллиметровой сетке: {snapped} дет.");
         }
 
+        private const int MaxJointRepairRoundsUntilNoPartMoves = 8;
+
         private static void RepairAutoSeatedJointsAfterGridSnap(List<KitchenElement?> elements)
         {
             var scene = new List<KitchenElement>(elements.Count);
             foreach (var el in elements)
                 if (el != null) scene.Add(el);
 
-            foreach (var el in scene)
-                if (el is IAutoSeated seated) seated.RepairJointAfterGridSnap(scene);
+            for (int round = 0; round < MaxJointRepairRoundsUntilNoPartMoves; round++)
+            {
+                bool movedAny = false;
+
+                foreach (var el in scene)
+                {
+                    if (!(el is IAutoSeated seated)) continue;
+
+                    var beforePos = el.transform.position;
+                    var beforeRot = el.transform.rotation;
+                    seated.RepairJointAfterGridSnap(scene);
+                    if (el.transform.position != beforePos || el.transform.rotation != beforeRot)
+                        movedAny = true;
+                }
+
+                if (!movedAny) break;
+            }
         }
 
         private static void RestoreBasePlate(ElementData data)

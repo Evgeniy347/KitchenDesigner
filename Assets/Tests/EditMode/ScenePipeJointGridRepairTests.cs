@@ -149,4 +149,99 @@ public class ScenePipeJointGridRepairTests : SnapTestBase
             + "(RepairAutoSeatedJointsAfterGridSnap) — иначе загрузка проекта САМА рвёт то, "
             + "что было закрыто на момент сохранения");
     }
+
+    private static int FreeLegIndex(PipeFittingElement fitting, IReadOnlyList<KitchenElement> scene)
+    {
+        var survey = ScenePipeSurvey.Of(scene);
+        for (int p = 0; p < survey.Ports.Count; p++)
+        {
+            if (!string.Equals(survey.Ports[p].ElementId, fitting.PartName,
+                    System.StringComparison.Ordinal)) continue;
+            if (survey.Network.IsFree(p)) return survey.Ports[p].PortIndex;
+        }
+        Assert.Fail($"{fitting.PartName}: свободная нога не найдена — стенд не может продолжать");
+        return -1;
+    }
+
+    /// <summary>Отвод_91/92 задачи A из «Otvod_91»/«Otvod_92»: двуногий фитинг, у которого
+    /// ОДНА нога уже сомкнута (с Podacha/Obratka), а ДРУГАЯ разомкнута унаследованным
+    /// смещением на трубу. <c>SnapPortDock.Best</c> — единственное описание правила
+    /// стыка (<c>SnapPortRuleSingleSourceTests</c>) — всегда предлагает элементу
+    /// ГЛОБАЛЬНО ближайшую пару портов across всей сцены; уже сомкнутая нога всегда
+    /// меряет ближе, чем просто открытая, так что <c>RepairJointAfterGridSnap</c> для
+    /// такого фитинга — молчаливый no-op: он бесконечно перевыбирает уже закрытую ногу
+    /// и никогда не пробует открытую.</summary>
+    [Test]
+    public void RepairAfterLoad_ClosesAnOpenJoint_EvenWhenTheSameFittingHasAnotherCloserClosedJoint()
+    {
+        var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Run");
+        var elbow = ElbowBroughtUpTo(pipe);
+        var built = new List<KitchenElement> { pipe, elbow };
+        elbow.SeatAfterMove(built);
+        Assume.That(JoinedLinks(pipe, elbow), Is.EqualTo(1),
+            "стенд обязан доказать сам себя: элбоу сел на трубу");
+
+        int freeIdx = FreeLegIndex(elbow, built);
+
+        elbow.transform.position += new Vector3(Units(0.6f), 0f, 0f);
+        Assume.That(JoinedLinks(pipe, elbow), Is.EqualTo(0),
+            "стенд обязан доказать сам себя: сдвиг элбоу на 0.6 мм рвёт стык труба-фитинг "
+            + "(допуск PipeJoint.JoinToleranceMm = 0.5 мм)");
+
+        var capGo = ElementFactory.CreatePipeCap("Cap", Vector3.zero);
+        _spawned.Add(capGo);
+        var cap = capGo.GetComponent<PipeFittingElement>();
+        cap.transform.position += elbow.PortPositionUnits(freeIdx)
+            + elbow.PortDirection(freeIdx) * Units(20f) - cap.PortPositionUnits(0);
+
+        var scene = new List<KitchenElement> { pipe, elbow, cap };
+        cap.SeatAfterMove(scene);
+        Assume.That(JoinedLinks(elbow, cap), Is.EqualTo(1),
+            "стенд обязан доказать сам себя: заглушка села ровно на свободную ногу элбоу");
+        Assume.That(JoinedLinks(pipe, elbow), Is.EqualTo(0),
+            "стенд обязан доказать сам себя: труба-элбоу стык остаётся разомкнут после "
+            + "посадки заглушки на другую ногу");
+
+        var data = SaveLoadManager.CaptureScene(scene);
+        var json = SaveLoadManager.Serialize(data);
+
+        ClearRegistry();
+        _spawned.Clear();
+
+        var loaded = SaveLoadManager.Deserialize(json);
+        Assert.IsNotNull(loaded);
+        var objs = SaveLoadManager.RestoreScene(loaded!);
+        _spawned.AddRange(objs);
+        var restored = objs.Select(g => g.GetComponent<KitchenElement>())
+            .Where(e => e != null).ToList()!;
+
+        var restoredPipe = restored.FirstOrDefault(e => e.PartName == "Run");
+        var restoredElbow = restored.FirstOrDefault(e => e.PartName == "Elb");
+        var restoredCap = restored.FirstOrDefault(e => e.PartName == "Cap");
+        Assert.IsNotNull(restoredPipe, "труба обязана вернуться после load");
+        Assert.IsNotNull(restoredElbow, "уголок обязан вернуться после load");
+        Assert.IsNotNull(restoredCap, "заглушка обязана вернуться после load");
+
+        Assert.AreEqual(1, JoinedLinks(restoredPipe!, restoredElbow!),
+            "SceneRestorer обязан закрыть открытый стык труба-фитинг ДАЖЕ когда у того же "
+            + "фитинга уже есть более близкий сомкнутый стык на другой ноге — иначе фитинг "
+            + "никогда не выберет открытую ногу, потому что SnapPortDock.Best всегда "
+            + "предлагает глобально ближайшую пару портов");
+        Assert.AreEqual(1, JoinedLinks(restoredElbow!, restoredCap!),
+            "починка открытого стыка на одной ноге фитинга не обязана рвать уже сомкнутый "
+            + "стык на другой");
+
+        var elbowSizes = ScenePipeSurvey.SizesOf(restoredElbow);
+        Assert.AreNotEqual(PipeSpec.NoValue, ScenePipeSurvey.DesignationAt(elbowSizes, 0),
+            "«Диаметр 1» отвода читается тем же путём, что и редактор свойств "
+            + "(PipeFittingFieldsEditor → ScenePipeSurvey.SizesOf), и обязан быть заполнен, "
+            + "как только обе ноги фитинга сомкнуты сетью");
+        Assert.AreNotEqual(PipeSpec.NoValue, ScenePipeSurvey.DesignationAt(elbowSizes, 1),
+            "«Диаметр 2» отвода обязан быть заполнен по той же причине");
+
+        var capSizes = ScenePipeSurvey.SizesOf(restoredCap);
+        Assert.AreNotEqual(PipeSpec.NoValue, ScenePipeSurvey.DesignationAt(capSizes, 0),
+            "«Диаметр 1» одноногого фитинга (та же форма, что у Podacha/Obratka) обязан "
+            + "быть заполнен, когда цепочка портов доходит до трубы с известным ДУ");
+    }
 }

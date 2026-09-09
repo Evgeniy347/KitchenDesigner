@@ -28,11 +28,12 @@ namespace KitchenDesigner.Core
         public static void RepairAfterGridSnap(KitchenElement element,
             IReadOnlyList<KitchenElement> scene)
         {
-            if (element == null) return;
+            if (element == null || scene == null) return;
 
             float maxDist = GridRepairMaxDistMm * AppConstants.MM_TO_UNITS;
-            SeatWithinDistance(element, element.transform.position, element.transform.rotation,
-                scene, default, maxDist);
+            var others = FreePortedPartsExcept(scene, element);
+            SeatUsingPorts(element, element.transform.position, element.transform.rotation,
+                others, default, maxDist);
         }
 
         private static void SeatWithinDistance(KitchenElement element, Vector3 poseOrigin,
@@ -41,10 +42,18 @@ namespace KitchenDesigner.Core
         {
             if (element == null || scene == null) return;
 
+            SeatUsingPorts(element, poseOrigin, poseRotation, scene.ToPortedParts(), cursor,
+                maxDist);
+        }
+
+        private static void SeatUsingPorts(KitchenElement element, Vector3 poseOrigin,
+            Quaternion poseRotation, List<PortedPart> others, in SnapCursor cursor,
+            float maxDist)
+        {
             var moved = element.ToPortedPart(element.transform.position);
             if (!moved.HasPorts) return;
 
-            var dock = SnapPortDock.Best(moved, scene.ToPortedParts(), maxDist, cursor);
+            var dock = SnapPortDock.Best(moved, others, maxDist, cursor);
             if (!dock.taken) return;
 
             var turn = Quaternion.AngleAxis(dock.rotationDegrees, dock.rotationAxis);
@@ -196,6 +205,38 @@ namespace KitchenDesigner.Core
                 if (string.Equals(survey.Ports[i].ElementId, excludedElementId,
                         System.StringComparison.Ordinal)) continue;
                 result.Add(survey.Ports[i]);
+            }
+            return result;
+        }
+
+        private static List<PortedPart> FreePortedPartsExcept(IReadOnlyList<KitchenElement> scene,
+            KitchenElement moving)
+        {
+            var result = new List<PortedPart>();
+            if (scene == null) return result;
+
+            var survey = ScenePipeSurvey.Of(scene);
+            var freeIndexesByElementId = new Dictionary<string, List<int>>();
+            for (int i = 0; i < survey.Ports.Count; i++)
+            {
+                if (!survey.Network.IsFree(i)) continue;
+                var elementId = survey.Ports[i].ElementId;
+                if (!freeIndexesByElementId.TryGetValue(elementId, out var indexes))
+                    freeIndexesByElementId[elementId] = indexes = new List<int>();
+                indexes.Add(survey.Ports[i].PortIndex);
+            }
+
+            foreach (var e in scene)
+            {
+                if (e == null || ReferenceEquals(e, moving)) continue;
+                if (!(e is ISnapPorts ported)) continue;
+                if (!freeIndexesByElementId.TryGetValue(e.PartName, out var freeIndexes)
+                    || freeIndexes.Count == 0) continue;
+
+                var ports = new SnapPort[freeIndexes.Count];
+                for (int k = 0; k < freeIndexes.Count; k++)
+                    ports[k] = ported.SnapPortAt(freeIndexes[k], e.transform.position);
+                result.Add(new PortedPart(e.GetInstanceID(), e.PartName, ports));
             }
             return result;
         }
