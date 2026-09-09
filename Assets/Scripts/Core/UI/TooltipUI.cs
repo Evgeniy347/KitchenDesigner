@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -28,6 +29,16 @@ namespace KitchenDesigner.Core.UI
             var trigger = target.GetComponent<EventTrigger>() ?? target.AddComponent<EventTrigger>();
             var rect = target.GetComponent<RectTransform>();
             Add(trigger, EventTriggerType.PointerEnter, () => Request(rect, text));
+            Add(trigger, EventTriggerType.PointerExit, Hide);
+        }
+
+        public static void Attach(GameObject target, Func<string> textProvider)
+        {
+            if (target == null || textProvider == null) return;
+
+            var trigger = target.GetComponent<EventTrigger>() ?? target.AddComponent<EventTrigger>();
+            var rect = target.GetComponent<RectTransform>();
+            Add(trigger, EventTriggerType.PointerEnter, () => Request(rect, textProvider()));
             Add(trigger, EventTriggerType.PointerExit, Hide);
         }
 

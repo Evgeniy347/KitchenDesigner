@@ -124,6 +124,29 @@ public class TooltipUITests
     }
 
     [UnityTest]
+    public IEnumerator Attach_WithFuncProvider_ReadsTheTextFreshOnEveryHover()
+    {
+        var button = MakeButton("Btn");
+        string current = "Первое значение";
+        TooltipUI.Attach(button, () => current);
+
+        Hover(button);
+        yield return new WaitForSecondsRealtime(1f);
+        Assert.AreEqual("Первое значение",
+            TooltipRoot!.GetComponentInChildren<TMPro.TMP_Text>().text);
+
+        Unhover(button);
+        current = "Второе значение";
+        Hover(button);
+        yield return new WaitForSecondsRealtime(1f);
+
+        Assert.AreEqual("Второе значение",
+            TooltipRoot!.GetComponentInChildren<TMPro.TMP_Text>().text,
+            "провайдер обязан вызываться заново при каждом наведении — иначе подсказка, "
+            + "привязанная один раз, замораживает текст на момент сборки");
+    }
+
+    [UnityTest]
     public IEnumerator Tooltip_IsOneObjectOnTheCanvasOfTheButton_DrawnAboveEverything()
     {
         var first = MakeButton("First");

@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core.UI
         private static Sprite? _findIssue, _document, _sceneTree, _book, _resizeHandles, _moveHandles, _tintDrop;
         private static Sprite? _shelf, _facade, _drawer, _furniture, _appliance, _faucet, _room;
         private static Sprite? _search, _tileStub;
+        private static Sprite? _dockExpanded, _dockRail;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -56,6 +57,8 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Room => _room ??= BuildRoom();
         public static Sprite Search => _search ??= BuildSearch();
         public static Sprite TileStub => _tileStub ??= BuildTileStub();
+        public static Sprite DockExpanded => _dockExpanded ??= BuildDockExpanded();
+        public static Sprite DockRail => _dockRail ??= BuildDockRail();
 
         private static Sprite BuildGear()
         {
@@ -455,6 +458,26 @@ namespace KitchenDesigner.Core.UI
             Disc(px, 26, 38, 15, Ink);
             Disc(px, 26, 38, 11, Clear);
             Line(px, 36, 28, 50, 14, 4, Ink);
+            return Finish(px);
+        }
+
+        private static Sprite BuildDockExpanded()
+        {
+            var px = NewCanvas();
+            Rect(px, 8, 8, 56, 56, Ink2);
+            Rect(px, 12, 41, 52, 52, Ink);
+            Rect(px, 12, 26, 52, 37, Ink);
+            Rect(px, 12, 11, 52, 22, Ink);
+            return Finish(px);
+        }
+
+        private static Sprite BuildDockRail()
+        {
+            var px = NewCanvas();
+            Rect(px, 8, 8, 26, 56, Ink2);
+            Disc(px, 17, 46, 6, Ink);
+            Disc(px, 17, 32, 6, Ink);
+            Disc(px, 17, 18, 6, Ink);
             return Finish(px);
         }
 

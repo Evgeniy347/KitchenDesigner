@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
@@ -10,6 +11,7 @@ using UnityEngine.TestTools;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>Левый док каталога после перехода на плитки (docs/todo_evolution.md §2.4,
 /// вариант A): поиск первым контролом, свёрнутые по умолчанию все группы кроме
@@ -425,5 +427,142 @@ public class SidebarPanelTests
             else PlayerPrefs.DeleteKey("KitchenSidebarDockChoice");
             PlayerPrefs.Save();
         }
+    }
+
+    [Test]
+    public void SearchField_MatchesByTheTileTitle_NotOnlyByPresetNames()
+    {
+        var search = Child(Panel, "SbSearch").GetComponent<TMP_InputField>();
+        search.text = "фитинг";
+
+        var fittingTile = Tile("Сантехника", "Фитинг");
+        Assert.IsTrue(fittingTile.gameObject.activeSelf,
+            "заголовок плитки лежит в данных (SidebarCatalogTable) и обязан участвовать в "
+            + "поиске: ни один из шести пресетов не называется «фитинг», только сама плитка");
+    }
+
+    [Test]
+    public void PresetDot_CarriesAVisibleOrdinalLabel_NotJustAColor()
+    {
+        var tile = Tile("Сантехника", "Фитинг");
+        var firstDot = Child(Child(tile, "Presets"), "PresetDot_0");
+
+        var label = firstDot.GetComponentInChildren<TMP_Text>();
+        Assert.IsNotNull(label,
+            "точка пресета обязана нести различимую метку — на 16 px один цвет от другого "
+            + "не отличить без наведения");
+        Assert.AreEqual("1", label!.text,
+            "метка — порядковый номер пресета, а не буква-псевдоиконка");
+    }
+
+    private static void Fire(GameObject go, EventTriggerType type)
+    {
+        var trigger = go.GetComponent<EventTrigger>();
+        Assert.IsNotNull(trigger, $"на «{go.name}» нет EventTrigger — подсказку не повесили");
+        foreach (var entry in trigger!.triggers)
+            if (entry.eventID == type)
+                entry.callback.Invoke(new PointerEventData(EventSystem.current));
+    }
+
+    [UnityTest]
+    public IEnumerator TileTooltip_ReflectsTheCurrentlySelectedPreset_NotTheOneAtBuildTime()
+    {
+        var tile = Tile("Сантехника", "Фитинг");
+        var presets = Child(tile, "Presets");
+
+        Child(presets, "PresetDot_2").GetComponent<Button>().onClick.Invoke();
+
+        Fire(tile.gameObject, EventTriggerType.PointerEnter);
+        yield return new WaitForSecondsRealtime(1f);
+
+        var tooltipText = _canvasGo.transform.Find("Tooltip")
+            .GetComponentInChildren<TMP_Text>().text;
+        Assert.IsTrue(tooltipText.Contains("Тройник"),
+            "подсказка плитки обязана показывать НЫНЕ выбранный пресет: она привязана один "
+            + "раз при сборке, и если текст не пересчитывается на каждом наведении, здесь "
+            + "останется имя пресета номер ноль вместо выбранного");
+    }
+
+    [Test]
+    public void DockModeButton_HasNoLetterLabel_ShowsAnIconInstead()
+    {
+        var dockModeBtn = Child(Panel, "SbDockMode");
+
+        Assert.IsNull(dockModeBtn.GetComponentInChildren<TMP_Text>(),
+            "буквы «Д»/«Р» — псевдоиконки, запрещённые правилом 4: переключатель режима "
+            + "дока обязан рисоваться спрайтом, как остальные иконки IconFactory");
+        var icon = Child(dockModeBtn, "SbDockMode_Icon").GetComponent<Image>();
+        Assert.IsNotNull(icon.sprite);
+    }
+
+    [Test]
+    public void SelectingAPreset_PersistsAsTheLastUsedPreset_ForTheNextBuildOfTheSameTile()
+    {
+        const string key = "KitchenSidebarPreset_Ящик";
+        bool hadPrevValue = PlayerPrefs.HasKey(key);
+        string prevValue = PlayerPrefs.GetString(key, "");
+        try
+        {
+            var drawerTile = Tile("Ящики", "Ящик");
+            var presets = Child(drawerTile, "Presets");
+            Child(presets, "PresetDot_1").GetComponent<Button>().onClick.Invoke();
+
+            Assert.AreEqual("Ящик Movento", SidebarPresetPreference.Load("Ящик"),
+                "клик по точке пресета обязан немедленно запомнить выбор — так же, как "
+                + "запоминается режим дока");
+
+            Object.DestroyImmediate(_sidebarHost);
+            Object.DestroyImmediate(_canvasGo);
+            _canvasGo = new GameObject("Canvas");
+            _canvasGo.AddComponent<Canvas>();
+            _sidebarHost = new GameObject("SidebarHost");
+            _sidebar = _sidebarHost.AddComponent<SidebarUI>();
+            _sidebar.Build(_canvasGo.transform);
+
+            var rebuiltTile = Tile("Ящики", "Ящик");
+            var rebuiltPresets = Child(rebuiltTile, "Presets");
+            var secondDot = Child(rebuiltPresets, "PresetDot_1").GetComponent<Image>();
+            AssertSameColor(UIStyle.SurfaceActive, secondDot.color,
+                "плитку пересобрали заново («перезапуск»), и она обязана открыться на "
+                + "последнем использованном пресете, а не на пресете номер ноль");
+        }
+        finally
+        {
+            if (hadPrevValue) PlayerPrefs.SetString(key, prevValue);
+            else PlayerPrefs.DeleteKey(key);
+            PlayerPrefs.Save();
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator SlashShortcut_DefersActivatingSearchByOneFrame_SoTheSlashCannotLeakIntoIt()
+    {
+        _sidebar.SetExpandedForTests(false);
+        var search = Child(Panel, "SbSearch").GetComponent<TMP_InputField>();
+
+        _sidebar.SimulateSlashShortcutForTests();
+
+        Assert.IsFalse(search.isFocused,
+            "поле поиска не должно получать фокус в ТОМ ЖЕ кадре, где сработал шорткат — "
+            + "EventSystem мог ещё не разослать символ «/» этого нажатия, и активированное "
+            + "прямо сейчас поле получило бы его в довесок");
+
+        yield return null;
+
+        Assert.IsTrue(search.isFocused,
+            "на следующем кадре поле поиска обязано получить фокус");
+    }
+
+    [UnityTest]
+    public IEnumerator ExpandedDock_WithTilesSearchHeadersAndPresetDots_MatchesUiSnapshot()
+    {
+        _sidebar.SetDockChoiceForTests(SidebarDockChoice.Docked);
+        _sidebar.SetExpandedForTests(true);
+        Header("Сантехника").onClick.Invoke();
+        _sidebar.ShowAllPresetRowsForTests();
+        yield return null;
+
+        string dir = Path.Combine(Application.dataPath, "..", "test-results");
+        UiSnapshotEngine.CaptureVerified(_canvasGo, Path.Combine(dir, "sidebar_dock_expanded.json"));
     }
 }

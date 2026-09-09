@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.UI
         private const string RoomModeHint = "Доступно в режиме «Помещение»";
         private const float PresetDotSize = 16f;
         private const float PresetDotGap = 3f;
+        private const int PresetDotFont = 10;
 
         private static readonly Color ActiveToggleColor = new Color(0.30f, 0.55f, 0.34f, 1f);
 
@@ -36,12 +37,13 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _collapseLabel;
         private Image? _pinBg;
         private Image? _dockModeBg;
-        private TMP_Text? _dockModeLabel;
+        private Image? _dockModeIcon;
         private TMP_InputField? _searchField;
         private TMP_Text? _searchHint;
 
         private bool _expanded = true;
         private bool _pinned = true;
+        private bool _focusSearchNextFrame;
         private SidebarDockChoice _dockChoice = SidebarDockChoice.Unset;
 
         private readonly List<RenderTexture> _ownedTextures = new List<RenderTexture>();
@@ -57,6 +59,7 @@ namespace KitchenDesigner.Core.UI
             public RectTransform presetRow = null!;
             public List<SidebarCatalog.Item> presets = null!;
             public int selected;
+            public string title = "";
             public string groupTitle = "";
             public bool thumbnailReady;
         }
@@ -94,6 +97,19 @@ namespace KitchenDesigner.Core.UI
 
         internal void CollapseAfterSpawnForTests() => CollapseAfterSpawnIfDockModeSaysSo();
 
+        internal void SimulateSlashShortcutForTests()
+        {
+            SetExpanded(true);
+            _focusSearchNextFrame = true;
+        }
+
+        internal void ShowAllPresetRowsForTests()
+        {
+            foreach (var gu in _groups)
+                foreach (var tile in gu.tiles)
+                    if (tile.presets.Count > 1) tile.presetRow.gameObject.SetActive(true);
+        }
+
         public void Build(Transform canvas)
         {
             _dockChoice = SidebarDockPreference.Load();
@@ -116,12 +132,13 @@ namespace KitchenDesigner.Core.UI
             pinBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(46, -4);
             _pinBg = pinBtn.GetComponent<Image>();
 
-            var dockModeBtn = UIFactory.CreateButton("SbDockMode", _panel, "",
+            var dockModeBtn = UIFactory.CreateIconButton("SbDockMode", _panel, IconFactory.DockExpanded,
                 new Vector2(78, -4), new Vector2(28, 28), ToggleDockMode);
             UIFactory.AnchorTopLeft(dockModeBtn.GetComponent<RectTransform>());
             dockModeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(78, -4);
             _dockModeBg = dockModeBtn.GetComponent<Image>();
-            _dockModeLabel = dockModeBtn.GetComponentInChildren<TMP_Text>();
+            var dockModeIconRect = dockModeBtn.transform.Find("SbDockMode_Icon");
+            _dockModeIcon = dockModeIconRect != null ? dockModeIconRect.GetComponent<Image>() : null;
             TooltipUI.Attach(dockModeBtn.gameObject,
                 "Раскрытый док остаётся открытым после установки детали.\n"
                 + "Рейка иконок сворачивается после установки.\n"
@@ -247,7 +264,9 @@ namespace KitchenDesigner.Core.UI
                 rect = btn.GetComponent<RectTransform>(),
                 button = btn,
                 presets = tile.presets,
+                title = tile.title,
                 groupTitle = groupTitle,
+                selected = InitialPresetIndex(tile),
             };
             btn.onClick.AddListener(() => SpawnSelected(tileUi));
 
@@ -312,8 +331,16 @@ namespace KitchenDesigner.Core.UI
                 () => tileUi.presetRow.gameObject.SetActive(tile.presets.Count > 1),
                 () => tileUi.presetRow.gameObject.SetActive(false));
 
-            TooltipUI.Attach(btn.gameObject, TileTooltipText(tileUi));
+            TooltipUI.Attach(btn.gameObject, () => TileTooltipText(tileUi));
             return tileUi;
+        }
+
+        private static int InitialPresetIndex(SidebarTileBuilder.Tile tile)
+        {
+            string? lastUsed = SidebarPresetPreference.Load(tile.title);
+            if (lastUsed == null) return 0;
+            int idx = tile.presets.FindIndex(p => p.name == lastUsed);
+            return idx >= 0 ? idx : 0;
         }
 
         private void BuildPresetDots(TileUI tileUi)
@@ -335,6 +362,16 @@ namespace KitchenDesigner.Core.UI
                 dotBtn.targetGraphic = dotImg;
                 dotBtn.onClick.AddListener(() => SelectPreset(tileUi, presetIndex));
 
+                var dotLabel = UIFactory.CreateLabel("PresetDotLabel", dotGo.transform,
+                    (presetIndex + 1).ToString(), PresetDotFont, Vector2.zero, Vector2.zero,
+                    TextAnchor.MiddleCenter);
+                dotLabel.raycastTarget = false;
+                var dotLabelRect = dotLabel.rectTransform;
+                dotLabelRect.anchorMin = Vector2.zero;
+                dotLabelRect.anchorMax = Vector2.one;
+                dotLabelRect.offsetMin = Vector2.zero;
+                dotLabelRect.offsetMax = Vector2.zero;
+
                 TooltipUI.Attach(dotGo, tileUi.presets[presetIndex].name);
             }
         }
@@ -347,6 +384,7 @@ namespace KitchenDesigner.Core.UI
                 var img = tileUi.presetRow.GetChild(i).GetComponent<Image>();
                 if (img != null) img.color = i == presetIndex ? UIStyle.SurfaceActive : UIStyle.SurfaceInactive;
             }
+            SidebarPresetPreference.Save(tileUi.title, tileUi.presets[presetIndex].name);
             TooltipUI.Hide();
         }
 
@@ -400,6 +438,8 @@ namespace KitchenDesigner.Core.UI
         private bool MatchesSearch(TileUI tile, string filter)
         {
             if (string.IsNullOrEmpty(filter)) return true;
+            if (tile.title.IndexOf(filter, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
             foreach (var preset in tile.presets)
                 if (preset.name.IndexOf(filter, System.StringComparison.OrdinalIgnoreCase) >= 0)
                     return true;
@@ -493,16 +533,25 @@ namespace KitchenDesigner.Core.UI
 
         private void HandleKeyboardShortcuts()
         {
+            if (_focusSearchNextFrame)
+            {
+                _focusSearchNextFrame = false;
+                FocusSearchField();
+                return;
+            }
+
             if (IsTypingElsewhere()) return;
-            bool pressed = Input.GetKeyDown(KeyCode.Slash) || Input.GetKeyDown(KeyCode.Space);
-            if (!pressed) return;
+            if (!Input.GetKeyDown(KeyCode.Slash)) return;
 
             SetExpanded(true);
-            if (_searchField != null)
-            {
-                _searchField.Select();
-                _searchField.ActivateInputField();
-            }
+            _focusSearchNextFrame = true;
+        }
+
+        private void FocusSearchField()
+        {
+            if (_searchField == null) return;
+            _searchField.Select();
+            _searchField.ActivateInputField();
         }
 
         private bool IsTypingElsewhere()
@@ -607,10 +656,10 @@ namespace KitchenDesigner.Core.UI
                 _dockModeBg.color = _dockChoice != SidebarDockChoice.Unset
                     ? ActiveToggleColor : UIFactory.ButtonColor;
             }
-            if (_dockModeLabel != null)
+            if (_dockModeIcon != null)
             {
                 bool collapsesAfterSpawn = SidebarDockBudget.CollapsesAfterSpawn(_dockChoice, Screen.height);
-                _dockModeLabel.text = collapsesAfterSpawn ? "Р" : "Д";
+                _dockModeIcon.sprite = collapsesAfterSpawn ? IconFactory.DockRail : IconFactory.DockExpanded;
             }
         }
 
