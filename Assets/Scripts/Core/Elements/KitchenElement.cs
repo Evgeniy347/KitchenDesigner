@@ -159,6 +159,9 @@ namespace KitchenDesigner.Core
 
         public virtual string DisplayTypeName => "Деталь";
 
+        public virtual bool IsFlatBoardElement =>
+            GetComponent<Wall>() == null && GetComponent<BasePlate>() == null;
+
         public virtual CutoutNeighbourRole CutoutRole =>
             GetComponent<BasePlate>() == null ? CutoutNeighbourRole.Carcass : CutoutNeighbourRole.None;
 
@@ -517,12 +520,12 @@ namespace KitchenDesigner.Core
         private void Awake()
         {
             ApplyDimensions();
-            PartRegistry.Register(this);
+            if (!ElementFactorySandbox.IsActive) PartRegistry.Register(this);
         }
 
         private void OnDestroy()
         {
-            PartRegistry.Unregister(this);
+            if (!ElementFactorySandbox.IsActive) PartRegistry.Unregister(this);
             DestroyOwnedMesh();
             OnElementDestroyed();
         }

@@ -132,13 +132,41 @@ public class ThumbnailRendererTests
             + "срезала объект вместе с фоном.");
     }
 
+    // Старая версия этого теста смотрела в реестр ПОСЛЕ DestroyImmediate и потому
+    // доказывала только «мёртвой записи не осталось» — этого недостаточно: сам
+    // KitchenElement.Awake() зовёт PartRegistry.Register синхронно при AddComponent,
+    // ДО того как ThumbnailRenderer успевает что-либо решить, и тот же Register
+    // дёргает SceneChangeTracker.NoteMembershipChanged/SceneRevision.Bump/
+    // SceneVisibilityManager.Invalidate — то есть реальная сцена пересчитывает
+    // выводимые связи на каждую миниатюру, даже если запись потом благополучно
+    // уходит из реестра при уборке. Поэтому здесь два сильных утверждения:
+    // счётчик ревизии сцены не сдвинулся ВООБЩЕ, и внутри самого спауна
+    // (до какой бы то ни было уборки) реестр не вырос ни на одну запись.
     [UnityTest]
-    public IEnumerator SandboxElement_NeverRegistersInPartRegistry()
+    public IEnumerator SandboxElement_NeverRegistersInPartRegistry_AndNeverBumpsSceneRevision()
     {
         PartRegistry.Clear();
-        var rt = ThumbnailRenderer.Render(Kinds[0].spawn);
+        int countDuringSpawn = -1;
+        int revisionBefore = SceneRevision.Version;
+
+        var rt = ThumbnailRenderer.Render(() =>
+        {
+            var go = Kinds[0].spawn();
+            countDuringSpawn = PartRegistry.GetAll().Count;
+            return go;
+        });
+
+        Assert.AreEqual(0, countDuringSpawn,
+            "внутри спауна миниатюры (ДО какой-либо уборки) реестр вырос — значит "
+            + "KitchenElement.Awake зарегистрировал элемент, невзирая на песочницу, и "
+            + "реальная сцена уже пересчитала SceneChangeTracker/SceneVisibilityManager "
+            + "на объект, который через мгновение будет уничтожен");
         Assert.AreEqual(0, PartRegistry.GetAll().Count,
             "ThumbnailRenderer обязан спавнить элемент в песочнице — он не должен попасть в реестр сцены");
+        Assert.AreEqual(revisionBefore, SceneRevision.Version,
+            "рендер одной миниатюры поднял SceneRevision — тот же счётчик двигает "
+            + "undo/автосохранение/отпечаток сцены, и рендер плитки не имеет права его трогать");
+
         UnityEngine.Object.DestroyImmediate(rt);
         yield return null;
     }
