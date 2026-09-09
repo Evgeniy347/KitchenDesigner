@@ -52,13 +52,6 @@ public class SidebarCatalogTests
     }
 
     [Test]
-    public void ApplianceGroup_ShortLabelIsT()
-    {
-        var groups = SidebarCatalog.Build();
-        Assert.AreEqual("Т", groups[4].shortLabel, "свёрнутый сайдбар подписывает «Технику» буквой Т");
-    }
-
-    [Test]
     public void BoardGroup_HasShelfRadialShelfAndPanel()
     {
         var groups = SidebarCatalog.Build();
@@ -285,15 +278,6 @@ public class SidebarCatalogTests
         Assert.IsTrue(it.kind == SidebarItemKind.Sink, "элемент «Мойка» помечен как мойка");
         Assert.AreEqual(new Vector3Int(
             SinkElement.OUTER_WIDTH_MM, SinkElement.TotalHeightMM, SinkElement.OUTER_DEPTH_MM), it.dims);
-    }
-
-    [Test]
-    public void SanitaryGroup_ShortLabelIsS()
-    {
-        var groups = SidebarCatalog.Build();
-        Assert.AreEqual("С", groups[SanitaryIndex].shortLabel,
-            "свёрнутый сайдбар подписывает группу одной буквой, и «С» не занята: "
-            + "Д, Ф, Я, М, Т, П");
     }
 
     [Test]

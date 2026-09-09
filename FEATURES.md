@@ -63,7 +63,7 @@
 |---------|-------------|-------|------|
 | Context menu | ContextMenuUI | ContextMenuLayoutTests, ContextMenuRefreshBugTests | UI/ |
 | Main UI | UIManager, UIFactory | — | UI/ |
-| Sidebar | SidebarUI, SidebarCatalog (данные: одна таблица Rows() + SidebarGroupKey), SidebarSpawnRouter, SidebarPresetResolution (Pure) | SidebarCatalogTests, SidebarSpawnRouterTests, SidebarPresetResolutionTests (Pure) | UI/, Pure/UI/ |
+| Sidebar | SidebarUI, SidebarCatalog (данные: SidebarCatalogTable — TypeRow = плитка со своим заголовком, PresetRow = вариант внутри неё), SidebarTileBuilder (заголовок плитки = TypeRow.title, без эвристики по именам), SidebarSpawnRouter, SidebarPresetResolution (Pure) | SidebarCatalogTests, SidebarCatalogTableTests, SidebarTileBuilderTests, SidebarSpawnRouterTests, SidebarPresetResolutionTests (Pure) | UI/, Pure/UI/ |
 | Sidebar dock mode (раскрытый док / рейка иконок) | SidebarDockChoice (Pure), SidebarDockBudget.CollapsesAfterSpawn (Pure, «чей выбор главнее»: явный выбор > высота экрана), SidebarDockPreference (PlayerPrefs, не файл проекта) | SidebarDockBudgetTests (Pure), SidebarDockPreferenceTests, SidebarDockChoiceStaysOutOfTheProjectFileTests (Pure), SidebarPanelTests (Docked_/Rail_/DockModeButton_/UserChoice_…) | UI/, Pure/UI/ |
 | Settings | SettingsPanelUI, KitchenSettings | SettingsPanelUITests, KitchenSettingsTests, McpSettingsParityTests | UI/, Infrastructure/ |
 | Floor settings | FloorSettingsUI | FloorSettingsLayoutTests | UI/ |

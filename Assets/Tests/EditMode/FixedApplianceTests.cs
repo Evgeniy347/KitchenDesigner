@@ -222,7 +222,6 @@ public class FixedApplianceTests
     {
         var group = SidebarCatalog.Build().Find(g => g.title == "Техника");
 
-        Assert.AreEqual("Т", group.shortLabel);
         var item = group.items.Find(i => i.applianceModel == CooktopElement.MODEL_BOSCH_PUE611BB5E);
         Assert.IsTrue(item.kind == SidebarItemKind.Cooktop, "пункт «Техники» — варочная поверхность");
         Assert.AreEqual(new Vector3Int(592, 51, 522), item.dims, "в каталоге размеры производителя");
