@@ -1,0 +1,142 @@
+{
+  "root": "Canvas",
+  "children": [
+    {
+      "type": "Button",
+      "text": "1",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "2",
+      "position": [19, 0]
+    },
+    {
+      "type": "Button",
+      "text": "3",
+      "position": [38, 0]
+    },
+    {
+      "type": "Button",
+      "text": "4",
+      "position": [57, 0]
+    },
+    {
+      "type": "Button",
+      "text": "5",
+      "position": [76, 0]
+    },
+    {
+      "type": "Button",
+      "text": "6",
+      "position": [95, 0]
+    },
+    {
+      "type": "Button",
+      "text": "«",
+      "position": [4, -4]
+    },
+    {
+      "type": "Button",
+      "text": "SbPin",
+      "position": [46, -4]
+    },
+    {
+      "type": "Button",
+      "text": "SbDockMode",
+      "position": [78, -4]
+    },
+    {
+      "type": "Button",
+      "text": "▼  Детали",
+      "position": [8, -8]
+    },
+    {
+      "type": "InputField",
+      "label": "SbSearch",
+      "value": "",
+      "interactable": true,
+      "position": [8, -38]
+    },
+    {
+      "type": "Button",
+      "text": "Полка",
+      "position": [8, -46]
+    },
+    {
+      "type": "Button",
+      "text": "Радиусная полка",
+      "position": [120, -46]
+    },
+    {
+      "type": "Button",
+      "text": "ДВП/ХДФ",
+      "position": [8, -158]
+    },
+    {
+      "type": "Button",
+      "text": "►  Фасады",
+      "position": [8, -270]
+    },
+    {
+      "type": "Button",
+      "text": "►  Ящики",
+      "position": [8, -308]
+    },
+    {
+      "type": "Button",
+      "text": "►  Мебель",
+      "position": [8, -346]
+    },
+    {
+      "type": "Button",
+      "text": "►  Техника",
+      "position": [8, -384]
+    },
+    {
+      "type": "Button",
+      "text": "▼  Сантехника",
+      "position": [8, -422]
+    },
+    {
+      "type": "Button",
+      "text": "Унитаз",
+      "position": [8, -460]
+    },
+    {
+      "type": "Button",
+      "text": "Инсталляция",
+      "position": [120, -460]
+    },
+    {
+      "type": "Button",
+      "text": "Ванна",
+      "position": [8, -572]
+    },
+    {
+      "type": "Button",
+      "text": "Смеситель",
+      "position": [120, -572]
+    },
+    {
+      "type": "Button",
+      "text": "Душевая стойка",
+      "position": [8, -684]
+    },
+    {
+      "type": "Button",
+      "text": "Труба",
+      "position": [120, -684]
+    },
+    {
+      "type": "Button",
+      "text": "Фитинг",
+      "position": [8, -796]
+    },
+    {
+      "type": "Button",
+      "text": "►  Помещение",
+      "position": [8, -908]
+    }
+  ]
+}
