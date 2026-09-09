@@ -27,7 +27,7 @@
 | Align/Distribute | AlignDistributeTool | AlignDistributeToolTests | Snap/ |
 | Validation | ValidationCore (правила), ValidationSnapshot + ConstraintValidator (адаптер сцены), FacadeValidator, DrawerValidator | ValidationCoreTests, ValidationInvariantTests, ConstraintValidatorTests, FacadeValidatorTests, DrawerValidatorTests | Geometry/, Validation/ |
 | Groups/Modules | GroupManager, ModuleEditMode | GroupTests, ModuleSystemTests | Infrastructure/ |
-| Specification | SpecificationManager | SpecificationManagerTests, SpecificationExportTests | Infrastructure/ |
+| Specification | SpecificationManager, IQuantifies, SpecItem, SpecUnit, SpecTotals | SpecificationManagerTests, SpecificationExportTests, SpecificationFrozenSceneTests, SpecUnitTests, SpecItemTests, SpecTotalsTests | Infrastructure/, Pure/Infrastructure/, UI/SpecificationPanelUI.cs |
 | Строка состояния и история сообщений | StatusBarUI.ShowTransient (единственная дверь, она же пишет историю), StatusLevel, StatusBarSink (переходник автообновления), ConsoleLog (общий кольцевой буфер на 400 строк, свёртка повторов, отметка времени), ConsoleOverlay (лента по клавише «ё») | ConsoleLogTests, StatusBarSingleDoorTests, StatusBarUITests, StatusBarUIContractTests, StatusBarSinkTests, StatusBarLifetimeTests | Pure/UI/, UI/, Update/ |
 | Edge banding | EdgeBanding (HasEdgeEffective — единственный читатель), EdgeStates (три состояния торца), SetEdgeBandingCommand, SceneAnalyzer (EDG-01) | EdgeBandingTests, EdgeStatesTests, EdgeStateSingleReaderTests | Geometry/, Elements/, Commands/, Analysis/ |
 | Перенос состояний кромки при загрузке | EdgeStateMigration, SceneRestorer | EdgeStateMigrationTests | Persistence/ |

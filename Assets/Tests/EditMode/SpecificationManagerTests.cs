@@ -138,7 +138,9 @@ public class SpecificationManagerTests
         string csv = SpecificationExport.ToCsv(result);
         var rows = csv.Replace("\r\n", "\n").Trim().Split('\n');
         var header = rows[0].Split(';');
-        var total = rows[rows.Length - 1].Split(';');
+        var totalRow = System.Array.Find(rows, r => r.StartsWith("Total;"));
+        Assert.IsNotNull(totalRow, "в CSV есть строка Total");
+        var total = totalRow!.Split(';');
 
         Assert.AreEqual(header.Length, total.Length,
             "в итоговой строке столько же колонок, сколько в шапке");
@@ -198,5 +200,108 @@ public class SpecificationManagerTests
 
         Object.DestroyImmediate(plate.gameObject);
         Object.DestroyImmediate(board.gameObject);
+    }
+
+    // ── IQuantifies: обобщённая строка спецификации, тест-элемент, продакшн не трогаем ──
+
+    /// <summary>Фиктивный элемент только для теста: доказывает, что "элемент объявляет свои
+    /// строки спецификации с их единицами" работает для единицы, которой сегодня нет ни у
+    /// одного производственного элемента (карта §3.2, этап 0 — фундамент считает бетон в м³
+    /// позже; здесь только скелет). Ни один продакшн-класс не меняется.</summary>
+    private class FakeConcreteBlock : KitchenElement, IQuantifies
+    {
+        public string Section = "Фундамент";
+        public string ItemName = "Бетон B20";
+        public float VolumeM3 = 1f;
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return new SpecItem(Section, ItemName, "Бетон", SpecUnit.VolumeM3, VolumeM3);
+        }
+    }
+
+    private static FakeConcreteBlock CreateConcreteBlock(string name, float volumeM3)
+    {
+        var go = new GameObject(name);
+        var element = go.AddComponent<FakeConcreteBlock>();
+        element.PartName = name;
+        element.ItemName = name;
+        element.VolumeM3 = volumeM3;
+        return element;
+    }
+
+    [Test]
+    public void Build_LegacyBoard_DefaultsToFurnitureSectionAndAreaUnit()
+    {
+        var board = CreateElement("Board", new Vector3Int(800, 400, 18));
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { board });
+
+        Assert.AreEqual("Мебель", result.lines[0].section);
+        Assert.AreEqual(SpecUnit.AreaM2, result.lines[0].unit);
+
+        Object.DestroyImmediate(board.gameObject);
+    }
+
+    [Test]
+    public void Build_IQuantifiesElement_ReportsOwnUnit()
+    {
+        var block = CreateConcreteBlock("Бетон B20", 1.2f);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { block });
+
+        Assert.AreEqual(1, result.lines.Count);
+        Assert.AreEqual(SpecUnit.VolumeM3, result.lines[0].unit);
+        Assert.AreEqual("Фундамент", result.lines[0].section);
+        Assert.AreEqual(1.2f, result.lines[0].qtyTotal, 0.0001f);
+
+        Object.DestroyImmediate(block.gameObject);
+    }
+
+    [Test]
+    public void Build_IQuantifiesElement_DoesNotLeakIntoLegacyAreaTotal()
+    {
+        var board = CreateElement("Board", new Vector3Int(800, 400, 18));
+        var block = CreateConcreteBlock("Бетон B20", 1.2f);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { board, block });
+
+        Assert.AreEqual(0.32f, result.totalAreaM2, 0.0001f,
+            "кубометры бетона не должны попасть в старый агрегат площади м²");
+
+        Object.DestroyImmediate(board.gameObject);
+        Object.DestroyImmediate(block.gameObject);
+    }
+
+    [Test]
+    public void Build_IQuantifiesElement_TotalsByUnit_KeepsVolumeSeparateFromArea()
+    {
+        var board = CreateElement("Board", new Vector3Int(800, 400, 18));
+        var block = CreateConcreteBlock("Бетон B20", 1.2f);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { board, block });
+
+        Assert.AreEqual(0.32f, result.totalsByUnit[SpecUnit.AreaM2], 0.0001f);
+        Assert.AreEqual(1.2f, result.totalsByUnit[SpecUnit.VolumeM3], 0.0001f,
+            "итог по м³ считается отдельно от итога по м², а не складывается в общую кучу");
+
+        Object.DestroyImmediate(board.gameObject);
+        Object.DestroyImmediate(block.gameObject);
+    }
+
+    [Test]
+    public void Build_TwoIdenticalIQuantifiesItems_GroupIntoOneLineWithSummedQty()
+    {
+        var a = CreateConcreteBlock("Бетон B20", 0.5f);
+        var b = CreateConcreteBlock("Бетон B20", 0.5f);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
+
+        Assert.AreEqual(1, result.lines.Count, "одинаковая позиция бетона — одна строка");
+        Assert.AreEqual(2, result.lines[0].count);
+        Assert.AreEqual(1.0f, result.lines[0].qtyTotal, 0.0001f);
+
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
     }
 }

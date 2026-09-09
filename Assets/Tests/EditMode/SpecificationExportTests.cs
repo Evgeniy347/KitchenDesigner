@@ -16,7 +16,11 @@ public class SpecificationExportTests
             dimensionsMM = new Vector3Int(800, 400, 18),
             count = 2,
             areaPerBoardM2 = 0.65f,
-            totalAreaM2 = 1.30f
+            totalAreaM2 = 1.30f,
+            qtyPerItem = 0.65f,
+            qtyTotal = 1.30f,
+            section = "Мебель",
+            unit = SpecUnit.AreaM2,
         };
         return new SpecResult
         {
@@ -35,6 +39,30 @@ public class SpecificationExportTests
         StringAssert.StartsWith("Name;Width_mm;Height_mm;Depth_mm;Count", lines[0]);
         StringAssert.Contains("Board;800;400;18;2", csv);
         StringAssert.StartsWith("Total;;;;2;;", lines[lines.Length - 1]);
+    }
+
+    [Test]
+    public void ToCsv_HeaderHasSectionAndUnitColumns()
+    {
+        var header = SpecificationExport.ToCsv(MakeResult("Board"))
+            .Replace("\r\n", "\n").Split('\n')[0].Split(';');
+
+        Assert.Contains("Section", header, "раздел обязан стать колонкой, а не подразумеваться");
+        Assert.Contains("Unit", header, "единица обязана стать колонкой, а не подразумеваться в заголовке S, м²");
+    }
+
+    [Test]
+    public void ToCsv_DataRow_CarriesSectionAndUnitLabel()
+    {
+        var csv = SpecificationExport.ToCsv(MakeResult("Board"));
+        var header = csv.Replace("\r\n", "\n").Split('\n')[0].Split(';');
+        var dataRow = csv.Replace("\r\n", "\n").Split('\n')[1].Split(';');
+
+        int sectionCol = System.Array.IndexOf(header, "Section");
+        int unitCol = System.Array.IndexOf(header, "Unit");
+
+        Assert.AreEqual("Мебель", dataRow[sectionCol]);
+        Assert.AreEqual("м²", dataRow[unitCol], "единица строки — та, что объявил элемент, не 'S' из шапки");
     }
 
     [Test]

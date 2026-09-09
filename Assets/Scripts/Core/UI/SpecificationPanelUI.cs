@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -14,11 +15,14 @@ namespace KitchenDesigner.Core.UI
         private const float ColMaterial = 420f;
         private const float ColCount = 545f;
         private const float ColArea = 615f;
-        private const float ContentWidth = 660f;
+        private const float ColSection = 690f;
+        private const float ColUnit = 790f;
+        private const float ContentWidth = 840f;
         private const float ViewportHeight = 480f;
         private const float ViewportCenterY = -30f;
         private const int MaxNameChars = 22;
         private const int MaxMaterialChars = 14;
+        private const int MaxSectionChars = 10;
         internal const float ScrollbarWidth = 8f;
 
         private GameObject? _root;
@@ -28,7 +32,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("SpecPanel", canvas, Vector2.zero, new Vector2(680, 640));
+            var panel = UIFactory.CreatePanel("SpecPanel", canvas, Vector2.zero, new Vector2(860, 640));
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
@@ -62,7 +66,9 @@ namespace KitchenDesigner.Core.UI
                 $"<pos={ColW}>Ш<pos={ColH}>В<pos={ColD}>Г, мм" +
                 $"<pos={ColMaterial}>Материал" +
                 $"<pos={ColCount}>Кол-во" +
-                $"<pos={ColArea}>S, м²";
+                $"<pos={ColArea}>Кол-во ед." +
+                $"<pos={ColSection}>Раздел" +
+                $"<pos={ColUnit}>Ед.";
         }
 
         private static void BuildSeparator(Transform parent, float y)
@@ -172,7 +178,9 @@ namespace KitchenDesigner.Core.UI
                           $"<pos={ColD}>{line.dimensionsMM.z}" +
                           $"<pos={ColMaterial}>{Trim(line.material, MaxMaterialChars)}" +
                           $"<pos={ColCount}>{line.count}" +
-                          $"<pos={ColArea}>{line.totalAreaM2:F2}");
+                          $"<pos={ColArea}>{line.qtyTotal:F2}" +
+                          $"<pos={ColSection}>{Trim(line.section, MaxSectionChars)}" +
+                          $"<pos={ColUnit}>{line.unit.Label()}");
                 sb.AppendLine();
                 n++;
             }
@@ -181,8 +189,15 @@ namespace KitchenDesigner.Core.UI
                 sb.AppendLine();
 
             sb.Append($"<pos={ColName}>Всего:" +
-                      $"<pos={ColCount}>{result.totalCount}" +
-                      $"<pos={ColArea}>{result.totalAreaM2:F2}");
+                      $"<pos={ColCount}>{result.totalCount}");
+            bool firstUnit = true;
+            foreach (var unit in SortedUnits(result))
+            {
+                if (!firstUnit) sb.AppendLine();
+                sb.Append($"<pos={ColArea}>{result.totalsByUnit[unit]:F2}" +
+                          $"<pos={ColUnit}>{unit.Label()}");
+                firstUnit = false;
+            }
             _content!.text = sb.ToString();
 
             _content!.ForceMeshUpdate();
@@ -192,6 +207,13 @@ namespace KitchenDesigner.Core.UI
             LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRect!);
             _scrollRect!.Rebuild(CanvasUpdate.PostLayout);
             _scrollRect!.verticalNormalizedPosition = 1f;
+        }
+
+        private static System.Collections.Generic.IEnumerable<SpecUnit> SortedUnits(SpecResult result)
+        {
+            if (result.totalsByUnit == null) yield break;
+            foreach (var unit in result.totalsByUnit.Keys.OrderBy(u => u.ToString(), System.StringComparer.Ordinal))
+                yield return unit;
         }
 
         private static string Trim(string s, int max) =>

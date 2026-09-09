@@ -11,6 +11,11 @@ namespace KitchenDesigner.Core
         IEnumerable<AssembledFacadeMesh.Part> GetSpecParts();
     }
 
+    public interface IQuantifies
+    {
+        IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements);
+    }
+
     public struct SpecLine
     {
         public string name;
@@ -24,6 +29,12 @@ namespace KitchenDesigner.Core
         public string edgeL2;
         public string edgeW1;
         public string edgeW2;
+
+        public string section;
+        public SpecUnit unit;
+
+        public float qtyPerItem;
+        public float qtyTotal;
     }
 
     public readonly struct EdgeColumns
@@ -56,24 +67,58 @@ namespace KitchenDesigner.Core
         public List<SpecLine> lines;
         public int totalCount;
         public float totalAreaM2;
+
+        public Dictionary<SpecUnit, float> totalsByUnit;
     }
 
     public static class SpecificationExport
     {
+        private static readonly string[] HeaderCells =
+        {
+            "Name", "Width_mm", "Height_mm", "Depth_mm", "Count", "AreaPerBoard_m2", "TotalArea_m2",
+            "Material", "Grooves", "Кромка L1", "Кромка L2", "Кромка W1", "Кромка W2",
+            "Section", "Unit", "QtyPerItem", "QtyTotal",
+        };
+        private const int ColCount = 4, ColArea = 6, ColUnit = 14, ColQtyTotal = 16;
+
+        private static string Row(params string[] cells)
+        {
+            var padded = new string[HeaderCells.Length];
+            for (int i = 0; i < padded.Length; i++) padded[i] = i < cells.Length ? cells[i] ?? "" : "";
+            return string.Join(";", padded);
+        }
+
         public static string ToCsv(SpecResult result)
         {
             var sb = new StringBuilder();
-            sb.AppendLine("Name;Width_mm;Height_mm;Depth_mm;Count;AreaPerBoard_m2;TotalArea_m2;Material;Grooves;" +
-                "Кромка L1;Кромка L2;Кромка W1;Кромка W2");
+            sb.AppendLine(string.Join(";", HeaderCells));
             foreach (var line in result.lines)
             {
                 sb.AppendLine($"{EscapeCsv(line.name)};{line.dimensionsMM.x};{line.dimensionsMM.y};" +
                     $"{line.dimensionsMM.z};{line.count};{line.areaPerBoardM2:F4};{line.totalAreaM2:F4};" +
                     $"{EscapeCsv(line.material)};{EscapeCsv(line.grooves)};" +
-                    $"{line.edgeL1};{line.edgeL2};{line.edgeW1};{line.edgeW2}");
+                    $"{line.edgeL1};{line.edgeL2};{line.edgeW1};{line.edgeW2};" +
+                    $"{EscapeCsv(line.section)};{line.unit.Label()};{line.qtyPerItem:F4};{line.qtyTotal:F4}");
             }
             sb.AppendLine();
-            sb.AppendLine($"Total;;;;{result.totalCount};;{result.totalAreaM2:F4};;;;;;");
+
+            var totalCells = new string[HeaderCells.Length];
+            totalCells[0] = "Total";
+            totalCells[ColCount] = result.totalCount.ToString();
+            totalCells[ColArea] = result.totalAreaM2.ToString("F4");
+            sb.AppendLine(Row(totalCells));
+
+            if (result.totalsByUnit != null)
+            {
+                foreach (var unit in result.totalsByUnit.Keys.OrderBy(u => u.ToString(), System.StringComparer.Ordinal))
+                {
+                    var unitCells = new string[HeaderCells.Length];
+                    unitCells[0] = "Итого";
+                    unitCells[ColUnit] = unit.Label();
+                    unitCells[ColQtyTotal] = result.totalsByUnit[unit].ToString("F4");
+                    sb.AppendLine(Row(unitCells));
+                }
+            }
             return sb.ToString();
         }
 
@@ -105,6 +150,8 @@ namespace KitchenDesigner.Core
 
     public static class SpecificationManager
     {
+        private const string FurnitureSection = "Мебель";
+
         public static float SurfaceAreaM2(Vector3Int dimsMM)
         {
             float w = dimsMM.x * AppConstants.MM_TO_UNITS;
@@ -124,6 +171,13 @@ namespace KitchenDesigner.Core
             {
                 if (e == null) continue;
                 if (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null) continue;
+
+                if (e is IQuantifies quantifies)
+                {
+                    foreach (var item in quantifies.GetSpecItems(all))
+                        AccumulateItem(groups, order, item);
+                    continue;
+                }
 
                 if (e is ISpecificationParts composite)
                 {
@@ -154,12 +208,15 @@ namespace KitchenDesigner.Core
                 var line = groups[key];
                 result.lines.Add(line);
                 result.totalCount += line.count;
-                result.totalAreaM2 += line.totalAreaM2;
+                if (line.unit == SpecUnit.AreaM2)
+                    result.totalAreaM2 += line.totalAreaM2;
             }
 
             result.lines = result.lines
                 .OrderBy(l => l.material, System.StringComparer.Ordinal)
                 .ToList();
+
+            result.totalsByUnit = SpecTotals.ByUnit(result.lines.Select(l => (l.unit, l.qtyTotal)));
 
             return result;
         }
@@ -185,23 +242,58 @@ namespace KitchenDesigner.Core
             string key = $"{dims.x}x{dims.y}x{dims.z}|{material}|{grooves}|{edges.Key}";
             if (!groups.TryGetValue(key, out var line))
             {
+                float faceArea = BoardFaceArea.FaceAreaM2(dims);
                 line = new SpecLine
                 {
                     name = name,
                     dimensionsMM = dims,
                     count = 0,
-                    areaPerBoardM2 = BoardFaceArea.FaceAreaM2(dims),
+                    areaPerBoardM2 = faceArea,
                     material = material,
                     grooves = grooves,
                     edgeL1 = edges.l1,
                     edgeL2 = edges.l2,
                     edgeW1 = edges.w1,
                     edgeW2 = edges.w2,
+                    section = FurnitureSection,
+                    unit = SpecUnit.AreaM2,
+                    qtyPerItem = faceArea,
                 };
                 order.Add(key);
             }
             line.count++;
             line.totalAreaM2 = line.count * line.areaPerBoardM2;
+            line.qtyTotal = line.count * line.qtyPerItem;
+            groups[key] = line;
+        }
+
+        private static void AccumulateItem(Dictionary<string, SpecLine> groups, List<string> order, SpecItem item)
+        {
+            string key = item.GroupKey();
+            if (!groups.TryGetValue(key, out var line))
+            {
+                line = new SpecLine
+                {
+                    name = item.name,
+                    dimensionsMM = item.hasDims ? item.dimsMM : default,
+                    count = 0,
+                    areaPerBoardM2 = 0f,
+                    totalAreaM2 = 0f,
+                    material = item.material,
+                    grooves = "",
+                    section = item.section,
+                    unit = item.unit,
+                    qtyPerItem = item.qty,
+                };
+                order.Add(key);
+            }
+            line.count++;
+            line.qtyTotal = line.count * line.qtyPerItem;
+            if (line.unit == SpecUnit.AreaM2)
+            {
+                line.areaPerBoardM2 = line.qtyPerItem;
+                line.totalAreaM2 = line.qtyTotal;
+            }
             groups[key] = line;
         }
     }
