@@ -23,132 +23,187 @@ namespace KitchenDesigner.Core.UI
             CommitImmediate(CreateBoardGo(dims, $"Board {dims.x}x{dims.y}x{dims.z}"));
         }
 
-        public void SpawnBoard(Vector3Int dims, string name) =>
-            BeginPlacement(CreateBoardGo(dims, name));
-
-        public void SpawnFacade(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos =>
-                ElementFactory.CreateFacade(dims, name, pos));
-
-        public void SpawnAssembledFacade(Vector3Int dims, string name, AssembledFill fill) =>
-            PlaceCenteredOnGround(dims.y, pos =>
-                ElementFactory.CreateAssembledFacade(dims, name, pos, fill));
-
-        public void SpawnWall(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateWall(dims, name, pos));
-
-        public void SpawnDrawer(string drawerType, int length, string colorName, int width,
-            string name, DrawerSystem system)
+        /// <summary>Единственный вход от кнопки сайдбара (и от её миниатюры —
+        /// см. SidebarThumbnailSpawns, тот же switch на тех же полях, но с иной
+        /// постановкой) до фабрики. Новый ПРЕСЕТ существующего вида — это
+        /// изменение данных в SidebarCatalog, а не в этом методе: ветка ниже
+        /// читает всё нужное из item.dims/item.name/item.preset и не имеет
+        /// собственных параметров, которые эти данные могли бы не пропустить.
+        /// Новый ВИД (SidebarItemKind) — это честный код, и ему единственному
+        /// разрешено дописать сюда ветку.</summary>
+        public void Spawn(SidebarCatalog.Item item)
         {
-            var type = SidebarPresetResolution.DrawerTypeOf(drawerType);
-            var color = SidebarPresetResolution.DrawerColorOf(colorName);
-            PlaceCenteredOnGround(DrawerConstants.GetMinOpeningHeight(type), pos =>
-                ElementFactory.CreateDrawer(type, length, color, width,
-                    DrawerLinks.UniqueName(name), pos, system));
+            switch (item.kind)
+            {
+                case SidebarItemKind.Floor:
+                    PlaceAtHeightUnaffectedByGrid(-AppConstants.HalfHeightUnits(item.dims.y),
+                        pos => ElementFactory.CreateFloor(item.dims, item.name, pos));
+                    break;
+                case SidebarItemKind.LightSource:
+                    PlaceAtHeightUnaffectedByGrid(PendantHeightMeters,
+                        pos => ElementFactory.CreateLightSource(item.name, pos));
+                    break;
+                case SidebarItemKind.Sink:
+                    PlaceAtHeightUnaffectedByGrid(WorktopHeightMeters,
+                        pos => ElementFactory.CreateSink(item.name, pos));
+                    break;
+                case SidebarItemKind.Cooktop:
+                    PlaceAtHeightUnaffectedByGrid(WorktopHeightMeters,
+                        pos => ElementFactory.CreateCooktop(item.name, pos, item.preset.applianceModel));
+                    break;
+                case SidebarItemKind.Oven:
+                    PlaceAtHeightUnaffectedByGrid(
+                        AppConstants.HalfHeightUnits(OvenElement.ModelDimensionsMM.y),
+                        pos => ElementFactory.CreateOven(item.name, pos));
+                    break;
+                case SidebarItemKind.Dishwasher:
+                    PlaceAtHeightUnaffectedByGrid(
+                        AppConstants.HalfHeightUnits(DishwasherElement.ModelDimensionsMM.y),
+                        pos => ElementFactory.CreateDishwasher(item.name, pos));
+                    break;
+                case SidebarItemKind.Drawer:
+                {
+                    var type = SidebarPresetResolution.DrawerTypeOf(item.preset.drawerType);
+                    var color = SidebarPresetResolution.DrawerColorOf(item.preset.drawerColor);
+                    var system = SidebarPresetResolution.DrawerSystemOf(item.preset.drawerSystem);
+                    PlaceCenteredOnGround(DrawerConstants.GetMinOpeningHeight(type), pos =>
+                        ElementFactory.CreateDrawer(type, item.preset.drawerLength, color,
+                            item.preset.drawerWidth, DrawerLinks.UniqueName(item.name), pos, system));
+                    break;
+                }
+                case SidebarItemKind.Window:
+                    PlaceCenteredOnGround(item.dims.y, pos =>
+                        ElementFactory.CreateWindow(item.dims, item.name, pos));
+                    break;
+                case SidebarItemKind.Door:
+                    PlaceCenteredOnGround(item.dims.y, pos =>
+                        ElementFactory.CreateDoor(item.dims, item.name, pos));
+                    break;
+                case SidebarItemKind.RadiusTable:
+                    PlaceCenteredOnGround(item.dims.y, pos =>
+                        ElementFactory.CreateRadiusTable(item.dims, item.name, pos));
+                    break;
+                case SidebarItemKind.Stool:
+                    PlaceCenteredOnGround(item.dims.y, pos =>
+                        ElementFactory.CreateStool(item.dims, 0, item.name, pos));
+                    break;
+                case SidebarItemKind.Chair:
+                    PlaceCenteredOnGround(item.dims.y, pos => ElementFactory.CreateChair(item.dims, 0,
+                        AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT, item.name, pos));
+                    break;
+                case SidebarItemKind.Sofa:
+                    PlaceCenteredOnGround(item.dims.y, pos => ElementFactory.CreateSofa(item.dims,
+                        SofaElement.DefaultCornerRadiusMM, SofaElement.DefaultSeatHeightMM,
+                        item.name, pos));
+                    break;
+                case SidebarItemKind.Bed:
+                    PlaceCenteredOnGround(item.dims.y, pos =>
+                        ElementFactory.CreateBed(item.dims, true, true, item.name, pos));
+                    break;
+                case SidebarItemKind.Pouffe:
+                    PlaceCenteredOnGround(item.dims.y, pos => ElementFactory.CreatePouffe(item.dims,
+                        PouffeElement.DefaultCornerRadiusMM, PouffeElement.DefaultSeatThicknessMM,
+                        item.name, pos));
+                    break;
+                case SidebarItemKind.Toilet:
+                    PlaceCenteredOnGround(ToiletElement.ModelDimensionsMM.y,
+                        pos => ElementFactory.CreateToilet(ToiletElement.DefaultSeatHeightMM,
+                            item.name, pos));
+                    break;
+                case SidebarItemKind.WallHungToilet:
+                    PlaceCenteredOnGround(WallHungToiletElement.ModelDimensionsMM.y,
+                        pos => ElementFactory.CreateWallHungToilet(
+                            WallHungToiletElement.DefaultSeatHeightMM,
+                            WallHungToiletElement.DefaultFlushPlateHeightMM, item.name, pos));
+                    break;
+                case SidebarItemKind.Bathtub:
+                    PlaceCenteredOnGround(item.dims.y, pos => ElementFactory.CreateBathtub(item.dims,
+                        BathtubElement.DefaultRimWidthMM, BathtubElement.DefaultBowlDepthMM,
+                        BathtubElement.DefaultBowlRadiusMM, BathtubElement.DefaultBowlFilletMM,
+                        item.name, pos));
+                    break;
+                case SidebarItemKind.BathMixer:
+                    PlaceAtHeightUnaffectedByGrid(
+                        BathMixerLayout.CentreAboveFloorMM(BathMixerSpec.Default)
+                            * AppConstants.MM_TO_UNITS,
+                        pos => ElementFactory.CreateBathMixer(BathMixerSpec.Default, item.name, pos));
+                    break;
+                case SidebarItemKind.ShowerColumn:
+                    PlaceAtHeightUnaffectedByGrid(
+                        ShowerColumnLayout.CentreAboveFloorMM(ShowerColumnSpec.Default)
+                            * AppConstants.MM_TO_UNITS,
+                        pos => ElementFactory.CreateShowerColumn(ShowerColumnSpec.Default,
+                            item.name, pos));
+                    break;
+                case SidebarItemKind.Socket:
+                    PlaceAtHeightUnaffectedByGrid(
+                        WallDeviceLayout.SocketCentreAboveFloorMM * AppConstants.MM_TO_UNITS,
+                        pos => ElementFactory.CreateSocket(WallDeviceSpec.Default, item.name, pos));
+                    break;
+                case SidebarItemKind.LightSwitch:
+                    PlaceAtHeightUnaffectedByGrid(
+                        WallDeviceLayout.SwitchCentreAboveFloorMM * AppConstants.MM_TO_UNITS,
+                        pos => ElementFactory.CreateLightSwitch(WallDeviceSpec.Default, true, null,
+                            item.name, pos));
+                    break;
+                case SidebarItemKind.Table:
+                    PlaceCenteredOnGround(item.dims.y, pos =>
+                        ElementFactory.CreateTable(item.dims, item.name, pos));
+                    break;
+                case SidebarItemKind.Pillar:
+                {
+                    int midHeightMM = item.preset.pillarMidHeightMM;
+                    int totalH = PillarElement.TopHeightMM + midHeightMM + PillarElement.BottomHeightMM;
+                    PlaceCenteredOnGround(totalH, pos =>
+                        ElementFactory.CreatePillar(midHeightMM, item.name, pos));
+                    break;
+                }
+                case SidebarItemKind.ScrewLeg:
+                {
+                    int totalH = ScrewLegSpec.BodyHeightMM(ScrewLegSpec.DEFAULT_THREAD_LENGTH_MM,
+                        ScrewLegSpec.DEFAULT_BASE_HEIGHT_MM);
+                    PlaceCenteredOnGround(totalH, pos => ElementFactory.CreateScrewLeg(item.name, pos));
+                    break;
+                }
+                case SidebarItemKind.Pipe:
+                    PlaceCenteredOnGround(PipeElementSpec.DEFAULT_LENGTH_MM,
+                        pos => ElementFactory.CreatePipe(PipeSpec.DEFAULT_SIZE,
+                            PipeElementSpec.DEFAULT_LENGTH_MM, item.name, pos));
+                    break;
+                case SidebarItemKind.PipeFitting:
+                    PlaceCenteredOnGround(
+                        PipeFittingSpec.RoundedMm(
+                            PipeFittingSpec.HeightMm(item.preset.fittingKind, PipeSpec.DEFAULT_SIZE)),
+                        pos => CreateFitting(item.preset.fittingKind, item.name, pos));
+                    break;
+                case SidebarItemKind.Panel:
+                    PlaceCenteredOnGround(item.dims.y, pos =>
+                        ElementFactory.Instance.CreatePanel(item.dims, item.name, pos));
+                    break;
+                case SidebarItemKind.RadialShelf:
+                    PlaceCenteredOnGround(item.dims.y, pos =>
+                        ElementFactory.CreateRadialShelf(item.dims.x, item.dims.z, item.dims.y,
+                            AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, item.name, pos));
+                    break;
+                case SidebarItemKind.Facade:
+                    if (item.preset.facadeAssembled)
+                        PlaceCenteredOnGround(item.dims.y, pos =>
+                            ElementFactory.CreateAssembledFacade(item.dims, item.name, pos,
+                                AssembledFill.Blind));
+                    else
+                        PlaceCenteredOnGround(item.dims.y, pos =>
+                            ElementFactory.CreateFacade(item.dims, item.name, pos));
+                    break;
+                case SidebarItemKind.Wall:
+                    PlaceCenteredOnGround(item.dims.y, pos =>
+                        ElementFactory.CreateWall(item.dims, item.name, pos));
+                    break;
+                case SidebarItemKind.Board:
+                default:
+                    BeginPlacement(CreateBoardGo(item.dims, item.name));
+                    break;
+            }
         }
-
-        public void SpawnTable(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateTable(dims, name, pos));
-
-        public void SpawnRadiusTable(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateRadiusTable(dims, name, pos));
-
-        public void SpawnStool(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateStool(dims, 0, name, pos));
-
-        public void SpawnChair(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateChair(dims, 0,
-                AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT, name, pos));
-
-        public void SpawnSofa(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateSofa(dims,
-                SofaElement.DefaultCornerRadiusMM, SofaElement.DefaultSeatHeightMM,
-                name, pos));
-
-        public void SpawnBed(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateBed(dims, true, true, name, pos));
-
-        public void SpawnPouffe(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreatePouffe(dims,
-                PouffeElement.DefaultCornerRadiusMM, PouffeElement.DefaultSeatThicknessMM,
-                name, pos));
-
-        public void SpawnToilet(string name) =>
-            PlaceCenteredOnGround(ToiletElement.ModelDimensionsMM.y,
-                pos => ElementFactory.CreateToilet(ToiletElement.DefaultSeatHeightMM, name, pos));
-
-        public void SpawnWallHungToilet(string name) =>
-            PlaceCenteredOnGround(WallHungToiletElement.ModelDimensionsMM.y,
-                pos => ElementFactory.CreateWallHungToilet(
-                    WallHungToiletElement.DefaultSeatHeightMM,
-                    WallHungToiletElement.DefaultFlushPlateHeightMM, name, pos));
-
-        public void SpawnBathtub(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateBathtub(dims,
-                BathtubElement.DefaultRimWidthMM, BathtubElement.DefaultBowlDepthMM,
-                BathtubElement.DefaultBowlRadiusMM, BathtubElement.DefaultBowlFilletMM,
-                name, pos));
-
-        public void SpawnSocket(string name) =>
-            PlaceAtHeightUnaffectedByGrid(
-                WallDeviceLayout.SocketCentreAboveFloorMM * AppConstants.MM_TO_UNITS,
-                pos => ElementFactory.CreateSocket(WallDeviceSpec.Default, name, pos));
-
-        public void SpawnLightSwitch(string name) =>
-            PlaceAtHeightUnaffectedByGrid(
-                WallDeviceLayout.SwitchCentreAboveFloorMM * AppConstants.MM_TO_UNITS,
-                pos => ElementFactory.CreateLightSwitch(WallDeviceSpec.Default, true, null,
-                    name, pos));
-
-        public void SpawnBathMixer(string name) =>
-            PlaceAtHeightUnaffectedByGrid(
-                BathMixerLayout.CentreAboveFloorMM(BathMixerSpec.Default)
-                    * AppConstants.MM_TO_UNITS,
-                pos => ElementFactory.CreateBathMixer(BathMixerSpec.Default, name, pos));
-
-        public void SpawnShowerColumn(string name) =>
-            PlaceAtHeightUnaffectedByGrid(
-                ShowerColumnLayout.CentreAboveFloorMM(ShowerColumnSpec.Default)
-                    * AppConstants.MM_TO_UNITS,
-                pos => ElementFactory.CreateShowerColumn(ShowerColumnSpec.Default, name, pos));
-
-        public void SpawnPanel(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos =>
-                ElementFactory.Instance.CreatePanel(dims, name, pos));
-
-        public void SpawnRadialShelf(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos =>
-                ElementFactory.CreateRadialShelf(dims.x, dims.z, dims.y,
-                    AppConstants.RADIAL_CORNER_RADIUS_DEFAULT, name, pos));
-
-        public void SpawnWindow(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateWindow(dims, name, pos));
-
-        public void SpawnDoor(Vector3Int dims, string name) =>
-            PlaceCenteredOnGround(dims.y, pos => ElementFactory.CreateDoor(dims, name, pos));
-
-        public void SpawnScrewLeg(string name)
-        {
-            int totalH = ScrewLegSpec.BodyHeightMM(ScrewLegSpec.DEFAULT_THREAD_LENGTH_MM,
-                ScrewLegSpec.DEFAULT_BASE_HEIGHT_MM);
-            PlaceCenteredOnGround(totalH, pos => ElementFactory.CreateScrewLeg(name, pos));
-        }
-
-        public void SpawnPillar(int midHeightMM, string name)
-        {
-            int totalH = PillarElement.TopHeightMM + midHeightMM + PillarElement.BottomHeightMM;
-            PlaceCenteredOnGround(totalH, pos => ElementFactory.CreatePillar(midHeightMM, name, pos));
-        }
-
-        public void SpawnPipe(string name) =>
-            PlaceCenteredOnGround(PipeElementSpec.DEFAULT_LENGTH_MM,
-                pos => ElementFactory.CreatePipe(PipeSpec.DEFAULT_SIZE,
-                    PipeElementSpec.DEFAULT_LENGTH_MM, name, pos));
-
-        public void SpawnPipeFitting(PipeNodeKind kind, string name) =>
-            PlaceCenteredOnGround(
-                PipeFittingSpec.RoundedMm(PipeFittingSpec.HeightMm(kind, PipeSpec.DEFAULT_SIZE)),
-                pos => CreateFitting(kind, name, pos));
 
         private static GameObject CreateFitting(PipeNodeKind kind, string name, Vector3 pos) =>
             kind switch
@@ -161,32 +216,6 @@ namespace KitchenDesigner.Core.UI
                 PipeNodeKind.Return => ElementFactory.CreatePipeReturn(name, pos),
                 _ => ElementFactory.CreatePipeCoupling(name, pos),
             };
-
-        public void SpawnFloor(Vector3Int dims, string name) =>
-            PlaceAtHeightUnaffectedByGrid(-AppConstants.HalfHeightUnits(dims.y),
-                pos => ElementFactory.CreateFloor(dims, name, pos));
-
-        public void SpawnSink(string name) =>
-            PlaceAtHeightUnaffectedByGrid(WorktopHeightMeters,
-                pos => ElementFactory.CreateSink(name, pos));
-
-        public void SpawnCooktop(string name, string model) =>
-            PlaceAtHeightUnaffectedByGrid(WorktopHeightMeters,
-                pos => ElementFactory.CreateCooktop(name, pos, model));
-
-        public void SpawnOven(string name) =>
-            PlaceAtHeightUnaffectedByGrid(
-                AppConstants.HalfHeightUnits(OvenElement.ModelDimensionsMM.y),
-                pos => ElementFactory.CreateOven(name, pos));
-
-        public void SpawnDishwasher(string name) =>
-            PlaceAtHeightUnaffectedByGrid(
-                AppConstants.HalfHeightUnits(DishwasherElement.ModelDimensionsMM.y),
-                pos => ElementFactory.CreateDishwasher(name, pos));
-
-        public void SpawnLightSource(string name) =>
-            PlaceAtHeightUnaffectedByGrid(PendantHeightMeters,
-                pos => ElementFactory.CreateLightSource(name, pos));
 
         public const float WorktopHeightMeters = 0.9f;
         public const float PendantHeightMeters = 2.2f;

@@ -14,11 +14,15 @@ namespace KitchenDesigner.Core.UI
         public const string DefaultDrawerSystem = SidebarPresetResolution.DefaultDrawerSystem;
         public const string MoventoDrawerSystem = SidebarPresetResolution.MoventoDrawerSystem;
 
-        public struct Item
+        /// <summary>Всё, чем один пресет отличается от другого пресета ТОГО ЖЕ
+        /// типа. Раньше эти поля лежали прямо на <see cref="Item"/> вперемешку с
+        /// теми, что различают ТИПЫ (name/dims/kind) — и каждое новое поле пресета
+        /// было полем на Item, параметром в IElementSpawns, параметром в обеих его
+        /// реализациях и параметром в SidebarSpawnRouter. Здесь им одна дверь: новый
+        /// пресет существующего типа — это новое значение полей ЗДЕСЬ, а не новая
+        /// сигнатура где-то ниже по цепочке.</summary>
+        public struct Preset
         {
-            public string name;
-            public Vector3Int dims;
-            public SidebarItemKind kind;
             public string applianceModel;
             public int pillarMidHeightMM;
             public string drawerType;
@@ -28,26 +32,40 @@ namespace KitchenDesigner.Core.UI
             public string drawerSystem;
             public PipeNodeKind fittingKind;
             public bool facadeAssembled;
+
+            public static Preset Default() => new Preset
+            {
+                applianceModel = "",
+                pillarMidHeightMM = PillarElement.MidHeightMM_Default,
+                drawerType = DefaultDrawerType,
+                drawerLength = DefaultDrawerLengthMM,
+                drawerColor = DefaultDrawerColor,
+                drawerWidth = DefaultDrawerWidthMM,
+                drawerSystem = DefaultDrawerSystem,
+                fittingKind = PipeNodeKind.Coupling,
+                facadeAssembled = false,
+            };
+        }
+
+        public struct Item
+        {
+            public string name;
+            public Vector3Int dims;
+            public SidebarItemKind kind;
+            public Preset preset;
             internal string tileTitle;
 
             public Item(string name, Vector3Int dims,
                 SidebarItemKind kind = SidebarItemKind.Board)
             {
                 this.name = name; this.dims = dims; this.kind = kind;
-                applianceModel = "";
-                pillarMidHeightMM = PillarElement.MidHeightMM_Default;
-                drawerType = DefaultDrawerType;
-                drawerLength = DefaultDrawerLengthMM;
-                drawerColor = DefaultDrawerColor;
-                drawerWidth = DefaultDrawerWidthMM;
-                drawerSystem = DefaultDrawerSystem;
-                fittingKind = PipeNodeKind.Coupling;
-                facadeAssembled = false;
+                preset = Preset.Default();
                 tileTitle = name;
             }
 
-            public string DisplayName => !string.IsNullOrEmpty(applianceModel) && name.EndsWith(applianceModel)
-                ? name.Substring(0, name.Length - applianceModel.Length).TrimEnd()
+            public string DisplayName =>
+                !string.IsNullOrEmpty(preset.applianceModel) && name.EndsWith(preset.applianceModel)
+                ? name.Substring(0, name.Length - preset.applianceModel.Length).TrimEnd()
                 : name;
 
             public EditModeManager.Category Category => kind switch
@@ -224,18 +242,18 @@ namespace KitchenDesigner.Core.UI
             int height = DrawerConstants.GetMinOpeningHeight(SidebarPresetResolution.DrawerTypeOf(drawerType));
             var item = new Item(name, new Vector3Int(DefaultDrawerWidthMM, height, length),
                 SidebarItemKind.Drawer);
-            item.drawerType = drawerType;
-            item.drawerLength = length;
-            item.drawerColor = DefaultDrawerColor;
-            item.drawerWidth = DefaultDrawerWidthMM;
-            item.drawerSystem = system;
+            item.preset.drawerType = drawerType;
+            item.preset.drawerLength = length;
+            item.preset.drawerColor = DefaultDrawerColor;
+            item.preset.drawerWidth = DefaultDrawerWidthMM;
+            item.preset.drawerSystem = system;
             return item;
         }
 
         private static Item AssembledFacadeItem(string name)
         {
             var item = new Item(name, new Vector3Int(600, 716, 18), SidebarItemKind.Facade);
-            item.facadeAssembled = true;
+            item.preset.facadeAssembled = true;
             return item;
         }
 
@@ -247,7 +265,7 @@ namespace KitchenDesigner.Core.UI
                 PipeFittingSpec.RoundedMm(PipeFittingSpec.HeightMm(kind, sizeId)),
                 PipeFittingSpec.RoundedMm(PipeFittingSpec.DepthMm(kind, sizeId))),
                 SidebarItemKind.PipeFitting);
-            item.fittingKind = kind;
+            item.preset.fittingKind = kind;
             return item;
         }
 
@@ -283,14 +301,14 @@ namespace KitchenDesigner.Core.UI
         {
             var item = new Item(name, DishwasherElement.ModelDimensionsMM,
                 SidebarItemKind.Dishwasher);
-            item.applianceModel = DishwasherElement.MODEL;
+            item.preset.applianceModel = DishwasherElement.MODEL;
             return item;
         }
 
         private static Item OvenItem(string name)
         {
             var item = new Item(name, OvenElement.ModelDimensionsMM, SidebarItemKind.Oven);
-            item.applianceModel = OvenElement.MODEL;
+            item.preset.applianceModel = OvenElement.MODEL;
             return item;
         }
 
@@ -298,7 +316,7 @@ namespace KitchenDesigner.Core.UI
         {
             var item = new Item(name, CooktopElement.ModelDimensionsMM(model),
                 SidebarItemKind.Cooktop);
-            item.applianceModel = model;
+            item.preset.applianceModel = model;
             return item;
         }
 
@@ -321,7 +339,7 @@ namespace KitchenDesigner.Core.UI
             int totalH = PillarElement.TopHeightMM + midHeightMM + PillarElement.BottomHeightMM;
             var item = new Item(name, new Vector3Int(PillarElement.DiameterMM_Default, totalH,
                 PillarElement.DiameterMM_Default), SidebarItemKind.Pillar);
-            item.pillarMidHeightMM = midHeightMM;
+            item.preset.pillarMidHeightMM = midHeightMM;
             return item;
         }
 
