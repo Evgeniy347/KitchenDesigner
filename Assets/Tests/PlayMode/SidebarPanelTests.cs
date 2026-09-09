@@ -504,26 +504,39 @@ public class SidebarPanelTests
     [UnityTest]
     public IEnumerator TileTooltip_ReflectsTheCurrentlySelectedPreset_NotTheOneAtBuildTime()
     {
-        // Группы стартуют свёрнутыми (ResetLastUsedGroupForTests в [SetUp]), и плитка
-        // свёрнутой группы неактивна в иерархии: наведение на неё — сценарий, которого
-        // не бывает у реального пользователя (нельзя навести курсор на невидимую плитку),
-        // и без раскрытия группы TooltipUI.EnsureOnCanvasOf не находит Canvas через
-        // GetComponentInParent (он не видит неактивных предков), узел «Tooltip» не
-        // создаётся вовсе, а следующий Find(...) молча возвращает null и валит тест
-        // NullReferenceException'ом вместо содержательного Assert.
+        // Раскрытая ГРУППА не значит раскрытый ДОК: SidebarDockBudget.CollapsesAfterSpawn
+        // при малом Screen.height (batchMode) уже решил при Build(), что панель стартует
+        // свёрнутой в мини-режим, и ApplyState() гасит SbFull целиком — раскрытые
+        // group.open тогда сидят под неактивным предком, GetComponentInParent<Canvas>
+        // его не видит, и TooltipUI.EnsureOnCanvasOf молча ничего не находит.
+        // ExpandAllGroupsForTests раскрывает и сам док (SetExpanded(true)), не только
+        // группы.
         _sidebar.ExpandAllGroupsForTests();
 
         var tile = Tile("Сантехника", "Фитинг");
-        var presets = Child(tile, "Presets");
+        TestContext.WriteLine($"плитка активна в иерархии: {tile.gameObject.activeInHierarchy}");
 
+        var presets = Child(tile, "Presets");
         Child(presets, "PresetDot_2").GetComponent<Button>().onClick.Invoke();
 
         Fire(tile.gameObject, EventTriggerType.PointerEnter);
         yield return new WaitForSecondsRealtime(1f);
 
-        var tooltipText = _canvasGo.transform.Find("Tooltip")
-            .GetComponentInChildren<TMP_Text>().text;
-        Assert.IsTrue(tooltipText.Contains("Тройник"),
+        var canvas = tile.GetComponentInParent<Canvas>();
+        TestContext.WriteLine($"канва найдена от плитки через GetComponentInParent: {canvas != null}");
+
+        var tooltipNode = _canvasGo.transform.Find("Tooltip");
+        TestContext.WriteLine($"узел «Tooltip» создан на канве: {tooltipNode != null}");
+        Assert.IsNotNull(tooltipNode,
+            "подсказка не навесилась вовсе: TooltipUI.EnsureOnCanvasOf не нашёл Canvas от "
+            + "плитки (наведённая плитка должна быть активной в раскрытом доке)");
+
+        var label = tooltipNode!.GetComponentInChildren<TMP_Text>();
+        TestContext.WriteLine($"текстовый компонент на подсказке: {label != null}");
+        Assert.IsNotNull(label, "у узла «Tooltip» нет текстового компонента");
+
+        TestContext.WriteLine($"текст подсказки: '{label!.text}'");
+        Assert.IsTrue(label.text.Contains("Тройник"),
             "подсказка плитки обязана показывать НЫНЕ выбранный пресет: она привязана один "
             + "раз при сборке, и если текст не пересчитывается на каждом наведении, здесь "
             + "останется имя пресета номер ноль вместо выбранного");

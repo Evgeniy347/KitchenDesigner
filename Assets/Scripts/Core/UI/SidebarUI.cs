@@ -112,6 +112,7 @@ namespace KitchenDesigner.Core.UI
 
         internal void ExpandAllGroupsForTests()
         {
+            SetExpanded(true);
             foreach (var gu in _groups)
             {
                 gu.open = true;
