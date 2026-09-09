@@ -138,68 +138,6 @@ namespace KitchenDesigner.Core.UI
 
         public void SpawnPreset(int index) => Spawner.SpawnPreset(index);
 
-        public void SpawnBoard(Vector3Int dims) =>
-            SpawnBoard(dims, $"Board {dims.x}x{dims.y}x{dims.z}");
-
-        public void SpawnBoard(Vector3Int dims, string name) => Spawner.SpawnBoard(dims, name);
-
-        public void SpawnFacade(Vector3Int dims, string name) =>
-            Spawner.SpawnFacade(dims, name);
-
-        public void SpawnAssembledFacade(Vector3Int dims, string name,
-            AssembledFill fill = AssembledFill.Blind) =>
-            Spawner.SpawnAssembledFacade(dims, name, fill);
-
-        public void SpawnWall(Vector3Int dims, string name) => Spawner.SpawnWall(dims, name);
-
-        public void SpawnDrawer(string drawerType, int length, string colorName, int width, string name,
-            DrawerSystem system = DrawerSystem.Gtv) =>
-            Spawner.SpawnDrawer(drawerType, length, colorName, width, name, system);
-
-        public void SpawnTable(Vector3Int dims, string name) => Spawner.SpawnTable(dims, name);
-
-        public void SpawnRadiusTable(Vector3Int dims, string name) => Spawner.SpawnRadiusTable(dims, name);
-
-        public void SpawnStool(Vector3Int dims, string name) => Spawner.SpawnStool(dims, name);
-        public void SpawnChair(Vector3Int dims, string name) => Spawner.SpawnChair(dims, name);
-        public void SpawnSofa(Vector3Int dims, string name) => Spawner.SpawnSofa(dims, name);
-
-        public void SpawnBed(Vector3Int dims, string name) => Spawner.SpawnBed(dims, name);
-
-        public void SpawnPouffe(Vector3Int dims, string name) => Spawner.SpawnPouffe(dims, name);
-
-        public void SpawnToilet(string name) => Spawner.SpawnToilet(name);
-
-        public void SpawnWallHungToilet(string name) => Spawner.SpawnWallHungToilet(name);
-
-        public void SpawnBathtub(Vector3Int dims, string name) => Spawner.SpawnBathtub(dims, name);
-
-        public void SpawnBathMixer(string name) => Spawner.SpawnBathMixer(name);
-
-        public void SpawnShowerColumn(string name) => Spawner.SpawnShowerColumn(name);
-
-        public void SpawnSocket(string name) => Spawner.SpawnSocket(name);
-
-        public void SpawnLightSwitch(string name) => Spawner.SpawnLightSwitch(name);
-
-        public void SpawnPanel(Vector3Int dims, string name) =>
-            Spawner.SpawnPanel(dims, name);
-
-        public void SpawnRadialShelf(Vector3Int dims, string name) => Spawner.SpawnRadialShelf(dims, name);
-
-        public void SpawnWindow(Vector3Int dims, string name) => Spawner.SpawnWindow(dims, name);
-
-        public void SpawnDoor(Vector3Int dims, string name) => Spawner.SpawnDoor(dims, name);
-
-        public void SpawnPillar(int midHeightMM, string name) => Spawner.SpawnPillar(midHeightMM, name);
-
-        public void SpawnPipe(string name) => Spawner.SpawnPipe(name);
-
-        public void SpawnPipeFitting(Plumbing.PipeNodeKind kind, string name) =>
-            Spawner.SpawnPipeFitting(kind, name);
-
-        public void SpawnScrewLeg(string name) => Spawner.SpawnScrewLeg(name);
-
         private Vector3 GroundPointInFrontOfCamera()
         {
             var cam = Camera.main;
@@ -217,18 +155,6 @@ namespace KitchenDesigner.Core.UI
             if (_contextMenu != null)
                 _contextMenu.Open(element);
         }
-
-        public void SpawnFloor(Vector3Int dims, string name) => Spawner.SpawnFloor(dims, name);
-
-        public void SpawnSink(string name) => Spawner.SpawnSink(name);
-
-        public void SpawnCooktop(string name, string model = "") => Spawner.SpawnCooktop(name, model);
-
-        public void SpawnOven(string name) => Spawner.SpawnOven(name);
-
-        public void SpawnDishwasher(string name) => Spawner.SpawnDishwasher(name);
-
-        public void SpawnLightSource(string name) => Spawner.SpawnLightSource(name);
 
         public void OpenGroupMenu(KitchenElement element)
         {
