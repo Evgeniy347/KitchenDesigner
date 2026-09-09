@@ -110,6 +110,16 @@ namespace KitchenDesigner.Core.UI
                     if (tile.presets.Count > 1) tile.presetRow.gameObject.SetActive(true);
         }
 
+        internal void ExpandAllGroupsForTests()
+        {
+            foreach (var gu in _groups)
+            {
+                gu.open = true;
+                SetGroupHeaderText(gu, gu.title);
+            }
+            RelayoutFull();
+        }
+
         public void Build(Transform canvas)
         {
             _dockChoice = SidebarDockPreference.Load();
@@ -309,6 +319,7 @@ namespace KitchenDesigner.Core.UI
             cRt.offsetMin = Vector2.zero;
             cRt.offsetMax = new Vector2(0f, -SidebarLayout.TileImageH);
             tileUi.caption = caption;
+            caption.text = tile.presets.Count > 1 ? tile.title : tile.presets[0].DisplayName;
 
             var presetRowGo = new GameObject("Presets", typeof(RectTransform));
             presetRowGo.transform.SetParent(btn.transform, false);
@@ -386,6 +397,10 @@ namespace KitchenDesigner.Core.UI
             }
             SidebarPresetPreference.Save(tileUi.title, tileUi.presets[presetIndex].name);
             TooltipUI.Hide();
+
+            tileUi.thumbnailReady = false;
+            tileUi.stub.gameObject.SetActive(true);
+            RequestThumbnail(tileUi);
         }
 
         private static void AddHoverEntries(GameObject go, System.Action onEnter, System.Action onExit)
@@ -520,7 +535,7 @@ namespace KitchenDesigner.Core.UI
                 budget--;
                 if (tile.thumbnailReady) continue;
 
-                var spawn = SidebarThumbnailSpawns.For(tile.presets[0]);
+                var spawn = SidebarThumbnailSpawns.For(tile.presets[tile.selected]);
                 if (spawn == null) continue;
 
                 var texture = ThumbnailRenderer.Render(spawn, ThumbnailRenderer.DefaultSize);

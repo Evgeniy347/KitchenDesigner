@@ -198,6 +198,42 @@ public class SidebarPanelTests
     }
 
     [Test]
+    public void Caption_ShowsTileTitleForMultiPreset_AndItemDisplayNameForSinglePreset()
+    {
+        var fittingCaption = Tile("Сантехника", "Фитинг").GetComponentInChildren<TMP_Text>();
+        Assert.AreEqual("Фитинг", fittingCaption.text,
+            "многопресетная плитка подписана заголовком плитки, а не именем пресета номер ноль");
+
+        var shelfCaption = Tile("Детали", "Полка").GetComponentInChildren<TMP_Text>();
+        Assert.AreEqual("Полка", shelfCaption.text,
+            "однопресетная плитка подписана именем своей единственной позиции");
+    }
+
+    [UnityTest]
+    public IEnumerator SwitchingPreset_RerendersTheThumbnail_ForTheNewlySelectedPreset()
+    {
+        var tile = Tile("Ящики", "Ящик");
+        var thumb = Child(tile, "Thumb").GetComponent<RawImage>();
+        var stub = Child(tile, "Stub").GetComponent<Image>();
+
+        for (int i = 0; i < 10 && thumb.texture == null; i++) yield return null;
+        Assert.IsNotNull(thumb.texture, "картинка первого пресета обязана отрисоваться до переключения");
+
+        var presets = Child(tile, "Presets");
+        Child(presets, "PresetDot_1").GetComponent<Button>().onClick.Invoke();
+
+        Assert.IsTrue(stub.gameObject.activeSelf,
+            "после смены пресета заглушка обязана вернуться, пока не отрисована новая картинка — "
+            + "иначе на плитке молча останется картинка старого пресета");
+
+        for (int i = 0; i < 10 && stub.gameObject.activeSelf; i++) yield return null;
+
+        Assert.IsFalse(stub.gameObject.activeSelf,
+            "картинка нового пресета обязана дорисоваться за несколько кадров, как и при первом показе");
+        Assert.IsNotNull(thumb.texture, "у плитки обязана остаться картинка после переключения пресета");
+    }
+
+    [Test]
     public void EveryCatalogItem_HasItsTileInTheContent()
     {
         var present = new HashSet<string>();
@@ -551,6 +587,49 @@ public class SidebarPanelTests
 
         Assert.IsTrue(search.isFocused,
             "на следующем кадре поле поиска обязано получить фокус");
+    }
+
+    /// <summary>Сенсор на дефект, который прожил незамеченным при полном покрытии тестами:
+    /// подпись плитки нигде не выставлялась (`Item.DisplayName`/`tile.title` не читались), и
+    /// картинка всегда рендерилась для нулевого пресета, поэтому «Ящик Movento», «Варочная
+    /// Bosch» и все пресеты фитингов кроме первого не получали её никогда. Ни `Tile_HasA
+    /// ThumbnailSlotAndAPlaceholderStub`, ни `Tile_ThumbnailAppears_AfterAFewFramesOfLazy
+    /// Generation` этого не ловили — оба проверяли ровно одну плитку с ровно одним пресетом.
+    /// Здесь проверка идёт по ВСЕМ плиткам каталога и по факту содержимого (непустой текст,
+    /// текстура с реальными размерами), а не по `!= null`.</summary>
+    [UnityTest]
+    public IEnumerator EveryTile_HasANonEmptyCaption_AndARenderedThumbnail()
+    {
+        _sidebar.ExpandAllGroupsForTests();
+
+        var allTiles = SidebarCatalog.Build()
+            .SelectMany(g => SidebarTileBuilder.BuildTiles(g.items).Select(t => (g.title, t)))
+            .ToList();
+
+        int framesNeeded = allTiles.Count / 2 + 4;
+        for (int i = 0; i < framesNeeded; i++) yield return null;
+
+        var emptyCaptions = new List<string>();
+        var missingThumbnails = new List<string>();
+
+        foreach (var (groupTitle, tile) in allTiles)
+        {
+            var node = Tile(groupTitle, tile.title);
+
+            var caption = node.GetComponentInChildren<TMP_Text>();
+            if (caption == null || string.IsNullOrWhiteSpace(caption.text))
+                emptyCaptions.Add(groupTitle + "/" + tile.title);
+
+            var thumb = Child(node, "Thumb").GetComponent<RawImage>();
+            if (!(thumb.texture is RenderTexture rt) || rt.width <= 0 || rt.height <= 0)
+                missingThumbnails.Add(groupTitle + "/" + tile.title);
+        }
+
+        Assert.IsEmpty(emptyCaptions,
+            "плитки без подписи (" + emptyCaptions.Count + "): " + string.Join(", ", emptyCaptions));
+        Assert.IsEmpty(missingThumbnails,
+            "плитки без отрисованной картинки (" + missingThumbnails.Count + "): "
+            + string.Join(", ", missingThumbnails));
     }
 
     [UnityTest]
