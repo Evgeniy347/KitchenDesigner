@@ -304,4 +304,141 @@ public class SpecificationManagerTests
         Object.DestroyImmediate(a.gameObject);
         Object.DestroyImmediate(b.gameObject);
     }
+
+    // ── Приёмка возврата: §1 сумма разных слагаемых ──
+
+    /// <summary>Дефект из приёмки: сумма считалась как count × qtyPerItem первой строки, а не
+    /// как накопление реальных qty. 1,2 + 0,8 обязаны дать 2,0, а не 2,4 (2 × 1,2) — слагаемые
+    /// намеренно РАЗНЫЕ, чтобы тест мог упасть на старой формуле.</summary>
+    [Test]
+    public void Build_TwoIQuantifiesItems_DifferentQty_SumsRealQtyNotFirstTimesCount()
+    {
+        var a = CreateConcreteBlock("Песок", 1.2f);
+        var b = CreateConcreteBlock("Песок", 0.8f);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
+
+        Assert.AreEqual(1, result.lines.Count);
+        Assert.AreEqual(2, result.lines[0].count);
+        Assert.AreEqual(2.0f, result.lines[0].qtyTotal, 0.0001f,
+            "1,2 + 0,8 = 2,0; старая формула (2 × 1,2 = 2,4) не должна вернуться");
+
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
+    }
+
+    /// <summary>Тот же дефект на штучных деталях с большими числами: 1240 + 800 = 2040, а
+    /// старая формула (2 × 1240 = 2480) — нет.</summary>
+    [Test]
+    public void Build_TwoIQuantifiesItems_DifferentPieceCounts_SumsRealQty()
+    {
+        var a = CreateConcreteBlock("Кирпич", 1240f);
+        var b = CreateConcreteBlock("Кирпич", 800f);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
+
+        Assert.AreEqual(1, result.lines.Count);
+        Assert.AreEqual(2040f, result.lines[0].qtyTotal, 0.0001f,
+            "1240 + 800 = 2040; старая формула (2 × 1240 = 2480) не должна вернуться");
+
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
+    }
+
+    // ── Приёмка возврата: §2 IQuantifies спрашивается у КОМПОНЕНТОВ, стена не блокирует ──
+
+    private class FakeWallQuantities : MonoBehaviour, IQuantifies
+    {
+        public float LengthM = 1f;
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return new SpecItem("Стены", "Кладка", "Кирпич", SpecUnit.LinearMeters, LengthM);
+        }
+    }
+
+    /// <summary>D12: хозяин со стеной (`Wall`) когда-то выбрасывался из спецификации ДО проверки
+    /// `IQuantifies` — компонент вроде `WallQuantities` не смог бы подключиться никогда. Теперь
+    /// `Build` спрашивает КОМПОНЕНТЫ элемента, а не тип, и наличие `Wall` на хозяине этому не
+    /// мешает.</summary>
+    [Test]
+    public void Build_WallHostWithQuantifiesComponent_IsCounted()
+    {
+        var go = new GameObject("Wall");
+        var element = go.AddComponent<KitchenElement>();
+        element.PartName = "Wall";
+        go.AddComponent<Wall>();
+        var quantifies = go.AddComponent<FakeWallQuantities>();
+        quantifies.LengthM = 3f;
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { element });
+
+        Assert.AreEqual(1, result.lines.Count, "стена с IQuantifies обязана попасть в спецификацию");
+        Assert.AreEqual(SpecUnit.LinearMeters, result.lines[0].unit);
+        Assert.AreEqual(3f, result.lines[0].qtyTotal, 0.0001f);
+
+        Object.DestroyImmediate(go);
+    }
+
+    /// <summary>Стена БЕЗ `IQuantifies` — противоположный вход к предыдущему тесту. Она не должна
+    /// ни попасть в спецификацию, ни (тем более) залипнуть в старую ветку доски ЛДСП — тип
+    /// хозяина совпадает с обычной доской (`KitchenElement`), различает их только `Wall`.</summary>
+    [Test]
+    public void Build_WallHostWithoutQuantifiesComponent_IsDropped()
+    {
+        var go = new GameObject("Wall");
+        var element = go.AddComponent<KitchenElement>();
+        element.PartName = "Wall";
+        element.DimensionsMM = new Vector3Int(3000, 2700, 100);
+        go.AddComponent<Wall>();
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { element });
+
+        Assert.AreEqual(0, result.lines.Count,
+            "стена без IQuantifies не умеет себя посчитать — не должна появиться как доска ЛДСП");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ── Приёмка возврата: §3 не-IQuantifies элемент, который не доска, вообще не попадает ──
+
+    /// <summary>Дефект из приёмки: стул шёл в старую ветку и получал «м² пласти», как будто он
+    /// доска ЛДСП. Стул не реализует ни `IQuantifies`, ни `ISpecificationParts` и не является
+    /// доскообразным типом — он обязан просто не попасть в спецификацию.</summary>
+    [Test]
+    public void Build_NonBoardElementWithoutQuantifies_IsDroppedNotCountedAsBoard()
+    {
+        var go = new GameObject("Chair");
+        var chair = go.AddComponent<ChairElement>();
+        chair.PartName = "Chair";
+        chair.DimensionsMM = new Vector3Int(ChairElement.DefaultWidthMM,
+            ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { chair });
+
+        Assert.AreEqual(0, result.lines.Count,
+            "стул не умеет считать себя сам — не должен превратиться в доску ЛДСП");
+
+        Object.DestroyImmediate(go);
+    }
+
+    // ── Приёмка возврата: §4 «Всего» не мешает штуки с кубометрами ──
+
+    /// <summary>Дефект из приёмки: `totalCount` складывал число досок с числом фундаментов —
+    /// «Всего» переставало быть числом досок. Одна доска + один фундамент (м³) — «Всего»
+    /// обязано остаться равным 1 (доска), а не 2.</summary>
+    [Test]
+    public void Build_BoardPlusFoundation_TotalCountCountsOnlyFurnitureBoards()
+    {
+        var board = CreateElement("Board", new Vector3Int(800, 400, 18));
+        var block = CreateConcreteBlock("Бетон B20", 1.2f);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { board, block });
+
+        Assert.AreEqual(1, result.totalCount,
+            "«Всего» — это счёт досок (м²), кубометры фундамента сюда не входят");
+
+        Object.DestroyImmediate(board.gameObject);
+        Object.DestroyImmediate(block.gameObject);
+    }
 }

@@ -92,4 +92,31 @@ public class SpecificationExportTests
         bool ok = SpecificationExport.SaveToFile(MakeResult("Board"), "Z:\\<>:invalid\\x.csv");
         Assert.IsFalse(ok);
     }
+
+    /// <summary>Дефект из приёмки: строки «Итого» шли в АЛФАВИТНОМ порядке названий единиц
+    /// (`u.ToString()` Ordinal), а не в порядке их перечисления в `SpecUnit`. Кг («Kilograms»)
+    /// и Шт («Pieces») намеренно выбраны так, чтобы алфавитный и объявленный порядок разошлись:
+    /// алфавит даёт Kilograms → Pieces, объявление — Pieces (0) → Kilograms (4).</summary>
+    [Test]
+    public void ToCsv_TotalsByUnitRows_OrderedByEnumDeclarationNotAlphabet()
+    {
+        var result = new SpecResult
+        {
+            lines = new List<SpecLine>(),
+            totalsByUnit = new Dictionary<SpecUnit, float>
+            {
+                { SpecUnit.Kilograms, 10f },
+                { SpecUnit.Pieces, 5f },
+            },
+        };
+
+        var csv = SpecificationExport.ToCsv(result);
+        int piecesLine = csv.IndexOf("шт", System.StringComparison.Ordinal);
+        int kgLine = csv.IndexOf("кг", System.StringComparison.Ordinal);
+
+        Assert.Greater(piecesLine, -1);
+        Assert.Greater(kgLine, -1);
+        Assert.Less(piecesLine, kgLine,
+            "шт (Pieces=0) обязан идти раньше кг (Kilograms=4) — порядок объявления, не алфавит");
+    }
 }

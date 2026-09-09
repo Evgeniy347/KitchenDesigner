@@ -110,7 +110,7 @@ namespace KitchenDesigner.Core
 
             if (result.totalsByUnit != null)
             {
-                foreach (var unit in result.totalsByUnit.Keys.OrderBy(u => u.ToString(), System.StringComparer.Ordinal))
+                foreach (var unit in result.totalsByUnit.Keys.OrderBy(u => (int)u))
                 {
                     var unitCells = new string[HeaderCells.Length];
                     unitCells[0] = "Итого";
@@ -170,14 +170,15 @@ namespace KitchenDesigner.Core
             foreach (var e in all)
             {
                 if (e == null) continue;
-                if (e.GetComponent<BasePlate>() != null || e.GetComponent<Wall>() != null) continue;
 
-                if (e is IQuantifies quantifies)
+                bool selfQuantified = false;
+                foreach (var quantifies in e.GetComponents<IQuantifies>())
                 {
+                    selfQuantified = true;
                     foreach (var item in quantifies.GetSpecItems(all))
                         AccumulateItem(groups, order, item);
-                    continue;
                 }
+                if (selfQuantified) continue;
 
                 if (e is ISpecificationParts composite)
                 {
@@ -197,6 +198,8 @@ namespace KitchenDesigner.Core
                     continue;
                 }
 
+                if (!IsFlatBoardElement(e)) continue;
+
                 Accumulate(groups, order, e.PartName, e.DimensionsMM,
                     MaterialCatalog.Get(e.MaterialId).displayName, GroovesLabel(e),
                     EdgeColumns.For(e, all));
@@ -207,9 +210,11 @@ namespace KitchenDesigner.Core
             {
                 var line = groups[key];
                 result.lines.Add(line);
-                result.totalCount += line.count;
                 if (line.unit == SpecUnit.AreaM2)
+                {
+                    result.totalCount += line.count;
                     result.totalAreaM2 += line.totalAreaM2;
+                }
             }
 
             result.lines = result.lines
@@ -219,6 +224,15 @@ namespace KitchenDesigner.Core
             result.totalsByUnit = SpecTotals.ByUnit(result.lines.Select(l => (l.unit, l.qtyTotal)));
 
             return result;
+        }
+
+        private static bool IsFlatBoardElement(KitchenElement e)
+        {
+            if (e.GetComponent<Wall>() != null || e.GetComponent<BasePlate>() != null) return false;
+            return e.GetType() == typeof(KitchenElement)
+                || e is PanelElement
+                || e is FacadeElement
+                || e is DrawerElement;
         }
 
         public static string GroovesLabel(KitchenElement element)
@@ -283,15 +297,15 @@ namespace KitchenDesigner.Core
                     grooves = "",
                     section = item.section,
                     unit = item.unit,
-                    qtyPerItem = item.qty,
+                    qtyPerItem = item.hasDims ? item.qty : 0f,
                 };
                 order.Add(key);
             }
             line.count++;
-            line.qtyTotal = line.count * line.qtyPerItem;
+            line.qtyTotal += item.qty;
             if (line.unit == SpecUnit.AreaM2)
             {
-                line.areaPerBoardM2 = line.qtyPerItem;
+                line.areaPerBoardM2 = item.hasDims ? item.qty : 0f;
                 line.totalAreaM2 = line.qtyTotal;
             }
             groups[key] = line;

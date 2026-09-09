@@ -212,7 +212,7 @@ namespace KitchenDesigner.Core.UI
         private static System.Collections.Generic.IEnumerable<SpecUnit> SortedUnits(SpecResult result)
         {
             if (result.totalsByUnit == null) yield break;
-            foreach (var unit in result.totalsByUnit.Keys.OrderBy(u => u.ToString(), System.StringComparer.Ordinal))
+            foreach (var unit in result.totalsByUnit.Keys.OrderBy(u => (int)u))
                 yield return unit;
         }
 
