@@ -99,12 +99,29 @@ namespace KitchenDesigner.Core
         private float _doorProgress;
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
+        private float _cachedSafeProgress = 1f;
+        private int _obstacleCheckRevision = -1;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private static int _activeStepDoors;
+
+        public static int TakeActiveStepDoorCalls()
+        {
+            int n = _activeStepDoors;
+            _activeStepDoors = 0;
+            return n;
+        }
+#endif
 
         [NotUndoable("режим пассажира — ставится хостом при пристёгивании")]
         public bool IsPassenger
         {
             get => _isPassenger;
-            set => _isPassenger = value;
+            set
+            {
+                _isPassenger = value;
+                if (!value) enabled = true;
+            }
         }
 
         [Undoable]
@@ -138,7 +155,10 @@ namespace KitchenDesigner.Core
             if (open && _doorProgress <= 0f) CaptureClosed();
             _openTarget = open;
             if (!Mathf.Approximately(_doorProgress, open ? 1f : 0f))
+            {
+                enabled = true;
                 FrameRateManager.KeepAwake(OpenSeconds + AppConstants.OPENING_KEEP_AWAKE_MARGIN_SECONDS);
+            }
         }
 
         public void ForceClose()
@@ -147,6 +167,7 @@ namespace KitchenDesigner.Core
             if (_doorProgress <= 0f && !_openTarget) return;
             _openTarget = false;
             _doorProgress = 0f;
+            enabled = false;
             transform.SetPositionAndRotation(_closedPos, _closedRot);
 
             foreach (var el in PartRegistry.All)
@@ -169,14 +190,29 @@ namespace KitchenDesigner.Core
 
         public void StepDoor(float dt)
         {
-            if (_isPassenger) return;
-            using var _ = PerfMarkers.FacadeStepDoor.Auto();
+            if (_isPassenger)
+            {
+                enabled = false;
+                return;
+            }
+
             float target = _openTarget ? 1f : 0f;
             if (Mathf.Approximately(_doorProgress, target))
             {
+                using var _ = PerfMarkers.FacadeStepDoor.Auto();
                 if (_doorProgress <= 0f) CaptureClosed();
+                enabled = false;
                 return;
             }
+
+            if (StillBlockedAtLastKnownSafeProgress()) return;
+
+            using var __ = PerfMarkers.FacadeStepDoor.Auto();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            _activeStepDoors++;
+#endif
+            float progressBeforeThisFrame = _doorProgress;
+
             float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
             _doorProgress = Mathf.MoveTowards(_doorProgress, target, step);
 
@@ -195,11 +231,17 @@ namespace KitchenDesigner.Core
                 }
                 exclude.AddRange(AttachLinks.Descendants(this));
                 float safe = OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
+                _cachedSafeProgress = safe;
+                _obstacleCheckRevision = SceneRevision.Version;
                 if (safe < _doorProgress) _doorProgress = Mathf.Max(_doorProgress - step, safe);
             }
 
-            ApplyDoor();
+            if (!Mathf.Approximately(_doorProgress, progressBeforeThisFrame)) ApplyDoor();
         }
+
+        private bool StillBlockedAtLastKnownSafeProgress() =>
+            _openTarget && _obstacleCheckRevision == SceneRevision.Version
+            && Mathf.Approximately(_doorProgress, _cachedSafeProgress);
 
         private void ApplyDoor()
         {
@@ -223,6 +265,9 @@ namespace KitchenDesigner.Core
             _doorProgress = 0f;
             _closedPos = Vector3.zero;
             _closedRot = Quaternion.identity;
+            _cachedSafeProgress = 1f;
+            _obstacleCheckRevision = -1;
+            enabled = true;
         }
     }
 }
