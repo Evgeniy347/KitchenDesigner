@@ -221,7 +221,7 @@ namespace KitchenDesigner.Core.UI
         private static Item DrawerItem(string name, string drawerType, int length,
             string system = DefaultDrawerSystem)
         {
-            int height = drawerType switch { "A" => 86, "B" => 120, "C" => 168, _ => 200 };
+            int height = DrawerConstants.GetMinOpeningHeight(SidebarPresetResolution.DrawerTypeOf(drawerType));
             var item = new Item(name, new Vector3Int(DefaultDrawerWidthMM, height, length),
                 SidebarItemKind.Drawer);
             item.drawerType = drawerType;

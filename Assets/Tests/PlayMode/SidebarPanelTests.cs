@@ -212,6 +212,7 @@ public class SidebarPanelTests
     [UnityTest]
     public IEnumerator SwitchingPreset_RerendersTheThumbnail_ForTheNewlySelectedPreset()
     {
+        Header("Ящики").onClick.Invoke();
         var tile = Tile("Ящики", "Ящик");
         var thumb = Child(tile, "Thumb").GetComponent<RawImage>();
         var stub = Child(tile, "Stub").GetComponent<Image>();
@@ -639,7 +640,12 @@ public class SidebarPanelTests
         _sidebar.SetExpandedForTests(true);
         Header("Сантехника").onClick.Invoke();
         _sidebar.ShowAllPresetRowsForTests();
-        yield return null;
+
+        int visibleTileCount = SidebarCatalog.Build()
+            .Where(g => g.title == "Детали" || g.title == "Сантехника")
+            .Sum(g => SidebarTileBuilder.BuildTiles(g.items).Count);
+        int framesNeeded = visibleTileCount / 2 + 4;
+        for (int i = 0; i < framesNeeded; i++) yield return null;
 
         string dir = Path.Combine(Application.dataPath, "..", "test-results");
         UiSnapshotEngine.CaptureVerified(_canvasGo, Path.Combine(dir, "sidebar_dock_expanded.json"));

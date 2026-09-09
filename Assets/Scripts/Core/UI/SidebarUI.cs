@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -26,6 +27,10 @@ namespace KitchenDesigner.Core.UI
         private const int PresetDotFont = 10;
 
         private static readonly Color ActiveToggleColor = new Color(0.30f, 0.55f, 0.34f, 1f);
+
+        private static readonly MethodInfo? TmpActivateInputFieldInternal =
+            typeof(TMP_InputField).GetMethod("ActivateInputFieldInternal",
+                BindingFlags.Instance | BindingFlags.NonPublic);
 
         private static string? _lastUsedGroupTitle;
 
@@ -567,6 +572,8 @@ namespace KitchenDesigner.Core.UI
             if (_searchField == null) return;
             _searchField.Select();
             _searchField.ActivateInputField();
+            if (!_searchField.isFocused)
+                TmpActivateInputFieldInternal?.Invoke(_searchField, null);
         }
 
         private bool IsTypingElsewhere()
