@@ -16,9 +16,21 @@ public class MaterialPreviewTests
     private ContextMenuUI? _ctx;
     private SelectionManager? _selection;
     private KitchenElement? _element;
+    private ProjectLoadStateGuard? _globals;
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель и МЕНЕДЖЕР ВЫДЕЛЕНИЯ строятся один раз на класс, и
+    /// именно вместе: ContextMenuUI.Build подписывается на
+    /// SelectionManager.Instance.OnSelectionChanged ровно один раз и только
+    /// если менеджер к тому моменту существует. Пересоздавать менеджер на
+    /// каждый тест при общей панели значило бы тихо оборвать путь
+    /// «выделение → панель»: тесты про подсветку выделения остались бы
+    /// зелёными, проверяя менеджер сам с собой. Что путь жив, требует
+    /// SelectingAnotherElement_ReopensThePanelOnIt.
+    ///
+    /// Build стоит ~0,30 с, Open — ~5 мс: двадцать девять сборок панели были
+    /// дороже всей остальной работы набора вместе.</summary>
+    [OneTimeSetUp]
+    public void BuildPanelOnce()
     {
         IgnoreMaterialLeakLog();
         _canvasGo = new GameObject("Canvas");
@@ -44,6 +56,31 @@ public class MaterialPreviewTests
         _ctxGo!.transform.SetParent(_canvasGo!.transform);
         _ctx = _ctxGo!.AddComponent<ContextMenuUI>();
         _ctx!.Build(_canvasGo!.transform);
+    }
+
+    /// <summary>Уничтожение панели снова снимает подсветку выделения и снова
+    /// роняет в лог «leak materials into the scene». Глушитель поэтому стоит и
+    /// здесь, и снимается тут же: иначе он утёк бы в следующий класс и погасил
+    /// бы там настоящие ошибки.</summary>
+    [OneTimeTearDown]
+    public void DestroyPanelOnce()
+    {
+        IgnoreMaterialLeakLog();
+        if (_ctx != null) _ctx!.Close();
+        SetSelectionInstance(null);
+        if (_canvasGo != null) Object.DestroyImmediate(_canvasGo);
+        var es = Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
+        if (es != null) Object.DestroyImmediate(es.gameObject);
+        LogAssert.ignoreFailingMessages = false;
+    }
+
+    [SetUp]
+    public void Setup()
+    {
+        IgnoreMaterialLeakLog();
+        _globals = ProjectLoadStateGuard.Capture();
+        if (_ctx != null) ((IContextMenuHost)_ctx!).Fields.ForgetLastApplyFrame();
+        Unfocus();
 
         _element = CreateBoard("Деталь", new Vector3Int(400, 400, 18), Vector3.zero);
         MaterialManager.ApplyById(_element!, "white");
@@ -55,10 +92,10 @@ public class MaterialPreviewTests
     {
         IgnoreMaterialLeakLog();
         if (_ctx != null) _ctx!.Close();
-        SetSelectionInstance(null);
-        if (_canvasGo != null) Object.DestroyImmediate(_canvasGo);
-        var es = Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
-        if (es != null) Object.DestroyImmediate(es.gameObject);
+        // Выделение снимается ДО уничтожения элементов: менеджер живёт весь
+        // класс, и иначе у него остались бы ссылка на разрушенный объект и
+        // запись о его материалах.
+        if (_selection != null) _selection!.DeselectAll();
 
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null) Object.DestroyImmediate(e.gameObject);
@@ -66,7 +103,16 @@ public class MaterialPreviewTests
         GroupManager.Clear();
         CommandStack.Clear();
         ElementFactory.ClearPools();
+        if (_globals != null) _globals!.Restore();
         LogAssert.ignoreFailingMessages = false;
+    }
+
+    /// <summary>Сфокусированное поле панели RefreshUnfocused пропускает, а
+    /// фокус при общей панели переживает тест: снимать его обязан каждый.</summary>
+    private static void Unfocus()
+    {
+        var es = Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
+        if (es != null) es.SetSelectedGameObject(null);
     }
 
     // ── Высота пункта: перенос длинных названий ────────────────────────
@@ -421,6 +467,58 @@ public class MaterialPreviewTests
             "смена декора обязана отменяться Ctrl+Z (правило 2 UI-GUIDELINES)");
     }
 
+    // ── общая панель: чем закрыта слепота ──────────────────────────────
+
+    /// <summary>Панель подписывается на смену выделения ОДИН раз, в Build, и
+    /// только если SelectionManager.Instance уже существует. Пока панель
+    /// строилась на каждый тест, менеджер строился вместе с ней и вопрос не
+    /// возникал; при общей панели пересозданный на тест менеджер оборвал бы
+    /// подписку молча, и Hover_RemovesSelectionHighlight с соседями остались бы
+    /// зелёными, проверяя менеджер сам с собой. Это единственное место, где
+    /// путь «выделение → панель» проверен целиком.</summary>
+    [Test]
+    public void SelectingAnotherElement_ReopensThePanelOnIt()
+    {
+        IgnoreMaterialLeakLog();
+        var other = CreateBoard("Деталь3", new Vector3Int(500, 300, 18), new Vector3(2f, 0f, 0f));
+        Assume.That(PanelTarget(), Is.SameAs(_element), "меню открыто на элементе из SetUp");
+
+        _selection!.Select(other);
+
+        Assert.AreSame(other, PanelTarget(),
+            "BUG: панель не услышала смену выделения — подписка на OnSelectionChanged "
+            + "потеряна вместе с менеджером, и все тесты про выделение в этом классе "
+            + "проверяют менеджер сам с собой");
+    }
+
+    /// <summary>Список декоров снимается в Build (MaterialOptions.DisplayNames)
+    /// и при общей панели прожил бы весь класс. Продукт от этого не страдает:
+    /// ShowFor на каждом Open перезаливает список через MaterialOptions.Fill —
+    /// но проверено это не было, а теперь от этого зависит и цена набора.
+    /// Декор, заведённый ПОСЛЕ сборки панели, обязан оказаться в списке.</summary>
+    [Test]
+    public void MaterialDropdown_ListsADecorRegisteredAfterThePanelWasBuilt()
+    {
+        IgnoreMaterialLeakLog();
+        const string lateName = "Декор, заведённый после сборки панели";
+        try
+        {
+            MaterialCatalog.Register(
+                new MaterialDef("late-probe-decor", lateName, "ЛДСП", Color.green));
+            _ctx!.Open(_element!);
+
+            var listed = Dropdown("CtxMaterial").options.ConvertAll(o => o.text);
+
+            CollectionAssert.Contains(listed, lateName,
+                "BUG: список декоров снят один раз при сборке панели и больше не "
+                + "обновляется — новый декор есть в каталоге, но не в меню");
+        }
+        finally
+        {
+            MaterialCatalog.Reset();
+        }
+    }
+
     // ── helpers ────────────────────────────────────────────────────────
 
     /// <summary>Подсветка выделения зовёт renderer.material — в EditMode Unity
@@ -459,6 +557,10 @@ public class MaterialPreviewTests
         _ctx!.Materials.Choose(SlotOf(legs), IndexOfMaterial(id));
 
     private void EndPreview() => _ctx!.Materials.EndPreview();
+
+    /// <summary>На чём панель открыта СЕЙЧАС — единственный внешний признак
+    /// того, что смена выделения до неё дошла.</summary>
+    private KitchenElement? PanelTarget() => ((IContextMenuHost)_ctx!).Target;
 
     private TMP_Dropdown Dropdown(string nodeName)
     {
