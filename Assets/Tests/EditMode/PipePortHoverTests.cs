@@ -164,6 +164,47 @@ public class PipePortHoverTests
     }
 
     [Test]
+    public void NoChoiceOption_WithASeatedNeighbour_PreviewsRemovingIt()
+    {
+        var pipe = Pipe();
+        Seat(pipe, 1, PipeNodeKind.Cap);
+        var seated = PipeEndFittings.NeighbourAt(pipe, 1, PartRegistry.GetAll())!;
+        var hover = HoverOf(pipe);
+        int lit = EnabledRenderers(seated);
+        Assume.That(lit, Is.GreaterThan(0), "заглушка на конце видна до наведения на «нет»");
+
+        hover.EnterOption(1, PipeConnectionRule.NoChoice);
+
+        Assert.IsTrue(ScenePreview.IsShowing,
+            "«как будет, если выбрать „нет"» — это тоже показ, а не молчание");
+        Assert.IsNull(ScenePreview.Ghost, "снятие детали не ставит на её место ничего нового");
+        Assert.AreEqual(0, EnabledRenderers(seated),
+            "заглушка, которую снимут, гаснет на время превью — иначе нечем "
+            + "показать, что будет, если выбрать «нет»");
+
+        hover.Clear();
+
+        Assert.AreEqual(lit, EnabledRenderers(seated),
+            "ушли с «нет» — заглушка обязана вернуться, как и любой другой призрак");
+    }
+
+    [Test]
+    public void Sync_MovesTheGhost_WhenThePortsOwnerMovesUnderAnOpenPreview()
+    {
+        var pipe = Pipe();
+        var hover = HoverOf(pipe);
+        hover.EnterOption(1, OptionOf(PipeNodeKind.Elbow));
+        var posBefore = ScenePreview.Ghost!.transform.position;
+
+        pipe.transform.position += new Vector3(1f, 0f, 0f);
+        HoverPreviewGate.Sync();
+
+        Assert.AreNotEqual(posBefore, ScenePreview.Ghost!.transform.position,
+            "хозяин порта уехал под открытым превью — без Sync призрак остался бы "
+            + "стоять на старом месте вместо нового мундштука");
+    }
+
+    [Test]
     public void Commit_DropsThePreview_BeforeTheRealEditRuns()
     {
         var pipe = Pipe();
