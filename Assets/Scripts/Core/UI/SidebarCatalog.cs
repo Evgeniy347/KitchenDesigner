@@ -99,6 +99,7 @@ namespace KitchenDesigner.Core.UI
             new GroupMeta(SidebarGroupKey.Appliance, "Техника", IconFactory.Appliance),
             new GroupMeta(SidebarGroupKey.Sanitary, "Сантехника", IconFactory.Faucet),
             new GroupMeta(SidebarGroupKey.Room, "Помещение", IconFactory.Room),
+            new GroupMeta(SidebarGroupKey.Construction, "Конструкции", IconFactory.Brickwork),
         };
 
         private static List<Group>? _cache;

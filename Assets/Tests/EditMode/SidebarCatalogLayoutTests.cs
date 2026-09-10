@@ -21,6 +21,58 @@ public class SidebarCatalogLayoutTests
         return metrics;
     }
 
+    /// <summary>Группа «Конструкции» заведена этапом 3а ПУСТОЙ, и это её рабочее
+    /// состояние на две-три недели вперёд. Пустая группа обязана стоить ровно
+    /// свой заголовок: если бы раскладка добавляла ей ряд плиток или зазор
+    /// «после плиток», док на 1366×768 потерял бы видимый ряд, а заметили бы это
+    /// по скриншоту, а не по счёту.</summary>
+    [Test]
+    public void AnEmptyGroup_CostsExactlyItsHeader()
+    {
+        var withEmpty = new List<SidebarTileGroupMetrics>
+        {
+            new SidebarTileGroupMetrics(true, 4),
+            new SidebarTileGroupMetrics(true, 0),
+        };
+        var withoutEmpty = new List<SidebarTileGroupMetrics>
+        {
+            new SidebarTileGroupMetrics(true, 4),
+        };
+
+        var rows = new List<SidebarTileRow>();
+        float taller = SidebarLayout.PlaceTiles(withEmpty, rows);
+        int headerRows = rows.Count(r => r.IsHeader);
+        int tileRowsOfTheEmptyGroup = rows.Count(r => r.Group == 1 && !r.IsHeader);
+        float shorter = SidebarLayout.PlaceTiles(withoutEmpty, rows);
+
+        Assert.AreEqual(2, headerRows, "у пустой группы обязан остаться собственный заголовок");
+        Assert.AreEqual(0, tileRowsOfTheEmptyGroup, "плиток у пустой группы нет");
+        Assert.AreEqual(SidebarLayout.HeaderH + SidebarLayout.HeaderGap, taller - shorter, 0.01f,
+            "пустая группа удлинила содержимое не на один заголовок");
+    }
+
+    /// <summary>Тот же счёт, но на настоящем каталоге и на настоящем экране
+    /// 1366×768: сколько плиток видно без прокрутки, от появления пустой группы
+    /// не меняется — меняется только длина содержимого.</summary>
+    [Test]
+    public void TheRealCatalog_WithTheEmptyConstructionGroup_StillFillsTheDockAt768()
+    {
+        var catalog = SidebarCatalog.Build();
+        Assert.IsEmpty(catalog[catalog.Count - 1].items,
+            "последняя группа каталога — «Конструкции», и она пока пустая; когда в неё "
+            + "приедут плитки этапов 3б/4/5, этот тест нужно переписать, а не удалить");
+
+        var rows = new List<SidebarTileRow>();
+        float height = SidebarLayout.PlaceTiles(AllGroupsOpen(), rows);
+
+        Assert.Greater(SidebarDockBudget.TilesVisibleWithoutScroll(768f, 36f, 8f), 0,
+            "на 1366×768 док обязан показывать хотя бы один ряд плиток без прокрутки");
+        Assert.Greater(height, SidebarDockBudget.ViewportHeight(
+            SidebarDockBudget.PanelHeight(768f, 36f, 8f)),
+            "каталог длиннее окна дока — прокрутка и должна быть; равенство означало бы, "
+            + "что раскладка потеряла содержимое");
+    }
+
     [Test]
     public void WholeCatalog_ContentHeight_CoversTheLowestTile()
     {

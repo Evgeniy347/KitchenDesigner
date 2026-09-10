@@ -17,6 +17,7 @@ namespace KitchenDesigner.Core.UI
         private static Sprite? _note, _play, _pause, _trackNext, _trackPrev;
         private static Sprite? _findIssue, _document, _sceneTree, _book, _resizeHandles, _moveHandles;
         private static Sprite? _shelf, _facade, _drawer, _furniture, _appliance, _faucet, _room;
+        private static Sprite? _brickwork;
         private static Sprite? _search, _tileStub;
         private static Sprite? _dockExpanded, _dockRail;
 
@@ -54,6 +55,7 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Appliance => _appliance ??= BuildAppliance();
         public static Sprite Faucet => _faucet ??= BuildFaucet();
         public static Sprite Room => _room ??= BuildRoom();
+        public static Sprite Brickwork => _brickwork ??= BuildBrickwork();
         public static Sprite Search => _search ??= BuildSearch();
         public static Sprite TileStub => _tileStub ??= BuildTileStub();
         public static Sprite DockExpanded => _dockExpanded ??= BuildDockExpanded();
@@ -282,6 +284,21 @@ namespace KitchenDesigner.Core.UI
             TriangleUp(px, 32, 20, 54, 18, Ink);
             Rect(px, 30, 6, 34, 14, Clear);
             return Finish(px);
+        }
+
+        private static Sprite BuildBrickwork()
+        {
+            var px = NewCanvas();
+            BrickCourse(px, 45, 51, 6, Ink);
+            BrickCourse(px, 53, 59, -1, Ink2);
+            return Finish(px);
+        }
+
+        private static void BrickCourse(Color32[] px, int bottom, int top, int firstLeft, Color ink)
+        {
+            const int brickW = 12, mortar = 2;
+            for (int left = firstLeft; left < S - 4; left += brickW + mortar)
+                Rect(px, Mathf.Max(4, left), bottom, Mathf.Min(S - 4, left + brickW), top, ink);
         }
 
         private static Sprite BuildCircularArrow(bool redo)

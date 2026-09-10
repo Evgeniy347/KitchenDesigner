@@ -181,6 +181,7 @@ public class IconFactoryTests
         ("Техника", IconFactory.Appliance),
         ("Сантехника", IconFactory.Faucet),
         ("Помещение", IconFactory.Room),
+        ("Конструкции", IconFactory.Brickwork),
     };
 
     [Test]

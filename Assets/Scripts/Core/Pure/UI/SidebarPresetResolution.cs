@@ -9,6 +9,7 @@ namespace KitchenDesigner.Core.UI
         Appliance,
         Sanitary,
         Room,
+        Construction,
     }
 
     public static class SidebarPresetResolution

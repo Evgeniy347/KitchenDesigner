@@ -8,7 +8,7 @@ using KitchenDesigner.Core.UI;
 
 public class SidebarCatalogTests
 {
-    /// <summary>Индекс группы «Помещение»: она последняя, и её номер сдвигается
+    /// <summary>Индекс группы «Помещение»: последняя из кухонных, её номер сдвигается
     /// каждый раз, когда перед ней появляется новая группа.</summary>
     private const int RoomIndex = 6;
 
@@ -16,13 +16,20 @@ public class SidebarCatalogTests
     /// лягут ванна, смеситель и душ соседних сессий.</summary>
     private const int SanitaryIndex = 5;
 
+    /// <summary>Индекс группы «Конструкции»: заведена этапом 3а пустой —
+    /// плитки стены, ленты и перекрытия приходят этапами 3б/4/5. Пустая группа
+    /// здесь ЖДЁТСЯ: заголовок в доке есть, плиток под ним нет, и раскладка от
+    /// этого не ломается (SidebarCatalogLayoutTests).</summary>
+    private const int ConstructionIndex = 7;
+
     [Test]
-    public void Build_HasSevenGroups()
+    public void Build_HasEightGroups()
     {
         var groups = SidebarCatalog.Build();
 
-        Assert.AreEqual(7, groups.Count,
-            "шестой встала «Сантехника» — перед «Помещением», чтобы комната осталась последней");
+        Assert.AreEqual(8, groups.Count,
+            "восьмой встали «Конструкции» — после «Помещения», потому что это уже не кухня, "
+            + "а дом: стены, лента и перекрытие лягут туда этапами 3б/4/5");
         Assert.AreEqual("Детали", groups[0].title);
         Assert.AreEqual("Фасады", groups[1].title);
         Assert.AreEqual("Ящики", groups[2].title);
@@ -30,6 +37,7 @@ public class SidebarCatalogTests
         Assert.AreEqual("Техника", groups[4].title);
         Assert.AreEqual("Сантехника", groups[SanitaryIndex].title);
         Assert.AreEqual("Помещение", groups[RoomIndex].title);
+        Assert.AreEqual("Конструкции", groups[ConstructionIndex].title);
     }
 
     [Test]
@@ -49,6 +57,7 @@ public class SidebarCatalogTests
         Assert.AreEqual(IconFactory.Appliance, groups[4].icon);
         Assert.AreEqual(IconFactory.Faucet, groups[SanitaryIndex].icon);
         Assert.AreEqual(IconFactory.Room, groups[RoomIndex].icon);
+        Assert.AreEqual(IconFactory.Brickwork, groups[ConstructionIndex].icon);
     }
 
     [Test]
