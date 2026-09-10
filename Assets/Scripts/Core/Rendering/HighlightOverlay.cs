@@ -29,10 +29,9 @@ namespace KitchenDesigner.Core
 
         private static KitchenElement? _shownFor;
         private static Action? _rebuild;
+        private static Func<int>? _signature;
         private static Action? _onHide;
-        private static Vector3 _shownPos;
-        private static Quaternion _shownRot;
-        private static Vector3Int _shownDims;
+        private static int _shownSignature;
 
         public static int PieceCount => Pieces.Count;
 
@@ -40,15 +39,15 @@ namespace KitchenDesigner.Core
 
         public static KitchenElement? ShownFor => _shownFor;
 
-        public static void Begin(KitchenElement element, Action rebuild, Action? onHide = null)
+        public static void Begin(KitchenElement element, Action rebuild, Func<int> signature,
+            Action? onHide = null)
         {
-            if (element == null) return;
+            if (element == null || signature == null) return;
             _shownFor = element;
             _rebuild = rebuild;
+            _signature = signature;
             _onHide = onHide;
-            _shownPos = element.transform.position;
-            _shownRot = element.transform.rotation;
-            _shownDims = element.DimensionsMM;
+            _shownSignature = signature();
         }
 
         public static void Hide()
@@ -63,6 +62,8 @@ namespace KitchenDesigner.Core
 
             _shownFor = null;
             _rebuild = null;
+            _signature = null;
+            _shownSignature = 0;
             var onHide = _onHide;
             _onHide = null;
             onHide?.Invoke();
@@ -72,15 +73,13 @@ namespace KitchenDesigner.Core
         {
             if (Pieces.Count == 0) return;
 
-            if (_shownFor == null || !SceneVisibility.AnyRendererEnabled(_shownFor))
+            if (HoverAnchor.IsGone(_shownFor))
             {
                 Hide();
                 return;
             }
 
-            var t = _shownFor.transform;
-            if (t.position == _shownPos && t.rotation == _shownRot
-                && _shownFor.DimensionsMM == _shownDims) return;
+            if (_signature == null || _signature() == _shownSignature) return;
 
             _rebuild?.Invoke();
         }
@@ -110,6 +109,12 @@ namespace KitchenDesigner.Core
             float length = along.magnitude;
             if (length <= 0f) return;
 
+            var axis = along / length;
+            float lift = LiftMm * toU;
+            from -= axis * lift;
+            to += axis * lift;
+            length += lift * 2f;
+
             float radius = (sleeveMM.RadiusMM + LiftMm) * toU;
             var mesh = CylinderStackMesh.Build(new CylinderSection(radius, length));
             mesh.name = "PartHighlightSleeve";
@@ -119,7 +124,7 @@ namespace KitchenDesigner.Core
 
             var go = NewPiece("PartHighlightSleeve");
             go.transform.position = (from + to) * 0.5f;
-            go.transform.rotation = Quaternion.FromToRotation(Vector3.up, along / length);
+            go.transform.rotation = Quaternion.FromToRotation(Vector3.up, axis);
             go.transform.localScale = Vector3.one;
 
             Dress(go, mesh);

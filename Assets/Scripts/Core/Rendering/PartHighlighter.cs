@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -9,7 +10,7 @@ namespace KitchenDesigner.Core
         public static bool IsShown(KitchenElement element, string region) =>
             element != null && HighlightOverlay.ShownFor == element
             && HighlightOverlay.PieceCount > 0
-            && string.Equals(_shownRegion, region, System.StringComparison.Ordinal);
+            && string.Equals(_shownRegion, region, StringComparison.Ordinal);
 
         public static string PipeEndRegion(PartEnd end) => "pipe:" + end;
 
@@ -19,7 +20,7 @@ namespace KitchenDesigner.Core
         {
             if (pipe == null) return;
             Show(pipe, PipeEndRegion(end),
-                PipePartHighlight.PipeEnd(pipe.LengthMM, pipe.OuterDiameterMm, end),
+                () => PipePartHighlight.PipeEnd(pipe.LengthMM, pipe.OuterDiameterMm, end),
                 () => ShowPipeEnd(pipe, end));
         }
 
@@ -27,16 +28,9 @@ namespace KitchenDesigner.Core
         {
             if (fitting == null) return;
             Show(fitting, FittingMouthRegion(portIndex),
-                PipePartHighlight.FittingMouth(fitting.NodeKind, fitting.PortFrameSizeId,
+                () => PipePartHighlight.FittingMouth(fitting.NodeKind, fitting.PortFrameSizeId,
                     fitting.BoreSizeIds, portIndex),
                 () => ShowFittingMouth(fitting, portIndex));
-        }
-
-        public static void ShowSleeve(KitchenElement element, string region,
-            in HighlightSleeve sleeveMM)
-        {
-            var copy = sleeveMM;
-            Show(element, region, sleeveMM, () => ShowSleeve(element, region, copy));
         }
 
         public static void Sync() => HighlightOverlay.Sync();
@@ -44,18 +38,29 @@ namespace KitchenDesigner.Core
         public static void Hide() => HighlightOverlay.Hide();
 
         private static void Show(KitchenElement element, string region,
-            in HighlightSleeve sleeveMM, System.Action rebuild)
+            Func<HighlightSleeve> geometry, Action rebuild)
         {
             Hide();
-            if (element == null || sleeveMM.IsEmpty) return;
+            if (element == null) return;
+
+            var sleeveMM = geometry();
+            if (sleeveMM.IsEmpty) return;
             if (HighlightOverlay.HighlightMaterial() == null) return;
 
             HighlightOverlay.AddSleeve(element.transform, sleeveMM);
             if (HighlightOverlay.PieceCount == 0) return;
 
             _shownRegion = region;
-            HighlightOverlay.Begin(element, rebuild, Forget);
+            HighlightOverlay.Begin(element, rebuild, () => Signature(element, geometry()), Forget);
         }
+
+        private static int Signature(KitchenElement element, HighlightSleeve sleeveMM) =>
+            new HighlightSignature()
+                .Add(element.transform.position)
+                .Add(element.transform.rotation)
+                .Add(element.transform.lossyScale)
+                .Add(sleeveMM)
+                .Value;
 
         private static void Forget() => _shownRegion = string.Empty;
     }

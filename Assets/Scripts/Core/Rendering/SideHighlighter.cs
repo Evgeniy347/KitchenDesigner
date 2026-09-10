@@ -112,9 +112,18 @@ namespace KitchenDesigner.Core
             _shownFaceIndex = faceIndex;
             _shownBands = bands;
             _shownEdgeSide = null;
-            HighlightOverlay.Begin(element, () => Rebuild(element, faceIndex, bands), Forget);
+            HighlightOverlay.Begin(element, () => Rebuild(element, faceIndex, bands),
+                () => Signature(element), Forget);
             return true;
         }
+
+        private static int Signature(KitchenElement element) =>
+            new HighlightSignature()
+                .Add(element.transform.position)
+                .Add(element.transform.rotation)
+                .Add(element.transform.lossyScale)
+                .Add(element.DimensionsMM)
+                .Value;
 
         private static void Rebuild(KitchenElement element, int faceIndex, bool bands)
         {
