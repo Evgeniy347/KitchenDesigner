@@ -22,9 +22,8 @@ public class ElementFieldsEditorTests
     /// сброса — условная перестройка списков «Прикрепить к» и «Фасад» — закрыта в
     /// самом <c>ContextMenuUI.Open</c>).
     ///
-    /// Настройка <c>BlockOnViolation</c> — глобальная, поэтому она остаётся
-    /// ПОТЕСТОВОЙ: панель переживает тест, а глобальное состояние обязано
-    /// возвращаться на место после каждого.</summary>
+    /// Что панель переживает тест, а состояние вокруг неё — нет, разобрано
+    /// в <see cref="Setup"/>: там сбрасываются оба потестовых состояния.</summary>
     [OneTimeSetUp]
     public void BuildThePanelOnce()
     {
@@ -42,11 +41,26 @@ public class ElementFieldsEditorTests
         if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
     }
 
+    /// <summary>Панель переживает тест — значит всё ПОТЕСТОВОЕ состояние обязано
+    /// возвращаться на место здесь, и таких состояний два.
+    ///
+    /// <c>BlockOnViolation</c> — глобальная настройка приложения.
+    ///
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: <c>ApplyOncePerFrame</c>
+    /// пропускает один Apply за кадр, а в EditMode <c>Time.frameCount</c> стоит на
+    /// месте, поэтому окно, взведённое ПРЕДЫДУЩИМ тестом, молча съедало первую же
+    /// правку следующего. Со своей панелью на каждый тест счётчик рождался заново и
+    /// прятал это: восемь тестов падали не своими значениями, а значениями по
+    /// умолчанию — «Expected 850, But was 450» и есть «Apply не позвался вовсе».
+    /// В приложении кадр сменяется, поэтому лечится это здесь, а не в продукте;
+    /// тот же сброс по той же причине стоит в <c>McpUiPropertyParityTests</c> и
+    /// <c>ScrewLegHostSectionTests</c>.</summary>
     [SetUp]
     public void Setup()
     {
         _blockOnViolation = KitchenSettings.Instance.BlockOnViolation;
         KitchenSettings.Instance.BlockOnViolation = false;
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
     }
 
     [TearDown]
@@ -78,6 +92,15 @@ public class ElementFieldsEditorTests
     {
         Field(label).text = value;
         Field(label).onEndEdit.Invoke(value);
+    }
+
+    private List<string> VisibleFieldValues()
+    {
+        var values = new List<string>();
+        foreach (var field in Panel().GetComponentsInChildren<TMP_InputField>(false))
+            values.Add(field.name + "=" + Text(field));
+        values.Sort(System.StringComparer.Ordinal);
+        return values;
     }
 
     private KitchenElement Board() =>
@@ -1063,5 +1086,73 @@ public class ElementFieldsEditorTests
 
         Assert.AreEqual(elbow.DerivedDimensionsMM, elbow.DimensionsMM,
             "и он обязан совпадать с вычисленным, а не жить своей жизнью");
+    }
+
+    /// <summary>Что видно в панели ПОСЛЕ переключения выделения. В приложении
+    /// панель одна: её не пересобирают, а переоткрывают на другой детали, — и
+    /// вопрос «не остались ли в полях числа от предыдущей» не должен жить только
+    /// внутри чужих тестов про клампы. Проверяются оба направления: сначала
+    /// открыта только опора, потом стул с правкой, потом снова опора — все её
+    /// ВИДИМЫЕ поля обязаны совпасть с первым разом, — и обратно на стул, где
+    /// стоит его собственная, только что применённая высота сиденья.
+    ///
+    /// Сравнение по «видимым полям», а не по всем: строку, которой у детали нет,
+    /// прячет <c>RowVisibility</c>, и невидимый текст пользователю не показывают.
+    /// Если строка когда-нибудь станет видна шире, чем её редактор отвечает
+    /// <c>Handles</c>, чужое значение станет видимым — и упадёт этот тест.</summary>
+    [Test]
+    public void SelectionSwitch_ReReadsTheVisibleFields_FromTheNewlySelectedElement()
+    {
+        var chair = Chair();
+        var pillar = Pillar();
+        pillar.transform.position += new Vector3(2f, 0f, 0f);
+
+        _menu!.Open(pillar);
+        var pillarAlone = VisibleFieldValues();
+        Assume.That(pillarAlone, Has.Member("F_Диаметр=" + pillar.DiameterMM),
+            "диаметр опоры обязан быть среди видимых полей — иначе сравнивать нечего");
+
+        _menu!.Open(chair);
+        Assume.That(Text(Field(ChairFieldsEditor.SeatHeightNode)),
+            Is.EqualTo(AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT.ToString()));
+        Type(ChairFieldsEditor.SeatHeightNode, "500");
+        Assume.That(chair.SeatHeightMM, Is.EqualTo(500), "правка обязана примениться");
+
+        _menu!.Open(pillar);
+        Assert.AreEqual(pillar.DiameterMM.ToString(), Text(Field("Диаметр")),
+            "у опоры в поле диаметра — её диаметр, а не то, что осталось от стула");
+        CollectionAssert.AreEqual(pillarAlone, VisibleFieldValues(),
+            "все видимые поля опоры обязаны читаться заново: панель ОДНА, и переключение "
+            + "выделения — единственный боевой способ её сбросить");
+
+        _menu!.Open(chair);
+        Assert.AreEqual("500", Text(Field(ChairFieldsEditor.SeatHeightNode)),
+            "и обратно на стул — его собственная высота сиденья, применённая до переключения");
+    }
+
+    /// <summary>Спрятанная строка тоже обязана расстаться с числом предыдущей
+    /// детали. Видно её сейчас или нет — решает <c>RowVisibility</c> (набор фасетов),
+    /// а текст пишет <c>Show</c> у редактора, и он спрашивает <c>Handles</c> (тип):
+    /// два разных вопроса об одном и том же. Пока ответы совпадают, чужое число
+    /// прячется — расширь фасет строки на один тип, и оно станет видимым, причём
+    /// зелёными останутся все тесты. Поэтому <c>NumberFieldsEditor</c> пишет поля
+    /// БЕЗУСЛОВНО, отдавая «холостой» текст той детали, которой это свойство не
+    /// принадлежит (CONVENTIONS.md → conventions/CORRECTNESS.md, «Not only the
+    /// guard — every READER of a state must ask through one function»).</summary>
+    [Test]
+    public void SelectionSwitch_EvenAHiddenRow_DropsThePreviousElementsNumber()
+    {
+        var chair = Chair();
+        _menu!.Open(chair);
+        Type(ChairFieldsEditor.SeatHeightNode, "500");
+        Assume.That(Text(Field(ChairFieldsEditor.SeatHeightNode)), Is.EqualTo("500"));
+
+        _menu!.Open(Board());
+
+        var row = Field(ChairFieldsEditor.SeatHeightNode);
+        Assume.That(row.gameObject.activeInHierarchy, Is.False,
+            "у полки нет высоты сиденья — строка спрятана");
+        Assert.AreEqual("0", Text(row),
+            "в спрятанной строке — холостое значение, а не 500 мм от стула");
     }
 }

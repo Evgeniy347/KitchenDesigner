@@ -126,14 +126,12 @@ namespace KitchenDesigner.Core.UI
 
         public override void Track(KitchenElement element)
         {
-            bool mine = Handles(element);
             foreach (var binding in _bindings)
-                Fields.Track(binding.Field, mine ? binding.TextOf(element) : binding.IdleText);
+                Fields.Track(binding.Field, binding.TextOf(element));
         }
 
         private void WriteFields(KitchenElement element)
         {
-            if (!Handles(element)) return;
             foreach (var binding in _bindings) binding.Field.text = binding.TextOf(element);
         }
     }
