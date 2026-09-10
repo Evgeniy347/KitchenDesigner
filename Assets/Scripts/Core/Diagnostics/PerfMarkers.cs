@@ -65,10 +65,19 @@ namespace KitchenDesigner.Core
         public static readonly PerfMarker ErrorPanelAnalyze = Reg("ErrorPanelUI.Analyze");
         public static readonly PerfMarker ToolbarRefresh = Reg("ToolbarUI.Refresh");
 
-        public static readonly ProfilerMarker DoorSnapToWall = new ProfilerMarker("DoorElement.SnapToWall");
-        public static readonly ProfilerMarker WindowSnapToWall = new ProfilerMarker("WindowElement.SnapToWall");
+        public static readonly PerfMarker DoorSnapToWall = Reg("DoorElement.SnapToWall");
+        public static readonly PerfMarker WindowSnapToWall = Reg("WindowElement.SnapToWall");
 
         public static IReadOnlyList<string> NamesInDeclarationOrder => _namesFilledByEveryRegBelow;
+
+        public static readonly IReadOnlyDictionary<string, string[]> NestedInto = new Dictionary<string, string[]>()
+        {
+            ["OpeningCollision.FindMaxProgress"] = new[]
+            {
+                "OpeningCollision.BuildObstacles",
+                "OpeningCollision.ScanForBlock",
+            },
+        };
 
         internal static void AddTicks(int slot, long ticks) => _ticksThisFrame[slot] += ticks;
 

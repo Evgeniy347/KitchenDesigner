@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.Profiling;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -46,7 +45,7 @@ namespace KitchenDesigner.Core
             set { _sillProtrusionMM = Mathf.Clamp(value, 0, 200); ApplyDimensions(); }
         }
 
-        protected override ProfilerMarker SnapToWallMarker => PerfMarkers.WindowSnapToWall;
+        protected override PerfMarker SnapToWallMarker => PerfMarkers.WindowSnapToWall;
 
         protected override void RegisterOnWall(Wall wall) => wall.RegisterWindow(this);
         protected override void UnregisterOnWall(Wall wall) => wall.UnregisterWindow(this);

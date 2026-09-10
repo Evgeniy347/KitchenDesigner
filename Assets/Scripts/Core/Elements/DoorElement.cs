@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.Profiling;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -33,7 +32,7 @@ namespace KitchenDesigner.Core
             set { _sashType = value; ApplySashType(); }
         }
 
-        protected override ProfilerMarker SnapToWallMarker => PerfMarkers.DoorSnapToWall;
+        protected override PerfMarker SnapToWallMarker => PerfMarkers.DoorSnapToWall;
 
         protected override void RegisterOnWall(Wall wall) => wall.RegisterDoor(this);
         protected override void UnregisterOnWall(Wall wall) => wall.UnregisterDoor(this);

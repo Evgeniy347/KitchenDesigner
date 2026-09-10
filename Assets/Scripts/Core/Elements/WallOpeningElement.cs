@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.Profiling;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -412,7 +411,7 @@ namespace KitchenDesigner.Core
             group = null;
         }
 
-        protected abstract ProfilerMarker SnapToWallMarker { get; }
+        protected abstract PerfMarker SnapToWallMarker { get; }
         protected abstract void RegisterOnWall(Wall wall);
         protected abstract void UnregisterOnWall(Wall wall);
         protected abstract bool IsRegisteredOn(Wall wall);

@@ -69,13 +69,16 @@ public class PerfMarkerCoverageTests
     [Test]
     public void EveryMarkerName_NamesTheFile_ItIsActuallyMeasuredIn()
     {
-        var files = ProductionFilesOutsideDiagnostics();
+        // Раньше `File.ReadAllText` жил внутри `FirstOrDefault`, вызываемого на каждый
+        // маркер — O(маркеры × файлы), порядка 40 × 700 чтений диска на один прогон. Дерево
+        // читается один раз в словарь, дальше сторож только ищет по уже прочитанному тексту.
+        var text = ProductionFilesOutsideDiagnostics().ToDictionary(f => f, File.ReadAllText);
         var offenders = new List<string>();
 
         foreach (var (fieldName, markerName) in MarkerNameByFieldName())
         {
             var pattern = new Regex(@"\bPerfMarkers\." + Regex.Escape(fieldName) + @"\b");
-            var site = files.FirstOrDefault(f => pattern.IsMatch(File.ReadAllText(f)));
+            var site = text.FirstOrDefault(pair => pattern.IsMatch(pair.Value)).Key;
             if (site == null) continue;
 
             string owner = markerName.Substring(0, Math.Max(markerName.IndexOf('.'), 0));
@@ -92,26 +95,6 @@ public class PerfMarkerCoverageTests
             "имя маркера — это адрес: по «Wall.SyncOpenings» в дампе идут открывать "
             + "Wall.cs. Имя, разъехавшееся с местом замера, посылает читателя дампа "
             + "в чужой файл — и тем дороже, чем позднее это заметят: " + string.Join("; ", offenders));
-    }
-
-    [Test]
-    public void TheOnlyMarkersLeftOnTheUnityProfiler_AreTheTwoWallOpeningOnes()
-    {
-        var unityOnly = typeof(PerfMarkers)
-            .GetFields(BindingFlags.Public | BindingFlags.Static)
-            .Where(f => f.FieldType == typeof(Unity.Profiling.ProfilerMarker))
-            .Select(f => f.Name)
-            .OrderBy(n => n)
-            .ToArray();
-
-        CollectionAssert.AreEqual(new[] { "DoorSnapToWall", "WindowSnapToWall" }, unityOnly,
-            "маркер типа ProfilerMarker меряет ЧЕРЕЗ Unity, а его Begin/End помечены "
-            + "[Conditional(\"ENABLE_PROFILER\")] — в обычной сборке плеера он не даёт "
-            + "ничего, поэтому такие маркеры и не попадают в список F9-профиля: имя без "
-            + "числа хуже отсутствующего имени. Эти двое остались, потому что их "
-            + "единственное место замера — WallOpeningElement.SnapToWall, и файл в тот "
-            + "момент правил другой агент. Освободится файл — перевести оба на Reg() "
-            + "и удалить этот тест; появится третий — так делать нельзя");
     }
 
     [Test]

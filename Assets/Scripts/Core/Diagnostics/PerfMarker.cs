@@ -23,21 +23,32 @@ namespace KitchenDesigner.Core
         {
             private readonly int _slot;
             private readonly long _startedAtTicks;
+            private readonly bool _hasStartTicks;
             private readonly ProfilerMarker _unity;
 
             internal Scope(int slot, ProfilerMarker unity)
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || KD_PERF
                 _slot = slot;
                 _unity = unity;
-                _startedAtTicks = PerfMarkers.Measuring ? Stopwatch.GetTimestamp() : 0L;
+                _hasStartTicks = PerfMarkers.Measuring;
+                _startedAtTicks = _hasStartTicks ? Stopwatch.GetTimestamp() : 0L;
                 _unity.Begin();
+#else
+                _slot = 0;
+                _unity = default;
+                _hasStartTicks = false;
+                _startedAtTicks = 0L;
+#endif
             }
 
             public void Dispose()
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || KD_PERF
                 _unity.End();
-                if (_startedAtTicks == 0L) return;
+                if (!_hasStartTicks) return;
                 PerfMarkers.AddTicks(_slot, Stopwatch.GetTimestamp() - _startedAtTicks);
+#endif
             }
         }
     }

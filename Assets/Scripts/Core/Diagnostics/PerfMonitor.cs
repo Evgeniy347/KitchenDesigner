@@ -286,7 +286,8 @@ namespace KitchenDesigner.Core
             {
                 int i = order[k];
                 if (!WorthShowing(_worstMarkersMs[i])) break;
-                sb.AppendLine("     " + MarkerLine(_slots[i].Name, _worstMarkersMs[i], DumpNameColumnWidth));
+                sb.AppendLine("     " + MarkerLine(_slots[i].Name, _worstMarkersMs[i], DumpNameColumnWidth)
+                              + NestedSuffix(_slots[i].Name));
                 shown++;
             }
             if (shown == 0) sb.AppendLine($"     все маркеры дешевле {DumpThresholdMs:F2}ms — время уходит мимо них");
@@ -305,7 +306,7 @@ namespace KitchenDesigner.Core
                 int i = order[k];
                 if (!WorthShowing(avgPerFrameMs[i]) && !WorthShowing(slots[i].MaxMs)) continue;
                 sb.AppendLine("     " + MarkerLine(slots[i].Name, avgPerFrameMs[i], DumpNameColumnWidth)
-                              + " / " + Milliseconds(slots[i].MaxMs) + "ms");
+                              + " / " + Milliseconds(slots[i].MaxMs) + "ms" + NestedSuffix(slots[i].Name));
                 shown++;
             }
         }
@@ -314,6 +315,11 @@ namespace KitchenDesigner.Core
 
         internal static string MarkerLine(string name, float ms, int nameWidth) =>
             name.PadRight(nameWidth) + " " + Milliseconds(ms) + "ms";
+
+        internal static string NestedSuffix(string name) =>
+            PerfMarkers.NestedInto.TryGetValue(name, out var children)
+                ? "  [вкл. " + string.Join(", ", children) + "]"
+                : "";
 
         private static string Milliseconds(float ms) =>
             ms.ToString("F2").PadLeft(MillisecondsColumnWidth);

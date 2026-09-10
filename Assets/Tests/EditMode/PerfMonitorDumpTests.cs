@@ -132,6 +132,30 @@ public class PerfMonitorDumpTests
         Assert.Greater(shortName.Length, PerfMonitor.DumpNameColumnWidth);
     }
 
+    // Дефект D4 (вторая часть): `OpeningCollision.FindMaxProgress` вызывает и
+    // `BuildObstacles`, и `ScanForBlock` — их такты уже включены в родителя, поэтому
+    // колонки дампа честно суммируются далеко за 100% кадра. Вместо вычитания тактов у
+    // родителя (что смешало бы «где горячо» с «кто кого вызвал») дамп прямо подписывает
+    // вложенность рядом с именем через PerfMarkers.NestedInto.
+    [Test]
+    public void NestedSuffix_NamesTheChildren_ForAMarkerThatContainsThem()
+    {
+        StringAssert.Contains("OpeningCollision.BuildObstacles",
+            PerfMonitor.NestedSuffix("OpeningCollision.FindMaxProgress"),
+            "без подписи читатель дампа видит родителя и детей по отдельности, каждого "
+            + "долей от 100% кадра, и складывает их — получая цифру, которой не бывает");
+        StringAssert.Contains("OpeningCollision.ScanForBlock",
+            PerfMonitor.NestedSuffix("OpeningCollision.FindMaxProgress"));
+    }
+
+    [Test]
+    public void NestedSuffix_IsEmpty_ForAMarkerThatNestsNothing()
+    {
+        Assert.AreEqual("", PerfMonitor.NestedSuffix("CameraController.Update"),
+            "подпись — исключение для конкретных вложенных пар, а не украшение каждой "
+            + "строки дампа");
+    }
+
     [Test]
     public void CsvCapacity_HoldsAtLeastAMinuteOfFramesAt60Fps()
     {
