@@ -127,7 +127,10 @@ public class MaterialTests
 
         var spec = SpecificationManager.Build(_spawned.ConvertAll(g => g.GetComponent<KitchenElement>()));
 
-        Assert.AreEqual(2, spec.lines.Count, "одинаковый размер, но разный декор → разные строки");
+        // +1 строка кромки погонными метрами (кромкование по умолчанию включено, торцы
+        // открыты у всех трёх досок) — она общая на весь Build, не по материалу.
+        Assert.AreEqual(3, spec.lines.Count,
+            "одинаковый размер, но разный декор → разные строки, плюс общая строка кромки");
         Assert.AreEqual(3, spec.totalCount);
 
         var csv = SpecificationExport.ToCsv(spec);

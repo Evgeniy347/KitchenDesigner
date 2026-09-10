@@ -69,6 +69,17 @@ public class SidebarSpawnRouterTests
         UnityEngine.Object.DestroyImmediate(element.gameObject);
     }
 
+    /// <summary>Стена — единственный законный вход, у которого CLR-тип совпадает с обычной
+    /// доской: `ElementFactoryInstance.CreateWall` строит plain `KitchenElement` и вешает
+    /// маркерный компонент `Wall` поверх него (тот же приём, каким `IsFlatBoardElement` и
+    /// `SupportsGrooves` отличают стену от доски в продакшне) — своего класса у стены нет и не
+    /// предполагается. Голое сравнение CLR-типов не видит этого и объявляло бы стену
+    /// «провалившейся в доску» при каждом прогоне. Проверяем и тип, И отсутствие маркера: вид,
+    /// который действительно провалился в CreatePart, не несёт вообще никакого компонента
+    /// сверх обычной доски — а стена несёт `Wall`.</summary>
+    private static bool IsIndistinguishableFromPlainBoard(KitchenElement element, Type boardType) =>
+        element.GetType() == boardType && element.GetComponent<Wall>() == null;
+
     /// <summary>Снимок наблюдаемого поведения спауна: конкретный тип
     /// компонента (различает вид И пресеты, которые меняют класс — сборный
     /// фасад, каждый фитинг трубы) плюс габариты плюс всё, что можно снять
@@ -124,7 +135,7 @@ public class SidebarSpawnRouterTests
         {
             if (kind == SidebarItemKind.Board) continue;
             var element = SpawnReal(ItemOfKind(kind));
-            bool isBoard = element.GetType() == boardType;
+            bool isBoard = IsIndistinguishableFromPlainBoard(element, boardType);
             Destroy(element);
             if (isBoard) fallen.Add(kind.ToString());
         }
@@ -157,7 +168,7 @@ public class SidebarSpawnRouterTests
         foreach (var item in CatalogItems())
         {
             var element = SpawnReal(item);
-            bool isBoard = element.GetType() == boardType;
+            bool isBoard = IsIndistinguishableFromPlainBoard(element, boardType);
             Destroy(element);
             if (item.kind != SidebarItemKind.Board && isBoard)
                 silent.Add(item.name + " (" + item.kind + ")");
@@ -284,7 +295,16 @@ public class SidebarSpawnRouterTests
     {
         switch (value)
         {
-            case string s: return s + "*";
+            // Префикс, а не суффикс: спаун имени и большинства строковых полей проходит через
+            // ElementNaming.Sanitize, а тот ЗАВЕРШАЕТ санитайзинг вызовом Trim('_') — символ
+            // вроде "*" на конце строки не транслитерируется и не отбрасывается, а превращается
+            // в "_", который тут же обрезается тем же Trim. "Имя*" и "Имя" сануются в ОДНУ и ту
+            // же строку, мутация исчезает бесследно, и «имя доезжает до спауна» перестаёт быть
+            // наблюдаемым — не потому что имя не доехало, а потому что сенсор ослеп на
+            // собственной мутации. Префикс не встречает этой ловушки: ведущий "Z" не подпадает
+            // ни под Trim (тот трогает лишь края уже собранной строки после свёртки), ни под
+            // отбрасывание, и остаётся в сануированном результате.
+            case string s: return "Z" + s;
             case int i: return i + 137;
             case Vector3Int v: return v + new Vector3Int(7, 11, 13);
             case SidebarItemKind k:

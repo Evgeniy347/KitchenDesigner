@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -400,6 +401,21 @@ public class EdgeBandingTests
         return col;
     }
 
+    /// <summary>Строка полки в CSV по имени, а не по фиксированному индексу: Build добавляет
+    /// строку кромки погонными метрами (материал "" — сортируется раньше "Shelf"), так что
+    /// данные полки не обязаны лежать сразу после шапки.</summary>
+    private static string[] ShelfRow(SpecResult result)
+    {
+        var header = CsvRow(result, 0);
+        int nameCol = System.Array.IndexOf(header, "Name");
+        var rows = SpecificationExport.ToCsv(result).Replace("\r\n", "\n").Trim().Split('\n');
+        return rows.Skip(1).Select(r => r.Split(';')).Single(cells => cells[nameCol] == "Shelf");
+    }
+
+    /// <summary>Замер, не предположение: Build теперь добавляет ещё строку кромки погонными
+    /// метрами (материал у неё "" — пустая строка сортируется раньше любого названия
+    /// материала), поэтому строка ПОЛКИ больше не обязана стоять первой после шапки. Данные
+    /// не теряются — они просто на другой строке; строку полки находим по колонке Name.</summary>
     [Test]
     public void ToCsv_OpenEndsCarryThicknessCoveredOnesAreEmpty()
     {
@@ -409,7 +425,7 @@ public class EdgeBandingTests
         side.EdgeBandingEnabled = false; // стойка в этом тесте не интересна
 
         var result = SpecificationManager.Build(new List<KitchenElement> { shelf, side });
-        var row = CsvRow(result, 1);
+        var row = ShelfRow(result);
 
         Assert.AreEqual("0.5", row[Column(result, "Кромка L1")]);
         Assert.AreEqual("0.5", row[Column(result, "Кромка L2")]);
@@ -455,7 +471,10 @@ public class EdgeBandingTests
         var result = SpecificationManager.Build(
             new List<KitchenElement> { open, closed, side });
 
-        Assert.AreEqual(3, result.lines.Count);
+        // 3 доски (open/closed/side — разная кромка или разные габариты, значит разные
+        // позиции) + 1 общая строка кромки погонными метрами (open и closed кромкуются по
+        // умолчанию; сторона выключила кромкование себе, но не мешает чужой строке).
+        Assert.AreEqual(4, result.lines.Count, "3 доски (разные позиции) + строка кромки");
     }
 
     // ── Валидация ──────────────────────────────────────────────────

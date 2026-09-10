@@ -129,6 +129,13 @@ public class MoventoDrawerTests
 
     // ── 2. Спецификация: Movento раскладывается, GTV — нет ───────────────
 
+    /// <summary>Движок раскладки — DrawerElement.GetSpecItems (IQuantifies), а не старая
+    /// ISpecificationParts-композиция: строка группируется по ИМЕНИ детали (part.suffix)
+    /// вместе с размером и материалом. Перед и задник совпадают размером, но у них РАЗНЫЕ
+    /// имена ("Перед"/"Задник") — поэтому они больше не слипаются в одну строку только
+    /// потому, что случайно вышел один и тот же габарит: это разные физические детали, и
+    /// ведомость обязана показать обе. Раньше (Accumulate по dims+material, без имени)
+    /// они прятали бы одну деталь за другой.</summary>
     [Test]
     public void Spec_MoventoDrawer_DecomposesIntoParts()
     {
@@ -136,24 +143,36 @@ public class MoventoDrawerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { drawer });
 
-        // 3 строки: боковина ×2, перед+задник ×2 (одинаковый размер), дно ×1.
-        Assert.AreEqual(3, result.lines.Count, "боковины / перед+задник / дно");
+        // 4 строки: боковина ×2 (сгруппирована — одинаковое имя и размер), перед ×1, задник
+        // ×1 (та же геометрия, что у переда, но другое имя — отдельная строка), дно ×1.
+        Assert.AreEqual(4, result.lines.Count, "боковина / перед / задник / дно");
         Assert.AreEqual(5, result.totalCount, "всего 5 деталей");
 
-        foreach (var line in result.lines)
-            Assert.IsTrue(line.name.Contains("·"), $"деталь должна иметь суффикс: {line.name}");
-
-        var bottom = result.lines.First(l => l.name.EndsWith("·" + MoventoDrawerMesh.SUFFIX_BOTTOM));
+        var bottom = result.lines.First(l => l.name == MoventoDrawerMesh.SUFFIX_BOTTOM);
         Assert.AreEqual(new Vector3Int(494, 490, 16), bottom.dimensionsMM, "размер дна в спецификации");
         Assert.AreEqual(1, bottom.count);
 
-        var side = result.lines.First(l => l.name.EndsWith("·" + MoventoDrawerMesh.SUFFIX_SIDE));
+        var side = result.lines.First(l => l.name == MoventoDrawerMesh.SUFFIX_SIDE);
         Assert.AreEqual(2, side.count, "боковины группируются в count 2");
         Assert.AreEqual(new Vector3Int(490, 86, 16), side.dimensionsMM);
+
+        var front = result.lines.First(l => l.name == MoventoDrawerMesh.SUFFIX_FRONT);
+        var back = result.lines.First(l => l.name == MoventoDrawerMesh.SUFFIX_BACK);
+        Assert.AreEqual(1, front.count);
+        Assert.AreEqual(1, back.count);
+        Assert.AreEqual(front.dimensionsMM, back.dimensionsMM,
+            "перед и задник совпадают размером — и всё равно две разные строки");
     }
 
+    /// <summary>Переписано: ящик GTV больше НЕ остаётся одной строкой. Метабокс — покупное
+    /// изделие в штуках, но дно и задняя стенка внутри него — реальные листовые детали,
+    /// которые режутся из ЛДСП, и раньше (дефект из приёмки — см.
+    /// SpecificationManagerTests.Build_GtvDrawer_KitInPiecesPlusBottomAndBackInArea) их площадь
+    /// либо не считалась вовсе, либо считалась неверно как площадь пласти всего короба. Теперь
+    /// GTV честно раскладывается на комплект (Pieces, контурный габарит) плюс дно и заднюю
+    /// стенку (AreaM2, каждая своей строкой) — три строки, а не одна.</summary>
     [Test]
-    public void Spec_GtvDrawer_StaysSingleLine()
+    public void Spec_GtvDrawer_DecomposesIntoKitPlusBottomAndBack()
     {
         var go = ElementFactory.CreateDrawer(DrawerType.A, 500, DrawerColor.Anthracite, 568, "GtvDrawer", Vector3.zero);
         _spawned.Add(go);
@@ -161,12 +180,21 @@ public class MoventoDrawerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { drawer });
 
-        Assert.AreEqual(1, result.lines.Count, "GTV — одна строка (покупной короб)");
-        Assert.IsFalse(result.lines[0].name.Contains("·"), "имя GTV без суффикса детали");
-        Assert.AreEqual("GtvDrawer", result.lines[0].name);
-        Assert.AreEqual(drawer.DimensionsMM, result.lines[0].dimensionsMM, "габарит GTV — контурный бокс");
+        Assert.AreEqual(3, result.lines.Count, "комплект + дно + задняя стенка");
+
+        var kit = result.lines.Single(l => l.unit == SpecUnit.Pieces);
+        Assert.AreEqual(1, kit.count);
+        Assert.AreEqual(drawer.DimensionsMM, kit.dimensionsMM, "габарит комплекта — контурный бокс");
+
+        var boards = result.lines.Where(l => l.unit == SpecUnit.AreaM2).ToList();
+        Assert.AreEqual(2, boards.Count, "дно и задняя стенка — листовые детали, каждая своей строкой");
+        Assert.IsTrue(boards.Any(l => l.name == MoventoDrawerMesh.SUFFIX_BOTTOM));
+        Assert.IsTrue(boards.Any(l => l.name == MoventoDrawerMesh.SUFFIX_BACK));
     }
 
+    /// <summary>Те же 4 группы, что в Spec_MoventoDrawer_DecomposesIntoParts (перед и задник —
+    /// разные строки, см. её комментарий), но количество внутри каждой удваивается за счёт
+    /// второго ящика: боковины 4, перед 2, задник 2, дно 2.</summary>
     [Test]
     public void Spec_TwoIdenticalMovento_PartsGroupAcrossDrawers()
     {
@@ -175,8 +203,7 @@ public class MoventoDrawerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
 
-        // Те же 3 группы, но количество удваивается: боковины 4, перед+задник 4, дно 2.
-        Assert.AreEqual(3, result.lines.Count, "одинаковые детали двух ящиков сходятся в общие группы");
+        Assert.AreEqual(4, result.lines.Count, "боковина / перед / задник / дно — одинаковые детали двух ящиков сходятся в общие группы");
         Assert.AreEqual(10, result.totalCount, "5 деталей × 2 ящика");
     }
 

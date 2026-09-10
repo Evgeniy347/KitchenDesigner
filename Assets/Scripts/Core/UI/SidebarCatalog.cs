@@ -134,7 +134,7 @@ namespace KitchenDesigner.Core.UI
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Drawer, "Ящик",
                 DrawerItem("Ящик GTV", DefaultDrawerType, DefaultDrawerLengthMM, DefaultDrawerSystem));
             yield return SidebarCatalogRow.PresetRow(SidebarGroupKey.Drawer,
-                DrawerItem("Ящик Movento", DefaultDrawerType, 500, MoventoDrawerSystem));
+                MoventoDrawerItem("Ящик Movento"));
 
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, "Прямоугольный стол",
                 new Item("Прямоугольный стол", new Vector3Int(2000, 750, 1000), SidebarItemKind.Table));
@@ -240,6 +240,13 @@ namespace KitchenDesigner.Core.UI
             item.preset.drawerColor = DefaultDrawerColor;
             item.preset.drawerWidth = DefaultDrawerWidthMM;
             item.preset.drawerSystem = system;
+            return item;
+        }
+
+        private static Item MoventoDrawerItem(string name)
+        {
+            var item = DrawerItem(name, "B", 500, MoventoDrawerSystem);
+            item.preset.drawerColor = "White";
             return item;
         }
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -178,7 +179,10 @@ public class GroovePartTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { plain, grooved });
 
-        Assert.AreEqual(2, result.lines.Count, "одинаковые щиты с разной врезкой — разные позиции");
+        // +1 строка кромки погонными метрами (кромкование по умолчанию включено у обеих
+        // досок) — общая на весь Build, не дробится по пазам.
+        Assert.AreEqual(3, result.lines.Count,
+            "одинаковые щиты с разной врезкой — разные позиции, плюс общая строка кромки");
         Assert.AreEqual(2, result.totalCount);
     }
 
@@ -192,9 +196,12 @@ public class GroovePartTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
 
-        Assert.AreEqual(1, result.lines.Count);
-        Assert.AreEqual(2, result.lines[0].count);
-        Assert.AreEqual("Глухой 16*4*7:Низ", result.lines[0].grooves);
+        // +1 строка кромки погонными метрами (кромкование по умолчанию включено) — ищем
+        // строку доски по unit, а не по индексу [0] (кромка без материала сортируется первой).
+        Assert.AreEqual(2, result.lines.Count, "доски слились в одну группу + строка кромки");
+        var board = result.lines.Single(l => l.unit == SpecUnit.AreaM2);
+        Assert.AreEqual(2, board.count);
+        Assert.AreEqual("Глухой 16*4*7:Низ", board.grooves);
     }
 
     [Test]
@@ -209,9 +216,15 @@ public class GroovePartTests
         var rows = csv.Replace("\r\n", "\n").Trim().Split('\n');
         var header = rows[0].Split(';');
         int grooveCol = System.Array.IndexOf(header, "Grooves");
+        int nameCol = System.Array.IndexOf(header, "Name");
         Assert.AreNotEqual(-1, grooveCol, "в шапке есть колонка Grooves");
 
-        var dataRow = rows[1].Split(';');
+        // Данные — НЕ обязательно строка 1: кромкование по умолчанию включено, торцы этой
+        // детали открыты, и Build добавляет ещё строку кромки погонными метрами (без
+        // материала), которая сортируется РАНЬШЕ доски (пустой материал раньше любого
+        // названия). Строку доски находим по колонке Name, а не по фиксированному индексу —
+        // так замер переживёт появление новых строк-спутников до/после доски.
+        var dataRow = rows.Skip(1).Select(r => r.Split(';')).Single(cells => cells[nameCol] == "Board");
         Assert.AreEqual("Сквозной 16*4*7:Право", dataRow[grooveCol]);
     }
 }

@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Plumbing;
 
 public class SpecificationManagerTests
 {
@@ -21,6 +23,10 @@ public class SpecificationManagerTests
         Assert.AreEqual(0.6832f, area, 0.0001f);
     }
 
+    /// <summary>Кромка (кромкование по умолчанию включено, все торцы открыты) даёт ОДНУ
+    /// дополнительную строку погонных метров на весь Build — она не короб, поэтому у неё нет
+    /// материала, и по алфавиту пустая строка встаёт раньше любого названия материала: строка
+    /// кромки обязана лечь ПЕРВОЙ, доски — за ней, в прежнем порядке.</summary>
     [Test]
     public void Build_TwoIdenticalOneDifferent_TwoGroups()
     {
@@ -30,10 +36,11 @@ public class SpecificationManagerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { a, b, c });
 
-        Assert.AreEqual(2, result.lines.Count);
+        Assert.AreEqual(3, result.lines.Count, "2 группы досок + 1 строка кромки погонными метрами");
         Assert.AreEqual(3, result.totalCount);
-        Assert.AreEqual(2, result.lines[0].count);
-        Assert.AreEqual(1, result.lines[1].count);
+        Assert.AreEqual(SpecUnit.LinearMeters, result.lines[0].unit, "кромка без материала сортируется первой");
+        Assert.AreEqual(2, result.lines[1].count);
+        Assert.AreEqual(1, result.lines[2].count);
 
         Object.DestroyImmediate(a.gameObject);
         Object.DestroyImmediate(b.gameObject);
@@ -51,9 +58,12 @@ public class SpecificationManagerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
 
-        Assert.AreEqual(1, result.lines.Count, "уникальные имена не должны дробить группу");
-        Assert.AreEqual(2, result.lines[0].count);
-        Assert.AreEqual("Bokovina", result.lines[0].name, "имя берётся от первой детали группы");
+        // +1 строка кромки погонными метрами (кромкование по умолчанию включено, торцы
+        // открыты) — она без материала и сортируется раньше любой доски.
+        Assert.AreEqual(2, result.lines.Count, "уникальные имена не должны дробить группу досок");
+        var board = result.lines.Single(l => l.unit == SpecUnit.AreaM2);
+        Assert.AreEqual(2, board.count);
+        Assert.AreEqual("Bokovina", board.name, "имя берётся от первой детали группы");
 
         Object.DestroyImmediate(a.gameObject);
         Object.DestroyImmediate(b.gameObject);
@@ -101,9 +111,13 @@ public class SpecificationManagerTests
         var resultNormal = SpecificationManager.Build(new List<KitchenElement> { normal });
         var resultRotated = SpecificationManager.Build(new List<KitchenElement> { rotated });
 
-        Assert.AreEqual(resultNormal.lines[0].areaPerBoardM2, resultRotated.lines[0].areaPerBoardM2, 0.0001f,
+        // Кромка (по умолчанию включена) добавляет свою строку погонных метров рядом с
+        // доской — ищем строку доски по unit, а не по индексу [0].
+        var lineNormal = resultNormal.lines.Single(l => l.unit == SpecUnit.AreaM2);
+        var lineRotated = resultRotated.lines.Single(l => l.unit == SpecUnit.AreaM2);
+        Assert.AreEqual(lineNormal.areaPerBoardM2, lineRotated.areaPerBoardM2, 0.0001f,
             "0,552×0,720 в обоих случаях — толщина 18 мм не должна попасть в множители");
-        Assert.AreEqual(0.552f * 0.720f, resultNormal.lines[0].areaPerBoardM2, 0.0001f);
+        Assert.AreEqual(0.552f * 0.720f, lineNormal.areaPerBoardM2, 0.0001f);
 
         Object.DestroyImmediate(normal.gameObject);
         Object.DestroyImmediate(rotated.gameObject);
@@ -172,9 +186,12 @@ public class SpecificationManagerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { darkWood, white });
 
-        Assert.AreEqual(2, result.lines.Count);
-        Assert.AreEqual("Белый", result.lines[0].material, "по алфавиту «Белый» раньше «Ясень тёмный»");
-        Assert.AreEqual("Ясень тёмный", result.lines[1].material);
+        // +1 строка кромки погонными метрами: она без материала («») и по Ordinal встаёт
+        // раньше любого названия — первой идёт она, а не «Белый».
+        Assert.AreEqual(3, result.lines.Count, "2 доски по материалу + 1 строка кромки");
+        Assert.AreEqual("", result.lines[0].material, "кромка без материала — раньше всех по алфавиту");
+        Assert.AreEqual("Белый", result.lines[1].material, "по алфавиту «Белый» раньше «Ясень тёмный»");
+        Assert.AreEqual("Ясень тёмный", result.lines[2].material);
 
         Object.DestroyImmediate(darkWood.gameObject);
         Object.DestroyImmediate(white.gameObject);
@@ -194,9 +211,11 @@ public class SpecificationManagerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { plate, board });
 
-        Assert.AreEqual(1, result.lines.Count);
+        // Плита пола пропускается ДО кромки (BasePlate — не доскообразный элемент), но сама
+        // доска остаётся с кромкованием включённым по умолчанию — +1 строка погонных метров.
+        Assert.AreEqual(2, result.lines.Count, "доска + строка кромки; плита пола не считается вовсе");
         Assert.AreEqual(1, result.totalCount);
-        Assert.AreEqual("Board", result.lines[0].name);
+        Assert.AreEqual("Board", result.lines.Single(l => l.unit == SpecUnit.AreaM2).name);
 
         Object.DestroyImmediate(plate.gameObject);
         Object.DestroyImmediate(board.gameObject);
@@ -237,8 +256,12 @@ public class SpecificationManagerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { board });
 
-        Assert.AreEqual("Мебель", result.lines[0].section);
-        Assert.AreEqual(SpecUnit.AreaM2, result.lines[0].unit);
+        // Доска с кромкованием (по умолчанию включено) даёт ещё строку кромки погонными
+        // метрами — она тоже «Мебель», но другой unit; ищем ИМЕННО строку доски (м²), а не
+        // первую по счёту (после сортировки по материалу первой может лечь кромка).
+        var line = result.lines.Single(l => l.unit == SpecUnit.AreaM2);
+        Assert.AreEqual("Мебель", line.section);
+        Assert.AreEqual(SpecUnit.AreaM2, line.unit);
 
         Object.DestroyImmediate(board.gameObject);
     }
@@ -625,7 +648,11 @@ public class SpecificationManagerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { drawer });
 
-        Assert.AreEqual(5, result.lines.Count, "боковина×2 (сгруппированы), перед, задник, дно");
+        // 4 СТРОКИ: боковина×2 (сгруппированы — одинаковое имя и размер), перед и задник —
+        // РАЗНЫЕ строки (перед и задник теперь несут разное имя в GroupKey, поэтому больше не
+        // слипаются в одну строку только потому, что совпал размер), дно. Итого 5 деталей.
+        Assert.AreEqual(4, result.lines.Count, "боковина (×2), перед, задник, дно");
+        Assert.AreEqual(5, result.lines.Sum(l => l.count), "всего 5 листовых деталей");
         Assert.IsTrue(result.lines.All(l => l.unit == SpecUnit.AreaM2));
         Assert.IsTrue(result.lines.All(l => l.hasDims));
 
