@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using KitchenDesigner.Core.MCP;
+using KitchenDesigner.Core;
 
 public class McpPortArgumentTests
 {

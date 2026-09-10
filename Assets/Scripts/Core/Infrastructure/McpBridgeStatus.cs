@@ -11,7 +11,7 @@ namespace KitchenDesigner.Core
 
         public const string PortVariable = "UNITY_MCP_PORT";
 
-        public const string PortArgument = KitchenDesigner.Core.MCP.McpPortArgument.Name;
+        public const string PortArgument = McpPortArgument.Name;
 
         public static int? TestPort { get; set; }
 
@@ -44,7 +44,7 @@ namespace KitchenDesigner.Core
             if (!string.IsNullOrWhiteSpace(env) && int.TryParse(env, out var envPort) && envPort > 0)
                 return envPort;
 
-            var result = KitchenDesigner.Core.MCP.McpPortArgument.Parse(Environment.GetCommandLineArgs(), fallbackPort);
+            var result = McpPortArgument.Parse(Environment.GetCommandLineArgs(), fallbackPort);
             if (result.Warning != null)
                 Debug.LogWarning("[MCP] " + result.Warning);
             return result.Port;

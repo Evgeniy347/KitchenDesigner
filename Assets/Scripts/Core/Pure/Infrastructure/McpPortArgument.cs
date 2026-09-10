@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace KitchenDesigner.Core.MCP
+namespace KitchenDesigner.Core
 {
     public static class McpPortArgument
     {
