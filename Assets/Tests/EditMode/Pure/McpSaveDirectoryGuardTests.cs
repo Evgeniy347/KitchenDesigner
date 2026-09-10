@@ -1,6 +1,6 @@
 using System;
+using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using NUnit.Framework;
 using KitchenDesigner.Core;
 
@@ -11,13 +11,24 @@ using KitchenDesigner.Core;
 /// "opposite input" agents/TEST-DESIGN.md asks for.</summary>
 public class McpSaveDirectoryGuardTests
 {
-#pragma warning disable SYSLIB1054
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern bool CreateSymbolicLinkW(string symlink, string target, uint flags);
-#pragma warning restore SYSLIB1054
-
-    private const uint SYMBOLIC_LINK_FLAG_DIRECTORY = 0x1;
-    private const uint SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE = 0x2;
+    /// <summary>A directory JUNCTION, not a symlink: `mklink /J` needs no elevation and no
+    /// Developer Mode, unlike `CreateSymbolicLinkW`, which is why CI could never run the
+    /// escape test below. Both are NTFS reparse points and both are resolved transparently
+    /// by <c>Win32RealPath.TryGetFinalPath</c> (via GetFinalPathNameByHandle), so a junction
+    /// exercises the same code path in <see cref="McpSaveDirectoryGuard"/> as a symlink would.</summary>
+    private static bool TryCreateJunction(string linkPath, string target)
+    {
+        var psi = new ProcessStartInfo("cmd.exe", $"/c mklink /J \"{linkPath}\" \"{target}\"")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+        using var proc = Process.Start(psi);
+        proc!.WaitForExit();
+        return proc.ExitCode == 0 && Directory.Exists(linkPath);
+    }
 
     private string _allowedDir = string.Empty;
     private string _outsideDir = string.Empty;
@@ -141,14 +152,10 @@ public class McpSaveDirectoryGuardTests
     public void Evaluate_Refuses_WhenASymlinkInsideTheAllowedDirectoryPointsOutside()
     {
         var linkPath = Path.Combine(_allowedDir, "escape-link");
-        CreateSymbolicLinkW(linkPath, _outsideDir,
-            SYMBOLIC_LINK_FLAG_DIRECTORY | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE);
-        bool created = Marshal.GetLastWin32Error() == 0 && Directory.Exists(linkPath);
-        if (!created)
+        if (!TryCreateJunction(linkPath, _outsideDir))
         {
-            Assert.Ignore("Не удалось создать символическую ссылку в этом окружении "
-                + "(нужны права администратора либо включённый Режим разработчика Windows — "
-                + "CreateSymbolicLinkW возвращает true даже при отказе по привилегиям).");
+            Assert.Ignore("Не удалось создать junction в этом окружении "
+                + "(не NTFS-том либо иное ограничение файловой системы).");
             return;
         }
 

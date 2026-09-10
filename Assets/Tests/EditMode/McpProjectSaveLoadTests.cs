@@ -1,7 +1,9 @@
 using System.IO;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
 
@@ -68,6 +70,7 @@ public class McpProjectSaveLoadTests : McpTestFixture
         MakeElement("Board1", new Vector3Int(600, 400, 18));
         string path = Path.Combine(Application.temporaryCachePath, $"mcp_missing_{System.Guid.NewGuid():N}.json");
 
+        LogAssert.Expect(LogType.Error, $"[SaveLoad] File not found: {path}");
         var resp = _handler!.Handle(MakeReq("load_project", new { path }));
 
         Assert.AreEqual("error", resp.type,
@@ -83,6 +86,7 @@ public class McpProjectSaveLoadTests : McpTestFixture
         string path = TempPath();
         File.WriteAllText(path, "{ this is not valid json ][");
 
+        LogAssert.Expect(LogType.Error, new Regex(@"^\[SaveLoad\] Load failed: .*Missing a name for object member.*"));
         var resp = _handler!.Handle(MakeReq("load_project", new { path }));
 
         Assert.AreEqual("error", resp.type,
