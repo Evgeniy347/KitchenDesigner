@@ -136,10 +136,14 @@ SAFETY
 
 PERSISTING WORK — nothing survives past this connection on its own
   save_project {path} writes the WHOLE current project to a file — the same
-  format and the same call the app's own Save/Save As makes.
+  format and the same call the app's own Save/Save As makes. The path must
+  resolve inside the directory the app was started with (-mcpSaveDir
+  <folder>) — without that startup flag, or for any path outside it, the
+  call is refused with an error naming the reason, not a silent no-op.
   load_project {path} replaces the ENTIRE current scene with a project file —
   the same call as Open/Load. A missing or corrupt file is an error, not an
-  empty scene; the scene is left untouched.
+  empty scene; the scene is left untouched. load_project has no directory
+  restriction — it only reads.
   Neither remembers a 'last path' for you across calls — always pass the full
   path you mean.",
 

@@ -15,11 +15,18 @@ public class McpProjectSaveLoadTests : McpTestFixture
 {
     private string? _tempFile;
 
+    [SetUp]
+    public void ConfigureSaveDirectory()
+    {
+        McpSaveDirectoryStatus.TestDirectory = Application.temporaryCachePath;
+    }
+
     [TearDown]
     public void CleanupTempFile()
     {
         if (!string.IsNullOrEmpty(_tempFile) && File.Exists(_tempFile)) File.Delete(_tempFile);
         DemoMode.ResetCurrent();
+        McpSaveDirectoryStatus.ResetForTests();
     }
 
     private string TempPath()
@@ -89,6 +96,41 @@ public class McpProjectSaveLoadTests : McpTestFixture
         var resp = _handler!.Handle(MakeReq("save_project", new { }));
         Assert.AreEqual("error", resp.type,
             "path обязателен - молчаливый no-op выглядел бы как успешное сохранение");
+    }
+
+    [Test]
+    public void SaveProject_WithoutConfiguredSaveDirectory_IsRefused()
+    {
+        McpSaveDirectoryStatus.TestDirectory = null;
+        MakeElement("Board1", new Vector3Int(600, 400, 18));
+        string path = TempPath();
+
+        var resp = _handler!.Handle(MakeReq("save_project", new { path }));
+
+        Assert.AreEqual("error", resp.type,
+            "без -mcpSaveDir save_project обязан отказывать любому пути, а не тихо писать на диск");
+        StringAssert.Contains(McpSaveDirectoryStatus.DirectoryArgument, ErrorMessage(resp),
+            "отказ обязан называть параметр запуска, который включает сохранение");
+        Assert.IsFalse(File.Exists(path));
+    }
+
+    [Test]
+    public void SaveProject_OutsideTheConfiguredDirectory_IsRefused()
+    {
+        var outsideDir = Path.Combine(Application.temporaryCachePath, $"mcp_outside_{System.Guid.NewGuid():N}");
+        Directory.CreateDirectory(outsideDir);
+        McpSaveDirectoryStatus.TestDirectory = outsideDir;
+        MakeElement("Board1", new Vector3Int(600, 400, 18));
+        string path = TempPath(); // under Application.temporaryCachePath itself, NOT under outsideDir
+
+        var resp = _handler!.Handle(MakeReq("save_project", new { path }));
+
+        Assert.AreEqual("error", resp.type,
+            "путь за пределами -mcpSaveDir обязан быть отказом, даже если каталог настроен");
+        StringAssert.Contains(path, ErrorMessage(resp));
+        Assert.IsFalse(File.Exists(path));
+
+        Directory.Delete(outsideDir, recursive: true);
     }
 
     [Test]

@@ -33,6 +33,7 @@ namespace KitchenDesigner.Core.MCP
             _router = new McpRpcRouter(DispatchOnMainThread, Application.version);
             _port = McpBridgeStatus.ResolvePort(_port);
             McpBridgeStatus.Report(_port, false);
+            McpSaveDirectoryStatus.LogStartupStatus();
         }
 
         private void Start()

@@ -11,6 +11,10 @@ namespace KitchenDesigner.Core.MCP
             if (p == null || string.IsNullOrEmpty(p.path))
                 return McpResponse.Error(req.id, -32602, "path required");
 
+            var directoryCheck = McpSaveDirectoryGuard.Evaluate(McpSaveDirectoryStatus.AllowedDirectory, p.path);
+            if (!directoryCheck.Allowed)
+                return McpResponse.Error(req.id, -1, directoryCheck.Reason ?? "Refused");
+
             if (DemoMode.Current.IsDemoFile(p.path))
                 return McpResponse.Error(req.id, -1,
                     $"Refused: '{p.path}' is the demo project file. Save to a different path.");
