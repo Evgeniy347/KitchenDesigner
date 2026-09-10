@@ -79,6 +79,11 @@ real inflation was latent and appeared only when the derived bore exceeded the n
 сторону, ближе N мм друг к другу и перекрывающихся площадью. Встречные нормали законны — их
 съедает отсечение задних граней, и сенсор обязан их пропускать, иначе утонет в стыках коробок.
 
+Сенсор обобщён в `CoplanarSurfaceDetector` и прогоняется по всем типам элементов
+(`CoplanarSurfaceCoverageTests`, список типов — из `EveryElementType.Declared()`, а не руками);
+посудомойка оказалась вторым случаем ровно того же дефекта. У круглых деталей боковая грань AABB —
+касательная, а не плоскость: такие находки разбирают по мешу, а не заносят в исключения не глядя.
+
 ## Isometric screenshot tests (REQUIRED for new elements)
 
 Every new element type MUST have a PlayMode isometric screenshot test. This visual regression test ensures the element renders correctly.
