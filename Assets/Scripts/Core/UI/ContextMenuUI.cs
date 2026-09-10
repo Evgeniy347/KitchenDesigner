@@ -649,6 +649,7 @@ namespace KitchenDesigner.Core.UI
         public void Close()
         {
             SideHighlighter.Hide();
+            HoverPreviewGate.HideAll();
             _textures.EndPreview();
             _materials.EndPreview();
             TextureOverlayHandles.End();
