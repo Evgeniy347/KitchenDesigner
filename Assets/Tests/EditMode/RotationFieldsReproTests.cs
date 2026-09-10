@@ -4,6 +4,7 @@ using NUnit.Framework;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
@@ -28,12 +29,22 @@ public class RotationFieldsReproTests
     private ContextMenuUI? _menu;
     private Transform _panel = null!;
 
-    [SetUp]
-    public void SetUp()
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню —
+    /// 0,31 с, и восемь сборок это 2,4 с прогона EditMode при бюджете 170.
+    /// Боевой сценарий — это и есть ОДНА панель, переоткрываемая через
+    /// <c>Open</c>; полный разбор того, что <c>Open</c> сбрасывает, — в сводке
+    /// <see cref="ContextMenuLayoutTests"/>.
+    ///
+    /// Для ЭТОГО класса решает одна строка того сброса: <c>Open</c> зовёт
+    /// <c>RotationDisplayState.Forget</c>. Показанная тройка углов — статик
+    /// панели, и она и есть предмет жалобы; без <c>Forget</c> общая панель
+    /// показывала бы тройку предыдущего теста, и репро зеленело бы на чужом
+    /// состоянии. Каждый тест здесь открывает свой элемент со своим поворотом,
+    /// то есть проходит через <c>Forget</c> и собирает тройку из своего
+    /// кватерниона — ровно как приложение при выборе другой детали.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
-        PartRegistry.Clear();
-        GroupManager.Clear();
-        CommandStack.Clear();
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
         var go = new GameObject("CtxMenu");
@@ -42,13 +53,35 @@ public class RotationFieldsReproTests
         _panel = _canvas!.transform.Find("ContextMenu")!;
     }
 
-    [TearDown]
-    public void TearDown()
+    [OneTimeTearDown]
+    public void DropThePanel()
     {
         if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
         if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
-        _menu = null;
-        _canvas = null;
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние вокруг неё
+    /// возвращается на место здесь: реестры сцены, окно склейки правок
+    /// (<c>ApplyOncePerFrame</c> пропускает один Apply за кадр, а в EditMode
+    /// кадр не сменяется) и фокус — <c>RefreshUnfocused</c> не трогает
+    /// сфокусированное поле, а этот класс читает поля углов.</summary>
+    [SetUp]
+    public void SetUp()
+    {
+        PartRegistry.Clear();
+        GroupManager.Clear();
+        CommandStack.Clear();
+        if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+    }
+
+    /// <summary>Панель закрывается ДО уничтожения деталей: <c>Close</c> обнуляет
+    /// <c>_target</c>, иначе панель осталась бы с уничтоженной деталью в руках,
+    /// а взведённая кнопка «Удалить» — взведённой на следующий тест.</summary>
+    [TearDown]
+    public void TearDown()
+    {
+        if (_menu != null) _menu!.Close();
         foreach (var go in _spawned)
         {
             if (go == null) continue;
