@@ -86,6 +86,11 @@ namespace KitchenDesigner.Core.MCP
 
         private static readonly Detail[] Details =
         {
+            (info, el) =>
+            {
+                var wall = el.GetComponent<Wall>();
+                if (wall != null) info.wallLoadBearing = wall.LoadBearing;
+            },
             For<DrawerElement>((info, drawer) => info.drawer = new DrawerInfo
             {
                 system = McpWireEnums.Name(drawer.System),
