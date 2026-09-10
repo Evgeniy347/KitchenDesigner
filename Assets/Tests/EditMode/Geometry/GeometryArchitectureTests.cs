@@ -47,6 +47,9 @@ namespace KitchenDesigner.Tests.Geometry
         {
             ("GeometryArchitectureTests.cs",
                 "сам сторож: запрещённые символы лежат в его таблице как строки-шаблоны"),
+            ("PreviewAndHighlightRuleTests.cs",
+                "тоже сторож: он ЧИТАЕТ исходники накладки и превью и ищет в них строку "
+                + "«new GameObject(» — движка не касается, имя лежит в нём как образец поиска"),
         };
         private static string RepoSubdir(params string[] parts) => RepoPaths.Subdir(parts);
 

@@ -68,4 +68,18 @@ public class UIStyleTokenTests
         Assert.Greater(UIStyle.EdgeHighlight3D.r, UIStyle.EdgeHighlight3D.b + 0.5f,
             "Ярко-красная, а не жёлтая: на светлой текстуре детали жёлтая заливка не читалась");
     }
+
+    [Test]
+    public void UIStyle_PreviewGhost_IsGreen_AndSeeThrough()
+    {
+        Assert.Less(UIStyle.PreviewGhost.a, 0.7f,
+            "Призрак кандидата — предложение, а не факт: сквозь него обязано быть видно "
+            + "место, куда он встанет, иначе превью неотличимо от применённой правки");
+        Assert.Greater(UIStyle.PreviewGhost.a, 0.2f, "иначе призрака не видно вовсе");
+        Assert.Greater(UIStyle.PreviewGhost.g, UIStyle.PreviewGhost.r + 0.3f,
+            "Зелёный отвечает на вопрос «что будет», красный (EdgeHighlight3D) — на вопрос "
+            + "«где это»; сблизь их оттенки, и превью прочитается как ошибка");
+        Assert.Greater(UIStyle.PreviewGhost.g, UIStyle.PreviewGhost.b + 0.3f,
+            "не голубой: голубым красится призрак ПЕРЕТАСКИВАНИЯ, а это другой смысл");
+    }
 }
