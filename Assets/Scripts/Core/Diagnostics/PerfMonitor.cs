@@ -5,8 +5,11 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
+    [DefaultExecutionOrder(RunsAfterEveryMeasuredComponent)]
     public class PerfMonitor : MonoBehaviour
     {
+        internal const int RunsAfterEveryMeasuredComponent = 30000;
+
         private const int DumpEveryFrames = 120;
 
         internal const int CsvCapacityFrames = 3600;
@@ -121,14 +124,17 @@ namespace KitchenDesigner.Core
             if (GetComponent<PerfHud>() == null) gameObject.AddComponent<PerfHud>();
         }
 
-        private void Update()
+        private void Update() => HandleHotkeys();
+
+        private void LateUpdate()
         {
-            HandleHotkeys();
             if (!Enabled) return;
 
             Sample();
             if (++_windowFrames >= DumpEveryFrames) Dump();
         }
+
+        internal void SimulateLateUpdateForTests() => LateUpdate();
 
         private void HandleHotkeys()
         {
