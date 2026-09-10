@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class DrawerElement : KitchenElement, IFacadeHost, IOpenable, IQuantifies
+    public class DrawerElement : KitchenElement, IFacadeHost, IOpenable, IQuantifies, IParksAtAGestureLimit
     {
         public override bool CanFollowAnAttachParent => false;
 
@@ -300,7 +300,8 @@ namespace KitchenDesigner.Core
         internal void Update()
         {
             StepAnimation(Time.deltaTime);
-            if (!_isUpperDrawer && Mathf.Approximately(_t, _open ? 1f : 0f)) enabled = false;
+            if (!_isUpperDrawer && (Mathf.Approximately(_t, _open ? 1f : 0f) || IsParkedAtALimit))
+                enabled = false;
         }
 
         private void LateUpdate()

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class FacadeElement : KitchenElement, IOpenable
+    public class FacadeElement : KitchenElement, IOpenable, IParksAtAGestureLimit
     {
         public override bool IsFlatBoardElement => true;
 
@@ -131,7 +131,7 @@ namespace KitchenDesigner.Core
         public DoorMode Mode
         {
             get => _mode;
-            set { _mode = value; _obstacleCheckRevision = -1; if (_doorProgress > 0f) ApplyDoor(); }
+            set { _mode = value; _obstacleCheckRevision = -1; enabled = true; if (_doorProgress > 0f) ApplyDoor(); }
         }
 
         public void CycleMode() => Mode = FacadeDoor.Next(_mode);
@@ -211,7 +211,11 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            if (StillBlockedAtLastKnownSafeProgress()) return;
+            if (IsParkedAtALimit)
+            {
+                enabled = false;
+                return;
+            }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _activeStepDoors++;
@@ -260,7 +264,7 @@ namespace KitchenDesigner.Core
             return _cachedSafeProgress;
         }
 
-        private bool StillBlockedAtLastKnownSafeProgress() =>
+        public bool IsParkedAtALimit =>
             _openTarget && _obstacleCheckRevision == SceneRevision.Version
             && Mathf.Approximately(_doorProgress, _cachedSafeProgress);
 
@@ -277,6 +281,7 @@ namespace KitchenDesigner.Core
         {
             _closedPos += worldDelta;
             _obstacleCheckRevision = -1;
+            enabled = true;
             ApplyDoor();
         }
 

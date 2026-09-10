@@ -359,4 +359,80 @@ public class IdleUpdateSleepPerfGuardTests : ElementTestBase
             "сдвиг собственного transform обязан разбудить Update — иначе унитаз никогда " +
             "не переснимется к стене");
     }
+
+    // ───────────────────────── FacadeElement, упёршийся в препятствие ─────────────────────────
+
+    /// <summary>Случай, ради которого весь приём и делался, до сих пор не был закрыт: в
+    /// StepDoor ранний выход «всё ещё упёрт в тот же предел» стоял РАНЬШЕ `enabled = false`,
+    /// и условие истинно ровно для дверцы, стоящей у своего предела. Такая дверца оставалась
+    /// в списке вызовов Unity навсегда, а в этом сьюте не было ни одного случая с фасадом.</summary>
+    private FacadeElement MakeBlockedFacade()
+    {
+        var facade = MakePrimitiveFacade("Дверца", new Vector3Int(600, 716, 18),
+            new Vector3(0f, 0.358f, 0f));
+        MakePrimitiveElement("Препятствие", new Vector3Int(600, 600, 18),
+            new Vector3(0f, 0.358f, 0.3f));
+
+        facade.SetOpen(true);
+        for (int i = 0; i < 20; i++) facade.StepDoor(0.05f);
+        return facade;
+    }
+
+    [Test]
+    public void FacadeElement_StuckAgainstObstacle_DisablesUpdate()
+    {
+        var facade = MakeBlockedFacade();
+
+        Assert.Greater(facade.DoorProgress, 0f, "предусловие: дверца приоткрылась");
+        Assert.Less(facade.DoorProgress, 1f, "предусловие: препятствие её остановило");
+        Assert.IsFalse(facade.enabled,
+            "дверца упёрлась и больше не сдвинется без изменения сцены — обязана выключить " +
+            "свой Update, иначе единственный случай, ради которого всё делалось, тикает вечно");
+    }
+
+    [Test]
+    public void FacadeElement_ModeChanged_WakesTheParkedDoor()
+    {
+        var facade = MakeBlockedFacade();
+        Assert.IsFalse(facade.enabled, "предусловие: упёршаяся дверца уснула");
+
+        facade.Mode = DoorMode.HingeFrontRight;
+
+        Assert.IsTrue(facade.enabled,
+            "смена режима навески сбрасывает кэш предела — сеттер обязан и разбудить Update, " +
+            "иначе сброшенный кэш никто не пересчитает");
+    }
+
+    [Test]
+    public void FacadeElement_ClosedPoseShifted_WakesTheParkedDoor()
+    {
+        var facade = MakeBlockedFacade();
+        Assert.IsFalse(facade.enabled, "предусловие: упёршаяся дверца уснула");
+
+        facade.ShiftClosedPose(new Vector3(0.5f, 0f, 0f));
+
+        Assert.IsTrue(facade.enabled,
+            "хозяин сдвинул закрытую позу — условия жеста изменились, кэш сброшен, " +
+            "и компонент обязан проснуться");
+    }
+
+    // ───────────────────────── DrawerElement, упёршийся в препятствие ─────────────────────────
+
+    [Test]
+    public void DrawerElement_StuckAgainstObstacle_DisablesUpdate()
+    {
+        var drawer = SpawnDrawer();
+        MakePrimitiveElement("Препятствие", new Vector3Int(400, 700, 18),
+            new Vector3(0f, 0f, 0.2f));
+
+        drawer.SetOpen(true);
+        for (int i = 0; i < 30; i++) drawer.StepAnimation(0.05f);
+        drawer.Update();
+
+        Assert.Greater(drawer.AnimProgress, 0f, "предусловие: ящик выехал");
+        Assert.Less(drawer.AnimProgress, 1f, "предусловие: препятствие его остановило");
+        Assert.IsFalse(drawer.enabled,
+            "упёршийся ящик болел тем же: цель никогда не достигнута, поэтому старое условие " +
+            "выключения не срабатывало и Update тикал вечно");
+    }
 }
