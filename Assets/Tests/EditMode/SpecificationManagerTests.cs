@@ -498,4 +498,176 @@ public class SpecificationManagerTests
 
         Object.DestroyImmediate(go);
     }
+
+    // ── §1 Труба и фитинги объявляют себя ──────────────────────────
+
+    private static void CleanupPipes()
+    {
+        PartRegistry.Clear();
+        ElementFactory.ClearPools();
+    }
+
+    /// <summary>Две трубы одного условного прохода, но РАЗНОЙ длины: одна строка погонных
+    /// метров, сумма — 0,6 + 0,4 = 1,0 м, а не 2×0,6 (слагаемые намеренно разные,
+    /// AGENTS.md → TEST-DESIGN §"суммы с разными слагаемыми").</summary>
+    [Test]
+    public void Build_TwoPipesSameBore_DifferentLengths_OneLineSumsMeters()
+    {
+        var a = ElementFactory.CreatePipe(PipeSpec.Dn20, 600, "Pipe1", Vector3.zero).GetComponent<PipeElement>();
+        var b = ElementFactory.CreatePipe(PipeSpec.Dn20, 400, "Pipe2", new Vector3(0, 0, 2)).GetComponent<PipeElement>();
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
+
+        var line = result.lines.Single(l => l.unit == SpecUnit.LinearMeters && l.section == "Сантехника");
+        Assert.AreEqual(1.0f, line.qtyTotal, 0.0001f, "0,6 + 0,4 = 1,0 м; не 2×0,6");
+        Assert.AreEqual(2, line.count);
+        Assert.IsFalse(line.hasDims, "у трубы нет геометрии WxHxD, только ДН и длина");
+
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
+        CleanupPipes();
+    }
+
+    /// <summary>Противоположный вход: разный условный проход — дн20 и дн32 — обязаны попасть в
+    /// РАЗНЫЕ строки, а не слиться в одну общую.</summary>
+    [Test]
+    public void Build_TwoPipesDifferentBore_TwoSeparateLines()
+    {
+        var a = ElementFactory.CreatePipe(PipeSpec.Dn20, 500, "Pipe1", Vector3.zero).GetComponent<PipeElement>();
+        var b = ElementFactory.CreatePipe(PipeSpec.Dn32, 500, "Pipe2", new Vector3(0, 0, 2)).GetComponent<PipeElement>();
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
+
+        var pipeLines = result.lines.Where(l => l.unit == SpecUnit.LinearMeters).ToList();
+        Assert.AreEqual(2, pipeLines.Count, "дн20 и дн32 — разные строки");
+        Assert.AreNotEqual(pipeLines[0].name, pipeLines[1].name);
+
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
+        CleanupPipes();
+    }
+
+    /// <summary>Фитинги — штуки, по виду фитинга и диаметру: два отвода одного ДН — одна строка,
+    /// счёт 2. Отвод и тройник (тот же ДН) — разные строки.</summary>
+    [Test]
+    public void Build_TwoElbowsSameBore_OneLineCountsPieces()
+    {
+        var a = ElementFactory.CreatePipeElbow("Elbow1", Vector3.zero).GetComponent<PipeFittingElement>();
+        var b = ElementFactory.CreatePipeElbow("Elbow2", new Vector3(0, 0, 2)).GetComponent<PipeFittingElement>();
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
+
+        var line = result.lines.Single(l => l.unit == SpecUnit.Pieces && l.section == "Сантехника");
+        Assert.AreEqual(2, line.count);
+        Assert.AreEqual(2f, line.qtyTotal, 0.0001f);
+        Assert.IsFalse(line.hasDims);
+
+        Object.DestroyImmediate(a.gameObject);
+        Object.DestroyImmediate(b.gameObject);
+        CleanupPipes();
+    }
+
+    [Test]
+    public void Build_ElbowAndTee_TwoSeparateFittingLines()
+    {
+        var elbow = ElementFactory.CreatePipeElbow("Elbow1", Vector3.zero).GetComponent<PipeFittingElement>();
+        var tee = ElementFactory.CreatePipeTee("Tee1", new Vector3(0, 0, 2)).GetComponent<PipeFittingElement>();
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { elbow, tee });
+
+        var fittingLines = result.lines.Where(l => l.unit == SpecUnit.Pieces).ToList();
+        Assert.AreEqual(2, fittingLines.Count, "отвод и тройник — разные виды фитинга");
+
+        Object.DestroyImmediate(elbow.gameObject);
+        Object.DestroyImmediate(tee.gameObject);
+        CleanupPipes();
+    }
+
+    // ── §2 Ящик GTV — комплект в штуках плюс дно/задняя стенка в м² ──
+
+    /// <summary>Дефект: GTV метабокс считался как лист ЛДСП 0,14 м² (площадь пласти 350×400).
+    /// Теперь — комплект (штуки) плюс те детали, что реально из листа: дно и задняя стенка,
+    /// каждая своей строкой в м². Полной площади пласти короба быть не должно.</summary>
+    [Test]
+    public void Build_GtvDrawer_KitInPiecesPlusBottomAndBackInArea()
+    {
+        var go = ElementFactory.CreateDrawer(DrawerType.B, 400, DrawerColor.Anthracite, 350,
+            "Drawer1", Vector3.zero, DrawerSystem.Gtv);
+        var drawer = go.GetComponent<DrawerElement>();
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { drawer });
+
+        var kit = result.lines.Single(l => l.unit == SpecUnit.Pieces);
+        Assert.AreEqual(1, kit.count);
+        Assert.IsTrue(kit.hasDims, "габариты короба показать можно — это реальный внешний размер");
+
+        var boards = result.lines.Where(l => l.unit == SpecUnit.AreaM2).ToList();
+        Assert.AreEqual(2, boards.Count, "дно и задняя стенка — две отдельные листовые детали");
+        Assert.IsTrue(boards.All(b => b.hasDims));
+
+        float faceArea350x400 = SpecificationManager.SurfaceAreaM2(new Vector3Int(350, 400, 18)); // не в ходу, но
+        Assert.IsFalse(boards.Any(b => Mathf.Approximately(b.areaPerBoardM2, 0.14f)),
+            "площадь пласти короба целиком (350×400 ≈ 0,14 м²) — старый дефектный номер, его быть не должно");
+
+        Object.DestroyImmediate(go);
+        CleanupPipes();
+    }
+
+    /// <summary>Movento не регрессирует: тип-свитч в менеджере убран, ящик Movento теперь
+    /// проходит через тот же общий `IQuantifies`, что и GTV, и продолжает считаться листовыми
+    /// деталями в м² (боковины, перед, задник, дно).</summary>
+    [Test]
+    public void Build_MoventoDrawer_StillReportsAreaLines()
+    {
+        var go = ElementFactory.CreateDrawer(DrawerType.B, 400, DrawerColor.Anthracite, 550,
+            "Drawer1", Vector3.zero, DrawerSystem.Movento);
+        var drawer = go.GetComponent<DrawerElement>();
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { drawer });
+
+        Assert.AreEqual(5, result.lines.Count, "боковина×2 (сгруппированы), перед, задник, дно");
+        Assert.IsTrue(result.lines.All(l => l.unit == SpecUnit.AreaM2));
+        Assert.IsTrue(result.lines.All(l => l.hasDims));
+
+        Object.DestroyImmediate(go);
+        CleanupPipes();
+    }
+
+    // ── §3 Кромка — погонные метры ──────────────────────────────────
+
+    /// <summary>Изолированная доска без соседей: все четыре торца непокрыты, кромкование по
+    /// умолчанию включено — все четыре стороны обязаны дать метры кромки, а не только колонки.</summary>
+    [Test]
+    public void Build_IsolatedBoardWithEdgeBanding_AddsLinearMeterKromkaLine()
+    {
+        var board = CreateElement("Board", new Vector3Int(800, 18, 400));
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { board });
+
+        var kromka = result.lines.Where(l => l.unit == SpecUnit.LinearMeters).ToList();
+        Assert.AreEqual(1, kromka.Count, "все четыре торца — одна толщина, одна строка");
+        Assert.IsFalse(kromka[0].hasDims, "кромка — не короб, у неё нет WxHxD");
+        // два торца по 0,8 м (L1/L2) + два по 0,4 м (W1/W2) = 2,4 м суммарно.
+        Assert.AreEqual(2.4f, kromka[0].qtyTotal, 0.001f);
+
+        Object.DestroyImmediate(board.gameObject);
+    }
+
+    /// <summary>Противоположный вход: кромкование выключено — строки кромки быть не должно
+    /// вовсе, площадь пласти при этом не меняется (числа листовых деталей не трогаем).</summary>
+    [Test]
+    public void Build_BoardWithEdgeBandingDisabled_NoKromkaLineButAreaUnchanged()
+    {
+        var board = CreateElement("Board", new Vector3Int(800, 18, 400));
+        board.EdgeBandingEnabled = false;
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { board });
+
+        Assert.IsFalse(result.lines.Any(l => l.unit == SpecUnit.LinearMeters),
+            "кромкование выключено — метровой строки быть не должно");
+        Assert.AreEqual(1, result.lines.Count);
+        Assert.AreEqual(0.32f, result.totalAreaM2, 0.0001f, "площадь пласти не меняется от колонки кромки");
+
+        Object.DestroyImmediate(board.gameObject);
+    }
 }

@@ -3,7 +3,7 @@ using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core
 {
-    public class PipeElement : KitchenElement, ISnapPorts, IAutoSeated
+    public class PipeElement : KitchenElement, ISnapPorts, IAutoSeated, IQuantifies
     {
         public override string DisplayTypeName => "Труба";
 
@@ -78,6 +78,12 @@ namespace KitchenDesigner.Core
         public void RepairJointAfterGridSnap(
             System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
             PipeDocking.RepairAfterGridSnap(this, scene);
+
+        public System.Collections.Generic.IEnumerable<SpecItem> GetSpecItems(
+            System.Collections.Generic.IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PipeSpecItems.PipeLine(Size, _lengthMM);
+        }
 
         public Vector3 EndAUnits => SnapPortAt(0, transform.position).Position;
 

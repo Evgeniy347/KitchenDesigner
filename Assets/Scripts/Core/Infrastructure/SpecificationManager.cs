@@ -32,6 +32,7 @@ namespace KitchenDesigner.Core
 
         public string section;
         public SpecUnit unit;
+        public bool hasDims;
 
         public float qtyPerItem;
         public float qtyTotal;
@@ -150,8 +151,6 @@ namespace KitchenDesigner.Core
 
     public static class SpecificationManager
     {
-        private const string FurnitureSection = "Мебель";
-
         public static float SurfaceAreaM2(Vector3Int dimsMM)
         {
             float w = dimsMM.x * AppConstants.MM_TO_UNITS;
@@ -189,20 +188,20 @@ namespace KitchenDesigner.Core
                     continue;
                 }
 
-                if (e is DrawerElement drawer && drawer.System == DrawerSystem.Movento)
-                {
-                    string decor = MaterialCatalog.Get(e.MaterialId).displayName;
-                    foreach (var part in drawer.GetSpecParts())
-                        Accumulate(groups, order, $"{e.PartName}·{part.suffix}",
-                            part.dimsMM, part.materialKind ?? decor, "", default);
-                    continue;
-                }
-
                 if (!e.IsFlatBoardElement) continue;
 
+                var edges = EdgeColumns.For(e, all);
                 Accumulate(groups, order, e.PartName, e.DimensionsMM,
-                    MaterialCatalog.Get(e.MaterialId).displayName, GroovesLabel(e),
-                    EdgeColumns.For(e, all));
+                    MaterialCatalog.Get(e.MaterialId).displayName, GroovesLabel(e), edges);
+
+                var layout = EdgeBanding.LayoutOf(e.DimensionsMM);
+                if (layout.IsValid)
+                {
+                    AddEdgeBandingItem(groups, order, edges.l1, layout.SideLengthMM(EdgeSide.L1));
+                    AddEdgeBandingItem(groups, order, edges.l2, layout.SideLengthMM(EdgeSide.L2));
+                    AddEdgeBandingItem(groups, order, edges.w1, layout.SideLengthMM(EdgeSide.W1));
+                    AddEdgeBandingItem(groups, order, edges.w2, layout.SideLengthMM(EdgeSide.W2));
+                }
             }
 
             var result = new SpecResult { lines = new List<SpecLine>() };
@@ -260,8 +259,9 @@ namespace KitchenDesigner.Core
                     edgeL2 = edges.l2,
                     edgeW1 = edges.w1,
                     edgeW2 = edges.w2,
-                    section = FurnitureSection,
+                    section = SpecSections.Furniture,
                     unit = SpecUnit.AreaM2,
+                    hasDims = true,
                     qtyPerItem = faceArea,
                 };
                 order.Add(key);
@@ -288,6 +288,7 @@ namespace KitchenDesigner.Core
                     grooves = "",
                     section = item.section,
                     unit = item.unit,
+                    hasDims = item.hasDims,
                     qtyPerItem = item.hasDims ? item.qty : 0f,
                 };
                 order.Add(key);
@@ -300,6 +301,13 @@ namespace KitchenDesigner.Core
                 line.totalAreaM2 = line.qtyTotal;
             }
             groups[key] = line;
+        }
+
+        private static void AddEdgeBandingItem(Dictionary<string, SpecLine> groups, List<string> order,
+            string thicknessLabel, int sideLengthMM)
+        {
+            if (string.IsNullOrEmpty(thicknessLabel)) return;
+            AccumulateItem(groups, order, EdgeBandingSpecItems.For(thicknessLabel, sideLengthMM));
         }
     }
 }

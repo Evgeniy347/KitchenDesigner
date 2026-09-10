@@ -3,10 +3,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class DrawerElement : KitchenElement, IFacadeHost, IOpenable
+    public class DrawerElement : KitchenElement, IFacadeHost, IOpenable, IQuantifies
     {
-        public override bool IsFlatBoardElement => true;
-
         public override bool CanFollowAnAttachParent => false;
 
         public override Vector3 AttachRestPosition => ClosedPosition;
@@ -265,11 +263,30 @@ namespace KitchenDesigner.Core
             _filter.sharedMesh = mesh;
         }
 
-        public IEnumerable<AssembledFacadeMesh.Part> GetSpecParts()
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {
-            if (_system != DrawerSystem.Movento)
-                return new AssembledFacadeMesh.Part[0];
-            return MoventoDrawerMesh.ComputeParts(_internalWidth, _type, _nominalLength);
+            string decor = MaterialCatalog.Get(MaterialId).displayName;
+
+            if (_system == DrawerSystem.Movento)
+            {
+                foreach (var part in MoventoDrawerMesh.ComputeParts(_internalWidth, _type, _nominalLength))
+                    yield return new SpecItem(SpecSections.Furniture, part.suffix,
+                        part.materialKind ?? decor, SpecUnit.AreaM2,
+                        BoardFaceArea.FaceAreaM2(part.dimsMM), part.dimsMM, hasDims: true);
+                yield break;
+            }
+
+            yield return new SpecItem(SpecSections.Furniture,
+                $"Комплект {DrawerConstants.GetSystemLabel(_system)}", "", SpecUnit.Pieces, 1f,
+                DimensionsMM, hasDims: true);
+
+            var bottom = GtvDrawerBoardParts.BottomDimsMM(_internalWidth, _nominalLength);
+            yield return new SpecItem(SpecSections.Furniture, MoventoDrawerMesh.SUFFIX_BOTTOM, decor,
+                SpecUnit.AreaM2, BoardFaceArea.FaceAreaM2(bottom), bottom, hasDims: true);
+
+            var back = GtvDrawerBoardParts.BackDimsMM(_internalWidth, _type);
+            yield return new SpecItem(SpecSections.Furniture, MoventoDrawerMesh.SUFFIX_BACK, decor,
+                SpecUnit.AreaM2, BoardFaceArea.FaceAreaM2(back), back, hasDims: true);
         }
 
         private void Update() => StepAnimation(Time.deltaTime);
