@@ -195,9 +195,12 @@ rather than naming the one field somebody remembered.
 меняет данные в пределах 0,5 мм с обоснованием.
 
 Из того же куста: **молчаливый откат по нарушению тоже переписывает размер без следа.**
-`ContextMenuUI` и `ResizeHandleManager.FinishDrag` при `BlockOnViolation` возвращают
-`DimensionsMM = oldDims` без записи команды — в хронике не остаётся ничего, и «значение само
-вернулось» становится необъяснимым.
+`ContextMenuUI` и `ResizeHandleManager.FinishDrag` при `BlockOnViolation` возвращали
+`DimensionsMM = oldDims` без записи команды — в хронике не оставалось ничего, и «значение само
+вернулось» становилось необъяснимым. Половина этого закрыта: шлюз теперь сравнивает нарушения
+до и после и НАЗЫВАЕТ отказ в статус-баре (`conventions/CORRECTNESS.md` → «Шлюз „не пущу"
+обязан спрашивать про РАЗНИЦУ»). Записи в отмене по-прежнему нет — и правильно, ничего не
+применилось; необъяснимым перестал быть сам отказ, а не его отсутствие в истории.
 
 ## Fixing how something is CREATED does not fix what was already created
 
