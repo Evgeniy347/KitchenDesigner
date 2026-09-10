@@ -107,8 +107,8 @@ MCP; `-batchmode`/`-nographics` не годятся, дымовой провер
 зелёными при несобирающемся приложении. Обычный прогон остаётся быстрым, но **в конце каждой
 многоагентной сессии менеджер гоняет `build.cmd -BuildOnly`** — один раз на всех исполнителей.
 Зелёный `dotnet` не компилирует ни UI, ни Elements, ни MCP; зелёный EditMode не доказывает, что
-
 `.exe` собирается.
+
 ## `docs/example.save.json` — NEVER TOUCH IT
 
 **This file belongs to the user. Do NOT modify it, do NOT revert it, do NOT
