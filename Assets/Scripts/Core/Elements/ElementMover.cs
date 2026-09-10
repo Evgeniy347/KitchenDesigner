@@ -77,11 +77,7 @@ namespace KitchenDesigner.Core
         {
             var shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) return;
-            _ghostMaterial = new Material(shader);
-            _ghostMaterial.SetFloat("_Surface", 1);
-            _ghostMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            _ghostMaterial.renderQueue = 3000;
-            _ghostMaterial.color = new Color(0.3f, 0.6f, 1f, 0.2f);
+            _ghostMaterial = TransparentMaterial.Make(shader, new Color(0.3f, 0.6f, 1f, 0.2f));
             _ghostMaterial.SetFloat("_Metallic", 0f);
             _ghostMaterial.SetFloat("_Smoothness", 0.1f);
         }
@@ -627,12 +623,8 @@ namespace KitchenDesigner.Core
                 var material = renderer.sharedMaterial;
                 if (material == null) continue;
 
-                var painted = new Material(material);
+                var painted = TransparentMaterial.Make(material, DragGesture.AllowedTint);
                 painted.name = ElementTint.DragName;
-                painted.SetFloat("_Surface", 1);
-                painted.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                painted.renderQueue = 3000;
-                painted.color = DragGesture.AllowedTint;
                 renderer.material = painted;
                 _dragPaint.Add(new DragPaint(renderer, material, painted));
             }

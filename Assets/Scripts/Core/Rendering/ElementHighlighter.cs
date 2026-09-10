@@ -12,9 +12,6 @@ namespace KitchenDesigner.Core
         public static bool TintEnabled { get; set; } = true;
 
         private const float TintEmissionStrength = 0.4f;
-        private const float SurfaceTypeTransparent = 1f;
-        private const float BlendModeAlpha = 0f;
-        private const int ZWriteOff = 0;
 
         private static readonly Color ValidTintColor = new Color(0.85f, 1f, 0.85f, 1f);
         private static readonly Color InvalidTintColor = new Color(1f, 0.8f, 0.8f, 1f);
@@ -74,22 +71,8 @@ namespace KitchenDesigner.Core
             return m;
         }
 
-        public static Material MakeTransparent(Shader shader, Color color)
-        {
-            var m = new Material(shader);
-            m.SetFloat("_Surface", SurfaceTypeTransparent);
-            m.SetFloat("_Blend", BlendModeAlpha);
-            m.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            m.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            m.SetInt("_ZWrite", ZWriteOff);
-            m.DisableKeyword("_ALPHATEST_ON");
-            m.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-            m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            m.SetOverrideTag("RenderType", "Transparent");
-            m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-            m.SetColor("_BaseColor", color);
-            return m;
-        }
+        public static Material MakeTransparent(Shader shader, Color color) =>
+            TransparentMaterial.Make(shader, color);
 
         public void RefreshHighlights()
         {

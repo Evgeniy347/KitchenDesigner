@@ -165,26 +165,21 @@ namespace KitchenDesigner.Core
             {
                 if (renderer == null) continue;
                 var source = renderer.sharedMaterial;
-                var painted = source != null ? new Material(source) : NeutralGhost();
+                var painted = source != null ? TransparentMaterial.Make(source, color) : NeutralGhost(color);
                 if (painted == null) continue;
 
                 painted.name = TintName;
                 painted.hideFlags = HideFlags.DontSave;
-                painted.SetFloat("_Surface", 1f);
-                painted.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                painted.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-                painted.color = color;
-                if (painted.HasProperty("_BaseColor")) painted.SetColor("_BaseColor", color);
 
                 renderer.sharedMaterial = painted;
                 Painted.Add(painted);
             }
         }
 
-        private static Material? NeutralGhost()
+        private static Material? NeutralGhost(Color color)
         {
             var shader = Shader.Find("Universal Render Pipeline/Lit");
-            return shader == null ? null : new Material(shader);
+            return shader == null ? null : TransparentMaterial.Make(shader, color);
         }
 
         private static void DestroyNow(UnityEngine.Object obj)

@@ -185,18 +185,7 @@ namespace KitchenDesigner.Core
             return _material;
         }
 
-        internal static void MakeSeeThrough(Material m)
-        {
-            if (m.HasProperty("_Surface")) m.SetFloat("_Surface", 1f);
-            if (m.HasProperty("_Blend")) m.SetFloat("_Blend", 0f);
-            if (m.HasProperty("_SrcBlend"))
-                m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            if (m.HasProperty("_DstBlend"))
-                m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            if (m.HasProperty("_ZWrite")) m.SetFloat("_ZWrite", 0f);
-            m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-        }
+        internal static void MakeSeeThrough(Material m) => TransparentMaterial.Apply(m, m.color);
 
         internal static Shader? FindHighlightShader()
         {
