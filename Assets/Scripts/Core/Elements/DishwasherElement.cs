@@ -21,67 +21,62 @@ namespace KitchenDesigner.Core
             yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
         }
 
-        public const string MODEL = "Bosch SMV25EX02E";
+        public const string MODEL = DishwasherBody.MODEL;
 
-        public const int BODY_WIDTH_MM = 598;
-        public const int BODY_DEPTH_MM = 550;
+        public const int BODY_WIDTH_MM = DishwasherBody.BODY_WIDTH_MM;
+        public const int BODY_DEPTH_MM = DishwasherBody.BODY_DEPTH_MM;
 
-        public const int HEIGHT_MIN_MM = 815;
-        public const int HEIGHT_MAX_MM = 875;
+        public const int HEIGHT_MIN_MM = DishwasherBody.HEIGHT_MIN_MM;
+        public const int HEIGHT_MAX_MM = DishwasherBody.HEIGHT_MAX_MM;
 
-        public const int BODY_HEIGHT_MM = HEIGHT_MIN_MM;
+        public const int BODY_HEIGHT_MM = DishwasherBody.BODY_HEIGHT_MM;
 
-        public const int NICHE_WIDTH_MM = 600;
-        public const int NICHE_MIN_DEPTH_MM = 550;
+        public const int NICHE_WIDTH_MM = DishwasherBody.NICHE_WIDTH_MM;
+        public const int NICHE_MIN_DEPTH_MM = DishwasherBody.NICHE_MIN_DEPTH_MM;
 
-        public const int FACADE_WIDTH_MM = NICHE_WIDTH_MM;
-        public const int FACADE_MIN_HEIGHT_MM = 655;
-        public const int FACADE_MAX_HEIGHT_MM = 725;
-        public const int FACADE_NOMINAL_HEIGHT_MM = 720;
+        public const int FACADE_WIDTH_MM = DishwasherBody.FACADE_WIDTH_MM;
+        public const int FACADE_MIN_HEIGHT_MM = DishwasherBody.FACADE_MIN_HEIGHT_MM;
+        public const int FACADE_MAX_HEIGHT_MM = DishwasherBody.FACADE_MAX_HEIGHT_MM;
+        public const int FACADE_NOMINAL_HEIGHT_MM = DishwasherBody.FACADE_NOMINAL_HEIGHT_MM;
 
-        public const int PLINTH_MIN_MM = 90;
-        public const int PLINTH_MAX_MM = 220;
-        public const int PLINTH_NICHE_MM = 89;
-        public const int PLINTH_SETBACK_MM = 53;
+        public const int PLINTH_MIN_MM = DishwasherBody.PLINTH_MIN_MM;
+        public const int PLINTH_MAX_MM = DishwasherBody.PLINTH_MAX_MM;
+        public const int PLINTH_NICHE_MM = DishwasherBody.PLINTH_NICHE_MM;
+        public const int PLINTH_SETBACK_MM = DishwasherBody.PLINTH_SETBACK_MM;
 
-        public const int FEET_PROTRUSION_MM = 100;
-        public const int FEET_ADJUST_MM = HEIGHT_MAX_MM - HEIGHT_MIN_MM;
+        public const int FEET_PROTRUSION_MM = DishwasherBody.FEET_PROTRUSION_MM;
+        public const int FEET_ADJUST_MM = DishwasherBody.FEET_ADJUST_MM;
 
-        public const int BASE_HEIGHT_MM = BODY_HEIGHT_MM - FACADE_MAX_HEIGHT_MM;
-        public const int BASE_SETBACK_MM = FEET_PROTRUSION_MM;
-        public const int BASE_DEPTH_MM = BODY_DEPTH_MM - BASE_SETBACK_MM;
+        public const int BASE_HEIGHT_MM = DishwasherBody.BASE_HEIGHT_MM;
+        public const int BASE_SETBACK_MM = DishwasherBody.BASE_SETBACK_MM;
+        public const int BASE_DEPTH_MM = DishwasherBody.BASE_DEPTH_MM;
 
-        public const int TANK_HEIGHT_MM = BODY_HEIGHT_MM - BASE_HEIGHT_MM;
+        public const int TANK_HEIGHT_MM = DishwasherBody.TANK_HEIGHT_MM;
 
-        public const float FACADE_MOUNT_GAP_MM = 5f;
+        public const float FACADE_MOUNT_GAP_MM = DishwasherBody.FACADE_MOUNT_GAP_MM;
 
-        public const int CONTROL_PANEL_HEIGHT_MM = 14;
-        public const float OVERLAY_THICKNESS_MM = 2f;
+        public const int CONTROL_PANEL_HEIGHT_MM = DishwasherBody.CONTROL_PANEL_HEIGHT_MM;
+        public const float OVERLAY_THICKNESS_MM = DishwasherBody.OVERLAY_THICKNESS_MM;
 
-        public const int BODY_WALL_MM = 20;
-        public const int DOOR_THICKNESS_MM = 20;
+        public const int BODY_WALL_MM = DishwasherBody.BODY_WALL_MM;
+        public const int DOOR_THICKNESS_MM = DishwasherBody.DOOR_THICKNESS_MM;
+        public const float DOOR_SLAB_THICKNESS_MM = DishwasherBody.DOOR_SLAB_THICKNESS_MM;
 
         public const float DOOR_OPEN_ANGLE_DEG = DropDoor.OPEN_ANGLE_DEG;
 
-        public static Vector3Int ModelDimensionsMM =>
-            new Vector3Int(BODY_WIDTH_MM, BODY_HEIGHT_MM, BODY_DEPTH_MM);
+        public static Vector3Int ModelDimensionsMM => DishwasherBody.ModelDimensionsMM;
 
-        public static int PlinthForFacade(int facadeHeightMM) => BODY_HEIGHT_MM - facadeHeightMM;
+        public static int PlinthForFacade(int facadeHeightMM) =>
+            DishwasherBody.PlinthForFacade(facadeHeightMM);
 
         public static bool IsFacadeHeightValid(int facadeHeightMM) =>
-            facadeHeightMM >= FACADE_MIN_HEIGHT_MM && facadeHeightMM <= FACADE_MAX_HEIGHT_MM;
+            DishwasherBody.IsFacadeHeightValid(facadeHeightMM);
 
-        private const int IdxBodyBottom = 0;
-        private const int IdxBodyTop = 1;
-        private const int IdxBodyLeft = 2;
-        private const int IdxBodyRight = 3;
-        private const int IdxBodyBack = 4;
-        private const int IdxBase = 5;
-        private const int IdxDoor = 6;
-        private const int IdxPanel = 7;
-        private const int BodyPartCount = 6;
-        private const int DoorPartCount = 2;
-        private const int ChildCount = BodyPartCount + DoorPartCount;
+        private const int IdxBase = DishwasherBody.IdxBase;
+        private const int IdxDoor = DishwasherBody.IdxDoor;
+        private const int IdxPanel = DishwasherBody.IdxPanel;
+        private const int BodyPartCount = DishwasherBody.BodyPartCount;
+        private const int ChildCount = DishwasherBody.ChildCount;
 
         [SerializeField] private string _attachedFacadeName = "";
         [SerializeField] private bool _open;
@@ -89,10 +84,11 @@ namespace KitchenDesigner.Core
         private ApplianceBoxes? _boxes;
         private DropDoor? _door;
 
-        private ApplianceBoxes Boxes => _boxes ??= new ApplianceBoxes(transform, ChildName);
+        private ApplianceBoxes Boxes => _boxes ??= new ApplianceBoxes(transform, DishwasherBody.ChildName);
 
         private DropDoor Door =>
-            _door ??= new DropDoor(Boxes, BodyPartCount, DoorPartsMM, () => HingeLocalMM);
+            _door ??= new DropDoor(Boxes, BodyPartCount, DishwasherBody.DoorPartsMM,
+                () => DishwasherBody.HingeLocalMM);
 
         public bool HasFixedSize => true;
 
@@ -134,7 +130,7 @@ namespace KitchenDesigner.Core
             TANK_HEIGHT_MM * AppConstants.MM_TO_UNITS,
             BODY_DEPTH_MM * AppConstants.MM_TO_UNITS);
 
-        public const float TANK_CENTER_Y_MM = BASE_HEIGHT_MM * 0.5f;
+        public const float TANK_CENTER_Y_MM = DishwasherBody.TANK_CENTER_Y_MM;
 
         public Vector3 SoleCenterWorld => transform.position + transform.rotation *
             new Vector3(0f, -BODY_HEIGHT_MM * 0.5f, 0f) * AppConstants.MM_TO_UNITS;
@@ -157,74 +153,13 @@ namespace KitchenDesigner.Core
             RebuildGeometry();
         }
 
-        private static string ChildName(int idx) => idx switch
-        {
-            IdxBodyBottom => "BodyBottom",
-            IdxBodyTop => "BodyTop",
-            IdxBodyLeft => "BodyLeft",
-            IdxBodyRight => "BodyRight",
-            IdxBodyBack => "BodyBack",
-            IdxBase => "Base",
-            IdxDoor => "Door",
-            _ => "ControlPanel",
-        };
-
-        private const float TankBottomMM = -BODY_HEIGHT_MM * 0.5f + BASE_HEIGHT_MM;
-
-        private static (Vector3 centerMM, Vector3 sizeMM)[] BodyPartsMM()
-        {
-            float halfH = BODY_HEIGHT_MM * 0.5f;
-            float halfD = BODY_DEPTH_MM * 0.5f;
-            float t = BODY_WALL_MM;
-
-            float cy = TANK_CENTER_Y_MM;
-            float bottom = TankBottomMM;
-            float top = halfH;
-            float back = -halfD;
-            float depth = BODY_DEPTH_MM - DOOR_THICKNESS_MM;
-            float cz = back + depth * 0.5f;
-
-            float sideX = (BODY_WIDTH_MM - t) * 0.5f;
-            float innerH = TANK_HEIGHT_MM - 2 * t;
-            float innerW = BODY_WIDTH_MM - 2 * t;
-
-            return new[]
-            {
-                (new Vector3(0f, bottom + t * 0.5f, cz), new Vector3(BODY_WIDTH_MM, t, depth)),
-                (new Vector3(0f, top - t * 0.5f, cz), new Vector3(BODY_WIDTH_MM, t, depth)),
-                (new Vector3(-sideX, cy, cz), new Vector3(t, innerH, depth)),
-                (new Vector3(sideX, cy, cz), new Vector3(t, innerH, depth)),
-                (new Vector3(0f, cy, back + t * 0.5f), new Vector3(innerW, innerH, t)),
-                (new Vector3(0f, -halfH + BASE_HEIGHT_MM * 0.5f, back + BASE_DEPTH_MM * 0.5f),
-                 new Vector3(BODY_WIDTH_MM, BASE_HEIGHT_MM, BASE_DEPTH_MM)),
-            };
-        }
-
-        private static (Vector3 centerMM, Vector3 sizeMM)[] DoorPartsMM()
-        {
-            float halfH = BODY_HEIGHT_MM * 0.5f;
-            float halfD = BODY_DEPTH_MM * 0.5f;
-
-            return new[]
-            {
-                (new Vector3(0f, TANK_CENTER_Y_MM, halfD - DOOR_THICKNESS_MM * 0.5f),
-                 new Vector3(BODY_WIDTH_MM, TANK_HEIGHT_MM, DOOR_THICKNESS_MM)),
-                (new Vector3(0f, halfH - CONTROL_PANEL_HEIGHT_MM * 0.5f,
-                     halfD - OVERLAY_THICKNESS_MM * 0.5f),
-                 new Vector3(BODY_WIDTH_MM, CONTROL_PANEL_HEIGHT_MM, OVERLAY_THICKNESS_MM)),
-            };
-        }
-
-        public static Vector3 HingeLocalMM =>
-            new Vector3(0f, TankBottomMM, BODY_DEPTH_MM * 0.5f - DOOR_THICKNESS_MM);
-
         public static Quaternion DoorLocalRotation(float progress) => DropDoor.LocalRotation(progress);
 
         private void RebuildGeometry()
         {
             Boxes.Ensure(ChildCount);
 
-            var body = BodyPartsMM();
+            var body = DishwasherBody.BodyPartsMM();
             for (int i = 0; i < BodyPartCount; i++)
                 Boxes.Place(i, body[i].centerMM, body[i].sizeMM, Quaternion.identity);
 
