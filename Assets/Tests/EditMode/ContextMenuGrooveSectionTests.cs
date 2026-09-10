@@ -12,8 +12,21 @@ public class ContextMenuGrooveSectionTests
     private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню — 0,31 с,
+    /// и десять сборок это 3,1 с из прогона EditMode при бюджете 170 с. Почему это
+    /// безопасно — в сводке <see cref="ContextMenuLayoutTests"/>: боевой сценарий и есть
+    /// ОДНА панель, переоткрываемая через <c>Open</c>, а <c>Open</c> и есть её сброс —
+    /// в том числе <c>_grooves.Collapse()</c> и <c>_grooves.Refresh()</c>, на которых
+    /// стоят <see cref="OpeningAnElement_ShowsTheGrooveListCollapsed"/> и
+    /// <see cref="GroovesChangedOutsideTheMenu_IsNoticed"/>.
+    ///
+    /// Три теста панель не открывают вовсе (<see cref="GrooveWidgets_KeepTheirNames"/> и
+    /// оба теста про порядок пунктов дропдаунов): они читают то, что собрано в
+    /// <c>Build</c> и не зависит от элемента — имена узлов и списки, снятые с
+    /// <c>GrooveSide</c>/<c>GrooveKind</c>. Свёрнутость строк им не мешает:
+    /// <c>Transform.Find</c> находит и погашенные узлы.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
@@ -22,12 +35,41 @@ public class ContextMenuGrooveSectionTests
         _menu!.Build(_canvas!.transform);
     }
 
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние ВНУТРИ неё
+    /// сбрасывается здесь. <c>ForgetLastApplyFrame</c> — окно склейки правок:
+    /// <c>ApplyOncePerFrame</c> пропускает один Apply за кадр, а в EditMode
+    /// <c>Time.frameCount</c> стоит на месте, поэтому окно, взведённое предыдущим
+    /// тестом, съело бы первую правку следующего. Фокус снимается по той же причине:
+    /// <c>RefreshUnfocused</c> МОЛЧА пропускает сфокусированное поле, а
+    /// <c>EventSystem</c> в EditMode один на весь прогон и переживает не только тест,
+    /// но и класс. <c>DisarmAll</c> — второй ремень к <c>Close()</c> из
+    /// <c>[TearDown]</c>: взвод «Удалить» живёт в статике, а строка, уже погашенная
+    /// свёрнутой секцией, второго <c>OnDisable</c> не получит.</summary>
+    [SetUp]
+    public void Setup()
+    {
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
+    }
+
+    /// <summary>«Удалить» взводится статиком <c>ConfirmDeleteButton._theOnlyArmedOne</c>,
+    /// а <c>_target</c> панели указывает на деталь, которую этот же <c>[TearDown]</c>
+    /// сейчас уничтожит. И то и другое снимает <c>Close()</c> — и он обязан идти ДО
+    /// <c>DestroyImmediate</c>.</summary>
     [TearDown]
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        if (_menu != null) _menu!.Close();
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
