@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
@@ -10,7 +11,7 @@ namespace KitchenDesigner.Core
 
         public const string PortVariable = "UNITY_MCP_PORT";
 
-        public const string PortArgument = "-mcpPort";
+        public const string PortArgument = KitchenDesigner.Core.MCP.McpPortArgument.Name;
 
         public static int? TestPort { get; set; }
 
@@ -43,17 +44,10 @@ namespace KitchenDesigner.Core
             if (!string.IsNullOrWhiteSpace(env) && int.TryParse(env, out var envPort) && envPort > 0)
                 return envPort;
 
-            var args = Environment.GetCommandLineArgs();
-            for (int i = 0; i < args.Length - 1; i++)
-            {
-                if (args[i].Equals(PortArgument, StringComparison.OrdinalIgnoreCase) &&
-                    int.TryParse(args[i + 1], out var argPort) && argPort > 0)
-                {
-                    return argPort;
-                }
-            }
-
-            return fallbackPort;
+            var result = KitchenDesigner.Core.MCP.McpPortArgument.Parse(Environment.GetCommandLineArgs(), fallbackPort);
+            if (result.Warning != null)
+                Debug.LogWarning("[MCP] " + result.Warning);
+            return result.Port;
         }
     }
 }
