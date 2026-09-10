@@ -554,6 +554,10 @@ locked                true = move/resize/delete will be rejected (edit_elements
 transparent           true = drawn see-through (edit_elements {transparent:...}).
                       Appearance only - size, position and the specification are
                       the same as for a solid element.
+wallLoadBearing       Признак несущей стены (только WallElement). По умолчанию
+                      несущие ВСЕ стены; отключается переключателем в свойствах
+                      конкретной стены. От этого флага зависит, попадёт ли стена
+                      под ленту фундамента.
 hasViolations         true = this element overlaps something or is disconnected.
 faceGaps              Per-axis nearest OPPOSITE neighbour: {axis, neighbor, gapMM,
                       touching, isOverlap}. touching=true means flush contact
