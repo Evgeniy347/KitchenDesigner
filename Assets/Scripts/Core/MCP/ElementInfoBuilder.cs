@@ -329,13 +329,13 @@ namespace KitchenDesigner.Core.MCP
             {
                 model = OvenElement.MODEL,
                 fixedSize = oven.HasFixedSize,
-                facadeThicknessMM = OvenElement.FACADE_THICKNESS_MM,
-                bodyWidthMM = OvenElement.BODY_WIDTH_MM,
-                bodyDepthMM = OvenElement.BODY_DEPTH_MM,
-                bodyHeightMM = OvenElement.BODY_HEIGHT_MM,
-                controlPanelHeightMM = OvenElement.CONTROL_PANEL_HEIGHT_MM,
-                glassHeightMM = OvenElement.GLASS_HEIGHT_MM,
-                handleProtrusionMM = OvenElement.HANDLE_PROTRUSION_MM,
+                facadeThicknessMM = OvenBody.FACADE_THICKNESS_MM,
+                bodyWidthMM = OvenBody.BODY_WIDTH_MM,
+                bodyDepthMM = OvenBody.BODY_DEPTH_MM,
+                bodyHeightMM = OvenBody.BODY_HEIGHT_MM,
+                controlPanelHeightMM = OvenBody.CONTROL_PANEL_HEIGHT_MM,
+                glassHeightMM = OvenBody.GLASS_HEIGHT_MM,
+                handleProtrusionMM = OvenBody.HANDLE_PROTRUSION_MM,
                 isOpen = oven.IsOpen
             }),
 

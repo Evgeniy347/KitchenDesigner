@@ -1866,7 +1866,7 @@ public class IsoScreenshotTests : ElementFrameTests
             + "короб выреза под ним. Кадр, наведённый на позицию корня, смотрит выше "
             + "детали");
 
-        float declaredHalfDepth = OvenElement.DEPTH_MM * 0.5f * AppConstants.MM_TO_UNITS;
+        float declaredHalfDepth = OvenBody.DEPTH_MM * 0.5f * AppConstants.MM_TO_UNITS;
         Assert.Greater(RendererBoundsOf(oven).max.z - oven.transform.position.z,
             declaredHalfDepth + 0.02f,
             "ручка духовки торчит за объявленный габарит DEPTH_MM: кадр по dims корня "
@@ -2129,7 +2129,7 @@ public class IsoScreenshotTests : ElementFrameTests
     [UnityTest]
     public IEnumerator IsoOven_Bosch()
     {
-        float half = OvenElement.FACADE_HEIGHT_MM * 0.5f * AppConstants.MM_TO_UNITS;
+        float half = OvenBody.FACADE_HEIGHT_MM * 0.5f * AppConstants.MM_TO_UNITS;
         var go = ElementFactory.CreateOven("IsoOven", new Vector3(0f, half, 0f));
         _spawned.Add(go);
         Assert.IsNotNull(go.GetComponent<OvenElement>(),

@@ -100,8 +100,8 @@ public class OvenElementTests : McpTestFixture
 
         // 594×595 фасад, 548 корпус + 19.5 фасад = 567.5 → 568 в целых мм.
         Assert.AreEqual(new Vector3Int(594, 595, 568), oven.DimensionsMM);
-        Assert.AreEqual(568, OvenElement.DEPTH_MM);
-        Assert.AreEqual(567.5f, OvenElement.TOTAL_DEPTH_MM, 1e-4f, "корпус 548 + фасад 19.5");
+        Assert.AreEqual(568, OvenBody.DEPTH_MM);
+        Assert.AreEqual(567.5f, OvenBody.TOTAL_DEPTH_MM, 1e-4f, "корпус 548 + фасад 19.5");
     }
 
     [Test]
@@ -193,9 +193,15 @@ public class OvenElementTests : McpTestFixture
 
         Assert.AreEqual(594f, size.x, 0.01f);
         Assert.AreEqual(595f, size.y, 0.01f);
-        Assert.AreEqual(19.5f, size.z, 0.01f, "толщина фасадной рамки");
-        // Передняя грань фасада — передняя грань всего прибора (567.5 / 2).
-        Assert.AreEqual(567.5f * 0.5f, center.z + size.z * 0.5f, 0.01f);
+        Assert.AreEqual(17.5f, size.z, 0.01f,
+            "плита дверцы = 19.5 минус 2 мм накладки: раньше здесь стояли все 19.5, "
+            + "и её лицо совпадало с лицом стекла и панели — они мерцали");
+        Assert.AreEqual(567.5f * 0.5f - OvenBody.OVERLAY_THICKNESS_MM,
+            center.z + size.z * 0.5f, 0.01f,
+            "рамка утоплена на толщину накладки, а лицо прибора держат стекло и панель");
+        Assert.AreEqual(567.5f * 0.5f - OvenBody.FACADE_THICKNESS_MM,
+            center.z - size.z * 0.5f, 0.01f,
+            "сзади дверца там же, где была: петля и корпус не сдвинулись");
     }
 
     /// <summary>Корпус — 560 × 570 × 548 (DNS: встраивание 57 × 54.8 см, ниша
@@ -231,7 +237,7 @@ public class OvenElementTests : McpTestFixture
         Assert.AreEqual(-567.5f * 0.5f, min.z, 0.01f);
 
         // Внутри пусто: ни одна стенка не заходит в камеру.
-        float t = OvenElement.BODY_WALL_MM;
+        float t = OvenBody.BODY_WALL_MM;
         foreach (var wall in walls)
         {
             var (c, s) = BoxMM(oven, wall);
@@ -247,15 +253,15 @@ public class OvenElementTests : McpTestFixture
     [Test]
     public void FacadeOverhangs_AddUpToTheFacadeHeight()
     {
-        Assert.AreEqual(OvenElement.FACADE_HEIGHT_MM,
-            OvenElement.FACADE_TOP_OVERHANG_MM + OvenElement.BODY_HEIGHT_MM
-            + OvenElement.FACADE_BOTTOM_OVERHANG_MM,
+        Assert.AreEqual(OvenBody.FACADE_HEIGHT_MM,
+            OvenBody.FACADE_TOP_OVERHANG_MM + OvenBody.BODY_HEIGHT_MM
+            + OvenBody.FACADE_BOTTOM_OVERHANG_MM,
             "верхний выступ + корпус + нижний выступ = высота фасада");
-        Assert.AreEqual(0, OvenElement.FACADE_BOTTOM_OVERHANG_MM,
+        Assert.AreEqual(0, OvenBody.FACADE_BOTTOM_OVERHANG_MM,
             "595 − 25 − 570 = 0: снизу фасад заподлицо с корпусом");
-        Assert.AreEqual(560, OvenElement.BODY_WIDTH_MM, "ниша 560⁺⁸, корпус в неё входит");
-        Assert.AreEqual(570, OvenElement.BODY_HEIGHT_MM, "высота встраивания 57 см");
-        Assert.AreEqual(548, OvenElement.BODY_DEPTH_MM, "глубина встраивания 54.8 см");
+        Assert.AreEqual(560, OvenBody.BODY_WIDTH_MM, "ниша 560⁺⁸, корпус в неё входит");
+        Assert.AreEqual(570, OvenBody.BODY_HEIGHT_MM, "высота встраивания 57 см");
+        Assert.AreEqual(548, OvenBody.BODY_DEPTH_MM, "глубина встраивания 54.8 см");
     }
 
     [Test]
@@ -278,10 +284,10 @@ public class OvenElementTests : McpTestFixture
         var (center, size) = BoxMM(oven, "Glass");
         var panel = BoxMM(oven, "ControlPanel");
 
-        Assert.AreEqual(499, OvenElement.GLASS_HEIGHT_MM, "595 − 96");
+        Assert.AreEqual(499, OvenBody.GLASS_HEIGHT_MM, "595 − 96");
         // Стекло — вставка в рамке: уже проёма двери на две ширины рамки.
-        Assert.AreEqual(594f - 2 * OvenElement.DOOR_FRAME_MM, size.x, 0.01f);
-        Assert.AreEqual(499f - 2 * OvenElement.DOOR_FRAME_MM, size.y, 0.01f);
+        Assert.AreEqual(594f - 2 * OvenBody.DOOR_FRAME_MM, size.x, 0.01f);
+        Assert.AreEqual(499f - 2 * OvenBody.DOOR_FRAME_MM, size.y, 0.01f);
 
         float panelBottom = panel.center.y - panel.size.y * 0.5f;
         Assert.Less(center.y + size.y * 0.5f, panelBottom + 0.01f, "стекло не залезает на панель");
@@ -298,7 +304,7 @@ public class OvenElementTests : McpTestFixture
         float panelBottom = panel.center.y - panel.size.y * 0.5f;
         Assert.AreEqual(panelBottom, center.y + size.y * 0.5f, 0.01f,
             "верх ручки — по низу панели управления");
-        Assert.AreEqual(594f - 2 * OvenElement.HANDLE_SIDE_INSET_MM, size.x, 0.01f);
+        Assert.AreEqual(594f - 2 * OvenBody.HANDLE_SIDE_INSET_MM, size.x, 0.01f);
     }
 
     /// <summary>Ручка — единственная деталь, которой РАЗРЕШЕНО выходить за
@@ -315,7 +321,7 @@ public class OvenElementTests : McpTestFixture
             float front = center.z + size.z * 0.5f;
             if (child.name == "Handle")
             {
-                Assert.AreEqual(halfD + OvenElement.HANDLE_PROTRUSION_MM, front, 0.01f,
+                Assert.AreEqual(halfD + OvenBody.HANDLE_PROTRUSION_MM, front, 0.01f,
                     "ручка выступает вперёд ровно на свой максимум");
                 continue;
             }
@@ -468,15 +474,15 @@ public class OvenElementTests : McpTestFixture
         // прилегает к корпусу), т.е. середина нижнего заднего ребра рамки.
         Vector3 HingeEdge(Transform f) => f.localPosition + f.localRotation * new Vector3(
             0f,
-            -OvenElement.FACADE_HEIGHT_MM * 0.5f * toU,
-            -OvenElement.FACADE_THICKNESS_MM * 0.5f * toU);
+            -OvenBody.FACADE_HEIGHT_MM * 0.5f * toU,
+            -OvenBody.FACADE_THICKNESS_MM * 0.5f * toU);
         Vector3 TopEdge(Transform f) => f.localPosition + f.localRotation * new Vector3(
             0f,
-            OvenElement.FACADE_HEIGHT_MM * 0.5f * toU,
-            -OvenElement.FACADE_THICKNESS_MM * 0.5f * toU);
+            OvenBody.FACADE_HEIGHT_MM * 0.5f * toU,
+            -OvenBody.FACADE_THICKNESS_MM * 0.5f * toU);
 
         var closedHinge = HingeEdge(Child(oven, "Facade"));
-        Assert.AreEqual(0f, (closedHinge - OvenElement.HingeLocalMM * toU).magnitude, 1e-5f,
+        Assert.AreEqual(0f, (closedHinge - OvenBody.HingeLocalMM * toU).magnitude, 1e-5f,
             "закрытая дверца стоит на своей же оси петли");
 
         oven.SetOpen(true);
@@ -495,7 +501,7 @@ public class OvenElementTests : McpTestFixture
 
         // Верх фасада ушёл ВПЕРЁД на всю высоту дверцы и опустился к петле.
         var openTop = TopEdge(facade);
-        Assert.AreEqual(closedHinge.z / toU + OvenElement.FACADE_HEIGHT_MM, openTop.z / toU, 0.01f,
+        Assert.AreEqual(closedHinge.z / toU + OvenBody.FACADE_HEIGHT_MM, openTop.z / toU, 0.01f,
             "верх дверцы вынесло вперёд на её высоту");
         Assert.AreEqual(closedHinge.y, openTop.y, 1e-5f, "и опустился на уровень петли");
     }
