@@ -92,7 +92,8 @@ public class SettingsPanelUITests
     [Test]
     public void TabButtons_HaveCorrectLabels()
     {
-        string[] expected = { "Проект", "Вид", "Управление", "Фото режим", "Свет", "MCP", "О программе" };
+        string[] expected =
+            { "Проект", "Вид", "Строительство", "Управление", "Фото режим", "Свет", "MCP", "О программе" };
         for (int i = 0; i < expected.Length; i++)
         {
             var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
@@ -107,6 +108,8 @@ public class SettingsPanelUITests
     {
         Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Project"), "Tab_Project page should exist");
         Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_View"), "Tab_View page should exist");
+        Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Construction"),
+            "Tab_Construction page should exist");
         Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Control"), "Tab_Control page should exist");
         Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Photo"), "Tab_Photo page should exist");
         Assert.IsNotNull(_canvas!.transform.Find(PagePath + "Tab_Light"), "Tab_Light page should exist");
