@@ -101,10 +101,12 @@ namespace KitchenDesigner.Core
             Cube(RimLeft, new Vector3(-(outerW - rimW) * 0.5f, rimH * 0.5f, 0f), new Vector3(rimW, rimH, bowlD));
             Cube(RimRight, new Vector3((outerW - rimW) * 0.5f, rimH * 0.5f, 0f), new Vector3(rimW, rimH, bowlD));
 
-            Cube(BowlFront, new Vector3(0f, -bowlH * 0.5f, (bowlD - wall) * 0.5f), new Vector3(bowlW, bowlH, wall));
-            Cube(BowlBack, new Vector3(0f, -bowlH * 0.5f, -(bowlD - wall) * 0.5f), new Vector3(bowlW, bowlH, wall));
-            Cube(BowlLeft, new Vector3(-(bowlW - wall) * 0.5f, -bowlH * 0.5f, 0f), new Vector3(wall, bowlH, bowlD - 2f * wall));
-            Cube(BowlRight, new Vector3((bowlW - wall) * 0.5f, -bowlH * 0.5f, 0f), new Vector3(wall, bowlH, bowlD - 2f * wall));
+            float wallH = bowlH - wall;
+            float wallCY = -wallH * 0.5f;
+            Cube(BowlFront, new Vector3(0f, wallCY, (bowlD - wall) * 0.5f), new Vector3(bowlW, wallH, wall));
+            Cube(BowlBack, new Vector3(0f, wallCY, -(bowlD - wall) * 0.5f), new Vector3(bowlW, wallH, wall));
+            Cube(BowlLeft, new Vector3(-(bowlW - wall) * 0.5f, wallCY, 0f), new Vector3(wall, wallH, bowlD - 2f * wall));
+            Cube(BowlRight, new Vector3((bowlW - wall) * 0.5f, wallCY, 0f), new Vector3(wall, wallH, bowlD - 2f * wall));
             Cube(BowlBottom, new Vector3(0f, -bowlH + wall * 0.5f, 0f), new Vector3(bowlW, wall, bowlD));
 
             RebuildFaucet(faucetSign, toU, outerD, rimH, rimW);

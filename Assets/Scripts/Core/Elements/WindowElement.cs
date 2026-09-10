@@ -113,28 +113,32 @@ namespace KitchenDesigner.Core
 
             int hidden = ComputeHiddenSides();
 
+            float slopeU = AppConstants.WINDOW_SLOPE_MM * toU;
+            float frameD = totalD - slopeU;
+            float frameCZ = halfD - frameD * 0.5f;
+
             if (_frameLeft != null)
             {
-                _frameLeft.transform.localPosition = new Vector3(-halfW + frameU * 0.5f, 0f, 0f);
-                _frameLeft.transform.localScale = new Vector3(frameU, totalH, totalD);
+                _frameLeft.transform.localPosition = new Vector3(-halfW + frameU * 0.5f, 0f, frameCZ);
+                _frameLeft.transform.localScale = new Vector3(frameU, totalH, frameD);
                 _frameLeft.SetActive((hidden & 1) == 0);
             }
             if (_frameRight != null)
             {
-                _frameRight.transform.localPosition = new Vector3(halfW - frameU * 0.5f, 0f, 0f);
-                _frameRight.transform.localScale = new Vector3(frameU, totalH, totalD);
+                _frameRight.transform.localPosition = new Vector3(halfW - frameU * 0.5f, 0f, frameCZ);
+                _frameRight.transform.localScale = new Vector3(frameU, totalH, frameD);
                 _frameRight.SetActive((hidden & 2) == 0);
             }
             if (_frameTop != null)
             {
-                _frameTop.transform.localPosition = new Vector3(0f, halfH - frameU * 0.5f, 0f);
-                _frameTop.transform.localScale = new Vector3(innerW, frameU, totalD);
+                _frameTop.transform.localPosition = new Vector3(0f, halfH - frameU * 0.5f, frameCZ);
+                _frameTop.transform.localScale = new Vector3(innerW, frameU, frameD);
                 _frameTop.SetActive((hidden & 4) == 0);
             }
             if (_frameBottom != null)
             {
-                _frameBottom.transform.localPosition = new Vector3(0f, -halfH + frameU * 0.5f, 0f);
-                _frameBottom.transform.localScale = new Vector3(innerW, frameU, totalD);
+                _frameBottom.transform.localPosition = new Vector3(0f, -halfH + frameU * 0.5f, frameCZ);
+                _frameBottom.transform.localScale = new Vector3(innerW, frameU, frameD);
                 _frameBottom.SetActive((hidden & 8) == 0);
             }
 

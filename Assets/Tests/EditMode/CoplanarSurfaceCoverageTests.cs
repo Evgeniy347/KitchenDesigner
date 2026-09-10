@@ -35,13 +35,43 @@ public class CoplanarSurfaceCoverageTests
     [TearDown]
     public void TearDown() => EveryElementType.ClearScene();
 
-    /// <summary>Пока пусто: причинных дефектов кроме духовки и посудомойки
-    /// (обе починены в этой же кампании) не найдено, а ложных срабатываний от
-    /// круглых деталей заранее не предугадать без прогона. Запись сюда —
-    /// ТОЛЬКО с причиной и только после того, как найденная пара проверена по
-    /// мешу, а не по одним числам сенсора.</summary>
+    /// <summary>Первый прогон (2026-09-10) нашёл 4 типа с находками. Мойка и окно —
+    /// причинные дефекты, починены в геометрии (`SinkMesh`, `WindowElement`) той же
+    /// кампанией: стенки чаши утоплены до дна, рама окна утоплена под откос — по
+    /// образцу `AGENTS.md` → «Накладка, лежащая на детали...». Розетка и унитаз — ниже,
+    /// с причиной на каждую; ни один из четырёх не оказался ложным срабатыванием от
+    /// круглой детали (все грани — плоские торцы или плиты, не касательные AABB).</summary>
     private static readonly Dictionary<Type, string> KnownLegitimateCoplanarSurfaces =
-        new Dictionary<Type, string>();
+        new Dictionary<Type, string>
+    {
+        { typeof(SocketElement),
+            "SocketAndSwitchLayoutTests.SocketLayout_ThePinHoles_AreSunkIntoTheWellAndNeverTouchEachOther "
+            + "запирает именно это: гнёзда под штыри и заземляющие лапки — маленькие декоративные "
+            + "врезки, ЦЕЛИКОМ лежащие внутри колодца (не доходят до его края), а не деталь во весь "
+            + "габарит несущей поверхности, как было у дверцы духовки. Раздвинуть их значило бы "
+            + "нарушить тест, который явно и осознанно запирает эту геометрию" },
+        { typeof(ToiletElement),
+            "ToiletLayoutTests.FlushButton_IsRecessedIntoTheCisternTop_NotStickingOut запирает "
+            + "кнопку смыва вровень с крышкой бачка по причине, названной в самом тесте: "
+            + "габарит унитаза (HeightMM) фиксированный, торчащая кнопка вынесла бы его вверх. "
+            + "Утопить бачок под кнопку тоже нельзя — его верх и есть заявленная высота прибора. "
+            + "Кнопка — маленькая декоративная врезка внутри крышки, не деталь во весь габарит" },
+    };
+
+    private static List<string> FightsFor(Type type)
+    {
+        EveryElementType.ClearScene();
+        var element = EveryElementType.Spawn(type, "Cop" + type.Name);
+
+        var renderers = ElementRenderers.BodyOf(element);
+        if (renderers.Count < 2) return new List<string>();
+
+        var boxes = renderers
+            .Select(r => CoplanarSurfaceDetector.FromWorldBounds(r.bounds))
+            .ToArray();
+        return CoplanarSurfaceDetector.Fights(
+            boxes, i => ElementRenderers.PathOf(element, renderers[i]));
+    }
 
     [Test]
     public void EveryExcludedType_StillExistsAsAConcreteElementType()
@@ -58,6 +88,25 @@ public class CoplanarSurfaceCoverageTests
         }
     }
 
+    /// <summary>Противоположный вход: тип В списке исключений обязан ДЕЙСТВИТЕЛЬНО давать
+    /// находку сенсора. Иначе список исключений — просто место, куда прячут находку,
+    /// которую уже починили иначе, и «законно» от «забыли снять запись» не отличить —
+    /// тот же принцип, что в SpecificationCoverageGuardTests.EveryExcludedType_ProducesNoSpecLineAtAll,
+    /// только наоборот: там исключённый обязан молчать, здесь — обязан звучать.</summary>
+    [Test]
+    public void EveryExcludedType_StillTriggersTheSensor()
+    {
+        var stale = new List<string>();
+        foreach (var type in KnownLegitimateCoplanarSurfaces.Keys)
+            if (FightsFor(type).Count == 0)
+                stale.Add(type.Name);
+
+        Assert.IsEmpty(stale,
+            "эти типы значатся в KnownLegitimateCoplanarSurfaces («пара законна»), но сенсор "
+            + "на них больше НИЧЕГО не находит — причина исключения устарела (геометрию уже "
+            + "починили иначе или переставили), запись пора убрать: " + string.Join(", ", stale));
+    }
+
     [Test]
     public void EveryDeclaredElementType_ClosedPose_HasNoTwoRenderedSurfacesFightingForTheSamePixel()
     {
@@ -65,18 +114,7 @@ public class CoplanarSurfaceCoverageTests
 
         foreach (var type in EveryElementType.Declared())
         {
-            EveryElementType.ClearScene();
-            var element = EveryElementType.Spawn(type, "Cop" + type.Name);
-
-            var renderers = ElementRenderers.BodyOf(element);
-            if (renderers.Count < 2) continue;
-
-            var boxes = renderers
-                .Select(r => CoplanarSurfaceDetector.FromWorldBounds(r.bounds))
-                .ToArray();
-            var fights = CoplanarSurfaceDetector.Fights(
-                boxes, i => ElementRenderers.PathOf(element, renderers[i]));
-
+            var fights = FightsFor(type);
             if (fights.Count == 0) continue;
             if (KnownLegitimateCoplanarSurfaces.ContainsKey(type)) continue;
 

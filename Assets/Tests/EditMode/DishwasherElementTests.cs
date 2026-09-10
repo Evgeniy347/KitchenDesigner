@@ -1560,10 +1560,13 @@ public class DishwasherElementTests : McpTestFixture
         var dw = Make();
         float toU = AppConstants.MM_TO_UNITS;
 
+        // Дитя "Door" — это плита, утопленная на OVERLAY_THICKNESS_MM под накладку
+        // панели управления; её половина толщины — DOOR_SLAB_THICKNESS_MM, не полная
+        // DOOR_THICKNESS_MM вместе с накладкой.
         Vector3 Edge(Transform d, float sign) => d.localPosition + d.localRotation * new Vector3(
             0f,
             sign * DishwasherElement.TANK_HEIGHT_MM * 0.5f * toU,
-            -DishwasherElement.DOOR_THICKNESS_MM * 0.5f * toU);
+            -DishwasherElement.DOOR_SLAB_THICKNESS_MM * 0.5f * toU);
 
         var closedHinge = Edge(Child(dw, "Door"), -1f);
         Assert.AreEqual(0f, (closedHinge - DishwasherElement.HingeLocalMM * toU).magnitude, 1e-5f,

@@ -472,14 +472,17 @@ public class OvenElementTests : McpTestFixture
 
         // Ось петли — нижняя кромка на ЗАДНЕЙ плоскости фасада (там дверца
         // прилегает к корпусу), т.е. середина нижнего заднего ребра рамки.
+        // Дитя "Facade" — это плита, утопленная на OVERLAY_THICKNESS_MM под накладку
+        // (стекло/панель); её половина толщины — FACADE_SLAB_THICKNESS_MM, не полная
+        // FACADE_THICKNESS_MM накладки со стеклом.
         Vector3 HingeEdge(Transform f) => f.localPosition + f.localRotation * new Vector3(
             0f,
             -OvenBody.FACADE_HEIGHT_MM * 0.5f * toU,
-            -OvenBody.FACADE_THICKNESS_MM * 0.5f * toU);
+            -OvenBody.FACADE_SLAB_THICKNESS_MM * 0.5f * toU);
         Vector3 TopEdge(Transform f) => f.localPosition + f.localRotation * new Vector3(
             0f,
             OvenBody.FACADE_HEIGHT_MM * 0.5f * toU,
-            -OvenBody.FACADE_THICKNESS_MM * 0.5f * toU);
+            -OvenBody.FACADE_SLAB_THICKNESS_MM * 0.5f * toU);
 
         var closedHinge = HingeEdge(Child(oven, "Facade"));
         Assert.AreEqual(0f, (closedHinge - OvenBody.HingeLocalMM * toU).magnitude, 1e-5f,
