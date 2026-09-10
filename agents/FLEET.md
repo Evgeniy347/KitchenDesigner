@@ -198,6 +198,9 @@ interpretation first, then run.
   matters — `-All` sweeps everything by design — but a second agent's work no longer lands in
   your commit by accident. If you ever see files you did not touch in your own `git show --stat`,
   that is this failure returning, not a mystery.
+  Обратная сторона того же: **твой файл может уехать в чужой коммит**, пока ты пишешь сообщение.
+  Ищи свои строки в `git log -p -- <файл>`, а не в `git diff`, и не переделывай работу, которую
+  сосед уже закоммитил под своим именем — содержимое на месте, чужое только авторство.
 - Commit small and often: the window in which neighbours can see your intermediate state is
   exactly the gap between your commits.
 - **Every `.ps1` that contains Cyrillic is UTF-8 WITH BOM** — not just `tools/unity.ps1`.
