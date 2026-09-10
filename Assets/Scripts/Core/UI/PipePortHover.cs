@@ -6,14 +6,14 @@ using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core.UI
 {
-    internal sealed class PipePortHover
+    internal sealed class PipePortHover<T> where T : KitchenElement
     {
-        private readonly Func<KitchenElement?> _owner;
+        private readonly Func<T?> _owner;
         private readonly IReadOnlyList<PipeNodeKind> _choices;
-        private readonly Action<KitchenElement, int> _paint;
+        private readonly Action<T, int> _paint;
 
-        public PipePortHover(Func<KitchenElement?> owner, IReadOnlyList<PipeNodeKind> choices,
-            Action<KitchenElement, int> paint)
+        public PipePortHover(Func<T?> owner, IReadOnlyList<PipeNodeKind> choices,
+            Action<T, int> paint)
         {
             _owner = owner;
             _choices = choices;
@@ -35,15 +35,13 @@ namespace KitchenDesigner.Core.UI
         public void Enter(int port)
         {
             HoverPreviewGate.HideAll();
-            var owner = _owner();
-            if (owner == null) return;
+            if (!TryOwner(out var owner)) return;
             _paint(owner, port);
         }
 
         public void EnterOption(int port, int option)
         {
-            var owner = _owner();
-            if (owner == null)
+            if (!TryOwner(out var owner))
             {
                 Clear();
                 return;
@@ -54,6 +52,12 @@ namespace KitchenDesigner.Core.UI
             var scene = PartRegistry.GetAll();
             var replaced = PipeEndFittings.NeighbourAt(owner, port, scene);
             var kind = PipeConnectionRule.KindAt(_choices, option);
+            if (PipeEndFittings.HeldByAPipe(replaced, kind))
+            {
+                ScenePreview.Leave();
+                return;
+            }
+
             if (!kind.HasValue)
             {
                 if (replaced == null) { ScenePreview.Leave(); return; }
@@ -63,6 +67,14 @@ namespace KitchenDesigner.Core.UI
 
             ScenePreview.Hover(PipeEndFittings.PreviewKey(owner, port, kind.Value),
                 () => PipeEndFittings.Preview(owner, port, kind.Value, scene), replaced, owner);
+        }
+
+        private bool TryOwner(out T owner)
+        {
+            var candidate = _owner();
+            owner = candidate!;
+            KitchenElement? asElement = candidate;
+            return asElement != null;
         }
 
         private static string NoChoiceKey(KitchenElement owner, int port) =>

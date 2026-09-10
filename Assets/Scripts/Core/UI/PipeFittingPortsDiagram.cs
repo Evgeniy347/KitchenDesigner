@@ -32,20 +32,17 @@ namespace KitchenDesigner.Core.UI
         private readonly Image?[] _slots = new Image?[MaxPorts];
         private readonly Image?[] _holes = new Image?[MaxPorts];
         private readonly TMP_Dropdown?[] _choices = new TMP_Dropdown?[MaxPorts];
-        private readonly PipePortHover _hover;
+        private readonly PipePortHover<PipeFittingElement> _hover;
 
         public PipeFittingPortsDiagram(IContextMenuHost host, Func<PipeFittingElement?> target)
         {
             _host = host;
             _target = target;
-            _hover = new PipePortHover(() => target(), Choices, Paint);
+            _hover = new PipePortHover<PipeFittingElement>(() => target(), Choices, Paint);
         }
 
-        private static void Paint(KitchenElement owner, int port)
-        {
-            if (owner is PipeFittingElement fitting)
-                PartHighlighter.ShowFittingMouth(fitting, port);
-        }
+        private static void Paint(PipeFittingElement fitting, int port) =>
+            PartHighlighter.ShowFittingMouth(fitting, port);
 
         public void Build(Transform parent)
         {
@@ -114,9 +111,15 @@ namespace KitchenDesigner.Core.UI
 
             var kind = PipeConnectionRule.KindAt(Choices, option);
 
-            PipeEndFittings.Set(fitting, port, kind, PartRegistry.GetAll());
+            var outcome = PipeEndFittings.Set(fitting, port, kind, PartRegistry.GetAll());
+            if (outcome == PipeEndEdit.OccupiedByPipe)
+                Refuse("На этом порту труба — выбор из списка её не заменяет, удалите трубу сами");
+
             Show(fitting);
         }
+
+        private static void Refuse(string reason) =>
+            StatusBarUI.Instance?.ShowTransient(reason, StatusLevel.Warning);
 
         private void Repaint(PipeFittingElement fitting)
         {

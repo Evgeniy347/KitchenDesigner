@@ -139,22 +139,106 @@ public class PipeFittingPortFittingsTests : SnapTestBase
             "схема портов обязана НАЗВАТЬ трубу, а не показывать порт пустым");
     }
 
+    /// <summary>ФИТИНГ на порту заменяется выбором из списка — это и есть обратный
+    /// вход к запрету ниже. Починка «трубу не сносить» не имеет права превратиться в
+    /// «на занятом порту нельзя ничего»: замена детали на детали — нормальная правка
+    /// и остаётся одним шагом отмены.</summary>
     [Test]
-    public void APortTakenByAPlainPipe_IsReplaceable_BecauseTheListDescribesAPipe()
+    public void APortHeldByAFitting_IsReplacedByTheChoice()
+    {
+        var elbow = Elbow(Vector3.zero, "Corner");
+        Choose(elbow, 0, PipeNodeKind.Cap);
+        var cap = FittingAt(elbow, 0)!;
+        Assume.That(JoinedLinks(), Is.EqualTo(1), "заглушка сидит на нулевом порту отвода");
+        int undoBefore = CommandStack.UndoCount;
+
+        var outcome = Choose(elbow, 0, PipeNodeKind.Coupling);
+
+        Assert.AreEqual(PipeEndEdit.Changed, outcome,
+            "фитинг на порту заменяется — запрет касается ТОЛЬКО трубы");
+        Assert.AreEqual(PipeNodeKind.Coupling, FittingAt(elbow, 0)!.NodeKind,
+            "на порту стоит выбранная деталь");
+        Assert.IsFalse(cap.gameObject.activeInHierarchy, "прежняя заглушка снята");
+        Assert.AreEqual(1, JoinedLinks(), "новая деталь тоже соединена");
+        Assert.AreEqual(undoBefore + 1, CommandStack.UndoCount,
+            "снять старую и поставить новую — одна правка");
+    }
+
+    /// <summary>СТОРОЖ ДЕФЕКТА. На порту фитинга сидит труба, у трубы свой дальний
+    /// стык — и выбор любой другой детали в списке этого порта выполнял
+    /// <c>DeleteCommand</c> НА ВСЮ ТРУБУ: в панели это выглядело заменой фитинга, а в
+    /// сцене двухметровая труба исчезала и её второй конец осиротевал.
+    ///
+    /// Отказ достижим именно здесь, и вот чем: <c>ScenePipeSurvey</c> выпускает порты
+    /// и у труб, <c>PipeJoint.Connects</c> стык «труба—фитинг» ПРИНИМАЕТ (запрещена
+    /// только пара труба—труба), поэтому соседом порта фитинга труба быть может — и
+    /// бывает почти всегда. На конце самой трубы состояние недостижимо, и ветки там
+    /// нет: <c>PipeConnectionRule.CanConnect(Pipe, Pipe)</c> ложно, соседом конца
+    /// трубы труба не станет. Тот, кто сочтёт этот отказ мёртвым, обязан сначала
+    /// уронить настоящий тест, а не свою <c>Assume</c>: здесь нет ни одной.</summary>
+    [Test]
+    public void APortHeldByAPipe_IsRefused_AndTheWholePipeStaysWhereItWas()
+    {
+        var elbow = Elbow(Vector3.zero, "Corner");
+        var pipe = PipeWithItsUpperEndAt(elbow.PortPositionUnits(0), "Run");
+        Choose(pipe, LowerEnd, PipeNodeKind.Cap);
+        var farCap = FittingAt(pipe, LowerEnd)!;
+        Assume.That(JoinedLinks(), Is.EqualTo(2),
+            "труба сидит на порту отвода, а на её дальнем конце — своя заглушка");
+        Vector3 pipeBefore = pipe.transform.position;
+        int parts = PartRegistry.GetAll().Count;
+        int undoBefore = CommandStack.UndoCount;
+
+        var outcome = Choose(elbow, 0, PipeNodeKind.Cap);
+
+        Assert.AreEqual(PipeEndEdit.OccupiedByPipe, outcome,
+            "трубу выбор из списка не заменяет: её убирает пользователь сам");
+        Assert.IsTrue(pipe.gameObject.activeInHierarchy, "труба НЕ удалена");
+        Assert.IsTrue(farCap.gameObject.activeInHierarchy,
+            "и её дальний стык не осиротел — он и был ценой этого дефекта");
+        Assert.AreEqual(pipeBefore, pipe.transform.position, "труба не сдвинута");
+        Assert.AreEqual(parts, PartRegistry.GetAll().Count,
+            "сцена осталась как была: отказ не создаёт деталь и не удаляет её");
+        Assert.AreEqual(2, JoinedLinks(), "оба стыка на месте");
+        Assert.AreEqual(undoBefore, CommandStack.UndoCount,
+            "отказ не пишется в историю — отменять нечего");
+        Assert.AreEqual(PipeNodeKind.Pipe,
+            PipeEndFittings.StateAt(elbow, 0, PartRegistry.GetAll()).Fitting,
+            "и схема по-прежнему называет на этом порту трубу");
+    }
+
+    /// <summary>«Нет» — тот же выбор из того же списка, и трубу он тоже не снимает:
+    /// иначе запрет обходился бы одним пунктом выше остальных.</summary>
+    [Test]
+    public void TheNoneOptionOnAPortHeldByAPipe_IsRefusedTheSameWay()
     {
         var elbow = Elbow(Vector3.zero, "Corner");
         var pipe = PipeWithItsUpperEndAt(elbow.PortPositionUnits(0), "Run");
         Assume.That(JoinedLinks(), Is.EqualTo(1), "труба состыкована с портом отвода напрямую");
-        Assume.That(PipeConnectionRule.ChoicesFor(PipeNodeKind.Elbow),
-            Contains.Item(PipeNodeKind.Pipe), "у фитинга труба есть в списке");
+        int undoBefore = CommandStack.UndoCount;
 
-        var outcome = Choose(elbow, 0, PipeNodeKind.Cap);
+        var outcome = Choose(elbow, 0, null);
 
-        Assert.AreEqual(PipeEndEdit.Changed, outcome,
-            "к порту фитинга труба подключается наравне с фитингами, поэтому её можно "
-            + "заменить выбором из того же списка");
-        Assert.IsFalse(pipe.gameObject.activeInHierarchy, "прежняя труба снята с порта");
-        Assert.IsNotNull(FittingAt(elbow, 0), "на порту теперь заглушка");
+        Assert.AreEqual(PipeEndEdit.OccupiedByPipe, outcome,
+            "«нет» на занятом трубой порту отказывает так же, как выбор детали");
+        Assert.IsTrue(pipe.gameObject.activeInHierarchy, "труба НЕ удалена");
+        Assert.AreEqual(1, JoinedLinks(), "стык не разорван");
+        Assert.AreEqual(undoBefore, CommandStack.UndoCount, "и в историю ничего не легло");
+    }
+
+    /// <summary>Труба на порту, и в списке выбрана ТРУБА — менять нечего. Это не
+    /// отказ: пользователь просит то, что уже стоит.</summary>
+    [Test]
+    public void ChoosingAPipeOnAPortAlreadyHoldingOne_ChangesNothing()
+    {
+        var elbow = Elbow(Vector3.zero, "Corner");
+        PipeWithItsUpperEndAt(elbow.PortPositionUnits(0), "Run");
+        Assume.That(JoinedLinks(), Is.EqualTo(1));
+
+        var outcome = Choose(elbow, 0, PipeNodeKind.Pipe);
+
+        Assert.AreEqual(PipeEndEdit.Unchanged, outcome,
+            "повторный выбор того, что уже стоит, не отказ и не правка");
     }
 
     [Test]

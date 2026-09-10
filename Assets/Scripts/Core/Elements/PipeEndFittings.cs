@@ -10,6 +10,7 @@ namespace KitchenDesigner.Core
     {
         Unchanged,
         Changed,
+        OccupiedByPipe,
     }
 
     internal readonly struct PipeEndState
@@ -32,6 +33,9 @@ namespace KitchenDesigner.Core
             PipeElement _ => PipeNodeKind.Pipe,
             _ => null,
         };
+
+        public static bool HeldByAPipe(KitchenElement? seated, PipeNodeKind? kind) =>
+            KindOf(seated) == PipeNodeKind.Pipe && kind != PipeNodeKind.Pipe;
 
         public static IReadOnlyList<PipeNodeKind> ChoicesFor(KitchenElement? owner) =>
             PipeConnectionRule.ChoicesFor(KindOf(owner) ?? PipeNodeKind.Pipe);
@@ -68,16 +72,16 @@ namespace KitchenDesigner.Core
             int partner = PartnerOfPort(survey, owner, port);
             var neighbour = NeighbourOf(survey, partner, scene);
             var seatedKind = KindOf(neighbour);
-            var seated = neighbour as PipeFittingElement;
             if (neighbour == null && !kind.HasValue) return PipeEndEdit.Unchanged;
             if (seatedKind.HasValue && kind.HasValue && seatedKind.Value == kind.Value)
                 return PipeEndEdit.Unchanged;
+            if (HeldByAPipe(neighbour, kind)) return PipeEndEdit.OccupiedByPipe;
 
             CommandStack.BeginCapture();
             if (neighbour != null) CommandStack.Execute(new DeleteCommand(neighbour.gameObject));
             if (kind.HasValue)
                 CommandStack.Execute(new CreateCommand(
-                    SpawnFor(survey, owner, port, kind.Value, seated, scene)));
+                    SpawnFor(survey, owner, port, kind.Value, neighbour, scene)));
             CommandStack.EndCapture($"Порт {owner.PartName}", commit: true);
 
             if (ElementHighlighter.Instance != null)
@@ -99,11 +103,12 @@ namespace KitchenDesigner.Core
 
             var survey = ScenePipeSurvey.Of(scene);
             var neighbour = NeighbourOf(survey, PartnerOfPort(survey, owner, port), scene);
-            return SpawnFor(survey, owner, port, kind, neighbour as PipeFittingElement, scene);
+            if (HeldByAPipe(neighbour, kind)) return null;
+            return SpawnFor(survey, owner, port, kind, neighbour, scene);
         }
 
         private static GameObject SpawnFor(PipeSurvey survey, KitchenElement owner, int port,
-            PipeNodeKind kind, PipeFittingElement? seated, IReadOnlyList<KitchenElement> scene) =>
+            PipeNodeKind kind, KitchenElement? seated, IReadOnlyList<KitchenElement> scene) =>
             seated != null && kind != PipeNodeKind.Pipe
                 ? Replace(survey, seated, kind, scene)
                 : Spawn(owner, port, kind, scene);
@@ -160,7 +165,7 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        private static GameObject Replace(PipeSurvey survey, PipeFittingElement seated,
+        private static GameObject Replace(PipeSurvey survey, KitchenElement seated,
             PipeNodeKind kind, IReadOnlyList<KitchenElement> scene)
         {
             var go = Create(kind, seated.PartName + "_" + PipeFittingNames.TypeId(kind),
@@ -182,9 +187,9 @@ namespace KitchenDesigner.Core
             return go;
         }
 
-        private static PipePort?[] NeighbourPortsOf(PipeSurvey survey, PipeFittingElement seated)
+        private static PipePort?[] NeighbourPortsOf(PipeSurvey survey, KitchenElement seated)
         {
-            var ports = new PipePort?[seated.PortCount];
+            var ports = new PipePort?[PortCountOf(seated)];
             for (int i = 0; i < ports.Length; i++)
             {
                 int index = IndexOfPort(survey, seated.PartName, i);

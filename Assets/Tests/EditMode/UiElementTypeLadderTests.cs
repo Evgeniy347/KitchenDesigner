@@ -26,6 +26,15 @@ using NUnit.Framework;
 ///
 /// Список разрешённых файлов лежит ЗДЕСЬ, а не в конфиге: расширить его можно
 /// только осознанной правкой этого теста, которую видно в ревью.
+///
+/// Список УМЕЕТ и сокращаться. <c>PipeEndsDiagram</c> и
+/// <c>PipeFittingPortsDiagram</c> стояли в нём ради одного приватного
+/// <c>Paint(KitchenElement, int)</c>: общая дверь <c>PipePortHover</c> стирала тип
+/// хозяина порта до <c>Action&lt;KitchenElement,int&gt;</c>, и каждая схема
+/// возвращала его обратно проверкой <c>is</c>. Дверь стала дженериком
+/// <c>PipePortHover&lt;T&gt;</c> — тип хозяина едет параметром, <c>Paint</c>
+/// принимает свою трубу или свой фитинг, и вопрос исчез вместе с обеими строками
+/// разрешений. Долг гасят так, а не приписыванием причины.
 /// </summary>
 public class UiElementTypeLadderTests
 {
@@ -53,12 +62,6 @@ public class UiElementTypeLadderTests
         ("ShowerColumnFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
         ("ToiletFieldsEditor.cs", "видимость строк: один редактор на оба варианта унитаза — "
             + "строка «Высота чаши» у них общая, а «Высота панели» только у подвесного"),
-        ("PipeEndsDiagram.cs", "делегат Paint для общей двери PipePortHover: конструктор берёт "
-            + "только Func<PipeElement?>, поэтому owner здесь не может быть ничем другим — "
-            + "проверка не ветвит на несколько типов, а лишь возвращает callback к типу, "
-            + "стёртому общим сигнатурой Action<KitchenElement,int>"),
-        ("PipeFittingPortsDiagram.cs", "тот же делегат Paint для той же общей двери "
-            + "PipePortHover, конструктор берёт только Func<PipeFittingElement?>"),
     };
 
     /// <summary>Формы вопроса «какого ты типа». Базовый <c>KitchenElement</c>

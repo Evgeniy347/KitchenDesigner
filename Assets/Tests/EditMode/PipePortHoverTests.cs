@@ -48,10 +48,28 @@ public class PipePortHoverTests
         return go.GetComponent<PipeElement>();
     }
 
-    private static PipePortHover HoverOf(PipeElement pipe) =>
-        new PipePortHover(() => pipe, PipeEndsDiagram.Choices,
-            (owner, end) => PartHighlighter.ShowPipeEnd((PipeElement)owner,
-                PipeEndsDiagram.EndAt(end)));
+    private PipeFittingElement Elbow()
+    {
+        var go = ElementFactory.CreatePipeElbow("Corner", Vector3.zero);
+        _spawned.Add(go);
+        return go.GetComponent<PipeFittingElement>();
+    }
+
+    private PipeElement PipeWithItsUpperEndAt(Vector3 end)
+    {
+        var go = ElementFactory.CreatePipe(PipeSpec.DEFAULT_SIZE, PipeLengthMm, "Run",
+            end - new Vector3(0f, PipeLengthMm * 0.5f * AppConstants.MM_TO_UNITS, 0f));
+        _spawned.Add(go);
+        return go.GetComponent<PipeElement>();
+    }
+
+    private static PipePortHover<PipeElement> HoverOf(PipeElement pipe) =>
+        new PipePortHover<PipeElement>(() => pipe, PipeEndsDiagram.Choices,
+            (owner, end) => PartHighlighter.ShowPipeEnd(owner, PipeEndsDiagram.EndAt(end)));
+
+    private static PipePortHover<PipeFittingElement> HoverOf(PipeFittingElement fitting) =>
+        new PipePortHover<PipeFittingElement>(() => fitting, PipeFittingPortsDiagram.Choices,
+            (owner, port) => PartHighlighter.ShowFittingMouth(owner, port));
 
     private static int OptionOf(PipeNodeKind kind) => PipeEndsDiagram.OptionOf(kind);
 
@@ -186,6 +204,32 @@ public class PipePortHoverTests
 
         Assert.AreEqual(lit, EnabledRenderers(seated),
             "ушли с «нет» — заглушка обязана вернуться, как и любой другой призрак");
+    }
+
+    /// <summary>Предпросмотр не имеет права показывать то, чего правка не сделает.
+    /// На порту фитинга сидит труба, выбор её не заменяет — значит и наведение не
+    /// гасит трубу и не ставит на её место призрак: погашенная труба читалась бы как
+    /// «сейчас исчезнет», а клик по пункту отказал бы. Один и тот же вопрос
+    /// (<c>PipeEndFittings.HeldByAPipe</c>) задают и правка, и превью.</summary>
+    [Test]
+    public void HoveringAFittingOnAPortHeldByAPipe_ShowsNothing_AndLeavesThePipeLit()
+    {
+        var elbow = Elbow();
+        var pipe = PipeWithItsUpperEndAt(elbow.PortPositionUnits(0));
+        var hover = HoverOf(elbow);
+        int lit = EnabledRenderers(pipe);
+        Assume.That(lit, Is.GreaterThan(0), "труба на порту видна до наведения");
+
+        hover.EnterOption(0,
+            PipeEndsDiagram.OptionOf(PipeFittingPortsDiagram.Choices, PipeNodeKind.Cap));
+
+        Assert.IsFalse(ScenePreview.IsShowing,
+            "правка откажет — показывать «как будет» нечего");
+        Assert.IsNull(ScenePreview.Ghost, "и призрака нет");
+        Assert.AreEqual(lit, EnabledRenderers(pipe),
+            "труба НЕ гаснет: превью удаления того, что не удалят, — обман");
+        Assert.IsTrue(PartHighlighter.IsShown(elbow, PartHighlighter.FittingMouthRegion(0)),
+            "но красный на порту остаётся: вопрос «где это» никуда не делся");
     }
 
     [Test]

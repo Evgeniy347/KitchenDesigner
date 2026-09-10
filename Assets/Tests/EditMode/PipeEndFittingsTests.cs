@@ -21,13 +21,15 @@ using KitchenDesigner.Core.Plumbing;
 /// Имена элементов латинские: <c>ElementNaming.Rule</c> пропускает в PartName
 /// только латиницу.
 ///
-/// Здесь стоял тест «конец занят ДРУГОЙ ТРУБОЙ — отказ со своим ответом»
-/// (<c>PipeEndEdit.OccupiedByOther</c>). Он ушёл вместе с этим исходом, потому что
-/// с появлением <c>PipeConnectionRule</c> соседом порта может стать только то, что
-/// <c>PipeJoint.Connects</c> уже признало стыком, а значит — только описываемый
-/// списком вид. Сцена больше не умеет поставить на порт нечто, чего список не
-/// называет: тест уходил в Inconclusive на своей же <c>Assume</c> («две трубы
-/// состыкованы напрямую») и не проверял ничего.</summary>
+/// Здесь стоял тест «конец занят ДРУГОЙ ТРУБОЙ — отказ со своим ответом». На конце
+/// САМОЙ трубы это состояние действительно недостижимо:
+/// <c>PipeConnectionRule.CanConnect(Pipe, Pipe)</c> ложно, <c>PipeJoint.Connects</c>
+/// спрашивает то же правило, и соседом конца трубы труба не становится — тест уходил
+/// в Inconclusive на своей же <c>Assume</c> и не проверял ничего. Но отказ живёт, и
+/// живёт достижимо: на ПОРТУ ФИТИНГА труба сидит постоянно, и выбор из списка её не
+/// заменяет. Сторож — <c>PipeFittingPortFittingsTests</c>
+/// (<c>APortHeldByAPipe_IsRefused_AndTheWholePipeStaysWhereItWas</c>); здесь его нет
+/// не потому, что отказа нет, а потому, что этой двери у трубы нет.</summary>
 public class PipeEndFittingsTests : SnapTestBase
 {
     private const int PipeLengthMm = 600;

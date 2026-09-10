@@ -31,21 +31,19 @@ namespace KitchenDesigner.Core.UI
         private readonly Image?[] _slots = new Image?[EndCount];
         private readonly Image?[] _holes = new Image?[EndCount];
         private readonly TMP_Dropdown?[] _choices = new TMP_Dropdown?[EndCount];
-        private readonly PipePortHover _hover;
+        private readonly PipePortHover<PipeElement> _hover;
 
         public PipeEndsDiagram(IContextMenuHost host, Func<PipeElement?> target)
         {
             _host = host;
             _target = target;
-            _hover = new PipePortHover(() => target(), Choices, Paint);
+            _hover = new PipePortHover<PipeElement>(() => target(), Choices, Paint);
         }
 
         public static PartEnd EndAt(int end) => end == 0 ? PartEnd.Start : PartEnd.End;
 
-        private static void Paint(KitchenElement owner, int end)
-        {
-            if (owner is PipeElement pipe) PartHighlighter.ShowPipeEnd(pipe, EndAt(end));
-        }
+        private static void Paint(PipeElement pipe, int end) =>
+            PartHighlighter.ShowPipeEnd(pipe, EndAt(end));
 
         internal static readonly IReadOnlyList<PipeNodeKind> Choices =
             PipeConnectionRule.ChoicesFor(PipeNodeKind.Pipe);
