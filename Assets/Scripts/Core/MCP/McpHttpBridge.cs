@@ -22,6 +22,7 @@ namespace KitchenDesigner.Core.MCP
         private readonly ManualResetEventSlim _shuttingDown = new ManualResetEventSlim(false);
         private McpCommandHandler? _handler;
         private McpRpcRouter? _router;
+        private McpCallTiming? _currentCallTiming;
 
         public int Port => _port;
         public bool IsRunning => _running;
@@ -128,6 +129,10 @@ namespace KitchenDesigner.Core.MCP
 
         private void Serve(HttpListenerContext context)
         {
+            var timing = new McpCallTiming();
+            timing.MarkAccepted();
+            _currentCallTiming = timing;
+
             var request = context.Request;
             var (refusedStatus, refusal) = McpRequestGate.Inspect(
                 request.HttpMethod,
@@ -140,6 +145,7 @@ namespace KitchenDesigner.Core.MCP
             if (refusedStatus != 0)
             {
                 Respond(context, refusedStatus, refusal, "text/plain; charset=utf-8");
+                _currentCallTiming = null;
                 return;
             }
 
@@ -149,6 +155,8 @@ namespace KitchenDesigner.Core.MCP
 
             var (status, json) = _router!.Handle(body);
             Respond(context, status, json, "application/json; charset=utf-8");
+            timing.MarkRespondedAndLog();
+            _currentCallTiming = null;
         }
 
         private static void Respond(HttpListenerContext context, int status, string? body, string contentType)
@@ -173,13 +181,17 @@ namespace KitchenDesigner.Core.MCP
             McpResponse? result = null;
             Exception? failure = null;
             using var done = new ManualResetEventSlim(false);
+            var timing = _currentCallTiming;
+            timing?.MarkQueued(request.method);
 
             _mainThreadActions.Enqueue(() =>
             {
                 try
                 {
+                    timing?.MarkStarted();
                     FrameRateManager.KeepAwake(1f);
                     result = _handler!.Handle(request);
+                    timing?.MarkExecuted();
                 }
                 catch (Exception ex) { failure = ex; }
                 finally { done.Set(); }

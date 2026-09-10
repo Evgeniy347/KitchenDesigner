@@ -311,7 +311,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var f in fields) if (!allowed.Contains(f))
                 return McpResponse.Error(req.id, -32602, $"Unknown compact field '{f}'");
             var all = PartRegistry.GetAll();
-            var validation = all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var validation = McpValidationCache.Get(all);
             var elements = new List<Dictionary<string, object?>>();
             var missing = new List<string>();
             foreach (var name in p.names)
@@ -377,7 +377,7 @@ namespace KitchenDesigner.Core.MCP
         private McpResponse TerseResult(McpRequest req, int matched, int updated)
         {
             var all = PartRegistry.GetAll();
-            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var vr = McpValidationCache.Get(all);
             return McpResponse.Result(req.id, new
             {
                 ok = true,

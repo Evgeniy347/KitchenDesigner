@@ -62,7 +62,7 @@ namespace KitchenDesigner.Core.MCP
         private static (int elementCount, int violationCount) SceneCounts()
         {
             var all = PartRegistry.GetAll();
-            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var vr = McpValidationCache.Get(all);
             return (all != null ? all.Count : 0, vr != null ? vr.violations.Count : 0);
         }
 

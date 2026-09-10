@@ -299,7 +299,7 @@ namespace KitchenDesigner.Core.MCP
         {
             var all = PartRegistry.GetAll();
             if (all == null || all.Count == 0) return false;
-            var vr = ConstraintValidator.Validate(all);
+            var vr = McpValidationCache.Get(all);
             return vr != null && vr.violations.Contains(element);
         }
 
@@ -361,7 +361,7 @@ namespace KitchenDesigner.Core.MCP
         private static object BuildMutationResult(KitchenElement el)
         {
             var all = PartRegistry.GetAll();
-            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var vr = McpValidationCache.Get(all);
             return new
             {
                 ok = true,

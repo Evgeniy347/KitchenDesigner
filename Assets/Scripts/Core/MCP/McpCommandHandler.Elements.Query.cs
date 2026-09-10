@@ -11,7 +11,7 @@ namespace KitchenDesigner.Core.MCP
         private McpResponse HandleGetAllElements(McpRequest req)
         {
             var elements = PartRegistry.GetAll();
-            var vr = elements != null && elements.Count > 0 ? ConstraintValidator.Validate(elements) : null;
+            var vr = McpValidationCache.Get(elements);
             var list = new List<ElementInfo>();
             if (elements == null) return McpResponse.Error(req.id, -1, "PartRegistry is not initialized");
             foreach (var el in elements)
@@ -38,7 +38,7 @@ namespace KitchenDesigner.Core.MCP
         {
             var p = req.Params?.ToObjectStrict<ParamsGetElements>() ?? new ParamsGetElements();
             var all = PartRegistry.GetAll();
-            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var vr = McpValidationCache.Get(all);
 
             var matched = new List<KitchenElement>();
             var missing = new List<string>();
@@ -150,7 +150,7 @@ namespace KitchenDesigner.Core.MCP
             if (all == null || all.Count == 0)
                 return McpResponse.Result(req.id, new { violations = new string[0], count = 0 });
 
-            var result = ConstraintValidator.Validate(all);
+            var result = McpValidationCache.Get(all)!;
             var facadeIssues = ComputeFacadeViolations(all);
             var drawerIssues = ComputeDrawerViolations(all);
 

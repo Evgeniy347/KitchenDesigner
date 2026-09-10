@@ -26,7 +26,7 @@ namespace KitchenDesigner.Core.MCP
             bool hasViolations = false;
             if (allElements != null && allElements.Count > 0)
             {
-                var vr = validation ?? ConstraintValidator.Validate(allElements);
+                var vr = validation ?? McpValidationCache.Get(allElements)!;
                 hasViolations = vr.violations.Contains(el);
             }
 

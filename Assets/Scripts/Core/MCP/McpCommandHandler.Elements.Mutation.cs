@@ -81,7 +81,7 @@ namespace KitchenDesigner.Core.MCP
             List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)> resolved)
         {
             var all = PartRegistry.GetAll();
-            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var vr = McpValidationCache.Get(all);
             var results = new List<object>();
             foreach (var item in resolved)
             {
@@ -217,7 +217,7 @@ namespace KitchenDesigner.Core.MCP
             CommandStack.Execute(new CompositeCommand($"MCP clone_elements x{allClones.Count}", commands));
             SettleSceneAfterMutation();
             var all = PartRegistry.GetAll();
-            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var vr = McpValidationCache.Get(all);
             var created = new List<string>();
             var elements = new List<ElementInfo>();
             foreach (var el in allClones) { created.Add(el.PartName); elements.Add(ElementInfoBuilder.Build(el, all, false, vr)); }
@@ -272,7 +272,7 @@ namespace KitchenDesigner.Core.MCP
             CommandStack.Execute(new CompositeCommand($"MCP align_elements ({commands.Count} moves)", commands));
             SettleSceneAfterMutation();
             var all = PartRegistry.GetAll();
-            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var vr = McpValidationCache.Get(all);
             var results = new List<object>();
             foreach (var op in p.ops)
             {
@@ -328,7 +328,7 @@ namespace KitchenDesigner.Core.MCP
             SettleSceneAfterMutation();
 
             var all = PartRegistry.GetAll();
-            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var vr = McpValidationCache.Get(all);
             var results = new List<object>();
             foreach (var el in resolved)
             {
@@ -425,7 +425,7 @@ namespace KitchenDesigner.Core.MCP
             SnapOpeningsOnceEveryWallOfTheBatchIsRegistered(created);
             SettleSceneAfterMutation();
             var all = PartRegistry.GetAll();
-            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var vr = McpValidationCache.Get(all);
             var elements = new List<ElementInfo>();
             var createdNames = new List<string>();
             foreach (var el in created) { createdNames.Add(el.PartName); elements.Add(ElementInfoBuilder.Build(el, all, false, vr)); }
@@ -466,7 +466,7 @@ namespace KitchenDesigner.Core.MCP
 
             SettleSceneAfterMutation();
             var all = PartRegistry.GetAll();
-            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var vr = McpValidationCache.Get(all);
             var elements = new List<ElementInfo>();
             var names = new List<string>();
             foreach (var el in results) { names.Add(el.PartName); elements.Add(ElementInfoBuilder.Build(el, all, false, vr)); }
@@ -497,7 +497,7 @@ namespace KitchenDesigner.Core.MCP
             CommandStack.Execute(new CompositeCommand($"MCP delete_elements x{commands.Count}", commands));
             SettleSceneAfterMutation();
             var allAfter = PartRegistry.GetAll();
-            var vrAfter = allAfter != null && allAfter.Count > 0 ? ConstraintValidator.Validate(allAfter) : null;
+            var vrAfter = McpValidationCache.Get(allAfter);
             Debug.Log($"[MCP] Deleted {commands.Count} elements");
             return McpResponse.Result(req.id, new { ok = true, deleted = deletedNames, sceneViolationCount = vrAfter != null ? vrAfter.violations.Count : 0 });
         }

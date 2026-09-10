@@ -11,7 +11,7 @@ namespace KitchenDesigner.Core.MCP
         private McpResponse HandleGetModules(McpRequest req)
         {
             var allElements = PartRegistry.GetAll();
-            var vr = allElements != null && allElements.Count > 0 ? ConstraintValidator.Validate(allElements) : null;
+            var vr = McpValidationCache.Get(allElements);
             var list = new List<ModuleInfo>();
             foreach (var g in GroupManager.AllGroups())
                 list.Add(BuildModuleInfo(g, allElements, vr));

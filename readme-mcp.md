@@ -62,6 +62,23 @@ claude mcp add --transport http unity-kitchen http://127.0.0.1:9337/mcp
 
 Эндпоинт слушает только loopback и отбивает чужие `Host` и `Origin`.
 
+### Замер: разбивка одного вызова по этапам
+
+Каждый ответ пишет в лог одну строку `[MCP][Timing] method=… total=…ms
+accepted->queued=…ms queued->started=…ms started->executed=…ms executed->responded=…ms
+validateRecomputes=…`. Стадии — принят (вход в `Serve`), поставлен в очередь (перед
+`_mainThreadActions.Enqueue`), начал выполняться (внутри очереди, перед
+`McpCommandHandler.Handle`), выполнен (сразу после), ответ отправлен (после записи байт).
+`validateRecomputes` — сколько раз за этот вызов реально пересчиталась валидация всей сцены
+(`McpValidationCache`, `Assets/Scripts/Core/MCP/McpValidationCache.cs`) — счётчик работы, а не
+миллисекунды: он не плавает от машины к машине. Для батча из нескольких `tools/call` в одном
+HTTP-теле строка описывает ПОСЛЕДНИЙ вызов батча (упрощение, батчи в реальном использовании
+агентом — редкость).
+
+Чистая арифметика разбивки (тики → мс, без Unity) — `Assets/Scripts/Core/Pure/MCP/
+McpCallTimingBreakdown.cs`, проверяется `dotnet` в `Assets/Tests/EditMode/Pure/
+McpCallTimingBreakdownTests.cs`.
+
 ## Где подробности
 
 - Инструменты, единицы, рабочий цикл — `get_project_instructions` и `guide`

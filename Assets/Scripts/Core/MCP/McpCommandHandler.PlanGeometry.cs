@@ -352,7 +352,7 @@ namespace KitchenDesigner.Core.MCP
             }
 
             var all = PartRegistry.GetAll();
-            var validation = all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var validation = McpValidationCache.Get(all);
             var violations = new List<object>();
             foreach (var name in desiredList)
             {
@@ -408,7 +408,7 @@ namespace KitchenDesigner.Core.MCP
         {
             SettleSceneAfterMutation();
             var all = PartRegistry.GetAll();
-            var vr = all != null && all.Count > 0 ? ConstraintValidator.Validate(all) : null;
+            var vr = McpValidationCache.Get(all);
             var violations = new List<object>();
             foreach (var el in affected) violations.AddRange(BuildElementViolations(el, all, vr));
             return McpResponse.Result(req.id, new { ok = true, created, updated, deleted = 0, violations });
