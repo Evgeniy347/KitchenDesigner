@@ -250,8 +250,13 @@ public class PipeSeatRuleReproTests : SnapTestBase
         var coupling = Coupling("Mufta");
         PutPortAt(coupling, 0, upperMouth + new Vector3(0f, Units(SpanMm), 0f));
 
+        // 1 мм здесь незаметно сталкивался со SpanMm: дальний конец claimant садился на
+        // упреждающие 118 мм от ближнего и оказывался в 0,4 мм от устья Mufta — ближе
+        // допуска стыка (0,5 мм), так что сеть считала его уже соединённым и связей
+        // получалось две вместо одной. 1,5 мм держит и ближний конец в досягаемости
+        // (2 мм) устья тройника, и дальний — вне допуска стыка с Mufta (0,9 мм).
         claimant = Pipe("Pretendent", PipeLengthMm, Vector3.zero);
-        PutEndAt(claimant, 0, upperMouth + new Vector3(0f, Units(1f), 0f));
+        PutEndAt(claimant, 0, upperMouth + new Vector3(0f, Units(1.5f), 0f));
 
         var scene = new List<KitchenElement> { tee, sitting, coupling, claimant };
 
