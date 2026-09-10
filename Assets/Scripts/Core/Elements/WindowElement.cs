@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Profiling;
 using UnityEngine;
 
@@ -5,9 +6,14 @@ namespace KitchenDesigner.Core
 {
     public enum GlassTint { Clear = 0, Tinted = 1 }
 
-    public class WindowElement : WallOpeningElement
+    public class WindowElement : WallOpeningElement, IQuantifies
     {
         public override string DisplayTypeName => "Окно";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
 

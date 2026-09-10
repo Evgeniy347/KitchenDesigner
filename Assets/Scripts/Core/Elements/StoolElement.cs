@@ -1,10 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class StoolElement : KitchenElement, IHasTwoDecorSlots
+    public class StoolElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
     {
         public override string DisplayTypeName => "Табуретка";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public const int DefaultWidthMM = 360;
         public const int DefaultHeightMM = 450;

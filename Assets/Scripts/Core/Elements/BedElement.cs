@@ -1,10 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class BedElement : KitchenElement, IHasTwoDecorSlots
+    public class BedElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
     {
         public override string DisplayTypeName => "Кровать";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public const int DefaultWidthMM = BedLayout.DoubleWidthMM;
         public const int DefaultHeightMM = BedLayout.DefaultHeightWithHeadboardMM;

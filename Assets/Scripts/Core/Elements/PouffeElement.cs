@@ -1,10 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class PouffeElement : KitchenElement, IHasTwoDecorSlots
+    public class PouffeElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
     {
         public override string DisplayTypeName => "Пуфик";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public const int DefaultWidthMM = PouffeLayout.DefaultWidthMM;
         public const int DefaultHeightMM = PouffeLayout.DefaultHeightMM;

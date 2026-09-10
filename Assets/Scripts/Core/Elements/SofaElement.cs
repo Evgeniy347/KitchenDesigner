@@ -1,10 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class SofaElement : KitchenElement, IHasTwoDecorSlots
+    public class SofaElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
     {
         public override string DisplayTypeName => "Диван";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public const int DefaultWidthMM = SofaLayout.DefaultWidthMM;
         public const int DefaultHeightMM = SofaLayout.DefaultHeightMM;

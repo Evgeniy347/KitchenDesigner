@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Profiling;
 using UnityEngine;
 
@@ -5,9 +6,14 @@ namespace KitchenDesigner.Core
 {
     public enum DoorSashType { Glass = 0, Blind = 1 }
 
-    public class DoorElement : WallOpeningElement
+    public class DoorElement : WallOpeningElement, IQuantifies
     {
         public override string DisplayTypeName => "Дверь";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.AlignsCutout;
 

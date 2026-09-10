@@ -30,21 +30,12 @@ public class SpecificationCoverageGuardTests
     private static readonly Dictionary<Type, string> ExcludedFromSpecification =
         new Dictionary<Type, string>
     {
-        { typeof(StoolElement), "цельная точёная мебель без разбивки на детали — вне этого дефекта" },
-        { typeof(ChairElement), "цельная мебель со спинкой без разбивки на детали — вне этого дефекта" },
-        { typeof(SofaElement), "мягкая мебель, разбивки на детали нет — вне этого дефекта" },
-        { typeof(PouffeElement), "мягкая мебель, разбивки на детали нет — вне этого дефекта" },
-        { typeof(BedElement), "цельная мебель без разбивки на детали — вне этого дефекта" },
         { typeof(PillarElement),
             "процедурная точёная опора-колонна (не хозяйственная фурнитура винтовой опоры) — "
             + "ни листовая деталь, ни покупное изделие; вне этого дефекта" },
         { typeof(FloorElement),
             "напольное покрытие помещения, а не деталь и не штучное изделие — не входит в "
             + "ведомость по конструкции" },
-        { typeof(WindowElement),
-            "проём стены со своей рамой и створкой, не разложен на детали — вне этого дефекта" },
-        { typeof(DoorElement),
-            "проём стены со своим полотном, не разложен на детали — вне этого дефекта" },
     };
 
     [Test]
@@ -139,6 +130,34 @@ public class SpecificationCoverageGuardTests
                 $"{type.Name} — покупное изделие той же природы, что мойка и ванна, и "
                 + "обязано считать себя само через IQuantifies, а не прятаться в списке "
                 + "исключений");
+
+            EveryElementType.ClearScene();
+            var element = EveryElementType.Spawn(type, "Cov" + type.Name);
+            Assert.Greater(element.GetComponents<IQuantifies>().Length, 0,
+                $"{type.Name} обязан реализовать IQuantifies");
+        }
+    }
+
+    /// <summary>Противоположный вход: цельная мебель (табурет, стул, диван, пуф,
+    /// кровать) и проёмы стены (окно, дверь) — по ответу пользователя от
+    /// 2026-09-10 такое же покупное изделие штуками, как мойка и унитаз, и
+    /// обязаны считать себя сами через IQuantifies, а не прятаться в списке
+    /// исключений.</summary>
+    [Test]
+    public void PurchasedFurnitureAndOpenings_AreCoveredThroughIQuantifies_NotThroughTheExclusionList()
+    {
+        var purchasedTypes = new[]
+        {
+            typeof(StoolElement), typeof(ChairElement), typeof(SofaElement),
+            typeof(PouffeElement), typeof(BedElement), typeof(WindowElement), typeof(DoorElement),
+        };
+
+        foreach (var type in purchasedTypes)
+        {
+            Assert.IsFalse(ExcludedFromSpecification.ContainsKey(type),
+                $"{type.Name} — цельная мебель или проём, считается покупным изделием "
+                + "штуками и обязано считать себя само через IQuantifies, а не прятаться "
+                + "в списке исключений");
 
             EveryElementType.ClearScene();
             var element = EveryElementType.Spawn(type, "Cov" + type.Name);

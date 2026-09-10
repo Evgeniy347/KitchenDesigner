@@ -105,6 +105,57 @@ public class PurchasedGoodsSpecificationTests
         AssertSinglePurchasedPiece(go.GetComponent<BathtubElement>(), "Ванна");
     }
 
+    [Test]
+    public void Stool_IsCountedAsOnePurchasedPiece()
+    {
+        var go = ElementFactory.CreateStool(new Vector3Int(360, 450, 360), 0, "Stool", Vector3.zero);
+        AssertSinglePurchasedPiece(go.GetComponent<StoolElement>(), "Табуретка");
+    }
+
+    [Test]
+    public void Chair_IsCountedAsOnePurchasedPiece()
+    {
+        var go = ElementFactory.CreateChair(new Vector3Int(400, 900, 400), 0, 460, "Chair", Vector3.zero);
+        AssertSinglePurchasedPiece(go.GetComponent<ChairElement>(), "Стул");
+    }
+
+    [Test]
+    public void Sofa_IsCountedAsOnePurchasedPiece()
+    {
+        var go = ElementFactory.CreateSofa(new Vector3Int(1800, 800, 900), 30, 420, "Sofa", Vector3.zero);
+        AssertSinglePurchasedPiece(go.GetComponent<SofaElement>(), "Диван");
+    }
+
+    [Test]
+    public void Pouffe_IsCountedAsOnePurchasedPiece()
+    {
+        var go = ElementFactory.CreatePouffe(new Vector3Int(400, 420, 400), 30, 80, "Pouffe", Vector3.zero);
+        AssertSinglePurchasedPiece(go.GetComponent<PouffeElement>(), "Пуфик");
+    }
+
+    [Test]
+    public void Bed_IsCountedAsOnePurchasedPiece()
+    {
+        var go = ElementFactory.CreateBed(
+            new Vector3Int(BedElement.DefaultWidthMM, BedElement.DefaultHeightMM, BedElement.DefaultDepthMM),
+            true, true, "Bed", Vector3.zero);
+        AssertSinglePurchasedPiece(go.GetComponent<BedElement>(), "Кровать");
+    }
+
+    [Test]
+    public void Window_IsCountedAsOnePurchasedPiece()
+    {
+        var go = ElementFactory.CreateWindow(new Vector3Int(900, 1200, 100), "Window", Vector3.zero);
+        AssertSinglePurchasedPiece(go.GetComponent<WindowElement>(), "Окно");
+    }
+
+    [Test]
+    public void Door_IsCountedAsOnePurchasedPiece()
+    {
+        var go = ElementFactory.CreateDoor(new Vector3Int(900, 2000, 100), "Door", Vector3.zero);
+        AssertSinglePurchasedPiece(go.GetComponent<DoorElement>(), "Дверь");
+    }
+
     /// <summary>Девять светильников одной кухни — девять отдельных счётов, суммирующихся
     /// в totalsByUnit по штукам, а не одна строка "х9" молчаливо потерявшая тираж.</summary>
     [Test]

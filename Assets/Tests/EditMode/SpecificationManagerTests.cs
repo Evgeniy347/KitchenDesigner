@@ -533,22 +533,25 @@ public class SpecificationManagerTests
 
     // ── Приёмка возврата: §3 не-IQuantifies элемент, который не доска, вообще не попадает ──
 
-    /// <summary>Дефект из приёмки: стул шёл в старую ветку и получал «м² пласти», как будто он
-    /// доска ЛДСП. Стул не реализует ни `IQuantifies`, ни `ISpecificationParts` и не является
-    /// доскообразным типом — он обязан просто не попасть в спецификацию.</summary>
+    /// <summary>Дефект из приёмки: элемент без `IQuantifies` шёл в старую ветку и получал
+    /// «м² пласти», как будто он доска ЛДСП. Стул с тех пор получил `IQuantifies` (считается
+    /// покупным изделием штуками — см. <see cref="PurchasedGoodsSpecificationTests"/>), так что
+    /// приёмка теперь берёт колонну: она не реализует ни `IQuantifies`, ни
+    /// `ISpecificationParts`, не доскообразный тип — и обязана просто не попасть в
+    /// спецификацию.</summary>
     [Test]
     public void Build_NonBoardElementWithoutQuantifies_IsDroppedNotCountedAsBoard()
     {
-        var go = new GameObject("Chair");
-        var chair = go.AddComponent<ChairElement>();
-        chair.PartName = "Chair";
-        chair.DimensionsMM = new Vector3Int(ChairElement.DefaultWidthMM,
-            ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM);
+        var go = new GameObject("Pillar");
+        var pillar = go.AddComponent<PillarElement>();
+        pillar.PartName = "Pillar";
+        pillar.MidHeightMM = 700;
+        pillar.DimensionsMM = new Vector3Int(80, pillar.TotalHeightMM, 80);
 
-        var result = SpecificationManager.Build(new List<KitchenElement> { chair });
+        var result = SpecificationManager.Build(new List<KitchenElement> { pillar });
 
         Assert.AreEqual(0, result.lines.Count,
-            "стул не умеет считать себя сам — не должен превратиться в доску ЛДСП");
+            "колонна не умеет считать себя сама — не должна превратиться в доску ЛДСП");
 
         Object.DestroyImmediate(go);
     }
