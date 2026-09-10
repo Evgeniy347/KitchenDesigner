@@ -149,7 +149,8 @@ public class FacadeFloorSinkReproTests
     [Test]
     public void AFacadeFromTheSidebar_StandsOnTheFloor_NotInIt()
     {
-        var facade = SpawnFromSidebar(s => s.SpawnFacade(new Vector3Int(350, 716, 18), "Фасад"));
+        var facade = SpawnFromSidebar(
+            new SidebarCatalog.Item("Фасад", new Vector3Int(350, 716, 18), SidebarItemKind.Facade));
 
         Assert.IsInstanceOf<FacadeElement>(facade, "кнопка фасада обязана родить фасад");
         Assert.AreEqual(FacadeElement.DEFAULT_GAP_MM, ((FacadeElement)facade).GapBottom,
@@ -162,7 +163,8 @@ public class FacadeFloorSinkReproTests
     [Test]
     public void APlainBoardFromTheSidebar_StandsExactlyOnZero_NotLiftedByAFacadeGap()
     {
-        var board = SpawnFromSidebar(s => s.SpawnBoard(new Vector3Int(600, 18, 400), "Доска"));
+        var board = SpawnFromSidebar(
+            new SidebarCatalog.Item("Доска", new Vector3Int(600, 18, 400), SidebarItemKind.Board));
 
         Assert.AreEqual(0, board.Gaps.Bottom, "у обычной доски зазоров нет");
         AssertSitsOnFloor(board, "доска из сайдбара");
@@ -175,10 +177,10 @@ public class FacadeFloorSinkReproTests
     /// прогоне без сцены и так же он ложится, если постановка на курсор
     /// отключена. Сетка выключена в SetUp: с включённой центр округляется к её
     /// шагу и утопание тонет в этом округлении.</summary>
-    private KitchenElement SpawnFromSidebar(System.Action<ElementSpawner> spawn)
+    private KitchenElement SpawnFromSidebar(SidebarCatalog.Item item)
     {
         var spawner = new ElementSpawner(() => Vector3.zero, () => null);
-        spawn(spawner);
+        spawner.Spawn(item);
 
         var all = PartRegistry.GetAll();
         Assert.AreEqual(1, all.Count,

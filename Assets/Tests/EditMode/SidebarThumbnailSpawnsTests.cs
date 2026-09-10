@@ -113,12 +113,12 @@ public class SidebarThumbnailSpawnsTests
     public void AssembledFacadePreset_SpawnsAnAssembledFacade_NotAPlainOne()
     {
         var assembled = CatalogItems()
-            .FirstOrDefault(i => i.kind == SidebarItemKind.Facade && i.facadeAssembled);
+            .FirstOrDefault(i => i.kind == SidebarItemKind.Facade && i.preset.facadeAssembled);
         Assert.IsTrue(assembled.kind == SidebarItemKind.Facade,
             "в каталоге нет сборного фасада — проверка сторожила бы пустоту");
 
         var plain = CatalogItems()
-            .First(i => i.kind == SidebarItemKind.Facade && !i.facadeAssembled);
+            .First(i => i.kind == SidebarItemKind.Facade && !i.preset.facadeAssembled);
 
         GameObject assembledGo, plainGo;
         using (ElementFactorySandbox.Enter())

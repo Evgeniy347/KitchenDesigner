@@ -101,14 +101,14 @@ public class SidebarCatalogTests
         }
 
         var plain = groups[1].items.Find(it => it.name == "Фасад щитовой");
-        Assert.IsFalse(plain.facadeAssembled, "щитовой фасад — не сборный");
+        Assert.IsFalse(plain.preset.facadeAssembled, "щитовой фасад — не сборный");
         Assert.AreEqual(new Vector3Int(600, 716, 18), plain.dims, "размеры щитового по умолчанию");
 
         var assembled = groups[1].items.Find(it => it.name == "Фасад сборный");
-        Assert.IsTrue(assembled.facadeAssembled, "сборный фасад помечен как сборный");
+        Assert.IsTrue(assembled.preset.facadeAssembled, "сборный фасад помечен как сборный");
         Assert.AreEqual(new Vector3Int(600, 716, 18), assembled.dims);
 
-        Assert.AreEqual(1, groups[1].items.FindAll(it => it.facadeAssembled).Count, "1 сборный фасад");
+        Assert.AreEqual(1, groups[1].items.FindAll(it => it.preset.facadeAssembled).Count, "1 сборный фасад");
     }
 
     /// <summary>Два вида фасада делят один <see cref="SidebarItemKind.Facade"/>
@@ -129,7 +129,7 @@ public class SidebarCatalogTests
             + "по разным плиткам (SidebarTileBuilder группирует ПОСЛЕДОВАТЕЛЬНЫЕ записи "
             + "одного kind в одну плитку)");
 
-        var flags = facades.ConvertAll(f => f.facadeAssembled);
+        var flags = facades.ConvertAll(f => f.preset.facadeAssembled);
         CollectionAssert.AllItemsAreUnique(flags,
             "оба значения признака обязаны встретиться — иначе один из вариантов недостижим "
             + "с одним и тем же kind");
@@ -143,13 +143,13 @@ public class SidebarCatalogTests
 
         var gtv = groups[2].items[0];
         Assert.IsTrue(gtv.kind == SidebarItemKind.Drawer);
-        Assert.AreEqual("gtv", gtv.drawerSystem);
-        Assert.AreEqual("A", gtv.drawerType);
-        Assert.AreEqual(350, gtv.drawerLength);
+        Assert.AreEqual("gtv", gtv.preset.drawerSystem);
+        Assert.AreEqual("A", gtv.preset.drawerType);
+        Assert.AreEqual(350, gtv.preset.drawerLength);
 
         var movento = groups[2].items[1];
         Assert.IsTrue(movento.kind == SidebarItemKind.Drawer);
-        Assert.AreEqual("movento", movento.drawerSystem);
+        Assert.AreEqual("movento", movento.preset.drawerSystem);
         Assert.AreEqual("Ящик Movento", movento.name);
     }
 
@@ -267,7 +267,7 @@ public class SidebarCatalogTests
         var it = groups[3].items.Find(i => i.name == "Ножка");
         Assert.IsNotNull(it);
         Assert.IsTrue(it.kind == SidebarItemKind.Pillar);
-        Assert.AreEqual(PillarElement.MidHeightMM_Default, it.pillarMidHeightMM);
+        Assert.AreEqual(PillarElement.MidHeightMM_Default, it.preset.pillarMidHeightMM);
     }
 
     [Test]
@@ -322,7 +322,7 @@ public class SidebarCatalogTests
         foreach (var item in items)
         {
             string identity = item.kind == SidebarItemKind.PipeFitting
-                ? item.kind + ":" + item.fittingKind
+                ? item.kind + ":" + item.preset.fittingKind
                 : item.kind.ToString();
             string clash = seen.TryGetValue(identity, out var other) ? other : "";
             Assert.IsEmpty(clash,
@@ -349,7 +349,7 @@ public class SidebarCatalogTests
         Assert.AreEqual(6, fittings.Count,
             "шесть фитингов одной трубы: колено, муфта, тройник, заглушка, подача, обратка");
 
-        var presets = fittings.ConvertAll(i => i.fittingKind);
+        var presets = fittings.ConvertAll(i => i.preset.fittingKind);
         CollectionAssert.AllItemsAreUnique(presets,
             "каждый фитинг обязан нести свой PipeNodeKind — иначе два разных фитинга "
             + "заведут одну и ту же деталь");
@@ -473,12 +473,12 @@ public class SidebarCatalogTests
 
         Assert.AreEqual(4, items.Count);
         Assert.IsTrue(items[0].kind == SidebarItemKind.Cooktop);
-        Assert.AreEqual("", items[0].applianceModel,
+        Assert.AreEqual("", items[0].preset.applianceModel,
             "варочная свободного размера идёт первой и модели не имеет: её габариты "
             + "пользователь правит сам");
-        Assert.AreEqual(CooktopElement.MODEL_BOSCH_PUE611BB5E, items[1].applianceModel);
-        Assert.AreEqual(OvenElement.MODEL, items[2].applianceModel);
-        Assert.AreEqual(DishwasherElement.MODEL, items[3].applianceModel);
+        Assert.AreEqual(CooktopElement.MODEL_BOSCH_PUE611BB5E, items[1].preset.applianceModel);
+        Assert.AreEqual(OvenElement.MODEL, items[2].preset.applianceModel);
+        Assert.AreEqual(DishwasherElement.MODEL, items[3].preset.applianceModel);
     }
 
     [Test]
@@ -501,7 +501,7 @@ public class SidebarCatalogTests
         var inCatalog = new System.Collections.Generic.List<string>();
         foreach (var g in SidebarCatalog.Build())
             foreach (var it in g.items)
-                if (!string.IsNullOrEmpty(it.applianceModel)) inCatalog.Add(it.applianceModel);
+                if (!string.IsNullOrEmpty(it.preset.applianceModel)) inCatalog.Add(it.preset.applianceModel);
 
         var missingInCatalog = new System.Collections.Generic.List<string>();
         foreach (var model in ApplianceModels.All)
