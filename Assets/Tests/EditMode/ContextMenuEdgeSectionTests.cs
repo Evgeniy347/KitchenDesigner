@@ -20,13 +20,21 @@ public class ContextMenuEdgeSectionTests
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
-    private bool _blockBefore;
+    private ProjectLoadStateGuard? _globals;
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню — 0,31 с,
+    /// и десять сборок это 3,1 с из прогона EditMode при бюджете 170 с. Почему это
+    /// безопасно — в сводке <see cref="ContextMenuLayoutTests"/>: боевой сценарий и есть
+    /// ОДНА панель, переоткрываемая через <c>Open</c>, а <c>Open</c> и есть её сброс —
+    /// в том числе <c>SideHighlighter.Hide()</c> и <c>_edges.Refresh()</c>, на которых
+    /// стоит <see cref="OpeningAnotherElement_DropsHoverHighlightOfThePreviousOne"/>.
+    ///
+    /// Три теста панель не открывают: <see cref="EdgeDiagram_KeepsItsWidgetNames"/>
+    /// читает имена узлов, собранные в <c>Build</c>, а оба теста про троттлинг —
+    /// чистая арифметика <c>FrameThrottle</c> и панель не трогают вовсе.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
-        _blockBefore = KitchenSettings.Instance.BlockOnViolation;
-        KitchenSettings.Instance.BlockOnViolation = false;
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
         var go = new GameObject("CtxMenu");
@@ -34,18 +42,48 @@ public class ContextMenuEdgeSectionTests
         _menu!.Build(_canvas!.transform);
     }
 
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь.
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: <c>ApplyOncePerFrame</c>
+    /// пропускает один Apply за кадр, а в EditMode <c>Time.frameCount</c> стоит на
+    /// месте, поэтому окно, взведённое предыдущим тестом, съело бы первую правку
+    /// следующего — то есть ровно оба теста про толщину. Фокус снимается по той же
+    /// причине: <c>RefreshUnfocused</c> МОЛЧА пропускает сфокусированное поле, а
+    /// <c>EventSystem</c> в EditMode один на весь прогон. <c>BlockOnViolation</c>
+    /// (зачем — в сводке класса) возвращается не руками, а через
+    /// <c>ProjectLoadStateGuard</c>: ручная пара сохраняет ровно то поле, о котором
+    /// вспомнили.</summary>
+    [SetUp]
+    public void Setup()
+    {
+        _globals = ProjectLoadStateGuard.Capture();
+        KitchenSettings.Instance.BlockOnViolation = false;
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
+    }
+
+    /// <summary><c>Close()</c> обязан идти ДО <c>DestroyImmediate</c> спавнов: он
+    /// обнуляет <c>_target</c> панели, иначе живая панель осталась бы с уничтоженной
+    /// деталью в руках, и он же снимает подсветку сторон и взвод кнопок удаления.</summary>
     [TearDown]
     public void Teardown()
     {
         SideHighlighter.Hide();
         CommandStack.Clear();
-        KitchenSettings.Instance.BlockOnViolation = _blockBefore;
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        if (_menu != null) _menu!.Close();
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         PartRegistry.Clear();
+        _globals!.Restore();
     }
 
     private KitchenElement Board(string name, Vector3Int dims, Vector3 pos)
