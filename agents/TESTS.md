@@ -95,6 +95,20 @@ the only signal they owe anyone.
 **The MCP port is an argument** (`-mcpPort`, default 9337), because the smoke run must not fight
 the user's own running copy for the port.
 
+**Плеер запускается скрытым и молчащим.** `-WindowStyle Hidden` сам по себе окно Unity-плеера
+не прячет: плеер вызывает `ShowWindow` при старте и ещё раз при `Screen.SetResolution`. Рабочий
+способ — опрашивать `MainWindowHandle` и звать `user32!ShowWindow(SW_HIDE)` в цикле ожидания
+MCP; `-batchmode`/`-nographics` не годятся, дымовой проверке нужна живая сцена. Звук глушится
+аргументом `-muteAudio` (`MuteAudioArgument` → `AudioOutputPolicy`), а не настройкой: файл
+настроек пользователя проверка не трогает. Пользователь работает за той же машиной — всплывшее
+окно и заигравшая музыка это его рабочий день, а не косметика.
+
+**Сборка плеера — отдельный редкий шаг, а не часть `-RunTests`.** Дважды за ночь тесты были
+зелёными при несобирающемся приложении. Обычный прогон остаётся быстрым, но **в конце каждой
+многоагентной сессии менеджер гоняет `build.cmd -BuildOnly`** — один раз на всех исполнителей.
+Зелёный `dotnet` не компилирует ни UI, ни Elements, ни MCP; зелёный EditMode не доказывает, что
+
+`.exe` собирается.
 ## `docs/example.save.json` — NEVER TOUCH IT
 
 **This file belongs to the user. Do NOT modify it, do NOT revert it, do NOT
