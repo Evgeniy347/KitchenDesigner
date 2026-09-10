@@ -36,16 +36,6 @@ namespace KitchenDesigner.Core.Plumbing
         {
             var ports = survey.Ports;
 
-            foreach (var link in survey.Network.Links)
-            {
-                var sizeA = survey.SizeOf(link.APortIndex);
-                var sizeB = survey.SizeOf(link.BPortIndex);
-                if (sizeA == null || sizeB == null) continue;
-                if (string.Equals(sizeA, sizeB, StringComparison.Ordinal)) continue;
-                findings.Add(PipeIssueCatalog.DirectSizeMismatch(
-                    ports[link.APortIndex], ports[link.BPortIndex], sizeA, sizeB));
-            }
-
             var reported = new List<string>();
             for (int i = 0; i < ports.Count; i++)
             {
