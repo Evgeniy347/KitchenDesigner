@@ -10,7 +10,6 @@ namespace KitchenDesigner.Core
     {
         Unchanged,
         Changed,
-        OccupiedByOther,
     }
 
     internal readonly struct PipeEndState
@@ -69,10 +68,6 @@ namespace KitchenDesigner.Core
             int partner = PartnerOfPort(survey, owner, port);
             var neighbour = NeighbourOf(survey, partner, scene);
             var seatedKind = KindOf(neighbour);
-            bool describable = seatedKind.HasValue
-                               && PipeConnectionRule.CanConnect(ownerKind, seatedKind.Value);
-            if (neighbour != null && !describable) return PipeEndEdit.OccupiedByOther;
-
             var seated = neighbour as PipeFittingElement;
             if (neighbour == null && !kind.HasValue) return PipeEndEdit.Unchanged;
             if (seatedKind.HasValue && kind.HasValue && seatedKind.Value == kind.Value)

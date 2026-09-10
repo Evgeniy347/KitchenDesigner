@@ -118,15 +118,9 @@ namespace KitchenDesigner.Core.UI
 
             var kind = PipeConnectionRule.KindAt(Choices, option);
 
-            var outcome = PipeEndFittings.Set(pipe, end, kind, PartRegistry.GetAll());
-            if (outcome == PipeEndEdit.OccupiedByOther)
-                Refuse("Конец трубы занят другой деталью");
-
+            PipeEndFittings.Set(pipe, end, kind, PartRegistry.GetAll());
             Show(pipe);
         }
-
-        private static void Refuse(string reason) =>
-            StatusBarUI.Instance?.ShowTransient(reason, StatusLevel.Warning);
 
         private void Repaint(PipeElement pipe)
         {

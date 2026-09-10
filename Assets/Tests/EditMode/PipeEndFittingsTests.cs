@@ -19,7 +19,15 @@ using KitchenDesigner.Core.Plumbing;
 /// РОВНО ОДИН шаг отмены.
 ///
 /// Имена элементов латинские: <c>ElementNaming.Rule</c> пропускает в PartName
-/// только латиницу.</summary>
+/// только латиницу.
+///
+/// Здесь стоял тест «конец занят ДРУГОЙ ТРУБОЙ — отказ со своим ответом»
+/// (<c>PipeEndEdit.OccupiedByOther</c>). Он ушёл вместе с этим исходом, потому что
+/// с появлением <c>PipeConnectionRule</c> соседом порта может стать только то, что
+/// <c>PipeJoint.Connects</c> уже признало стыком, а значит — только описываемый
+/// списком вид. Сцена больше не умеет поставить на порт нечто, чего список не
+/// называет: тест уходил в Inconclusive на своей же <c>Assume</c> («две трубы
+/// состыкованы напрямую») и не проверял ничего.</summary>
 public class PipeEndFittingsTests : SnapTestBase
 {
     private const int PipeLengthMm = 600;
@@ -334,18 +342,4 @@ public class PipeEndFittingsTests : SnapTestBase
             "сосед остаётся ровно там, где стоял");
     }
 
-    [Test]
-    public void AnEndTakenByAnotherPipe_IsRefused_WithItsOwnAnswer()
-    {
-        var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Run");
-        var second = PipeWithItsLowerEndAt(pipe.EndBUnits, "Next");
-        Assume.That(JoinedLinks(), Is.EqualTo(1), "две трубы состыкованы напрямую");
-
-        var outcome = Choose(pipe, UpperEnd, PipeNodeKind.Cap);
-
-        Assert.AreEqual(PipeEndEdit.OccupiedByOther, outcome,
-            "на конце не фитинг, а другая труба — список её не описывает и подменять её "
-            + "выбором из списка нельзя");
-        Assert.IsTrue(second.gameObject.activeInHierarchy);
-    }
 }
