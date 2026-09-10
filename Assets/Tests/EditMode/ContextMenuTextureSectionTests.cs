@@ -12,8 +12,20 @@ public class ContextMenuTextureSectionTests
     private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню — 0,31 с,
+    /// и восемь сборок это 2,5 с из прогона EditMode при бюджете 170 с. Почему это
+    /// безопасно — в сводке <see cref="ContextMenuLayoutTests"/>: боевой сценарий и есть
+    /// ОДНА панель, переоткрываемая через <c>Open</c>.
+    ///
+    /// Здесь у общей панели есть два переживающих тест состояния, и оба сбрасывает сам
+    /// <c>Open</c>: свёрнутость секции текстур (<c>_textures.Collapse()</c> — поэтому
+    /// <see cref="OpenWallWithThreeOverlays"/> разворачивает её сам, а не рассчитывает
+    /// на свежесобранную панель) и список декоров в строках
+    /// (<c>RebuildMaterialOptions</c>, который <c>Open</c> зовёт стене как
+    /// <c>SupportsTextureOverlays</c>). Каждый тест этого класса идёт через
+    /// <c>OpenWallWithThreeOverlays</c>, то есть через <c>Open</c>, без исключений.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
@@ -22,13 +34,38 @@ public class ContextMenuTextureSectionTests
         _menu!.Build(_canvas!.transform);
     }
 
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь.
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: в EditMode
+    /// <c>Time.frameCount</c> стоит на месте, и окно, взведённое предыдущим тестом,
+    /// съело бы первую правку следующего. Взвод «Удалить» живёт в статике и переживает
+    /// не только тест (<see cref="DeletingAnyOverlay_DropsTheAreaHandles_BecauseIndexesShift"/>
+    /// жмёт CtxTexDel0 дважды), фокус — причина, по которой <c>RefreshUnfocused</c>
+    /// молча пропускает поле.</summary>
+    [SetUp]
+    public void Setup()
+    {
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
+    }
+
+    /// <summary><c>Close()</c> обязан идти ДО <c>DestroyImmediate</c> спавнов: он
+    /// обнуляет <c>_target</c>, закрывает превью декора и гасит ручки области —
+    /// иначе живая панель осталась бы с уничтоженной стеной в руках.</summary>
     [TearDown]
     public void Teardown()
     {
         TextureOverlayHandles.End();
         CommandStack.Clear();
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        if (_menu != null) _menu!.Close();
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
