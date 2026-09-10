@@ -50,6 +50,8 @@ namespace KitchenDesigner.Core.UI
             if (ReferenceEquals(Instance, this)) Instance = null;
         }
 
+        internal void SimulateAwakeForTests() => Awake();
+
         public void Build(Transform canvas)
         {
             var chip = UIFactory.CreatePanel("StatusBar", canvas,

@@ -197,13 +197,47 @@ public class ElementHighlighterTests
     /// материалу КАЖДОГО ребёнка, возвращается порендерно и не требует, чтобы
     /// элемент умел перекрасить себя сам. Вопрос теста поэтому другой: каждая
     /// дочерняя коробка носит тон нарушения — и своя стеклокерамика, и свой
-    /// корпус, а не один общий красный на всех.</summary>
+    /// корпус, а не один общий красный на всех.
+    ///
+    /// Две варочные одна на другой нарушение НЕ вносят: `CooktopElement` несёт
+    /// `ElementKind.Recessed`, а `ValidationElement.IgnoredInPairs` выключает
+    /// ОБЫЧНУЮ проверку наложения для Decor|Recessed целиком
+    /// (`ValidationCore.ProcessPair`, ранний `return` до AABB-теста) — варочная
+    /// обязана легально лежать в проёме столешницы. Единственный путь довести
+    /// её до нарушения — тот же, что и в
+    /// `CooktopElementTests.Validator_CooktopOverSidePanel_IsViolation`:
+    /// присосать к столешнице (`SnapToPart`) и подсунуть под неё боковину,
+    /// на которую наедет короб выреза (`CheckExtraBodyAgainstNeighbour` +
+    /// `IsCarcass`, обходящий тот же ранний `IgnoredInPairs`).</summary>
     [Test]
     public void Cooktop_Invalid_TintsEveryChildBox_ThoughTheRootCarriesNoRenderer()
     {
-        var go = Spawn(ElementFactory.CreateCooktop("CooktopTint", Vector3.zero));
+        const float ToU = AppConstants.MM_TO_UNITS;
+        const int TopThicknessMM = 38;
+        const float UnderTopY = -0.369f;
+
+        var topGo = Spawn(GameObject.CreatePrimitive(PrimitiveType.Cube));
+        var top = topGo.AddComponent<KitchenElement>();
+        top.PartName = "Countertop";
+        top.transform.rotation = ManagedRotation.Euler(-90f, 0f, 0f);
+        top.DimensionsMM = new Vector3Int(2000, 1200, TopThicknessMM);
+        PartRegistry.Register(top);
+
+        var sideGo = Spawn(GameObject.CreatePrimitive(PrimitiveType.Cube));
+        var side = sideGo.AddComponent<KitchenElement>();
+        side.PartName = "Side";
+        side.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
+        side.DimensionsMM = new Vector3Int(560, 700, 18);
+        side.transform.position = new Vector3(0f, UnderTopY, 0f);
+        PartRegistry.Register(side);
+
+        float topSurfaceY = top.transform.position.y + TopThicknessMM * 0.5f * ToU;
+        var go = Spawn(ElementFactory.CreateCooktop("CooktopTint", new Vector3(0f, topSurfaceY + 0.02f, 0f)));
         var cooktop = go.GetComponent<CooktopElement>()!;
-        Spawn(ElementFactory.CreateCooktop("CooktopTwin", Vector3.zero));
+        cooktop.SnapToPart();
+        Assert.IsTrue(cooktop.IsAttached,
+            "предусловие: варочная обязана сесть на столешницу — иначе короб выреза не строится "
+            + "и наезжать на боковину нечему");
 
         Assert.IsNull(go.GetComponent<MeshRenderer>(),
             "варочная собрана из дочерних коробок: на корне рендерера нет, красить её через корень нечем");
@@ -212,8 +246,9 @@ public class ElementHighlighterTests
         var before = new Material[children.Count];
         for (int i = 0; i < children.Count; i++) before[i] = children[i].sharedMaterial;
 
-        Assume.That(ConstraintValidator.Validate(PartRegistry.GetAll()).violations.Contains(cooktop),
-            Is.True, "вторая варочная стоит ровно на первой — иначе тонировать нечего");
+        Assert.IsTrue(ConstraintValidator.Validate(PartRegistry.GetAll()).violations.Contains(cooktop),
+            "предусловие: короб выреза обязан наехать на боковину под столешницей — иначе "
+            + "тонировать нечего");
 
         _highlighter!.ApplyForElement(cooktop);
 

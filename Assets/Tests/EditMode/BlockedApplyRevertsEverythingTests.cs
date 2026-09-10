@@ -160,9 +160,13 @@ public class BlockedApplyRevertsEverythingTests
         var ctx = BuildMenu();
         ctx.Open(el);
 
-        Assume.That(StatusBarUI.Instance, Is.SameAs(_statusBar),
-            "судить о сообщении можно только при живой полосе: её `Instance` ставится в Awake, "
-            + "который в EditMode срабатывает на AddComponent (см. ElementTestBase)");
+        // EditMode не вызывает MonoBehaviour-колбэки сам по себе (см. c45d2279):
+        // `AddComponent` не запускает `Awake`, значит `StatusBarUI.Instance` без
+        // явного толчка остаётся null. Тот же приём, что и у PerfMonitor
+        // (`SimulateAwakeForTests`, 0db46322).
+        _statusBar!.SimulateAwakeForTests();
+        Assert.AreSame(_statusBar, StatusBarUI.Instance,
+            "полоса обязана стать текущей сразу после симуляции Awake");
 
         ctx.SetWidthFieldTextForTests("1200");
         _statusBar!.ShowTransient("", KitchenDesigner.Core.Update.StatusLevel.Info);
