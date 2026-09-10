@@ -87,6 +87,16 @@ This is a rule and not an item on a debt list on purpose: a task saying «split 
 gets postponed forever and then crossed off unread, while a rule fires on the next person who
 opens the file for any reason at all.
 
+**Решение «молчать / прятаться» — чистая функция, а не свойство с кэшем.** `AudioOutputPolicy.Silent`
+складывала три независимых сигнала (тестовый прогон, batch-режим, аргумент `-muteAudio`) прямо в
+Unity-свойстве и запоминала аргумент в `static bool?`. Из-за этого единственная комбинация, которая
+реально уезжает пользователю — не batch, не тест, аргумент передан — не проверялась ничем: убери
+слагаемое, и все тесты репозитория останутся зелёными. Разделяй: `Decide(testRun, batchMode, args)`
+без состояния живёт в `Pure/`, а Unity-сторона остаётся тонким адаптером, подставляющим настоящие
+`Application.isBatchMode` и `Environment.GetCommandLineArgs()`. Тогда таблица истинности
+проверяется на быстром пути целиком, а статическая защёлка, которую никто не может сбросить,
+исчезает вместе с порядковой зависимостью тестов.
+
 ## A class without a scene lives on the fast path
 
 `Assets/Scripts/Core/Pure/**` and `Assets/Tests/EditMode/Pure/**` are compiled a SECOND
