@@ -9,27 +9,12 @@
     {
       "type": "Button",
       "text": "2",
-      "position": [19, 0]
+      "position": [28, 0]
     },
     {
       "type": "Button",
       "text": "3",
-      "position": [38, 0]
-    },
-    {
-      "type": "Button",
-      "text": "4",
-      "position": [57, 0]
-    },
-    {
-      "type": "Button",
-      "text": "5",
-      "position": [76, 0]
-    },
-    {
-      "type": "Button",
-      "text": "6",
-      "position": [95, 0]
+      "position": [56, 0]
     },
     {
       "type": "Button",
@@ -50,6 +35,21 @@
       "type": "Button",
       "text": "▼  Детали",
       "position": [8, -8]
+    },
+    {
+      "type": "Button",
+      "text": "4",
+      "position": [0, -28]
+    },
+    {
+      "type": "Button",
+      "text": "5",
+      "position": [28, -28]
+    },
+    {
+      "type": "Button",
+      "text": "6",
+      "position": [56, -28]
     },
     {
       "type": "InputField",
