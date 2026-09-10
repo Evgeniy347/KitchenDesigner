@@ -87,11 +87,13 @@ function Invoke-Tool {
 }
 
 function Add-Result {
-    param([string]$Name, [bool]$Passed, [double]$Ms, [string]$Detail = '')
+    param([string]$Name, [bool]$Passed, [double]$Ms, [string]$Detail = '', [bool]$Budgeted = $true)
     $script:results.Add([pscustomobject]@{ Name = $Name; Passed = $Passed; Ms = [math]::Round($Ms, 2); Detail = $Detail })
     if (-not $Passed) { $script:overallOk = $false }
     $status = if ($Passed) { 'OK ' } else { 'FAIL' }
-    $budgetNote = if ($Ms -gt $PerTestBudgetMs) { " (BUDGET EXCEEDED: >${PerTestBudgetMs}ms)" } else { '' }
+    # A slow step never fails the run by itself - only a wrong result does (Passed above).
+    # The budget is an orientir to flag noisily, not a gate; see agents/TESTS.md.
+    $budgetNote = if (-not $Budgeted) { ' (cleanup, not a budgeted step)' } elseif ($Ms -gt $PerTestBudgetMs) { " (BUDGET EXCEEDED: >${PerTestBudgetMs}ms)" } else { '' }
     Write-Host ("[{0}] {1,-28} {2,7:N2} ms{3}{4}" -f $status, $Name, $Ms, $budgetNote, $(if ($Detail) { " - $Detail" } else { '' }))
 }
 
@@ -242,7 +244,7 @@ finally {
     Start-Sleep -Milliseconds 200
     $stillThere = Get-Process -Id $proc.Id -ErrorAction SilentlyContinue
     $t.Stop()
-    Add-Result -Name 'shutdown_no_orphan' -Passed ($null -eq $stillThere) -Ms $t.Elapsed.TotalMilliseconds
+    Add-Result -Name 'shutdown_no_orphan' -Passed ($null -eq $stillThere) -Ms $t.Elapsed.TotalMilliseconds -Budgeted $false
 
     # ---- own temp -mcpSaveDir: clean up regardless of outcome ----
     Remove-Item -LiteralPath $tempSaveDir -Recurse -Force -ErrorAction SilentlyContinue

@@ -107,11 +107,23 @@ if defined DRYRUN goto :dry_plan
 REM ---- build the installer if it is missing ----
 if not exist "!SETUP!" (
     if defined NOBUILD ( echo [FAIL] -NoBuild, but !SETUP! is missing & exit /b 1 )
-    echo === [1/4] Building installer ===
+    echo === [1/5] Building installer ===
     call "%installerDir%build-installer.cmd"
     if errorlevel 1 ( echo [FAIL] build-installer failed & exit /b 1 )
     if not exist "!SETUP!" ( echo [FAIL] still no setup after build & exit /b 1 )
 )
+
+REM ---- post-build smoke test: 5000+ tests can be green while the PLAYER itself is
+REM broken (fails to start, MCP never comes up) - that reached a release before this
+REM step existed. tools\smoke-test.ps1 launches the actual Build\KitchenDesigner.exe on
+REM its OWN mcp port (never 9337, so it never fights an already-running user instance)
+REM and drives it over MCP. A failure here stops the release; see tools\smoke-test.ps1
+REM and installer\PUBLISH.md step 7 for what it checks.
+set "playerExe=%root%\Build\KitchenDesigner.exe"
+if not exist "!playerExe!" ( echo [FAIL] !playerExe! not found - cannot smoke-test a player that was not built & exit /b 1 )
+echo === [2/5] Smoke-testing the built player ===
+powershell -NoProfile -ExecutionPolicy Bypass -File "%root%\tools\smoke-test.ps1" -ExePath "!playerExe!"
+if errorlevel 1 ( echo [FAIL] Smoke test failed - release NOT published & exit /b 1 )
 
 REM ---- repo slug from origin (gh resolves the repo from the current directory) ----
 pushd "%root%"
@@ -128,7 +140,7 @@ if errorlevel 1 ( echo [FAIL] make-release-notes failed & exit /b 1 )
 REM ---- tag ----
 git -C "%root%" rev-parse -q --verify "refs/tags/!TAG!" >nul
 if errorlevel 1 (
-    echo === [2/4] Creating tag !TAG! ===
+    echo === [3/5] Creating tag !TAG! ===
     git -C "%root%" tag !TAG!
     if errorlevel 1 ( echo [FAIL] git tag failed & exit /b 1 )
     git -C "%root%" push origin !TAG!
@@ -144,11 +156,11 @@ if defined PRERELEASE set "GHFLAGS=--prerelease"
 REM ---- release (create, or edit + upload; idempotent) ----
 gh release view "!TAG!" -R "!SLUG!" >nul 2>nul
 if errorlevel 1 (
-    echo === [3/4] Creating release !TAG! ===
+    echo === [4/5] Creating release !TAG! ===
     gh release create "!TAG!" "!SETUP!" -R "!SLUG!" --title "Kitchen Designer !VER!" --notes-file "!NOTES!" !GHFLAGS!
     if errorlevel 1 ( echo [FAIL] gh release create failed & exit /b 1 )
 ) else (
-    echo === [3/4] Updating existing release !TAG! ===
+    echo === [4/5] Updating existing release !TAG! ===
     REM A second run used to upload the asset only and leave the body from the first
     REM run, so a corrected changelog went nowhere.
     gh release edit "!TAG!" -R "!SLUG!" --title "Kitchen Designer !VER!" --notes-file "!NOTES!" !GHFLAGS!
@@ -158,7 +170,7 @@ if errorlevel 1 (
 )
 del "!NOTES!" >nul 2>nul
 
-echo === [4/4] Done ===
+echo === [5/5] Done ===
 echo.
 if defined PRERELEASE (
     echo Download ^(prerelease - by tag only^):
