@@ -92,7 +92,8 @@ public class ViolationTintSweepTests
             var watched = new List<MeshRenderer>();
             foreach (var renderer in body)
             {
-                var material = renderer != null ? renderer.sharedMaterial : null;
+                if (renderer == null) continue;
+                var material = renderer.sharedMaterial;
                 if (material == null) continue;
                 if (!HasColour(material)) continue;
                 watched.Add(renderer);
