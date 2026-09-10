@@ -50,7 +50,7 @@ namespace KitchenDesigner.Core
             d.attachedToName = element.AttachedToName ?? "";
             d.isWall = wall != null;
             d.wallKind = wall != null ? wall.Kind : "";
-            d.wallLoadBearing = wall == null || wall.LoadBearing;
+            d.wallLoadBearing = wall != null && wall.LoadBearing;
             if (wall != null)
             {
                 var ws = wall.EndShape;
