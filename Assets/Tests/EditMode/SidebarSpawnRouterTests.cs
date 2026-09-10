@@ -425,6 +425,42 @@ public class SidebarSpawnRouterTests
             + "подпись — если не меняет, сравнение слепо и объявит мёртвыми все поля");
     }
 
+    /// <summary>Критерий приёмки D16 (docs/todo_evolution.md §2.1), закреплённый
+    /// механизмом, а не списком имён: добавление новой ПОЗИЦИИ существующего
+    /// вида не имеет права требовать нового метода на интерфейсе спауна.
+    /// Раньше у каждого вида был свой Spawn* метод — новый параметр пресета
+    /// (скажем, ещё одна опция ящика) правил сигнатуру здесь, в
+    /// SidebarSpawnRouter и в ОБЕИХ реализациях сразу. Если этот тест
+    /// покраснел, значит рецепт снова растёкся: кто-то опять завёл метод на
+    /// каждый вид вместо того, чтобы читать новое поле прямо из
+    /// <see cref="SidebarCatalog.Item"/>/<see cref="SidebarCatalog.Preset"/>
+    /// внутри уже существующей ветки Spawn(Item).</summary>
+    [Test]
+    public void IElementSpawns_NeverGrowsAMethodPerType_OnlyOneSpawnEntryPoint()
+    {
+        var methods = typeof(IElementSpawns).GetMethods(BindingFlags.Public | BindingFlags.Instance);
+
+        Assert.AreEqual(1, methods.Length,
+            "IElementSpawns обзавёлся ещё одним методом — это ровно тот способ, каким "
+            + "новая позиция каталога раньше стоила шести мест правки (SidebarItemKind, "
+            + "SidebarCatalog.Item, case в SidebarSpawnRouter, метод в IElementSpawns и обе "
+            + "его реализации). Новое поле пресета существующего вида обязано читаться прямо "
+            + "внутри Spawn(SidebarCatalog.Item), а не приезжать отдельным параметром. Методы: "
+            + string.Join(", ", methods.Select(m => m.Name)));
+
+        Assert.AreEqual(nameof(IElementSpawns.Spawn), methods[0].Name,
+            "единственный метод интерфейса обязан называться Spawn и принимать весь "
+            + "SidebarCatalog.Item целиком");
+
+        var parameters = methods[0].GetParameters();
+        Assert.AreEqual(1, parameters.Length,
+            "Spawn обязан принимать РОВНО один параметр — весь пресет целиком, а не набор "
+            + "примитивов, который пришлось бы менять при каждом новом поле");
+        Assert.AreEqual(typeof(SidebarCatalog.Item), parameters[0].ParameterType,
+            "единственный параметр Spawn обязан быть SidebarCatalog.Item — иначе новое поле "
+            + "пресета опять не сможет доехать без правки сигнатуры");
+    }
+
     /// <summary>Сторож сторожа. Спаун — настоящий, и он может оказаться нем:
     /// пустой каталог, спаун, который всегда строит одно и то же. Тогда все
     /// проверки выше зеленеют на пустоте.</summary>
