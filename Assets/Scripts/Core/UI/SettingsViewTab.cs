@@ -138,8 +138,8 @@ namespace KitchenDesigner.Core.UI
             y -= PresetRowH + SettingsRowFactory.RowStep - SettingsRowFactory.RowH;
         }
 
-        private void Hint(string rowKey, string key) =>
-            HintBadge.AttachAfterLabel(_rows.RowLabel(rowKey), key);
+        private void Hint(string rowKey, string hint) =>
+            HintBadge.AttachAfterLabel(_rows.RowLabel(rowKey), hint);
 
         private void SwitchPreset(int index)
         {
