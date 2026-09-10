@@ -28,6 +28,18 @@
   `UndoableCoverageTests` валит сборку на непомеченном свойстве, а
   `ContextMenuUndoTests` проходит по всем полям панели у всех типов элементов
   и требует ровно один шаг отмены с возвратом состояния.
+- **`[Undoable]` даёт откат только строке, которая пишется внутри `Apply`.**
+  Выпадающий список и переключатель работают иначе: их обратный вызов меняет
+  элемент НЕМЕДЛЕННО, вне `Apply`, и к моменту применения снимок «до» уже
+  содержит новое значение — диф пуст, в стек не ложится ничего, отмена молча
+  не делает ничего. Атрибут на таком свойстве — обещание без исполнения.
+  Такая строка обязана положить команду САМА: снять `UndoableProperties.Capture`
+  до и после и выполнить `SetPropertiesCommand.TryCreate` (образцы —
+  `BedFieldsEditor.Commit`, `PipeFieldsEditor.OnSizeSelected`) либо выполнить
+  свою команду (`ContextMenuMaterialSection.Choose` → `SetMaterialCommand`,
+  `WallFieldsEditor` → `SetWallLoadBearingCommand`). `ContextMenuUndoTests`
+  перебирает только `TMP_InputField` и этих строк НЕ ВИДИТ; списки и
+  переключатели трубопровода стережёт `PipePanelChoiceUndoGuardTests`.
 - Невалидный ввод: красная рамка поля, значение не откатывается молча.
   Esc — откат, Enter — применение.
 

@@ -74,7 +74,13 @@ namespace KitchenDesigner.Core.UI
         private void OnSizeSelected(int index)
         {
             if (!(Host.Target is PipeElement pipe)) return;
+
+            var before = UndoableProperties.Capture(pipe);
             pipe.SizeId = PipeElementSpec.SizeIdAt(index);
+            var after = UndoableProperties.Capture(pipe);
+            var command = SetPropertiesCommand.TryCreate(pipe, before, after);
+            if (command != null) CommandStack.Execute(command);
+
             WriteDerived(pipe);
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.RefreshHighlight(pipe);
