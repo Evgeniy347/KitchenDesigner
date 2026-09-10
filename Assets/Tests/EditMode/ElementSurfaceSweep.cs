@@ -32,16 +32,19 @@ using KitchenDesigner.Core;
 ///   3. подсветка перетаскивания и возврат;
 ///   4. то же, но краску перед возвратом ЧИТАЮТ (`renderer.material` — мутация);
 ///   5. выделение и снятие выделения;
-///   6. тон нарушения и его снятие (`ApplyMaterial(..., isValid: true)` —
-///      <see cref="ValidityPaint.Own"/>, то есть возврат собственного материала);
-///   7. НАЗНАЧЕНИЕ ДЕКОРА — последним, потому что это единственный шаг, который
-///      меняет материал НАВСЕГДА и обратно не отдаёт.
+///   6. НАЗНАЧЕНИЕ ДЕКОРА — единственный шаг, который меняет материал НАВСЕГДА и
+///      обратно не отдаёт, поэтому он идёт после всех, кому нужна первозданность;
+///   7. тон нарушения — последним, потому что первозданность ему НЕ нужна: он
+///      спрашивает про СОБСТВЕННЫЙ цвет, каким бы тот ни был, и читает его на
+///      месте, ровно как читал прежний отдельный проход `ViolationTintSweepTests`.
+///      Собственный цвет назначенного декора вместо серого умолчания вопрос только
+///      усиливает: значение, совпавшее с умолчанием, не отличить от потерянного.
 ///
-/// Шаги 3–6 обязаны вернуть материал каждому рендереру, и каждый из них проверяет
+/// Шаги 3–5 обязаны вернуть материал каждому рендереру, и каждый из них проверяет
 /// это САМ своим сторожем. Чтобы сломанный возврат не выглядел потом дефектом
-/// СОСЕДНЕГО сторожа, перед шагом 6 и перед шагом 7 проход сверяет состояние с
-/// первозданным и, если оно разошлось, пишет это в <see cref="Row.NotPristine"/> —
-/// отдельным сообщением с именем шага, а не молчаливым искажением чужих чисел.
+/// СОСЕДНЕГО сторожа, перед шагом 6 проход сверяет состояние с первозданным и,
+/// если оно разошлось, пишет это в <see cref="Row.NotPristine"/> — отдельным
+/// сообщением, а не молчаливым искажением чужих чисел.
 ///
 /// Из сцены наружу не уходит ни одного объекта — только строки, числа и цвета,
 /// поэтому порядок ТЕСТОВ ничего не решает, а сам проход самодостаточен: он
@@ -236,13 +239,33 @@ public static class ElementSurfaceSweep
         for (int i = 0; i < body.Count; i++)
             if (!ReferenceEquals(body[i].sharedMaterial, original[i])) row.SelectStuck.Add(path[i]);
 
-        // 6. Тон нарушения. Задаётся ПРЯМО, а не выстраиванием наезда: вопрос —
+        // 6. Декор. Единственный шаг, который меняет материал НАВСЕГДА и обратно не
+        // отдаёт, — поэтому он предпоследний, а последним идёт тон нарушения,
+        // которому первозданность и не нужна: он спрашивает про СОБСТВЕННЫЙ цвет,
+        // каким бы тот ни был, и читает его на месте (так же читал и прежний
+        // отдельный проход ViolationTintSweepTests). Собственный цвет назначенного
+        // декора вместо серого умолчания вопрос только усиливает: значение,
+        // совпавшее с умолчанием, не отличить от потерянного.
+        NotePristine(row, "назначением декора", body, original, path);
+        if (wearing.Count > 0)
+        {
+            var def = MaterialCatalog.Get(DecorId);
+            ApplyDecorThroughEverySlot(element, def);
+            var newDecor = MaterialManager.GetSharedMaterial(def);
+            foreach (int i in wearing)
+                if (!ReferenceEquals(body[i].sharedMaterial, newDecor)) row.DecorMissed.Add(path[i]);
+        }
+
+        // 7. Тон нарушения. Задаётся ПРЯМО, а не выстраиванием наезда: вопрос —
         // «получил ли тон объект, про который сказано, что он нарушает», и он
         // обязан звучать для типов, которым валидатор наезда не выпишет вовсе.
-        NotePristine(row, "тоном нарушения", body, original, path);
+        var own = new Material[body.Count];
         var tintWatched = new List<int>();
         for (int i = 0; i < body.Count; i++)
-            if (original[i] != null && HasColour(original[i])) tintWatched.Add(i);
+        {
+            own[i] = body[i].sharedMaterial;
+            if (own[i] != null && HasColour(own[i])) tintWatched.Add(i);
+        }
         row.TintWatched = tintWatched.Count;
 
         if (tintWatched.Count > 0)
@@ -250,11 +273,10 @@ public static class ElementSurfaceSweep
             ElementHighlighter.ApplyMaterial(element, isValid: false);
             foreach (int i in tintWatched)
             {
-                var own = original[i];
-                var ownColour = ValidityTint.BaseColorOf(own);
+                var ownColour = ValidityTint.BaseColorOf(own[i]);
                 var now = body[i].sharedMaterial;
 
-                if (now == null || ReferenceEquals(now, own))
+                if (now == null || ReferenceEquals(now, own[i]))
                 {
                     row.TintUntinted.Add(path[i] + " " + Describe(ownColour)
                         + " — материал не тронут вовсе");
@@ -269,7 +291,7 @@ public static class ElementSurfaceSweep
                     continue;
                 }
 
-                if (!ReferenceEquals(ValidityTint.OwnOf(now), own)) row.TintForgotten.Add(path[i]);
+                if (!ReferenceEquals(ValidityTint.OwnOf(now), own[i])) row.TintForgotten.Add(path[i]);
 
                 var tinted = ValidityTint.BaseColorOf(now);
                 if (FarFrom(ownColour, ValidityTint.ViolationColor)
@@ -277,18 +299,6 @@ public static class ElementSurfaceSweep
                     row.TintFlattened.Add(path[i] + " " + Describe(ownColour)
                         + " → " + Describe(tinted));
             }
-            ElementHighlighter.ApplyMaterial(element, isValid: true);
-        }
-
-        // 7. Декор — последним: единственный шаг, который меняет материал навсегда.
-        NotePristine(row, "назначением декора", body, original, path);
-        if (wearing.Count > 0)
-        {
-            var def = MaterialCatalog.Get(DecorId);
-            ApplyDecorThroughEverySlot(element, def);
-            var newDecor = MaterialManager.GetSharedMaterial(def);
-            foreach (int i in wearing)
-                if (!ReferenceEquals(body[i].sharedMaterial, newDecor)) row.DecorMissed.Add(path[i]);
         }
 
         return row;
