@@ -394,7 +394,7 @@ namespace KitchenDesigner.Core.UI
         {
             var dup = UIFactory.CreateButton("CtxDup", parent, "Дублировать",
                 new Vector2(-91, 0), new Vector2(150, 32), Duplicate);
-            var del = UIFactory.CreateDangerButton("CtxDel", parent, "Удалить",
+            var del = UIFactory.CreateConfirmDeleteButton("CtxDel", parent, "Удалить",
                 new Vector2(91, 0), new Vector2(150, 32), Delete);
             _layout.Add(32f, 0f,
                 dup.GetComponent<RectTransform>(),
