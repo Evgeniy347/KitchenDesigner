@@ -13,8 +13,33 @@ public class ContextMenuLayoutTests
     private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс, а не в каждом из сорока тестов:
+    /// сборка контекстного меню — 0,31 с, и сорок сборок это 12,6 с из 193-секундного
+    /// прогона EditMode при бюджете 170.
+    ///
+    /// Переоткрытие ОДНОЙ панели — это и есть боевой сценарий: в приложении панель
+    /// живёт всю сессию, а <c>ContextMenuUI.Open</c> и есть её сброс (гасит пазы,
+    /// текстуры, световые связи, зазоры, закрывает превью, снимает взвод кнопок
+    /// удаления через <c>Refresh</c> списков, перечитывает поля, зовёт <c>Show</c>
+    /// каждому редактору, <c>RelayoutForTarget</c>, <c>SetIsOnWithoutNotify</c>,
+    /// <c>ClearHighlights</c> + <c>TrackAllFields</c>, <c>SyncEnabledState</c>).
+    /// Через <c>Open</c> проходит КАЖДЫЙ тест этого класса, кроме
+    /// <see cref="ConfirmDelete_SurvivesItsOwnConfirmingPress"/>, который панель не
+    /// трогает вовсе (чистая арифметика <c>ConfirmDeleteButton.ShouldDisarm</c>).
+    /// «Своя панель на каждый тест» проверяла сценарий, которого в приложении нет.
+    ///
+    /// Единственное, что <c>Open</c> сбрасывал НЕ всегда, — списки дропдаунов
+    /// «Прикрепить к» и «Фасад»: они перестраивались только для типа, попавшего в
+    /// свою ветку, и устаревший набор опций переживал переключение. Это закрыто в
+    /// продукте (<c>ContextMenuUI.Open</c> перестраивает оба всегда), а не оснасткой:
+    /// с условной перестройкой одна панель на класс была бы честной ровно до
+    /// первого теста, который прочитает опции.
+    ///
+    /// Элементы теста уносятся в <c>[TearDown]</c>, и панель перед этим закрывается:
+    /// <c>Close</c> обнуляет <c>_target</c>, иначе живая панель осталась бы с
+    /// уничтоженной деталью в руках.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
@@ -23,11 +48,17 @@ public class ContextMenuLayoutTests
         _menu!.Build(_canvas!.transform);
     }
 
-    [TearDown]
-    public void Teardown()
+    [OneTimeTearDown]
+    public void DropThePanel()
     {
         if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
         if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    [TearDown]
+    public void Teardown()
+    {
+        if (_menu != null) _menu!.Close();
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();

@@ -13,14 +13,38 @@ public class ElementFieldsEditorTests
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private bool _blockOnViolation;
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс, а не в каждом из пятидесяти семи
+    /// тестов: сборка контекстного меню — 0,32 с, и пятьдесят семь сборок это 18,4 с
+    /// из 193-секундного прогона EditMode при бюджете 170. Причина, по которой это
+    /// безопасно, разобрана в сводке <see cref="ContextMenuLayoutTests"/>: боевой
+    /// сценарий — ОДНА панель, переоткрываемая через <c>Open</c>, и через <c>Open</c>
+    /// проходит каждый тест этого класса без исключений (единственная протечка
+    /// сброса — условная перестройка списков «Прикрепить к» и «Фасад» — закрыта в
+    /// самом <c>ContextMenuUI.Open</c>).
+    ///
+    /// Настройка <c>BlockOnViolation</c> — глобальная, поэтому она остаётся
+    /// ПОТЕСТОВОЙ: панель переживает тест, а глобальное состояние обязано
+    /// возвращаться на место после каждого.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
         var go = new GameObject("CtxMenu");
         _menu = go.AddComponent<ContextMenuUI>();
         _menu!.Build(_canvas!.transform);
+    }
+
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    [SetUp]
+    public void Setup()
+    {
         _blockOnViolation = KitchenSettings.Instance.BlockOnViolation;
         KitchenSettings.Instance.BlockOnViolation = false;
     }
@@ -30,8 +54,7 @@ public class ElementFieldsEditorTests
     {
         KitchenSettings.Instance.BlockOnViolation = _blockOnViolation;
         CommandStack.Clear();
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        if (_menu != null) _menu!.Close();
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();

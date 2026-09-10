@@ -612,21 +612,15 @@ namespace KitchenDesigner.Core.UI
                 _gaps.WriteFrom(element);
                 RefreshOpenButtons();
 
-                if (AttachLinks.CanBeChild(element))
-                {
-                    _attachedTo.Rebuild();
-                    _attachedTo.SetValue(element.AttachedToName);
-                }
+                _attachedTo.Rebuild();
+                _attachedTo.SetValue(element.AttachedToName);
 
                 var facadeHost = element as IFacadeHost;
-                if (facadeHost != null)
-                {
-                    if (_drawerFacadeLabel != null)
-                        _drawerFacadeLabel.text = _facets.Has(ElementFacet.Drawer)
-                            ? DrawerFacadeLabelText : HostFacadeLabelText;
-                    _attachedFacade.Rebuild();
-                    _attachedFacade.SetValue(facadeHost.AttachedFacadeName);
-                }
+                if (facadeHost != null && _drawerFacadeLabel != null)
+                    _drawerFacadeLabel.text = _facets.Has(ElementFacet.Drawer)
+                        ? DrawerFacadeLabelText : HostFacadeLabelText;
+                _attachedFacade.Rebuild();
+                _attachedFacade.SetValue(facadeHost != null ? facadeHost.AttachedFacadeName : "");
 
                 ShowDimensionLocks(element);
 
