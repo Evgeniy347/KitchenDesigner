@@ -176,6 +176,21 @@ flag. Every object of the format that our code builds must therefore start alrea
 `ElementData.OfCurrentFormat()` — and a test should walk the format by reflection to say so,
 rather than naming the one field somebody remembered.
 
+
+**Проход после загрузки чинит СТЫК, а не РАЗМЕР.** `SceneRestorer.RepairAutoSeatedJointsAfterGridSnap`
+звал у опоры полную автоподгонку — и каждое открытие проекта молча заменяло сохранённую высоту
+своим расчётом, без команды и без отмены, а следующее сохранение уносило подмену в файл насовсем.
+Пользователь видел «поставил 100, открыл — снова 95» и не мог найти этому следов в хронике.
+Хозяин размера — пользователь и жест, который он сам сделал; загрузчик — никогда. Образец
+разделения уже был у трубы: `PipeDocking.RepairAfterGridSnap` только двигает, `PipeDocking.Seat` —
+жест, который ложится в undo. Единственное законное исключение — `MmGrid.Snap` на загрузке, и оно
+меняет данные в пределах 0,5 мм с обоснованием.
+
+Из того же куста: **молчаливый откат по нарушению тоже переписывает размер без следа.**
+`ContextMenuUI` и `ResizeHandleManager.FinishDrag` при `BlockOnViolation` возвращают
+`DimensionsMM = oldDims` без записи команды — в хронике не остаётся ничего, и «значение само
+вернулось» становится необъяснимым.
+
 ## Fixing how something is CREATED does not fix what was already created
 
 Placement, defaults and derived fields are applied at creation. A saved project carries the
