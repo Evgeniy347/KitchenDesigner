@@ -8,12 +8,15 @@ namespace KitchenDesigner.Core
         public readonly Bounds Bounds;
         public readonly float MaxDimension;
         public readonly float CameraDistance;
+        public readonly Vector3 ViewDirection;
 
-        public ThumbnailFraming(Bounds bounds, float maxDimension, float cameraDistance)
+        public ThumbnailFraming(Bounds bounds, float maxDimension, float cameraDistance,
+            Vector3 viewDirection)
         {
             Bounds = bounds;
             MaxDimension = maxDimension;
             CameraDistance = cameraDistance;
+            ViewDirection = viewDirection;
         }
     }
 
@@ -56,8 +59,10 @@ namespace KitchenDesigner.Core
                     var bounds = RendererBoundsOf(go);
                     float distance = IsoCameraRig.Distance(
                         bounds.size, DistanceScale, ContextFreeMinDistanceUnits);
+                    Vector3 viewDirection = ElementFacing.CameraDirection(IsoCameraRig.IsoDir);
                     framing = new ThumbnailFraming(bounds,
-                        Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z)), distance);
+                        Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z)),
+                        distance, viewDirection);
 
                     camGo = new GameObject("ThumbnailCam");
                     var cam = camGo.AddComponent<Camera>();
@@ -69,8 +74,7 @@ namespace KitchenDesigner.Core
                     cam.farClipPlane = 100f;
                     cam.cullingMask = 1 << IsolationLayer;
 
-                    camGo.transform.position = IsoCameraRig.Position(
-                        bounds.center, bounds.size, DistanceScale, ContextFreeMinDistanceUnits);
+                    camGo.transform.position = bounds.center + viewDirection * distance;
                     camGo.transform.LookAt(bounds.center);
 
                     cam.targetTexture = rt;

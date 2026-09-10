@@ -102,6 +102,61 @@ public class ThumbnailRendererTests
         return (float)painted / pixels.Length;
     }
 
+    // Разворот миниатюры лицом к камере. Жалоба была на два типа — «стул и
+    // унитаз стоят спинкой», — а причина общая: лицо в проекте у ВСЕХ типов
+    // смотрит в +Z (это заперто в ElementFacingTests настоящей геометрией
+    // унитаза, дивана и духовки), а общая изометрическая камера стоит со
+    // стороны -Z, то есть в затылок каждому. Поэтому чинится не два числа, а
+    // сторона, с которой смотрит камера миниатюры, и проверяется это по ВСЕМ
+    // типам сразу: одинаковое направление взгляда у всех и означает, что ни
+    // один тип не завёл собственного ракурса — третьему такому случаю негде
+    // появиться.
+    [UnityTest]
+    public IEnumerator EveryKind_IsFramedFromItsFrontSide_WithNoPerTypeAngle()
+    {
+        var expected = ElementFacing.CameraDirection(IsoCameraRig.IsoDir);
+        var wrongSide = new List<string>();
+
+        foreach (var (name, spawn) in Kinds)
+        {
+            var rt = ThumbnailRenderer.Render(spawn, ThumbnailRenderer.DefaultSize,
+                out var framing);
+
+            if (Vector3.Dot(ElementFacing.LocalFront, framing.ViewDirection) <= 0f
+                || (framing.ViewDirection - expected).magnitude > 1e-3f)
+                wrongSide.Add(name + " " + framing.ViewDirection);
+
+            UnityEngine.Object.DestroyImmediate(rt);
+            yield return null;
+        }
+
+        Assert.IsEmpty(wrongSide,
+            "камера миниатюры смотрит на эти типы не со стороны их лица (+Z) или "
+            + "со стороны, отличной от всех остальных: " + string.Join(", ", wrongSide)
+            + ". Ракурс миниатюры выводится из ОДНОЙ объявленной фронтальной оси "
+            + "(ElementFacing.LocalFront) и обязан быть один для всех типов");
+    }
+
+    // Тот же факт для стула — единственного из четырёх соседей, чья спинка живёт
+    // не в чистом слое, а в самом элементе, и потому не попала в ElementFacingTests.
+    [Test]
+    public void Chair_KeepsItsBackrestAtTheBack_LikeTheSofaAndTheToilet()
+    {
+        var go = ElementFactory.CreateChair(new Vector3Int(450, 900, 450), 20, 450,
+            "ChairFacing", Vector3.zero);
+        var backrest = go.transform.Find(ChairElement.BackrestChildName);
+
+        Assert.IsNotNull(backrest,
+            "щит спинки обязан быть отдельным ребёнком с известным именем — "
+            + "иначе про ориентацию стула нечего и спрашивать");
+        Assert.Less(backrest!.localPosition.z, 0f,
+            "спинка стула стоит в -Z, как спинка дивана и бачок унитаза: лицо стула "
+            + "смотрит в +Z, и разворачивать стул отдельно от остальных типов не нужно");
+
+        go.GetComponent<KitchenElement>()?.PrepareForDestruction();
+        UnityEngine.Object.DestroyImmediate(go);
+    }
+
     // Контур в кадре миниатюры. EdgeOutlineRenderer рисует чёрные рёбра всех
     // элементов реестра через GL в OnRenderObject, а этот вызов приходит на
     // КАЖДУЮ камеру и не фильтруется её cullingMask — то есть контуры реальной
