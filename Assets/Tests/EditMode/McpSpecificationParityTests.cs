@@ -46,6 +46,15 @@ public class McpSpecificationParityTests : McpTestFixture
         return rows.Skip(1).Take(expectedRowCount).Select(r => r.Split(';')).ToArray();
     }
 
+    // SpecificationExport.ToCsv formats numbers via unformatted interpolated strings
+    // ($"{x:F4}") and .ToString("F4"), both of which fall back to
+    // CultureInfo.CurrentCulture - so the decimal separator the file actually uses is
+    // whatever culture is active on the machine that ran the export, not invariant "."
+    // (see report: this is a real defect in SpecificationExport, out of scope here).
+    // The test must parse with that same culture or it "corrects" a comma into a
+    // thousands separator and silently mis-reads the number by 10x/100x/1000x.
+    private static float ParseCsvFloat(string cell) => float.Parse(cell, NumberStyles.Float, CultureInfo.CurrentCulture);
+
     [Test]
     public void GetSpecification_MatchesCsvExport_SameSceneSameNumbers()
     {
@@ -80,8 +89,8 @@ public class McpSpecificationParityTests : McpTestFixture
             Assert.AreEqual(int.Parse(row[2], CultureInfo.InvariantCulture), line["dimYMm"]!.Value<int>(), $"dimYMm на строке {i}");
             Assert.AreEqual(int.Parse(row[3], CultureInfo.InvariantCulture), line["dimZMm"]!.Value<int>(), $"dimZMm на строке {i}");
             Assert.AreEqual(int.Parse(row[4], CultureInfo.InvariantCulture), line["count"]!.Value<int>(), $"count на строке {i}");
-            Assert.AreEqual(float.Parse(row[5], CultureInfo.InvariantCulture), line["areaPerBoardM2"]!.Value<float>(), 1e-3f, $"areaPerBoardM2 на строке {i}");
-            Assert.AreEqual(float.Parse(row[6], CultureInfo.InvariantCulture), line["totalAreaM2"]!.Value<float>(), 1e-3f, $"totalAreaM2 на строке {i}");
+            Assert.AreEqual(ParseCsvFloat(row[5]), line["areaPerBoardM2"]!.Value<float>(), 1e-3f, $"areaPerBoardM2 на строке {i}");
+            Assert.AreEqual(ParseCsvFloat(row[6]), line["totalAreaM2"]!.Value<float>(), 1e-3f, $"totalAreaM2 на строке {i}");
             Assert.AreEqual(row[7], line["material"]!.Value<string>(), $"material на строке {i}");
             Assert.AreEqual(row[8], line["grooves"]!.Value<string>(), $"grooves на строке {i}");
             Assert.AreEqual(row[9], line["edgeL1"]!.Value<string>(), $"edgeL1 на строке {i}");
@@ -90,8 +99,8 @@ public class McpSpecificationParityTests : McpTestFixture
             Assert.AreEqual(row[12], line["edgeW2"]!.Value<string>(), $"edgeW2 на строке {i}");
             Assert.AreEqual(row[13], line["section"]!.Value<string>(), $"section на строке {i}");
             Assert.AreEqual(row[14], line["unit"]!.Value<string>(), $"unit на строке {i}");
-            Assert.AreEqual(float.Parse(row[15], CultureInfo.InvariantCulture), line["qtyPerItemInUnit"]!.Value<float>(), 1e-3f, $"qtyPerItemInUnit на строке {i}");
-            Assert.AreEqual(float.Parse(row[16], CultureInfo.InvariantCulture), line["qtyTotalInUnit"]!.Value<float>(), 1e-3f, $"qtyTotalInUnit на строке {i}");
+            Assert.AreEqual(ParseCsvFloat(row[15]), line["qtyPerItemInUnit"]!.Value<float>(), 1e-3f, $"qtyPerItemInUnit на строке {i}");
+            Assert.AreEqual(ParseCsvFloat(row[16]), line["qtyTotalInUnit"]!.Value<float>(), 1e-3f, $"qtyTotalInUnit на строке {i}");
         }
 
         var pipeLine = mcpLines.Single(l => l!["name"]!.Value<string>()!.StartsWith("Труба"));

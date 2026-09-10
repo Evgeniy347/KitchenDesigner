@@ -22,7 +22,8 @@ namespace KitchenDesigner.Core.MCP
                 hasDims = l.hasDims,
                 count = l.count, areaPerBoardM2 = l.areaPerBoardM2, totalAreaM2 = l.totalAreaM2,
                 material = l.material, grooves = l.grooves,
-                edgeL1 = l.edgeL1, edgeL2 = l.edgeL2, edgeW1 = l.edgeW1, edgeW2 = l.edgeW2,
+                edgeL1 = l.edgeL1 ?? string.Empty, edgeL2 = l.edgeL2 ?? string.Empty,
+                edgeW1 = l.edgeW1 ?? string.Empty, edgeW2 = l.edgeW2 ?? string.Empty,
                 section = l.section, unit = l.unit.Label(),
                 qtyPerItemInUnit = l.qtyPerItem, qtyTotalInUnit = l.qtyTotal
             }).ToList();
