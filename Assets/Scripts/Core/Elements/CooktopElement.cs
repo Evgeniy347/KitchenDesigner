@@ -218,7 +218,7 @@ namespace KitchenDesigner.Core
             }
         }
 
-        public void SnapToPart() => SnapToPartCore();
+        public override void SnapToPart() => SnapToPartCore();
 
         protected override void OnAttached(KitchenElement part) => _yawDeg = YawRelativeTo(part);
 

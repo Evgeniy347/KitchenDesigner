@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public abstract class PartCutoutElement : KitchenElement, IPartCutout, IQuantifies
+    public abstract class PartCutoutElement : KitchenElement, IPartCutout, IQuantifies, ICutsItsHost
     {
         public const int SNAP_CATCH_MM = 100;
         public const int SNAP_RELEASE_MM = 60;
@@ -110,6 +110,12 @@ namespace KitchenDesigner.Core
             OnAttached(part);
             AlignToPart(part);
         }
+
+        public abstract void SnapToPart();
+
+        public void ReleaseHostCutout() => UnregisterFromPart();
+
+        public void RestoreHostCutout() => SnapToPart();
 
         internal void UnregisterFromPart() => Mount.Detach();
 

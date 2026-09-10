@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public abstract class WallOpeningElement : KitchenElement, IOpenable, IWallMounted, IPaintsItself
+    public abstract class WallOpeningElement : KitchenElement, IOpenable, IWallMounted, IPaintsItself, ICutsItsHost
     {
         public override bool CanFollowAnAttachParent => false;
 
@@ -284,6 +284,10 @@ namespace KitchenDesigner.Core
             return null;
         }
 
+        public void ReleaseHostCutout() => UnregisterFromWall();
+
+        public void RestoreHostCutout() => SnapToWall();
+
         internal void UnregisterFromWall()
         {
             var wall = FindAttachedWall();
@@ -350,7 +354,11 @@ namespace KitchenDesigner.Core
             PaintFrame(material);
         }
 
-        public override void PrepareForDestruction() => DestroyChildren();
+        public override void PrepareForDestruction()
+        {
+            UnregisterFromWall();
+            DestroyChildren();
+        }
 
         protected override void OnElementDestroyed()
         {

@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core
             Mesh.Rebuild(_faucetSign, Skin());
         }
 
-        public void SnapToPart()
+        public override void SnapToPart()
         {
             using var _ = PerfMarkers.SinkSnapToPart.Auto();
             SnapToPartCore();
