@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TMPro;
@@ -8,21 +9,19 @@ namespace KitchenDesigner.Core.UI
 {
     public class SpecificationPanelUI : MonoBehaviour, IProjectWindow
     {
-        private const float ColName = 40f;
-        private const float ColW = 250f;
-        private const float ColH = 305f;
-        private const float ColD = 360f;
-        private const float ColMaterial = 420f;
-        private const float ColCount = 545f;
-        private const float ColArea = 615f;
-        private const float ColSection = 690f;
-        private const float ColUnit = 790f;
+        internal const float ColName = 40f;
+        internal const float ColW = 250f;
+        internal const float ColH = 305f;
+        internal const float ColD = 360f;
+        internal const float ColMaterial = 420f;
+        internal const float ColQty = 630f;
+        internal const float ColUnit = 730f;
         private const float ContentWidth = 840f;
         private const float ViewportHeight = 480f;
         private const float ViewportCenterY = -30f;
-        private const int MaxNameChars = 22;
-        private const int MaxMaterialChars = 14;
-        private const int MaxSectionChars = 10;
+        internal const int MaxNameChars = 22;
+        internal const int MaxMaterialChars = 20;
+        internal const int MaxSectionChars = 60;
         internal const float ScrollbarWidth = 8f;
 
         private GameObject? _root;
@@ -65,9 +64,7 @@ namespace KitchenDesigner.Core.UI
                 $"№<pos={ColName}>Название" +
                 $"<pos={ColW}>Ш<pos={ColH}>В<pos={ColD}>Г, мм" +
                 $"<pos={ColMaterial}>Материал" +
-                $"<pos={ColCount}>Кол-во" +
-                $"<pos={ColArea}>Кол-во ед." +
-                $"<pos={ColSection}>Раздел" +
+                $"<pos={ColQty}>Кол-во" +
                 $"<pos={ColUnit}>Ед.";
         }
 
@@ -167,38 +164,7 @@ namespace KitchenDesigner.Core.UI
         private void Refresh()
         {
             var result = SpecificationManager.Build(PartRegistry.All);
-
-            var sb = new StringBuilder();
-            int n = 1;
-            foreach (var line in result.lines)
-            {
-                sb.Append($"{n}<pos={ColName}>{Trim(line.name, MaxNameChars)}" +
-                          $"<pos={ColW}>{line.dimensionsMM.x}" +
-                          $"<pos={ColH}>{line.dimensionsMM.y}" +
-                          $"<pos={ColD}>{line.dimensionsMM.z}" +
-                          $"<pos={ColMaterial}>{Trim(line.material, MaxMaterialChars)}" +
-                          $"<pos={ColCount}>{line.count}" +
-                          $"<pos={ColArea}>{line.qtyTotal:F2}" +
-                          $"<pos={ColSection}>{Trim(line.section, MaxSectionChars)}" +
-                          $"<pos={ColUnit}>{line.unit.Label()}");
-                sb.AppendLine();
-                n++;
-            }
-
-            if (result.lines.Count > 0)
-                sb.AppendLine();
-
-            sb.Append($"<pos={ColName}>Всего:" +
-                      $"<pos={ColCount}>{result.totalCount}");
-            bool firstUnit = true;
-            foreach (var unit in SortedUnits(result))
-            {
-                if (!firstUnit) sb.AppendLine();
-                sb.Append($"<pos={ColArea}>{result.totalsByUnit[unit]:F2}" +
-                          $"<pos={ColUnit}>{unit.Label()}");
-                firstUnit = false;
-            }
-            _content!.text = sb.ToString();
+            _content!.text = BuildDisplayText(result);
 
             _content!.ForceMeshUpdate();
             var preferred = _content!.GetPreferredValues(ContentWidth, 0f);
@@ -209,7 +175,81 @@ namespace KitchenDesigner.Core.UI
             _scrollRect!.verticalNormalizedPosition = 1f;
         }
 
-        private static System.Collections.Generic.IEnumerable<SpecUnit> SortedUnits(SpecResult result)
+        internal static string BuildDisplayText(SpecResult result)
+        {
+            var sb = new StringBuilder();
+            int n = 1;
+            bool firstSection = true;
+
+            var bySection = result.lines
+                .GroupBy(l => l.section)
+                .OrderBy(g => g.Key, System.StringComparer.Ordinal);
+
+            foreach (var section in bySection)
+            {
+                if (!firstSection) sb.AppendLine();
+                firstSection = false;
+
+                sb.Append($"<b>{Trim(SectionLabel(section.Key), MaxSectionChars)}</b>");
+                sb.AppendLine();
+
+                var byMaterial = section
+                    .GroupBy(l => l.material)
+                    .OrderBy(g => g.Key, System.StringComparer.Ordinal);
+
+                foreach (var materialGroup in byMaterial)
+                {
+                    var lines = materialGroup.ToList();
+                    foreach (var line in lines)
+                    {
+                        sb.Append($"{n}<pos={ColName}>{Trim(line.name, MaxNameChars)}" +
+                                  $"<pos={ColW}>{DimCell(line.dimensionsMM.x, line.hasDims)}" +
+                                  $"<pos={ColH}>{DimCell(line.dimensionsMM.y, line.hasDims)}" +
+                                  $"<pos={ColD}>{DimCell(line.dimensionsMM.z, line.hasDims)}" +
+                                  $"<pos={ColMaterial}>{Trim(line.material, MaxMaterialChars)}" +
+                                  $"<pos={ColQty}>{FormatQty(line.qtyTotal, line.unit)}" +
+                                  $"<pos={ColUnit}>{line.unit.Label()}");
+                        sb.AppendLine();
+                        n++;
+                    }
+
+                    sb.Append($"<pos={ColMaterial}>{MaterialSubtotalText(materialGroup.Key, lines)}");
+                    sb.AppendLine();
+                }
+            }
+
+            if (result.lines.Count > 0)
+                sb.AppendLine();
+
+            sb.Append($"<pos={ColName}>Всего, досок:<pos={ColQty}>{result.totalCount}");
+            foreach (var unit in SortedUnits(result))
+            {
+                sb.AppendLine();
+                sb.Append($"<pos={ColName}>Всего, {unit.Label()}:" +
+                          $"<pos={ColQty}>{FormatQty(result.totalsByUnit[unit], unit)}" +
+                          $"<pos={ColUnit}>{unit.Label()}");
+            }
+            return sb.ToString();
+        }
+
+        private static string SectionLabel(string section) =>
+            string.IsNullOrEmpty(section) ? "Без раздела" : section;
+
+        private static string DimCell(int valueMM, bool hasDims) => hasDims ? valueMM.ToString() : "";
+
+        private static string FormatQty(float qtyTotal, SpecUnit unit) =>
+            unit == SpecUnit.Pieces ? Mathf.RoundToInt(qtyTotal).ToString() : qtyTotal.ToString("F2");
+
+        private static string MaterialSubtotalText(string material, IReadOnlyList<SpecLine> lines)
+        {
+            var totals = SpecTotals.ByUnit(lines.Select(l => (l.unit, l.qtyTotal)));
+            var parts = totals.Keys.OrderBy(u => (int)u)
+                .Select(u => $"{FormatQty(totals[u], u)} {u.Label()}");
+            string label = string.IsNullOrEmpty(material) ? "без материала" : material;
+            return $"Итого, {label}: {string.Join(", ", parts)}";
+        }
+
+        private static IEnumerable<SpecUnit> SortedUnits(SpecResult result)
         {
             if (result.totalsByUnit == null) yield break;
             foreach (var unit in result.totalsByUnit.Keys.OrderBy(u => (int)u))
