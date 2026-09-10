@@ -346,7 +346,15 @@ namespace KitchenDesigner.Core
 
         private static void CopyPlainPart(KitchenElement source, GameObject copy)
         {
-            if (source.GetComponent<Wall>() != null) copy.AddComponent<Wall>();
+            var sourceWall = source.GetComponent<Wall>();
+            if (sourceWall != null)
+            {
+                var copiedWall = copy.AddComponent<Wall>();
+                copiedWall.LoadBearing = sourceWall.LoadBearing;
+                copiedWall.Masonry = sourceWall.Masonry;
+                copiedWall.JointMm = sourceWall.JointMm;
+                copiedWall.WastePct = sourceWall.WastePct;
+            }
 
             var made = copy.GetComponent<KitchenElement>();
             if (made == null) return;

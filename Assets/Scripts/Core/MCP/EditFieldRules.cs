@@ -26,7 +26,7 @@ namespace KitchenDesigner.Core.MCP
             el is ChairElement || el is SofaElement || el is ToiletElement
             || el is WallHungToiletElement;
 
-        internal static bool AcceptsLoadBearing(KitchenElement el) => el.GetComponent<Wall>() != null;
+        internal static bool AcceptsWallFields(KitchenElement el) => el.GetComponent<Wall>() != null;
 
         internal readonly struct EditTarget
         {
@@ -58,7 +58,10 @@ namespace KitchenDesigner.Core.MCP
             Unsupported("is_open", o => o.is_open.HasValue, AcceptsOpenFlag),
             Unsupported("corner_radius", o => o.corner_radius.HasValue, AcceptsCornerRadius),
             Unsupported("seat_height", o => o.seat_height.HasValue, AcceptsSeatHeight),
-            Unsupported("load_bearing", o => o.load_bearing.HasValue, AcceptsLoadBearing),
+            Unsupported("load_bearing", o => o.load_bearing.HasValue, AcceptsWallFields),
+            Unsupported("masonry", o => o.masonry != null, AcceptsWallFields),
+            Unsupported("masonry_joint_mm", o => o.masonry_joint_mm.HasValue, AcceptsWallFields),
+            Unsupported("masonry_waste_pct", o => o.masonry_waste_pct.HasValue, AcceptsWallFields),
             Unsupported("flush_plate_height", o => o.flush_plate_height.HasValue,
                 el => el is WallHungToiletElement),
             Unsupported("rim_width", o => o.rim_width.HasValue, el => el is BathtubElement),

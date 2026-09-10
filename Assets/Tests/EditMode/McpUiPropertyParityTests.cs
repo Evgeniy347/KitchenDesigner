@@ -829,7 +829,7 @@ public class McpUiPropertyParityTests : McpTestFixture
             "тумблер «Несущая» стоит в панели стены (WallFieldsEditor) — если опыт его не "
             + "увидел, страж снова слеп к компонентам-соседям");
         CollectionAssert.Contains(mcp, nameof(Wall.LoadBearing),
-            "load_bearing разрешён стенам в EditFieldRules.AcceptsLoadBearing — если опыт "
+            "load_bearing разрешён стенам в EditFieldRules.AcceptsWallFields — если опыт "
             + "не увидел разницу, запрос не долетел до Wall");
     }
 

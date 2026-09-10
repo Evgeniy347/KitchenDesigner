@@ -191,6 +191,14 @@ namespace KitchenDesigner.Core.MCP
             }),
             (op, el) =>
             {
+                var wall = el.GetComponent<Wall>();
+                if (wall == null) return;
+                if (op.masonry != null) wall.Masonry = McpWireEnums.ParseMasonry(op.masonry);
+                if (op.masonry_joint_mm.HasValue) wall.JointMm = op.masonry_joint_mm.Value;
+                if (op.masonry_waste_pct.HasValue) wall.WastePct = op.masonry_waste_pct.Value;
+            },
+            (op, el) =>
+            {
                 if (!op.load_bearing.HasValue) return;
                 var wall = el.GetComponent<Wall>();
                 if (wall != null) wall.LoadBearing = op.load_bearing.Value;

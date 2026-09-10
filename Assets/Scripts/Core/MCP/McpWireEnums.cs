@@ -1,4 +1,5 @@
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Construction;
 
 namespace KitchenDesigner.Core.MCP
 {
@@ -121,6 +122,28 @@ namespace KitchenDesigner.Core.MCP
                 default: return DoorSashType.Glass;
             }
         }
+
+        public static MasonryTechnology ParseMasonry(string s)
+        {
+            switch ((s ?? "").Trim().ToLowerInvariant())
+            {
+                case "brick_thickened": return MasonryTechnology.BrickThickened;
+                case "aerated_block": return MasonryTechnology.AeratedBlock;
+                case "timber": return MasonryTechnology.Timber;
+                case "frame": return MasonryTechnology.Frame;
+                default: return MasonryTechnology.BrickSingle;
+            }
+        }
+
+        public static string Name(MasonryTechnology t) => t switch
+        {
+            MasonryTechnology.BrickSingle => "brick_single",
+            MasonryTechnology.BrickThickened => "brick_thickened",
+            MasonryTechnology.AeratedBlock => "aerated_block",
+            MasonryTechnology.Timber => "timber",
+            MasonryTechnology.Frame => "frame",
+            _ => "brick_single",
+        };
 
         public static string Name(DrawerSystem s) => s == DrawerSystem.Movento ? "movento" : "gtv";
 

@@ -75,7 +75,11 @@ namespace KitchenDesigner.Core.UI
             _registered.Rows;
 
         public TMP_InputField NumberField(string label, RowVisibility visibility, string unit = "мм",
-            string? nodeSuffix = null)
+            string? nodeSuffix = null) =>
+            LabelledNumberField(label, visibility, unit, nodeSuffix).field;
+
+        public (TextMeshProUGUI label, TMP_InputField field) LabelledNumberField(string label,
+            RowVisibility visibility, string unit = "мм", string? nodeSuffix = null)
         {
             var node = nodeSuffix ?? label;
             var lbl = UIFactory.CreateLabel("L_" + node, _parent, label, 15,
@@ -85,7 +89,7 @@ namespace KitchenDesigner.Core.UI
             _registered.Add(lbl, field);
             visibility.Register(_layout, RowH, RowGap,
                 lbl.rectTransform, field.GetComponent<RectTransform>());
-            return field;
+            return (lbl, field);
         }
 
         public (TMP_InputField first, TMP_InputField second) PairField(string label,

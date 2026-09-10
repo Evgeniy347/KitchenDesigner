@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using KitchenDesigner.Core.Construction;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -9,6 +10,29 @@ namespace KitchenDesigner.Core
         public bool LoadBearing { get => _loadBearing; set => _loadBearing = value; }
 
         public string Kind => _loadBearing ? "bearing" : "partition";
+
+        [SerializeField] private MasonryTechnology _masonry = KitchenSettings.Instance.ConstructionMasonry;
+        [SerializeField] private int _jointMm = KitchenSettings.Instance.ConstructionJointMm;
+        [SerializeField] private int _wastePct = KitchenSettings.Instance.ConstructionWastePct;
+
+        public MasonryTechnology Masonry
+        {
+            get => _masonry;
+            set => _masonry = (MasonryTechnology)Mathf.Clamp((int)value, 0, MasonryUnit.Table.Count - 1);
+        }
+
+        public int JointMm
+        {
+            get => _jointMm;
+            set => _jointMm = Mathf.Clamp(value, 0, KitchenSettings.CONSTRUCTION_JOINT_MAX_MM);
+        }
+
+        public int WastePct
+        {
+            get => _wastePct;
+            set => _wastePct = Mathf.Clamp(value, 0, KitchenSettings.CONSTRUCTION_WASTE_MAX_PCT);
+        }
+
         [SerializeField] private WallMeshBuilder.EndShape _endShape = default;
         [SerializeField] private bool _hasEndShape;
         public WallMeshBuilder.EndShape EndShape => _hasEndShape ? _endShape : WallMeshBuilder.EndShape.Square;

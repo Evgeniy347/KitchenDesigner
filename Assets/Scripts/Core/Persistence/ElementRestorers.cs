@@ -63,6 +63,9 @@ namespace KitchenDesigner.Core
                  var wall = el.GetComponent<Wall>();
                  if (wall == null) return;
                  wall.LoadBearing = d.WallIsLoadBearing();
+                 wall.Masonry = (KitchenDesigner.Core.Construction.MasonryTechnology)d.wallMasonry;
+                 wall.JointMm = d.wallJointMm;
+                 wall.WastePct = d.wallWastePct;
                  if (d.wallEndShape != null && d.wallEndShape.Length >= 4)
                      wall.SetEndShape(new WallMeshBuilder.EndShape
                      {

@@ -89,7 +89,11 @@ namespace KitchenDesigner.Core.MCP
             (info, el) =>
             {
                 var wall = el.GetComponent<Wall>();
-                if (wall != null) info.wallLoadBearing = wall.LoadBearing;
+                if (wall == null) return;
+                info.wallLoadBearing = wall.LoadBearing;
+                info.wallMasonry = McpWireEnums.Name(wall.Masonry);
+                info.wallJointMm = wall.JointMm;
+                info.wallWastePct = wall.WastePct;
             },
             For<DrawerElement>((info, drawer) => info.drawer = new DrawerInfo
             {

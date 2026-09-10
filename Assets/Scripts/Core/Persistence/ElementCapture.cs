@@ -53,6 +53,9 @@ namespace KitchenDesigner.Core
             d.wallLoadBearing = wall != null && wall.LoadBearing;
             if (wall != null)
             {
+                d.wallMasonry = (int)wall.Masonry;
+                d.wallJointMm = wall.JointMm;
+                d.wallWastePct = wall.WastePct;
                 var ws = wall.EndShape;
                 d.wallEndShape = new[] { ws.startFront, ws.startBack, ws.endFront, ws.endBack };
             }

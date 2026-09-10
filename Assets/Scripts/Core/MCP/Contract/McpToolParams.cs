@@ -144,6 +144,18 @@ namespace KitchenDesigner.Core.MCP.Contract
                   "partition. New walls default to true. Omit to keep.")]
         public bool? load_bearing;
 
+        [McpParam("Wall only: masonry technology of THIS wall — it decides how the wall is "
+                  + "counted in the specification (pieces, m3 of timber, frame studs). New walls "
+                  + "take the project default from the construction settings tab. Omit to keep.",
+            Enum = new[] { "brick_single", "brick_thickened", "aerated_block", "timber", "frame" })]
+        public string? masonry;
+        [McpParam("Wall only: mortar joint in MM. A thicker joint means fewer stones and more "
+                  + "mortar for the same wall. Omit to keep.", Min = 0)]
+        public int? masonry_joint_mm;
+        [McpParam("Wall only: spare for breakage and cutting, in % on top of the counted pieces. "
+                  + "Does not change the mortar. Omit to keep.", Min = 0)]
+        public int? masonry_waste_pct;
+
         [McpParam("Gap in MM on the left side. Omit to keep.", Min = 0)] public int? gap_left;
         [McpParam("Gap in MM on the right side. Omit to keep.", Min = 0)] public int? gap_right;
         [McpParam("Gap in MM on the top side. Omit to keep.", Min = 0)] public int? gap_top;

@@ -58,6 +58,9 @@ namespace KitchenDesigner.Core
         public string wallKind = "";
         public float[] wallEndShape = System.Array.Empty<float>();
         public bool wallLoadBearing = true;
+        public int wallMasonry = (int)KitchenDesigner.Core.Construction.MasonryTechnology.BrickSingle;
+        public int wallJointMm = KitchenSettings.CONSTRUCTION_JOINT_DEFAULT_MM;
+        public int wallWastePct = KitchenSettings.CONSTRUCTION_WASTE_DEFAULT_PCT;
         public bool isFacade = false;
         public bool isRadialShelf = false;
         public bool isTable = false;

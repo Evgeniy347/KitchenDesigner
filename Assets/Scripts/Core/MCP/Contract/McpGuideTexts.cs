@@ -558,6 +558,13 @@ wallLoadBearing       Признак несущей стены (только Wal
                       несущие ВСЕ стены; отключается переключателем в свойствах
                       конкретной стены. От этого флага зависит, попадёт ли стена
                       под ленту фундамента.
+wallMasonry           Технология кладки этой стены: brick_single | brick_thickened |
+                      aerated_block | timber | frame. Новая стена берёт значение из
+                      вкладки настроек «Строительство»; правится полем masonry.
+wallJointMm           Растворный шов этой кладки, мм. Чем толще шов, тем меньше
+                      камней и больше раствора уходит на ту же стену.
+wallWastePct          Запас на бой и подрезку, % сверх посчитанных штук. На объём
+                      раствора не влияет.
 hasViolations         true = this element overlaps something or is disconnected.
 faceGaps              Per-axis nearest OPPOSITE neighbour: {axis, neighbor, gapMM,
                       touching, isOverlap}. touching=true means flush contact
