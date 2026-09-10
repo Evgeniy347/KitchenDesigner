@@ -1,4 +1,3 @@
-using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -18,9 +17,10 @@ using KitchenDesigner.Core;
 ///   хотя до гашения <c>Update</c> ловил это каждый кадр.
 ///
 /// Точка пробуждения одна: <c>SceneChangeTracker.Poll</c> уже знает и про смену
-/// состава сцены (<c>_membershipChanged</c>), и про то, кто сдвинулся. Тесты
-/// щупают именно её — не <c>Update</c> (в EditMode он не идёт), а флаг
-/// <c>enabled</c>, по которому <c>Update</c> и решает, работать ли ему.</summary>
+/// состава сцены (<c>_membershipChanged</c>), и про то, кто сдвинулся. Первые два
+/// теста щупают именно её: в EditMode <c>Update</c> сам не идёт, поэтому судим по
+/// флагу <c>enabled</c>, по которому <c>Update</c> и решает, работать ли ему.
+/// Третий зовёт <c>Update</c> руками и спрашивает обоих гостей одно и то же.</summary>
 public class PartCutoutWakeTests
 {
     private ProjectLoadStateGuard? _globals;
@@ -97,24 +97,46 @@ public class PartCutoutWakeTests
             + "положения любой детали, которая МОГЛА БЫ стать хозяином");
     }
 
-    /// <summary>Одна модель устаревания на всех: <c>CooktopElement</c> опрашивал
-    /// <c>Mount.PartMoved</c>, <c>SinkElement</c> — нет, и у одного базового
-    /// класса было два разных ответа на вопрос «пора ли проснуться». Свели в
-    /// базовый; тест краснеет, если кто-то снова завёл собственный
-    /// <c>Update</c>.</summary>
+    /// <summary>Одна модель устаревания на ОБОИХ: <c>CooktopElement.Update</c>
+    /// опрашивал <c>Mount.PartMoved</c>, а <c>SinkElement.Update</c> — нет, и у
+    /// одного базового класса было два разных ответа на вопрос «пора ли
+    /// проснуться». Вопрос задаётся поведением, а не отражением: хозяин уехал,
+    /// счётчик позы не двигали (его двигает <c>SceneChangeTracker</c>, и тут он
+    /// намеренно не зван) — единственный, кто может это заметить, это опрос
+    /// <c>PartMoved</c> внутри <c>Update</c>. Варочная замечала и до правки,
+    /// мойка — нет; теперь обе, потому что <c>Update</c> у них общий.</summary>
     [Test]
-    public void TheStalenessModel_LivesInTheBaseClassOnly()
+    public void BothGuests_NoticeTheHostMoved_WithNoPoseBumpAtAll()
     {
-        const BindingFlags Own = BindingFlags.Instance | BindingFlags.Public
-            | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+        foreach (bool asSink in new[] { false, true })
+        {
+            EveryElementType.ClearScene();
 
-        Assert.IsNotNull(typeof(PartCutoutElement).GetMethod("Update", Own),
-            "общий Update живёт в базовом классе");
+            var topGo = ElementFactory.CreatePart(new Vector3Int(1200, 40, 600), "Столешница",
+                new Vector3(2f, 0f, 0f));
+            var top = topGo.GetComponent<KitchenElement>();
+            PartRegistry.Register(top);
 
-        foreach (var t in new[] { typeof(SinkElement), typeof(CooktopElement) })
-            Assert.IsNull(t.GetMethod("Update", Own),
-                $"{t.Name} снова завёл собственный Update — две модели устаревания у одного "
-                + "базового класса уже расходились однажды: варочная опрашивала Mount.PartMoved, "
-                + "мойка нет");
+            var guestGo = asSink
+                ? ElementFactory.CreateSink("Мойка", new Vector3(2f, 0.02f, 0f))
+                : ElementFactory.CreateCooktop("Варочная", new Vector3(2f, 0.02f, 0f));
+            var guest = guestGo.GetComponent<PartCutoutElement>();
+            PartRegistry.Register(guest);
+            guest.SnapToPart();
+            Assert.IsTrue(guest.IsAttached, $"предусловие ({guest.DisplayTypeName}): гость сел");
+
+            guest.Update();
+            Assert.IsFalse(guest.enabled, $"предусловие ({guest.DisplayTypeName}): гость уснул");
+
+            float xBefore = guest.transform.position.x;
+            top.transform.position += new Vector3(0.3f, 0f, 0f);
+            guest.enabled = true;
+            guest.Update();
+
+            Assert.AreEqual(xBefore + 0.3f, guest.transform.position.x, 1e-3f,
+                $"{guest.DisplayTypeName}: хозяин уехал на 300 мм без единого бампа позы — "
+                + "заметить это может только опрос Mount.PartMoved в Update, и он обязан быть "
+                + "один на всех наследников PartCutoutElement");
+        }
     }
 }
