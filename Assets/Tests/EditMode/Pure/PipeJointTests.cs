@@ -16,6 +16,12 @@ public class PipeJointTests
     private static PipePort Port(string id, in PointMm at, in PipeAxis outward) =>
         new PipePort(id, PipeNodeKind.Pipe, 0, at, outward, PipeSpec.Dn20);
 
+    // Труба к трубе не соединяется (PipeConnectionRule) — эти два порта стоят на месте
+    // трубы, но ПОД ФИТИНГ, ровно чтобы проверить геометрию контакта отдельно от правила
+    // связи: тест бьёт по расстоянию и оси, а не по тому, какие роды узлов уживаются.
+    private static PipePort FittingPort(string id, in PointMm at, in PipeAxis outward) =>
+        new PipePort(id, PipeNodeKind.Elbow, 0, at, outward, PipeSpec.Dn20);
+
     [Test]
     public void PipeJoint_Tolerance_IsTheProjectContactTolerance()
     {
@@ -28,7 +34,16 @@ public class PipeJointTests
     {
         Assert.IsTrue(PipeJoint.Connects(
             Port("a", Origin, PipeAxis.Right),
-            Port("b", Origin, PipeAxis.Left)));
+            FittingPort("b", Origin, PipeAxis.Left)));
+    }
+
+    [Test]
+    public void PipeJoint_DoesNotConnect_WhenBothPortsAreOnAPipe()
+    {
+        Assert.IsFalse(PipeJoint.Connects(
+            Port("a", Origin, PipeAxis.Right),
+            Port("b", Origin, PipeAxis.Left)),
+            "труба к трубе — не стык (PipeConnectionRule), даже если торцы совпали и оси противоположны");
     }
 
     [Test]
@@ -55,10 +70,10 @@ public class PipeJointTests
         var outside = new PointMm(Origin.XMm + Tolerance.ContactMm * 2f, Origin.YMm, Origin.ZMm);
 
         Assert.IsTrue(PipeJoint.Connects(
-            Port("a", Origin, PipeAxis.Right), Port("b", inside, PipeAxis.Left)),
+            Port("a", Origin, PipeAxis.Right), FittingPort("b", inside, PipeAxis.Left)),
             "0,4 мм — монтажный зазор, а не разрыв трассы");
         Assert.IsFalse(PipeJoint.Connects(
-            Port("a", Origin, PipeAxis.Right), Port("b", outside, PipeAxis.Left)),
+            Port("a", Origin, PipeAxis.Right), FittingPort("b", outside, PipeAxis.Left)),
             "1,0 мм между торцами — уже дыра: вода пойдёт мимо");
     }
 

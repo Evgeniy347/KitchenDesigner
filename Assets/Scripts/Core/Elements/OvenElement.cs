@@ -214,7 +214,11 @@ namespace KitchenDesigner.Core
             Door.ApplyPose();
         }
 
-        internal void Update() => StepDoor(Time.deltaTime);
+        internal void Update()
+        {
+            StepDoor(Time.deltaTime);
+            if (Mathf.Approximately(Door.Progress, _open ? 1f : 0f)) enabled = false;
+        }
 
         public void StepDoor(float dt)
         {

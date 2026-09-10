@@ -103,7 +103,7 @@ namespace KitchenDesigner.Core
             SashGroup.localRotation = rot;
         }
 
-        private void Update()
+        internal void Update()
         {
             StepDoor(Time.deltaTime);
             if (PoseVersion != _lastPoseVersion)

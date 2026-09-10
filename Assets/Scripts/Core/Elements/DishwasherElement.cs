@@ -254,7 +254,10 @@ namespace KitchenDesigner.Core
             _open = open;
             SyncAttachedFacade();
             if (Door.IsAnimatingTowards(open))
+            {
+                enabled = true;
                 FrameRateManager.KeepAwake(DropDoor.OPEN_SECONDS + DropDoor.KEEP_AWAKE_MARGIN_SECONDS);
+            }
         }
 
         public void ToggleOpen() => SetOpen(!_open);
@@ -276,7 +279,11 @@ namespace KitchenDesigner.Core
             if (facade != null) facade.SetOpen(_open);
         }
 
-        internal void Update() => StepDoor(Time.deltaTime);
+        internal void Update()
+        {
+            StepDoor(Time.deltaTime);
+            if (Mathf.Approximately(Door.Progress, _open ? 1f : 0f)) enabled = false;
+        }
 
         public void StepDoor(float dt)
         {

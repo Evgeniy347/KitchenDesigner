@@ -455,7 +455,12 @@ namespace KitchenDesigner.Core
 			if (_wasMoved)
 			{
 				foreach (var m in _moveSet)
-					if (m != null) MmGrid.Snap(m);
+				{
+					if (m == null) continue;
+					MmGrid.Snap(m);
+					if (m is PipeElement movedPipe)
+						PipeDocking.RefitRunAfterResize(movedPipe, PartRegistry.GetAll());
+				}
 
 				Vector3Int? seatedDimsBefore = null;
 				Vector3 seatedPosBefore = Vector3.zero;

@@ -134,7 +134,11 @@ namespace KitchenDesigner.Core
         public bool IsUpperDrawer
         {
             get => _isUpperDrawer;
-            set => _isUpperDrawer = value;
+            set
+            {
+                _isUpperDrawer = value;
+                if (value) enabled = true;
+            }
         }
 
         [NotUndoable("обратная ссылка пары, ведёт DrawerLinks")]
@@ -174,6 +178,7 @@ namespace KitchenDesigner.Core
             if (willOpen && _t <= 0f) CaptureClosed();
             _open = willOpen;
             SyncAttachedFacade();
+            if (!Mathf.Approximately(_t, willOpen ? 1f : 0f)) enabled = true;
 
             if (syncPair)
             {
@@ -289,7 +294,11 @@ namespace KitchenDesigner.Core
                 SpecUnit.AreaM2, BoardFaceArea.FaceAreaM2(back), back, hasDims: true);
         }
 
-        private void Update() => StepAnimation(Time.deltaTime);
+        internal void Update()
+        {
+            StepAnimation(Time.deltaTime);
+            if (!_isUpperDrawer && Mathf.Approximately(_t, _open ? 1f : 0f)) enabled = false;
+        }
 
         private void LateUpdate()
         {
@@ -362,7 +371,10 @@ namespace KitchenDesigner.Core
             _open = open;
             SyncAttachedFacade();
             if (!Mathf.Approximately(_t, open ? 1f : 0f))
+            {
+                enabled = true;
                 FrameRateManager.KeepAwake(OpenSeconds + AppConstants.OPENING_KEEP_AWAKE_MARGIN_SECONDS);
+            }
         }
 
         public void ToggleOpen() => SetOpen(!_open);

@@ -65,7 +65,7 @@ namespace KitchenDesigner.Core
             SnapToPart();
         }
 
-        private void Update()
+        internal void Update()
         {
             if (PoseVersion == _lastPoseVersion) { enabled = false; return; }
             _lastPoseVersion = PoseVersion;

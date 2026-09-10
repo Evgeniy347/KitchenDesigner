@@ -66,18 +66,23 @@ public class PipeRulesTests
             WithCode(PipeRules.Collect(scene), PipeIssueCatalog.CodeOpenEnd));
     }
 
+    /// <summary>Труба к трубе — не стык (PipeConnectionRule.CanConnect), даже когда
+    /// торцы совпали и оси противоположны: между двумя отрезками трубы всегда нужен
+    /// фитинг (муфта, отвод, тройник), и это касается любых двух труб, разного
+    /// диаметра или одного. PIP-02 сравнивает размеры на СТЫКЕ, а стыка тут нет —
+    /// поэтому вместо него бьёт PIP-01: оба конца свободны.</summary>
     [Test]
-    public void PipeRules_SizeMismatch_IsReported_WhenTwoPipesMeetDirectly()
+    public void PipeRules_SizeMismatch_IsNotReported_WhenTwoPipesMeetDirectly_NoJointExistsThere()
     {
         var scene = new PipeTestScene()
             .Pipe("thin", Start, Joint, PipeSpec.Dn20)
             .Pipe("thick", Joint, End, PipeSpec.Dn25);
 
-        var mismatch = WithCode(PipeRules.Collect(scene), PipeIssueCatalog.CodeSizeMismatch);
-        Assert.AreEqual(1, mismatch.Count, "3/4 дюйма в 1 дюйм напрямую не садится — нужен переходник");
-        Assert.AreEqual(PipeFindingLevel.Error, mismatch[0].Level);
-        Assert.AreEqual("thick", mismatch[0].OtherElementId,
-            "замечание называет обе трубы, иначе непонятно, где искать");
+        var findings = PipeRules.Collect(scene);
+        CollectionAssert.IsEmpty(WithCode(findings, PipeIssueCatalog.CodeSizeMismatch),
+            "без фитинга между ними это не стык, а два отдельных свободных торца — сравнивать нечего");
+        Assert.AreEqual(4, WithCode(findings, PipeIssueCatalog.CodeOpenEnd).Count,
+            "без фитинга между ними у обеих труб свободны ОБА торца — стыка нет вовсе");
     }
 
     [Test]
@@ -105,20 +110,27 @@ public class PipeRulesTests
             "отвод бывает только одного диаметра — свести на нём два размера нельзя");
     }
 
-    /// <summary>Обе стороны одного правила в одном тесте: те же две трубы, тот
-    /// же стык. Без переходной муфты PIP-02 обязан сработать, с ней — молчать.
-    /// Порознь эти утверждения ничего не стоят: правило, которое всегда молчит,
-    /// пройдёт вторую половину, а правило, которое всегда ругается, — первую.</summary>
+    /// <summary>Обе стороны одного правила в одном тесте: те же два диаметра,
+    /// тот же узел. Фитинг без свободы размера (отвод — PipeNodePorts.RequiresOneSize)
+    /// обязан сработать по PIP-02, переходная муфта — смолчать. Порознь эти
+    /// утверждения ничего не стоят: правило, которое всегда молчит, пройдёт
+    /// вторую половину, а правило, которое всегда ругается, — первую.
+    ///
+    /// Раньше здесь стояли ДВЕ трубы встык без всякого фитинга — но
+    /// PipeConnectionRule запрещает трубе стыковаться с трубой напрямую (труба
+    /// без фитинга — не узел, а два свободных торца, PIP-01), так что тот сценарий
+    /// не проверял PIP-02 вовсе, а проверял то, чего в сети уже нет.</summary>
     [Test]
-    public void PipeRules_SizeMismatch_FiresWithoutATransitionCoupling_AndIsSilentWithOne()
+    public void PipeRules_SizeMismatch_FiresOnAFittingWithoutSizeFreedom_AndIsSilentOnACoupling()
     {
         var direct = new PipeTestScene()
             .Pipe("thin", Start, Joint, PipeSpec.Dn20)
-            .Pipe("thick", Joint, End, PipeSpec.Dn25);
+            .Pipe("thick", Joint, Top, PipeSpec.Dn25)
+            .Fitting("elbow", PipeNodeKind.Elbow, (Joint, PipeAxis.Left), (Joint, PipeAxis.Up));
 
         Assert.AreEqual(1, WithCode(PipeRules.Collect(direct),
                 PipeIssueCatalog.CodeSizeMismatch).Count,
-            "3/4\" и 1\" сведены напрямую — переходника между ними нет, и это отказ");
+            "отвод — не переходник: он одного диаметра, и свести на нём 3/4\" с 1\" нельзя");
 
         var through = new PipeTestScene()
             .Pipe("thin", Start, Joint, PipeSpec.Dn20)
@@ -203,7 +215,8 @@ public class PipeRulesTests
         var far = PipeTestScene.At(3000f, 0f, 0f);
         var scene = new PipeTestScene()
             .Pipe("thin", Start, Joint, PipeSpec.Dn20)
-            .Pipe("thick", Joint, End, PipeSpec.Dn25)
+            .Pipe("thick", Joint, Top, PipeSpec.Dn25)
+            .Fitting("elbow", PipeNodeKind.Elbow, (Joint, PipeAxis.Left), (Joint, PipeAxis.Up))
             .Obstacle("carcass", PipeObstacleKind.Part,
                 PipeTestScene.At(400f, -100f, -100f), PipeTestScene.At(600f, 100f, 100f))
             .Fitting("s1", PipeNodeKind.Supply, (far, PipeAxis.Left))
