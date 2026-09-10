@@ -64,12 +64,17 @@ public class SpecificationFrozenSceneTests
         Assert.Greater(result.totalCount, 0);
         Assert.Greater(result.totalAreaM2, 0f);
 
-        Assert.IsTrue(result.lines.All(l => l.unit == SpecUnit.AreaM2),
-            "в реальной кухне сегодня нет конструктивных элементов — все строки в м²");
-        Assert.IsTrue(result.lines.All(l => l.section == "Мебель"),
-            "все детали кухни — раздел «Мебель», пока не появится фундамент/стены (не в этом заходе)");
+        Assert.IsTrue(result.lines.Any(l => l.unit == SpecUnit.AreaM2 && l.section == "Мебель"),
+            "листовые детали кухни считаются в м² в разделе «Мебель»");
+        Assert.IsTrue(result.lines.Any(l => l.unit == SpecUnit.LinearMeters),
+            "труба и кромка меряются погонными метрами — если этих строк нет, элементы снова выпали из ведомости молча");
+        Assert.IsTrue(result.lines.Any(l => l.unit == SpecUnit.Pieces),
+            "фитинги и покупные комплекты меряются штуками");
+        Assert.IsFalse(result.lines.Any(l => l.unit == SpecUnit.VolumeM3),
+            "кубометры появятся только с фундаментом — конструктивных элементов в этой сцене нет");
 
-        Assert.AreEqual(1, result.totalsByUnit.Count, "единственная единица в кухне — м²");
+        Assert.Greater(result.totalsByUnit.Count, 1,
+            "единиц больше одной: м² у досок, погонные метры у трубы и кромки, штуки у фитингов");
         Assert.AreEqual(result.totalAreaM2, result.totalsByUnit[SpecUnit.AreaM2], 0.0001f,
             "итог по м² в totalsByUnit обязан совпасть со старым totalAreaM2 — это одна и та же величина");
 
