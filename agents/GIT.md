@@ -34,6 +34,8 @@ Body paragraph, free to span lines and contain (parentheses), "quotes" and $sign
 ```powershell
 .\tools\git-commit.ps1 -Message "feat: something" -Files Assets/Scripts/Core/Foo.cs, Assets/Scripts/Core/Foo.cs.meta
 # -All            stage every tracked change instead of a file list
+#                 (refuses if docs/example.save.json is dirty - agents/TESTS.md ->
+#                 "docs/example.save.json - NEVER TOUCH IT"; use -Files instead)
 # -DryRun         print the timestamp it would use and stop
 # -Amend          re-time the current HEAD commit (NOT in a shared tree — `agents/FLEET.md`
 #                 → «Never `--amend` or `reset` in a shared tree»; a wrong commit gets a

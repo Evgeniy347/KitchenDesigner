@@ -52,6 +52,26 @@ if (-not $repoRoot) { throw 'Not inside a git repository.' }
 Set-Location $repoRoot
 
 # --------------------------------------------------------------------------------------
+# Guard: docs/example.save.json is the user's live project file (agents/TESTS.md ->
+# "docs/example.save.json - NEVER TOUCH IT"). It is dirty almost all the time, so any path
+# through this script that stages "everything" - `-All`, or a bare `-Amend` that takes
+# whatever is already in the index - can silently drag tens of thousands of lines of the
+# user's project into an unrelated commit. It already happened once (2026-08-31) and the
+# only known cleanup (`git reset` + amend) is now itself forbidden in a shared tree
+# (agents/FLEET.md -> "Never `--amend` or `reset` in a shared tree"). Refuse up front
+# instead of relying on someone noticing `git status` first.
+if ($All -or ($Amend -and -not ($Files -and $Files.Count -gt 0))) {
+    $guardPath = 'docs/example.save.json'
+    $dirty = git status --porcelain -- $guardPath 2>$null
+    if ($dirty) {
+        throw ("Refusing: '$guardPath' has uncommitted changes in the working tree (or index) " +
+            "- it is the user's live project file, never a file to sweep into a commit " +
+            "(agents/TESTS.md). Commit your own files explicitly with -Files instead of " +
+            "-All / a whole-index -Amend.")
+    }
+}
+
+# --------------------------------------------------------------------------------------
 # Timestamp rules
 # --------------------------------------------------------------------------------------
 
