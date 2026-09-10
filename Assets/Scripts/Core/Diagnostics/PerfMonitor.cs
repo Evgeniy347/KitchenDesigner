@@ -1,5 +1,3 @@
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
 using System;
 using System.Text;
 using Unity.Profiling;
@@ -135,7 +133,12 @@ namespace KitchenDesigner.Core
             if (!Input.GetKeyDown(KeyCode.F9)) return;
 
             bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-            if (shift) ToggleCsv();
+            ApplyF9(shift);
+        }
+
+        internal void ApplyF9(bool shiftHeld)
+        {
+            if (shiftHeld) ToggleCsv();
             else
             {
                 Enabled = !Enabled;
@@ -143,6 +146,8 @@ namespace KitchenDesigner.Core
                 Debug.Log($"[Perf] замер {(Enabled ? "включён" : "выключен")}");
             }
         }
+
+        internal void SimulateF9ForTests(bool shiftHeld = false) => ApplyF9(shiftHeld);
 
         private void ToggleCsv() => SetCsvRecording(_csv == null || !_csv.Recording);
 
@@ -428,5 +433,3 @@ namespace KitchenDesigner.Core
         }
     }
 }
-
-#endif

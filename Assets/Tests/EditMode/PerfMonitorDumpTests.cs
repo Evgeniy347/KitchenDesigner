@@ -1,5 +1,3 @@
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
@@ -160,8 +158,42 @@ public class PerfMonitorDumpTests
             + "потому что Bootstrap поднимает монитор всегда: " + string.Join(", ", offenders));
     }
 
+    [Test]
+    public void PerfMonitor_IsCompiledUnconditionally_SoF9StillOpensTheWindowInAReleaseBuild()
+    {
+        var path = System.IO.Path.Combine(UnityEngine.Application.dataPath, "Scripts", "Core", "Diagnostics", "PerfMonitor.cs");
+        Assert.IsTrue(System.IO.File.Exists(path), "скан не видит файла — проверять было бы нечего");
+
+        var source = System.IO.File.ReadAllText(path);
+        StringAssert.DoesNotContain("#if", source,
+            "F9 читает этот файл; спрятанный под #if UNITY_EDITOR/DEVELOPMENT_BUILD класс "
+            + "целиком выпадает из сборки KitchenDesigner/Build Windows (development=false) — "
+            + "именно так окно пропало в собранном плеере в прошлый раз");
+    }
+
+    [Test]
+    public void Bootstrap_CreatesPerfMonitorUnconditionally_SoTheHotkeyHasSomethingToToggle()
+    {
+        var path = System.IO.Path.Combine(UnityEngine.Application.dataPath, "Scripts", "Core", "Infrastructure", "Bootstrap.cs");
+        Assert.IsTrue(System.IO.File.Exists(path), "скан не видит файла — проверять было бы нечего");
+
+        var lines = System.IO.File.ReadAllLines(path);
+        int guardDepth = 0;
+        bool gated = false;
+        foreach (var line in lines)
+        {
+            var trimmed = line.TrimStart();
+            if (trimmed.StartsWith("#if")) { guardDepth++; continue; }
+            if (trimmed.StartsWith("#endif")) { guardDepth = System.Math.Max(0, guardDepth - 1); continue; }
+            if (guardDepth > 0 && line.Contains("AddComponent<PerfMonitor>")) gated = true;
+        }
+
+        Assert.IsFalse(gated,
+            "если Bootstrap создаёт PerfMonitor только под #if UNITY_EDITOR/DEVELOPMENT_BUILD, "
+            + "в обычной (не-dev) сборке компонента на сцене вообще нет — F9 нажимается, "
+            + "но переключать нечего, и окно не появляется");
+    }
+
     private static float PerfRefreshInFrames() =>
         PerfMonitor.HudRefreshSeconds * FramesPerSecondAssumedForBudgets;
 }
-
-#endif

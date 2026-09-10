@@ -1,5 +1,3 @@
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -50,6 +48,17 @@ public class PerfHudTests
             + "нечитаемым ровно тогда, когда в него смотрят");
         if (font != null) Object.DestroyImmediate(font);
     }
-}
 
-#endif
+    [Test]
+    public void PerfHud_IsCompiledUnconditionally_SoTheOverlayExistsInAReleaseBuildToo()
+    {
+        var path = System.IO.Path.Combine(Application.dataPath, "Scripts", "Core", "Diagnostics", "PerfHud.cs");
+        Assert.IsTrue(System.IO.File.Exists(path), "скан не видит файла — проверять было бы нечего");
+
+        var source = System.IO.File.ReadAllText(path);
+        StringAssert.DoesNotContain("#if", source,
+            "PerfMonitor рисует HUD через этот компонент; спрятанный под #if "
+            + "UNITY_EDITOR/DEVELOPMENT_BUILD оверлей выпал бы из обычной сборки "
+            + "даже если сам PerfMonitor остался — окно снова не появилось бы");
+    }
+}

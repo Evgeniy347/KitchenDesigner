@@ -1,5 +1,3 @@
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -63,5 +61,3 @@ namespace KitchenDesigner.Core
         }
     }
 }
-
-#endif

@@ -1,5 +1,3 @@
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -132,6 +130,17 @@ public class PerfCsvLogTests
 
     private static int FileCount(string dir) =>
         Directory.Exists(dir) ? Directory.GetFiles(dir).Length : 0;
-}
 
-#endif
+    [Test]
+    public void PerfCsvLog_IsCompiledUnconditionally_BecausePerfMonitorUsesItInEveryBuild()
+    {
+        var path = Path.Combine(Application.dataPath, "Scripts", "Core", "Diagnostics", "PerfCsvLog.cs");
+        Assert.IsTrue(File.Exists(path), "скан не видит файла — проверять было бы нечего");
+
+        var source = File.ReadAllText(path);
+        StringAssert.DoesNotContain("#if", source,
+            "PerfMonitor хранит запись CSV в этом классе безусловно; спрятанный под "
+            + "#if UNITY_EDITOR/DEVELOPMENT_BUILD он не собрался бы вместе с PerfMonitor "
+            + "в обычной сборке");
+    }
+}
