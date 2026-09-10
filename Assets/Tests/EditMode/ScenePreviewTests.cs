@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Plumbing;
 
 /// <summary>Два прямых поведения `ScenePreview`, ниже уровня панели портов.
 ///

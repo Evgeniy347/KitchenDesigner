@@ -2,6 +2,7 @@ using System.IO;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Tests.Geometry;
 
 /// <summary>`PartHighlighter.Sync()` работал только по совпадению: труба и
