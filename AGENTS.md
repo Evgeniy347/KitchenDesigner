@@ -34,6 +34,11 @@ source carries no comments at all — see CONVENTIONS.md → "Comments live in t
   `ConvertTo-Json` over a whole array; `grep` the Unity log by marker instead of printing a
   line range (its NUnit stack traces and `Serialization depth limit` spam are worthless).
   For sweeps print only rows where the value CHANGES.
+- **Never search from the filesystem root.** `find / -iname …` on this machine walks network
+  drives and system trees and does not finish: one such search sat five hours and was killed by
+  the user, who noticed it before any agent did. Search the repository, and for engine or
+  package sources `Library/PackageCache` — the agent that started that `find` had already
+  found its file there minutes earlier.
 - **Read code targeted.** `codegraph_context` → `Read` with `offset`/`limit`. Read a whole
   file only when you truly need all of it; four full reads of 500–700-line files cost ~30k.
 - **Aggregate repeated failures.** A test that prints the same message for every millimetre
