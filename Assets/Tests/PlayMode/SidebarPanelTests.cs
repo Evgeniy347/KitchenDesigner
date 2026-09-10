@@ -366,18 +366,45 @@ public class SidebarPanelTests
     [Test]
     public void SearchField_MatchesByAnyPresetName_AndSpawnsTheMatchedPresetNotTheRememberedOne()
     {
-        var search = Child(Panel, "SbSearch").GetComponent<TMP_InputField>();
+        // Запомненный пресет читается из PlayerPrefs — общего с реальным Editor-сеансом
+        // хранилища, а не сброшенного между тестами состояния. Тест фиксирует «запомнен
+        // GTV» ЯВНО (как соседний тест ниже фиксирует «запомнен Movento»), а не полагается
+        // на то, что ключ окажется пустым: иначе ручная проверка Movento-пресета в этом же
+        // Editor-проекте (у него теперь настоящие, не дефолтные значения) молча подменяет
+        // «запомненный по умолчанию» на Movento, и тест перестаёт ловить исходный дефект.
+        const string key = "KitchenSidebarPreset_Ящик";
+        bool hadPrevValue = PlayerPrefs.HasKey(key);
+        string prevValue = PlayerPrefs.GetString(key, "");
+        try
+        {
+            SidebarPresetPreference.Save("Ящик", "Ящик GTV");
+            Object.DestroyImmediate(_sidebarHost);
+            Object.DestroyImmediate(_canvasGo);
+            _canvasGo = new GameObject("Canvas");
+            _canvasGo.AddComponent<Canvas>();
+            _sidebarHost = new GameObject("SidebarHost");
+            _sidebar = _sidebarHost.AddComponent<SidebarUI>();
+            _sidebar.Build(_canvasGo.transform);
 
-        var spawnedWithoutSearch = _sidebar.ItemToSpawnForTests("Ящики", "Ящик");
-        Assert.AreEqual("Ящик GTV", spawnedWithoutSearch.name,
-            "без поиска плитка отдаёт запомненный по умолчанию пресет (GTV)");
+            var search = Child(Panel, "SbSearch").GetComponent<TMP_InputField>();
 
-        search.text = "Movento";
-        var spawnedWithSearch = _sidebar.ItemToSpawnForTests("Ящики", "Ящик");
+            var spawnedWithoutSearch = _sidebar.ItemToSpawnForTests("Ящики", "Ящик");
+            Assert.AreEqual("Ящик GTV", spawnedWithoutSearch.name,
+                "без поиска плитка отдаёт запомненный по умолчанию пресет (GTV)");
 
-        Assert.AreEqual("Ящик Movento", spawnedWithSearch.name,
-            "совпадение по ИМЕНИ ВАРИАНТА обязано переключить выбор на него — иначе клик "
-            + "по найденной плиткой ставит не то, что было найдено");
+            search.text = "Movento";
+            var spawnedWithSearch = _sidebar.ItemToSpawnForTests("Ящики", "Ящик");
+
+            Assert.AreEqual("Ящик Movento", spawnedWithSearch.name,
+                "совпадение по ИМЕНИ ВАРИАНТА обязано переключить выбор на него — иначе клик "
+                + "по найденной плиткой ставит не то, что было найдено");
+        }
+        finally
+        {
+            if (hadPrevValue) PlayerPrefs.SetString(key, prevValue);
+            else PlayerPrefs.DeleteKey(key);
+            PlayerPrefs.Save();
+        }
     }
 
     [Test]

@@ -124,11 +124,18 @@ public class MoventoDrawerSceneTests : ElementFrameTests
         // ── Спецификация раскладывается на детали ────────────────
         var spec = SpecificationManager.Build(drawers.Cast<KitchenElement>().ToList());
         Assert.IsTrue(spec.lines.Count > 0, "спецификация не пуста");
+        var partSuffixes = new HashSet<string>
+        {
+            MoventoDrawerMesh.SUFFIX_SIDE,
+            MoventoDrawerMesh.SUFFIX_FRONT,
+            MoventoDrawerMesh.SUFFIX_BACK,
+            MoventoDrawerMesh.SUFFIX_BOTTOM,
+        };
         foreach (var line in spec.lines)
-            Assert.IsTrue(line.name.Contains("·"),
-                $"каждая позиция — деталь короба с суффиксом: {line.name}");
-        Assert.IsTrue(spec.lines.Any(l => l.name.EndsWith("·" + MoventoDrawerMesh.SUFFIX_BOTTOM)), "есть дно");
-        Assert.IsTrue(spec.lines.Any(l => l.name.EndsWith("·" + MoventoDrawerMesh.SUFFIX_SIDE)), "есть боковины");
+            Assert.IsTrue(partSuffixes.Contains(line.name),
+                $"каждая позиция — деталь короба, названная по детали: {line.name}");
+        Assert.IsTrue(spec.lines.Any(l => l.name == MoventoDrawerMesh.SUFFIX_BOTTOM), "есть дно");
+        Assert.IsTrue(spec.lines.Any(l => l.name == MoventoDrawerMesh.SUFFIX_SIDE), "есть боковины");
 
         // ── Скриншот ─────────────────────────────────────────────
         // Про нарушения расстановки спрашивает сама съёмка: валидационный тон в
