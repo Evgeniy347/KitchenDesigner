@@ -70,6 +70,28 @@ edit→check cycle while answering a question nobody was asking at that moment.
   dirty in `git status` and everyone stopped looking. `tools\artifacts.ps1` runs them in
   one play session and reports which files actually changed size.
 
+## Smoke tests on the BUILT player — the tip of the pyramid, and it stays tiny
+
+Twice in one night the suite was green at five thousand tests while the player did not compile,
+and once that reached a release: the ordinary gate runs tests and never starts the built
+application. So the release path now launches the player and checks it — but that check is the
+TIP of the pyramid and must keep the shape of one.
+
+**What belongs there:** only what is invisible below it — the app starts, MCP answers, a create /
+read / delete round trip through MCP, a project save and load, the app exits leaving no process.
+That is the whole list. Anything provable in an EditMode or a dotnet test is proved there
+instead: those cost milliseconds and this costs a player launch.
+
+**Budget: 10 ms per test**, the launch itself being the one shared price of the run. A test that
+cannot hold that budget is not a smoke test — move it down the pyramid.
+
+**Do not run them on their own.** They are part of publishing a release, not a command an agent
+reaches for. Write them, wire them, leave them; a failed smoke check stops the release, which is
+the only signal they owe anyone.
+
+**The MCP port is an argument** (`-mcpPort`, default 9337), because the smoke run must not fight
+the user's own running copy for the port.
+
 ## `docs/example.save.json` — NEVER TOUCH IT
 
 **This file belongs to the user. Do NOT modify it, do NOT revert it, do NOT
