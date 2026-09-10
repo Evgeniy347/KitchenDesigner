@@ -295,13 +295,16 @@ public class EdgeSubstrateTests
         var e = MakePart(new Vector3Int(600, 18, 500));
         e.EdgeBandingEnabled = false;
         Assert.IsFalse(MaterialManager.HasCustomDecor(e), "декор у детали — дефолтный");
+        MakePart(new Vector3Int(600, 18, 500));
 
         var host = new GameObject("Highlighter");
         _spawned.Add(host);
         var highlighter = host.AddComponent<ElementHighlighter>();
-        highlighter.CreateMaterials();
-        ElementHighlighter.TintEnabled = true;
+        ElementHighlighter.ViolationTintVisible = true;
 
+        Assume.That(ConstraintValidator.Validate(PartRegistry.GetAll()).violations.Contains(e), Is.True,
+            "вторая деталь стоит ровно на первой — без нарушения тонировать нечего "
+            + "и тест был бы пуст");
         highlighter.ApplyForElement(e);
 
         var mats = e.GetComponent<MeshRenderer>().sharedMaterials;

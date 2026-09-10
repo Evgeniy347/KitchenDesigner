@@ -4,11 +4,14 @@ using KitchenDesigner.Core;
 /// Снимок ГЛОБАЛЬНОГО состояния, которое переписывает загрузка проекта.
 ///
 /// <c>SaveLoadManager.RestoreScene</c> восстанавливает не только детали: из файла
-/// приезжают блок настроек, режим ручек, выключатель света и тонировка. Тест,
+/// приезжают блок настроек, режим ручек и выключатель света. Тон валидности
+/// (<c>ElementHighlighter.ViolationTintVisible</c>) из файла больше не приезжает —
+/// кнопки и ключа <c>tintEnabled</c> нет, — но его гасит фоторежим, и глобальный
+/// статик, утёкший из соседнего набора, портит эталоны так же молча. Тест,
 /// который поднял <c>docs/example.save.json</c> и не вернул это назад, портит
 /// соседей — и портит НЕПРЕДСКАЗУЕМО, потому что сам файл переписывается
 /// автосохранением десктопа. Так уже ломались SceneVisibilityTests,
-/// SettingsPanelUITests, SnapshotTests (эталоны ловили чужие lightsOn/tintEnabled)
+/// SettingsPanelUITests, SnapshotTests (эталоны ловили чужой lightsOn)
 /// и WallManagerTests.
 ///
 /// Правило: набор, грузящий проект, снимает состояние в [SetUp] и возвращает
@@ -19,7 +22,7 @@ public sealed class ProjectLoadStateGuard
     private readonly KitchenSettingsData? _settings;
     private readonly ResizeHandleManager.HandleMode _handleMode;
     private readonly bool _lightsOn;
-    private readonly bool _tintEnabled;
+    private readonly bool _violationTintVisible;
     private readonly int _musicTrack;
     private readonly int _musicVolumePct;
 
@@ -29,7 +32,7 @@ public sealed class ProjectLoadStateGuard
         _settings = s != null ? s.ToData() : null;
         _handleMode = ResizeHandleManager.Mode;
         _lightsOn = LightSourceElement.GlobalOn;
-        _tintEnabled = ElementHighlighter.TintEnabled;
+        _violationTintVisible = ElementHighlighter.ViolationTintVisible;
         _musicTrack = KitchenDesigner.Core.Audio.MusicState.Track;
         _musicVolumePct = KitchenDesigner.Core.Audio.MusicState.VolumePct;
     }
@@ -46,7 +49,7 @@ public sealed class ProjectLoadStateGuard
         if (s != null && _settings != null) s.ApplyFrom(_settings);
         ResizeHandleManager.SetMode(_handleMode);
         LightSourceElement.SetGlobalOn(_lightsOn);
-        ElementHighlighter.TintEnabled = _tintEnabled;
+        ElementHighlighter.ViolationTintVisible = _violationTintVisible;
         KitchenDesigner.Core.Audio.MusicState.Track = _musicTrack;
         KitchenDesigner.Core.Audio.MusicState.VolumePct = _musicVolumePct;
 

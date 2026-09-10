@@ -93,7 +93,7 @@ public class SelectionTintFrameTests
     private GameObject? _mainCamera;
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private Color32[]? _lastPixels;
-    private bool _tintWas;
+    private bool _violationTintWas;
     private bool _gridWas;
 
     /// <summary>Валидационный тон выключен на время кадра. Он глобальный и
@@ -108,8 +108,8 @@ public class SelectionTintFrameTests
     public IEnumerator SetUp()
     {
         PlayModeTestConfig.ConfigureForTests();
-        _tintWas = ElementHighlighter.TintEnabled;
-        ElementHighlighter.TintEnabled = false;
+        _violationTintWas = ElementHighlighter.ViolationTintVisible;
+        ElementHighlighter.ViolationTintVisible = false;
         _gridWas = KitchenSettings.Instance.SpatialGrid;
         KitchenSettings.Instance.SpatialGrid = false;
 
@@ -132,7 +132,7 @@ public class SelectionTintFrameTests
     public IEnumerator TearDown()
     {
         if (SelectionManager.Instance != null) SelectionManager.Instance.DeselectAll();
-        ElementHighlighter.TintEnabled = _tintWas;
+        ElementHighlighter.ViolationTintVisible = _violationTintWas;
         KitchenSettings.Instance.SpatialGrid = _gridWas;
 
         foreach (var go in _spawned)

@@ -7,14 +7,14 @@ using KitchenDesigner.Core;
 public class PhotoModeServiceOverlayReproTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
-    private bool _tintBefore;
+    private bool _violationTintBefore;
     private ElementHighlighter? _highlighterBefore;
 
     [SetUp]
     public void SetUp()
     {
         LogAssert.ignoreFailingMessages = true;
-        _tintBefore = ElementHighlighter.TintEnabled;
+        _violationTintBefore = ElementHighlighter.ViolationTintVisible;
         // SelectionTintRestoreTests уже документирует этот риск: живой
         // ElementHighlighter.Instance, оставшийся от СОСЕДНЕГО класса в общем
         // прогоне, репэйнтит элемент сразу после того, как DeselectAll вернул
@@ -33,7 +33,7 @@ public class PhotoModeServiceOverlayReproTests
     public void TearDown()
     {
         EditModeManager.Reset();
-        ElementHighlighter.TintEnabled = _tintBefore;
+        ElementHighlighter.ViolationTintVisible = _violationTintBefore;
         ElementHighlighter.Instance = _highlighterBefore;
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -83,7 +83,6 @@ public class PhotoModeServiceOverlayReproTests
     {
         var host = Spawn(new GameObject("Highlighter"));
         var highlighter = host.AddComponent<ElementHighlighter>();
-        highlighter.CreateMaterials();
 
         var a = MakeFacade("A", new Vector3Int(400, 300, 18), Vector3.zero);
         MakeFacade("B", new Vector3Int(400, 300, 18), new Vector3(0.003f, 0f, 0f));
@@ -92,7 +91,7 @@ public class PhotoModeServiceOverlayReproTests
             + "непонятно, что именно должен гасить фоторежим");
         var ownDecor = a.GetComponent<MeshRenderer>().sharedMaterial;
 
-        ElementHighlighter.TintEnabled = true;
+        ElementHighlighter.ViolationTintVisible = true;
         highlighter.ApplyForElement(a);
 
         Assert.AreNotEqual(ownDecor, a.GetComponent<MeshRenderer>().sharedMaterials[0],
@@ -105,7 +104,6 @@ public class PhotoModeServiceOverlayReproTests
     {
         var host = Spawn(new GameObject("Highlighter"));
         var highlighter = host.AddComponent<ElementHighlighter>();
-        highlighter.CreateMaterials();
 
         var a = MakeFacade("A", new Vector3Int(400, 300, 18), Vector3.zero);
         MakeFacade("B", new Vector3Int(400, 300, 18), new Vector3(0.003f, 0f, 0f));
@@ -128,7 +126,7 @@ public class PhotoModeServiceOverlayReproTests
 
         Assert.AreEqual(ownDecor, a.GetComponent<MeshRenderer>().sharedMaterials[0],
             "D11: тонкая красная метка валидности не должна попадать в фотографию для "
-            + "заказчика — TintEnabled=false в фоторежиме обязан гасить И невалидную ветку, "
+            + "заказчика — ViolationTintVisible=false в фоторежиме обязан гасить И невалидную ветку, "
             + "а не только зелёную подсветку валидной детали");
     }
 

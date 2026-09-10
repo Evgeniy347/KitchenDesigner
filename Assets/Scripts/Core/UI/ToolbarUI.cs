@@ -89,9 +89,6 @@ namespace KitchenDesigner.Core.UI
             _eyedropperSwatch = AddSwatch(eyedropperButton.transform);
             AddSeparator(bar.transform, ref x);
 
-            var tintButton = AddIconButton(bar.transform, "TintToggle", IconFactory.TintDrop, ref x,
-                ToggleTint, "Тонировка");
-            _toggles.Add((tintButton, () => ElementHighlighter.TintEnabled));
             var lightsButton = AddIconButton(bar.transform, "LightsToggle", IconFactory.Bulb,
                 ref x, ToggleLights, "Свет");
             _toggles.Add((lightsButton, () => LightSourceElement.GlobalOn));
@@ -307,13 +304,6 @@ namespace KitchenDesigner.Core.UI
             var trigger = target.GetComponent<EventTrigger>();
             if (trigger != null) trigger.triggers.Clear();
             TooltipUI.Attach(target, tooltip);
-        }
-
-        private static void ToggleTint()
-        {
-            ElementHighlighter.TintEnabled = !ElementHighlighter.TintEnabled;
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
         }
 
         private static void ToggleLights() => LightSourceElement.SetGlobalOn(!LightSourceElement.GlobalOn);

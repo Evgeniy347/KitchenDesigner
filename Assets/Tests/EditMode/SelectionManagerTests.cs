@@ -347,14 +347,6 @@ public class SelectionManagerTests
         return e;
     }
 
-    private static void InitHighlighterMaterials(ElementHighlighter hl)
-    {
-        hl.CreateMaterials();
-        Assert.IsTrue(hl.MaterialsReady,
-            "подсветка строит свои пять материалов сама — CreateMaterials молча выходит, "
-            + "если шейдер URP не найден, и тогда весь тест ниже проверял бы пустоту");
-    }
-
     /// <summary>
     /// Баг: DeselectAll шёл по _selectedElements и дёргал RestoreMaterial,
     /// а тот триггерил ElementHighlighter.ApplyForElement → ApplyMaterial
@@ -362,6 +354,12 @@ public class SelectionManagerTests
     /// — и заново сохранял материал в _savedMaterials, потому что список
     /// _selectedElements ещё не был очищен. После очистки орфан оставался
     /// навсегда.
+    ///
+    /// Ветки ownDecorOnly больше нет: тон нарушения подмешивается к своему
+    /// материалу порендерно и своего декора не съедает, поэтому исключение для
+    /// стен стало ненужным, а вместе с ним ушёл и звонок в RefreshHighlight из
+    /// подсветки. Сторож остаётся: цикл «снятие → подсветка → сохранение»
+    /// может вернуться любым другим путём, а орфан по-прежнему ничем не падает.
     /// </summary>
     [Test]
     public void DeselectAll_LeavesNoOrphanSavedMaterials()
@@ -371,7 +369,6 @@ public class SelectionManagerTests
         {
             var hlGo = new GameObject("ElementHighlighter");
             var hl = hlGo.AddComponent<ElementHighlighter>();
-            InitHighlighterMaterials(hl);
             _spawned.Add(hlGo);
 
             var wallA = MakeWithRenderer("Стена_тест_A", wall: true);
@@ -407,7 +404,6 @@ public class SelectionManagerTests
         {
             var hlGo = new GameObject("ElementHighlighter");
             var hl = hlGo.AddComponent<ElementHighlighter>();
-            InitHighlighterMaterials(hl);
             _spawned.Add(hlGo);
 
             var wallA = MakeWithRenderer("Стена_тест_A", wall: true);
@@ -474,9 +470,11 @@ public class SelectionManagerTests
         }
     }
 
-    /// <summary>У стены и пола ApplyForElement по дороге зовёт RefreshHighlight
-    /// (ветка ownDecorOnly). Пока подсветка снята, она возвращаться не должна —
-    /// иначе предпросмотр текстуры на стене был бы жёлтым.</summary>
+    /// <summary>Пока подсветка снята, она возвращаться не должна — иначе
+    /// предпросмотр текстуры на стене был бы жёлтым. Раньше её возвращала
+    /// подсветка валидности (ветка ownDecorOnly звала RefreshHighlight); ветки
+    /// больше нет, но дверь <c>RefreshHighlight</c> открыта всем, и вопрос
+    /// задаётся ей напрямую.</summary>
     [Test]
     public void RefreshHighlight_DoesNothing_WhileSuppressed()
     {

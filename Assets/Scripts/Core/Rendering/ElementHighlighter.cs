@@ -9,24 +9,7 @@ namespace KitchenDesigner.Core
 
         public int RefreshCount { get; set; }
 
-        public static bool TintEnabled { get; set; } = true;
-
-        private const float TintEmissionStrength = 0.4f;
-
-        private static readonly Color ValidTintColor = new Color(0.85f, 1f, 0.85f, 1f);
-        private static readonly Color InvalidTintColor = new Color(1f, 0.8f, 0.8f, 1f);
-        private static readonly Color OutsideEditedModuleColor = new Color(0.35f, 0.35f, 0.38f, 1f);
-        private static readonly Color ValidSeeThroughColor = new Color(0.7f, 0.85f, 0.7f, 0.08f);
-        private static readonly Color InvalidSeeThroughColor = new Color(0.9f, 0.55f, 0.55f, 0.12f);
-
-        private Material? _validMaterial;
-        private Material? _invalidMaterial;
-        private Material? _validTransparentMaterial;
-        private Material? _invalidTransparentMaterial;
-        private Material? _dimmedMaterial;
-        private bool _materialsInitialized;
-
-        internal bool MaterialsReady => _materialsInitialized;
+        public static bool ViolationTintVisible { get; set; } = true;
 
         private void Awake()
         {
@@ -35,7 +18,6 @@ namespace KitchenDesigner.Core
 
         private void Start()
         {
-            CreateMaterials();
             RefreshHighlights();
             ModuleEditMode.Changed += RefreshHighlights;
         }
@@ -43,32 +25,6 @@ namespace KitchenDesigner.Core
         private void OnDestroy()
         {
             ModuleEditMode.Changed -= RefreshHighlights;
-        }
-
-        public void CreateMaterials()
-        {
-            var shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) return;
-
-            _validMaterial = MakeTinted(shader, ValidTintColor, Color.green);
-            _invalidMaterial = MakeTinted(shader, InvalidTintColor, Color.red);
-
-            _dimmedMaterial = new Material(shader);
-            _dimmedMaterial.SetColor("_BaseColor", OutsideEditedModuleColor);
-
-            _validTransparentMaterial = MakeTransparent(shader, ValidSeeThroughColor);
-            _invalidTransparentMaterial = MakeTransparent(shader, InvalidSeeThroughColor);
-
-            _materialsInitialized = true;
-        }
-
-        private static Material MakeTinted(Shader shader, Color baseColor, Color emission)
-        {
-            var m = new Material(shader);
-            m.EnableKeyword("_EMISSION");
-            m.SetColor("_EmissionColor", emission * TintEmissionStrength);
-            m.SetColor("_BaseColor", baseColor);
-            return m;
         }
 
         public static Material MakeTransparent(Shader shader, Color color) =>
@@ -83,12 +39,6 @@ namespace KitchenDesigner.Core
             }
 
             RefreshCount++;
-            if (!_materialsInitialized)
-            {
-                CreateMaterials();
-                if (!_materialsInitialized)
-                    return;
-            }
 
             var list = PartRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
@@ -109,7 +59,7 @@ namespace KitchenDesigner.Core
 
         public void ApplyForElement(KitchenElement element)
         {
-            if (element == null || !_materialsInitialized) return;
+            if (element == null) return;
 
             var list = PartRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);
@@ -118,75 +68,44 @@ namespace KitchenDesigner.Core
             ApplyMaterial(element, isValid);
         }
 
-        private static bool KeepsItsOwnMaterialAlways(KitchenElement element) =>
-            element.GetComponent<BasePlate>() != null || element is LightSourceElement;
-
-        private static bool TintedOnlyByItsOwnDecor(KitchenElement element) =>
-            element.GetComponent<Wall>() != null || element is FloorElement;
-
-        private void ApplyMaterial(KitchenElement element, bool isValid)
+        private static ValidityPaint PaintFor(KitchenElement element, bool isValid)
         {
-            if (element is CooktopElement cooktop)
-            {
-                PaintCooktopChildren(cooktop, isValid);
-                return;
-            }
+            if (ModuleEditMode.IsActive && !ModuleEditMode.IsEditable(element))
+                return ValidityPaint.Dimmed;
 
+            bool violating = !isValid && ViolationTintVisible;
+
+            if (PhotoMode.ResolveTransparent(element.Transparent))
+                return violating ? ValidityPaint.SeeThroughViolation : ValidityPaint.SeeThrough;
+
+            return violating ? ValidityPaint.Violation : ValidityPaint.Own;
+        }
+
+        internal static void ApplyMaterial(KitchenElement element, bool isValid)
+        {
             var body = ElementRenderers.BodyOf(element);
             if (body.Count == 0) return;
 
-            if (KeepsItsOwnMaterialAlways(element)) return;
+            var paint = PaintFor(element, isValid);
+            PaintBody(element, body, paint,
+                keepAux: paint == ValidityPaint.Own || paint == ValidityPaint.Violation);
 
-            bool ownDecorOnly = TintedOnlyByItsOwnDecor(element);
-
-            if (ModuleEditMode.IsActive && !ModuleEditMode.IsEditable(element))
-            {
-                PaintBody(element, body, _dimmedMaterial!);
-                ElementOutline.For(element)?.Hide();
-                return;
-            }
-
-            if (PhotoMode.ResolveTransparent(element.Transparent))
-            {
-                PaintBody(element, body, isValid ? _validTransparentMaterial! : _invalidTransparentMaterial!);
+            if (paint == ValidityPaint.SeeThrough || paint == ValidityPaint.SeeThroughViolation)
                 ElementOutline.Ensure(element)?.Show(selected: false);
-            }
-            else if (ownDecorOnly)
-            {
-                MaterialManager.ApplyOwnDecor(element);
-                ElementOutline.For(element)?.Hide();
-                SelectionManager.Instance?.RefreshHighlight(element);
-            }
-            else if (!TintEnabled || (isValid && MaterialManager.HasCustomDecor(element)))
-            {
-                MaterialManager.ApplyOwnDecor(element);
-                ElementOutline.For(element)?.Hide();
-            }
             else
-            {
-                PaintBody(element, body, isValid ? _validMaterial! : _invalidMaterial!,
-                    keepAux: true);
                 ElementOutline.For(element)?.Hide();
-            }
         }
 
         private static void PaintBody(KitchenElement element, List<MeshRenderer> body,
-            Material material, bool keepAux = false)
+            ValidityPaint paint, bool keepAux)
         {
             foreach (var renderer in body)
-                if (renderer != null)
-                    PaintFlat(element, renderer, material, keepAux);
-        }
-
-        internal void PaintCooktopChildren(CooktopElement cooktop, bool isValid)
-        {
-            if (isValid)
             {
-                cooktop.ApplyMaterials();
-                return;
+                if (renderer == null) continue;
+                var material = ValidityTint.Of(paint, renderer.sharedMaterial);
+                if (material == null || ReferenceEquals(material, renderer.sharedMaterial)) continue;
+                PaintFlat(element, renderer, material, keepAux);
             }
-            foreach (var mr in cooktop.GetComponentsInChildren<MeshRenderer>())
-                if (mr != null) mr.sharedMaterial = _invalidMaterial!;
         }
 
         internal static void PaintFlat(KitchenElement element, MeshRenderer renderer,
@@ -197,7 +116,7 @@ namespace KitchenDesigner.Core
             int count = mesh != null ? mesh.subMeshCount : 1;
             if (count <= 1)
             {
-                renderer.material = material;
+                renderer.sharedMaterial = material;
                 return;
             }
 

@@ -195,24 +195,22 @@ public class SaveRestoreContractTests
     }
 
     [Test]
-    public void Restore_ToolbarToggles_TintAndLights_ComeBackFromTheFile()
+    public void Restore_ToolbarToggle_Lights_ComesBackFromTheFile()
     {
         var board = Register(ElementFactory.CreatePart(
             new Vector3Int(600, 18, 500), "ToggleBoard", new Vector3(0f, 0.5f, 0f)));
 
-        ElementHighlighter.TintEnabled = false;
         LightSourceElement.SetGlobalOn(false);
         var json = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(new[] { board }));
 
-        ElementHighlighter.TintEnabled = true;
         LightSourceElement.SetGlobalOn(true);
         var data = SaveLoadManager.Deserialize(json);
         SaveLoadManager.RestoreScene(data!);
 
-        Assert.IsFalse(ElementHighlighter.TintEnabled,
-            "тумблер тонировки — часть рабочего места пользователя, он лежит в файле проекта");
         Assert.IsFalse(LightSourceElement.GlobalOn,
-            "выключатель света — тоже часть проекта, а не рантайм-состояние");
+            "выключатель света — часть проекта, а не рантайм-состояние. Тонировка рядом с ним "
+            + "больше не лежит: кнопка «Тонировка» и ключ tintEnabled удалены, тон валидности — "
+            + "индикатор, а не рабочее место пользователя");
     }
 
     [Test]
@@ -268,8 +266,7 @@ public class SaveRestoreContractTests
         Assert.IsFalse(element.isOven, "духовки в старых проектах не бывает");
         Assert.IsFalse(element.isDishwasher, "и посудомойки тоже");
 
-        Assert.IsTrue(data.tintEnabled, "тумблеры вида — из умолчаний приложения");
-        Assert.IsTrue(data.lightsOn, "свет включён");
+        Assert.IsTrue(data.lightsOn, "тумблеры вида — из умолчаний приложения: свет включён");
         Assert.IsEmpty(data.windows, "окна проекта остаются на местах по умолчанию");
         Assert.AreEqual("", data.projectInstructions, "инструкций проекта тогда не было");
         Assert.IsFalse(data.basePlateValid,

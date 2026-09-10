@@ -108,7 +108,6 @@ public class ToolbarModeAndWidthTests
     [TestCase("Spec")]
     [TestCase("Hierarchy")]
     [TestCase("ProjectInstructions")]
-    [TestCase("TintToggle")]
     public void FormerlyTextPanelButtons_AreNowIconsWithTooltip_D10Point1(string buttonName)
     {
         var btn = _bar.Find(buttonName)!;

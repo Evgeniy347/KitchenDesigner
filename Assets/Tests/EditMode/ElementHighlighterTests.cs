@@ -8,30 +8,30 @@ public class ElementHighlighterTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private ElementHighlighter? _highlighter;
-    private bool _tintBefore;
+    private bool _violationTintBefore;
 
     [SetUp]
     public void SetUp()
     {
         LogAssert.ignoreFailingMessages = true;
-        _tintBefore = ElementHighlighter.TintEnabled;
+        _violationTintBefore = ElementHighlighter.ViolationTintVisible;
         PartRegistry.Clear();
 
         var host = new GameObject("Highlighter");
         _spawned.Add(host);
         _highlighter = host.AddComponent<ElementHighlighter>();
-        _highlighter.CreateMaterials();
     }
 
     [TearDown]
     public void TearDown()
     {
-        ElementHighlighter.TintEnabled = _tintBefore;
+        ElementHighlighter.ViolationTintVisible = _violationTintBefore;
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null) Object.DestroyImmediate(e.gameObject);
         PartRegistry.Clear();
+        ValidityTint.Clear();
         MaterialManager.ClearCache();
         MaterialCatalog.Reset();
         LogAssert.ignoreFailingMessages = false;
@@ -87,50 +87,50 @@ public class ElementHighlighterTests
             + "проходом: отдельного триггера у неё нет, и без него голый торец не появился бы");
     }
 
+    /// <summary>Подложка-план (<c>BasePlate</c>) раньше стояла в списке
+    /// исключений «держит свой материал, что бы ни сказала валидация»: тон был
+    /// СПЛОШНОЙ заливкой, и красная плита 3×3 м забивала сцену. Причина
+    /// исчезла вместе со сплошной заливкой — тон теперь подмешивается к
+    /// собственному цвету, — а правило у пользователя одно: любой объект с
+    /// нарушением затонирован. Исключений не осталось ни одного.</summary>
     [Test]
-    public void BasePlateAndLamp_KeepTheirOwnMaterial_WhateverTheValidationSays()
+    public void BasePlate_IsTintedLikeAnythingElse_TheRuleHasNoExceptions()
     {
         var plate = MakePart(new Vector3Int(3000, 18, 3000), "Plate");
         plate.gameObject.AddComponent<BasePlate>();
         var plateMat = plate.GetComponent<MeshRenderer>().sharedMaterial;
+        MakePart(new Vector3Int(3000, 18, 3000), "PlateTwin");
 
-        var lampGo = Spawn(ElementFactory.CreateLightSource("Lamp", new Vector3(0f, 2f, 0f)));
-        var lamp = lampGo.GetComponent<LightSourceElement>()!;
-        lamp.EnsureLight();
-        var lampMat = lampGo.GetComponent<MeshRenderer>()!.sharedMaterial;
+        Assume.That(ConstraintValidator.Validate(PartRegistry.GetAll()).violations.Contains(plate),
+            Is.True, "вторая плита стоит ровно на первой — иначе тонировать нечего");
 
         _highlighter!.RefreshHighlights();
 
-        Assert.AreEqual(plateMat, plate.GetComponent<MeshRenderer>().sharedMaterial,
-            "пол держит свой материал: валидационный тон на всю плиту забивает сцену");
-        Assert.AreEqual(lampMat, lampGo.GetComponent<MeshRenderer>()!.sharedMaterial,
-            "плафон лампы светящийся — тонировка погасила бы его");
+        Assert.AreNotEqual(plateMat, plate.GetComponent<MeshRenderer>().sharedMaterial,
+            "подложка с нарушением обязана затониться: правило без исключений");
     }
 
     [Test]
-    public void TintOff_ValidPart_ShowsItsOwnDecorInsteadOfTheFlatGreenTint()
+    public void ValidPart_KeepsItsOwnMaterialUntouched_ThereIsNoGreenTintAnyMore()
     {
         var plate = MakePart(new Vector3Int(3000, 18, 3000), "AnchorPlate");
         plate.transform.position = new Vector3(0f, -0.009f, 0f);
         plate.gameObject.AddComponent<BasePlate>();
 
-        var e = MakePart(new Vector3Int(600, 18, 500), "TintOffPart");
+        var e = MakePart(new Vector3Int(600, 18, 500), "ValidPart");
         e.transform.position = new Vector3(0f, 0.009f, 0f);
         var ownDecor = e.GetComponent<MeshRenderer>().sharedMaterial;
 
         Assume.That(ConstraintValidator.Validate(PartRegistry.GetAll()).violations.Contains(e), Is.False,
-            "деталь должна быть валидной, иначе обе ветки красят её красным и тест пуст");
+            "деталь должна быть валидной, иначе проверяется тон нарушения, а не его отсутствие");
 
-        ElementHighlighter.TintEnabled = true;
-        _highlighter!.ApplyForElement(e);
-        var tinted = e.GetComponent<MeshRenderer>().sharedMaterials[0];
-        Assert.AreNotEqual(ownDecor, tinted, "с включённой тонировкой валидная деталь красится зелёным");
-
-        ElementHighlighter.TintEnabled = false;
+        ElementHighlighter.ViolationTintVisible = true;
         _highlighter!.ApplyForElement(e);
 
-        Assert.AreNotEqual(tinted, e.GetComponent<MeshRenderer>().sharedMaterials[0],
-            "с выключенной тонировкой валидная деталь показывает СВОЙ материал, а не плоский тон");
+        Assert.AreEqual(ownDecor, e.GetComponent<MeshRenderer>().sharedMaterials[0],
+            "валидная деталь больше НЕ красится: зелёный тон валидности удалён вместе с "
+            + "кнопкой «Тонировка». Подсветка, взявшаяся перекрашивать валидный объект, "
+            + "снова спрячет его декор — ровно то, на что жаловался пользователь");
     }
 
     [Test]
@@ -190,25 +190,42 @@ public class ElementHighlighterTests
             "паз обязан остаться тёмным и при повторной тонировке поверх уже тонированной детали");
     }
 
+    /// <summary>У варочной на корне рендерера нет — тело собрано из дочерних
+    /// коробок, и раньше её красила отдельная ветка
+    /// (<c>PaintCooktopChildren</c>). Ветка ушла: общий обход
+    /// <c>ElementRenderers.BodyOf</c> и так видит детей, а тон, подмешанный к
+    /// материалу КАЖДОГО ребёнка, возвращается порендерно и не требует, чтобы
+    /// элемент умел перекрасить себя сам. Вопрос теста поэтому другой: каждая
+    /// дочерняя коробка носит тон нарушения — и своя стеклокерамика, и свой
+    /// корпус, а не один общий красный на всех.</summary>
     [Test]
-    public void Cooktop_Invalid_TurnsRedThroughItsChildren_BecauseTheRootCarriesNoRenderer()
+    public void Cooktop_Invalid_TintsEveryChildBox_ThoughTheRootCarriesNoRenderer()
     {
         var go = Spawn(ElementFactory.CreateCooktop("CooktopTint", Vector3.zero));
         var cooktop = go.GetComponent<CooktopElement>()!;
+        Spawn(ElementFactory.CreateCooktop("CooktopTwin", Vector3.zero));
 
         Assert.IsNull(go.GetComponent<MeshRenderer>(),
             "варочная собрана из дочерних коробок: на корне рендерера нет, красить её через корень нечем");
-        var children = go.GetComponentsInChildren<MeshRenderer>();
-        Assert.Greater(children.Length, 0, "дочерние коробки должны существовать, иначе тест пустой");
-        var before = children[0].sharedMaterial;
+        var children = ElementRenderers.BodyOf(cooktop);
+        Assert.Greater(children.Count, 0, "дочерние коробки должны существовать, иначе тест пустой");
+        var before = new Material[children.Count];
+        for (int i = 0; i < children.Count; i++) before[i] = children[i].sharedMaterial;
 
-        _highlighter!.PaintCooktopChildren(cooktop, isValid: false);
+        Assume.That(ConstraintValidator.Validate(PartRegistry.GetAll()).violations.Contains(cooktop),
+            Is.True, "вторая варочная стоит ровно на первой — иначе тонировать нечего");
 
-        Assert.AreNotEqual(before, children[0].sharedMaterial,
-            "без этой ветки варочная не могла бы покраснеть вообще, и наезд её выреза на боковину "
-            + "был бы виден только по самой боковине");
-        foreach (var mr in children)
-            Assert.AreEqual(children[0].sharedMaterial, mr.sharedMaterial,
-                "красным становятся ВСЕ дочерние коробки, а не первая попавшаяся");
+        _highlighter!.ApplyForElement(cooktop);
+
+        for (int i = 0; i < children.Count; i++)
+        {
+            if (before[i] == null) continue;
+            Assert.AreNotEqual(before[i], children[i].sharedMaterial,
+                "без обхода детей наезд выреза варочной на боковину был бы виден только "
+                + "по самой боковине: " + ElementRenderers.PathOf(cooktop, children[i]));
+            Assert.AreEqual(before[i], ValidityTint.OwnOf(children[i].sharedMaterial),
+                "тон обязан помнить СВОЙ источник порендерно — иначе снятие нарушения "
+                + "вернёт чужой материал: " + ElementRenderers.PathOf(cooktop, children[i]));
+        }
     }
 }

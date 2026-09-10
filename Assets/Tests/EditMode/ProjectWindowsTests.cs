@@ -4,8 +4,10 @@ using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
-/// <summary>Положение окон проекта, факт «открыто/закрыто» и тумблеры вида
-/// (тонировка, свет) живут в файле проекта.</summary>
+/// <summary>Положение окон проекта, факт «открыто/закрыто» и тумблер вида
+/// (свет) живут в файле проекта. Тонировки среди них больше нет: кнопка
+/// «Тонировка» и её ключ <c>tintEnabled</c> удалены — тон валидности не
+/// настройка пользователя, а индикатор, и гасит его только фоторежим.</summary>
 public class ProjectWindowsTests
 {
     /// <summary>Минимальное окно: RectTransform + видимость, без всего UI.</summary>
@@ -48,7 +50,6 @@ public class ProjectWindowsTests
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
 
-        ElementHighlighter.TintEnabled = true;
         LightSourceElement.SetGlobalOn(true);
     }
 
@@ -143,7 +144,6 @@ public class ProjectWindowsTests
     public void WindowsAndViewToggles_RoundTripThroughProjectFile()
     {
         var window = CreateWindow("dayNight", new Vector2(-10, -60), 272);
-        ElementHighlighter.TintEnabled = false;
         LightSourceElement.SetGlobalOn(false);
 
         var data = SaveLoadManager.CaptureScene(new List<KitchenElement>());
@@ -152,13 +152,11 @@ public class ProjectWindowsTests
         // Состояние в приложении сбито — восстановление обязано вернуть его из файла.
         window.SetVisible(false);
         window.WindowRect!.anchoredPosition = Vector2.zero;
-        ElementHighlighter.TintEnabled = true;
         LightSourceElement.SetGlobalOn(true);
 
         var restored = SaveLoadManager.Deserialize(json);
         SaveLoadManager.RestoreScene(restored!);
 
-        Assert.IsFalse(ElementHighlighter.TintEnabled, "тонировка");
         Assert.IsFalse(LightSourceElement.GlobalOn, "свет");
         Assert.IsTrue(window.IsVisible, "окно снова открыто");
         Assert.AreEqual(new Vector2(-10, -60), window.WindowRect!.anchoredPosition);
@@ -169,12 +167,11 @@ public class ProjectWindowsTests
     {
         var window = CreateWindow("specification", new Vector2(3, 4), 640);
 
-        // Файл старого формата: полей windows/tintEnabled/lightsOn в JSON нет.
+        // Файл старого формата: полей windows/lightsOn в JSON нет.
         var restored = SaveLoadManager.Deserialize("{\"version\":" + AppConstants.SAVE_FORMAT_VERSION + "}");
 
         Assert.IsNotNull(restored);
         Assert.AreEqual(0, restored!.windows.Length);
-        Assert.IsTrue(restored.tintEnabled, "дефолт приложения — тонировка включена");
         Assert.IsTrue(restored.lightsOn, "дефолт приложения — свет включён");
 
         SaveLoadManager.RestoreScene(restored);

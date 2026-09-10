@@ -109,7 +109,7 @@ public class SaveValidationTests
     /// <summary>Загрузка сейва переписывает ГЛОБАЛЬНОЕ состояние целиком: блок
     /// настроек (KitchenSettings — синглтон-ассет, включая ObjectsVisible /
     /// HideLightSources), режим ручек (ResizeHandleManager.Mode) и статики
-    /// LightSourceElement.GlobalOn и ElementHighlighter.TintEnabled — RestoreScene
+    /// LightSourceElement.GlobalOn — RestoreScene
     /// выставляет их из файла проекта. Точечного сохранения пары флагов мало: в
     /// полном прогоне это роняло SceneVisibilityTests, SettingsPanelUITests, а
     /// тонировка утекала в эталоны SnapshotTests. Снимаем и возвращаем всё

@@ -84,7 +84,6 @@ public class ProjectLoadPerfTests
         var hlGo = new GameObject("ElementHighlighter");
         var hl = hlGo.AddComponent<ElementHighlighter>();
         ElementHighlighter.Instance = hl;
-        hl.CreateMaterials();
         int refreshesBefore = hl.RefreshCount;
 
         var deserialize = Stopwatch.StartNew();
@@ -153,7 +152,6 @@ public class ProjectLoadPerfTests
             + $"{perElementRefreshes} обновлений подсветки\n"
             + $"[LoadPerf] только цикл создания        {spawnOnly.ElapsedMilliseconds} мс\n"
             + $"[LoadPerf] цикл создания без мешей     {spawnNoMesh.ElapsedMilliseconds} мс\n"
-            + $"[LoadPerf] материалы подсветки готовы: {hl.MaterialsReady}\n"
             + $"[LoadPerf] один Validate               {oneValidate.Elapsed.TotalMilliseconds:F1} мс\n"
             + $"[LoadPerf] один EdgeSubstrate.SyncScene {oneSync.Elapsed.TotalMilliseconds:F1} мс\n"
             + $"[LoadPerf] один RefreshHighlights      {oneRefresh.Elapsed.TotalMilliseconds:F1} мс");

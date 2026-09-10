@@ -12,23 +12,19 @@ using KitchenDesigner.Core.Analysis;
 /// Общая оснастка КАДРОВЫХ тестов — тех, чей смысл в том, чтобы показать, как
 /// элемент ВЫГЛЯДИТ.
 ///
-/// Зачем она появилась. <c>ElementHighlighter.TintEnabled</c> по умолчанию
-/// <c>true</c>, и валидный элемент без пользовательского декора красится
-/// <c>_validMaterial</c> — бледно-зелёным с эмиссией; невалидный красится
-/// розовым <c>_invalidMaterial</c>. То есть изометрические кадры никогда не
-/// показывали собственный материал ни одного элемента: у части он был зелёный,
-/// у части розовый, и ни хрома, ни дуба, ни белой эмали на снимках не было.
-/// Индикатор валидации — это не то, ради чего кадр снимают, поэтому в кадровых
-/// тестах тон выключается ровно так же, как это делает фоторежим
-/// (<c>PhotoMode.Enter</c>: запомнить, выключить, обновить подсветку;
-/// <c>PhotoMode.Exit</c>: вернуть прежнее).
+/// Зачем она появилась. <c>ElementHighlighter.ViolationTintVisible</c> по умолчанию
+/// <c>true</c>, и элемент с нарушением подмешивает к своему цвету красное
+/// (<c>ValidityTint</c>). Индикатор валидации — это не то, ради чего кадр
+/// снимают, поэтому в кадровых тестах тон выключается ровно так же, как это
+/// делает фоторежим (<c>PhotoMode.Enter</c>: выключить, обновить подсветку;
+/// <c>PhotoMode.Exit</c>: вернуть).
 ///
 /// Выключение живёт в ОДНОМ месте — <see cref="CaptureFramePng"/>, — и не
-/// раньше: <c>Bootstrap</c> в <c>[UnitySetUp]</c> восстанавливает проект, а
-/// <c>SceneRestorer</c> присваивает <c>TintEnabled</c> из файла. Значение,
-/// выставленное до него, было бы молча перетёрто.
+/// раньше: <c>Bootstrap</c> в <c>[UnitySetUp]</c> восстанавливает проект и
+/// перекрашивает сцену. Значение, выставленное до него, дало бы кадр, снятый
+/// до перекраски.
 ///
-/// Возврат в <c>[TearDown]</c> обязателен: <c>TintEnabled</c> — глобальный
+/// Возврат в <c>[TearDown]</c> обязателен: <c>ViolationTintVisible</c> — глобальный
 /// статик, а <c>conventions/SERIALIZATION.md</c> требует, чтобы набор,
 /// прогнанный в одиночку, и он же в полном прогоне давали один результат.
 ///
@@ -45,13 +41,13 @@ public abstract class ElementFrameTests
     private const string CollisionCodePrefix = "COL-";
 
     private bool _tintTaken;
-    private bool _tintWas;
+    private bool _violationTintWas;
 
     [TearDown]
     public void RestoreValidationTint()
     {
         if (!_tintTaken) return;
-        ElementHighlighter.TintEnabled = _tintWas;
+        ElementHighlighter.ViolationTintVisible = _violationTintWas;
         _tintTaken = false;
     }
 
@@ -145,12 +141,12 @@ public abstract class ElementFrameTests
     {
         if (!_tintTaken)
         {
-            _tintWas = ElementHighlighter.TintEnabled;
+            _violationTintWas = ElementHighlighter.ViolationTintVisible;
             _tintTaken = true;
         }
-        if (!ElementHighlighter.TintEnabled) return;
+        if (!ElementHighlighter.ViolationTintVisible) return;
 
-        ElementHighlighter.TintEnabled = false;
+        ElementHighlighter.ViolationTintVisible = false;
         if (ElementHighlighter.Instance != null)
             ElementHighlighter.Instance.RefreshHighlights();
     }
@@ -164,7 +160,7 @@ public abstract class ElementFrameTests
 /// прожил бы до первого нового кадра, поэтому здесь сторожится не список, а
 /// КОНСТРУКЦИЯ: тон выключается и вопрос валидатору задаётся в одной и той же
 /// функции <c>ElementFrameTests.CaptureFramePng</c>, а наследники не имеют
-/// права ни снимать пиксели сами, ни трогать <c>TintEnabled</c>. Тогда «кадр
+/// права ни снимать пиксели сами, ни трогать <c>ViolationTintVisible</c>. Тогда «кадр
 /// без проверки» невозможно написать: чтобы кадр показывал материал, набор
 /// обязан пройти через оснастку, а внутри неё проверка безусловна.
 /// </summary>
@@ -239,7 +235,7 @@ public class ElementFrameCoverageTests
     {
         var offenders = new List<string>();
         foreach (var suite in FrameSuites())
-            if (SourceOf(suite).Contains("TintEnabled"))
+            if (SourceOf(suite).Contains("ViolationTintVisible"))
                 offenders.Add(suite.Name);
 
         Assert.IsEmpty(offenders,

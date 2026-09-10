@@ -96,7 +96,7 @@ off, and restores it in `TearDown`. Skip the base and your suite photographs the
 INDICATOR instead of the material — which is what every iso frame did for months, showing a
 green tint for a valid element and a pink one for an invalid one, and the real chrome, oak or
 enamel never once. `ElementFrameCoverageTests` enforces this: no suite may read pixels itself
-or touch `TintEnabled`, and it proves it found the suites before trusting an empty result.
+or touch `ViolationTintVisible`, and it proves it found the suites before trusting an empty result.
 
 **Pattern:**
 ```csharp

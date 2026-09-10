@@ -43,7 +43,6 @@ namespace KitchenDesigner.Core
 
             data.settings = KitchenSettings.Instance.ToData();
 
-            data.tintEnabled = ElementHighlighter.TintEnabled;
             data.lightsOn = LightSourceElement.GlobalOn;
             data.musicTrack = Audio.MusicState.Track;
             data.musicVolumePct = Audio.MusicState.VolumePct;

@@ -25,7 +25,6 @@ namespace KitchenDesigner.Core
 
         public KitchenSettingsData? settings = null;
 
-        public bool tintEnabled = true;
         public bool lightsOn = true;
 
         public int musicTrack = 0;

@@ -112,7 +112,7 @@ public class LoweredWallOpeningFrameTests
     private static readonly Vector3Int WindowDims = new Vector3Int(900, 1200, 100);
 
     private KitchenSettingsData? _settingsBackup;
-    private bool _tintWas;
+    private bool _violationTintWas;
     private GameObject? _bootstrap;
     private GameObject? _mainCamera;
     private readonly List<GameObject> _spawned = new List<GameObject>();
@@ -165,14 +165,14 @@ public class LoweredWallOpeningFrameTests
             settings.NormalView.hideOpeningsOnLoweredWalls = false;
         }
 
-        _tintWas = ElementHighlighter.TintEnabled;
-        ElementHighlighter.TintEnabled = false;
+        _violationTintWas = ElementHighlighter.ViolationTintVisible;
+        ElementHighlighter.ViolationTintVisible = false;
     }
 
     [UnityTearDown]
     public IEnumerator TearDown()
     {
-        ElementHighlighter.TintEnabled = _tintWas;
+        ElementHighlighter.ViolationTintVisible = _violationTintWas;
 
         foreach (var go in _spawned)
             if (go != null) Object.Destroy(go);

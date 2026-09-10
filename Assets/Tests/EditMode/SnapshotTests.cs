@@ -87,7 +87,7 @@ public class SnapshotTests
         // RestoreScene из файла проекта, а грузит его SnapMutationTests (живой
         // docs/example.save.json). Стоит десктопу сохранить проект с выключенной
         // тонировкой — и эталоны здесь краснеют по причине, к ним не относящейся.
-        ElementHighlighter.TintEnabled = true;
+        ElementHighlighter.ViolationTintVisible = true;
     }
 
     // ── helpers ─────────────────────────────────────────────────────────

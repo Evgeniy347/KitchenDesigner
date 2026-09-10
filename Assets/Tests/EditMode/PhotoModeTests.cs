@@ -637,27 +637,27 @@ public class PhotoModeLifecycleTests
     {
         var s = KitchenSettings.Instance;
         var before = s.ToData();
-        bool tintBefore = ElementHighlighter.TintEnabled;
+        bool tintBefore = ElementHighlighter.ViolationTintVisible;
         try
         {
             s.PhotoCeiling = true;
-            ElementHighlighter.TintEnabled = true;
+            ElementHighlighter.ViolationTintVisible = true;
 
             PhotoMode.SetActive(true);
             Assert.IsTrue(PhotoQualityController.IsApplied, "вход поднимает качество картинки");
-            Assert.IsFalse(ElementHighlighter.TintEnabled, "валидационный тон в кадре не нужен");
+            Assert.IsFalse(ElementHighlighter.ViolationTintVisible, "валидационный тон в кадре не нужен");
 
             PhotoMode.SetActive(false);
 
             Assert.IsFalse(PhotoQualityController.IsApplied,
                 "рабочий режим лёгкий: всё тяжёлое обязано откатиться полностью, а не остаться висеть");
             Assert.IsFalse(CeilingBuilder.Exists, "временный потолок уходит вместе с режимом");
-            Assert.IsTrue(ElementHighlighter.TintEnabled, "прежнее состояние тона возвращается");
+            Assert.IsTrue(ElementHighlighter.ViolationTintVisible, "выход из фоторежима возвращает тон валидности");
         }
         finally
         {
             EditModeManager.SetMode(EditMode.Normal);
-            ElementHighlighter.TintEnabled = tintBefore;
+            ElementHighlighter.ViolationTintVisible = tintBefore;
             s.ApplyFrom(before);
         }
     }

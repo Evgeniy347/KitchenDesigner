@@ -12,8 +12,6 @@ namespace KitchenDesigner.Core
 
         public static event Action? Changed;
 
-        private static bool _prevTintEnabled;
-
         public static bool ResolveTransparent(bool elementTransparent) =>
             ResolveTransparent(elementTransparent, Active);
 
@@ -35,8 +33,8 @@ namespace KitchenDesigner.Core
                 SelectionManager.Instance.DeselectAll();
             else
                 Debug.LogWarning("PhotoMode.Enter: SelectionManager.Instance is null — cannot clear the selection highlight before entering Photo mode.");
-            _prevTintEnabled = ElementHighlighter.TintEnabled;
-            ElementHighlighter.TintEnabled = false;
+
+            ElementHighlighter.ViolationTintVisible = false;
             RefreshHighlights();
             ApplySceneOverFinalMaterials();
         }
@@ -55,7 +53,7 @@ namespace KitchenDesigner.Core
             PhotoQualityController.Restore();
             PhotoShadowCasters.Restore();
             CeilingBuilder.Clear();
-            ElementHighlighter.TintEnabled = _prevTintEnabled;
+            ElementHighlighter.ViolationTintVisible = true;
             RefreshHighlights();
         }
 

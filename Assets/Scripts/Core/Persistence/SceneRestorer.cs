@@ -73,7 +73,6 @@ namespace KitchenDesigner.Core
             if (data.settings != null)
                 KitchenSettings.Instance.ApplyFrom(data.settings);
 
-            ElementHighlighter.TintEnabled = data.tintEnabled;
             LightSourceElement.SetGlobalOn(data.lightsOn);
             Audio.MusicState.Track = data.musicTrack;
             Audio.MusicState.VolumePct = data.musicVolumePct;

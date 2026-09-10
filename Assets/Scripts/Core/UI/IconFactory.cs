@@ -15,7 +15,7 @@ namespace KitchenDesigner.Core.UI
         private static Sprite? _caretUp, _caretDown;
         private static Sprite? _ruler, _bulb, _sun, _eyedropper, _crosshair;
         private static Sprite? _note, _play, _pause, _trackNext, _trackPrev;
-        private static Sprite? _findIssue, _document, _sceneTree, _book, _resizeHandles, _moveHandles, _tintDrop;
+        private static Sprite? _findIssue, _document, _sceneTree, _book, _resizeHandles, _moveHandles;
         private static Sprite? _shelf, _facade, _drawer, _furniture, _appliance, _faucet, _room;
         private static Sprite? _search, _tileStub;
         private static Sprite? _dockExpanded, _dockRail;
@@ -47,7 +47,6 @@ namespace KitchenDesigner.Core.UI
         public static Sprite Book => _book ??= BuildBook();
         public static Sprite ResizeHandles => _resizeHandles ??= BuildResizeHandles();
         public static Sprite MoveHandles => _moveHandles ??= BuildMoveHandles();
-        public static Sprite TintDrop => _tintDrop ??= BuildTintDrop();
         public static Sprite Shelf => _shelf ??= BuildShelf();
         public static Sprite Facade => _facade ??= BuildFacade();
         public static Sprite Drawer => _drawer ??= BuildDrawer();
@@ -217,22 +216,6 @@ namespace KitchenDesigner.Core.UI
             Disc(px, 32, 32, 5, Ink2);
             return Finish(px);
         }
-
-        private static Sprite BuildTintDrop()
-        {
-            var px = NewCanvas();
-            DrawTintDropBody(px);
-            DrawTintDropGloss(px);
-            return Finish(px);
-        }
-
-        private static void DrawTintDropBody(Color32[] px)
-        {
-            TriangleUp(px, 32, 30, 50, 5, Ink);
-            Disc(px, 32, 24, 15, Ink);
-        }
-
-        private static void DrawTintDropGloss(Color32[] px) => Disc(px, 26, 20, 3, Ink2);
 
         private static Sprite BuildShelf()
         {
