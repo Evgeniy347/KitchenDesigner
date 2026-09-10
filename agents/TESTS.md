@@ -221,6 +221,15 @@ generators that are SUPPOSED to picture the real kitchen (`SnapMutationTests`,
 name a part of the user's scene only when the scene is frozen — on the live file, name
 nothing and assert nothing.
 
+
+**`Copy-Item` сохраняет время источника, и MSBuild считает восстановленный файл неизменившимся.**
+После откатки мутации из бэкапа `dotnet test` собрал СТАРУЮ dll и показал те же красные, что и
+мутация, — «откат не помог» читается как настоящий дефект и стоит целого ложного диагноза.
+Восстанавливай исходник через `git show HEAD:path` либо обновляй время
+(`$_.LastWriteTime = Get-Date`). Тот же капкан уже записан для снапшот-эталонов
+(`Move-Item` тоже сохраняет время), но там цена — неверная дата файла, а здесь — неверный вывод
+о продукте.
+
 ## Iterating on ONE test class
 
 Use the gateway with a filter — **~11 s against ~167 s** for the whole suite. Filtering now
