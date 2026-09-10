@@ -5,6 +5,7 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Tests.Geometry;
 
 /// <summary>Дефект D5. Профайлер сливал показания маркеров в `Update`, а треть маркеров
 /// работает в `LateUpdate`: `WallManager.LateUpdate`, `SceneChangeTracker.Poll`,
