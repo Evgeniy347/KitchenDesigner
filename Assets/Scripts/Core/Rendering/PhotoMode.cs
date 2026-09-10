@@ -41,13 +41,13 @@ namespace KitchenDesigner.Core
             ApplySceneOverFinalMaterials();
         }
 
-        private static void CloseToolsThatDrawOverlays()
+        internal static void CloseToolsThatDrawOverlays()
         {
             MeasureMode.SetActive(false);
             LightPickMode.SetSource(null);
             EyedropperMode.SetActive(false);
             TextureOverlayHandles.End();
-            SideHighlighter.Hide();
+            HoverPreviewGate.HideAll();
         }
 
         internal static void Exit()
