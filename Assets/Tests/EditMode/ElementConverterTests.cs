@@ -714,6 +714,11 @@ public class ElementConverterTests
         // Контракт IOpenable: производные от состояния дверцы, а не хранимые
         // поля — после конвертации их считает новый класс.
         "IsClosedPose", "OpenActionLabel",
+        // Дверь, замершая у своего же предела (обгон препятствия): чистая функция
+        // от _openTarget/_doorProgress и кэша SafeProgress (IParksAtAGestureLimit,
+        // будильник для сна Update) — после конвертации в другой тип её считает
+        // новый класс, а не переносит.
+        "IsParkedAtALimit",
         // Пассажирский режим ставится хостом при пристёгивании, в сейв не пишется:
         // после загрузки SaveLoadManagerInstance зовёт OnAttachedFacadeChanged,
         // который и восстанавливает флаг.

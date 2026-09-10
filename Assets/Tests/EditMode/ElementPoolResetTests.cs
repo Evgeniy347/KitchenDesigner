@@ -131,6 +131,8 @@ public class ElementPoolResetTests
         ["IsClosedPose"] = "производное от IsOpen и DoorProgress",
         ["IsDoorClosed"] = "производное от IsOpen и DoorProgress",
         ["OpenActionLabel"] = "подпись пункта меню, считается из IsOpen и хозяина фасада",
+        ["IsParkedAtALimit"] = "дверь замерла у предела препятствия — чистая функция от "
+            + "_openTarget/_doorProgress и кэша SafeProgress (IParksAtAGestureLimit)",
         ["ClosedPosition"] = "производное от transform и IsDoorClosed",
         ["ClosedRotation"] = "производное от transform и IsDoorClosed",
         ["Body"] = "readonly struct FacadeBody, целиком выводится из DimensionsMM, Gaps и позы "
