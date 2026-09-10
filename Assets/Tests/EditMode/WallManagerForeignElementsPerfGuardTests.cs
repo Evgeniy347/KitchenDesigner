@@ -7,7 +7,9 @@ using KitchenDesigner.Core;
 /// отсеивая не-стены через GetComponent&lt;Wall&gt;()». Для кухни (десятки элементов) это
 /// копейки, для дома на сотни элементов — уже нет: каждый кадр каждая деталь платит за
 /// GetComponent, который почти всегда возвращает null. Фикс завёл отдельный реестр стен
-/// (<see cref="PartRegistry.Walls"/>, наполняемый Wall.Awake/OnDestroy) — LateUpdate теперь
+/// (<see cref="PartRegistry.Walls"/>, наполняемый тем же `PartRegistry.Register`, что и сам
+/// элемент, — см. урок про пул в ElementFactorySandboxTests: учёт обязан происходить на месте
+/// вызова, а не только в Awake) — LateUpdate теперь
 /// обходит только его. Считаем СОБЫТИЯ (<see cref="WallManager.TakeWallsVisited"/>) — сколько
 /// элементов реально попало в тело цикла, а не миллисекунды, которые плавают от машины к
 /// машине.</summary>
@@ -133,5 +135,28 @@ public class WallManagerForeignElementsPerfGuardTests
 
         Assert.AreEqual(0, PartRegistry.Walls.Count,
             "OnDestroy стены обязан снять её с реестра стен немедленно");
+    }
+
+    /// <summary>Стена, УДАЛЁННАЯ пользователем, не разрушается: удаление гасит объект и
+    /// снимает элемент с учёта, а сам GameObject живёт, пока его держит undo, — значит
+    /// `Wall.OnDestroy` не вызывается вовсе. Реестр стен, наполняемый только из Awake/OnDestroy,
+    /// копил бы такие стены до конца сеанса, и `WallManager.LateUpdate` платил бы за каждую
+    /// каждый кадр. Поэтому учёт стены обязан следовать за учётом её элемента, а не за
+    /// временем жизни GameObject.</summary>
+    [Test]
+    public void DeletedWall_LeavesTheWallRegistry_AndComesBackOnUndo()
+    {
+        var wallElement = MakeWall("Стена", new Vector3Int(2000, 2500, 100), new Vector3(0, 1.25f, 0));
+        Assert.AreEqual(1, PartRegistry.Walls.Count, "предусловие: стена в реестре");
+
+        SceneMembership.Leave(wallElement.gameObject, wallElement);
+
+        Assert.AreEqual(0, PartRegistry.Walls.Count,
+            "удалённая стена осталась в реестре стен — WallManager будет обходить её каждый кадр");
+
+        SceneMembership.Return(wallElement.gameObject, wallElement);
+
+        Assert.AreEqual(1, PartRegistry.Walls.Count,
+            "отмена удаления вернула стену в сцену — реестр стен обязан увидеть её снова");
     }
 }

@@ -30,6 +30,7 @@ namespace KitchenDesigner.Core
             PurgeDead();
             if (element == null || _all.Contains(element)) return;
             _all.Add(element);
+            RegisterWall(element.GetComponent<Wall>());
             SceneChangeTracker.NoteMembershipChanged();
             SceneRevision.Bump();
             SceneVisibilityManager.Invalidate();
@@ -38,6 +39,7 @@ namespace KitchenDesigner.Core
         public void Unregister(KitchenElement element)
         {
             if (!_all.Remove(element)) return;
+            if (element != null) UnregisterWall(element.GetComponent<Wall>());
             SceneChangeTracker.NoteMembershipChanged();
             SceneRevision.Bump();
             SceneVisibilityManager.Invalidate();
@@ -77,6 +79,7 @@ namespace KitchenDesigner.Core
 
         public void UnregisterWall(Wall wall)
         {
+            if (wall == null) return;
             _walls.Remove(wall);
         }
 
