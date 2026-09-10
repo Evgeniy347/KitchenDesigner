@@ -53,6 +53,12 @@ public class UiElementTypeLadderTests
         ("ShowerColumnFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
         ("ToiletFieldsEditor.cs", "видимость строк: один редактор на оба варианта унитаза — "
             + "строка «Высота чаши» у них общая, а «Высота панели» только у подвесного"),
+        ("PipeEndsDiagram.cs", "делегат Paint для общей двери PipePortHover: конструктор берёт "
+            + "только Func<PipeElement?>, поэтому owner здесь не может быть ничем другим — "
+            + "проверка не ветвит на несколько типов, а лишь возвращает callback к типу, "
+            + "стёртому общим сигнатурой Action<KitchenElement,int>"),
+        ("PipeFittingPortsDiagram.cs", "тот же делегат Paint для той же общей двери "
+            + "PipePortHover, конструктор берёт только Func<PipeFittingElement?>"),
     };
 
     /// <summary>Формы вопроса «какого ты типа». Базовый <c>KitchenElement</c>
