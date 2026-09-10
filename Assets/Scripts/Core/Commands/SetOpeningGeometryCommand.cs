@@ -18,9 +18,10 @@ namespace KitchenDesigner.Core
             _opening = opening; _beforeDims = opening.DimensionsMM; _afterDims = dims;
             _beforePos = opening.transform.position; _afterPos = pos;
             _beforeRot = opening.transform.rotation; _afterWall = wall;
-            _beforeWall = opening is WindowElement w ? w.AttachedWallName
-                : opening is DoorElement d ? d.AttachedWallName : "";
+            _beforeWall = Opening?.AttachedWallName ?? "";
         }
+
+        private WallOpeningElement? Opening => _opening as WallOpeningElement;
 
         public void Execute()
         {
@@ -37,14 +38,9 @@ namespace KitchenDesigner.Core
             foreach (var e in PartRegistry.GetAll())
                 if (e != null && e.PartName == _beforeWall) { oldWall = e.GetComponent<Wall>(); break; }
             if (oldWall != null) Attach(oldWall);
-            else if (_opening is WindowElement w) w.UnregisterFromWall();
-            else if (_opening is DoorElement d) d.UnregisterFromWall();
+            else Opening?.ReleaseHostCutout();
         }
 
-        private void Attach(Wall wall)
-        {
-            if (_opening is WindowElement w) w.AttachToWall(wall);
-            else if (_opening is DoorElement d) d.AttachToWall(wall);
-        }
+        private void Attach(Wall wall) => Opening?.AttachToWall(wall);
     }
 }

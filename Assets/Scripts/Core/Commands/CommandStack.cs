@@ -136,25 +136,9 @@ namespace KitchenDesigner.Core
             _element = created?.GetComponent<KitchenElement>();
         }
 
-        public void Execute()
-        {
-            if (_created == null) return;
-            _created.SetActive(true);
-            if (_element != null)
-                PartRegistry.Register(_element);
-            if (_element is WindowElement window) window.SnapToWall();
-            else if (_element is DoorElement door) door.SnapToWall();
-        }
+        public void Execute() => SceneMembership.Return(_created, _element);
 
-        public void Undo()
-        {
-            if (_created == null) return;
-            if (_element is WindowElement window) window.UnregisterFromWall();
-            else if (_element is DoorElement door) door.UnregisterFromWall();
-            _created.SetActive(false);
-            if (_element != null)
-                PartRegistry.Unregister(_element);
-        }
+        public void Undo() => SceneMembership.Leave(_created, _element);
     }
 
     public class DeleteCommand : IUndoCommand
@@ -174,27 +158,13 @@ namespace KitchenDesigner.Core
             _siblingIndex = deleted != null ? deleted.transform.GetSiblingIndex() : 0;
         }
 
-        public void Execute()
-        {
-            if (_deleted == null) return;
-            if (_element is WindowElement win)
-                win.UnregisterFromWall();
-            if (_element is DoorElement door)
-                door.UnregisterFromWall();
-            _deleted.SetActive(false);
-            if (_element != null)
-                PartRegistry.Unregister(_element);
-        }
+        public void Execute() => SceneMembership.Leave(_deleted, _element);
 
         public void Undo()
         {
             if (_deleted == null) return;
-            _deleted.SetActive(true);
-            if (_element != null)
-                PartRegistry.Register(_element);
             _deleted.transform.SetSiblingIndex(_siblingIndex);
-            if (_element is WindowElement window) window.SnapToWall();
-            else if (_element is DoorElement door) door.SnapToWall();
+            SceneMembership.Return(_deleted, _element);
         }
     }
 

@@ -70,8 +70,7 @@ namespace KitchenDesigner.Core
             var snap = SnapSystem.TrySnap(pending, others, pos);
             pending.transform.position = WorldBounds.Clamp(snap.snapped ? snap.position : pos);
 
-            if (pending is CooktopElement cooktop) cooktop.SnapToPart();
-            if (pending is SinkElement sink) sink.SnapToPart();
+            if (pending is PartCutoutElement cutout) cutout.SnapToPart();
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.ApplyForElement(pending);
@@ -98,14 +97,7 @@ namespace KitchenDesigner.Core
             _pendingGo = null;
             if (go == null) return;
 
-            var el = go.GetComponent<KitchenElement>();
-            if (el is WindowElement win) win.UnregisterFromWall();
-            if (el is DoorElement door) door.UnregisterFromWall();
-            if (el is SinkElement sink) sink.UnregisterFromPart();
-            if (el is CooktopElement cooktop) cooktop.UnregisterFromPart();
-
-            go.SetActive(false);
-            if (el != null) PartRegistry.Unregister(el);
+            SceneMembership.Leave(go, go.GetComponent<KitchenElement>());
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
