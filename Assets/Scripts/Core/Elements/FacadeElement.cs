@@ -103,6 +103,7 @@ namespace KitchenDesigner.Core
         private Quaternion _closedRot = Quaternion.identity;
         private float _cachedSafeProgress = 1f;
         private int _obstacleCheckRevision = -1;
+        private System.Collections.Generic.List<KitchenElement>? _ridersOfThisGesture;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private static int _activeStepDoors;
@@ -130,7 +131,7 @@ namespace KitchenDesigner.Core
         public DoorMode Mode
         {
             get => _mode;
-            set { _mode = value; if (_doorProgress > 0f) ApplyDoor(); }
+            set { _mode = value; _obstacleCheckRevision = -1; if (_doorProgress > 0f) ApplyDoor(); }
         }
 
         public void CycleMode() => Mode = FacadeDoor.Next(_mode);
@@ -156,6 +157,7 @@ namespace KitchenDesigner.Core
             }
             if (open && _doorProgress <= 0f) CaptureClosed();
             _openTarget = open;
+            _obstacleCheckRevision = -1;
             if (!Mathf.Approximately(_doorProgress, open ? 1f : 0f))
             {
                 enabled = true;
@@ -184,6 +186,7 @@ namespace KitchenDesigner.Core
         {
             _closedPos = transform.position;
             _closedRot = transform.rotation;
+            _obstacleCheckRevision = -1;
         }
 
         internal void CaptureClosedPose() => CaptureClosed();
@@ -220,25 +223,41 @@ namespace KitchenDesigner.Core
 
             if (_openTarget && _doorProgress > 0f)
             {
-                var exclude = new System.Collections.Generic.List<KitchenElement>();
-                foreach (var el in PartRegistry.All)
-                {
-                    if (el is DrawerElement d && d.AttachedFacadeName == PartName)
-                    {
-                        exclude.Add(d);
-                        var pair = d.FindPaired();
-                        if (pair != null) exclude.Add(pair);
-                        break;
-                    }
-                }
-                exclude.AddRange(AttachLinks.Descendants(this));
-                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
-                _cachedSafeProgress = safe;
-                _obstacleCheckRevision = SceneRevision.Version;
+                float safe = SafeProgress();
                 if (safe < _doorProgress) _doorProgress = Mathf.Max(_doorProgress - step, safe);
             }
 
-            if (!Mathf.Approximately(_doorProgress, progressBeforeThisFrame)) ApplyDoor();
+            if (!Mathf.Approximately(_doorProgress, progressBeforeThisFrame))
+            {
+                ApplyDoor();
+                SceneChangeTracker.NoteSelfAnimated(this);
+                if (_ridersOfThisGesture != null)
+                    for (int i = 0; i < _ridersOfThisGesture.Count; i++)
+                        SceneChangeTracker.NoteSelfAnimated(_ridersOfThisGesture[i]);
+            }
+        }
+
+        private float SafeProgress()
+        {
+            if (_obstacleCheckRevision == SceneRevision.Version) return _cachedSafeProgress;
+
+            var exclude = new System.Collections.Generic.List<KitchenElement>();
+            foreach (var el in PartRegistry.All)
+            {
+                if (el is DrawerElement d && d.AttachedFacadeName == PartName)
+                {
+                    exclude.Add(d);
+                    var pair = d.FindPaired();
+                    if (pair != null) exclude.Add(pair);
+                    break;
+                }
+            }
+            _ridersOfThisGesture = AttachLinks.Descendants(this);
+            exclude.AddRange(_ridersOfThisGesture);
+
+            _cachedSafeProgress = OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
+            _obstacleCheckRevision = SceneRevision.Version;
+            return _cachedSafeProgress;
         }
 
         private bool StillBlockedAtLastKnownSafeProgress() =>
@@ -257,6 +276,7 @@ namespace KitchenDesigner.Core
         internal void ShiftClosedPose(Vector3 worldDelta)
         {
             _closedPos += worldDelta;
+            _obstacleCheckRevision = -1;
             ApplyDoor();
         }
 
@@ -270,6 +290,7 @@ namespace KitchenDesigner.Core
             _closedRot = Quaternion.identity;
             _cachedSafeProgress = 1f;
             _obstacleCheckRevision = -1;
+            _ridersOfThisGesture = null;
             enabled = true;
         }
     }

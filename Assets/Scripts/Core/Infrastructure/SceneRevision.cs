@@ -4,7 +4,13 @@ namespace KitchenDesigner.Core
     {
         public static int Version { get; private set; }
 
-        public static void Bump() => Version++;
+        public static void Bump()
+        {
+            Version++;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            _bumps++;
+#endif
+        }
 
         public static bool Changed(ref int seen)
         {
@@ -13,6 +19,23 @@ namespace KitchenDesigner.Core
             return true;
         }
 
-        public static void Reset() => Version = 0;
+        public static void Reset()
+        {
+            Version = 0;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            _bumps = 0;
+#endif
+        }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private static int _bumps;
+
+        public static int TakeBumps()
+        {
+            int n = _bumps;
+            _bumps = 0;
+            return n;
+        }
+#endif
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -5,10 +6,16 @@ namespace KitchenDesigner.Core
     public class SceneChangeTracker : MonoBehaviour
     {
         private static bool _membershipChanged;
+        private static readonly HashSet<KitchenElement> _selfAnimated = new HashSet<KitchenElement>();
 
         private void LateUpdate() => Poll();
 
         public static void NoteMembershipChanged() => _membershipChanged = true;
+
+        public static void NoteSelfAnimated(KitchenElement element)
+        {
+            if (element != null) _selfAnimated.Add(element);
+        }
 
         public static void Poll()
         {
@@ -23,11 +30,14 @@ namespace KitchenDesigner.Core
 
                 var t = e.transform;
                 if (!t.hasChanged) continue;
+                if (_selfAnimated.Contains(e)) continue;
 
                 t.hasChanged = false;
                 e.BumpPoseVersion();
                 any = true;
             }
+
+            _selfAnimated.Clear();
 
             if (any) SettleDerivedLinks();
         }

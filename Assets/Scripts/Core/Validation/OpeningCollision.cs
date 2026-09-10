@@ -25,6 +25,17 @@ namespace KitchenDesigner.Core
 
         public const float MinBlockingPenetrationMm = 1f;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private static int _buildObstacleCalls;
+
+        public static int TakeBuildObstacleCalls()
+        {
+            int n = _buildObstacleCalls;
+            _buildObstacleCalls = 0;
+            return n;
+        }
+#endif
+
         public static float FindMaxProgress(
             KitchenElement self,
             OpenBoxes getBoxes,
@@ -83,6 +94,9 @@ namespace KitchenDesigner.Core
             List<OpeningObstacle> into)
         {
             using var _ = PerfMarkers.OpeningBuildObstacles.Auto();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            _buildObstacleCalls++;
+#endif
 
             float touchGap = TouchGapMm * AppConstants.MM_TO_UNITS;
             var pieces = new List<Bounds>();
