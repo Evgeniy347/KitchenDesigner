@@ -341,5 +341,4 @@ public class PipeEndFittingsTests : SnapTestBase
         Assert.AreEqual(abovePositionBefore, above.transform.position,
             "сосед остаётся ровно там, где стоял");
     }
-
 }
