@@ -185,17 +185,21 @@ namespace KitchenDesigner.Core
             {
                 if (e == null) continue;
 
-                bool selfQuantified = false;
-                foreach (var quantifies in e.GetComponents<IQuantifies>())
-                {
-                    selfQuantified = true;
-                    foreach (var item in quantifies.GetSpecItems(all))
-                        AccumulateItem(groups, order, item);
-                }
-                if (selfQuantified) continue;
+                var quantifiers = e.GetComponents<IQuantifies>();
+                var route = ElementSpecCoverage.Taken(ElementSpecCoverage.Declared(
+                    quantifiers.Length > 0, e is ISpecificationParts, e.IsFlatBoardElement));
 
-                if (e is ISpecificationParts composite)
+                if (route == SpecRoute.Quantifies)
                 {
+                    foreach (var quantifies in quantifiers)
+                        foreach (var item in quantifies.GetSpecItems(all))
+                            AccumulateItem(groups, order, item);
+                    continue;
+                }
+
+                if (route == SpecRoute.SpecificationParts)
+                {
+                    var composite = (ISpecificationParts)e;
                     string decor = MaterialCatalog.Get(e.MaterialId).displayName;
                     foreach (var part in composite.GetSpecParts())
                         Accumulate(groups, order, $"{e.PartName}·{part.suffix}",
@@ -203,7 +207,7 @@ namespace KitchenDesigner.Core
                     continue;
                 }
 
-                if (!e.IsFlatBoardElement) continue;
+                if (route != SpecRoute.FlatBoard) continue;
 
                 string boardDecor = MaterialCatalog.Get(e.MaterialId).displayName;
                 var edges = EdgeColumns.For(e, all);

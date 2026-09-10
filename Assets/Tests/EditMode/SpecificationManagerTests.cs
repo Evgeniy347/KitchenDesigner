@@ -271,7 +271,7 @@ public class SpecificationManagerTests
     /// позже; здесь только скелет). Ни один продакшн-класс не меняется.</summary>
     private class FakeConcreteBlock : KitchenElement, IQuantifies
     {
-        public string Section = "Фундамент";
+        public string Section = SpecSections.Foundation;
         public string ItemName = "Бетон B20";
         public float VolumeM3 = 1f;
 
@@ -368,7 +368,7 @@ public class SpecificationManagerTests
         // метрами — она тоже «Мебель», но другой unit; ищем ИМЕННО строку доски (м²), а не
         // первую по счёту (после сортировки по материалу первой может лечь кромка).
         var line = result.lines.Single(l => l.unit == SpecUnit.AreaM2);
-        Assert.AreEqual("Мебель", line.section);
+        Assert.AreEqual(SpecSections.Furniture, line.section);
         Assert.AreEqual(SpecUnit.AreaM2, line.unit);
 
         Object.DestroyImmediate(board.gameObject);
@@ -383,7 +383,7 @@ public class SpecificationManagerTests
 
         Assert.AreEqual(1, result.lines.Count);
         Assert.AreEqual(SpecUnit.VolumeM3, result.lines[0].unit);
-        Assert.AreEqual("Фундамент", result.lines[0].section);
+        Assert.AreEqual(SpecSections.Foundation, result.lines[0].section);
         Assert.AreEqual(1.2f, result.lines[0].qtyTotal, 0.0001f);
 
         Object.DestroyImmediate(block.gameObject);
@@ -484,7 +484,7 @@ public class SpecificationManagerTests
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {
-            yield return new SpecItem("Стены", "Кладка", "Кирпич", SpecUnit.LinearMeters, LengthM);
+            yield return new SpecItem(SpecSections.Walls, "Кладка", "Кирпич", SpecUnit.LinearMeters, LengthM);
         }
     }
 
@@ -652,7 +652,7 @@ public class SpecificationManagerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
 
-        var line = result.lines.Single(l => l.unit == SpecUnit.LinearMeters && l.section == "Сантехника");
+        var line = result.lines.Single(l => l.unit == SpecUnit.LinearMeters && l.section == SpecSections.Plumbing);
         Assert.AreEqual(1.0f, line.qtyTotal, 0.0001f, "0,6 + 0,4 = 1,0 м; не 2×0,6");
         Assert.AreEqual(2, line.count);
         Assert.IsFalse(line.hasDims, "у трубы нет геометрии WxHxD, только ДН и длина");
@@ -691,7 +691,7 @@ public class SpecificationManagerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
 
-        var line = result.lines.Single(l => l.unit == SpecUnit.Pieces && l.section == "Сантехника");
+        var line = result.lines.Single(l => l.unit == SpecUnit.Pieces && l.section == SpecSections.Plumbing);
         Assert.AreEqual(2, line.count);
         Assert.AreEqual(2f, line.qtyTotal, 0.0001f);
         Assert.IsFalse(line.hasDims);

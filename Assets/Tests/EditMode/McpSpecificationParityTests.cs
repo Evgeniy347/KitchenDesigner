@@ -119,7 +119,7 @@ public class McpSpecificationParityTests : McpTestFixture
 
         var pipeLine = mcpLines.Single(l => l!["name"]!.Value<string>()!.StartsWith("Труба"));
         Assert.IsFalse(pipeLine!["hasDims"]!.Value<bool>(), "у трубы нет физических габаритов - dims не значат 0x0x0");
-        Assert.AreEqual("Сантехника", pipeLine["section"]!.Value<string>());
+        Assert.AreEqual(SpecSections.Plumbing, pipeLine["section"]!.Value<string>());
         Assert.AreEqual("м", pipeLine["unit"]!.Value<string>());
         Assert.AreEqual(1.234f, pipeLine["qtyTotalInUnit"]!.Value<float>(), 1e-3f);
 

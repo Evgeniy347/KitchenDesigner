@@ -1,40 +1,103 @@
 using NUnit.Framework;
 using KitchenDesigner.Core;
 
-/// <summary>Правило само по себе — «любой из четырёх путей засчитывает покрытие,
-/// ни одного пути нет ⇒ не засчитывает». Каждая ветка проверена отдельно, и есть
-/// противоположный вход: все флаги ложны.</summary>
+/// <summary>Правило маршрутизации в ведомость само по себе, без сцены.
+///
+/// Раньше здесь проверялась дизъюнкция «любой из четырёх путей засчитывает покрытие». Она
+/// отвечала на вопрос «объявлен ли интерфейс», а нужен был другой: «вышла ли строка». Тип
+/// с <c>GetSpecItems</c> из одного <c>yield break</c> проходил ту проверку и исчезал из
+/// ведомости; и она же прятала ВТОРОЙ объявленный маршрут, который
+/// <c>SpecificationManager.Build</c> не берёт никогда.
+///
+/// Теперь правило состоит из трёх частей: какие маршруты ОБЪЯВЛЕНЫ, какой из них Build
+/// БЕРЁТ (первый по своему порядку), и какие после этого МЕРТВЫ. Порядок здесь и порядок в
+/// <c>SpecificationManager.Build</c> — один и тот же код, а не два описания одного
+/// контура.</summary>
 public class ElementSpecCoverageTests
 {
     [Test]
-    public void IsCovered_SelfQuantifies_ReportsCovered()
-        => Assert.IsTrue(ElementSpecCoverage.IsCovered(
-            selfQuantifies: true, isSpecificationParts: false,
-            isFlatBoardElement: false, isKnownExclusion: false));
+    public void Declared_NoPath_IsNone()
+        => Assert.AreEqual(SpecRoute.None, ElementSpecCoverage.Declared(false, false, false));
 
     [Test]
-    public void IsCovered_IsSpecificationParts_ReportsCovered()
-        => Assert.IsTrue(ElementSpecCoverage.IsCovered(
-            selfQuantifies: false, isSpecificationParts: true,
-            isFlatBoardElement: false, isKnownExclusion: false));
+    public void Declared_AllThreePaths_KeepsAllThreeFlags()
+        => Assert.AreEqual(
+            SpecRoute.Quantifies | SpecRoute.SpecificationParts | SpecRoute.FlatBoard,
+            ElementSpecCoverage.Declared(true, true, true));
 
     [Test]
-    public void IsCovered_IsFlatBoardElement_ReportsCovered()
-        => Assert.IsTrue(ElementSpecCoverage.IsCovered(
-            selfQuantifies: false, isSpecificationParts: false,
-            isFlatBoardElement: true, isKnownExclusion: false));
+    public void Declared_FlatBoardOnly_IsFlatBoardAlone()
+        => Assert.AreEqual(SpecRoute.FlatBoard, ElementSpecCoverage.Declared(false, false, true));
 
     [Test]
-    public void IsCovered_KnownExclusion_ReportsCovered()
-        => Assert.IsTrue(ElementSpecCoverage.IsCovered(
-            selfQuantifies: false, isSpecificationParts: false,
-            isFlatBoardElement: false, isKnownExclusion: true));
+    public void Declared_SpecificationPartsOnly_IsSpecificationPartsAlone()
+        => Assert.AreEqual(SpecRoute.SpecificationParts,
+            ElementSpecCoverage.Declared(false, true, false));
 
-    /// <summary>Противоположный вход: ни одного пути покрытия и не исключение —
-    /// именно так десять радиусных полок пропали из ведомости молча.</summary>
     [Test]
-    public void IsCovered_NoPathAndNotExcluded_ReportsNotCovered()
-        => Assert.IsFalse(ElementSpecCoverage.IsCovered(
-            selfQuantifies: false, isSpecificationParts: false,
-            isFlatBoardElement: false, isKnownExclusion: false));
+    public void Taken_Nothing_IsNone()
+        => Assert.AreEqual(SpecRoute.None, ElementSpecCoverage.Taken(SpecRoute.None));
+
+    [Test]
+    public void Taken_SingleRoute_IsThatRoute()
+    {
+        Assert.AreEqual(SpecRoute.Quantifies, ElementSpecCoverage.Taken(SpecRoute.Quantifies));
+        Assert.AreEqual(SpecRoute.SpecificationParts,
+            ElementSpecCoverage.Taken(SpecRoute.SpecificationParts));
+        Assert.AreEqual(SpecRoute.FlatBoard, ElementSpecCoverage.Taken(SpecRoute.FlatBoard));
+    }
+
+    /// <summary>Порядок Build: IQuantifies выигрывает у обоих остальных, ISpecificationParts —
+    /// у листовой детали. Это тот самый молчаливый проигрыш, ради которого правило и вынесено
+    /// в отдельную функцию: «петли, шт» у фасада убьют его строку по площади ЛДСП.</summary>
+    [Test]
+    public void Taken_QuantifiesWinsOverEverythingElse()
+    {
+        Assert.AreEqual(SpecRoute.Quantifies,
+            ElementSpecCoverage.Taken(SpecRoute.Quantifies | SpecRoute.FlatBoard));
+        Assert.AreEqual(SpecRoute.Quantifies,
+            ElementSpecCoverage.Taken(SpecRoute.Quantifies | SpecRoute.SpecificationParts));
+        Assert.AreEqual(SpecRoute.Quantifies, ElementSpecCoverage.Taken(
+            SpecRoute.Quantifies | SpecRoute.SpecificationParts | SpecRoute.FlatBoard));
+    }
+
+    [Test]
+    public void Taken_SpecificationPartsWinsOverFlatBoard()
+        => Assert.AreEqual(SpecRoute.SpecificationParts,
+            ElementSpecCoverage.Taken(SpecRoute.SpecificationParts | SpecRoute.FlatBoard));
+
+    [Test]
+    public void Dead_SingleRoute_IsNone()
+    {
+        Assert.AreEqual(SpecRoute.None, ElementSpecCoverage.Dead(SpecRoute.Quantifies));
+        Assert.AreEqual(SpecRoute.None, ElementSpecCoverage.Dead(SpecRoute.SpecificationParts));
+        Assert.AreEqual(SpecRoute.None, ElementSpecCoverage.Dead(SpecRoute.FlatBoard));
+        Assert.AreEqual(SpecRoute.None, ElementSpecCoverage.Dead(SpecRoute.None));
+    }
+
+    [Test]
+    public void Dead_TwoRoutes_NamesTheOneBuildNeverWalks()
+    {
+        Assert.AreEqual(SpecRoute.FlatBoard,
+            ElementSpecCoverage.Dead(SpecRoute.Quantifies | SpecRoute.FlatBoard));
+        Assert.AreEqual(SpecRoute.FlatBoard,
+            ElementSpecCoverage.Dead(SpecRoute.SpecificationParts | SpecRoute.FlatBoard));
+        Assert.AreEqual(SpecRoute.SpecificationParts | SpecRoute.FlatBoard,
+            ElementSpecCoverage.Dead(SpecRoute.Quantifies | SpecRoute.SpecificationParts
+                | SpecRoute.FlatBoard));
+    }
+
+    /// <summary>Покрытие меряется ВЫДАННЫМИ строками, а не объявленным интерфейсом: ноль строк
+    /// — не покрыт, чем бы тип себя ни объявил. Именно так десять радиусных полок и весь
+    /// список покупных изделий пропали из ведомости молча.</summary>
+    [Test]
+    public void IsCovered_ZeroLines_ReportsNotCovered()
+        => Assert.IsFalse(ElementSpecCoverage.IsCovered(0));
+
+    [Test]
+    public void IsCovered_AtLeastOneLine_ReportsCovered()
+    {
+        Assert.IsTrue(ElementSpecCoverage.IsCovered(1));
+        Assert.IsTrue(ElementSpecCoverage.IsCovered(7));
+    }
 }
