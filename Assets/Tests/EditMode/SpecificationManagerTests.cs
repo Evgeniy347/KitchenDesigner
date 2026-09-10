@@ -476,9 +476,9 @@ public class SpecificationManagerTests
         Object.DestroyImmediate(b.gameObject);
     }
 
-    // ── Приёмка возврата: §2 IQuantifies спрашивается у КОМПОНЕНТОВ, стена не блокирует ──
+    // ── Приёмка возврата: §2 IQuantifies спрашивается у КОМПОНЕНТОВ, а не у типа ──
 
-    private class FakeWallQuantities : MonoBehaviour, IQuantifies
+    private class FakeSiblingQuantities : MonoBehaviour, IQuantifies
     {
         public float LengthM = 1f;
 
@@ -488,47 +488,55 @@ public class SpecificationManagerTests
         }
     }
 
-    /// <summary>D12: хозяин со стеной (`Wall`) когда-то выбрасывался из спецификации ДО проверки
-    /// `IQuantifies` — компонент вроде `WallQuantities` не смог бы подключиться никогда. Теперь
-    /// `Build` спрашивает КОМПОНЕНТЫ элемента, а не тип, и наличие `Wall` на хозяине этому не
-    /// мешает.</summary>
+    /// <summary>D12: маршрут в ведомость выбирается по КОМПОНЕНТАМ элемента, а не по его типу.
+    /// Хозяин со стеной (`Wall`) когда-то выбрасывался ДО проверки `IQuantifies`, и счётчик
+    /// соседним компонентом не смог бы подключиться никогда.
+    ///
+    /// Проба здесь — ДОСКООБРАЗНЫЙ хозяин 800×400×18: его тип (`KitchenElement`) не отличим от
+    /// обычной доски, и `Build`, смотрящий на тип, выдал бы ему «м² пласти». Соседний
+    /// `IQuantifies` обязан этот маршрут перебить. Стену в этой паре больше не используем: с
+    /// d58fb3ca `Wall` САМ реализует `IQuantifies`, поэтому «стена без счётчика» стала
+    /// невозможным входом, а стена со счётчиком считается в
+    /// <see cref="WallSpecificationTests"/>, где проверяют её собственные числа.</summary>
     [Test]
-    public void Build_WallHostWithQuantifiesComponent_IsCounted()
+    public void Build_QuantifierOnASiblingComponent_BeatsTheBoardRoute()
     {
-        var go = new GameObject("Wall");
-        var element = go.AddComponent<KitchenElement>();
-        element.PartName = "Wall";
-        go.AddComponent<Wall>();
-        var quantifies = go.AddComponent<FakeWallQuantities>();
-        quantifies.LengthM = 3f;
+        var element = CreateElement("Доскообразный хозяин", new Vector3Int(800, 400, 18));
+        element.gameObject.AddComponent<FakeSiblingQuantities>().LengthM = 3f;
 
         var result = SpecificationManager.Build(new List<KitchenElement> { element });
 
-        Assert.AreEqual(1, result.lines.Count, "стена с IQuantifies обязана попасть в спецификацию");
+        Assert.AreEqual(1, result.lines.Count,
+            "строка ровно одна, от соседнего счётчика: маршрут `IQuantifies` делает `continue`, "
+            + "и ни листовая ветка, ни её кромка не запускаются. Получено: "
+            + string.Join(", ", result.lines.Select(l => $"{l.section}/{l.name}/{l.unit}")));
         Assert.AreEqual(SpecUnit.LinearMeters, result.lines[0].unit);
         Assert.AreEqual(3f, result.lines[0].qtyTotal, 0.0001f);
+        Assert.IsFalse(result.lines.Any(l => l.isBoardArea),
+            "ни одной строки «м² пласти»: хозяин доскообразен, но считает себя не как доска");
 
-        Object.DestroyImmediate(go);
+        Object.DestroyImmediate(element.gameObject);
     }
 
-    /// <summary>Стена БЕЗ `IQuantifies` — противоположный вход к предыдущему тесту. Она не должна
-    /// ни попасть в спецификацию, ни (тем более) залипнуть в старую ветку доски ЛДСП — тип
-    /// хозяина совпадает с обычной доской (`KitchenElement`), различает их только `Wall`.</summary>
+    /// <summary>Противоположный вход к предыдущему тесту: ТОТ ЖЕ хозяин, тот же габарит, но без
+    /// соседа-счётчика — и он обязан уйти в листовую ветку и получить «м² пласти». Без этой
+    /// половины первый тест зеленел бы и на `Build`, который вообще не умеет считать доски, то
+    /// есть не отличал бы «счётчик перебил маршрут» от «маршрута доски и не было».</summary>
     [Test]
-    public void Build_WallHostWithoutQuantifiesComponent_IsDropped()
+    public void Build_TheSameHostWithoutTheSibling_FallsBackToTheBoardRoute()
     {
-        var go = new GameObject("Wall");
-        var element = go.AddComponent<KitchenElement>();
-        element.PartName = "Wall";
-        element.DimensionsMM = new Vector3Int(3000, 2700, 100);
-        go.AddComponent<Wall>();
+        var element = CreateElement("Доскообразный хозяин", new Vector3Int(800, 400, 18));
 
         var result = SpecificationManager.Build(new List<KitchenElement> { element });
 
-        Assert.AreEqual(0, result.lines.Count,
-            "стена без IQuantifies не умеет себя посчитать — не должна появиться как доска ЛДСП");
+        var board = result.lines.Single(l => l.isBoardArea);
+        Assert.AreEqual(new Vector3Int(800, 400, 18), board.dimensionsMM);
+        Assert.AreEqual(SpecUnit.AreaM2, board.unit);
+        Assert.AreEqual(SpecSections.Furniture, board.section);
+        Assert.IsFalse(result.lines.Any(l => l.section == SpecSections.Walls),
+            "строке раздела «Стены» взяться неоткуда — соседа-счётчика нет");
 
-        Object.DestroyImmediate(go);
+        Object.DestroyImmediate(element.gameObject);
     }
 
     // ── Приёмка возврата: §3 не-IQuantifies элемент, который не доска, вообще не попадает ──
