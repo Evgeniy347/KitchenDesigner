@@ -591,6 +591,9 @@ namespace KitchenDesigner.Core.UI
 
         private const int ThumbnailsPerFrame = 2;
 
+        internal static readonly Vector2Int ThumbnailPixels = ThumbnailFrame.SizeForTile(
+            SidebarLayout.TileW, SidebarLayout.TileImageH, ThumbnailRenderer.DefaultSize);
+
         private void ProcessThumbnailQueue()
         {
             int budget = ThumbnailsPerFrame;
@@ -606,7 +609,8 @@ namespace KitchenDesigner.Core.UI
 
                 ReleaseThumbnail(tile);
 
-                var texture = ThumbnailRenderer.Render(spawn, ThumbnailRenderer.DefaultSize);
+                var texture = ThumbnailRenderer.Render(spawn,
+                    ThumbnailPixels.x, ThumbnailPixels.y, out _);
                 _ownedTextures.Add(texture);
                 tile.thumb.texture = texture;
                 tile.stub.gameObject.SetActive(false);

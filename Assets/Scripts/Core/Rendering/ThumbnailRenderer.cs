@@ -27,14 +27,19 @@ namespace KitchenDesigner.Core
         private const float ContextFreeMinDistanceUnits = 0.01f;
 
         public static RenderTexture Render(Func<GameObject> spawn, int size = DefaultSize) =>
-            Render(spawn, size, out _);
+            Render(spawn, size, size, out _);
 
         public static RenderTexture Render(Func<GameObject> spawn, int size,
+            out ThumbnailFraming framing) =>
+            Render(spawn, size, size, out framing);
+
+        public static RenderTexture Render(Func<GameObject> spawn, int widthPx, int heightPx,
             out ThumbnailFraming framing)
         {
             if (spawn == null) throw new ArgumentNullException(nameof(spawn));
 
-            var rt = new RenderTexture(size, size, 16, RenderTextureFormat.ARGB32);
+            var rt = new RenderTexture(Mathf.Max(ThumbnailFrame.MinPixels, widthPx),
+                Mathf.Max(ThumbnailFrame.MinPixels, heightPx), 16, RenderTextureFormat.ARGB32);
             framing = default;
 
             using (ElementFactorySandbox.Enter())
@@ -59,7 +64,6 @@ namespace KitchenDesigner.Core
                     cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
                     cam.orthographic = false;
                     cam.fieldOfView = Fov;
-                    cam.aspect = 1f;
                     cam.nearClipPlane = 0.01f;
                     cam.farClipPlane = 100f;
                     cam.cullingMask = 1 << IsolationLayer;
@@ -69,6 +73,7 @@ namespace KitchenDesigner.Core
                     camGo.transform.LookAt(bounds.center);
 
                     cam.targetTexture = rt;
+                    cam.aspect = ThumbnailFrame.Aspect(rt.width, rt.height);
                     cam.Render();
                     cam.targetTexture = null;
 

@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.UI;
 
 public class ThumbnailRendererTests
 {
@@ -97,6 +98,90 @@ public class ThumbnailRendererTests
 
         UnityEngine.Object.DestroyImmediate(tex);
         return (float)painted / pixels.Length;
+    }
+
+    private static RectInt PaintedBox(RenderTexture rt)
+    {
+        var tex = new Texture2D(rt.width, rt.height, TextureFormat.RGBA32, false);
+        var prevActive = RenderTexture.active;
+        RenderTexture.active = rt;
+        tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+        tex.Apply();
+        RenderTexture.active = prevActive;
+
+        var pixels = tex.GetPixels32();
+        int minX = rt.width, minY = rt.height, maxX = -1, maxY = -1;
+        for (int y = 0; y < rt.height; y++)
+        for (int x = 0; x < rt.width; x++)
+        {
+            if (pixels[y * rt.width + x].a <= 8) continue;
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+        }
+
+        UnityEngine.Object.DestroyImmediate(tex);
+        Assert.GreaterOrEqual(maxX, 0, "в кадре не закрашено ни одного пикселя — "
+            + "мерить пропорции отпечатка нечем");
+        return new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
+    }
+
+    // Сенсор круглости. Дефект: «все миниатюры сжаты по вертикали, источник
+    // света выглядит не шаром, а яйцом на боку». Шар — единственный элемент,
+    // у которого отпечаток ОБЯЗАН быть одинаковым по ширине и высоте при любой
+    // форме цели, поэтому он и стоит сторожем: пока камера получает aspect
+    // ровно той RenderTexture, в которую рисует, отпечаток остаётся кругом.
+    // Проверяются ДВЕ цели, а не одна: на квадратной цели дефект не виден
+    // вовсе (aspect = 1 угадывается сам), и тест на ней был бы зелёным против
+    // кода, который врёт на любой другой форме — той самой, что нужна плитке
+    // каталога 96×56.
+    [UnityTest]
+    public IEnumerator LightSourceSphere_LeavesARoundImprint_OnASquareAndOnATileShapedTarget()
+    {
+        var tile = ThumbnailFrame.SizeForTile(SidebarLayout.TileW, SidebarLayout.TileImageH,
+            ThumbnailRenderer.DefaultSize);
+        var targets = new[]
+        {
+            new Vector2Int(ThumbnailRenderer.DefaultSize, ThumbnailRenderer.DefaultSize),
+            tile,
+        };
+
+        foreach (var target in targets)
+        {
+            var rt = ThumbnailRenderer.Render(
+                () => ElementFactory.CreateLightSource("LightSourceRoundness", Vector3.zero),
+                target.x, target.y, out _);
+
+            var box = PaintedBox(rt);
+            Assert.AreEqual(box.height, box.width, 2,
+                "шар источника света обязан оставлять на картинке круг: отпечаток "
+                + box.width + "×" + box.height + " пикселей на цели " + target.x + "×"
+                + target.y + " — это яйцо на боку. Расхождение пропорций камеры и цели "
+                + "(aspect против сторон RenderTexture) сплющивает КАЖДУЮ миниатюру, "
+                + "просто на шаре это видно, а на шкафу нет");
+
+            UnityEngine.Object.DestroyImmediate(rt);
+            yield return null;
+        }
+    }
+
+    // Второй конец той же связки. Круглость шара проверяется на кадре, но
+    // сжимала картинку ПЛИТКА: RawImage не умеет preserveAspect и растягивает
+    // текстуру на свой прямоугольник как есть. Значит каталог обязан заказывать
+    // текстуру формы своей плитки — иначе шар снова станет яйцом, а кадр при
+    // этом останется честным и сенсор круглости промолчит.
+    [Test]
+    public void SidebarTile_AsksForATextureShapedLikeItsOwnRect_NotASquareOne()
+    {
+        Assert.AreNotEqual(SidebarUI.ThumbnailPixels.y, SidebarUI.ThumbnailPixels.x,
+            "плитка каталога не квадратная (96×56), поэтому и текстура под неё "
+            + "не имеет права быть квадратной: RawImage растянет её без пощады");
+        Assert.AreEqual(SidebarLayout.TileW / SidebarLayout.TileImageH,
+            ThumbnailFrame.Aspect(SidebarUI.ThumbnailPixels.x, SidebarUI.ThumbnailPixels.y),
+            0.02f,
+            "пропорция заказанной текстуры совпадает с пропорцией картинки плитки — "
+            + "на разницу между ними RawImage и сплющивает изображение");
     }
 
     // Сенсор кадрирования: печатает по каждому типу габарит Renderer.bounds,
