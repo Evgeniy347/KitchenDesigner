@@ -14,125 +14,33 @@ using KitchenDesigner.Core.UI;
 /// оживает — тест молча уходил бы в `if (UIManager.Instance == null) return`
 /// и зеленел на пустом.
 ///
-/// Дыра тут не теоретическая, и она НЕ ловится сверкой
-/// <see cref="McpUiCreationParityTests"/>: та сверяет, какие методы фабрики
-/// зовёт ElementSpawner, и остаётся зелёной, пока сам файл не изменился. Ветка,
-/// зовущая не тот метод, потерянный вид объекта, перепутанный порядок
-/// проверок — всё это происходит ВЫШЕ, между каталогом и ElementSpawner, и обе
-/// сверки этого не видят.
+/// С 2026-09-10 <see cref="IElementSpawns"/> сжался до ОДНОГО метода
+/// (<c>Spawn(SidebarCatalog.Item)</c>) — раньше здесь стоял подставной
+/// приёмник (Recorder), который реализовывал ~30 методов интерфейса и просто
+/// запоминал, какой из них позвали. Это давало чёрный ящик ДО фабрики: видно
+/// было, какой Spawn* метод выбрал маршрутизатор, но не то, что тот метод
+/// реально построил. Одного метода Spawn(Item) для такого наблюдения уже не
+/// хватает — ветвление теперь целиком внутри самой реализации, и подставной
+/// приёмник его не видит вовсе.
+///
+/// Поэтому сенсор здесь сменился на РЕЗУЛЬТАТ: тесты гоняют настоящий
+/// <see cref="SidebarThumbnailSpawns"/> (тот же путь, что миниатюра плитки —
+/// без сцены, без камеры, без PlacementController, см. ElementFactorySandbox)
+/// и разглядывают получившийся компонент — его конкретный тип и то, что можно
+/// снять с него рефлексией. Это даже строже прежнего: раньше проверялось, что
+/// маршрутизатор ПОЗВАЛ правильный метод с правильными аргументами; теперь —
+/// что фабрика и правда ПОСТРОИЛА то, что обещано.
 ///
 /// Ловушка, ради которой тест написан, была живой раньше: у сборного фасада
 /// истинны были ОБА булевых признака каталога — и «сборный», и «фасад», —
-/// потому что isFacade отвечал «да» на оба вида. Старое ветвление работало
-/// только потому, что ветка сборного стояла в тексте ВЫШЕ ветки щитового.
-/// Перестановка двух соседних строк молча превращала все сборные фасады в
-/// щитовые, и ни один тест не краснел. Признаки is* с тех пор удалены (см.
-/// SidebarCatalog.Item), но тест остаётся стражем формы — маршрутизатор
-/// обязан ветвиться по единственному kind, а не собирать заново булевы
-/// флаги поверх него.
-///
-/// Поверхность снимается ЗАПИСЬЮ, а не созданием: подставной приёмник
-/// запоминает, какой метод его позвали и с чем. Поэтому тест не строит мешей,
-/// не нуждается ни в камере, ни в сцене и идёт мгновенно.</summary>
+/// потому что isFacade отвечал «да» на оба вида. Признаки is* с тех пор
+/// удалены (см. SidebarCatalog.Item), но тест остаётся стражем формы:
+/// сборный фасад обязан рождать другой КОМПОНЕНТ (AssembledFacadeElement), а
+/// не читать флаг молча.</summary>
 public class SidebarSpawnRouterTests
 {
-    /// <summary>Приёмник, который ничего не создаёт, а только записывает вызов.
-    /// Реализует тот же интерфейс, что и настоящий ElementSpawner, поэтому
-    /// новый метод спауна нельзя добавить, забыв про этот тест: файл перестанет
-    /// компилироваться.</summary>
-    private sealed class Recorder : IElementSpawns
-    {
-        public string Method = "";
-        public readonly List<object> Args = new List<object>();
-
-        private void Put(string method, params object[] args)
-        {
-            Assert.IsEmpty(Method,
-                "маршрутизатор позвал спаун дважды за одно нажатие: кнопка сайдбара обязана "
-                + "заводить ровно один объект. Было " + Method + ", стало " + method);
-            Method = method;
-            Args.AddRange(args);
-        }
-
-        public void SpawnBoard(Vector3Int dims, string name) => Put(nameof(SpawnBoard), dims, name);
-
-        public void SpawnFacade(Vector3Int dims, string name) =>
-            Put(nameof(SpawnFacade), dims, name);
-
-        public void SpawnAssembledFacade(Vector3Int dims, string name, AssembledFill fill) =>
-            Put(nameof(SpawnAssembledFacade), dims, name, fill);
-
-        public void SpawnWall(Vector3Int dims, string name) => Put(nameof(SpawnWall), dims, name);
-
-        public void SpawnDrawer(string drawerType, int length, string colorName, int width,
-            string name, DrawerSystem system) =>
-            Put(nameof(SpawnDrawer), drawerType, length, colorName, width, name, system);
-
-        public void SpawnTable(Vector3Int dims, string name) => Put(nameof(SpawnTable), dims, name);
-
-        public void SpawnRadiusTable(Vector3Int dims, string name) => Put(nameof(SpawnRadiusTable), dims, name);
-
-        public void SpawnStool(Vector3Int dims, string name) => Put(nameof(SpawnStool), dims, name);
-
-        public void SpawnChair(Vector3Int dims, string name) => Put(nameof(SpawnChair), dims, name);
-
-        public void SpawnSofa(Vector3Int dims, string name) => Put(nameof(SpawnSofa), dims, name);
-
-        public void SpawnBed(Vector3Int dims, string name) => Put(nameof(SpawnBed), dims, name);
-
-        public void SpawnPouffe(Vector3Int dims, string name) => Put(nameof(SpawnPouffe), dims, name);
-
-        public void SpawnToilet(string name) => Put(nameof(SpawnToilet), name);
-
-        public void SpawnWallHungToilet(string name) => Put(nameof(SpawnWallHungToilet), name);
-
-        public void SpawnBathtub(Vector3Int dims, string name) => Put(nameof(SpawnBathtub), dims, name);
-
-        public void SpawnBathMixer(string name) => Put(nameof(SpawnBathMixer), name);
-
-        public void SpawnShowerColumn(string name) => Put(nameof(SpawnShowerColumn), name);
-
-        public void SpawnSocket(string name) => Put(nameof(SpawnSocket), name);
-
-        public void SpawnLightSwitch(string name) => Put(nameof(SpawnLightSwitch), name);
-
-        public void SpawnPanel(Vector3Int dims, string name) =>
-            Put(nameof(SpawnPanel), dims, name);
-
-        public void SpawnRadialShelf(Vector3Int dims, string name) => Put(nameof(SpawnRadialShelf), dims, name);
-
-        public void SpawnWindow(Vector3Int dims, string name) => Put(nameof(SpawnWindow), dims, name);
-
-        public void SpawnDoor(Vector3Int dims, string name) => Put(nameof(SpawnDoor), dims, name);
-
-        public void SpawnScrewLeg(string name) => Put(nameof(SpawnScrewLeg), name);
-
-        public void SpawnPillar(int midHeightMM, string name) => Put(nameof(SpawnPillar), midHeightMM, name);
-
-        public void SpawnPipe(string name) => Put(nameof(SpawnPipe), name);
-
-        public void SpawnPipeFitting(PipeNodeKind kind, string name) =>
-            Put(nameof(SpawnPipeFitting), kind, name);
-
-        public void SpawnFloor(Vector3Int dims, string name) => Put(nameof(SpawnFloor), dims, name);
-
-        public void SpawnSink(string name) => Put(nameof(SpawnSink), name);
-
-        public void SpawnCooktop(string name, string model) => Put(nameof(SpawnCooktop), name, model);
-
-        public void SpawnOven(string name) => Put(nameof(SpawnOven), name);
-
-        public void SpawnDishwasher(string name) => Put(nameof(SpawnDishwasher), name);
-
-        public void SpawnLightSource(string name) => Put(nameof(SpawnLightSource), name);
-    }
-
-    private static Recorder Route(SidebarCatalog.Item item)
-    {
-        var recorder = new Recorder();
-        SidebarSpawnRouter.Route(item, recorder);
-        return recorder;
-    }
+    [TearDown]
+    public void TearDown() => PartRegistry.Clear();
 
     private static IEnumerable<SidebarCatalog.Item> CatalogItems() =>
         SidebarCatalog.Build().SelectMany(g => g.items);
@@ -140,30 +48,95 @@ public class SidebarSpawnRouterTests
     private static SidebarCatalog.Item ItemOfKind(SidebarItemKind kind) =>
         new SidebarCatalog.Item("Проба", new Vector3Int(600, 400, 18), kind);
 
+    /// <summary>Заводит item настоящим спауном миниатюры (тот же switch, что
+    /// у ElementSpawner, но без постановки на сцену) и возвращает получившийся
+    /// KitchenElement. Вызывающий обязан уничтожить объект сам.</summary>
+    private static KitchenElement SpawnReal(SidebarCatalog.Item item)
+    {
+        GameObject go;
+        using (ElementFactorySandbox.Enter())
+            go = SidebarThumbnailSpawns.For(item)!();
+
+        var element = go.GetComponent<KitchenElement>();
+        Assert.IsNotNull(element,
+            "спаун «" + item.name + "» (" + item.kind + ") вернул объект без KitchenElement");
+        return element!;
+    }
+
+    private static void Destroy(KitchenElement element)
+    {
+        element.PrepareForDestruction();
+        UnityEngine.Object.DestroyImmediate(element.gameObject);
+    }
+
+    /// <summary>Снимок наблюдаемого поведения спауна: конкретный тип
+    /// компонента (различает вид И пресеты, которые меняют класс — сборный
+    /// фасад, каждый фитинг трубы) плюс габариты плюс всё, что можно снять
+    /// рефлексией с самого компонента без побочных эффектов — простые
+    /// публичные свойства (строка/число/булево/перечисление). Это и есть
+    /// сенсор «поле каталога дошло до готового объекта», а не только «дошло
+    /// до вызова фабрики»: последнее уже проверяла Recorder-версия этого
+    /// файла, и её обманул бы перепутанный порядок аргументов внутри самой
+    /// реализации IElementSpawns — сюда он уже не спрячется.</summary>
+    private static string Signature(SidebarCatalog.Item item)
+    {
+        var element = SpawnReal(item);
+        try
+        {
+            var parts = new List<string> { element.GetType().Name, element.DimensionsMM.ToString() };
+
+            foreach (var prop in element.GetType()
+                         .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                         .Where(p => p.GetIndexParameters().Length == 0 && p.CanRead)
+                         .OrderBy(p => p.Name, StringComparer.Ordinal))
+            {
+                if (!(prop.PropertyType.IsEnum || prop.PropertyType == typeof(string)
+                      || prop.PropertyType == typeof(bool) || prop.PropertyType == typeof(int)
+                      || prop.PropertyType == typeof(float))) continue;
+                object? value;
+                try { value = prop.GetValue(element); }
+                catch { continue; }
+                parts.Add(prop.Name + "=" + (value?.ToString() ?? "null"));
+            }
+            return string.Join("|", parts);
+        }
+        finally
+        {
+            Destroy(element);
+        }
+    }
+
     /// <summary>Главная проверка. «Обычная деталь» — единственный вид, который
-    /// маршрутизатор имеет право отдать в SpawnBoard; для всех прочих это
+    /// маршрутизатор имеет право отдать в CreatePart; для всех прочих это
     /// признак того, что ветка не написана и вид провалился в общий случай.
     /// Именно так выглядит забытый объект: кнопка есть, нажатие работает, и
     /// вместо дивана появляется доска.</summary>
     [Test]
     public void EverySidebarItemKind_HasItsOwnBranch_AndDoesNotFallThroughToAPlainBoard()
     {
+        var board = SpawnReal(ItemOfKind(SidebarItemKind.Board));
+        var boardType = board.GetType();
+        Destroy(board);
+
         var fallen = new List<string>();
 
         foreach (SidebarItemKind kind in Enum.GetValues(typeof(SidebarItemKind)))
         {
             if (kind == SidebarItemKind.Board) continue;
-            var recorder = Route(ItemOfKind(kind));
-            if (recorder.Method == nameof(Recorder.SpawnBoard)) fallen.Add(kind.ToString());
+            var element = SpawnReal(ItemOfKind(kind));
+            bool isBoard = element.GetType() == boardType;
+            Destroy(element);
+            if (isBoard) fallen.Add(kind.ToString());
         }
 
         Assert.IsEmpty(fallen,
             McpUiParityRule.Rule
-            + "ЧТО СЛОМАНО: вид объекта есть в SidebarItemKind, но ветки в SidebarSpawnRouter "
-            + "у него нет — нажатие на кнопку сайдбара молча заводит обычную доску вместо "
-            + "объекта. Молчаливый успех: ни ошибки, ни пустоты, просто не то. "
-            + "ЧТО СДЕЛАТЬ: дописать ветку в SidebarSpawnRouter.Route и убедиться, что тот же "
-            + "объект заводится агентом через create_elements. "
+            + "ЧТО СЛОМАНО: вид объекта есть в SidebarItemKind, но ветки в ElementSpawner/"
+            + "SidebarThumbnailSpawns у него нет — нажатие на кнопку сайдбара молча заводит "
+            + "обычную доску вместо объекта. Молчаливый успех: ни ошибки, ни пустоты, просто "
+            + "не то. "
+            + "ЧТО СДЕЛАТЬ: дописать ветку в Spawn(Item) обеих реализаций IElementSpawns и "
+            + "убедиться, что тот же объект заводится агентом через create_elements. "
             + McpUiParityRule.CreationAddresses
             + "Проваливаются в доску: " + string.Join(", ", fallen));
     }
@@ -175,15 +148,18 @@ public class SidebarSpawnRouterTests
     [Test]
     public void EveryButtonTheCatalogOffers_ReachesASpawn()
     {
+        var board = SpawnReal(ItemOfKind(SidebarItemKind.Board));
+        var boardType = board.GetType();
+        Destroy(board);
+
         var silent = new List<string>();
 
         foreach (var item in CatalogItems())
         {
-            var recorder = Route(item);
-            Assert.IsNotEmpty(recorder.Method,
-                "кнопка «" + item.name + "» не позвала ничего — нажатие на неё не делает ровно "
-                + "ничего, и пользователь видит зависшую кнопку");
-            if (item.kind != SidebarItemKind.Board && recorder.Method == nameof(Recorder.SpawnBoard))
+            var element = SpawnReal(item);
+            bool isBoard = element.GetType() == boardType;
+            Destroy(element);
+            if (item.kind != SidebarItemKind.Board && isBoard)
                 silent.Add(item.name + " (" + item.kind + ")");
         }
 
@@ -191,7 +167,7 @@ public class SidebarSpawnRouterTests
             McpUiParityRule.Rule
             + "ЧТО СЛОМАНО: кнопка сайдбара заводит обычную доску вместо объекта, который "
             + "обещает её название. "
-            + "ЧТО СДЕЛАТЬ: дописать ветку в SidebarSpawnRouter.Route. "
+            + "ЧТО СДЕЛАТЬ: дописать ветку в Spawn(Item) обеих реализаций IElementSpawns. "
             + McpUiParityRule.CreationAddresses
             + "Кнопки: " + string.Join(", ", silent));
     }
@@ -205,53 +181,69 @@ public class SidebarSpawnRouterTests
     /// docs/todo_evolution.md §2.1, тот же приём, что уже применён к
     /// фитингам трубы и к системе ящика). Сведение вернуло РОВНО ту форму
     /// ветвления, от которой уходили: `kind == Facade` плюс булев признак
-    /// `facadeAssembled` поверх него. Разница с прежней ловушкой в том, что
-    /// признак теперь ровно один, а не два конкурирующих — но проверить,
-    /// что он всё ещё решает исход, а не молча теряется по дороге (как это
-    /// было с зазорами сборного фасада), обязан именно этот тест.</summary>
+    /// `preset.facadeAssembled` поверх него.</summary>
     [Test]
     public void TheAssembledFacade_StaysAssembled_AndDoesNotDegradeToAPlainFacade()
     {
         var item = ItemOfKind(SidebarItemKind.Facade);
-        item.facadeAssembled = true;
+        item.preset.facadeAssembled = true;
 
-        Assert.AreEqual(nameof(Recorder.SpawnAssembledFacade), Route(item).Method,
-            "сборный фасад (facadeAssembled = true) приехал щитовым — признак из каталога "
-            + "не долетел до маршрутизатора");
+        var element = SpawnReal(item);
+        try
+        {
+            Assert.IsInstanceOf<AssembledFacadeElement>(element,
+                "сборный фасад (preset.facadeAssembled = true) приехал щитовым — признак из "
+                + "каталога не долетел до готового объекта");
+        }
+        finally { Destroy(element); }
     }
 
     /// <summary>Обратный вход к тесту выше: без признака та же самая запись
     /// обязана остаться щитовой. Один тест на «true» ничего не доказывает,
-    /// если маршрутизатор на самом деле всегда зовёт SpawnAssembledFacade —
-    /// нужны оба значения признака, дающие РАЗНЫЕ методы.</summary>
+    /// если фабрика на самом деле всегда строит AssembledFacadeElement —
+    /// нужны оба значения признака, дающие РАЗНЫЕ компоненты.</summary>
     [Test]
     public void ThePlainFacade_DoesNotBecomeAssembled_WhenTheFlagIsFalse()
     {
         var item = ItemOfKind(SidebarItemKind.Facade);
-        item.facadeAssembled = false;
+        item.preset.facadeAssembled = false;
 
-        Assert.AreEqual(nameof(Recorder.SpawnFacade), Route(item).Method,
-            "щитовой фасад (facadeAssembled = false) приехал сборным");
+        var element = SpawnReal(item);
+        try
+        {
+            Assert.IsInstanceOf<FacadeElement>(element, "щитовой фасад обязан быть FacadeElement");
+            Assert.IsNotInstanceOf<AssembledFacadeElement>(element,
+                "щитовой фасад (preset.facadeAssembled = false) приехал сборным");
+        }
+        finally { Destroy(element); }
     }
 
     /// <summary>Аргументы теряются так же тихо, как ветки. У варочной
     /// поверхности несколько моделей, и модель — единственное, что отличает их
-    /// друг от друга: потерянная по дороге, она даёт габариты по умолчанию
-    /// вместо габаритов выбранной модели.</summary>
+    /// друг от друга: потерянная по дороге, она даёт готовый объект без
+    /// модели вместо модели выбранной.</summary>
     [Test]
     public void TheCooktopModel_TravelsFromTheCatalogToTheSpawn()
     {
         var withModel = CatalogItems()
-            .Where(i => i.kind == SidebarItemKind.Cooktop && !string.IsNullOrEmpty(i.applianceModel))
+            .Where(i => i.kind == SidebarItemKind.Cooktop && !string.IsNullOrEmpty(i.preset.applianceModel))
             .ToList();
 
         Assert.IsNotEmpty(withModel,
             "в каталоге нет ни одной варочной с моделью — проверка сторожила бы пустоту");
 
         foreach (var item in withModel)
-            CollectionAssert.Contains(Route(item).Args, item.applianceModel,
-                "модель варочной не доехала от каталога до спауна: кнопка «" + item.name
-                + "» заведёт поверхность с габаритами по умолчанию, а не выбранной модели");
+        {
+            var element = SpawnReal(item);
+            try
+            {
+                Assert.IsInstanceOf<CooktopElement>(element, "варочная обязана быть CooktopElement");
+                Assert.AreEqual(item.preset.applianceModel, ((CooktopElement)element).Model,
+                    "модель варочной не доехала от каталога до готового объекта: кнопка «"
+                    + item.name + "» заведёт поверхность без модели выбранной");
+            }
+            finally { Destroy(element); }
+        }
     }
 
     /// <summary>Ящик отличается от прочих тем, что вид системы едет строкой, а
@@ -263,22 +255,31 @@ public class SidebarSpawnRouterTests
     {
         var movento = CatalogItems()
             .Where(i => i.kind == SidebarItemKind.Drawer
-                        && i.drawerSystem == SidebarCatalog.MoventoDrawerSystem)
+                        && i.preset.drawerSystem == SidebarCatalog.MoventoDrawerSystem)
             .ToList();
 
         Assert.IsNotEmpty(movento,
             "в каталоге нет ни одного ящика Movento — проверка сторожила бы пустоту");
 
         foreach (var item in movento)
-            CollectionAssert.Contains(Route(item).Args, DrawerSystem.Movento,
-                "ящик Movento приехал системой GTV. Строка вида системы в каталоге сверяется с "
-                + "образцом, и опечатка в ней отказа не даёт — даёт другой ящик: " + item.name);
+        {
+            var element = SpawnReal(item);
+            try
+            {
+                Assert.IsInstanceOf<DrawerElement>(element, "ящик обязан быть DrawerElement");
+                Assert.AreEqual(DrawerSystem.Movento, ((DrawerElement)element).System,
+                    "ящик Movento приехал системой GTV. Строка вида системы в каталоге сверяется "
+                    + "с образцом, и опечатка в ней отказа не даёт — даёт другой ящик: "
+                    + item.name);
+            }
+            finally { Destroy(element); }
+        }
     }
 
-    /// <summary>Мутация поля каталога: значение подменяется на заведомо другое
-    /// того же типа. Новый тип поля обязан приехать сюда явно — иначе механизм
-    /// молча перестал бы проверять новое поле, а это ровно тот вид молчания,
-    /// против которого он написан.</summary>
+    /// <summary>Мутация значения поля пресета: значение подменяется на
+    /// заведомо другое того же типа. Новый тип поля обязан приехать сюда
+    /// явно — иначе механизм молча перестал бы проверять новое поле, а это
+    /// ровно тот вид молчания, против которого он написан.</summary>
     private static object? MutatedValue(object? value)
     {
         switch (value)
@@ -295,63 +296,89 @@ public class SidebarSpawnRouterTests
         }
     }
 
-    private static SidebarCatalog.Item WithField(SidebarCatalog.Item item, FieldInfo field,
-        object value)
+    /// <summary>Путь к одному полю: либо прямо на Item (name/dims/kind), либо
+    /// на его единственном вложенном объекте-пресете (preset.*). Рефлексия
+    /// идёт РОВНО на один уровень вглубь — ровно столько, на сколько
+    /// SidebarCatalog.Item сегодня прячет тип-специфичные поля. Новое поле,
+    /// добавленное в SidebarCatalog.Preset, попадает под перебор само, без
+    /// правки этого файла.</summary>
+    private readonly struct FieldPath
     {
-        object boxed = item;
-        field.SetValue(boxed, value);
-        return (SidebarCatalog.Item)boxed;
+        public readonly string Label;
+        private readonly FieldInfo _outer;
+        private readonly FieldInfo? _inner;
+
+        public FieldPath(string label, FieldInfo outer, FieldInfo? inner)
+        {
+            Label = label; _outer = outer; _inner = inner;
+        }
+
+        public object? GetValue(SidebarCatalog.Item item) =>
+            _inner == null ? _outer.GetValue(item) : _inner.GetValue(_outer.GetValue(item));
+
+        public SidebarCatalog.Item With(SidebarCatalog.Item item, object value)
+        {
+            object boxed = item;
+            if (_inner == null) { _outer.SetValue(boxed, value); return (SidebarCatalog.Item)boxed; }
+            object nested = _outer.GetValue(boxed)!;
+            _inner.SetValue(nested, value);
+            _outer.SetValue(boxed, nested);
+            return (SidebarCatalog.Item)boxed;
+        }
     }
 
-    /// <summary>Что именно маршрутизатор передал: метод и все аргументы. Сравнение
-    /// двух таких строк отвечает на единственный вопрос механизма ниже — видно ли
-    /// поле каталога с той стороны вообще.</summary>
-    private static string Signature(SidebarCatalog.Item item)
+    private static bool IsLeafFieldType(Type t) =>
+        t.IsEnum || t == typeof(string) || t == typeof(bool) || t == typeof(int)
+        || t == typeof(Vector3Int);
+
+    private static IEnumerable<FieldPath> ItemFieldPaths()
     {
-        var recorder = Route(item);
-        return recorder.Method + "(" + string.Join(", ",
-            recorder.Args.Select(a => a == null ? "null" : a.ToString() ?? "null")) + ")";
+        foreach (var outer in typeof(SidebarCatalog.Item).GetFields(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (IsLeafFieldType(outer.FieldType))
+            {
+                yield return new FieldPath(outer.Name, outer, null);
+                continue;
+            }
+            foreach (var inner in outer.FieldType.GetFields(BindingFlags.Public | BindingFlags.Instance))
+                yield return new FieldPath(outer.Name + "." + inner.Name, outer, inner);
+        }
     }
 
-    private static FieldInfo[] ItemFields() =>
-        typeof(SidebarCatalog.Item).GetFields(BindingFlags.Public | BindingFlags.Instance);
-
-    /// <summary>Механизм против мёртвого числа в каталоге. Поле Item, которое
-    /// маршрутизатор не передаёт НИ ДЛЯ ОДНОЙ записи, — это настройка, которая
-    /// выглядит настройкой и ни на что не влияет: следующий человек поправит её
-    /// и не поймёт, почему ничего не изменилось.
+    /// <summary>Механизм против мёртвого числа в каталоге. Поле Item (или поле
+    /// его пресета), которое ни для одной записи не меняет наблюдаемый
+    /// результат спауна, — это настройка, которая выглядит настройкой и ни на
+    /// что не влияет: следующий человек поправит её и не поймёт, почему ничего
+    /// не изменилось.
     ///
     /// Так и было: у сборного фасада запись каталога объявляла четыре зазора, а
-    /// SpawnAssembledFacade их не принимал. Проверка одной записи тут не годится —
-    /// щитовой фасад те же зазоры передавал, и «поле живое» было правдой ровно
+    /// спаун их не принимал. Проверка одной записи тут не годится — щитовой
+    /// фасад те же зазоры передавал, и «поле живое» было правдой ровно
     /// наполовину. Поэтому спрашиваем не про запись, а про ПОЛЕ, и спрашиваем
     /// подменой: значение меняется на заведомо другое, и если после этого
-    /// маршрутизатор зовёт ровно то же самое — поле не доезжает никуда.
-    ///
-    /// Перебор идёт рефлексией, поэтому новое поле попадает под проверку само;
-    /// добавить мёртвое число молча больше нельзя.</summary>
+    /// готовый объект не меняется никак — поле не доезжает никуда.</summary>
     [Test]
     public void EveryFieldOfACatalogItem_ReachesTheSpawner()
     {
         var items = CatalogItems().ToList();
-        var fields = ItemFields();
+        var paths = ItemFieldPaths().ToList();
         var unknownType = new List<string>();
         var dead = new List<string>();
 
-        foreach (var field in fields)
+        foreach (var path in paths)
         {
             bool observed = false;
             foreach (var item in items)
             {
-                object? mutated = MutatedValue(field.GetValue(item));
-                if (mutated == null) { unknownType.Add(field.Name); break; }
-                if (Signature(WithField(item, field, mutated)) != Signature(item))
+                object? mutated = MutatedValue(path.GetValue(item));
+                if (mutated == null) { unknownType.Add(path.Label); break; }
+                if (Signature(path.With(item, mutated)) != Signature(item))
                 {
                     observed = true;
                     break;
                 }
             }
-            if (!observed && !unknownType.Contains(field.Name)) dead.Add(field.Name);
+            if (!observed && !unknownType.Contains(path.Label)) dead.Add(path.Label);
         }
 
         Assert.IsEmpty(unknownType,
@@ -361,14 +388,13 @@ public class SidebarSpawnRouterTests
 
         Assert.IsEmpty(dead,
             McpUiParityRule.Rule
-            + "ЧТО СЛОМАНО: поле каталога сайдбара не доезжает до спауна ни для одной "
-            + "записи. Оно выглядит настройкой и ею не является: следующий человек "
-            + "поправит число и не поймёт, почему объект не изменился. Так уже было с "
-            + "зазорами сборного фасада. "
-            + "ЧТО СДЕЛАТЬ: либо протянуть значение через IElementSpawns/ElementSpawner/"
-            + "ElementFactory и принять его в SidebarSpawnRouter.Route, либо убрать поле из "
-            + "SidebarCatalog.Item и оставить одно место, где величина задаётся — константу "
-            + "на самом элементе (FacadeElement.DEFAULT_GAP_MM и подобные). "
+            + "ЧТО СЛОМАНО: поле каталога сайдбара (или поле его пресета) не доезжает до "
+            + "готового объекта ни для одной записи. Оно выглядит настройкой и ею не является: "
+            + "следующий человек поправит число и не поймёт, почему объект не изменился. Так "
+            + "уже было с зазорами сборного фасада. "
+            + "ЧТО СДЕЛАТЬ: либо протянуть значение через Spawn(Item) до фабрики, либо убрать "
+            + "поле из SidebarCatalog.Item/Preset и оставить одно место, где величина задаётся — "
+            + "константу на самом элементе (FacadeElement.DEFAULT_GAP_MM и подобные). "
             + "Мёртвые поля: " + string.Join(", ", dead));
     }
 
@@ -380,11 +406,11 @@ public class SidebarSpawnRouterTests
     [Test]
     public void TheDeadFieldScan_SeesTheFields_AndItsComparisonWorksBothWays()
     {
-        var fields = ItemFields();
-        Assert.GreaterOrEqual(fields.Length, 8,
-            "у записи каталога около десятка полей; меньше — значит рефлексия читает не тот "
-            + "тип, и перебор по полям проверяет пустоту: " + string.Join(", ",
-                fields.Select(f => f.Name)));
+        var paths = ItemFieldPaths().ToList();
+        Assert.GreaterOrEqual(paths.Count, 8,
+            "у записи каталога около десятка полей (с учётом пресета); меньше — значит "
+            + "рефлексия читает не тот тип, и перебор по полям проверяет пустоту: "
+            + string.Join(", ", paths.Select(p => p.Label)));
 
         var drawer = CatalogItems().First(i => i.kind == SidebarItemKind.Drawer);
 
@@ -392,18 +418,18 @@ public class SidebarSpawnRouterTests
             "одна и та же запись обязана давать одну и ту же подпись — иначе сравнение "
             + "показывает разницу всегда, и ни одно поле не может быть признано мёртвым");
 
-        var name = fields.First(f => f.Name == "name");
+        var name = paths.First(p => p.Label == "name");
         Assert.AreNotEqual(Signature(drawer),
-            Signature(WithField(drawer, name, MutatedValue(drawer.name)!)),
+            Signature(name.With(drawer, MutatedValue(name.GetValue(drawer))!)),
             "имя доезжает до спауна во ВСЕХ ветках, поэтому его подмена обязана менять "
             + "подпись — если не меняет, сравнение слепо и объявит мёртвыми все поля");
     }
 
-    /// <summary>Сторож сторожа. Запись — это подставной приёмник, и он может
-    /// оказаться нем: не тот интерфейс, пустой каталог, маршрутизатор, который
-    /// ничего не зовёт. Тогда все проверки выше зеленеют на пустоте.</summary>
+    /// <summary>Сторож сторожа. Спаун — настоящий, и он может оказаться нем:
+    /// пустой каталог, спаун, который всегда строит одно и то же. Тогда все
+    /// проверки выше зеленеют на пустоте.</summary>
     [Test]
-    public void TheRecorder_ActuallySeesTheCalls_AndTheCatalogIsNotEmpty()
+    public void TheRealSpawn_ActuallyBuildsDifferentObjects_AndTheCatalogIsNotEmpty()
     {
         var kinds = Enum.GetValues(typeof(SidebarItemKind)).Length;
         Assert.GreaterOrEqual(kinds, 20,
@@ -414,14 +440,16 @@ public class SidebarSpawnRouterTests
             "каталог сайдбара предлагает два десятка кнопок; меньше — значит Build() вернул "
             + "не то, и перебор по каталогу ничего не проверяет");
 
-        var board = Route(ItemOfKind(SidebarItemKind.Board));
-        Assert.AreEqual(nameof(Recorder.SpawnBoard), board.Method,
-            "обычная деталь обязана доезжать до SpawnBoard — если и она молчит, приёмник "
-            + "не подключён и все проверки выше зелены ни на чём");
+        var board = SpawnReal(ItemOfKind(SidebarItemKind.Board));
+        var boardType = board.GetType();
+        Destroy(board);
 
-        var sofa = Route(ItemOfKind(SidebarItemKind.Sofa));
-        Assert.AreEqual(nameof(Recorder.SpawnSofa), sofa.Method,
-            "диван обязан доезжать до своего спауна — положительный контроль на то, что "
-            + "разные виды приезжают в РАЗНЫЕ методы, а не все в один");
+        var sofa = SpawnReal(ItemOfKind(SidebarItemKind.Sofa));
+        var sofaType = sofa.GetType();
+        Destroy(sofa);
+
+        Assert.AreNotEqual(boardType, sofaType,
+            "диван обязан заводить компонент, отличный от обычной доски — положительный "
+            + "контроль на то, что разные виды приезжают в РАЗНЫЕ объекты, а не все в один");
     }
 }
