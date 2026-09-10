@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
@@ -29,22 +30,54 @@ public class ScrewLegHostSectionTests
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
 
-    [SetUp]
-    public void SetUp()
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню —
+    /// 0,31 с, и шесть сборок это почти две секунды прогона EditMode при бюджете
+    /// 170. Боевой сценарий — это и есть ОДНА панель, переоткрываемая через
+    /// <c>Open</c>: через <c>Open</c> проходит каждый тест этого класса, кроме
+    /// <see cref="TheLegCarriesTheSixtyMillimetreDetent_IntoItsGeometrySnapshot"/>,
+    /// который панель не трогает вовсе. Полный разбор того, что <c>Open</c>
+    /// сбрасывает, — в сводке <see cref="ContextMenuLayoutTests"/>.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
-        PartRegistry.Clear();
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("ScrewLegSectionCanvas");
         var go = new GameObject("CtxMenu");
         _menu = go.AddComponent<ContextMenuUI>();
-        _menu.Build(_canvas.transform);
+        _menu!.Build(_canvas!.transform);
     }
 
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    /// <summary>Панель переживает тест — значит ПОТЕСТОВОЕ состояние обязано
+    /// возвращаться на место здесь. <c>ForgetLastApplyFrame</c> — окно склейки
+    /// правок: в EditMode <c>Time.frameCount</c> стоит на месте, и окно,
+    /// взведённое предыдущим тестом, съело бы первую правку следующего (тот же
+    /// сброс стоит и в <c>Type</c>, но там он про Enter'ы ОДНОГО теста).
+    /// Фокус снимается потому, что <c>RefreshUnfocused</c> не трогает
+    /// сфокусированное поле: с общей панелью фокус переживал бы тест и давал
+    /// ложное «не обновилось».</summary>
+    [SetUp]
+    public void SetUp()
+    {
+        PartRegistry.Clear();
+        if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+    }
+
+    /// <summary>Панель закрывается ДО уничтожения деталей: <c>Close</c> обнуляет
+    /// <c>_target</c>, иначе панель осталась бы с уничтоженной опорой в руках, а
+    /// взведённая кнопка «Удалить» (статик <c>ConfirmDeleteButton</c>) —
+    /// взведённой на следующий тест.</summary>
     [TearDown]
     public void TearDown()
     {
-        if (_menu != null) Object.DestroyImmediate(_menu.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas.gameObject);
+        if (_menu != null) _menu!.Close();
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         PartRegistry.Clear();
