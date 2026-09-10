@@ -122,18 +122,39 @@ public class PipeFittingPortFittingsTests : SnapTestBase
     }
 
     [Test]
-    public void APortTakenByAPlainPipe_RefusesOnAFitting_SameAsOnAPipe()
+    public void AnElbowsFreePort_AcceptsAPipe_SeatedMouthToMouth()
+    {
+        var elbow = Elbow(Vector3.zero, "Corner");
+        Assume.That(OpenEnds(), Is.EqualTo(2), "у голого отвода открыты оба порта");
+
+        var outcome = Choose(elbow, 1, PipeNodeKind.Pipe);
+
+        Assert.AreEqual(PipeEndEdit.Changed, outcome,
+            "трубу можно подключить к любому фитингу — правило в PipeConnectionRule");
+        var pipe = PipeEndFittings.NeighbourAt(elbow, 1, PartRegistry.GetAll()) as PipeElement;
+        Assert.IsNotNull(pipe, "на порт отвода обязана сесть именно труба");
+        Assert.AreEqual(1, JoinedLinks());
+        Assert.AreEqual(PipeNodeKind.Pipe,
+            PipeEndFittings.StateAt(elbow, 1, PartRegistry.GetAll()).Fitting,
+            "схема портов обязана НАЗВАТЬ трубу, а не показывать порт пустым");
+    }
+
+    [Test]
+    public void APortTakenByAPlainPipe_IsReplaceable_BecauseTheListDescribesAPipe()
     {
         var elbow = Elbow(Vector3.zero, "Corner");
         var pipe = PipeWithItsUpperEndAt(elbow.PortPositionUnits(0), "Run");
         Assume.That(JoinedLinks(), Is.EqualTo(1), "труба состыкована с портом отвода напрямую");
+        Assume.That(PipeConnectionRule.ChoicesFor(PipeNodeKind.Elbow),
+            Contains.Item(PipeNodeKind.Pipe), "у фитинга труба есть в списке");
 
         var outcome = Choose(elbow, 0, PipeNodeKind.Cap);
 
-        Assert.AreEqual(PipeEndEdit.OccupiedByOther, outcome,
-            "на порту не фитинг, а труба — список не описывает трубу и подменять её "
-            + "выбором из списка нельзя, точно так же, как на конце трубы");
-        Assert.IsTrue(pipe.gameObject.activeInHierarchy);
+        Assert.AreEqual(PipeEndEdit.Changed, outcome,
+            "к порту фитинга труба подключается наравне с фитингами, поэтому её можно "
+            + "заменить выбором из того же списка");
+        Assert.IsFalse(pipe.gameObject.activeInHierarchy, "прежняя труба снята с порта");
+        Assert.IsNotNull(FittingAt(elbow, 0), "на порту теперь заглушка");
     }
 
     [Test]

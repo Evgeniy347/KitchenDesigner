@@ -289,6 +289,9 @@ namespace KitchenDesigner.Core
             // уже выровненное значение.
             if (_target != null) MmGrid.Snap(_target);
 
+            if (_target is PipeElement resizedPipe)
+                PipeDocking.RefitRunAfterResize(resizedPipe, PartRegistry.GetAll());
+
             var afterDims = _target!.DimensionsMM;
             var afterPos = _target.transform.position;
             bool changed = _modeAtDragStart == HandleMode.Resize

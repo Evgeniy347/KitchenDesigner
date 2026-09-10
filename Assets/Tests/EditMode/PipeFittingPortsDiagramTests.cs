@@ -78,7 +78,8 @@ public class PipeFittingPortsDiagramTests
 
     private Image Slot(int port) => Diagram().Find("CtxFittingPort" + port)!.GetComponent<Image>();
 
-    private static int OptionOf(PipeNodeKind kind) => PipeEndsDiagram.OptionOf(kind);
+    private static int OptionOf(PipeNodeKind kind) =>
+        PipeEndsDiagram.OptionOf(PipeFittingPortsDiagram.Choices, kind);
 
     private void Pick(int port, int option)
     {

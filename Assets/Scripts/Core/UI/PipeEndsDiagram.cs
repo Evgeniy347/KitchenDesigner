@@ -38,10 +38,15 @@ namespace KitchenDesigner.Core.UI
             _target = target;
         }
 
-        public static List<string> Options()
+        internal static readonly IReadOnlyList<PipeNodeKind> Choices =
+            PipeConnectionRule.ChoicesFor(PipeNodeKind.Pipe);
+
+        public static List<string> Options() => Options(Choices);
+
+        public static List<string> Options(IReadOnlyList<PipeNodeKind> choices)
         {
             var options = new List<string> { NoFittingOption };
-            foreach (var kind in PipeEndFittings.Kinds) options.Add(PipeFittingNames.Title(kind));
+            foreach (var kind in choices) options.Add(PipeFittingNames.Title(kind));
             return options;
         }
 
@@ -96,9 +101,7 @@ namespace KitchenDesigner.Core.UI
             var pipe = _target();
             if (pipe == null) return;
 
-            var kind = option <= 0 || option > PipeEndFittings.Kinds.Length
-                ? (PipeNodeKind?)null
-                : PipeEndFittings.Kinds[option - 1];
+            var kind = PipeConnectionRule.KindAt(Choices, option);
 
             var outcome = PipeEndFittings.Set(pipe, end, kind, PartRegistry.GetAll());
             if (outcome == PipeEndEdit.OccupiedByOther)
@@ -129,13 +132,10 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        public static int OptionOf(PipeNodeKind? fitting)
-        {
-            if (!fitting.HasValue) return 0;
-            for (int i = 0; i < PipeEndFittings.Kinds.Length; i++)
-                if (PipeEndFittings.Kinds[i] == fitting.Value) return i + 1;
-            return 0;
-        }
+        public static int OptionOf(PipeNodeKind? fitting) => OptionOf(Choices, fitting);
+
+        public static int OptionOf(IReadOnlyList<PipeNodeKind> choices, PipeNodeKind? fitting) =>
+            PipeConnectionRule.OptionOf(choices, fitting);
 
         private static (Image slot, Image hole) BuildSlot(Transform parent, string name,
             Vector2 pos)

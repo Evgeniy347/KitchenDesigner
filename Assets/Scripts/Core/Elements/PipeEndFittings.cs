@@ -27,7 +27,15 @@ namespace KitchenDesigner.Core
 
     internal static class PipeEndFittings
     {
-        public static readonly PipeNodeKind[] Kinds = PipeFittingNames.Kinds;
+        public static PipeNodeKind? KindOf(KitchenElement? part) => part switch
+        {
+            PipeFittingElement fitting => fitting.NodeKind,
+            PipeElement _ => PipeNodeKind.Pipe,
+            _ => null,
+        };
+
+        public static IReadOnlyList<PipeNodeKind> ChoicesFor(KitchenElement? owner) =>
+            PipeConnectionRule.ChoicesFor(KindOf(owner) ?? PipeNodeKind.Pipe);
 
         public static int PortCountOf(KitchenElement? owner) =>
             owner is ISnapPorts ported ? ported.SnapPortCount : 0;
@@ -44,8 +52,7 @@ namespace KitchenDesigner.Core
             IReadOnlyList<KitchenElement> scene)
         {
             var neighbour = NeighbourAt(owner, port, scene);
-            return new PipeEndState(neighbour != null,
-                neighbour is PipeFittingElement fitting ? fitting.NodeKind : (PipeNodeKind?)null);
+            return new PipeEndState(neighbour != null, KindOf(neighbour));
         }
 
         public static PipeEndEdit Set(KitchenElement owner, int port, PipeNodeKind? kind,
@@ -54,21 +61,28 @@ namespace KitchenDesigner.Core
             if (owner == null || scene == null) return PipeEndEdit.Unchanged;
             if (port < 0 || port >= PortCountOf(owner)) return PipeEndEdit.Unchanged;
 
+            var ownerKind = KindOf(owner) ?? PipeNodeKind.Pipe;
+            if (kind.HasValue && !PipeConnectionRule.CanConnect(ownerKind, kind.Value))
+                return PipeEndEdit.Unchanged;
+
             var survey = ScenePipeSurvey.Of(scene);
             int partner = PartnerOfPort(survey, owner, port);
             var neighbour = NeighbourOf(survey, partner, scene);
-            var seated = neighbour as PipeFittingElement;
-            if (neighbour != null && seated == null) return PipeEndEdit.OccupiedByOther;
+            var seatedKind = KindOf(neighbour);
+            bool describable = seatedKind.HasValue
+                               && PipeConnectionRule.CanConnect(ownerKind, seatedKind.Value);
+            if (neighbour != null && !describable) return PipeEndEdit.OccupiedByOther;
 
-            if (seated == null && !kind.HasValue) return PipeEndEdit.Unchanged;
-            if (seated != null && kind.HasValue && seated.NodeKind == kind.Value)
+            var seated = neighbour as PipeFittingElement;
+            if (neighbour == null && !kind.HasValue) return PipeEndEdit.Unchanged;
+            if (seatedKind.HasValue && kind.HasValue && seatedKind.Value == kind.Value)
                 return PipeEndEdit.Unchanged;
 
             CommandStack.BeginCapture();
-            if (seated != null) CommandStack.Execute(new DeleteCommand(seated.gameObject));
+            if (neighbour != null) CommandStack.Execute(new DeleteCommand(neighbour.gameObject));
             if (kind.HasValue)
             {
-                var spawned = seated != null
+                var spawned = seated != null && kind.Value != PipeNodeKind.Pipe
                     ? Replace(survey, seated, kind.Value, scene)
                     : Spawn(owner, port, kind.Value, scene);
                 CommandStack.Execute(new CreateCommand(spawned));
@@ -87,7 +101,16 @@ namespace KitchenDesigner.Core
                 owner.transform.position);
             var fitting = go.GetComponent<PipeFittingElement>();
             if (fitting != null) SeatNewFittingOnPort(fitting, owner, port, scene);
+            else SeatNewPipeOnPort(go.GetComponent<PipeElement>(), owner, port);
             return go;
+        }
+
+        private static void SeatNewPipeOnPort(PipeElement? pipe, KitchenElement owner, int port)
+        {
+            if (pipe == null || !(owner is ISnapPorts ownerPorts)) return;
+
+            var mouth = ownerPorts.SnapPortAt(port, owner.transform.position);
+            PipeDocking.SeatPort(pipe, 0, pipe.transform.position, pipe.transform.rotation, mouth);
         }
 
         private static void SeatNewFittingOnPort(PipeFittingElement fitting, KitchenElement owner,
@@ -176,6 +199,8 @@ namespace KitchenDesigner.Core
         private static GameObject Create(PipeNodeKind kind, string name, Vector3 position) =>
             kind switch
             {
+                PipeNodeKind.Pipe => ElementFactory.CreatePipe(PipeSpec.DEFAULT_SIZE,
+                    PipeElementSpec.DEFAULT_LENGTH_MM, name, position),
                 PipeNodeKind.Elbow => ElementFactory.CreatePipeElbow(name, position),
                 PipeNodeKind.Coupling => ElementFactory.CreatePipeCoupling(name, position),
                 PipeNodeKind.Tee => ElementFactory.CreatePipeTee(name, position),

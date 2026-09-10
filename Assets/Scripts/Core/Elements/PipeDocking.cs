@@ -9,7 +9,65 @@ namespace KitchenDesigner.Core
     {
         public const float RotationEpsilonDegrees = WallSeating.RotationEpsilonDegrees;
 
-        public const float GridRepairMaxDistMm = 2f;
+        public const float GridRepairMaxDistMm = PipeRunFit.ReachMm;
+
+        public static bool RefitRunAfterResize(PipeElement pipe,
+            IReadOnlyList<KitchenElement> scene)
+        {
+            if (pipe == null || scene == null) return false;
+
+            float toMm = 1f / AppConstants.MM_TO_UNITS;
+            var ends = EndPortsOf(pipe, toMm);
+            var fit = PipeRunFit.ForRun(ends[0], ends[1], MouthsExcept(scene, pipe, toMm));
+            if (!fit.HasValue) return false;
+
+            pipe.LengthMM = fit.Value.LengthMm;
+            var centre = 0.5f * (pipe.SnapPortAt(0, pipe.transform.position).Position
+                                 + pipe.SnapPortAt(1, pipe.transform.position).Position);
+            var target = new Vector3(fit.Value.CentreMm.XMm, fit.Value.CentreMm.YMm,
+                fit.Value.CentreMm.ZMm) * AppConstants.MM_TO_UNITS;
+            pipe.transform.position += target - centre;
+            return true;
+        }
+
+        private static PipePort[] EndPortsOf(PipeElement pipe, float toMm)
+        {
+            var ports = new PipePort[2];
+            for (int i = 0; i < ports.Length; i++)
+            {
+                var mouth = pipe.SnapPortAt(i, pipe.transform.position);
+                ports[i] = new PipePort(pipe.PartName, PipeNodeKind.Pipe, i,
+                    new PointMm(mouth.Position.x * toMm, mouth.Position.y * toMm,
+                        mouth.Position.z * toMm),
+                    new PipeAxis(mouth.Outward.x, mouth.Outward.y, mouth.Outward.z), pipe.SizeId);
+            }
+            return ports;
+        }
+
+        private static List<PipePort> MouthsExcept(IReadOnlyList<KitchenElement> scene,
+            KitchenElement excluded, float toMm)
+        {
+            var result = new List<PipePort>();
+            for (int i = 0; i < scene.Count; i++)
+            {
+                var element = scene[i];
+                if (element == null || ReferenceEquals(element, excluded)) continue;
+                if (!(element is ISnapPorts ported)) continue;
+
+                var kind = element is PipeFittingElement fitting
+                    ? fitting.NodeKind
+                    : PipeNodeKind.Pipe;
+                for (int p = 0; p < ported.SnapPortCount; p++)
+                {
+                    var mouth = ported.SnapPortAt(p, element.transform.position);
+                    result.Add(new PipePort(element.PartName, kind, p,
+                        new PointMm(mouth.Position.x * toMm, mouth.Position.y * toMm,
+                            mouth.Position.z * toMm),
+                        new PipeAxis(mouth.Outward.x, mouth.Outward.y, mouth.Outward.z)));
+                }
+            }
+            return result;
+        }
 
         public static void Seat(KitchenElement element, Vector3 poseOrigin,
             Quaternion poseRotation, IReadOnlyList<KitchenElement> scene, in SnapCursor cursor)

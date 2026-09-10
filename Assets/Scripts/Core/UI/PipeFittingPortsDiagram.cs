@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +12,9 @@ namespace KitchenDesigner.Core.UI
     internal sealed class PipeFittingPortsDiagram
     {
         public static readonly int MaxPorts = PipeFittingDiagramLayout.MaxPortCount();
+
+        internal static readonly IReadOnlyList<PipeNodeKind> Choices =
+            PipeConnectionRule.ChoicesForAnyFitting();
         public const int RecomputeEveryNFrames = 15;
 
         private const float SchematicH = 150f;
@@ -61,8 +65,8 @@ namespace KitchenDesigner.Core.UI
                 int index = i;
                 var visibility = PortVisibility(i);
                 var (_, dropdown) = _host.Rows.NamedDropdown("CtxFittingPortFitting" + i,
-                    "Порт " + (i + 1), PipeEndsDiagram.Options(), option => OnChosen(index, option),
-                    visibility, "CtxFittingPortLbl" + i);
+                    "Порт " + (i + 1), PipeEndsDiagram.Options(Choices),
+                    option => OnChosen(index, option), visibility, "CtxFittingPortLbl" + i);
                 _choices[i] = dropdown;
             }
 
@@ -94,9 +98,7 @@ namespace KitchenDesigner.Core.UI
             var fitting = _target();
             if (fitting == null) return;
 
-            var kind = option <= 0 || option > PipeEndFittings.Kinds.Length
-                ? (PipeNodeKind?)null
-                : PipeEndFittings.Kinds[option - 1];
+            var kind = PipeConnectionRule.KindAt(Choices, option);
 
             var outcome = PipeEndFittings.Set(fitting, port, kind, PartRegistry.GetAll());
             if (outcome == PipeEndEdit.OccupiedByOther)
@@ -124,7 +126,8 @@ namespace KitchenDesigner.Core.UI
                 PositionLeg(i, slots[i].DirX, slots[i].DirY);
 
                 var state = PipeEndFittings.StateAt(fitting, i, scene);
-                _choices[i]?.SetValueWithoutNotify(PipeEndsDiagram.OptionOf(state.Fitting));
+                _choices[i]?.SetValueWithoutNotify(
+                    PipeEndsDiagram.OptionOf(Choices, state.Fitting));
 
                 var slot = _slots[i];
                 if (slot != null) slot.color = state.Connected
