@@ -41,22 +41,30 @@ namespace KitchenDesigner.Core.UI
             y -= SettingsRowFactory.GapPx;
 
             AddViewToggle(page, ref y, ViewField.Walls, "Стены", "Стены", 0);
+            Hint("Стены", hint: "settings.view.walls");
             AddViewToggle(page, ref y, ViewField.WallOutline, "Контур", WallOutlineId, 1);
+            Hint(WallOutlineId, hint: "settings.view.wallOutline");
             AddViewToggle(page, ref y, ViewField.LowerNearWalls, "Опускать ближние стены",
                 "Опускать ближние стены", 1);
+            Hint("Опускать ближние стены", hint: "settings.view.lowerNearWalls");
             AddViewToggle(page, ref y, ViewField.LowerAllWalls, "Опускать все стены",
                 "Опускать все стены", 2);
+            Hint("Опускать все стены", hint: "settings.view.lowerAllWalls");
             AddViewToggle(page, ref y, ViewField.HideOpeningsOnLoweredWalls, "Скрывать окна и двери",
                 "Скрывать окна и двери", 2);
+            Hint("Скрывать окна и двери", hint: "settings.view.hideOpeningsOnLoweredWalls");
 
             y -= SettingsRowFactory.GapPx;
             AddViewToggle(page, ref y, ViewField.Objects, "Объекты", "Объекты", 0);
+            Hint("Объекты", hint: "settings.view.objects");
             AddViewToggle(page, ref y, ViewField.ObjectOutline, "Контур", ObjectOutlineId, 1);
+            Hint(ObjectOutlineId, hint: "settings.view.objectOutline");
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddHeader(page, ref y, "Освещение");
             AddViewToggle(page, ref y, ViewField.HideLightSources, "Скрыть источники света",
                 "Скрыть источники света", 1);
+            Hint("Скрыть источники света", hint: "settings.view.hideLightSources");
 
             EditModeManager.Changed -= FollowEditMode;
             EditModeManager.Changed += FollowEditMode;
@@ -110,7 +118,8 @@ namespace KitchenDesigner.Core.UI
 
             int count = PresetModes.Length;
             float gap = 4f;
-            float btnW = (SettingsRowFactory.ContentW - gap * (count - 1)) / count;
+            float stripW = SettingsRowFactory.ContentW - HintBadge.LaneWidth;
+            float btnW = (stripW - gap * (count - 1)) / count;
             float firstX = -(SettingsRowFactory.ContentW - btnW) * 0.5f;
             for (int i = 0; i < count; i++)
             {
@@ -122,8 +131,15 @@ namespace KitchenDesigner.Core.UI
                 _presetButtons.Add(btn);
             }
 
+            HintBadge.Attach(rowRect,
+                new Vector2(SettingsRowFactory.ContentW * 0.5f - UIStyle.HintBadgeSize * 0.5f, 0f),
+                hint: "settings.view.preset");
+
             y -= PresetRowH + SettingsRowFactory.RowStep - SettingsRowFactory.RowH;
         }
+
+        private void Hint(string rowKey, string key) =>
+            HintBadge.AttachAfterLabel(_rows.RowLabel(rowKey), key);
 
         private void SwitchPreset(int index)
         {

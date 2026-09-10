@@ -32,6 +32,12 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color EdgeForcedSide = new Color(0.95f, 0.80f, 0.25f, 1f);
         public static readonly Color EdgeSuppressedSide = new Color(0.90f, 0.31f, 0.28f, 1f);
         public static readonly Color EdgeHighlight3D = new Color(1f, 0.15f, 0.1f, 0.8f);
+        public static readonly Color PreviewGhost = new Color(0.25f, 0.9f, 0.35f, 0.45f);
+
+        public static readonly Color HintIcon = new Color(0.52f, 0.58f, 0.70f, 1f);
+        public static readonly Color HintIconHover = new Color(0.30f, 0.50f, 0.75f, 1f);
+        public static readonly Color HintCloud = new Color(0.14f, 0.15f, 0.19f, 0.98f);
+        public static readonly Color HintCloudBorder = new Color(0.35f, 0.37f, 0.42f, 1f);
 
         public static readonly Color MeasureHint = new Color(1f, 0.35f, 0.75f, 1f);
         public static readonly Color MeasureLine = new Color(0.95f, 0.15f, 0.15f, 1f);
@@ -46,6 +52,11 @@ namespace KitchenDesigner.Core.UI
         public const float CloseBtnInset = 8f;
         public const float DropdownItemMinH = 24f;
         public const float DragStripHeight = 40f;
+        public const float HintBadgeSize = 24f;
+        public const float HintBubbleMaxWidth = 320f;
+        public const float HintBubblePadX = 12f;
+        public const float HintBubblePadY = 8f;
+        public const float HintCloudBorderPx = 1f;
 
         public const int FontTitle = 20;
         public const int FontWindowTitle = 24;
@@ -59,5 +70,6 @@ namespace KitchenDesigner.Core.UI
         public const string GlyphExpanded = "▼";
         public const string GlyphDropdown = "▼";
         public const string GlyphAngle = "∟";
+        public const string GlyphHint = "i";
     }
 }

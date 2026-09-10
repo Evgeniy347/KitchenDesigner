@@ -697,6 +697,7 @@ namespace KitchenDesigner.Core.UI
                 LightPicking = Lighting.LightPickMode.Active,
                 Measuring = Measure.MeasureMode.Active,
                 Eyedropping = Tools.EyedropperMode.Active,
+                HintOpen = HintBubbleUI.IsOpen,
                 ConfirmArmed = ConfirmDeleteButton.AnyArmed,
                 ContextMenuOpen = ContextMenuUI.Instance != null && ContextMenuUI.Instance.IsOpen,
                 GroupMenuOpen = GroupMenuUI.Instance != null && GroupMenuUI.Instance.IsOpen,

@@ -7,6 +7,7 @@ namespace KitchenDesigner.Core
         LightPick,
         Measure,
         Eyedropper,
+        HintBubble,
         ConfirmDelete,
         ContextMenu,
         GroupMenu,
@@ -22,6 +23,7 @@ namespace KitchenDesigner.Core
         public bool LightPicking;
         public bool Measuring;
         public bool Eyedropping;
+        public bool HintOpen;
         public bool ConfirmArmed;
         public bool ContextMenuOpen;
         public bool GroupMenuOpen;
@@ -39,6 +41,7 @@ namespace KitchenDesigner.Core
             if (claims.LightPicking) return EscapeOwner.LightPick;
             if (claims.Measuring) return EscapeOwner.Measure;
             if (claims.Eyedropping) return EscapeOwner.Eyedropper;
+            if (claims.HintOpen) return EscapeOwner.HintBubble;
             if (claims.ConfirmArmed) return EscapeOwner.ConfirmDelete;
             if (claims.ContextMenuOpen) return EscapeOwner.ContextMenu;
             if (claims.GroupMenuOpen) return EscapeOwner.GroupMenu;

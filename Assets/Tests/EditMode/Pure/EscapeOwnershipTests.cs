@@ -4,8 +4,9 @@ using KitchenDesigner.Core;
 /// <summary>
 /// Единый порядок владения Escape в каталоге: ровно один хозяин на нажатие,
 /// от самого частного к самому общему —
-/// перетаскивание → пикер света → измерение → пипетка → подтверждение удаления →
-/// контекстное меню → меню группы → выделение плитки каталога → схлопывание каталога →
+/// перетаскивание → пикер света → измерение → пипетка → облачко подсказки →
+/// подтверждение удаления → контекстное меню → меню группы →
+/// выделение плитки каталога → схлопывание каталога →
 /// панель дня/ночи → панель музыки. Нижний по списку не спрашивается, если верхний
 /// уже забрал нажатие — каждый тест ниже это доказывает встречным входом: включает
 /// хозяина ВЫШЕ и проверяет, что владение не спускается ниже.
@@ -106,10 +107,38 @@ public class EscapeOwnershipTests
             DayNightOpen = true,
             MusicOpen = true,
         };
+        claims.HintOpen = true;
         Assert.AreEqual(EscapeOwner.Eyedropper, EscapeOwnership.Resolve(claims));
 
         claims.Measuring = true;
         Assert.AreEqual(EscapeOwner.Measure, EscapeOwnership.Resolve(claims));
+    }
+
+    [Test]
+    public void HintBubble_WinsOverConfirmDeleteAndPanels_ButNotOverAnyToolMode()
+    {
+        var claims = new EscapeClaims
+        {
+            HintOpen = true,
+            ConfirmArmed = true,
+            ContextMenuOpen = true,
+            GroupMenuOpen = true,
+            CatalogTileSelected = true,
+            CatalogCollapsible = true,
+            DayNightOpen = true,
+            MusicOpen = true,
+        };
+        Assert.AreEqual(EscapeOwner.HintBubble, EscapeOwnership.Resolve(claims),
+            "приколотое кликом облачко подсказки нарисовано ПОВЕРХ панели и её кнопок — " +
+            "Escape целится в верхнее, а не в то, что под ним");
+
+        claims.Eyedropping = true;
+        Assert.AreEqual(EscapeOwner.Eyedropper, EscapeOwnership.Resolve(claims),
+            "но режим инструмента — состояние всей сцены, он старше любого облачка");
+
+        claims.Eyedropping = false;
+        claims.Dragging = true;
+        Assert.AreEqual(EscapeOwner.ElementDrag, EscapeOwnership.Resolve(claims));
     }
 
     [Test]
@@ -129,6 +158,12 @@ public class EscapeOwnershipTests
             "взведённая вторым кликом кнопка удаления — самая частная деталь открытой панели, " +
             "отменяется раньше закрытия самой панели");
 
+        claims.HintOpen = true;
+        Assert.AreEqual(EscapeOwner.HintBubble, EscapeOwnership.Resolve(claims),
+            "но открытое поверх кнопки облачко подсказки Escape закроет первым — " +
+            "иначе один Escape снял бы взвод, а облачко осталось бы висеть");
+
+        claims.HintOpen = false;
         claims.Eyedropping = true;
         Assert.AreEqual(EscapeOwner.Eyedropper, EscapeOwnership.Resolve(claims));
     }

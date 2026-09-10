@@ -81,6 +81,7 @@ namespace KitchenDesigner.Core.UI
                 LightPicking = Lighting.LightPickMode.Active,
                 Measuring = Measure.MeasureMode.Active,
                 Eyedropping = Tools.EyedropperMode.Active,
+                HintOpen = HintBubbleUI.IsOpen,
             }) == EscapeOwner.ConfirmDelete;
 
         private void OnDisable() => Disarm();
