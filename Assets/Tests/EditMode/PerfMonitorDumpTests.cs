@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using KitchenDesigner.Core;
 
@@ -196,4 +198,73 @@ public class PerfMonitorDumpTests
 
     private static float PerfRefreshInFrames() =>
         PerfMonitor.HudRefreshSeconds * FramesPerSecondAssumedForBudgets;
+
+    private static readonly Regex GuardedMemberDeclaration = new Regex(
+        @"(?:public|internal)\s+static\s+[\w<>\[\],\.\?]+\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\(|=>|\{)",
+        RegexOptions.Compiled);
+
+    [Test]
+    public void DiagnosticsFiles_NeverCallASymbol_ThatIsItselfHiddenBehindAnEditorOrDevBuildGuard()
+    {
+        var scriptsRoot = System.IO.Path.Combine(UnityEngine.Application.dataPath, "Scripts");
+        var diagnosticsDir = System.IO.Path.Combine(scriptsRoot, "Core", "Diagnostics");
+        var diagnosticsFiles = System.IO.Directory.GetFiles(diagnosticsDir, "*.cs");
+        Assert.GreaterOrEqual(diagnosticsFiles.Length, 4,
+            "скан не видит файлов диагностики — проверять было бы нечего");
+
+        var everyOtherFile = System.IO.Directory
+            .GetFiles(scriptsRoot, "*.cs", System.IO.SearchOption.AllDirectories)
+            .Where(f => !f.StartsWith(diagnosticsDir))
+            .ToArray();
+
+        var guardedSymbols = new Dictionary<string, string>();
+        foreach (var file in everyOtherFile)
+            foreach (var name in GuardedMembersDeclaredUnderEditorOrDevBuildGuard(file))
+                guardedSymbols[name] = System.IO.Path.GetFileName(file);
+
+        var offenders = new List<string>();
+        foreach (var diagFile in diagnosticsFiles)
+        {
+            var text = System.IO.File.ReadAllText(diagFile);
+            foreach (var (symbol, definingFile) in guardedSymbols)
+            {
+                if (Regex.IsMatch(text, $@"\b{Regex.Escape(symbol)}\b"))
+                    offenders.Add($"{System.IO.Path.GetFileName(diagFile)} зовёт {symbol} " +
+                                  $"(объявлен под #if UNITY_EDITOR/DEVELOPMENT_BUILD в {definingFile})");
+            }
+        }
+
+        CollectionAssert.IsEmpty(offenders,
+            "PerfMonitor/PerfHud/PerfCsvLog/PerfMarkers компилируются в обычном плеере "
+            + "безусловно — им нельзя звать метод или свойство, объявленные под "
+            + "#if UNITY_EDITOR/DEVELOPMENT_BUILD в другом файле: в обычной сборке символа "
+            + "не будет, и получится ровно тот CS0117, из-за которого не собрался плеер: "
+            + string.Join("; ", offenders));
+    }
+
+    private static IEnumerable<string> GuardedMembersDeclaredUnderEditorOrDevBuildGuard(string file)
+    {
+        var lines = System.IO.File.ReadAllLines(file);
+        var relevantStack = new Stack<bool>();
+
+        foreach (var line in lines)
+        {
+            var trimmed = line.TrimStart();
+            if (trimmed.StartsWith("#if"))
+            {
+                bool relevant = trimmed.Contains("UNITY_EDITOR") || trimmed.Contains("DEVELOPMENT_BUILD");
+                relevantStack.Push(relevant || (relevantStack.Count > 0 && relevantStack.Peek()));
+                continue;
+            }
+            if (trimmed.StartsWith("#endif"))
+            {
+                if (relevantStack.Count > 0) relevantStack.Pop();
+                continue;
+            }
+            if (relevantStack.Count == 0 || !relevantStack.Peek()) continue;
+
+            var match = GuardedMemberDeclaration.Match(line);
+            if (match.Success) yield return match.Groups[1].Value;
+        }
+    }
 }

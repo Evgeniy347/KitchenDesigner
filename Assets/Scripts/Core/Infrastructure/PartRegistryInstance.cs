@@ -6,7 +6,6 @@ namespace KitchenDesigner.Core
     {
         private readonly List<KitchenElement> _all = new List<KitchenElement>();
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
         private static int _getAllCalls;
 
         public static int TakeGetAllCalls()
@@ -15,7 +14,6 @@ namespace KitchenDesigner.Core
             _getAllCalls = 0;
             return n;
         }
-#endif
 
         public IReadOnlyList<KitchenElement> All
         {
@@ -47,9 +45,7 @@ namespace KitchenDesigner.Core
         public List<KitchenElement> GetAll()
         {
             using var _ = PerfMarkers.PartRegistryGetAll.Auto();
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
             _getAllCalls++;
-#endif
             PurgeDead();
             return new List<KitchenElement>(_all);
         }
