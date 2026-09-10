@@ -85,6 +85,9 @@ public class SidebarPanelTests
     private Button Header(string group)
         => Child(FullContent, "SbGrp_" + group).GetComponent<Button>();
 
+    private static List<SidebarTileBuilder.Tile> TilesOf(string groupTitle) =>
+        SidebarTileBuilder.BuildTiles(SidebarCatalog.Build().Find(g => g.title == groupTitle).items);
+
     private static void AssertSameColor(Color expected, Color actual, string message)
     {
         Assert.AreEqual(expected.r, actual.r, 0.01f, message);
@@ -892,5 +895,222 @@ public class SidebarPanelTests
 
         string dir = Path.Combine(Application.dataPath, "..", "test-results");
         UiSnapshotEngine.CaptureVerified(_canvasGo, Path.Combine(dir, "sidebar_dock_expanded.json"));
+    }
+
+    /// <summary>Клавиатурный путь к постановке элемента (docs/todo_evolution.md §2.4, пункт 5
+    /// порядка работ): «/» уже раскрывал каталог и переходил в поиск — здесь стрелки, Enter,
+    /// Escape и переключение варианта. Каждая проверка «что заспавнилось» сверяется с
+    /// <see cref="SidebarUI.ItemToSpawnForTests"/> — тем же результатом, что и клик мышью,
+    /// а не с тем, какая плитка подсветилась (этот класс дефекта уже ловили: поиск находил
+    /// один вариант, а ставил другой).</summary>
+    [UnityTest]
+    public IEnumerator DownArrow_FromTheSearchField_MovesFocusIntoTheGrid_KeepingTheTypedFilter()
+    {
+        var search = Child(Panel, "SbSearch").GetComponent<TMP_InputField>();
+        _sidebar.SimulateSlashShortcutForTests();
+        yield return null;
+        yield return null;
+        Assert.IsTrue(search.isFocused,
+            "поиск обязан быть в фокусе перед проверкой — иначе тест ничего не доказывает");
+        search.text = "Полка";
+
+        _sidebar.SimulateKeyForTests(KeyCode.DownArrow);
+
+        Assert.IsTrue(_sidebar.HasKeyboardSelectionForTests,
+            "стрелка вниз из поля поиска обязана перевести клавиатурный фокус в сетку плиток");
+        Assert.AreEqual("Полка", search.text,
+            "набранный текст фильтра не имеет права потеряться при переходе в сетку");
+    }
+
+    [Test]
+    public void ArrowRight_SelectsTheNeighborTileInTheSameRow()
+    {
+        var tiles = TilesOf("Детали");
+        Assert.GreaterOrEqual(tiles.Count, 2,
+            "нужно хотя бы две плитки в «Детали», чтобы проверить соседку по строке");
+        _sidebar.SelectTileForTests("Детали", tiles[0].title);
+
+        _sidebar.SimulateKeyForTests(KeyCode.RightArrow);
+
+        Assert.AreEqual(tiles[1].title, _sidebar.KeyboardSelectedTileTitleForTests,
+            "стрелка вправо от левой плитки строки обязана выбрать правую плитку той же строки");
+    }
+
+    [Test]
+    public void ArrowDown_SelectsTheNeighborTileInTheRowBelow_SameColumn()
+    {
+        var tiles = TilesOf("Детали");
+        Assert.GreaterOrEqual(tiles.Count, 3,
+            "нужно хотя бы три плитки в «Детали» (две строки сетки 2×N), чтобы проверить "
+            + "соседку снизу");
+        _sidebar.SelectTileForTests("Детали", tiles[0].title);
+
+        _sidebar.SimulateKeyForTests(KeyCode.DownArrow);
+
+        Assert.AreEqual(tiles[2].title, _sidebar.KeyboardSelectedTileTitleForTests,
+            "стрелка вниз от плитки в столбце 0 обязана выбрать плитку следующей строки того "
+            + "же столбца");
+    }
+
+    [Test]
+    public void ArrowUp_AtTheTopOfTheFirstOpenGroup_StaysPut_DoesNotFlyIntoEmptiness()
+    {
+        var tiles = TilesOf("Детали");
+        _sidebar.SelectTileForTests("Детали", tiles[0].title);
+
+        _sidebar.SimulateKeyForTests(KeyCode.UpArrow);
+
+        Assert.AreEqual(tiles[0].title, _sidebar.KeyboardSelectedTileTitleForTests,
+            "выше первой строки первой открытой группы ничего нет — стрелка вверх обязана "
+            + "оставить выделение на месте, а не улететь в пустоту");
+    }
+
+    [Test]
+    public void ArrowLeft_AtTheLeftmostColumn_StaysPut_DoesNotFlyIntoEmptiness()
+    {
+        var tiles = TilesOf("Детали");
+        _sidebar.SelectTileForTests("Детали", tiles[0].title);
+
+        _sidebar.SimulateKeyForTests(KeyCode.LeftArrow);
+
+        Assert.AreEqual(tiles[0].title, _sidebar.KeyboardSelectedTileTitleForTests,
+            "левее первого столбца ничего нет — стрелка влево обязана оставить выделение на месте");
+    }
+
+    [Test]
+    public void ArrowDown_FromTheLastTileOfAnOpenGroup_CrossesIntoTheNextOpenGroup_SkippingClosedOnes()
+    {
+        // «Детали» открыта по умолчанию (SetUp сбрасывает последнюю использованную группу);
+        // раскрываем ещё «Сантехника» — между ними остаются свёрнутыми «Фасады», «Ящики»,
+        // «Мебель», «Техника», и стрелка обязана пропустить их все, будто их нет.
+        Header("Сантехника").onClick.Invoke();
+        var detaliTiles = TilesOf("Детали");
+        _sidebar.SelectTileForTests("Детали", detaliTiles[detaliTiles.Count - 1].title);
+
+        _sidebar.SimulateKeyForTests(KeyCode.DownArrow);
+
+        Assert.AreEqual("Сантехника", _sidebar.KeyboardSelectedGroupTitleForTests,
+            "стрелка вниз с последней плитки открытой группы обязана перейти в следующую "
+            + "ОТКРЫТУЮ группу, пропустив свёрнутые между ними");
+    }
+
+    [Test]
+    public void Enter_InTheGrid_TargetsTheSameItemAClickWould()
+    {
+        var tiles = TilesOf("Детали");
+        _sidebar.SelectTileForTests("Детали", tiles[0].title);
+        var expected = _sidebar.ItemToSpawnForTests("Детали", tiles[0].title);
+
+        _sidebar.SimulateKeyForTests(KeyCode.Return);
+
+        Assert.IsNotNull(_sidebar.LastSpawnAttemptForTests,
+            "Enter в сетке обязан нацелиться на постановку выбранной плитки");
+        Assert.AreEqual(expected.name, _sidebar.LastSpawnAttemptForTests!.Value.name,
+            "Enter в сетке обязан поставить именно ту позицию, что была бы поставлена кликом "
+            + "по плитке — сенсор проверяет РЕЗУЛЬТАТ (что заспавнилось), а не то, что "
+            + "подсветилось");
+    }
+
+    /// <summary>Противоположный вход к <see cref="Enter_InTheGrid_TargetsTheSameItemAClickWould"/>:
+    /// то же нажатие Enter, но фокус остаётся в поле поиска — и обязано НЕ ставить ничего.</summary>
+    [UnityTest]
+    public IEnumerator Enter_WhileTypingInSearch_DoesNotSpawnAnything()
+    {
+        var search = Child(Panel, "SbSearch").GetComponent<TMP_InputField>();
+        _sidebar.SimulateSlashShortcutForTests();
+        yield return null;
+        yield return null;
+        Assert.IsTrue(search.isFocused,
+            "поиск обязан быть в фокусе перед проверкой — иначе тест ничего не доказывает");
+        search.text = "Полка";
+
+        _sidebar.SimulateKeyForTests(KeyCode.Return);
+
+        Assert.IsNull(_sidebar.LastSpawnAttemptForTests,
+            "Enter, нажатый пока фокус в поле поиска, не имеет права ничего ставить — иначе "
+            + "набор текста фильтра сам собой спавнил бы деталь");
+    }
+
+    [Test]
+    public void Escape_ClearsTheKeyboardSelection_BeforeAnythingElse()
+    {
+        var tiles = TilesOf("Детали");
+        _sidebar.SelectTileForTests("Детали", tiles[0].title);
+
+        _sidebar.SimulateKeyForTests(KeyCode.Escape);
+
+        Assert.IsFalse(_sidebar.HasKeyboardSelectionForTests,
+            "Escape обязан снять клавиатурное выделение плитки первым делом");
+    }
+
+    [Test]
+    public void Escape_WithNoSelection_CollapsesAnUnpinnedExpandedDock()
+    {
+        _sidebar.SetExpandedForTests(true);
+        Child(Panel, "SbPin").GetComponent<Button>().onClick.Invoke(); // снимаем булавку
+
+        _sidebar.SimulateKeyForTests(KeyCode.Escape);
+
+        Assert.IsFalse(Full.gameObject.activeSelf,
+            "без клавиатурного выделения и без булавки Escape обязан свернуть раскрытый док");
+    }
+
+    [Test]
+    public void Escape_WithNoSelection_LeavesAPinnedDockAlone()
+    {
+        _sidebar.SetExpandedForTests(true); // булавка по умолчанию включена
+
+        _sidebar.SimulateKeyForTests(KeyCode.Escape);
+
+        Assert.IsTrue(Full.gameObject.activeSelf,
+            "закреплённый док не имеет права закрыться от Escape — иначе пользователь "
+            + "потеряет открытый каталог посреди работы");
+    }
+
+    [Test]
+    public void KeyboardSelection_IsMarkedByBothColorAndAnOutline_NotColorAlone()
+    {
+        var tiles = TilesOf("Детали");
+        var tileNode = Tile("Детали", tiles[0].title);
+        var background = tileNode.GetComponent<Image>();
+        var outline = tileNode.GetComponent<Outline>();
+        Assert.IsNotNull(outline,
+            "у плитки обязана быть рамка-Outline — иначе выделение несёт только цвет "
+            + "(LEAD-AGENT.md §2: цвет как единственный носитель смысла теряется примерно "
+            + "у 8% мужчин)");
+        Assert.IsFalse(outline!.enabled, "до выделения рамка обязана быть выключена");
+        Color unselectedColor = background.color;
+
+        _sidebar.SelectTileForTests("Детали", tiles[0].title);
+
+        Assert.IsTrue(outline.enabled, "выбранная плитка обязана включить рамку");
+        Assert.AreNotEqual(unselectedColor, background.color,
+            "выбранная плитка обязана сменить и цвет фона — цвет и форма вместе, не порознь");
+    }
+
+    [Test]
+    public void RightBracket_CyclesToTheNextPreset_OfTheKeyboardSelectedTile()
+    {
+        const string key = "KitchenSidebarPreset_Ящик";
+        bool hadPrevValue = PlayerPrefs.HasKey(key);
+        string prevValue = PlayerPrefs.GetString(key, "");
+        try
+        {
+            _sidebar.SelectTileForTests("Ящики", "Ящик");
+            string? before = SidebarPresetPreference.Load("Ящик");
+
+            _sidebar.SimulateKeyForTests(KeyCode.RightBracket);
+
+            string? after = SidebarPresetPreference.Load("Ящик");
+            Assert.AreNotEqual(before, after,
+                "] обязан переключить вариант плитки, выбранной клавиатурой, — так же, как клик "
+                + "по точке пресета");
+        }
+        finally
+        {
+            if (hadPrevValue) PlayerPrefs.SetString(key, prevValue);
+            else PlayerPrefs.DeleteKey(key);
+            PlayerPrefs.Save();
+        }
     }
 }

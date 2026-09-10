@@ -47,12 +47,15 @@ namespace KitchenDesigner.Core.UI
         {
             public RectTransform rect = null!;
             public Button button = null!;
+            public Image background = null!;
+            public Outline outline = null!;
             public TMP_Text caption = null!;
             public RawImage thumb = null!;
             public Image stub = null!;
             public RectTransform presetRow = null!;
             public List<SidebarCatalog.Item> presets = null!;
             public int selected;
+            public int groupIndex;
             public string title = "";
             public string groupTitle = "";
             public bool thumbnailReady;
@@ -71,6 +74,9 @@ namespace KitchenDesigner.Core.UI
         private readonly List<SidebarTileGroupMetrics> _metrics = new List<SidebarTileGroupMetrics>();
         private readonly List<SidebarTileRow> _rows = new List<SidebarTileRow>();
         private readonly List<List<TileUI>> _visibleTilesByGroup = new List<List<TileUI>>();
+        private static readonly List<TileUI> EmptyTiles = new List<TileUI>();
+
+        private TileUI? _kbSelectedTile;
 
         private class ModeStyledTile
         {
@@ -123,6 +129,23 @@ namespace KitchenDesigner.Core.UI
             var tile = gu.tiles.Find(t => t.title == tileTitle);
             return tile.presets[SpawnPresetIndex(tile)];
         }
+
+        internal void SimulateKeyForTests(KeyCode key) => HandleKey(key);
+
+        internal void SelectTileForTests(string groupTitle, string tileTitle)
+        {
+            var gu = _groups.Find(g => g.title == groupTitle);
+            var tile = gu.tiles.Find(t => t.title == tileTitle);
+            if (tile != null) SetSelectedTile(tile);
+        }
+
+        internal bool HasKeyboardSelectionForTests => _kbSelectedTile != null;
+
+        internal string? KeyboardSelectedTileTitleForTests => _kbSelectedTile?.title;
+
+        internal string? KeyboardSelectedGroupTitleForTests => _kbSelectedTile?.groupTitle;
+
+        internal SidebarCatalog.Item? LastSpawnAttemptForTests { get; private set; }
 
         public void Build(Transform canvas)
         {
@@ -258,15 +281,16 @@ namespace KitchenDesigner.Core.UI
                     SetGroupHeaderText(gu, g.title);
                 }
 
+                int groupIndex = _groups.Count;
                 foreach (var tile in SidebarTileBuilder.BuildTiles(g.items))
-                    gu.tiles.Add(BuildTile(g.title, tile));
+                    gu.tiles.Add(BuildTile(g.title, groupIndex, tile));
 
                 _groups.Add(gu);
             }
             RelayoutFull();
         }
 
-        private TileUI BuildTile(string groupTitle, SidebarTileBuilder.Tile tile)
+        private TileUI BuildTile(string groupTitle, int groupIndex, SidebarTileBuilder.Tile tile)
         {
             var btn = UIFactory.CreateButton("SbTile_" + groupTitle + "_" + tile.title,
                 _full!.Content, "", Vector2.zero, new Vector2(SidebarLayout.TileW, SidebarLayout.TileH),
@@ -277,12 +301,20 @@ namespace KitchenDesigner.Core.UI
             {
                 rect = btn.GetComponent<RectTransform>(),
                 button = btn,
+                background = btn.GetComponent<Image>(),
                 presets = tile.presets,
                 title = tile.title,
                 groupTitle = groupTitle,
+                groupIndex = groupIndex,
                 selected = InitialPresetIndex(tile),
             };
             btn.onClick.AddListener(() => SpawnSelected(tileUi));
+
+            var outline = btn.gameObject.AddComponent<Outline>();
+            outline.effectColor = UIStyle.HighlightChanged;
+            outline.effectDistance = new Vector2(3f, 3f);
+            outline.enabled = false;
+            tileUi.outline = outline;
 
             var thumbGo = new GameObject("Thumb", typeof(RectTransform), typeof(RawImage));
             thumbGo.transform.SetParent(btn.transform, false);
@@ -529,6 +561,7 @@ namespace KitchenDesigner.Core.UI
             }
 
             _full!.ContentHeight = height;
+            ClearKeyboardSelectionIfNoLongerVisible();
         }
 
         private void RequestThumbnail(TileUI tile)
@@ -581,6 +614,13 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
+        private static readonly KeyCode[] NavKeys =
+        {
+            KeyCode.UpArrow, KeyCode.DownArrow, KeyCode.LeftArrow, KeyCode.RightArrow,
+            KeyCode.Return, KeyCode.KeypadEnter, KeyCode.Escape,
+            KeyCode.LeftBracket, KeyCode.RightBracket, KeyCode.Slash,
+        };
+
         private void HandleKeyboardShortcuts()
         {
             if (_focusSearchNextFrame)
@@ -590,11 +630,49 @@ namespace KitchenDesigner.Core.UI
                 return;
             }
 
-            if (IsTypingElsewhere()) return;
-            if (!Input.GetKeyDown(KeyCode.Slash)) return;
+            foreach (var key in NavKeys)
+            {
+                if (!Input.GetKeyDown(key)) continue;
+                HandleKey(key);
+                break;
+            }
+        }
 
-            SetExpanded(true);
-            _focusSearchNextFrame = true;
+        private void HandleKey(KeyCode key)
+        {
+            if (IsSearchFieldFocused())
+            {
+                if (key == KeyCode.DownArrow) EnterGridFromSearch();
+                return;
+            }
+
+            var selectedTile = _kbSelectedTile;
+            if (selectedTile != null)
+            {
+                switch (key)
+                {
+                    case KeyCode.UpArrow: MoveVertical(-1); return;
+                    case KeyCode.DownArrow: MoveVertical(1); return;
+                    case KeyCode.LeftArrow: MoveHorizontal(-1); return;
+                    case KeyCode.RightArrow: MoveHorizontal(1); return;
+                    case KeyCode.Return:
+                    case KeyCode.KeypadEnter: SpawnSelected(selectedTile); return;
+                    case KeyCode.LeftBracket: CyclePreset(selectedTile, -1); return;
+                    case KeyCode.RightBracket: CyclePreset(selectedTile, 1); return;
+                    case KeyCode.Escape: SetSelectedTile(null); return;
+                }
+                return;
+            }
+
+            if (key == KeyCode.Slash)
+            {
+                if (IsTypingElsewhere()) return;
+                SetExpanded(true);
+                _focusSearchNextFrame = true;
+                return;
+            }
+
+            if (key == KeyCode.Escape && !_pinned && _expanded) SetExpanded(false);
         }
 
         private void FocusSearchField()
@@ -604,12 +682,164 @@ namespace KitchenDesigner.Core.UI
             _searchField.ActivateInputField();
         }
 
+        private bool IsSearchFieldFocused() => _searchField != null && _searchField.isFocused;
+
         private bool IsTypingElsewhere()
         {
             var selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
             if (selected == null) return false;
             var field = selected.GetComponent<TMP_InputField>();
             return field != null && field.isFocused;
+        }
+
+        private void EnterGridFromSearch()
+        {
+            if (_searchField != null)
+            {
+                _searchField.DeactivateInputField();
+                if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+            }
+            SelectFirstNavigableTile();
+        }
+
+        private List<TileUI> NavigableTilesOfGroup(int groupIndex)
+        {
+            if (groupIndex < 0 || groupIndex >= _metrics.Count) return EmptyTiles;
+            if (!_metrics[groupIndex].Open) return EmptyTiles;
+            return _visibleTilesByGroup[groupIndex];
+        }
+
+        private int PreviousNavigableGroup(int fromGroup)
+        {
+            for (int i = fromGroup - 1; i >= 0; i--)
+                if (NavigableTilesOfGroup(i).Count > 0) return i;
+            return -1;
+        }
+
+        private int NextNavigableGroup(int fromGroup)
+        {
+            for (int i = fromGroup + 1; i < _groups.Count; i++)
+                if (NavigableTilesOfGroup(i).Count > 0) return i;
+            return -1;
+        }
+
+        private void SelectFirstNavigableTile()
+        {
+            for (int i = 0; i < _groups.Count; i++)
+            {
+                var tiles = NavigableTilesOfGroup(i);
+                if (tiles.Count > 0) { SetSelectedTile(tiles[0]); return; }
+            }
+        }
+
+        private void SelectRowCol(List<TileUI> tiles, int row, int col)
+        {
+            int rowStart = row * SidebarLayout.GridColumns;
+            int rowCount = Mathf.Min(SidebarLayout.GridColumns, tiles.Count - rowStart);
+            if (rowCount <= 0) return;
+            int clampedCol = Mathf.Clamp(col, 0, rowCount - 1);
+            SetSelectedTile(tiles[rowStart + clampedCol]);
+        }
+
+        private void MoveHorizontal(int delta)
+        {
+            var selectedTile = _kbSelectedTile;
+            if (selectedTile == null) { SelectFirstNavigableTile(); return; }
+            var tiles = NavigableTilesOfGroup(selectedTile.groupIndex);
+            int idx = tiles.IndexOf(selectedTile);
+            if (idx < 0) { SelectFirstNavigableTile(); return; }
+            int row = SidebarLayout.TileRowOf(idx);
+            SelectRowCol(tiles, row, SidebarLayout.TileColOf(idx) + delta);
+        }
+
+        private void MoveVertical(int delta)
+        {
+            var selectedTile = _kbSelectedTile;
+            if (selectedTile == null) { SelectFirstNavigableTile(); return; }
+            int groupIndex = selectedTile.groupIndex;
+            var tiles = NavigableTilesOfGroup(groupIndex);
+            int idx = tiles.IndexOf(selectedTile);
+            if (idx < 0) { SelectFirstNavigableTile(); return; }
+
+            int row = SidebarLayout.TileRowOf(idx);
+            int col = SidebarLayout.TileColOf(idx);
+            int lastRow = SidebarLayout.TileRowOf(tiles.Count - 1);
+            int newRow = row + delta;
+
+            if (newRow < 0)
+            {
+                int prevGroup = PreviousNavigableGroup(groupIndex);
+                if (prevGroup < 0) return;
+                var prevTiles = NavigableTilesOfGroup(prevGroup);
+                SelectRowCol(prevTiles, SidebarLayout.TileRowOf(prevTiles.Count - 1), col);
+                return;
+            }
+            if (newRow > lastRow)
+            {
+                int nextGroup = NextNavigableGroup(groupIndex);
+                if (nextGroup < 0) return;
+                var nextTiles = NavigableTilesOfGroup(nextGroup);
+                SelectRowCol(nextTiles, 0, col);
+                return;
+            }
+            SelectRowCol(tiles, newRow, col);
+        }
+
+        private void CyclePreset(TileUI tile, int delta)
+        {
+            if (tile.presets.Count <= 1) return;
+            int count = tile.presets.Count;
+            int next = ((tile.selected + delta) % count + count) % count;
+            SelectPreset(tile, next);
+        }
+
+        private void SetSelectedTile(TileUI? tile)
+        {
+            var previous = _kbSelectedTile;
+            if (ReferenceEquals(previous, tile)) return;
+            if (previous != null) ApplyKeyboardHighlight(previous, false);
+            _kbSelectedTile = tile;
+            if (tile != null)
+            {
+                ApplyKeyboardHighlight(tile, true);
+                ScrollTileIntoView(tile);
+            }
+        }
+
+        private static void ApplyKeyboardHighlight(TileUI tile, bool selected)
+        {
+            tile.background.color = selected ? UIStyle.SurfaceActive : UIFactory.ButtonColor;
+            tile.outline.enabled = selected;
+        }
+
+        private void ClearKeyboardSelectionIfNoLongerVisible()
+        {
+            var selectedTile = _kbSelectedTile;
+            if (selectedTile == null) return;
+            if (!NavigableTilesOfGroup(selectedTile.groupIndex).Contains(selectedTile))
+                SetSelectedTile(null);
+        }
+
+        private void ScrollTileIntoView(TileUI tile)
+        {
+            if (_full == null) return;
+            float viewportHeight = _full.Viewport.rect.height;
+            float contentHeight = _full.ContentHeight;
+            if (contentHeight <= viewportHeight) return;
+
+            var content = _full.Content;
+            float tileTop = tile.rect.anchoredPosition.y;
+            float tileBottom = tileTop - tile.rect.sizeDelta.y;
+
+            float scrollTop = content.anchoredPosition.y;
+            float visibleTop = -scrollTop;
+            float visibleBottom = visibleTop - viewportHeight;
+
+            if (tileTop > visibleTop) scrollTop = -tileTop;
+            else if (tileBottom < visibleBottom) scrollTop = -tileBottom - viewportHeight;
+
+            scrollTop = Mathf.Clamp(scrollTop, 0f, Mathf.Max(0f, contentHeight - viewportHeight));
+            content.anchoredPosition = new Vector2(content.anchoredPosition.x, scrollTop);
         }
 
         private void BuildMini()
@@ -652,9 +882,10 @@ namespace KitchenDesigner.Core.UI
 
         private void SpawnSelected(TileUI tile)
         {
-            if (UIManager.Instance == null) return;
             int presetIndex = SpawnPresetIndex(tile);
             var item = tile.presets[presetIndex];
+            LastSpawnAttemptForTests = item;
+            if (UIManager.Instance == null) return;
             if (presetIndex != tile.selected) SelectPreset(tile, presetIndex);
             SidebarSpawnRouter.Route(item, UIManager.Instance.Spawner);
             SidebarLastGroupPreference.Save(tile.groupTitle);
