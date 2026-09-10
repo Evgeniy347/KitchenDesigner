@@ -70,6 +70,15 @@ DIAGONAL — `(w + d)·cos30` — while a cylinder inside it shows only its diam
 box looks far too large for a correct tube. That reading cost one wrong instruction here; the
 real inflation was latent and appeared only when the derived bore exceeded the nominal frame.
 
+**Накладка, лежащая на детали, не имеет права кончаться в её плоскости.** Стекло и панель
+управления духовки заканчивались ровно там же, где плита дверцы, и смотрели туда же — пять пар
+копланарных граней и мерцание на лице прибора (z-fighting). Накладка либо утапливает несущую
+деталь на свою толщину, либо выступает вперёд; общая толщина при этом не меняется, меняется кто
+держит лицо. «Сдвинуть на 0,1 мм, чтобы не мерцало» — не починка, а отложенный тот же дефект.
+Сенсор дешёвый и элементо-независимый (`OvenCoplanarSurfaceTests`): пара граней, смотрящих в ОДНУ
+сторону, ближе N мм друг к другу и перекрывающихся площадью. Встречные нормали законны — их
+съедает отсечение задних граней, и сенсор обязан их пропускать, иначе утонет в стыках коробок.
+
 ## Isometric screenshot tests (REQUIRED for new elements)
 
 Every new element type MUST have a PlayMode isometric screenshot test. This visual regression test ensures the element renders correctly.
