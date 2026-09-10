@@ -6,6 +6,8 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Lighting;
+using KitchenDesigner.Core.Measure;
 using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.UI;
 
@@ -98,6 +100,55 @@ public class ThumbnailRendererTests
 
         UnityEngine.Object.DestroyImmediate(tex);
         return (float)painted / pixels.Length;
+    }
+
+    // Контур в кадре миниатюры. EdgeOutlineRenderer рисует чёрные рёбра всех
+    // элементов реестра через GL в OnRenderObject, а этот вызов приходит на
+    // КАЖДУЮ камеру и не фильтруется её cullingMask — то есть контуры реальной
+    // сцены попадали в кадр плитки, хотя сам элемент плитки живёт в песочнице
+    // и в реестре его нет. Песочница уже делает элемент невидимым для реестра,
+    // валидации и автосохранения; наложения сцены встают в тот же список.
+    //
+    // Тест проверяет ОБА конца: что наложение выключено ИМЕННО во время рендера
+    // (иначе достаточно было бы «после рендера включено», и код, не гасящий
+    // ничего, был бы зелёным) и что после рендера оно вернулось как было —
+    // включая то, что выключенное чужой рукой не имеет права включиться само.
+    [UnityTest]
+    public IEnumerator SceneOverlays_AreOffWhileAThumbnailRenders_AndComeBackAsTheyWere()
+    {
+        var host = new GameObject("OverlayHost");
+        var outline = host.AddComponent<EdgeOutlineRenderer>();
+        var grid = host.AddComponent<SpatialGridRenderer>();
+        var measure = host.AddComponent<MeasureRenderer>();
+        var lightPick = host.AddComponent<LightPickRenderer>();
+        lightPick.enabled = false;
+
+        var onDuringRender = new List<string>();
+
+        var rt = ThumbnailRenderer.Render(() =>
+        {
+            if (outline.enabled) onDuringRender.Add(nameof(EdgeOutlineRenderer));
+            if (grid.enabled) onDuringRender.Add(nameof(SpatialGridRenderer));
+            if (measure.enabled) onDuringRender.Add(nameof(MeasureRenderer));
+            return Kinds[0].spawn();
+        });
+
+        Assert.IsEmpty(onDuringRender,
+            "во время рендера миниатюры остались включёнными наложения сцены: "
+            + string.Join(", ", onDuringRender)
+            + ". Они рисуют через GL в OnRenderObject, а этот вызов приходит на каждую "
+            + "камеру помимо cullingMask — контур реальной сцены оказывается в кадре плитки");
+
+        Assert.IsTrue(outline.enabled, "после рендера контур обязан вернуться включённым");
+        Assert.IsTrue(grid.enabled, "и пространственная сетка тоже");
+        Assert.IsTrue(measure.enabled, "и линейка");
+        Assert.IsFalse(lightPick.enabled,
+            "а выключенное до рендера так и остаётся выключенным: песочница возвращает "
+            + "состояние как было, а не включает всё подряд");
+
+        UnityEngine.Object.DestroyImmediate(rt);
+        UnityEngine.Object.DestroyImmediate(host);
+        yield return null;
     }
 
     private static RectInt PaintedBox(RenderTexture rt)

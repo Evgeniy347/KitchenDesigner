@@ -43,6 +43,7 @@ namespace KitchenDesigner.Core
             framing = default;
 
             using (ElementFactorySandbox.Enter())
+            using (ThumbnailOverlays.Suppress())
             {
                 GameObject? go = null;
                 GameObject? camGo = null;
