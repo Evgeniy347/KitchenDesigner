@@ -90,6 +90,23 @@ wins over date preservation). Always `git branch backup/<name>` first — it rew
 2. **Commit** via `.\tools\git-commit.ps1 -Message "<type>: <desc>" -Files <paths>` — it picks
    the timestamp itself; do not set `GIT_AUTHOR_DATE` / `GIT_COMMITTER_DATE` manually
 
+## CRITICAL: never `git stash` — the tree is shared
+
+Several agents edit the SAME working tree at the same time. `git stash` takes everyone's
+uncommitted work, not yours: on 2026-09-10 one agent stashed to look at an unrelated red
+test and silently reverted files two other agents were writing at that moment. It restored
+them by hand afterwards and believed nothing was lost — but «believed» is the whole problem,
+because a stash pop over files that moved on disk in the meantime cannot be verified by the
+one who did it.
+
+The same goes for anything else that rewrites the tree wholesale: `git checkout -- .`,
+`git reset --hard`, `git clean`, `git restore` without a path. If you need a clean state to
+compare against, read the committed version instead — `git show HEAD:path/file` writes it
+anywhere you like without touching the tree.
+
+And a red test in a file that is not yours is not yours to diagnose: say so in the report and
+move on. The manager knows who owns what.
+
 ## Temp files
 
 - `tmp-scripts/` — scripts
