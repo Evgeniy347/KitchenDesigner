@@ -63,6 +63,7 @@ namespace KitchenDesigner.Core.UI
         private readonly ShowerColumnFieldsEditor _showerColumnFields;
         private readonly WallDeviceFieldsEditor _wallDeviceFields;
         private readonly WallOpeningFieldsEditor _openingFields;
+        private readonly WallFieldsEditor _wallFields;
         private readonly FacadeFieldsEditor _facadeFields;
         private readonly AssembledFacadeFieldsEditor _assembledFields;
         private readonly ElementFieldsEditor[] _editors;
@@ -100,6 +101,7 @@ namespace KitchenDesigner.Core.UI
             _showerColumnFields = new ShowerColumnFieldsEditor(this);
             _wallDeviceFields = new WallDeviceFieldsEditor(this);
             _openingFields = new WallOpeningFieldsEditor(this);
+            _wallFields = new WallFieldsEditor(this);
             _facadeFields = new FacadeFieldsEditor(this);
             _assembledFields = new AssembledFacadeFieldsEditor(this);
             _editors = new ElementFieldsEditor[]
@@ -108,7 +110,7 @@ namespace KitchenDesigner.Core.UI
                 _pipeFields, _pipeFittingFields,
                 _tableFields, _stoolFields, _chairFields, _sofaFields, _bedFields,
                 _pouffeFields, _toiletFields, _bathtubFields, _bathMixerFields,
-                _showerColumnFields, _wallDeviceFields, _openingFields, _lights,
+                _showerColumnFields, _wallDeviceFields, _openingFields, _wallFields, _lights,
                 _assembledFields, _facadeFields,
             };
         }
@@ -327,6 +329,7 @@ namespace KitchenDesigner.Core.UI
             _bathMixerFields.Build();
             _showerColumnFields.Build();
             _wallDeviceFields.Build();
+            _wallFields.Build();
             _pillarFields.Build();
             _screwLegFields.Build();
             _pipeFields.Build();

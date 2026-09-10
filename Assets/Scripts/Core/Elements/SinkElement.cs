@@ -67,10 +67,12 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
-            if (PoseVersion == _lastPoseVersion) return;
+            if (PoseVersion == _lastPoseVersion) { enabled = false; return; }
             _lastPoseVersion = PoseVersion;
             SnapToPart();
         }
+
+        protected override void OnOwnPoseVersionBumped() => enabled = true;
 
         public override void ApplyDimensions()
         {

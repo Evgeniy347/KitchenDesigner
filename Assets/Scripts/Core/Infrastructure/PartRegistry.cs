@@ -27,5 +27,11 @@ namespace KitchenDesigner.Core
         public static List<KitchenElement> GetAll() => Instance.GetAll();
 
         public static void Clear() => Instance.Clear();
+
+        public static IReadOnlyList<Wall> Walls => Instance.Walls;
+
+        public static void RegisterWall(Wall wall) => Instance.RegisterWall(wall);
+
+        public static void UnregisterWall(Wall wall) => Instance.UnregisterWall(wall);
     }
 }

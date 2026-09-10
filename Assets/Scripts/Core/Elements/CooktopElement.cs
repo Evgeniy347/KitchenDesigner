@@ -187,7 +187,10 @@ namespace KitchenDesigner.Core
             }
 
             if (Mount.PartMoved) SnapToPart();
+            else if (PoseVersion == _lastPoseVersion) enabled = false;
         }
+
+        protected override void OnOwnPoseVersionBumped() => enabled = true;
 
         public override void ApplyDimensions()
         {

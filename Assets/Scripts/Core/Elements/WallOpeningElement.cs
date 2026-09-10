@@ -78,7 +78,10 @@ namespace KitchenDesigner.Core
         {
             _isOpen = open;
             if (!Mathf.Approximately(_openT, open ? 1f : 0f))
+            {
+                enabled = true;
                 FrameRateManager.KeepAwake(OpenSeconds + AppConstants.OPENING_KEEP_AWAKE_MARGIN_SECONDS);
+            }
         }
 
         public void ToggleOpen() => SetOpen(!_isOpen);
@@ -108,7 +111,11 @@ namespace KitchenDesigner.Core
                 _lastPoseVersion = PoseVersion;
                 SnapToWall();
             }
+
+            if (Mathf.Approximately(_openT, _isOpen ? 1f : 0f)) enabled = false;
         }
+
+        protected override void OnOwnPoseVersionBumped() => enabled = true;
 
         public void StepDoor(float dt)
         {

@@ -57,6 +57,7 @@ namespace KitchenDesigner.Core
         public bool isWall = false;
         public string wallKind = "";
         public float[] wallEndShape = System.Array.Empty<float>();
+        public bool wallLoadBearing = true;
         public bool isFacade = false;
         public bool isRadialShelf = false;
         public bool isTable = false;

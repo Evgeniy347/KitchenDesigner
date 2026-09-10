@@ -198,7 +198,10 @@ namespace KitchenDesigner.Core
         {
             _open = open;
             if (Door.IsAnimatingTowards(open))
+            {
+                enabled = true;
                 FrameRateManager.KeepAwake(DropDoor.OPEN_SECONDS + DropDoor.KEEP_AWAKE_MARGIN_SECONDS);
+            }
         }
 
         public void ToggleOpen() => SetOpen(!_open);

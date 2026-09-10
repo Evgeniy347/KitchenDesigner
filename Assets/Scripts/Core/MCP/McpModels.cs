@@ -72,6 +72,7 @@ namespace KitchenDesigner.Core.MCP
         public string? edges;
         public string? attachedToName;
         public bool? attachDetached;
+        public bool? wallLoadBearing;
 
         public string? facadeMode;
         public float? faceNormalX, faceNormalY, faceNormalZ;

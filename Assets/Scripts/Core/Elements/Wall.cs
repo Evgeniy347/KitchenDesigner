@@ -7,6 +7,9 @@ namespace KitchenDesigner.Core
     {
         [SerializeField] private string _kind = "";
         public string Kind { get => _kind; set => _kind = value ?? ""; }
+        [SerializeField] private bool _loadBearing = true;
+        [Undoable]
+        public bool LoadBearing { get => _loadBearing; set => _loadBearing = value; }
         [SerializeField] private WallMeshBuilder.EndShape _endShape = default;
         [SerializeField] private bool _hasEndShape;
         public WallMeshBuilder.EndShape EndShape => _hasEndShape ? _endShape : WallMeshBuilder.EndShape.Square;
@@ -145,6 +148,11 @@ namespace KitchenDesigner.Core
             RebuildMesh();
         }
 
+        private void Awake()
+        {
+            if (!ElementFactorySandbox.IsActive) PartRegistry.RegisterWall(this);
+        }
+
         private void LateUpdate() => SyncOpeningsIfChanged();
 
         private (Vector3 pos, Quaternion rot, Vector3 scale, Vector3Int dims) CurrentGeometry()
@@ -230,6 +238,7 @@ namespace KitchenDesigner.Core
 
         private void OnDestroy()
         {
+            if (!ElementFactorySandbox.IsActive) PartRegistry.UnregisterWall(this);
             if (_customMesh != null)
             {
                 if (Application.isPlaying) Object.Destroy(_customMesh);

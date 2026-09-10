@@ -54,8 +54,8 @@ exception still fires, and a self-test proving the scanner sees the contract at 
 обязан пересобираться (`PipeRunFit`), а остаток округления — делиться между **обоими** стыками,
 а не сваливаться на один: 0,25 мм на стык вместо 0,65 мм на одном. Лечить такое подкруткой
 `Tolerance.ContactMm` или `PipeJoint.JoinToleranceMm` запрещено: допуск описывает точность
-
 посадки, а не прячет арифметику.
+
 ## CRITICAL: File operations — NEVER delete permanently
 
 When deleting files, ALWAYS move to trash first. Never use `rm -rf`, `Remove-Item -Force`, or `git clean` on source/config files.

@@ -140,6 +140,10 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Material decor id or display name (see list_materials). Omit to keep.")]
         public string? material;
 
+        [McpParam("Wall only: true = load-bearing (counts toward foundation planning), false = " +
+                  "partition. New walls default to true. Omit to keep.")]
+        public bool? load_bearing;
+
         [McpParam("Gap in MM on the left side. Omit to keep.", Min = 0)] public int? gap_left;
         [McpParam("Gap in MM on the right side. Omit to keep.", Min = 0)] public int? gap_right;
         [McpParam("Gap in MM on the top side. Omit to keep.", Min = 0)] public int? gap_top;

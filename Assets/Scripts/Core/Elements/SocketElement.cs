@@ -123,10 +123,12 @@ namespace KitchenDesigner.Core
 
         internal void Update()
         {
-            if (PoseVersion == _lastPoseVersion) return;
+            if (PoseVersion == _lastPoseVersion) { enabled = false; return; }
             _lastPoseVersion = PoseVersion;
             SnapToWall();
         }
+
+        protected override void OnOwnPoseVersionBumped() => enabled = true;
 
         public void SnapToWall() => WallSeating.Seat(this, WallDeviceLayout
             .ClampProtrusionMM(_protrusionMM));

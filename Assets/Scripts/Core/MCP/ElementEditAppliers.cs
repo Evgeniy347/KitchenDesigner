@@ -189,6 +189,12 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (op.is_open.HasValue) oven.SetOpen(op.is_open.Value);
             }),
+            (op, el) =>
+            {
+                if (!op.load_bearing.HasValue) return;
+                var wall = el.GetComponent<Wall>();
+                if (wall != null) wall.LoadBearing = op.load_bearing.Value;
+            },
         };
 
         public static void ApplyTypeSpecific(EditOp op, KitchenElement el)

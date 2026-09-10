@@ -9,5 +9,9 @@ namespace KitchenDesigner.Core
         void Unregister(KitchenElement element);
         List<KitchenElement> GetAll();
         void Clear();
+
+        IReadOnlyList<Wall> Walls { get; }
+        void RegisterWall(Wall wall);
+        void UnregisterWall(Wall wall);
     }
 }

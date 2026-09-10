@@ -517,7 +517,15 @@ namespace KitchenDesigner.Core
 
         public int PoseVersion { get; private set; }
 
-        internal void BumpPoseVersion() => PoseVersion++;
+        internal void BumpPoseVersion()
+        {
+            PoseVersion++;
+            OnOwnPoseVersionBumped();
+            foreach (var cutout in _cutouts)
+                if (!IsGone(cutout) && cutout is KitchenElement hosted) hosted.enabled = true;
+        }
+
+        protected virtual void OnOwnPoseVersionBumped() { }
 
         private void Awake()
         {

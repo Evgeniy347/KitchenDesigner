@@ -25,11 +25,15 @@ namespace KitchenDesigner.Core
             Vector3 sceneCenter = Vector3.zero;
             float loweredUnits = LoweredHeightMM * AppConstants.MM_TO_UNITS;
 
-            foreach (var e in PartRegistry.All)
+            foreach (var wall in PartRegistry.Walls)
             {
-                if (e == null) continue;
-                var wall = e.GetComponent<Wall>();
                 if (wall == null) continue;
+                var e = wall.GetComponent<KitchenElement>();
+                if (e == null) continue;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                _wallsVisited++;
+#endif
 
                 var renderer = e.GetComponent<MeshRenderer>();
                 if (renderer != null) renderer.enabled = show;
@@ -68,6 +72,15 @@ namespace KitchenDesigner.Core
         {
             int n = _activeOpeningVisibilityApplications;
             _activeOpeningVisibilityApplications = 0;
+            return n;
+        }
+
+        private static int _wallsVisited;
+
+        public static int TakeWallsVisited()
+        {
+            int n = _wallsVisited;
+            _wallsVisited = 0;
             return n;
         }
 #endif

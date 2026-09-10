@@ -5,6 +5,7 @@ namespace KitchenDesigner.Core
     public class PartRegistryInstance : IPartRegistry
     {
         private readonly List<KitchenElement> _all = new List<KitchenElement>();
+        private readonly List<Wall> _walls = new List<Wall>();
 
         private static int _getAllCalls;
 
@@ -52,10 +53,31 @@ namespace KitchenDesigner.Core
 
         public void Clear()
         {
+            _walls.Clear();
             if (_all.Count == 0) return;
             _all.Clear();
             SceneChangeTracker.NoteMembershipChanged();
             SceneRevision.Bump();
+        }
+
+        public IReadOnlyList<Wall> Walls
+        {
+            get
+            {
+                _walls.RemoveAll(w => w == null);
+                return _walls;
+            }
+        }
+
+        public void RegisterWall(Wall wall)
+        {
+            if (wall == null || _walls.Contains(wall)) return;
+            _walls.Add(wall);
+        }
+
+        public void UnregisterWall(Wall wall)
+        {
+            _walls.Remove(wall);
         }
 
         private void PurgeDead()

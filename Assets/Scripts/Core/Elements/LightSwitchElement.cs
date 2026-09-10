@@ -150,16 +150,31 @@ namespace KitchenDesigner.Core
             LightSwitchNetwork.Refresh();
         }
 
+        private bool _skipNextEnableRefresh;
+
         private void Start() => SnapToWall();
 
-        private void OnEnable() => LightSwitchNetwork.Refresh();
+        private void OnEnable()
+        {
+            if (_skipNextEnableRefresh) { _skipNextEnableRefresh = false; return; }
+            LightSwitchNetwork.Refresh();
+        }
 
         internal void Update()
         {
-            if (PoseVersion == _lastPoseVersion) return;
+            if (PoseVersion == _lastPoseVersion) { enabled = false; return; }
             _lastPoseVersion = PoseVersion;
             SnapToWall();
         }
+
+        private void Wake()
+        {
+            if (enabled) return;
+            _skipNextEnableRefresh = true;
+            enabled = true;
+        }
+
+        protected override void OnOwnPoseVersionBumped() => Wake();
 
         public void SnapToWall() => WallSeating.Seat(this, WallDeviceLayout
             .ClampProtrusionMM(_protrusionMM));

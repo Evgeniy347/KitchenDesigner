@@ -51284,9 +51284,9 @@
                 34
             ],
             "position": [
-                0.4414999783039093,
-                0.07450000196695328,
-                0.7330000400543213
+                0.4421500563621521,
+                0.07450008392333985,
+                0.911085844039917
             ],
             "rotation": [
                 0.0,
@@ -51451,14 +51451,14 @@
             ],
             "position": [
                 0.8705000281333923,
-                0.07450000196695328,
+                0.07450000941753388,
                 0.7330000400543213
             ],
             "rotation": [
-                -6.18172535382655e-8,
                 0.0,
-                -0.70710688829422,
-                0.7071067094802856
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
             ],
             "movable": true,
             "isWall": false,
@@ -51607,6 +51607,1832 @@
             "pipeLengthMM": 600,
             "isPipeFitting": true,
             "pipeFittingType": "pipe_elbow"
+        },
+        {
+            "name": "Obratka_1",
+            "dimensionsMM": [
+                67,
+                46,
+                67
+            ],
+            "position": [
+                0.8822250366210938,
+                0.022925011813640596,
+                0.9110859036445618
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "isStool": false,
+            "isChair": false,
+            "isSofa": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": false,
+            "isWallHungToilet": false,
+            "toiletSeatHeightMM": 400,
+            "toiletFlushPlateHeightMM": 600,
+            "isBathtub": false,
+            "bathtubRimWidthMM": 40,
+            "bathtubBowlDepthMM": 450,
+            "bathtubBowlRadiusMM": 120,
+            "bathtubBowlFilletMM": 80,
+            "isBathMixer": false,
+            "bathMixerCentresMM": 150,
+            "bathMixerBodyLengthMM": 270,
+            "bathMixerBodyDiameterMM": 70,
+            "bathMixerEscutcheonReachMM": 34,
+            "bathMixerSpoutLengthMM": 110,
+            "bathMixerOutletDiameterMM": 13,
+            "isShowerColumn": false,
+            "showerColumnHeightMM": 1150,
+            "showerRiserDiameterMM": 32,
+            "showerHeadDiameterMM": 250,
+            "showerHeadThicknessMM": 30,
+            "showerArmReachMM": 380,
+            "showerWallOffsetMM": 60,
+            "showerHandDiameterMM": 110,
+            "showerHoseLengthMM": 1000,
+            "isSocket": false,
+            "isLightSwitch": false,
+            "wallDevicePlateWidthMM": 80,
+            "wallDevicePlateHeightMM": 80,
+            "wallDeviceProtrusionMM": 10,
+            "wallDevicePostCount": 1,
+            "lightSwitchOn": true,
+            "switchLightNames": [],
+            "isBed": false,
+            "bedDouble": true,
+            "bedHeadboard": true,
+            "seatHeightMM": 450,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600,
+            "isPipeFitting": true,
+            "pipeFittingType": "pipe_return"
+        },
+        {
+            "name": "Podacha_1",
+            "dimensionsMM": [
+                67,
+                46,
+                67
+            ],
+            "position": [
+                0.4304250478744507,
+                0.022925082594156266,
+                0.911085844039917
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "isStool": false,
+            "isChair": false,
+            "isSofa": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": false,
+            "isWallHungToilet": false,
+            "toiletSeatHeightMM": 400,
+            "toiletFlushPlateHeightMM": 600,
+            "isBathtub": false,
+            "bathtubRimWidthMM": 40,
+            "bathtubBowlDepthMM": 450,
+            "bathtubBowlRadiusMM": 120,
+            "bathtubBowlFilletMM": 80,
+            "isBathMixer": false,
+            "bathMixerCentresMM": 150,
+            "bathMixerBodyLengthMM": 270,
+            "bathMixerBodyDiameterMM": 70,
+            "bathMixerEscutcheonReachMM": 34,
+            "bathMixerSpoutLengthMM": 110,
+            "bathMixerOutletDiameterMM": 13,
+            "isShowerColumn": false,
+            "showerColumnHeightMM": 1150,
+            "showerRiserDiameterMM": 32,
+            "showerHeadDiameterMM": 250,
+            "showerHeadThicknessMM": 30,
+            "showerArmReachMM": 380,
+            "showerWallOffsetMM": 60,
+            "showerHandDiameterMM": 110,
+            "showerHoseLengthMM": 1000,
+            "isSocket": false,
+            "isLightSwitch": false,
+            "wallDevicePlateWidthMM": 80,
+            "wallDevicePlateHeightMM": 80,
+            "wallDeviceProtrusionMM": 10,
+            "wallDevicePostCount": 1,
+            "lightSwitchOn": true,
+            "switchLightNames": [],
+            "isBed": false,
+            "bedDouble": true,
+            "bedHeadboard": true,
+            "seatHeightMM": 450,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600,
+            "isPipeFitting": true,
+            "pipeFittingType": "pipe_supply"
+        },
+        {
+            "name": "Obratka_1_pipe_tee",
+            "dimensionsMM": [
+                57,
+                80,
+                34
+            ],
+            "position": [
+                0.8705000281333923,
+                0.0862250104546547,
+                0.9110859036445618
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "isStool": false,
+            "isChair": false,
+            "isSofa": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": false,
+            "isWallHungToilet": false,
+            "toiletSeatHeightMM": 400,
+            "toiletFlushPlateHeightMM": 600,
+            "isBathtub": false,
+            "bathtubRimWidthMM": 40,
+            "bathtubBowlDepthMM": 450,
+            "bathtubBowlRadiusMM": 120,
+            "bathtubBowlFilletMM": 80,
+            "isBathMixer": false,
+            "bathMixerCentresMM": 150,
+            "bathMixerBodyLengthMM": 270,
+            "bathMixerBodyDiameterMM": 70,
+            "bathMixerEscutcheonReachMM": 34,
+            "bathMixerSpoutLengthMM": 110,
+            "bathMixerOutletDiameterMM": 13,
+            "isShowerColumn": false,
+            "showerColumnHeightMM": 1150,
+            "showerRiserDiameterMM": 32,
+            "showerHeadDiameterMM": 250,
+            "showerHeadThicknessMM": 30,
+            "showerArmReachMM": 380,
+            "showerWallOffsetMM": 60,
+            "showerHandDiameterMM": 110,
+            "showerHoseLengthMM": 1000,
+            "isSocket": false,
+            "isLightSwitch": false,
+            "wallDevicePlateWidthMM": 80,
+            "wallDevicePlateHeightMM": 80,
+            "wallDeviceProtrusionMM": 10,
+            "wallDevicePostCount": 1,
+            "lightSwitchOn": true,
+            "switchLightNames": [],
+            "isBed": false,
+            "bedDouble": true,
+            "bedHeadboard": true,
+            "seatHeightMM": 450,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600,
+            "isPipeFitting": true,
+            "pipeFittingType": "pipe_tee"
+        },
+        {
+            "name": "Truba_1",
+            "dimensionsMM": [
+                27,
+                173,
+                27
+            ],
+            "position": [
+                0.7555250525474548,
+                0.08622504025697708,
+                0.911085844039917
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "isStool": false,
+            "isChair": false,
+            "isSofa": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": false,
+            "isWallHungToilet": false,
+            "toiletSeatHeightMM": 400,
+            "toiletFlushPlateHeightMM": 600,
+            "isBathtub": false,
+            "bathtubRimWidthMM": 40,
+            "bathtubBowlDepthMM": 450,
+            "bathtubBowlRadiusMM": 120,
+            "bathtubBowlFilletMM": 80,
+            "isBathMixer": false,
+            "bathMixerCentresMM": 150,
+            "bathMixerBodyLengthMM": 270,
+            "bathMixerBodyDiameterMM": 70,
+            "bathMixerEscutcheonReachMM": 34,
+            "bathMixerSpoutLengthMM": 110,
+            "bathMixerOutletDiameterMM": 13,
+            "isShowerColumn": false,
+            "showerColumnHeightMM": 1150,
+            "showerRiserDiameterMM": 32,
+            "showerHeadDiameterMM": 250,
+            "showerHeadThicknessMM": 30,
+            "showerArmReachMM": 380,
+            "showerWallOffsetMM": 60,
+            "showerHandDiameterMM": 110,
+            "showerHoseLengthMM": 1000,
+            "isSocket": false,
+            "isLightSwitch": false,
+            "wallDevicePlateWidthMM": 80,
+            "wallDevicePlateHeightMM": 80,
+            "wallDeviceProtrusionMM": 10,
+            "wallDevicePostCount": 1,
+            "lightSwitchOn": true,
+            "switchLightNames": [],
+            "isBed": false,
+            "bedDouble": true,
+            "bedHeadboard": true,
+            "seatHeightMM": 450,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8,
+            "isPipe": true,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 173,
+            "isPipeFitting": false,
+            "pipeFittingType": "pipe_elbow"
+        },
+        {
+            "name": "Truba_pipe_elbow_1",
+            "dimensionsMM": [
+                57,
+                57,
+                34
+            ],
+            "position": [
+                0.4414999783039093,
+                0.07450000196695328,
+                0.7330000400543213
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "isStool": false,
+            "isChair": false,
+            "isSofa": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": false,
+            "isWallHungToilet": false,
+            "toiletSeatHeightMM": 400,
+            "toiletFlushPlateHeightMM": 600,
+            "isBathtub": false,
+            "bathtubRimWidthMM": 40,
+            "bathtubBowlDepthMM": 450,
+            "bathtubBowlRadiusMM": 120,
+            "bathtubBowlFilletMM": 80,
+            "isBathMixer": false,
+            "bathMixerCentresMM": 150,
+            "bathMixerBodyLengthMM": 270,
+            "bathMixerBodyDiameterMM": 70,
+            "bathMixerEscutcheonReachMM": 34,
+            "bathMixerSpoutLengthMM": 110,
+            "bathMixerOutletDiameterMM": 13,
+            "isShowerColumn": false,
+            "showerColumnHeightMM": 1150,
+            "showerRiserDiameterMM": 32,
+            "showerHeadDiameterMM": 250,
+            "showerHeadThicknessMM": 30,
+            "showerArmReachMM": 380,
+            "showerWallOffsetMM": 60,
+            "showerHandDiameterMM": 110,
+            "showerHoseLengthMM": 1000,
+            "isSocket": false,
+            "isLightSwitch": false,
+            "wallDevicePlateWidthMM": 80,
+            "wallDevicePlateHeightMM": 80,
+            "wallDeviceProtrusionMM": 10,
+            "wallDevicePostCount": 1,
+            "lightSwitchOn": true,
+            "switchLightNames": [],
+            "isBed": false,
+            "bedDouble": true,
+            "bedHeadboard": true,
+            "seatHeightMM": 450,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600,
+            "isPipeFitting": true,
+            "pipeFittingType": "pipe_elbow"
+        },
+        {
+            "name": "Obratka_1_pipe_tee_1",
+            "dimensionsMM": [
+                57,
+                80,
+                34
+            ],
+            "position": [
+                0.6288250684738159,
+                0.0979500412940979,
+                0.911085844039917
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "isStool": false,
+            "isChair": false,
+            "isSofa": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": false,
+            "isWallHungToilet": false,
+            "toiletSeatHeightMM": 400,
+            "toiletFlushPlateHeightMM": 600,
+            "isBathtub": false,
+            "bathtubRimWidthMM": 40,
+            "bathtubBowlDepthMM": 450,
+            "bathtubBowlRadiusMM": 120,
+            "bathtubBowlFilletMM": 80,
+            "isBathMixer": false,
+            "bathMixerCentresMM": 150,
+            "bathMixerBodyLengthMM": 270,
+            "bathMixerBodyDiameterMM": 70,
+            "bathMixerEscutcheonReachMM": 34,
+            "bathMixerSpoutLengthMM": 110,
+            "bathMixerOutletDiameterMM": 13,
+            "isShowerColumn": false,
+            "showerColumnHeightMM": 1150,
+            "showerRiserDiameterMM": 32,
+            "showerHeadDiameterMM": 250,
+            "showerHeadThicknessMM": 30,
+            "showerArmReachMM": 380,
+            "showerWallOffsetMM": 60,
+            "showerHandDiameterMM": 110,
+            "showerHoseLengthMM": 1000,
+            "isSocket": false,
+            "isLightSwitch": false,
+            "wallDevicePlateWidthMM": 80,
+            "wallDevicePlateHeightMM": 80,
+            "wallDeviceProtrusionMM": 10,
+            "wallDevicePostCount": 1,
+            "lightSwitchOn": true,
+            "switchLightNames": [],
+            "isBed": false,
+            "bedDouble": true,
+            "bedHeadboard": true,
+            "seatHeightMM": 450,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600,
+            "isPipeFitting": true,
+            "pipeFittingType": "pipe_tee"
+        },
+        {
+            "name": "Truba_2",
+            "dimensionsMM": [
+                27,
+                118,
+                27
+            ],
+            "position": [
+                0.5296250581741333,
+                0.08622507750988007,
+                0.911085844039917
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "isStool": false,
+            "isChair": false,
+            "isSofa": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": false,
+            "isWallHungToilet": false,
+            "toiletSeatHeightMM": 400,
+            "toiletFlushPlateHeightMM": 600,
+            "isBathtub": false,
+            "bathtubRimWidthMM": 40,
+            "bathtubBowlDepthMM": 450,
+            "bathtubBowlRadiusMM": 120,
+            "bathtubBowlFilletMM": 80,
+            "isBathMixer": false,
+            "bathMixerCentresMM": 150,
+            "bathMixerBodyLengthMM": 270,
+            "bathMixerBodyDiameterMM": 70,
+            "bathMixerEscutcheonReachMM": 34,
+            "bathMixerSpoutLengthMM": 110,
+            "bathMixerOutletDiameterMM": 13,
+            "isShowerColumn": false,
+            "showerColumnHeightMM": 1150,
+            "showerRiserDiameterMM": 32,
+            "showerHeadDiameterMM": 250,
+            "showerHeadThicknessMM": 30,
+            "showerArmReachMM": 380,
+            "showerWallOffsetMM": 60,
+            "showerHandDiameterMM": 110,
+            "showerHoseLengthMM": 1000,
+            "isSocket": false,
+            "isLightSwitch": false,
+            "wallDevicePlateWidthMM": 80,
+            "wallDevicePlateHeightMM": 80,
+            "wallDeviceProtrusionMM": 10,
+            "wallDevicePostCount": 1,
+            "lightSwitchOn": true,
+            "switchLightNames": [],
+            "isBed": false,
+            "bedDouble": true,
+            "bedHeadboard": true,
+            "seatHeightMM": 450,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8,
+            "isPipe": true,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 118,
+            "isPipeFitting": false,
+            "pipeFittingType": "pipe_elbow"
+        },
+        {
+            "name": "Truba_3",
+            "dimensionsMM": [
+                27,
+                173,
+                27
+            ],
+            "position": [
+                0.7555250525474548,
+                0.1666250228881836,
+                0.911085844039917
+            ],
+            "rotation": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "isStool": false,
+            "isChair": false,
+            "isSofa": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": false,
+            "isWallHungToilet": false,
+            "toiletSeatHeightMM": 400,
+            "toiletFlushPlateHeightMM": 600,
+            "isBathtub": false,
+            "bathtubRimWidthMM": 40,
+            "bathtubBowlDepthMM": 450,
+            "bathtubBowlRadiusMM": 120,
+            "bathtubBowlFilletMM": 80,
+            "isBathMixer": false,
+            "bathMixerCentresMM": 150,
+            "bathMixerBodyLengthMM": 270,
+            "bathMixerBodyDiameterMM": 70,
+            "bathMixerEscutcheonReachMM": 34,
+            "bathMixerSpoutLengthMM": 110,
+            "bathMixerOutletDiameterMM": 13,
+            "isShowerColumn": false,
+            "showerColumnHeightMM": 1150,
+            "showerRiserDiameterMM": 32,
+            "showerHeadDiameterMM": 250,
+            "showerHeadThicknessMM": 30,
+            "showerArmReachMM": 380,
+            "showerWallOffsetMM": 60,
+            "showerHandDiameterMM": 110,
+            "showerHoseLengthMM": 1000,
+            "isSocket": false,
+            "isLightSwitch": false,
+            "wallDevicePlateWidthMM": 80,
+            "wallDevicePlateHeightMM": 80,
+            "wallDeviceProtrusionMM": 10,
+            "wallDevicePostCount": 1,
+            "lightSwitchOn": true,
+            "switchLightNames": [],
+            "isBed": false,
+            "bedDouble": true,
+            "bedHeadboard": true,
+            "seatHeightMM": 450,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8,
+            "isPipe": true,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 173,
+            "isPipeFitting": false,
+            "pipeFittingType": "pipe_elbow"
+        },
+        {
+            "name": "Truba_pipe_elbow_2",
+            "dimensionsMM": [
+                57,
+                57,
+                34
+            ],
+            "position": [
+                0.6405500769615173,
+                0.15490004420280457,
+                0.911085844039917
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "isStool": false,
+            "isChair": false,
+            "isSofa": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": false,
+            "isWallHungToilet": false,
+            "toiletSeatHeightMM": 400,
+            "toiletFlushPlateHeightMM": 600,
+            "isBathtub": false,
+            "bathtubRimWidthMM": 40,
+            "bathtubBowlDepthMM": 450,
+            "bathtubBowlRadiusMM": 120,
+            "bathtubBowlFilletMM": 80,
+            "isBathMixer": false,
+            "bathMixerCentresMM": 150,
+            "bathMixerBodyLengthMM": 270,
+            "bathMixerBodyDiameterMM": 70,
+            "bathMixerEscutcheonReachMM": 34,
+            "bathMixerSpoutLengthMM": 110,
+            "bathMixerOutletDiameterMM": 13,
+            "isShowerColumn": false,
+            "showerColumnHeightMM": 1150,
+            "showerRiserDiameterMM": 32,
+            "showerHeadDiameterMM": 250,
+            "showerHeadThicknessMM": 30,
+            "showerArmReachMM": 380,
+            "showerWallOffsetMM": 60,
+            "showerHandDiameterMM": 110,
+            "showerHoseLengthMM": 1000,
+            "isSocket": false,
+            "isLightSwitch": false,
+            "wallDevicePlateWidthMM": 80,
+            "wallDevicePlateHeightMM": 80,
+            "wallDeviceProtrusionMM": 10,
+            "wallDevicePostCount": 1,
+            "lightSwitchOn": true,
+            "switchLightNames": [],
+            "isBed": false,
+            "bedDouble": true,
+            "bedHeadboard": true,
+            "seatHeightMM": 450,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600,
+            "isPipeFitting": true,
+            "pipeFittingType": "pipe_elbow"
+        },
+        {
+            "name": "Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow_1",
+            "dimensionsMM": [
+                57,
+                57,
+                34
+            ],
+            "position": [
+                0.8705000281333923,
+                0.15490001440048219,
+                0.911085844039917
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "isStool": false,
+            "isChair": false,
+            "isSofa": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": false,
+            "isWallHungToilet": false,
+            "toiletSeatHeightMM": 400,
+            "toiletFlushPlateHeightMM": 600,
+            "isBathtub": false,
+            "bathtubRimWidthMM": 40,
+            "bathtubBowlDepthMM": 450,
+            "bathtubBowlRadiusMM": 120,
+            "bathtubBowlFilletMM": 80,
+            "isBathMixer": false,
+            "bathMixerCentresMM": 150,
+            "bathMixerBodyLengthMM": 270,
+            "bathMixerBodyDiameterMM": 70,
+            "bathMixerEscutcheonReachMM": 34,
+            "bathMixerSpoutLengthMM": 110,
+            "bathMixerOutletDiameterMM": 13,
+            "isShowerColumn": false,
+            "showerColumnHeightMM": 1150,
+            "showerRiserDiameterMM": 32,
+            "showerHeadDiameterMM": 250,
+            "showerHeadThicknessMM": 30,
+            "showerArmReachMM": 380,
+            "showerWallOffsetMM": 60,
+            "showerHandDiameterMM": 110,
+            "showerHoseLengthMM": 1000,
+            "isSocket": false,
+            "isLightSwitch": false,
+            "wallDevicePlateWidthMM": 80,
+            "wallDevicePlateHeightMM": 80,
+            "wallDeviceProtrusionMM": 10,
+            "wallDevicePostCount": 1,
+            "lightSwitchOn": true,
+            "switchLightNames": [],
+            "isBed": false,
+            "bedDouble": true,
+            "bedHeadboard": true,
+            "seatHeightMM": 450,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600,
+            "isPipeFitting": true,
+            "pipeFittingType": "pipe_elbow"
+        },
+        {
+            "name": "SmokeTestSave_13336",
+            "dimensionsMM": [
+                444,
+                55,
+                222
+            ],
+            "position": [
+                9.222000122070313,
+                0.027500001713633539,
+                9.611000061035157
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true,
+            "isWall": false,
+            "wallKind": "",
+            "wallEndShape": [],
+            "isFacade": false,
+            "isRadialShelf": false,
+            "isTable": false,
+            "isRadiusTable": false,
+            "isStool": false,
+            "isChair": false,
+            "isSofa": false,
+            "isPouffe": false,
+            "pouffeSeatThicknessMM": 50,
+            "isToilet": false,
+            "isWallHungToilet": false,
+            "toiletSeatHeightMM": 400,
+            "toiletFlushPlateHeightMM": 600,
+            "isBathtub": false,
+            "bathtubRimWidthMM": 40,
+            "bathtubBowlDepthMM": 450,
+            "bathtubBowlRadiusMM": 120,
+            "bathtubBowlFilletMM": 80,
+            "isBathMixer": false,
+            "bathMixerCentresMM": 150,
+            "bathMixerBodyLengthMM": 270,
+            "bathMixerBodyDiameterMM": 70,
+            "bathMixerEscutcheonReachMM": 34,
+            "bathMixerSpoutLengthMM": 110,
+            "bathMixerOutletDiameterMM": 13,
+            "isShowerColumn": false,
+            "showerColumnHeightMM": 1150,
+            "showerRiserDiameterMM": 32,
+            "showerHeadDiameterMM": 250,
+            "showerHeadThicknessMM": 30,
+            "showerArmReachMM": 380,
+            "showerWallOffsetMM": 60,
+            "showerHandDiameterMM": 110,
+            "showerHoseLengthMM": 1000,
+            "isSocket": false,
+            "isLightSwitch": false,
+            "wallDevicePlateWidthMM": 80,
+            "wallDevicePlateHeightMM": 80,
+            "wallDeviceProtrusionMM": 10,
+            "wallDevicePostCount": 1,
+            "lightSwitchOn": true,
+            "switchLightNames": [],
+            "isBed": false,
+            "bedDouble": true,
+            "bedHeadboard": true,
+            "seatHeightMM": 450,
+            "legInsetMM": 100,
+            "gapLeft": 0,
+            "gapRight": 0,
+            "gapTop": 0,
+            "gapBottom": 0,
+            "gapFront": 0,
+            "gapBack": 0,
+            "groupId": 0,
+            "materialId": "default",
+            "legsMaterialId": "default",
+            "tabletopMaterialId": "default",
+            "transparent": false,
+            "doorMode": 0,
+            "doorOpen": false,
+            "assembled": false,
+            "assembledFill": 0,
+            "grooveCount": 0,
+            "cornerRadius": 0,
+            "isDrawer": false,
+            "drawerSystem": 0,
+            "drawerType": 0,
+            "drawerNominalLength": 350,
+            "drawerColor": 0,
+            "drawerInternalWidth": 400,
+            "drawerIsDouble": false,
+            "drawerIsUpper": false,
+            "drawerPairedName": "",
+            "drawerAttachedFacadeName": "",
+            "attachedToName": "",
+            "doubleDrawerState": 0,
+            "isWindow": false,
+            "windowTint": 0,
+            "windowSillProtrusionMM": 50,
+            "windowDoorMode": 0,
+            "windowIsOpen": false,
+            "windowAttachedWallName": "",
+            "isDoor": false,
+            "doorSashType": 0,
+            "doorDoorMode": 0,
+            "doorIsOpen": false,
+            "doorAttachedWallName": "",
+            "isPillar": false,
+            "midHeightMM": 75,
+            "isFloor": false,
+            "floorPolygonXZ": [],
+            "isLightSource": false,
+            "lightTemperatureK": 3000,
+            "lightPowerW": 9,
+            "lightDiffusionPct": 50,
+            "lightUpPct": 8,
+            "lightBeamDeg": 150,
+            "lightSoftnessPct": 30,
+            "lightRangeMinMM": 2000,
+            "lightRangeMaxMM": 16000,
+            "lightDropMM": 120,
+            "lightUpConePct": 66,
+            "lightUpRangePct": 50,
+            "lightEfficacyLmPerW": 110,
+            "lightLumensPerUnit": 700,
+            "lightGlowPct": 100,
+            "lightShadowStrengthPct": 70,
+            "lightShape": 0,
+            "lightShadow": 0,
+            "isPanel": false,
+            "isSink": false,
+            "sinkAttachedPartName": "",
+            "sinkOffsetXMM": 0,
+            "sinkOffsetYMM": 0,
+            "isCooktop": false,
+            "cooktopModel": "",
+            "cooktopAttachedPartName": "",
+            "cooktopOffsetXMM": 0,
+            "cooktopOffsetYMM": 0,
+            "cooktopCutoutWidthMM": 0,
+            "cooktopCutoutDepthMM": 0,
+            "cooktopYawDeg": 0.0,
+            "isOven": false,
+            "isDishwasher": false,
+            "dishwasherAttachedFacadeName": "",
+            "grooves": [],
+            "textureOverlays": [],
+            "edgeBanding": true,
+            "edgeThicknessMM": 1.0,
+            "edgeSkipValidation": false,
+            "edgeManualMask": 0,
+            "edgeSuppressedMask": 0,
+            "isScrewLeg": false,
+            "screwLegThread": "M6",
+            "screwLegThreadLengthMM": 50,
+            "screwLegInsertionMM": 25,
+            "screwLegBaseDiameterMM": 25,
+            "screwLegBaseHeightMM": 8,
+            "isPipe": false,
+            "pipeSizeId": "dn20",
+            "pipeLengthMM": 600,
+            "isPipeFitting": false,
+            "pipeFittingType": "pipe_elbow"
         }
     ],
     "groups": [
@@ -51696,11 +53522,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 0.8676758408546448,
-        "targetY": -0.5704795718193054,
-        "targetZ": 1.5383720397949219,
-        "angleX": 33.61177062988281,
-        "angleY": -2507.183349609375,
+        "targetX": 0.6938307285308838,
+        "targetY": 0.15195661783218385,
+        "targetZ": 1.0232181549072266,
+        "angleX": 25.560962677001954,
+        "angleY": -2378.17822265625,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": 4.681513786315918,
@@ -51709,7 +53535,7 @@
         "photoAngleX": -13.948541641235352,
         "photoAngleY": -917.5298461914063
     },
-    "handleMode": "Move",
+    "handleMode": "Resize",
     "projectInstructions": "Планировка квартиры 85,8 м2 (2-комнатная), панельный дом.\n\nОси: X — восток(+), Z — север(+), Y — вверх. Все размеры в мм.\nНачало отсчёта плана (origin) — внутренний юго-западный угол комнаты 22,9 м2:\nмировые координаты (-1585, -3620). Комната 22,9 в чистоте 3170 x 7240.\nКухонные модули (ряды A и B) стоят вплотную к граням z=0 и x=3170 —\nэти грани двигать НЕЛЬЗЯ.\n\nbearing_wall_thickness_mm: 250\npartition_wall_thickness_mm: 125\nfloor_thickness_mm: 100\n\nСтена состоит из ОТДЕЛЬНЫХ БЛОКОВ: несущие пилоны 250 мм (шаг 1200) чередуются\nс перегородками 125 мм по одной линии. Фасады 150 мм — задаются через\nthickness_mm на стене, а не типом. Тёмно-серый на чертеже = несущая,\nсветло-серый = перегородка.\nВысота стен 2700, низ стен и верх пола на Y=0.\n",
     "basePlateValid": true,
     "basePlate": {
@@ -51879,902 +53705,6 @@
         "pipeFittingType": "pipe_elbow"
     },
     "undoHistory": [
-        {
-            "type": "move",
-            "description": "Move Cab_R_Bottom_4",
-            "elementIndex": 246,
-            "posBefore": [
-                7.948000431060791,
-                0.3660000264644623,
-                2.993000030517578
-            ],
-            "posAfter": [
-                7.948000431060791,
-                0.5060000419616699,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_R_Bottom_5",
-            "elementIndex": 247,
-            "posBefore": [
-                8.04800033569336,
-                0.5060000419616699,
-                2.993000030517578
-            ],
-            "posAfter": [
-                7.932000637054443,
-                0.5060000419616699,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_R_Bottom_5",
-            "elementIndex": 247,
-            "posBefore": [
-                7.932000637054443,
-                0.5060000419616699,
-                2.993000030517578
-            ],
-            "posAfter": [
-                7.932000637054443,
-                0.2330000102519989,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_R_Bottom_5",
-            "elementIndex": 247,
-            "posBefore": [
-                7.932000637054443,
-                0.2330000102519989,
-                2.993000030517578
-            ],
-            "posAfter": [
-                7.948000907897949,
-                0.2330000102519989,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_R_Bottom_5",
-            "elementIndex": 247,
-            "posBefore": [
-                7.948000907897949,
-                0.2330000102519989,
-                2.993000030517578
-            ],
-            "posAfter": [
-                7.948000907897949,
-                0.22600001096725465,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_R_Bottom_6",
-            "elementIndex": 248,
-            "posBefore": [
-                8.04800033569336,
-                0.5060000419616699,
-                2.993000030517578
-            ],
-            "posAfter": [
-                7.948000907897949,
-                0.5060000419616699,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_R_Bottom_6",
-            "elementIndex": 248,
-            "posBefore": [
-                7.948000907897949,
-                0.5060000419616699,
-                2.993000030517578
-            ],
-            "posAfter": [
-                7.948000907897949,
-                0.5060000419616699,
-                1.3930003643035889
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_R_Bottom_7",
-            "elementIndex": 249,
-            "posBefore": [
-                8.04800033569336,
-                0.7230001091957092,
-                2.9930002689361574
-            ],
-            "posAfter": [
-                7.948000907897949,
-                0.7230001091957092,
-                2.9930002689361574
-            ],
-            "rotBefore": [
-                -0.5,
-                -0.5,
-                0.5000000596046448,
-                0.5000000596046448
-            ],
-            "rotAfter": [
-                -0.5,
-                -0.5,
-                0.5000000596046448,
-                0.5000000596046448
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_R_Bottom_7",
-            "elementIndex": 249,
-            "posBefore": [
-                7.948000907897949,
-                0.7230001091957092,
-                2.9930002689361574
-            ],
-            "posAfter": [
-                7.948000907897949,
-                0.7229999303817749,
-                1.3930003643035889
-            ],
-            "rotBefore": [
-                -0.5,
-                -0.5,
-                0.5000000596046448,
-                0.5000000596046448
-            ],
-            "rotAfter": [
-                -0.5,
-                -0.5,
-                0.5000000596046448,
-                0.5000000596046448
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_R_Bottom_8",
-            "elementIndex": 250,
-            "posBefore": [
-                8.048001289367676,
-                0.22600001096725465,
-                2.993000030517578
-            ],
-            "posAfter": [
-                7.948000907897949,
-                0.22600001096725465,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_R_Bottom_8",
-            "elementIndex": 250,
-            "posBefore": [
-                7.948000907897949,
-                0.22600001096725465,
-                2.993000030517578
-            ],
-            "posAfter": [
-                7.948000907897949,
-                0.22600001096725465,
-                1.3930003643035889
-            ],
-            "rotBefore": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "rotAfter": [
-                0.5,
-                0.5,
-                -0.5,
-                -0.5
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Fasad_schitovoy_2",
-            "elementIndex": 218,
-            "posBefore": [
-                7.131000518798828,
-                0.5960000157356262,
-                2.8010001182556154
-            ],
-            "posAfter": [
-                7.131000518798828,
-                0.5960000157356262,
-                2.8010001182556154
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                748,
-                200,
-                18
-            ],
-            "dimsAfter": [
-                748,
-                200,
-                18
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize W250_13",
-            "elementIndex": 125,
-            "posBefore": [
-                1.7100000381469727,
-                1.350000023841858,
-                0.2760000228881836
-            ],
-            "posAfter": [
-                1.7100000381469727,
-                1.350000023841858,
-                0.27650004625320437
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [
-                1582,
-                2700,
-                250
-            ],
-            "dimsAfter": [
-                1583,
-                2700,
-                250
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize W250_04",
-            "elementIndex": 107,
-            "posBefore": [
-                5.175000190734863,
-                1.350000023841858,
-                -2.192000150680542
-            ],
-            "posAfter": [
-                5.175000190734863,
-                1.350000023841858,
-                -2.191500186920166
-            ],
-            "rotBefore": [
-                0.0,
-                -0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                -0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                3104,
-                2700,
-                250
-            ],
-            "dimsAfter": [
-                3105,
-                2700,
-                250
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize W125_13",
-            "elementIndex": 136,
-            "posBefore": [
-                3.5385003089904787,
-                1.350000023841858,
-                -2.129999876022339
-            ],
-            "posAfter": [
-                3.5385003089904787,
-                1.350000023841858,
-                -2.129499912261963
-            ],
-            "rotBefore": [
-                0.0,
-                -0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                -0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                2980,
-                2700,
-                125
-            ],
-            "dimsAfter": [
-                2981,
-                2700,
-                125
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize P_HALL_N",
-            "elementIndex": 141,
-            "posBefore": [
-                5.9070000648498539,
-                1.350000023841858,
-                1.130500078201294
-            ],
-            "posAfter": [
-                5.907500267028809,
-                1.350000023841858,
-                1.130500078201294
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                1456,
-                2700,
-                125
-            ],
-            "dimsAfter": [
-                1457,
-                2700,
-                125
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize W150_12",
-            "elementIndex": 122,
-            "posBefore": [
-                5.96750020980835,
-                1.350000023841858,
-                -1.6450002193450928
-            ],
-            "posAfter": [
-                5.968000411987305,
-                1.350000023841858,
-                -1.6450002193450928
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                1335,
-                2700,
-                150
-            ],
-            "dimsAfter": [
-                1336,
-                2700,
-                150
-            ],
-            "children": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize P_R41_W",
-            "elementIndex": 142,
-            "posBefore": [
-                6.698500633239746,
-                1.350000023841858,
-                -0.2504999041557312
-            ],
-            "posAfter": [
-                6.698500633239746,
-                1.350000023841858,
-                -0.25099992752075198
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [
-                2637,
-                2700,
-                125
-            ],
-            "dimsAfter": [
-                2638,
-                2700,
-                125
-            ],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_7",
-            "elementIndex": 245,
-            "posBefore": [
-                8.155999183654786,
-                0.7425000071525574,
-                2.993000030517578
-            ],
-            "posAfter": [
-                8.190001487731934,
-                0.7425000071525574,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_7",
-            "elementIndex": 245,
-            "posBefore": [
-                8.190001487731934,
-                0.7425000071525574,
-                2.993000030517578
-            ],
-            "posAfter": [
-                8.205999374389649,
-                0.7425000071525574,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_7",
-            "elementIndex": 245,
-            "posBefore": [
-                8.205999374389649,
-                0.7425000071525574,
-                2.993000030517578
-            ],
-            "posAfter": [
-                8.190000534057618,
-                0.7425000071525574,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_7",
-            "elementIndex": 245,
-            "posBefore": [
-                8.190000534057618,
-                0.7425000071525574,
-                2.993000030517578
-            ],
-            "posAfter": [
-                8.190000534057618,
-                0.7035000324249268,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_7",
-            "elementIndex": 245,
-            "posBefore": [
-                8.190000534057618,
-                0.7035000324249268,
-                2.993000030517578
-            ],
-            "posAfter": [
-                8.205999374389649,
-                0.7035000324249268,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_8",
-            "elementIndex": 251,
-            "posBefore": [
-                8.305999755859375,
-                0.7035000324249268,
-                2.993000030517578
-            ],
-            "posAfter": [
-                8.205999374389649,
-                0.7035000324249268,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_8",
-            "elementIndex": 251,
-            "posBefore": [
-                8.205999374389649,
-                0.7035000324249268,
-                2.993000030517578
-            ],
-            "posAfter": [
-                8.205999374389649,
-                0.5065000653266907,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_8",
-            "elementIndex": 251,
-            "posBefore": [
-                8.205999374389649,
-                0.5065000653266907,
-                2.993000030517578
-            ],
-            "posAfter": [
-                8.205999374389649,
-                0.42350003123283389,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_9",
-            "elementIndex": 252,
-            "posBefore": [
-                8.305999755859375,
-                0.42350003123283389,
-                2.993000030517578
-            ],
-            "posAfter": [
-                8.206000328063965,
-                0.42350003123283389,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_9",
-            "elementIndex": 252,
-            "posBefore": [
-                8.206000328063965,
-                0.42350003123283389,
-                2.993000030517578
-            ],
-            "posAfter": [
-                8.206000328063965,
-                0.226500004529953,
-                2.993000030517578
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": []
-        },
         {
             "type": "move",
             "description": "Move Yaschik_Movento_9",
@@ -85871,6 +86801,1798 @@
             "dimsBefore": [],
             "dimsAfter": [],
             "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8705000281333923,
+                0.07450000196695328,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.8822250366210938,
+                0.07450000941753388,
+                0.7447250485420227
+            ],
+            "rotBefore": [
+                -6.18172535382655e-8,
+                0.0,
+                -0.70710688829422,
+                0.7071067094802856
+            ],
+            "rotAfter": [
+                0.5,
+                -0.5,
+                0.5,
+                -0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8822250366210938,
+                0.07450000941753388,
+                0.7447250485420227
+            ],
+            "posAfter": [
+                0.8939500451087952,
+                0.07450001686811447,
+                0.7330000400543213
+            ],
+            "rotBefore": [
+                0.5,
+                -0.5,
+                0.5,
+                -0.5
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                -0.7071068286895752,
+                -3.090862321641907e-8,
+                3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8939500451087952,
+                0.07450001686811447,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.8822250366210938,
+                0.07450000941753388,
+                0.7212750315666199
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                -0.7071068286895752,
+                -3.090862321641907e-8,
+                3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8822250366210938,
+                0.07450000941753388,
+                0.7212750315666199
+            ],
+            "posAfter": [
+                0.8705000281333923,
+                0.07450001686811447,
+                0.7330000400543213
+            ],
+            "rotBefore": [
+                0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8705000281333923,
+                0.07450001686811447,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.8704999685287476,
+                0.08622501790523529,
+                0.7212750315666199
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                -0.5,
+                -0.5,
+                0.5,
+                -0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8704999685287476,
+                0.08622501790523529,
+                0.7212750315666199
+            ],
+            "posAfter": [
+                0.8704999685287476,
+                0.09795001149177551,
+                0.7330000400543213
+            ],
+            "rotBefore": [
+                -0.5,
+                -0.5,
+                0.5,
+                -0.5
+            ],
+            "rotAfter": [
+                -0.7071068286895752,
+                -0.7071068286895752,
+                -3.090862321641907e-8,
+                3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8704999685287476,
+                0.09795001149177551,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.8704999685287476,
+                0.08622501790523529,
+                0.7447250485420227
+            ],
+            "rotBefore": [
+                -0.7071068286895752,
+                -0.7071068286895752,
+                -3.090862321641907e-8,
+                3.090862321641907e-8
+            ],
+            "rotAfter": [
+                -0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8704999685287476,
+                0.08622501790523529,
+                0.7447250485420227
+            ],
+            "posAfter": [
+                0.8704999685287476,
+                0.07450001686811447,
+                0.7330000400543213
+            ],
+            "rotBefore": [
+                -0.5,
+                -0.5,
+                -0.5,
+                0.5
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8704999685287476,
+                0.07450001686811447,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.8939500451087952,
+                0.07450000941753388,
+                0.7330000400543213
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8939500451087952,
+                0.07450000941753388,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.8939500451087952,
+                0.07450000941753388,
+                0.7330000400543213
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8939500451087952,
+                0.07450000941753388,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.8939500451087952,
+                0.07450000941753388,
+                0.7330000400543213
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8939500451087952,
+                0.07450000941753388,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.8939500451087952,
+                0.07450000941753388,
+                0.7330000400543213
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow",
+            "elementIndex": 308,
+            "posBefore": [
+                0.8939500451087952,
+                0.07450000941753388,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.8705000281333923,
+                0.07450000941753388,
+                0.7330000400543213
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Obratka_1",
+            "elementIndex": 309,
+            "posBefore": [
+                0.9822250604629517,
+                0.022925011813640596,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.9822250604629517,
+                0.022925011813640596,
+                0.8475466370582581
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Obratka_1",
+            "elementIndex": 309,
+            "posBefore": [
+                0.9822250604629517,
+                0.022925011813640596,
+                0.8475466370582581
+            ],
+            "posAfter": [
+                0.8822250366210938,
+                0.022925011813640596,
+                0.8475466370582581
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Obratka_1",
+            "elementIndex": 309,
+            "posBefore": [
+                0.8822250366210938,
+                0.022925011813640596,
+                0.8475466370582581
+            ],
+            "posAfter": [
+                0.8822250366210938,
+                0.022925011813640596,
+                0.9110859036445618
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Podacha_1",
+            "elementIndex": 310,
+            "posBefore": [
+                0.5297749638557434,
+                0.0229250006377697,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.5297749638557434,
+                0.0229250006377697,
+                0.8802434802055359
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Podacha_1",
+            "elementIndex": 310,
+            "posBefore": [
+                0.5297749638557434,
+                0.0229250006377697,
+                0.8802434802055359
+            ],
+            "posAfter": [
+                0.4246622622013092,
+                0.0229250006377697,
+                0.8802434802055359
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Podacha_1",
+            "elementIndex": 310,
+            "posBefore": [
+                0.4246622622013092,
+                0.0229250006377697,
+                0.8802434802055359
+            ],
+            "posAfter": [
+                0.4246622622013092,
+                0.0229250006377697,
+                0.8000000715255737
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Podacha_1",
+            "elementIndex": 310,
+            "posBefore": [
+                0.4246622622013092,
+                0.0229250006377697,
+                0.8000000715255737
+            ],
+            "posAfter": [
+                0.4297749996185303,
+                0.0229250006377697,
+                0.8000000715255737
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Podacha_1",
+            "elementIndex": 310,
+            "posBefore": [
+                0.4297749996185303,
+                0.0229250006377697,
+                0.8000000715255737
+            ],
+            "posAfter": [
+                0.4297749996185303,
+                0.0229250006377697,
+                0.920867383480072
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Obratka_1_pipe_tee",
+            "elementIndex": 311,
+            "posBefore": [
+                0.8939500451087952,
+                0.0862250104546547,
+                0.9110859036445618
+            ],
+            "posAfter": [
+                0.8939500451087952,
+                0.0862250104546547,
+                0.9110859036445618
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Obratka_1_pipe_tee",
+            "elementIndex": 311,
+            "posBefore": [
+                0.8939500451087952,
+                0.0862250104546547,
+                0.9110859036445618
+            ],
+            "posAfter": [
+                0.8939500451087952,
+                0.0862250104546547,
+                0.9110859036445618
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Obratka_1_pipe_tee",
+            "elementIndex": 311,
+            "posBefore": [
+                0.8939500451087952,
+                0.0862250104546547,
+                0.9110859036445618
+            ],
+            "posAfter": [
+                0.8705000281333923,
+                0.0862250104546547,
+                0.9110859036445618
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_1",
+            "elementIndex": 312,
+            "posBefore": [
+                0.7560250163078308,
+                0.08622504025697708,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.7560250163078308,
+                0.08622504025697708,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_1",
+            "elementIndex": 312,
+            "posBefore": [
+                0.7560250163078308,
+                0.08622504025697708,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.6560250520706177,
+                0.08622505515813828,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_pipe_elbow_1",
+            "elementIndex": 313,
+            "posBefore": [
+                0.5414999723434448,
+                0.07450000196695328,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.4414999783039093,
+                0.07450000196695328,
+                0.7330000400543213
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_pipe_elbow_1",
+            "elementIndex": 313,
+            "posBefore": [
+                0.4414999783039093,
+                0.07450000196695328,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.4414999783039093,
+                0.07450000196695328,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_pipe_elbow_1",
+            "elementIndex": 313,
+            "posBefore": [
+                0.4414999783039093,
+                0.07450000196695328,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.4414999783039093,
+                0.07450000196695328,
+                0.7330000400543213
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_pipe_elbow",
+            "elementIndex": 307,
+            "posBefore": [
+                0.4414999783039093,
+                0.07450000196695328,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.4414999783039093,
+                0.07450000196695328,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Podacha_1",
+            "elementIndex": 310,
+            "posBefore": [
+                0.4297749996185303,
+                0.0229250006377697,
+                0.920867383480072
+            ],
+            "posAfter": [
+                0.4297749996185303,
+                0.0229250006377697,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Truba_1",
+            "elementIndex": 312,
+            "posBefore": [
+                0.6560250520706177,
+                0.08622505515813828,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.7555250525474548,
+                0.08622504025697708,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [
+                27,
+                372,
+                27
+            ],
+            "dimsAfter": [
+                27,
+                173,
+                27
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Obratka_1_pipe_tee_1",
+            "elementIndex": 314,
+            "posBefore": [
+                0.9705000519752502,
+                0.0862250104546547,
+                0.9110859036445618
+            ],
+            "posAfter": [
+                0.6405250430107117,
+                0.0862249806523323,
+                0.9110859036445618
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Obratka_1_pipe_tee_1",
+            "elementIndex": 314,
+            "posBefore": [
+                0.6405250430107117,
+                0.0862249806523323,
+                0.9110859036445618
+            ],
+            "posAfter": [
+                0.6405250430107117,
+                0.0862249806523323,
+                0.9110859036445618
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-8
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Obratka_1_pipe_tee_1",
+            "elementIndex": 314,
+            "posBefore": [
+                0.6405250430107117,
+                0.0862249806523323,
+                0.9110859036445618
+            ],
+            "posAfter": [
+                0.6405250430107117,
+                0.0862249806523323,
+                0.9110859036445618
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Obratka_1_pipe_tee_1",
+            "elementIndex": 314,
+            "posBefore": [
+                0.6405250430107117,
+                0.0862249806523323,
+                0.9110859036445618
+            ],
+            "posAfter": [
+                0.6288250684738159,
+                0.0979500412940979,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_2",
+            "elementIndex": 315,
+            "posBefore": [
+                0.8555250763893127,
+                0.08622504025697708,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.5564749836921692,
+                0.08622507750988007,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Truba_2",
+            "elementIndex": 315,
+            "posBefore": [
+                0.5564749836921692,
+                0.08622507750988007,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.5289750099182129,
+                0.08622507750988007,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [
+                27,
+                173,
+                27
+            ],
+            "dimsAfter": [
+                27,
+                118,
+                27
+            ],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_3",
+            "elementIndex": 316,
+            "posBefore": [
+                0.8555250763893127,
+                0.08622504025697708,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.8555250763893127,
+                0.23423105478286744,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_pipe_elbow_2",
+            "elementIndex": 317,
+            "posBefore": [
+                0.5414999723434448,
+                0.07450000196695328,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.5414999723434448,
+                0.12822508811950684,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_pipe_elbow_2",
+            "elementIndex": 317,
+            "posBefore": [
+                0.5414999723434448,
+                0.12822508811950684,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.6405500769615173,
+                0.12822508811950684,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_pipe_elbow_2",
+            "elementIndex": 317,
+            "posBefore": [
+                0.6405500769615173,
+                0.12822508811950684,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.6405500769615173,
+                0.15490004420280457,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow_1",
+            "elementIndex": 318,
+            "posBefore": [
+                0.9705000519752502,
+                0.07450000941753388,
+                0.7330000400543213
+            ],
+            "posAfter": [
+                0.9705000519752502,
+                0.07450000941753388,
+                0.8760288953781128
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow_1",
+            "elementIndex": 318,
+            "posBefore": [
+                0.9705000519752502,
+                0.07450000941753388,
+                0.8760288953781128
+            ],
+            "posAfter": [
+                0.8705000281333923,
+                0.07450002431869507,
+                0.8760288953781128
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow_1",
+            "elementIndex": 318,
+            "posBefore": [
+                0.8705000281333923,
+                0.07450002431869507,
+                0.8760288953781128
+            ],
+            "posAfter": [
+                0.8705000281333923,
+                0.07450002431869507,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Otvod_91_pipe_coupling_pipe_elbow_pipe_tee_pipe_return_pipe_tee_pipe_elbow_1",
+            "elementIndex": 318,
+            "posBefore": [
+                0.8705000281333923,
+                0.07450002431869507,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.8705000281333923,
+                0.15490001440048219,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.7071068286895752,
+                -0.7071068286895752
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_3",
+            "elementIndex": 316,
+            "posBefore": [
+                0.8555250763893127,
+                0.23423105478286744,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.8555250763893127,
+                0.13972501456737519,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_3",
+            "elementIndex": 316,
+            "posBefore": [
+                0.8555250763893127,
+                0.13972501456737519,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.7555250525474548,
+                0.13972502946853639,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_3",
+            "elementIndex": 316,
+            "posBefore": [
+                0.7555250525474548,
+                0.13972502946853639,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.7555250525474548,
+                0.1666250228881836,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Truba_2",
+            "elementIndex": 315,
+            "posBefore": [
+                0.5289750099182129,
+                0.08622507750988007,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.5296250581741333,
+                0.08622507750988007,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "rotAfter": [
+                0.7071068286895752,
+                0.7071068286895752,
+                -3.090862321641907e-8,
+                -3.090862321641907e-8
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Podacha_1",
+            "elementIndex": 310,
+            "posBefore": [
+                0.4297749996185303,
+                0.0229250006377697,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.27627474069595339,
+                0.0229250006377697,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "move",
+            "description": "Move Podacha_1",
+            "elementIndex": 310,
+            "posBefore": [
+                0.27627474069595339,
+                0.0229250006377697,
+                0.911085844039917
+            ],
+            "posAfter": [
+                0.4297749698162079,
+                0.0229250006377697,
+                0.911085844039917
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Truba_2",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Truba_2",
+                    "elementIndex": 315,
+                    "posBefore": [
+                        0.5296250581741333,
+                        0.08622507750988007,
+                        0.911085844039917
+                    ],
+                    "posAfter": [
+                        0.5296250581741333,
+                        0.08622507750988007,
+                        0.911085844039917
+                    ],
+                    "rotBefore": [
+                        0.7071068286895752,
+                        0.7071068286895752,
+                        -3.090862321641907e-8,
+                        -3.090862321641907e-8
+                    ],
+                    "rotAfter": [
+                        0.7071068286895752,
+                        0.7071068286895752,
+                        -3.090862321641907e-8,
+                        -3.090862321641907e-8
+                    ],
+                    "dimsBefore": [
+                        27,
+                        118,
+                        27
+                    ],
+                    "dimsAfter": [
+                        27,
+                        118,
+                        27
+                    ],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Truba_pipe_elbow",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Truba_pipe_elbow",
+                    "elementIndex": 307,
+                    "posBefore": [
+                        0.4414999783039093,
+                        0.07450008392333985,
+                        0.911085844039917
+                    ],
+                    "posAfter": [
+                        0.4414999783039093,
+                        0.07450008392333985,
+                        0.911085844039917
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        57,
+                        57,
+                        34
+                    ],
+                    "dimsAfter": [
+                        57,
+                        57,
+                        34
+                    ],
+                    "children": []
+                }
+            ]
+        },
+        {
+            "type": "resize",
+            "description": "Resize Leg_B2_B3",
+            "elementIndex": 91,
+            "posBefore": [
+                0.4519999623298645,
+                0.04750000312924385,
+                -3.3499999046325685
+            ],
+            "posAfter": [
+                0.4519999623298645,
+                0.05000000074505806,
+                -3.3499999046325685
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                50,
+                95,
+                50
+            ],
+            "dimsAfter": [
+                50,
+                100,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Leg_B3_B4",
+            "elementIndex": 92,
+            "posBefore": [
+                -0.22800001502037049,
+                0.04750000312924385,
+                -3.3500001430511476
+            ],
+            "posAfter": [
+                -0.22800001502037049,
+                0.058000002056360248,
+                -3.3500001430511476
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                50,
+                95,
+                50
+            ],
+            "dimsAfter": [
+                50,
+                116,
+                50
+            ],
+            "children": []
+        },
+        {
+            "type": "resize",
+            "description": "Resize Leg_B3_B4",
+            "elementIndex": 92,
+            "posBefore": [
+                -0.22800001502037049,
+                0.058000002056360248,
+                -3.3500001430511476
+            ],
+            "posAfter": [
+                -0.22800001502037049,
+                0.05000000447034836,
+                -3.3500001430511476
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [
+                50,
+                116,
+                50
+            ],
+            "dimsAfter": [
+                50,
+                100,
+                50
+            ],
+            "children": []
         }
     ],
     "redoHistory": [],
@@ -85893,7 +88615,7 @@
             "lowerAllWalls": true,
             "hideOpeningsOnLoweredWalls": true,
             "objectsVisible": true,
-            "edgeOutline": true,
+            "edgeOutline": false,
             "hideLightSources": false
         },
         "viewRoom": {
@@ -85916,7 +88638,7 @@
             "edgeOutline": false,
             "hideLightSources": false
         },
-        "edgeOutline": true,
+        "edgeOutline": false,
         "wallsEnabled": true,
         "lowerNearWalls": true,
         "wallOutline": false,
@@ -85971,7 +88693,7 @@
     },
     "tintEnabled": false,
     "lightsOn": false,
-    "musicTrack": 2,
+    "musicTrack": 0,
     "musicVolumePct": 70,
     "windows": [
         {
