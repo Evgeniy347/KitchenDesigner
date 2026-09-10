@@ -133,6 +133,23 @@ public class PillarAutoFitTests
     }
 
     [Test]
+    public void RepairAfterGridSnap_SeatsThePillar_ButNeverRecomputesItsHeight()
+    {
+        var floor = Board(new Vector3(0f, -0.009f, 0f), new Vector3Int(3000, 18, 3000));
+        var board = Board(new Vector3(0f, 0.108f, 0f), new Vector3Int(540, 16, 564));
+        var pillar = Pillar(new Vector3(0f, 0.09f, 0f), 50);
+        int midByHand = pillar.MidHeightMM;
+
+        pillar.RepairJointAfterGridSnap(Scene(floor, board, pillar));
+
+        Assert.AreEqual(midByHand, pillar.MidHeightMM,
+            "проход после загрузки чинит СТЫК, а не размер: пересчёт по зазору здесь "
+            + "переписал бы высоту из файла молча и без отмены");
+        Assert.AreEqual(TopOf(floor), BottomOf(pillar), 1e-4f,
+            "посадка на пол — это всё ещё его работа");
+    }
+
+    [Test]
     public void GapMM_RoundsDown_SoTheLegNeverGrowsThroughTheBoardAbove()
     {
         Assert.AreEqual(107, PillarAutoFit.GapMM(107.6f * U),

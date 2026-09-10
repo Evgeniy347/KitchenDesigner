@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core
 
 		public void RepairJointAfterGridSnap(
 			System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
-			PillarAutoFit.Seat(this, scene);
+			PillarAutoFit.SeatWithoutResizing(this, scene);
 		public const int DiameterMM_Default = 50;
 		public const int DiameterMM_Min = 20;
 		public const int DiameterMM_Max = 200;

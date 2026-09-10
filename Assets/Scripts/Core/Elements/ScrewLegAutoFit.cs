@@ -11,7 +11,15 @@ namespace KitchenDesigner.Core
 
         private const float SameLevelEpsilonUnits = 1e-4f;
 
-        public static void Seat(ScrewLegElement leg, IReadOnlyList<KitchenElement> scene)
+        public static void Seat(ScrewLegElement leg, IReadOnlyList<KitchenElement> scene) =>
+            Seat(leg, scene, mayResize: true);
+
+        public static void SeatWithoutResizing(ScrewLegElement leg,
+            IReadOnlyList<KitchenElement> scene) =>
+            Seat(leg, scene, mayResize: false);
+
+        private static void Seat(ScrewLegElement leg, IReadOnlyList<KitchenElement> scene,
+            bool mayResize)
         {
             if (leg == null || scene == null) return;
 
@@ -21,7 +29,7 @@ namespace KitchenDesigner.Core
                 float mountY = ElementAabb.Of(host).minY;
                 float floorY = FloorUnder(leg, host, mountY, scene);
 
-                leg.SetHeightAboveFloorMM(HeightMM(mountY - floorY));
+                if (mayResize) leg.SetHeightAboveFloorMM(HeightMM(mountY - floorY));
                 StandOn(leg, floorY);
             }
 

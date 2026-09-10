@@ -12,7 +12,15 @@ namespace KitchenDesigner.Core
         private const float FloorSearchDepthUnits = 1f;
         private const float BelowCentreUnits = 0.01f;
 
-        public static void Seat(PillarElement pillar, IReadOnlyList<KitchenElement> scene)
+        public static void Seat(PillarElement pillar, IReadOnlyList<KitchenElement> scene) =>
+            Seat(pillar, scene, mayResize: true);
+
+        public static void SeatWithoutResizing(PillarElement pillar,
+            IReadOnlyList<KitchenElement> scene) =>
+            Seat(pillar, scene, mayResize: false);
+
+        private static void Seat(PillarElement pillar, IReadOnlyList<KitchenElement> scene,
+            bool mayResize)
         {
             if (pillar == null || scene == null) return;
 
@@ -20,6 +28,7 @@ namespace KitchenDesigner.Core
             if (floorY <= NoFloorFound + 1f) return;
 
             StandOn(pillar, floorY);
+            if (!mayResize) return;
 
             var above = NearestBoardAbove(pillar, floorY, scene);
             if (above == null) return;

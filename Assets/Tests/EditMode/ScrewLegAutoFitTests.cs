@@ -186,4 +186,20 @@ public class ScrewLegAutoFitTests
             "хозяину объём отдан, а всем остальным — нет: вылезшая резьба, попавшая "
             + "в чужую деталь, обязана остаться ошибкой");
     }
+
+    [Test]
+    public void RepairAfterGridSnap_SeatsTheLeg_ButNeverRecomputesItsHeight()
+    {
+        var host = BottomPanelAt(0.150f);
+        var leg = Leg(new Vector3(0f, 0.100f, 0f));
+        leg.ThreadLengthMM = 20;
+        int threadByHand = leg.ThreadLengthMM;
+
+        leg.RepairJointAfterGridSnap(Scene(host, leg));
+
+        Assert.AreEqual(threadByHand, leg.ThreadLengthMM,
+            "проход после загрузки чинит СТЫК, а не размер: пересчёт резьбы здесь "
+            + "переписал бы сохранённое значение молча и без отмены");
+        Assert.AreEqual(0f, BottomOf(leg), 1e-4f, "посадка на пол — это всё ещё его работа");
+    }
 }

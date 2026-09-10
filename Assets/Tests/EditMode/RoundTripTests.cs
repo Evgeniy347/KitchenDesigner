@@ -1050,6 +1050,49 @@ public class RoundTripTests
             "габарит опоры — пятка плюс вся резьба");
     }
 
+    /// <summary>Круг «задал руками → сохранил → открыл» для высоты опоры.
+    ///
+    /// Сцена собрана так, что автоподгонка НЕ СОГЛАСНА с сохранённым числом:
+    /// под опорой пол, над ней дно короба на 100 мм, а высота задана 80 мм.
+    /// Пока загрузка звала полный пересчёт, файл открывался с 100 мм — значение
+    /// пользователя переписывалось молча, без команды и без отмены, и следующее
+    /// сохранение уносило подмену в файл насовсем.</summary>
+    [Test]
+    public void Pillar_KeepsTheHeightFromTheFile_EvenWhenTheGapAboveSuggestsAnother()
+    {
+        MakeBoard("Пол1", new Vector3Int(3000, 18, 3000), new Vector3(0f, -0.009f, 0f));
+        MakeBoard("Дно1", new Vector3Int(540, 16, 564), new Vector3(0f, 0.108f, 0f));
+        var pillar = (PillarElement)GetElement(
+            ElementFactory.CreatePillar(50, "Опора1", new Vector3(0f, 0.04f, 0f)));
+        Assert.AreEqual(80, pillar.DimensionsMM.y, "исходная высота — 20 + 50 + 10");
+
+        FullRoundTrip();
+
+        var restored = Object.FindObjectsByType<PillarElement>(FindObjectsSortMode.None);
+        Assert.AreEqual(1, restored.Length, "опора обязана восстановиться ровно одна");
+        var r = restored[0];
+        Assert.AreEqual(50, r.MidHeightMM, "высота опоры — пользовательская, а не выводимая");
+        Assert.AreEqual(80, r.DimensionsMM.y, "габарит обязан совпасть с ней до миллиметра");
+    }
+
+    /// <summary>То же самое для винтовой опоры: под дном на 150 мм лежит хозяин,
+    /// и до починки загрузка растягивала резьбу до него, стирая заданные 70 мм.</summary>
+    [Test]
+    public void ScrewLeg_KeepsTheThreadFromTheFile_EvenWhenTheHostAboveSuggestsAnother()
+    {
+        MakeBoard("Дно2", new Vector3Int(600, 18, 500), new Vector3(0f, 0.159f, 0f));
+        var leg = (ScrewLegElement)GetElement(
+            ElementFactory.CreateScrewLeg("Опора2", new Vector3(0f, 0.03f, 0f)));
+        leg.ThreadLengthMM = 70;
+
+        FullRoundTrip();
+
+        var restored = Object.FindObjectsByType<ScrewLegElement>(FindObjectsSortMode.None);
+        Assert.AreEqual(1, restored.Length, "винтовая опора обязана восстановиться ровно одна");
+        var r = restored[0];
+        Assert.AreEqual(70, r.ThreadLengthMM, "длина резьбы — пользовательская, а не выводимая");
+    }
+
     /// <summary>Труба сохраняет ИСТОЧНИК ИСТИНЫ и только его: условный проход и
     /// длину. Наружный, внутренний и толщина стенки в файл не попадают — их
     /// пересчитывают из ДУ при загрузке, поэтому проверять их надо ПОСЛЕ

@@ -194,7 +194,7 @@ namespace KitchenDesigner.Core
 
         public void RepairJointAfterGridSnap(
             System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
-            ScrewLegAutoFit.Seat(this, scene);
+            ScrewLegAutoFit.SeatWithoutResizing(this, scene);
 
         private void SyncDimensions() =>
             Data.DimensionsMM = new Vector3Int(_baseDiameterMM, BodyHeightMM, _baseDiameterMM);
