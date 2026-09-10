@@ -32,17 +32,26 @@ namespace KitchenDesigner.Core.UI
         private readonly Image?[] _slots = new Image?[MaxPorts];
         private readonly Image?[] _holes = new Image?[MaxPorts];
         private readonly TMP_Dropdown?[] _choices = new TMP_Dropdown?[MaxPorts];
+        private readonly PipePortHover _hover;
 
         public PipeFittingPortsDiagram(IContextMenuHost host, Func<PipeFittingElement?> target)
         {
             _host = host;
             _target = target;
+            _hover = new PipePortHover(() => target(), Choices, Paint);
+        }
+
+        private static void Paint(KitchenElement owner, int port)
+        {
+            if (owner is PipeFittingElement fitting)
+                PartHighlighter.ShowFittingMouth(fitting, port);
         }
 
         public void Build(Transform parent)
         {
             var root = UIFactory.CreateRect("CtxFittingPortsDiagram", parent);
             root.sizeDelta = new Vector2(RowWidth, SchematicH);
+            _hover.Guard(root.gameObject);
 
             var hub = UIFactory.CreatePanel("CtxFittingHub", root, Vector2.zero,
                 new Vector2(HubSize, HubSize), UIStyle.EdgeBoard);
@@ -56,6 +65,7 @@ namespace KitchenDesigner.Core.UI
                 _joints[i] = joint;
 
                 (_slots[i], _holes[i]) = BuildSlot(root, "CtxFittingPort" + i);
+                _hover.WatchSlot(_slots[i]!.gameObject, i);
             }
 
             _host.Layout.AddFor(ElementFacet.PipeFitting, SchematicH, RowGap, root);
@@ -68,6 +78,7 @@ namespace KitchenDesigner.Core.UI
                     "Порт " + (i + 1), PipeEndsDiagram.Options(Choices),
                     option => OnChosen(index, option), visibility, "CtxFittingPortLbl" + i);
                 _choices[i] = dropdown;
+                _hover.Watch(dropdown, i);
             }
 
             _host.Rows.Hint("CtxFittingPortsHint",
@@ -84,6 +95,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Show(PipeFittingElement fitting)
         {
+            _hover.Clear();
             _recompute.Reset();
             Repaint(fitting);
         }
@@ -95,6 +107,8 @@ namespace KitchenDesigner.Core.UI
 
         internal void OnChosen(int port, int option)
         {
+            _hover.Commit();
+
             var fitting = _target();
             if (fitting == null) return;
 
@@ -157,7 +171,7 @@ namespace KitchenDesigner.Core.UI
         {
             var slot = UIFactory.CreatePanel(name, parent, Vector2.zero,
                 new Vector2(SlotSize, SlotSize), UIStyle.EdgeAbsent);
-            slot.raycastTarget = false;
+            slot.raycastTarget = true;
 
             var hole = UIFactory.CreatePanel(name + "Hole", slot.transform, Vector2.zero,
                 new Vector2(SlotSize - SlotBorder * 2f, SlotSize - SlotBorder * 2f),

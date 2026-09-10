@@ -31,11 +31,20 @@ namespace KitchenDesigner.Core.UI
         private readonly Image?[] _slots = new Image?[EndCount];
         private readonly Image?[] _holes = new Image?[EndCount];
         private readonly TMP_Dropdown?[] _choices = new TMP_Dropdown?[EndCount];
+        private readonly PipePortHover _hover;
 
         public PipeEndsDiagram(IContextMenuHost host, Func<PipeElement?> target)
         {
             _host = host;
             _target = target;
+            _hover = new PipePortHover(() => target(), Choices, Paint);
+        }
+
+        public static PartEnd EndAt(int end) => end == 0 ? PartEnd.Start : PartEnd.End;
+
+        private static void Paint(KitchenElement owner, int end)
+        {
+            if (owner is PipeElement pipe) PartHighlighter.ShowPipeEnd(pipe, EndAt(end));
         }
 
         internal static readonly IReadOnlyList<PipeNodeKind> Choices =
@@ -54,6 +63,7 @@ namespace KitchenDesigner.Core.UI
         {
             var root = UIFactory.CreateRect("CtxPipeEndsDiagram", parent);
             root.sizeDelta = new Vector2(RowWidth, DiagramH);
+            _hover.Guard(root.gameObject);
 
             UIFactory.CreatePanel("CtxPipeBody", root, new Vector2(0f, BarY),
                 new Vector2((RunHalfW - SlotW) * 2f, BarH), UIStyle.EdgeBoard);
@@ -65,6 +75,7 @@ namespace KitchenDesigner.Core.UI
 
                 (_slots[end], _holes[end]) = BuildSlot(root, "CtxPipeEnd" + end,
                     new Vector2(slotX, BarY));
+                _hover.WatchSlot(_slots[end]!.gameObject, end);
 
                 UIFactory.CreatePanel("CtxPipeJoint" + end, root,
                     new Vector2(side * (RunHalfW - SlotW), BarY),
@@ -77,6 +88,7 @@ namespace KitchenDesigner.Core.UI
                 _choices[end] = UIFactory.CreateDropdown("CtxPipeEndFitting" + end, root,
                     Options(), new Vector2(side * ChoiceX, ChoiceY),
                     new Vector2(ChoiceW, ChoiceH), option => OnChosen(index, option));
+                _hover.Watch(_choices[end], end);
             }
 
             _host.Layout.AddFor(ElementFacet.Pipe, DiagramH, RowGap, root);
@@ -87,6 +99,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Show(PipeElement pipe)
         {
+            _hover.Clear();
             _recompute.Reset();
             Repaint(pipe);
         }
@@ -98,6 +111,8 @@ namespace KitchenDesigner.Core.UI
 
         internal void OnChosen(int end, int option)
         {
+            _hover.Commit();
+
             var pipe = _target();
             if (pipe == null) return;
 
@@ -142,7 +157,7 @@ namespace KitchenDesigner.Core.UI
         {
             var slot = UIFactory.CreatePanel(name, parent, pos, new Vector2(SlotW, BarH),
                 UIStyle.EdgeAbsent);
-            slot.raycastTarget = false;
+            slot.raycastTarget = true;
 
             var hole = UIFactory.CreatePanel(name + "Hole", slot.transform, Vector2.zero,
                 new Vector2(SlotW - SlotBorder * 2f, BarH - SlotBorder * 2f), UIStyle.EdgeBoard);

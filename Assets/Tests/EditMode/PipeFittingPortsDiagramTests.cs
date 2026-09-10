@@ -169,4 +169,61 @@ public class PipeFittingPortsDiagramTests
             "панель одна и та же на все виды фитингов — переоткрытие на тройнике обязано "
             + "показать его третий порт, а не унаследовать форму отвода");
     }
+
+    private static void Hover(GameObject go, bool enter)
+    {
+        var hover = go.GetComponent<PointerHover>();
+        Assert.NotNull(hover, "порт схемы обязан реагировать на наведение");
+        if (enter) hover!.Enter?.Invoke();
+        else hover!.Exit?.Invoke();
+    }
+
+    [Test]
+    public void HoveringAnOccupiedPort_PaintsThatMouth_AndOnlyThatOne()
+    {
+        var tee = Tee();
+        _menu!.Open(tee);
+        Pick(1, OptionOf(PipeNodeKind.Cap));
+        Assume.That(PipeEndFittings.NeighbourAt(tee, 1, PartRegistry.GetAll()), Is.Not.Null);
+
+        Hover(Slot(1).gameObject, enter: true);
+
+        Assert.IsTrue(PartHighlighter.IsShown(tee, PartHighlighter.FittingMouthRegion(1)),
+            "занятый порт красится там же, где свободный, — на устье СВОЕЙ ноги: "
+            + "красный отвечает «где это», а не «свободно ли это»");
+        Assert.IsFalse(PartHighlighter.IsShown(tee, PartHighlighter.FittingMouthRegion(0)),
+            "и соседнюю ногу не трогает");
+
+        Hover(Slot(1).gameObject, enter: false);
+        Assert.IsFalse(PartHighlighter.IsShown(tee, PartHighlighter.FittingMouthRegion(1)),
+            "уход курсора снимает подсветку");
+    }
+
+    [Test]
+    public void HoveringThePortDropdown_PaintsTheSameMouth()
+    {
+        var elbow = Elbow();
+        _menu!.Open(elbow);
+
+        Hover(Choice(0).gameObject, enter: true);
+
+        Assert.IsTrue(PartHighlighter.IsShown(elbow, PartHighlighter.FittingMouthRegion(0)),
+            "список порта и порт на схеме говорят об одной и той же ноге фитинга");
+    }
+
+    [Test]
+    public void ClosingThePanel_TakesTheRedAndTheGhostWithIt()
+    {
+        var elbow = Elbow();
+        _menu!.Open(elbow);
+        Hover(Slot(0).gameObject, enter: true);
+        ScenePreview.Hover("тест", () => new GameObject("Ghost"), null);
+        Assume.That(ScenePreview.IsShowing, Is.True);
+
+        _menu!.Close();
+
+        Assert.IsFalse(PartHighlighter.IsShown(elbow, PartHighlighter.FittingMouthRegion(0)),
+            "закрытая панель не оставляет красного устья на фитинге");
+        Assert.IsFalse(ScenePreview.IsShowing, "и не оставляет призрака в сцене");
+    }
 }

@@ -171,4 +171,108 @@ public class PipeEndsDiagramTests
         Assert.AreEqual(0, Choice(1).value);
         Assert.IsTrue(Hole(1).enabled, "и торец снова читается как пустой контур");
     }
+
+    /// <summary>Наведение приходит через <c>PointerHover</c> — тот же приём, что и в
+    /// схеме кромок: EditMode не шлёт указательских событий, и дёргается тот же
+    /// делегат, который позовёт мышь.</summary>
+    private static void Hover(GameObject go, bool enter)
+    {
+        var hover = go.GetComponent<PointerHover>();
+        Assert.NotNull(hover, "торец схемы обязан реагировать на наведение");
+        if (enter) hover!.Enter?.Invoke();
+        else hover!.Exit?.Invoke();
+    }
+
+    /// <summary>Ставит превью чужими руками: показать призрака из выпадающего списка
+    /// в EditMode нечем — список TMP разворачивается только живым указателем, — а
+    /// проверить надо ГАШЕНИЕ, и оно не зависит от того, кто превью завёл.</summary>
+    private static void SomePreview()
+    {
+        ScenePreview.Hover("тест", () => new GameObject("Ghost"), null);
+        Assume.That(ScenePreview.IsShowing, Is.True);
+    }
+
+    [Test]
+    public void HoveringAnEnd_PaintsThatEndOfThePipe_AndLeavingHidesIt()
+    {
+        var pipe = Pipe();
+        _menu!.Open(pipe);
+
+        Hover(Slot(1).gameObject, enter: true);
+        Assert.IsTrue(PartHighlighter.IsShown(pipe, PartHighlighter.PipeEndRegion(PartEnd.End)),
+            "наведение на торец схемы красит ЭТОТ конец трубы в сцене — с любого ракурса "
+            + "видно, о каком конце речь");
+        Assert.IsFalse(PartHighlighter.IsShown(pipe,
+            PartHighlighter.PipeEndRegion(PartEnd.Start)), "и только этот");
+
+        Hover(Slot(1).gameObject, enter: false);
+        Assert.IsFalse(PartHighlighter.IsShown(pipe, PartHighlighter.PipeEndRegion(PartEnd.End)),
+            "уход курсора снимает подсветку");
+    }
+
+    [Test]
+    public void HoveringTheDropdownItself_PaintsTheSameEnd()
+    {
+        var pipe = Pipe();
+        _menu!.Open(pipe);
+
+        Hover(Choice(0).gameObject, enter: true);
+
+        Assert.IsTrue(PartHighlighter.IsShown(pipe,
+            PartHighlighter.PipeEndRegion(PartEnd.Start)),
+            "список у торца и сам торец говорят об одном и том же участке трубы");
+    }
+
+    [Test]
+    public void ClosingThePanel_TakesTheRedAndTheGhostWithIt()
+    {
+        var pipe = Pipe();
+        _menu!.Open(pipe);
+        Hover(Slot(0).gameObject, enter: true);
+        SomePreview();
+
+        _menu!.Close();
+
+        Assert.IsFalse(PartHighlighter.IsShown(pipe,
+            PartHighlighter.PipeEndRegion(PartEnd.Start)),
+            "закрытая панель не оставляет красного участка на детали: PointerExit по "
+            + "скрытому виджету уже не придёт");
+        Assert.IsFalse(ScenePreview.IsShowing,
+            "и не оставляет призрака — иначе в сцене навсегда зелёная деталь, "
+            + "которой нет ни в реестре, ни в спецификации");
+    }
+
+    [Test]
+    public void OpeningAnotherPipe_DropsWhatWasShownForThePreviousOne()
+    {
+        var first = Pipe();
+        var second = Pipe();
+        _menu!.Open(first);
+        Hover(Slot(0).gameObject, enter: true);
+        SomePreview();
+
+        _menu!.Open(second);
+
+        Assert.AreEqual(0, SideHighlighter.QuadCount,
+            "подсветка принадлежала ПРЕДЫДУЩЕЙ трубе — смена выделения её снимает");
+        Assert.IsFalse(ScenePreview.IsShowing, "и превью тоже");
+    }
+
+    [Test]
+    public void ChoosingAKind_ClearsThePreview_AndPutsTheRealFittingOn()
+    {
+        var pipe = Pipe();
+        _menu!.Open(pipe);
+        Hover(Slot(1).gameObject, enter: true);
+        SomePreview();
+
+        Pick(1, OptionOf(PipeNodeKind.Cap));
+
+        Assert.IsFalse(ScenePreview.IsShowing, "выбрал — тонировка исчезла");
+        Assert.IsNull(ScenePreview.Ghost, "и призрак уничтожен, а не оставлен рядом с деталью");
+        Assert.IsFalse(PartHighlighter.IsShown(pipe, PartHighlighter.PipeEndRegion(PartEnd.End)),
+            "красный участок тоже снят: выбор закрыл список, курсору неоткуда его держать");
+        Assert.IsNotNull(PipeEndFittings.NeighbourAt(pipe, 1, PartRegistry.GetAll()),
+            "а деталь встала на конец по-настоящему");
+    }
 }

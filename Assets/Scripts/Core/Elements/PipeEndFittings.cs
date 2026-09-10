@@ -81,18 +81,37 @@ namespace KitchenDesigner.Core
             CommandStack.BeginCapture();
             if (neighbour != null) CommandStack.Execute(new DeleteCommand(neighbour.gameObject));
             if (kind.HasValue)
-            {
-                var spawned = seated != null && kind.Value != PipeNodeKind.Pipe
-                    ? Replace(survey, seated, kind.Value, scene)
-                    : Spawn(owner, port, kind.Value, scene);
-                CommandStack.Execute(new CreateCommand(spawned));
-            }
+                CommandStack.Execute(new CreateCommand(
+                    SpawnFor(survey, owner, port, kind.Value, seated, scene)));
             CommandStack.EndCapture($"Порт {owner.PartName}", commit: true);
 
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
             return PipeEndEdit.Changed;
         }
+
+        public static string PreviewKey(KitchenElement owner, int port, PipeNodeKind kind) =>
+            owner == null ? string.Empty : owner.PartName + ":" + port + ":" + kind;
+
+        public static GameObject? Preview(KitchenElement owner, int port, PipeNodeKind kind,
+            IReadOnlyList<KitchenElement> scene)
+        {
+            if (owner == null || scene == null) return null;
+            if (port < 0 || port >= PortCountOf(owner)) return null;
+
+            var ownerKind = KindOf(owner) ?? PipeNodeKind.Pipe;
+            if (!PipeConnectionRule.CanConnect(ownerKind, kind)) return null;
+
+            var survey = ScenePipeSurvey.Of(scene);
+            var neighbour = NeighbourOf(survey, PartnerOfPort(survey, owner, port), scene);
+            return SpawnFor(survey, owner, port, kind, neighbour as PipeFittingElement, scene);
+        }
+
+        private static GameObject SpawnFor(PipeSurvey survey, KitchenElement owner, int port,
+            PipeNodeKind kind, PipeFittingElement? seated, IReadOnlyList<KitchenElement> scene) =>
+            seated != null && kind != PipeNodeKind.Pipe
+                ? Replace(survey, seated, kind, scene)
+                : Spawn(owner, port, kind, scene);
 
         private static GameObject Spawn(KitchenElement owner, int port, PipeNodeKind kind,
             IReadOnlyList<KitchenElement> scene)
