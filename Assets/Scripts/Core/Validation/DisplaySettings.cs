@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -24,6 +25,16 @@ namespace KitchenDesigner.Core
                     Screen.currentResolution.height,
                     FullScreenMode.FullScreenWindow);
             }
+
+            ReapplyHiddenWindow();
+        }
+
+        private static void ReapplyHiddenWindow()
+        {
+            if (!HideWindowArgument.Parse(Environment.GetCommandLineArgs())) return;
+#if UNITY_STANDALONE_WIN
+            Win32WindowVisibility.HideActiveWindow();
+#endif
         }
 
         internal static bool TheAppOwnsItsWindowSize()
