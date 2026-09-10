@@ -228,4 +228,188 @@ public class ElementHighlighterTests
                 + "вернёт чужой материал: " + ElementRenderers.PathOf(cooktop, children[i]));
         }
     }
+
+    private KitchenElement MakeWall(Vector3Int dims, string name)
+    {
+        var go = Spawn(ElementFactory.CreateWall(dims, name, Vector3.zero));
+        return go.GetComponent<KitchenElement>()!;
+    }
+
+    /// <summary>Стена, у которой есть свой материал, и пустая сцена вокруг:
+    /// оба флага сняты, тонировать нечего. Дальше тесты этого раздела двигают
+    /// ровно один флаг за раз.</summary>
+    private KitchenElement PlainWall(string name)
+    {
+        var wall = MakeWall(new Vector3Int(3000, 2500, 100), name);
+        Assume.That(wall.GetComponent<MeshRenderer>()!.sharedMaterial, Is.Not.Null,
+            "фабрика обязана дать стене её материал: и тон нарушения, и прозрачность "
+            + "ВЫВОДЯТСЯ из материала рендерера, а выводить из ничего нельзя");
+        Assume.That(PhotoMode.Active, Is.False, "фоторежим гасит и прозрачность, и тон");
+        Assume.That(ModuleEditMode.IsActive, Is.False, "режим модуля глушит всё остальное");
+        Assume.That(ConstraintValidator.Validate(PartRegistry.GetAll()).violations.Contains(wall),
+            Is.False, "одинокая стена обязана быть валидной, иначе проверяется тон нарушения");
+        ElementHighlighter.ViolationTintVisible = true;
+        return wall;
+    }
+
+    /// <summary>«Прозрачный» обязан выключаться обратно, и выключение ставит на
+    /// рендерер РОВНО тот материал, который на нём был. Прежний возврат звал
+    /// <c>MaterialManager.ApplyOwnDecor</c>, а тот на дефолтном
+    /// <c>MaterialId</c> красит серым ЛДСП — стена возвращалась не к себе, а к
+    /// заводскому декору. Сравнение по ссылке здесь и есть вопрос: «тот же
+    /// самый материал?», а не «похожий на вид».
+    ///
+    /// Прежняя версия теста собирала стену руками — <c>GameObject</c> с пустым
+    /// <c>MeshRenderer</c>, без материала вовсе, — и проходила только потому,
+    /// что подсветка клала на неё ПРЕДСОБРАННЫЙ прозрачный материал, а
+    /// возвращала <c>ApplyOwnDecor</c>. Обе опоры удалены вместе со сплошной
+    /// заливкой, поэтому стена здесь настоящая, из фабрики.</summary>
+    [Test]
+    public void WallTransparency_CanBeTurnedBackOff()
+    {
+        var wall = PlainWall("СтенаПрозрачность");
+        var renderer = wall.GetComponent<MeshRenderer>()!;
+        var own = renderer.sharedMaterial;
+
+        wall.Transparent = true;
+        _highlighter!.ApplyForElement(wall);
+
+        Assert.AreEqual((int)UnityEngine.Rendering.RenderQueue.Transparent,
+            renderer.sharedMaterial.renderQueue, "стена стала прозрачной");
+        Assert.AreEqual(own, ValidityTint.OwnOf(renderer.sharedMaterial),
+            "прозрачная краска обязана помнить источник — иначе возвращать будет нечего");
+
+        wall.Transparent = false;
+        _highlighter!.ApplyForElement(wall);
+
+        Assert.AreNotEqual((int)UnityEngine.Rendering.RenderQueue.Transparent,
+            renderer.sharedMaterial.renderQueue, "и вернулась обратно");
+        Assert.AreEqual(own, renderer.sharedMaterial,
+            "возврат ставит ЗАПОМНЕННЫЙ материал, а не красит заново своим декором");
+    }
+
+    /// <summary>Противоположный вход к предыдущему тесту: рендерер носит
+    /// материал, которого у декора элемента нет вовсе — так делают ванна,
+    /// варочная и духовка. Возврат из прозрачности обязан вернуть именно его;
+    /// «покрасить своим декором заново» отдало бы серый ЛДСП, и стеклокерамика
+    /// стала бы ЛДСП после одного нажатия «Прозрачный».</summary>
+    [Test]
+    public void Transparency_ReturnsTheMaterialTheRendererWore_NotWhatTheElementDecorWouldRepaint()
+    {
+        var wall = PlainWall("СтенаЧужойМатериал");
+        var renderer = wall.GetComponent<MeshRenderer>()!;
+        var decor = renderer.sharedMaterial;
+
+        var painted = new Material(decor);
+        painted.name = "Эмаль ванны";
+        painted.SetColor("_BaseColor", new Color(0.05f, 0.35f, 0.75f, 1f));
+        renderer.sharedMaterial = painted;
+        Assume.That(Visibly(ValidityTint.BaseColorOf(decor), ValidityTint.BaseColorOf(painted)),
+            Is.True, "материал мимо декора обязан отличаться по цвету, иначе подмену не увидеть");
+
+        wall.Transparent = true;
+        _highlighter!.ApplyForElement(wall);
+        wall.Transparent = false;
+        _highlighter!.ApplyForElement(wall);
+
+        Assert.AreEqual(painted, renderer.sharedMaterial,
+            "вернулся не тот материал: " + Describe(ValidityTint.BaseColorOf(painted)) + " → "
+            + Describe(ValidityTint.BaseColorOf(renderer.sharedMaterial)));
+    }
+
+    /// <summary>Два независимых флага — «прозрачный» и «нарушает» — дают
+    /// четыре состояния, и расходятся такие пары именно на СНЯТИИ. Здесь оба
+    /// подняты: прозрачный красный, а не выбор одного из двух.</summary>
+    [Test]
+    public void TransparentAndViolating_IsBothAtOnce_SeeThroughAndRed()
+    {
+        var wall = PlainWall("СтенаПрозрачнаяИНарушает");
+        var renderer = wall.GetComponent<MeshRenderer>()!;
+        var own = renderer.sharedMaterial;
+        var ownColour = ValidityTint.BaseColorOf(own);
+
+        wall.Transparent = true;
+        ElementHighlighter.ApplyMaterial(wall, isValid: false);
+
+        var now = renderer.sharedMaterial;
+        var colour = ValidityTint.BaseColorOf(now);
+        Assert.AreEqual((int)UnityEngine.Rendering.RenderQueue.Transparent, now.renderQueue,
+            "нарушение не отменяет прозрачность: стена сквозная и в нарушении");
+        Assert.AreEqual(ValidityTint.SeeThroughAlpha, colour.a, 1e-3f,
+            "и остаётся такой же еле заметной, как без нарушения");
+        Assert.IsTrue(Visibly(ownColour, colour),
+            "прозрачность не отменяет тон: сквозная стена с нарушением обязана краснеть, "
+            + Describe(ownColour) + " → " + Describe(colour));
+        Assert.AreEqual(own, ValidityTint.OwnOf(now),
+            "и помнить источник — снятие любого из двух флагов идёт от него");
+    }
+
+    /// <summary>Снятие ОДНОГО флага возвращает к правильному промежуточному
+    /// состоянию, а не к серому и не к плотному: нарушение ушло, прозрачность
+    /// осталась.</summary>
+    [Test]
+    public void ViolationDropped_WhileStillTransparent_StaysSeeThroughInItsOwnColour()
+    {
+        var wall = PlainWall("СтенаСнялиНарушение");
+        var renderer = wall.GetComponent<MeshRenderer>()!;
+        var own = renderer.sharedMaterial;
+        var ownColour = ValidityTint.BaseColorOf(own);
+
+        wall.Transparent = true;
+        ElementHighlighter.ApplyMaterial(wall, isValid: false);
+        ElementHighlighter.ApplyMaterial(wall, isValid: true);
+
+        var now = renderer.sharedMaterial;
+        var colour = ValidityTint.BaseColorOf(now);
+        Assert.AreEqual((int)UnityEngine.Rendering.RenderQueue.Transparent, now.renderQueue,
+            "«Прозрачный» никто не выключал — стена обязана остаться сквозной");
+        Assert.AreEqual(ValidityTint.SeeThroughAlpha, colour.a, 1e-3f);
+        Assert.IsFalse(Visibly(ownColour, colour),
+            "и вернуться к СВОЕМУ цвету: ни красного тона, ни серого ЛДСП, "
+            + Describe(ownColour) + " → " + Describe(colour));
+        Assert.AreEqual(own, ValidityTint.OwnOf(now),
+            "источник тот же — прозрачная краска после снятия нарушения выводится от него");
+    }
+
+    /// <summary>Тот же переход с другой стороны: прозрачность выключили,
+    /// нарушение осталось. Стена обязана стать плотной и остаться красной —
+    /// «вернули как было» здесь спрятало бы нарушение.</summary>
+    [Test]
+    public void TransparencyDropped_WhileStillViolating_BecomesOpaqueAndStaysRed()
+    {
+        var wall = PlainWall("СтенаСнялиПрозрачность");
+        var renderer = wall.GetComponent<MeshRenderer>()!;
+        var own = renderer.sharedMaterial;
+        var ownColour = ValidityTint.BaseColorOf(own);
+
+        wall.Transparent = true;
+        ElementHighlighter.ApplyMaterial(wall, isValid: false);
+        wall.Transparent = false;
+        ElementHighlighter.ApplyMaterial(wall, isValid: false);
+
+        var now = renderer.sharedMaterial;
+        var colour = ValidityTint.BaseColorOf(now);
+        Assert.AreNotEqual((int)UnityEngine.Rendering.RenderQueue.Transparent, now.renderQueue,
+            "«Прозрачный» выключен — стена обязана стать плотной");
+        Assert.AreEqual(ownColour.a, colour.a, 1e-3f,
+            "и перестать быть еле заметной: альфа берётся у своего материала, а не "
+            + "остаётся сквозной " + ValidityTint.SeeThroughAlpha.ToString("0.00"));
+        Assert.IsTrue(Visibly(ownColour, colour),
+            "нарушение никто не снимал: тон обязан остаться, " + Describe(ownColour)
+            + " → " + Describe(colour));
+        Assert.AreEqual(own, ValidityTint.OwnOf(now),
+            "источник остаётся тем же — вторая тонировка берётся от него, а не от "
+            + "прозрачной краски, иначе цвет уползает с каждым нажатием");
+    }
+
+    private const float MinColorStep = 0.05f;
+
+    private static bool Visibly(Color a, Color b) =>
+        Mathf.Abs(a.r - b.r) > MinColorStep
+        || Mathf.Abs(a.g - b.g) > MinColorStep
+        || Mathf.Abs(a.b - b.b) > MinColorStep;
+
+    private static string Describe(Color c) =>
+        "(" + c.r.ToString("0.00") + " " + c.g.ToString("0.00") + " " + c.b.ToString("0.00")
+        + " a" + c.a.ToString("0.00") + ")";
 }
