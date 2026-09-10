@@ -142,6 +142,16 @@ diagonal above (√3/2, true from any angle), the face diagonal below (√2, wha
 Swap one for the other and the window widens by 15% with nothing to notice it, so each factor
 is pinned by its own test.
 
+**Сторож, отбирающий по типу, слеп к соседям по объекту.** `McpUiPropertyParityTests` фильтровал
+свойства через `typeof(KitchenElement).IsAssignableFrom(p.DeclaringType)` — и потому НИКОГДА не
+видел `Wall`: тот висит соседним `MonoBehaviour` на том же GameObject, а не наследуется. Панель и
+MCP правили `Kind`, `EndShape` и `LoadBearing` вручную согласованно, и разъехались бы молча. Такой
+сторож не краснеет ни в одну сторону — он просто ничего не проверяет для целого класса свойств.
+Лечится не списком исключений, а тем же источником, которым пользуется панель: соседний компонент
+находится по `GetComponent<X>()` в `*FieldsEditor.Handles`, поэтому следующий редактор соседа
+попадёт под стража сам. И сторожа проверяй сторожем: тест «зонд действительно вышел на соседнюю
+поверхность» стоит одну строку, а без него расширение снова окажется декорацией.
+
 ## A brute-force sweep writes the WHOLE list to a file; a cap in the message is a defect
 
 A sweep that truncates its own findings costs an extra run every time and, worse, makes two
