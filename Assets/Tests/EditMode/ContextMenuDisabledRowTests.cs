@@ -27,8 +27,15 @@ public class ContextMenuDisabledRowTests
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню — 0,31 с,
+    /// и четыре сборки это 1,4 с из прогона EditMode при бюджете 170 с. Почему это
+    /// безопасно — в сводке <see cref="ContextMenuLayoutTests"/>: боевой сценарий и есть
+    /// ОДНА панель, переоткрываемая через <c>Open</c>. Здесь это верно вдвойне: оба
+    /// сторожа и так перебирают все типы ОДНОЙ панелью, зовя <c>Open</c> и
+    /// <c>Close</c> по кругу, — то есть проверяемое состояние подписей уже сегодня
+    /// живёт в переоткрытой панели, а не в свежесобранной.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
@@ -37,12 +44,39 @@ public class ContextMenuDisabledRowTests
         _menu!.Build(_canvas!.transform);
     }
 
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь.
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: в EditMode
+    /// <c>Time.frameCount</c> стоит на месте, и окно, взведённое предыдущим тестом,
+    /// съело бы первую правку следующего. <c>DisarmAll</c> — взвод «Удалить» живёт в
+    /// статике и переживает не только тест, но и класс: сторожа перебирают ВСЕ типы
+    /// и читают состояние каждой строки, а взведённая кнопка держит ссылку на элемент,
+    /// которого уже нет, — падение было бы <c>MissingReference</c>, а не по делу.
+    /// Фокус — причина, по которой <c>RefreshUnfocused</c> молча пропускает
+    /// поле.</summary>
+    [SetUp]
+    public void Setup()
+    {
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
+    }
+
+    /// <summary><c>Close()</c> обязан идти ДО <c>EveryElementType.ClearScene()</c>: он
+    /// обнуляет <c>_target</c>, иначе живая панель осталась бы с уничтоженным элементом
+    /// в руках.</summary>
     [TearDown]
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        if (_menu != null) _menu!.Close();
         EveryElementType.ClearScene();
     }
 
