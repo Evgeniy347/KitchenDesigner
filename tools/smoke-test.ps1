@@ -19,6 +19,16 @@
     Шаг 5 поднимает приложение с -mcpSaveDir <временный каталог>, которым скрипт владеет сам:
     он создаётся перед запуском и удаляется в конце прогона независимо от результата.
 
+    Плеер запускается БЕЗ видимого окна и БЕЗ звука — это прогон на машине пользователя,
+    рядом с его собственной работой. -batchmode/-nographics не годятся: тест гоняет
+    настоящий рендер (реальная сцена, create/get/delete через MCP). Вместо этого окно
+    прячется после запуска через ShowWindow(SW_HIDE) (Hide-PlayerWindow) — процесс
+    остаётся с настоящим GPU-окном, Windows просто никогда его не показывает; прячется
+    в цикле, а не один раз, потому что движок сам вызывает ShowWindow при старте и при
+    смене режима окна (DisplaySettings.ApplyWindowMode). Звук выключается аргументом
+    -muteAudio (см. MuteAudioArgument / AudioOutputPolicy в Core/Audio) — он глушит вывод
+    на время процесса и ничего не пишет в файл настроек пользователя.
+
     НЕ вызывается сам по себе ни из build.cmd, ни из обычного прогона тестов
     (agents/TESTS.md). Он часть пути релиза (installer/build-installer.cmd
     и installer/publish-github.cmd) и запускается только оттуда.
@@ -97,6 +107,30 @@ function Add-Result {
     Write-Host ("[{0}] {1,-28} {2,7:N2} ms{3}{4}" -f $status, $Name, $Ms, $budgetNote, $(if ($Detail) { " - $Detail" } else { '' }))
 }
 
+if (-not ([System.Management.Automation.PSTypeName]'SmokeTest.NativeMethods').Type) {
+    Add-Type -Namespace SmokeTest -Name NativeMethods -MemberDefinition @'
+[DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+'@
+}
+$SW_HIDE = 0
+
+function Hide-PlayerWindow {
+    # -batchmode/-nographics are not an option here: the smoke test drives a REAL render
+    # (MCP scene ops, save/load), so the window is hidden after the fact instead - the
+    # process still owns a real GPU-backed window, Windows just never shows it. Start-Process
+    # -WindowStyle Hidden alone does not reliably hide a Unity player: the engine calls
+    # ShowWindow itself during boot and during Screen.SetResolution (DisplaySettings.
+    # ApplyWindowMode), which can re-show it - so this is polled, not called once.
+    param($Process)
+    try {
+        $Process.Refresh()
+        $h = $Process.MainWindowHandle
+        if ($h -ne [IntPtr]::Zero) {
+            [SmokeTest.NativeMethods]::ShowWindow($h, $SW_HIDE) | Out-Null
+        }
+    } catch { }
+}
+
 function Stop-SmokeProcess {
     param($Process)
     if ($null -eq $Process) { return }
@@ -121,18 +155,25 @@ $tempSaveDir = Join-Path ([System.IO.Path]::GetTempPath()) "kd-smoke-$([guid]::N
 New-Item -ItemType Directory -Path $tempSaveDir -Force | Out-Null
 
 # ---- 1) Launch ----
+# -muteAudio: the smoke test must never play sound on the machine it runs on (see
+# MuteAudioArgument / AudioOutputPolicy in Core/Audio) - same reasoning as -mcpPort not
+# fighting the user's own instance for a port.
 try {
-    $proc = Start-Process -FilePath $ExePath -ArgumentList @('-mcpPort', "$Port", '-mcpSaveDir', "$tempSaveDir") -PassThru
+    $proc = Start-Process -FilePath $ExePath `
+        -ArgumentList @('-mcpPort', "$Port", '-mcpSaveDir', "$tempSaveDir", '-muteAudio') `
+        -WindowStyle Hidden -PassThru
 } catch {
     Write-Host "[FAIL] Could not start player: $_" -ForegroundColor Red
     Remove-Item -LiteralPath $tempSaveDir -Recurse -Force -ErrorAction SilentlyContinue
     exit 1
 }
+Hide-PlayerWindow -Process $proc
 
 # ---- Wait for MCP to come up (start cost is NOT charged to any single test) ----
 $sw = [System.Diagnostics.Stopwatch]::StartNew()
 $up = $false
 while ($sw.Elapsed.TotalSeconds -lt $StartupTimeoutSec) {
+    Hide-PlayerWindow -Process $proc
     if ($proc.HasExited) {
         Write-Host "[FAIL] Player process exited during startup (exit code $($proc.ExitCode))." -ForegroundColor Red
         Remove-Item -LiteralPath $tempSaveDir -Recurse -Force -ErrorAction SilentlyContinue
