@@ -6,6 +6,7 @@ using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Analysis;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Construction;
 
 /// <summary>Контракт каталога проблем: набор кодов, уровень каждого кода и
 /// колонка «Деталь». Эти сведения раньше были комментариями в
@@ -97,6 +98,10 @@ public class AnalysisContractTests
                     PipeNodeKind.Supply), a, b),
             IssueCatalog.FromPipeFinding(
                 PipeIssueCatalog.ObstacleCrossed(PipeRun(a), Blocking(b)), a, b),
+            IssueCatalog.FromConstructionFinding(
+                ConstructionIssueCatalog.WallThicknessOffFormat(a.PartName,
+                    MasonryUnit.Of(MasonryTechnology.BrickSingle), 300f,
+                    MasonryUnit.ThicknessSeries(MasonryTechnology.BrickSingle, 10f)), a),
         };
     }
 
@@ -115,6 +120,7 @@ public class AnalysisContractTests
             "LEG-01", "LEG-02", "LEG-03",
             "PIP-01", "PIP-02", "PIP-03", "PIP-04",
             "SEAT-01",
+            "WAL-01",
         };
 
         CollectionAssert.AreEqual(expected, DeclaredCodes(),
@@ -164,6 +170,7 @@ public class AnalysisContractTests
             ["PIP-02"] = IssueLevel.Error,
             ["PIP-03"] = IssueLevel.Error,
             ["PIP-04"] = IssueLevel.Error,
+            ["WAL-01"] = IssueLevel.Warning,
         };
 
         CollectionAssert.AreEquivalent(expected.Keys, byCode.Keys,

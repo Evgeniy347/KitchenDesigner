@@ -265,6 +265,7 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodePipeSizeMismatch = "PIP-02";
         public const string CodePipeObstacleCrossed = "PIP-03";
         public const string CodePipeSameRoleJoin = "PIP-04";
+        public const string CodeWallThicknessOffFormat = "WAL-01";
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {
@@ -422,6 +423,12 @@ namespace KitchenDesigner.Core.Analysis
             new AnalysisIssue(
                 finding.Level == Plumbing.PipeFindingLevel.Error ? IssueLevel.Error : IssueLevel.Warning,
                 finding.Code, PairDetail(element, other), finding.Message, element, other);
+
+        public static AnalysisIssue FromConstructionFinding(Construction.ConstructionFinding finding,
+            KitchenElement? element) =>
+            new AnalysisIssue(
+                finding.Level == Construction.ConstructionFindingLevel.Error ? IssueLevel.Error : IssueLevel.Warning,
+                finding.Code, Name(element), finding.Message, element);
 
         private static string Name(KitchenElement? e) =>
             e != null && !string.IsNullOrEmpty(e.PartName) ? e.PartName : "—";
