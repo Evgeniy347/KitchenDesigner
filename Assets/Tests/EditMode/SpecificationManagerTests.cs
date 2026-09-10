@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
@@ -162,7 +163,10 @@ public class SpecificationManagerTests
         int countCol = System.Array.IndexOf(header, "Count");
         int areaCol = System.Array.IndexOf(header, "TotalArea_m2");
         Assert.AreEqual("2", total[countCol], "кол-во должно стоять в колонке Count");
-        Assert.IsTrue(float.TryParse(total[areaCol], out float area), "площадь — число");
+        // ToCsv печатает дробные числа зафиксированной SpecificationExport.NumberCulture
+        // (ru-RU, запятая) - разбирать нужно той же константой, не культурой машины прогона.
+        Assert.IsTrue(float.TryParse(total[areaCol], NumberStyles.Float, SpecificationExport.NumberCulture, out float area),
+            "площадь — число");
         Assert.AreEqual(0.32f * 2f, area, 0.001f, "площадь пласти в колонке TotalArea_m2, не полная поверхность");
 
         Object.DestroyImmediate(a.gameObject);

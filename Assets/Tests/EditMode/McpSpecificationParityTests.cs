@@ -46,14 +46,12 @@ public class McpSpecificationParityTests : McpTestFixture
         return rows.Skip(1).Take(expectedRowCount).Select(r => r.Split(';')).ToArray();
     }
 
-    // SpecificationExport.ToCsv formats numbers via unformatted interpolated strings
-    // ($"{x:F4}") and .ToString("F4"), both of which fall back to
-    // CultureInfo.CurrentCulture - so the decimal separator the file actually uses is
-    // whatever culture is active on the machine that ran the export, not invariant "."
-    // (see report: this is a real defect in SpecificationExport, out of scope here).
-    // The test must parse with that same culture or it "corrects" a comma into a
-    // thousands separator and silently mis-reads the number by 10x/100x/1000x.
-    private static float ParseCsvFloat(string cell) => float.Parse(cell, NumberStyles.Float, CultureInfo.CurrentCulture);
+    // SpecificationExport.ToCsv formats fractional numbers with the fixed
+    // SpecificationExport.NumberCulture (ru-RU, comma decimal separator), independent of
+    // whatever culture happens to be active on the machine running the test. Parse with
+    // that same constant - not CultureInfo.CurrentCulture - so the test is independent of
+    // the runner's locale, and so it still fails if the export's number format ever changes.
+    private static float ParseCsvFloat(string cell) => float.Parse(cell, NumberStyles.Float, SpecificationExport.NumberCulture);
 
     [Test]
     public void GetSpecification_MatchesCsvExport_SameSceneSameNumbers()
