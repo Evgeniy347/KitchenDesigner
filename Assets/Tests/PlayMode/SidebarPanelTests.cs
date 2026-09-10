@@ -54,6 +54,7 @@ public class SidebarPanelTests
         EditModeManager.Reset();
         SidebarUI.ResetLastUsedGroupForTests();
         PartRegistry.Clear();
+        CameraController.CatalogHasLiveKeyboardSelection = false;
     }
 
     private static Transform Child(Transform parent, string name)
@@ -1031,6 +1032,46 @@ public class SidebarPanelTests
             + "набор текста фильтра сам собой спавнил бы деталь");
     }
 
+    /// <summary>Приёмка нашла ровно этот сценарий: плитка выбрана клавиатурой (док раскрыт
+    /// постоянно на 1080p), пользователь кликнул в постороннее поле — например поле свойств
+    /// элемента — и печатает там. Enter обязан уйти в это поле, а не одновременно поставить
+    /// деталь: набор нажатий проверяется РЕЗУЛЬТАТОМ (что заспавнилось), а не тем, что
+    /// осталось подсвеченным в сетке.</summary>
+    [UnityTest]
+    public IEnumerator Enter_WhileTypingInAnUnrelatedField_DoesNotSpawnAnything_EvenWithATileSelected()
+    {
+        var esGo = new GameObject("EventSystem", typeof(EventSystem));
+        var otherField = UIFactory.CreateInputField("OtherField", _canvasGo.transform, "",
+            Vector2.zero, new Vector2(120f, 24f));
+        try
+        {
+            var tiles = TilesOf("Детали");
+            _sidebar.SelectTileForTests("Детали", tiles[0].title);
+
+            otherField.ActivateInputField();
+            yield return null;
+            Assert.IsTrue(otherField.isFocused,
+                "постороннее поле обязано быть в фокусе перед проверкой — иначе тест ничего "
+                + "не доказывает");
+
+            otherField.text = "600";
+            _sidebar.SimulateKeyForTests(KeyCode.Return);
+
+            Assert.IsNull(_sidebar.LastSpawnAttemptForTests,
+                "Enter, нажатый пока фокус в постороннем поле (не в поиске каталога), не "
+                + "имеет права поставить плитку, выбранную клавиатурой раньше — иначе "
+                + "подтверждение значения в чужом поле спавнило бы деталь заодно");
+            Assert.IsTrue(_sidebar.HasKeyboardSelectionForTests,
+                "выделение плитки не обязано сниматься от чужого Enter — оно просто не "
+                + "имеет права действовать, пока печатает кто-то другой");
+        }
+        finally
+        {
+            Object.DestroyImmediate(otherField.gameObject);
+            Object.DestroyImmediate(esGo);
+        }
+    }
+
     [Test]
     public void Escape_ClearsTheKeyboardSelection_BeforeAnythingElse()
     {
@@ -1086,6 +1127,28 @@ public class SidebarPanelTests
         Assert.IsTrue(outline.enabled, "выбранная плитка обязана включить рамку");
         Assert.AreNotEqual(unselectedColor, background.color,
             "выбранная плитка обязана сменить и цвет фона — цвет и форма вместе, не порознь");
+    }
+
+    /// <summary>Сайдбар — единственный источник этого флага, а камера (CameraController.
+    /// ApplyArrowOrbitIfOwned) только читает его: направление зависимости обязано идти от UI
+    /// вниз к ядру, а не наоборот (LayerDependencyDirectionTests). Контракт проверяется здесь,
+    /// на реальном выборе плитки, а не на подставном значении.</summary>
+    [Test]
+    public void SelectingATile_ClaimsTheArrowKeysFromTheCamera_AndReleasesThemOnDeselect()
+    {
+        Assert.IsFalse(CameraController.CatalogHasLiveKeyboardSelection,
+            "без выбранной плитки признак, который читает камера, обязан быть снят");
+
+        var tiles = TilesOf("Детали");
+        _sidebar.SelectTileForTests("Детали", tiles[0].title);
+        Assert.IsTrue(CameraController.CatalogHasLiveKeyboardSelection,
+            "выбор плитки клавиатурой обязан поднять признак — иначе камера не узнает, что "
+            + "сетка забрала стрелки себе");
+
+        _sidebar.SimulateKeyForTests(KeyCode.Escape);
+        Assert.IsFalse(CameraController.CatalogHasLiveKeyboardSelection,
+            "снятие выделения обязано опустить признак обратно — иначе камера остаётся "
+            + "заблокированной навсегда после одного выбора плитки");
     }
 
     [Test]

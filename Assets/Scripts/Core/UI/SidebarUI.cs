@@ -646,6 +646,8 @@ namespace KitchenDesigner.Core.UI
                 return;
             }
 
+            if (IsTypingElsewhere()) return;
+
             var selectedTile = _kbSelectedTile;
             if (selectedTile != null)
             {
@@ -666,7 +668,6 @@ namespace KitchenDesigner.Core.UI
 
             if (key == KeyCode.Slash)
             {
-                if (IsTypingElsewhere()) return;
                 SetExpanded(true);
                 _focusSearchNextFrame = true;
                 return;
@@ -799,6 +800,7 @@ namespace KitchenDesigner.Core.UI
             if (ReferenceEquals(previous, tile)) return;
             if (previous != null) ApplyKeyboardHighlight(previous, false);
             _kbSelectedTile = tile;
+            CameraController.CatalogHasLiveKeyboardSelection = tile != null;
             if (tile != null)
             {
                 ApplyKeyboardHighlight(tile, true);

@@ -38,6 +38,7 @@ public class CameraControllerTests
         Object.DestroyImmediate(_controller!.gameObject);
         Object.DestroyImmediate(_floorGo!);
         Object.DestroyImmediate(_cameraGo!);
+        CameraController.CatalogHasLiveKeyboardSelection = false;
     }
 
     [Test]
@@ -851,5 +852,75 @@ public class CameraControllerTests
 
         _controller!.ActivateSelected();
         Assert.False(dw.IsOpen, "E закрывает дверцу посудомойки обратно");
+    }
+
+    [Test]
+    public void CameraOwnsArrows_WhenNeitherFieldNorCatalogClaimsThem()
+    {
+        Assert.IsTrue(CameraController.CameraOwnsArrows(typingInAnyField: false, catalogHasLiveSelection: false),
+            "без набора текста и без выделения в сетке стрелки обязаны крутить камеру");
+    }
+
+    [Test]
+    public void CameraDoesNotOwnArrows_WhileTypingInAnyField()
+    {
+        Assert.IsFalse(CameraController.CameraOwnsArrows(typingInAnyField: true, catalogHasLiveSelection: false),
+            "поле ввода — старший хозяин стрелок: камера обязана уступить, даже если "
+            + "выделения в каталоге нет");
+    }
+
+    [Test]
+    public void CameraDoesNotOwnArrows_WhileTheCatalogHasALiveSelection()
+    {
+        Assert.IsFalse(CameraController.CameraOwnsArrows(typingInAnyField: false, catalogHasLiveSelection: true),
+            "живое клавиатурное выделение в сетке каталога обязано забрать стрелки у "
+            + "камеры — иначе навигация по плиткам вращает сцену заодно");
+    }
+
+    [Test]
+    public void CameraDoesNotOwnArrows_WhenBothOthersClaimThem()
+    {
+        Assert.IsFalse(CameraController.CameraOwnsArrows(typingInAnyField: true, catalogHasLiveSelection: true),
+            "любой из старших хозяев уже достаточен, чтобы камера не тронулась");
+    }
+
+    [Test]
+    public void ApplyArrowOrbitIfOwned_MovesCamera_WhenNoCatalogSelectionIsAlive()
+    {
+        CameraController.CatalogHasLiveKeyboardSelection = false;
+        _controller!.SetState(new CameraState
+        {
+            valid = true, targetX = 0f, targetY = 0f, targetZ = 0f,
+            angleX = 0f, angleY = 0f, distance = 5f
+        });
+
+        _controller!.ApplyArrowOrbitIfOwned(Vector2.right, 1f);
+
+        Assert.AreNotEqual(0f, _controller!.GetState().angleY,
+            "без клавиатурного выделения в каталоге стрелки обязаны вращать камеру, как раньше");
+    }
+
+    [Test]
+    public void ApplyArrowOrbitIfOwned_LeavesCameraStill_WhileTheCatalogHasALiveSelection()
+    {
+        CameraController.CatalogHasLiveKeyboardSelection = true;
+        try
+        {
+            _controller!.SetState(new CameraState
+            {
+                valid = true, targetX = 0f, targetY = 0f, targetZ = 0f,
+                angleX = 0f, angleY = 0f, distance = 5f
+            });
+
+            _controller!.ApplyArrowOrbitIfOwned(Vector2.right, 1f);
+
+            Assert.AreEqual(0f, _controller!.GetState().angleY,
+                "живое клавиатурное выделение в сетке каталога обязано забрать стрелки у "
+                + "камеры, иначе навигация по плиткам вращает сцену заодно");
+        }
+        finally
+        {
+            CameraController.CatalogHasLiveKeyboardSelection = false;
+        }
     }
 }

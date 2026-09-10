@@ -383,6 +383,17 @@ namespace KitchenDesigner.Core
             Vector2 input = new Vector2(
                 (Input.GetKey(KeyCode.RightArrow) ? 1f : 0f) - (Input.GetKey(KeyCode.LeftArrow) ? 1f : 0f),
                 (Input.GetKey(KeyCode.UpArrow) ? 1f : 0f) - (Input.GetKey(KeyCode.DownArrow) ? 1f : 0f));
+            ApplyArrowOrbitIfOwned(input, dt);
+        }
+
+        public static bool CatalogHasLiveKeyboardSelection { get; set; }
+
+        public static bool CameraOwnsArrows(bool typingInAnyField, bool catalogHasLiveSelection) =>
+            !typingInAnyField && !catalogHasLiveSelection;
+
+        internal void ApplyArrowOrbitIfOwned(Vector2 input, float dt)
+        {
+            if (!CameraOwnsArrows(IsTypingInInputField(), CatalogHasLiveKeyboardSelection)) return;
             ApplyArrowOrbit(input, dt);
         }
 
