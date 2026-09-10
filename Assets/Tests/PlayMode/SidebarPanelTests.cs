@@ -165,6 +165,7 @@ public class SidebarPanelTests
     [UnityTest]
     public IEnumerator Tile_ThumbnailAppears_AfterAFewFramesOfLazyGeneration()
     {
+        _sidebar.SetExpandedForTests(true);
         var tile = Tile("Детали", "Полка");
         var stub = Child(tile, "Stub").GetComponent<Image>();
         var thumb = Child(tile, "Thumb").GetComponent<RawImage>();
@@ -212,6 +213,7 @@ public class SidebarPanelTests
     [UnityTest]
     public IEnumerator SwitchingPreset_RerendersTheThumbnail_ForTheNewlySelectedPreset()
     {
+        _sidebar.SetExpandedForTests(true);
         Header("Ящики").onClick.Invoke();
         var tile = Tile("Ящики", "Ящик");
         var thumb = Child(tile, "Thumb").GetComponent<RawImage>();
@@ -355,6 +357,63 @@ public class SidebarPanelTests
             "плитка находится по имени ЛЮБОГО своего пресета, а не только по заголовку плитки");
     }
 
+    /// <summary>Дефект приёмки: поиск «Movento» находил и показывал плитку «Ящик» по имени
+    /// пресета, но клик всё равно ставил ЗАПОМНЕННЫЙ пресет (GTV), потому что тест выше
+    /// проверял только видимость плитки, а не то, что реально уходит в
+    /// <see cref="SidebarSpawnRouter.Route"/>. Здесь проверяется РЕЗУЛЬТАТ поиска — какой
+    /// именно пресет плитка отдаст на спавн — через
+    /// <see cref="SidebarUI.ItemToSpawnForTests"/>, без поднятия полного UIManager.</summary>
+    [Test]
+    public void SearchField_MatchesByAnyPresetName_AndSpawnsTheMatchedPresetNotTheRememberedOne()
+    {
+        var search = Child(Panel, "SbSearch").GetComponent<TMP_InputField>();
+
+        var spawnedWithoutSearch = _sidebar.ItemToSpawnForTests("Ящики", "Ящик");
+        Assert.AreEqual("Ящик GTV", spawnedWithoutSearch.name,
+            "без поиска плитка отдаёт запомненный по умолчанию пресет (GTV)");
+
+        search.text = "Movento";
+        var spawnedWithSearch = _sidebar.ItemToSpawnForTests("Ящики", "Ящик");
+
+        Assert.AreEqual("Ящик Movento", spawnedWithSearch.name,
+            "совпадение по ИМЕНИ ВАРИАНТА обязано переключить выбор на него — иначе клик "
+            + "по найденной плиткой ставит не то, что было найдено");
+    }
+
+    [Test]
+    public void SearchField_MatchingOnlyTheTileTitle_DoesNotDisturbTheRememberedPreset()
+    {
+        const string key = "KitchenSidebarPreset_Ящик";
+        bool hadPrevValue = PlayerPrefs.HasKey(key);
+        string prevValue = PlayerPrefs.GetString(key, "");
+        try
+        {
+            SidebarPresetPreference.Save("Ящик", "Ящик Movento");
+            Object.DestroyImmediate(_sidebarHost);
+            Object.DestroyImmediate(_canvasGo);
+            _canvasGo = new GameObject("Canvas");
+            _canvasGo.AddComponent<Canvas>();
+            _sidebarHost = new GameObject("SidebarHost");
+            _sidebar = _sidebarHost.AddComponent<SidebarUI>();
+            _sidebar.Build(_canvasGo.transform);
+
+            var search = Child(Panel, "SbSearch").GetComponent<TMP_InputField>();
+            search.text = "Ящик";
+
+            var spawned = _sidebar.ItemToSpawnForTests("Ящики", "Ящик");
+
+            Assert.AreEqual("Ящик Movento", spawned.name,
+                "«Ящик» совпадает с ЗАГОЛОВКОМ плитки (её найдёт любой пресет), а не с "
+                + "конкретным вариантом — общее слово не обязано переключать запомненный выбор");
+        }
+        finally
+        {
+            if (hadPrevValue) PlayerPrefs.SetString(key, prevValue);
+            else PlayerPrefs.DeleteKey(key);
+            PlayerPrefs.Save();
+        }
+    }
+
     [Test]
     public void RoomMode_GraysOutRegularTiles_ButKeepsWallsAndAlwaysItems()
     {
@@ -460,6 +519,140 @@ public class SidebarPanelTests
         {
             Object.DestroyImmediate(restartedHost);
             Object.DestroyImmediate(restartedCanvasGo);
+            if (hadPrevValue) PlayerPrefs.SetInt("KitchenSidebarDockChoice", prevValue);
+            else PlayerPrefs.DeleteKey("KitchenSidebarDockChoice");
+            PlayerPrefs.Save();
+        }
+    }
+
+    [Test]
+    public void SelectingAGroup_PersistsAsTheLastUsedGroup_ForTheNextBuild()
+    {
+        const string key = "KitchenSidebarLastGroup";
+        bool hadPrevValue = PlayerPrefs.HasKey(key);
+        string prevValue = PlayerPrefs.GetString(key, "");
+        try
+        {
+            Header("Ящики").onClick.Invoke();
+
+            Assert.AreEqual("Ящики", PlayerPrefs.GetString(key),
+                "раскрытие группы обязано немедленно запомнить её как последнюю "
+                + "использованную — так же, как запоминается пресет и режим дока");
+
+            Object.DestroyImmediate(_sidebarHost);
+            Object.DestroyImmediate(_canvasGo);
+            _canvasGo = new GameObject("Canvas");
+            _canvasGo.AddComponent<Canvas>();
+            _sidebarHost = new GameObject("SidebarHost");
+            _sidebar = _sidebarHost.AddComponent<SidebarUI>();
+            _sidebar.Build(_canvasGo.transform);
+
+            var label = Header("Ящики").GetComponentInChildren<TMP_Text>();
+            Assert.IsTrue(label.text.StartsWith(UIStyle.GlyphExpanded),
+                "плитку пересобрали заново, и открытой обязана оказаться последняя "
+                + "использованная группа");
+        }
+        finally
+        {
+            if (hadPrevValue) PlayerPrefs.SetString(key, prevValue);
+            else PlayerPrefs.DeleteKey(key);
+            PlayerPrefs.Save();
+        }
+    }
+
+    /// <summary>Как <see cref="UserChoice_SurvivesARestart_ThroughTheSamePlayerPrefsKey_NotInTheProjectFile"/>,
+    /// но для последней использованной группы: было статическое поле <c>_lastUsedGroupTitle</c>,
+    /// которое переживало только текущий запуск программы, а не сам проект — то же, от чего
+    /// уже избавили выбор дока и выбор пресета.</summary>
+    [Test]
+    public void LastUsedGroup_SurvivesARestart_ThroughTheSamePlayerPrefsKey_NotInTheProjectFile()
+    {
+        const string key = "KitchenSidebarLastGroup";
+        bool hadPrevValue = PlayerPrefs.HasKey(key);
+        string prevValue = PlayerPrefs.GetString(key, "");
+        var restartedCanvasGo = new GameObject("CanvasAfterRestart");
+        var restartedHost = new GameObject("SidebarHostAfterRestart");
+        try
+        {
+            PlayerPrefs.SetString(key, "Ящики");
+            PlayerPrefs.Save();
+
+            restartedCanvasGo.AddComponent<Canvas>();
+            var restarted = restartedHost.AddComponent<SidebarUI>();
+            restarted.Build(restartedCanvasGo.transform);
+
+            var restartedContent = (RectTransform)Child(
+                Child(Child(restartedCanvasGo.transform, "Sidebar"), "SbFull"), "SbFullContent");
+            var label = Child(restartedContent, "SbGrp_Ящики").GetComponentInChildren<TMP_Text>();
+
+            Assert.IsTrue(label.text.StartsWith(UIStyle.GlyphExpanded),
+                "«перезапуск» — новый экземпляр SidebarUI, читающий тот же ключ PlayerPrefs, "
+                + "а не файл проекта: он обязан открыться на группе, выбранной ДО перезапуска");
+        }
+        finally
+        {
+            Object.DestroyImmediate(restartedHost);
+            Object.DestroyImmediate(restartedCanvasGo);
+            if (hadPrevValue) PlayerPrefs.SetString(key, prevValue);
+            else PlayerPrefs.DeleteKey(key);
+            PlayerPrefs.Save();
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator SwitchingPreset_ReleasesThePreviousThumbnailRenderTexture()
+    {
+        _sidebar.SetExpandedForTests(true);
+        Header("Ящики").onClick.Invoke();
+        var tile = Tile("Ящики", "Ящик");
+        var thumb = Child(tile, "Thumb").GetComponent<RawImage>();
+
+        for (int i = 0; i < 10 && thumb.texture == null; i++) yield return null;
+        var firstTexture = thumb.texture as RenderTexture;
+        Assert.IsNotNull(firstTexture, "картинка первого пресета обязана быть RenderTexture");
+        Assert.IsTrue(firstTexture!.IsCreated());
+
+        var presets = Child(tile, "Presets");
+        Child(presets, "PresetDot_1").GetComponent<Button>().onClick.Invoke();
+        for (int i = 0; i < 10 && thumb.texture == firstTexture; i++) yield return null;
+
+        Assert.IsFalse(firstTexture.IsCreated(),
+            "переключение пресета обязано ОСВОБОДИТЬ прежнюю RenderTexture, а не держать её "
+            + "до закрытия панели — иначе каждый клик по пресету течёт по 64 КБ видеопамяти");
+        Assert.AreNotSame(firstTexture, thumb.texture,
+            "у плитки обязана остаться картинка НОВОГО пресета");
+    }
+
+    [Test]
+    public void CollapsedIntoTheRail_DoesNotQueueThumbnailsForTheHiddenOpenGroup()
+    {
+        bool hadPrevValue = PlayerPrefs.HasKey("KitchenSidebarDockChoice");
+        int prevValue = PlayerPrefs.GetInt("KitchenSidebarDockChoice", 0);
+        var railCanvasGo = new GameObject("CanvasRail");
+        var railHost = new GameObject("SidebarHostRail");
+        try
+        {
+            SidebarDockPreference.Save(SidebarDockChoice.Rail);
+
+            railCanvasGo.AddComponent<Canvas>();
+            var rail = railHost.AddComponent<SidebarUI>();
+            rail.Build(railCanvasGo.transform);
+
+            Assert.AreEqual(0, rail.PendingThumbnailCountForTests,
+                "рейка иконок сворачивает панель при построении — раскрытая группа не видна "
+                + "никому, и заказывать для неё миниатюры сейчас незачем "
+                + "(docs/UI-GUIDELINES.md, «лениво, размазано по кадрам»)");
+
+            rail.SetExpandedForTests(true);
+
+            Assert.Greater(rail.PendingThumbnailCountForTests, 0,
+                "как только панель РЕАЛЬНО показана впервые, миниатюры открытой группы "
+                + "обязаны встать в очередь");
+        }
+        finally
+        {
+            Object.DestroyImmediate(railHost);
+            Object.DestroyImmediate(railCanvasGo);
             if (hadPrevValue) PlayerPrefs.SetInt("KitchenSidebarDockChoice", prevValue);
             else PlayerPrefs.DeleteKey("KitchenSidebarDockChoice");
             PlayerPrefs.Save();

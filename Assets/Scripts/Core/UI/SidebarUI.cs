@@ -21,13 +21,7 @@ namespace KitchenDesigner.Core.UI
         public const int TileFont = UIStyle.FontSmall;
 
         private const string RoomModeHint = "Доступно в режиме «Помещение»";
-        private const float PresetDotSize = 16f;
-        private const float PresetDotGap = 3f;
-        private const int PresetDotFont = 10;
-
         private static readonly Color ActiveToggleColor = new Color(0.30f, 0.55f, 0.34f, 1f);
-
-        private static string? _lastUsedGroupTitle;
 
         private RectTransform? _panel;
         private ScrollArea? _full;
@@ -85,7 +79,7 @@ namespace KitchenDesigner.Core.UI
         }
         private readonly List<ModeStyledTile> _modeStyledTiles = new List<ModeStyledTile>();
 
-        public static void ResetLastUsedGroupForTests() => _lastUsedGroupTitle = null;
+        public static void ResetLastUsedGroupForTests() => SidebarLastGroupPreference.ClearForTests();
 
         public void SetExpandedForTests(bool expanded) => SetExpanded(expanded);
 
@@ -119,6 +113,15 @@ namespace KitchenDesigner.Core.UI
                 SetGroupHeaderText(gu, gu.title);
             }
             RelayoutFull();
+        }
+
+        internal int PendingThumbnailCountForTests => _pendingThumbnails.Count;
+
+        internal SidebarCatalog.Item ItemToSpawnForTests(string groupTitle, string tileTitle)
+        {
+            var gu = _groups.Find(g => g.title == groupTitle);
+            var tile = gu.tiles.Find(t => t.title == tileTitle);
+            return tile.presets[SpawnPresetIndex(tile)];
         }
 
         public void Build(Transform canvas)
@@ -231,7 +234,7 @@ namespace KitchenDesigner.Core.UI
         private void BuildFull()
         {
             var catalog = SidebarCatalog.Build();
-            string? openTitle = _lastUsedGroupTitle;
+            string? openTitle = SidebarLastGroupPreference.Load();
             bool anyOpen = openTitle != null && catalog.Any(g => g.title == openTitle);
             if (!anyOpen) openTitle = catalog.Count > 0 ? catalog[0].title : null;
 
@@ -328,8 +331,9 @@ namespace KitchenDesigner.Core.UI
             presetRowRect.anchorMin = new Vector2(0f, 1f);
             presetRowRect.anchorMax = new Vector2(1f, 1f);
             presetRowRect.pivot = new Vector2(0f, 1f);
-            presetRowRect.offsetMin = new Vector2(2f, -(SidebarLayout.TileImageH - 2f));
-            presetRowRect.offsetMax = new Vector2(-2f, -(SidebarLayout.TileImageH - PresetDotSize - 2f));
+            float presetRowsH = SidebarLayout.PresetRowsHeight(tile.presets.Count);
+            presetRowRect.offsetMin = new Vector2(SidebarLayout.PresetRowInset, -(2f + presetRowsH));
+            presetRowRect.offsetMax = new Vector2(-SidebarLayout.PresetRowInset, -2f);
             presetRowGo.SetActive(false);
             tileUi.presetRow = presetRowRect;
 
@@ -363,10 +367,10 @@ namespace KitchenDesigner.Core.UI
                 var dotGo = new GameObject("PresetDot_" + i, typeof(RectTransform), typeof(Image));
                 dotGo.transform.SetParent(tileUi.presetRow, false);
                 var dotRect = (RectTransform)dotGo.transform;
-                dotRect.anchorMin = dotRect.anchorMax = new Vector2(0f, 0.5f);
-                dotRect.pivot = new Vector2(0f, 0.5f);
-                dotRect.sizeDelta = new Vector2(PresetDotSize, PresetDotSize);
-                dotRect.anchoredPosition = new Vector2(i * (PresetDotSize + PresetDotGap), 0f);
+                dotRect.anchorMin = dotRect.anchorMax = new Vector2(0f, 1f);
+                dotRect.pivot = new Vector2(0f, 1f);
+                dotRect.sizeDelta = new Vector2(SidebarLayout.PresetDotSize, SidebarLayout.PresetDotSize);
+                dotRect.anchoredPosition = SidebarLayout.PresetDotPosition(i);
                 var dotImg = dotGo.GetComponent<Image>();
                 dotImg.color = presetIndex == tileUi.selected ? UIStyle.SurfaceActive : UIStyle.SurfaceInactive;
 
@@ -375,7 +379,7 @@ namespace KitchenDesigner.Core.UI
                 dotBtn.onClick.AddListener(() => SelectPreset(tileUi, presetIndex));
 
                 var dotLabel = UIFactory.CreateLabel("PresetDotLabel", dotGo.transform,
-                    (presetIndex + 1).ToString(), PresetDotFont, Vector2.zero, Vector2.zero,
+                    (presetIndex + 1).ToString(), UIStyle.FontSmall, Vector2.zero, Vector2.zero,
                     TextAnchor.MiddleCenter);
                 dotLabel.raycastTarget = false;
                 var dotLabelRect = dotLabel.rectTransform;
@@ -462,6 +466,24 @@ namespace KitchenDesigner.Core.UI
             return false;
         }
 
+        private static int? FindMatchingPresetIndex(TileUI tile, string filter)
+        {
+            if (string.IsNullOrEmpty(filter)) return null;
+            for (int i = 0; i < tile.presets.Count; i++)
+                if (tile.presets[i].name.IndexOf(filter, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                    return i;
+            return null;
+        }
+
+        private int SpawnPresetIndex(TileUI tile)
+        {
+            string filter = _searchField != null ? _searchField.text.Trim() : "";
+            if (string.IsNullOrEmpty(filter)) return tile.selected;
+            if (tile.title.IndexOf(filter, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                return tile.selected;
+            return FindMatchingPresetIndex(tile, filter) ?? tile.selected;
+        }
+
         private void RelayoutFull()
         {
             string filter = _searchField != null ? _searchField.text.Trim() : "";
@@ -511,9 +533,19 @@ namespace KitchenDesigner.Core.UI
 
         private void RequestThumbnail(TileUI tile)
         {
+            if (!_expanded) return;
             if (tile.thumbnailReady) return;
             if (_pendingThumbnails.Contains(tile)) return;
             _pendingThumbnails.Add(tile);
+        }
+
+        private void ReleaseThumbnail(TileUI tile)
+        {
+            if (tile.thumb.texture is RenderTexture oldTexture)
+            {
+                _ownedTextures.Remove(oldTexture);
+                oldTexture.Release();
+            }
         }
 
         private void Update()
@@ -538,6 +570,8 @@ namespace KitchenDesigner.Core.UI
 
                 var spawn = SidebarThumbnailSpawns.For(tile.presets[tile.selected]);
                 if (spawn == null) continue;
+
+                ReleaseThumbnail(tile);
 
                 var texture = ThumbnailRenderer.Render(spawn, ThumbnailRenderer.DefaultSize);
                 _ownedTextures.Add(texture);
@@ -599,7 +633,7 @@ namespace KitchenDesigner.Core.UI
         private void ToggleGroup(GroupUI gu)
         {
             gu.open = !gu.open;
-            if (gu.open) _lastUsedGroupTitle = gu.title;
+            if (gu.open) SidebarLastGroupPreference.Save(gu.title);
             SetGroupHeaderText(gu, gu.title);
             RelayoutFull();
         }
@@ -611,7 +645,7 @@ namespace KitchenDesigner.Core.UI
 
             var gu = _groups[index];
             gu.open = true;
-            _lastUsedGroupTitle = gu.title;
+            SidebarLastGroupPreference.Save(gu.title);
             SetGroupHeaderText(gu, gu.title);
             RelayoutFull();
         }
@@ -619,9 +653,11 @@ namespace KitchenDesigner.Core.UI
         private void SpawnSelected(TileUI tile)
         {
             if (UIManager.Instance == null) return;
-            var item = tile.presets[tile.selected];
+            int presetIndex = SpawnPresetIndex(tile);
+            var item = tile.presets[presetIndex];
+            if (presetIndex != tile.selected) SelectPreset(tile, presetIndex);
             SidebarSpawnRouter.Route(item, UIManager.Instance.Spawner);
-            _lastUsedGroupTitle = tile.groupTitle;
+            SidebarLastGroupPreference.Save(tile.groupTitle);
 
             CollapseAfterSpawnIfDockModeSaysSo();
         }
@@ -633,8 +669,10 @@ namespace KitchenDesigner.Core.UI
 
         private void SetExpanded(bool expanded)
         {
+            bool wasExpanded = _expanded;
             _expanded = expanded;
             ApplyState();
+            if (expanded && !wasExpanded) RelayoutFull();
         }
 
         private void TogglePin()

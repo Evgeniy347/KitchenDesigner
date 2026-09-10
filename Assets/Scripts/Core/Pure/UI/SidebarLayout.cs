@@ -63,6 +63,36 @@ namespace KitchenDesigner.Core.UI
         public const float TopStripH = 36f;
         public const float SearchBandH = 32f;
 
+        public const float PresetDotSize = 24f;
+        public const float PresetDotGap = 4f;
+        public const float PresetRowInset = 2f;
+        public const float PresetRowWidth = TileW - 2f * PresetRowInset;
+
+        public static int PresetDotsPerRow()
+            => Mathf.Max(1, Mathf.FloorToInt((PresetRowWidth + PresetDotGap) / (PresetDotSize + PresetDotGap)));
+
+        public static int PresetDotRows(int presetCount)
+        {
+            if (presetCount <= 0) return 0;
+            int perRow = PresetDotsPerRow();
+            return Mathf.CeilToInt(presetCount / (float)perRow);
+        }
+
+        public static float PresetRowsHeight(int presetCount)
+        {
+            int rows = PresetDotRows(presetCount);
+            if (rows <= 0) return 0f;
+            return rows * PresetDotSize + (rows - 1) * PresetDotGap;
+        }
+
+        public static Vector2 PresetDotPosition(int index)
+        {
+            int perRow = PresetDotsPerRow();
+            int row = index / perRow;
+            int col = index % perRow;
+            return new Vector2(col * (PresetDotSize + PresetDotGap), -row * (PresetDotSize + PresetDotGap));
+        }
+
         public static float TileColX(int col) => Pad + col * (TileW + TileGap);
 
         public static float TileRowY(int row) => -(row * (TileH + TileGap));
