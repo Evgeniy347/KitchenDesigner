@@ -23,6 +23,7 @@
             "isWall": false,
             "wallKind": "",
             "wallEndShape": [],
+            "wallLoadBearing": false,
             "isFacade": false,
             "isRadialShelf": true,
             "isTable": false,
@@ -211,6 +212,7 @@
         "isWall": false,
         "wallKind": "",
         "wallEndShape": [],
+        "wallLoadBearing": true,
         "isFacade": false,
         "isRadialShelf": false,
         "isTable": false,
@@ -452,7 +454,6 @@
         "photoSsgiResolutionPct": 50,
         "photoSsgiBlurPx": 3
     },
-    "tintEnabled": true,
     "lightsOn": true,
     "musicTrack": 0,
     "musicVolumePct": 60,
