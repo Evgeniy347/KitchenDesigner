@@ -50,6 +50,11 @@ namespace KitchenDesigner.Core
 
         public bool IsEmpty => Faces == null || Faces.Length == 0;
 
+        public ElementGeometry WithoutPorts() => !HasPorts
+            ? this
+            : new ElementGeometry(Id, Name, Faces, GrooveSeatFaces, GrooveWallFaces, Min, Max,
+                IsPanel, MountNormal, MountEdgeDetentUnits, null);
+
         public static void BoundsOf(Vector3[] vertices, out Vector3 min, out Vector3 max)
         {
             min = vertices[0];

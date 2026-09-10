@@ -11,6 +11,12 @@ namespace KitchenDesigner.Core
 
         public const float GridRepairMaxDistMm = PipeRunFit.ReachMm;
 
+        public static PipeNodeKind KindOf(KitchenElement? element) =>
+            element is PipeFittingElement fitting ? fitting.NodeKind : PipeNodeKind.Pipe;
+
+        public static bool MaySeatOn(KitchenElement? moved, KitchenElement? other) =>
+            !(moved is ISnapPorts) || PipeConnectionRule.CanConnect(KindOf(moved), KindOf(other));
+
         public static bool RefitRunAfterResize(PipeElement pipe,
             IReadOnlyList<KitchenElement> scene)
         {
@@ -100,8 +106,8 @@ namespace KitchenDesigner.Core
         {
             if (element == null || scene == null) return;
 
-            SeatUsingPorts(element, poseOrigin, poseRotation, scene.ToPortedParts(), cursor,
-                maxDist);
+            SeatUsingPorts(element, poseOrigin, poseRotation, scene.ToPortedParts(element),
+                cursor, maxDist);
         }
 
         private static void SeatUsingPorts(KitchenElement element, Vector3 poseOrigin,
@@ -288,6 +294,7 @@ namespace KitchenDesigner.Core
             {
                 if (e == null || ReferenceEquals(e, moving)) continue;
                 if (!(e is ISnapPorts ported)) continue;
+                if (!MaySeatOn(moving, e)) continue;
                 if (!freeIndexesByElementId.TryGetValue(e.PartName, out var freeIndexes)
                     || freeIndexes.Count == 0) continue;
 

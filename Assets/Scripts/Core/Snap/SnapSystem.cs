@@ -73,7 +73,7 @@ namespace KitchenDesigner.Core
             if (!KitchenSettings.Instance.SnapEnabled) return default;
             if (!moved.gameObject.activeInHierarchy) return default;
 
-            return TrySnap(moved, others.ToGeometry(), testPosition);
+            return TrySnap(moved, others.ToGeometryFor(moved), testPosition);
         }
 
         public static SnapResult TrySnap(KitchenElement moved, IReadOnlyList<ElementGeometry> others,
@@ -114,7 +114,9 @@ namespace KitchenDesigner.Core
             {
                 if (other == null || !other.gameObject.activeInHierarchy) continue;
                 neighbours.Add(other);
-                scene.Add(other.ToGeometry());
+                scene.Add(PipeDocking.MaySeatOn(moved, other)
+                    ? other.ToGeometry()
+                    : other.ToGeometry().WithoutPorts());
             }
 
             var snap = knownSnap ?? TrySnap(moved, scene, testPosition);

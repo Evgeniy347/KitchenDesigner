@@ -62,7 +62,8 @@ namespace KitchenDesigner.Core
                 : new PortedPart(element.GetInstanceID(), element.PartName,
                     PortsOf(element, position));
 
-        public static List<PortedPart> ToPortedParts(this IEnumerable<KitchenElement> elements)
+        public static List<PortedPart> ToPortedParts(this IEnumerable<KitchenElement> elements,
+            KitchenElement? seatedElement = null)
         {
             var result = new List<PortedPart>();
             if (elements == null) return result;
@@ -70,6 +71,7 @@ namespace KitchenDesigner.Core
             foreach (var e in elements)
             {
                 if (e == null || !e.gameObject.activeInHierarchy) continue;
+                if (seatedElement != null && !PipeDocking.MaySeatOn(seatedElement, e)) continue;
                 var part = e.ToPortedPart(e.transform.position);
                 if (part.HasPorts) result.Add(part);
             }
@@ -82,7 +84,11 @@ namespace KitchenDesigner.Core
         private static float MountEdgeDetentUnitsOf(KitchenElement element) =>
             element is IMountsOnTarget mount ? mount.MountEdgeDetentUnits : 0f;
 
-        public static List<ElementGeometry> ToGeometry(this IEnumerable<KitchenElement> elements)
+        public static List<ElementGeometry> ToGeometry(this IEnumerable<KitchenElement> elements) =>
+            ToGeometryFor(elements, null);
+
+        public static List<ElementGeometry> ToGeometryFor(
+            this IEnumerable<KitchenElement> elements, KitchenElement? seatedElement)
         {
             var result = new List<ElementGeometry>();
             if (elements == null) return result;
@@ -90,7 +96,10 @@ namespace KitchenDesigner.Core
             foreach (var e in elements)
             {
                 if (e == null || !e.gameObject.activeInHierarchy) continue;
-                result.Add(e.ToGeometry());
+                var geometry = e.ToGeometry();
+                if (seatedElement != null && !PipeDocking.MaySeatOn(seatedElement, e))
+                    geometry = geometry.WithoutPorts();
+                result.Add(geometry);
             }
             return result;
         }
