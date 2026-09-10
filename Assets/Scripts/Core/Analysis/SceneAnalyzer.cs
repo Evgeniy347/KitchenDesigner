@@ -262,6 +262,7 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodePipeOpenEnd = "PIP-01";
         public const string CodePipeSizeMismatch = "PIP-02";
         public const string CodePipeObstacleCrossed = "PIP-03";
+        public const string CodePipeSameRoleJoin = "PIP-04";
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {

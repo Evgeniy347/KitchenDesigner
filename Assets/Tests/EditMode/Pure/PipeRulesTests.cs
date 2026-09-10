@@ -8,7 +8,8 @@ using KitchenDesigner.Core.Plumbing;
 /// торец — вода на полу, деталь ОТКАЖЕТ. PIP-02 — стыковка разных диаметров без
 /// переходника: такой узел не собрать. PIP-03 — трасса сквозь деталь; сквозь
 /// стену и пол трубу как раз и ведут, поэтому препятствием считается только то,
-/// что мешает физически.
+/// что мешает физически. PIP-04 — подача сведена напрямую с подачей (или
+/// обратка с обраткой): контур не замкнётся, устройство не будет работать.
 ///
 /// У каждого правила здесь есть парный отрицательный случай: правило, которое
 /// умеет только срабатывать, зелёного состояния не описывает.</summary>
@@ -199,11 +200,14 @@ public class PipeRulesTests
     [Test]
     public void PipeRules_Collect_ReportsRulesInCodeOrder()
     {
+        var far = PipeTestScene.At(3000f, 0f, 0f);
         var scene = new PipeTestScene()
             .Pipe("thin", Start, Joint, PipeSpec.Dn20)
             .Pipe("thick", Joint, End, PipeSpec.Dn25)
             .Obstacle("carcass", PipeObstacleKind.Part,
-                PipeTestScene.At(400f, -100f, -100f), PipeTestScene.At(600f, 100f, 100f));
+                PipeTestScene.At(400f, -100f, -100f), PipeTestScene.At(600f, 100f, 100f))
+            .Fitting("s1", PipeNodeKind.Supply, (far, PipeAxis.Left))
+            .Fitting("s2", PipeNodeKind.Supply, (far, PipeAxis.Right));
 
         var codes = new List<string>();
         foreach (var finding in PipeRules.Collect(scene))
@@ -215,8 +219,68 @@ public class PipeRulesTests
                 PipeIssueCatalog.CodeOpenEnd,
                 PipeIssueCatalog.CodeSizeMismatch,
                 PipeIssueCatalog.CodeObstacleCrossed,
+                PipeIssueCatalog.CodeSameRoleJoin,
             },
             codes,
             "порядок замечаний — часть контракта: клиент читает их подряд");
+    }
+
+    [Test]
+    public void PipeRules_SameRoleJoin_IsReported_WhenTwoSuppliesConnectDirectly()
+    {
+        var scene = new PipeTestScene()
+            .Fitting("s1", PipeNodeKind.Supply, (Joint, PipeAxis.Left))
+            .Fitting("s2", PipeNodeKind.Supply, (Joint, PipeAxis.Right));
+
+        var found = WithCode(PipeRules.Collect(scene), PipeIssueCatalog.CodeSameRoleJoin);
+        Assert.AreEqual(1, found.Count, "подача не может замыкаться сама на себя — воде некуда возвращаться");
+        Assert.AreEqual(PipeFindingLevel.Error, found[0].Level,
+            "контур не заработает — это отказ, а не замечание");
+        Assert.AreEqual("s1", found[0].ElementId);
+        Assert.AreEqual("s2", found[0].OtherElementId);
+    }
+
+    [Test]
+    public void PipeRules_SameRoleJoin_IsReported_WhenTwoReturnsConnectDirectly()
+    {
+        var scene = new PipeTestScene()
+            .Fitting("r1", PipeNodeKind.Return, (Joint, PipeAxis.Left))
+            .Fitting("r2", PipeNodeKind.Return, (Joint, PipeAxis.Right));
+
+        var found = WithCode(PipeRules.Collect(scene), PipeIssueCatalog.CodeSameRoleJoin);
+        Assert.AreEqual(1, found.Count, "обратка не может замыкаться сама на себя");
+    }
+
+    [Test]
+    public void PipeRules_SameRoleJoin_IsSilent_WhenSupplyMeetsReturn()
+    {
+        var scene = new PipeTestScene()
+            .Fitting("supply", PipeNodeKind.Supply, (Joint, PipeAxis.Left))
+            .Fitting("return", PipeNodeKind.Return, (Joint, PipeAxis.Right));
+
+        CollectionAssert.IsEmpty(
+            WithCode(PipeRules.Collect(scene), PipeIssueCatalog.CodeSameRoleJoin),
+            "подача с обраткой — это и есть замкнутый контур, законное соединение");
+    }
+
+    /// <summary>Обе стороны в одном тесте: тот же стык, одна подача заменена на
+    /// обратку. Без замены PIP-04 обязан сработать, с ней — молчать.</summary>
+    [Test]
+    public void PipeRules_SameRoleJoin_FiresForTwoSupplies_AndIsSilentOnceOneBecomesAReturn()
+    {
+        var direct = new PipeTestScene()
+            .Fitting("s1", PipeNodeKind.Supply, (Joint, PipeAxis.Left))
+            .Fitting("s2", PipeNodeKind.Supply, (Joint, PipeAxis.Right));
+
+        Assert.AreEqual(1, WithCode(PipeRules.Collect(direct),
+                PipeIssueCatalog.CodeSameRoleJoin).Count,
+            "две подачи сведены напрямую — контур не замкнётся");
+
+        var fixedScene = new PipeTestScene()
+            .Fitting("s1", PipeNodeKind.Supply, (Joint, PipeAxis.Left))
+            .Fitting("r2", PipeNodeKind.Return, (Joint, PipeAxis.Right));
+
+        CollectionAssert.IsEmpty(
+            WithCode(PipeRules.Collect(fixedScene), PipeIssueCatalog.CodeSameRoleJoin));
     }
 }

@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core.Plumbing
             CollectOpenEnds(survey, findings);
             CollectSizeMismatches(survey, findings);
             CollectObstacles(segments, obstacles, findings);
+            CollectSameRoleJoins(survey, findings);
             return findings;
         }
 
@@ -80,6 +81,20 @@ namespace KitchenDesigner.Core.Plumbing
             }
 
             return false;
+        }
+
+        private static void CollectSameRoleJoins(PipeSurvey survey, List<PipeFinding> findings)
+        {
+            var ports = survey.Ports;
+            foreach (var link in survey.Network.Links)
+            {
+                var kindA = ports[link.APortIndex].OwnerKind;
+                var kindB = ports[link.BPortIndex].OwnerKind;
+                if (kindA != kindB) continue;
+                if (kindA != PipeNodeKind.Supply && kindA != PipeNodeKind.Return) continue;
+                findings.Add(PipeIssueCatalog.SameRoleJoin(
+                    ports[link.APortIndex], ports[link.BPortIndex], kindA));
+            }
         }
 
         private static void CollectObstacles(IReadOnlyList<PipeRunSegment> segments,
