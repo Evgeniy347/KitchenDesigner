@@ -100,6 +100,33 @@ public class SpecificationPanelUITests
         Assert.AreEqual("", CellAt(row, SpecificationPanelUI.ColD, SpecificationPanelUI.ColMaterial));
     }
 
+    // ── Требование 4: «Дет.» — число деталей у строки с габаритами, ничего — у строки без ──
+
+    [Test]
+    public void BuildDisplayText_BoardLine_ShowsPieceCountInPiecesColumn()
+    {
+        var result = Result(BoardLine("Дно", new Vector3Int(600, 500, 18), "Белый (GTV)", SpecSections.Furniture,
+            2, 1.24f));
+
+        var row = Lines(SpecificationPanelUI.BuildDisplayText(result)).Single(l => l.Contains("Дно"));
+
+        Assert.AreEqual("2", CellAt(row, SpecificationPanelUI.ColPieces, SpecificationPanelUI.ColQty),
+            "колонка «Дет.» обязана показать число физических деталей (2 доски), а не м²");
+    }
+
+    [Test]
+    public void BuildDisplayText_LineWithoutDims_LeavesPiecesColumnBlank_NotSourceRowCount()
+    {
+        // Строка без габаритов не считается «деталями» — противоположный вход к тесту выше:
+        // здесь source-row-count (3) не имеет права всплыть в колонке «Дет.».
+        var result = Result(ItemLine("Кирпич", "Керамика", "Стены", SpecUnit.Pieces, 3, 3720f));
+
+        var row = Lines(SpecificationPanelUI.BuildDisplayText(result)).Single(l => l.Contains("Кирпич"));
+
+        Assert.AreEqual("", CellAt(row, SpecificationPanelUI.ColPieces, SpecificationPanelUI.ColQty),
+            "hasDims=false — колонка «Дет.» обязана быть пустой, а не числом строк-источников");
+    }
+
     // ── Требование 3: «Кол-во» — всегда общее количество в собственной единице строки ──
 
     [Test]

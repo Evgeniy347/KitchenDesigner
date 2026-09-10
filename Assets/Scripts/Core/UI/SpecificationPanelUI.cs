@@ -14,13 +14,14 @@ namespace KitchenDesigner.Core.UI
         internal const float ColH = 305f;
         internal const float ColD = 360f;
         internal const float ColMaterial = 420f;
+        internal const float ColPieces = 580f;
         internal const float ColQty = 630f;
         internal const float ColUnit = 730f;
         private const float ContentWidth = 840f;
         private const float ViewportHeight = 480f;
         private const float ViewportCenterY = -30f;
         internal const int MaxNameChars = 22;
-        internal const int MaxMaterialChars = 20;
+        internal const int MaxMaterialChars = 15;
         internal const int MaxSectionChars = 60;
         internal const float ScrollbarWidth = 8f;
 
@@ -64,6 +65,7 @@ namespace KitchenDesigner.Core.UI
                 $"№<pos={ColName}>Название" +
                 $"<pos={ColW}>Ш<pos={ColH}>В<pos={ColD}>Г, мм" +
                 $"<pos={ColMaterial}>Материал" +
+                $"<pos={ColPieces}>Дет." +
                 $"<pos={ColQty}>Кол-во" +
                 $"<pos={ColUnit}>Ед.";
         }
@@ -207,6 +209,7 @@ namespace KitchenDesigner.Core.UI
                                   $"<pos={ColH}>{DimCell(line.dimensionsMM.y, line.hasDims)}" +
                                   $"<pos={ColD}>{DimCell(line.dimensionsMM.z, line.hasDims)}" +
                                   $"<pos={ColMaterial}>{Trim(line.material, MaxMaterialChars)}" +
+                                  $"<pos={ColPieces}>{PiecesCell(line)}" +
                                   $"<pos={ColQty}>{FormatQty(line.qtyTotal, line.unit)}" +
                                   $"<pos={ColUnit}>{line.unit.Label()}");
                         sb.AppendLine();
@@ -236,6 +239,8 @@ namespace KitchenDesigner.Core.UI
             string.IsNullOrEmpty(section) ? "Без раздела" : section;
 
         private static string DimCell(int valueMM, bool hasDims) => hasDims ? valueMM.ToString() : "";
+
+        private static string PiecesCell(SpecLine line) => line.hasDims ? line.count.ToString() : "";
 
         private static string FormatQty(float qtyTotal, SpecUnit unit) =>
             unit == SpecUnit.Pieces ? Mathf.RoundToInt(qtyTotal).ToString() : qtyTotal.ToString("F2");
