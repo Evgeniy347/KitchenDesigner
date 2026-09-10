@@ -14,13 +14,6 @@ namespace KitchenDesigner.Core.UI
         public const string DefaultDrawerSystem = SidebarPresetResolution.DefaultDrawerSystem;
         public const string MoventoDrawerSystem = SidebarPresetResolution.MoventoDrawerSystem;
 
-        /// <summary>Всё, чем один пресет отличается от другого пресета ТОГО ЖЕ
-        /// типа. Раньше эти поля лежали прямо на <see cref="Item"/> вперемешку с
-        /// теми, что различают ТИПЫ (name/dims/kind) — и каждое новое поле пресета
-        /// было полем на Item, параметром в IElementSpawns, параметром в обеих его
-        /// реализациях и параметром в SidebarSpawnRouter. Здесь им одна дверь: новый
-        /// пресет существующего типа — это новое значение полей ЗДЕСЬ, а не новая
-        /// сигнатура где-то ниже по цепочке.</summary>
         public struct Preset
         {
             public string applianceModel;

@@ -4,12 +4,6 @@ using KitchenDesigner.Core.Plumbing;
 
 namespace KitchenDesigner.Core.UI
 {
-    /// <summary>Тот же switch на тех же полях каталога, что и в ElementSpawner,
-    /// только вместо постановки на пол/курсор — просто GameObject в нуле
-    /// координат, для картинки на плитке. Расхождения между двумя реализациями
-    /// одного интерфейса больше не может быть НА УРОВНЕ СИГНАТУРЫ — обе читают
-    /// один и тот же <see cref="SidebarCatalog.Item"/>, а не набор параметров,
-    /// который мог собраться по-разному на входе в каждую.</summary>
     internal sealed class SidebarThumbnailSpawns : IElementSpawns
     {
         private GameObject? _spawned;

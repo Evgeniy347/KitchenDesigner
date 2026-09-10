@@ -23,14 +23,6 @@ namespace KitchenDesigner.Core.UI
             CommitImmediate(CreateBoardGo(dims, $"Board {dims.x}x{dims.y}x{dims.z}"));
         }
 
-        /// <summary>Единственный вход от кнопки сайдбара (и от её миниатюры —
-        /// см. SidebarThumbnailSpawns, тот же switch на тех же полях, но с иной
-        /// постановкой) до фабрики. Новый ПРЕСЕТ существующего вида — это
-        /// изменение данных в SidebarCatalog, а не в этом методе: ветка ниже
-        /// читает всё нужное из item.dims/item.name/item.preset и не имеет
-        /// собственных параметров, которые эти данные могли бы не пропустить.
-        /// Новый ВИД (SidebarItemKind) — это честный код, и ему единственному
-        /// разрешено дописать сюда ветку.</summary>
         public void Spawn(SidebarCatalog.Item item)
         {
             switch (item.kind)
