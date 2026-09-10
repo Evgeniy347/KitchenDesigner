@@ -4,12 +4,15 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class Wall : MonoBehaviour
+    public class Wall : MonoBehaviour, IQuantifies
     {
         [SerializeField] private bool _loadBearing = true;
         public bool LoadBearing { get => _loadBearing; set => _loadBearing = value; }
 
         public string Kind => _loadBearing ? "bearing" : "partition";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements) =>
+            WallQuantitySurvey.Items(this);
 
         [SerializeField] private MasonryTechnology _masonry = KitchenSettings.Instance.ConstructionMasonry;
         [SerializeField] private int _jointMm = KitchenSettings.Instance.ConstructionJointMm;
