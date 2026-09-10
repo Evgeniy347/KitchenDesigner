@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class TableElement : KitchenElement, IHasTwoDecorSlots
+    public class TableElement : KitchenElement, IHasTwoDecorSlots, ISpecificationParts
     {
 
         public override string DisplayTypeName => "Стол";
@@ -145,6 +146,16 @@ namespace KitchenDesigner.Core
         public string SecondarySlotLabel => DecorSlots.LegsLabel;
 
         public void SetMaterial(Material material) => DecorSlots.SetBothSlots(this, material);
+
+        public IEnumerable<AssembledFacadeMesh.Part> GetSpecParts()
+        {
+            var dims = DimensionsMM;
+            yield return new AssembledFacadeMesh.Part
+            {
+                suffix = "Столешница",
+                dimsMM = new Vector3Int(dims.x, TabletopThicknessMM, dims.z),
+            };
+        }
 
         public override void PrepareForDestruction() => DestroyChildren();
 

@@ -3,9 +3,15 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class ToiletElement : KitchenElement, IHasTwoDecorSlots, IFixedSizeElement, IStandsOnFloor
+    public class ToiletElement : KitchenElement, IHasTwoDecorSlots, IFixedSizeElement, IStandsOnFloor,
+        IQuantifies
     {
         public override string DisplayTypeName => "Унитаз-компакт";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public const int DefaultWidthMM = ToiletLayout.WidthMM;
         public const int DefaultHeightMM = ToiletLayout.HeightMM;

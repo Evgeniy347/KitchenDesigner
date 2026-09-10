@@ -4,9 +4,14 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     public class WallHungToiletElement : KitchenElement, IHasTwoDecorSlots, IFixedSizeElement,
-        IWallMounted, IStandsOnFloor
+        IWallMounted, IStandsOnFloor, IQuantifies
     {
         public override string DisplayTypeName => "Унитаз подвесной";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public const int DefaultWidthMM = WallHungToiletLayout.WidthMM;
         public const int DefaultHeightMM = WallHungToiletLayout.HeightMM;

@@ -30,9 +30,6 @@ public class SpecificationCoverageGuardTests
     private static readonly Dictionary<Type, string> ExcludedFromSpecification =
         new Dictionary<Type, string>
     {
-        { typeof(TableElement),
-            "прямоугольный стол — столешница не разложена на листовые детали; тот же "
-            + "по форме дефект, что был у радиусного стола, чинить отдельным проходом" },
         { typeof(StoolElement), "цельная точёная мебель без разбивки на детали — вне этого дефекта" },
         { typeof(ChairElement), "цельная мебель со спинкой без разбивки на детали — вне этого дефекта" },
         { typeof(SofaElement), "мягкая мебель, разбивки на детали нет — вне этого дефекта" },
@@ -48,13 +45,6 @@ public class SpecificationCoverageGuardTests
             "проём стены со своей рамой и створкой, не разложен на детали — вне этого дефекта" },
         { typeof(DoorElement),
             "проём стены со своим полотном, не разложен на детали — вне этого дефекта" },
-        { typeof(ToiletElement),
-            "покупная сантехника той же природы, что мойка и ванна, но не значится в "
-            + "замороженной кухне — тот же дефект, чинить отдельным проходом" },
-        { typeof(WallHungToiletElement),
-            "покупная сантехника той же природы — см. причину у ToiletElement" },
-        { typeof(ShowerColumnElement),
-            "покупная сантехника той же природы — см. причину у ToiletElement" },
     };
 
     [Test]
@@ -112,5 +102,48 @@ public class SpecificationCoverageGuardTests
         EveryElementType.ClearScene();
         var element = EveryElementType.Spawn(typeof(RadiusTableElement), "CovRadiusTable");
         Assert.IsTrue(element is ISpecificationParts);
+    }
+
+    /// <summary>Противоположный вход: прямоугольный стол закрыл тот же дефект, что и
+    /// радиусный — столешница считается через ISpecificationParts, а не списана в
+    /// исключения. Ножки стола (LegSet, точёный брус) не покупное изделие и не
+    /// листовая деталь — считать их пока не с чем, ровно как у радиусного стола,
+    /// поэтому в исключения попадать не должны: у них просто нет отдельной строки.</summary>
+    [Test]
+    public void TableElement_IsCoveredThroughSpecificationParts_NotThroughTheExclusionList()
+    {
+        Assert.IsFalse(ExcludedFromSpecification.ContainsKey(typeof(TableElement)),
+            "прямоугольный стол обязан считать столешницу сам через ISpecificationParts, "
+            + "а не прятаться в списке исключений");
+
+        EveryElementType.ClearScene();
+        var element = EveryElementType.Spawn(typeof(TableElement), "CovTable");
+        Assert.IsTrue(element is ISpecificationParts);
+    }
+
+    /// <summary>Противоположный вход: покупная сантехника той же природы, что мойка и
+    /// ванна (уже считаются штуками через IQuantifies) — унитаз, подвесной унитаз и
+    /// душевая стойка обязаны считать себя сами тем же механизмом, а не прятаться в
+    /// списке исключений.</summary>
+    [Test]
+    public void PurchasedSanitaryTypes_AreCoveredThroughIQuantifies_NotThroughTheExclusionList()
+    {
+        var purchasedTypes = new[]
+        {
+            typeof(ToiletElement), typeof(WallHungToiletElement), typeof(ShowerColumnElement),
+        };
+
+        foreach (var type in purchasedTypes)
+        {
+            Assert.IsFalse(ExcludedFromSpecification.ContainsKey(type),
+                $"{type.Name} — покупное изделие той же природы, что мойка и ванна, и "
+                + "обязано считать себя само через IQuantifies, а не прятаться в списке "
+                + "исключений");
+
+            EveryElementType.ClearScene();
+            var element = EveryElementType.Spawn(type, "Cov" + type.Name);
+            Assert.Greater(element.GetComponents<IQuantifies>().Length, 0,
+                $"{type.Name} обязан реализовать IQuantifies");
+        }
     }
 }
