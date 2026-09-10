@@ -9,6 +9,8 @@ namespace KitchenDesigner.Core.UI
     {
         public static GroupMenuUI? Instance { get; private set; }
 
+        public bool IsOpen => _root != null && _root.activeSelf;
+
         internal static readonly Vector2 GroupSettingsSize = new Vector2(280, 240);
         internal static readonly Vector2 CompactLinkPromptSize = new Vector2(240, 132);
         internal const float DragStripDownToTheTitleBottom = 96f;
@@ -152,9 +154,26 @@ namespace KitchenDesigner.Core.UI
 
         private void Update()
         {
-            if (_root != null && _root.activeSelf && Input.GetKeyDown(KeyCode.Escape))
-                Close();
+            if (IsOpen && Input.GetKeyDown(KeyCode.Escape))
+                TryCloseFromEscape();
         }
+
+        internal void TryCloseFromEscape()
+        {
+            if (OwnsEscape()) Close();
+        }
+
+        private static bool OwnsEscape() =>
+            EscapeOwnership.Resolve(new EscapeClaims
+            {
+                GroupMenuOpen = true,
+                Dragging = ElementMover.IsDragging,
+                LightPicking = Lighting.LightPickMode.Active,
+                Measuring = Measure.MeasureMode.Active,
+                Eyedropping = Tools.EyedropperMode.Active,
+                ConfirmArmed = ConfirmDeleteButton.AnyArmed,
+                ContextMenuOpen = ContextMenuUI.Instance != null && ContextMenuUI.Instance.IsOpen,
+            }) == EscapeOwner.GroupMenu;
 
         private void CloseWhenSelectionLeavesTheGroup(KitchenElement? element)
         {

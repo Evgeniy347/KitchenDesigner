@@ -10,6 +10,8 @@ namespace KitchenDesigner.Core.UI
     {
         public static ContextMenuUI? Instance { get; private set; }
 
+        public bool IsOpen => _root != null && _root.activeSelf;
+
         private GameObject? _root;
         private KitchenElement? _target;
         private TMP_Text? _titleLabel;
@@ -463,8 +465,8 @@ namespace KitchenDesigner.Core.UI
             using var _ = PerfMarkers.ContextMenuUpdate.Auto();
             ProcessDeferredClose();
 
-            if (Input.GetKeyDown(KeyCode.Escape) && _root != null && _root.activeSelf)
-                Close();
+            if (Input.GetKeyDown(KeyCode.Escape) && IsOpen)
+                TryCloseFromEscape();
 
             if (_root != null && _root.activeSelf && _target != null)
             {
@@ -493,6 +495,22 @@ namespace KitchenDesigner.Core.UI
 
             SideHighlighter.Sync();
         }
+
+        internal void TryCloseFromEscape()
+        {
+            if (OwnsEscape()) Close();
+        }
+
+        private static bool OwnsEscape() =>
+            EscapeOwnership.Resolve(new EscapeClaims
+            {
+                ContextMenuOpen = true,
+                Dragging = ElementMover.IsDragging,
+                LightPicking = Lighting.LightPickMode.Active,
+                Measuring = Measure.MeasureMode.Active,
+                Eyedropping = Tools.EyedropperMode.Active,
+                ConfirmArmed = ConfirmDeleteButton.AnyArmed,
+            }) == EscapeOwner.ContextMenu;
 
         private bool IsAnyFieldFocused()
         {

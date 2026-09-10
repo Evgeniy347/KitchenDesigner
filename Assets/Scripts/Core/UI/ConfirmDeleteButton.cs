@@ -18,6 +18,8 @@ namespace KitchenDesigner.Core.UI
 
         public bool Armed { get; private set; }
 
+        public static bool AnyArmed => _theOnlyArmedOne != null;
+
         public static ConfirmDeleteButton Attach(Button button, System.Action onConfirm)
         {
             var confirm = button.gameObject.AddComponent<ConfirmDeleteButton>();
@@ -65,11 +67,21 @@ namespace KitchenDesigner.Core.UI
         private void LateUpdate()
         {
             if (!Armed) return;
-            bool cancelled = Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape);
+            bool cancelled = Input.GetMouseButtonDown(1) || (Input.GetKeyDown(KeyCode.Escape) && OwnsEscape());
             if (ShouldDisarm(Time.frameCount, _armedFrame, _pointerDownFrame,
                     Input.GetMouseButtonDown(0), cancelled))
                 Disarm();
         }
+
+        internal static bool OwnsEscape() =>
+            EscapeOwnership.Resolve(new EscapeClaims
+            {
+                ConfirmArmed = true,
+                Dragging = ElementMover.IsDragging,
+                LightPicking = Lighting.LightPickMode.Active,
+                Measuring = Measure.MeasureMode.Active,
+                Eyedropping = Tools.EyedropperMode.Active,
+            }) == EscapeOwner.ConfirmDelete;
 
         private void OnDisable() => Disarm();
     }

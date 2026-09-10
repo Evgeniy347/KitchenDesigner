@@ -110,8 +110,27 @@ namespace KitchenDesigner.Core.UI
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Escape) && _root != null && _root.activeSelf)
-                SetVisible(false);
+            if (Input.GetKeyDown(KeyCode.Escape) && IsVisible)
+                TryHideFromEscape();
         }
+
+        internal void TryHideFromEscape()
+        {
+            if (OwnsEscape()) SetVisible(false);
+        }
+
+        private static bool OwnsEscape() =>
+            EscapeOwnership.Resolve(new EscapeClaims
+            {
+                DayNightOpen = true,
+                Dragging = ElementMover.IsDragging,
+                LightPicking = Lighting.LightPickMode.Active,
+                Measuring = Measure.MeasureMode.Active,
+                Eyedropping = Tools.EyedropperMode.Active,
+                ConfirmArmed = ConfirmDeleteButton.AnyArmed,
+                ContextMenuOpen = ContextMenuUI.Instance != null && ContextMenuUI.Instance.IsOpen,
+                GroupMenuOpen = GroupMenuUI.Instance != null && GroupMenuUI.Instance.IsOpen,
+                CatalogTileSelected = SidebarUI.CatalogClaimsEscape,
+            }) == EscapeOwner.DayNightPanel;
     }
 }

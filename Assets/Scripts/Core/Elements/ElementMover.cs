@@ -288,7 +288,7 @@ namespace KitchenDesigner.Core
 
             if (Input.GetKeyDown(KeyCode.Escape) && IsDragging)
             {
-                CancelDrag();
+                TryCancelDragFromEscape();
                 return;
             }
 
@@ -317,6 +317,15 @@ namespace KitchenDesigner.Core
                 _pressed = false;
             }
         }
+
+        internal void TryCancelDragFromEscape()
+        {
+            if (!OwnsEscape()) return;
+            CancelDrag();
+        }
+
+        private static bool OwnsEscape() =>
+            EscapeOwnership.Resolve(new EscapeClaims { Dragging = IsDragging }) == EscapeOwner.ElementDrag;
 
         private void CancelDrag()
         {

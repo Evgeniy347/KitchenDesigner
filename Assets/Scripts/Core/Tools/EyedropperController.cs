@@ -22,11 +22,8 @@ namespace KitchenDesigner.Core.Tools
             if (!EyedropperMode.Active) return;
             if (PlacementController.IsActive) return;
 
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                EyedropperMode.SetActive(false);
+            if (Input.GetKeyDown(KeyCode.Escape) && TryExitFromEscape())
                 return;
-            }
 
             var cam = Camera.main;
             if (cam == null) return;
@@ -101,5 +98,21 @@ namespace KitchenDesigner.Core.Tools
         private static bool PointerOverUI() =>
             UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+
+        internal bool TryExitFromEscape()
+        {
+            if (!OwnsEscape()) return false;
+            EyedropperMode.SetActive(false);
+            return true;
+        }
+
+        private static bool OwnsEscape() =>
+            EscapeOwnership.Resolve(new EscapeClaims
+            {
+                Eyedropping = true,
+                Dragging = ElementMover.IsDragging,
+                LightPicking = Lighting.LightPickMode.Active,
+                Measuring = Measure.MeasureMode.Active,
+            }) == EscapeOwner.Eyedropper;
     }
 }

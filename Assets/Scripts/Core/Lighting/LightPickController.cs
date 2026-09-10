@@ -44,12 +44,8 @@ namespace KitchenDesigner.Core.Lighting
             var cam = Camera.main;
             if (cam == null) return;
 
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                LightPickMode.SetSource(null);
-                ResetState();
+            if (Input.GetKeyDown(KeyCode.Escape) && TryExitFromEscape())
                 return;
-            }
 
             Vector2 mouse = Input.mousePosition;
             UpdateHover(cam, mouse);
@@ -112,5 +108,20 @@ namespace KitchenDesigner.Core.Lighting
         private static bool PointerOverUI() =>
             UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+
+        internal bool TryExitFromEscape()
+        {
+            if (!OwnsEscape()) return false;
+            LightPickMode.SetSource(null);
+            ResetState();
+            return true;
+        }
+
+        private static bool OwnsEscape() =>
+            EscapeOwnership.Resolve(new EscapeClaims
+            {
+                LightPicking = true,
+                Dragging = ElementMover.IsDragging,
+            }) == EscapeOwner.LightPick;
     }
 }

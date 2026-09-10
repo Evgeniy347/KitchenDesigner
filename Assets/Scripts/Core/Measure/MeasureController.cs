@@ -44,7 +44,7 @@ namespace KitchenDesigner.Core.Measure
             var cam = Camera.main;
             if (cam == null) return;
 
-            if (Input.GetKeyDown(KeyCode.Escape)) CancelOneStep();
+            if (Input.GetKeyDown(KeyCode.Escape)) TryCancelOneStepFromEscape();
 
             Vector2 mouse = Input.mousePosition;
             CollectVertices(cam);
@@ -221,5 +221,18 @@ namespace KitchenDesigner.Core.Measure
         private static bool PointerOverUI() =>
             UnityEngine.EventSystems.EventSystem.current != null &&
             UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+
+        internal void TryCancelOneStepFromEscape()
+        {
+            if (OwnsEscape()) CancelOneStep();
+        }
+
+        private static bool OwnsEscape() =>
+            EscapeOwnership.Resolve(new EscapeClaims
+            {
+                Measuring = true,
+                Dragging = ElementMover.IsDragging,
+                LightPicking = Lighting.LightPickMode.Active,
+            }) == EscapeOwner.Measure;
     }
 }

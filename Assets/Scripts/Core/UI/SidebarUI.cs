@@ -661,7 +661,9 @@ namespace KitchenDesigner.Core.UI
                     case KeyCode.KeypadEnter: SpawnSelected(selectedTile); return;
                     case KeyCode.LeftBracket: CyclePreset(selectedTile, -1); return;
                     case KeyCode.RightBracket: CyclePreset(selectedTile, 1); return;
-                    case KeyCode.Escape: SetSelectedTile(null); return;
+                    case KeyCode.Escape:
+                        if (OwnsEscape(catalogTileSelected: true)) SetSelectedTile(null);
+                        return;
                 }
                 return;
             }
@@ -673,7 +675,8 @@ namespace KitchenDesigner.Core.UI
                 return;
             }
 
-            if (key == KeyCode.Escape && !_pinned && _expanded) SetExpanded(false);
+            if (key == KeyCode.Escape && !_pinned && _expanded && OwnsEscape(catalogCollapsible: true))
+                SetExpanded(false);
         }
 
         private void FocusSearchField()
@@ -682,6 +685,22 @@ namespace KitchenDesigner.Core.UI
             _searchField.Select();
             _searchField.ActivateInputField();
         }
+
+        public static bool CatalogClaimsEscape { get; private set; }
+
+        private static bool OwnsEscape(bool catalogTileSelected = false, bool catalogCollapsible = false) =>
+            EscapeOwnership.Resolve(new EscapeClaims
+            {
+                CatalogTileSelected = catalogTileSelected,
+                CatalogCollapsible = catalogCollapsible,
+                Dragging = ElementMover.IsDragging,
+                LightPicking = Lighting.LightPickMode.Active,
+                Measuring = Measure.MeasureMode.Active,
+                Eyedropping = Tools.EyedropperMode.Active,
+                ConfirmArmed = ConfirmDeleteButton.AnyArmed,
+                ContextMenuOpen = ContextMenuUI.Instance != null && ContextMenuUI.Instance.IsOpen,
+                GroupMenuOpen = GroupMenuUI.Instance != null && GroupMenuUI.Instance.IsOpen,
+            }) == (catalogTileSelected ? EscapeOwner.CatalogTileSelection : EscapeOwner.CatalogCollapse);
 
         private bool IsSearchFieldFocused() => _searchField != null && _searchField.isFocused;
 
@@ -801,6 +820,7 @@ namespace KitchenDesigner.Core.UI
             if (previous != null) ApplyKeyboardHighlight(previous, false);
             _kbSelectedTile = tile;
             CameraController.CatalogHasLiveKeyboardSelection = tile != null;
+            RefreshCatalogClaimsEscape();
             if (tile != null)
             {
                 ApplyKeyboardHighlight(tile, true);
@@ -905,6 +925,7 @@ namespace KitchenDesigner.Core.UI
             bool wasExpanded = _expanded;
             _expanded = expanded;
             ApplyState();
+            RefreshCatalogClaimsEscape();
             if (expanded && !wasExpanded) RelayoutFull();
         }
 
@@ -912,7 +933,11 @@ namespace KitchenDesigner.Core.UI
         {
             _pinned = !_pinned;
             ApplyState();
+            RefreshCatalogClaimsEscape();
         }
+
+        private void RefreshCatalogClaimsEscape() =>
+            CatalogClaimsEscape = _kbSelectedTile != null || (_expanded && !_pinned);
 
         private void ToggleDockMode()
         {

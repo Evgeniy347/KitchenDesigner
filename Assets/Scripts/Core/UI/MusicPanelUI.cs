@@ -116,9 +116,29 @@ namespace KitchenDesigner.Core.UI
         private void Update()
         {
             if (_root == null || !_root.activeSelf) return;
-            if (Input.GetKeyDown(KeyCode.Escape)) { SetVisible(false); return; }
+            if (Input.GetKeyDown(KeyCode.Escape)) TryHideFromEscape();
             bool playing = MusicPlayer.Instance != null && MusicPlayer.Instance.IsPlaying;
             if (playing != _shownAsPlaying) Refresh();
         }
+
+        internal void TryHideFromEscape()
+        {
+            if (OwnsEscape()) SetVisible(false);
+        }
+
+        private static bool OwnsEscape() =>
+            EscapeOwnership.Resolve(new EscapeClaims
+            {
+                MusicOpen = true,
+                Dragging = ElementMover.IsDragging,
+                LightPicking = Lighting.LightPickMode.Active,
+                Measuring = Measure.MeasureMode.Active,
+                Eyedropping = Tools.EyedropperMode.Active,
+                ConfirmArmed = ConfirmDeleteButton.AnyArmed,
+                ContextMenuOpen = ContextMenuUI.Instance != null && ContextMenuUI.Instance.IsOpen,
+                GroupMenuOpen = GroupMenuUI.Instance != null && GroupMenuUI.Instance.IsOpen,
+                CatalogTileSelected = SidebarUI.CatalogClaimsEscape,
+                DayNightOpen = DayNightPanelUI.Instance != null && DayNightPanelUI.Instance.IsVisible,
+            }) == EscapeOwner.MusicPanel;
     }
 }
