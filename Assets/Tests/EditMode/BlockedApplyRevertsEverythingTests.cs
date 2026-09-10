@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Reflection;
 using NUnit.Framework;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
@@ -22,8 +20,6 @@ using KitchenDesigner.Core.UI;
 /// оба теста включают блокировку без искусственных подпорок.</summary>
 public class BlockedApplyRevertsEverythingTests
 {
-    private static readonly BindingFlags Priv = BindingFlags.NonPublic | BindingFlags.Instance;
-
     private GameObject? _root;
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private bool _blockBefore;
@@ -70,12 +66,6 @@ public class BlockedApplyRevertsEverythingTests
         return el;
     }
 
-    private static TMP_InputField Field(ContextMenuUI ctx, string name) =>
-        (TMP_InputField)typeof(ContextMenuUI).GetField(name, Priv)!.GetValue(ctx)!;
-
-    private static void InvokeApply(ContextMenuUI ctx) =>
-        typeof(ContextMenuUI).GetMethod("Apply", Priv)!.Invoke(ctx, null);
-
     private static List<string> SnapshotOf(KitchenElement el)
     {
         var bag = UndoableProperties.Capture(el);
@@ -116,9 +106,9 @@ public class BlockedApplyRevertsEverythingTests
 
         var before = SnapshotOf(el);
 
-        Field(ctx, "_name").text = "Переименованная";
-        Field(ctx, "_w").text = "900";
-        InvokeApply(ctx);
+        ctx.SetNameFieldTextForTests("Переименованная");
+        ctx.SetWidthFieldTextForTests("900");
+        ctx.SimulateApplyForTests();
 
         var after = SnapshotOf(el);
 
@@ -144,9 +134,9 @@ public class BlockedApplyRevertsEverythingTests
         ctx.Open(el);
         CommandStack.Clear();
 
-        Field(ctx, "_name").text = "Переименованная";
-        Field(ctx, "_w").text = "900";
-        InvokeApply(ctx);
+        ctx.SetNameFieldTextForTests("Переименованная");
+        ctx.SetWidthFieldTextForTests("900");
+        ctx.SimulateApplyForTests();
 
         Assert.AreEqual(900, el.DimensionsMM.x, "без блокировки ширина обязана примениться");
         Assert.AreEqual("Переименованная", el.PartName, "без блокировки имя обязано примениться");

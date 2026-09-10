@@ -147,6 +147,12 @@ namespace KitchenDesigner.Core.UI
 
         internal ElementFieldsEditor[] Editors => _editors;
 
+        internal void SetNameFieldTextForTests(string text) => _name!.text = text;
+
+        internal void SetWidthFieldTextForTests(string text) => _w!.text = text;
+
+        internal void SimulateApplyForTests() => Apply();
+
         private void Awake()
         {
             Instance = this;
