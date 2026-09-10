@@ -50,6 +50,16 @@ namespace KitchenDesigner.Core.Plumbing
             return null;
         }
 
+        public static IReadOnlyList<string?> PadToPortCount(IReadOnlyList<string?> boreSizeIds, int portCount)
+        {
+            if (boreSizeIds.Count == portCount) return boreSizeIds;
+
+            var padded = new string?[portCount];
+            for (int i = 0; i < portCount; i++)
+                padded[i] = i < boreSizeIds.Count ? boreSizeIds[i] : null;
+            return padded;
+        }
+
         public static string Widest(IReadOnlyList<string?>? sizes)
         {
             if (sizes == null) return PipeSpec.DEFAULT_SIZE;

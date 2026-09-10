@@ -22,7 +22,7 @@ namespace KitchenDesigner.Core
 
         public string PortFrameSizeId => PipeSpec.DEFAULT_SIZE;
 
-        public IReadOnlyList<string?> BoreSizeIds => _boreSizeIds;
+        public IReadOnlyList<string?> BoreSizeIds => PipeSizes.PadToPortCount(_boreSizeIds, PortCount);
 
         public string BoreSizeId => PipeSizes.Widest(_boreSizeIds);
 
