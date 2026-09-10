@@ -31,13 +31,25 @@ public class HintTextGuardTests
 
     private static string CoreDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
 
-    private static IEnumerable<(string file, string line)> CodeLines() =>
-        Directory.GetFiles(CoreDir(), "*.cs", SearchOption.AllDirectories)
+    /// <summary>Всё дерево `Assets/Scripts/Core` (около 690 файлов) читается ОДИН раз
+    /// на класс, а не заново в каждом из семи тестов. Читали заново: четыре теста
+    /// звали `CodeLines()`/`KeysInCode()`, то есть ~2700 чтений диска на прогон вместо
+    /// 690, и в EditMode это платилось при каждом запуске набора. Скан от кэша не
+    /// ослабел — оба множества по-прежнему выводятся из ИСХОДНИКА, просто исходник
+    /// прочитан однажды; что скан действительно что-то видит, стережёт
+    /// <see cref="TheScan_FindsTheSamplePanel"/>.</summary>
+    private static List<(string file, string line)>? _codeLines;
+
+    private static List<(string file, string line)> CodeLines() =>
+        _codeLines ??= Directory.GetFiles(CoreDir(), "*.cs", SearchOption.AllDirectories)
             .SelectMany(file => SourceLines.WithoutComments(File.ReadAllLines(file))
-                .Select(line => (Path.GetFileName(file), line)));
+                .Select(line => (Path.GetFileName(file), line)))
+            .ToList();
+
+    private static List<(string file, string key)>? _keysInCode;
 
     private static List<(string file, string key)> KeysInCode() =>
-        CodeLines()
+        _keysInCode ??= CodeLines()
             .SelectMany(p => Declared.Matches(p.line).Cast<Match>()
                 .Select(m => (p.file, m.Groups[1].Value)))
             .ToList();

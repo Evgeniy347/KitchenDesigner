@@ -15,13 +15,31 @@ public class PerfMarkerCoverageTests
     private static string DiagnosticsDir() =>
         Path.Combine(ScriptsRoot(), "Core", "Diagnostics");
 
+    private static string[]? _files;
+
     private static string[] ProductionFilesOutsideDiagnostics() =>
-        Directory.GetFiles(ScriptsRoot(), "*.cs", SearchOption.AllDirectories)
+        _files ??= Directory.GetFiles(ScriptsRoot(), "*.cs", SearchOption.AllDirectories)
             .Where(f => !f.StartsWith(DiagnosticsDir(), StringComparison.Ordinal))
             .ToArray();
 
+    /// <summary>Дерево исходников (около 690 файлов) читается ОДИН раз на класс.
+    /// Раньше `File.ReadAllText` жил внутри `FirstOrDefault`, вызываемого на каждый
+    /// маркер — O(маркеры × файлы). Это починили, но словарь всё равно строился
+    /// ЗАНОВО в каждом из двух сканирующих тестов: 1400 чтений диска вместо 690.
+    /// Кэш не ослабляет сторожа — оба множества по-прежнему выводятся из исходника,
+    /// а что скан вообще что-то видит, стережёт
+    /// <see cref="TheScan_SeesBothTheMarkersAndTheSources"/>.</summary>
+    private static Dictionary<string, string>? _sourceText;
+
+    private static Dictionary<string, string> SourceText() =>
+        _sourceText ??= ProductionFilesOutsideDiagnostics().ToDictionary(f => f, File.ReadAllText);
+
+    private static Dictionary<string, string>? _markerNames;
+
     private static Dictionary<string, string> MarkerNameByFieldName()
     {
+        if (_markerNames != null) return _markerNames;
+
         var names = PerfMarkers.NamesInDeclarationOrder;
         var map = new Dictionary<string, string>();
         foreach (var field in typeof(PerfMarkers).GetFields(BindingFlags.Public | BindingFlags.Static))
@@ -30,7 +48,20 @@ public class PerfMarkerCoverageTests
             var marker = (PerfMarker)field.GetValue(null)!;
             map[field.Name] = names[marker.Slot];
         }
-        return map;
+        return _markerNames = map;
+    }
+
+    /// <summary>Регулярка на имя поля собирается один раз, а не заново в каждом из
+    /// двух тестов на каждый из ~40 маркеров.</summary>
+    private static readonly Dictionary<string, Regex> SiteOf =
+        new Dictionary<string, Regex>(StringComparer.Ordinal);
+
+    private static Regex SitePattern(string fieldName)
+    {
+        if (SiteOf.TryGetValue(fieldName, out var cached)) return cached;
+        var made = new Regex(@"\bPerfMarkers\." + Regex.Escape(fieldName) + @"\b", RegexOptions.Compiled);
+        SiteOf[fieldName] = made;
+        return made;
     }
 
     [Test]
@@ -45,13 +76,12 @@ public class PerfMarkerCoverageTests
     [Test]
     public void EveryDeclaredMarker_HasExactlyOneMeasurementSite_OutsideDiagnostics()
     {
-        var files = ProductionFilesOutsideDiagnostics();
-        var text = files.ToDictionary(f => f, File.ReadAllText);
+        var text = SourceText();
 
         var offenders = new List<string>();
         foreach (var (fieldName, markerName) in MarkerNameByFieldName())
         {
-            var pattern = new Regex(@"\bPerfMarkers\." + Regex.Escape(fieldName) + @"\b");
+            var pattern = SitePattern(fieldName);
             int sites = text.Sum(pair => pattern.Matches(pair.Value).Count);
 
             if (sites != 1)
@@ -71,13 +101,14 @@ public class PerfMarkerCoverageTests
     {
         // Раньше `File.ReadAllText` жил внутри `FirstOrDefault`, вызываемого на каждый
         // маркер — O(маркеры × файлы), порядка 40 × 700 чтений диска на один прогон. Дерево
-        // читается один раз в словарь, дальше сторож только ищет по уже прочитанному тексту.
-        var text = ProductionFilesOutsideDiagnostics().ToDictionary(f => f, File.ReadAllText);
+        // читается один раз на КЛАСС (SourceText), дальше сторож только ищет по уже
+        // прочитанному тексту уже собранной регуляркой.
+        var text = SourceText();
         var offenders = new List<string>();
 
         foreach (var (fieldName, markerName) in MarkerNameByFieldName())
         {
-            var pattern = new Regex(@"\bPerfMarkers\." + Regex.Escape(fieldName) + @"\b");
+            var pattern = SitePattern(fieldName);
             var site = text.FirstOrDefault(pair => pattern.IsMatch(pair.Value)).Key;
             if (site == null) continue;
 
