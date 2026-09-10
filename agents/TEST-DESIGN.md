@@ -174,6 +174,7 @@ MCP правили `Kind`, `EndShape` и `LoadBearing` вручную согла
 вопросом к интерфейсу (`ICutsItsHost`) в единственной точке перехода (`SceneMembership.Leave` /
 `Return`): тогда новый тип попадает под правило сам, а сторож перебирает настоящую фабрику типов
 (`EveryElementType.Makers`), а не список, написанный руками.
+
 ## A brute-force sweep writes the WHOLE list to a file; a cap in the message is a defect
 
 A sweep that truncates its own findings costs an extra run every time and, worse, makes two
