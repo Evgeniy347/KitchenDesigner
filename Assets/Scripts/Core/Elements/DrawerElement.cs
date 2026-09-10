@@ -51,6 +51,7 @@ namespace KitchenDesigner.Core
         private Quaternion _closedRot = Quaternion.identity;
         private float _cachedSafeProgress = 1f;
         private int _obstacleCheckRevision = -1;
+        private bool _parkedAtLimit;
 
         [Undoable]
         public DrawerSystem System
@@ -334,10 +335,17 @@ namespace KitchenDesigner.Core
             if (Mathf.Approximately(_t, target))
             {
                 if (_t <= 0f) CaptureClosed();
+                _parkedAtLimit = false;
                 return;
             }
 
-            if (IsParkedAtALimit) return;
+            if (StillBlockedOnThisRevision)
+            {
+                _parkedAtLimit = true;
+                return;
+            }
+
+            _parkedAtLimit = false;
 
             float progressBeforeThisFrame = _t;
             float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
@@ -380,7 +388,9 @@ namespace KitchenDesigner.Core
             return _cachedSafeProgress;
         }
 
-        public bool IsParkedAtALimit =>
+        public bool IsParkedAtALimit => _parkedAtLimit;
+
+        private bool StillBlockedOnThisRevision =>
             _open && _obstacleCheckRevision == SceneRevision.Version
             && Mathf.Approximately(_t, _cachedSafeProgress);
 
@@ -417,6 +427,7 @@ namespace KitchenDesigner.Core
             if (_t <= 0f && !_open) return;
             _open = false;
             _t = 0f;
+            _parkedAtLimit = false;
             transform.SetPositionAndRotation(_closedPos, _closedRot);
         }
 

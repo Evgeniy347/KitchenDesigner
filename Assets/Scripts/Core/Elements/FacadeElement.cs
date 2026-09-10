@@ -103,6 +103,7 @@ namespace KitchenDesigner.Core
         private Quaternion _closedRot = Quaternion.identity;
         private float _cachedSafeProgress = 1f;
         private int _obstacleCheckRevision = -1;
+        private bool _parkedAtLimit;
         private readonly System.Collections.Generic.List<KitchenElement> _ridersOfThisGesture =
             new System.Collections.Generic.List<KitchenElement>();
         private int _ridersRevision = -1;
@@ -175,6 +176,7 @@ namespace KitchenDesigner.Core
             _openTarget = false;
             _doorProgress = 0f;
             ForgetTheRidersOfThisGesture();
+            _parkedAtLimit = false;
             enabled = false;
             transform.SetPositionAndRotation(_closedPos, _closedRot);
 
@@ -201,6 +203,7 @@ namespace KitchenDesigner.Core
         {
             if (_isPassenger)
             {
+                _parkedAtLimit = false;
                 enabled = false;
                 return;
             }
@@ -212,15 +215,19 @@ namespace KitchenDesigner.Core
             {
                 if (_doorProgress <= 0f) CaptureClosed();
                 ForgetTheRidersOfThisGesture();
+                _parkedAtLimit = false;
                 enabled = false;
                 return;
             }
 
-            if (IsParkedAtALimit)
+            if (StillBlockedOnThisRevision)
             {
+                _parkedAtLimit = true;
                 enabled = false;
                 return;
             }
+
+            _parkedAtLimit = false;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _activeStepDoors++;
@@ -285,7 +292,9 @@ namespace KitchenDesigner.Core
             return _cachedSafeProgress;
         }
 
-        public bool IsParkedAtALimit =>
+        public bool IsParkedAtALimit => _parkedAtLimit;
+
+        private bool StillBlockedOnThisRevision =>
             _openTarget && _obstacleCheckRevision == SceneRevision.Version
             && Mathf.Approximately(_doorProgress, _cachedSafeProgress);
 
@@ -316,6 +325,7 @@ namespace KitchenDesigner.Core
             _closedRot = Quaternion.identity;
             _cachedSafeProgress = 1f;
             _obstacleCheckRevision = -1;
+            _parkedAtLimit = false;
             ForgetTheRidersOfThisGesture();
             enabled = true;
         }

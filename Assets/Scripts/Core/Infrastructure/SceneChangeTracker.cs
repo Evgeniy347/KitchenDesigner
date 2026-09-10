@@ -21,9 +21,9 @@ namespace KitchenDesigner.Core
         {
             using var _ = PerfMarkers.SceneChangeTrackerPoll.Auto();
 
+            var all = PartRegistry.All;
             bool any = _membershipChanged;
             bool hostSetChanged = _membershipChanged;
-            var all = PartRegistry.All;
             for (int i = 0; i < all.Count; i++)
             {
                 var e = all[i];
