@@ -217,6 +217,150 @@ public class FacadeOpeningCostTests
     /// <summary>Сторож самого сенсора: без глушения он действительно считает по вызову на кадр.
     /// Тест, который не может покраснеть, ничего не стоит — здесь красный воспроизводится
     /// принудительным бампом, то есть ровно тем, что делал `SceneChangeTracker` до правки.</summary>
+    // ───────────────────────── тот же дефект у ящика ─────────────────────────
+
+    /// <summary>Ящик болел ровно тем же: `ApplyAnimPose` двигал собственный трансформ каждый
+    /// кадр и НЕ звал `NoteSelfAnimated`, а `FindMaxProgress` гонялся безусловно, без всякого
+    /// кэша. Сенсоры и пороги здесь те же, что у дверцы, — потому что дефект количественно
+    /// тот же.</summary>
+    private DrawerElement MakeDrawer()
+    {
+        var go = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400,
+            "Ящик", Vector3.zero);
+        _spawned.Add(go);
+        return go.GetComponent<DrawerElement>()!;
+    }
+
+    /// <summary>Ящик выезжает вперёд по локальному Z; половина глубины 350мм — 175мм.</summary>
+    private KitchenElement MakeObstacleInFrontOfTheDrawer(float gapMm)
+    {
+        float z = (175f + gapMm + 9f) * AppConstants.MM_TO_UNITS;
+        var go = ElementFactory.CreatePart(new Vector3Int(400, 700, 18), "Препятствие",
+            new Vector3(0f, 0f, z));
+        _spawned.Add(go);
+        return go.GetComponent<KitchenElement>()!;
+    }
+
+    private void RunDrawerGesture(DrawerElement d, bool bumpEveryFrame, int frames = GestureFrames)
+    {
+        for (int i = 0; i < frames; i++)
+        {
+            if (bumpEveryFrame) SceneRevision.Bump();
+            d.StepAnimation(Dt);
+            SceneChangeTracker.Poll();
+        }
+    }
+
+    [Test]
+    public void BlockedDrawerGesture_BuildsObstacles_OnceOrTwice_NotEveryFrame()
+    {
+        var d = MakeDrawer();
+        MakeObstacleInFrontOfTheDrawer(100f);
+        SettleTheSceneAndZeroTheSensors();
+
+        d.SetOpen(true);
+        RunDrawerGesture(d, bumpEveryFrame: false);
+
+        int builds = OpeningCollision.TakeBuildObstacleCalls();
+        Assert.LessOrEqual(builds, 2,
+            $"препятствия за время выдвижения не двигаются — предел жеста считается один раз. "
+            + $"Получено {builds} построений за {GestureFrames} кадров: у ящика кэша предела "
+            + "не было вовсе, `FindMaxProgress` звался безусловно на каждом кадре");
+        Assert.Greater(builds, 0, "препятствия обязаны быть построены хотя бы раз, иначе ящик слеп");
+    }
+
+    [Test]
+    public void DrawerGesture_DoesNotBumpSceneRevision_EveryFrame()
+    {
+        var d = MakeDrawer();
+        MakeObstacleInFrontOfTheDrawer(100f);
+        SettleTheSceneAndZeroTheSensors();
+
+        d.SetOpen(true);
+        RunDrawerGesture(d, bumpEveryFrame: false);
+
+        int bumps = SceneRevision.TakeBumps();
+        Assert.LessOrEqual(bumps, 2,
+            $"собственное движение выезжающего ящика — не изменение сцены. Ревизия сдвинулась "
+            + $"{bumps} раз за {GestureFrames} кадров: столько же раз отработали "
+            + "`SettleDerivedLinks`, обе `ApplyAll` и полный `SceneAnalyzer.Analyze`");
+    }
+
+    [Test]
+    public void DrawerCachedLimit_StopsTheDrawer_AtExactlyTheSameProgress_AsAPerFrameScan()
+    {
+        var d = MakeDrawer();
+        MakeObstacleInFrontOfTheDrawer(100f);
+        SettleTheSceneAndZeroTheSensors();
+
+        d.SetOpen(true);
+        RunDrawerGesture(d, bumpEveryFrame: true);
+        float perFrameScan = d.AnimProgress;
+
+        d.ForceClose();
+        SettleTheSceneAndZeroTheSensors();
+
+        d.SetOpen(true);
+        RunDrawerGesture(d, bumpEveryFrame: false);
+        float cached = d.AnimProgress;
+
+        Assert.Less(perFrameScan, 1f,
+            "препятствие в 100 мм перед ящиком обязано его остановить — иначе тест сравнивает "
+            + "два беспрепятственных выдвижения и не проверяет ничего");
+        Assert.AreEqual(perFrameScan, cached, 1e-6f,
+            "кэшированный предел разошёлся с покадровым — ящик упирается не там, где раньше");
+    }
+
+    [Test]
+    public void UnobstructedDrawer_StillOpensFully()
+    {
+        var d = MakeDrawer();
+        SettleTheSceneAndZeroTheSensors();
+
+        d.SetOpen(true);
+        RunDrawerGesture(d, bumpEveryFrame: false);
+
+        Assert.AreEqual(1f, d.AnimProgress, 1e-4f,
+            "пустая сцена ничего не загораживает — ящик выезжает полностью");
+    }
+
+    [Test]
+    public void ObstacleRemovedMidDrawerGesture_LetsTheDrawerContinue()
+    {
+        var d = MakeDrawer();
+        var obstacle = MakeObstacleInFrontOfTheDrawer(100f);
+        SettleTheSceneAndZeroTheSensors();
+
+        d.SetOpen(true);
+        RunDrawerGesture(d, bumpEveryFrame: false);
+        Assert.Less(d.AnimProgress, 1f, "ящик обязан упереться в препятствие");
+
+        PartRegistry.Unregister(obstacle);
+        Object.DestroyImmediate(obstacle.gameObject);
+
+        RunDrawerGesture(d, bumpEveryFrame: false);
+
+        Assert.AreEqual(1f, d.AnimProgress, 1e-4f,
+            "препятствие убрали посреди жеста — кэш обязан протухнуть по ревизии сцены, "
+            + "иначе ящик навсегда упирается в пустоту");
+    }
+
+    [Test]
+    public void DrawerSensor_GoesRed_WhenTheRevisionIsPoisonedEveryFrame()
+    {
+        var d = MakeDrawer();
+        MakeObstacleInFrontOfTheDrawer(100f);
+        SettleTheSceneAndZeroTheSensors();
+
+        d.SetOpen(true);
+        RunDrawerGesture(d, bumpEveryFrame: true);
+
+        int builds = OpeningCollision.TakeBuildObstacleCalls();
+        Assert.Greater(builds, 10,
+            "если ревизию травить каждый кадр, кэш ящика обязан промахиваться каждый кадр — "
+            + "иначе сенсор считает не то, и зелёный в соседних тестах ничего не доказывает");
+    }
+
     [Test]
     public void Sensor_GoesRed_WhenTheRevisionIsPoisonedEveryFrame()
     {

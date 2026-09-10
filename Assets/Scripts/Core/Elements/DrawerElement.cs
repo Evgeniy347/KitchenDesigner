@@ -49,6 +49,8 @@ namespace KitchenDesigner.Core
         private float _t;
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
+        private float _cachedSafeProgress = 1f;
+        private int _obstacleCheckRevision = -1;
 
         [Undoable]
         public DrawerSystem System
@@ -177,6 +179,7 @@ namespace KitchenDesigner.Core
                 : (value != DoubleDrawerState.Closed);
             if (willOpen && _t <= 0f) CaptureClosed();
             _open = willOpen;
+            _obstacleCheckRevision = -1;
             SyncAttachedFacade();
             if (!Mathf.Approximately(_t, willOpen ? 1f : 0f)) enabled = true;
 
@@ -313,8 +316,13 @@ namespace KitchenDesigner.Core
 
             float step = AppConstants.HalfHeightUnits(DrawerConstants.GetMinOpeningHeight(lower.Type)
                         + DrawerConstants.GetMinOpeningHeight(_type));
-            _closedPos = lower.ClosedPosition + lower.ClosedRotation * Vector3.up * step;
-            _closedRot = lower.ClosedRotation;
+            var followedPos = lower.ClosedPosition + lower.ClosedRotation * Vector3.up * step;
+            if (followedPos != _closedPos || lower.ClosedRotation != _closedRot)
+            {
+                _closedPos = followedPos;
+                _closedRot = lower.ClosedRotation;
+                _obstacleCheckRevision = -1;
+            }
             ApplyAnimPose();
         }
 
@@ -327,32 +335,53 @@ namespace KitchenDesigner.Core
                 if (_t <= 0f) CaptureClosed();
                 return;
             }
+
+            if (IsParkedAtALimit) return;
+
+            float progressBeforeThisFrame = _t;
             float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
             _t = Mathf.MoveTowards(_t, target, step);
 
             if (_open && _t > 0f)
             {
-                var exclude = new System.Collections.Generic.List<KitchenElement> { this };
-                var f = FindAttachedFacade();
-                if (f != null) exclude.Add(f);
-                var pair = FindPairedDrawer();
-                if (pair != null)
-                {
-                    exclude.Add(pair);
-                    var pairFacade = pair.FindAttachedFacade();
-                    if (pairFacade != null) exclude.Add(pairFacade);
-                }
-                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
+                float safe = SafeProgress();
                 if (safe < _t)
                 {
                     _t = Mathf.Max(_t - step, safe);
+                    var pair = FindPairedDrawer();
                     if (!_isUpperDrawer && pair != null && pair._isUpperDrawer && pair._t > _t)
                         pair._t = _t;
                 }
             }
 
             ApplyAnimPose();
+            if (!Mathf.Approximately(_t, progressBeforeThisFrame))
+                SceneChangeTracker.NoteSelfAnimated(this);
         }
+
+        private float SafeProgress()
+        {
+            if (_obstacleCheckRevision == SceneRevision.Version) return _cachedSafeProgress;
+
+            var exclude = new List<KitchenElement> { this };
+            var f = FindAttachedFacade();
+            if (f != null) exclude.Add(f);
+            var pair = FindPairedDrawer();
+            if (pair != null)
+            {
+                exclude.Add(pair);
+                var pairFacade = pair.FindAttachedFacade();
+                if (pairFacade != null) exclude.Add(pairFacade);
+            }
+
+            _cachedSafeProgress = OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
+            _obstacleCheckRevision = SceneRevision.Version;
+            return _cachedSafeProgress;
+        }
+
+        public bool IsParkedAtALimit =>
+            _open && _obstacleCheckRevision == SceneRevision.Version
+            && Mathf.Approximately(_t, _cachedSafeProgress);
 
         public void GetOpenBoxes(float progress, List<OrientedBox> into)
         {
@@ -369,6 +398,7 @@ namespace KitchenDesigner.Core
         {
             if (open && _t <= 0f) CaptureClosed();
             _open = open;
+            _obstacleCheckRevision = -1;
             SyncAttachedFacade();
             if (!Mathf.Approximately(_t, open ? 1f : 0f))
             {
@@ -395,13 +425,16 @@ namespace KitchenDesigner.Core
         {
             _closedPos = transform.position;
             _closedRot = transform.rotation;
+            _obstacleCheckRevision = -1;
         }
 
         private void ApplyAnimPose()
         {
             float eased = 0.5f * (1f - Mathf.Cos(Mathf.PI * _t));
-            Vector3 offset = _closedRot * Vector3.forward * (DrawerSlideMeters * eased);
-            transform.SetPositionAndRotation(_closedPos + offset, _closedRot);
+            Vector3 pose = _closedPos + _closedRot * Vector3.forward * (DrawerSlideMeters * eased);
+            var t = transform;
+            if (t.position == pose && t.rotation == _closedRot) return;
+            t.SetPositionAndRotation(pose, _closedRot);
         }
     }
 }
