@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace KitchenDesigner.Core.Plumbing
 {
     public static class PipeSpecItems
@@ -10,10 +12,16 @@ namespace KitchenDesigner.Core.Plumbing
             new SpecItem(SpecSections.Plumbing, PipeLineName(size), "",
                 SpecUnit.LinearMeters, LengthMeters(lengthMM));
 
-        public static string FittingLineName(string title, PipeSize bore) => $"{title} ДН{bore.NominalBoreMm}";
+        public static string FittingLineName(string title, IReadOnlyList<string?> boreSizeIds)
+        {
+            var parts = new string[boreSizeIds.Count];
+            for (int i = 0; i < boreSizeIds.Count; i++)
+                parts[i] = PipeSpec.NominalOrDash(boreSizeIds[i]);
+            return $"{title} ДН{string.Join("×", parts)}";
+        }
 
-        public static SpecItem FittingLine(string title, PipeSize bore) =>
-            new SpecItem(SpecSections.Plumbing, FittingLineName(title, bore), "",
+        public static SpecItem FittingLine(string title, IReadOnlyList<string?> boreSizeIds) =>
+            new SpecItem(SpecSections.Plumbing, FittingLineName(title, boreSizeIds), "",
                 SpecUnit.Pieces, 1f);
     }
 }

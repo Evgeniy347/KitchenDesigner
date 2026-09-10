@@ -53,6 +53,9 @@ namespace KitchenDesigner.Core.Plumbing
         public static string DesignationOrDash(string? id) =>
             TryFind(id, out var size) ? size.Designation : NoValue;
 
+        public static string NominalOrDash(string? id) =>
+            TryFind(id, out var size) ? size.NominalBoreMm.ToString() : NoValue;
+
         private static string[] CollectIds()
         {
             var ids = new string[Table.Length];

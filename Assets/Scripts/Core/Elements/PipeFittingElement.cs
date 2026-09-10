@@ -69,7 +69,7 @@ namespace KitchenDesigner.Core
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {
-            yield return PipeSpecItems.FittingLine(DisplayTypeName, PipeSpec.Get(BoreSizeId));
+            yield return PipeSpecItems.FittingLine(DisplayTypeName, BoreSizeIds);
         }
 
         public Vector3 HubPositionUnits =>

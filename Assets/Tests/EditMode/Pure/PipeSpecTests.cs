@@ -79,6 +79,16 @@ public class PipeSpecTests
     }
 
     [Test]
+    public void PipeSpec_NominalOrDash_GivesADash_WhenNothingIsKnown()
+    {
+        Assert.AreEqual(PipeSpec.NoValue, PipeSpec.NominalOrDash(null),
+            "отвод без известного диаметра показывает прочерк, а не ДУ по умолчанию — "
+            + "иначе непристыкованный фитинг ушёл бы в ведомость с выдуманным числом");
+        Assert.AreEqual(PipeSpec.NoValue, PipeSpec.NominalOrDash("dn13"));
+        Assert.AreEqual("25", PipeSpec.NominalOrDash(PipeSpec.Dn25));
+    }
+
+    [Test]
     public void PipeSpec_Sizes_AreDerivedFromTheTable()
     {
         Assert.AreEqual(PipeSpec.Table.Length, PipeSpec.Sizes.Length);

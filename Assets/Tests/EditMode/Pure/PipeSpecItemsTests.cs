@@ -45,7 +45,7 @@ public class PipeSpecItemsTests
     [Test]
     public void FittingLine_IsOnePieceRegardlessOfBore()
     {
-        var item = PipeSpecItems.FittingLine("Отвод", PipeSpec.Get(PipeSpec.Dn25));
+        var item = PipeSpecItems.FittingLine("Отвод", new[] { PipeSpec.Dn25, PipeSpec.Dn25 });
 
         Assert.AreEqual(SpecUnit.Pieces, item.unit);
         Assert.AreEqual(1f, item.qty, 0.0001f);
@@ -57,8 +57,8 @@ public class PipeSpecItemsTests
     [Test]
     public void FittingLine_SameKindDifferentBore_DifferentGroupKey()
     {
-        var dn20 = PipeSpecItems.FittingLine("Отвод", PipeSpec.Get(PipeSpec.Dn20));
-        var dn32 = PipeSpecItems.FittingLine("Отвод", PipeSpec.Get(PipeSpec.Dn32));
+        var dn20 = PipeSpecItems.FittingLine("Отвод", new[] { PipeSpec.Dn20, PipeSpec.Dn20 });
+        var dn32 = PipeSpecItems.FittingLine("Отвод", new[] { PipeSpec.Dn32, PipeSpec.Dn32 });
 
         Assert.AreNotEqual(dn20.GroupKey(), dn32.GroupKey());
     }
@@ -66,9 +66,53 @@ public class PipeSpecItemsTests
     [Test]
     public void FittingLine_DifferentKindSameBore_DifferentGroupKey()
     {
-        var elbow = PipeSpecItems.FittingLine("Отвод", PipeSpec.Get(PipeSpec.Dn20));
-        var tee = PipeSpecItems.FittingLine("Тройник", PipeSpec.Get(PipeSpec.Dn20));
+        var elbow = PipeSpecItems.FittingLine("Отвод", new[] { PipeSpec.Dn20, PipeSpec.Dn20 });
+        var tee = PipeSpecItems.FittingLine("Тройник", new[] { PipeSpec.Dn20, PipeSpec.Dn20 });
 
         Assert.AreNotEqual(elbow.GroupKey(), tee.GroupKey());
+    }
+
+    /// <summary>Несущая проверка дефекта: тройник с переходом (25×25×20) обязан назвать
+    /// ВСЕ три отвода в имени строки — не «самый широкий», который стёр бы переход и
+    /// заставил купить не ту деталь.</summary>
+    [Test]
+    public void FittingLine_ReducingTee_NamesEveryBore_NotOnlyTheWidest()
+    {
+        var reducing = PipeSpecItems.FittingLineName("Тройник",
+            new[] { PipeSpec.Dn25, PipeSpec.Dn25, PipeSpec.Dn20 });
+
+        Assert.AreEqual("Тройник ДН25×25×20", reducing);
+    }
+
+    /// <summary>Противоположный вход: тройник без перехода (все три отвода одного
+    /// диаметра) называет их одинаково — три раза ДН20, не единственный ДН20.</summary>
+    [Test]
+    public void FittingLine_EqualTee_NamesAllThreeBoresTheSame()
+    {
+        var equal = PipeSpecItems.FittingLineName("Тройник",
+            new[] { PipeSpec.Dn20, PipeSpec.Dn20, PipeSpec.Dn20 });
+
+        Assert.AreEqual("Тройник ДН20×20×20", equal);
+    }
+
+    /// <summary>Несущая проверка второй половины дефекта: отвод фитинга, к которому
+    /// ничего не пристыковано, не имеет известного диаметра. Имя обязано показать это
+    /// прочерком, а не подставить умолчание ДН20, взятое из воздуха.</summary>
+    [Test]
+    public void FittingLineName_UnknownBore_ShowsDash_NotADefault()
+    {
+        var unconnected = PipeSpecItems.FittingLineName("Заглушка", new string?[] { null });
+
+        Assert.AreEqual("Заглушка ДН—", unconnected);
+    }
+
+    /// <summary>Противоположный вход: тот же вид фитинга с известным диаметром даёт
+    /// число, а не прочерк — прочерк не превратился в постоянную заглушку.</summary>
+    [Test]
+    public void FittingLineName_KnownBore_ShowsTheNumber_NotADash()
+    {
+        var known = PipeSpecItems.FittingLineName("Заглушка", new[] { PipeSpec.Dn20 });
+
+        Assert.AreEqual("Заглушка ДН20", known);
     }
 }
