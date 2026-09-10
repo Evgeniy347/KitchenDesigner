@@ -132,7 +132,16 @@ SAFETY
   edit_elements {locked:false} ONLY if the user explicitly allowed it.
   create_elements / edit_elements / clone_elements / delete_elements are undoable.
   Prefer them over the ADVANCED raw tools (set_position, set_scale,
-  delete_object) — those bypass undo, validation and snapping.",
+  delete_object) — those bypass undo, validation and snapping.
+
+PERSISTING WORK — nothing survives past this connection on its own
+  save_project {path} writes the WHOLE current project to a file — the same
+  format and the same call the app's own Save/Save As makes.
+  load_project {path} replaces the ENTIRE current scene with a project file —
+  the same call as Open/Load. A missing or corrupt file is an error, not an
+  empty scene; the scene is left untouched.
+  Neither remembers a 'last path' for you across calls — always pass the full
+  path you mean.",
 
             ["planning"] =
 @"FLOORPLANS — DECLARE, DON'T COMPUTE

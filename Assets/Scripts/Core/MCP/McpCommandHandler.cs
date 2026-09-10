@@ -67,6 +67,8 @@ namespace KitchenDesigner.Core.MCP
 
                     case "get_specification": return HandleGetSpecification(request);
                     case "export_specification_csv": return HandleExportCsv(request);
+                    case "save_project": return HandleSaveProject(request);
+                    case "load_project": return HandleLoadProject(request);
                     case "get_console_logs": return HandleConsoleLogs(request);
                     case "get_settings": return HandleGetSettings(request);
                     case "get_project_instructions": return HandleGetProjectInstructions(request);

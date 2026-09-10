@@ -658,6 +658,20 @@ namespace KitchenDesigner.Core.MCP.Contract
     }
 
     [Serializable]
+    public class ParamsSaveProject
+    {
+        [McpParam("Full file path to write the project file to (created if missing, overwritten if it exists). Same on-disk format as the app's own Save/Save As.", Required = true)]
+        public string path = string.Empty;
+    }
+
+    [Serializable]
+    public class ParamsLoadProject
+    {
+        [McpParam("Full file path to read the project file from. Replaces the ENTIRE current scene.", Required = true)]
+        public string path = string.Empty;
+    }
+
+    [Serializable]
     public class ParamsSetEnabled
     {
         [McpParam("Turn the feature on (true) or off (false).", Required = true)] public bool enabled;
