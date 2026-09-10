@@ -22,6 +22,7 @@ namespace KitchenDesigner.Core
             using var _ = PerfMarkers.SceneChangeTrackerPoll.Auto();
 
             bool any = _membershipChanged;
+            bool hostSetChanged = _membershipChanged;
             var all = PartRegistry.All;
             for (int i = 0; i < all.Count; i++)
             {
@@ -34,12 +35,22 @@ namespace KitchenDesigner.Core
 
                 t.hasChanged = false;
                 e.BumpPoseVersion();
+                if (e.SupportsGrooves) hostSetChanged = true;
                 any = true;
             }
 
             _selfAnimated.Clear();
 
+            if (hostSetChanged) WakeCutoutGuests();
             if (any) SettleDerivedLinks();
+        }
+
+        public static void WakeCutoutGuests()
+        {
+            var all = PartRegistry.All;
+            for (int i = 0; i < all.Count; i++)
+                if (all[i] is PartCutoutElement guest && guest != null)
+                    guest.WakeForSceneChange();
         }
 
         public static void SettleDerivedLinks()
@@ -49,7 +60,19 @@ namespace KitchenDesigner.Core
             _membershipChanged = false;
             ScrewLegHostLink.ApplyAll(PartRegistry.All);
             Analysis.PipeFittingSizeLink.ApplyAll(PartRegistry.All);
+            WakeWhoeverParkedAtAGestureLimit();
             SceneRevision.Bump();
+        }
+
+        private static void WakeWhoeverParkedAtAGestureLimit()
+        {
+            var all = PartRegistry.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var e = all[i];
+                if (e != null && e is IParksAtAGestureLimit parked && parked.IsParkedAtALimit)
+                    e.enabled = true;
+            }
         }
     }
 }

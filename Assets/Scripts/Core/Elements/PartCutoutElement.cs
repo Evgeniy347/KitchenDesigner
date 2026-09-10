@@ -14,6 +14,14 @@ namespace KitchenDesigner.Core
 
         private bool _mountConfigured;
 
+        private string _seatHostName = "";
+        private int _seatOffsetXMM;
+        private int _seatOffsetYMM;
+        private bool _hasSeatMemo;
+        private bool _sceneChanged;
+
+        private int _lastPoseVersion;
+
         protected KitchenElement? MemoPart;
         protected int MemoOffsetXMM = int.MinValue;
         protected int MemoOffsetYMM = int.MinValue;
@@ -90,6 +98,12 @@ namespace KitchenDesigner.Core
 
         protected KitchenElement? SnapToPartCore()
         {
+            if (_hasSeatMemo)
+            {
+                var reseated = ReseatOnRememberedHost();
+                if (reseated != null) return reseated;
+            }
+
             var part = Mount.CurrentOrNamedPart();
             Mount.TrackDrift(part);
             TrackYaw(part);
@@ -99,8 +113,30 @@ namespace KitchenDesigner.Core
             if (part == null) return null;
 
             Mount.Adopt(part);
+            _hasSeatMemo = false;
             AlignToPart(part);
             return part;
+        }
+
+        private KitchenElement? ReseatOnRememberedHost()
+        {
+            string wanted = _seatHostName;
+            string previous = Mount.AttachedPartName;
+            Mount.AttachedPartName = wanted;
+            var host = Mount.FindNamedPart();
+            if (host == null || !host.gameObject.activeInHierarchy || !AcceptsHost(host))
+            {
+                Mount.AttachedPartName = previous;
+                return null;
+            }
+
+            Mount.AttachTo(host);
+            Mount.OffsetXMM = _seatOffsetXMM;
+            Mount.OffsetYMM = _seatOffsetYMM;
+            _hasSeatMemo = false;
+            OnAttached(host);
+            AlignToPart(host);
+            return host;
         }
 
         public void AttachToPart(KitchenElement part)
@@ -113,9 +149,52 @@ namespace KitchenDesigner.Core
 
         public abstract void SnapToPart();
 
-        public void ReleaseHostCutout() => UnregisterFromPart();
+        public void ReleaseHostCutout()
+        {
+            _seatHostName = Mount.AttachedPartName;
+            _seatOffsetXMM = Mount.OffsetXMM;
+            _seatOffsetYMM = Mount.OffsetYMM;
+            _hasSeatMemo = !string.IsNullOrEmpty(_seatHostName);
+            UnregisterFromPart();
+        }
 
         public void RestoreHostCutout() => SnapToPart();
+
+        internal static void ResettlePendingGuestsOf(KitchenElement host)
+        {
+            if (host == null || !host.SupportsGrooves) return;
+            var all = PartRegistry.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var guest = all[i] as PartCutoutElement;
+                if (guest == null) continue;
+                if (!guest._hasSeatMemo || guest._seatHostName != host.PartName) continue;
+                guest.SnapToPart();
+            }
+        }
+
+        internal void WakeForSceneChange()
+        {
+            _sceneChanged = true;
+            enabled = true;
+        }
+
+        internal void Update()
+        {
+            bool poseChanged = PoseVersion != _lastPoseVersion;
+            if (poseChanged) _lastPoseVersion = PoseVersion;
+
+            if (!poseChanged && !_sceneChanged && !Mount.PartMoved)
+            {
+                enabled = false;
+                return;
+            }
+
+            _sceneChanged = false;
+            SnapToPart();
+        }
+
+        protected override void OnOwnPoseVersionBumped() => enabled = true;
 
         internal void UnregisterFromPart() => Mount.Detach();
 

@@ -65,7 +65,6 @@ namespace KitchenDesigner.Core
 
         private Quaternion _appliedRotation = Quaternion.identity;
         private bool _hasAppliedRotation;
-        private int _lastPoseVersion;
 
         private CooktopMesh Mesh => _mesh ??= new CooktopMesh(transform);
 
@@ -177,20 +176,6 @@ namespace KitchenDesigner.Core
         {
             SnapToPart();
         }
-
-        internal void Update()
-        {
-            if (PoseVersion != _lastPoseVersion)
-            {
-                _lastPoseVersion = PoseVersion;
-                SnapToPart();
-            }
-
-            if (Mount.PartMoved) SnapToPart();
-            else if (PoseVersion == _lastPoseVersion) enabled = false;
-        }
-
-        protected override void OnOwnPoseVersionBumped() => enabled = true;
 
         public override void ApplyDimensions()
         {

@@ -30,6 +30,8 @@ namespace KitchenDesigner.Core
         protected Vector3 SashHalfExtents;
         private Vector3 _lastCutoutPos = new Vector3(float.NaN, 0f, 0f);
         private int _lastPoseVersion;
+        private Wall? _attachedWall;
+        private Wall? _seatWall;
 
         [Undoable]
         public DoorMode Mode
@@ -163,6 +165,7 @@ namespace KitchenDesigner.Core
             if (wall == null) return;
             UnregisterFromWall();
             _attachedWallName = wall.gameObject.name;
+            _attachedWall = wall;
             RegisterOnWall(wall);
             _lastCutoutPos = transform.position;
             AlignToWall(wall);
@@ -176,6 +179,7 @@ namespace KitchenDesigner.Core
             {
                 UnregisterFromWall();
                 _attachedWallName = best.gameObject.name;
+                _attachedWall = best;
                 RegisterOnWall(best);
                 _lastCutoutPos = transform.position;
             }
@@ -284,14 +288,46 @@ namespace KitchenDesigner.Core
             return null;
         }
 
-        public void ReleaseHostCutout() => UnregisterFromWall();
+        public void ReleaseHostCutout()
+        {
+            var seat = FindAttachedWall();
+            if (seat == null && _attachedWall != null) seat = _attachedWall;
+            _seatWall = seat;
+            UnregisterFromWall();
+        }
 
-        public void RestoreHostCutout() => SnapToWall();
+        public void RestoreHostCutout()
+        {
+            var seat = _seatWall;
+            if (seat != null && seat.gameObject.activeInHierarchy)
+            {
+                _seatWall = null;
+                AttachToWall(seat);
+                return;
+            }
+            SnapToWall();
+        }
+
+        internal static void ResettlePendingOpeningsOf(KitchenElement host)
+        {
+            var wall = host != null ? host.GetComponent<Wall>() : null;
+            if (wall == null) return;
+            var all = PartRegistry.All;
+            for (int i = 0; i < all.Count; i++)
+            {
+                var opening = all[i] as WallOpeningElement;
+                if (opening == null) continue;
+                if (!ReferenceEquals(opening._seatWall, wall)) continue;
+                opening.RestoreHostCutout();
+            }
+        }
 
         internal void UnregisterFromWall()
         {
             var wall = FindAttachedWall();
+            if (wall == null && _attachedWall != null) wall = _attachedWall;
             _attachedWallName = "";
+            _attachedWall = null;
             if (wall != null) UnregisterOnWall(wall);
         }
 

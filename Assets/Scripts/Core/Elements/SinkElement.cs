@@ -30,8 +30,6 @@ namespace KitchenDesigner.Core
         private SinkMesh? _mesh;
         private int _faucetSign = 1;
 
-        private int _lastPoseVersion;
-
         protected override (int widthMM, int depthMM) CutoutExtentsMM => (CutoutWidthMM, CutoutDepthMM);
 
         protected override int RimHeightMM => RIM_HEIGHT_MM;
@@ -64,15 +62,6 @@ namespace KitchenDesigner.Core
         {
             SnapToPart();
         }
-
-        internal void Update()
-        {
-            if (PoseVersion == _lastPoseVersion) { enabled = false; return; }
-            _lastPoseVersion = PoseVersion;
-            SnapToPart();
-        }
-
-        protected override void OnOwnPoseVersionBumped() => enabled = true;
 
         public override void ApplyDimensions()
         {

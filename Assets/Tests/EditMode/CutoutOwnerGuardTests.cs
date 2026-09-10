@@ -89,19 +89,46 @@ public class CutoutOwnerGuardTests
         return (wall, top);
     }
 
-    /// <summary>Ставим гостя туда, где он мог бы врезаться, и просим его самого
-    /// прилипнуть. Сначала над столешницей, потом — если там ничего не
-    /// прорезалось — в стену.</summary>
+    /// <summary>Просим элемент сесть на место — НЕ спрашивая, объявил ли он
+    /// <c>ICutsItsHost</c>. Ровно в этом была слепота прежней пробы: она
+    /// начиналась с <c>if (el is not ICutsItsHost) return 0</c>, и новый тип,
+    /// который режет хозяина, но забыл объявить интерфейс, считался «не
+    /// режущим» — то есть самая вероятная ошибка оставляла сторожа зелёным.
+    /// Теперь проба ходит общим путём: объявленному гостю — его же
+    /// <c>RestoreHostCutout</c>, всем остальным — их собственный жест посадки
+    /// (<c>SnapTo…</c>) плюс общий тик сцены, а судим по ХОЗЯИНУ: у кого
+    /// выросла перепись дыр.</summary>
+    private static void MakeItSettle(KitchenElement el)
+    {
+        if (el is ICutsItsHost guest)
+        {
+            guest.RestoreHostCutout();
+            return;
+        }
+
+        foreach (var m in el.GetType().GetMethods(
+                     System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+        {
+            if (m.GetParameters().Length != 0 || m.ReturnType != typeof(void)) continue;
+            if (!m.Name.StartsWith("SnapTo", System.StringComparison.Ordinal)) continue;
+            // Жест чужого типа может и упасть на стенде — судим всё равно по
+            // хозяину: перепись дыр читается ниже независимо от исхода.
+            try { m.Invoke(el, null); }
+            catch (System.Reflection.TargetInvocationException) { }
+        }
+        SceneChangeTracker.Poll();
+    }
+
+    /// <summary>Ставим элемент туда, где он мог бы врезаться. Сначала над
+    /// столешницей, потом — если там ничего не прорезалось — в стену.</summary>
     private static int TryToOpenAHole(KitchenElement el)
     {
-        if (el is not ICutsItsHost guest) return 0;
-
         el.transform.position = OverTheCountertop;
-        guest.RestoreHostCutout();
+        MakeItSettle(el);
         if (OpenHoles() > 0) return OpenHoles();
 
         el.transform.position = InTheWall;
-        guest.RestoreHostCutout();
+        MakeItSettle(el);
         return OpenHoles();
     }
 
@@ -129,6 +156,13 @@ public class CutoutOwnerGuardTests
             }
 
             typesThatCut++;
+
+            if (el is not ICutsItsHost)
+            {
+                offenders.Add($"{type.Name}: прорезал хозяина, но НЕ объявил ICutsItsHost — "
+                    + "SceneMembership.Leave/Return его не позовут, и дыра переживёт хозяина");
+                continue;
+            }
 
             CommandStack.Execute(new DeleteCommand(el.gameObject));
             int afterDelete = OpenHoles();
@@ -202,6 +236,90 @@ public class CutoutOwnerGuardTests
         CommandStack.Undo();
 
         Assert.IsTrue(wall.HasWindow(window), "Ctrl+Z вернул окно — проём открылся снова");
+    }
+
+    /// <summary>F1. Удалили ХОЗЯИНА первым, потом гостя. <c>PartMount.Detach</c>
+    /// искала хозяина только по имени через <c>PartRegistry.All</c>, а
+    /// <c>SceneMembership.Leave</c> к этому моменту уже сняла столешницу с
+    /// учёта — хозяин не находился, <c>UnregisterCutout</c> никто не звал, и
+    /// после Ctrl+Z столешница возвращалась С ДЫРОЙ И БЕЗ МОЙКИ. Порядок в
+    /// композитной команде решал исход.</summary>
+    [Test]
+    public void DeletingTheHostFirst_ThenTheSink_StillClosesTheHole_AndUndoBringsBothBack()
+    {
+        var (_, topGo) = BuildHosts();
+        var top = topGo.GetComponent<KitchenElement>();
+
+        var sinkGo = ElementFactory.CreateSink("Мойка", OverTheCountertop);
+        var sink = sinkGo.GetComponent<SinkElement>();
+        sink.SnapToPart();
+        Assert.AreEqual(1, top.AttachedCutouts.Count, "мойка врезалась в столешницу");
+        int verticesWithHole = top.GetComponent<MeshFilter>().sharedMesh.vertexCount;
+
+        var delete = new CompositeCommand("удалить столешницу и мойку", new List<IUndoCommand>
+        {
+            new DeleteCommand(topGo),
+            new DeleteCommand(sinkGo),
+        });
+        CommandStack.Execute(delete);
+
+        Assert.AreEqual(0, top.AttachedCutouts.Count,
+            "хозяина сняли с учёта РАНЬШЕ гостя — но вырез всё равно обязан закрыться: "
+            + "искать хозяина только по имени в реестре уже поздно");
+
+        CommandStack.Undo();
+
+        Assert.AreEqual(1, top.AttachedCutouts.Count,
+            "Ctrl+Z вернул обоих — мойка обязана снова сидеть в столешнице");
+        Assert.AreEqual(verticesWithHole, top.GetComponent<MeshFilter>().sharedMesh.vertexCount,
+            "и проём тот же, что был до удаления");
+    }
+
+    /// <summary>F5. Отмена удаления обязана ВОССТАНОВИТЬ посадку, а не вывести
+    /// её заново. Прежде <c>Return</c> звал <c>SnapToPart</c>, тот шёл в
+    /// <c>FindCatchingPart</c> и <c>CaptureCatch</c> ПЕРЕЗАПИСЫВАЛ смещения,
+    /// пересчитав их из мирового положения: Ctrl+Z мог пересадить мойку на
+    /// соседнюю доску или сдвинуть её. Число вершин и <c>position.y</c> этого
+    /// не видят — поэтому проверяем имя хозяина и оба смещения.</summary>
+    [Test]
+    public void UndoingASinkDeletion_RestoresTheSameSeat_NotAFreshlyDerivedOne()
+    {
+        var (_, topGo) = BuildHosts();
+        var top = topGo.GetComponent<KitchenElement>();
+
+        var sinkGo = ElementFactory.CreateSink("Мойка", OverTheCountertop);
+        var sink = sinkGo.GetComponent<SinkElement>();
+        sink.SnapToPart();
+        Assert.AreEqual(1, top.AttachedCutouts.Count, "мойка врезалась в столешницу");
+
+        sink.OffsetXMM = 170;
+        sink.OffsetYMM = 25;
+        sink.SnapToPart();
+        string hostBefore = sink.AttachedPartName;
+        int offXBefore = sink.OffsetXMM;
+        int offYBefore = sink.OffsetYMM;
+        Assert.AreEqual(top.PartName, hostBefore, "мойка сидит именно на этой столешнице");
+        Assert.AreEqual(170, offXBefore, "предусловие: посадка НЕ по центру доски");
+
+        // Столешницу подвинули, пока мойка спала: сохранённая посадка (170, 25)
+        // и мировое положение мойки разошлись на 300 мм. Именно на таком
+        // расхождении видно, что делает Return — восстанавливает посадку или
+        // выводит её заново из позиции.
+        Vector3 sinkBefore = sink.transform.position;
+        top.transform.position += new Vector3(0.3f, 0f, 0f);
+
+        CommandStack.Execute(new DeleteCommand(sinkGo));
+        CommandStack.Undo();
+
+        Assert.AreEqual(hostBefore, sink.AttachedPartName,
+            "Ctrl+Z обязан вернуть мойку тому же хозяину");
+        Assert.AreEqual(offXBefore, sink.OffsetXMM,
+            "и дословно то же смещение по X: SnapToPart → FindCatchingPart → CaptureCatch "
+            + "пересчитывает смещения из мирового положения и выдал бы -130. Восстановление — "
+            + "это восстановление, а не жест (conventions/SERIALIZATION.md про загрузочный проход)");
+        Assert.AreEqual(offYBefore, sink.OffsetYMM, "и по Y");
+        Assert.AreEqual(sinkBefore.x + 0.3f, sink.transform.position.x, 1e-3f,
+            "и посадка применена: мойка уехала вместе со своей столешницей, ровно на её 300 мм");
     }
 
     [Test]

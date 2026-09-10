@@ -133,6 +133,7 @@ namespace KitchenDesigner.Core
         public void Detach()
         {
             var part = FindNamedPart();
+            if (part == null && _part != null) part = _part;
             _attachedPartName = "";
             _part = null;
             if (part != null) part.UnregisterCutout(_owner!);

@@ -18,6 +18,9 @@ namespace KitchenDesigner.Core
             go.SetActive(true);
             if (element != null) PartRegistry.Register(element);
             if (element != null && element is ICutsItsHost guest) guest.RestoreHostCutout();
+            if (element == null) return;
+            PartCutoutElement.ResettlePendingGuestsOf(element);
+            WallOpeningElement.ResettlePendingOpeningsOf(element);
         }
     }
 }
