@@ -166,8 +166,8 @@ namespace KitchenDesigner.Core.MCP
 
         public string section = string.Empty;
         public string unit = string.Empty;
-        public float qtyPerItem;
-        public float qtyTotal;
+        public float qtyPerItemInUnit;
+        public float qtyTotalInUnit;
     }
 
     [Serializable]

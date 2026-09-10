@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
@@ -58,6 +59,28 @@ public class McpUnitContractTests : McpTestFixture
     private static bool MentionsMetres(string text) =>
         MetreWord.IsMatch(text) || MetreAbbreviation.IsMatch(text);
 
+    /// <summary>«Метры» здесь не всегда утечка масштаба Unity. Ведомость материалов
+    /// (get_specification) законно продаёт кромку и трубу в погонных метрах — это
+    /// ЗНАЧЕНИЕ данных (единица самой ведомости), а не единица КООРДИНАТЫ агента. Значение
+    /// словаря — буквальная фраза, которая обязана ЖИТЬ в описании: тест ниже проверяет
+    /// это, чтобы исключение не пережило свою фразу и не спрятало будущую настоящую утечку
+    /// метров в том же описании.</summary>
+    private static readonly Dictionary<string, string> MetresAsAQuantityUnit =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["tool get_specification"] = "linear metres",
+        };
+
+    private static bool MentionsMetresAsAScaleLeak(string text, string key)
+    {
+        if (MetresAsAQuantityUnit.TryGetValue(key, out var phrase)
+            && text.IndexOf(phrase, StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            text = text.Remove(text.IndexOf(phrase, StringComparison.OrdinalIgnoreCase), phrase.Length);
+        }
+        return MentionsMetres(text);
+    }
+
     private static List<Type> ReachableParamsTypes()
     {
         var found = new List<Type>();
@@ -104,8 +127,11 @@ public class McpUnitContractTests : McpTestFixture
         var metres = new List<string>();
 
         foreach (var tool in McpToolRegistry.Tools)
-            if (MentionsMetres(tool.Description))
-                metres.Add("tool " + tool.Name);
+        {
+            var key = "tool " + tool.Name;
+            if (MentionsMetresAsAScaleLeak(tool.Description, key))
+                metres.Add(key);
+        }
 
         foreach (var type in ReachableParamsTypes())
             foreach (var field in type.GetFields(PublicInstance))
@@ -124,6 +150,22 @@ public class McpUnitContractTests : McpTestFixture
             + "(миллиметры) — два смещения по мировым осям в разных единицах. Ошибка тихая: "
             + "x:433 вместо 0.433 не отвергается, а уезжает на 433 метра.\n"
             + string.Join("\n", metres));
+    }
+
+    [Test]
+    public void MetresAsAQuantityUnitExemption_StillNamesALivingPhrase()
+    {
+        foreach (var pair in MetresAsAQuantityUnit)
+        {
+            var tool = McpToolRegistry.Tools.FirstOrDefault(t => "tool " + t.Name == pair.Key);
+            Assert.IsNotNull(tool, $"исключение «{pair.Key}» пережило свой инструмент");
+            StringAssert.Contains(pair.Value, tool!.Description,
+                $"исключение «{pair.Key}» ({pair.Value}) пережило свою фразу: описание "
+                + "изменилось, а прощение осталось и рискует спрятать настоящую утечку "
+                + "метров под тем же именем инструмента");
+            Assert.IsTrue(MentionsMetres(tool.Description),
+                $"исключение «{pair.Key}» больше не о метрах вообще — оно лишнее");
+        }
     }
 
     [Test]

@@ -58,7 +58,14 @@ public class McpSpecificationParityTests : McpTestFixture
 
         var resp = _handler!.Handle(MakeReq("get_specification", new { }));
         var mcpLines = Lines(resp);
-        Assert.AreEqual(3, mcpLines.Count, "две доски + одна труба - три строки ведомости");
+        Assert.AreEqual(4, mcpLines.Count,
+            "две доски + труба - но строк четыре, не три: обе доски по умолчанию несут "
+            + "кромку (PartData._edgeBanding = true), и на изолированной детали без соседей "
+            + "открыты все 4 стороны, так что EdgeColumns.For находит кромку на каждой из "
+            + "них. AddEdgeBandingItem группирует эти стороны по толщине кромки в ОДНУ "
+            + "строку ведомости (EdgeBandingSpecItems.For), общую на обе доски, - в погонных "
+            + "метрах, section \"Кромка\". Итого: BoardA, BoardB, PipeA и эта общая строка "
+            + "кромки.");
 
         var csvRows = ParseCsvLines(csv, mcpLines.Count);
         Assert.AreEqual(mcpLines.Count, csvRows.Length, "CSV и MCP должны видеть одинаковое число строк");
@@ -83,15 +90,15 @@ public class McpSpecificationParityTests : McpTestFixture
             Assert.AreEqual(row[12], line["edgeW2"]!.Value<string>(), $"edgeW2 на строке {i}");
             Assert.AreEqual(row[13], line["section"]!.Value<string>(), $"section на строке {i}");
             Assert.AreEqual(row[14], line["unit"]!.Value<string>(), $"unit на строке {i}");
-            Assert.AreEqual(float.Parse(row[15], CultureInfo.InvariantCulture), line["qtyPerItem"]!.Value<float>(), 1e-3f, $"qtyPerItem на строке {i}");
-            Assert.AreEqual(float.Parse(row[16], CultureInfo.InvariantCulture), line["qtyTotal"]!.Value<float>(), 1e-3f, $"qtyTotal на строке {i}");
+            Assert.AreEqual(float.Parse(row[15], CultureInfo.InvariantCulture), line["qtyPerItemInUnit"]!.Value<float>(), 1e-3f, $"qtyPerItemInUnit на строке {i}");
+            Assert.AreEqual(float.Parse(row[16], CultureInfo.InvariantCulture), line["qtyTotalInUnit"]!.Value<float>(), 1e-3f, $"qtyTotalInUnit на строке {i}");
         }
 
         var pipeLine = mcpLines.Single(l => l!["name"]!.Value<string>()!.StartsWith("Труба"));
         Assert.IsFalse(pipeLine!["hasDims"]!.Value<bool>(), "у трубы нет физических габаритов - dims не значат 0x0x0");
         Assert.AreEqual("Сантехника", pipeLine["section"]!.Value<string>());
         Assert.AreEqual("м", pipeLine["unit"]!.Value<string>());
-        Assert.AreEqual(1.234f, pipeLine["qtyTotal"]!.Value<float>(), 1e-3f);
+        Assert.AreEqual(1.234f, pipeLine["qtyTotalInUnit"]!.Value<float>(), 1e-3f);
 
         var boardLine = mcpLines.First(l => l!["name"]!.Value<string>() == "BoardA");
         Assert.IsTrue(boardLine!["hasDims"]!.Value<bool>());
@@ -110,6 +117,9 @@ public class McpSpecificationParityTests : McpTestFixture
         var sourceFields = typeof(SpecLine).GetFields(BindingFlags.Public | BindingFlags.Instance)
             .Select(f => f.Name)
             .Where(n => n != nameof(SpecLine.dimensionsMM)) // раскладывается в dimXMm/dimYMm/dimZMm ниже
+            .Where(n => n != nameof(SpecLine.qtyPerItem) && n != nameof(SpecLine.qtyTotal))
+            // переименованы в qtyPerItemInUnit/qtyTotalInUnit ниже: единица переменная
+            // (шт/м/м²/м³/кг) и живёт в соседнем поле unit, суффикс InUnit честно на это указывает
             .ToArray();
         var mcpFields = typeof(SpecLineInfo).GetFields(BindingFlags.Public | BindingFlags.Instance)
             .Select(f => f.Name)
@@ -125,5 +135,9 @@ public class McpSpecificationParityTests : McpTestFixture
             && mcpFields.Contains(nameof(SpecLineInfo.dimYMm))
             && mcpFields.Contains(nameof(SpecLineInfo.dimZMm)),
             "dimensionsMM должен быть разложен в dimXMm/dimYMm/dimZMm");
+
+        Assert.IsTrue(mcpFields.Contains(nameof(SpecLineInfo.qtyPerItemInUnit))
+            && mcpFields.Contains(nameof(SpecLineInfo.qtyTotalInUnit)),
+            "SpecLine.qtyPerItem/qtyTotal должны дойти как qtyPerItemInUnit/qtyTotalInUnit");
     }
 }

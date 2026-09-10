@@ -24,7 +24,7 @@ namespace KitchenDesigner.Core.MCP
                 material = l.material, grooves = l.grooves,
                 edgeL1 = l.edgeL1, edgeL2 = l.edgeL2, edgeW1 = l.edgeW1, edgeW2 = l.edgeW2,
                 section = l.section, unit = l.unit.Label(),
-                qtyPerItem = l.qtyPerItem, qtyTotal = l.qtyTotal
+                qtyPerItemInUnit = l.qtyPerItem, qtyTotalInUnit = l.qtyTotal
             }).ToList();
 
             var totalsByUnit = spec.totalsByUnit?.ToDictionary(kv => kv.Key.Label(), kv => kv.Value)

@@ -23,9 +23,14 @@ public class McpResponseUnitContractTests
     private const BindingFlags PublicInstance = BindingFlags.Public | BindingFlags.Instance;
 
     /// <summary>Единица, названная в имени поля. Сравнение без учёта регистра: в
-    /// поверхности живут и MM (edgeThicknessMM), и Mm (posXMm).</summary>
+    /// поверхности живут и MM (edgeThicknessMM), и Mm (posXMm). "inunit" — отдельный
+    /// случай: у SpecLineInfo.qtyPerItemInUnit/qtyTotalInUnit единица не одна и не
+    /// вписывается в имя (шт/м/м²/м³/кг по строке ведомости) — она лежит РЯДОМ, в
+    /// соседнем поле `unit` того же объекта. Суффикс "InUnit" — это не единица, а
+    /// адрес, где искать единицу: он честно говорит читающему агенту «не гадай, здесь
+    /// смотри на соседнее поле», а не притворяется, что единица известна заранее.</summary>
     private static readonly string[] UnitTokens =
-        { "mm", "deg", "pct", "px", "sec", "m2", "count", "ratio", "progress", "index" };
+        { "mm", "deg", "pct", "px", "sec", "m2", "count", "ratio", "progress", "index", "inunit" };
 
     /// <summary>Числа ответа, у которых физической единицы НЕТ. Причина обязательна:
     /// без неё через полгода не отличить безразмерную величину от забытого метра.
@@ -78,6 +83,10 @@ public class McpResponseUnitContractTests
     private static readonly Dictionary<string, string> NotALengthAfterAll =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
+            ["McpCommandHandler.Info.cs :: hasDims"] = "флаг «есть ли у строки ведомости "
+                + "физический размер вообще», а не длина: «dim» здесь основа слова Dims в "
+                + "hasDims, не величина — отличает реальную доску нулевого размера от "
+                + "строки без размеров вовсе (см. SpecLineInfo.hasDims, McpModels.cs)",
             ["ElementInfoBuilder.cs :: faceGaps"] = "список AxisGapInfo, каждый со своим gapMM",
             ["ElementInfoBuilder.cs :: fixedSize"] = "флаг «размер задан производителем»",
             ["ElementInfoBuilder.cs :: maxLights"] = "потолок числа ламп — штуки",
