@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Analysis;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Tests.Geometry;
 
 /// <summary>Правило связи спрашивали только те, кто ДОКЛАДЫВАЕТ о стыке
 /// (<c>PipeJoint.Connects</c>, <c>PipeRunFit.ForRun</c>), и не спрашивал никто, кто
@@ -257,5 +259,31 @@ public class PipeSeatRuleReproTests : SnapTestBase
             "стенд обязан начинаться с ОДНОЙ связи — трубы " + sitting.PartName
             + " на верхнем устье тройника; без неё «устье занято» не воспроизведено");
         return scene;
+    }
+
+    /// <summary>Допуск ремонта по сетке — самостоятельный выбор, а не эхо
+    /// <c>PipeRunFit.ReachMm</c>. Числом они совпали (2 мм), и константа была
+    /// написана как <c>= PipeRunFit.ReachMm</c>: правка допуска подгонки пролёта
+    /// молча перенастраивала бы восстановление целостности данных при ЗАГРУЗКЕ
+    /// проекта, которое к пользовательскому жесту отношения не имеет (обоснование —
+    /// в шапке <c>ScenePipeJointGridRepairTests</c>).</summary>
+    [Test]
+    public void TheGridRepairTolerance_IsItsOwnConstant_NotAnEchoOfTheRunFitReach()
+    {
+        Assert.AreEqual(2f, PipeDocking.GridRepairMaxDistMm, 1e-4f,
+            "2 мм — осознанный выбор ремонта по сетке, задокументированный в "
+            + "ScenePipeJointGridRepairTests");
+
+        string source = File.ReadAllText(Path.Combine(
+            RepoPaths.Subdir("Assets", "Scripts", "Core", "Elements"), "PipeDocking.cs"));
+        int declaration = source.IndexOf("GridRepairMaxDistMm =", System.StringComparison.Ordinal);
+
+        Assert.Greater(declaration, -1,
+            "константа исчезла — сторож остался бы зелёным ни о чём");
+        Assert.IsFalse(
+            source.Substring(declaration, source.IndexOf(';', declaration) - declaration)
+                .Contains("PipeRunFit"),
+            "склеивать два независимых допуска в один нельзя: следующая правка ReachMm "
+            + "перенастроит ремонт по сетке, и ни один тест этого не заметит");
     }
 }

@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core
     {
         public const float RotationEpsilonDegrees = WallSeating.RotationEpsilonDegrees;
 
-        public const float GridRepairMaxDistMm = PipeRunFit.ReachMm;
+        public const float GridRepairMaxDistMm = 2f;
 
         public static PipeNodeKind KindOf(KitchenElement? element) =>
             element is PipeFittingElement fitting ? fitting.NodeKind : PipeNodeKind.Pipe;
