@@ -90,8 +90,11 @@ public class AnalysisContractTests
             IssueCatalog.ScrewLegNoFooting(a, new ScrewLegSupport(null, 0f)),
             IssueCatalog.FromPipeFinding(PipeIssueCatalog.OpenEnd(PipeEnd(a)), a, null),
             IssueCatalog.FromPipeFinding(
-                PipeIssueCatalog.DirectSizeMismatch(PipeEnd(a), PipeEnd(b),
-                    PipeSpec.Dn20, PipeSpec.Dn32), a, b),
+                PipeIssueCatalog.FittingSizeMismatch(a.PartName,
+                    PipeSpec.Dn20, PipeSpec.Dn32), a, null),
+            IssueCatalog.FromPipeFinding(
+                PipeIssueCatalog.SameRoleJoin(PipeEnd(a), PipeEnd(b),
+                    PipeNodeKind.Supply), a, b),
             IssueCatalog.FromPipeFinding(
                 PipeIssueCatalog.ObstacleCrossed(PipeRun(a), Blocking(b)), a, b),
         };
@@ -110,7 +113,7 @@ public class AnalysisContractTests
             "FAC-01",
             "GAP-01", "GAP-02",
             "LEG-01", "LEG-02", "LEG-03",
-            "PIP-01", "PIP-02", "PIP-03",
+            "PIP-01", "PIP-02", "PIP-03", "PIP-04",
             "SEAT-01",
         };
 
@@ -160,6 +163,7 @@ public class AnalysisContractTests
             ["PIP-01"] = IssueLevel.Error,
             ["PIP-02"] = IssueLevel.Error,
             ["PIP-03"] = IssueLevel.Error,
+            ["PIP-04"] = IssueLevel.Error,
         };
 
         CollectionAssert.AreEquivalent(expected.Keys, byCode.Keys,

@@ -11,11 +11,6 @@ namespace KitchenDesigner.Core.Plumbing
             new PipeFinding(PipeFindingLevel.Error, CodeOpenEnd, port.ElementId, null,
                 $"{PipeFittingNames.Title(port.OwnerKind)}: порт {port.PortIndex} не соединён — нужна заглушка, фитинг, подача или обратка");
 
-        public static PipeFinding DirectSizeMismatch(in PipePort a, in PipePort b,
-            string? sizeA, string? sizeB) =>
-            new PipeFinding(PipeFindingLevel.Error, CodeSizeMismatch, a.ElementId, b.ElementId,
-                $"Трубы {PipeSpec.DesignationOrDash(sizeA)} и {PipeSpec.DesignationOrDash(sizeB)} состыкованы напрямую — нужен переходник");
-
         public static PipeFinding FittingSizeMismatch(string elementId, string? sizeA, string? sizeB) =>
             new PipeFinding(PipeFindingLevel.Error, CodeSizeMismatch, elementId, null,
                 $"Фитинг сводит разные диаметры: {PipeSpec.DesignationOrDash(sizeA)} и {PipeSpec.DesignationOrDash(sizeB)} — нужен переходник");

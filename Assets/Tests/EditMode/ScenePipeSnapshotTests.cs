@@ -84,31 +84,23 @@ public class ScenePipeSnapshotTests
             "препятствий в сцене нет — пересекать нечего");
     }
 
+    /// <summary>Труба к трубе — не стык: <c>PipeConnectionRule</c> требует между двумя
+    /// отрезками фитинг, и торцы, сведённые вплотную, остаются свободными ОБА.
+    /// Раньше здесь стояло «стык закрыл по одному концу каждой трубы» — это описание
+    /// сети, которой больше нет.</summary>
     [Test]
-    public void TwoPipesButtedEndToEnd_HaveNoOpenEndAtTheJoint_AndDoNotCrossEachOther()
+    public void TwoPipesButtedEndToEnd_AreNotAJoint_AndStillDoNotCrossEachOther()
     {
         var lower = Pipe("Lower", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
         var upper = Pipe("Upper", 600, new Vector3(0f, Units(900), 0f), PipeSpec.Dn20);
 
         var findings = Findings(lower, upper);
 
-        Assert.AreEqual(2, Of(findings, PipeIssueCatalog.CodeOpenEnd).Count,
-            "стык закрыл по одному концу каждой трубы: свободными остались только крайние два");
+        Assert.AreEqual(4, Of(findings, PipeIssueCatalog.CodeOpenEnd).Count,
+            "без муфты между ними стыка нет вовсе: у каждой трубы открыты ОБА торца");
         Assert.IsEmpty(Of(findings, PipeIssueCatalog.CodeObstacleCrossed),
-            "труба не препятствие для трубы: иначе КАЖДЫЙ стык трассы читался бы как PIP-03, "
-            + "и правило про пересечение утонуло бы в собственном шуме");
-    }
-
-    [Test]
-    public void TwoPipesOfDifferentBore_ButtedTogether_AreReportedAsPip02()
-    {
-        var lower = Pipe("Lower", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
-        var upper = Pipe("Upper", 600, new Vector3(0f, Units(900), 0f), PipeSpec.Dn32);
-
-        var mismatches = Of(Findings(lower, upper), PipeIssueCatalog.CodeSizeMismatch);
-
-        Assert.AreEqual(1, mismatches.Count,
-            "ДУ 20 и ДУ 32 состыкованы напрямую — без переходника такой стык не собрать");
+            "труба не препятствие для трубы: иначе КАЖДОЕ примыкание трассы читалось бы "
+            + "как PIP-03, и правило про пересечение утонуло бы в собственном шуме");
     }
 
     private PipeFittingElement Fitting(GameObject go)
@@ -148,12 +140,19 @@ public class ScenePipeSnapshotTests
     /// <summary>Обе стороны PIP-02 на настоящей сцене, одними и теми же трубами.
     ///
     /// Переходная муфта — это и есть железка, которой сводят разные ДУ: два порта
-    /// соосно, диаметры сторон независимы и оба выводятся с подведённых труб. Так
-    /// что стык ДУ 20 с ДУ 32 ЧЕРЕЗ неё законен, а он же напрямую — отказ. Порознь
-    /// эти половины ничего не стоят: правило, которое всегда молчит, пройдёт
-    /// первую, а правило, которое всегда ругается, — вторую.</summary>
+    /// соосно, диаметры сторон независимы и оба выводятся с подведённых труб. А
+    /// тройник бывает только одного диаметра (<c>PipeNodePorts.RequiresOneSize</c>),
+    /// и те же ДУ 20 с ДУ 32 на нём — отказ. Порознь эти половины ничего не стоят:
+    /// правило, которое всегда молчит, пройдёт первую, а правило, которое всегда
+    /// ругается, — вторую.
+    ///
+    /// Второй половиной раньше стояли ДВЕ ТРУБЫ ВСТЫК. С появлением
+    /// <c>PipeConnectionRule</c> труба с трубой не соединяется вовсе, значит и
+    /// сравнивать на несуществующем узле нечего (там теперь PIP-01 × 4, см.
+    /// <see cref="TwoPipesButtedEndToEnd_AreNotAJoint_AndStillDoNotCrossEachOther"/>):
+    /// тот сценарий проверял не PIP-02, а сеть, которой больше нет.</summary>
     [Test]
-    public void ATransitionCoupling_SilencesPip02_WhileTheSameTwoPipesButtedDirectlyDoNot()
+    public void ATransitionCoupling_SilencesPip02_WhileATeeOnTheSameTwoBoresFiresIt()
     {
         float reach = PortReachMm(PipeNodeKind.Coupling);
 
@@ -172,14 +171,37 @@ public class ScenePipeSnapshotTests
             "контроль: одним диаметром через ту же муфту тоже молчит — иначе первая "
             + "половина зелена просто потому, что правило перестало срабатывать вообще");
 
-        var direct = Of(Findings(
-                Pipe("Lower", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20),
-                Pipe("Upper", 600, new Vector3(0f, Units(900), 0f), PipeSpec.Dn32)),
-            PipeIssueCatalog.CodeSizeMismatch);
+        var mismatched = TeeSpan(PipeSpec.Dn32, out var branch);
+        var onTee = Of(Findings(mismatched), PipeIssueCatalog.CodeSizeMismatch);
 
-        Assert.AreEqual(1, direct.Count,
-            "а без переходника те же ДУ 20 и ДУ 32 напрямую не собрать — ровно ради "
-            + "этого стыка PIP-02 и написан");
+        Assert.AreEqual(1, onTee.Count,
+            "а тройник — не переходник: он одного диаметра, и свести на нём ДУ 20 с ДУ 32 "
+            + "нельзя — ровно ради этого стыка PIP-02 и написан");
+        Assert.AreEqual(branch.PartName, onTee[0].ElementId,
+            "виноват узел, который сводит два размера, а не труба, которая честно "
+            + "объявила свой");
+
+        Assert.IsEmpty(Of(Findings(TeeSpan(PipeSpec.Dn20, out _)),
+                PipeIssueCatalog.CodeSizeMismatch),
+            "контроль: тот же тройник одним диаметром молчит");
+    }
+
+    /// <summary>Тройник с двумя трубами на соосных портах 0 и 1. Устья тройника
+    /// отстоят от его центра и по Y, и по X (ступица не в центре габарита), поэтому
+    /// центр сдвинут на ту же X-составляющую — иначе устья не легли бы на ось труб.
+    /// Боковой порт остаётся свободным: это PIP-01, а не PIP-02.</summary>
+    private KitchenElement[] TeeSpan(string upperSizeId, out PipeFittingElement tee)
+    {
+        var mouth = PipeFittingSpec.PortOffsetMm(PipeNodeKind.Tee, PipeSpec.Dn20, 0);
+        float reachMm = Mathf.Abs(mouth.YMm);
+
+        var lower = Pipe("Lower", 600, new Vector3(0f, Units(300), 0f), PipeSpec.Dn20);
+        tee = Fitting(ElementFactory.CreatePipeTee("Branch",
+            new Vector3(-UnitsMm(mouth.XMm), Units(600) + UnitsMm(reachMm), 0f)));
+        var upper = Pipe("Upper", 600,
+            new Vector3(0f, Units(600) + UnitsMm(2f * reachMm) + Units(300), 0f), upperSizeId);
+
+        return new KitchenElement[] { lower, tee, upper };
     }
 
     /// <summary>И вторая половина решения: диаметры сторон переходной муфты
