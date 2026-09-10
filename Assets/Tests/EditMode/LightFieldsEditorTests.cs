@@ -3,6 +3,7 @@ using NUnit.Framework;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
@@ -12,8 +13,21 @@ public class LightFieldsEditorTests
     private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
-    [SetUp]
-    public void Setup()
+    private ProjectLoadStateGuard? _guard;
+
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню —
+    /// 0,31 с, и десять сборок это 3,1 с прогона EditMode при бюджете 170.
+    /// Боевой сценарий — это и есть ОДНА панель, переоткрываемая через
+    /// <c>Open</c>; полный разбор того, что <c>Open</c> сбрасывает, — в сводке
+    /// <see cref="ContextMenuLayoutTests"/>. Здесь важнее всего, что он зовёт
+    /// <c>Collapse</c> световой секции: свёрнутость тонкой настройки
+    /// (<c>LightFieldsEditor</c>) — статик панели, и без сброса на открытии
+    /// <see cref="AdvancedRows_AreHiddenUntilTheExpanderIsClicked"/> проверял бы
+    /// раскладку, оставленную предыдущим тестом. Единственный тест, который
+    /// панель не открывает, — <see cref="LightRows_KeepTheirWidgetNames"/>: он
+    /// спрашивает только имена узлов, а их расставляет <c>Build</c>.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
@@ -22,16 +36,48 @@ public class LightFieldsEditorTests
         _menu!.Build(_canvas!.transform);
     }
 
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    /// <summary>Панель переживает тест — значит ПОТЕСТОВОЕ состояние обязано
+    /// возвращаться на место здесь, и таких состояний три.
+    ///
+    /// <c>LightSourceElement.GlobalOn</c> — глобальный выключатель света, его
+    /// пишет и панель, и загрузка проекта; утёкший в соседний набор, он молча
+    /// портит эталоны (<see cref="ProjectLoadStateGuard"/>).
+    ///
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: <c>ApplyOncePerFrame</c>
+    /// пропускает один Apply за кадр, а в EditMode <c>Time.frameCount</c> стоит
+    /// на месте, поэтому окно, взведённое предыдущим тестом, съело бы первую же
+    /// правку следующего — и «Мощность = 17» вернуло бы значение по умолчанию.
+    ///
+    /// Фокус: <c>RefreshUnfocused</c> не трогает сфокусированное поле, так что
+    /// переживший тест фокус даёт и ложное «не обновилось», и обратное.</summary>
+    [SetUp]
+    public void Setup()
+    {
+        _guard = ProjectLoadStateGuard.Capture();
+        if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+    }
+
+    /// <summary>Панель закрывается ДО уничтожения лампы: <c>Close</c> обнуляет
+    /// <c>_target</c>, иначе панель осталась бы с уничтоженным элементом в руках,
+    /// а взведённая кнопка «Удалить» — взведённой на следующий тест.</summary>
     [TearDown]
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        if (_menu != null) _menu!.Close();
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         PartRegistry.Clear();
+        _guard?.Restore();
     }
 
     private LightSourceElement Lamp()
