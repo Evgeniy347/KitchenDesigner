@@ -16,6 +16,7 @@ namespace KitchenDesigner.Core
         private Vector3 _offset;
         private Vector3 _startPosition;
         private Quaternion _startRotation;
+        private Vector3Int _startDimensions;
         private bool _wasMoved;
         private bool _wasShift;
         private float _vOffset;
@@ -118,6 +119,7 @@ namespace KitchenDesigner.Core
             _pressMouse = Input.mousePosition;
             _pressTime = Time.unscaledTime;
             _startPosition = element.transform.position;
+            _startDimensions = element.DimensionsMM;
             _startRotation = element.transform.rotation;
             _wasMoved = false;
             _wasShift = false;
@@ -149,6 +151,7 @@ namespace KitchenDesigner.Core
             _wasMoved = true;
             BuildMoveSet();
             _startPosition = target.transform.position;
+            _startDimensions = target.DimensionsMM;
             _startRotation = target.transform.rotation;
             _heldDragY = _startPosition.y;
             HoldAttachedPipes();
@@ -223,7 +226,11 @@ namespace KitchenDesigner.Core
         private void RevertMoveSet()
         {
             PipeRunFollow.Release(_pipeHold);
-            if (_target != null) _target.transform.rotation = _startRotation;
+            if (_target != null)
+            {
+                if (_target.DimensionsMM != _startDimensions) _target.DimensionsMM = _startDimensions;
+                _target.transform.rotation = _startRotation;
+            }
 
             if (_moveSet.Count == 0)
             {

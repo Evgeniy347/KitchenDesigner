@@ -662,24 +662,42 @@ namespace KitchenDesigner.Core.UI
             if (_target == null) return;
             var target = _target;
             var propsBefore = UndoableProperties.Capture(target);
+            bool blocked = false;
 
             CommandStack.BeginCapture();
             try
             {
-                ApplyFields(target);
+                blocked = ApplyFields(target);
                 var propsAfter = UndoableProperties.Capture(target);
-                var propsCommand = SetPropertiesCommand.TryCreate(target, propsBefore, propsAfter);
-                if (propsCommand != null) CommandStack.Execute(propsCommand);
+                if (blocked) RevertEverythingApplyTouched(target, propsBefore, propsAfter);
+                else
+                {
+                    var propsCommand = SetPropertiesCommand.TryCreate(target, propsBefore, propsAfter);
+                    if (propsCommand != null) CommandStack.Execute(propsCommand);
+                }
             }
             finally
             {
-                CommandStack.EndCapture($"Свойства {target.PartName}", commit: true);
+                CommandStack.EndCapture($"Свойства {target.PartName}", commit: !blocked);
             }
 
             RefreshAfterApply(target);
         }
 
-        private void ApplyFields(KitchenElement target)
+        private static void RevertEverythingApplyTouched(KitchenElement target,
+            ElementPropertyBag propsBefore, ElementPropertyBag propsAfter)
+        {
+            if (propsBefore.TryGet(nameof(KitchenElement.PartName), out var oldName)
+                && oldName is string named && target.PartName != named)
+            {
+                DrawerLinks.Rename(target, named);
+                target.gameObject.name = target.PartName;
+            }
+            UndoableProperties.Restore(target, propsBefore,
+                UndoableProperties.Changed(propsBefore, propsAfter));
+        }
+
+        private bool ApplyFields(KitchenElement target)
         {
             _fields.ForgetRejections();
             if (target is IOpenable openable) openable.ForceClose();
@@ -729,18 +747,18 @@ namespace KitchenDesigner.Core.UI
                 target.transform.position = oldPos;
                 target.transform.rotation = oldRot;
                 _rotationDisplay.Remember(shownRotation);
+                return true;
             }
-            else
-            {
-                CommandStack.Execute(new ResizeCommand(target,
-                    oldDims, target.DimensionsMM,
-                    oldPos, target.transform.position,
-                    oldRot, target.transform.rotation));
 
-                var followers = AttachMove.FollowersCommand(target,
-                    oldPos, oldRot, target.transform.position, target.transform.rotation);
-                if (followers != null) CommandStack.Execute(followers);
-            }
+            CommandStack.Execute(new ResizeCommand(target,
+                oldDims, target.DimensionsMM,
+                oldPos, target.transform.position,
+                oldRot, target.transform.rotation));
+
+            var followers = AttachMove.FollowersCommand(target,
+                oldPos, oldRot, target.transform.position, target.transform.rotation);
+            if (followers != null) CommandStack.Execute(followers);
+            return false;
         }
 
         private void RefreshAfterApply(KitchenElement target)
