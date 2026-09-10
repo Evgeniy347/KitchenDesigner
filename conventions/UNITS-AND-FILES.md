@@ -46,6 +46,16 @@ so the scanner has to parse the object initialisers as well. `McpResponseUnitCon
 the working pattern: two scans, a stated reason on every exception plus a check that the
 exception still fires, and a self-test proving the scanner sees the contract at all.
 
+**Целые миллиметры не стыкуются с дробной геометрией.** Устья, ноги и ступицы фитингов
+считаются от наружного диаметра (×1,5, ×1,25) и на целые мм не ложатся: пролёт между устьями
+отвода и тройника ДН20 — 118,655 мм. Любое округление длины или позиции до мм-сетки
+(`MmGrid.Snap` в `FinishDrag`) рвёт стык на величину до 1 мм при допуске 0,5 мм — так труба
+`Truba_2` перестала соединяться с отводом, разойдясь на 0,65 мм. После `MmGrid.Snap` пролёт
+обязан пересобираться (`PipeRunFit`), а остаток округления — делиться между **обоими** стыками,
+а не сваливаться на один: 0,25 мм на стык вместо 0,65 мм на одном. Лечить такое подкруткой
+`Tolerance.ContactMm` или `PipeJoint.JoinToleranceMm` запрещено: допуск описывает точность
+
+посадки, а не прячет арифметику.
 ## CRITICAL: File operations — NEVER delete permanently
 
 When deleting files, ALWAYS move to trash first. Never use `rm -rf`, `Remove-Item -Force`, or `git clean` on source/config files.
