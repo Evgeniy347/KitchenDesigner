@@ -16,8 +16,10 @@ namespace KitchenDesigner.Core
         private static Func<GameObject?>? _spawn;
         private static KitchenElement? _replaced;
         private static KitchenElement? _owner;
+        private static bool _watchesOwner;
         private static Vector3 _ownerPos;
         private static Quaternion _ownerRot;
+        private static Vector3Int _ownerDims;
 
         public static string? ShownKey => State.ShownKey;
 
@@ -37,6 +39,7 @@ namespace KitchenDesigner.Core
             _spawn = spawn;
             _replaced = replaced;
             _owner = owner;
+            _watchesOwner = owner != null;
             Build(spawn, replaced);
             RememberOwnerPose();
         }
@@ -60,9 +63,17 @@ namespace KitchenDesigner.Core
         public static void Sync()
         {
             if (!State.IsShowing || _spawn == null) return;
-            if (_owner == null) return;
-            if (_owner.transform.position == _ownerPos
-                && _owner.transform.rotation == _ownerRot) return;
+            if (!_watchesOwner) return;
+
+            if (HoverAnchor.IsGone(_owner))
+            {
+                Leave();
+                return;
+            }
+
+            if (_owner!.transform.position == _ownerPos
+                && _owner.transform.rotation == _ownerRot
+                && _owner.DimensionsMM == _ownerDims) return;
 
             var spawn = _spawn;
             var replaced = _replaced;
@@ -79,6 +90,7 @@ namespace KitchenDesigner.Core
             if (_ghost != null)
             {
                 _ghost.hideFlags = HideFlags.DontSave;
+                Intangible(_ghost);
                 Tint(_ghost);
             }
 
@@ -90,13 +102,18 @@ namespace KitchenDesigner.Core
             if (_owner == null) return;
             _ownerPos = _owner.transform.position;
             _ownerRot = _owner.transform.rotation;
+            _ownerDims = _owner.DimensionsMM;
         }
 
         private static void Teardown()
         {
-            foreach (var renderer in Muted)
-                if (renderer != null) renderer.enabled = true;
-            Muted.Clear();
+            if (Muted.Count > 0)
+            {
+                foreach (var renderer in Muted)
+                    if (renderer != null) renderer.enabled = true;
+                Muted.Clear();
+                SceneVisibilityManager.Invalidate();
+            }
 
             foreach (var material in Painted)
                 if (material != null) DestroyNow(material);
@@ -111,8 +128,10 @@ namespace KitchenDesigner.Core
             _spawn = null;
             _replaced = null;
             _owner = null;
+            _watchesOwner = false;
             _ownerPos = default;
             _ownerRot = default;
+            _ownerDims = default;
         }
 
         private static void Mute(KitchenElement? replaced)
@@ -123,6 +142,19 @@ namespace KitchenDesigner.Core
                 if (renderer == null || !renderer.enabled) continue;
                 renderer.enabled = false;
                 Muted.Add(renderer);
+            }
+        }
+
+        private static void Intangible(GameObject ghost)
+        {
+            foreach (var collider in ghost.GetComponentsInChildren<Collider>(true))
+                if (collider != null) collider.enabled = false;
+
+            foreach (var renderer in ghost.GetComponentsInChildren<Renderer>(true))
+            {
+                if (renderer == null) continue;
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
             }
         }
 
