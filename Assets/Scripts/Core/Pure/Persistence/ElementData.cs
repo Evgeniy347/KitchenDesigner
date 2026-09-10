@@ -211,6 +211,13 @@ namespace KitchenDesigner.Core
         public static ElementData OfCurrentFormat() =>
             new ElementData { edgeSuppressedMask = 0 };
 
+        public const string WALL_KIND_PARTITION = "partition";
+
+        public bool WallIsLoadBearing() =>
+            wallLoadBearing
+            && !string.Equals(wallKind, WALL_KIND_PARTITION,
+                System.StringComparison.OrdinalIgnoreCase);
+
         public List<GrooveSpec> GrooveSpecs()
         {
             var result = new List<GrooveSpec>();

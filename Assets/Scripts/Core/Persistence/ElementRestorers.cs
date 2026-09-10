@@ -62,7 +62,7 @@ namespace KitchenDesigner.Core
              {
                  var wall = el.GetComponent<Wall>();
                  if (wall == null) return;
-                 wall.LoadBearing = d.wallLoadBearing;
+                 wall.LoadBearing = d.WallIsLoadBearing();
                  if (d.wallEndShape != null && d.wallEndShape.Length >= 4)
                      wall.SetEndShape(new WallMeshBuilder.EndShape
                      {

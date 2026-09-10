@@ -176,6 +176,14 @@ flag. Every object of the format that our code builds must therefore start alrea
 `ElementData.OfCurrentFormat()` — and a test should walk the format by reflection to say so,
 rather than naming the one field somebody remembered.
 
+**Сохраняемый `bool` с дефолтом «истина» в JSON неотличим от ОТСУТСТВИЯ поля** — у `bool` нет
+сентинела, и `JsonUtility` оставляет инициализатор. Такой флаг едет на проводе как `int`/nullable
+(или опирается на соседнее поле, которое в старом файле ЕСТЬ), пока формат не научится
+версионировать. `wallLoadBearing = true` молча повышал перегородки старых проектов до несущих;
+запасным путём стал `wallKind` (`"partition"` → не несущая, `ElementData.WallIsLoadBearing`), и
+именно поэтому `wallKind` остаётся в формате, хотя `wallLoadBearing` его дублирует. Тест на такой
+флаг обязан вырезать поле у стены с ПРОТИВОПОЛОЖНЫМ значением: вырезать его у стены, которая и так
+несущая, — проверка, которая не может провалиться.
 
 **Проход после загрузки чинит СТЫК, а не РАЗМЕР.** `SceneRestorer.RepairAutoSeatedJointsAfterGridSnap`
 звал у опоры полную автоподгонку — и каждое открытие проекта молча заменяло сохранённую высоту

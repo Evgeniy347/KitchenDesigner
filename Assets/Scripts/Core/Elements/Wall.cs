@@ -6,7 +6,6 @@ namespace KitchenDesigner.Core
     public class Wall : MonoBehaviour
     {
         [SerializeField] private bool _loadBearing = true;
-        [Undoable]
         public bool LoadBearing { get => _loadBearing; set => _loadBearing = value; }
 
         public string Kind => _loadBearing ? "bearing" : "partition";

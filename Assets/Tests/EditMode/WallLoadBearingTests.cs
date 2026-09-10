@@ -135,4 +135,73 @@ public class WallLoadBearingTests
             "старый проект без поля обязан читаться как несущая — миграция бесплатна за счёт "
             + "инициализатора поля в ElementData");
     }
+
+    /// <summary>F4, самый дорогой из найденных: он трогает УЖЕ СОХРАНЁННЫЕ
+    /// проекты. Тест выше вырезал <c>wallLoadBearing</c> у стены, которая и так
+    /// была несущей, — то есть проверял случай, который не может провалиться.
+    /// А настоящий старый файл несёт <c>wallKind:"partition"</c> и НЕ несёт
+    /// <c>wallLoadBearing</c>: <c>JsonUtility</c> оставляет инициализатор
+    /// <c>true</c>, и перегородка молча повышалась до несущей. <c>bool</c> не
+    /// отличает «поля нет» от «false», поэтому запасной путь — второе поле,
+    /// которое в файле ЕСТЬ.</summary>
+    [Test]
+    public void OldProjectJson_WithPartitionKindAndNoLoadBearingField_LoadsAsPartition()
+    {
+        var wall = MakeWall("Перегородка");
+        wall.GetComponent<Wall>().LoadBearing = false;
+        var el = wall.GetComponent<KitchenElement>();
+        PartRegistry.Register(el);
+
+        var json = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(PartRegistry.GetAll()));
+        Assert.IsTrue(json.Contains("\"wallKind\": \"partition\"") || json.Contains("\"wallKind\":\"partition\""),
+            "проверка ничего не доказывает, если wallKind перестал писаться: " + json);
+
+        string oldJson = System.Text.RegularExpressions.Regex.Replace(
+            json, "\"wallLoadBearing\"\\s*:\\s*(true|false),?", "");
+        Assert.IsFalse(oldJson.Contains("wallLoadBearing"), "поле вырезано целиком");
+
+        foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
+        _spawned.Clear();
+        PartRegistry.Clear();
+
+        var data = SaveLoadManager.Deserialize(oldJson);
+        Assert.IsNotNull(data, "старый файл обязан десериализоваться");
+        var restored = SaveLoadManager.RestoreScene(data!)
+            .Select(g => g.GetComponent<Wall>())
+            .Where(w => w != null)
+            .ToList();
+        foreach (var go in restored.Select(w => w!.gameObject)) _spawned.Add(go);
+
+        Assert.AreEqual(1, restored.Count);
+        Assert.IsFalse(restored[0]!.LoadBearing,
+            "перегородка, сохранённая ДО появления wallLoadBearing, обязана вернуться перегородкой: "
+            + "при отсутствии bool-поля решает wallKind, иначе старые проекты пользователя молча "
+            + "получают несущие стены там, где их не было");
+    }
+
+    /// <summary>F8. <c>[Undoable]</c> на <c>Wall.LoadBearing</c> был инертным
+    /// украшением: <c>UndoableProperties</c> сканирует тип САМОГО
+    /// <c>KitchenElement</c>, а <c>Wall</c> — соседний компонент на том же
+    /// объекте, и в выборку не попадает никогда. Отмена работала и работает
+    /// только потому, что <c>WallFieldsEditor</c> кладёт
+    /// <c>SetWallLoadBearingCommand</c> явно (тест выше). Атрибут снят;
+    /// вернуть его можно лишь вместе с поддержкой соседей в сканере — иначе
+    /// он снова обещает то, чего не делает.</summary>
+    [Test]
+    public void WallLoadBearing_IsNotDecoratedUndoable_BecauseTheScannerCannotSeeANeighbourComponent()
+    {
+        var prop = typeof(Wall).GetProperty(nameof(Wall.LoadBearing));
+        Assert.IsNotNull(prop, "свойство на месте");
+        Assert.IsNull(
+            prop!.GetCustomAttributes(typeof(UndoableAttribute), true).FirstOrDefault(),
+            "[Undoable] на соседнем компоненте не читает никто: UndoableProperties.For берёт "
+            + "element.GetType(), то есть тип KitchenElement. Либо научи сканер соседям "
+            + "(WallFieldsEditor.Handles уже находит их через GetComponent), либо не обещай "
+            + "атрибутом того, чего он не делает");
+
+        var wallEl = MakeWall().GetComponent<KitchenElement>();
+        Assert.IsEmpty(
+            UndoableProperties.For(wallEl.GetType()).Where(p => p.Name == nameof(Wall.LoadBearing)),
+            "и сканер её действительно не видит — это и есть причина, по которой атрибут снят");
+    }
 }
