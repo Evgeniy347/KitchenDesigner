@@ -22,34 +22,74 @@ using KitchenDesigner.Core.UI;
 /// </summary>
 public class MaterialSlotLabelTests
 {
+    private const string LabelNotWritten = "‹подпись не перезаписана›";
+
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
-    private bool _blockOnViolation;
+    private ProjectLoadStateGuard? _globals;
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс: Build стоит ~0,3 с, а Open —
+    /// ~5 мс, и тринадцать сборок были дороже всей остальной работы набора вместе.
+    /// Всё, что панель помнит между тестами, приводится в порядок ниже: защёлка
+    /// кадра правок, фокус поля, глобальные настройки — и сами подписи декора,
+    /// которые при общей панели пережили бы тест и позеленили бы следующий на
+    /// чужом тексте (см. <see cref="PoisonSlotLabels"/>).</summary>
+    [OneTimeSetUp]
+    public void BuildPanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
         var go = new GameObject("CtxMenu");
         _menu = go.AddComponent<ContextMenuUI>();
         _menu!.Build(_canvas!.transform);
-        _blockOnViolation = KitchenSettings.Instance.BlockOnViolation;
+    }
+
+    [OneTimeTearDown]
+    public void DestroyPanelOnce()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    [SetUp]
+    public void Setup()
+    {
+        _globals = ProjectLoadStateGuard.Capture();
         KitchenSettings.Instance.BlockOnViolation = false;
+        if (_menu != null) ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        Unfocus();
+        PoisonSlotLabels();
     }
 
     [TearDown]
     public void Teardown()
     {
-        KitchenSettings.Instance.BlockOnViolation = _blockOnViolation;
+        if (_menu != null) _menu!.Close();
         CommandStack.Clear();
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         PartRegistry.Clear();
+        if (_globals != null) _globals!.Restore();
+    }
+
+    /// <summary>Подписи — единственное, что этот набор читает из панели, и общая
+    /// панель отдала бы их следующему тесту как есть. Заведомо неверный текст
+    /// перед каждым тестом превращает каждое сравнение в доказательство того,
+    /// что ShowFor написал подпись ИМЕННО этого элемента, а не донёс её от
+    /// предыдущего.</summary>
+    private void PoisonSlotLabels()
+    {
+        if (_canvas == null) return;
+        SlotLabel(ContextMenuMaterialSection.PrimarySlotLabelNode).text = LabelNotWritten;
+        SlotLabel(ContextMenuMaterialSection.SecondarySlotLabelNode).text = LabelNotWritten;
+    }
+
+    private static void Unfocus()
+    {
+        var es = Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
+        if (es != null) es.SetSelectedGameObject(null);
     }
 
     private KitchenElement Spawn(GameObject go)
@@ -95,8 +135,10 @@ public class MaterialSlotLabelTests
 
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
-    private string LabelText(string node) =>
-        Panel().Find(node)!.GetComponent<TMP_Text>().text;
+    private TMP_Text SlotLabel(string node) =>
+        Panel().Find(node)!.GetComponent<TMP_Text>();
+
+    private string LabelText(string node) => SlotLabel(node).text;
 
     private (string top, string legs) LabelsFor(KitchenElement element)
     {
