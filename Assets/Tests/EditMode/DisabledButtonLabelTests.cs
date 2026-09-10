@@ -3,6 +3,7 @@ using NUnit.Framework;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
@@ -22,8 +23,20 @@ public class DisabledButtonLabelTests
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
 
-    [SetUp]
-    public void Setup()
+    private readonly List<GameObject> _probes = new List<GameObject>();
+
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню —
+    /// 0,31 с, и четыре сборки это 1,3 с прогона EditMode при бюджете 170.
+    /// Боевой сценарий — это и есть ОДНА панель, переоткрываемая через
+    /// <c>Open</c>; полный разбор того, что <c>Open</c> сбрасывает, — в сводке
+    /// <see cref="ContextMenuLayoutTests"/>. Оба сторожа-перебора открывают
+    /// панель на каждом типе элемента сами и сами же зовут <c>Close</c>, а два
+    /// теста фабрики панель не читают вовсе: они собирают СВОЮ кнопку на том же
+    /// холсте и спрашивают её подпись, поэтому общая панель им безразлична.
+    /// Кнопки-пробы уносятся в <c>[TearDown]</c> — холст теперь переживает тест,
+    /// и оставленная проба досталась бы следующему.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
@@ -32,12 +45,36 @@ public class DisabledButtonLabelTests
         _menu!.Build(_canvas!.transform);
     }
 
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние вокруг неё
+    /// возвращается на место здесь: фокус (<c>RefreshUnfocused</c> не трогает
+    /// сфокусированное поле) и окно склейки правок (в EditMode
+    /// <c>Time.frameCount</c> стоит на месте).</summary>
+    [SetUp]
+    public void Setup()
+    {
+        if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+    }
+
+    /// <summary>Панель закрывается ДО уничтожения элементов сцены: <c>Close</c>
+    /// обнуляет <c>_target</c>, иначе панель осталась бы с уничтоженной деталью
+    /// в руках, а взведённая кнопка «Удалить» — взведённой на следующий
+    /// тест.</summary>
     [TearDown]
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        if (_menu != null) _menu!.Close();
+        foreach (var go in _probes)
+            if (go != null) Object.DestroyImmediate(go);
+        _probes.Clear();
         EveryElementType.ClearScene();
     }
 
@@ -46,6 +83,7 @@ public class DisabledButtonLabelTests
     {
         var button = UIFactory.CreateButton("Проба", _canvas!.transform, "Нажми",
             Vector2.zero, new Vector2(100, 32), null);
+        _probes.Add(button.gameObject);
         var caption = button.GetComponentInChildren<TMP_Text>();
         var bright = caption.color;
 
@@ -68,6 +106,7 @@ public class DisabledButtonLabelTests
     {
         var button = UIFactory.CreateIconButton("ПробаИконка", _canvas!.transform,
             IconFactory.Undo, Vector2.zero, new Vector2(32, 32), () => { });
+        _probes.Add(button.gameObject);
         var icon = button.transform.Find("ПробаИконка_Icon")!.GetComponent<Image>();
         var bright = icon.color;
 
