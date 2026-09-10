@@ -55,6 +55,8 @@ namespace KitchenDesigner.Core
 
         private readonly List<KitchenElement> _moveSet = new List<KitchenElement>();
         private readonly List<Vector3> _moveStart = new List<Vector3>();
+        private readonly List<KitchenElement> _lonelyTarget = new List<KitchenElement>();
+        private SceneViolations _violationsAtDragStart = SceneViolations.Empty;
 
         private void Start()
         {
@@ -143,6 +145,7 @@ namespace KitchenDesigner.Core
         {
             if (target == null) return;
             _target = target;
+            _violationsAtDragStart = SceneViolations.OfScene();
             IsDragging = true;
             _wasMoved = true;
             BuildMoveSet();
@@ -489,7 +492,7 @@ namespace KitchenDesigner.Core
 
 				var refits = RefitMovedRuns();
 
-				if (KitchenSettings.Instance.BlockOnViolation && MoveSetCausesViolation())
+				if (KitchenSettings.Instance.BlockOnViolation && MoveSetIntroducedAViolation())
 				{
 					for (int i = refits.Count - 1; i >= 0; i--) refits[i].Undo();
 					if (seatedDimsBefore.HasValue && _target != null)
@@ -553,20 +556,22 @@ namespace KitchenDesigner.Core
             return scene;
         }
 
-        private bool MoveSetCausesViolation()
+        private bool MoveSetIntroducedAViolation()
         {
-            var result = ConstraintValidator.Validate(PartRegistry.GetAll());
-            if (result.isValid) return false;
+            var after = SceneViolations.OfScene();
+            if (after.IsClean) return false;
 
             float radius = KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;
-            if (_moveSet.Count == 0)
-                return _target != null && ConstraintValidator.HasViolationNear(result, _target, radius);
-            foreach (var m in _moveSet)
-            {
-                if (m != null && ConstraintValidator.HasViolationNear(result, m, radius))
-                    return true;
-            }
-            return false;
+            return EditGate.IntroducedNear(_violationsAtDragStart, after,
+                DraggedOrTarget(), radius, out _);
+        }
+
+        private List<KitchenElement> DraggedOrTarget()
+        {
+            if (_moveSet.Count > 0) return _moveSet;
+            _lonelyTarget.Clear();
+            if (_target != null) _lonelyTarget.Add(_target);
+            return _lonelyTarget;
         }
 
         private IUndoCommand BuildMoveCommand(Vector3Int? seatedDimsBefore = null,
@@ -634,7 +639,7 @@ namespace KitchenDesigner.Core
         {
             if (_dragPaint.Count == 0 || _target == null) return;
 
-            var tint = DragGesture.TintFor(MoveSetCausesViolation());
+            var tint = DragGesture.TintFor(MoveSetIntroducedAViolation());
             foreach (var paint in _dragPaint)
             {
                 if (paint.painted == null) continue;

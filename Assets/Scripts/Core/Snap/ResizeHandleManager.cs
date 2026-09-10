@@ -49,6 +49,8 @@ namespace KitchenDesigner.Core
         private Vector3Int _dimsBefore;
         private Vector3 _posBefore;
         private Quaternion _rotBefore;
+        private SceneViolations _violationsAtDragStart = SceneViolations.Empty;
+        private readonly List<KitchenElement> _resizeFocus = new List<KitchenElement>();
         private HandleMode _modeAtDragStart;
         private HandleMode _modeHandlesWereBuiltIn;
         private bool _ctrlHeldLastFrame;
@@ -209,6 +211,7 @@ namespace KitchenDesigner.Core
             _dimsBefore = dims;
             _posBefore = _target.transform.position;
             _rotBefore = _target.transform.rotation;
+            _violationsAtDragStart = SceneViolations.OfScene();
             _sParam0 = ClosestParamOnNormalMeters();
 
             _resizingElement = _target;
@@ -303,7 +306,7 @@ namespace KitchenDesigner.Core
             // и красное состояние (например, пересечение с соседом) фиксировалось
             // в сцене и в undo-стеке.
             var settings = KitchenSettings.Instance;
-            if (changed && settings != null && settings.BlockOnViolation && CausesViolation())
+            if (changed && settings != null && settings.BlockOnViolation && IntroducedAViolation())
             {
                 _target.DimensionsMM = _dimsBefore;
                 _target.transform.position = _posBefore;
@@ -324,14 +327,17 @@ namespace KitchenDesigner.Core
             PositionHandles(_layoutCamera);
         }
 
-        // Нарушение на самой детали или вплотную к ней (AABB в радиусе
-        // snapThreshold * 2) — тот же критерий, что при перемещении.
-        private bool CausesViolation()
+        // Нарушение, ВНЕСЁННОЕ этим жестом, на самой детали или вплотную к ней (AABB в
+        // радиусе snapThreshold * 2) — тот же критерий и тот же шлюз, что при перемещении.
+        private bool IntroducedAViolation()
         {
-            var result = ConstraintValidator.Validate(PartRegistry.GetAll());
-            if (result.isValid) return false;
+            var after = SceneViolations.OfScene();
+            if (after.IsClean) return false;
             float radius = KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;
-            return ConstraintValidator.HasViolationNear(result, _target!, radius);
+            _resizeFocus.Clear();
+            if (_target != null) _resizeFocus.Add(_target);
+            return EditGate.IntroducedNear(_violationsAtDragStart, after,
+                _resizeFocus, radius, out _);
         }
 
         private float ClosestParamOnNormalMeters()

@@ -90,18 +90,21 @@ namespace KitchenDesigner.Core
         {
             if (result == null || element == null || result.violations.Count == 0) return false;
 
-            var ea = element.ToGeometry();
             foreach (var v in result.violations)
-            {
-                if (v == element) return true;
-                if (v == null) continue;
-                var va = v.ToGeometry();
-                if (va.Min.x <= ea.Max.x + radiusUnits && va.Max.x >= ea.Min.x - radiusUnits &&
-                    va.Min.y <= ea.Max.y + radiusUnits && va.Max.y >= ea.Min.y - radiusUnits &&
-                    va.Min.z <= ea.Max.z + radiusUnits && va.Max.z >= ea.Min.z - radiusUnits)
-                    return true;
-            }
+                if (AreWithin(v, element, radiusUnits)) return true;
             return false;
+        }
+
+        public static bool AreWithin(KitchenElement? a, KitchenElement? b, float radiusUnits)
+        {
+            if (a == null || b == null) return false;
+            if (ReferenceEquals(a, b)) return true;
+
+            var ga = a.ToGeometry();
+            var gb = b.ToGeometry();
+            return ga.Min.x <= gb.Max.x + radiusUnits && ga.Max.x >= gb.Min.x - radiusUnits &&
+                   ga.Min.y <= gb.Max.y + radiusUnits && ga.Max.y >= gb.Min.y - radiusUnits &&
+                   ga.Min.z <= gb.Max.z + radiusUnits && ga.Max.z >= gb.Min.z - radiusUnits;
         }
 
         public static bool AreInFaceToFaceContact(KitchenElement a, KitchenElement b) =>

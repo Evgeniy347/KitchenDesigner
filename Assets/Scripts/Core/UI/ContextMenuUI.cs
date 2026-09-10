@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using KitchenDesigner.Core.Analysis;
+using KitchenDesigner.Core.Update;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,6 +23,9 @@ namespace KitchenDesigner.Core.UI
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
+
+        internal const string RefusalPrefix = "Правка отклонена: ";
+        private SceneViolations _violationsBeforeApply = SceneViolations.Empty;
 
         private const string DrawerFacadeLabelText = "Фасад ящика";
         private const string HostFacadeLabelText = "Фасад";
@@ -668,6 +673,7 @@ namespace KitchenDesigner.Core.UI
             if (_target == null) return;
             var target = _target;
             var propsBefore = UndoableProperties.Capture(target);
+            _violationsBeforeApply = SceneViolations.OfScene();
             bool blocked = false;
 
             CommandStack.BeginCapture();
@@ -747,12 +753,14 @@ namespace KitchenDesigner.Core.UI
 
             foreach (var editor in _editors) editor.ApplyAfterPosition(target);
 
-            if (KitchenSettings.Instance.BlockOnViolation && WouldCauseViolation())
+            if (KitchenSettings.Instance.BlockOnViolation
+                && ThisEditIntroducedAViolation(target, out var introduced))
             {
                 target.DimensionsMM = oldDims;
                 target.transform.position = oldPos;
                 target.transform.rotation = oldRot;
                 _rotationDisplay.Remember(shownRotation);
+                ReportRefusal(introduced);
                 return true;
             }
 
@@ -790,13 +798,19 @@ namespace KitchenDesigner.Core.UI
             _fields.ShowRejections();
         }
 
-        private bool WouldCauseViolation()
+        private bool ThisEditIntroducedAViolation(KitchenElement target,
+            out ContactViolation introduced) =>
+            EditGate.IntroducedOn(_violationsBeforeApply, SceneViolations.OfScene(),
+                target, out introduced);
+
+        private static string RefusalText(ContactViolation introduced)
         {
-            if (_target == null) return false;
-            var list = PartRegistry.GetAll();
-            var result = ConstraintValidator.Validate(list);
-            return result.violations.Contains(_target);
+            var issue = IssueCatalog.FromViolation(introduced);
+            return $"{RefusalPrefix}{issue.Code} · {issue.Detail} · {issue.Message}";
         }
+
+        private static void ReportRefusal(ContactViolation introduced) =>
+            StatusBarUI.Instance?.ShowTransient(RefusalText(introduced), StatusLevel.Error);
 
         private void RotateAxis(RotationAxis axis, float angle = 90f)
         {
