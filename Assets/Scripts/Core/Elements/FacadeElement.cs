@@ -103,7 +103,9 @@ namespace KitchenDesigner.Core
         private Quaternion _closedRot = Quaternion.identity;
         private float _cachedSafeProgress = 1f;
         private int _obstacleCheckRevision = -1;
-        private System.Collections.Generic.List<KitchenElement>? _ridersOfThisGesture;
+        private readonly System.Collections.Generic.List<KitchenElement> _ridersOfThisGesture =
+            new System.Collections.Generic.List<KitchenElement>();
+        private int _ridersRevision = -1;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private static int _activeStepDoors;
@@ -158,6 +160,7 @@ namespace KitchenDesigner.Core
             if (open && _doorProgress <= 0f) CaptureClosed();
             _openTarget = open;
             _obstacleCheckRevision = -1;
+            _ridersRevision = -1;
             if (!Mathf.Approximately(_doorProgress, open ? 1f : 0f))
             {
                 enabled = true;
@@ -171,6 +174,7 @@ namespace KitchenDesigner.Core
             if (_doorProgress <= 0f && !_openTarget) return;
             _openTarget = false;
             _doorProgress = 0f;
+            ForgetTheRidersOfThisGesture();
             enabled = false;
             transform.SetPositionAndRotation(_closedPos, _closedRot);
 
@@ -207,6 +211,7 @@ namespace KitchenDesigner.Core
             if (Mathf.Approximately(_doorProgress, target))
             {
                 if (_doorProgress <= 0f) CaptureClosed();
+                ForgetTheRidersOfThisGesture();
                 enabled = false;
                 return;
             }
@@ -235,10 +240,27 @@ namespace KitchenDesigner.Core
             {
                 ApplyDoor();
                 SceneChangeTracker.NoteSelfAnimated(this);
-                if (_ridersOfThisGesture != null)
-                    for (int i = 0; i < _ridersOfThisGesture.Count; i++)
-                        SceneChangeTracker.NoteSelfAnimated(_ridersOfThisGesture[i]);
+                var riders = RidersOfThisGesture();
+                for (int i = 0; i < riders.Count; i++)
+                    SceneChangeTracker.NoteSelfAnimated(riders[i]);
             }
+        }
+
+        private System.Collections.Generic.List<KitchenElement> RidersOfThisGesture()
+        {
+            if (_ridersRevision != SceneRevision.Version)
+            {
+                _ridersOfThisGesture.Clear();
+                AttachLinks.Descendants(this, _ridersOfThisGesture);
+                _ridersRevision = SceneRevision.Version;
+            }
+            return _ridersOfThisGesture;
+        }
+
+        private void ForgetTheRidersOfThisGesture()
+        {
+            _ridersOfThisGesture.Clear();
+            _ridersRevision = -1;
         }
 
         private float SafeProgress()
@@ -256,8 +278,7 @@ namespace KitchenDesigner.Core
                     break;
                 }
             }
-            _ridersOfThisGesture = AttachLinks.Descendants(this);
-            exclude.AddRange(_ridersOfThisGesture);
+            exclude.AddRange(RidersOfThisGesture());
 
             _cachedSafeProgress = OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
             _obstacleCheckRevision = SceneRevision.Version;
@@ -295,7 +316,7 @@ namespace KitchenDesigner.Core
             _closedRot = Quaternion.identity;
             _cachedSafeProgress = 1f;
             _obstacleCheckRevision = -1;
-            _ridersOfThisGesture = null;
+            ForgetTheRidersOfThisGesture();
             enabled = true;
         }
     }
