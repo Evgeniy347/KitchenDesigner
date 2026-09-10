@@ -61,8 +61,26 @@ namespace KitchenDesigner.Core
 
         public static bool RoomMode => EditModeManager.Mode == EditMode.Room;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private static int _activeOpeningVisibilityApplications;
+
+        public static int TakeActiveOpeningVisibilityApplications()
+        {
+            int n = _activeOpeningVisibilityApplications;
+            _activeOpeningVisibilityApplications = 0;
+            return n;
+        }
+#endif
+
         private static void ApplyOpeningVisibility(Wall wall, bool hidden)
         {
+            bool roomMode = RoomMode;
+            if (!wall.OpeningVisibilityChanged(hidden, roomMode)) return;
+            wall.MarkOpeningVisibilityApplied(hidden, roomMode);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            _activeOpeningVisibilityApplications++;
+#endif
+
             foreach (var w in wall.AttachedWindows)
                 if (w != null)
                 {

@@ -77,10 +77,21 @@ namespace KitchenDesigner.Core
 
         public IReadOnlyList<WindowElement> AttachedWindows => _attachedWindows;
 
+        private (bool hidden, bool roomMode)? _openingsVisibilityApplied;
+
+        public bool OpeningVisibilityChanged(bool hidden, bool roomMode) =>
+            !_openingsVisibilityApplied.HasValue
+            || _openingsVisibilityApplied.Value.hidden != hidden
+            || _openingsVisibilityApplied.Value.roomMode != roomMode;
+
+        public void MarkOpeningVisibilityApplied(bool hidden, bool roomMode) =>
+            _openingsVisibilityApplied = (hidden, roomMode);
+
         public void RegisterWindow(WindowElement window)
         {
             if (!_attachedWindows.Contains(window))
                 _attachedWindows.Add(window);
+            _openingsVisibilityApplied = null;
             RebuildMesh();
             foreach (var w in _attachedWindows)
                 if (w != null) w.RefreshGeometry();
@@ -91,6 +102,7 @@ namespace KitchenDesigner.Core
         public void UnregisterWindow(WindowElement window)
         {
             _attachedWindows.Remove(window);
+            _openingsVisibilityApplied = null;
             RebuildMesh();
             foreach (var w in _attachedWindows)
                 if (w != null) w.RefreshGeometry();
@@ -106,6 +118,7 @@ namespace KitchenDesigner.Core
         {
             if (!_attachedDoors.Contains(door))
                 _attachedDoors.Add(door);
+            _openingsVisibilityApplied = null;
             RebuildMesh();
             foreach (var w in _attachedWindows)
                 if (w != null) w.RefreshGeometry();
@@ -116,6 +129,7 @@ namespace KitchenDesigner.Core
         public void UnregisterDoor(DoorElement door)
         {
             _attachedDoors.Remove(door);
+            _openingsVisibilityApplied = null;
             RebuildMesh();
             foreach (var w in _attachedWindows)
                 if (w != null) w.RefreshGeometry();
