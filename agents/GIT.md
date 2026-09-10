@@ -91,6 +91,11 @@ wins over date preservation). Always `git branch backup/<name>` first — it rew
 1. **Edit files** (one logical change)
 2. **Commit** via `.\tools\git-commit.ps1 -Message "<type>: <desc>" -Files <paths>` — it picks
    the timestamp itself; do not set `GIT_AUTHOR_DATE` / `GIT_COMMITTER_DATE` manually
+3. **`git status --short | grep '^??'` — и добавь `.meta` каждого нового файла.** За одну сессию
+   девяти агентов потерялось **двадцать пять** `.meta`; каждый из девяти считал, что закоммитил
+   свою работу целиком. Unity перегенерирует GUID на чистом клоне, и любая сериализованная
+   ссылка на такой файл рвётся — а заметит это не автор, а следующий, у кого «почему-то отвалилась
+   сцена». Правило простое: `.cs` и `.cs.meta` едут одним коммитом, всегда.
 
 ## CRITICAL: never `git stash` — the tree is shared
 
