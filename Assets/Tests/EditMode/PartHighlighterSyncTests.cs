@@ -76,8 +76,10 @@ public class PartHighlighterSyncTests
     [Test]
     public void ContextMenuUI_Update_KeepsThePipeHighlightInSync()
     {
-        var source = File.ReadAllText(RepoPaths.Subdir("Assets", "Scripts", "Core", "UI",
-            "ContextMenuUI.cs"));
+        var path = Path.Combine(
+            RepoPaths.Subdir("Assets", "Scripts", "Core", "UI"), "ContextMenuUI.cs");
+        Assert.IsTrue(File.Exists(path), $"сканер смотрит не туда — не найден {path}");
+        var source = File.ReadAllText(path);
 
         StringAssert.Contains("HoverPreviewGate.Sync();", source,
             "раньше подсветку трубы синхронизировал ТОЛЬКО побочный эффект "

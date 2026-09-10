@@ -61,8 +61,10 @@ public class HoverPreviewGateTests
     [Test]
     public void PipePortHover_RoutesItsClear_ThroughTheOneDoor()
     {
-        var source = File.ReadAllText(RepoPaths.Subdir("Assets", "Scripts", "Core", "UI",
-            "PipePortHover.cs"));
+        var path = Path.Combine(
+            RepoPaths.Subdir("Assets", "Scripts", "Core", "UI"), "PipePortHover.cs");
+        Assert.IsTrue(File.Exists(path), $"сканер смотрит не туда — не найден {path}");
+        var source = File.ReadAllText(path);
 
         StringAssert.Contains("public void Clear() => HoverPreviewGate.HideAll();", source,
             "потребитель обязан гасить ОБА состояния одним вызовом — собранная на месте "
