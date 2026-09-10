@@ -18,8 +18,15 @@ public class SettingsPanelUITests
     // структура окна поменяется снова, править придётся одну строку, а не сорок.
     private const string PagePath = "SettingsPanel/SettingsPanelBody/SettingsPanelBodyContent/";
 
-    [SetUp]
-    public void Setup()
+    private ProjectLoadStateGuard? _globals;
+
+    /// <summary>`SettingsPanelUI.Build` стоит 0,10 с, а тестов в классе пятьдесят — пять
+    /// секунд стены на пересборку одного и того же окна. Панель строится ОДИН раз, а
+    /// потестовым остаётся то, что тесты действительно портят: глобальные настройки
+    /// (<see cref="ProjectLoadStateGuard"/>), режим редактора и состояние самой панели —
+    /// открытая вкладка и значения виджетов.</summary>
+    [OneTimeSetUp]
+    public void BuildPanelOnce()
     {
         var go = new GameObject("TestCanvas");
         _canvas = go.AddComponent<Canvas>();
@@ -38,23 +45,84 @@ public class SettingsPanelUITests
         _ui!.Build(_canvas!.transform);
     }
 
+    /// <summary>Панель обязана быть УНИЧТОЖЕНА, а не просто забыта: `SettingsViewTab`
+    /// подписан на статический `EditModeManager.Changed`, `SettingsPhotoTab` — на
+    /// `PhotoMode.Changed`, и отписка живёт только в `OnDestroy`. Уцелевшая панель
+    /// стреляла бы мёртвым делегатом в тестах соседних классов, которые про настройки
+    /// ничего не знают.</summary>
+    [OneTimeTearDown]
+    public void DestroyPanelOnce()
+    {
+        EditModeManager.Reset();
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        _canvas = null;
+        _ui = null;
+
+        var es = Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
+        if (es != null) Object.DestroyImmediate(es.gameObject);
+    }
+
+    [SetUp]
+    public void Setup()
+    {
+        // Тесты крутят восемнадцать виджетов и пишут прямо в KitchenSettings.Instance,
+        // а откатывали это руками и не полностью. Снимок глобального состояния снимается
+        // ДО первой правки теста.
+        _globals = ProjectLoadStateGuard.Capture();
+
+        var events = UnityEngine.EventSystems.EventSystem.current;
+        if (events != null) events.SetSelectedGameObject(null);
+
+        // Полоса вкладок общая: тест, кликнувший «О программе», оставил бы её открытой
+        // следующему. Приводим панель к тому же виду, в котором её оставляет Build.
+        ClickTab("Проект");
+
+        // SetVisible(true) — ЕДИНСТВЕННЫЙ путь к SyncFromSettings: без него виджеты не
+        // перечитают настройки и тест увидит значения предыдущего. Закрываем сразу же —
+        // после Build панель тоже спрятана, и это проверяет Panel_StartsHidden.
+        _ui!.SetVisible(true);
+        _ui!.SetVisible(false);
+    }
+
     [TearDown]
     public void TearDown()
     {
         // Режим редактора — глобальное состояние: тест, который его крутит,
         // обязан вернуть исходное (см. правила снапшотов в AGENTS.md).
         EditModeManager.Reset();
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
-        var es = Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
-        if (es != null) Object.DestroyImmediate(es.gameObject);
+        _globals!.Restore();
+        _globals = null;
     }
 
     // ── Build / smoke ───────────────────────────────────────
 
+    /// <summary>Сборку проверяет ОТДЕЛЬНАЯ панель на своём холсте, а не общая: `Build`
+    /// не убирает прежний корень, он создаёт рядом второй «SettingsPanel», и все
+    /// последующие `Find("SettingsPanel")` отдавали бы осиротевший — с разобранными
+    /// вкладками и без связи с `_ui`.</summary>
     [Test]
     public void Build_DoesNotThrow()
     {
-        Assert.DoesNotThrow(() => _ui!.Build(_canvas!.transform));
+        var probe = NewProbePanel(out var canvas);
+        try
+        {
+            Assert.DoesNotThrow(() => probe.Build(canvas.transform));
+            Assert.IsNotNull(canvas.transform.Find("SettingsPanel"), "панель собралась");
+        }
+        finally
+        {
+            Object.DestroyImmediate(canvas.gameObject);
+        }
+    }
+
+    private static SettingsPanelUI NewProbePanel(out Canvas canvas)
+    {
+        var go = new GameObject("ProbeCanvas");
+        canvas = go.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        go.AddComponent<CanvasScaler>();
+        go.AddComponent<GraphicRaycaster>();
+        return go.AddComponent<SettingsPanelUI>();
     }
 
     [Test]
@@ -925,7 +993,16 @@ public class SettingsPanelUITests
     [Test]
     public void TwoConsecutiveBuilds_DoNotThrow()
     {
-        Assert.DoesNotThrow(() => _ui!.Build(_canvas!.transform));
+        var probe = NewProbePanel(out var canvas);
+        try
+        {
+            probe.Build(canvas.transform);
+            Assert.DoesNotThrow(() => probe.Build(canvas.transform));
+        }
+        finally
+        {
+            Object.DestroyImmediate(canvas.gameObject);
+        }
     }
 
     [Test]
