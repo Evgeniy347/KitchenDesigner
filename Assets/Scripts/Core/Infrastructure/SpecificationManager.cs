@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -74,6 +75,8 @@ namespace KitchenDesigner.Core
 
     public static class SpecificationExport
     {
+        public static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("ru-RU");
+
         private static readonly string[] HeaderCells =
         {
             "Name", "Width_mm", "Height_mm", "Depth_mm", "Count", "AreaPerBoard_m2", "TotalArea_m2",
@@ -96,17 +99,17 @@ namespace KitchenDesigner.Core
             foreach (var line in result.lines)
             {
                 sb.AppendLine($"{EscapeCsv(line.name)};{line.dimensionsMM.x};{line.dimensionsMM.y};" +
-                    $"{line.dimensionsMM.z};{line.count};{line.areaPerBoardM2:F4};{line.totalAreaM2:F4};" +
+                    $"{line.dimensionsMM.z};{line.count};{line.areaPerBoardM2.ToString("F4", NumberCulture)};{line.totalAreaM2.ToString("F4", NumberCulture)};" +
                     $"{EscapeCsv(line.material)};{EscapeCsv(line.grooves)};" +
                     $"{line.edgeL1};{line.edgeL2};{line.edgeW1};{line.edgeW2};" +
-                    $"{EscapeCsv(line.section)};{line.unit.Label()};{line.qtyPerItem:F4};{line.qtyTotal:F4}");
+                    $"{EscapeCsv(line.section)};{line.unit.Label()};{line.qtyPerItem.ToString("F4", NumberCulture)};{line.qtyTotal.ToString("F4", NumberCulture)}");
             }
             sb.AppendLine();
 
             var totalCells = new string[HeaderCells.Length];
             totalCells[0] = "Total";
             totalCells[ColCount] = result.totalCount.ToString();
-            totalCells[ColArea] = result.totalAreaM2.ToString("F4");
+            totalCells[ColArea] = result.totalAreaM2.ToString("F4", NumberCulture);
             sb.AppendLine(Row(totalCells));
 
             if (result.totalsByUnit != null)
@@ -116,7 +119,7 @@ namespace KitchenDesigner.Core
                     var unitCells = new string[HeaderCells.Length];
                     unitCells[0] = "Итого";
                     unitCells[ColUnit] = unit.Label();
-                    unitCells[ColQtyTotal] = result.totalsByUnit[unit].ToString("F4");
+                    unitCells[ColQtyTotal] = result.totalsByUnit[unit].ToString("F4", NumberCulture);
                     sb.AppendLine(Row(unitCells));
                 }
             }

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -118,5 +120,49 @@ public class SpecificationExportTests
         Assert.Greater(kgLine, -1);
         Assert.Less(piecesLine, kgLine,
             "шт (Pieces=0) обязан идти раньше кг (Kilograms=4) — порядок объявления, не алфавит");
+    }
+
+    /// <summary>Формат зафиксирован на ru-RU (запятая), а не на культуре машины прогона.
+    /// Тест намеренно выставляет культуру потока в en-US (точка) ПЕРЕД вызовом — если
+    /// `ToCsv` вернётся к неявному `IFormatProvider` (берущему культуру потока), дробная
+    /// часть выйдет через точку и тест покраснеет независимо от локали машины, на которой
+    /// он реально запущен.</summary>
+    [Test]
+    public void ToCsv_FractionalNumbers_UseCommaRegardlessOfThreadCulture()
+    {
+        var original = Thread.CurrentThread.CurrentCulture;
+        try
+        {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+            var csv = SpecificationExport.ToCsv(MakeResult("Board"));
+            var dataRow = csv.Replace("\r\n", "\n").Split('\n')[1].Split(';');
+
+            StringAssert.Contains(",", dataRow[5], "AreaPerBoard_m2 обязан выйти с запятой (ru-RU), не точкой");
+            StringAssert.Contains(",", dataRow[6], "TotalArea_m2 обязан выйти с запятой (ru-RU), не точкой");
+            StringAssert.DoesNotContain(".", dataRow[5]);
+            StringAssert.DoesNotContain(".", dataRow[6]);
+        }
+        finally
+        {
+            Thread.CurrentThread.CurrentCulture = original;
+        }
+    }
+
+    /// <summary>Обратный вход: целые количества (Count) не должны обрасти разделителем
+    /// разрядов ru-RU (пробел/неразрывный пробел) — только дробные поля идут через
+    /// `NumberCulture`, целые остаются как есть.</summary>
+    [Test]
+    public void ToCsv_IntegerCount_HasNoThousandsSeparator()
+    {
+        var result = MakeResult("Board");
+        var line = result.lines[0];
+        line.count = 12345;
+        result.lines[0] = line;
+
+        var csv = SpecificationExport.ToCsv(result);
+        var dataRow = csv.Replace("\r\n", "\n").Split('\n')[1].Split(';');
+
+        Assert.AreEqual("12345", dataRow[4]);
     }
 }
