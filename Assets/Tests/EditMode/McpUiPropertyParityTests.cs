@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using TMPro;
@@ -283,28 +285,93 @@ public class McpUiPropertyParityTests : McpTestFixture
 
     // ---------- слепок свойств ----------
 
-    private static readonly Dictionary<Type, PropertyInfo[]> ReadableCache =
-        new Dictionary<Type, PropertyInfo[]>();
+    /// <summary>Компоненты-соседи, которые правит какой-нибудь *FieldsEditor не
+    /// через `element is XxxElement`, а через `element.GetComponent&lt;X&gt;()`
+    /// — то есть X не является подклассом KitchenElement, а сидит на том же
+    /// GameObject рядом с ним (сейчас единственный такой — Wall). Список берётся
+    /// ИЗ ИСХОДНИКОВ панели, а не пишется руками: забытый в ручном списке тип
+    /// молча вернул бы дыру, которую этот тест и должен закрывать. Совпадает по
+    /// духу с <see cref="EveryElementClassInTheProject_HasASpecimen"/> — та же
+    /// идея, третий независимый источник вместо списка.</summary>
+    private static readonly Regex NeighbourHandlesPattern =
+        new Regex(@"GetComponent<(\w+)>\(\)\s*!=\s*null", RegexOptions.Compiled);
+
+    private static IReadOnlyList<Type>? _neighbourComponentTypes;
+
+    private static IReadOnlyList<Type> NeighbourComponentTypes()
+    {
+        if (_neighbourComponentTypes != null) return _neighbourComponentTypes;
+
+        var names = new SortedSet<string>(StringComparer.Ordinal);
+        var dir = KitchenDesigner.Tests.Geometry.RepoPaths.Subdir("Assets", "Scripts", "Core", "UI");
+        foreach (var file in Directory.GetFiles(dir, "*FieldsEditor.cs"))
+            foreach (var line in KitchenDesigner.Tests.Geometry.SourceLines.CodeOnly(File.ReadAllLines(file)))
+            {
+                var m = NeighbourHandlesPattern.Match(line);
+                if (m.Success) names.Add(m.Groups[1].Value);
+            }
+
+        var types = new List<Type>();
+        foreach (var name in names)
+        {
+            var type = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(SafeTypes)
+                .FirstOrDefault(t => t.Name == name && typeof(Component).IsAssignableFrom(t));
+            if (type != null) types.Add(type);
+        }
+        return _neighbourComponentTypes = types;
+    }
+
+    private static IEnumerable<Type> SafeTypes(Assembly a)
+    {
+        try { return a.GetTypes(); }
+        catch (ReflectionTypeLoadException e) { return e.Types.Where(t => t != null).Select(t => t!); }
+    }
+
+    private static readonly Dictionary<string, PropertyInfo[]> ReadableCache =
+        new Dictionary<string, PropertyInfo[]>(StringComparer.Ordinal);
 
     /// <summary>В слепок идут только свойства С ПУБЛИЧНЫМ СЕТТЕРОМ, потому что
     /// сверяются ПРАВКИ. Производные (IsOpen, BoxWidth, TotalHeightMM,
     /// DecorSurfaceMM и ещё десятки) меняются заодно с тем, что правят, и в
     /// слепке дали бы разницу там, где обе поверхности делают одно и то же
     /// разными путями: в панели дверь открывается кнопкой, у агента — полем
-    /// is_open, а IsOpen у обоих только читается.</summary>
-    private static PropertyInfo[] Readable(Type type)
+    /// is_open, а IsOpen у обоих только читается.
+    ///
+    /// Свойства берутся не только с типа самого элемента, но и с компонентов
+    /// из <see cref="NeighbourComponentTypes"/>, которые ФАКТИЧЕСКИ сидят на
+    /// этом GameObject: Wall — сосед KitchenElement, а не его подкласс, и до
+    /// этой правки страж его свойства не видел вовсе.</summary>
+    private static PropertyInfo[] Readable(KitchenElement element)
     {
-        if (ReadableCache.TryGetValue(type, out var cached)) return cached;
-        var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => p.CanRead && p.CanWrite
-                        && p.GetGetMethod() != null && p.GetSetMethod() != null
-                        && p.GetIndexParameters().Length == 0
-                        && p.DeclaringType != null
-                        && typeof(KitchenElement).IsAssignableFrom(p.DeclaringType))
-            .OrderBy(p => p.Name, StringComparer.Ordinal)
+        var type = element.GetType();
+        var neighbours = NeighbourComponentTypes()
+            .Where(t => element.GetComponent(t) != null)
+            .OrderBy(t => t.FullName, StringComparer.Ordinal)
             .ToArray();
-        ReadableCache[type] = props;
-        return props;
+        var key = (type.FullName ?? type.Name) + "|"
+            + string.Join(",", neighbours.Select(t => t.FullName ?? t.Name));
+        if (ReadableCache.TryGetValue(key, out var cached)) return cached;
+
+        bool InDomain(Type declaring) =>
+            typeof(KitchenElement).IsAssignableFrom(declaring)
+            || neighbours.Any(n => n.IsAssignableFrom(declaring));
+
+        static bool Writable(PropertyInfo p) =>
+            p.CanRead && p.CanWrite && p.GetGetMethod() != null && p.GetSetMethod() != null
+            && p.GetIndexParameters().Length == 0;
+
+        var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => Writable(p) && p.DeclaringType != null && InDomain(p.DeclaringType))
+            .ToList();
+
+        foreach (var neighbour in neighbours)
+            props.AddRange(neighbour.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(Writable));
+
+        var array = props.OrderBy(p => p.Name, StringComparer.Ordinal).ToArray();
+        ReadableCache[key] = array;
+        return array;
     }
 
     private static string Format(object? value)
@@ -324,9 +391,16 @@ public class McpUiPropertyParityTests : McpTestFixture
     private static Dictionary<string, string> Snapshot(KitchenElement element)
     {
         var values = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var p in Readable(element.GetType()))
+        foreach (var p in Readable(element))
         {
-            try { values[p.Name] = Format(p.GetValue(element)); }
+            try
+            {
+                var owner = p.DeclaringType != null && typeof(KitchenElement).IsAssignableFrom(p.DeclaringType)
+                    ? (Component)element
+                    : element.GetComponent(p.DeclaringType!);
+                if (owner == null) continue;
+                values[p.Name] = Format(p.GetValue(owner));
+            }
             catch (Exception) { }
         }
         values["transform.position"] = element.transform.position.ToString("F4");
@@ -734,6 +808,29 @@ public class McpUiPropertyParityTests : McpTestFixture
             + "меньше пяти свойств значит, что виджеты не нашлись");
         Assert.GreaterOrEqual(mcp.Count, 5,
             "столько же обязан уметь и агент");
+    }
+
+    /// <summary>Тот же сторож самого сторожа, но для СОСЕДА, а не подкласса:
+    /// LoadBearing объявлен на Wall, сидящем рядом с KitchenElement на одном
+    /// GameObject, а не на самом типе элемента. Раньше <see cref="Readable"/>
+    /// фильтровал свойства только по `typeof(KitchenElement).IsAssignableFrom`
+    /// и это свойство не видел вовсе — обе стороны молча совпадали на пустом,
+    /// потому что сравнивать было нечего. Если этот тест не видит LoadBearing
+    /// ни в одном слепке, значит обнаружение соседа (<see
+    /// cref="NeighbourComponentTypes"/>) сломалось, и дыра открылась снова.</summary>
+    [Test]
+    public void TheProbe_ActuallyDrivesTheNeighbourSurface()
+    {
+        var wall = Specimens().First(s => s.label == "Wall").make;
+        var ui = Ui("Wall", wall);
+        var mcp = Mcp("Wall", wall);
+
+        CollectionAssert.Contains(ui, nameof(Wall.LoadBearing),
+            "тумблер «Несущая» стоит в панели стены (WallFieldsEditor) — если опыт его не "
+            + "увидел, страж снова слеп к компонентам-соседям");
+        CollectionAssert.Contains(mcp, nameof(Wall.LoadBearing),
+            "load_bearing разрешён стенам в EditFieldRules.AcceptsLoadBearing — если опыт "
+            + "не увидел разницу, запрос не долетел до Wall");
     }
 
     /// <summary>Список исключений обязан гнить громко: запись, чьё расхождение

@@ -35,10 +35,30 @@ public class McpPlanGeometryTests : McpTestFixture
         Assert.AreEqual(1.45f, wall.transform.position.y, 0.0001f);
         Assert.AreEqual(1.5f, wall.transform.position.z, 0.0001f);
         Assert.AreEqual("bearing", wall.GetComponent<Wall>().Kind);
+        Assert.IsTrue(wall.GetComponent<Wall>().LoadBearing,
+            "kind:bearing и LoadBearing — одна и та же вещь: разбор плана обязан выставить флаг, "
+            + "а не только строку Kind");
         Assert.AreEqual("concrete", wall.MaterialId);
         Vector3 localEndDirection = wall.transform.rotation * Vector3.right;
         Assert.AreEqual(0.6f, localEndDirection.x, 0.001f);
         Assert.AreEqual(0.8f, localEndDirection.z, 0.001f);
+    }
+
+    [Test]
+    public void CreateWalls_PartitionKind_ClearsLoadBearing()
+    {
+        ProjectInstructions.Text = "partition_wall_thickness_mm: 100";
+        var response = _handler!.Handle(MakeReq("create_walls", new
+        {
+            segments = new[] { new { name = "W", from_x = 0, from_z = 0, to_x = 2000, to_z = 0, kind = "partition", height = 2500 } }
+        }));
+
+        Assert.AreEqual("result", response.type);
+        var wall = PartRegistry.GetAll().Find(e => e.PartName == "W")!.GetComponent<Wall>();
+        Assert.AreEqual("partition", wall.Kind);
+        Assert.IsFalse(wall.LoadBearing,
+            "kind:partition обязан снять LoadBearing — это тот же факт, а не независимая правка "
+            + "панели поверх решения планировщика");
     }
 
     [Test]

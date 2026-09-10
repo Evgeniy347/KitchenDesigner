@@ -73,7 +73,7 @@ namespace KitchenDesigner.Core.MCP
                     var go = ElementFactory.CreateWall(x.dims, x.item.name, x.pos);
                     go.transform.rotation = x.rot;
                     var el = go.GetComponent<KitchenElement>();
-                    var wall = go.GetComponent<Wall>(); wall.Kind = x.item.kind.ToLowerInvariant(); wall.SetEndShape(shapes[i]);
+                    var wall = go.GetComponent<Wall>(); wall.LoadBearing = x.item.kind.ToLowerInvariant() == "bearing"; wall.SetEndShape(shapes[i]);
                     MaterialManager.ApplyById(el, x.material);
                     commands.Add(new CreateCommand(go)); affected.Add(el); created.Add(el.PartName);
                 }

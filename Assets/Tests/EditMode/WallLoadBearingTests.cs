@@ -39,6 +39,25 @@ public class WallLoadBearingTests
         Assert.IsTrue(wall.LoadBearing, "все стены несущие по умолчанию, пока не сказано иное");
     }
 
+    /// <summary>Kind ("bearing"/"partition") и LoadBearing — один и тот же факт,
+    /// а не два независимых поля: Kind был отдельным settable-полем, и правка
+    /// одного не трогала другое. Теперь Kind — чистое чтение LoadBearing;
+    /// зафиксировано тестом, а не только сигнатурой (`get`-only свойство
+    /// компилятор проверит сам, а вот СВЯЗЬ значений — только тест).</summary>
+    [Test]
+    public void Kind_TracksLoadBearing_AsTheSameFact()
+    {
+        var wall = MakeWall().GetComponent<Wall>();
+        Assert.AreEqual("bearing", wall.Kind, "по умолчанию несущая — значит kind тоже bearing");
+
+        wall.LoadBearing = false;
+        Assert.AreEqual("partition", wall.Kind,
+            "снятый флаг обязан немедленно отразиться в Kind — второго места для этого факта нет");
+
+        wall.LoadBearing = true;
+        Assert.AreEqual("bearing", wall.Kind);
+    }
+
     [Test]
     public void SetWallLoadBearingCommand_Undo_RestoresPreviousValue()
     {

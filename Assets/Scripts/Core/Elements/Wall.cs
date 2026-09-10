@@ -5,11 +5,11 @@ namespace KitchenDesigner.Core
 {
     public class Wall : MonoBehaviour
     {
-        [SerializeField] private string _kind = "";
-        public string Kind { get => _kind; set => _kind = value ?? ""; }
         [SerializeField] private bool _loadBearing = true;
         [Undoable]
         public bool LoadBearing { get => _loadBearing; set => _loadBearing = value; }
+
+        public string Kind => _loadBearing ? "bearing" : "partition";
         [SerializeField] private WallMeshBuilder.EndShape _endShape = default;
         [SerializeField] private bool _hasEndShape;
         public WallMeshBuilder.EndShape EndShape => _hasEndShape ? _endShape : WallMeshBuilder.EndShape.Square;

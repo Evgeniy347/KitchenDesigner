@@ -36,7 +36,7 @@ namespace KitchenDesigner.Core
             _element.transform.position = pos;
             _element.transform.rotation = rot;
             var wall = _element.GetComponent<Wall>();
-            if (wall != null) { wall.Kind = kind; wall.SetEndShape(shape); }
+            if (wall != null) { wall.LoadBearing = kind == "bearing"; wall.SetEndShape(shape); }
             MaterialManager.ApplyById(_element, material);
         }
     }
