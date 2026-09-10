@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using NUnit.Framework;
@@ -16,6 +17,7 @@ public class SpecificationExportTests
         {
             name = name,
             dimensionsMM = new Vector3Int(800, 400, 18),
+            hasDims = true,
             count = 2,
             areaPerBoardM2 = 0.65f,
             totalAreaM2 = 1.30f,
@@ -98,17 +100,21 @@ public class SpecificationExportTests
     /// <summary>Дефект из приёмки: строки «Итого» шли в АЛФАВИТНОМ порядке названий единиц
     /// (`u.ToString()` Ordinal), а не в порядке их перечисления в `SpecUnit`. Кг («Kilograms»)
     /// и Шт («Pieces») намеренно выбраны так, чтобы алфавитный и объявленный порядок разошлись:
-    /// алфавит даёт Kilograms → Pieces, объявление — Pieces (0) → Kilograms (4).</summary>
+    /// алфавит даёт Kilograms → Pieces, объявление — Pieces (0) → Kilograms (4).
+    ///
+    /// «Итого» теперь строится по totalsBySection (пара раздел+единица, дефект приёмки №1) —
+    /// обе строки нарочно в ОДНОМ разделе, чтобы порядок внутри раздела остался именно
+    /// проверкой сортировки по единице, а не побочным эффектом сортировки по разделу.</summary>
     [Test]
-    public void ToCsv_TotalsByUnitRows_OrderedByEnumDeclarationNotAlphabet()
+    public void ToCsv_TotalsBySectionRows_OrderedByEnumDeclarationNotAlphabet()
     {
         var result = new SpecResult
         {
             lines = new List<SpecLine>(),
-            totalsByUnit = new Dictionary<SpecUnit, float>
+            totalsBySection = new Dictionary<(string, SpecUnit), float>
             {
-                { SpecUnit.Kilograms, 10f },
-                { SpecUnit.Pieces, 5f },
+                { ("Мебель", SpecUnit.Kilograms), 10f },
+                { ("Мебель", SpecUnit.Pieces), 5f },
             },
         };
 
@@ -120,6 +126,32 @@ public class SpecificationExportTests
         Assert.Greater(kgLine, -1);
         Assert.Less(piecesLine, kgLine,
             "шт (Pieces=0) обязан идти раньше кг (Kilograms=4) — порядок объявления, не алфавит");
+    }
+
+    /// <summary>Дефект приёмки №1: «Итого, м = 136,60» в эталоне складывало кромку (Мебель) и
+    /// трубу (Сантехника) в одну кучу. totalsBySection обязан развести одинаковую единицу по
+    /// разным разделам — противоположный вход к тесту выше, где раздел был один и тот же.</summary>
+    [Test]
+    public void ToCsv_TotalsBySection_DifferentSectionsSameUnit_AreNotMerged()
+    {
+        var result = new SpecResult
+        {
+            lines = new List<SpecLine>(),
+            totalsBySection = new Dictionary<(string, SpecUnit), float>
+            {
+                { ("Мебель", SpecUnit.LinearMeters), 136.23f },
+                { ("Сантехника", SpecUnit.LinearMeters), 0.37f },
+            },
+        };
+
+        var csv = SpecificationExport.ToCsv(result);
+        var rows = csv.Replace("\r\n", "\n").Trim('\n').Split('\n');
+        var totalRows = rows.Where(r => r.StartsWith("Итого;")).ToArray();
+
+        Assert.AreEqual(2, totalRows.Length, "раздел «Мебель» и раздел «Сантехника» — две отдельные строки «Итого»");
+        Assert.IsTrue(csv.Contains("136,2300"), "метраж кромки не должен слиться с метражом трубы");
+        Assert.IsTrue(csv.Contains("0,3700"), "метраж трубы остаётся собственным числом");
+        Assert.IsFalse(csv.Contains("136,6000"), "сумма 136,23+0,37, которая никому не нужна, не должна появиться");
     }
 
     /// <summary>Формат зафиксирован на ru-RU (запятая), а не на культуре машины прогона.

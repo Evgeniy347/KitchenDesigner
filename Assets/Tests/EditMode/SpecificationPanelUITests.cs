@@ -44,6 +44,7 @@ public class SpecificationPanelUITests
             totalCount = list.Where(l => l.unit == SpecUnit.AreaM2).Sum(l => l.count),
         };
         result.totalsByUnit = SpecTotals.ByUnit(list.Select(l => (l.unit, l.qtyTotal)));
+        result.totalsBySection = SpecTotals.BySectionAndUnit(list.Select(l => (l.section, l.unit, l.qtyTotal)));
         return result;
     }
 
@@ -143,6 +144,10 @@ public class SpecificationPanelUITests
         StringAssert.Contains("шт", row);
     }
 
+    /// <summary>Заодно из приёмки: окно раньше форматировало числа неявной культурой потока
+    /// («3.10» — точка), а выгрузка — зафиксированной SpecificationExport.NumberCulture
+    /// («3,1000» — запятая). Ожидаемое значение здесь намеренно строится ТОЙ ЖЕ константой,
+    /// не голым "F2" — иначе тест был бы зелёным на любой культуре машины прогона.</summary>
     [Test]
     public void BuildDisplayText_BoardLine_QtyColumn_MatchesTotalAreaFromCsv()
     {
@@ -151,9 +156,9 @@ public class SpecificationPanelUITests
 
         var row = Lines(SpecificationPanelUI.BuildDisplayText(result)).Single(l => l.Contains("Дно"));
 
-        Assert.AreEqual(1.24f.ToString("F2"),
+        Assert.AreEqual(1.24f.ToString("F2", SpecificationExport.NumberCulture),
             CellAt(row, SpecificationPanelUI.ColQty, SpecificationPanelUI.ColUnit),
-            "то же totalAreaM2/qtyTotal, что уходит в CSV — числа окна и CSV не расходятся");
+            "то же totalAreaM2/qtyTotal, той же культурой, что уходит в CSV — окно и CSV не расходятся");
     }
 
     // ── Требование 1: группировка по разделу — данные строки, а не сортировка по материалу ──

@@ -25,9 +25,11 @@ public class SpecificationManagerTests
     }
 
     /// <summary>Кромка (кромкование по умолчанию включено, все торцы открыты) даёт ОДНУ
-    /// дополнительную строку погонных метров на весь Build — она не короб, поэтому у неё нет
-    /// материала, и по алфавиту пустая строка встаёт раньше любого названия материала: строка
-    /// кромки обязана лечь ПЕРВОЙ, доски — за ней, в прежнем порядке.</summary>
+    /// дополнительную строку погонных метров на весь Build — все три доски здесь одного
+    /// (заводского) декора, так что их кромка сливается в одну строку ПО ЭТОМУ декору
+    /// (дефект приёмки №4: кромка несёт материал окантованной доски, а не пустую строку) —
+    /// искать её нужно по unit, а не по позиции: порядок строк теперь решает материал,
+    /// который у доски и у её кромки совпадает.</summary>
     [Test]
     public void Build_TwoIdenticalOneDifferent_TwoGroups()
     {
@@ -39,9 +41,12 @@ public class SpecificationManagerTests
 
         Assert.AreEqual(3, result.lines.Count, "2 группы досок + 1 строка кромки погонными метрами");
         Assert.AreEqual(3, result.totalCount);
-        Assert.AreEqual(SpecUnit.LinearMeters, result.lines[0].unit, "кромка без материала сортируется первой");
-        Assert.AreEqual(2, result.lines[1].count);
-        Assert.AreEqual(1, result.lines[2].count);
+        Assert.IsTrue(result.lines.Any(l => l.unit == SpecUnit.LinearMeters), "кромка добавлена отдельной строкой");
+        var boards = result.lines.Where(l => l.unit == SpecUnit.AreaM2)
+            .OrderByDescending(l => l.count).ToList();
+        Assert.AreEqual(2, boards.Count);
+        Assert.AreEqual(2, boards[0].count);
+        Assert.AreEqual(1, boards[1].count);
 
         Object.DestroyImmediate(a.gameObject);
         Object.DestroyImmediate(b.gameObject);
@@ -60,7 +65,7 @@ public class SpecificationManagerTests
         var result = SpecificationManager.Build(new List<KitchenElement> { a, b });
 
         // +1 строка кромки погонными метрами (кромкование по умолчанию включено, торцы
-        // открыты) — она без материала и сортируется раньше любой доски.
+        // открыты) — ищем доску по unit, не по позиции.
         Assert.AreEqual(2, result.lines.Count, "уникальные имена не должны дробить группу досок");
         var board = result.lines.Single(l => l.unit == SpecUnit.AreaM2);
         Assert.AreEqual(2, board.count);
@@ -143,6 +148,30 @@ public class SpecificationManagerTests
         foreach (var e in elements) Object.DestroyImmediate(e.gameObject);
     }
 
+    /// <summary>Дефект приёмки №2: «Total» (totalAreaM2) и «Итого, м²» (totalsBySection) — два
+    /// пути к ОДНОМУ и тому же числу, а раньше расходились в последнем разряде, потому что
+    /// считались по спискам в разном порядке (totalAreaM2 — до сортировки по материалу,
+    /// totalsByUnit — после). Разные, «неровные» слагаемые (не кратные друг другу) нужны, чтобы
+    /// сложение в разном порядке дало разный хвост при старой формуле.</summary>
+    [Test]
+    public void Build_TotalAreaM2_ExactlyMatchesTotalsBySectionEntry()
+    {
+        var dims = new[]
+        {
+            new Vector3Int(781, 433, 18), new Vector3Int(213, 907, 18), new Vector3Int(659, 311, 18),
+            new Vector3Int(148, 622, 18), new Vector3Int(937, 256, 18), new Vector3Int(374, 819, 18),
+            new Vector3Int(602, 145, 18), new Vector3Int(288, 733, 18),
+        };
+        var elements = dims.Select((d, i) => CreateElement($"Board_{i}", d)).ToList();
+
+        var result = SpecificationManager.Build(elements);
+
+        Assert.AreEqual(result.totalAreaM2, result.totalsBySection[(SpecSections.Furniture, SpecUnit.AreaM2)], 0f,
+            "totalAreaM2 и totalsBySection[Мебель, м²] обязаны быть БИТ В БИТ одним числом");
+
+        foreach (var e in elements) Object.DestroyImmediate(e.gameObject);
+    }
+
     [Test]
     public void ToCsv_TotalRow_CountAndAreaInCorrectColumns()
     {
@@ -176,7 +205,11 @@ public class SpecificationManagerTests
     /// <summary>D2: ведомость раскроя должна группироваться по материалу — деталей с разными
     /// декорами не должно быть вперемешку. Решение: строгая сортировка строк по имени материала
     /// (Ordinal), без дополнительной «умной» логики. Элементы добавлены в ОБРАТНОМ алфавиту
-    /// порядке, чтобы тест мог упасть, если сортировка не сработает.</summary>
+    /// порядке, чтобы тест мог упасть, если сортировка не сработает.
+    ///
+    /// Дефект приёмки №4: кромка продаётся по декору окантованной доски, а не общей пустой
+    /// строкой на все цвета сразу — у каждой доски здесь свой декор, значит и своя строка
+    /// кромки; в сумме 2 доски + 2 строки кромки, все четыре с непустым материалом.</summary>
     [Test]
     public void Build_MixedMaterials_SortedAlphabeticallyByMaterial()
     {
@@ -190,12 +223,17 @@ public class SpecificationManagerTests
 
         var result = SpecificationManager.Build(new List<KitchenElement> { darkWood, white });
 
-        // +1 строка кромки погонными метрами: она без материала («») и по Ordinal встаёт
-        // раньше любого названия — первой идёт она, а не «Белый».
-        Assert.AreEqual(3, result.lines.Count, "2 доски по материалу + 1 строка кромки");
-        Assert.AreEqual("", result.lines[0].material, "кромка без материала — раньше всех по алфавиту");
-        Assert.AreEqual("Белый", result.lines[1].material, "по алфавиту «Белый» раньше «Ясень тёмный»");
-        Assert.AreEqual("Ясень тёмный", result.lines[2].material);
+        Assert.AreEqual(4, result.lines.Count, "2 доски + 2 строки кромки (по декору каждой доски)");
+        Assert.IsFalse(result.lines.Any(l => l.material == ""),
+            "кромка больше не безлика — у каждой строки материал одной из двух досок");
+
+        int whiteIndex = result.lines.FindIndex(l => l.material == "Белый");
+        int darkIndex = result.lines.FindIndex(l => l.material == "Ясень тёмный");
+        Assert.Greater(whiteIndex, -1);
+        Assert.Greater(darkIndex, -1);
+        Assert.Less(whiteIndex, darkIndex, "по алфавиту «Белый» раньше «Ясень тёмный»");
+        Assert.AreEqual(2, result.lines.Count(l => l.material == "Белый"), "доска «Белый» + её кромка");
+        Assert.AreEqual(2, result.lines.Count(l => l.material == "Ясень тёмный"), "доска «Ясень тёмный» + её кромка");
 
         Object.DestroyImmediate(darkWood.gameObject);
         Object.DestroyImmediate(white.gameObject);
@@ -251,6 +289,72 @@ public class SpecificationManagerTests
         element.ItemName = name;
         element.VolumeM3 = volumeM3;
         return element;
+    }
+
+    // ── Приёмка возврата: §1 «Опалубка»/«Минвата» будущего — м², но не доска ──
+
+    /// <summary>Фиктивный элемент, объявляющий себя в м² БЕЗ реальных габаритов — форма
+    /// будущей опалубки/минваты (карта, часть 3): единица совпадает с доской ЛДСП, но это
+    /// суммарная площадь, а не лист определённого размера. Продакшн-класс не меняется.</summary>
+    private class FakeAreaWithoutDims : KitchenElement, IQuantifies
+    {
+        public string Section = "Ограждающие конструкции";
+        public string ItemName = "Опалубка";
+        public float AreaM2Qty = 1f;
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return new SpecItem(Section, ItemName, "Фанера", SpecUnit.AreaM2, AreaM2Qty);
+        }
+    }
+
+    private static FakeAreaWithoutDims CreateAreaWithoutDims(string name, float areaM2)
+    {
+        var go = new GameObject(name);
+        var element = go.AddComponent<FakeAreaWithoutDims>();
+        element.PartName = name;
+        element.ItemName = name;
+        element.AreaM2Qty = areaM2;
+        return element;
+    }
+
+    /// <summary>Дефект из приёмки: опалубка/минвата в м² БЕЗ габаритов не должна раздувать
+    /// «Всего досок» — только реальная листовая деталь (habDims=true) в счёт, а суммарная
+    /// площадь без размера листа — нет, даже если единица та же самая (м²).</summary>
+    [Test]
+    public void Build_AreaM2ItemWithoutDims_DoesNotInflateBoardTotals()
+    {
+        var board = CreateElement("Board", new Vector3Int(800, 400, 18));
+        var formwork = CreateAreaWithoutDims("Опалубка стены", 5f);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { board, formwork });
+
+        Assert.AreEqual(1, result.totalCount, "«Всего досок» — только реальная доска");
+        Assert.AreEqual(0.32f, result.totalAreaM2, 0.0001f,
+            "площадь опалубки (5 м²) не входит в «Всего досок», хотя единица та же — м²");
+
+        Object.DestroyImmediate(board.gameObject);
+        Object.DestroyImmediate(formwork.gameObject);
+    }
+
+    /// <summary>Дефект из приёмки: «Мебель, м²» (доска) и «Ограждающие конструкции, м²»
+    /// (опалубка) — разные разделы одной единицы, их нельзя тихо сложить в одну кучу
+    /// («Итого, м²» на весь проект). totalsBySection обязан развести их по разделу.</summary>
+    [Test]
+    public void Build_SameUnitDifferentSections_TotalsBySectionKeepsThemApart()
+    {
+        var board = CreateElement("Board", new Vector3Int(800, 400, 18));
+        var formwork = CreateAreaWithoutDims("Опалубка стены", 5f);
+
+        var result = SpecificationManager.Build(new List<KitchenElement> { board, formwork });
+
+        Assert.AreEqual(0.32f, result.totalsBySection[(SpecSections.Furniture, SpecUnit.AreaM2)], 0.0001f,
+            "площадь доски — только в разделе «Мебель»");
+        Assert.AreEqual(5f, result.totalsBySection[("Ограждающие конструкции", SpecUnit.AreaM2)], 0.0001f,
+            "площадь опалубки — в СВОЁМ разделе, не смешана с досками");
+
+        Object.DestroyImmediate(board.gameObject);
+        Object.DestroyImmediate(formwork.gameObject);
     }
 
     [Test]

@@ -81,14 +81,31 @@ public class McpSpecificationParityTests : McpTestFixture
         {
             var line = mcpLines[i]!;
             var row = csvRows[i];
+            bool hasDims = line["hasDims"]!.Value<bool>();
 
             Assert.AreEqual(row[0], line["name"]!.Value<string>(), $"name разошлось на строке {i}");
-            Assert.AreEqual(int.Parse(row[1], CultureInfo.InvariantCulture), line["dimXMm"]!.Value<int>(), $"dimXMm на строке {i}");
-            Assert.AreEqual(int.Parse(row[2], CultureInfo.InvariantCulture), line["dimYMm"]!.Value<int>(), $"dimYMm на строке {i}");
-            Assert.AreEqual(int.Parse(row[3], CultureInfo.InvariantCulture), line["dimZMm"]!.Value<int>(), $"dimZMm на строке {i}");
-            Assert.AreEqual(int.Parse(row[4], CultureInfo.InvariantCulture), line["count"]!.Value<int>(), $"count на строке {i}");
-            Assert.AreEqual(ParseCsvFloat(row[5]), line["areaPerBoardM2"]!.Value<float>(), 1e-3f, $"areaPerBoardM2 на строке {i}");
-            Assert.AreEqual(ParseCsvFloat(row[6]), line["totalAreaM2"]!.Value<float>(), 1e-3f, $"totalAreaM2 на строке {i}");
+            // Без габаритов CSV печатает пустые ячейки, а не нули (дефект приёмки №3) - сравнивать
+            // как числа тут нечего, само отсутствие значения и есть проверяемое поведение.
+            if (hasDims)
+            {
+                Assert.AreEqual(int.Parse(row[1], CultureInfo.InvariantCulture), line["dimXMm"]!.Value<int>(), $"dimXMm на строке {i}");
+                Assert.AreEqual(int.Parse(row[2], CultureInfo.InvariantCulture), line["dimYMm"]!.Value<int>(), $"dimYMm на строке {i}");
+                Assert.AreEqual(int.Parse(row[3], CultureInfo.InvariantCulture), line["dimZMm"]!.Value<int>(), $"dimZMm на строке {i}");
+                Assert.AreEqual(int.Parse(row[4], CultureInfo.InvariantCulture), line["count"]!.Value<int>(), $"count на строке {i}");
+                Assert.AreEqual(ParseCsvFloat(row[5]), line["areaPerBoardM2"]!.Value<float>(), 1e-3f, $"areaPerBoardM2 на строке {i}");
+                Assert.AreEqual(ParseCsvFloat(row[6]), line["totalAreaM2"]!.Value<float>(), 1e-3f, $"totalAreaM2 на строке {i}");
+                Assert.AreEqual(ParseCsvFloat(row[15]), line["qtyPerItemInUnit"]!.Value<float>(), 1e-3f, $"qtyPerItemInUnit на строке {i}");
+            }
+            else
+            {
+                Assert.AreEqual("", row[1], $"dimXMm пуст без габаритов на строке {i}");
+                Assert.AreEqual("", row[2], $"dimYMm пуст без габаритов на строке {i}");
+                Assert.AreEqual("", row[3], $"dimZMm пуст без габаритов на строке {i}");
+                Assert.AreEqual("", row[4], $"count пуст без габаритов на строке {i}");
+                Assert.AreEqual("", row[5], $"areaPerBoardM2 пуст без габаритов на строке {i}");
+                Assert.AreEqual("", row[6], $"totalAreaM2 пуст без габаритов на строке {i}");
+                Assert.AreEqual("", row[15], $"qtyPerItemInUnit пуст без габаритов на строке {i}");
+            }
             Assert.AreEqual(row[7], line["material"]!.Value<string>(), $"material на строке {i}");
             Assert.AreEqual(row[8], line["grooves"]!.Value<string>(), $"grooves на строке {i}");
             Assert.AreEqual(row[9], line["edgeL1"]!.Value<string>(), $"edgeL1 на строке {i}");
@@ -97,7 +114,6 @@ public class McpSpecificationParityTests : McpTestFixture
             Assert.AreEqual(row[12], line["edgeW2"]!.Value<string>(), $"edgeW2 на строке {i}");
             Assert.AreEqual(row[13], line["section"]!.Value<string>(), $"section на строке {i}");
             Assert.AreEqual(row[14], line["unit"]!.Value<string>(), $"unit на строке {i}");
-            Assert.AreEqual(ParseCsvFloat(row[15]), line["qtyPerItemInUnit"]!.Value<float>(), 1e-3f, $"qtyPerItemInUnit на строке {i}");
             Assert.AreEqual(ParseCsvFloat(row[16]), line["qtyTotalInUnit"]!.Value<float>(), 1e-3f, $"qtyTotalInUnit на строке {i}");
         }
 
@@ -127,6 +143,9 @@ public class McpSpecificationParityTests : McpTestFixture
             .Where(n => n != nameof(SpecLine.qtyPerItem) && n != nameof(SpecLine.qtyTotal))
             // переименованы в qtyPerItemInUnit/qtyTotalInUnit ниже: единица переменная
             // (шт/м/м²/м³/кг) и живёт в соседнем поле unit, суффикс InUnit честно на это указывает
+            .Where(n => n != nameof(SpecLine.isBoardArea))
+            // internal accumulation flag (только для totalCount/totalAreaM2 внутри Build) — не
+            // потребительское поле ведомости, агенту MCP оно не нужно
             .ToArray();
         var mcpFields = typeof(SpecLineInfo).GetFields(BindingFlags.Public | BindingFlags.Instance)
             .Select(f => f.Name)

@@ -35,8 +35,8 @@ public class WallTests
 
         var spec = SpecificationManager.Build(_spawned.ConvertAll(g => g.GetComponent<KitchenElement>()));
 
-        // Доска с кромкованием по умолчанию даёт ещё строку кромки погонными метрами (без
-        // материала — сортируется раньше "Board"), поэтому ищем строку доски по unit, не [0].
+        // Доска с кромкованием по умолчанию даёт ещё строку кромки погонными метрами,
+        // поэтому ищем строку доски по unit, не по индексу [0].
         Assert.AreEqual(1, spec.totalCount, "стена не входит в спецификацию");
         Assert.AreEqual("Board", spec.lines.Single(l => l.unit == SpecUnit.AreaM2).name);
     }

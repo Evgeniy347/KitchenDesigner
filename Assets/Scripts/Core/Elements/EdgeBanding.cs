@@ -133,6 +133,8 @@ namespace KitchenDesigner.Core
     {
         public const float CoverEpsilon = 0.001f;
 
+        public static readonly EdgeCoverage NoEdge = new EdgeCoverage(1f, 1f, 1f, 1f);
+
         public static bool IsSheet(Vector3Int dimsMM) => ThinAxis(dimsMM) >= 0;
 
         public static int ThinAxis(Vector3Int dimsMM)
@@ -180,9 +182,9 @@ namespace KitchenDesigner.Core
 
         public static EdgeCoverage Coverage(KitchenElement element, SceneFaces scene)
         {
-            if (element == null || scene == null) return default;
+            if (element == null || scene == null) return NoEdge;
             var layout = LayoutOf(element.DimensionsMM);
-            if (!layout.IsValid) return default;
+            if (!layout.IsValid) return NoEdge;
 
             var faces = element.GetFaces();
             var ends = new[]

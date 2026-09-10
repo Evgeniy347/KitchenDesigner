@@ -34,6 +34,7 @@ namespace KitchenDesigner.Core
         public string section;
         public SpecUnit unit;
         public bool hasDims;
+        public bool isBoardArea;
 
         public float qtyPerItem;
         public float qtyTotal;
@@ -54,6 +55,9 @@ namespace KitchenDesigner.Core
         {
             if (element == null || !element.EdgeBandingEnabled) return default;
 
+            var layout = EdgeBanding.LayoutOf(element.DimensionsMM);
+            if (!layout.IsValid) return default;
+
             var coverage = EdgeBanding.Coverage(element, all);
             string t = EdgeBanding.FormatThickness(element.EdgeThicknessMM);
             return new EdgeColumns(
@@ -71,6 +75,7 @@ namespace KitchenDesigner.Core
         public float totalAreaM2;
 
         public Dictionary<SpecUnit, float> totalsByUnit;
+        public Dictionary<(string section, SpecUnit unit), float> totalsBySection;
     }
 
     public static class SpecificationExport
@@ -83,7 +88,7 @@ namespace KitchenDesigner.Core
             "Material", "Grooves", "Кромка L1", "Кромка L2", "Кромка W1", "Кромка W2",
             "Section", "Unit", "QtyPerItem", "QtyTotal",
         };
-        private const int ColCount = 4, ColArea = 6, ColUnit = 14, ColQtyTotal = 16;
+        private const int ColCount = 4, ColArea = 6, ColSection = 13, ColUnit = 14, ColQtyTotal = 16;
 
         private static string Row(params string[] cells)
         {
@@ -92,17 +97,21 @@ namespace KitchenDesigner.Core
             return string.Join(";", padded);
         }
 
+        private static string AreaCell(float value, bool hasDims) =>
+            hasDims ? value.ToString("F4", NumberCulture) : "";
+
         public static string ToCsv(SpecResult result)
         {
             var sb = new StringBuilder();
             sb.AppendLine(string.Join(";", HeaderCells));
             foreach (var line in result.lines)
             {
-                sb.AppendLine($"{EscapeCsv(line.name)};{line.dimensionsMM.x};{line.dimensionsMM.y};" +
-                    $"{line.dimensionsMM.z};{line.count};{line.areaPerBoardM2.ToString("F4", NumberCulture)};{line.totalAreaM2.ToString("F4", NumberCulture)};" +
+                sb.AppendLine($"{EscapeCsv(line.name)};{SpecCellFormat.DimCell(line.dimensionsMM.x, line.hasDims)};" +
+                    $"{SpecCellFormat.DimCell(line.dimensionsMM.y, line.hasDims)};{SpecCellFormat.DimCell(line.dimensionsMM.z, line.hasDims)};" +
+                    $"{SpecCellFormat.CountCell(line.count, line.hasDims)};{AreaCell(line.areaPerBoardM2, line.hasDims)};{AreaCell(line.totalAreaM2, line.hasDims)};" +
                     $"{EscapeCsv(line.material)};{EscapeCsv(line.grooves)};" +
                     $"{line.edgeL1};{line.edgeL2};{line.edgeW1};{line.edgeW2};" +
-                    $"{EscapeCsv(line.section)};{line.unit.Label()};{line.qtyPerItem.ToString("F4", NumberCulture)};{line.qtyTotal.ToString("F4", NumberCulture)}");
+                    $"{EscapeCsv(line.section)};{line.unit.Label()};{AreaCell(line.qtyPerItem, line.hasDims)};{line.qtyTotal.ToString("F4", NumberCulture)}");
             }
             sb.AppendLine();
 
@@ -112,15 +121,18 @@ namespace KitchenDesigner.Core
             totalCells[ColArea] = result.totalAreaM2.ToString("F4", NumberCulture);
             sb.AppendLine(Row(totalCells));
 
-            if (result.totalsByUnit != null)
+            if (result.totalsBySection != null)
             {
-                foreach (var unit in result.totalsByUnit.Keys.OrderBy(u => (int)u))
+                foreach (var key in result.totalsBySection.Keys
+                    .OrderBy(k => (int)k.unit)
+                    .ThenBy(k => k.section, System.StringComparer.Ordinal))
                 {
-                    var unitCells = new string[HeaderCells.Length];
-                    unitCells[0] = "Итого";
-                    unitCells[ColUnit] = unit.Label();
-                    unitCells[ColQtyTotal] = result.totalsByUnit[unit].ToString("F4", NumberCulture);
-                    sb.AppendLine(Row(unitCells));
+                    var sectionCells = new string[HeaderCells.Length];
+                    sectionCells[0] = "Итого";
+                    sectionCells[ColSection] = key.section;
+                    sectionCells[ColUnit] = key.unit.Label();
+                    sectionCells[ColQtyTotal] = result.totalsBySection[key].ToString("F4", NumberCulture);
+                    sb.AppendLine(Row(sectionCells));
                 }
             }
             return sb.ToString();
@@ -193,37 +205,43 @@ namespace KitchenDesigner.Core
 
                 if (!e.IsFlatBoardElement) continue;
 
+                string boardDecor = MaterialCatalog.Get(e.MaterialId).displayName;
                 var edges = EdgeColumns.For(e, all);
                 Accumulate(groups, order, e.PartName, e.DimensionsMM,
-                    MaterialCatalog.Get(e.MaterialId).displayName, GroovesLabel(e), edges);
+                    boardDecor, GroovesLabel(e), edges);
 
                 var layout = EdgeBanding.LayoutOf(e.DimensionsMM);
                 if (layout.IsValid)
                 {
-                    AddEdgeBandingItem(groups, order, edges.l1, layout.SideLengthMM(EdgeSide.L1));
-                    AddEdgeBandingItem(groups, order, edges.l2, layout.SideLengthMM(EdgeSide.L2));
-                    AddEdgeBandingItem(groups, order, edges.w1, layout.SideLengthMM(EdgeSide.W1));
-                    AddEdgeBandingItem(groups, order, edges.w2, layout.SideLengthMM(EdgeSide.W2));
+                    AddEdgeBandingItem(groups, order, edges.l1, layout.SideLengthMM(EdgeSide.L1), boardDecor);
+                    AddEdgeBandingItem(groups, order, edges.l2, layout.SideLengthMM(EdgeSide.L2), boardDecor);
+                    AddEdgeBandingItem(groups, order, edges.w1, layout.SideLengthMM(EdgeSide.W1), boardDecor);
+                    AddEdgeBandingItem(groups, order, edges.w2, layout.SideLengthMM(EdgeSide.W2), boardDecor);
                 }
             }
 
-            var result = new SpecResult { lines = new List<SpecLine>() };
-            foreach (var key in order)
+            var result = new SpecResult
             {
-                var line = groups[key];
-                result.lines.Add(line);
-                if (line.unit == SpecUnit.AreaM2)
-                {
-                    result.totalCount += line.count;
-                    result.totalAreaM2 += line.totalAreaM2;
-                }
+                lines = order.Select(key => groups[key])
+                    .OrderBy(l => l.material, System.StringComparer.Ordinal)
+                    .ToList(),
+            };
+
+            var byUnit = new Dictionary<SpecUnit, float>();
+            var bySection = new Dictionary<(string, SpecUnit), float>();
+            foreach (var line in result.lines)
+            {
+                byUnit[line.unit] = byUnit.TryGetValue(line.unit, out var uSum) ? uSum + line.qtyTotal : line.qtyTotal;
+                var sectionKey = (line.section, line.unit);
+                bySection[sectionKey] = bySection.TryGetValue(sectionKey, out var sSum)
+                    ? sSum + line.qtyTotal : line.qtyTotal;
+
+                if (!line.isBoardArea) continue;
+                result.totalCount += line.count;
+                result.totalAreaM2 += line.totalAreaM2;
             }
-
-            result.lines = result.lines
-                .OrderBy(l => l.material, System.StringComparer.Ordinal)
-                .ToList();
-
-            result.totalsByUnit = SpecTotals.ByUnit(result.lines.Select(l => (l.unit, l.qtyTotal)));
+            result.totalsByUnit = byUnit;
+            result.totalsBySection = bySection;
 
             return result;
         }
@@ -265,6 +283,7 @@ namespace KitchenDesigner.Core
                     section = SpecSections.Furniture,
                     unit = SpecUnit.AreaM2,
                     hasDims = true,
+                    isBoardArea = true,
                     qtyPerItem = faceArea,
                 };
                 order.Add(key);
@@ -292,6 +311,7 @@ namespace KitchenDesigner.Core
                     section = item.section,
                     unit = item.unit,
                     hasDims = item.hasDims,
+                    isBoardArea = item.hasDims && item.unit == SpecUnit.AreaM2,
                     qtyPerItem = item.hasDims ? item.qty : 0f,
                 };
                 order.Add(key);
@@ -307,10 +327,10 @@ namespace KitchenDesigner.Core
         }
 
         private static void AddEdgeBandingItem(Dictionary<string, SpecLine> groups, List<string> order,
-            string thicknessLabel, int sideLengthMM)
+            string thicknessLabel, int sideLengthMM, string material)
         {
             if (string.IsNullOrEmpty(thicknessLabel)) return;
-            AccumulateItem(groups, order, EdgeBandingSpecItems.For(thicknessLabel, sideLengthMM));
+            AccumulateItem(groups, order, EdgeBandingSpecItems.For(thicknessLabel, sideLengthMM, material));
         }
     }
 }

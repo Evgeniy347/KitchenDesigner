@@ -243,6 +243,40 @@ public class EdgeBandingTests
         Assert.IsFalse(coverage.HasEdge(EdgeSide.W1), "торец у стены — кромки нет");
     }
 
+    /// <summary>Дефект приёмки №5: невалидная раскладка (ни одной стороны тоньше
+    /// AppConstants.EDGE_MAX_SIDE_MM — «голая» деталь вроде столешницы 60 мм) раньше давала
+    /// default(EdgeCoverage) = все рёбра нулевые = HasEdge истинно на всех четырёх сторонах —
+    /// колонки печатали толщину там, где метры не считаются вовсе (LayoutOf.IsValid ложно).
+    /// Вызов напрямую, минуя EdgeBandingEnabled: сегодняшние вызывающие места гейтят Coverage
+    /// через SupportsEdges, но контракт самой функции обязан быть верным сам по себе.</summary>
+    [Test]
+    public void Coverage_InvalidLayout_ReturnsNoEdgeOnAllSides()
+    {
+        var block = CreatePart("Countertop", new Vector3Int(800, 60, 400));
+        Assert.IsFalse(EdgeBanding.LayoutOf(block.DimensionsMM).IsValid,
+            "sanity: ни одна из трёх сторон не тоньше EDGE_MAX_SIDE_MM");
+
+        var coverage = EdgeBanding.Coverage(block, new List<KitchenElement> { block });
+
+        foreach (EdgeSide side in System.Enum.GetValues(typeof(EdgeSide)))
+            Assert.IsFalse(coverage.HasEdge(side),
+                $"{side}: невалидная раскладка не должна выглядеть как открытый торец");
+    }
+
+    /// <summary>Противоположный вход: та же самая деталь, но с валидной раскладкой (одна сторона
+    /// тоньше порога) — торцы снова открыты, как в LonePart_AllFourEndsAreOpen.</summary>
+    [Test]
+    public void Coverage_ValidLayout_StillReportsOpenEnds()
+    {
+        var shelf = CreatePart("Shelf", ShelfDims);
+        Assert.IsTrue(EdgeBanding.LayoutOf(shelf.DimensionsMM).IsValid);
+
+        var coverage = EdgeBanding.Coverage(shelf, new List<KitchenElement> { shelf });
+
+        foreach (EdgeSide side in System.Enum.GetValues(typeof(EdgeSide)))
+            Assert.IsTrue(coverage.HasEdge(side), $"{side}: валидная раскладка — торец открыт");
+    }
+
     [Test]
     public void NeighbourWithGap_LeavesEdge()
     {
@@ -402,8 +436,8 @@ public class EdgeBandingTests
     }
 
     /// <summary>Строка полки в CSV по имени, а не по фиксированному индексу: Build добавляет
-    /// строку кромки погонными метрами (материал "" — сортируется раньше "Shelf"), так что
-    /// данные полки не обязаны лежать сразу после шапки.</summary>
+    /// строку кромки погонными метрами (порядок строк решает материал), так что данные полки
+    /// не обязаны лежать сразу после шапки.</summary>
     private static string[] ShelfRow(SpecResult result)
     {
         var header = CsvRow(result, 0);
@@ -413,9 +447,9 @@ public class EdgeBandingTests
     }
 
     /// <summary>Замер, не предположение: Build теперь добавляет ещё строку кромки погонными
-    /// метрами (материал у неё "" — пустая строка сортируется раньше любого названия
-    /// материала), поэтому строка ПОЛКИ больше не обязана стоять первой после шапки. Данные
-    /// не теряются — они просто на другой строке; строку полки находим по колонке Name.</summary>
+    /// метрами (той же строкой, тот же материал, что и у полки), поэтому строка ПОЛКИ больше
+    /// не обязана стоять первой после шапки. Данные не теряются — они просто на другой строке;
+    /// строку полки находим по колонке Name.</summary>
     [Test]
     public void ToCsv_OpenEndsCarryThicknessCoveredOnesAreEmpty()
     {

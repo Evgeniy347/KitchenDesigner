@@ -11,5 +11,17 @@ namespace KitchenDesigner.Core
                 totals[unit] = totals.TryGetValue(unit, out var sum) ? sum + qty : qty;
             return totals;
         }
+
+        public static Dictionary<(string section, SpecUnit unit), float> BySectionAndUnit(
+            IEnumerable<(string section, SpecUnit unit, float qty)> rows)
+        {
+            var totals = new Dictionary<(string, SpecUnit), float>();
+            foreach (var (section, unit, qty) in rows)
+            {
+                var key = (section, unit);
+                totals[key] = totals.TryGetValue(key, out var sum) ? sum + qty : qty;
+            }
+            return totals;
+        }
     }
 }

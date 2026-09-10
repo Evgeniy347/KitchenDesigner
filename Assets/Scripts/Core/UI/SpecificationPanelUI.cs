@@ -225,12 +225,12 @@ namespace KitchenDesigner.Core.UI
                 sb.AppendLine();
 
             sb.Append($"<pos={ColName}>Всего, досок:<pos={ColQty}>{result.totalCount}");
-            foreach (var unit in SortedUnits(result))
+            foreach (var key in SortedSectionUnits(result))
             {
                 sb.AppendLine();
-                sb.Append($"<pos={ColName}>Всего, {unit.Label()}:" +
-                          $"<pos={ColQty}>{FormatQty(result.totalsByUnit[unit], unit)}" +
-                          $"<pos={ColUnit}>{unit.Label()}");
+                sb.Append($"<pos={ColName}>Всего, {SectionLabel(key.section)}, {key.unit.Label()}:" +
+                          $"<pos={ColQty}>{FormatQty(result.totalsBySection[key], key.unit)}" +
+                          $"<pos={ColUnit}>{key.unit.Label()}");
             }
             return sb.ToString();
         }
@@ -238,12 +238,14 @@ namespace KitchenDesigner.Core.UI
         private static string SectionLabel(string section) =>
             string.IsNullOrEmpty(section) ? "Без раздела" : section;
 
-        private static string DimCell(int valueMM, bool hasDims) => hasDims ? valueMM.ToString() : "";
+        private static string DimCell(int valueMM, bool hasDims) => SpecCellFormat.DimCell(valueMM, hasDims);
 
-        private static string PiecesCell(SpecLine line) => line.hasDims ? line.count.ToString() : "";
+        private static string PiecesCell(SpecLine line) => SpecCellFormat.CountCell(line.count, line.hasDims);
 
         private static string FormatQty(float qtyTotal, SpecUnit unit) =>
-            unit == SpecUnit.Pieces ? Mathf.RoundToInt(qtyTotal).ToString() : qtyTotal.ToString("F2");
+            unit == SpecUnit.Pieces
+                ? Mathf.RoundToInt(qtyTotal).ToString()
+                : qtyTotal.ToString("F2", SpecificationExport.NumberCulture);
 
         private static string MaterialSubtotalText(string material, IReadOnlyList<SpecLine> lines)
         {
@@ -254,11 +256,13 @@ namespace KitchenDesigner.Core.UI
             return $"Итого, {label}: {string.Join(", ", parts)}";
         }
 
-        private static IEnumerable<SpecUnit> SortedUnits(SpecResult result)
+        private static IEnumerable<(string section, SpecUnit unit)> SortedSectionUnits(SpecResult result)
         {
-            if (result.totalsByUnit == null) yield break;
-            foreach (var unit in result.totalsByUnit.Keys.OrderBy(u => (int)u))
-                yield return unit;
+            if (result.totalsBySection == null) yield break;
+            foreach (var key in result.totalsBySection.Keys
+                .OrderBy(k => (int)k.unit)
+                .ThenBy(k => k.section, System.StringComparer.Ordinal))
+                yield return key;
         }
 
         private static string Trim(string s, int max) =>
