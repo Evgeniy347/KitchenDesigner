@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class LightSourceElement : KitchenElement
+    public class LightSourceElement : KitchenElement, IQuantifies
     {
         public override bool CanFollowAnAttachParent => false;
 
@@ -11,6 +12,11 @@ namespace KitchenDesigner.Core
         public override bool ParticipatesInGapChecks => false;
 
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         private const float GlowBase = 0.6f;
         private const float GlowPerWatt = 0.06f;

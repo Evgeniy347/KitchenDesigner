@@ -1,10 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class ScrewLegElement : KitchenElement, IAutoSeated, IMountsOnTarget
+    public class ScrewLegElement : KitchenElement, IAutoSeated, IMountsOnTarget, IQuantifies
     {
         public override string DisplayTypeName => "Винтовая опора";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public Vector3 MountNormal => transform.up;
 

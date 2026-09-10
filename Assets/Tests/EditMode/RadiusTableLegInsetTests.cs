@@ -230,4 +230,53 @@ public class RadiusTableLegInsetTests
             Assert.LessOrEqual(Mathf.Abs(cz) + half, dims.z * 0.5f + 1f);
         }
     }
+
+    // ── Дефект: столешница радиусного стола молча выпадала из ведомости раскроя ──
+
+    /// <summary>Столешница — прямоугольная заготовка ЛДСП толщиной
+    /// TabletopThicknessMM, скругление появляется только при раскрое, как и у
+    /// радиусной полки. Стол — композит (крышка + ножки), поэтому объявляет себя не
+    /// через IsFlatBoardElement (это была бы вся коробка с ножками), а через
+    /// ISpecificationParts — как AssembledFacadeElement.</summary>
+    [Test]
+    public void GetSpecParts_ReturnsOneTabletopPart_SheetSizedWithoutLegs()
+    {
+        var dims = new Vector3Int(2000, 750, 1000);
+        var table = Table(dims, 100);
+
+        var parts = new System.Collections.Generic.List<AssembledFacadeMesh.Part>(
+            ((ISpecificationParts)table).GetSpecParts());
+
+        Assert.AreEqual(1, parts.Count, "у столешницы одна деталь — сама крышка");
+        Assert.AreEqual(new Vector3Int(dims.x, RadiusTableElement.TabletopThicknessMM, dims.z),
+            parts[0].dimsMM,
+            "заготовка крышки — это ширина/глубина стола и толщина плиты, а не высота стола с ногами");
+    }
+
+    /// <summary>Противоположный вход: другой габарит стола обязан дать другую
+    /// заготовку — формула не возвращает одну и ту же деталь для любого стола.</summary>
+    [Test]
+    public void GetSpecParts_DifferentTableSize_DifferentTabletopBlank()
+    {
+        var small = ((ISpecificationParts)Table(new Vector3Int(900, 750, 900), 100))
+            .GetSpecParts().GetEnumerator();
+        var large = ((ISpecificationParts)Table(new Vector3Int(2000, 750, 1000), 100))
+            .GetSpecParts().GetEnumerator();
+        small.MoveNext();
+        large.MoveNext();
+
+        Assert.AreNotEqual(small.Current.dimsMM, large.Current.dimsMM);
+    }
+
+    [Test]
+    public void Build_RadiusTable_IsIncludedInTheSpecificationAsOneAreaLine()
+    {
+        var table = Table(new Vector3Int(2000, 750, 1000), 100);
+
+        var result = SpecificationManager.Build(new KitchenElement[] { table });
+
+        Assert.AreEqual(1, result.lines.Count,
+            "радиусный стол обязан дать ровно одну строку — заготовку крышки");
+        Assert.AreEqual(SpecUnit.AreaM2, result.lines[0].unit);
+    }
 }

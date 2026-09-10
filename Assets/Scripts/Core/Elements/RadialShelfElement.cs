@@ -6,6 +6,9 @@ namespace KitchenDesigner.Core
     {
 
         public override string DisplayTypeName => "Радиусная полка";
+
+        public override bool IsFlatBoardElement => true;
+
         [SerializeField] private int _cornerRadius = AppConstants.RADIAL_CORNER_RADIUS_DEFAULT;
         private bool _applying;
 

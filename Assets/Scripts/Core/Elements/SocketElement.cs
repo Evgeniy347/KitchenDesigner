@@ -1,11 +1,17 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
     public class SocketElement : KitchenElement, IHasTwoDecorSlots, IWallMounted, IWallDevice,
-        IKeepsPlacementHeight
+        IKeepsPlacementHeight, IQuantifies
     {
         public override string DisplayTypeName => "Розетка";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public const int DefaultWidthMM = WallDeviceLayout.DefaultPlateWidthMM;
         public const int DefaultHeightMM = WallDeviceLayout.DefaultPlateHeightMM;

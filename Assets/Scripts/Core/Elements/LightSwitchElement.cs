@@ -4,9 +4,14 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     public class LightSwitchElement : KitchenElement, IHasTwoDecorSlots, IWallMounted, IWallDevice,
-        IKeepsPlacementHeight, ILightSwitch
+        IKeepsPlacementHeight, ILightSwitch, IQuantifies
     {
         public override string DisplayTypeName => "Выключатель";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public const int DefaultWidthMM = WallDeviceLayout.DefaultPlateWidthMM;
         public const int DefaultHeightMM = WallDeviceLayout.DefaultPlateHeightMM;

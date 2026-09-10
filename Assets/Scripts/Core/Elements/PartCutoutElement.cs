@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public abstract class PartCutoutElement : KitchenElement, IPartCutout
+    public abstract class PartCutoutElement : KitchenElement, IPartCutout, IQuantifies
     {
         public const int SNAP_CATCH_MM = 100;
         public const int SNAP_RELEASE_MM = 60;
@@ -39,6 +40,11 @@ namespace KitchenDesigner.Core
         protected abstract int MinEdgeMM { get; }
 
         protected abstract string HostRejectionMessage { get; }
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         [NotUndoable("служебная привязка к детали, вычисляется SnapToPart")]
         public string AttachedPartName

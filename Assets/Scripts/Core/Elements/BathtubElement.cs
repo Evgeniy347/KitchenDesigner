@@ -3,9 +3,14 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class BathtubElement : KitchenElement, IPaintsItself, IStandsOnFloor
+    public class BathtubElement : KitchenElement, IPaintsItself, IStandsOnFloor, IQuantifies
     {
         public override string DisplayTypeName => "Ванна";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public const int DefaultWidthMM = BathtubLayout.DefaultWidthMM;
         public const int DefaultHeightMM = BathtubLayout.DefaultHeightMM;

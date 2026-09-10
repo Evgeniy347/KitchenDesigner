@@ -1,11 +1,17 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
     public class BathMixerElement : KitchenElement, IWallMounted, IFixedSizeElement,
-        IKeepsPlacementHeight, IPaintsItself
+        IKeepsPlacementHeight, IPaintsItself, IQuantifies
     {
         public override string DisplayTypeName => "Смеситель для ванны";
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public override bool CanFollowAnAttachParent => false;
 

@@ -461,4 +461,22 @@ public class RadialShelfTests
         var go = ElementFactory.CreateRadialShelf(width, depth, thickness, cornerRadius, name, pos);
         return go.GetComponent<RadialShelfElement>();
     }
+
+    // ── Дефект: радиусная полка молча выпадала из ведомости раскроя ──────────
+
+    /// <summary>Заготовка радиусной полки прямоугольная — скругление углов происходит
+    /// только на этапе раскроя, а не при выпиливании листа. IsFlatBoardElement обязан
+    /// быть true, иначе SpecificationManager её просто не увидит (см.
+    /// SpecificationManagerTests.Build_DescendantOfKitchenElement_DeclaringNothing_...).</summary>
+    [Test]
+    public void IsFlatBoardElement_IsTrue_SoSpecificationCountsIt()
+    {
+        var shelf = CreateShelf("R_SPEC", 600, 400, 18, 200, Vector3.zero);
+
+        Assert.IsTrue(shelf.IsFlatBoardElement);
+
+        var result = SpecificationManager.Build(new[] { (KitchenElement)shelf });
+        Assert.AreEqual(1, result.lines.Count);
+        Assert.AreEqual(SpecUnit.AreaM2, result.lines[0].unit);
+    }
 }

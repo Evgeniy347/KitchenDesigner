@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class OvenElement : KitchenElement, IFixedSizeElement, IOpenable, IPaintsItself
+    public class OvenElement : KitchenElement, IFixedSizeElement, IOpenable, IPaintsItself,
+        IQuantifies
     {
         public override bool CanFollowAnAttachParent => false;
 
@@ -14,6 +15,11 @@ namespace KitchenDesigner.Core
         public string OpenActionLabel => IsOpen ? OpenLabels.CloseDoor : OpenLabels.OpenDoor;
 
         public void CycleOpenState() => ToggleOpen();
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
+        }
 
         public const string MODEL = "Bosch HBA514BB3";
 
