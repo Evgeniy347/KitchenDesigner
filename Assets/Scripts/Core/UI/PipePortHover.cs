@@ -34,8 +34,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Enter(int port)
         {
-            ScenePreview.Leave();
-            PartHighlighter.Hide();
+            HoverPreviewGate.HideAll();
             var owner = _owner();
             if (owner == null) return;
             _paint(owner, port);
@@ -52,24 +51,24 @@ namespace KitchenDesigner.Core.UI
 
             _paint(owner, port);
 
+            var scene = PartRegistry.GetAll();
+            var replaced = PipeEndFittings.NeighbourAt(owner, port, scene);
             var kind = PipeConnectionRule.KindAt(_choices, option);
             if (!kind.HasValue)
             {
-                ScenePreview.Leave();
+                if (replaced == null) { ScenePreview.Leave(); return; }
+                ScenePreview.Hover(NoChoiceKey(owner, port), () => null, replaced, owner);
                 return;
             }
 
-            var scene = PartRegistry.GetAll();
-            var replaced = PipeEndFittings.NeighbourAt(owner, port, scene);
             ScenePreview.Hover(PipeEndFittings.PreviewKey(owner, port, kind.Value),
-                () => PipeEndFittings.Preview(owner, port, kind.Value, scene), replaced);
+                () => PipeEndFittings.Preview(owner, port, kind.Value, scene), replaced, owner);
         }
 
-        public void Clear()
-        {
-            ScenePreview.Leave();
-            PartHighlighter.Hide();
-        }
+        private static string NoChoiceKey(KitchenElement owner, int port) =>
+            owner == null ? string.Empty : owner.PartName + ":" + port + ":none";
+
+        public void Clear() => HoverPreviewGate.HideAll();
 
         public void Commit()
         {

@@ -13,6 +13,12 @@ namespace KitchenDesigner.Core
         private static readonly List<Material> Painted = new List<Material>();
         private static GameObject? _ghost;
 
+        private static Func<GameObject?>? _spawn;
+        private static KitchenElement? _replaced;
+        private static KitchenElement? _owner;
+        private static Vector3 _ownerPos;
+        private static Quaternion _ownerRot;
+
         public static string? ShownKey => State.ShownKey;
 
         public static bool IsShowing => State.IsShowing;
@@ -21,19 +27,25 @@ namespace KitchenDesigner.Core
 
         public static IReadOnlyList<MeshRenderer> MutedRenderers => Muted;
 
-        public static void Hover(string key, Func<GameObject?> spawn, KitchenElement? replaced)
+        public static void Hover(string key, Func<GameObject?> spawn, KitchenElement? replaced,
+            KitchenElement? owner = null)
         {
             var step = State.Hover(key);
             if (step == ScenePreviewStep.None) return;
 
             Teardown();
+            _spawn = spawn;
+            _replaced = replaced;
+            _owner = owner;
             Build(spawn, replaced);
+            RememberOwnerPose();
         }
 
         public static void Leave()
         {
             if (State.Leave() == ScenePreviewStep.None) return;
             Teardown();
+            Forget();
         }
 
         public static string? Commit()
@@ -41,28 +53,43 @@ namespace KitchenDesigner.Core
             var key = State.ShownKey;
             State.Commit();
             Teardown();
+            Forget();
             return key;
+        }
+
+        public static void Sync()
+        {
+            if (!State.IsShowing || _spawn == null) return;
+            if (_owner == null) return;
+            if (_owner.transform.position == _ownerPos
+                && _owner.transform.rotation == _ownerRot) return;
+
+            var spawn = _spawn;
+            var replaced = _replaced;
+            Teardown();
+            Build(spawn, replaced);
+            RememberOwnerPose();
         }
 
         private static void Build(Func<GameObject?> spawn, KitchenElement? replaced)
         {
-            if (spawn == null)
+            if (spawn != null)
+                using (ElementFactorySandbox.Enter()) _ghost = spawn();
+
+            if (_ghost != null)
             {
-                State.Leave();
-                return;
+                _ghost.hideFlags = HideFlags.DontSave;
+                Tint(_ghost);
             }
 
-            using (ElementFactorySandbox.Enter()) _ghost = spawn();
-
-            if (_ghost == null)
-            {
-                State.Leave();
-                return;
-            }
-
-            _ghost.hideFlags = HideFlags.DontSave;
-            Tint(_ghost);
             Mute(replaced);
+        }
+
+        private static void RememberOwnerPose()
+        {
+            if (_owner == null) return;
+            _ownerPos = _owner.transform.position;
+            _ownerRot = _owner.transform.rotation;
         }
 
         private static void Teardown()
@@ -77,6 +104,15 @@ namespace KitchenDesigner.Core
 
             if (_ghost != null) DestroyNow(_ghost);
             _ghost = null;
+        }
+
+        private static void Forget()
+        {
+            _spawn = null;
+            _replaced = null;
+            _owner = null;
+            _ownerPos = default;
+            _ownerRot = default;
         }
 
         private static void Mute(KitchenElement? replaced)

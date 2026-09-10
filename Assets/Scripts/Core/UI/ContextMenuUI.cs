@@ -497,6 +497,7 @@ namespace KitchenDesigner.Core.UI
             }
 
             SideHighlighter.Sync();
+            HoverPreviewGate.Sync();
         }
 
         internal void TryCloseFromEscape()
