@@ -135,6 +135,26 @@ nothing reports a problem. The seam was found by reading `ApplyFields`, not by a
 that revealed it now has one, and the next such row will meet it as a red assertion instead of a
 puzzle.
 
+
+## Гасить `Update()` в покое — приём повторяемый, но с тремя ловушками
+
+`enabled = false`, когда компоненту нечего делать, и пробуждение из сеттера — рабочий приём:
+`FacadeElement` (`60e1f9e2`) стоил 95 % кадра, потом тем же способом закрыли девять элементов
+(духовка, посудомойка, дверь, ящик, варочная, мойка, розетка, выключатель, подвесной унитаз).
+Работа внутри `Update()` бывает уже нулевой — платится сам вызов Unity → C# на экземпляр.
+
+Перед тем как скопировать приём на десятый компонент, проверь три вещи. **Кто ещё делит этот
+`enabled`:** он гасит и `LateUpdate`, и `FixedUpdate` того же компонента — на этом чуть не встала
+`DrawerElement.SyncToLower`, и верхний ящик пары поэтому не засыпает вовсе. **Что делает
+`OnEnable`:** у `LightSwitchElement` это полный обход сцены, и служебное включение обязано
+отличаться от настоящего, иначе экономия оборачивается тратой. **От чьего transform зависит
+пробуждение:** варочная сидит на чужой столешнице, и собственный `PoseVersion` её не разбудит —
+будильник идёт через `KitchenElement.AttachedCutouts` хозяина.
+
+Тест — пара на компонент: «уснул в покое» и «проснулся от своего входа», плюс сенсор-счётчик,
+а не глазомер. Пробуждение обязано работать при загрузке проекта, отмене и MCP-команде, а не
+только при клике.
+
 ## A rule added to candidate SELECTION must reach `Diagnose` in the same commit
 
 The snap subsystem has two implementations of one geometry, and the rule above («changed one,
