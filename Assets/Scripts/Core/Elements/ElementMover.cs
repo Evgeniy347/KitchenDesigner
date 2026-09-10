@@ -136,15 +136,25 @@ namespace KitchenDesigner.Core
         private void BeginDrag()
         {
             if (_target == null) return;
-            IsDragging = true;
-            _wasMoved = true;
-            BuildMoveSet();
-            _startPosition = _target.transform.position;
-            _heldDragY = _startPosition.y;
-            HoldAttachedPipes();
+            BeginDragOn(_target);
             RecomputeOffset();
             SaveDragMaterial(_target!);
         }
+
+        internal void BeginDragOn(KitchenElement target)
+        {
+            if (target == null) return;
+            _target = target;
+            IsDragging = true;
+            _wasMoved = true;
+            BuildMoveSet();
+            _startPosition = target.transform.position;
+            _startRotation = target.transform.rotation;
+            _heldDragY = _startPosition.y;
+            HoldAttachedPipes();
+        }
+
+        internal void FinishDragNow() => FinishDrag();
 
         private void HoldAttachedPipes()
         {
@@ -458,8 +468,6 @@ namespace KitchenDesigner.Core
 				{
 					if (m == null) continue;
 					MmGrid.Snap(m);
-					if (m is PipeElement movedPipe)
-						PipeDocking.RefitRunAfterResize(movedPipe, PartRegistry.GetAll());
 				}
 
 				Vector3Int? seatedDimsBefore = null;
@@ -476,14 +484,18 @@ namespace KitchenDesigner.Core
 
 				FollowHeldPipes();
 
+				var refits = RefitMovedRuns();
+
 				if (KitchenSettings.Instance.BlockOnViolation && MoveSetCausesViolation())
 				{
+					for (int i = refits.Count - 1; i >= 0; i--) refits[i].Undo();
 					if (seatedDimsBefore.HasValue && _target != null)
 						_target.DimensionsMM = seatedDimsBefore.Value;
 					RevertMoveSet();
 				}
 				else
-					CommandStack.Execute(BuildMoveCommand(seatedDimsBefore, seatedPosBefore));
+					CommandStack.Execute(
+						BuildMoveCommand(seatedDimsBefore, seatedPosBefore, refits));
 			}
 			else
 			{
@@ -501,6 +513,31 @@ namespace KitchenDesigner.Core
 			_movingSet.Clear();
 			RefreshHighlights();
 		}
+
+        private List<IUndoCommand> RefitMovedRuns()
+        {
+            var written = new List<IUndoCommand>();
+            var scene = PartRegistry.GetAll();
+
+            foreach (var m in _moveSet)
+            {
+                if (!(m is PipeElement pipe)) continue;
+
+                var dimsBefore = pipe.DimensionsMM;
+                var posBefore = pipe.transform.position;
+                if (!PipeDocking.RefitRunAfterResize(pipe, scene)) continue;
+                if (ReferenceEquals(pipe, _target)) continue;
+                if (pipe.DimensionsMM == dimsBefore
+                    && (pipe.transform.position - posBefore).sqrMagnitude
+                       <= Tolerance.EpsilonSqr) continue;
+
+                var rotation = pipe.transform.rotation;
+                written.Add(new ResizeCommand(pipe, dimsBefore, pipe.DimensionsMM, posBefore,
+                    pipe.transform.position, rotation, rotation));
+            }
+
+            return written;
+        }
 
         private List<KitchenElement> SceneWithoutTheFollowingPipes()
         {
@@ -529,7 +566,8 @@ namespace KitchenDesigner.Core
             return false;
         }
 
-        private IUndoCommand BuildMoveCommand(Vector3Int? seatedDimsBefore = null, Vector3 seatedPosBefore = default)
+        private IUndoCommand BuildMoveCommand(Vector3Int? seatedDimsBefore = null,
+            Vector3 seatedPosBefore = default, List<IUndoCommand>? refits = null)
         {
             var cmds = new List<IUndoCommand>();
             for (int i = 0; i < _moveSet.Count; i++)
@@ -560,6 +598,8 @@ namespace KitchenDesigner.Core
                         _target.transform.rotation, _target.transform.rotation));
                 }
             }
+
+            if (refits != null) cmds.AddRange(refits);
 
             return cmds.Count == 1 ? cmds[0] : new CompositeCommand("Move group", cmds);
         }
