@@ -115,16 +115,106 @@ public class CoplanarSurfaceCoverageTests
             + string.Join("\n\n", violationsByType));
     }
 
+    private const string OnePlate =
+        "одна плита (или коробка) одним мешем на корне элемента: спорить в нём нечему";
+
+    private const string OneCombinedMesh =
+        "прибор собран ОДНИМ процедурным мешем на корне — отдельных деталей-рендереров, "
+        + "накладок и лицевых панелей у него нет";
+
+    private const string OnePipeMesh =
+        "труба и фитинг строятся одним процедурным мешем: тело и устья портов лежат в нём "
+        + "же, отдельного рендерера ни у одного порта нет";
+
+    /// <summary>Типы, у которых <c>ElementRenderers.BodyOf</c> находит РОВНО ОДИН
+    /// рендерер: сенсору не с чем сравнивать, и <see
+    /// cref="EveryDeclaredElementType_ClosedPose_HasNoTwoRenderedSurfacesFightingForTheSamePixel"/>
+    /// проходит по ним молча. Это не исключение из правила (для того есть
+    /// <see cref="KnownLegitimateCoplanarSurfaces"/> — там пара НАЙДЕНА и признана
+    /// законной), а перепись слепых зон сенсора.
+    ///
+    /// Список выписан ИМЕНАМИ, а не заменён порогом «пусть таких будет меньше
+    /// половины». Порог тут отвечал не на тот вопрос: половина от 37 объявленных
+    /// типов — 18, первый же прогон дал 19, и «сенсор ослеп» от «типов с одним мешем
+    /// на один больше половины» было не отличить. Порог можно подкрутить одной
+    /// цифрой; список — нельзя. Тип, потерявший второй рендерер (тот самый дефект
+    /// «один рендерер вместо всех» из `agents/TEST-DESIGN.md`), краснеет ПО ИМЕНИ, а
+    /// тип, у которого второй рендерер появился, краснеет вторым сторожем ниже —
+    /// проверка двусторонняя, как того требует
+    /// `agents/TEST-DESIGN.md` → «Проверка "значение входит в закрытый список"
+    /// обязана быть двусторонней».
+    ///
+    /// Новый тип в список НЕ попадает по умолчанию: он обязан иметь два рендерера
+    /// либо быть внесён сюда руками с причиной.</summary>
+    private static readonly Dictionary<Type, string> TypesBuiltAsOneSurface =
+        new Dictionary<Type, string>
+    {
+        { typeof(KitchenElement), OnePlate },
+        { typeof(PanelElement), OnePlate },
+        { typeof(FacadeElement), OnePlate },
+        { typeof(FloorElement), OnePlate },
+        { typeof(PillarElement), OnePlate },
+        { typeof(DrawerElement), OnePlate },
+        { typeof(RadialShelfElement), OnePlate },
+        { typeof(BathtubElement), OneCombinedMesh },
+        { typeof(BathMixerElement), OneCombinedMesh },
+        { typeof(ShowerColumnElement), OneCombinedMesh },
+        { typeof(ScrewLegElement), OneCombinedMesh },
+        { typeof(LightSourceElement),
+            "светильник — источник света с одной лампой-мешем; тела из нескольких "
+            + "поверхностей у него нет вовсе" },
+        { typeof(PipeElement), OnePipeMesh },
+        { typeof(PipeElbowElement), OnePipeMesh },
+        { typeof(PipeCouplingElement), OnePipeMesh },
+        { typeof(PipeTeeElement), OnePipeMesh },
+        { typeof(PipeCapElement), OnePipeMesh },
+        { typeof(PipeSupplyElement), OnePipeMesh },
+        { typeof(PipeReturnElement), OnePipeMesh },
+    };
+
     /// <summary>Сторож самого сенсора: паре граней вообще должно быть с чем спорить.
-    /// Тип с одним рендерером сенсор пропускает молча, и если таких вдруг станет
-    /// большинство — проверка выше позеленеет, ничего не проверив.</summary>
+    /// Тип с одним рендерером сенсор пропускает молча — и если таким молча станет
+    /// ещё один тип, проверка выше позеленеет, ничего про него не проверив.</summary>
     [Test]
     public void TheSensor_HasSomethingToCompare_OnMostTypes_OtherwiseItProvesNothing()
     {
-        var rows = ElementSurfaceSweep.Rows;
-        var single = rows.Where(r => r.BodyCount < 2).Select(r => r.Name).ToList();
-        Assert.Less(single.Count, rows.Count / 2,
-            "у большинства типов меньше двух рендереров — сенсору нечего сравнивать, и он "
-            + "зеленеет на любом коде. Одиночные: " + string.Join(", ", single));
+        var blind = ElementSurfaceSweep.Rows
+            .Where(r => r.BodyCount < 2 && !TypesBuiltAsOneSurface.ContainsKey(r.ElementType))
+            .Select(r => r.Name + " (" + r.BodyCount + " рендерер)")
+            .ToList();
+
+        Assert.IsEmpty(blind,
+            "у этих типов меньше двух рендереров, и в переписи слепых зон "
+            + "(TypesBuiltAsOneSurface) их нет — сенсору на них нечего сравнивать, и он "
+            + "зеленеет на любом коде. Это ровно тот дефект «один рендерер вместо всех», "
+            + "от которого написан ElementRenderers.BodyOf: сначала проверь, не потерял ли "
+            + "тип свои child-рендереры, и только если он ДЕЙСТВИТЕЛЬНО собран одним "
+            + "мешем — внеси его в перепись с причиной: " + string.Join(", ", blind));
+    }
+
+    /// <summary>Вторая сторона той же переписи: тип, объявленный «одной
+    /// поверхностью», обязан ею и остаться. Отрастил второй рендерер — запись
+    /// устарела, и сенсору с этого момента есть что сравнивать, о чём он должен
+    /// узнать сразу, а не через полгода.</summary>
+    [Test]
+    public void EveryTypeListedAsOneSurface_StillHasExactlyOneRenderer()
+    {
+        var declared = EveryElementType.Declared();
+        var stale = new List<string>();
+        foreach (var type in TypesBuiltAsOneSurface.Keys)
+        {
+            CollectionAssert.Contains(declared, type,
+                type.Name + " значится в переписи одноповерхностных типов, но рефлексия по "
+                + "сборке его не находит — тип удалён или переименован, запись мёртвая");
+            int count = ElementSurfaceSweep.Of(type).BodyCount;
+            if (count != 1) stale.Add(type.Name + ": " + count + " рендереров");
+        }
+
+        Assert.IsEmpty(stale,
+            "эти типы значатся в TypesBuiltAsOneSurface («собран одним мешем, сравнивать "
+            + "нечего»), но рендереров у них теперь не один. Два и больше — сенсор на них "
+            + "работает, и запись пора убрать, иначе перепись слепых зон превращается в "
+            + "место, куда прячут найденную пару. Ноль — у типа пропало тело целиком, и "
+            + "это дефект, а не запись: " + string.Join(", ", stale));
     }
 }
