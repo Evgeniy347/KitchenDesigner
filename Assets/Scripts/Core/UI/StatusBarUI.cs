@@ -9,7 +9,9 @@ namespace KitchenDesigner.Core.UI
 {
     public class StatusBarUI : MonoBehaviour
     {
-        public static StatusBarUI? Instance { get; private set; }
+        private static StatusBarUI? _instance;
+
+        public static StatusBarUI? Instance => _instance != null ? _instance : null;
 
         private struct Message
         {
@@ -43,14 +45,21 @@ namespace KitchenDesigner.Core.UI
         public int QueuedCount => _queue.Count;
         public string? ActiveText => _active?.Text;
 
-        private void Awake() => Instance = this;
+        private void Awake() => _instance = this;
 
         private void OnDestroy()
         {
-            if (ReferenceEquals(Instance, this)) Instance = null;
+            if (ReferenceEquals(_instance, this)) _instance = null;
         }
 
         internal void SimulateAwakeForTests() => Awake();
+
+        internal static StatusBarUI? SwapInstanceForTests(StatusBarUI? next)
+        {
+            var previous = _instance;
+            _instance = next;
+            return previous;
+        }
 
         public void Build(Transform canvas)
         {
