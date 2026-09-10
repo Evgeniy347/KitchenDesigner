@@ -22,6 +22,7 @@ public class PerfMonitorDrainTimingTests
     private const string AMarkerThatRunsInLateUpdate = "SceneChangeTracker.Poll";
 
     private GameObject? _host;
+    private PerfMonitor? _monitor;
     private bool _enabledBefore;
 
     [SetUp]
@@ -35,6 +36,8 @@ public class PerfMonitorDrainTimingTests
     [TearDown]
     public void TearDown()
     {
+        if (_monitor != null) _monitor.SimulateOnDestroyForTests();
+        _monitor = null;
         if (_host != null) Object.DestroyImmediate(_host);
         _host = null;
         PerfMonitor.Enabled = _enabledBefore;
@@ -49,11 +52,22 @@ public class PerfMonitorDrainTimingTests
         return -1;
     }
 
+    /// <summary>В EditMode Unity не звонит колбэки сама: `AddComponent` не вызывает ни
+    /// `Awake`, ни `LateUpdate`, ни `OnDestroy` (на этом уже упали три теста, `c45d2279`).
+    /// Поэтому каждый шаг здесь зовётся ЯВНО, и утверждения ниже — про атрибуцию тактов
+    /// («в чей замер они попали»), а не про то, что движок что-то вызовет.
+    ///
+    /// `Awake` обязателен и обязан идти ДО первых тактов: он заводит слоты замера и заодно
+    /// обнуляет накопленное (`StartWindow` → `DropEverythingMeasuredSoFar`). Без него
+    /// `Sample` выходит на первой строке, HUD остаётся пустым, и тест ловит не порядок
+    /// слива, а отсутствие инициализации.</summary>
     private PerfMonitor MakeMonitor()
     {
         _host = new GameObject("PerfMonitor сторожа");
         var monitor = _host.AddComponent<PerfMonitor>();
         PerfMonitor.Enabled = true;
+        monitor.SimulateAwakeForTests();
+        _monitor = monitor;
         return monitor;
     }
 

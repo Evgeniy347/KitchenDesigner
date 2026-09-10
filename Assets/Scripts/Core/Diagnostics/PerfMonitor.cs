@@ -134,6 +134,10 @@ namespace KitchenDesigner.Core
             if (++_windowFrames >= DumpEveryFrames) Dump();
         }
 
+        internal void SimulateAwakeForTests() => Awake();
+
+        internal void SimulateOnDestroyForTests() => OnDestroy();
+
         internal void SimulateLateUpdateForTests() => LateUpdate();
 
         private void HandleHotkeys()
