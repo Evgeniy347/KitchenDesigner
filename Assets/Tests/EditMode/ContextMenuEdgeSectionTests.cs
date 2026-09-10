@@ -6,15 +6,27 @@ using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
+/// <summary>Секция кромок в панели свойств: схема сторон, цикл состояний по клику, подсветка
+/// и поле толщины.
+///
+/// `BlockOnViolation` фикстура ГАСИТ, и это не удобство: одинокая деталь в пустой сцене сама
+/// по себе нарушение (опереться не на что), а `ContextMenuUI.Apply` при нарушении с версии
+/// «заблокированное применение откатывает всё» откатывает ВЕСЬ ввод, включая толщину кромки.
+/// С включённой блокировкой тесты толщины проверяли бы не разбор числа, а факт отката —
+/// `Thickness_WithComma_IsApplied` до этого зеленел лишь потому, что откат тогда возвращал
+/// три поля из дюжины и кромку в сцене оставлял.</summary>
 public class ContextMenuEdgeSectionTests
 {
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
+    private bool _blockBefore;
 
     [SetUp]
     public void Setup()
     {
+        _blockBefore = KitchenSettings.Instance.BlockOnViolation;
+        KitchenSettings.Instance.BlockOnViolation = false;
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
         var go = new GameObject("CtxMenu");
@@ -27,6 +39,7 @@ public class ContextMenuEdgeSectionTests
     {
         SideHighlighter.Hide();
         CommandStack.Clear();
+        KitchenSettings.Instance.BlockOnViolation = _blockBefore;
         if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
         if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
         foreach (var go in _spawned)

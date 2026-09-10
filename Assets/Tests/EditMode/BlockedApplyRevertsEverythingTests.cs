@@ -124,7 +124,12 @@ public class BlockedApplyRevertsEverythingTests
     }
 
     /// <summary>Положительный контроль: без блокировки те же самые правки обязаны примениться
-    /// и лечь в стек одним шагом. Иначе зелёный выше значил бы «панель не работает вообще».</summary>
+    /// и лечь в стек одним шагом. Иначе зелёный выше значил бы «панель не работает вообще».
+    ///
+    /// Имя проходит через `ElementNaming.Normalize` (см. `ElementNaming.Rule`): в имени детали
+    /// разрешены только латиница, цифры, `-` и `_`, потому что по имени деталь адресуется из
+    /// MCP и из сохранения. Поэтому набранное кириллицей «Переименованная» применяется
+    /// транслитом — и ждём мы здесь именно транслит, а не исходную строку.</summary>
     [Test]
     public void SameEditWithoutBlocking_IsAppliedAndUndoable()
     {
@@ -139,7 +144,8 @@ public class BlockedApplyRevertsEverythingTests
         ctx.SimulateApplyForTests();
 
         Assert.AreEqual(900, el.DimensionsMM.x, "без блокировки ширина обязана примениться");
-        Assert.AreEqual("Переименованная", el.PartName, "без блокировки имя обязано примениться");
+        Assert.AreEqual("Pereimenovannaya", el.PartName,
+            "без блокировки имя обязано примениться — транслитом, как велит ElementNaming.Rule");
         Assert.AreEqual(1, CommandStack.UndoCount, "одна правка — ровно один шаг отмены");
     }
 
