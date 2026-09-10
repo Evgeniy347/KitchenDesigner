@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core.MCP
             long respondedTicks = Stopwatch.GetTimestamp();
             var breakdown = new McpCallTimingBreakdown(
                 _acceptedTicks, _queuedTicks, _startedTicks, _executedTicks, respondedTicks);
-            Debug.Log(breakdown.Format(_method, McpValidationCache.TakeRecomputeCount()));
+            UnityEngine.Debug.Log(breakdown.Format(_method, McpValidationCache.TakeRecomputeCount()));
         }
     }
 }
