@@ -80,7 +80,7 @@ namespace KitchenDesigner.Core.MCP
                 else
                 {
                     commands.Add(new SetWallGeometryCommand(x.existing, x.dims, x.pos, x.rot,
-                        x.item.kind.ToLowerInvariant(), x.material, shapes[i]));
+                        x.item.kind.ToLowerInvariant() == "bearing", x.material, shapes[i]));
                     affected.Add(x.existing); updated++;
                 }
             }
