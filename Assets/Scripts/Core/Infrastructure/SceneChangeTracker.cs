@@ -12,6 +12,8 @@ namespace KitchenDesigner.Core
 
         public static void Poll()
         {
+            using var _ = PerfMarkers.SceneChangeTrackerPoll.Auto();
+
             bool any = _membershipChanged;
             var all = PartRegistry.All;
             for (int i = 0; i < all.Count; i++)
@@ -32,6 +34,8 @@ namespace KitchenDesigner.Core
 
         public static void SettleDerivedLinks()
         {
+            using var _ = PerfMarkers.SettleDerivedLinks.Auto();
+
             _membershipChanged = false;
             ScrewLegHostLink.ApplyAll(PartRegistry.All);
             Analysis.PipeFittingSizeLink.ApplyAll(PartRegistry.All);

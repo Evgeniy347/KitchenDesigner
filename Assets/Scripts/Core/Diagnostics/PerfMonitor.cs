@@ -8,7 +8,6 @@ namespace KitchenDesigner.Core
     public class PerfMonitor : MonoBehaviour
     {
         private const int DumpEveryFrames = 120;
-        private const int AttachAttemptFrames = 600;
 
         internal const int CsvCapacityFrames = 3600;
         internal const float DumpThresholdMs = 0.05f;
@@ -17,20 +16,29 @@ namespace KitchenDesigner.Core
         internal const int HudNameColumnWidth = 40;
         internal const int MillisecondsColumnWidth = 6;
         internal const float HudRefreshSeconds = 0.25f;
-        internal const string MarkerNeverAttachedText = "нет данных (маркер не подключён)";
 
         private static readonly float[] HistogramEdgesMs = { 8f, 16f, 33f, 50f };
         private static readonly string[] HistogramLabels = { "<8", "8-16", "16-33", "33-50", ">50" };
 
         public static PerfMonitor? Instance { get; private set; }
-        public static bool Enabled { get; set; }
+
+        private static bool _enabled;
+
+        public static bool Enabled
+        {
+            get => _enabled;
+            set
+            {
+                _enabled = value;
+                PerfMarkers.Measuring = value;
+            }
+        }
 
         public string HudText { get; private set; } = "";
 
         internal struct MarkerSlot
         {
             public string Name;
-            public ProfilerRecorder Recorder;
             public float PreviousFrameMs;
             public float SumMs;
             public float MaxMs;
@@ -68,9 +76,6 @@ namespace KitchenDesigner.Core
         private float _worstGcBytes;
         private float[]? _worstMarkersMs;
 
-        private int _attachFrames;
-        private bool _attachReported;
-
         private PerfCsvLog? _csv;
         private float[]? _row;
         private float _nextHudTime;
@@ -85,10 +90,7 @@ namespace KitchenDesigner.Core
 
             _slots = new MarkerSlot[names.Count];
             for (int i = 0; i < names.Count; i++)
-            {
                 _slots[i] = new MarkerSlot { Name = names[i] };
-                TryAttach(ref _slots[i]);
-            }
 
             _worstMarkersMs = new float[names.Count];
 
@@ -182,22 +184,8 @@ namespace KitchenDesigner.Core
         {
             if (_slots == null) return;
 
-            bool attaching = _attachFrames < AttachAttemptFrames;
-            if (attaching) _attachFrames++;
-
             for (int i = 0; i < _slots.Length; i++)
-            {
-                ref var s = ref _slots[i];
-                if (!s.Recorder.Valid)
-                {
-                    if (attaching) TryAttach(ref s);
-                    if (!s.Recorder.Valid) { s.PreviousFrameMs = 0f; continue; }
-                }
-
-                s.RecordFrame(s.Recorder.LastValue * 1e-6f);
-            }
-
-            if (!attaching) WarnOnceAboutMarkersThatNeverAttached();
+                _slots[i].RecordFrame(PerfMarkers.TakeFrameMs(i));
 
             float dtMs = Time.unscaledDeltaTime * 1000f;
             float gcBytes = _gcFrame.Valid ? _gcFrame.LastValue : 0f;
@@ -309,13 +297,6 @@ namespace KitchenDesigner.Core
             for (int k = 0; k < order.Length && shown < TopMarkersInDump; k++)
             {
                 int i = order[k];
-                if (slots[i].FramesMeasured == 0)
-                {
-                    sb.AppendLine("     " + slots[i].Name.PadRight(DumpNameColumnWidth)
-                                  + " " + MarkerNeverAttachedText);
-                    shown++;
-                    continue;
-                }
                 if (!WorthShowing(avgPerFrameMs[i]) && !WorthShowing(slots[i].MaxMs)) continue;
                 sb.AppendLine("     " + MarkerLine(slots[i].Name, avgPerFrameMs[i], DumpNameColumnWidth)
                               + " / " + Milliseconds(slots[i].MaxMs) + "ms");
@@ -385,6 +366,7 @@ namespace KitchenDesigner.Core
             _worstDtMs = 0f;
             _worstGcBytes = 0f;
             Array.Clear(_histogram, 0, _histogram.Length);
+            PerfMarkers.DropEverythingMeasuredSoFar();
 
             if (_slots == null) return;
             for (int i = 0; i < _slots.Length; i++)
@@ -393,27 +375,6 @@ namespace KitchenDesigner.Core
                 _slots[i].MaxMs = 0f;
                 _slots[i].FramesMeasured = 0;
             }
-        }
-
-        private static void TryAttach(ref MarkerSlot s)
-        {
-            var r = ProfilerRecorder.StartNew(ProfilerCategory.Scripts, s.Name);
-            if (r.Valid) s.Recorder = r;
-            else r.Dispose();
-        }
-
-        private void WarnOnceAboutMarkersThatNeverAttached()
-        {
-            if (_attachReported || _slots == null) return;
-            _attachReported = true;
-
-            var sb = new StringBuilder();
-            for (int i = 0; i < _slots.Length; i++)
-                if (!_slots[i].Recorder.Valid)
-                    sb.Append(sb.Length == 0 ? "" : ", ").Append(_slots[i].Name);
-
-            if (sb.Length > 0)
-                Debug.LogWarning($"[Perf] маркеры не подключены: {sb}");
         }
 
         private void OnDestroy()
@@ -426,10 +387,6 @@ namespace KitchenDesigner.Core
             if (_drawCalls.Valid) _drawCalls.Dispose();
             if (_batches.Valid) _batches.Dispose();
             if (_setPass.Valid) _setPass.Dispose();
-
-            if (_slots == null) return;
-            for (int i = 0; i < _slots.Length; i++)
-                if (_slots[i].Recorder.Valid) _slots[i].Recorder.Dispose();
         }
     }
 }

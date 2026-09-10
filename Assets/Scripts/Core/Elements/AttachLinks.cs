@@ -43,6 +43,8 @@ namespace KitchenDesigner.Core
         public static void Descendants(KitchenElement? root, List<KitchenElement> into)
         {
             if (root == null) return;
+            using var _ = PerfMarkers.AttachLinksDescendants.Auto();
+
             var seen = new HashSet<KitchenElement> { root };
             var queue = new Queue<KitchenElement>();
             queue.Enqueue(root);

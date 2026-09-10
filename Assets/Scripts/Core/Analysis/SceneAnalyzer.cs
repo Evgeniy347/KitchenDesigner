@@ -14,6 +14,8 @@ namespace KitchenDesigner.Core.Analysis
 
         public static List<AnalysisIssue> Analyze()
         {
+            using var _ = PerfMarkers.SceneAnalyzerAnalyze.Auto();
+
             var issues = new List<AnalysisIssue>();
             var all = PartRegistry.GetAll();
             if (all == null || all.Count == 0) return issues;

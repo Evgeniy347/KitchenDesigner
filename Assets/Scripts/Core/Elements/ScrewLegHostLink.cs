@@ -28,6 +28,8 @@ namespace KitchenDesigner.Core
         {
             if (scene == null) return 0;
 
+            using var _ = PerfMarkers.ScrewLegHostLinkApplyAll.Auto();
+
             CollectHosts(scene, _batchOwners, _batchCandidates);
 
             int changed = 0;

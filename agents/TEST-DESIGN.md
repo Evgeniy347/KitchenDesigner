@@ -105,6 +105,19 @@ another).
 Generalise it: when a class of defect produces no error, no log line and no red test, ask what
 the missing measurement is and write it once, rather than fixing the instances one by one.
 
+**A sensor built on a platform facility must be tested in the build where it will be read.**
+The F9 profiler printed its whole list of markers with «нет данных (маркер не подключён)» beside
+every one, for months, and nobody could tell — because it measured through `ProfilerMarker` +
+`ProfilerRecorder`, and `ProfilerMarker.Begin/End` are `[Conditional("ENABLE_PROFILER")]`. That
+symbol exists in the editor and in a development build, so every EditMode and PlayMode test was
+green; `KitchenDesigner/Build Windows` sets `development = false`, so in the player the user
+actually runs the calls are compiled away and no recorder attaches. The engine COUNTERS in the
+same dump kept working, which made the output look healthy. Two rules came out of it: measure
+with something that survives the release build (a `Stopwatch` in `PerfMarker` now does), and pin
+the two halves of the sensor to each other — `PerfMarkerCoverageTests` fails when a declared
+marker name has no measurement site, has two, or names a class it is not measured in. A silent
+sensor is worse than none: `0.00ms` beside a method reads as «this is free».
+
 And the second half of that lesson: **a sensor must read the same source the production code
 reads.** The handle gizmo was measured against the pixel height of `Camera.main` while the
 render test photographed it with its OWN 512×512 camera — two cameras, one number, and the

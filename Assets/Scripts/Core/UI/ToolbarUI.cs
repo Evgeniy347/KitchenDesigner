@@ -114,6 +114,8 @@ namespace KitchenDesigner.Core.UI
 
         public void Refresh()
         {
+            using var _ = PerfMarkers.ToolbarRefresh.Auto();
+
             if (_undoButton != null) _undoButton.interactable = CommandStack.CanUndo;
             if (_redoButton != null) _redoButton.interactable = CommandStack.CanRedo;
 

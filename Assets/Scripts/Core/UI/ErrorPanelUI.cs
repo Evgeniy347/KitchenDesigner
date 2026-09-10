@@ -146,6 +146,8 @@ namespace KitchenDesigner.Core.UI
 
         private void Analyze()
         {
+            using var _ = PerfMarkers.ErrorPanelAnalyze.Auto();
+
             _allIssues.Clear();
             _allIssues.AddRange(SceneAnalyzer.Analyze());
             _lastSceneVersion = SceneRevision.Version;

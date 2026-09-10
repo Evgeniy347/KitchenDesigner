@@ -59,17 +59,25 @@ public class PerfMonitorDumpTests
     }
 
     [Test]
-    public void WindowTop_ShowsAMarkerThatNeverAttached_AsNoData_NotAsZeroMilliseconds()
+    public void TurningTheMonitorOn_TurnsMeasuringOn_SoTheMarkersCannotStaySilent()
     {
-        string text = WindowTop(new PerfMonitor.MarkerSlot { Name = "Never.Attached" });
+        bool wasEnabled = PerfMonitor.Enabled;
+        try
+        {
+            PerfMonitor.Enabled = true;
+            Assert.IsTrue(PerfMarkers.Measuring,
+                "F9 переключает ровно один флаг; если он не доходит до PerfMarkers, "
+                + "каждая область замера видит Measuring == false и не записывает "
+                + "ничего — дамп снова печатает список имён без единого числа");
 
-        StringAssert.Contains("Never.Attached", text);
-        StringAssert.Contains(PerfMonitor.MarkerNeverAttachedText, text,
-            "маркер, к которому не удалось подключиться, без этой пометки выглядел бы "
-            + "как «этот метод ничего не стоит» — и оптимизировали бы не то");
-        StringAssert.DoesNotContain(
-            PerfMonitor.MarkerLine("Never.Attached", 0f, PerfMonitor.DumpNameColumnWidth), text,
-            "вместо честного «нет данных» это была бы строка с нулём миллисекунд");
+            PerfMonitor.Enabled = false;
+            Assert.IsFalse(PerfMarkers.Measuring,
+                "выключенный монитор обязан снимать плату за Stopwatch с горячих путей");
+        }
+        finally
+        {
+            PerfMonitor.Enabled = wasEnabled;
+        }
     }
 
     [Test]

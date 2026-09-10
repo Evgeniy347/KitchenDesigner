@@ -8,6 +8,8 @@ namespace KitchenDesigner.Core.Analysis
         {
             if (scene == null || !CarriesAFitting(scene)) return 0;
 
+            using var _ = PerfMarkers.PipeFittingSizeLinkApplyAll.Auto();
+
             var survey = ScenePipeSurvey.Of(scene);
 
             int changed = 0;

@@ -198,10 +198,11 @@ namespace KitchenDesigner.Core
                 return;
             }
 
+            using var _ = PerfMarkers.FacadeStepDoor.Auto();
+
             float target = _openTarget ? 1f : 0f;
             if (Mathf.Approximately(_doorProgress, target))
             {
-                using var _ = PerfMarkers.FacadeStepDoor.Auto();
                 if (_doorProgress <= 0f) CaptureClosed();
                 enabled = false;
                 return;
@@ -209,7 +210,6 @@ namespace KitchenDesigner.Core
 
             if (StillBlockedAtLastKnownSafeProgress()) return;
 
-            using var __ = PerfMarkers.FacadeStepDoor.Auto();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _activeStepDoors++;
 #endif
@@ -248,6 +248,7 @@ namespace KitchenDesigner.Core
         private void ApplyDoor()
         {
             if (_isPassenger) return;
+            using var _ = PerfMarkers.FacadeApplyDoor.Auto();
             var half = transform.localScale * 0.5f;
             FacadeDoor.Pose(_closedPos, _closedRot, half, _mode, _doorProgress, out var pos, out var rot);
             transform.SetPositionAndRotation(pos, rot);

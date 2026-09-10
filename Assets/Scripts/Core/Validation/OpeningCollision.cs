@@ -31,6 +31,8 @@ namespace KitchenDesigner.Core
             List<KitchenElement>? exclude = null,
             float precision = 0.001f)
         {
+            using var _ = PerfMarkers.OpeningFindMaxProgress.Auto();
+
             var moving = new List<OrientedBox>();
             getBoxes(0f, moving);
             if (moving.Count == 0) return 1f;
@@ -50,6 +52,8 @@ namespace KitchenDesigner.Core
             var obstacles = new List<OpeningObstacle>();
             BuildObstacles(closed, origin, frame, others, obstacles);
             if (obstacles.Count == 0) return 1f;
+
+            using var __ = PerfMarkers.OpeningScanForBlock.Auto();
 
             float prevFree = 0f, hit = -1f;
             for (int i = 1; i <= ScanSteps; i++)
@@ -78,6 +82,8 @@ namespace KitchenDesigner.Core
             IReadOnlyList<KitchenElement> others,
             List<OpeningObstacle> into)
         {
+            using var _ = PerfMarkers.OpeningBuildObstacles.Auto();
+
             float touchGap = TouchGapMm * AppConstants.MM_TO_UNITS;
             var pieces = new List<Bounds>();
 
