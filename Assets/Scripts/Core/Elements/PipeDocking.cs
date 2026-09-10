@@ -24,7 +24,8 @@ namespace KitchenDesigner.Core
 
             float toMm = 1f / AppConstants.MM_TO_UNITS;
             var ends = EndPortsOf(pipe, toMm);
-            var fit = PipeRunFit.ForRun(ends[0], ends[1], MouthsExcept(scene, pipe, toMm));
+            var fit = PipeRunFit.ForRun(ends[0], ends[1],
+                PortsExcept(scene, pipe.PartName, portsHeldByTheExcludedCountAsOffered: true));
             if (!fit.HasValue) return false;
 
             pipe.LengthMM = fit.Value.LengthMm;
@@ -48,31 +49,6 @@ namespace KitchenDesigner.Core
                     new PipeAxis(mouth.Outward.x, mouth.Outward.y, mouth.Outward.z), pipe.SizeId);
             }
             return ports;
-        }
-
-        private static List<PipePort> MouthsExcept(IReadOnlyList<KitchenElement> scene,
-            KitchenElement excluded, float toMm)
-        {
-            var result = new List<PipePort>();
-            for (int i = 0; i < scene.Count; i++)
-            {
-                var element = scene[i];
-                if (element == null || ReferenceEquals(element, excluded)) continue;
-                if (!(element is ISnapPorts ported)) continue;
-
-                var kind = element is PipeFittingElement fitting
-                    ? fitting.NodeKind
-                    : PipeNodeKind.Pipe;
-                for (int p = 0; p < ported.SnapPortCount; p++)
-                {
-                    var mouth = ported.SnapPortAt(p, element.transform.position);
-                    result.Add(new PipePort(element.PartName, kind, p,
-                        new PointMm(mouth.Position.x * toMm, mouth.Position.y * toMm,
-                            mouth.Position.z * toMm),
-                        new PipeAxis(mouth.Outward.x, mouth.Outward.y, mouth.Outward.z)));
-                }
-            }
-            return result;
         }
 
         public static void Seat(KitchenElement element, Vector3 poseOrigin,
@@ -257,7 +233,12 @@ namespace KitchenDesigner.Core
         }
 
         private static List<PipePort> FreePortsExcept(IReadOnlyList<KitchenElement> scene,
-            string excludedElementId)
+            string excludedElementId) =>
+            PortsExcept(scene, excludedElementId,
+                portsHeldByTheExcludedCountAsOffered: false);
+
+        private static List<PipePort> PortsExcept(IReadOnlyList<KitchenElement> scene,
+            string excludedElementId, bool portsHeldByTheExcludedCountAsOffered)
         {
             var result = new List<PipePort>();
             if (scene == null) return result;
@@ -265,9 +246,15 @@ namespace KitchenDesigner.Core
             var survey = ScenePipeSurvey.Of(scene);
             for (int i = 0; i < survey.Ports.Count; i++)
             {
-                if (!survey.Network.IsFree(i)) continue;
                 if (string.Equals(survey.Ports[i].ElementId, excludedElementId,
                         System.StringComparison.Ordinal)) continue;
+
+                int partner = survey.Network.PartnerOf(i);
+                if (partner != PipeNetwork.NoPartner
+                    && !(portsHeldByTheExcludedCountAsOffered
+                         && string.Equals(survey.Ports[partner].ElementId, excludedElementId,
+                             System.StringComparison.Ordinal))) continue;
+
                 result.Add(survey.Ports[i]);
             }
             return result;

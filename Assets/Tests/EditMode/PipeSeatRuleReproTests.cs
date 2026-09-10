@@ -24,10 +24,17 @@ using KitchenDesigner.Core.Plumbing;
 /// сразу — покадровый магнит (<c>SnapSystem.TrySnap</c> →
 /// <c>ElementGeometryExtensions.ToGeometryFor</c>), посадка при отпускании кнопки
 /// (<c>PipeDocking.Seat</c> → <c>ToPortedParts</c>), ремонт по сетке и снэп при
-/// изменении размера.</summary>
+/// изменении размера.
+///
+/// Вторая половина того же куста — ЗАНЯТОЕ устье: подгонка пролёта спрашивала
+/// правило связи, но не спрашивала сеть, и список ей подавали из всех устьев сцены
+/// подряд. Теперь список строится из сети (<c>PipeDocking.PortsExcept</c>): устье
+/// предлагается, если оно свободно ИЛИ занято самой этой трубой — второе
+/// обязательно, иначе подгонка перестала бы работать ровно там, где нужна.</summary>
 public class PipeSeatRuleReproTests : SnapTestBase
 {
     private const int PipeLengthMm = 118;
+    private const float SpanMm = 118.6f;
 
     [TearDown]
     public void ClearRegistry()
@@ -52,6 +59,16 @@ public class PipeSeatRuleReproTests : SnapTestBase
         _spawned.Add(go);
         return go.GetComponent<PipeFittingElement>();
     }
+
+    private PipeFittingElement Tee(string name)
+    {
+        var go = ElementFactory.CreatePipeTee(name, Vector3.zero);
+        _spawned.Add(go);
+        return go.GetComponent<PipeFittingElement>();
+    }
+
+    private static void PutPortAt(PipeFittingElement fitting, int portIndex, Vector3 world) =>
+        fitting.transform.position += world - fitting.PortPositionUnits(portIndex);
 
     private static void PutEndAt(PipeElement pipe, int end, Vector3 world) =>
         pipe.transform.position += world - pipe.SnapPortAt(end, pipe.transform.position).Position;
@@ -153,5 +170,92 @@ public class PipeSeatRuleReproTests : SnapTestBase
 
         Assert.IsTrue(report.portSeatWins,
             "иначе «магнит ничего не предлагает» было бы неотличимо от «магнит выключен»");
+    }
+
+    /// <summary>Занятое устье. <c>PipeRunFit.ForRun</c> отбирал устье по id элемента,
+    /// правилу связи, встречной оси и зазору — но не спрашивал, не занято ли оно, а
+    /// <c>PipeDocking</c> подавал ему ВСЕ устья сцены, занятые в том числе. Труба А
+    /// садилась на устье тройника, уже занятое трубой Б: два претендента на одно
+    /// устье, сеть выбирала одного, второй молча становился открытым концом —
+    /// <c>PIP-01</c>, причину которого пользователю не видно.</summary>
+    [Test]
+    public void RefittingARun_IgnoresAMouthAlreadyTakenByAnotherPipe()
+    {
+        var scene = SceneWithATakenTeeMouth(out PipeElement claimant, out PipeElement sitting);
+
+        int lengthBefore = claimant.LengthMM;
+        bool refitted = PipeDocking.RefitRunAfterResize(claimant, scene);
+
+        Assert.IsFalse(refitted,
+            "устье тройника уже занято трубой " + sitting.PartName + ", и предлагать его "
+            + "второй трубе нельзя: сеть выберет одну из двух, а вторая станет открытым "
+            + "концом без видимой причины");
+        Assert.AreEqual(lengthBefore, claimant.LengthMM, "длину при этом никто не менял");
+    }
+
+    /// <summary>Противоположный вход: то же самое устье, но СВОБОДНОЕ — подгонка
+    /// обязана сработать, иначе тест выше проходил бы и на коде, который не подгоняет
+    /// пролёт никогда.</summary>
+    [Test]
+    public void RefittingARun_TakesTheSameMouth_OnceItIsFree()
+    {
+        var scene = SceneWithATakenTeeMouth(out PipeElement claimant, out PipeElement sitting);
+        scene.Remove(sitting);
+        PartRegistry.Unregister(sitting);
+        Object.DestroyImmediate(sitting.gameObject);
+
+        bool refitted = PipeDocking.RefitRunAfterResize(claimant, scene);
+
+        Assert.IsTrue(refitted, "устье освободилось — пролёт подгоняется");
+        Assert.AreEqual(Mathf.RoundToInt(SpanMm), claimant.LengthMM,
+            "и длина берётся из ДРОБНОГО пролёта между устьями, округлённого до целых мм");
+    }
+
+    /// <summary>Труба, которая УЖЕ сидит на устье, обязана видеть его своим: иначе
+    /// подгонка пролёта перестала бы работать ровно в том случае, ради которого
+    /// написана — один конец сидит, второй не достаёт (см.
+    /// <c>PipeRunFitTests</c>).</summary>
+    [Test]
+    public void RefittingARun_StillSeesTheMouthItIsSittingOnItself()
+    {
+        var low = Coupling("Nizhnyaya");
+        Vector3 lowMouth = low.PortPositionUnits(1);
+        var high = Coupling("Verhnyaya");
+        PutPortAt(high, 0, lowMouth + new Vector3(0f, Units(SpanMm), 0f));
+
+        var pipe = Pipe("Truba", PipeLengthMm, Vector3.zero);
+        PutEndAt(pipe, 0, lowMouth);
+
+        var scene = new List<KitchenElement> { low, high, pipe };
+        Assert.AreEqual(1, JoinedLinks(low, high, pipe),
+            "стенд обязан начинаться с ОДНОГО закрытого стыка — нижнего");
+
+        Assert.IsTrue(PipeDocking.RefitRunAfterResize(pipe, scene),
+            "нижнее устье занято САМОЙ этой трубой, и не предложить его ей — значит "
+            + "отказаться подгонять пролёт именно там, где он и нужен");
+        Assert.AreEqual(Mathf.RoundToInt(SpanMm), pipe.LengthMM, "пролёт закрыт целой длиной");
+    }
+
+    private List<KitchenElement> SceneWithATakenTeeMouth(out PipeElement claimant,
+        out PipeElement sitting)
+    {
+        var tee = Tee("Troinik");
+        Vector3 upperMouth = tee.PortPositionUnits(1);
+
+        sitting = Pipe("Sidit", PipeLengthMm, Vector3.zero);
+        PutEndAt(sitting, 0, upperMouth);
+
+        var coupling = Coupling("Mufta");
+        PutPortAt(coupling, 0, upperMouth + new Vector3(0f, Units(SpanMm), 0f));
+
+        claimant = Pipe("Pretendent", PipeLengthMm, Vector3.zero);
+        PutEndAt(claimant, 0, upperMouth + new Vector3(0f, Units(1f), 0f));
+
+        var scene = new List<KitchenElement> { tee, sitting, coupling, claimant };
+
+        Assert.AreEqual(1, JoinedLinks(tee, sitting, coupling, claimant),
+            "стенд обязан начинаться с ОДНОЙ связи — трубы " + sitting.PartName
+            + " на верхнем устье тройника; без неё «устье занято» не воспроизведено");
+        return scene;
     }
 }
