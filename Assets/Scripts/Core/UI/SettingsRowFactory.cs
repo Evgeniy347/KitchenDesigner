@@ -47,6 +47,58 @@ namespace KitchenDesigner.Core.UI
             return toggle;
         }
 
+        public TMP_Dropdown AddDropdown(Transform parent, ref float y, string label,
+            List<string> options, int value, Action<int> onChanged, string? id = null,
+            Func<int>? read = null)
+        {
+            string key = id ?? label;
+            var rowRect = CreateRow("RowDd_" + key, parent, y);
+
+            _rowLabels[key] = CreateRowLabel("Lbl_" + key, rowRect, label, 0f);
+
+            var dropdown = UIFactory.CreateDropdown("Dd_" + key, rowRect, options,
+                new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0), new Vector2(ControlW, RowH),
+                onChanged);
+            dropdown.SetValueWithoutNotify(Mathf.Clamp(value, 0, Mathf.Max(0, options.Count - 1)));
+            dropdown.RefreshShownValue();
+            UIFactory.FitDropdownItems(dropdown);
+
+            if (read != null)
+                _readBackFromSettings.Add(() =>
+                {
+                    if (dropdown == null) return;
+                    dropdown.SetValueWithoutNotify(
+                        Mathf.Clamp(read(), 0, Mathf.Max(0, dropdown.options.Count - 1)));
+                    dropdown.RefreshShownValue();
+                });
+
+            y -= RowStep;
+            return dropdown;
+        }
+
+        public TextMeshProUGUI AddReadOnlyValue(Transform parent, ref float y, string label,
+            string value, string? id = null, Func<string>? read = null)
+        {
+            string key = id ?? label;
+            var rowRect = CreateRow("RowRo_" + key, parent, y);
+
+            _rowLabels[key] = CreateRowLabel("Lbl_" + key, rowRect, label, 0f);
+
+            var valueLabel = UIFactory.CreateLabel("Val_" + key, rowRect, value, UIStyle.FontBody,
+                new Vector2(ContentW * 0.5f - ControlW * 0.5f, 0), new Vector2(ControlW, RowH),
+                TextAnchor.MiddleLeft);
+            valueLabel.color = UIStyle.TextSecondary;
+
+            if (read != null)
+                _readBackFromSettings.Add(() =>
+                {
+                    if (valueLabel != null) valueLabel.text = read();
+                });
+
+            y -= RowStep;
+            return valueLabel;
+        }
+
         public void AddHeader(Transform parent, ref float y, string label)
         {
             var rowRect = CreateRow("RowHdr_" + label, parent, y);

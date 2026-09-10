@@ -78,5 +78,16 @@ namespace KitchenDesigner.Core
         public int photoSsgiSamples = KitchenSettings.PHOTO_SSGI_SAMPLES_DEFAULT;
         public int photoSsgiResolutionPct = KitchenSettings.PHOTO_SSGI_RESOLUTION_DEFAULT_PCT;
         public int photoSsgiBlurPx = KitchenSettings.PHOTO_SSGI_BLUR_DEFAULT_PX;
+
+        public int constructionRegion = (int)ConstructionRegion.Urals;
+        public int constructionFloorHeightMm = KitchenSettings.CONSTRUCTION_FLOOR_HEIGHT_DEFAULT_MM;
+        public int constructionMasonry = (int)KitchenDesigner.Core.Construction.MasonryTechnology.BrickSingle;
+        public int constructionJointMm = KitchenSettings.CONSTRUCTION_JOINT_DEFAULT_MM;
+        public int constructionWastePct = KitchenSettings.CONSTRUCTION_WASTE_DEFAULT_PCT;
+        public int constructionSoil = (int)SoilKind.Unknown;
+        public int constructionConcrete = (int)ConcreteGrade.B20;
+        public int constructionSandMm = KitchenSettings.CONSTRUCTION_SAND_DEFAULT_MM;
+        public int constructionGravelMm = KitchenSettings.CONSTRUCTION_GRAVEL_DEFAULT_MM;
+        public bool constructionCompacted = true;
     }
 }

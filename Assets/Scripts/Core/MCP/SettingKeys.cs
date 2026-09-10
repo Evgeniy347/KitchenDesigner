@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using KitchenDesigner.Core.Construction;
 using UnityEngine;
 
 namespace KitchenDesigner.Core.MCP
@@ -69,6 +70,27 @@ namespace KitchenDesigner.Core.MCP
                 () => S.WasdSpeed, v => S.WasdSpeed = v),
             SettingKey.Number("arrow_speed", "arrowSpeed",
                 () => S.ArrowSpeed, v => S.ArrowSpeed = v),
+
+            SettingKey.Number("construction_region", "constructionRegion",
+                () => (int)S.ConstructionRegion, v => S.ConstructionRegion = (ConstructionRegion)(int)v),
+            SettingKey.Number("construction_floor_height", "constructionFloorHeightMm",
+                () => S.ConstructionFloorHeightMm, v => S.ConstructionFloorHeightMm = (int)v),
+            SettingKey.Number("construction_masonry", "constructionMasonry",
+                () => (int)S.ConstructionMasonry, v => S.ConstructionMasonry = (MasonryTechnology)(int)v),
+            SettingKey.Number("construction_joint", "constructionJointMm",
+                () => S.ConstructionJointMm, v => S.ConstructionJointMm = (int)v),
+            SettingKey.Number("construction_waste", "constructionWastePct",
+                () => S.ConstructionWastePct, v => S.ConstructionWastePct = (int)v),
+            SettingKey.Number("construction_soil", "constructionSoil",
+                () => (int)S.ConstructionSoil, v => S.ConstructionSoil = (SoilKind)(int)v),
+            SettingKey.Number("construction_concrete", "constructionConcrete",
+                () => (int)S.ConstructionConcrete, v => S.ConstructionConcrete = (ConcreteGrade)(int)v),
+            SettingKey.Number("construction_sand", "constructionSandMm",
+                () => S.ConstructionSandMm, v => S.ConstructionSandMm = (int)v),
+            SettingKey.Number("construction_gravel", "constructionGravelMm",
+                () => S.ConstructionGravelMm, v => S.ConstructionGravelMm = (int)v),
+            SettingKey.Flag("construction_compacted", "constructionCompacted",
+                () => S.ConstructionCompacted, v => S.ConstructionCompacted = v),
 
             SettingKey.Flag("photo_active", "photoActive",
                 () => PhotoMode.Active, PhotoMode.SetActive),

@@ -318,6 +318,7 @@ namespace KitchenDesigner.Core
             _wasdSpeed = 1f;
             _arrowSpeed = 1f;
             ResetPhotoLook();
+            ResetConstruction();
         }
 
         public KitchenSettingsData ToData()
@@ -372,6 +373,7 @@ namespace KitchenDesigner.Core
                 photoLampShadows = _photoLampShadows
             };
             CapturePhotoTuning(data);
+            CaptureConstruction(data);
             return data;
         }
 
@@ -394,6 +396,7 @@ namespace KitchenDesigner.Core
             _wasdSpeed = Mathf.Clamp(data.wasdSpeed, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
             _arrowSpeed = Mathf.Clamp(data.arrowSpeed, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
             ApplyPhotoSettings(data);
+            ApplyConstruction(data);
         }
 
         private void ApplyViewPresets(KitchenSettingsData data)

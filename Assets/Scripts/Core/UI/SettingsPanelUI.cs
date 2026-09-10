@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core.UI
         private const float BodyBottomInset = PanelH * 0.5f + CloseY + CloseH * 0.5f + UIStyle.GapInner;
 
         private static readonly string[] TabLabels =
-            { "Проект", "Вид", "Управление", "Фото режим", "Свет", "MCP", "О программе" };
+            { "Проект", "Вид", "Строительство", "Управление", "Фото режим", "Свет", "MCP", "О программе" };
 
         private readonly SettingsRowFactory _rows = new();
         private readonly SettingsTabStrip _tabs = new();
@@ -62,6 +62,7 @@ namespace KitchenDesigner.Core.UI
 
             _projectTab.Build(AddPage("Tab_Project"), s, ContentTopY);
             _viewTab.Build(AddPage("Tab_View"), ContentTopY);
+            new SettingsConstructionTab(_rows).Build(AddPage("Tab_Construction"), s, ContentTopY);
             new SettingsControlTab(_rows).Build(AddPage("Tab_Control"), s, ContentTopY);
             _photoTab.Build(AddPage("Tab_Photo"), s, ContentTopY);
             new SettingsLightTab(_rows).Build(AddPage("Tab_Light"), s, ContentTopY);

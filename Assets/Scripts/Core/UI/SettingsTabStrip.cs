@@ -11,6 +11,7 @@ namespace KitchenDesigner.Core.UI
         public const float TabH = 32f;
         public const float TabGap = 4f;
         public const float TabPaddingPx = 14f;
+        public const float MinTabFontSize = 11f;
 
         private readonly List<Button> _buttons = new();
         private readonly List<GameObject> _pages = new();
@@ -65,8 +66,14 @@ namespace KitchenDesigner.Core.UI
                 rect.sizeDelta = new Vector2(w, TabH);
                 rect.anchoredPosition = new Vector2(x + w * 0.5f, y);
                 x += w + TabGap;
+
+                var caption = _buttons[i].GetComponentInChildren<TMPro.TextMeshProUGUI>();
+                if (caption != null) caption.fontSize = CaptionFontSize(scale);
             }
         }
+
+        public static float CaptionFontSize(float stripScale) =>
+            stripScale >= 1f ? TabFontSize : Mathf.Max(MinTabFontSize, TabFontSize * stripScale);
 
         private static float CaptionWidth(Button button, string label)
         {
