@@ -19,12 +19,21 @@ namespace KitchenDesigner.Core.MCP
             {
                 name = l.name,
                 dimXMm = l.dimensionsMM.x, dimYMm = l.dimensionsMM.y, dimZMm = l.dimensionsMM.z,
-                count = l.count, areaPerBoardM2 = l.areaPerBoardM2, totalAreaM2 = l.totalAreaM2
+                hasDims = l.hasDims,
+                count = l.count, areaPerBoardM2 = l.areaPerBoardM2, totalAreaM2 = l.totalAreaM2,
+                material = l.material, grooves = l.grooves,
+                edgeL1 = l.edgeL1, edgeL2 = l.edgeL2, edgeW1 = l.edgeW1, edgeW2 = l.edgeW2,
+                section = l.section, unit = l.unit.Label(),
+                qtyPerItem = l.qtyPerItem, qtyTotal = l.qtyTotal
             }).ToList();
+
+            var totalsByUnit = spec.totalsByUnit?.ToDictionary(kv => kv.Key.Label(), kv => kv.Value)
+                ?? new Dictionary<string, float>();
 
             return McpResponse.Result(req.id, new SpecInfo
             {
-                lines = lines, totalCount = spec.totalCount, totalAreaM2 = spec.totalAreaM2
+                lines = lines, totalCount = spec.totalCount, totalAreaM2 = spec.totalAreaM2,
+                totalsByUnit = totalsByUnit
             });
         }
 

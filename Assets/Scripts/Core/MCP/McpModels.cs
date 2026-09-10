@@ -142,6 +142,7 @@ namespace KitchenDesigner.Core.MCP
         public List<SpecLineInfo> lines = new();
         public int totalCount;
         public float totalAreaM2;
+        public Dictionary<string, float> totalsByUnit = new();
     }
 
     [Serializable]
@@ -151,9 +152,22 @@ namespace KitchenDesigner.Core.MCP
         public int dimXMm;
         public int dimYMm;
         public int dimZMm;
+        public bool hasDims;
         public int count;
         public float areaPerBoardM2;
         public float totalAreaM2;
+
+        public string material = string.Empty;
+        public string grooves = string.Empty;
+        public string edgeL1 = string.Empty;
+        public string edgeL2 = string.Empty;
+        public string edgeW1 = string.Empty;
+        public string edgeW2 = string.Empty;
+
+        public string section = string.Empty;
+        public string unit = string.Empty;
+        public float qtyPerItem;
+        public float qtyTotal;
     }
 
     [Serializable]
