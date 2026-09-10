@@ -46,6 +46,8 @@ public class UiElementTypeLadderTests
         ("AssembledFacadeFieldsEditor.cs", "реестр редакторов"),
         ("ScrewLegFieldsEditor.cs", "реестр редакторов"),
         ("PipeFieldsEditor.cs", "реестр редакторов"),
+        ("PipeFittingFieldsEditor.cs", "реестр редакторов: ветку выбрал Handles(), схема портов "
+            + "строится по PipeFittingSpec.Legs, а не по виду фитинга"),
         ("BathtubFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
         ("BathMixerFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
         ("ShowerColumnFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
