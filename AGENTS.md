@@ -2,6 +2,19 @@
 
 **Language policy:** All internal reasoning and planning MUST be done in English. Final responses to the user in chat MUST be written in Russian.
 
+## NEVER `git stash` — the working tree is shared
+
+Up to five agents edit this ONE working tree at the same time. `git stash` takes their
+uncommitted work too, not just yours, and `stash pop` over files that moved on disk in the
+meantime restores a state nobody can verify. It has already happened twice in one night, the
+second time by an agent whose own task text forbade it two paragraphs earlier — so the rule
+lives here, at the top of the map, and not only in `agents/GIT.md`.
+
+Same for `git reset --hard`, `git clean`, and `git checkout`/`restore` without a path. To
+look at the committed version of a file, use `git show HEAD:path/file` — it writes wherever
+you point it and touches nothing. A red test in a file that is not yours is not yours to
+diagnose: name it in the report and move on.
+
 ## Output discipline (keep the context small)
 
 A debugging session burns context through tool OUTPUT, not through source size — the rules
