@@ -12,8 +12,26 @@ public class ContextMenuGapSectionTests
     private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню — 0,31 с,
+    /// и десять сборок это 3,0 с из прогона EditMode при бюджете 170 с. Почему это
+    /// безопасно — в сводке <see cref="ContextMenuLayoutTests"/>: боевой сценарий и есть
+    /// ОДНА панель, переоткрываемая через <c>Open</c>.
+    ///
+    /// Свёрнутость секции зазоров — поле панели, а не элемента, и живёт она теперь
+    /// весь класс. Сбрасывает её <c>_gaps.Collapse()</c> внутри <c>Open</c>, поэтому
+    /// <see cref="OpeningAnElement_ShowsTheGapListCollapsed"/> раскрывает секцию сам и
+    /// сам же требует, чтобы <c>Open</c> её свернул. Три теста панель не открывают —
+    /// <see cref="GapWidgets_KeepTheirNames"/>, <see cref="GapFields_AreOrderedByGapSidesAll"/>
+    /// и <see cref="GapField_RejectsLetters"/>: первые два читают то, что собрано в
+    /// <c>Build</c> (имена узлов и порядок полей — <c>Transform.Find</c> находит и
+    /// погашенные), третий проверяет <c>onValidateInput</c>, которому состояние панели
+    /// безразлично.
+    ///
+    /// У каждого теста СВОИ числа зазоров: с общей панелью значение, случайно
+    /// совпавшее со значением предыдущего теста, не отличить от значения, которое
+    /// панель не переписала (agents/TEST-DESIGN.md → «non-default numbers»).</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
@@ -22,13 +40,39 @@ public class ContextMenuGapSectionTests
         _menu!.Build(_canvas!.transform);
     }
 
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь.
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: <c>ApplyOncePerFrame</c>
+    /// пропускает один Apply за кадр, а в EditMode <c>Time.frameCount</c> стоит на
+    /// месте, поэтому окно, взведённое предыдущим тестом, съело бы правку
+    /// <see cref="ApplyFromField_WritesTheGapOntoTheElement_AndIsUndoable"/>. Фокус
+    /// снимается по той же причине: <c>RefreshUnfocused</c> МОЛЧА пропускает
+    /// сфокусированное поле — и даёт как ложное «значение не обновилось», так и
+    /// ложное «обновилось».</summary>
+    [SetUp]
+    public void Setup()
+    {
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
+    }
+
+    /// <summary><c>Close()</c> обязан идти ДО <c>DestroyImmediate</c> спавнов: он
+    /// обнуляет <c>_target</c> панели, иначе живая панель осталась бы с уничтоженным
+    /// фасадом в руках.</summary>
     [TearDown]
     public void Teardown()
     {
         SideHighlighter.Hide();
         CommandStack.Clear();
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        if (_menu != null) _menu!.Close();
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -92,9 +136,9 @@ public class ContextMenuGapSectionTests
     public void Open_ElementWithoutGaps_ShowsZeroes()
     {
         var facade = Facade();
-        facade.GapLeft = 7;
+        facade.GapLeft = 13;
         _menu!.Open(facade);
-        Assume.That(GapField(GapSide.Left).text.Replace("​", ""), Is.EqualTo("7"));
+        Assume.That(GapField(GapSide.Left).text.Replace("​", ""), Is.EqualTo("13"));
 
         _menu!.Open(Board());
 
@@ -106,7 +150,7 @@ public class ContextMenuGapSectionTests
     public void Counter_CountsSidesWithANonZeroGap()
     {
         var facade = Facade();
-        facade.GapLeft = 5;
+        facade.GapLeft = 17;
         facade.GapRight = 0;
         facade.GapTop = 0;
         facade.GapBottom = 0;
@@ -130,7 +174,7 @@ public class ContextMenuGapSectionTests
         _menu!.Open(facade);
         Assume.That(Counter(), Does.Contain("(0)"));
 
-        GapField(GapSide.Left).text = "5";
+        GapField(GapSide.Left).text = "19";
         _menu!.Gaps.RefreshCounter();
 
         StringAssert.Contains("(1)", Counter(),
