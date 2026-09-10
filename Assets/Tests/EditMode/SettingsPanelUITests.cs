@@ -80,9 +80,11 @@ public class SettingsPanelUITests
     // ── Tabs ────────────────────────────────────────────────
 
     [Test]
-    public void SixTabButtons_Exist()
+    public void EveryTabButton_Exists()
     {
-        for (int i = 0; i < 6; i++)
+        // Восемь, а не шесть: «Строительство» (3ffa6d09) стало восьмой вкладкой, а счётчик в
+        // этом цикле остался на шести и молча перестал смотреть на две последние кнопки.
+        for (int i = 0; i < 8; i++)
         {
             var tab = _canvas!.transform.Find($"SettingsPanel/Tab_{i}");
             Assert.IsNotNull(tab, $"Tab_{i} should exist");
@@ -120,20 +122,59 @@ public class SettingsPanelUITests
     [Test]
     public void SwitchTab_OnlyActivePageVisible()
     {
-        var project = _canvas!.transform.Find(PagePath + "Tab_Project").gameObject;
-        var photo = _canvas!.transform.Find(PagePath + "Tab_Photo").gameObject;
-        var about = _canvas!.transform.Find(PagePath + "Tab_About").gameObject;
+        // Кнопку ищем по НАДПИСИ, а не по индексу `Tab_6`: восьмая вкладка «Строительство»
+        // встала третьей (3ffa6d09/5ffd4a9c) и сдвинула номера всем, кто стоял правее, — тест
+        // тогда честно нажимал «MCP» и требовал показать «О программе». Индекс тут вообще не
+        // предмет проверки; предмет — «видна ровно одна страница», и он спрашивается у ВСЕХ
+        // страниц сразу, а не у трёх выбранных руками.
+        var pages = TabPages();
+        Assert.AreEqual(8, pages.Count,
+            "страниц столько же, сколько вкладок на полосе: " + string.Join(", ", pages.Select(p => p.name)));
 
-        Assert.IsTrue(project.activeSelf, "Project tab should be active by default");
-        Assert.IsFalse(photo.activeSelf, "Photo tab should be hidden by default");
-        Assert.IsFalse(about.activeSelf, "About tab should be hidden by default");
+        Assert.AreEqual("Tab_Project", TheOnlyVisiblePage(pages),
+            "по умолчанию открыта первая вкладка — «Проект»");
 
-        // Tab_1 → «Вид», Tab_2 → «Управление», Tab_3 → «Фото режим»,
-        // Tab_4 → «Свет», Tab_5 → «MCP», Tab_6 → «О программе».
-        _canvas!.transform.Find("SettingsPanel/Tab_6").GetComponent<Button>().onClick.Invoke();
-        Assert.IsFalse(project.activeSelf, "Project should hide after switching to About");
-        Assert.IsTrue(about.activeSelf, "About should show after click");
-        Assert.IsFalse(photo.activeSelf, "Photo should stay hidden");
+        ClickTab("О программе");
+        Assert.AreEqual("Tab_About", TheOnlyVisiblePage(pages),
+            "после клика по «О программе» видна её страница и никакая другая");
+
+        ClickTab("Строительство");
+        Assert.AreEqual("Tab_Construction", TheOnlyVisiblePage(pages),
+            "и новая вкладка переключается так же, как остальные семь");
+    }
+
+    private List<GameObject> TabPages()
+    {
+        var content = _canvas!.transform.Find(PagePath.TrimEnd('/'));
+        Assert.IsNotNull(content, "область прокрутки окна настроек: " + PagePath);
+        var pages = new List<GameObject>();
+        foreach (Transform child in content!)
+            if (child.name.StartsWith("Tab_", System.StringComparison.Ordinal))
+                pages.Add(child.gameObject);
+        return pages;
+    }
+
+    private static string TheOnlyVisiblePage(IReadOnlyList<GameObject> pages)
+    {
+        var visible = pages.Where(p => p.activeSelf).Select(p => p.name).ToList();
+        Assert.AreEqual(1, visible.Count,
+            "видна обязана быть ровно одна страница — иначе параметры двух вкладок наложатся "
+            + "друг на друга прямо в окне. Активны: " + string.Join(", ", visible));
+        return visible[0];
+    }
+
+    private void ClickTab(string caption)
+    {
+        var panel = _canvas!.transform.Find("SettingsPanel");
+        foreach (Transform child in panel!)
+        {
+            if (!child.name.StartsWith("Tab_", System.StringComparison.Ordinal)) continue;
+            var label = child.GetComponentInChildren<TextMeshProUGUI>();
+            if (label == null || label.text.Replace("\u200b", "") != caption) continue;
+            child.GetComponent<Button>().onClick.Invoke();
+            return;
+        }
+        Assert.Fail($"кнопки вкладки «{caption}» на полосе нет");
     }
 
     [Test]
