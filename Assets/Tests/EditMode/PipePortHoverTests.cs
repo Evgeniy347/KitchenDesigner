@@ -176,7 +176,7 @@ public class PipePortHoverTests
         hover.EnterOption(1, PipeConnectionRule.NoChoice);
 
         Assert.IsTrue(ScenePreview.IsShowing,
-            "«как будет, если выбрать „нет"» — это тоже показ, а не молчание");
+            "«как будет, если выбрать „нет“» — это тоже показ, а не молчание");
         Assert.IsNull(ScenePreview.Ghost, "снятие детали не ставит на её место ничего нового");
         Assert.AreEqual(0, EnabledRenderers(seated),
             "заглушка, которую снимут, гаснет на время превью — иначе нечем "

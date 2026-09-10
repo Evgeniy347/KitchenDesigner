@@ -64,7 +64,7 @@ public class ScenePreviewTests
             "показ «ничего не будет» — тоже показ, а не тишина");
         Assert.IsNull(ScenePreview.Ghost, "спавнить нечего — призрака и не должно быть");
         Assert.AreEqual(0, EnabledRenderers(replaced),
-            "без гашения заменяемого нечем показать «как будет, если выбрать „нет"»");
+            "без гашения заменяемого нечем показать «как будет, если выбрать „нет“»");
 
         ScenePreview.Leave();
 
