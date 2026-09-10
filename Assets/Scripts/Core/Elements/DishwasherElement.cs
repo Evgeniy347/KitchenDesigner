@@ -55,6 +55,8 @@ namespace KitchenDesigner.Core
 
         public const float FACADE_MOUNT_GAP_MM = DishwasherBody.FACADE_MOUNT_GAP_MM;
 
+        public static Vector3 HingeLocalMM => DishwasherBody.HingeLocalMM;
+
         public const int CONTROL_PANEL_HEIGHT_MM = DishwasherBody.CONTROL_PANEL_HEIGHT_MM;
         public const float OVERLAY_THICKNESS_MM = DishwasherBody.OVERLAY_THICKNESS_MM;
 
