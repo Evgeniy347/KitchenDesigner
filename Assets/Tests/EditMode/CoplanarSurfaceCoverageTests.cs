@@ -10,8 +10,7 @@ using KitchenDesigner.Core;
 /// `DishwasherCoplanarSurfaceTests` проверяют это на ЧИСТОЙ математике
 /// (`OvenBody`/`DishwasherBody`) и гоняются быстрым `dotnet test`; этот класс —
 /// тот же сенсор (`CoplanarSurfaceDetector`), но по РЕАЛЬНОЙ построенной сцене
-/// каждого типа элемента, как `SpecificationCoverageGuardTests` гоняет
-/// `IQuantifies`/`ISpecificationParts` по каждому типу из <see cref="EveryElementType"/>.
+/// каждого типа элемента.
 ///
 /// Источник коробок — не отдельная «Body»-математика (её у большинства типов
 /// нет и заводить ради одного сенсора не требуется, `AGENTS.md` →
@@ -27,14 +26,15 @@ using KitchenDesigner.Core;
 /// уходит по кривой. Прежде чем заносить находку в исключения ниже, смотри
 /// скриншот или меш, а не только числа сенсора.
 ///
+/// Спавн всех типов настоящей фабрикой — единственное, что здесь дорого, и он
+/// НЕ свой: показания снимает общий <see cref="ElementSurfaceSweep"/>, один
+/// проход на весь прогон EditMode для четырёх наборов сторожей. Вопрос этого
+/// класса остался прежним и задаётся тем же сенсором по тем же `Renderer.bounds`.
+///
 /// Требует настоящий Unity (реальные `GameObject`/`MeshRenderer`), поэтому в
-/// `mutation-test.ps1 -TestsOnly` не входит — гоняется в общем прогоне
-/// PlayMode/EditMode очередью менеджера, как и `SpecificationCoverageGuardTests`.</summary>
+/// `mutation-test.ps1 -TestsOnly` не входит.</summary>
 public class CoplanarSurfaceCoverageTests
 {
-    [TearDown]
-    public void TearDown() => EveryElementType.ClearScene();
-
     /// <summary>Первый прогон (2026-09-10) нашёл 4 типа с находками. Мойка и окно —
     /// причинные дефекты, починены в геометрии (`SinkMesh`, `WindowElement`) той же
     /// кампанией: стенки чаши утоплены до дна, рама окна утоплена под откос — по
@@ -57,21 +57,6 @@ public class CoplanarSurfaceCoverageTests
             + "Утопить бачок под кнопку тоже нельзя — его верх и есть заявленная высота прибора. "
             + "Кнопка — маленькая декоративная врезка внутри крышки, не деталь во весь габарит" },
     };
-
-    private static List<string> FightsFor(Type type)
-    {
-        EveryElementType.ClearScene();
-        var element = EveryElementType.Spawn(type, "Cop" + type.Name);
-
-        var renderers = ElementRenderers.BodyOf(element);
-        if (renderers.Count < 2) return new List<string>();
-
-        var boxes = renderers
-            .Select(r => CoplanarSurfaceDetector.FromWorldBounds(r.bounds))
-            .ToArray();
-        return CoplanarSurfaceDetector.Fights(
-            boxes, i => ElementRenderers.PathOf(element, renderers[i]));
-    }
 
     [Test]
     public void EveryExcludedType_StillExistsAsAConcreteElementType()
@@ -98,7 +83,7 @@ public class CoplanarSurfaceCoverageTests
     {
         var stale = new List<string>();
         foreach (var type in KnownLegitimateCoplanarSurfaces.Keys)
-            if (FightsFor(type).Count == 0)
+            if (ElementSurfaceSweep.Of(type).CoplanarFights.Count == 0)
                 stale.Add(type.Name);
 
         Assert.IsEmpty(stale,
@@ -112,13 +97,12 @@ public class CoplanarSurfaceCoverageTests
     {
         var violationsByType = new List<string>();
 
-        foreach (var type in EveryElementType.Declared())
+        foreach (var row in ElementSurfaceSweep.Rows)
         {
-            var fights = FightsFor(type);
-            if (fights.Count == 0) continue;
-            if (KnownLegitimateCoplanarSurfaces.ContainsKey(type)) continue;
+            if (row.CoplanarFights.Count == 0) continue;
+            if (KnownLegitimateCoplanarSurfaces.ContainsKey(row.ElementType)) continue;
 
-            violationsByType.Add(type.Name + ":\n  " + string.Join("\n  ", fights));
+            violationsByType.Add(row.Name + ":\n  " + string.Join("\n  ", row.CoplanarFights));
         }
 
         Assert.IsEmpty(violationsByType,
@@ -129,5 +113,18 @@ public class CoplanarSurfaceCoverageTests
             + "меняя общую толщину узла; если пара законна по конструкции — заведите "
             + "исключение в KnownLegitimateCoplanarSurfaces с причиной. Найдено:\n\n"
             + string.Join("\n\n", violationsByType));
+    }
+
+    /// <summary>Сторож самого сенсора: паре граней вообще должно быть с чем спорить.
+    /// Тип с одним рендерером сенсор пропускает молча, и если таких вдруг станет
+    /// большинство — проверка выше позеленеет, ничего не проверив.</summary>
+    [Test]
+    public void TheSensor_HasSomethingToCompare_OnMostTypes_OtherwiseItProvesNothing()
+    {
+        var rows = ElementSurfaceSweep.Rows;
+        var single = rows.Where(r => r.BodyCount < 2).Select(r => r.Name).ToList();
+        Assert.Less(single.Count, rows.Count / 2,
+            "у большинства типов меньше двух рендереров — сенсору нечего сравнивать, и он "
+            + "зеленеет на любом коде. Одиночные: " + string.Join(", ", single));
     }
 }

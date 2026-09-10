@@ -132,49 +132,112 @@ public class CutoutOwnerGuardTests
         return OpenHoles();
     }
 
+    /// <summary>Стенд (стена + столешница) один на весь перебор, а не свой на каждый
+    /// тип: он ничем не отличается от типа к типу, а стоил двух спавнов настоящей
+    /// фабрикой из трёх — 74 из 111 на один этот тест. Гость уносится сам
+    /// (<c>DestroyImmediate</c> зовёт <c>OnDestroy</c>, то есть боевой путь снятия
+    /// врезки), после чего стенд ОБЯЗАН вернуться к первозданному виду — и это
+    /// проверяется, а не предполагается: ноль открытых дыр, простая коробка
+    /// столешницы, ровно два элемента в реестре. Разошлось — стенд ставится заново,
+    /// а расхождение попадает в отчёт с именем типа, который его оставил. Так
+    /// повторное использование стенда не может тихо подменить чувствительность:
+    /// либо стенд чист, либо тест об этом говорит.
+    ///
+    /// Спрашивается РОВНО то, о чём этот набор: открытых вырезов ноль и меш
+    /// столешницы — простая коробка. Всё остальное, что тип мог наплодить в сцене
+    /// (спутники, пулы, привязки), уносится молча: это не вопрос этого сторожа, и
+    /// превращать его в новое красное было бы подменой темы.</summary>
+    private const int PristineTopVertices = 24;
+
+    private static void SweepEverythingButTheStand(GameObject wall, GameObject top)
+    {
+        foreach (var el in UnityEngine.Object.FindObjectsByType<KitchenElement>())
+        {
+            if (el == null) continue;
+            if (el.gameObject == wall || el.gameObject == top) continue;
+            UnityEngine.Object.DestroyImmediate(el.gameObject);
+        }
+    }
+
+    private static string? StandIsDirty(GameObject top)
+    {
+        int holes = OpenHoles();
+        if (holes != 0) return holes + " открытых вырезов осталось на стенде";
+
+        var mesh = top.GetComponent<MeshFilter>();
+        var count = mesh != null && mesh.sharedMesh != null ? mesh.sharedMesh.vertexCount : -1;
+        if (count != PristineTopVertices)
+            return "меш столешницы " + count + " вершин вместо " + PristineTopVertices;
+
+        return null;
+    }
+
     [Test]
     public void EveryTypeThatCutsItsHost_TakesTheHoleWithItWhenDeleted_AndBringsItBackOnUndo()
     {
         var offenders = new List<string>();
         int typesThatCut = 0;
 
+        EveryElementType.ClearScene();
+        CommandStack.Clear();
+        var (wallGo, topGo) = BuildHosts();
+
         foreach (var (type, _) in EveryElementType.Makers)
         {
-            EveryElementType.ClearScene();
             CommandStack.Clear();
-            BuildHosts();
 
             var el = EveryElementType.Spawn(type, "Сторож " + type.Name);
             int opened = TryToOpenAHole(el);
+            var guest = el.gameObject;
 
             if (opened == 0)
             {
                 if (el is ICutsItsHost)
                     offenders.Add($"{type.Name}: объявил ICutsItsHost, но перепись дыр его не увидела — "
                         + "механизм врезки новый, а OpenHoles о нём не знает");
-                continue;
             }
-
-            typesThatCut++;
-
-            if (el is not ICutsItsHost)
+            else if (el is not ICutsItsHost)
             {
+                typesThatCut++;
                 offenders.Add($"{type.Name}: прорезал хозяина, но НЕ объявил ICutsItsHost — "
                     + "SceneMembership.Leave/Return его не позовут, и дыра переживёт хозяина");
-                continue;
+            }
+            else
+            {
+                typesThatCut++;
+
+                CommandStack.Execute(new DeleteCommand(guest));
+                int afterDelete = OpenHoles();
+                if (afterDelete != 0)
+                    offenders.Add($"{type.Name}: удалили хозяина выреза, а в сцене осталось {afterDelete} "
+                        + "открытых вырезов — дыра пережила того, кто её прорезал");
+
+                CommandStack.Undo();
+                int afterUndo = OpenHoles();
+                if (afterUndo != opened)
+                    offenders.Add($"{type.Name}: Ctrl+Z вернул хозяина, но вырезов стало {afterUndo} "
+                        + $"вместо {opened} — обратный путь не восстановил дыру");
             }
 
-            CommandStack.Execute(new DeleteCommand(el.gameObject));
-            int afterDelete = OpenHoles();
-            if (afterDelete != 0)
-                offenders.Add($"{type.Name}: удалили хозяина выреза, а в сцене осталось {afterDelete} "
-                    + "открытых вырезов — дыра пережила того, кто её прорезал");
+            // Гость уходит боевым путём: DestroyImmediate зовёт OnDestroy, а он и
+            // снимает врезку. Стенд после этого обязан быть первозданным.
+            CommandStack.Clear();
+            // PartRegistry сам отказывается держать уничтоженный объект
+            // (agents/TEST-DESIGN.md → «MissingReferenceException … лечится в общей
+            // коллекции»), поэтому снимать гостя с учёта руками не нужно.
+            SweepEverythingButTheStand(wallGo, topGo);
+            SceneChangeTracker.Poll();
 
-            CommandStack.Undo();
-            int afterUndo = OpenHoles();
-            if (afterUndo != opened)
-                offenders.Add($"{type.Name}: Ctrl+Z вернул хозяина, но вырезов стало {afterUndo} "
-                    + $"вместо {opened} — обратный путь не восстановил дыру");
+            var dirty = StandIsDirty(topGo);
+            if (dirty != null)
+            {
+                offenders.Add($"{type.Name}: гость ушёл, а стенд остался не первозданным — {dirty}. "
+                    + "Это тот же дефект, что и «дыра пережила хозяина», только пойманный на "
+                    + "выходе, а не через DeleteCommand");
+                EveryElementType.ClearScene();
+                CommandStack.Clear();
+                (wallGo, topGo) = BuildHosts();
+            }
         }
 
         Assert.Greater(typesThatCut, 0,
