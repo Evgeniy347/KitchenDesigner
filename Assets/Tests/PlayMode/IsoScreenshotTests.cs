@@ -2138,11 +2138,30 @@ public class IsoScreenshotTests : ElementFrameTests
         yield return RenderElementIso(go, "iso_oven.png", 3f);
     }
 
+    /// <summary>Первые два кадра машин вышли ГОЛОЙ КОРОБКОЙ, и это не дефект геометрии:
+    /// вся она — люк, обод, стекло, панель управления и расточка барабана — живёт на грани
+    /// +Z, а камера стоит со стороны -Z, то есть в затылок. Ровно так же выглядит и снимок
+    /// посудомойки, снятый тем же прогоном. Поэтому машина разворачивается тем же
+    /// <see cref="FrontTowardsCameraDeg"/>, что диван и стул: разворот не трогает
+    /// габаритную коробку, и общий IsoDir остаётся нетронутым — его правка пересняла бы
+    /// каждый чужой эталон.
+    ///
+    /// Открытый люк снимается отдельным кадром У КАЖДОЙ из двух машин: за ним видно
+    /// цилиндрическое углубление барабана, и это единственная картинка, на которой оно
+    /// вообще есть. Что углубление и люк доезжают до сцены, спрашивает уже не кадр, а
+    /// LaundryMachineElementTests — кадр только показывает это человеку.</summary>
     [UnityTest]
     public IEnumerator IsoLaundryMachine_WasherClosed()
     {
         yield return RenderLaundryMachine(LaundryMachineKind.Washer, false,
             "IsoWasher", "iso_laundry_washer.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoLaundryMachine_WasherDoorOpen()
+    {
+        yield return RenderLaundryMachine(LaundryMachineKind.Washer, true,
+            "IsoWasherOpen", "iso_laundry_washer_open.png");
     }
 
     [UnityTest]
@@ -2159,6 +2178,7 @@ public class IsoScreenshotTests : ElementFrameTests
         float half = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
         var go = ElementFactory.CreateLaundryMachine(kind, dims, name, new Vector3(0f, half, 0f));
         _spawned.Add(go);
+        go.transform.rotation = Quaternion.Euler(0f, FrontTowardsCameraDeg, 0f);
 
         var machine = go.GetComponent<LaundryMachineElement>();
         Assert.IsNotNull(machine, "машина обязана быть машиной, а не доской");
@@ -2166,6 +2186,9 @@ public class IsoScreenshotTests : ElementFrameTests
         {
             machine!.SetOpen(true);
             machine!.StepDoor(DropDoor.OPEN_SECONDS);
+            Assert.AreEqual(1f, machine!.DoorProgress, 0.001f,
+                "люк не раскрылся до конца — кадр показал бы приоткрытую дверцу, "
+                + "и эталон закрепил бы гашение о препятствие вместо геометрии");
         }
         yield return null;
 

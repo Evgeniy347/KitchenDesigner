@@ -258,6 +258,25 @@ public class LaundryMachineElementTests
         Assert.AreEqual(expected.x, size.x, 0.5f, "меш корпуса шире или уже объявленного");
         Assert.AreEqual(expected.y, size.y, 0.5f, "меш корпуса выше или ниже объявленного");
         Assert.AreEqual(expected.z, size.z, 0.5f, "меш корпуса глубже или мельче объявленного");
+
+        var dims = LaundryMachineBody.DefaultDimensionsMM;
+        float boreBottomZ = (expected.z * 0.5f - LaundryMachineBody.DrumDepthMM(dims))
+            * AppConstants.MM_TO_UNITS;
+        float boreRadius = LaundryMachineBody.DrumDiameterMM(LaundryMachineKind.Washer, dims)
+            * 0.5f * AppConstants.MM_TO_UNITS;
+
+        int onTheBoreBottom = 0;
+        foreach (var v in mesh.vertices)
+        {
+            if (Mathf.Abs(v.z - boreBottomZ) > 0.0005f) continue;
+            if (new Vector2(v.x, v.y).magnitude > boreRadius + 0.0005f) continue;
+            onTheBoreBottom++;
+        }
+
+        Assert.Greater(onTheBoreBottom, 3,
+            "в меше корпуса нет дна расточки: ни одной вершины на глубине барабана внутри "
+            + "его радиуса. Габаритная коробка такой корпус не отличит от глухой стенки — "
+            + "именно так за открытой дверцей и оказалось бы ничего");
     }
 
     [Test]
@@ -291,6 +310,109 @@ public class LaundryMachineElementTests
         Assert.AreEqual(0, degenerate,
             "вырожденный треугольник нулевой площади: у кольца совпали два угла. Таких: "
             + degenerate);
+    }
+
+    /// <summary>Сенсор, которого не хватало: изометрический кадр обеих машин вышел ГОЛОЙ
+    /// КОРОБКОЙ, а весь EditMode был зелёным — потому что тесты спрашивали список деталей и
+    /// чистую арифметику, но ни один не спрашивал, доехала ли геометрия до СЦЕНЫ с
+    /// ненулевым габаритом и включённой. Кадр оказался единственным, кто это видел, и
+    /// увидел его человек глазами.
+    ///
+    /// Здесь тот же вопрос задан числом: у каждой детали есть включённый рендерер с
+    /// ненулевой коробкой, лицевые детали стоят ПЕРЕД корпусом, а размеры обода и стекла —
+    /// те самые, что назвал вид. Любая из причин, по которым коробка могла оказаться
+    /// голой — деталь не создана, выключена, нулевого размера, утоплена в корпус — красит
+    /// этот тест, и красит без PNG.</summary>
+    [Test]
+    public void EveryPartOfTheFace_ReachesTheSceneVisible_NotJustThePartList()
+    {
+        foreach (var kind in new[] { LaundryMachineKind.Washer, LaundryMachineKind.Dryer })
+        {
+            var machine = MakeDefault(kind, "Face_" + kind);
+            var dims = LaundryMachineBody.DefaultDimensionsMM;
+
+            for (int i = 0; i < LaundryMachineBody.PartCount; i++)
+            {
+                var child = machine.transform.GetChild(i);
+                string what = kind + "/" + LaundryMachineBody.PartName(i);
+
+                Assert.IsTrue(child.gameObject.activeInHierarchy,
+                    what + ": деталь выключена — в кадре её не будет, а список деталей "
+                    + "об этом молчит");
+
+                var renderer = child.GetComponent<MeshRenderer>();
+                Assert.IsNotNull(renderer, what + ": нет рендерера");
+                Assert.IsTrue(renderer!.enabled, what + ": рендерер выключен");
+                Assert.Greater(renderer.bounds.size.sqrMagnitude, 0f,
+                    what + ": коробка рендерера нулевая — деталь есть, а показать нечего");
+                Assert.IsNotNull(renderer.sharedMaterial, what + ": деталь без материала");
+            }
+
+            var shell = BoundsOf(machine, LaundryMachineBody.IdxShell);
+            var panel = BoundsOf(machine, LaundryMachineBody.IdxControlPanel);
+            var rim = BoundsOf(machine, LaundryMachineBody.IdxHatchRim);
+            var glass = BoundsOf(machine, LaundryMachineBody.IdxHatchGlass);
+
+            Assert.Greater(panel.max.z, shell.max.z,
+                kind + ": панель управления не выступает вперёд корпуса — значит она "
+                + "утоплена в него и человек её не увидит");
+            Assert.Greater(rim.max.z, shell.max.z,
+                kind + ": обод люка не выступает вперёд корпуса");
+            Assert.Greater(glass.max.z, rim.max.z,
+                kind + ": стекло не выступает вперёд обода — тёмного круга в кольце не видно");
+
+            float toMM = 1f / AppConstants.MM_TO_UNITS;
+            Assert.AreEqual(LaundryMachineBody.HatchDiameterMM(kind, dims),
+                rim.size.x * toMM, 1f,
+                kind + ": обод в сцене не того диаметра, который назвал вид");
+            Assert.AreEqual(LaundryMachineBody.GlassDiameterMM(kind, dims),
+                glass.size.x * toMM, 1f,
+                kind + ": стекло в сцене не того диаметра, который назвал вид");
+            Assert.AreEqual(LaundryMachineBody.CONTROL_PANEL_HEIGHT_MM,
+                panel.size.y * toMM, 1f,
+                kind + ": панель управления в сцене не той высоты");
+        }
+    }
+
+    /// <summary>Вторая половина того же сенсора, и она отвечает на вопрос, который кадр
+    /// задать не смог: открытый люк выходит ЗА объявленную коробку вперёд — на свой
+    /// диаметр от петли. Пока это не было измерено, «открытый люк не виден на снимке» и
+    /// «открытого люка нет» выглядели одинаково.</summary>
+    [Test]
+    public void AnOpenHatch_LeavesTheDeclaredBox_WhichIsWhatTheFrameCouldNotShow()
+    {
+        var machine = MakeDefault(LaundryMachineKind.Dryer, "OpenBounds");
+        var dims = LaundryMachineBody.DefaultDimensionsMM;
+
+        float closedFront = UnionBounds(machine).max.z / AppConstants.MM_TO_UNITS;
+        Assert.AreEqual(dims.z * 0.5f, closedFront, 1f,
+            "закрытая машина укладывается в объявленную коробку — стекло лежит на её грани");
+
+        machine.SetOpen(true);
+        machine.StepDoor(DropDoor.OPEN_SECONDS);
+        Assert.AreEqual(1f, machine.DoorProgress, 0.001f, "люк не раскрылся до конца");
+
+        float openFront = UnionBounds(machine).max.z / AppConstants.MM_TO_UNITS;
+        float hingeZ = LaundryMachineBody.HingeLocalMM(LaundryMachineKind.Dryer, dims).z;
+        float hatch = LaundryMachineBody.HatchDiameterMM(LaundryMachineKind.Dryer, dims);
+
+        Assert.AreEqual(hingeZ + hatch, openFront, 2f,
+            "открытый люк встаёт поперёк и уходит вперёд от петли на СВОЙ ДИАМЕТР. "
+            + "Совпадение с закрытым габаритом значило бы, что люка в сцене нет вовсе");
+        Assert.Greater(openFront, closedFront + 1f,
+            "и потому открытая машина заведомо длиннее закрытой");
+    }
+
+    private static Bounds BoundsOf(LaundryMachineElement machine, int part) =>
+        machine.transform.GetChild(part).GetComponent<MeshRenderer>().bounds;
+
+    private static Bounds UnionBounds(LaundryMachineElement machine)
+    {
+        var renderers = machine.GetComponentsInChildren<MeshRenderer>();
+        Assert.IsNotEmpty(renderers, "у машины нет ни одного рендерера");
+        var union = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++) union.Encapsulate(renderers[i].bounds);
+        return union;
     }
 
     [Test]
