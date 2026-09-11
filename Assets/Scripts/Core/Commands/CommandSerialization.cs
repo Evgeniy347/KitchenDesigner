@@ -33,6 +33,12 @@ namespace KitchenDesigner.Core
                         CommandRecord.ToV3(r.posBefore), CommandRecord.ToV3(r.posAfter),
                         CommandRecord.ToQuat(r.rotBefore), CommandRecord.ToQuat(r.rotAfter));
                 }
+                case "convert":
+                {
+                    var e = resolve(r.elementIndex);
+                    if (e == null) return null;
+                    return ConvertElementCommand.FromRecord(e, r);
+                }
                 case "composite":
                 {
                     var children = new List<IUndoCommand>();

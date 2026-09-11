@@ -16,6 +16,8 @@ namespace KitchenDesigner.Core
         public int[] dimsBefore = new int[0];
         public int[] dimsAfter = new int[0];
         public CommandRecord[]? children;
+        public int convertTo = -1;
+        public ElementData[] convertState = new ElementData[0];
 
         public static float[] V3(Vector3 v) => new[] { v.x, v.y, v.z };
         public static float[] V4(Quaternion q) => new[] { q.x, q.y, q.z, q.w };

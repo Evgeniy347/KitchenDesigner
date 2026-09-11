@@ -120,8 +120,7 @@ namespace KitchenDesigner.Core.UI
             };
             if (ElementConverter.GetElementType(target) == targetType) return;
 
-            var converted = ElementConverter.Convert(target, targetType);
-            if (converted != null) _reopen(converted);
+            ConvertElementCommand.Run(target, targetType, _reopen);
             RefreshHighlights();
         }
 

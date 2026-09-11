@@ -292,7 +292,7 @@ namespace KitchenDesigner.Core
                 "ElementRestorers без замыкающей записи: " + data.name);
         }
 
-        private static void ApplyShared(ElementData data, KitchenElement el)
+        internal static void ApplyShared(ElementData data, KitchenElement el)
         {
             el.Movable = data.movable;
             el.AttachedToName = data.attachedToName ?? "";

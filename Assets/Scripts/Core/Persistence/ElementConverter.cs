@@ -143,6 +143,18 @@ namespace KitchenDesigner.Core
             return element.GetType() == typeof(KitchenElement);
         }
 
+        public static TargetType TargetTypeOf(ElementData data)
+        {
+            if (data == null) return TargetType.Part;
+            if (data.isDrawer) return TargetType.Drawer;
+            if (data.isWindow) return TargetType.Window;
+            if (data.isDoor) return TargetType.Door;
+            if (data.assembled) return TargetType.AssembledFacade;
+            if (data.isRadialShelf) return TargetType.RadialShelf;
+            if (data.isFacade) return TargetType.Facade;
+            return TargetType.Part;
+        }
+
         public static TargetType GetElementType(KitchenElement element)
         {
             if (element is AssembledFacadeElement) return TargetType.AssembledFacade;
