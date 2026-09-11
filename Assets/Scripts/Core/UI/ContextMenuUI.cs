@@ -733,6 +733,7 @@ namespace KitchenDesigner.Core.UI
             DrawerLinks.Rename(target, string.IsNullOrWhiteSpace(_name!.text) ? "Board" : _name!.text);
             target.gameObject.name = target.PartName;
 
+            var anchor = ResizeShift.Before(target);
             ApplyDimensionFields(target, oldDims);
             foreach (var editor in _editors) editor.Apply(target);
 
@@ -761,6 +762,9 @@ namespace KitchenDesigner.Core.UI
             if (target is IWallMounted wallMounted) wallMounted.SnapToWall();
 
             foreach (var editor in _editors) editor.ApplyAfterPosition(target);
+
+            if (target.transform.position == oldPos && target.transform.rotation == oldRot)
+                target.transform.position += anchor.After(target);
 
             if (KitchenSettings.Instance.BlockOnViolation
                 && ThisEditIntroducedAViolation(target, out var refusal))
