@@ -270,3 +270,10 @@ The helper now passes a pathspec on `-Amend` too, and warns when `-Amend` is use
 Rewriting history — `--amend`, `reset`, `rebase` — is the coordinator's, and even then not while
 others are working. A commit that is wrong gets a second commit on top; that is what history is
 for. If you think you need `--amend`, you need a new commit.
+
+**Команда-проверка, которую пишет сам opencode, умеет врать — проверяй КОМПИЛЯЦИЕЙ или
+счётом.** 2026-09-11 `big-pickle` свёл семь копий одного идиома, напечатал `OK` по своей же
+проверке — и в четырёх файлах снёс закрывающую скобку класса, оставив осиротевшую скобку
+метода. Грепом такое не ловится: текст, который он искал, на месте. Балансовые правки
+принимаются счётом скобок или компиляцией, а не вхождением строки. Это второй вид его
+молчаливого провала; первый — заголовок сессии и выход с кодом 0 без единой правки.
