@@ -1,5 +1,5 @@
 {
-	"name": "KitchenDesigner.Tests.EditMode",
+	"name": "KitchenDesigner.Tests.Geometry",
 	"rootNamespace": "",
 	"references": [
 		"KitchenDesigner.Geometry",

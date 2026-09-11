@@ -74,6 +74,13 @@ namespace KitchenDesigner.Tests.Geometry
         private static string GeometryTestSourceDir() =>
             RepoSubdir("Assets", "Tests", "EditMode", "Geometry");
 
+        /// <summary>Общие помощники сторожей. Они собираются отдельной сборкой
+        /// (KitchenDesigner.Tests.Sources), но линкуются в ОБА проекта быстрого пути,
+        /// поэтому запрет на движок держит их так же, как и сами тесты ядра —
+        /// иначе вызов движка здесь ронял бы dotnet, а Unity молчал бы.</summary>
+        private static string SharedTestSourceDir() =>
+            RepoSubdir("Assets", "Tests", "EditMode", "Sources");
+
         private static string PureSourceDir() =>
             RepoSubdir("Assets", "Scripts", "Core", "Pure");
 
@@ -133,7 +140,7 @@ namespace KitchenDesigner.Tests.Geometry
         public void CoreTestSources_DoNotTouchTheEngine()
         {
             var dir = GeometryTestSourceDir();
-            var files = ScannedFiles(dir);
+            var files = ScannedFiles(dir).Concat(ScannedFiles(SharedTestSourceDir())).ToArray();
             Assert.IsNotEmpty(files, "в " + dir + " нет тестов — тест бесполезен");
 
             var violations = EngineReferences(files);
@@ -191,6 +198,9 @@ namespace KitchenDesigner.Tests.Geometry
         public void CoreTestSources_AreActuallyScanned_AndNotBlanketExempted()
         {
             var names = ScannedFileNames(GeometryTestSourceDir());
+            CollectionAssert.Contains(ScannedFileNames(SharedTestSourceDir()), "RepoPaths.cs",
+                "общие помощники уехали в свою сборку, и скан перестал их видеть — запрет "
+                + "на движок в них больше не проверяется ничем");
             CollectionAssert.Contains(names, "SnapCoreTestBase.cs",
                 "скан каталога тестов ядра должен видеть его файлы — грепу по несуществующему "
                 + "пути нечего найти, и он зеленеет, ничего не проверив");

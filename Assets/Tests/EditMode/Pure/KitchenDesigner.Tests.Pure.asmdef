@@ -1,5 +1,5 @@
 {
-	"name": "KitchenDesigner.Tests.EditMode",
+	"name": "KitchenDesigner.Tests.Pure",
 	"rootNamespace": "",
 	"references": [
 		"KitchenDesigner.Geometry",
@@ -8,7 +8,8 @@
 		"KitchenDesigner.Editor",
 		"Unity.TextMeshPro",
 		"KitchenDesigner.Tests.Shared",
-		"KitchenDesigner.Tests.Sources"
+		"KitchenDesigner.Tests.Sources",
+		"KitchenDesigner.Tests.Geometry"
 	],
 	"includePlatforms": [
 		"Editor"
