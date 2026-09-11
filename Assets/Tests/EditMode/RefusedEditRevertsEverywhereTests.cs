@@ -183,11 +183,20 @@ public class RefusedEditRevertsEverywhereTests
             + "бы, что отмена вернёт состояние, которого пользователь никогда не видел");
     }
 
+    /// <summary>Панели нужен ТРЕТИЙ щит, а двум жестам — нет, и это не подпорка под тест.
+    /// Правка размера в панели уводит деталь от конфликта, если он возникает ровно с одной
+    /// стороны (`ResizeAnchoring`), — значит с одним соседом COL-01 больше не вносится и
+    /// отклонять нечего. Зажатая с двух сторон деталь растёт симметрично от центра, как
+    /// раньше, и вход теста снова становится входом. Перетаскивание и ручки размера этого
+    /// правила не знают: они двигают деталь туда, куда сказал пользователь.</summary>
     [Test]
     public void PanelApply_RefusedForAViolation_RevertsEverythingAndNamesIt()
     {
         AssertRefusedEditLeavesTheSceneUntouched("панель свойств", el =>
         {
+            SpawnPart("Mirror", new Vector3(-0.6f, 0f, 0f));
+            Assert.IsTrue(ConstraintValidator.Validate(PartRegistry.GetAll()).isValid,
+                "предусловие: три щита в ряд — сцена всё ещё валидна");
             var ctx = BuildMenu();
             ctx.Open(el);
             return () =>

@@ -23,7 +23,10 @@ using KitchenDesigner.Core.UI;
 /// ввод откатывался целиком (conventions/CORRECTNESS.md → «A gate that can only refuse must
 /// have somewhere to fall back to»). Поэтому одинокая деталь переехала в противоположный
 /// вход: теперь она проверяет, что правка ПРОХОДИТ и ложится в отмену. Блокировку включает
-/// пара щитов в контакте грань-в-грань (сцена валидна) и правка, которая их пересекает.</summary>
+/// ТРОЙКА щитов в контакте грань-в-грань (сцена валидна) и правка, которая растит средний в
+/// оба соседа сразу: с одним соседом панель теперь уводит деталь от конфликта вместо того,
+/// чтобы его вносить (`ResizeAnchoring`), и отклонять стало нечего — этот обычный случай
+/// проверяется здесь же, рядом с отказом.</summary>
 public class BlockedApplyRevertsEverythingTests
 {
     private GameObject? _root;
@@ -139,6 +142,23 @@ public class BlockedApplyRevertsEverythingTests
         return (a, b);
     }
 
+    /// <summary>Та же валидная сцена, но щиты стоят с ОБЕИХ сторон. Так вход остался входом:
+    /// с одним соседом правка ширины до 1200 мм больше не вносит COL-01 вовсе — панель теперь
+    /// уводит деталь от единственного конфликта (`ResizeAnchoring`), и шлюзу нечего отклонять.
+    /// Зажатая с двух сторон деталь растёт по-прежнему симметрично от центра и вгоняет по
+    /// 300 мм в каждого соседа — блокировке снова есть на что опереться, а заодно это
+    /// сценовая проверка правила «конфликт с обеих сторон — поведение прежнее».
+    /// Левый щит назван так, чтобы подстрока «Сосед» нашлась в тексте отказа независимо от
+    /// того, какую из двух пар шлюз назовёт первой.</summary>
+    private (KitchenElement edited, KitchenElement neighbour) SpawnPinnedTriple()
+    {
+        var (a, b) = SpawnTouchingPair();
+        SpawnPart("Сосед-слева", new Vector3(-0.6f, 0f, 0f));
+        Assert.IsTrue(ConstraintValidator.Validate(PartRegistry.GetAll()).isValid,
+            "предусловие: три щита в ряд — сцена всё ещё валидна, отклонять пока нечего");
+        return (a, b);
+    }
+
     private static List<string> SnapshotOf(KitchenElement el)
     {
         var bag = UndoableProperties.Capture(el);
@@ -163,7 +183,7 @@ public class BlockedApplyRevertsEverythingTests
     [Test]
     public void ApplyThatIntroducesAViolation_LeavesNoEditInTheScene_AndNoUndoRecord()
     {
-        var (el, _) = SpawnTouchingPair();
+        var (el, _) = SpawnPinnedTriple();
         var ctx = _menu!;
         ctx.Open(el);
         CommandStack.Clear();
@@ -194,7 +214,7 @@ public class BlockedApplyRevertsEverythingTests
     [Test]
     public void BlockedApply_NamesTheViolationItRefused_InTheStatusBar()
     {
-        var (el, _) = SpawnTouchingPair();
+        var (el, _) = SpawnPinnedTriple();
         var ctx = _menu!;
         ctx.Open(el);
 
@@ -219,6 +239,42 @@ public class BlockedApplyRevertsEverythingTests
             "названо обязано быть ВНЕСЁННОЕ нарушение, с его кодом: " + _statusBar!.ActiveText);
         Assert.IsTrue(_statusBar!.ActiveText!.Contains("Сосед"),
             "и вторая деталь пары, иначе неясно, во что уперлась правка: " + _statusBar!.ActiveText);
+    }
+
+    /// <summary>Обычный случай рядом с отказом: сосед ОДИН, и та же правка ширины до 1200 мм
+    /// теперь не отклоняется, а уводит деталь от конфликта на половину прироста — правая грань
+    /// остаётся там же, где была, весь прирост уходит влево. Шлюз при этом молчит, потому что
+    /// нарушения не внесено; смещение считается ДО шлюза именно затем, чтобы тот судил то
+    /// состояние, которое увидит пользователь, а не промежуточное.
+    ///
+    /// И размер, и смещение обязаны откатываться ОДНИМ Ctrl+Z: они едут в одной
+    /// `ResizeCommand`, а не двумя.</summary>
+    [Test]
+    public void ApplyThatWouldOverlapOnOneSide_ShiftsAwayInsteadOfBeingRefused()
+    {
+        var (el, _) = SpawnTouchingPair();
+        var ctx = _menu!;
+        ctx.Open(el);
+        CommandStack.Clear();
+
+        ctx.SetWidthFieldTextForTests("1200");
+        ctx.SimulateApplyForTests();
+
+        Assert.AreEqual(1200, el.DimensionsMM.x,
+            "конфликт возникал ровно с одной стороны — правку положено применить, а не отклонить");
+        Assert.AreEqual(-0.3f, el.transform.position.x, 1e-4f,
+            "деталь обязана уйти на половину прироста от соседа, чтобы правая грань осталась "
+            + "на месте");
+        Assert.IsTrue(ConstraintValidator.Validate(PartRegistry.GetAll()).isValid,
+            "смещение затем и считается, чтобы сцена осталась валидной");
+        Assert.AreEqual(1, CommandStack.UndoCount,
+            "размер и смещение — одна правка и один шаг отмены");
+
+        CommandStack.Undo();
+
+        Assert.AreEqual(600, el.DimensionsMM.x, "отмена возвращает размер");
+        Assert.AreEqual(0f, el.transform.position.x, 1e-4f,
+            "и позицию тем же шагом — иначе деталь осталась бы смещённой без причины");
     }
 
     /// <summary>Противоположный вход и главный смысл правки: деталь, которая нарушала ДО
