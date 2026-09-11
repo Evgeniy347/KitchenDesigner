@@ -50,7 +50,8 @@ namespace KitchenDesigner.Core
 
         public bool PosedLike(in ValidationElement other)
         {
-            if (Kind != other.Kind || GroupId != other.GroupId || PairedName != other.PairedName
+            if (Name != other.Name
+                || Kind != other.Kind || GroupId != other.GroupId || PairedName != other.PairedName
                 || AttachedWallIndex != other.AttachedWallIndex || HostIndex != other.HostIndex
                 || HasExtraBody != other.HasExtraBody
                 || HeightSpan.Min != other.HeightSpan.Min || HeightSpan.Max != other.HeightSpan.Max

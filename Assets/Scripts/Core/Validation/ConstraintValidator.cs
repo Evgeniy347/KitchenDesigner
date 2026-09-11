@@ -44,6 +44,12 @@ namespace KitchenDesigner.Core
         private static readonly List<ValidationElement> _snapshots = new List<ValidationElement>();
         private static readonly CoreValidationResult _core = new CoreValidationResult();
 
+        private static readonly GestureValidation _gesture = new GestureValidation();
+
+        public static int GestureFreezes => _gesture.Freezes;
+
+        public static int GesturePairsInLastFrame => _gesture.PairsInLastFrame;
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private static int _sceneValidations;
 
@@ -92,7 +98,9 @@ namespace KitchenDesigner.Core
 
             ValidationSnapshot.Build(_elems, _snapshots);
             var core = _core;
-            ValidationCore.Validate(_snapshots, core);
+            if (!SceneGesture.InProgress) _gesture.Reset();
+            if (!SceneGesture.InProgress || !_gesture.TryValidate(_snapshots, core))
+                ValidationCore.Validate(_snapshots, core);
 
             foreach (var c in core.Contacts)
                 result.contacts.Add(new FaceContact(_elems[c.A], _elems[c.B],
