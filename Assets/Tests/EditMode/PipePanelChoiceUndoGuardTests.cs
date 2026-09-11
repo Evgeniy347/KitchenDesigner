@@ -10,7 +10,7 @@ using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
 /// <summary>
-/// Сторож обещания «правка в окне свойств трубопровода = один шаг отмены» для тех строк,
+/// Сторож обещания «правка в окне свойств = один шаг отмены» для тех строк,
 /// которые <c>ContextMenuUndoTests</c> не видит вовсе.
 ///
 /// Тот тест перебирает <c>TMP_InputField</c> панели и жмёт «Применить»: такие поля
@@ -22,8 +22,14 @@ using KitchenDesigner.Core.UI;
 /// «Условный проход» трубы: строка работала, отмена — нет.
 ///
 /// Поэтому здесь перебираются не поля, а РЕАЛЬНЫЕ выпадающие списки и переключатели панели,
-/// найденные в её иерархии, и типы элементов трубопровода, найденные отражением. Новый вид
-/// фитинга и новая строка выбора попадают под проверку сами, без правки этого файла.
+/// найденные в её иерархии, и КАЖДЫЙ объявленный тип элемента (<c>EveryElementType</c> —
+/// тот же список типов и тот же настоящий спавн, что у общего прохода
+/// <c>ElementSurfaceSweep</c>; своего перебора типов здесь не заводится). Новый тип элемента
+/// и новая строка выбора попадают под проверку сами, без правки этого файла.
+///
+/// Перебор один на весь класс: спавн настоящей фабрикой и построение панели — единственное,
+/// что здесь дорого, а сами вопросы стоят микросекунды (`agents/TEST-DESIGN.md` → «Дорогой
+/// перебор всех типов делается ОДИН раз»).
 ///
 /// Проверяется на каждом управляющем элементе:
 ///   1. выбор вообще что-то поменял (иначе проверять нечего — строка ничего не правит,
@@ -38,6 +44,11 @@ using KitchenDesigner.Core.UI;
 ///
 /// Диаметры фитинга под сторожа не попадают, и это правильно: они ВЫВОДИМЫЕ, их строки
 /// нередактируемые, единственный писатель — <c>PipeFittingSizeLink</c>.
+///
+/// Строки из <see cref="KnownGaps"/> перебор ПРОПУСКАЕТ — это признанный долг, а не тишина:
+/// каждая названа поимённо вместе с владельцем, и <see cref="EveryKnownGap_IsStillAGap"/>
+/// краснеет, когда долг закрыли, а из списка не убрали. Всякая ДРУГАЯ строка выбора обязана
+/// класть команду сама — список не растёт молча.
 /// </summary>
 public class PipePanelChoiceUndoGuardTests
 {
@@ -102,22 +113,32 @@ public class PipePanelChoiceUndoGuardTests
         PartRegistry.Clear();
     }
 
-    /// <summary>Виды трубопровода берутся из сборки, а не выписаны руками: новый класс
-    /// фитинга попадает под сторожа сам.</summary>
-    private static IEnumerable<Type> PlumbingTypes() =>
-        typeof(KitchenElement).Assembly.GetTypes()
-            .Where(t => !t.IsAbstract
-                        && (typeof(PipeFittingElement).IsAssignableFrom(t)
-                            || typeof(PipeElement).IsAssignableFrom(t)))
-            .OrderBy(t => t.Name, StringComparer.Ordinal);
+    /// <summary>Признанный долг: строки выбора, которые состояние МЕНЯЮТ, а команду не
+    /// кладут, и чинятся не здесь. Имя узла — ключ, значение — кто владелец и что не так.
+    /// Список закрытый и убывающий: <see cref="EveryKnownGap_IsStillAGap"/> краснеет, когда
+    /// строку починили, а из списка забыли убрать, а всякая НЕназванная строка обязана
+    /// класть команду сама.</summary>
+    private static readonly Dictionary<string, string> KnownGaps =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["CtxTransparent"] = "ContextMenuUI.BuildPropertySection — пишет [Undoable] "
+                                 + "Transparent напрямую, без команды",
+            ["CtxLock"] = "ContextMenuUI.BuildPropertySection — пишет [Undoable] Movable "
+                          + "напрямую, без команды",
+            ["CtxType"] = "ElementTypeConverter.Select — смена системы ящика пишет [Undoable] "
+                          + "System без команды, а структурная конверсия ПЕРЕСОБИРАЕТ элемент "
+                          + "(старый объект уничтожается, отменять нечем)",
+        };
+
+    /// <summary>Типы берутся у общего перебора <c>EveryElementType</c>, а не выписаны руками
+    /// и не выведены своим отражением: новый тип элемента попадает под сторожа сам, и второго
+    /// списка типов в наборе не заводится.</summary>
+    private static IEnumerable<Type> SweptTypes() => EveryElementType.Declared();
 
     private KitchenElement Spawn(Type type)
     {
-        var go = new GameObject("P_" + type.Name);
-        _spawned.Add(go);
-        var el = (KitchenElement)go.AddComponent(type);
-        el.PartName = "P_" + type.Name;
-        PartRegistry.Register(el);
+        var el = EveryElementType.Spawn(type, "P_" + type.Name);
+        _spawned.Add(el.gameObject);
         return el;
     }
 
@@ -238,13 +259,13 @@ public class PipePanelChoiceUndoGuardTests
     }
 
     [Test]
-    public void EveryChoiceRowOfThePlumbingPanel_IsUndoableInOneStep()
+    public void EveryChoiceRowOfThePropertiesPanel_IsUndoableInOneStep()
     {
         var failures = new List<string>();
         int checkedControls = 0;
         var ctx = BuildMenu();
 
-        foreach (var type in PlumbingTypes())
+        foreach (var type in SweptTypes())
         {
             KitchenElement el;
             try
@@ -266,11 +287,34 @@ public class PipePanelChoiceUndoGuardTests
             {
                 if (control == null || !control.gameObject.activeInHierarchy) continue;
                 if (el == null) break;
+                if (KnownGaps.ContainsKey(control.gameObject.name)) continue;
 
                 CommandStack.Clear();
                 var before = StateOf(el);
                 var what = Describe(control);
-                if (!Pick(control)) continue;
+                bool picked;
+                try
+                {
+                    picked = Pick(control);
+                }
+                catch (Exception e)
+                {
+                    failures.Add($"{type.Name}: {what} — выбор бросил исключение "
+                                 + $"({e.GetType().Name}: {e.Message})");
+                    while (CommandStack.CanUndo) CommandStack.Undo();
+                    continue;
+                }
+
+                if (!picked) continue;
+
+                if (el == null)
+                {
+                    failures.Add($"{type.Name}: {what} — строка УНИЧТОЖИЛА подопытный элемент. "
+                                 + "Пересборку элемента сторож проверить не может: либо строка "
+                                 + "обязана обойтись без пересборки, либо её имя узла "
+                                 + "заносится в KnownGaps с владельцем");
+                    break;
+                }
 
                 var after = StateOf(el);
                 // Строка ничего не правит (списки свёрнутой секции текстур лишь готовят
@@ -311,12 +355,63 @@ public class PipePanelChoiceUndoGuardTests
         Assert.IsEmpty(failures,
             "\nСтрока выбора в окне свойств обязана сама положить команду в CommandStack: "
             + "её обратный вызов срабатывает ВНЕ ContextMenuUI.Apply, и диф "
-            + "SetPropertiesCommand её уже не поймает — образец в "
-            + "PipeFieldsEditor.OnSizeSelected и BedFieldsEditor.Commit.\n"
+            + "SetPropertiesCommand её уже не поймает — готовый помощник ChoiceRowUndo.Commit, "
+            + "образцы в PipeFieldsEditor.OnSizeSelected и BedFieldsEditor.Commit.\n"
             + string.Join("\n", failures));
         Assert.Greater(checkedControls, 1,
             $"проверено всего {checkedControls} строк выбора — панель не открылась или списки "
             + "не нашлись, и тогда этот тест не может провалиться и потому бесполезен");
+    }
+
+    /// <summary>Список признанного долга обязан УБЫВАТЬ. Строку починили или убрали из
+    /// панели, а из <see cref="KnownGaps"/> не вычеркнули — сводный перебор молча перестаёт
+    /// её стеречь, и следующая поломка уже никого не разбудит.</summary>
+    [Test]
+    public void EveryKnownGap_IsStillAGap()
+    {
+        var stale = new List<string>();
+
+        foreach (var gap in KnownGaps)
+        {
+            var ctx = BuildMenu();
+            var el = Spawn(typeof(KitchenElement));
+            ctx.Open(el);
+
+            Component? control = ChoiceControls()
+                .FirstOrDefault(c => c.gameObject.name == gap.Key);
+            if (control is null)
+            {
+                stale.Add($"{gap.Key}: строки с таким именем в панели детали больше нет — "
+                          + $"вычеркни её из KnownGaps ({gap.Value})");
+            }
+            else
+            {
+                CommandStack.Clear();
+                var before = StateOf(el);
+                if (!Pick(control))
+                {
+                    stale.Add($"{gap.Key}: строку нечем дёрнуть, значит она уже ничего не "
+                              + $"меняет и долгом не является ({gap.Value})");
+                }
+                else if (el != null && !Same(before, StateOf(el)) && CommandStack.UndoCount == 1)
+                {
+                    stale.Add($"{gap.Key}: строка ПОЧИНЕНА — кладёт ровно один шаг отмены. "
+                              + $"Убери её из KnownGaps, чтобы сводный перебор снова её "
+                              + $"стерёг ({gap.Value})");
+                }
+            }
+
+            while (CommandStack.CanUndo) CommandStack.Undo();
+            ctx.Close();
+            UnityEngine.Object.DestroyImmediate(ctx.gameObject);
+            CommandStack.Clear();
+            ClearScene();
+        }
+
+        Assert.IsEmpty(stale,
+            "\nKnownGaps — закрытый и убывающий список признанного долга, а не свалка "
+            + "исключений: пока имя лежит в нём, сводный перебор эту строку ПРОПУСКАЕТ.\n"
+            + string.Join("\n", stale));
     }
 
     /// <summary>Отдельно — тот самый путь из отчёта пользователя, чтобы регрессия читалась
