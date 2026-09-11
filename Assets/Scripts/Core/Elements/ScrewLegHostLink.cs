@@ -9,6 +9,9 @@ namespace KitchenDesigner.Core
 
         private static readonly List<ElementGeometry> _batchCandidates = new List<ElementGeometry>();
         private static readonly List<KitchenElement> _batchOwners = new List<KitchenElement>();
+        private static readonly List<ScrewLegElement> _batchLegs = new List<ScrewLegElement>();
+
+        internal static int HostGeometriesBuiltByLastApplyAll { get; private set; }
 
         public static string Derive(ScrewLegElement leg, IReadOnlyList<KitchenElement> scene)
         {
@@ -30,14 +33,24 @@ namespace KitchenDesigner.Core
 
             using var _ = PerfMarkers.ScrewLegHostLinkApplyAll.Auto();
 
+            HostGeometriesBuiltByLastApplyAll = 0;
+            _batchLegs.Clear();
+            _batchOwners.Clear();
+            _batchCandidates.Clear();
+            for (int i = 0; i < scene.Count; i++)
+                if (scene[i] is ScrewLegElement leg) _batchLegs.Add(leg);
+            if (_batchLegs.Count == 0) return 0;
+
             CollectHosts(scene, _batchOwners, _batchCandidates);
+            HostGeometriesBuiltByLastApplyAll = _batchCandidates.Count;
 
             int changed = 0;
-            for (int i = 0; i < scene.Count; i++)
-            {
-                if (!(scene[i] is ScrewLegElement leg)) continue;
-                if (Take(leg, HostNameFor(leg, _batchOwners, _batchCandidates))) changed++;
-            }
+            for (int i = 0; i < _batchLegs.Count; i++)
+                if (Take(_batchLegs[i], HostNameFor(_batchLegs[i], _batchOwners, _batchCandidates))) changed++;
+
+            _batchLegs.Clear();
+            _batchOwners.Clear();
+            _batchCandidates.Clear();
             return changed;
         }
 

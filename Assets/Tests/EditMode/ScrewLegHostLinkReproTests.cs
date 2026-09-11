@@ -186,6 +186,49 @@ public class ScrewLegHostLinkReproTests
         Assert.IsNull(leg.InsertionIntoHostMM);
     }
 
+    /// <summary>Пара к остальному классу с другой стороны: пересчёт обязан быть
+    /// всеобъемлющим, но НЕ обязан ничего считать в сцене, где винтовых опор нет
+    /// вообще. `ApplyAll` зовётся каждым кадром любого перетаскивания
+    /// (<c>SceneChangeTracker.Poll</c> → <c>SettleDerivedLinks</c>), и до раннего
+    /// выхода он строил <c>ElementGeometry</c> на КАЖДУЮ деталь-хозяина — работу,
+    /// результат которой некому прочитать.
+    ///
+    /// Мерка — не время (оно флаки в batch), а сам продукт дорогой части:
+    /// <c>HostGeometriesBuiltByLastApplyAll</c>, число построенных геометрий.
+    /// Утверждение на времени было бы зелёным и на выкинутом раннем выходе.</summary>
+    [Test]
+    public void ApplyAll_OnASceneWithoutASingleScrewLeg_BuildsNoHostGeometry()
+    {
+        var left = BottomPanel("ДноЛевое", 0f, 150f);
+        var right = BottomPanel("ДноПравое", 1f, 160f);
+        AssertPolled(left, right);
+
+        int changed = ScrewLegHostLink.ApplyAll(PartRegistry.GetAll());
+
+        Assert.AreEqual(0, changed, "менять нечего: опор в сцене нет");
+        Assert.AreEqual(0, ScrewLegHostLink.HostGeometriesBuiltByLastApplyAll,
+            "две детали-хозяина посчитаны геометрией, хотя читателя у этой геометрии "
+            + "нет ни одного, — это и есть тот O(всех элементов) на каждом кадре");
+    }
+
+    /// <summary>Положительный контроль к предыдущему, обязательный: без него ранний
+    /// выход можно было бы «улучшить» до полного отказа считать, и сенсор остался бы
+    /// зелёным. Та же сцена плюс одна опора — геометрия хозяев обязана быть построена,
+    /// и связь обязана появиться.</summary>
+    [Test]
+    public void ApplyAll_WithOneScrewLegInTheScene_StillBuildsHostsAndLinksIt()
+    {
+        var (_, _, leg) = TwoBoardsAndASeatedLeg();
+
+        ScrewLegHostLink.ApplyAll(PartRegistry.GetAll());
+
+        Assert.AreEqual(2, ScrewLegHostLink.HostGeometriesBuiltByLastApplyAll,
+            "обе детали обязаны попасть в кандидаты: опора в сцене есть. "
+            + "Ноль здесь означал бы ранний выход, сработавший там, где работать было надо");
+        Assert.AreEqual("ДноЛевое", leg.HostPartName,
+            "и связь остаётся выведенной, а не замороженной ранним выходом");
+    }
+
     private static bool OverlapReported(ValidationResult result, KitchenElement a, KitchenElement b)
     {
         if (result.diagnostics == null) return false;
