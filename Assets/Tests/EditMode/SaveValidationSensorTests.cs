@@ -32,6 +32,18 @@ public class SaveValidationSensorTests
     private string _reportPath = "";
     private ProjectLoadStateGuard? _guard;
 
+    /// <summary>Сцена живого файла, общая для обоих сенсоров: оба её только ЧИТАЮТ —
+    /// один прогоняет <see cref="SceneAnalyzer"/>, другой сканирует стыки, — а
+    /// `SaveLoadManager.RestoreScene` на проекте пользователя стоит около секунды.
+    /// Поднимается ЛЕНИВО и переиспользуется. Файл при этом по-прежнему только
+    /// читается (agents/TESTS.md → «NEVER TOUCH IT»).</summary>
+    private List<KitchenElement>? _scene;
+
+    /// <summary>Сколько записей даёт файл в <see cref="PartRegistry"/>. Снимается при
+    /// восстановлении и сверяется на входе в каждый следующий тест: сенсор, который
+    /// что-то в общей сцене сдвинул или удалил, обязан краснеть здесь.</summary>
+    private int _registryParts = -1;
+
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
@@ -44,10 +56,17 @@ public class SaveValidationSensorTests
         Directory.CreateDirectory(dir);
         _reportPath = Path.Combine(dir, ReportFileName);
         File.WriteAllText(_reportPath, $"# Сенсор {SaveFileName} (живой файл, не критерий приёмки)\n");
+
+        CaptureGlobals();
     }
 
-    [SetUp]
-    public void SetUp()
+    /// <summary>Снимок глобального состояния — ОДИН раз на класс. Сцена общая, а вместе с
+    /// ней общее и то, что приехало из файла пользователя
+    /// (<c>SceneRestorer.RestoreProjectState</c>): потестовый <c>Restore()</c> сдирал бы
+    /// настройки с живой сцены, и второй сенсор читал бы ту же геометрию при других
+    /// настройках. Соседние классы защищены прежним способом — состояние возвращается в
+    /// <c>[OneTimeTearDown]</c>.</summary>
+    private void CaptureGlobals()
     {
         var s = KitchenSettings.Instance;
         Assert.IsNotNull(s);
@@ -57,16 +76,47 @@ public class SaveValidationSensorTests
         s.AutoSave = false;
         s.SpatialGrid = false;
         s.NormalView.edgeOutline = false;
-
-        ClearScene();
     }
 
+    [SetUp]
+    public void SetUp() => AssertSharedSceneIntact();
+
     [TearDown]
-    public void TearDown()
+    public void TearDown() => FaceCache.Clear();
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
     {
         ClearScene();
+        _scene = null;
         _guard?.Restore();
-        FaceCache.Clear();
+        _guard = null;
+    }
+
+    /// <summary>Сторож общей сцены на границе тестов: проверка стоит в <c>[SetUp]</c>,
+    /// чтобы падение указывало на ПРЕДЫДУЩИЙ тест.</summary>
+    private void AssertSharedSceneIntact()
+    {
+        if (_scene == null) return;
+        Assert.AreEqual(_registryParts, PartRegistry.GetAll().Count,
+            "общая сцена поехала между тестами: записей в PartRegistry стало другое число");
+        Assert.AreEqual(_scene!.Count, _scene!.Count(e => e != null),
+            "в общей сцене появились уничтоженные детали");
+    }
+
+    private List<KitchenElement> SharedScene()
+    {
+        if (_scene != null)
+        {
+            AssertSharedSceneIntact();
+            return _scene!;
+        }
+
+        ClearScene();
+        var built = RestoreScene();
+        _registryParts = PartRegistry.GetAll().Count;
+        _scene = built;
+        return built;
     }
 
     private void ClearScene()
@@ -103,7 +153,7 @@ public class SaveValidationSensorTests
     [Test]
     public void Analyze_LiveExampleSave_PrintsFindings()
     {
-        RestoreScene();
+        SharedScene();
         var issues = SceneAnalyzer.Analyze();
 
         var lines = issues
@@ -122,7 +172,7 @@ public class SaveValidationSensorTests
     [Test]
     public void Geometry_LiveExampleSave_PrintsSubToleranceJoints()
     {
-        var elements = RestoreScene();
+        var elements = SharedScene();
         float toMm = 1f / AppConstants.MM_TO_UNITS;
         float deadBand = Tolerance.SnapEpsilon;
         float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;

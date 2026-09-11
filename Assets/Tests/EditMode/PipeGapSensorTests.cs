@@ -31,6 +31,19 @@ public class PipeGapSensorTests
     private string _json = "";
     private ProjectLoadStateGuard? _guard;
 
+    /// <summary>Замороженная сцена, общая для трёх сенсоров: они только МЕРЯЮТ устья и
+    /// печатают числа, ничего не двигая, а `SaveLoadManager.RestoreScene` на этой фикстуре
+    /// стоит около секунды. Четвёртый тест сажает сцену САМ и поэтому общую сбрасывает.
+    /// Восстановление ленивое — порядок тестов NUnit не гарантирует, а сбросить и поднять
+    /// заново дешевле, чем договариваться о порядке.</summary>
+    private List<KitchenElement>? _scene;
+
+    /// <summary>Сколько записей даёт фикстура в <see cref="PartRegistry"/>. Снимается при
+    /// первом восстановлении и сверяется на входе в КАЖДЫЙ следующий тест: сенсор, который
+    /// что-то в общей сцене сдвинул или удалил, обязан краснеть здесь, а не тихо менять
+    /// числа у соседа.</summary>
+    private int _registryParts = -1;
+
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
@@ -38,10 +51,16 @@ public class PipeGapSensorTests
         Assert.IsTrue(File.Exists(fullPath), $"Save file not found: {fullPath}");
         _json = File.ReadAllText(fullPath);
         Assert.IsNotEmpty(_json);
+
+        CaptureGlobals();
     }
 
-    [SetUp]
-    public void SetUp()
+    /// <summary>Снимок глобального состояния — ОДИН раз на класс. Сцена общая, а вместе с
+    /// ней общее и то, что приехало из файла проекта (<c>SceneRestorer.RestoreProjectState</c>):
+    /// потестовый <c>Restore()</c> сдирал бы настройки с живой сцены, и второй сенсор мерял
+    /// бы ту же геометрию при других настройках. Соседние классы защищены прежним способом —
+    /// состояние возвращается в <c>[OneTimeTearDown]</c>.</summary>
+    private void CaptureGlobals()
     {
         var s = KitchenSettings.Instance;
         Assert.IsNotNull(s);
@@ -51,16 +70,58 @@ public class PipeGapSensorTests
         s.AutoSave = false;
         s.SpatialGrid = false;
         s.NormalView.edgeOutline = false;
-
-        ClearScene();
     }
 
+    [SetUp]
+    public void SetUp() => AssertSharedSceneIntact();
+
     [TearDown]
-    public void TearDown()
+    public void TearDown() => FaceCache.Clear();
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        DropSharedScene();
+        _guard?.Restore();
+        _guard = null;
+    }
+
+    /// <summary>Сторож общей сцены на границе тестов: если она жива, её состав обязан быть
+    /// тем же, что при восстановлении. Проверка стоит именно в <c>[SetUp]</c>, а не только
+    /// внутри <see cref="SharedScene"/>, чтобы падение указывало на ПРЕДЫДУЩИЙ тест.</summary>
+    private void AssertSharedSceneIntact()
+    {
+        if (_scene == null) return;
+        Assert.AreEqual(_registryParts, PartRegistry.GetAll().Count,
+            "общая сцена поехала между тестами: записей в PartRegistry стало другое число");
+        Assert.AreEqual(_scene!.Count, _scene!.Count(e => e != null),
+            "в общей сцене появились уничтоженные детали");
+    }
+
+    /// <summary>Сцена фикстуры, общая для читающих сенсоров: поднимается ЛЕНИВО и
+    /// переиспользуется.</summary>
+    private List<KitchenElement> SharedScene()
+    {
+        if (_scene != null)
+        {
+            AssertSharedSceneIntact();
+            return _scene!;
+        }
+
+        ClearScene();
+        var built = RestoreScene();
+        _registryParts = PartRegistry.GetAll().Count;
+        _scene = built;
+        return built;
+    }
+
+    /// <summary>Забыть общую сцену и вычистить её из сцены Unity: зовёт только тест,
+    /// которому нужна своя.</summary>
+    private void DropSharedScene()
     {
         ClearScene();
-        _guard?.Restore();
-        FaceCache.Clear();
+        _scene = null;
+        _registryParts = -1;
     }
 
     private void ClearScene()
@@ -135,7 +196,7 @@ public class PipeGapSensorTests
     [Test]
     public void PrintEveryPortOfAllFiveElements_OnTheFrozenUserScene()
     {
-        var elements = RestoreScene();
+        var elements = SharedScene();
         var survey = ScenePipeSurvey.Of(elements);
 
         foreach (var name in AllFiveNames)
@@ -196,20 +257,22 @@ public class PipeGapSensorTests
     [Test]
     public void MouthToMouthGap_TrubaToOtvod92_OnTheFrozenUserScene()
     {
-        var elements = RestoreScene();
+        var elements = SharedScene();
         ReportGap(elements, "Truba", "Otvod_92");
     }
 
     [Test]
     public void MouthToMouthGap_TrubaToOtvod91_OnTheFrozenUserScene()
     {
-        var elements = RestoreScene();
+        var elements = SharedScene();
         ReportGap(elements, "Truba", "Otvod_91");
     }
 
     [Test]
     public void MouthToMouthGap_OnASelfSeatedScene_IsWithinTheProjectJoinTolerance()
     {
+        DropSharedScene();
+
         var s = KitchenSettings.Instance;
         Assert.IsNotNull(s);
         s.SnapEnabled = true;
