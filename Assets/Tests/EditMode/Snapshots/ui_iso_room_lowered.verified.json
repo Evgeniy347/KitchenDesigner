@@ -128,33 +128,28 @@
     },
     {
       "type": "Button",
-      "text": "TintToggle",
+      "text": "LightsToggle",
       "position": [716, -6]
     },
     {
       "type": "Button",
-      "text": "LightsToggle",
+      "text": "DayNight",
       "position": [762, -6]
     },
     {
       "type": "Button",
-      "text": "DayNight",
-      "position": [808, -6]
-    },
-    {
-      "type": "Button",
       "text": "Обычный",
-      "position": [870, -6]
+      "position": [824, -6]
     },
     {
       "type": "Button",
       "text": "Помещение",
-      "position": [976, -6]
+      "position": [930, -6]
     },
     {
       "type": "Button",
       "text": "Фото",
-      "position": [1102, -6]
+      "position": [1056, -6]
     },
     {
       "type": "Button",
@@ -203,6 +198,11 @@
       "type": "Button",
       "text": "SbMini_Помещение",
       "position": [6, -258]
+    },
+    {
+      "type": "Button",
+      "text": "SbMini_Конструкции",
+      "position": [6, -300]
     }
   ]
 }

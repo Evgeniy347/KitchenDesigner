@@ -48,182 +48,201 @@
     },
     {
       "type": "Label",
-      "text": "Дальность теней",
+      "text": "Высота этажа",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Заполняющий свет",
+      "text": "Глубина промерзания",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Контраст",
+      "text": "Грунт",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Насыщенность",
+      "text": "Дом",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Окружающий свет",
+      "text": "Запас",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Отскок от пола",
+      "text": "Кладка",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Порог свечения",
+      "text": "Класс бетона",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Потолок сверху",
+      "text": "Подушка: песок",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Предел отскока",
+      "text": "Подушка: щебень",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Предел свечения",
+      "text": "Регион",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Сила виньетки",
+      "text": "Технология",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Сила свечения",
+      "text": "Трамбовка",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Сила теней солнца",
+      "text": "Участок",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Стены сбоку",
+      "text": "Фундамент",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Тени от ламп",
+      "text": "Шов",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Тени сцены",
-      "position": [-90, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "Тонемаппинг",
-      "position": [-90, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "Экспозиция",
-      "position": [-90, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "Экспозиция и тон",
-      "position": [-90, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "Эффекты",
-      "position": [-90, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "10 м",
-      "position": [208, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "8 %",
-      "position": [208, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "6 %",
-      "position": [208, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "100 %",
-      "position": [208, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "250 %",
-      "position": [208, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "150 %",
-      "position": [208, 0]
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Песок", "Супесь", "Суглинок", "Глина", "Торф", "Неизвестно"],
+      "selected": 5,
+      "position": [165, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["B15", "B20", "B25"],
+      "selected": 1,
+      "position": [165, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Центр", "Северо-Запад", "Юг", "Поволжье", "Урал", "Сибирь", "Дальний Восток", "Крайний Север"],
+      "selected": 4,
+      "position": [165, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Кирпич 250×120×65", "Кирпич 250×120×88", "Газоблок 600×300×200", "Брус", "Каркас"],
+      "selected": 0,
+      "position": [165, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Fld_Высота этажа",
+      "value": "3000",
+      "interactable": true,
+      "position": [165, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Fld_Запас",
+      "value": "5",
+      "interactable": true,
+      "position": [165, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Fld_Подушка: песок",
+      "value": "100",
+      "interactable": true,
+      "position": [165, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Fld_Подушка: щебень",
+      "value": "100",
+      "interactable": true,
+      "position": [165, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Fld_Шов",
+      "value": "10",
+      "interactable": true,
+      "position": [165, 0]
     },
     {
       "type": "Label",
-      "text": "200 %",
-      "position": [208, 0]
-    },
-    {
-      "type": "Label",
-      "text": "400 %",
-      "position": [208, 0]
-    },
-    {
-      "type": "Label",
-      "text": "400 %",
-      "position": [208, 0]
-    },
-    {
-      "type": "Label",
-      "text": "22 %",
-      "position": [208, 0]
-    },
-    {
-      "type": "Label",
-      "text": "30 %",
-      "position": [208, 0]
-    },
-    {
-      "type": "Label",
-      "text": "100 %",
-      "position": [208, 0]
-    },
-    {
-      "type": "Label",
-      "text": "280 %",
-      "position": [208, 0]
-    },
-    {
-      "type": "Label",
-      "text": "нейтральный",
-      "position": [208, 0]
-    },
-    {
-      "type": "Label",
-      "text": "+0.5 EV",
-      "position": [208, 0]
+      "text": "—",
+      "position": [165, 0]
     },
     {
       "type": "Toggle",
-      "label": "Tgl_Тени от ламп",
+      "label": "Tgl_Трамбовка",
       "isOn": true,
       "position": [224, 0]
     },

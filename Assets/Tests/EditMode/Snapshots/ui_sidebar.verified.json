@@ -40,6 +40,11 @@
       "type": "Button",
       "text": "SbMini_Помещение",
       "position": [6, -258]
+    },
+    {
+      "type": "Button",
+      "text": "SbMini_Конструкции",
+      "position": [6, -300]
     }
   ]
 }

@@ -137,6 +137,11 @@
       "type": "Button",
       "text": "►  Помещение",
       "position": [8, -908]
+    },
+    {
+      "type": "Button",
+      "text": "►  Конструкции",
+      "position": [8, -946]
     }
   ]
 }
