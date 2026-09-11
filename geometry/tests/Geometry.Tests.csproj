@@ -23,7 +23,7 @@
       ElementTypeCatalog — лежат отдельной сборкой: их зовут и корневые тесты
       EditMode, и Pure, а копия вместо ссылки разошлась бы с оригиналом.
     -->
-    <Compile Include="..\..\Assets\Tests\EditMode\Sources\**\*.cs" />
+    <Compile Include="..\..\Assets\Tests\EditMode\Helpers\**\*.cs" />
     <!--
       Сенсор «два узла в одной точке» линкуется сюда, а не копируется: его
       зовут ДВЕ стороны — UiSnapshotEngine при съёмке (Unity) и UiNodeOverlapTests

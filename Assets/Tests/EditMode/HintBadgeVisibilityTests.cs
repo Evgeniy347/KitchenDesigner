@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 using KitchenDesigner.Tests;
+using KitchenDesigner.Tests.Geometry;
 
 /// <summary>
 /// Стражи ВИДИМОСТИ значка подсказки «i» (docs/UI-GUIDELINES.md → §13).
@@ -114,7 +115,7 @@ public class HintBadgeVisibilityTests
     [Test]
     public void EveryDeclaredHintKey_GrewABadge_OnTheRealPanel()
     {
-        var declared = HintTextGuardTests.DeclaredKeys();
+        var declared = HintKeyScan.DeclaredKeys();
         Assert.That(declared.Count, Is.GreaterThanOrEqualTo(5),
             "скан по «hint:» не нашёл ни одного размеченного контрола — тогда проверка ниже "
             + "зеленеет вхолостую, что бы ни случилось с панелями");

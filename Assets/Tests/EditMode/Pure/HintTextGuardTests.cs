@@ -26,48 +26,16 @@ public class HintTextGuardTests
     private const int MaxTextLength = 220;
     private const int MaxSentences = 2;
 
-    private static readonly Regex Declared = new Regex(@"\bhint\s*:\s*""([^""]*)""");
     private static readonly Regex AnyHintArgument = new Regex(@"\bhint\s*:");
     private static readonly Regex AnyHintCall = new Regex(@"\bHint\(");
     private static readonly Regex HintedRow = new Regex(
         @"\bHint\(\s*(""[^""]*""|[A-Za-z_]\w*)\s*,\s*hint\s*:\s*""([^""]*)""\s*\)");
 
-    private static string CoreDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
-
-    /// <summary>Всё дерево `Assets/Scripts/Core` (около 690 файлов) читается ОДИН раз
-    /// на класс, а не заново в каждом из семи тестов. Читали заново: четыре теста
-    /// звали `CodeLines()`/`KeysInCode()`, то есть ~2700 чтений диска на прогон вместо
-    /// 690, и в EditMode это платилось при каждом запуске набора. Скан от кэша не
-    /// ослабел — оба множества по-прежнему выводятся из ИСХОДНИКА, просто исходник
-    /// прочитан однажды; что скан действительно что-то видит, стережёт
-    /// <see cref="TheScan_FindsTheSamplePanel"/>.</summary>
-    private static List<(string file, string line)>? _codeLines;
-
-    private static List<(string file, string line)> CodeLines() =>
-        _codeLines ??= Directory.GetFiles(CoreDir(), "*.cs", SearchOption.AllDirectories)
-            .SelectMany(file => SourceLines.WithoutComments(File.ReadAllLines(file))
-                .Select(line => (Path.GetFileName(file), line)))
-            .ToList();
-
-    private static List<(string file, string key)>? _keysInCode;
-
-    private static List<(string file, string key)> KeysInCode() =>
-        _keysInCode ??= CodeLines()
-            .SelectMany(p => Declared.Matches(p.line).Cast<Match>()
-                .Select(m => (p.file, m.Groups[1].Value)))
-            .ToList();
-
-    /// <summary>Тот же скан читает и сторож видимости
-    /// (<c>HintBadgeVisibilityTests</c>): он строит настоящие панели и требует, чтобы у
-    /// каждого заявленного здесь ключа ВЫРОС значок. Второе описание одного множества
-    /// разъехалось бы с первым, как разъезжается любая вторая копия таблицы
-    /// (conventions/STRUCTURE.md → «A capability table has a twin in the contract»).</summary>
-    public static IReadOnlyList<(string file, string key)> DeclaredKeys() => KeysInCode();
 
     [Test]
     public void TheScan_FindsTheSamplePanel()
     {
-        var keys = KeysInCode();
+        var keys = HintKeyScan.DeclaredKeys();
         Assert.That(keys.Count, Is.GreaterThanOrEqualTo(5),
             "Скан по «hint:» не нашёл размеченных контролов — значит он зеленеет вхолостую "
             + "и обе проверки ниже ничего не стерегут. Образец разметки — SettingsViewTab.cs.");
@@ -78,7 +46,7 @@ public class HintTextGuardTests
     [Test]
     public void EveryKeyClaimedByAControl_HasText()
     {
-        var missing = KeysInCode()
+        var missing = HintKeyScan.DeclaredKeys()
             .Where(k => !HintText.Has(k.key))
             .Select(k => k.file + " → " + k.key)
             .Distinct()
@@ -93,7 +61,7 @@ public class HintTextGuardTests
     [Test]
     public void EveryText_IsClaimedBySomeControl()
     {
-        var claimed = KeysInCode().Select(k => k.key).ToHashSet(StringComparer.Ordinal);
+        var claimed = HintKeyScan.DeclaredKeys().Select(k => k.key).ToHashSet(StringComparer.Ordinal);
         var dangling = HintText.All.Keys.Where(k => !claimed.Contains(k)).ToList();
 
         Assert.IsEmpty(dangling,
@@ -105,8 +73,8 @@ public class HintTextGuardTests
     [Test]
     public void EveryHintArgument_IsALiteral()
     {
-        var computed = CodeLines()
-            .Where(p => AnyHintArgument.IsMatch(p.line) && !Declared.IsMatch(p.line))
+        var computed = HintKeyScan.CodeLines()
+            .Where(p => AnyHintArgument.IsMatch(p.line) && !HintKeyScan.Declared.IsMatch(p.line))
             .Select(p => p.file + ": " + p.line.Trim())
             .ToList();
 
@@ -136,7 +104,7 @@ public class HintTextGuardTests
         var unparsed = new List<string>();
         int asked = 0;
 
-        foreach (var panel in CodeLines().GroupBy(p => p.file))
+        foreach (var panel in HintKeyScan.CodeLines().GroupBy(p => p.file))
         {
             var lines = panel.Select(p => p.line).ToList();
             foreach (var line in lines)

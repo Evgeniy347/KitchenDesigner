@@ -12,11 +12,8 @@
   <ItemGroup>
     <Compile Include="..\..\Assets\Tests\EditMode\Pure\**\*.cs" />
     <Compile Include="ParallelAssemblyInfo.cs" />
-    <Compile Include="..\..\Assets\Tests\EditMode\Sources\**\*.cs">
-      <Link>Sources\%(Filename)%(Extension)</Link>
-    </Compile>
-    <Compile Include="..\..\Assets\Tests\EditMode\Geometry\ManagedRotation.cs">
-      <Link>Geometry\ManagedRotation.cs</Link>
+    <Compile Include="..\..\Assets\Tests\EditMode\Helpers\**\*.cs">
+      <Link>Helpers\%(Filename)%(Extension)</Link>
     </Compile>
   </ItemGroup>
 

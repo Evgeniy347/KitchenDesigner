@@ -1,7 +1,11 @@
 {
-	"name": "KitchenDesigner.Tests.Sources",
+	"name": "KitchenDesigner.Tests.Helpers",
 	"rootNamespace": "",
-	"references": [],
+	"references": [
+		"KitchenDesigner.Geometry",
+		"KitchenDesigner.Runtime",
+		"Unity.TextMeshPro"
+	],
 	"includePlatforms": [
 		"Editor"
 	],
@@ -14,5 +18,5 @@
 		"UNITY_INCLUDE_TESTS"
 	],
 	"versionDefines": [],
-	"noEngineReferences": true
+	"noEngineReferences": false
 }

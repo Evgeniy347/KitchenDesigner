@@ -75,11 +75,11 @@ namespace KitchenDesigner.Tests.Geometry
             RepoSubdir("Assets", "Tests", "EditMode", "Geometry");
 
         /// <summary>Общие помощники сторожей. Они собираются отдельной сборкой
-        /// (KitchenDesigner.Tests.Sources), но линкуются в ОБА проекта быстрого пути,
+        /// (KitchenDesigner.Tests.Helpers), но линкуются в ОБА проекта быстрого пути,
         /// поэтому запрет на движок держит их так же, как и сами тесты ядра —
         /// иначе вызов движка здесь ронял бы dotnet, а Unity молчал бы.</summary>
         private static string SharedTestSourceDir() =>
-            RepoSubdir("Assets", "Tests", "EditMode", "Sources");
+            RepoSubdir("Assets", "Tests", "EditMode", "Helpers");
 
         private static string PureSourceDir() =>
             RepoSubdir("Assets", "Scripts", "Core", "Pure");
