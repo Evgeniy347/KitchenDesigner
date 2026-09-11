@@ -19,13 +19,13 @@ namespace KitchenDesigner.Core
 
         public const int HATCH_RIM_WIDTH_MM = 25;
         public const int HATCH_MARGIN_MM = 60;
-        public const int HATCH_THICKNESS_MM = 6;
-        public const int GLASS_THICKNESS_MM = 6;
-        public const int GLASS_PROUD_MM = 2;
+        public const int HATCH_THICKNESS_MM = 18;
+        public const int GLASS_THICKNESS_MM = 10;
+        public const int GLASS_PROUD_MM = 6;
 
-        public const int FRONT_FACE_SETBACK_MM = 8;
+        public const int FRONT_FACE_SETBACK_MM = HATCH_THICKNESS_MM + GLASS_PROUD_MM;
         public const int CONTROL_PANEL_HEIGHT_MM = 90;
-        public const int CONTROL_PANEL_THICKNESS_MM = 5;
+        public const int CONTROL_PANEL_THICKNESS_MM = 20;
 
         public const int DRUM_DEPTH_MM = 300;
         public const int DRUM_BACK_WALL_MM = 20;

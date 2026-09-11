@@ -214,7 +214,14 @@ public class LaundryMachineBodyTests
         float rimFace = rim.centerMM.z + rim.sizeMM.z * 0.5f;
         float glassFace = glass.centerMM.z + glass.sizeMM.z * 0.5f;
 
-        Assert.Greater(rimFace, shellFace, "обод люка выступает вперёд лицевой грани корпуса");
+        Assert.AreEqual(LaundryMachineBody.HATCH_THICKNESS_MM, rimFace - shellFace, 0.001f,
+            "обод выступает вперёд лицевой грани корпуса на всю свою толщину: рельеф в "
+            + "пару миллиметров на кадре читается как «стекло вровень с корпусом»");
+        Assert.AreEqual(LaundryMachineBody.FRONT_FACE_SETBACK_MM,
+            LaundryMachineBody.HATCH_THICKNESS_MM + LaundryMachineBody.GLASS_PROUD_MM,
+            "отступ лицевой грани обязан быть суммой толщины обода и выступа стекла — "
+            + "иначе стекло перестаёт попадать ровно на объявленную грань, и разъедется "
+            + "либо габарит, либо рельеф");
         Assert.AreEqual(LaundryMachineBody.GLASS_PROUD_MM, glassFace - rimFace, 0.001f,
             "стекло выступает вперёд обода на свою объявленную величину — "
             + "иначе тёмного круга в белом кольце не видно");

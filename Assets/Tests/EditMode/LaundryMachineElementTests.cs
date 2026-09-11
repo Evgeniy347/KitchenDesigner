@@ -353,15 +353,24 @@ public class LaundryMachineElementTests
             var rim = BoundsOf(machine, LaundryMachineBody.IdxHatchRim);
             var glass = BoundsOf(machine, LaundryMachineBody.IdxHatchGlass);
 
+            float toMM = 1f / AppConstants.MM_TO_UNITS;
+
             Assert.Greater(panel.max.z, shell.max.z,
                 kind + ": панель управления не выступает вперёд корпуса — значит она "
                 + "утоплена в него и человек её не увидит");
-            Assert.Greater(rim.max.z, shell.max.z,
-                kind + ": обод люка не выступает вперёд корпуса");
-            Assert.Greater(glass.max.z, rim.max.z,
-                kind + ": стекло не выступает вперёд обода — тёмного круга в кольце не видно");
+            Assert.AreEqual(LaundryMachineBody.HATCH_THICKNESS_MM,
+                (rim.max.z - shell.max.z) * toMM, 0.5f,
+                kind + ": обод выступает вперёд корпуса не на свою толщину. Рельеф в пару "
+                + "миллиметров на кадре читается как «стекло вровень с корпусом» — ровно "
+                + "это и увидел человек");
+            Assert.AreEqual(LaundryMachineBody.GLASS_PROUD_MM,
+                (glass.max.z - rim.max.z) * toMM, 0.5f,
+                kind + ": стекло выступает вперёд обода не на объявленную величину");
+            Assert.AreEqual(LaundryMachineBody.HATCH_RIM_WIDTH_MM,
+                (rim.size.x - glass.size.x) * 0.5f * toMM, 0.5f,
+                kind + ": видимое белое кольцо вокруг стекла уже объявленного обода — "
+                + "в сцену доехал не тот диаметр");
 
-            float toMM = 1f / AppConstants.MM_TO_UNITS;
             Assert.AreEqual(LaundryMachineBody.HatchDiameterMM(kind, dims),
                 rim.size.x * toMM, 1f,
                 kind + ": обод в сцене не того диаметра, который назвал вид");
@@ -401,6 +410,80 @@ public class LaundryMachineElementTests
             + "Совпадение с закрытым габаритом значило бы, что люка в сцене нет вовсе");
         Assert.Greater(openFront, closedFront + 1f,
             "и потому открытая машина заведомо длиннее закрытой");
+    }
+
+    /// <summary>На кадре открытый люк читался как утонувший в передней стенке, а сенсор
+    /// выше молчал — потому что он меряет ГАБАРИТНУЮ КОРОБКУ объединения и не отличает
+    /// «вышел наружу» от «повернулся сквозь стенку»: в обоих случаях коробка растёт, просто
+    /// в разные стороны.
+    ///
+    /// Вопрос задаётся каждому УГЛУ каждой детали люка в местных координатах: люк,
+    /// навешенный на собственную левую кромку и открытый на 90 градусов, встаёт
+    /// перпендикулярно переду и обязан целиком остаться ПЕРЕД лицевой гранью корпуса.
+    /// Перевернуть ось петли — и половина углов уедет за эту грань внутрь, а тест назовёт
+    /// деталь и промах в миллиметрах.</summary>
+    [Test]
+    public void AnOpenHatch_StandsClearOfTheBody_NotTurnedThroughItsWall()
+    {
+        foreach (var kind in new[] { LaundryMachineKind.Washer, LaundryMachineKind.Dryer })
+        {
+            var machine = MakeDefault(kind, "Clear_" + kind);
+            var dims = LaundryMachineBody.DefaultDimensionsMM;
+            float shellFaceMM = dims.z * 0.5f - LaundryMachineBody.FRONT_FACE_SETBACK_MM;
+
+            machine.SetOpen(true);
+            machine.StepDoor(DropDoor.OPEN_SECONDS);
+            Assert.AreEqual(1f, machine.DoorProgress, 0.001f, kind + ": люк не раскрылся");
+
+            foreach (int part in new[]
+                     { LaundryMachineBody.IdxHatchRim, LaundryMachineBody.IdxHatchGlass })
+            {
+                float deepest = float.MaxValue;
+                foreach (var corner in LocalCornersMM(machine, part))
+                    deepest = Mathf.Min(deepest, corner.z);
+
+                Assert.GreaterOrEqual(deepest, shellFaceMM - 0.5f,
+                    kind + "/" + LaundryMachineBody.PartName(part)
+                    + ": открытый люк заходит ЗА лицевую грань корпуса на "
+                    + (shellFaceMM - deepest).ToString("0.#")
+                    + " мм — он повернулся сквозь стенку, а не наружу. Габаритная коробка "
+                    + "объединения этого не видит: она растёт в обе стороны одинаково");
+            }
+        }
+    }
+
+    /// <summary>Противоположный вход к тому же утверждению: закрытый люк лежит НА лицевой
+    /// грани, касаясь её, а не врезаясь. Без этой половины проверка выше проходила бы и на
+    /// люке, отодвинутом от машины на метр.</summary>
+    [Test]
+    public void AClosedHatch_RestsOnTheShellFace_TouchingItAndNoDeeper()
+    {
+        var machine = MakeDefault(LaundryMachineKind.Washer, "Rest");
+        var dims = LaundryMachineBody.DefaultDimensionsMM;
+        float shellFaceMM = dims.z * 0.5f - LaundryMachineBody.FRONT_FACE_SETBACK_MM;
+
+        float deepest = float.MaxValue;
+        foreach (var corner in LocalCornersMM(machine, LaundryMachineBody.IdxHatchRim))
+            deepest = Mathf.Min(deepest, corner.z);
+
+        Assert.AreEqual(shellFaceMM, deepest, 0.5f,
+            "закрытый обод стоит задней плоскостью ровно на лицевой грани корпуса: "
+            + "глубже — врезается, мельче — висит в воздухе со щелью");
+    }
+
+    private static Vector3[] LocalCornersMM(LaundryMachineElement machine, int part)
+    {
+        var child = machine.transform.GetChild(part);
+        var half = child.localScale * 0.5f;
+        var corners = new Vector3[8];
+        int at = 0;
+        for (int sx = -1; sx <= 1; sx += 2)
+            for (int sy = -1; sy <= 1; sy += 2)
+                for (int sz = -1; sz <= 1; sz += 2)
+                    corners[at++] = (child.localPosition + child.localRotation
+                        * new Vector3(half.x * sx, half.y * sy, half.z * sz))
+                        / AppConstants.MM_TO_UNITS;
+        return corners;
     }
 
     private static Bounds BoundsOf(LaundryMachineElement machine, int part) =>
