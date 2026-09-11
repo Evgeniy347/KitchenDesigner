@@ -107,9 +107,9 @@ namespace KitchenDesigner.Tests.Geometry
             var dir = Path.Combine(CoreDir(), layer);
             if (!Directory.Exists(dir)) return hits;
 
-            foreach (var file in Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories))
+            foreach (var file in SourceCorpus.Files(dir))
             {
-                var lines = File.ReadAllLines(file);
+                var lines = SourceCorpus.Lines(file);
                 for (int i = 0; i < lines.Length; i++)
                 {
                     var trimmed = lines[i].TrimStart();

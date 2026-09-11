@@ -48,7 +48,7 @@ namespace KitchenDesigner.Tests.Geometry
         private static string ScriptsDir() => RepoPaths.Subdir("Assets", "Scripts");
 
         private static string[] SourceFiles() =>
-            Directory.GetFiles(ScriptsDir(), "*.cs", SearchOption.AllDirectories);
+            SourceCorpus.Files(ScriptsDir());
 
         private static bool MayMentionIt(string fileName)
         {
@@ -72,7 +72,7 @@ namespace KitchenDesigner.Tests.Geometry
                 var name = Path.GetFileName(file) ?? string.Empty;
                 if (exempt(name)) continue;
 
-                var lines = File.ReadAllLines(file);
+                var lines = SourceCorpus.Lines(file);
                 for (int i = 0; i < lines.Length; i++)
                 {
                     if (IsComment(lines[i])) continue;

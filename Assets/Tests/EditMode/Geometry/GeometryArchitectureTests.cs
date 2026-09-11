@@ -21,7 +21,7 @@ namespace KitchenDesigner.Tests.Geometry
     /// сам по себе extern и под dotnet недоступен.</summary>
     public class GeometryArchitectureTests
     {
-        private static readonly (string pattern, string why)[] Banned =
+        private static readonly (string pattern, string why)[] BannedPatterns =
         {
             (@"\bMonoBehaviour\b",          "сцена: ядро работает со снимками геометрии"),
             (@"\bGameObject\b",             "сцена"),
@@ -37,6 +37,16 @@ namespace KitchenDesigner.Tests.Geometry
             (@"\bMatrix4x4\b",              "ECall"),
             (@"\bJsonUtility\b",            "лежит в UnityEngine.JSONSerializeModule и вызывает ECall: под dotnet не собирается вовсе"),
         };
+
+        /// <summary>Те же запреты, скомпилированные ОДИН раз. `Regex.IsMatch(line,
+        /// pattern)` перекомпилирует выражение по строке-шаблону через общий кэш на
+        /// каждый вызов, а вызовов здесь тринадцать на строку исходника, то есть
+        /// сотни тысяч на тест: четыре теста этого класса стоили 4,3 с из четырёх
+        /// секунд всего быстрого пути.</summary>
+        private static readonly (Regex rule, string name, string why)[] Banned =
+            Array.ConvertAll(BannedPatterns,
+                p => (new Regex(p.pattern, RegexOptions.Compiled),
+                      p.pattern.Trim('\\', 'b'), p.why));
 
         /// <summary>Файлы, которым НАЗЫВАТЬ запрещённые символы можно, с причиной.
         /// Причина обязательна: без неё через полгода не отличить осознанное
@@ -71,7 +81,7 @@ namespace KitchenDesigner.Tests.Geometry
             RepoSubdir("Assets", "Tests", "EditMode", "Pure");
 
         private static string[] ScannedFiles(string dir) =>
-            Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories);
+            SourceCorpus.Files(dir);
 
         private static string[] ScannedFileNames(string dir) =>
             Array.ConvertAll(ScannedFiles(dir), f => Path.GetFileName(f) ?? string.Empty);
@@ -84,7 +94,7 @@ namespace KitchenDesigner.Tests.Geometry
             {
                 if (Array.Exists(Allowed, a => a.file == Path.GetFileName(file))) continue;
 
-                var lines = File.ReadAllLines(file);
+                var lines = SourceCorpus.Lines(file);
                 for (int i = 0; i < lines.Length; i++)
                 {
                     var line = lines[i];
@@ -92,14 +102,15 @@ namespace KitchenDesigner.Tests.Geometry
                     // Комментарии не код: в них запрещённые имена законны —
                     // ими объясняют, ПОЧЕМУ ядро их не использует.
                     var trimmed = line.TrimStart();
-                    if (trimmed.StartsWith("//") || trimmed.StartsWith("///")
-                        || trimmed.StartsWith("*") || trimmed.StartsWith("/*")) continue;
+                    if (trimmed.StartsWith("//", StringComparison.Ordinal)
+                        || trimmed.StartsWith("*", StringComparison.Ordinal)
+                        || trimmed.StartsWith("/*", StringComparison.Ordinal)) continue;
 
-                    foreach (var (pattern, why) in Banned)
-                        if (Regex.IsMatch(line, pattern))
+                    foreach (var (rule, name, why) in Banned)
+                        if (rule.IsMatch(line))
                             violations.Add(
                                 Path.GetFileName(file) + ":" + (i + 1) + " — "
-                                + pattern.Trim('\\', 'b') + " (" + why + ")\n    " + trimmed);
+                                + name + " (" + why + ")\n    " + trimmed);
                 }
             }
 
@@ -251,7 +262,7 @@ namespace KitchenDesigner.Tests.Geometry
             var violations = new List<string>();
             foreach (var file in files)
             {
-                var lines = File.ReadAllLines(file);
+                var lines = SourceCorpus.Lines(file);
                 for (int i = 0; i < lines.Length; i++)
                     violations.AddRange(LineViolations(Path.GetFileName(file), i + 1, lines[i]));
             }
@@ -302,7 +313,7 @@ namespace KitchenDesigner.Tests.Geometry
                     + "файла больше нет — запись переживёт файл и начнёт освобождать следующий "
                     + "с этим именем");
 
-                bool fieldStillThere = matches.Any(f => File.ReadAllLines(f).Any(l => l.Contains(field)));
+                bool fieldStillThere = matches.Any(f => SourceCorpus.Lines(f).Any(l => l.Contains(field)));
                 Assert.IsTrue(fieldStillThere,
                     "белый список освобождает поле " + field + " в " + file + " (" + why + "), но "
                     + "такого поля в файле больше нет — запись начнёт молча освобождать следующее "
