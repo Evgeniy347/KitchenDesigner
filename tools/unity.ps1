@@ -486,7 +486,7 @@ function Get-DefaultFilter {
 }
 
 <#
-    Сколько это заняло — вслух, всегда.
+    Сколько это заняло — вслух, всегда, и ДВУМЯ величинами.
 
     Цикл «правка → проверка» разъезжается незаметно: чужой клиент в очереди,
     разросшийся набор, лишний импорт — каждый добавляет минуты, и ни один себя
@@ -494,31 +494,85 @@ function Get-DefaultFilter {
     строкой, чтобы деградацию замечали сразу, а не через неделю «почему-то всё
     стало медленно».
 
-    Бюджеты — ХОЛОДНЫЕ и ЗАМЕРЕННЫЕ: каждый прогон платит фиксированные 60–90 с
-    старта (лицензия, Asset Pipeline Refresh, три domain reload) ДО первого
-    теста, и они входят в цифры ниже. Замеры: прицельный класс 22 с, полный
-    EditMode (2237 тестов) 65 с, полный PlayMode (75 тестов) 100 с. Бюджет —
-    примерно полуторный запас к замеру: срабатывать он должен на деградации,
-    а не на шуме.
+    Но «прогон» — это СУММА двух разных величин, и один порог на сумму не
+    говорит, какая половина выросла. Из-за этого полдня искали секунды в
+    тестах, тогда как пятая часть бюджета лежала в компиляции.
+
+      * время тестов — `test-run/@duration` из отчёта NUnit;
+      * накладные — стена минус время тестов: лицензия 2,4 с, две перезагрузки
+        домена 5,1 с, КОМПИЛЯЦИЯ 14,3 с (Runtime 5 с и тесты 7 с последовательно),
+        сбор тестов 2,5 с, выход процесса ~4 с. Пол пустого проекта той же
+        версии Unity — 8,1 с (`agents/UNITY-GATEWAY.md`), всё сверх него это
+        компиляция, и она платится КАЖДЫЙ раз: ворота всегда идут после правки
+        исходников. Правкой тестов она не сокращается.
+
+    Поэтому порогов два, и сообщение обязано назвать виновную половину.
 #>
 function Get-BudgetSeconds {
-    if ($Command -eq 'method') { return 300 }             # сборка плеера
+    if ($Command -eq 'method') { return 300 }             # сборка плеера, отчёта NUnit нет
     if ($Filter) { return 60 }                            # прицельный прогон
-    # Измерено 2026-09-06: EditMode 146 с на 4346 тестах, PlayMode 185 с на 216.
+    # Измерено 2026-09-11: EditMode 149 с NUnit + 33 с накладных на 5 498 тестах.
+    # Порог — с запасом к факту: машина под нагрузкой даёт разброс, и ворота не
+    # должны краснеть от того, что рядом собирается второй проект.
     # Бюджет поднимается ОСОЗНАННО и вместе с числом тестов, которое его оправдало:
     # предупреждение, срабатывающее каждый раз, перестают читать.
     if ($Platform -eq 'PlayMode') { return 210 }
-    return 170                                            # полный EditMode
+    return 170                                            # полный EditMode, время тестов
+}
+
+function Get-OverheadBudgetSeconds {
+    # Измерено 2026-09-11: 33 с накладных на 5 498 тестах (лицензия 2,4 + два
+    # domain reload 5,1 + компиляция 14,3 + сбор тестов 2,5 + выход ~4).
+    # Порог с тем же запасом к факту, что и у времени тестов.
+    return 45
+}
+
+<#
+    Время тестов из отчёта NUnit, либо $null — отчёта нет (сборка плеера,
+    упавший до записи прогон). Без отчёта печатаем по-старому, одной величиной.
+
+    ЛОВУШКА: корневой `test-run/@duration` NUnit пишет в ТЕКУЩЕЙ культуре, а
+    вложенные `test-suite/@duration` — в инвариантной. На русской машине это
+    `duration="0,2048422"` у корня и `duration="0.204842"` у сюиты в одном
+    файле. Разбор по инвариантной культуре молча съедал запятую и превращал
+    0,2 с в 2 048 422 с — «время тестов 2 048 422 с при пороге 60». Поэтому
+    запятая приводится к точке ДО разбора.
+#>
+function Get-ReportedTestSeconds {
+    if ($Command -ne 'tests') { return $null }
+    if (-not (Test-Path $ResultPath)) { return $null }
+    try {
+        $x = [xml](Get-Content $ResultPath)
+        $d = $x.'test-run'.duration
+        if (-not $d) { return $null }
+        return [double]::Parse(($d -replace ',', '.'), [Globalization.CultureInfo]::InvariantCulture)
+    } catch { return $null }
 }
 
 function Report-Time {
     param([Diagnostics.Stopwatch]$Sw)
-    $s = $Sw.Elapsed.TotalSeconds
-    $budget = Get-BudgetSeconds
-    if ($s -gt $budget) {
-        Write-Host ("  прогон занял {0:N0} с — БОЛЬШЕ бюджета в {1} с" -f $s, $budget) -ForegroundColor Yellow
-    } else {
-        Write-Host ("  прогон занял {0:N1} с" -f $s) -ForegroundColor DarkGray
+    $wall = $Sw.Elapsed.TotalSeconds
+    $tests = Get-ReportedTestSeconds
+
+    if ($null -eq $tests) {
+        $budget = Get-BudgetSeconds
+        if ($wall -gt $budget) {
+            Write-Host ("  прогон занял {0:N0} с — БОЛЬШЕ бюджета в {1} с" -f $wall, $budget) -ForegroundColor Yellow
+        } else {
+            Write-Host ("  прогон занял {0:N1} с" -f $wall) -ForegroundColor DarkGray
+        }
+        return
+    }
+
+    $overhead = $wall - $tests
+    $testBudget = Get-BudgetSeconds
+    $overheadBudget = Get-OverheadBudgetSeconds
+    Write-Host ("  прогон занял {0:N1} с = тесты {1:N1} с + накладные {2:N1} с" -f $wall, $tests, $overhead) -ForegroundColor DarkGray
+    if ($tests -gt $testBudget) {
+        Write-Host ("  время тестов {0:N0} с при пороге {1} с — вырос набор, накладные ни при чём" -f $tests, $testBudget) -ForegroundColor Yellow
+    }
+    if ($overhead -gt $overheadBudget) {
+        Write-Host ("  накладные {0:N0} с при пороге {1} с — выросла компиляция или старт, тесты ни при чём" -f $overhead, $overheadBudget) -ForegroundColor Yellow
     }
 }
 
