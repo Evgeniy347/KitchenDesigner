@@ -7,8 +7,8 @@ namespace KitchenDesigner.Core
         IQuantifies
     {
         public override ElementFront Front =>
-            ElementFront.Parts(OvenBody.PartName(OvenBody.IdxFacade),
-                OvenBody.PartName(OvenBody.IdxGlass), OvenBody.PartName(OvenBody.IdxPanel),
+            ElementFront.Parts(OvenBody.PartName(OvenBody.IdxGlass),
+                OvenBody.PartName(OvenBody.IdxPanel),
                 OvenBody.PartName(OvenBody.IdxHandle));
 
         public override bool CanFollowAnAttachParent => false;

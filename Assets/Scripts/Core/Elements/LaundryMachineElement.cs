@@ -7,7 +7,6 @@ namespace KitchenDesigner.Core
     {
         public override ElementFront Front =>
             ElementFront.Parts(LaundryMachineBody.PartName(LaundryMachineBody.IdxControlPanel),
-                LaundryMachineBody.PartName(LaundryMachineBody.IdxHatchRim),
                 LaundryMachineBody.PartName(LaundryMachineBody.IdxHatchGlass));
 
         public static readonly Vector3 HingeAxis = Vector3.down;

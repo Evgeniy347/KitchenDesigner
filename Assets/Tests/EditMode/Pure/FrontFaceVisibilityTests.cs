@@ -117,4 +117,53 @@ public class FrontFaceVisibilityTests
         Assert.IsEmpty(FrontFaceVisibility.Hidden(oven, new[] { "Glass" }, IsoCameraRig.ViewDir),
             "стекло лежит поверх фасада и обязано считаться видимым");
     }
+
+    /// <summary>Обратная сторона той же пары, и она оплачена красным прогоном:
+    /// духовка объявляла лицевой деталью ПЛИТУ дверцы (<c>Facade</c>), а её
+    /// середину закрывает собственное стекло — плита утоплена под накладку
+    /// ровно на её толщину (<c>conventions/SHAPE-AND-SCREENSHOTS.md</c> →
+    /// «Накладка, лежащая на детали…»). Сенсор был прав: середины плиты в
+    /// кадре нет ни с какой стороны. Объявлять надо то, что лежит СВЕРХУ, —
+    /// стекло, панель и ручку.</summary>
+    [Test]
+    public void ACarrierSunkUnderItsOwnOverlay_IsNotADeclarableFacePart()
+    {
+        var oven = new List<FacePart>
+        {
+            Part("Facade", new Vector3(0f, 0f, 0.28f), new Vector3(0.60f, 0.45f, 0.02f)),
+            Part("Glass", new Vector3(0f, -0.03f, 0.292f), new Vector3(0.50f, 0.34f, 0.004f)),
+        };
+
+        CollectionAssert.AreEquivalent(new[] { "Facade" },
+            FrontFaceVisibility.Hidden(oven, new[] { "Facade" }, IsoCameraRig.ViewDir),
+            "плиту под накладкой в кадре не видно, и ослаблять сенсор ради неё нельзя: "
+            + "тогда он перестанет отличать «деталь закрыта своим же стеклом» от "
+            + "«деталь закрыта задней стенкой», ради чего и заведён");
+    }
+
+    /// <summary>Вторая находка того же красного прогона: обод люка стиральной
+    /// машины (<c>HatchRim</c>) — КОЛЬЦО, и центр его габаритной коробки это
+    /// дырка, а не поверхность. В дырке сидит стекло, поэтому обод «не виден»
+    /// при любом ракурсе. Это не дефект сенсора и не повод его ослаблять — это
+    /// оговорка про AABB у круглых деталей, уже записанная в
+    /// <c>CoplanarSurfaceCoverageTests</c>: объявляется то, что дырку
+    /// ЗАПОЛНЯЕТ, а кольцо вокруг него видно вместе с ним.</summary>
+    [Test]
+    public void ARingIsNotADeclarableFacePart_ItsBoxCentreIsTheHole()
+    {
+        var hatch = new List<FacePart>
+        {
+            Part("HatchRim", new Vector3(0f, 0f, 0.30f), new Vector3(0.40f, 0.40f, 0.018f)),
+            Part("HatchGlass", new Vector3(0f, 0f, 0.305f), new Vector3(0.35f, 0.35f, 0.010f)),
+        };
+
+        CollectionAssert.AreEquivalent(new[] { "HatchRim" },
+            FrontFaceVisibility.Hidden(hatch, new[] { "HatchRim" }, IsoCameraRig.ViewDir),
+            "центр коробки кольца занят стеклом — объявлять лицевым надо стекло");
+
+        Assert.IsEmpty(FrontFaceVisibility.Hidden(hatch, new[] { "HatchGlass" },
+                IsoCameraRig.ViewDir),
+            "а стекло видно, и вместе с ним в кадре оказывается и обод вокруг него: "
+            + "проверка не теряет чувствительности от того, что кольцо не объявлено");
+    }
 }
