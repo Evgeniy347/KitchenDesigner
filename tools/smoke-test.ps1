@@ -19,6 +19,14 @@
     Шаг 5 поднимает приложение с -mcpSaveDir <временный каталог>, которым скрипт владеет сам:
     он создаётся перед запуском и удаляется в конце прогона независимо от результата.
 
+    Плеер запускается ещё и с -ephemeralSession: в этом режиме приложение НЕ пишет в
+    PlayerPrefs (на Windows это реестр) ни «последний открытый проект», ни отметку
+    первого запуска — см. EphemeralSessionArgument, LastProjectMemory и FirstRunMarker
+    в Core. Раньше дымовой прогон подменял пользователю последний проект своим временным
+    файлом, и следующий ОБЫЧНЫЙ запуск открывал kd-smoke-<хэш>\smoke-roundtrip.save.json.
+    Чинится именно ЗАПИСЬ, а не подчистка после: прогон может упасть посередине, и тогда
+    подчистка не выполнится, а ключ уже подменён.
+
     Плеер запускается БЕЗ видимого окна и БЕЗ звука — это прогон на машине пользователя,
     рядом с его собственной работой. -batchmode/-nographics не годятся: тест гоняет
     настоящий рендер (реальная сцена, create/get/delete через MCP). Окно прячет СЕБЯ
@@ -179,9 +187,11 @@ New-Item -ItemType Directory -Path $tempSaveDir -Force | Out-Null
 # fighting the user's own instance for a port. -hideWindow: the player hides its own
 # window (see HideWindowArgument / DisplaySettings.ApplyWindowMode in Core) - always
 # passed, same as -muteAudio.
+# -ephemeralSession: nothing from this run outlives it - neither the last opened project
+# nor the first-run marker (LastProjectMemory / FirstRunMarker in Core).
 try {
     $proc = Start-Process -FilePath $ExePath `
-        -ArgumentList @('-mcpPort', "$Port", '-mcpSaveDir', "$tempSaveDir", '-muteAudio', '-hideWindow') `
+        -ArgumentList @('-mcpPort', "$Port", '-mcpSaveDir', "$tempSaveDir", '-muteAudio', '-hideWindow', '-ephemeralSession') `
         -WindowStyle Hidden -PassThru
 } catch {
     Write-Host "[FAIL] Could not start player: $_" -ForegroundColor Red

@@ -7,19 +7,24 @@ namespace KitchenDesigner.Core
 {
     internal class ProjectFileStore
     {
-        private const string LastPathKey = "KitchenLastSavePath";
+        private readonly ILastProjectMemory _lastProject;
+
+        public ProjectFileStore() : this(Environment.GetCommandLineArgs())
+        {
+        }
+
+        public ProjectFileStore(string[]? commandLineArgs)
+        {
+            _lastProject = LastProjectMemory.For(commandLineArgs);
+        }
 
         public string SavesDirectory =>
             Path.Combine(Application.persistentDataPath, "saves");
 
         public string LastPath
         {
-            get => PlayerPrefs.GetString(LastPathKey, "");
-            set
-            {
-                PlayerPrefs.SetString(LastPathKey, value ?? "");
-                PlayerPrefs.Save();
-            }
+            get => _lastProject.Value;
+            set => _lastProject.Value = value;
         }
 
         public bool HasLastPath => !string.IsNullOrEmpty(LastPath);

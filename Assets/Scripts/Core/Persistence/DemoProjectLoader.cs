@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using UnityEngine;
 
@@ -5,7 +6,6 @@ namespace KitchenDesigner.Core
 {
     internal static class DemoProjectLoader
     {
-        internal const string FirstRunKey = "KitchenFirstRunDone";
         internal const string DemoFolderName = "Demo";
         internal const string DemoFileName = "demo.json";
 
@@ -22,8 +22,8 @@ namespace KitchenDesigner.Core
 
         internal static bool OpenDemoOrLastSession(ISaveLoadManager saveLoad)
         {
-            bool firstRunRecorded = PlayerPrefs.GetInt(FirstRunKey, 0) != 0;
-            RememberThatWeHaveRunBefore();
+            bool firstRunRecorded = FirstRunMarker.Recorded;
+            FirstRunMarker.Record(Environment.GetCommandLineArgs());
 
             string demo = DemoPath;
             bool wanted = DemoMode.ShouldOpenDemo(
@@ -39,12 +39,6 @@ namespace KitchenDesigner.Core
             saveLoad.LastPath = string.Empty;
             DemoMode.Current.Enter(demoPath);
             return true;
-        }
-
-        private static void RememberThatWeHaveRunBefore()
-        {
-            PlayerPrefs.SetInt(FirstRunKey, 1);
-            PlayerPrefs.Save();
         }
     }
 }
