@@ -99,6 +99,9 @@ namespace KitchenDesigner.Core.UI
             var demoDialog = gameObject.AddComponent<DemoModeDialogUI>();
             demoDialog.Build(_canvas.transform);
 
+            var newerVersionDialog = gameObject.AddComponent<NewerVersionDialogUI>();
+            newerVersionDialog.Build(_canvas.transform);
+
             _placement = gameObject.AddComponent<PlacementController>();
         }
 

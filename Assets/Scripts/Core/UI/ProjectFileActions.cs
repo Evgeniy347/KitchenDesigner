@@ -42,11 +42,15 @@ namespace KitchenDesigner.Core.UI
             string? path = NativeFileDialog.OpenDialog("Открыть проект кухни",
                 SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return;
-            if (SaveLoadManager.LoadFromPath(path))
-            {
-                Toast("Загружено: " + System.IO.Path.GetFileName(path));
-                PhotoLookMigrationNotice.ShowIfPending();
-            }
+            NewerVersionPrompt.Confirm(ProjectFileVersion.Of(path!), BuildInfo.Version,
+                () => Open(path!));
+        }
+
+        private static void Open(string path)
+        {
+            if (!SaveLoadManager.LoadFromPath(path)) return;
+            Toast("Загружено: " + System.IO.Path.GetFileName(path));
+            PhotoLookMigrationNotice.ShowIfPending();
         }
 
         private static string SuggestedNameForANewFile() =>
