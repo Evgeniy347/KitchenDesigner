@@ -6,7 +6,8 @@ using KitchenDesigner.Core;
 /// два — приём тот же, что у ящика Movento (<see cref="DrawerSystem"/>): вид
 /// приезжает перечислением, а не вторым классом. Здесь проверяется то, что
 /// иначе стало бы комментарием: размеры по умолчанию, геометрия, которая идёт
-/// за размерами, и петля дверцы на ЛЕВОЙ кромке.
+/// за размерами, и КРУГЛЫЙ люк, петля которого лежит на его собственной левой
+/// кромке, а не на кромке корпуса.
 ///
 /// Размеры берутся НЕсимметричные (`conventions/SHAPE-AND-SCREENSHOTS.md` →
 /// «A mesh and its metadata must describe the SAME shape»): на кубе 600×600×600
@@ -32,6 +33,22 @@ public class LaundryMachineBodyTests
         Assert.AreNotEqual(LaundryMachineBody.NameOf(LaundryMachineKind.Washer),
             LaundryMachineBody.NameOf(LaundryMachineKind.Dryer),
             "два вида отличаются ровно названием — если названия совпали, различать нечем");
+    }
+
+    [Test]
+    public void TypeId_AndTryKindOf_AgreeInBothDirections()
+    {
+        foreach (var kind in new[] { LaundryMachineKind.Washer, LaundryMachineKind.Dryer })
+        {
+            Assert.IsTrue(LaundryMachineBody.TryKindOf(LaundryMachineBody.TypeId(kind), out var back),
+                "имя типа, выданное самой таблицей, обязано ею же читаться: " + kind);
+            Assert.AreEqual(kind, back, "круг «вид → имя типа → вид» потерял вид: " + kind);
+        }
+
+        Assert.IsFalse(LaundryMachineBody.TryKindOf("dishwasher", out _),
+            "чужое имя типа обязано быть ОТКАЗОМ, а не молчаливой стиральной машиной");
+        Assert.IsFalse(LaundryMachineBody.TryKindOf("", out _),
+            "пустая строка — тоже отказ");
     }
 
     [Test]
@@ -78,60 +95,106 @@ public class LaundryMachineBodyTests
     }
 
     [Test]
-    public void ControlPanel_SitsAtTheTopOfTheFront_AndTheDoorTakesTheRest()
+    public void ControlPanel_SitsAtTheTopOfTheFront_AndTheFrontPanelTakesTheRest()
     {
         var parts = LaundryMachineBody.ClosedPartsMM(Asymmetric);
         var panel = parts[LaundryMachineBody.IdxControlPanel];
-        var door = parts[LaundryMachineBody.IdxDoor];
+        var front = parts[LaundryMachineBody.IdxFrontPanel];
 
         float halfH = Asymmetric.y * 0.5f;
         Assert.AreEqual(halfH, panel.centerMM.y + panel.sizeMM.y * 0.5f, 0.001f,
             "панель управления прижата к верху");
         Assert.AreEqual(panel.centerMM.y - panel.sizeMM.y * 0.5f,
-            door.centerMM.y + door.sizeMM.y * 0.5f, 0.001f,
-            "дверца начинается ровно там, где кончается панель — без щели и без нахлёста");
-        Assert.AreEqual(-halfH, door.centerMM.y - door.sizeMM.y * 0.5f, 0.001f,
-            "дверца доходит до низа");
+            front.centerMM.y + front.sizeMM.y * 0.5f, 0.001f,
+            "передняя стенка начинается ровно там, где кончается панель — без щели и нахлёста");
+        Assert.AreEqual(-halfH, front.centerMM.y - front.sizeMM.y * 0.5f, 0.001f,
+            "передняя стенка доходит до низа");
     }
 
     [Test]
-    public void Porthole_StandsInFrontOfTheDoorSlab_ByItsOwnThickness()
+    public void TheHatch_IsRound_AndItsGlassSitsInsideItsRim()
     {
         var parts = LaundryMachineBody.ClosedPartsMM(Asymmetric);
-        var slab = parts[LaundryMachineBody.IdxDoor];
-        var glass = parts[LaundryMachineBody.IdxPorthole];
+        var rim = parts[LaundryMachineBody.IdxHatchRim];
+        var glass = parts[LaundryMachineBody.IdxHatchGlass];
 
-        float slabFront = slab.centerMM.z + slab.sizeMM.z * 0.5f;
-        float glassFront = glass.centerMM.z + glass.sizeMM.z * 0.5f;
-
-        Assert.AreEqual(LaundryMachineBody.OVERLAY_THICKNESS_MM, glassFront - slabFront, 0.001f,
-            "стекло люка стоит ПЕРЕД плитой двери ровно на свою толщину");
-        Assert.AreEqual(LaundryMachineBody.FRONT_THICKNESS_MM,
-            glassFront - (slab.centerMM.z - slab.sizeMM.z * 0.5f), 0.001f,
-            "общая толщина передка не изменилась от того, что плита утоплена");
+        Assert.AreEqual(rim.sizeMM.x, rim.sizeMM.y, 0.001f,
+            "люк КРУГЛЫЙ: ширина и высота обода равны, иначе это овал или прямоугольник");
+        Assert.AreEqual(glass.sizeMM.x, glass.sizeMM.y, 0.001f,
+            "стекло люка тоже круглое");
+        Assert.AreEqual(2 * LaundryMachineBody.HATCH_RIM_WIDTH_MM,
+            rim.sizeMM.x - glass.sizeMM.x, 0.001f,
+            "стекло уже обода ровно на две ширины обода — иначе ободка не видно");
+        Assert.IsTrue(LaundryMachineBody.IsRound(LaundryMachineBody.IdxHatchRim)
+            && LaundryMachineBody.IsRound(LaundryMachineBody.IdxHatchGlass),
+            "обе детали люка обязаны быть объявлены круглыми — по этому флагу им ставится диск");
+        Assert.IsFalse(LaundryMachineBody.IsRound(LaundryMachineBody.IdxFrontPanel),
+            "противоположный вход: передняя стенка — коробка, и диск ей не полагается");
     }
 
     [Test]
-    public void Hinge_SitsOnTheLeftEdge_AtTheBackOfTheDoor()
+    public void TheHatch_StandsProudOfTheFrontPanel_SoNothingFlickers()
+    {
+        var parts = LaundryMachineBody.ClosedPartsMM(Asymmetric);
+        var front = parts[LaundryMachineBody.IdxFrontPanel];
+        var rim = parts[LaundryMachineBody.IdxHatchRim];
+        var glass = parts[LaundryMachineBody.IdxHatchGlass];
+
+        float frontFace = front.centerMM.z + front.sizeMM.z * 0.5f;
+        float rimFace = rim.centerMM.z + rim.sizeMM.z * 0.5f;
+        float glassFace = glass.centerMM.z + glass.sizeMM.z * 0.5f;
+
+        Assert.Greater(rimFace, frontFace,
+            "обод люка выступает вперёд передней стенки, а не кончается в её плоскости");
+        Assert.Greater(glassFace, rimFace,
+            "стекло выступает вперёд обода — иначе тёмного круга в белом кольце не видно");
+        Assert.AreEqual(Asymmetric.z * 0.5f, glassFace, 0.001f,
+            "стекло — самая передняя точка машины и лежит ровно на её объявленной грани");
+    }
+
+    [Test]
+    public void TheHatchDiameter_FollowsTheSmallerOfWidthAndFrontHeight()
+    {
+        Assert.AreEqual(600 - 2 * LaundryMachineBody.HATCH_MARGIN_MM,
+            LaundryMachineBody.HatchDiameterMM(new Vector3Int(600, 1400, 600)), 0.001f,
+            "у высокой узкой машины диаметр люка ограничен ШИРИНОЙ");
+        Assert.AreEqual(1400 - LaundryMachineBody.CONTROL_PANEL_HEIGHT_MM
+                - 2 * LaundryMachineBody.HATCH_MARGIN_MM,
+            LaundryMachineBody.HatchDiameterMM(new Vector3Int(2000, 1400, 600)), 0.001f,
+            "у широкой низкой машины — ВЫСОТОЙ передней стенки; на квадрате эти два "
+            + "правила неотличимы, поэтому вход намеренно не квадратный");
+    }
+
+    [Test]
+    public void Hinge_SitsOnTheLeftEdgeOfTheHatchItself_AtItsBack()
     {
         var hinge = LaundryMachineBody.HingeLocalMM(Asymmetric);
+        float hatchHalf = LaundryMachineBody.HatchDiameterMM(Asymmetric) * 0.5f;
 
-        Assert.AreEqual(-Asymmetric.x * 0.5f, hinge.x, 0.001f,
-            "петля на ЛЕВОЙ кромке: дверца открывается влево-вперёд");
-        Assert.AreEqual(Asymmetric.z * 0.5f - LaundryMachineBody.FRONT_THICKNESS_MM, hinge.z, 0.001f,
-            "петля на задней плоскости передка, иначе дверца при открывании въезжает в корпус");
+        Assert.AreEqual(-hatchHalf, hinge.x, 0.001f,
+            "петля на левой кромке ЛЮКА, а не корпуса: люк круглый и уже передней стенки, "
+            + "петля по кромке корпуса развернула бы его вокруг пустоты");
+        Assert.Greater(hinge.x, -Asymmetric.x * 0.5f,
+            "и потому она заведомо правее левой стенки машины");
+        Assert.AreEqual(LaundryMachineBody.HatchCenterYMM, hinge.y, 0.001f,
+            "петля на высоте центра люка — вертикальная ось вращения");
 
-        var door = LaundryMachineBody.DoorPartsMM(Asymmetric)[0];
-        Assert.AreEqual(door.centerMM.y, hinge.y, 0.001f,
-            "петля на высоте середины дверцы — вертикальная ось вращения");
+        var rim = LaundryMachineBody.DoorPartsMM(Asymmetric)[0];
+        Assert.AreEqual(rim.centerMM.z - rim.sizeMM.z * 0.5f, hinge.z, 0.001f,
+            "петля на задней плоскости люка, иначе при открывании он въезжает в стенку");
     }
 
     [Test]
-    public void Hinge_MovesWithWidth()
+    public void Hinge_MovesWithTheHatch_NotWithTheShell()
     {
-        Assert.AreEqual(-300f, LaundryMachineBody.HingeLocalMM(new Vector3Int(600, 850, 600)).x, 0.001f);
-        Assert.AreEqual(-450f, LaundryMachineBody.HingeLocalMM(new Vector3Int(900, 850, 600)).x, 0.001f,
-            "петля обязана ехать за шириной, иначе широкая машина открывается из середины корпуса");
+        float narrow = LaundryMachineBody.HingeLocalMM(new Vector3Int(600, 850, 600)).x;
+        float wide = LaundryMachineBody.HingeLocalMM(new Vector3Int(900, 850, 600)).x;
+
+        Assert.Less(wide, narrow,
+            "шире машина — больше люк — левее его кромка; неподвижная петля означала бы, "
+            + "что люк вращается не вокруг себя");
+        Assert.AreEqual(-LaundryMachineBody.HatchDiameterMM(new Vector3Int(900, 850, 600)) * 0.5f,
+            wide, 0.001f);
     }
 
     [Test]
@@ -145,6 +208,8 @@ public class LaundryMachineBodyTests
         Assert.AreEqual(LaundryMachineBody.MIN_WIDTH_MM, clamped.x);
         Assert.AreEqual(LaundryMachineBody.MIN_HEIGHT_MM, clamped.y);
         Assert.AreEqual(LaundryMachineBody.MIN_DEPTH_MM, clamped.z);
+        Assert.Greater(LaundryMachineBody.GlassDiameterMM(clamped), 0f,
+            "на самом маленьком законном размере стекло люка обязано остаться видимым");
     }
 
     [Test]

@@ -15,19 +15,25 @@ namespace KitchenDesigner.Core
         public const int DEFAULT_DEPTH_MM = 600;
 
         public const int FRONT_THICKNESS_MM = 24;
-        public const float OVERLAY_THICKNESS_MM = 2f;
         public const int CONTROL_PANEL_HEIGHT_MM = 90;
-        public const int PORTHOLE_MARGIN_MM = 70;
 
-        public const int MIN_WIDTH_MM = 2 * PORTHOLE_MARGIN_MM + 1;
-        public const int MIN_HEIGHT_MM = CONTROL_PANEL_HEIGHT_MM + 2 * PORTHOLE_MARGIN_MM + 1;
+        public const int HATCH_MARGIN_MM = 60;
+        public const int HATCH_RIM_WIDTH_MM = 25;
+        public const int HATCH_BACK_INSET_MM = 4;
+        public const int HATCH_RIM_FRONT_GAP_MM = 4;
+        public const int HATCH_GLASS_BACK_INSET_MM = 8;
+        public const int FRONT_FACE_SETBACK_MM = 8;
+
+        public const int MIN_WIDTH_MM = 2 * HATCH_MARGIN_MM + 2 * HATCH_RIM_WIDTH_MM + 2;
+        public const int MIN_HEIGHT_MM = CONTROL_PANEL_HEIGHT_MM + MIN_WIDTH_MM;
         public const int MIN_DEPTH_MM = FRONT_THICKNESS_MM + 1;
 
         public const int IdxShell = 0;
         public const int IdxControlPanel = 1;
-        public const int IdxDoor = 2;
-        public const int IdxPorthole = 3;
-        public const int BodyPartCount = 2;
+        public const int IdxFrontPanel = 2;
+        public const int IdxHatchRim = 3;
+        public const int IdxHatchGlass = 4;
+        public const int BodyPartCount = 3;
         public const int DoorPartCount = 2;
         public const int PartCount = BodyPartCount + DoorPartCount;
 
@@ -60,13 +66,29 @@ namespace KitchenDesigner.Core
             Mathf.Max(dimensionsMM.y, MIN_HEIGHT_MM),
             Mathf.Max(dimensionsMM.z, MIN_DEPTH_MM));
 
+        public static bool IsRound(int partIndex) =>
+            partIndex == IdxHatchRim || partIndex == IdxHatchGlass;
+
         public static string PartName(int idx) => idx switch
         {
             IdxShell => "Shell",
             IdxControlPanel => "ControlPanel",
-            IdxDoor => "Door",
-            _ => "Porthole",
+            IdxFrontPanel => "FrontPanel",
+            IdxHatchRim => "HatchRim",
+            _ => "HatchGlass",
         };
+
+        public static float HatchDiameterMM(Vector3Int dimensionsMM)
+        {
+            var d = ClampMM(dimensionsMM);
+            float across = Mathf.Min(d.x, d.y - CONTROL_PANEL_HEIGHT_MM);
+            return across - 2 * HATCH_MARGIN_MM;
+        }
+
+        public static float GlassDiameterMM(Vector3Int dimensionsMM) =>
+            HatchDiameterMM(dimensionsMM) - 2 * HATCH_RIM_WIDTH_MM;
+
+        public const float HatchCenterYMM = -CONTROL_PANEL_HEIGHT_MM * 0.5f;
 
         public static (Vector3 centerMM, Vector3 sizeMM)[] BodyPartsMM(Vector3Int dimensionsMM)
         {
@@ -74,15 +96,20 @@ namespace KitchenDesigner.Core
             float halfH = d.y * 0.5f;
             float halfD = d.z * 0.5f;
             float shellDepth = d.z - FRONT_THICKNESS_MM;
+            float faceDepth = FRONT_THICKNESS_MM - FRONT_FACE_SETBACK_MM;
+            float faceCenterZ = halfD - FRONT_FACE_SETBACK_MM - faceDepth * 0.5f;
+            float frontPanelHeight = d.y - CONTROL_PANEL_HEIGHT_MM;
 
             return new[]
             {
                 (new Vector3(0f, 0f, -FRONT_THICKNESS_MM * 0.5f),
                  new Vector3(d.x, d.y, shellDepth)),
 
-                (new Vector3(0f, halfH - CONTROL_PANEL_HEIGHT_MM * 0.5f,
-                     halfD - FRONT_THICKNESS_MM * 0.5f),
-                 new Vector3(d.x, CONTROL_PANEL_HEIGHT_MM, FRONT_THICKNESS_MM)),
+                (new Vector3(0f, halfH - CONTROL_PANEL_HEIGHT_MM * 0.5f, faceCenterZ),
+                 new Vector3(d.x, CONTROL_PANEL_HEIGHT_MM, faceDepth)),
+
+                (new Vector3(0f, -CONTROL_PANEL_HEIGHT_MM * 0.5f, faceCenterZ),
+                 new Vector3(d.x, frontPanelHeight, faceDepth)),
             };
         }
 
@@ -90,19 +117,21 @@ namespace KitchenDesigner.Core
         {
             var d = ClampMM(dimensionsMM);
             float halfD = d.z * 0.5f;
-            float doorHeight = d.y - CONTROL_PANEL_HEIGHT_MM;
-            float doorCenterY = DoorCenterYMM;
-            float slabThickness = FRONT_THICKNESS_MM - OVERLAY_THICKNESS_MM;
+            float hatchY = HatchCenterYMM;
+            float rimDiameter = HatchDiameterMM(d);
+            float glassDiameter = GlassDiameterMM(d);
+
+            float rimBack = halfD - FRONT_THICKNESS_MM + HATCH_BACK_INSET_MM;
+            float rimFront = halfD - HATCH_RIM_FRONT_GAP_MM;
+            float glassBack = halfD - FRONT_THICKNESS_MM + HATCH_GLASS_BACK_INSET_MM;
 
             return new[]
             {
-                (new Vector3(0f, doorCenterY,
-                     halfD - OVERLAY_THICKNESS_MM - slabThickness * 0.5f),
-                 new Vector3(d.x, doorHeight, slabThickness)),
+                (new Vector3(0f, hatchY, (rimBack + rimFront) * 0.5f),
+                 new Vector3(rimDiameter, rimDiameter, rimFront - rimBack)),
 
-                (new Vector3(0f, doorCenterY, halfD - OVERLAY_THICKNESS_MM * 0.5f),
-                 new Vector3(d.x - 2 * PORTHOLE_MARGIN_MM,
-                     doorHeight - 2 * PORTHOLE_MARGIN_MM, OVERLAY_THICKNESS_MM)),
+                (new Vector3(0f, hatchY, (glassBack + halfD) * 0.5f),
+                 new Vector3(glassDiameter, glassDiameter, halfD - glassBack)),
             };
         }
 
@@ -119,10 +148,10 @@ namespace KitchenDesigner.Core
         public static Vector3 HingeLocalMM(Vector3Int dimensionsMM)
         {
             var d = ClampMM(dimensionsMM);
-            return new Vector3(-d.x * 0.5f, DoorCenterYMM, d.z * 0.5f - FRONT_THICKNESS_MM);
+            return new Vector3(
+                -HatchDiameterMM(d) * 0.5f,
+                HatchCenterYMM,
+                d.z * 0.5f - FRONT_THICKNESS_MM + HATCH_BACK_INSET_MM);
         }
-
-        private const float DoorCenterYMM =
-            -CONTROL_PANEL_HEIGHT_MM * 0.5f;
     }
 }

@@ -43,6 +43,24 @@ namespace KitchenDesigner.Core
             go.transform.localScale = sizeMM * toU;
         }
 
+        public void SetMesh(int idx, Mesh mesh)
+        {
+            if (idx < 0 || idx >= _children.Count) return;
+            var child = _children[idx];
+            if (child == null) return;
+            var filter = child.GetComponent<MeshFilter>();
+            if (filter != null) filter.sharedMesh = mesh;
+        }
+
+        public Mesh? MeshOf(int idx)
+        {
+            if (idx < 0 || idx >= _children.Count) return null;
+            var child = _children[idx];
+            if (child == null) return null;
+            var filter = child.GetComponent<MeshFilter>();
+            return filter != null ? filter.sharedMesh : null;
+        }
+
         public MeshRenderer? RendererOf(int idx)
         {
             if (idx < 0 || idx >= _children.Count) return null;

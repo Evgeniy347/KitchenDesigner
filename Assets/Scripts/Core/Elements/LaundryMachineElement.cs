@@ -67,6 +67,9 @@ namespace KitchenDesigner.Core
         {
             Boxes.Ensure(LaundryMachineBody.PartCount);
 
+            for (int i = 0; i < LaundryMachineBody.PartCount; i++)
+                if (LaundryMachineBody.IsRound(i)) Boxes.SetMesh(i, HatchDiscMesh.Unit());
+
             var body = LaundryMachineBody.BodyPartsMM(DimensionsMM);
             for (int i = 0; i < LaundryMachineBody.BodyPartCount; i++)
                 Boxes.Place(i, body[i].centerMM, body[i].sizeMM, Quaternion.identity);
@@ -118,7 +121,8 @@ namespace KitchenDesigner.Core
         public void GetOpenBoxes(float progress, List<OrientedBox> into) =>
             Door.WorldBoxes(transform, progress, into);
 
-        public override MeshRenderer? DecorRenderer => Boxes.RendererOf(LaundryMachineBody.IdxDoor);
+        public override MeshRenderer? DecorRenderer =>
+            Boxes.RendererOf(LaundryMachineBody.IdxFrontPanel);
 
         private void ApplyMaterials()
         {
@@ -127,7 +131,7 @@ namespace KitchenDesigner.Core
                 Boxes.SetMaterial(i, i switch
                 {
                     LaundryMachineBody.IdxControlPanel => ApplianceMaterials.LaundryPanel,
-                    LaundryMachineBody.IdxPorthole => ApplianceMaterials.LaundryGlass,
+                    LaundryMachineBody.IdxHatchGlass => ApplianceMaterials.LaundryGlass,
                     _ => front,
                 });
         }
@@ -144,7 +148,8 @@ namespace KitchenDesigner.Core
             var front = SanitaryDecor.ChosenOrFactory(MaterialId, material,
                 ApplianceMaterials.LaundryBody);
             Boxes.SetMaterial(LaundryMachineBody.IdxShell, front);
-            Boxes.SetMaterial(LaundryMachineBody.IdxDoor, front);
+            Boxes.SetMaterial(LaundryMachineBody.IdxFrontPanel, front);
+            Boxes.SetMaterial(LaundryMachineBody.IdxHatchRim, front);
         }
 
         public void DestroyChildren() => Boxes.Destroy();
