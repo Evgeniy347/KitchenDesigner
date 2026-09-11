@@ -12,12 +12,14 @@ namespace KitchenDesigner.Core
 
         public static float ContactDistUnits => Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
 
-        public static int PairsProcessed { get; private set; }
+        [ThreadStatic] private static int _pairsProcessedPerThread;
+
+        public static int PairsProcessed => _pairsProcessedPerThread;
 
         public static int TakePairsProcessed()
         {
-            int n = PairsProcessed;
-            PairsProcessed = 0;
+            int n = _pairsProcessedPerThread;
+            _pairsProcessedPerThread = 0;
             return n;
         }
 
@@ -52,7 +54,7 @@ namespace KitchenDesigner.Core
             IReadOnlyList<(int lo, int hi)> pairs, CoreValidationResult result, OverlapMarks marks)
         {
             float contactDist = ContactDistUnits;
-            PairsProcessed += pairs.Count;
+            _pairsProcessedPerThread += pairs.Count;
             for (int c = 0; c < pairs.Count; c++)
                 ProcessPair(all, pairs[c].lo, pairs[c].hi, contactDist, result, marks);
         }
