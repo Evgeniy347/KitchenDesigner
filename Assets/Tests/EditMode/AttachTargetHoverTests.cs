@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
@@ -179,13 +180,30 @@ public class AttachTargetHoverTests
 
         hover.Enter(1);
 
+        // Само чтение — и есть проверяемая мутация, и в EditMode Unity кричит о ней
+        // ОШИБКОЙ («Instantiating material … This will leak materials into the scene»),
+        // которую NUnit считает падением. Терпимость поднимается ровно вокруг чтения и
+        // возвращается назад: на весь класс её ставят соседние фикстуры, и тогда три
+        // остальных теста перестали бы замечать ошибки продукта.
         bool copied = false;
-        foreach (var renderer in ElementRenderers.BodyOf(named))
+        var copies = new List<Material>();
+        bool ignoredBefore = LogAssert.ignoreFailingMessages;
+        try
         {
-            if (renderer == null) continue;
-            var painted = renderer.sharedMaterial;
-            var copy = renderer.material;
-            if (painted != null && !ReferenceEquals(copy, painted)) copied = true;
+            LogAssert.ignoreFailingMessages = true;
+            foreach (var renderer in ElementRenderers.BodyOf(named))
+            {
+                if (renderer == null) continue;
+                var painted = renderer.sharedMaterial;
+                var copy = renderer.material;
+                if (painted == null || ReferenceEquals(copy, painted)) continue;
+                copied = true;
+                copies.Add(copy);
+            }
+        }
+        finally
+        {
+            LogAssert.ignoreFailingMessages = ignoredBefore;
         }
 
         Assume.That(copied, Is.True,
@@ -197,5 +215,8 @@ public class AttachTargetHoverTests
         Assert.IsEmpty(MaterialsThatMoved(named, before),
             "свою краску возврат обязан узнавать по ИМЕНИ, а не по адресу: копия нашей "
             + "краски — это наша краска, и материал обязан вернуться");
+
+        foreach (var copy in copies)
+            if (copy != null) UnityEngine.Object.DestroyImmediate(copy);
     }
 }
