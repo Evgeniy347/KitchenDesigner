@@ -91,6 +91,14 @@ When adding a new property/parameter to an element type:
    The property MUST carry `[Undoable]` or `[NotUndoable("reason")]` — `UndoableCoverageTests`
    fails the build otherwise. `[Undoable]` is enough to get undo/redo: `ContextMenuUI.Apply`
    snapshots every marked property before/after and pushes the diff as `SetPropertiesCommand`
+   **Но `[Undoable]` работает только для строк, которые пишутся ВНУТРИ `Apply`.** У списка
+   (`TMP_Dropdown`) и переключателя (`Toggle`) обратный вызов срабатывает раньше `Apply`: к моменту
+   применения снимок «до» уже содержит новое значение, разница пуста, и в стек не ложится ничего —
+   атрибут становится обещанием без исполнения. Такая строка обязана положить команду сама
+   (`ChoiceRowUndo`, образцы — `BedFieldsEditor.Commit`, `PipeFieldsEditor.OnSizeSelected`,
+   `SetMaterialCommand`). Так дефект и дожил до пользователя в четырнадцати строках сразу.
+   То же самое, другой формой: `[Undoable]` на свойстве компонента-СОСЕДА (`Wall`) не даёт ничего —
+   `UndoableProperties` сканирует только тип `KitchenElement`.
 2. **Panel row** — a row in the element's `*FieldsEditor` (`Assets/Scripts/Core/UI/`): build it in
    `Build()`, fill it in `Show()`, write it back in `Apply()`, re-read it in `Refresh()`. Shared
    rows (name, size, position, material, gaps, edges, grooves) live in `ContextMenuUI` and its

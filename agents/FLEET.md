@@ -71,6 +71,14 @@ So the question to ask before doing mechanical work here is not «could opencode
 scarce resource to save the free one. Reach for it OFTEN — the wrong reflex is doing a
 twelve-file rename by hand while a free model idles.
 
+**И проверяй, что он вообще ответил — молчание с кодом 0 бывает.** 2026-09-10 `opencode/big-pickle`
+на длинном задании-переписи печатал заголовок сессии и выходил с кодом 0, не сделав ничего;
+исполнитель поймал это только потому, что проверял результат КОМАНДОЙ, а не читал отчёт. Проба
+занимает секунду: `opencode run -m <модель> "Print PONG"` обязана вернуть `PONG`. Если проба
+проходит, а рабочее задание даёт пустой выход, — задание слишком длинное для этой модели: режь его
+или бери другую (`opencode/nemotron-3.5-lightning-free` в тот день отвечала). Два срыва подряд на
+одной области — бесплатный путь закрыт, дальше делай сам; ещё три захода стоят дороже, чем работа.
+
 ```bash
 opencode run -m opencode/big-pickle "In kd-repose, rename Foo to Bar everywhere in
 Assets/Scripts and Assets/Tests, then run .\tools\mutation-test.ps1 -TestsOnly and report the
