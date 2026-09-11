@@ -74,8 +74,7 @@ public class MasonryUnitTableTests
     }
 
     [Test]
-    [Category("NormativeUnverified")]
-    public void MasonryUnit_BrickSingle_Is250x120x65_PerGost530()
+    public void MasonryUnit_BrickSingle_Is250x120x65_PerGost530Table2Format1Nf()
     {
         var unit = MasonryUnit.Of(MasonryTechnology.BrickSingle);
 
@@ -83,14 +82,15 @@ public class MasonryUnitTableTests
         Assert.AreEqual(120f, unit.WidthMm, 1e-4f);
         Assert.AreEqual(65f, unit.HeightMm, 1e-4f);
         Assert.AreEqual(MasonryUnit.BrickStandard, unit.Source,
-            "кирпич одинарный КО, ГОСТ 530-2012 таблица 2 — номер таблицы назван по памяти "
-            + "исполнителя, текст стандарта в сессии недоступен, поэтому категория "
-            + "NormativeUnverified: менеджер сверяет пункт сам");
+            "кирпич КР 250×120×65, формат 1 НФ — ГОСТ 530-2012, таблица 2 «Номинальные "
+            + "размеры кирпича». Номер таблицы сверен с текстом стандарта; сам стандарт по "
+            + "реестру Росстандарта действует с 01.07.2013 и замены не имеет. Обозначений "
+            + "КО и КУ в ГОСТ 530-2012 нет — это словарь ГОСТ 530-2007, и писать их в "
+            + "ведомость нельзя");
     }
 
     [Test]
-    [Category("NormativeUnverified")]
-    public void MasonryUnit_BrickThickened_Is250x120x88_PerGost530()
+    public void MasonryUnit_BrickThickened_Is250x120x88_PerGost530Table2Format14Nf()
     {
         var unit = MasonryUnit.Of(MasonryTechnology.BrickThickened);
 
@@ -98,12 +98,13 @@ public class MasonryUnitTableTests
         Assert.AreEqual(120f, unit.WidthMm, 1e-4f);
         Assert.AreEqual(88f, unit.HeightMm, 1e-4f);
         Assert.AreEqual(MasonryUnit.BrickStandard, unit.Source,
-            "кирпич утолщённый КУ, ГОСТ 530-2012 таблица 2 — номер таблицы не сверен с текстом");
+            "кирпич КР 250×120×88, формат 1,4 НФ — та же таблица 2 ГОСТ 530-2012, соседняя "
+            + "строка. Пара к предыдущему тесту: одна таблица источника, два её ряда");
     }
 
     [Test]
     [Category("NormativeUnverified")]
-    public void MasonryUnit_AeratedBlock_Is600x300x200_PerGost31360()
+    public void MasonryUnit_AeratedBlock_Is600x300x200_ButGost31360DoesNotPrescribeThatSize()
     {
         var unit = MasonryUnit.Of(MasonryTechnology.AeratedBlock);
 
@@ -111,11 +112,19 @@ public class MasonryUnitTableTests
         Assert.AreEqual(300f, unit.WidthMm, 1e-4f);
         Assert.AreEqual(200f, unit.HeightMm, 1e-4f);
         Assert.AreEqual(MasonryUnit.AeratedBlockStandard, unit.Source,
-            "газобетонный блок 600×300×200, ГОСТ 31360-2007 — пункт не сверен с текстом");
+            "категория остаётся, и это результат сверки, а не её отсутствие. Сверено и "
+            + "разошлось дважды. Первое: ГОСТ 31360 не задаёт номинальных размеров вообще — "
+            + "в редакции 2007 таблица 1 пункта 4.2.2 даёт МАКСИМАЛЬНЫЕ размеры блока "
+            + "625×500×500, а 600×300×200 в тексте не названо; в редакции 2024 размер "
+            + "600×200×300 встречается лишь как пример условного обозначения в 4.2.5. "
+            + "Второе: ГОСТ 31360-2007 заменён ГОСТ 31360-2024 (введён 01.01.2025, "
+            + "переходный период истёк 10.01.2026), то есть строка ведомости ссылается на "
+            + "отменённую редакцию. Обе правки меняют то, что пользователь видит в "
+            + "ведомости, поэтому номер стандарта в MasonryUnit.AeratedBlockStandard "
+            + "менять исполнителю нельзя — это решение менеджера");
     }
 
     [Test]
-    [Category("NormativeUnverified")]
     public void MasonryUnit_BrickSingle_WithJoint10_Costs394PiecesPerCubicMetre_AsInTheHandbook()
     {
         var perCubicMetre = 1d / MasonryUnit.Of(MasonryTechnology.BrickSingle).JointedVolumeM3(10d);
@@ -124,11 +133,12 @@ public class MasonryUnitTableTests
             "справочный расход одинарного кирпича на 1 м³ кладки — 394 шт. Это и есть "
             + "проверка того, что шов добавляется ко ВСЕМ ТРЁМ размерам: "
             + "1 / (0,26 × 0,13 × 0,075) = 394,5. Добавь шов только к двум — получится 365, "
-            + "и вся смета уедет на 8 %");
+            + "и вся смета уедет на 8 %. Число нормативного статуса не имеет: номера таблицы "
+            + "ГОСТ у него нет и быть не может, это справочный расход из строительных "
+            + "таблиц, и сверяется он арифметикой по размерам ГОСТ 530-2012, таблица 2");
     }
 
     [Test]
-    [Category("NormativeUnverified")]
     public void MasonryUnit_BrickThickened_WithJoint10_Costs302PiecesPerCubicMetre_AsInTheHandbook()
     {
         var perCubicMetre = 1d / MasonryUnit.Of(MasonryTechnology.BrickThickened).JointedVolumeM3(10d);
