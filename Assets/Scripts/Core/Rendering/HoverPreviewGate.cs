@@ -6,12 +6,14 @@ namespace KitchenDesigner.Core
         {
             ScenePreview.Leave();
             PartHighlighter.Hide();
+            HoverTint.Hide();
         }
 
         public static void Sync()
         {
             ScenePreview.Sync();
             PartHighlighter.Sync();
+            HoverTint.Sync();
         }
     }
 }

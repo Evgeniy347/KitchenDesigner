@@ -7,6 +7,7 @@ namespace KitchenDesigner.Core
         public const string SelectionName = "KD Selection Tint";
         public const string DragName = "KD Drag Tint";
         public const string ValidityName = "KD Validity Tint";
+        public const string HoverName = "KD Hover Tint";
 
         public static bool Wears(MeshRenderer renderer, Material? painted, string tintName)
         {

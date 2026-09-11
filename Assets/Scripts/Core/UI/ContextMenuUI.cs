@@ -256,6 +256,7 @@ namespace KitchenDesigner.Core.UI
             _attachedTo = new NameDropdownBinder(attachToDropdown, AttachToNoneText,
                 () => _target != null ? _target.AttachedToName : "",
                 AttachToCandidateNames, () => AttachLinks.IsDetached(_target), CommitAttachedTo);
+            AttachTargetHover.Watch(attachToDropdown, AttachToNoneText);
         }
 
         private IEnumerable<string> AttachableFacadeNames()

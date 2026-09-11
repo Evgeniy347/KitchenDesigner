@@ -33,6 +33,7 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color EdgeSuppressedSide = new Color(0.90f, 0.31f, 0.28f, 1f);
         public static readonly Color EdgeHighlight3D = new Color(1f, 0.15f, 0.1f, 0.8f);
         public static readonly Color PreviewGhost = new Color(0.25f, 0.9f, 0.35f, 0.45f);
+        public static readonly Color HoverHighlight3D = new Color(0.25f, 0.9f, 0.35f, 1f);
 
         public static readonly Color HintIcon = new Color(0.52f, 0.58f, 0.70f, 1f);
         public static readonly Color HintIconHover = new Color(0.30f, 0.50f, 0.75f, 1f);
