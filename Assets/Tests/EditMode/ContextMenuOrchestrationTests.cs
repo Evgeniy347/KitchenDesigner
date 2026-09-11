@@ -11,8 +11,16 @@ public class ContextMenuOrchestrationTests
     private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню — 0,31 с,
+    /// и девять сборок это 2,8 с из прогона EditMode при бюджете 170 с. Почему это
+    /// безопасно — в сводке <see cref="ContextMenuLayoutTests"/>: боевой сценарий и есть
+    /// ОДНА панель, переоткрываемая через <c>Open</c>, и через <c>Open</c> проходит
+    /// КАЖДЫЙ тест этого класса без исключений.
+    ///
+    /// Своё, отдельное от прочих секций, у этого класса — отложенное закрытие: см.
+    /// <see cref="ForgetDeferredClose"/>.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
@@ -21,12 +29,67 @@ public class ContextMenuOrchestrationTests
         _menu!.Build(_canvas!.transform);
     }
 
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь.
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: в EditMode
+    /// <c>Time.frameCount</c> стоит на месте, и окно, взведённое предыдущим тестом,
+    /// съело бы первую правку следующего.
+    ///
+    /// Фокус здесь не удобство, а несущая часть: <c>RefreshUnfocused</c> МОЛЧА
+    /// пропускает сфокусированное поле, а именно через него панель показывает «Заход в
+    /// корпус» и поля посадки опоры. Сфокусированное поле даёт и ложное «значение не
+    /// обновилось», и ложное «обновилось», а <c>EventSystem</c> в EditMode один на весь
+    /// прогон и переживает не только тест, но и класс.</summary>
+    [SetUp]
+    public void Setup()
+    {
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
+        ForgetDeferredClose();
+    }
+
+    /// <summary>Вторая защёлка кадра, и она принадлежит ИМЕННО этому классу:
+    /// <c>OnSelectionChanged(null)</c> не закрывает панель сразу, а взводит
+    /// <c>_deferCloseFrame</c>, и <c>Close()</c> его НЕ снимает (а <c>Open</c> не
+    /// снимает потому, что приходящий из него <c>OnSelectionChanged</c> отсекается
+    /// флагом <c>_openInProgress</c>). Со своей панелью на тест защёлка умирала вместе
+    /// с панелью; с общей — <see cref="Deselecting_DoesNotClosethePanelInTheSameFrame"/>
+    /// оставляет её взведённой, и следующий тест, который зовёт
+    /// <c>ProcessDeferredClose</c>, закрыл бы панель, как только его кадр окажется
+    /// НОВЕЕ взведённого. Внутри одного кадра EditMode это не срабатывает, поэтому и
+    /// падало бы не всегда — что хуже, чем всегда.
+    ///
+    /// Снимается защёлка единственным путём, который для неё есть: панель открывают на
+    /// проходной детали и повторяют выбор того же элемента — <c>OnSelectionChanged</c>
+    /// с непустым элементом обнуляет <c>_deferCloseFrame</c>, а <c>element ==
+    /// _target</c> не даёт ей переоткрыться.</summary>
+    private void ForgetDeferredClose()
+    {
+        var scratch = ElementFactory.CreatePart(new Vector3Int(120, 120, 12), "Сброс", Vector3.zero);
+        var element = scratch.GetComponent<KitchenElement>();
+        _menu!.Open(element);
+        _menu!.OnSelectionChanged(element);
+        _menu!.Close();
+        Object.DestroyImmediate(scratch);
+        PartRegistry.Clear();
+    }
+
+    /// <summary><c>Close()</c> обязан идти ДО <c>DestroyImmediate</c> спавнов: он
+    /// обнуляет <c>_target</c>, иначе живая панель осталась бы с уничтоженным элементом
+    /// в руках.</summary>
     [TearDown]
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        if (_menu != null) _menu!.Close();
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -171,11 +234,21 @@ public class ContextMenuOrchestrationTests
         Assert.AreEqual(AssembledFill.Glass, assembled.Fill, "третий — стекло");
     }
 
+    /// <summary>Панель одна на класс, поэтому «после Open дропдаун показывает стекло»
+    /// прошло бы вхолостую на двойке, оставшейся от соседнего теста. Открываем СНАЧАЛА
+    /// глухую панель, убеждаемся в нуле — и только потом стеклянную: невыполненная
+    /// перерисовка теперь краснеет.</summary>
     [Test]
     public void AssembledFillDropdown_ShowsTheCurrentFill()
     {
+        var blind = Spawn<AssembledFacadeElement>(ElementFactory.CreateAssembledFacade(
+            new Vector3Int(451, 701, 18), "Глухой", Vector3.zero, AssembledFill.Blind));
+        _menu!.Open(blind);
+        Assert.AreEqual(0, Panel().Find("CtxFill")!.GetComponent<TMP_Dropdown>().value,
+            "предусловие: панель показывает глухую панель");
+
         var assembled = Spawn<AssembledFacadeElement>(ElementFactory.CreateAssembledFacade(
-            new Vector3Int(450, 700, 18), "Сборный", Vector3.zero));
+            new Vector3Int(450, 700, 18), "Сборный", new Vector3(0.9f, 0f, 0f)));
         assembled.Fill = AssembledFill.Glass;
         _menu!.Open(assembled);
 
