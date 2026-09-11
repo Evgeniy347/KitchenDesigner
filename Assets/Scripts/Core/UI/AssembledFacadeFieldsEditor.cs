@@ -18,7 +18,8 @@ namespace KitchenDesigner.Core.UI
         {
             var fillOptions = new List<string> { "Глухой (панель)", "Витрина (пусто)", "Стекло" };
             _fill = Rows.Dropdown("Заполнение", fillOptions, OnFillSelected,
-                RowVisibility.For(ElementFacet.Assembled), "CtxFill");
+                RowVisibility.For(ElementFacet.Assembled), "CtxFill",
+                hint: "element.assembled.fill");
         }
 
         public override void Show(KitchenElement element)

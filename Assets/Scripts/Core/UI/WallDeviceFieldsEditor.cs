@@ -41,7 +41,8 @@ namespace KitchenDesigner.Core.UI
 
             var widthRow = Rows.NumberField(PlateWidthLabel, anyDevice, "мм", PlateWidthNode);
             var heightRow = Rows.NumberField(PlateHeightLabel, anyDevice, "мм", PlateHeightNode);
-            var protrusionRow = Rows.NumberField(ProtrusionLabel, anyDevice, "мм", ProtrusionNode);
+            var protrusionRow = Rows.NumberField(ProtrusionLabel, anyDevice, "мм", ProtrusionNode,
+                hint: "element.wallDevice.protrusion");
 
             Bind<IWallDevice>(widthRow, device => device.PlateWidthMM,
                 (device, value) => device.PlateWidthMM = value,
@@ -54,9 +55,9 @@ namespace KitchenDesigner.Core.UI
                 WallDeviceLayout.DefaultProtrusionMM.ToString());
 
             _posts = Rows.Dropdown(PostCountLabel, PostOptions(), OnPostCountSelected,
-                anyDevice, PostCountNode);
+                anyDevice, PostCountNode, hint: "element.wallDevice.posts");
             _powered = Rows.Toggle(PoweredNode, PoweredLabel, true, OnPoweredToggled,
-                switchOnly, RowGap);
+                switchOnly, RowGap, hint: "element.wallDevice.powered");
         }
 
         public override void Show(KitchenElement element)

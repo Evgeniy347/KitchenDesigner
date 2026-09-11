@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core.UI
             for (int i = 0; i < FacadeDoor.Count; i++)
                 modeOptions.Add(FacadeDoor.Label((DoorMode)i));
             _mode = Rows.Dropdown("Дверца", modeOptions, OnModeSelected,
-                RowVisibility.For(ElementFacet.Facade), "CtxMode");
+                RowVisibility.For(ElementFacet.Facade), "CtxMode", hint: "element.facade.doorMode");
         }
 
         public override void Show(KitchenElement element)

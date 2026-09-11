@@ -54,45 +54,47 @@ namespace KitchenDesigner.Core.UI
             var advanced = RowVisibility.For(ElementFacet.Light, () => _advancedExpanded);
 
             Bind("Температура", "K", plain, l => l.TemperatureK, (l, v) => l.TemperatureK = v,
-                LampSpec.DEFAULT_TEMPERATURE_K);
+                LampSpec.DEFAULT_TEMPERATURE_K, hint: "element.light.temperature");
             Bind("Мощность", "Вт", plain, l => l.PowerW, (l, v) => l.PowerW = v,
-                LampSpec.DEFAULT_POWER_W);
+                LampSpec.DEFAULT_POWER_W, hint: "element.light.power");
             Bind("Рассеивание", "%", plain, l => l.DiffusionPct, (l, v) => l.DiffusionPct = v,
-                LampSpec.DEFAULT_DIFFUSION_PCT);
+                LampSpec.DEFAULT_DIFFUSION_PCT, hint: "element.light.diffusion");
             Bind("Угол пучка", "°", plain, l => l.BeamAngleDeg, (l, v) => l.BeamAngleDeg = v,
-                LampSpec.DEFAULT_BEAM_DEG);
+                LampSpec.DEFAULT_BEAM_DEG, hint: "element.light.beamAngle");
             Bind("Мягкость края", "%", plain, l => l.SoftnessPct, (l, v) => l.SoftnessPct = v,
-                LampSpec.DEFAULT_SOFTNESS_PCT);
+                LampSpec.DEFAULT_SOFTNESS_PCT, hint: "element.light.softness");
             Bind("Свет вверх", "%", plain, l => l.UpLightPct, (l, v) => l.UpLightPct = v,
-                LampSpec.DEFAULT_UP_PCT);
+                LampSpec.DEFAULT_UP_PCT, hint: "element.light.upLight");
 
             _shape = Rows.Dropdown("Форма потока", new List<string> { "Плафон", "Шар" },
-                OnShapeSelected, plain, "CtxLightShape");
+                OnShapeSelected, plain, "CtxLightShape", hint: "element.light.shape");
             _shadow = Rows.Dropdown("Тени лампы", new List<string> { "Нет", "Жёсткие", "Мягкие" },
-                OnShadowSelected, plain, "CtxLightShadow");
+                OnShadowSelected, plain, "CtxLightShadow", hint: "element.light.shadow");
 
             Bind("Сила тени", "%", plain, l => l.ShadowStrengthPct, (l, v) => l.ShadowStrengthPct = v,
-                LampSpec.DEFAULT_SHADOW_STRENGTH_PCT);
+                LampSpec.DEFAULT_SHADOW_STRENGTH_PCT, hint: "element.light.shadowStrength");
 
             _advancedLabel = Rows.WideButton("CtxLightAdv",
                 $"{AdvancedCaption}  {UIStyle.GlyphCollapsed}", ToggleAdvanced, plain, RowGap);
 
             Bind("Свечение плафона", "%", advanced, l => l.GlowPct, (l, v) => l.GlowPct = v,
-                LampSpec.DEFAULT_GLOW_PCT);
+                LampSpec.DEFAULT_GLOW_PCT, hint: "element.light.glow");
             Bind("Отступ вниз", "мм", advanced, l => l.DropMM, (l, v) => l.DropMM = v,
-                LampSpec.DEFAULT_DROP_MM);
+                LampSpec.DEFAULT_DROP_MM, hint: "element.light.drop");
             Bind("Верхний конус", "%", advanced, l => l.UpConePct, (l, v) => l.UpConePct = v,
-                LampSpec.DEFAULT_UP_CONE_PCT);
+                LampSpec.DEFAULT_UP_CONE_PCT, hint: "element.light.upCone");
             Bind("Верхний радиус", "%", advanced, l => l.UpRangePct, (l, v) => l.UpRangePct = v,
                 LampSpec.DEFAULT_UP_RANGE_PCT);
             Bind("Радиус при 0 %", "мм", advanced, l => l.RangeMinMM, (l, v) => l.RangeMinMM = v,
-                LampSpec.DEFAULT_RANGE_MIN_MM);
+                LampSpec.DEFAULT_RANGE_MIN_MM, hint: "element.light.range");
             Bind("Радиус при 100 %", "мм", advanced, l => l.RangeMaxMM, (l, v) => l.RangeMaxMM = v,
                 LampSpec.DEFAULT_RANGE_MAX_MM);
             Bind("Светоотдача", "лм/Вт", advanced, l => l.EfficacyLmPerW,
-                (l, v) => l.EfficacyLmPerW = v, LampSpec.DEFAULT_EFFICACY_LM_PER_W);
+                (l, v) => l.EfficacyLmPerW = v, LampSpec.DEFAULT_EFFICACY_LM_PER_W,
+                hint: "element.light.efficacy");
             Bind("Калибровка", "лм/ед", advanced, l => l.LumensPerUnit,
-                (l, v) => l.LumensPerUnit = v, LampSpec.DEFAULT_LUMENS_PER_UNIT);
+                (l, v) => l.LumensPerUnit = v, LampSpec.DEFAULT_LUMENS_PER_UNIT,
+                hint: "element.light.lumensPerUnit");
         }
 
         public override void Show(KitchenElement element)
@@ -130,9 +132,10 @@ namespace KitchenDesigner.Core.UI
         }
 
         private void Bind(string label, string unit, RowVisibility visibility,
-            Func<LightSourceElement, int> read, Action<LightSourceElement, int> write, int fallback)
+            Func<LightSourceElement, int> read, Action<LightSourceElement, int> write, int fallback,
+            string? hint = null)
         {
-            var field = Rows.NumberField(label, visibility, unit);
+            var field = Rows.NumberField(label, visibility, unit, null, hint);
             _bindings.Add(new Binding(field, read, write, fallback));
         }
 

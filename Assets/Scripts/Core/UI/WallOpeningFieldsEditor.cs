@@ -26,10 +26,12 @@ namespace KitchenDesigner.Core.UI
                 "CtxTint");
 
             _sillProtrusion = Rows.NumberField("Подоконник",
-                RowVisibility.ForExcept(ElementFacet.Window, ElementFacet.Door));
+                RowVisibility.ForExcept(ElementFacet.Window, ElementFacet.Door),
+                hint: "element.window.sill");
 
             _sashType = Rows.Dropdown("Створка", new List<string> { "Стекло", "Глухая" },
-                OnSashTypeSelected, RowVisibility.For(ElementFacet.Door), "CtxSashType");
+                OnSashTypeSelected, RowVisibility.For(ElementFacet.Door), "CtxSashType",
+                hint: "element.door.sash");
 
             var modeOptions = new List<string>
             {
@@ -39,7 +41,8 @@ namespace KitchenDesigner.Core.UI
                 FacadeDoor.Label(DoorMode.HingeFrontBottom),
             };
             _openingMode = Rows.Dropdown("Открывание", modeOptions, OnOpeningModeSelected,
-                RowVisibility.For(ElementFacet.Window), "CtxWinMode");
+                RowVisibility.For(ElementFacet.Window), "CtxWinMode",
+                hint: "element.window.openingMode");
         }
 
         public override IEnumerable<TMP_InputField?> ArithmeticFields()
