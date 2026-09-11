@@ -103,21 +103,26 @@ namespace KitchenDesigner.Core.UI
         private void OnTypeChanged(int index)
         {
             var drawer = Drawer;
-            if (drawer != null) drawer.Type = DrawerConstants.TypeFromIndex(index);
+            if (drawer == null) return;
+            ChoiceRowUndo.Commit(drawer, () => drawer.Type = DrawerConstants.TypeFromIndex(index),
+                drawer.FindPaired());
         }
 
         private void OnLengthChanged(int index)
         {
             var drawer = Drawer;
-            if (drawer != null && index >= 0 && index < DrawerConstants.ValidLengths.Length)
-                drawer.NominalLength = DrawerConstants.ValidLengths[index];
+            if (drawer == null || index < 0 || index >= DrawerConstants.ValidLengths.Length) return;
+            ChoiceRowUndo.Commit(drawer,
+                () => drawer.NominalLength = DrawerConstants.ValidLengths[index],
+                drawer.FindPaired());
         }
 
         private void OnColorChanged(int index)
         {
             var drawer = Drawer;
-            if (drawer != null && index >= 0 && index <= (int)DrawerColor.Black)
-                drawer.Color = (DrawerColor)index;
+            if (drawer == null || index < 0 || index > (int)DrawerColor.Black) return;
+            ChoiceRowUndo.Commit(drawer, () => drawer.Color = (DrawerColor)index,
+                drawer.FindPaired());
         }
 
         private void OnUpperLengthChanged(int index)
@@ -125,7 +130,9 @@ namespace KitchenDesigner.Core.UI
             var drawer = Drawer;
             if (drawer == null || index < 0 || index >= DrawerConstants.ValidLengths.Length) return;
             var upper = drawer.FindPaired();
-            if (upper != null) upper.NominalLength = DrawerConstants.ValidLengths[index];
+            if (upper == null) return;
+            ChoiceRowUndo.Commit(upper,
+                () => upper.NominalLength = DrawerConstants.ValidLengths[index], drawer);
         }
 
         private bool HasUpper()
