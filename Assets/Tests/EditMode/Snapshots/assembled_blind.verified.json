@@ -1,8 +1,10 @@
 {
     "version": 1,
+    "appVersion": "<version>",
     "elements": [
         {
             "name": "BlindAssembled",
+            "elementType": "assembled_facade",
             "dimensionsMM": [
                 600,
                 800,
@@ -197,6 +199,7 @@
     "basePlateValid": false,
     "basePlate": {
         "name": "",
+        "elementType": "",
         "dimensionsMM": [
             0,
             0,

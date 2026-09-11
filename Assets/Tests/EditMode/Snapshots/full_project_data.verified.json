@@ -1,8 +1,10 @@
 {
     "version": 1,
+    "appVersion": "<version>",
     "elements": [
         {
             "name": "Board_1",
+            "elementType": "board",
             "dimensionsMM": [
                 800,
                 400,
@@ -175,6 +177,7 @@
         },
         {
             "name": "Facade_1",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -376,6 +379,7 @@
     "basePlateValid": true,
     "basePlate": {
         "name": "BasePlate",
+        "elementType": "board",
         "dimensionsMM": [
             3500,
             18,

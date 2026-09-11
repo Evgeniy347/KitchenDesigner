@@ -1,8 +1,10 @@
 {
     "version": 1,
+    "appVersion": "<version>",
     "elements": [
         {
             "name": "HungToilet",
+            "elementType": "wall_hung_toilet",
             "dimensionsMM": [
                 360,
                 1000,
@@ -197,6 +199,7 @@
     "basePlateValid": false,
     "basePlate": {
         "name": "",
+        "elementType": "",
         "dimensionsMM": [
             0,
             0,

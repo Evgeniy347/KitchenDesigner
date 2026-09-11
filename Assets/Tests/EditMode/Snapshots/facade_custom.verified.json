@@ -1,8 +1,10 @@
 {
     "version": 1,
+    "appVersion": "<version>",
     "elements": [
         {
             "name": "CustomFacade",
+            "elementType": "facade",
             "dimensionsMM": [
                 600,
                 716,
@@ -197,6 +199,7 @@
     "basePlateValid": false,
     "basePlate": {
         "name": "",
+        "elementType": "",
         "dimensionsMM": [
             0,
             0,

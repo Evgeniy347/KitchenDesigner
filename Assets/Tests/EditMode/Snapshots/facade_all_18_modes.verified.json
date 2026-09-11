@@ -1,8 +1,10 @@
 {
     "version": 1,
+    "appVersion": "<version>",
     "elements": [
         {
             "name": "Mode_0",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -175,6 +177,7 @@
         },
         {
             "name": "Mode_1",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -347,6 +350,7 @@
         },
         {
             "name": "Mode_2",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -519,6 +523,7 @@
         },
         {
             "name": "Mode_3",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -691,6 +696,7 @@
         },
         {
             "name": "Mode_4",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -863,6 +869,7 @@
         },
         {
             "name": "Mode_5",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -1035,6 +1042,7 @@
         },
         {
             "name": "Mode_6",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -1207,6 +1215,7 @@
         },
         {
             "name": "Mode_7",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -1379,6 +1388,7 @@
         },
         {
             "name": "Mode_8",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -1551,6 +1561,7 @@
         },
         {
             "name": "Mode_9",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -1723,6 +1734,7 @@
         },
         {
             "name": "Mode_10",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -1895,6 +1907,7 @@
         },
         {
             "name": "Mode_11",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -2067,6 +2080,7 @@
         },
         {
             "name": "Mode_12",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -2239,6 +2253,7 @@
         },
         {
             "name": "Mode_13",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -2411,6 +2426,7 @@
         },
         {
             "name": "Mode_14",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -2583,6 +2599,7 @@
         },
         {
             "name": "Mode_15",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -2755,6 +2772,7 @@
         },
         {
             "name": "Mode_16",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -2927,6 +2945,7 @@
         },
         {
             "name": "Mode_17",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -3121,6 +3140,7 @@
     "basePlateValid": false,
     "basePlate": {
         "name": "",
+        "elementType": "",
         "dimensionsMM": [
             0,
             0,

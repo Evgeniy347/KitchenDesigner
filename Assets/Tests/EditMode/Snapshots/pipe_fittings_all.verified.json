@@ -1,8 +1,10 @@
 {
     "version": 1,
+    "appVersion": "<version>",
     "elements": [
         {
             "name": "SnapElbow",
+            "elementType": "pipe_elbow",
             "dimensionsMM": [
                 57,
                 57,
@@ -175,6 +177,7 @@
         },
         {
             "name": "SnapCoupling",
+            "elementType": "pipe_coupling",
             "dimensionsMM": [
                 34,
                 80,
@@ -347,6 +350,7 @@
         },
         {
             "name": "SnapTee",
+            "elementType": "pipe_tee",
             "dimensionsMM": [
                 57,
                 80,
@@ -519,6 +523,7 @@
         },
         {
             "name": "SnapCap",
+            "elementType": "pipe_cap",
             "dimensionsMM": [
                 44,
                 56,
@@ -691,6 +696,7 @@
         },
         {
             "name": "SnapSupply",
+            "elementType": "pipe_supply",
             "dimensionsMM": [
                 67,
                 46,
@@ -863,6 +869,7 @@
         },
         {
             "name": "SnapReturn",
+            "elementType": "pipe_return",
             "dimensionsMM": [
                 67,
                 46,
@@ -1057,6 +1064,7 @@
     "basePlateValid": false,
     "basePlate": {
         "name": "",
+        "elementType": "",
         "dimensionsMM": [
             0,
             0,

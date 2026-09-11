@@ -1,8 +1,10 @@
 {
     "version": 1,
+    "appVersion": "<version>",
     "elements": [
         {
             "name": "Board_A",
+            "elementType": "board",
             "dimensionsMM": [
                 800,
                 400,
@@ -175,6 +177,7 @@
         },
         {
             "name": "Facade_A",
+            "elementType": "facade",
             "dimensionsMM": [
                 450,
                 700,
@@ -347,6 +350,7 @@
         },
         {
             "name": "Assembled_A",
+            "elementType": "assembled_facade",
             "dimensionsMM": [
                 600,
                 800,
@@ -519,6 +523,7 @@
         },
         {
             "name": "Radial_A",
+            "elementType": "radial_shelf",
             "dimensionsMM": [
                 350,
                 18,
@@ -691,6 +696,7 @@
         },
         {
             "name": "Wall_A",
+            "elementType": "wall",
             "dimensionsMM": [
                 100,
                 2700,
@@ -890,6 +896,7 @@
     "basePlateValid": false,
     "basePlate": {
         "name": "",
+        "elementType": "",
         "dimensionsMM": [
             0,
             0,
