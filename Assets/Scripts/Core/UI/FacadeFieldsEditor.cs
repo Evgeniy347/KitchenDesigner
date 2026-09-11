@@ -29,7 +29,8 @@ namespace KitchenDesigner.Core.UI
 
         private void OnModeSelected(int index)
         {
-            if (Host.Target is FacadeElement facade) facade.Mode = (DoorMode)index;
+            if (Host.Target is FacadeElement facade)
+                ChoiceRowUndo.Commit(facade, () => facade.Mode = (DoorMode)index);
         }
     }
 }
