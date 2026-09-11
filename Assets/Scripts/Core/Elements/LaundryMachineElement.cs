@@ -5,6 +5,11 @@ namespace KitchenDesigner.Core
 {
     public class LaundryMachineElement : KitchenElement, IOpenable, IPaintsItself, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.Parts(LaundryMachineBody.PartName(LaundryMachineBody.IdxControlPanel),
+                LaundryMachineBody.PartName(LaundryMachineBody.IdxHatchRim),
+                LaundryMachineBody.PartName(LaundryMachineBody.IdxHatchGlass));
+
         public static readonly Vector3 HingeAxis = Vector3.down;
 
         public const float DOOR_OPEN_ANGLE_DEG = DropDoor.OPEN_ANGLE_DEG;

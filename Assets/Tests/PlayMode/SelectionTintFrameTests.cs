@@ -87,7 +87,11 @@ public class SelectionTintFrameTests
 
     private const int ColorDelta = 12;
 
-    private static readonly Vector3 IsoDir = new Vector3(0.5f, 0.5f, -0.866f).normalized;
+    /// <summary>Сторона съёмки — та же, что у всей изометрии проекта, и берётся
+    /// из общего <c>IsoCameraRig</c>: своя копия вектора разъехалась бы молча, а
+    /// съёмка элемента с затылка вырождает и этот кадр — тинт выделения на голой
+    /// коробке не отличить от тинта на любой другой голой коробке.</summary>
+    private static Vector3 IsoDir => IsoCameraRig.ViewDir;
 
     private GameObject? _bootstrap;
     private GameObject? _mainCamera;

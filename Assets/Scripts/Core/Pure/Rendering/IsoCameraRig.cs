@@ -8,6 +8,8 @@ namespace KitchenDesigner.Core
 
         public static readonly Vector3 IsoDir = new Vector3(0.5f, 0.5f, -0.866f).normalized;
 
+        public static readonly Vector3 ViewDir = ElementFacing.CameraDirection(IsoDir);
+
         public static Vector3 Position(Vector3 center, Vector3 size, float distanceScale) =>
             Position(center, size, distanceScale, MinDistance);
 
@@ -16,7 +18,7 @@ namespace KitchenDesigner.Core
         {
             float maxDim = Mathf.Max(size.x, size.y, size.z);
             float distance = Mathf.Max(maxDim * distanceScale, minDistance);
-            return center + IsoDir * distance;
+            return center + ViewDir * distance;
         }
 
         public static float Distance(Vector3 size, float distanceScale, float minDistance) =>

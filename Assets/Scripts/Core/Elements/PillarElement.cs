@@ -4,6 +4,8 @@ namespace KitchenDesigner.Core
 {
 	public class PillarElement : KitchenElement, IAutoSeated
 	{
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("опора — тело вращения: она одинакова со всех сторон");
 
         public override string DisplayTypeName => "Опора";
 

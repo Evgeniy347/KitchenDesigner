@@ -2,6 +2,9 @@ namespace KitchenDesigner.Core
 {
     public class PanelElement : KitchenElement
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("панель — плита: обе стороны одинаковы");
+
         public const int DEFAULT_GAP_MM = PanelBody.DEFAULT_GAP_MM;
 
         public override bool IsFlatBoardElement => true;

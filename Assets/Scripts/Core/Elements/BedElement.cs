@@ -5,6 +5,9 @@ namespace KitchenDesigner.Core
 {
     public class BedElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("кровать смотрит вверх: матрас и подушки видны с любой стороны");
+
         public override string DisplayTypeName => "Кровать";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

@@ -5,6 +5,9 @@ namespace KitchenDesigner.Core
 {
     public class ScrewLegElement : KitchenElement, IAutoSeated, IMountsOnTarget, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("винтовая опора — тело вращения");
+
         public override string DisplayTypeName => "Винтовая опора";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

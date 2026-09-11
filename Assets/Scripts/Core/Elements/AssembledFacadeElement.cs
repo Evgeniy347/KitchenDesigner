@@ -5,6 +5,8 @@ namespace KitchenDesigner.Core
 {
     public class AssembledFacadeElement : FacadeElement, ISpecificationParts
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("собранный фасад плоский: рамка и заполнение видны с обеих сторон одинаково");
 
         public override string DisplayTypeName => "Сборный фасад";
         private static Material? _grooveMat;

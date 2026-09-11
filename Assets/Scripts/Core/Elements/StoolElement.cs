@@ -5,6 +5,9 @@ namespace KitchenDesigner.Core
 {
     public class StoolElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("табурет — сиденье на ногах, лицевой детали у него нет");
+
         public override string DisplayTypeName => "Табуретка";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

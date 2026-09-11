@@ -5,6 +5,8 @@ namespace KitchenDesigner.Core
 {
     public class TableElement : KitchenElement, IHasTwoDecorSlots, ISpecificationParts
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("стол — столешница на ногах: лицевой детали у него нет");
 
         public override string DisplayTypeName => "Стол";
         public const int LegCrossSectionMM = 50;

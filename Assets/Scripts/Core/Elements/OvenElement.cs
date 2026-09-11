@@ -6,6 +6,11 @@ namespace KitchenDesigner.Core
     public class OvenElement : KitchenElement, IFixedSizeElement, IOpenable, IPaintsItself,
         IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.Parts(OvenBody.PartName(OvenBody.IdxFacade),
+                OvenBody.PartName(OvenBody.IdxGlass), OvenBody.PartName(OvenBody.IdxPanel),
+                OvenBody.PartName(OvenBody.IdxHandle));
+
         public override bool CanFollowAnAttachParent => false;
 
         public override string DisplayTypeName => MODEL;

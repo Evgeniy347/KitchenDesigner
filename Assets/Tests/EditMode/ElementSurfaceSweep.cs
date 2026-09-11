@@ -72,6 +72,18 @@ public static class ElementSurfaceSweep
         /// <summary>Пары граней, спорящих за один пиксель (z-fighting).</summary>
         public List<string> CoplanarFights = new List<string>();
 
+        /// <summary>Тип объявил лицо ИМЕНОВАННЫМИ деталями
+        /// (<c>ElementFront.Parts</c>), а не «лицевой детали нет».</summary>
+        public bool DeclaresNamedFront;
+
+        /// <summary>Причина, по которой у типа нет отдельной лицевой детали.</summary>
+        public string FrontReason = "";
+
+        /// <summary>Объявленные лицевыми детали, которых НЕ видно со стороны
+        /// общей изометрической камеры: либо их закрывает собственный корпус
+        /// (значит кадр снимают с затылка), либо такой детали в сцене нет.</summary>
+        public List<string> FrontHidden = new List<string>();
+
         public List<string> DragMissed = new List<string>();
         public List<string> DragStuck = new List<string>();
         public List<string> DragStuckAfterRead = new List<string>();
@@ -161,6 +173,9 @@ public static class ElementSurfaceSweep
         var body = ElementRenderers.BodyOf(element).Where(r => r != null).ToList();
         row.BodyCount = body.Count;
         row.HasRootRenderer = element.gameObject.GetComponent<MeshRenderer>() != null;
+        var front = element.Front;
+        row.DeclaresNamedFront = front.ShowsNamedParts;
+        row.FrontReason = front.Reason;
         if (body.Count == 0) return row;
 
         var path = new string[body.Count];
@@ -178,6 +193,18 @@ public static class ElementSurfaceSweep
         {
             var boxes = body.Select(r => CoplanarSurfaceDetector.FromWorldBounds(r.bounds)).ToArray();
             row.CoplanarFights = CoplanarSurfaceDetector.Fights(boxes, i => path[i]);
+        }
+
+        // 1б. Лицо. Тот же список рендереров, тот же AABB — вопрос другой:
+        // видно ли объявленную лицевую деталь с той стороны, где стоит общая
+        // изометрическая камера. Невидимая означает кадр с затылка.
+        if (front.ShowsNamedParts)
+        {
+            var faceParts = new List<FacePart>(body.Count);
+            foreach (var renderer in body)
+                faceParts.Add(new FacePart(renderer.gameObject.name, renderer.bounds));
+            row.FrontHidden = FrontFaceVisibility.Hidden(faceParts, front.PartNames,
+                IsoCameraRig.ViewDir);
         }
 
         // 2. Кто носит собственный декор элемента — по первозданному состоянию.

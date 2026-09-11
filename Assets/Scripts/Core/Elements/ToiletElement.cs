@@ -6,6 +6,9 @@ namespace KitchenDesigner.Core
     public class ToiletElement : KitchenElement, IHasTwoDecorSlots, IFixedSizeElement, IStandsOnFloor,
         IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("чаша и крышка видны и поверх бачка: защищённой лицевой детали у унитаза нет");
+
         public override string DisplayTypeName => "Унитаз-компакт";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

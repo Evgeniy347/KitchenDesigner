@@ -6,6 +6,10 @@ namespace KitchenDesigner.Core
     public class DishwasherElement : KitchenElement, IFixedSizeElement, IFacadeHost, IOpenable,
         IPaintsItself, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.Parts(DishwasherBody.ChildName(DishwasherBody.IdxDoor),
+                DishwasherBody.ChildName(DishwasherBody.IdxPanel));
+
         public override bool CanFollowAnAttachParent => false;
 
         public override string DisplayTypeName => MODEL;

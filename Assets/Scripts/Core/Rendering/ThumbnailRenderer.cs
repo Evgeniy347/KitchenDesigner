@@ -59,7 +59,7 @@ namespace KitchenDesigner.Core
                     var bounds = RendererBoundsOf(go);
                     float distance = IsoCameraRig.Distance(
                         bounds.size, DistanceScale, ContextFreeMinDistanceUnits);
-                    Vector3 viewDirection = ElementFacing.CameraDirection(IsoCameraRig.IsoDir);
+                    Vector3 viewDirection = IsoCameraRig.ViewDir;
                     framing = new ThumbnailFraming(bounds,
                         Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z)),
                         distance, viewDirection);

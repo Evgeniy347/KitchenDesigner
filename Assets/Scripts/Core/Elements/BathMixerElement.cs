@@ -6,6 +6,9 @@ namespace KitchenDesigner.Core
     public class BathMixerElement : KitchenElement, IWallMounted, IFixedSizeElement,
         IKeepsPlacementHeight, IPaintsItself, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("излив и рычаг — части корпуса смесителя, отдельной лицевой деталью не выделены");
+
         public override string DisplayTypeName => "Смеситель для ванны";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

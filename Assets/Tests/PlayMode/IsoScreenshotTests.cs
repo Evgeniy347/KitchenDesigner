@@ -12,18 +12,22 @@ using KitchenDesigner.Tests;
 /// <summary>
 /// PlayMode: изометрические снэпшоты 3D-объектов через Camera → RenderTexture.
 /// Снимает фасады (все 18 DoorMode, дверь открыта), деталь и помещение
-/// (стены подняты/опущены). Ракурс — 3/4 справа-сверху со стороны -Z.
+/// (стены подняты/опущены). Ракурс — 3/4 сверху, со стороны ЛИЦА элемента.
 ///
-/// «Со стороны -Z» — это НЕ «спереди», и раньше здесь было написано именно
-/// «спереди». У мебели со спинкой спинка по соглашению проекта смотрит в -Z
-/// (McpGuideTexts про стул: panel at the BACK (-Z)), то есть камера стоит с
-/// ТОЙ ЖЕ стороны и снимает такой элемент СО СПИНЫ. На iso_chair_*.png мы всё
-/// это время смотрели на щит спинки, а не на стул. Терпимо для стула, у
-/// которого сиденье всё равно торчит сбоку, и неприемлемо для дивана, где
-/// полка спинки во всю ширину закрывает все четыре подушки — то есть ровно
-/// то, ради чего снимок и делается. Поэтому диван развёрнут в своём тесте, а
-/// не правкой общего IsoDir: правка вектора пересняла бы каждый чужой эталон.
-/// Связку держит IsoCamera_StandsOnTheSameSideAsTheBackOfFurniture.
+/// Сторона выбирается не здесь и не по типу. Лицо в проекте у всех типов
+/// смотрит в +Z (`ElementFacing.LocalFront`), а сырой изометрический вектор
+/// `IsoCameraRig.IsoDir` стоит на -Z — то есть в затылок каждому элементу без
+/// исключения; просто у шкафа затылок похож на лицо, а у дивана, стула и
+/// посудомойки нет. Поэтому камеру ставит `IsoCameraRig.Position` по
+/// `IsoCameraRig.ViewDir` — выведенной стороне лица, одной на все типы.
+///
+/// Чего в этом файле больше НЕТ: константы разворота на 180° и
+/// поворотов снимаемого элемента. Разворот выписывали по одному типу — диван,
+/// кровать, настенная арматура, стиральные машины, — а посудомойке, духовке и
+/// варочной его не выписал никто, и они снимались голой коробкой со спины.
+/// Список случаев, замеченных глазами, — не правило
+/// (`conventions/CORRECTNESS.md` → «State a rule by its MECHANISM, not as a
+/// list of the cases you happened to fix»).
 /// </summary>
 public class IsoScreenshotTests : ElementFrameTests
 {
@@ -79,11 +83,6 @@ public class IsoScreenshotTests : ElementFrameTests
     }
 
     // ── Render helpers ───────────────────────────────────────
-
-    /// <summary>Направление камеры: 3/4 справа-сверху со стороны -Z (~30°).
-    /// Спинка мебели по соглашению смотрит туда же, поэтому такой элемент
-    /// попадает в кадр СО СПИНЫ — см. сводку класса.</summary>
-    private static readonly Vector3 IsoDir = IsoCameraRig.IsoDir;
 
     /// <summary>Пол дистанции: мелкий объект не подпускается к объективу
     /// ближе полуметра, иначе винтовая опора занимала бы весь кадр без
@@ -479,32 +478,23 @@ public class IsoScreenshotTests : ElementFrameTests
 
     // ─ Sofa isometric screenshots ───────────────────
 
-    /// <summary>Камера проекта стоит на -Z (IsoDir), а спинка мебели по
-    /// соглашению смотрит в -Z: у стула это дало снимок СЗАДИ, где вся
-    /// геометрия сиденья спрятана за щитом спинки. У дивана то же соглашение
-    /// прячет за полкой спинки все четыре подушки — то есть ровно то, что
-    /// снимок обязан показывать. Поэтому диван развёрнут на 180 градусов:
-    /// разворот не трогает габаритную коробку, поэтому проверка «влез в кадр»
-    /// остаётся честной, а IsoDir общий для всех типов и его правка
-    /// пересняла бы каждый чужой эталон.</summary>
-    private const float FrontTowardsCameraDeg = 180f;
-
-    /// <summary>Держит связку, из-за которой разворот вообще понадобился:
-    /// камера стоит со стороны -Z, и спинка мебели смотрит туда же. Пока оба
-    /// факта верны, элемент со спинкой попадает в кадр СО СПИНЫ, и тип, чья
-    /// геометрия живёт перед спинкой, обязан развернуться.
+    /// <summary>Держит связку, из-за которой съёмщик вообще переехал на другую
+    /// сторону: спинка мебели по соглашению проекта смотрит в -Z, а сырой
+    /// <c>IsoCameraRig.IsoDir</c> стоит там же — то есть в затылок.
     ///
-    /// Тест сторожит ОБА конца связки, а не только один: перевернут IsoDir
-    /// или переедет спинка на +Z — разворот дивана станет вредным, и красное
-    /// покажет на константу, которую надо убрать. Прозой это уже один раз не
-    /// удержалось: комментарий про «ракурс спереди» врал ровно столько, сколько
-    /// существовал, и никто не заметил, потому что PNG никто не открывал.</summary>
+    /// Раньше здесь жила константа разворота на 180°, и её
+    /// выписывали ПО ОДНОМУ типу: диван, кровать, настенная арматура, стиральные
+    /// машины. Посудомойке, духовке и варочной её никто не выписал, и они
+    /// снимались коробкой со спины — а эталоны были приняты и не стерегли
+    /// ничего. Теперь разворачивается КАМЕРА, один раз на все типы
+    /// (<c>IsoCameraRig.ViewDir</c>), и ни один тест этого файла не трогает
+    /// поворот снимаемого элемента.</summary>
     [Test]
-    public void IsoCamera_StandsOnTheSameSideAsTheBackOfFurniture_SoASofaMustTurnAround()
+    public void TheRigStandsOnTheFaceSide_NotBehindTheBackOfFurniture()
     {
-        Assert.Less(IsoDir.z, 0f,
-            "камера смотрит со стороны -Z: это и есть та сторона, куда по соглашению "
-            + "проекта обращена спинка мебели");
+        Assert.Less(IsoCameraRig.IsoDir.z, 0f,
+            "сырой изометрический вектор смотрит со стороны -Z: это и есть та сторона, "
+            + "куда по соглашению проекта обращена спинка мебели");
 
         var dims = new Vector3Int(SofaElement.DefaultWidthMM,
             SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM);
@@ -513,9 +503,9 @@ public class IsoScreenshotTests : ElementFrameTests
             + "ради одного типа значило бы поставить диван и стул в одной комнате "
             + "спинками навстречу");
 
-        Assert.AreEqual(180f, FrontTowardsCameraDeg,
-            "раз обе стороны связки сошлись, диван обязан развернуться к камере лицом: "
-            + "иначе снимок показывает полку спинки во всю ширину, а не четыре подушки");
+        Assert.Greater(IsoCameraRig.ViewDir.z, 0f,
+            "поэтому объектив переезжает на сторону лица — и делает это ОДИН раз для "
+            + "всех типов, а не списком тех, у кого затылок заметили глазами");
     }
 
     [UnityTest]
@@ -542,7 +532,6 @@ public class IsoScreenshotTests : ElementFrameTests
         var go = ElementFactory.CreateSofa(dims, cornerRadiusMM, seatHeightMM, name, pos);
         _spawned.Add(go);
 
-        go.transform.rotation = Quaternion.Euler(0f, FrontTowardsCameraDeg, 0f);
         var sofa = go.GetComponent<SofaElement>();
         Assert.IsNotNull(sofa);
         Assert.AreEqual(cornerRadiusMM, sofa!.CornerRadiusMM,
@@ -595,7 +584,6 @@ public class IsoScreenshotTests : ElementFrameTests
         var go = ElementFactory.CreateBed(dims, isDouble, hasHeadboard, name, pos);
         _spawned.Add(go);
 
-        go.transform.rotation = Quaternion.Euler(0f, FrontTowardsCameraDeg, 0f);
         var bed = go.GetComponent<BedElement>();
         Assert.IsNotNull(bed, "фабрика обязана вернуть именно BedElement");
         Assert.AreEqual(dims, bed!.DimensionsMM,
@@ -1022,33 +1010,31 @@ public class IsoScreenshotTests : ElementFrameTests
     /// дивана, и связку держит IsoCamera_FacesTheWallSideOfAFitting.</summary>
     private const float CloseUpDistanceScale = 1.21f;
 
-    /// <summary>Держит связку, из-за которой разворот понадобился второй раз,
-    /// теперь для настенной арматуры: камера стоит со стороны -Z, а лицо
+    /// <summary>Настенная арматура — второй случай той же связки: лицо
     /// смесителя и стойки смотрит в +Z, потому что задней гранью они садятся
-    /// на стену.
-    ///
-    /// Тест сторожит ОБА конца, а не один. Разверни IsoDir или перенеси
-    /// плоскость посадки — и разворот станет вредным, а красное покажет на
-    /// константу, которую надо убрать.</summary>
+    /// на стену. Разворачивать их больше не нужно — на сторону лица встаёт
+    /// камера, одна на все типы; здесь проверяется, что связка всё ещё та
+    /// самая, ради которой камера туда переехала.</summary>
     [Test]
-    public void IsoCamera_FacesTheWallSideOfAFitting_SoWallFittingsMustTurnAround()
+    public void TheRigStandsOnTheSpoutSideOfAFitting_WithoutTurningTheFittingItself()
     {
         var spec = BathMixerSpec.Default;
 
-        Assert.Less(IsoDir.z, 0f, "камера смотрит со стороны -Z");
         Assert.AreEqual(0f, BathMixerLayout.BoundsMM(spec).min.z, 1e-3f,
-            "а настенная арматура садится на стену задней гранью габарита, то есть "
-            + "плоскостью z=0 — той самой, к которой обращён объектив");
+            "настенная арматура садится на стену задней гранью габарита, плоскостью z=0");
         Assert.Greater(BathMixerOutlets.SpoutMouthMM(spec).z,
             BathMixerLayout.BodyAxisZMM(spec),
-            "лицо же её смотрит в противоположную сторону: излив уходит в +Z");
+            "а лицо её смотрит в +Z: излив уходит туда");
         Assert.Greater(ShowerColumnSpec.Default.ArmReachMM,
             ShowerColumnSpec.Default.WallOffsetMM,
             "и гусак стойки — туда же");
 
-        Assert.AreEqual(180f, FrontTowardsCameraDeg,
-            "раз обе стороны связки сошлись, арматура обязана развернуться к камере "
-            + "лицом: иначе снимок показывает затылки отражателей, а излива на нём нет");
+        Assert.Greater(Vector3.Dot(ElementFacing.LocalFront, IsoCameraRig.ViewDir), 0f,
+            "значит объектив обязан стоять со стороны излива. Раньше сюда была вписана "
+            + "константа разворота на 180°, и её выписывали по одному типу: диван, "
+            + "кровать, арматура, машины — а посудомойка, духовка и варочная остались "
+            + "без неё и снимались затылком. Теперь сторона одна и выводится "
+            + "(IsoCameraRigViewTests), а поимённых разворотов нет ни одного");
     }
 
     [UnityTest]
@@ -1240,10 +1226,8 @@ public class IsoScreenshotTests : ElementFrameTests
     /// от центра габарита, а не от нуля раскладки.</summary>
     private static Vector3 WorldFromLayoutMM(Vector3 posUnits, Bounds boundsMM,
         Vector3 pointMM) =>
-        posUnits + TurnedToCamera * ((pointMM - boundsMM.center) * AppConstants.MM_TO_UNITS);
+        posUnits + (pointMM - boundsMM.center) * AppConstants.MM_TO_UNITS;
 
-    private static Quaternion TurnedToCamera =>
-        Quaternion.Euler(0f, FrontTowardsCameraDeg, 0f);
 
     /// <summary>Крупный план, наведённый мимо модели, сохраняется на диск как
     /// обычный кадр — просто пустой — и никого не настораживает. Поэтому
@@ -1275,7 +1259,7 @@ public class IsoScreenshotTests : ElementFrameTests
         cam.farClipPlane = 100f;
 
         float distance = spanMM * AppConstants.MM_TO_UNITS * CloseUpDistanceScale;
-        camGo.transform.position = centre + IsoDir * distance;
+        camGo.transform.position = centre + IsoCameraRig.ViewDir * distance;
         camGo.transform.LookAt(centre);
 
         return (camGo, cam);
@@ -1304,7 +1288,12 @@ public class IsoScreenshotTests : ElementFrameTests
     /// закрывает три вещи: прибор получает опору (правило перестаёт
     /// срабатывать, потому что расстановка стала верной), Start → SnapToWall
     /// сажает его вплотную к плоскости стены, и он же разворачивает его лицом
-    /// от стены — то есть к объективу, стоящему на -Z.</summary>
+    /// от стены.
+    ///
+    /// Стена стоит ПОЗАДИ прибора по его собственному лицу, то есть в -Z: лицо
+    /// у всех типов смотрит в +Z, и туда же, на сторону лица, переехал
+    /// объектив. Раньше стена стояла в +Z, а прибор доворачивали на 180° —
+    /// это и был поимённый разворот, которого больше нет.</summary>
     private const int FittingWallWidthMM = 3000;
     private const int FittingWallHeightMM = 2500;
     private const int FittingWallThicknessMM = 100;
@@ -1332,7 +1321,7 @@ public class IsoScreenshotTests : ElementFrameTests
             new Vector3Int(FittingWallWidthMM, FittingWallHeightMM, FittingWallThicknessMM),
             new Vector3(fittingPos.x,
                 AppConstants.HalfHeightUnits(FittingWallHeightMM),
-                fittingPos.z + standoff));
+                fittingPos.z - standoff));
 
         AssertWallCoversTheBackOfTheFitting(wall, fittingDims, fittingPos, name);
     }
@@ -1409,7 +1398,6 @@ public class IsoScreenshotTests : ElementFrameTests
     {
         var go = ElementFactory.CreateBathMixer(spec, name, pos);
         _spawned.Add(go);
-        go.transform.rotation = TurnedToCamera;
 
         var mixer = go.GetComponent<BathMixerElement>();
         Assert.IsNotNull(mixer, "фабрика обязана вернуть именно BathMixerElement");
@@ -1459,7 +1447,6 @@ public class IsoScreenshotTests : ElementFrameTests
     {
         var go = ElementFactory.CreateShowerColumn(spec, name, pos);
         _spawned.Add(go);
-        go.transform.rotation = TurnedToCamera;
 
         var column = go.GetComponent<ShowerColumnElement>();
         Assert.IsNotNull(column, "фабрика обязана вернуть именно ShowerColumnElement");
@@ -1819,6 +1806,32 @@ public class IsoScreenshotTests : ElementFrameTests
             + string.Join("\n", outside));
     }
 
+    /// <summary>«Влез в кадр» — это про габарит, и голая коробка проходит его
+    /// так же легко, как коробка с лицом. Поэтому рядом стоит второй вопрос:
+    /// деталь, которую тип ОБЪЯВИЛ лицевой, обязана быть видна с той стороны,
+    /// где стоит объектив — её не закрывает собственный корпус элемента. Ровно
+    /// это отличает кадр посудомойки от кадра ящика той же ширины, и ровно
+    /// этого не спрашивал никто, пока эталоны машин снимались со спины.</summary>
+    private static void AssertShowsItsDeclaredFront(GameObject go, string png)
+    {
+        var element = go.GetComponent<KitchenElement>();
+        if (element == null) return;
+
+        var front = element!.Front;
+        if (!front.ShowsNamedParts) return;
+
+        var parts = new List<FacePart>();
+        foreach (var renderer in go.GetComponentsInChildren<Renderer>())
+            parts.Add(new FacePart(renderer.gameObject.name, renderer.bounds));
+
+        var hidden = FrontFaceVisibility.Hidden(parts, front.PartNames, IsoCameraRig.ViewDir);
+        Assert.IsEmpty(hidden,
+            png + ": объявленные лицевыми детали не попали в кадр — их закрывает "
+            + "собственный корпус элемента, то есть съёмка идёт с затылка. Кадр при этом "
+            + "сохранится и будет выглядеть исправной коробкой. Не видно: "
+            + string.Join(", ", hidden));
+    }
+
     private IEnumerator RenderElementIso(GameObject go, string png, float distanceScale)
     {
         // Дочерние коробки строятся в ApplyDimensions/Start — до кадра их нет.
@@ -1829,6 +1842,7 @@ public class IsoScreenshotTests : ElementFrameTests
         _spawned.Add(camGo);
 
         AssertFitsInFrame(cam, bounds, go.name);
+        AssertShowsItsDeclaredFront(go, png);
 
         yield return RenderToPng(cam, png);
 
@@ -2140,11 +2154,12 @@ public class IsoScreenshotTests : ElementFrameTests
 
     /// <summary>Первые два кадра машин вышли ГОЛОЙ КОРОБКОЙ, и это не дефект геометрии:
     /// вся она — люк, обод, стекло, панель управления и расточка барабана — живёт на грани
-    /// +Z, а камера стоит со стороны -Z, то есть в затылок. Ровно так же выглядит и снимок
-    /// посудомойки, снятый тем же прогоном. Поэтому машина разворачивается тем же
-    /// <see cref="FrontTowardsCameraDeg"/>, что диван и стул: разворот не трогает
-    /// габаритную коробку, и общий IsoDir остаётся нетронутым — его правка пересняла бы
-    /// каждый чужой эталон.
+    /// +Z, а камера стояла со стороны -Z, то есть в затылок. Ровно так же выглядел и снимок
+    /// посудомойки. Машину больше не разворачивают: на сторону лица встаёт камера
+    /// (<c>IsoCameraRig.ViewDir</c>), а что люк, обод и панель ДЕЙСТВИТЕЛЬНО попали в
+    /// кадр, спрашивает уже не глаз — тип объявляет их лицевыми
+    /// (<c>LaundryMachineElement.Front</c>), и это проверяет
+    /// <c>ElementFrontDeclarationTests</c>.
     ///
     /// Открытый люк снимается отдельным кадром У КАЖДОЙ из двух машин: за ним видно
     /// цилиндрическое углубление барабана, и это единственная картинка, на которой оно
@@ -2178,7 +2193,6 @@ public class IsoScreenshotTests : ElementFrameTests
         float half = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
         var go = ElementFactory.CreateLaundryMachine(kind, dims, name, new Vector3(0f, half, 0f));
         _spawned.Add(go);
-        go.transform.rotation = Quaternion.Euler(0f, FrontTowardsCameraDeg, 0f);
 
         var machine = go.GetComponent<LaundryMachineElement>();
         Assert.IsNotNull(machine, "машина обязана быть машиной, а не доской");

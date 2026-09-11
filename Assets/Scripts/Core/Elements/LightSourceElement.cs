@@ -5,6 +5,9 @@ namespace KitchenDesigner.Core
 {
     public class LightSourceElement : KitchenElement, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("светильник — шар: он одинаков со всех сторон");
+
         public override bool CanFollowAnAttachParent => false;
 
         public override string DisplayTypeName => "Источник света";

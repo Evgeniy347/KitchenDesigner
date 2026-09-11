@@ -5,6 +5,9 @@ namespace KitchenDesigner.Core
 {
     public class PipeElement : KitchenElement, ISnapPorts, IAutoSeated, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("труба — тело вращения");
+
         public override string DisplayTypeName => "Труба";
 
         public override bool CanFollowAnAttachParent => false;

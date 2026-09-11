@@ -6,6 +6,9 @@ namespace KitchenDesigner.Core
     public class SocketElement : KitchenElement, IHasTwoDecorSlots, IWallMounted, IWallDevice,
         IKeepsPlacementHeight, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.Parts(SocketLayout.WellName);
+
         public override string DisplayTypeName => "Розетка";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

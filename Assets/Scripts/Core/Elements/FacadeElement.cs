@@ -4,6 +4,9 @@ namespace KitchenDesigner.Core
 {
     public class FacadeElement : KitchenElement, IOpenable, IParksAtAGestureLimit
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("фасад — плита: обе стороны одинаковы");
+
         public override bool IsFlatBoardElement => true;
 
         public override bool CanFollowAnAttachParent => false;

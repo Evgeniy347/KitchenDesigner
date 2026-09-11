@@ -5,6 +5,9 @@ namespace KitchenDesigner.Core
 {
     public class DrawerElement : KitchenElement, IFacadeHost, IOpenable, IQuantifies, IParksAtAGestureLimit
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("ящик снимают выдвинутым: короб виден целиком, лицевой детали у него нет");
+
         public override bool CanFollowAnAttachParent => false;
 
         public override Vector3 AttachRestPosition => ClosedPosition;

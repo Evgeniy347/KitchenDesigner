@@ -5,6 +5,9 @@ namespace KitchenDesigner.Core
 {
     public class FloorElement : KitchenElement, IKeepsPlacementHeight
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("пол горизонтален: его поверхность видна сверху с любой стороны");
+
         public override bool CanFollowAnAttachParent => false;
 
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.None;

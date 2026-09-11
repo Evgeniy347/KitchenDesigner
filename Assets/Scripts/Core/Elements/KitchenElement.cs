@@ -159,6 +159,9 @@ namespace KitchenDesigner.Core
 
         public virtual string DisplayTypeName => "Деталь";
 
+        public virtual ElementFront Front =>
+            ElementFront.NoSeparateFacePart("доска — коробка с кромкой: с любой стороны одна и та же грань");
+
         public virtual bool IsFlatBoardElement =>
             GetType() == typeof(KitchenElement)
             && GetComponent<Wall>() == null

@@ -5,6 +5,9 @@ namespace KitchenDesigner.Core
 {
     public class ChairElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("лицо стула — сиденье, оно часть корневого меша и отдельной деталью не выделено");
+
         public override string DisplayTypeName => "Стул";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

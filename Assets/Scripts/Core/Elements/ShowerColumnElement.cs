@@ -6,6 +6,9 @@ namespace KitchenDesigner.Core
     public class ShowerColumnElement : KitchenElement, IWallMounted, IFixedSizeElement,
         IKeepsPlacementHeight, IPaintsItself, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("гусак и лейка — части корпуса стойки, отдельной лицевой деталью не выделены");
+
         public override string DisplayTypeName => "Душевая стойка";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

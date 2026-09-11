@@ -6,6 +6,9 @@ namespace KitchenDesigner.Core
     public class LightSwitchElement : KitchenElement, IHasTwoDecorSlots, IWallMounted, IWallDevice,
         IKeepsPlacementHeight, ILightSwitch, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.Parts(LightSwitchLayout.KeyName);
+
         public override string DisplayTypeName => "Выключатель";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

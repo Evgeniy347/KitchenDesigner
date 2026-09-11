@@ -8,10 +8,11 @@ using KitchenDesigner.Core;
 
 /// <summary>Пять ракурсов смесителя — отдельный набор, а не ещё один кадр в
 /// <c>IsoScreenshotTests</c>. Тот снимает ОДИН ракурс (3/4 справа-сверху) и
-/// два крупных плана, и общего у него с этим набором только направление
-/// разворота: настенная арматура садится задней гранью на z = 0 и растёт в
-/// +Z, а объектив проекта стоит на −Z, поэтому лицом к камере она
-/// поворачивается на 180°.
+/// два крупных плана, и общего у него с этим набором только СТОРОНА съёмки:
+/// настенная арматура садится задней гранью на z = 0 и растёт в +Z, туда же
+/// смотрит её лицо, и туда же — на сторону лица — ставит объектив общий
+/// <c>IsoCameraRig.ViewDir</c>. Сам прибор не разворачивается ни здесь, ни
+/// там.
 ///
 /// Зачем ракурсов пять. Дефект «деталь вывернута наизнанку» — это обход
 /// треугольников против нормалей: отсечение задних граней выбрасывает
@@ -35,19 +36,11 @@ public class BathMixerViewpointTests : ElementFrameTests
     private const float DistanceScale = 2.2f;
     private const float FramePadding = 0.02f;
 
-    /// <summary>Разворот арматуры лицом к объективу — та же константа, что в
-    /// <c>IsoScreenshotTests</c>, и по той же причине. Здесь она пересчитана
-    /// заново, а не позаимствована: два набора не имеют права молча
-    /// разъехаться, поэтому её держит собственный тест ниже.</summary>
-    private const float FrontTowardsCameraDeg = 180f;
-
-    private static Quaternion TurnedToCamera =>
-        Quaternion.Euler(0f, FrontTowardsCameraDeg, 0f);
-
     /// <summary>Направления заданы в СОБСТВЕННОЙ системе смесителя: +X —
-    /// торец термостата, −X — торец вентиля, +Z — лицо, +Y — верх. В мир они
-    /// переводятся разворотом, поэтому смена FrontTowardsCameraDeg не
-    /// требует переписывать пять векторов.</summary>
+    /// торец термостата, −X — торец вентиля, +Z — лицо, +Y — верх. Прибор
+    /// больше не разворачивают лицом к объективу — объектив сам стоит со
+    /// стороны лица (<c>IsoCameraRig.ViewDir</c>), — поэтому собственная
+    /// система совпадает с мировой и пять векторов идут в мир как есть.</summary>
     private static readonly (string Png, Vector3 LocalDir, string Shows)[] Viewpoints =
     {
         ("iso_bath_mixer_front_spout_lever_and_scale_ring.png",
@@ -110,13 +103,15 @@ public class BathMixerViewpointTests : ElementFrameTests
     }
 
     /// <summary>Сторож против случайного разворота: все пять ракурсов обязаны
-    /// стоять со стороны ЛИЦА смесителя, а лицо после разворота смотрит в −Z
-    /// мира — туда же, куда смотрит объектив у всей проектной изометрии.
+    /// стоять со стороны ЛИЦА смесителя — то есть в +Z, куда смотрит
+    /// <c>ElementFacing.LocalFront</c> и куда переехал объектив всей проектной
+    /// изометрии.
     ///
-    /// Тест краснеет с обеих сторон. Убери разворот — и каждый мировой
-    /// вектор сменит знак z, то есть все пять кадров станут снимками
-    /// затылка. Разверни один локальный вектор лицом внутрь стены — красное
-    /// покажет именно на него, по имени PNG.</summary>
+    /// Тест краснеет с обеих сторон. Разверни один локальный вектор лицом
+    /// внутрь стены — красное покажет именно на него, по имени PNG. Верни
+    /// съёмщика на сырой <c>IsoDir</c> — красной станет последняя проверка:
+    /// общая сторона съёмки разойдётся с лицом, и пять ракурсов этого набора
+    /// окажутся с другой стороны, чем весь остальной проект.</summary>
     [Test]
     public void EveryViewpoint_StandsOnTheFaceSideOfTheMixer_NotBehindTheWall()
     {
@@ -134,10 +129,12 @@ public class BathMixerViewpointTests : ElementFrameTests
             Assert.Greater(localDir.z, 0f,
                 png + " обязан стоять со стороны лица (+Z в собственной системе), "
                 + "иначе кадр показывает " + shows + " сквозь корпус");
-            Assert.Less((TurnedToCamera * localDir).z, 0f,
-                png + ": после разворота на " + FrontTowardsCameraDeg + "° камера обязана "
-                + "оказаться на −Z мира — там, где стоит вся изометрия проекта");
         }
+
+        Assert.Greater(Vector3.Dot(ElementFacing.LocalFront, IsoCameraRig.ViewDir), 0f,
+            "и общий съёмщик проекта стоит с ТОЙ ЖЕ стороны: пять ракурсов этого набора "
+            + "и один ракурс IsoScreenshotTests обязаны смотреть на прибор с одной "
+            + "стороны, иначе «не вижу излива» на одном кадре ничего не говорит о другом");
     }
 
     /// <summary>Пять ракурсов обязаны быть пятью РАЗНЫМИ ракурсами. Опечатка
@@ -188,7 +185,7 @@ public class BathMixerViewpointTests : ElementFrameTests
     /// Стена ставится так, чтобы посадка (Start → SnapToWall) НЕ двигала
     /// прибор: её передняя плоскость приходится ровно на заднюю грань его
     /// габарита. Тогда позиция остаётся заявленной, а разворот, который
-    /// посадка задаёт сама, совпадает с FrontTowardsCameraDeg — и проверка
+    /// посадка задаёт сама, оставляет лицо в +Z — и проверка
     /// ниже впервые становится проверкой, а не тавтологией про пустую
     /// сцену.</summary>
     private const int WallWidthMM = 3000;
@@ -207,7 +204,7 @@ public class BathMixerViewpointTests : ElementFrameTests
         var wallGo = ElementFactory.CreateWall(
             new Vector3Int(WallWidthMM, WallHeightMM, WallThicknessMM), name,
             new Vector3(fittingPos.x, AppConstants.HalfHeightUnits(WallHeightMM),
-                fittingPos.z + standoff));
+                fittingPos.z - standoff));
         _spawned.Add(wallGo);
     }
 
@@ -223,15 +220,15 @@ public class BathMixerViewpointTests : ElementFrameTests
 
         var go = ElementFactory.CreateBathMixer(spec, "Viewpoint" + index, pos);
         _spawned.Add(go);
-        go.transform.rotation = TurnedToCamera;
 
         // Меш строится в ApplyDimensions, а Start сажает прибор на ближайшую
         // стену — до этого кадра ни того, ни другого на сцене нет.
         yield return null;
 
-        Assert.AreEqual(0f, Quaternion.Angle(TurnedToCamera, go.transform.rotation), 0.05f,
-            "элемент развернулся сам: посадка на стену перебила разворот к камере, и "
-            + "кадр " + png + " снимает затылок");
+        Assert.AreEqual(0f, Quaternion.Angle(Quaternion.identity, go.transform.rotation), 0.05f,
+            "посадка на стену развернула прибор: стена стоит ПОЗАДИ его лица, в −Z, и "
+            + "SnapToWall обязан оставить лицо в +Z. Развернулся — значит кадр " + png
+            + " снимает затылок");
         Assert.AreEqual(0f, (pos - go.transform.position).magnitude, 1e-4f,
             "посадка сдвинула смеситель: стена стоит не на том расстоянии, и кадр "
             + png + " снят не там, где заявлено");
@@ -241,7 +238,7 @@ public class BathMixerViewpointTests : ElementFrameTests
         // ElementFrameTests.CaptureFramePng. Двух формулировок одного вопроса в
         // проекте было две, и это ровно та пара, которую свели в один хелпер.
         var bounds = RendererBoundsOf(go);
-        var worldDir = (TurnedToCamera * localDir).normalized;
+        var worldDir = localDir.normalized;
         float distance = Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z))
             * DistanceScale;
 

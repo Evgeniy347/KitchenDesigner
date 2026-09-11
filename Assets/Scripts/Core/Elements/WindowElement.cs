@@ -7,6 +7,9 @@ namespace KitchenDesigner.Core
 
     public class WindowElement : WallOpeningElement, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("окно — створка в проёме: обе её стороны одинаковы");
+
         public override string DisplayTypeName => "Окно";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

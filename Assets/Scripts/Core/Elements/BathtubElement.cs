@@ -5,6 +5,9 @@ namespace KitchenDesigner.Core
 {
     public class BathtubElement : KitchenElement, IPaintsItself, IStandsOnFloor, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("ванна — чаша с бортом по кругу, лицевой детали у неё нет");
+
         public override string DisplayTypeName => "Ванна";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

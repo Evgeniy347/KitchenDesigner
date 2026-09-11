@@ -5,6 +5,9 @@ namespace KitchenDesigner.Core
 {
     public class PouffeElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("пуф — тумба с сиденьем сверху, лицевой детали у неё нет");
+
         public override string DisplayTypeName => "Пуфик";
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)

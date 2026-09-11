@@ -4,6 +4,9 @@ namespace KitchenDesigner.Core
 {
     public class SinkElement : PartCutoutElement, IPaintsItself
     {
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("мойка смотрит вверх: чаша видна сверху с любой стороны");
+
         public override string DisplayTypeName => "Мойка";
 
         public override bool ParticipatesInGapChecks => false;
