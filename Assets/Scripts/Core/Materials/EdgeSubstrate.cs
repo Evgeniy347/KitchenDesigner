@@ -45,10 +45,22 @@ namespace KitchenDesigner.Core
             element.SetBareFaceMask(BareFaceMask(element, PartRegistry.GetAll()));
         }
 
+        [System.ThreadStatic] private static int _sceneSyncs;
+
+        public static int TakeSceneSyncs()
+        {
+            int n = _sceneSyncs;
+            _sceneSyncs = 0;
+            return n;
+        }
+
         public static void SyncScene(IReadOnlyList<KitchenElement>? all)
         {
             if (all == null) return;
+            if (SceneGesture.InProgress) return;
+
             using var _ = PerfMarkers.EdgeSubstrateSync.Auto();
+            _sceneSyncs++;
 
             var scene = SceneFaces.Of(all);
             for (int k = 0; k < scene.Count; k++)
