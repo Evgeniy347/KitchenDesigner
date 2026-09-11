@@ -20,20 +20,20 @@ namespace KitchenDesigner.Core.Analysis
             var all = PartRegistry.GetAll();
             if (all == null || all.Count == 0) return issues;
 
-            CollectCollisions(all, issues);
-            CollectEdgeCover(all, issues);
-            CollectNearContacts(all, issues);
-            CollectDishwasherFacadeBackGaps(all, issues);
-            CollectDishwasherSupport(all, issues);
-            CollectPanelSeating(all, issues);
-            CollectFacadeGaps(all, issues);
-            CollectDrawerFacadeLinks(all, issues);
-            CollectAttachLinks(all, issues);
-            CollectDishwasherFacadeLinks(all, issues);
-            CollectScrewLegMounting(all, issues);
-            CollectScrewLegFooting(all, issues);
-            CollectPipeRuns(all, issues);
-            CollectUnknownTypes(all, issues);
+            using (PerfMarkers.AnalyzeCollisions.Auto()) CollectCollisions(all, issues);
+            using (PerfMarkers.AnalyzeEdgeCover.Auto()) CollectEdgeCover(all, issues);
+            using (PerfMarkers.AnalyzeNearContacts.Auto()) CollectNearContacts(all, issues);
+            using (PerfMarkers.AnalyzeDishwasherFacadeBackGaps.Auto()) CollectDishwasherFacadeBackGaps(all, issues);
+            using (PerfMarkers.AnalyzeDishwasherSupport.Auto()) CollectDishwasherSupport(all, issues);
+            using (PerfMarkers.AnalyzePanelSeating.Auto()) CollectPanelSeating(all, issues);
+            using (PerfMarkers.AnalyzeFacadeGaps.Auto()) CollectFacadeGaps(all, issues);
+            using (PerfMarkers.AnalyzeDrawerFacadeLinks.Auto()) CollectDrawerFacadeLinks(all, issues);
+            using (PerfMarkers.AnalyzeAttachLinks.Auto()) CollectAttachLinks(all, issues);
+            using (PerfMarkers.AnalyzeDishwasherFacadeLinks.Auto()) CollectDishwasherFacadeLinks(all, issues);
+            using (PerfMarkers.AnalyzeScrewLegMounting.Auto()) CollectScrewLegMounting(all, issues);
+            using (PerfMarkers.AnalyzeScrewLegFooting.Auto()) CollectScrewLegFooting(all, issues);
+            using (PerfMarkers.AnalyzePipeRuns.Auto()) CollectPipeRuns(all, issues);
+            using (PerfMarkers.AnalyzeUnknownTypes.Auto()) CollectUnknownTypes(all, issues);
             return issues;
         }
 

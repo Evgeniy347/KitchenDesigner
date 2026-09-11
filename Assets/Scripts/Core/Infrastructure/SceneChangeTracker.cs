@@ -53,9 +53,20 @@ namespace KitchenDesigner.Core
                     guest.WakeForSceneChange();
         }
 
+        private static int _settlings;
+
+        public static int TakeSettlings()
+        {
+            int n = _settlings;
+            _settlings = 0;
+            return n;
+        }
+
         public static void SettleDerivedLinks()
         {
             using var _ = PerfMarkers.SettleDerivedLinks.Auto();
+
+            _settlings++;
 
             _membershipChanged = false;
             ScrewLegHostLink.ApplyAll(PartRegistry.All);

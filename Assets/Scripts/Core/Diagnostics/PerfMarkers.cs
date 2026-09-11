@@ -62,6 +62,20 @@ namespace KitchenDesigner.Core
         public static readonly PerfMarker PipeFittingSizeLinkApplyAll = Reg("PipeFittingSizeLink.ApplyAll");
 
         public static readonly PerfMarker SceneAnalyzerAnalyze = Reg("SceneAnalyzer.Analyze");
+        public static readonly PerfMarker AnalyzeCollisions = Reg("SceneAnalyzer.CollectCollisions");
+        public static readonly PerfMarker AnalyzeEdgeCover = Reg("SceneAnalyzer.CollectEdgeCover");
+        public static readonly PerfMarker AnalyzeNearContacts = Reg("SceneAnalyzer.CollectNearContacts");
+        public static readonly PerfMarker AnalyzeDishwasherFacadeBackGaps = Reg("SceneAnalyzer.CollectDishwasherFacadeBackGaps");
+        public static readonly PerfMarker AnalyzeDishwasherSupport = Reg("SceneAnalyzer.CollectDishwasherSupport");
+        public static readonly PerfMarker AnalyzePanelSeating = Reg("SceneAnalyzer.CollectPanelSeating");
+        public static readonly PerfMarker AnalyzeFacadeGaps = Reg("SceneAnalyzer.CollectFacadeGaps");
+        public static readonly PerfMarker AnalyzeDrawerFacadeLinks = Reg("SceneAnalyzer.CollectDrawerFacadeLinks");
+        public static readonly PerfMarker AnalyzeAttachLinks = Reg("SceneAnalyzer.CollectAttachLinks");
+        public static readonly PerfMarker AnalyzeDishwasherFacadeLinks = Reg("SceneAnalyzer.CollectDishwasherFacadeLinks");
+        public static readonly PerfMarker AnalyzeScrewLegMounting = Reg("SceneAnalyzer.CollectScrewLegMounting");
+        public static readonly PerfMarker AnalyzeScrewLegFooting = Reg("SceneAnalyzer.CollectScrewLegFooting");
+        public static readonly PerfMarker AnalyzePipeRuns = Reg("SceneAnalyzer.CollectPipeRuns");
+        public static readonly PerfMarker AnalyzeUnknownTypes = Reg("SceneAnalyzer.CollectUnknownTypes");
         public static readonly PerfMarker ErrorPanelAnalyze = Reg("ErrorPanelUI.Analyze");
         public static readonly PerfMarker ToolbarRefresh = Reg("ToolbarUI.Refresh");
 
@@ -76,6 +90,23 @@ namespace KitchenDesigner.Core
             {
                 "OpeningCollision.BuildObstacles",
                 "OpeningCollision.ScanForBlock",
+            },
+            ["SceneAnalyzer.Analyze"] = new[]
+            {
+                "SceneAnalyzer.CollectCollisions",
+                "SceneAnalyzer.CollectEdgeCover",
+                "SceneAnalyzer.CollectNearContacts",
+                "SceneAnalyzer.CollectDishwasherFacadeBackGaps",
+                "SceneAnalyzer.CollectDishwasherSupport",
+                "SceneAnalyzer.CollectPanelSeating",
+                "SceneAnalyzer.CollectFacadeGaps",
+                "SceneAnalyzer.CollectDrawerFacadeLinks",
+                "SceneAnalyzer.CollectAttachLinks",
+                "SceneAnalyzer.CollectDishwasherFacadeLinks",
+                "SceneAnalyzer.CollectScrewLegMounting",
+                "SceneAnalyzer.CollectScrewLegFooting",
+                "SceneAnalyzer.CollectPipeRuns",
+                "SceneAnalyzer.CollectUnknownTypes",
             },
         };
 

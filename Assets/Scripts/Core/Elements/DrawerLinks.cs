@@ -97,36 +97,15 @@ namespace KitchenDesigner.Core
         public static T WithFacadeClosed<T>(FacadeElement facade, bool displaced, System.Func<T> check)
         {
             if (facade == null || !displaced || !facade.IsPassenger) return check();
-            var savedPos = facade.transform.position;
-            var savedRot = facade.transform.rotation;
-            try
-            {
-                facade.transform.SetPositionAndRotation(facade.ClosedPosition, facade.ClosedRotation);
-                return check();
-            }
-            finally
-            {
-                facade.transform.SetPositionAndRotation(savedPos, savedRot);
-            }
+            return PoseProbe.At(facade.transform, facade.ClosedPosition, facade.ClosedRotation, check);
         }
 
         public static bool IsFacadeInContact(DrawerElement drawer, FacadeElement facade)
         {
             if (drawer == null || facade == null) return false;
-            var savedPos = drawer.transform.position;
-            var savedRot = drawer.transform.rotation;
-            try
-            {
-                drawer.transform.position = drawer.ClosedPosition;
-                drawer.transform.rotation = drawer.ClosedRotation;
-                return ConstraintValidator.AreFacadeMountable(drawer, facade,
-                    drawer.FacadeMountGapMm);
-            }
-            finally
-            {
-                drawer.transform.position = savedPos;
-                drawer.transform.rotation = savedRot;
-            }
+            return PoseProbe.At(drawer.transform, drawer.ClosedPosition, drawer.ClosedRotation,
+                () => ConstraintValidator.AreFacadeMountable(drawer, facade,
+                    drawer.FacadeMountGapMm));
         }
     }
 }
