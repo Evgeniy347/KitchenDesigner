@@ -391,16 +391,22 @@ namespace KitchenDesigner.Core.UI
         {
             _transparentToggle = _rows.Toggle("CtxTransparent", "Прозрачный", false, v =>
             {
-                if (_target == null) return;
-                _target.Transparent = v;
+                var target = _target;
+                if (target == null) return;
+                ChoiceRowUndo.Commit(target, () => target.Transparent = v);
                 if (ElementHighlighter.Instance != null)
-                    ElementHighlighter.Instance.ApplyForElement(_target);
+                    ElementHighlighter.Instance.ApplyForElement(target);
                 if (SelectionManager.Instance != null)
-                    SelectionManager.Instance.RefreshHighlight(_target);
+                    SelectionManager.Instance.RefreshHighlight(target);
             }, RowVisibility.Always, 7f);
 
             _lockToggle = _rows.Toggle("CtxLock", "Закрепить", false,
-                v => { if (_target != null) _target.Movable = !v; },
+                v =>
+                {
+                    var target = _target;
+                    if (target == null) return;
+                    ChoiceRowUndo.Commit(target, () => target.Movable = !v);
+                },
                 RowVisibility.Always, UIStyle.GapSection);
         }
 

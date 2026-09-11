@@ -121,13 +121,12 @@ public class PipePanelChoiceUndoGuardTests
     private static readonly Dictionary<string, string> KnownGaps =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["CtxTransparent"] = "ContextMenuUI.BuildPropertySection — пишет [Undoable] "
-                                 + "Transparent напрямую, без команды",
-            ["CtxLock"] = "ContextMenuUI.BuildPropertySection — пишет [Undoable] Movable "
-                          + "напрямую, без команды",
-            ["CtxType"] = "ElementTypeConverter.Select — смена системы ящика пишет [Undoable] "
-                          + "System без команды, а структурная конверсия ПЕРЕСОБИРАЕТ элемент "
-                          + "(старый объект уничтожается, отменять нечем)",
+            ["CtxType"] = "ElementTypeConverter.ConvertStructural — конверсия типа ПЕРЕСОБИРАЕТ "
+                          + "элемент: ElementConverter.Convert уничтожает компонент и вешает "
+                          + "новый, поэтому SetPropertiesCommand (он держит ссылку на элемент) "
+                          + "тут не годится, нужна отдельная команда пересоздания. Смена "
+                          + "СИСТЕМЫ ящика той же строкой уже закрыта — её стережёт "
+                          + "DrawerSystemChoice_IsUndoneInOneStep",
         };
 
     /// <summary>Типы берутся у общего перебора <c>EveryElementType</c>, а не выписаны руками
@@ -412,6 +411,38 @@ public class PipePanelChoiceUndoGuardTests
             "\nKnownGaps — закрытый и убывающий список признанного долга, а не свалка "
             + "исключений: пока имя лежит в нём, сводный перебор эту строку ПРОПУСКАЕТ.\n"
             + string.Join("\n", stale));
+    }
+
+    /// <summary>Строка «Тип» делает ДВА разных дела, и стеречь её сводным перебором нельзя:
+    /// у детали она пересобирает элемент (признанный долг <c>CtxType</c>, элемент под сторожем
+    /// умирает), а у ящика — просто меняет систему. Половина, которая правит свойство, обязана
+    /// отменяться, и проверяется она здесь поимённо.</summary>
+    [Test]
+    public void DrawerSystemChoice_IsUndoneInOneStep()
+    {
+        var ctx = BuildMenu();
+        var drawer = (DrawerElement)Spawn(typeof(DrawerElement));
+        ctx.Open(drawer);
+        CommandStack.Clear();
+
+        var dropdown = DropdownNamed(_root!, "CtxType");
+        Assert.NotNull(dropdown, "строка «Тип» обязана быть в панели ящика");
+        Assume.That(dropdown!.options.Count, Is.GreaterThan(1),
+            "в списке систем ящика обязано быть из чего выбирать");
+
+        var was = drawer.System;
+        dropdown.value = NextValue(dropdown);
+
+        Assert.AreNotEqual(was, drawer.System, "выбор системы обязан примениться сразу");
+        Assert.AreEqual(1, CommandStack.UndoCount,
+            "смена системы ящика — ровно один шаг отмены");
+
+        var picked = drawer.System;
+        CommandStack.Undo();
+        Assert.AreEqual(was, drawer.System, "«Отменить» обязано вернуть прежнюю систему");
+
+        CommandStack.Redo();
+        Assert.AreEqual(picked, drawer.System, "«Повторить» обязано вернуть выбор");
     }
 
     /// <summary>Отдельно — тот самый путь из отчёта пользователя, чтобы регрессия читалась

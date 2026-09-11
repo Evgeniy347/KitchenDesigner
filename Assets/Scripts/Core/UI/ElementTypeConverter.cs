@@ -104,7 +104,7 @@ namespace KitchenDesigner.Core.UI
             var system = choice == Choice.DrawerMovento ? DrawerSystem.Movento : DrawerSystem.Gtv;
             if (drawer.System == system) return;
 
-            drawer.System = system;
+            ChoiceRowUndo.Commit(drawer, () => drawer.System = system, drawer.FindPaired());
             _reopen(drawer);
             RefreshHighlights();
         }
