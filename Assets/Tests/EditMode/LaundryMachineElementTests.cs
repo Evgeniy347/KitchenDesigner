@@ -325,25 +325,65 @@ public class LaundryMachineElementTests
     }
 
     [Test]
+    /// <summary>Раньше здесь стояло «шире машина — больше вылет открытого люка». Это было
+    /// верно, пока диаметр люка ВЫВОДИЛСЯ из ширины корпуса; с тех пор люк стал размером
+    /// ИЗДЕЛИЯ — 320 мм у стиральной, 360 у сушильной, — и от ширины шкафа не зависит,
+    /// пока в него влезает. Прежнее ожидание умерло вместе со своей посылкой.
+    ///
+    /// Свойство, ради которого тест писался, живо и проверяется тем же жестом: петля лежит
+    /// на СОБСТВЕННОЙ левой кромке люка, поэтому открытый люк уходит вперёд ровно на свой
+    /// радиус — при любом корпусе. Петля пересчитывается на перестройке, а не остаётся от
+    /// прежнего размера; противоположный вход — корпус, в который номинальный люк не лезет:
+    /// там ужимается люк, и вылет обязан ужаться вместе с ним.</summary>
+    [Test]
     public void Resizing_MovesTheHinge_SoTheHatchStillTurnsAroundItself()
     {
-        float narrow = OpenHatchReach(new Vector3Int(600, 850, 600), "HingeNarrow");
-        float wide = OpenHatchReach(new Vector3Int(900, 1100, 700), "HingeWide");
+        float nominalRadius = LaundryMachineBody.WASHER_HATCH_DIAMETER_MM * 0.5f;
 
-        Assert.Greater(wide, narrow + 0.05f,
-            "у широкой машины люк больше, значит и вылет открытого люка больше; "
-            + "одинаковый вылет означал бы, что петля осталась на месте от прежнего размера");
+        Assert.AreEqual(nominalRadius, OpenHatchReachMM(new Vector3Int(600, 850, 600), 0, "HingeA"),
+            0.5f, "открытый люк уходит вперёд от петли ровно на свой радиус: петля лежит "
+            + "на его собственной левой кромке");
+        Assert.AreEqual(nominalRadius, OpenHatchReachMM(new Vector3Int(900, 1100, 700), 1, "HingeB"),
+            0.5f, "и на широком корпусе — тоже на свой радиус, потому что люк не доля шкафа, "
+            + "а размер изделия");
+
+        var squeezed = new Vector3Int(300, 850, 600);
+        float squeezedRadius = LaundryMachineBody.HatchDiameterMM(LaundryMachineKind.Washer,
+            squeezed) * 0.5f;
+
+        Assert.Less(squeezedRadius, nominalRadius,
+            "вход выбран так, чтобы номинальный люк в корпус НЕ влез — иначе проверка ниже "
+            + "не может провалиться");
+        Assert.AreEqual(squeezedRadius, OpenHatchReachMM(squeezed, 2, "HingeSqueezed"), 0.5f,
+            "люк ужался под узкий корпус — значит и петля переехала на его новую кромку; "
+            + "прежний вылет означал бы петлю от люка, которого больше нет");
     }
 
-    private float OpenHatchReach(Vector3Int dims, string name)
+    /// <summary>Размер задаётся ПОСЛЕ создания: вопрос в том, пересчитала ли петлю
+    /// перестройка, а не в том, что посчитала фабрика. Машины разносятся по x — открытый
+    /// люк одной иначе упирается в соседку, и гашение о препятствие подменяет ответ.</summary>
+    private float OpenHatchReachMM(Vector3Int dims, int slot, string name)
     {
-        var machine = Make(LaundryMachineKind.Washer, dims, name);
-        var hinge = LaundryMachineBody.HingeLocalMM(LaundryMachineKind.Washer, dims)
-            * AppConstants.MM_TO_UNITS;
+        var go = ElementFactory.CreateLaundryMachine(LaundryMachineKind.Washer,
+            LaundryMachineBody.DefaultDimensionsMM, name,
+            new Vector3(slot * MachineSpacingMeters, 0f, 0f));
+        _spawned.Add(go);
+        var machine = go.GetComponent<LaundryMachineElement>();
+        Assert.IsNotNull(machine, "фабрика обязана вернуть объект со стиральной машиной");
+
+        machine!.DimensionsMM = dims;
         machine.SetOpen(true);
         machine.StepDoor(DropDoor.OPEN_SECONDS);
-        return DoorOf(machine).localPosition.z - hinge.z;
+
+        Assert.AreEqual(1f, machine.DoorProgress, 0.001f,
+            "люк не раскрылся до конца — вылет измерен у недооткрытого люка, и число "
+            + "ничего не говорит о петле");
+
+        float hingeZ = LaundryMachineBody.HingeLocalMM(LaundryMachineKind.Washer, dims).z;
+        return DoorOf(machine).localPosition.z / AppConstants.MM_TO_UNITS - hingeZ;
     }
+
+    private const float MachineSpacingMeters = 5f;
 
     [Test]
     public void TheDoor_SwingsForwardOnAVerticalAxis_AndComesBack()
