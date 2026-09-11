@@ -45,6 +45,7 @@
 | Feature | Main classes | Tests | Path |
 |---------|-------------|-------|------|
 | Save/Load | ElementData, SaveLoadManager, SaveLoadManagerInstance | RoundTripTests, SnapshotTests, SaveLoadManagerTests | Persistence/ |
+| Совместимость файла вперёд (проект от более новой версии) | ElementData.elementType (строка типа, из того же ElementSelector.TypeOf) + ProjectData.appVersion (BuildInfo.Version — версия сборки и инсталлятора), RawElementRecords + JsonText (Pure — сырая запись элемента доживает от чтения файла до записи: неизвестные поля слово в слово, известные из свежего снимка), ProjectJson (шов: вешает сырой текст при чтении, возвращает при записи), UnknownTypeMarker + ElementTypeId, ElementRestorers (замыкающая запись → неизвестный тип), SceneAnalyzer/IssueCatalog (TYP-01), ProjectVersionNotice + NewerVersionPrompt + NewerVersionStrings (Pure — шлюз и текст), NewerVersionDialogUI («Открыть»/«Отмена»), ProjectFileVersion | UnknownElementTypeRoundTripTests (круг «новая → старая → новая» на замороженной фикстуре Fixtures/newer-version-unknown-type.save.json, поле в поле), RawElementRecordsTests, JsonTextTests, UnknownElementTypeTests, ProjectVersionNoticeTests, NewerVersionPromptTests, AnalysisContractTests | Persistence/, Pure/Persistence/, Analysis/, UI/ |
 | Element conversion | ElementConverter | ElementConverterTests | Persistence/ |
 | Auto-save | AutoSaveManager | AutoSaveQuitTests | Persistence/ |
 | File dialogs | NativeFileDialog | — | Persistence/ |

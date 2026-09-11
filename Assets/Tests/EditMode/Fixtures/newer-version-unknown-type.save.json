@@ -1,0 +1,58 @@
+{
+    "version": 1,
+    "appVersion": "99.0",
+    "elements": [
+        {
+            "name": "Detal_1",
+            "elementType": "board",
+            "dimensionsMM": [
+                600,
+                400,
+                18
+            ],
+            "position": [
+                0.5,
+                0.25,
+                -1.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true
+        },
+        {
+            "name": "Zvezdnyy_proektor_1",
+            "elementType": "star_projector",
+            "isStarProjector": true,
+            "starBeamCount": 7,
+            "starTintId": "cobalt",
+            "starNested": {
+                "modeId": "slow",
+                "anglesDeg": [
+                    15,
+                    30
+                ]
+            },
+            "dimensionsMM": [
+                300,
+                200,
+                300
+            ],
+            "position": [
+                1.5,
+                0.5,
+                -2.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "movable": true
+        }
+    ]
+}
