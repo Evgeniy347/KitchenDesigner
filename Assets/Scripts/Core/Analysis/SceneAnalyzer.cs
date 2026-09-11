@@ -33,6 +33,7 @@ namespace KitchenDesigner.Core.Analysis
             CollectScrewLegMounting(all, issues);
             CollectScrewLegFooting(all, issues);
             CollectPipeRuns(all, issues);
+            CollectUnknownTypes(all, issues);
             return issues;
         }
 
@@ -222,6 +223,17 @@ namespace KitchenDesigner.Core.Analysis
                     FindByName(all, finding.ElementId), FindByName(all, finding.OtherElementId)));
         }
 
+        private static void CollectUnknownTypes(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var e in all)
+            {
+                if (e == null) continue;
+                var marker = UnknownTypeMarker.On(e);
+                if (marker == null || string.IsNullOrEmpty(marker.TypeId)) continue;
+                issues.Add(IssueCatalog.UnknownType(e, marker.TypeId));
+            }
+        }
+
         private static KitchenElement? FindByName(List<KitchenElement> all, string? name)
         {
             if (string.IsNullOrEmpty(name)) return null;
@@ -266,6 +278,14 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodePipeObstacleCrossed = "PIP-03";
         public const string CodePipeSameRoleJoin = "PIP-04";
         public const string CodeWallThicknessOffFormat = "WAL-01";
+        public const string CodeUnknownElementType = "TYP-01";
+
+        public static AnalysisIssue UnknownType(KitchenElement element, string typeId) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeUnknownElementType,
+                Name(element),
+                $"Неизвестный тип объекта «{typeId}» — показан обычной деталью; "
+                + "его поля сохранятся и вернутся в более новой версии программы",
+                element);
 
         public static AnalysisIssue FromViolation(ContactViolation v)
         {

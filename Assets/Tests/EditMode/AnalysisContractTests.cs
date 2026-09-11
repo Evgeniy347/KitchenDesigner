@@ -98,6 +98,7 @@ public class AnalysisContractTests
                     PipeNodeKind.Supply), a, b),
             IssueCatalog.FromPipeFinding(
                 PipeIssueCatalog.ObstacleCrossed(PipeRun(a), Blocking(b)), a, b),
+            IssueCatalog.UnknownType(a, "washer"),
             IssueCatalog.FromConstructionFinding(
                 ConstructionIssueCatalog.WallThicknessOffFormat(a.PartName,
                     MasonryUnit.Of(MasonryTechnology.BrickSingle), 300f,
@@ -120,6 +121,7 @@ public class AnalysisContractTests
             "LEG-01", "LEG-02", "LEG-03",
             "PIP-01", "PIP-02", "PIP-03", "PIP-04",
             "SEAT-01",
+            "TYP-01",
             "WAL-01",
         };
 
@@ -171,6 +173,7 @@ public class AnalysisContractTests
             ["PIP-03"] = IssueLevel.Error,
             ["PIP-04"] = IssueLevel.Error,
             ["WAL-01"] = IssueLevel.Warning,
+            ["TYP-01"] = IssueLevel.Warning,
         };
 
         CollectionAssert.AreEquivalent(expected.Keys, byCode.Keys,
@@ -181,7 +184,9 @@ public class AnalysisContractTests
             Assert.AreEqual(pair.Value, byCode[pair.Key],
                 pair.Key + ": Error — физически недопустимая геометрия, Warning — недоделанная "
                 + "сборка, которую пользователь вправе доводить в любом порядке. DWH-05 "
-                + "единственный DWH-код уровня Error именно поэтому");
+                + "единственный DWH-код уровня Error именно поэтому. TYP-01 — не геометрия "
+                + "вовсе: объект, которого эта версия не знает, показан деталью и ждёт более "
+                + "новой версии, чинить его тут нечем, поэтому это предупреждение");
 
         CollectionAssert.DoesNotContain(byCode.Values, IssueLevel.Info,
             "уровень Info зарезервирован и каталогом не выдаётся — он живёт только в фильтре "
