@@ -19,7 +19,7 @@ target here, and nothing on this branch is deployed anywhere — see `DEPLOY.md`
 | Suite | Command | Tests | Time |
 |-------|---------|-------|------|
 | `dotnet` (core + pure) | `.\tools\mutation-test.ps1 -TestsOnly` | 1361 (867 + 494) | **~2 s** тестов, ~9 s стены |
-| EditMode | `build.cmd -RunTests` | 4744 | **~167 s** |
+| EditMode | `build.cmd -RunTests` | 5498 | **~149 s тестов + ~33 s накладных** |
 | PlayMode | `build.cmd -RunPlayMode` | 254 | **~113 s** |
 
 The `dotnet` row is not a fourth suite — those files are compiled twice, by Unity and by
@@ -232,7 +232,7 @@ nothing and assert nothing.
 
 ## Iterating on ONE test class
 
-Use the gateway with a filter — **~11 s against ~167 s** for the whole suite. Filtering now
+Use the gateway with a filter — **~11 s against ~149 s** for the whole suite. Filtering now
 pays for itself: the fixed start is ~10 s, and a filtered run additionally turns Burst
 compilation off (worth 2,3 s, and only there — on a full run it buys exactly nothing).
 Still run the FULL suite before committing.

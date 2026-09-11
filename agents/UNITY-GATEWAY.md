@@ -54,9 +54,20 @@ Rules that matter:
   `%TEMP%\build-kitchen.log`: a working Unity writes a line per import/compile/reload/test
   step, a wedged one writes nothing. Quiet longer than `-SilenceMinutes` (default 5)
   → killed and said out loud, rather than sitting until `-TimeoutMinutes` (default 30).
-- **Every run prints its own duration** and says so loudly above its budget, plus the
-  five slowest classes. A cycle degrades quietly otherwise — nobody notices the minute
-  that crept in until "everything got slow" a week later.
+- **Каждый прогон печатает ДВЕ величины, а не одну**, плюс пять самых долгих классов: время
+  тестов (`test-run/@duration` из отчёта NUnit) и накладные (стена минус это время). Порогов тоже
+  два — тесты 170 с, накладные 45 с — и сообщение о превышении называет виновную половину.
+  Замер 2026-09-11 на 5 498 тестах: 149 с NUnit + 33 с накладных; из накладных лицензия 2,4 с,
+  два domain reload 5,1 с, **компиляция 14,3 с** (Runtime 5 с и сборка тестов 7 с последовательно),
+  сбор тестов 2,5 с, выход процесса ~4 с. Пол пустого проекта — 8,1 с; всё сверх него это
+  компиляция, и она платится в КАЖДОМ прогоне ворот, потому что ворота всегда идут после правки
+  исходников. Правкой тестов она не сокращается. Один порог на сумму стоил полдня поиска секунд в
+  тестах при том, что пятая часть бюджета лежала в компиляции. Цикл иначе деградирует тихо: минуту,
+  которая вползла, замечают через неделю как «всё стало медленно».
+- **`test-run/@duration` NUnit пишет в ТЕКУЩЕЙ культуре, а вложенные `test-suite/@duration` — в
+  инвариантной.** В одном файле на русской машине лежат `0,2048422` и `0.204842`. Разбор корня по
+  `InvariantCulture` молча съедает запятую и превращает 0,2 с в 2 048 422 с — а накладные при этом
+  становятся отрицательными, что и есть единственный признак беды.
 - **`dotnet` FIRST, Unity LAST.** The core AND the scene-free layer compile a second time under
   plain `dotnet` (`Assets/Scripts/Core/Geometry` + `Assets/Scripts/Core/Pure`, with their test
   directories): `.\tools\mutation-test.ps1 -TestsOnly` runs 1361 tests in **~2 s**. Anything you
