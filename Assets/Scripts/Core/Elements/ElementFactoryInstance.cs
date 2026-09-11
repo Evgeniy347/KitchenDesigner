@@ -149,13 +149,12 @@ namespace KitchenDesigner.Core
                 source.transform.position + DuplicateOffsetForCurrentView());
         }
 
-        public static Vector3 DuplicateOffsetForCurrentView()
-        {
-            var camera = Camera.main;
-            return DuplicateOffset.ForViewDirection(
+        public static Vector3 DuplicateOffsetForCurrentView() => DuplicateOffsetForView(Camera.main);
+
+        public static Vector3 DuplicateOffsetForView(Camera? camera) =>
+            DuplicateOffset.ForViewDirection(
                 camera != null ? camera.transform.forward : Vector3.zero,
                 DUPLICATE_OFFSET_UNITS);
-        }
 
         public GameObject CreateWall(Vector3Int dimensionsMM, string name, Vector3 position)
         {

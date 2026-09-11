@@ -161,20 +161,28 @@ public class ElementDuplicatorTests
             + "ветке лестницы и её можно было забыть");
     }
 
-    /// <summary>Камеры в EditMode нет, направления взгляда тоже — смещение остаётся
-    /// историческим «+X». Assume, а не Assert: посторонняя камера в сцене сделала бы
-    /// этот тест красным на исправном коде.</summary>
+    /// <summary>Без камеры направления взгляда нет, и смещение остаётся историческим «+X».
+    /// Чужие камеры гасятся явно: в одиночном прогоне сцена пуста, а в полном в ней живёт
+    /// чья-то камера, и тест «без камеры» проверял бы не то, что написано в его имени.</summary>
     [Test]
     public void Duplicate_WithNoCameraAtAll_OffsetsTheCopy_SoItDoesNotHideInsideTheOriginal()
     {
-        Assume.That(Camera.main, Is.Null, "сцена теста обязана быть без главной камеры");
-        var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "Board", Vector3.zero);
-        var source = go.GetComponent<KitchenElement>();
+        var foreign = EveryEnabledCameraTurnedOff();
+        try
+        {
+            Assert.IsNull(Camera.main, "сцена теста обязана остаться без главной камеры");
+            var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "Board", Vector3.zero);
+            var source = go.GetComponent<KitchenElement>();
 
-        var copy = ElementFactory.Duplicate(source);
+            var copy = ElementFactory.Duplicate(source);
 
-        Assert.AreEqual(ElementFactoryInstance.DUPLICATE_OFFSET_UNITS,
-            copy.transform.position.x - source.transform.position.x, 1e-4f);
+            Assert.AreEqual(ElementFactoryInstance.DUPLICATE_OFFSET_UNITS,
+                copy.transform.position.x - source.transform.position.x, 1e-4f);
+        }
+        finally
+        {
+            TurnBackOn(foreign);
+        }
     }
 
     /// <summary>Путь пользователя целиком: камера в сцене, Ctrl+D зовёт эту же фабрику.
@@ -201,14 +209,53 @@ public class ElementDuplicatorTests
             "ось выбирается по камере, а не константой +X");
     }
 
+    /// <summary>Тот же перевод «ракурс → сторона», но у камеры спрашивают НАПРЯМУЮ, без
+    /// `Camera.main`. Эта пара тестов переживёт любую чужую камеру в общей сцене: если
+    /// однажды снова разойдутся сценовая сторона и чистая функция, красным станет здесь,
+    /// а не в тесте, который можно списать на окружение.</summary>
+    [Test]
+    public void DuplicateOffsetForView_CameraLookingAlongX_StepsBackTowardsTheViewer()
+    {
+        var cameraGo = new GameObject("ViewProbe");
+        try
+        {
+            var camera = cameraGo.AddComponent<Camera>();
+            cameraGo.transform.rotation = ManagedRotation.Euler(0f, 90f, 0f);
+            Assert.AreEqual(1f, cameraGo.transform.forward.x, 1e-4f,
+                "поворот на 90° вокруг Y обязан направить взгляд вдоль +X — иначе тест "
+                + "проверяет не тот ракурс, который назван в его имени");
+
+            Assert.AreEqual(new Vector3(-ElementFactoryInstance.DUPLICATE_OFFSET_UNITS, 0f, 0f),
+                ElementFactoryInstance.DuplicateOffsetForView(camera));
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(cameraGo);
+        }
+    }
+
+    [Test]
+    public void DuplicateOffsetForView_WithNoCameraAtAll_KeepsTheHistoricPlusXSide()
+    {
+        Assert.AreEqual(new Vector3(ElementFactoryInstance.DUPLICATE_OFFSET_UNITS, 0f, 0f),
+            ElementFactoryInstance.DuplicateOffsetForView(null));
+    }
+
+    /// <summary>Фабрика спрашивает ракурс у `Camera.main`, а это ПЕРВАЯ включённая камера
+    /// с тегом MainCamera: в полном прогоне ею оказывается чужая, с единичным разворотом,
+    /// и тест меряет ракурс, которого не задавал (так и вышло — знак «наоборот» и ноль по X).
+    /// Поэтому на время замера в сцене остаётся ровно одна включённая камера — наша, — и
+    /// это утверждается до замера, а не предполагается.</summary>
     private static Vector3 OffsetOfACopySeenFrom(Quaternion cameraRotation)
     {
+        var foreign = EveryEnabledCameraTurnedOff();
         var cameraGo = new GameObject("MainCamera") { tag = "MainCamera" };
         try
         {
-            cameraGo.AddComponent<Camera>();
+            var camera = cameraGo.AddComponent<Camera>();
             cameraGo.transform.rotation = cameraRotation;
-            Assume.That(Camera.main, Is.Not.Null, "фабрика читает ракурс через Camera.main");
+            Assert.AreSame(camera, Camera.main,
+                "замер имеет смысл, только если фабрика спросит ИМЕННО нашу камеру");
 
             var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "Board", Vector3.zero);
             var source = go.GetComponent<KitchenElement>();
@@ -220,7 +267,26 @@ public class ElementDuplicatorTests
         finally
         {
             UnityEngine.Object.DestroyImmediate(cameraGo);
+            TurnBackOn(foreign);
         }
+    }
+
+    private static List<Camera> EveryEnabledCameraTurnedOff()
+    {
+        var turnedOff = new List<Camera>();
+        foreach (var camera in UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+        {
+            if (!camera.enabled) continue;
+            camera.enabled = false;
+            turnedOff.Add(camera);
+        }
+        return turnedOff;
+    }
+
+    private static void TurnBackOn(List<Camera> cameras)
+    {
+        foreach (var camera in cameras)
+            if (camera != null) camera.enabled = true;
     }
 
     private static KitchenElement Made(GameObject go)
