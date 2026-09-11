@@ -82,18 +82,22 @@ namespace KitchenDesigner.Core.UI
 
         private void OnTintSelected(int index)
         {
-            if (Host.Target is WindowElement window) window.Tint = (GlassTint)index;
+            if (Host.Target is WindowElement window)
+                ChoiceRowUndo.Commit(window, () => window.Tint = (GlassTint)index);
         }
 
         private void OnSashTypeSelected(int index)
         {
-            if (Host.Target is DoorElement door) door.SashType = (DoorSashType)index;
+            if (Host.Target is DoorElement door)
+                ChoiceRowUndo.Commit(door, () => door.SashType = (DoorSashType)index);
         }
 
         private void OnOpeningModeSelected(int index)
         {
-            if (Host.Target is WindowElement window) window.Mode = (DoorMode)index;
-            else if (Host.Target is DoorElement door) door.Mode = (DoorMode)index;
+            if (Host.Target is WindowElement window)
+                ChoiceRowUndo.Commit(window, () => window.Mode = (DoorMode)index);
+            else if (Host.Target is DoorElement door)
+                ChoiceRowUndo.Commit(door, () => door.Mode = (DoorMode)index);
         }
     }
 }
