@@ -30,6 +30,7 @@ namespace KitchenDesigner.Core.UI
         PipeFitting = 1 << 19,
         PipeFittingSecondPort = 1 << 20,
         PipeFittingThirdPort = 1 << 21,
+        LaundryMachine = 1 << 22,
     }
 
     internal sealed class ContextMenuLayout

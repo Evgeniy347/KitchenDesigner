@@ -29,6 +29,7 @@ namespace KitchenDesigner.Core.UI
             if (element is LightSourceElement) facets |= ElementFacet.Light;
             if (element is OvenElement) facets |= ElementFacet.Oven;
             if (element is DishwasherElement) facets |= ElementFacet.Dishwasher;
+            if (element is LaundryMachineElement) facets |= ElementFacet.LaundryMachine;
             if (element.SupportsGrooves) facets |= ElementFacet.Part;
             return facets;
         }

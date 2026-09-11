@@ -22,7 +22,7 @@ namespace KitchenDesigner.Core.UI
 
         public override void Build()
         {
-            var visibility = RowVisibility.When(() => Host.Target is LaundryMachineElement);
+            var visibility = RowVisibility.For(ElementFacet.LaundryMachine);
             _kind = Rows.Dropdown(KindLabel, KindOptions(), OnKindSelected, visibility, KindNode,
                 hint: "element.laundry.kind");
         }
