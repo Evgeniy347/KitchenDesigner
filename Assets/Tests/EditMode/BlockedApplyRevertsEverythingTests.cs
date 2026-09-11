@@ -174,7 +174,7 @@ public class BlockedApplyRevertsEverythingTests
 
         Assert.AreEqual(600, el.DimensionsMM.x, "предусловие: правка обязана быть отклонена");
         Assert.IsNotNull(_statusBar!.ActiveText, "об отказе обязано быть сказано вслух");
-        Assert.IsTrue(_statusBar!.ActiveText!.StartsWith(ContextMenuUI.RefusalPrefix),
+        Assert.IsTrue(_statusBar!.ActiveText!.StartsWith(EditGate.RefusalPrefix),
             "сообщение начинается с причины отказа: " + _statusBar!.ActiveText);
         Assert.IsTrue(_statusBar!.ActiveText!.Contains(
                 KitchenDesigner.Core.Analysis.IssueCatalog.CodeOverlap),

@@ -24,7 +24,6 @@ namespace KitchenDesigner.Core.UI
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
 
-        internal const string RefusalPrefix = "Правка отклонена: ";
         private SceneViolations _violationsBeforeApply = SceneViolations.Empty;
 
         private const string DrawerFacadeLabelText = "Фасад ящика";
@@ -760,13 +759,13 @@ namespace KitchenDesigner.Core.UI
             foreach (var editor in _editors) editor.ApplyAfterPosition(target);
 
             if (KitchenSettings.Instance.BlockOnViolation
-                && ThisEditIntroducedAViolation(target, out var introduced))
+                && ThisEditIntroducedAViolation(target, out var refusal))
             {
                 target.DimensionsMM = oldDims;
                 target.transform.position = oldPos;
                 target.transform.rotation = oldRot;
                 _rotationDisplay.Remember(shownRotation);
-                ReportRefusal(introduced);
+                EditRefusalReport.Show(refusal);
                 return true;
             }
 
@@ -804,19 +803,9 @@ namespace KitchenDesigner.Core.UI
             _fields.ShowRejections();
         }
 
-        private bool ThisEditIntroducedAViolation(KitchenElement target,
-            out ContactViolation introduced) =>
-            EditGate.IntroducedOn(_violationsBeforeApply, SceneViolations.OfScene(),
-                target, out introduced);
-
-        private static string RefusalText(ContactViolation introduced)
-        {
-            var issue = IssueCatalog.FromViolation(introduced);
-            return $"{RefusalPrefix}{issue.Code} · {issue.Detail} · {issue.Message}";
-        }
-
-        private static void ReportRefusal(ContactViolation introduced) =>
-            StatusBarUI.Instance?.ShowTransient(RefusalText(introduced), StatusLevel.Error);
+        private bool ThisEditIntroducedAViolation(KitchenElement target, out string refusal) =>
+            EditGate.Refuses(_violationsBeforeApply, SceneViolations.OfScene(),
+                target, out refusal);
 
         private void RotateAxis(RotationAxis axis, float angle = 90f)
         {
