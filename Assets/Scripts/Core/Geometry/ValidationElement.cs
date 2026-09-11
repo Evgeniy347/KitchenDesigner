@@ -48,6 +48,30 @@ namespace KitchenDesigner.Core
             | ElementKind.SelfSupported
             | ElementKind.Decor | ElementKind.Recessed | ElementKind.FloatingFacade);
 
+        public bool PosedLike(in ValidationElement other)
+        {
+            if (Kind != other.Kind || GroupId != other.GroupId || PairedName != other.PairedName
+                || AttachedWallIndex != other.AttachedWallIndex || HostIndex != other.HostIndex
+                || HasExtraBody != other.HasExtraBody
+                || HeightSpan.Min != other.HeightSpan.Min || HeightSpan.Max != other.HeightSpan.Max
+                || Geometry.Min != other.Geometry.Min || Geometry.Max != other.Geometry.Max)
+                return false;
+
+            if (HasExtraBody
+                && (ExtraBody.Min != other.ExtraBody.Min || ExtraBody.Max != other.ExtraBody.Max))
+                return false;
+
+            var mine = Geometry.Faces;
+            var theirs = other.Geometry.Faces;
+            if (mine == null || theirs == null) return mine == theirs;
+            if (mine.Length != theirs.Length) return false;
+            for (int i = 0; i < mine.Length; i++)
+                if (mine[i].center != theirs[i].center || mine[i].normal != theirs[i].normal
+                    || mine[i].size != theirs[i].size)
+                    return false;
+            return true;
+        }
+
         public bool SharesModuleWith(in ValidationElement other) =>
             GroupId != NoGroup && GroupId == other.GroupId;
 

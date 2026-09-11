@@ -6,16 +6,20 @@ namespace KitchenDesigner.Core
 {
     public static class ValidationCore
     {
-        [ThreadStatic] private static List<int>? _overlappingPerThread;
-        [ThreadStatic] private static HashSet<int>? _overlappingSetPerThread;
-        [ThreadStatic] private static HashSet<int>? _anchorsInIllegalOverlapPerThread;
+        [ThreadStatic] private static OverlapMarks? _marksPerThread;
 
-        private static List<int> Overlapping => _overlappingPerThread ??= new List<int>();
+        private static OverlapMarks Marks => _marksPerThread ??= new OverlapMarks();
 
-        private static HashSet<int> OverlappingSet => _overlappingSetPerThread ??= new HashSet<int>();
+        public static float ContactDistUnits => Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
 
-        private static HashSet<int> AnchorsInIllegalOverlap =>
-            _anchorsInIllegalOverlapPerThread ??= new HashSet<int>();
+        public static int PairsProcessed { get; private set; }
+
+        public static int TakePairsProcessed()
+        {
+            int n = PairsProcessed;
+            PairsProcessed = 0;
+            return n;
+        }
 
         public static CoreValidationResult Validate(IReadOnlyList<ValidationElement> all)
         {
@@ -27,7 +31,9 @@ namespace KitchenDesigner.Core
         public static void Validate(IReadOnlyList<ValidationElement> all, CoreValidationResult result)
         {
             result.Clear();
-            ClearScratch();
+            ValidationBroadPhase.Clear();
+            var marks = Marks;
+            marks.Clear();
 
             int n = all?.Count ?? 0;
             if (n == 0)
@@ -36,45 +42,46 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            var candidates = ValidationBroadPhase.CandidatePairsInNestedLoopOrder(
+                all!, ContactDistUnits);
+            ProcessPairs(all!, candidates, result, marks);
+            Finish(all!, result, marks);
+        }
 
-            var candidates = ValidationBroadPhase.CandidatePairsInNestedLoopOrder(all!, contactDist);
-            for (int c = 0; c < candidates.Count; c++)
-                ProcessPair(all!, candidates[c].lo, candidates[c].hi, contactDist, result);
+        public static void ProcessPairs(IReadOnlyList<ValidationElement> all,
+            IReadOnlyList<(int lo, int hi)> pairs, CoreValidationResult result, OverlapMarks marks)
+        {
+            float contactDist = ContactDistUnits;
+            PairsProcessed += pairs.Count;
+            for (int c = 0; c < pairs.Count; c++)
+                ProcessPair(all, pairs[c].lo, pairs[c].hi, contactDist, result, marks);
+        }
 
-            CheckConnectivity(all!, result);
-            CheckWallHeightConstraints(all!, result);
+        public static void Finish(IReadOnlyList<ValidationElement> all,
+            CoreValidationResult result, OverlapMarks marks)
+        {
+            CheckConnectivity(all, result);
+            CheckWallHeightConstraints(all, result);
 
-            foreach (int i in Overlapping)
+            var overlapping = marks.InOrder;
+            for (int k = 0; k < overlapping.Count; k++)
             {
-                if (all![i].Is(ElementKind.Anchor) && !AnchorsInIllegalOverlap.Contains(i)) continue;
+                int i = overlapping[k];
+                if (all[i].Is(ElementKind.Anchor) && !marks.AnchorIsInIllegalOverlap(i)) continue;
                 if (!result.Violations.Contains(i))
                     result.Violations.Add(i);
             }
             result.IsValid = result.Violations.Count == 0;
         }
 
-        private static void ClearScratch()
-        {
-            ValidationBroadPhase.Clear();
-            Overlapping.Clear();
-            OverlappingSet.Clear();
-            AnchorsInIllegalOverlap.Clear();
-        }
-
-        private static void MarkOverlapping(int index)
-        {
-            if (OverlappingSet.Add(index)) Overlapping.Add(index);
-        }
-
         private static void ProcessPair(IReadOnlyList<ValidationElement> all,
-            int aIdx, int bIdx, float contactDist, CoreValidationResult result)
+            int aIdx, int bIdx, float contactDist, CoreValidationResult result, OverlapMarks marks)
         {
             var a = all[aIdx];
             var b = all[bIdx];
 
-            CheckExtraBodyAgainstNeighbour(a, aIdx, b, bIdx, contactDist, result);
-            CheckExtraBodyAgainstNeighbour(b, bIdx, a, aIdx, contactDist, result);
+            CheckExtraBodyAgainstNeighbour(a, aIdx, b, bIdx, contactDist, result, marks);
+            CheckExtraBodyAgainstNeighbour(b, bIdx, a, aIdx, contactDist, result, marks);
 
             if (a.IgnoredInPairs || b.IgnoredInPairs) return;
 
@@ -89,14 +96,14 @@ namespace KitchenDesigner.Core
             if (SharesSpaceLegitimately(a, b)) return;
             if (TrySeatedGrooveContact(a, b, aIdx, bIdx, result)) return;
 
-            MarkOverlapping(aIdx);
-            MarkOverlapping(bIdx);
+            marks.Mark(aIdx);
+            marks.Mark(bIdx);
 
             if (a.Is(ElementKind.Anchor) && b.Is(ElementKind.Anchor) && IsLegitAnchorPair(a, b)) return;
 
             result.AddDiagnostic(aIdx, bIdx, ViolationKind.Overlap);
-            if (a.Is(ElementKind.Anchor)) AnchorsInIllegalOverlap.Add(aIdx);
-            if (b.Is(ElementKind.Anchor)) AnchorsInIllegalOverlap.Add(bIdx);
+            if (a.Is(ElementKind.Anchor)) marks.MarkAnchorInIllegalOverlap(aIdx);
+            if (b.Is(ElementKind.Anchor)) marks.MarkAnchorInIllegalOverlap(bIdx);
         }
 
         private static bool TryScrewLegContact(in ValidationElement a, in ValidationElement b,
@@ -147,14 +154,15 @@ namespace KitchenDesigner.Core
         }
 
         private static void CheckExtraBodyAgainstNeighbour(in ValidationElement owner, int ownerIdx,
-            in ValidationElement other, int otherIdx, float contactDist, CoreValidationResult result)
+            in ValidationElement other, int otherIdx, float contactDist, CoreValidationResult result,
+            OverlapMarks marks)
         {
             if (!owner.HasExtraBody || owner.HostIndex == otherIdx) return;
             if (!BlocksExtraBody(owner, other)) return;
             if (!FaceContacts.AABBsIntersect(owner.ExtraBody, other.Geometry, contactDist)) return;
 
-            MarkOverlapping(ownerIdx);
-            MarkOverlapping(otherIdx);
+            marks.Mark(ownerIdx);
+            marks.Mark(otherIdx);
             result.AddDiagnostic(ownerIdx, otherIdx, ViolationKind.Overlap);
         }
 
@@ -200,6 +208,13 @@ namespace KitchenDesigner.Core
             return false;
         }
 
+        public static bool HasAnchor(IReadOnlyList<ValidationElement> all)
+        {
+            for (int i = 0; i < all.Count; i++)
+                if (all[i].Is(ElementKind.Anchor)) return true;
+            return false;
+        }
+
         private static void CheckConnectivity(IReadOnlyList<ValidationElement> all,
             CoreValidationResult result)
         {
@@ -220,16 +235,14 @@ namespace KitchenDesigner.Core
             var visited = new bool[n];
             var queue = new Queue<int>();
 
-            bool hasAnchor = false;
             for (int i = 0; i < n; i++)
             {
                 if (!all[i].Is(ElementKind.Anchor)) continue;
-                hasAnchor = true;
                 visited[i] = true;
                 queue.Enqueue(i);
             }
 
-            if (!hasAnchor)
+            if (!HasAnchor(all))
             {
                 int start = 0;
                 for (int i = 0; i < n; i++)

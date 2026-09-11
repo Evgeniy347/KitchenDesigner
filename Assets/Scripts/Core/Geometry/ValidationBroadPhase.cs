@@ -75,6 +75,16 @@ namespace KitchenDesigner.Core
             }
         }
 
+        public static bool SolidsReach(in ValidationElement a, in ValidationElement b,
+            float contactDist)
+        {
+            SolidBoundsIncludingExtraBody(a, out var minA, out var maxA);
+            SolidBoundsIncludingExtraBody(b, out var minB, out var maxB);
+            return minA.x <= maxB.x + contactDist && maxA.x >= minB.x - contactDist
+                && minA.y <= maxB.y + contactDist && maxA.y >= minB.y - contactDist
+                && minA.z <= maxB.z + contactDist && maxA.z >= minB.z - contactDist;
+        }
+
         private static void Insert(int index, Vector3 min, Vector3 max, float contactDist)
         {
             int cx0 = CellFloor(min.x - contactDist), cx1 = CellFloor(max.x + contactDist);
