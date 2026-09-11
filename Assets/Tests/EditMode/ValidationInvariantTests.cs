@@ -68,6 +68,22 @@ public class ValidationInvariantTests
     private string _reportPath = "";
     private ProjectLoadStateGuard? _guard;
 
+    /// <summary>Общая сцена класса: `SaveLoadManager.RestoreScene` на этой фикстуре стоит
+    /// около секунды, а оба теста её только читают. Восстанавливается ЛЕНИВО и
+    /// переиспользуется.</summary>
+    private List<KitchenElement>? _scene;
+
+    /// <summary>Прогоняли ли уже <see cref="Collect"/> по текущей общей сцене. Тесту на
+    /// детерминизм нужна НЕПРОГРЕТАЯ сцена: валидатор держит статические scratch-буферы,
+    /// и если первый из двух его прогонов окажется уже вторым по счёту, тест начнёт
+    /// сравнивать прогретое с прогретым и перестанет ловить то, ради чего написан.
+    /// Порядок тестов NUnit не гарантирует, поэтому договорённость «он идёт первым» тут
+    /// не годится — флаг ЗАСТАВЛЯЕТ пересобрать сцену, если по ней уже считали
+    /// (см. <see cref="ColdScene"/>).</summary>
+    private bool _sceneCollected;
+
+    private int _registryParts = -1;
+
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
@@ -80,13 +96,19 @@ public class ValidationInvariantTests
         Directory.CreateDirectory(dir);
         _reportPath = Path.Combine(dir, ReportFileName);
         File.WriteAllText(_reportPath, $"# Инвариант валидации: {SaveFileName}\n");
+
+        CaptureGlobals();
     }
 
     /// <summary>Загрузка сейва переписывает глобальное состояние целиком
     /// (KitchenSettings, режим ручек, статики подсветки) — снимаем и возвращаем
-    /// его так же, как это делает SaveValidationTests.</summary>
-    [SetUp]
-    public void SetUp()
+    /// его так же, как это делает SaveValidationTests, но ОДИН раз на класс, а не на тест:
+    /// сцена теперь общая, а вместе с ней общее и состояние, которое приехало из файла
+    /// (<c>SceneRestorer.RestoreProjectState</c>). Потестовый <c>Restore()</c> сдирал бы
+    /// настройки с живой сцены — первый тест считал бы counters по настройкам файла,
+    /// второй по умолчаниям, на той же геометрии. Соседние классы защищены как и прежде:
+    /// состояние возвращается в <c>[OneTimeTearDown]</c>.</summary>
+    private void CaptureGlobals()
     {
         var s = KitchenSettings.Instance;
         Assert.IsNotNull(s);
@@ -96,16 +118,85 @@ public class ValidationInvariantTests
         s.AutoSave = false;
         s.SpatialGrid = false;
         s.NormalView.edgeOutline = false;
-
-        ClearScene();
     }
 
+    [SetUp]
+    public void SetUp() => AssertSharedSceneIntact();
+
     [TearDown]
-    public void TearDown()
+    public void TearDown() => FaceCache.Clear();
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        DropSharedScene();
+        _guard?.Restore();
+        _guard = null;
+    }
+
+    /// <summary>Сторож общей сцены: число живых деталей закреплено тем же baseline
+    /// («elements»), а число записей в реестре — тем, что было при первой сборке. Тест,
+    /// который что-то в общей сцене сдвинул или уничтожил, обязан краснеть здесь, а не
+    /// превращаться в тихо поехавший счётчик у соседа. Зовётся из <c>[SetUp]</c> — на
+    /// границе тестов, чтобы падение указывало на ПРЕДЫДУЩИЙ тест, — и при каждом
+    /// обращении к сцене.</summary>
+    private void AssertSharedSceneIntact()
+    {
+        if (_scene == null) return;
+        Assert.AreEqual(ExpectedElements, _scene!.Count(e => e != null),
+            "общая сцена поехала между тестами: живых деталей стало другое число");
+        Assert.AreEqual(_registryParts, PartRegistry.GetAll().Count,
+            "общая сцена поехала между тестами: записей в PartRegistry стало другое число");
+    }
+
+    /// <summary>Сколько деталей обязана дать фикстура — то же число, которым baseline
+    /// закрепляет счётчик «elements»: два источника правды тут не нужны.</summary>
+    private static int ExpectedElements => Baseline.First(b => b.Key == "elements").Expected;
+
+    /// <summary>Сцена фикстуры, общая для обоих тестов: поднимается ЛЕНИВО и
+    /// переиспользуется.</summary>
+    private List<KitchenElement> SharedScene()
+    {
+        int expectedElements = ExpectedElements;
+
+        if (_scene != null)
+        {
+            AssertSharedSceneIntact();
+            return _scene!;
+        }
+
+        ClearScene();
+        var built = RestoreScene();
+        Assert.AreEqual(expectedElements, built.Count,
+            "фикстура дала другое число деталей — сравнивать счётчики с baseline уже нельзя");
+        _registryParts = PartRegistry.GetAll().Count;
+        _sceneCollected = false;
+        _scene = built;
+        return built;
+    }
+
+    /// <summary>Сцена, по которой <see cref="Collect"/> ещё не проходил. Если общая уже
+    /// прогрета — пересобирается (ещё одна секунда, зато тест на детерминизм не
+    /// вырождается в сравнение прогретого с прогретым).</summary>
+    private List<KitchenElement> ColdScene()
+    {
+        if (_scene != null && _sceneCollected) DropSharedScene();
+        return SharedScene();
+    }
+
+    private void DropSharedScene()
     {
         ClearScene();
-        _guard?.Restore();
-        FaceCache.Clear();
+        _scene = null;
+        _sceneCollected = false;
+        _registryParts = -1;
+    }
+
+    /// <summary>Тот же <see cref="Collect"/>, но помечающий общую сцену прогретой.</summary>
+    private Snapshot CollectAndMarkWarm(List<KitchenElement> elements)
+    {
+        _sceneCollected = true;
+        return Collect(elements);
     }
 
     private void ClearScene()
@@ -137,8 +228,8 @@ public class ValidationInvariantTests
     [Test]
     public void Validation_ExampleSave_MatchesBaseline()
     {
-        var elements = RestoreScene();
-        var snapshot = Collect(elements);
+        var elements = SharedScene();
+        var snapshot = CollectAndMarkWarm(elements);
 
         var lines = new List<string> { "", "## Счётчики" };
         foreach (var kv in snapshot.Counters)
@@ -170,12 +261,16 @@ public class ValidationInvariantTests
     /// <summary>Тот же результат на той же сцене. Валидатор держит статические
     /// scratch-буферы и словарь broad-phase сетки; если их чистка сломается,
     /// baseline первого теста будет «плавать» между прогонами, а мутационный
-    /// прогон — давать ложные убийства.</summary>
+    /// прогон — давать ложные убийства.
+    ///
+    /// Первый из двух прогонов обязан быть ПЕРВЫМ по этой сцене, иначе тест сравнивает
+    /// прогретое с прогретым: сцену выдаёт <see cref="ColdScene"/>, а не общий
+    /// <see cref="SharedScene"/>.</summary>
     [Test]
     public void Validation_ExampleSave_IsDeterministic()
     {
-        var elements = RestoreScene();
-        var first = Collect(elements);
+        var elements = ColdScene();
+        var first = CollectAndMarkWarm(elements);
         var second = Collect(elements);
 
         CollectionAssert.AreEqual(first.Counters.Values.ToList(), second.Counters.Values.ToList(),

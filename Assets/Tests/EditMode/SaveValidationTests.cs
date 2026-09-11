@@ -91,6 +91,20 @@ public class SaveValidationTests
     private string _reportPath = "";
     private ProjectLoadStateGuard? _guard;
 
+    /// <summary>Общая сцена класса. `SaveLoadManager.RestoreScene` на этой фикстуре стоит
+    /// около секунды, а тесты 1–3 сцену только ЧИТАЮТ — ни один из них ничего не двигает.
+    /// Поэтому она восстанавливается ЛЕНИВО и переиспользуется, а тест 4 (round-trip)
+    /// сбрасывает её и поднимает свою: ему нужна сцена «до» того, как по ней кто-то
+    /// прошёлся. Ленивый сброс вместо порядка тестов выбран сознательно — порядок NUnit
+    /// не гарантирует, а при любом порядке восстановлений выходит ровно три вместо
+    /// прежних пяти.</summary>
+    private List<KitchenElement>? _scene;
+
+    /// <summary>Сколько деталей даёт фикстура. Запоминается при первом восстановлении и
+    /// сверяется при каждом следующем: одна и та же фикстура обязана давать один и тот
+    /// же состав, иначе «общая сцена» превращается в тихо плывущие baseline соседа.</summary>
+    private int _fixtureParts = -1;
+
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
@@ -104,6 +118,8 @@ public class SaveValidationTests
         _reportPath = Path.Combine(dir, ReportFileName);
         // Один отчёт на весь класс: каждый тест дописывает свою секцию.
         File.WriteAllText(_reportPath, $"# Валидация {SaveFileName}\n");
+
+        CaptureGlobals();
     }
 
     /// <summary>Загрузка сейва переписывает ГЛОБАЛЬНОЕ состояние целиком: блок
@@ -113,9 +129,17 @@ public class SaveValidationTests
     /// выставляет их из файла проекта. Точечного сохранения пары флагов мало: в
     /// полном прогоне это роняло SceneVisibilityTests, SettingsPanelUITests, а
     /// тонировка утекала в эталоны SnapshotTests. Снимаем и возвращаем всё
-    /// целиком, как это делает SnapshotTests.</summary>
-    [SetUp]
-    public void SetUp()
+    /// целиком, как это делает SnapshotTests.
+    ///
+    /// Снимок снимается и возвращается ОДИН раз на класс,
+    /// а не на тест. Загрузка проекта тащит с собой не только детали: блок настроек, режим
+    /// ручек, свет, комнаты и планы (<c>SceneRestorer.RestoreProjectState</c>). Сцена
+    /// теперь общая — значит и это состояние общее, и потестовый <c>Restore()</c> сдирал бы
+    /// с живой сцены её собственные настройки: первый тест видел бы файл, второй —
+    /// умолчания, на той же самой геометрии. Контракт <see cref="ProjectLoadStateGuard"/>
+    /// («набор, грузящий проект, возвращает состояние») при этом соблюдён: соседние классы
+    /// получают состояние нетронутым.</summary>
+    private void CaptureGlobals()
     {
         var s = KitchenSettings.Instance;
         Assert.IsNotNull(s);
@@ -125,16 +149,61 @@ public class SaveValidationTests
         s.AutoSave = false;
         s.SpatialGrid = false;
         s.NormalView.edgeOutline = false;
-
-        ClearScene();
     }
 
+    [SetUp]
+    public void SetUp() => AssertSharedSceneIntact();
+
     [TearDown]
-    public void TearDown()
+    public void TearDown() => FaceCache.Clear();
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
     {
         ClearScene();
+        _scene = null;
         _guard?.Restore();
-        FaceCache.Clear();
+        _guard = null;
+    }
+
+    /// <summary>Сторож общей сцены: тест, который что-то в ней сдвинул или удалил, обязан
+    /// быть виден здесь, а не в разъехавшемся baseline у соседа. Зовётся из <c>[SetUp]</c>
+    /// — на границе тестов, чтобы падение указывало на ПРЕДЫДУЩИЙ тест, — и при каждом
+    /// обращении к сцене.</summary>
+    private void AssertSharedSceneIntact()
+    {
+        if (_scene == null) return;
+        Assert.AreEqual(_fixtureParts, PartRegistry.GetAll().Count,
+            "общая сцена поехала между тестами: деталей в реестре стало другое число");
+        Assert.AreEqual(_scene!.Count, _scene!.Count(e => e != null),
+            "в общей сцене появились уничтоженные детали");
+    }
+
+    /// <summary>Сцена фикстуры, общая для читающих тестов.</summary>
+    private List<KitchenElement> SharedScene()
+    {
+        if (_scene != null)
+        {
+            AssertSharedSceneIntact();
+            return _scene!;
+        }
+
+        ClearScene();
+        var built = RestoreScene();
+        int parts = PartRegistry.GetAll().Count;
+        if (_fixtureParts < 0) _fixtureParts = parts;
+        Assert.AreEqual(_fixtureParts, parts,
+            "одна и та же фикстура дала разное число деталей при повторном восстановлении");
+        _scene = built;
+        return built;
+    }
+
+    /// <summary>Забыть общую сцену: следующий обратившийся поднимет её заново. Зовёт
+    /// только тест, которому нужна своя сцена.</summary>
+    private void DropSharedScene()
+    {
+        ClearScene();
+        _scene = null;
     }
 
     private void ClearScene()
@@ -185,7 +254,7 @@ public class SaveValidationTests
     [Test]
     public void Analyze_FrozenPipeGapScene_MatchesKnownIssueBaseline()
     {
-        RestoreScene();
+        SharedScene();
         var issues = SceneAnalyzer.Analyze();
 
         var lines = issues
@@ -232,7 +301,7 @@ public class SaveValidationTests
     [Test]
     public void Geometry_ExampleSave_FacesOnMillimeterGrid()
     {
-        var elements = RestoreScene();
+        var elements = SharedScene();
         const string catHalf = "ровно .5 мм";
         const string catTenth = "дробь на 0.1-мм сетке";
         const string catDirt = "мимо 0.1-мм сетки";
@@ -285,7 +354,7 @@ public class SaveValidationTests
     [Test]
     public void Geometry_FrozenPipeGapScene_SubToleranceJointsMatchBaseline()
     {
-        var elements = RestoreScene();
+        var elements = SharedScene();
         float toMm = 1f / AppConstants.MM_TO_UNITS;
         float deadBand = Tolerance.SnapEpsilon;                            // 0.01 мм
         float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS; // 0.5 мм
@@ -313,10 +382,15 @@ public class SaveValidationTests
     /// <summary>Диагностика, а не требование: сохранение пишет ЛОГИЧЕСКУЮ позу
     /// (Wall.FullPosition, ClosedPosition двери/фасада/ящика — ElementCapture.FromElement),
     /// поэтому у этих типов перезагрузка стирает накопленный дрейф. Тест меряет,
-    /// у каких именно деталей это происходит, и не валится.</summary>
+    /// у каких именно деталей это происходит, и не валится.
+    ///
+    /// Единственный тест класса со СВОЕЙ сценой: он меряет позу «до» и сам же грузит
+    /// сцену второй раз из того, что записал, — общую сцену класса он бы за собой
+    /// оставил перезаписанной.</summary>
     [Test]
     public void RoundTrip_ExampleSave_ReportsPoseDrift()
     {
+        DropSharedScene();
         var before = PositionsByName(RestoreScene());
         string captured = SaveLoadManager.CaptureCurrentJson();
         Assert.IsNotEmpty(captured);
