@@ -60,7 +60,7 @@ namespace KitchenDesigner.Tests.Geometry
         private static bool IsComment(string line)
         {
             var trimmed = line.TrimStart();
-            return trimmed.StartsWith("//") || trimmed.StartsWith("*") || trimmed.StartsWith("/*");
+            return SourceCorpus.StartsAComment(trimmed);
         }
 
         private static List<string> Hits(string pattern, Func<string, bool> exempt)
@@ -76,7 +76,7 @@ namespace KitchenDesigner.Tests.Geometry
                 for (int i = 0; i < lines.Length; i++)
                 {
                     if (IsComment(lines[i])) continue;
-                    if (Regex.IsMatch(lines[i], pattern))
+                    if (SourceCorpus.Rule(pattern).IsMatch(lines[i]))
                         hits.Add(name + ":" + (i + 1) + "\n    " + lines[i].Trim());
                 }
             }

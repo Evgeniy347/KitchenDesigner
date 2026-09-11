@@ -85,6 +85,45 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
+        public void Rule_AnswersExactlyAsTheStaticRegexDid()
+        {
+            const string pattern = @"\bDrawer\b";
+
+            Assert.IsTrue(SourceCorpus.Rule(pattern).IsMatch("var box = new Drawer();"),
+                "скомпилированное выражение не нашло то, что статическое находило");
+            Assert.IsFalse(SourceCorpus.Rule(pattern).IsMatch("var box = new DrawerFacade();"),
+                "скомпилированное выражение обязано держать те же границы слова");
+        }
+
+        [Test]
+        public void Rule_HandsBackOneCompiledExpression_PerPattern()
+        {
+            const string pattern = @"\bPillar\b";
+
+            Assert.AreSame(SourceCorpus.Rule(pattern), SourceCorpus.Rule(pattern),
+                "выражение компилируется заново — ради чего кэш и заводился");
+        }
+
+        [Test]
+        public void StartsAComment_SeesTheThreeOpeners_AndNothingElse()
+        {
+            Assert.IsTrue(SourceCorpus.StartsAComment("// строка"),
+                "в комментарии запрещённое имя законно — им объясняют, почему код его не "
+                + "использует; сторож, переставший узнавать комментарий, краснеет на "
+                + "собственной таблице запретов");
+            Assert.IsTrue(SourceCorpus.StartsAComment("/// сводка"),
+                "сводка тоже комментарий, и в ней запрещённые имена называют чаще всего");
+            Assert.IsTrue(SourceCorpus.StartsAComment("* продолжение блока"),
+                "продолжение блочного комментария начинается со звёздочки");
+            Assert.IsTrue(SourceCorpus.StartsAComment("/* блок"),
+                "открытие блочного комментария");
+            Assert.IsFalse(SourceCorpus.StartsAComment("var url = \"https://example\";"),
+                "код со слэшами внутри строки комментарием не становится");
+            Assert.IsFalse(SourceCorpus.StartsAComment("public void Build()"),
+                "обычная строка кода принята за комментарий — сторож перестал её проверять");
+        }
+
+        [Test]
         public void TheCachedFileList_SurvivesACallerThatOverwritesWhatItGot()
         {
             File.WriteAllText(Path.Combine(_dir, "Only.cs"), "class A {}");

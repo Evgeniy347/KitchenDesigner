@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace KitchenDesigner.Tests.Geometry
 {
@@ -29,6 +31,9 @@ namespace KitchenDesigner.Tests.Geometry
         private static readonly ConcurrentDictionary<string, string> TextByPath =
             new ConcurrentDictionary<string, string>();
 
+        private static readonly ConcurrentDictionary<string, Regex> RulesByPattern =
+            new ConcurrentDictionary<string, Regex>();
+
         private static readonly ConcurrentDictionary<string, string[]> FilesByDir =
             new ConcurrentDictionary<string, string[]>();
 
@@ -40,5 +45,21 @@ namespace KitchenDesigner.Tests.Geometry
             (string[])LinesByPath.GetOrAdd(file, File.ReadAllLines).Clone();
 
         public static string Text(string file) => TextByPath.GetOrAdd(file, File.ReadAllText);
+
+        /// <summary>Скомпилированное выражение по своему шаблону. Статический
+        /// <c>Regex.IsMatch(line, pattern)</c> ходит за разобранным выражением в
+        /// общий кэш на КАЖДЫЙ вызов, а вызовов у сторожа столько, сколько строк в
+        /// дереве исходников, умноженное на число запретов.</summary>
+        public static Regex Rule(string pattern) =>
+            RulesByPattern.GetOrAdd(pattern, p => new Regex(p, RegexOptions.Compiled));
+
+        /// <summary>Строка начинает комментарий. Отдельный метод не ради краткости:
+        /// <c>StartsWith("//")</c> без указания сравнения сверяет строки ПО КУЛЬТУРЕ,
+        /// и на дереве исходников это стоит дороже самого запрета, который проверяют
+        /// следом.</summary>
+        public static bool StartsAComment(string trimmed) =>
+            trimmed.StartsWith("//", StringComparison.Ordinal)
+            || trimmed.StartsWith("*", StringComparison.Ordinal)
+            || trimmed.StartsWith("/*", StringComparison.Ordinal);
     }
 }

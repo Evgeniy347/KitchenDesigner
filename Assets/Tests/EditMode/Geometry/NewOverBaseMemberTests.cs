@@ -59,7 +59,7 @@ namespace KitchenDesigner.Tests.Geometry
                 try { dir = RepoPaths.Subdir(parts); }
                 catch (DirectoryNotFoundException) { continue; }
 
-                foreach (var f in Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories))
+                foreach (var f in SourceCorpus.Files(dir))
                     yield return f;
             }
         }
@@ -90,15 +90,15 @@ namespace KitchenDesigner.Tests.Geometry
                 var name = Path.GetFileName(file) ?? string.Empty;
                 if (IsAllowed(name)) continue;
 
-                var lines = File.ReadAllLines(file);
+                var lines = SourceCorpus.Lines(file);
                 for (int i = 0; i < lines.Length; i++)
                 {
                     var trimmed = lines[i].TrimStart();
-                    if (trimmed.StartsWith("//") || trimmed.StartsWith("*") || trimmed.StartsWith("/*"))
+                    if (SourceCorpus.StartsAComment(trimmed))
                         continue;
 
                     foreach (var (pattern, why) in Banned)
-                        if (Regex.IsMatch(lines[i], pattern))
+                        if (SourceCorpus.Rule(pattern).IsMatch(lines[i]))
                         {
                             violations.Add(name + ":" + (i + 1) + " — " + why + "\n    " + trimmed);
                             break;

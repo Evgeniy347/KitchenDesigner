@@ -113,9 +113,9 @@ namespace KitchenDesigner.Tests.Geometry
                 for (int i = 0; i < lines.Length; i++)
                 {
                     var trimmed = lines[i].TrimStart();
-                    if (trimmed.StartsWith("//") || trimmed.StartsWith("*") || trimmed.StartsWith("/*"))
+                    if (SourceCorpus.StartsAComment(trimmed))
                         continue;
-                    if (Regex.IsMatch(lines[i], pattern))
+                    if (SourceCorpus.Rule(pattern).IsMatch(lines[i]))
                         hits.Add(layer + "/" + Path.GetFileName(file) + ":" + (i + 1) + "\n    " + trimmed);
                 }
             }
