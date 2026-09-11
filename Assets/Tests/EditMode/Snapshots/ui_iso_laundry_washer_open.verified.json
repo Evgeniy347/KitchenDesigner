@@ -1,0 +1,193 @@
+{
+  "root": "UICanvas",
+  "children": [
+    {
+      "type": "Button",
+      "text": "Кухня",
+      "position": [4, 0]
+    },
+    {
+      "type": "Button",
+      "text": "BasePlate",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "IsoWasherOpen",
+      "position": [20, 0]
+    },
+    {
+      "type": "Button",
+      "text": "»",
+      "position": [4, -4]
+    },
+    {
+      "type": "Button",
+      "text": "+ Группа",
+      "position": [-64, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Music",
+      "position": [-8, -6]
+    },
+    {
+      "type": "Button",
+      "text": "SbMini_Детали",
+      "position": [6, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Spec",
+      "position": [8, -6]
+    },
+    {
+      "type": "Label",
+      "text": "Сцена",
+      "position": [14, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Hierarchy",
+      "position": [54, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Errors",
+      "position": [100, -6]
+    },
+    {
+      "type": "Button",
+      "text": "GotoIssue",
+      "position": [146, -6]
+    },
+    {
+      "type": "Button",
+      "text": "ProjectInstructions",
+      "position": [192, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Settings",
+      "position": [254, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Save",
+      "position": [300, -6]
+    },
+    {
+      "type": "Button",
+      "text": "SaveAs",
+      "position": [346, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Load",
+      "position": [392, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Undo",
+      "position": [454, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Redo",
+      "position": [500, -6]
+    },
+    {
+      "type": "Button",
+      "text": "HandleMode",
+      "position": [562, -6]
+    },
+    {
+      "type": "Button",
+      "text": "MeasureToggle",
+      "position": [608, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Eyedropper",
+      "position": [654, -6]
+    },
+    {
+      "type": "Button",
+      "text": "LightsToggle",
+      "position": [716, -6]
+    },
+    {
+      "type": "Button",
+      "text": "DayNight",
+      "position": [762, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Обычный",
+      "position": [824, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Помещение",
+      "position": [930, -6]
+    },
+    {
+      "type": "Button",
+      "text": "Фото",
+      "position": [1056, -6]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Переместить в…", "— вне групп —", "+ Новая группа"],
+      "selected": 0,
+      "position": [0, -38]
+    },
+    {
+      "type": "Button",
+      "text": "SbMini_Фасады",
+      "position": [6, -48]
+    },
+    {
+      "type": "InputField",
+      "label": "HierSearch",
+      "value": "",
+      "interactable": true,
+      "position": [0, -68]
+    },
+    {
+      "type": "Button",
+      "text": "SbMini_Ящики",
+      "position": [6, -90]
+    },
+    {
+      "type": "Button",
+      "text": "SbMini_Мебель",
+      "position": [6, -132]
+    },
+    {
+      "type": "Button",
+      "text": "SbMini_Техника",
+      "position": [6, -174]
+    },
+    {
+      "type": "Button",
+      "text": "SbMini_Сантехника",
+      "position": [6, -216]
+    },
+    {
+      "type": "Button",
+      "text": "SbMini_Помещение",
+      "position": [6, -258]
+    },
+    {
+      "type": "Button",
+      "text": "SbMini_Конструкции",
+      "position": [6, -300]
+    }
+  ]
+}
