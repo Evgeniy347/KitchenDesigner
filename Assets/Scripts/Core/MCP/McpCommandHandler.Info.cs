@@ -200,7 +200,7 @@ namespace KitchenDesigner.Core.MCP
                 RenderTexture.active = prevActive;
                 RenderTexture.ReleaseTemporary(flat);
                 RenderTexture.ReleaseTemporary(rt);
-                Object.Destroy(tex);
+                DestroyNow.The(tex);
             }
             return McpResponse.Result(req.id, new
             {

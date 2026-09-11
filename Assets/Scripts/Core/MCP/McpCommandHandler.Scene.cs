@@ -134,7 +134,7 @@ namespace KitchenDesigner.Core.MCP
             var deleted = new List<object>();
             foreach (var item in resolved)
             {
-                Object.Destroy(item.go);
+                DestroyNow.The(item.go);
                 deleted.Add(new { object_path = item.path, name = item.name });
             }
             return McpResponse.Result(req.id, new { ok = true, deleted });

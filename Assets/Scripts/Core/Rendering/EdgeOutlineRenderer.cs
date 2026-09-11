@@ -65,7 +65,7 @@ namespace KitchenDesigner.Core
 
         private void OnDestroy()
         {
-            if (_lineMaterial != null) Destroy(_lineMaterial);
+            DestroyNow.The(_lineMaterial);
         }
     }
 }

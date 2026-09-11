@@ -180,7 +180,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (_popupOverlay != null)
             {
-                Destroy(_popupOverlay);
+                DestroyNow.The(_popupOverlay);
                 _popupOverlay = null;
             }
         }

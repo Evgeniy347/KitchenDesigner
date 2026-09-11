@@ -22,7 +22,7 @@ namespace KitchenDesigner.Core.Lighting
 
         private void OnDestroy()
         {
-            if (_lineMaterial != null) Destroy(_lineMaterial);
+            DestroyNow.The(_lineMaterial);
         }
 
         private void OnRenderObject()

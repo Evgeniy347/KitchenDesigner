@@ -57,7 +57,7 @@ namespace KitchenDesigner.Core
 
         private void OnDestroy()
         {
-            if (_background != null) Destroy(_background);
+            DestroyNow.The(_background);
         }
     }
 }

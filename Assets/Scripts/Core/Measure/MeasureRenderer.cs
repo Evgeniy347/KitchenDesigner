@@ -27,7 +27,7 @@ namespace KitchenDesigner.Core.Measure
 
         private void OnDestroy()
         {
-            if (_lineMaterial != null) Destroy(_lineMaterial);
+            DestroyNow.The(_lineMaterial);
         }
 
         private void OnRenderObject()

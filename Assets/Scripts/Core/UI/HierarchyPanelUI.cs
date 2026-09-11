@@ -235,7 +235,7 @@ namespace KitchenDesigner.Core.UI
             _fingerprint = ComputeFingerprint();
 
             for (int i = _content.childCount - 1; i >= 0; i--)
-                Destroy(_content.GetChild(i).gameObject);
+                DestroyNow.The(_content.GetChild(i).gameObject);
 
             string filter = _searchField != null ? _searchField.text.Trim() : "";
             if (_searchHint != null) _searchHint.gameObject.SetActive(filter.Length == 0);

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 
 namespace KitchenDesigner.Tests.Geometry
@@ -60,7 +61,30 @@ namespace KitchenDesigner.Tests.Geometry
             "Rendering/CeilingBuilder.cs",
             "Rendering/ScenePreview.cs",
             "Rendering/PhotoQualityController.cs",
+            "Diagnostics/PerfHud.cs",
+            "Lighting/LightPickRenderer.cs",
+            "Measure/MeasureRenderer.cs",
+            "Rendering/EdgeOutlineRenderer.cs",
+            "Rendering/SpatialGridRenderer.cs",
+            "Snap/ResizeHandleManager.cs",
+            "UI/HierarchyPanelUI.cs",
+            "UI/MultiSelectDropdown.cs",
+            "MCP/McpCommandHandler.Info.cs",
+            "MCP/McpCommandHandler.Scene.cs",
         };
+
+        /// <summary>ГОЛЫЙ вызов: <c>Destroy(x)</c>, <c>Object.Destroy(x)</c> или
+        /// <c>UnityEngine.Object.Destroy(x)</c>. <c>DestroyImmediate</c>, <c>OnDestroy</c>
+        /// и вызов метода с тем же именем у собственного объекта (<c>_legSet?.Destroy()</c>)
+        /// сюда не попадают.</summary>
+        private static readonly Regex TheBareCall = new Regex(
+            @"(?<![\w.])Destroy\s*\(|(?<!\w)(?:UnityEngine\.)?Object\.Destroy\s*\(");
+
+        /// <summary>Законные голые вызовы — с причиной у каждого. Сегодня список ПУСТ:
+        /// при сведении P1 №2 ни одного случая, которому ветка «play mode или нет» была
+        /// бы не нужна, не нашлось. Список оставлен, чтобы следующее исключение пришлось
+        /// вносить сюда с причиной, а не расширять шаблон.</summary>
+        private static readonly (string file, string why)[] BareCallsAllowed = { };
 
         private static string ScriptsDir() => RepoPaths.Subdir("Assets", "Scripts");
 
@@ -75,6 +99,22 @@ namespace KitchenDesigner.Tests.Geometry
             var text = File.ReadAllText(file);
             return text.Contains("DestroyImmediate") && text.Contains("Application.isPlaying");
         }
+
+        private static IEnumerable<string> BareCallsIn(string name, IReadOnlyList<string> lines)
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                var line = lines[i];
+                foreach (Match match in TheBareCall.Matches(line))
+                {
+                    if (match.Index >= 5 && line.Substring(match.Index - 5, 5) == "void ") continue;
+                    yield return name + ":" + (i + 1) + "  " + line.Trim();
+                }
+            }
+        }
+
+        private static IEnumerable<string> BareCallsIn(string file) =>
+            BareCallsIn(Path.GetFileName(file)!, File.ReadAllLines(file));
 
         [Test]
         public void NoNewCopy_OfTheDestroyModeDecision_Appears()
@@ -142,6 +182,98 @@ namespace KitchenDesigner.Tests.Geometry
             Assert.IsTrue(CarriesTheCopy(decision!),
                 "признак копии обязан срабатывать хотя бы на образце — на самом "
                 + TheOnlyDecision + ", иначе тест выше зелен на пустом месте");
+        }
+
+        [Test]
+        public void NoBareDestroyCall_RemainsInProduction()
+        {
+            var allowed = BareCallsAllowed.Select(a => a.file).ToArray();
+            var offenders = ProductionFiles()
+                .Where(f => !CarriesTheCopy(f))
+                .Where(f => !allowed.Contains(Path.GetFileName(f)!))
+                .SelectMany(BareCallsIn)
+                .ToArray();
+
+            Assert.IsEmpty(offenders,
+                "ПРАВИЛО: уничтожать в продакшене можно только через " + TheOnlyDecision
+                + " (DestroyNow.The), и привести к нему свой вызов — часть того же "
+                + "изменения, разрешения ни у кого спрашивать не надо. ЧЕМ ПЛАТИМ: "
+                + "голый Destroy вне play mode бросает InvalidOperationException, поэтому "
+                + "ВЕСЬ путь, на котором он стоит, перестаёт быть проверяемым в EditMode "
+                + "— так покадровая цена перетаскивания не стерёглась ничем, а окно "
+                + "«Сцена» и поповер фильтра проверялись только тяжёлым PlayMode. И даже "
+                + "там отложенный Destroy снимает объект лишь в конце кадра, так что "
+                + "перестроение списка успевает удвоиться. ЧТО ДЕЛАТЬ: заменить вызов на "
+                + "DestroyNow.The(x) — он сам проверяет null и сам выбирает "
+                + "Destroy/DestroyImmediate, новых using не нужно; если вызову ветка "
+                + "ДЕЙСТВИТЕЛЬНО не нужна (уничтожение внутри самого решения или вызов "
+                + "своего метода с тем же именем) — внести файл в BareCallsAllowed с "
+                + "причиной и доложить. Голые вызовы: " + string.Join(", ", offenders));
+        }
+
+        [Test]
+        public void EveryAllowedBareCall_StillExists_AndStillNeedsTheException()
+        {
+            foreach (var allowed in BareCallsAllowed)
+            {
+                var file = ProductionFiles()
+                    .FirstOrDefault(f => Path.GetFileName(f) == allowed.file);
+                Assert.IsNotNull(file,
+                    $"{allowed.file} ({allowed.why}): файл исчез, а разрешение осталось — "
+                    + "оно начнёт молча прощать следующий файл с тем же именем");
+                Assert.IsNotEmpty(BareCallsIn(file!).ToArray(),
+                    $"{allowed.file} ({allowed.why}): голого вызова больше нет — убери "
+                    + "строку разрешения тем же изменением");
+            }
+        }
+
+        [Test]
+        public void TheBareCallScan_TellsACallFromADeclarationAndFromANeighboursMethod()
+        {
+            var sample = new[]
+            {
+                "            Destroy(_background);",
+                "            Object.Destroy(tex);",
+                "            UnityEngine.Object.Destroy(go);",
+                "            DestroyNow.The(_popupOverlay);",
+                "            _legSet?.Destroy();",
+                "            private void OnDestroy()",
+                "            private static void Destroy(Transform node)",
+            };
+
+            var found = BareCallsIn("Sample.cs", sample).ToArray();
+
+            Assert.AreEqual(3, found.Length,
+                "шаблон обязан ловить все три написания голого вызова и НИ ОДНОГО из "
+                + "соседних: правило, отобранное по одному написанию, обходится сменой "
+                + "стиля — а лишнее срабатывание на OnDestroy, на объявлении метода или "
+                + "на Destroy() своего же объекта превратило бы стража в помеху. "
+                + "Найдено: " + string.Join(" | ", found));
+            Assert.IsTrue(found[0].Contains("_background"),
+                "первая находка — вызов без квалификатора, унаследованный от компонента");
+            Assert.IsTrue(found[1].Contains("tex"),
+                "вторая — тот же вызов через короткое имя типа");
+            Assert.IsTrue(found[2].Contains("UnityEngine"),
+                "третья — он же полным именем: правило, не покрывающее полное имя, "
+                + "обходится одной строкой и молчит");
+        }
+
+        [Test]
+        public void TheBareCallScan_OnTheDecisionItself_SeesTheCallAndNotItsImmediateTwin()
+        {
+            var decision = ProductionFiles()
+                .Single(f => Path.GetFileName(f) == TheOnlyDecision);
+
+            var found = BareCallsIn(decision).ToArray();
+
+            Assert.AreEqual(1, found.Length,
+                "скан обязан читать НАСТОЯЩИЙ исходник, а не только синтетику: в самом "
+                + TheOnlyDecision + " обе ветки стоят рядом, и находка обязана быть "
+                + "ровно одна — та, что уничтожает в play mode. Ноль означал бы сломанный "
+                + "шаблон, на котором NoBareDestroyCall_RemainsInProduction зеленеет "
+                + "вхолостую; два — что шаблон считает нарушением и вторую ветку, и тогда "
+                + "он покраснеет на каждом сведённом файле. Найдено: "
+                + string.Join(" | ", found));
         }
     }
 }
