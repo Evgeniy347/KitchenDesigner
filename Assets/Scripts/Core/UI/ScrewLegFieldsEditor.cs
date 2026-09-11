@@ -29,10 +29,12 @@ namespace KitchenDesigner.Core.UI
         {
             var visibility = RowVisibility.For(ElementFacet.ScrewLeg);
             _thread = Rows.Dropdown("Резьба", new List<string>(ScrewLegSpec.Threads),
-                OnThreadSelected, visibility, "CtxScrewThread");
-            _threadLength = Rows.NumberField("Длина резьбы", visibility);
+                OnThreadSelected, visibility, "CtxScrewThread", hint: "element.screwLeg.thread");
+            _threadLength = Rows.NumberField("Длина резьбы", visibility,
+                hint: "element.screwLeg.threadLength");
             _baseDiameter = Rows.NumberField("Ø основания", visibility);
-            _baseHeight = Rows.NumberField("Высота основания", visibility);
+            _baseHeight = Rows.NumberField("Высота основания", visibility,
+                hint: "element.screwLeg.baseHeight");
             _hostSection.Build();
         }
 

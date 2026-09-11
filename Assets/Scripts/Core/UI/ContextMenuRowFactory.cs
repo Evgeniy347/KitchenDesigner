@@ -75,11 +75,12 @@ namespace KitchenDesigner.Core.UI
             _registered.Rows;
 
         public TMP_InputField NumberField(string label, RowVisibility visibility, string unit = "мм",
-            string? nodeSuffix = null) =>
-            LabelledNumberField(label, visibility, unit, nodeSuffix).field;
+            string? nodeSuffix = null, string? hint = null) =>
+            LabelledNumberField(label, visibility, unit, nodeSuffix, hint).field;
 
         public (TextMeshProUGUI label, TMP_InputField field) LabelledNumberField(string label,
-            RowVisibility visibility, string unit = "мм", string? nodeSuffix = null)
+            RowVisibility visibility, string unit = "мм", string? nodeSuffix = null,
+            string? hint = null)
         {
             var node = nodeSuffix ?? label;
             var lbl = UIFactory.CreateLabel("L_" + node, _parent, label, 15,
@@ -89,6 +90,7 @@ namespace KitchenDesigner.Core.UI
             _registered.Add(lbl, field);
             visibility.Register(_layout, RowH, RowGap,
                 lbl.rectTransform, field.GetComponent<RectTransform>());
+            if (hint != null) HintBadge.AttachAfterLabel(lbl, hint);
             return (lbl, field);
         }
 
@@ -139,7 +141,7 @@ namespace KitchenDesigner.Core.UI
         }
 
         public TMP_Dropdown Dropdown(string label, List<string> options, Action<int> onChanged,
-            RowVisibility visibility, string? nodeName = null)
+            RowVisibility visibility, string? nodeName = null, string? hint = null)
         {
             var lbl = UIFactory.CreateLabel("L_" + label, _parent, label, 15,
                 new Vector2(DropdownLabelX, 0), new Vector2(DropdownLabelW, LabelH));
@@ -148,6 +150,7 @@ namespace KitchenDesigner.Core.UI
             _registered.Add(lbl, dd);
             visibility.Register(_layout, DropdownH, RowGap,
                 lbl.rectTransform, dd.GetComponent<RectTransform>());
+            if (hint != null) HintBadge.AttachAfterLabel(lbl, hint);
             return dd;
         }
 

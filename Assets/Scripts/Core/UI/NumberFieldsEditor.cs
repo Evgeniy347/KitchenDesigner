@@ -100,7 +100,8 @@ namespace KitchenDesigner.Core.UI
             => Bind(CornerRadiusRow(visibility, node), read, write, "0");
 
         protected TMP_InputField CornerRadiusRow(RowVisibility visibility, string? node = null)
-            => Rows.NumberField("Скругление", visibility, "мм", node);
+            => Rows.NumberField("Скругление", visibility, "мм", node,
+                hint: "element.shape.cornerRadius");
 
         public override IEnumerable<TMP_InputField?> ArithmeticFields()
         {

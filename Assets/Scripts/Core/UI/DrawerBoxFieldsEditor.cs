@@ -37,16 +37,19 @@ namespace KitchenDesigner.Core.UI
 
             var typeNames = new List<string>
                 { "A — борт 86 мм", "B — борт 120 мм", "C — борт 168 мм", "D — борт 200 мм" };
-            _type = Rows.Dropdown("Тип ящика", typeNames, OnTypeChanged, drawerOnly, "CtxDrawerType");
+            _type = Rows.Dropdown("Тип ящика", typeNames, OnTypeChanged, drawerOnly, "CtxDrawerType",
+                hint: "element.drawer.type");
 
             var lengthNames = new List<string>();
             foreach (var l in DrawerConstants.ValidLengths) lengthNames.Add($"{l} мм");
-            _length = Rows.Dropdown("Длина", lengthNames, OnLengthChanged, drawerOnly, "CtxDrawerLen");
+            _length = Rows.Dropdown("Длина", lengthNames, OnLengthChanged, drawerOnly, "CtxDrawerLen",
+                hint: "element.drawer.length");
 
             var colorNames = new List<string> { "Антрацит", "Белый", "Чёрный" };
             _color = Rows.Dropdown("Цвет", colorNames, OnColorChanged, drawerOnly, "CtxDrawerColor");
 
-            _boxWidth = Rows.NumberField("Ширина короба", drawerOnly);
+            _boxWidth = Rows.NumberField("Ширина короба", drawerOnly,
+                hint: "element.drawer.boxWidth");
 
             Rows.WideButton("CtxDrawerDouble", "Двойной ящик", CreatePaired,
                 RowVisibility.For(ElementFacet.Drawer, CanCreateDouble), ActionGap);

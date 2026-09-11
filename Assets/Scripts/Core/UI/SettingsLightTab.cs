@@ -17,19 +17,24 @@ namespace KitchenDesigner.Core.UI
                 s.PhotoAmbientPct, Percent, v => s.PhotoAmbientPct = v, () => s.PhotoAmbientPct);
             AddPhotoSlider(page, ref y, "Отскок от пола", 0, KitchenSettings.PHOTO_FLOOR_BOUNCE_MAX_PCT,
                 s.PhotoFloorBouncePct, Percent, v => s.PhotoFloorBouncePct = v, () => s.PhotoFloorBouncePct);
+            Hint("Отскок от пола", hint: "settings.light.floorBounce");
             AddPhotoSlider(page, ref y, "Потолок сверху", 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
                 s.PhotoAmbientSkyPct, Percent, v => s.PhotoAmbientSkyPct = v, () => s.PhotoAmbientSkyPct);
+            Hint("Потолок сверху", hint: "settings.light.sky");
             AddPhotoSlider(page, ref y, "Стены сбоку", 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
                 s.PhotoAmbientEquatorPct, Percent, v => s.PhotoAmbientEquatorPct = v,
                 () => s.PhotoAmbientEquatorPct);
+            Hint("Стены сбоку", hint: "settings.light.equator");
             AddPhotoSlider(page, ref y, "Предел отскока", 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
                 s.PhotoBounceMaxPct, Percent, v => s.PhotoBounceMaxPct = v, () => s.PhotoBounceMaxPct);
+            Hint("Предел отскока", hint: "settings.light.bounceMax");
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddHeader(page, ref y, "Экспозиция и тон");
             AddPhotoSlider(page, ref y, "Тонемаппинг",
                 KitchenSettings.PHOTO_TONEMAP_NONE, KitchenSettings.PHOTO_TONEMAP_ACES,
                 s.PhotoTonemap, TonemapName, v => s.PhotoTonemap = v, () => s.PhotoTonemap);
+            Hint("Тонемаппинг", hint: "settings.light.tonemap");
             AddPhotoSlider(page, ref y, "Экспозиция",
                 KitchenSettings.PHOTO_EXPOSURE_MIN_PCT, KitchenSettings.PHOTO_EXPOSURE_MAX_PCT,
                 s.PhotoExposurePct, ExposureValue, v => s.PhotoExposurePct = v, () => s.PhotoExposurePct);
@@ -92,5 +97,8 @@ namespace KitchenDesigner.Core.UI
         private static string Meters(int v) => v + " м";
         private static string ExposureValue(int v) =>
             (v / 100f).ToString("+0.0;-0.0;0.0", System.Globalization.CultureInfo.InvariantCulture) + " EV";
+
+        private void Hint(string rowKey, string hint) =>
+            HintBadge.AttachAfterLabel(_rows.RowLabel(rowKey), hint);
     }
 }

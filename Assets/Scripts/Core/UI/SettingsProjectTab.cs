@@ -77,6 +77,7 @@ namespace KitchenDesigner.Core.UI
             y -= SettingsRowFactory.GapPx;
             _rows.AddToggle(page, ref y, "Пространственная сетка", s.SpatialGrid,
                 v => { s.SpatialGrid = v; }, read: () => s.SpatialGrid);
+            Hint("Пространственная сетка", hint: "settings.project.spatialGrid");
 
             _rows.AddInput(page, ref y, "Нижний порог кромки",
                 s.EdgePartialThresholdPct.ToString(),
@@ -89,6 +90,7 @@ namespace KitchenDesigner.Core.UI
                     f.text = s.EdgePartialThresholdPct.ToString();
                 }, s.EdgePartialThresholdPct.ToString(), unit: "%",
                 read: () => s.EdgePartialThresholdPct.ToString());
+            Hint("Нижний порог кромки", hint: "settings.project.edgePartialThreshold");
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddToggle(page, ref y, "Свободное панорамирование", s.CameraPanFree,
@@ -101,5 +103,8 @@ namespace KitchenDesigner.Core.UI
             _rows.SetFieldEnabled(_snapThresholdField, "Порог привязки", s.SnapEnabled);
             _rows.SetFieldEnabled(_autoSaveIntervalField, "Интервал автосохранения", s.AutoSave);
         }
+
+        private void Hint(string rowKey, string hint) =>
+            HintBadge.AttachAfterLabel(_rows.RowLabel(rowKey), hint);
     }
 }
