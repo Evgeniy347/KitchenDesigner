@@ -37,9 +37,13 @@
   до и после и выполнить `SetPropertiesCommand.TryCreate` (образцы —
   `BedFieldsEditor.Commit`, `PipeFieldsEditor.OnSizeSelected`) либо выполнить
   свою команду (`ContextMenuMaterialSection.Choose` → `SetMaterialCommand`,
-  `WallFieldsEditor` → `SetWallLoadBearingCommand`). `ContextMenuUndoTests`
-  перебирает только `TMP_InputField` и этих строк НЕ ВИДИТ; списки и
-  переключатели трубопровода стережёт `PipePanelChoiceUndoGuardTests`.
+  `WallFieldsEditor` → `SetWallLoadBearingCommand`). Готовый помощник для
+  первого случая — `ChoiceRowUndo.Commit`: он снимает «до»/«после» и складывает
+  правку нескольких элементов одного жеста (парный ящик) в ОДИН шаг.
+  `ContextMenuUndoTests` перебирает только `TMP_InputField` и этих строк НЕ
+  ВИДИТ; списки и переключатели у ВСЕХ типов элементов стережёт
+  `PipePanelChoiceUndoGuardTests` — признанный долг перечислен там поимённо в
+  `KnownGaps`, и список обязан убывать.
 - Невалидный ввод: красная рамка поля, значение не откатывается молча.
   Esc — откат, Enter — применение.
 
