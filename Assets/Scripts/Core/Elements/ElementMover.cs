@@ -72,8 +72,7 @@ namespace KitchenDesigner.Core
 
         private void OnDestroy()
         {
-            if (_ghostMaterial != null)
-                Destroy(_ghostMaterial);
+            DestroyNow.The(_ghostMaterial);
         }
 
         private void CreateGhostMaterial()
@@ -678,7 +677,7 @@ namespace KitchenDesigner.Core
             }
 
             foreach (var paint in _dragPaint)
-                if (paint.painted != null) Destroy(paint.painted);
+                DestroyNow.The(paint.painted);
 
             _dragPaint.Clear();
         }
