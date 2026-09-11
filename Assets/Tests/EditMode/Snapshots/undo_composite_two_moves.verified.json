@@ -573,7 +573,9 @@
                     ],
                     "dimsBefore": [],
                     "dimsAfter": [],
-                    "children": []
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
                 },
                 {
                     "type": "move",
@@ -603,9 +605,13 @@
                     ],
                     "dimsBefore": [],
                     "dimsAfter": [],
-                    "children": []
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
                 }
-            ]
+            ],
+            "convertTo": -1,
+            "convertState": []
         }
     ],
     "redoHistory": [],

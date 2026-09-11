@@ -400,7 +400,9 @@
                 600,
                 18
             ],
-            "children": []
+            "children": [],
+            "convertTo": -1,
+            "convertState": []
         }
     ],
     "redoHistory": [],
