@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.UI
             public string drawerColor;
             public int drawerWidth;
             public string drawerSystem;
+            public string laundryKind;
             public PipeNodeKind fittingKind;
             public bool facadeAssembled;
 
@@ -35,6 +36,7 @@ namespace KitchenDesigner.Core.UI
                 drawerColor = DefaultDrawerColor,
                 drawerWidth = DefaultDrawerWidthMM,
                 drawerSystem = DefaultDrawerSystem,
+                laundryKind = LaundryMachineBody.WASHER_TYPE_ID,
                 fittingKind = PipeNodeKind.Coupling,
                 facadeAssembled = false,
             };
@@ -172,6 +174,11 @@ namespace KitchenDesigner.Core.UI
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, "Посудомойка",
                 DishwasherItem("Посудомойка " + DishwasherElement.MODEL));
 
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, "Стиральная",
+                LaundryMachineItem(LaundryMachineKind.Washer));
+            yield return SidebarCatalogRow.PresetRow(SidebarGroupKey.Appliance,
+                LaundryMachineItem(LaundryMachineKind.Dryer));
+
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, "Унитаз",
                 ToiletItem("Унитаз"));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, "Инсталляция",
@@ -303,6 +310,14 @@ namespace KitchenDesigner.Core.UI
             var item = new Item(name, DishwasherElement.ModelDimensionsMM,
                 SidebarItemKind.Dishwasher);
             item.preset.applianceModel = DishwasherElement.MODEL;
+            return item;
+        }
+
+        private static Item LaundryMachineItem(LaundryMachineKind kind)
+        {
+            var item = new Item(LaundryMachineBody.NameOf(kind),
+                LaundryMachineBody.DefaultDimensionsMM, SidebarItemKind.LaundryMachine);
+            item.preset.laundryKind = LaundryMachineBody.TypeId(kind);
             return item;
         }
 

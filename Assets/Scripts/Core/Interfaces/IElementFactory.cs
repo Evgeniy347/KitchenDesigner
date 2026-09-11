@@ -53,6 +53,9 @@ namespace KitchenDesigner.Core
 
 		GameObject CreateOven(string name, Vector3 position);
 		GameObject CreateDishwasher(string name, Vector3 position);
+
+		GameObject CreateLaundryMachine(LaundryMachineKind kind, Vector3Int dimensionsMM,
+			string name, Vector3 position);
 		GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50);
         GameObject CreateDoor(Vector3Int dimensionsMM, string name, Vector3 position,

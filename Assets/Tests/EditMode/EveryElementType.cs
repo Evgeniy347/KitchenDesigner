@@ -57,6 +57,7 @@ public static class EveryElementType
         (typeof(CooktopElement), n => ElementFactory.CreateCooktop(n, Vector3.zero)),
         (typeof(OvenElement), n => ElementFactory.CreateOven(n, Vector3.zero)),
         (typeof(DishwasherElement), n => ElementFactory.CreateDishwasher(n, Vector3.zero)),
+        (typeof(LaundryMachineElement), n => ElementFactory.CreateLaundryMachine(LaundryMachineKind.Dryer, new Vector3Int(607, 853, 563), n, Vector3.zero)),
         (typeof(WindowElement), n => ElementFactory.CreateWindow(new Vector3Int(907, 1213, 103), n, Vector3.zero, GlassTint.Tinted, 63)),
         (typeof(DoorElement), n => ElementFactory.CreateDoor(new Vector3Int(903, 2007, 107), n, Vector3.zero, DoorSashType.Blind)),
     };

@@ -104,6 +104,7 @@ namespace KitchenDesigner.Core.MCP
 		public CooktopInfo? cooktop;
 		public OvenInfo? oven;
 		public DishwasherInfo? dishwasher;
+		public LaundryMachineInfo? laundryMachine;
 		public WindowInfo? window;
 		public DoorInfo? door;
     }
@@ -558,6 +559,14 @@ namespace KitchenDesigner.Core.MCP
 		public int baseHeightMM;
 		public int baseSetbackMM;
 		public float facadeMountGapMM;
+		public bool isOpen;
+	}
+
+	[Serializable]
+	public class LaundryMachineInfo
+	{
+		public string kind = "washer";
+		public string displayName = string.Empty;
 		public bool isOpen;
 	}
 

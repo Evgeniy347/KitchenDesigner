@@ -16,6 +16,9 @@ namespace KitchenDesigner.Core
         private static Material? _dishwasherTank;
         private static Material? _dishwasherDoor;
         private static Material? _dishwasherPanel;
+        private static Material? _laundryBody;
+        private static Material? _laundryGlass;
+        private static Material? _laundryPanel;
 
         public static Material CooktopGlass =>
             Cached(ref _cooktopGlass, new Color(0.08f, 0.08f, 0.08f, 1f), 0.05f, 0.92f);
@@ -52,6 +55,15 @@ namespace KitchenDesigner.Core
 
         public static Material DishwasherPanel =>
             Cached(ref _dishwasherPanel, new Color(0.03f, 0.03f, 0.035f, 1f), 0.05f, 0.7f);
+
+        public static Material LaundryBody =>
+            Cached(ref _laundryBody, new Color(0.93f, 0.93f, 0.94f, 1f), 0.05f, 0.45f);
+
+        public static Material LaundryGlass =>
+            Cached(ref _laundryGlass, new Color(0.10f, 0.12f, 0.14f, 1f), 0.05f, 0.95f);
+
+        public static Material LaundryPanel =>
+            Cached(ref _laundryPanel, new Color(0.20f, 0.21f, 0.23f, 1f), 0.1f, 0.6f);
 
         internal static Material Cached(ref Material? slot, Color color, float metallic, float smoothness)
         {

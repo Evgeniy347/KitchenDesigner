@@ -95,6 +95,11 @@ namespace KitchenDesigner.Core
              (factory, source, pos) => factory.CreateDishwasher(source.PartName, pos),
              CopyMaterial),
 
+            (el => el is LaundryMachineElement,
+             (factory, source, pos) => factory.CreateLaundryMachine(
+                 ((LaundryMachineElement)source).Kind, source.DimensionsMM, source.PartName, pos),
+             CopyMaterial),
+
             (el => el is PillarElement,
              (factory, source, pos) =>
                  factory.CreatePillar(((PillarElement)source).MidHeightMM, source.PartName, pos,

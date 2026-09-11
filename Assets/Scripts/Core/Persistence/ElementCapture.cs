@@ -205,6 +205,12 @@ namespace KitchenDesigner.Core
 				d.dishwasherAttachedFacadeName = dishwasherEl.AttachedFacadeName ?? "";
 				d.doorOpen = dishwasherEl.IsOpen;
 			}
+			d.isLaundryMachine = element is LaundryMachineElement;
+			if (element is LaundryMachineElement laundryEl)
+			{
+				d.laundryMachineKind = (int)laundryEl.Kind;
+				d.doorOpen = laundryEl.IsOpen;
+			}
 			d.isFloor = element is FloorElement;
 			if (element is FloorElement floor && floor.PolygonLocalMm.Count >= 3)
 			{

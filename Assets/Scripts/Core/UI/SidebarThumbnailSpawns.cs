@@ -38,6 +38,11 @@ namespace KitchenDesigner.Core.UI
                 case SidebarItemKind.Dishwasher:
                     _spawned = ElementFactory.CreateDishwasher(item.name, Vector3.zero);
                     break;
+                case SidebarItemKind.LaundryMachine:
+                    _spawned = ElementFactory.CreateLaundryMachine(
+                        SidebarPresetResolution.LaundryKindOf(item.preset.laundryKind),
+                        item.dims, item.name, Vector3.zero);
+                    break;
                 case SidebarItemKind.Drawer:
                 {
                     var type = SidebarPresetResolution.DrawerTypeOf(item.preset.drawerType);

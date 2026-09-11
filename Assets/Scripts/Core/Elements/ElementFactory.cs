@@ -141,6 +141,10 @@ namespace KitchenDesigner.Core
 		public static GameObject CreateDishwasher(string name, Vector3 position) =>
 			Instance.CreateDishwasher(name, position);
 
+		public static GameObject CreateLaundryMachine(LaundryMachineKind kind,
+			Vector3Int dimensionsMM, string name, Vector3 position) =>
+			Instance.CreateLaundryMachine(kind, dimensionsMM, name, position);
+
 		public static GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50) =>
             Instance.CreateWindow(dimensionsMM, name, position, tint, sillProtrusionMM);

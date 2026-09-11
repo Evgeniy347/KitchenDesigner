@@ -60,6 +60,7 @@ namespace KitchenDesigner.Core.UI
         private readonly ChairFieldsEditor _chairFields;
         private readonly SofaFieldsEditor _sofaFields;
         private readonly BedFieldsEditor _bedFields;
+        private readonly LaundryMachineFieldsEditor _laundryFields;
         private readonly PouffeFieldsEditor _pouffeFields;
         private readonly ToiletFieldsEditor _toiletFields;
         private readonly BathtubFieldsEditor _bathtubFields;
@@ -98,6 +99,7 @@ namespace KitchenDesigner.Core.UI
             _chairFields = new ChairFieldsEditor(this);
             _sofaFields = new SofaFieldsEditor(this);
             _bedFields = new BedFieldsEditor(this);
+            _laundryFields = new LaundryMachineFieldsEditor(this);
             _pouffeFields = new PouffeFieldsEditor(this);
             _toiletFields = new ToiletFieldsEditor(this);
             _bathtubFields = new BathtubFieldsEditor(this);
@@ -113,7 +115,7 @@ namespace KitchenDesigner.Core.UI
                 _radialFields, _cooktopFields, _drawerFields, _pillarFields, _screwLegFields,
                 _pipeFields, _pipeFittingFields,
                 _tableFields, _stoolFields, _chairFields, _sofaFields, _bedFields,
-                _pouffeFields, _toiletFields, _bathtubFields, _bathMixerFields,
+                _pouffeFields, _laundryFields, _toiletFields, _bathtubFields, _bathMixerFields,
                 _showerColumnFields, _wallDeviceFields, _openingFields, _wallFields, _lights,
                 _assembledFields, _facadeFields,
             };

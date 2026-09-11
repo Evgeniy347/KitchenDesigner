@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.UI
         Cooktop,
         Oven,
         Dishwasher,
+        LaundryMachine,
         Toilet,
         WallHungToilet,
         Bathtub,

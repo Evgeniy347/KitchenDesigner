@@ -10,28 +10,46 @@ namespace KitchenDesigner.Core
         public const float OPEN_SECONDS = AppConstants.OPENING_ANIM_DURATION_SECONDS;
         public const float KEEP_AWAKE_MARGIN_SECONDS = AppConstants.OPENING_KEEP_AWAKE_MARGIN_SECONDS;
 
+        public static readonly Vector3 DROP_HINGE_AXIS = Vector3.right;
+
         private readonly ApplianceBoxes _boxes;
         private readonly int _firstChild;
         private readonly Func<(Vector3 centerMM, Vector3 sizeMM)[]> _closedParts;
         private readonly Func<Vector3> _hingeLocalMM;
+        private readonly Vector3 _hingeAxis;
 
         private float _progress;
 
         public DropDoor(ApplianceBoxes boxes, int firstChild,
             Func<(Vector3 centerMM, Vector3 sizeMM)[]> closedParts, Func<Vector3> hingeLocalMM)
+            : this(boxes, firstChild, closedParts, hingeLocalMM, DROP_HINGE_AXIS)
+        {
+        }
+
+        public DropDoor(ApplianceBoxes boxes, int firstChild,
+            Func<(Vector3 centerMM, Vector3 sizeMM)[]> closedParts, Func<Vector3> hingeLocalMM,
+            Vector3 hingeAxis)
         {
             _boxes = boxes;
             _firstChild = firstChild;
             _closedParts = closedParts;
             _hingeLocalMM = hingeLocalMM;
+            _hingeAxis = hingeAxis;
         }
 
         public float Progress => _progress;
 
+        public Vector3 HingeAxis => _hingeAxis;
+
         public bool IsAnimatingTowards(bool open) => !Mathf.Approximately(_progress, open ? 1f : 0f);
 
+        public static Quaternion RotationAbout(Vector3 hingeAxis, float progress) =>
+            Quaternion.AngleAxis(OPEN_ANGLE_DEG * Mathf.Clamp01(progress), hingeAxis);
+
         public static Quaternion LocalRotation(float progress) =>
-            Quaternion.AngleAxis(OPEN_ANGLE_DEG * Mathf.Clamp01(progress), Vector3.right);
+            RotationAbout(DROP_HINGE_AXIS, progress);
+
+        public Quaternion LocalRotationAt(float progress) => RotationAbout(_hingeAxis, progress);
 
         public bool ForceClose()
         {
@@ -58,7 +76,7 @@ namespace KitchenDesigner.Core
 
         public Quaternion ApplyPose()
         {
-            var rotation = LocalRotation(_progress);
+            var rotation = LocalRotationAt(_progress);
             var parts = _closedParts();
             var hingeMM = _hingeLocalMM();
 
@@ -77,7 +95,7 @@ namespace KitchenDesigner.Core
         {
             float toU = AppConstants.MM_TO_UNITS;
             var hinge = _hingeLocalMM() * toU;
-            var localRot = LocalRotation(progress);
+            var localRot = LocalRotationAt(progress);
             var parts = _closedParts();
 
             for (int i = 0; i < parts.Length; i++)

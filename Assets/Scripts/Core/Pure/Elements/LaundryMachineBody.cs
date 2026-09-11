@@ -34,6 +34,21 @@ namespace KitchenDesigner.Core
         public const string WasherName = "Стиральная машина";
         public const string DryerName = "Сушильная машина";
 
+        public const string WASHER_TYPE_ID = "washing_machine";
+        public const string DRYER_TYPE_ID = "dryer";
+
+        public static string TypeId(LaundryMachineKind kind) =>
+            kind == LaundryMachineKind.Dryer ? DRYER_TYPE_ID : WASHER_TYPE_ID;
+
+        public static bool TryKindOf(string typeId, out LaundryMachineKind kind)
+        {
+            kind = LaundryMachineKind.Washer;
+            if (typeId == WASHER_TYPE_ID) return true;
+            if (typeId != DRYER_TYPE_ID) return false;
+            kind = LaundryMachineKind.Dryer;
+            return true;
+        }
+
         public static string NameOf(LaundryMachineKind kind) =>
             kind == LaundryMachineKind.Dryer ? DryerName : WasherName;
 

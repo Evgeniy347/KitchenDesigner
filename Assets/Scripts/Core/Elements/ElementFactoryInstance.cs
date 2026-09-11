@@ -650,6 +650,21 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, dishwasher);
         }
 
+        public GameObject CreateLaundryMachine(LaundryMachineKind kind, Vector3Int dimensionsMM,
+            string name, Vector3 position)
+        {
+            var go = ElementRoot.NewEmpty(name, LaundryMachineBody.NameOf(kind), position);
+
+            var machine = go.AddComponent<LaundryMachineElement>();
+            machine.PartName = go.name;
+            machine.Kind = kind;
+            machine.DimensionsMM = LaundryMachineBody.ClampMM(dimensionsMM);
+            machine.Movable = true;
+            machine.ApplyDimensions();
+
+            return ElementRoot.Publish(go, machine);
+        }
+
         public GameObject CreateWindow(Vector3Int dimensionsMM, string name, Vector3 position,
             GlassTint tint = GlassTint.Clear, int sillProtrusionMM = 50)
         {

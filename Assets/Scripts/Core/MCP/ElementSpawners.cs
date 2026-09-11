@@ -163,6 +163,14 @@ namespace KitchenDesigner.Core.MCP
 
                 ["dishwasher"] = (item, pos) => ElementFactory.CreateDishwasher(item.name, pos),
 
+                [LaundryMachineBody.WASHER_TYPE_ID] = (item, pos) =>
+                    ElementFactory.CreateLaundryMachine(LaundryMachineKind.Washer,
+                        LaundryDims(item), item.name, pos),
+
+                [LaundryMachineBody.DRYER_TYPE_ID] = (item, pos) =>
+                    ElementFactory.CreateLaundryMachine(LaundryMachineKind.Dryer,
+                        LaundryDims(item), item.name, pos),
+
                 ["window"] = (item, pos) => ElementFactory.CreateWindow(
                     new Vector3Int(item.width ?? WINDOW_DEFAULT_WIDTH_MM,
                         item.height ?? WINDOW_DEFAULT_HEIGHT_MM,
@@ -234,6 +242,11 @@ namespace KitchenDesigner.Core.MCP
             item.width ?? BedElement.DefaultWidthMM,
             item.height ?? BedElement.DefaultHeightMM,
             item.depth ?? BedElement.DefaultDepthMM);
+
+        private static Vector3Int LaundryDims(CreateItem item) => new Vector3Int(
+            item.width ?? LaundryMachineBody.DEFAULT_WIDTH_MM,
+            item.height ?? LaundryMachineBody.DEFAULT_HEIGHT_MM,
+            item.depth ?? LaundryMachineBody.DEFAULT_DEPTH_MM);
 
         private static Vector3Int TableDims(CreateItem item) => new Vector3Int(
             item.width ?? TABLE_DEFAULT_WIDTH_MM,

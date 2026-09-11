@@ -367,6 +367,13 @@ namespace KitchenDesigner.Core.MCP
                 isOpen = dishwasher.IsOpen
             }),
 
+            For<LaundryMachineElement>((info, machine) => info.laundryMachine = new LaundryMachineInfo
+            {
+                kind = McpWireEnums.Name(machine.Kind),
+                displayName = machine.DisplayTypeName,
+                isOpen = machine.IsOpen
+            }),
+
             For<WindowElement>((info, window) => info.window = new WindowInfo
             {
                 tint = McpWireEnums.Name(window.Tint),

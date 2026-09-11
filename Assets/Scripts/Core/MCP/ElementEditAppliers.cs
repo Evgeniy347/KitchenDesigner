@@ -189,6 +189,12 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (op.is_open.HasValue) oven.SetOpen(op.is_open.Value);
             }),
+            For<LaundryMachineElement>((op, machine) =>
+            {
+                if (op.laundry_kind != null)
+                    machine.Kind = McpWireEnums.ParseLaundryKind(op.laundry_kind);
+                if (op.is_open.HasValue) machine.SetOpen(op.is_open.Value);
+            }),
             (op, el) =>
             {
                 var wall = el.GetComponent<Wall>();

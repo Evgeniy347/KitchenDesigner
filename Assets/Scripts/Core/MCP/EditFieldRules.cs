@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core.MCP
     {
         internal static bool AcceptsOpenFlag(KitchenElement el) =>
             el is FacadeElement || el is WindowElement || el is DoorElement
-            || el is OvenElement || el is DishwasherElement;
+            || el is OvenElement || el is DishwasherElement || el is LaundryMachineElement;
 
         internal static bool AcceptsHingeMode(KitchenElement el) =>
             el is FacadeElement || el is WindowElement || el is DoorElement;
@@ -118,6 +118,8 @@ namespace KitchenDesigner.Core.MCP
             Unsupported("is_upper", o => o.is_upper.HasValue, IsDrawer),
             Unsupported("paired_drawer_name", o => o.paired_drawer_name != null, IsDrawer),
 
+            Unsupported("laundry_kind", o => o.laundry_kind != null, IsLaundryMachine),
+
             Unsupported("attached_facade_name", o => o.attached_facade_name != null, el => el is IFacadeHost),
 
             RejectBadAttachment,
@@ -158,6 +160,8 @@ namespace KitchenDesigner.Core.MCP
         };
 
         private static bool IsDrawer(KitchenElement el) => el is DrawerElement;
+
+        private static bool IsLaundryMachine(KitchenElement el) => el is LaundryMachineElement;
 
         private static Check Unsupported(
             string field, Func<EditOp, bool> isSet, Func<KitchenElement, bool> acceptedBy)

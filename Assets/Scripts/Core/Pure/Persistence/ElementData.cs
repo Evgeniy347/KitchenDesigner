@@ -189,6 +189,8 @@ namespace KitchenDesigner.Core
 		public bool isOven = false;
 		public bool isDishwasher = false;
 		public string dishwasherAttachedFacadeName = "";
+		public bool isLaundryMachine = false;
+		public int laundryMachineKind = (int)LaundryMachineKind.Washer;
 		public GrooveEntry[] grooves = System.Array.Empty<GrooveEntry>();
 		public TextureOverlayEntry[] textureOverlays = System.Array.Empty<TextureOverlayEntry>();
 		public bool edgeBanding = true;

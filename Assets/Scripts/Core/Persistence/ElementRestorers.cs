@@ -118,6 +118,14 @@ namespace KitchenDesigner.Core
                  if (d.doorOpen) dishwasher.SetOpen(true);
              }),
 
+            (d => d.isLaundryMachine,
+             (factory, d) => factory.CreateLaundryMachine(
+                 (LaundryMachineKind)d.laundryMachineKind, d.Dimensions, d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is LaundryMachineElement machine && d.doorOpen) machine.SetOpen(true);
+             }),
+
             (d => d.isPillar,
              (factory, d) => factory.CreatePillar(d.midHeightMM, d.name, d.Position, d.Dimensions.x),
              null),

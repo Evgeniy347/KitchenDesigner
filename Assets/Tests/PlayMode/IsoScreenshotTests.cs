@@ -2139,6 +2139,40 @@ public class IsoScreenshotTests : ElementFrameTests
     }
 
     [UnityTest]
+    public IEnumerator IsoLaundryMachine_WasherClosed()
+    {
+        yield return RenderLaundryMachine(LaundryMachineKind.Washer, false,
+            "IsoWasher", "iso_laundry_washer.png");
+    }
+
+    [UnityTest]
+    public IEnumerator IsoLaundryMachine_DryerDoorOpen()
+    {
+        yield return RenderLaundryMachine(LaundryMachineKind.Dryer, true,
+            "IsoDryer", "iso_laundry_dryer_open.png");
+    }
+
+    private IEnumerator RenderLaundryMachine(
+        LaundryMachineKind kind, bool open, string name, string png)
+    {
+        var dims = LaundryMachineBody.DefaultDimensionsMM;
+        float half = dims.y * 0.5f * AppConstants.MM_TO_UNITS;
+        var go = ElementFactory.CreateLaundryMachine(kind, dims, name, new Vector3(0f, half, 0f));
+        _spawned.Add(go);
+
+        var machine = go.GetComponent<LaundryMachineElement>();
+        Assert.IsNotNull(machine, "машина обязана быть машиной, а не доской");
+        if (open)
+        {
+            machine!.SetOpen(true);
+            machine!.StepDoor(DropDoor.OPEN_SECONDS);
+        }
+        yield return null;
+
+        yield return RenderElementIso(go, png, 3f);
+    }
+
+    [UnityTest]
     public IEnumerator IsoDishwasher_Bosch()
     {
         float half = DishwasherElement.ModelDimensionsMM.y * 0.5f * AppConstants.MM_TO_UNITS;

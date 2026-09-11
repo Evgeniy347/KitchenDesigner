@@ -20,6 +20,9 @@ namespace KitchenDesigner.Core.UI
         public static DrawerSystem DrawerSystemOf(string drawerSystem) =>
             drawerSystem == MoventoDrawerSystem ? DrawerSystem.Movento : DrawerSystem.Gtv;
 
+        public static LaundryMachineKind LaundryKindOf(string typeId) =>
+            LaundryMachineBody.TryKindOf(typeId, out var kind) ? kind : LaundryMachineKind.Washer;
+
         public static DrawerType DrawerTypeOf(string drawerType) => drawerType switch
         {
             "B" => DrawerType.B,

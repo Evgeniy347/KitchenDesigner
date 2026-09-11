@@ -379,6 +379,11 @@ namespace KitchenDesigner.Core.MCP.Contract
             "movento (wooden box exploded into separate spec parts). Omit to keep.",
             Enum = new[] { "gtv", "movento" })]
         public string? drawer_system;
+        [McpParam("Laundry machine only: which of the two it is. The washer and the dryer are ONE "
+            + "element with two names — switching this renames it and changes nothing else. "
+            + "Omit to keep.",
+            Enum = new[] { "washer", "dryer" })]
+        public string? laundry_kind;
         [McpParam("Drawer only: side height type — A=86, B=120, C=168, D=200 mm. Omit to keep.",
             Enum = new[] { "A", "B", "C", "D" })]
         public string? drawer_type;
@@ -484,7 +489,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "pipe", "pipe_elbow", "pipe_coupling", "pipe_tee", "pipe_cap", "pipe_supply", "pipe_return", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch" })]
+            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "pipe", "pipe_elbow", "pipe_coupling", "pipe_tee", "pipe_cap", "pipe_supply", "pipe_return", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch", "washing_machine", "dryer" })]
         public string? type;
 
         [McpParam("X of the MINIMUM world corner in MM — the same number get returns in anchor[0].")] public float anchor_x_mm;

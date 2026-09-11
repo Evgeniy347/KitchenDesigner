@@ -105,6 +105,15 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
+        public static LaundryMachineKind ParseLaundryKind(string s)
+        {
+            switch ((s ?? "").Trim().ToLowerInvariant())
+            {
+                case "dryer": return LaundryMachineKind.Dryer;
+                default: return LaundryMachineKind.Washer;
+            }
+        }
+
         public static GlassTint ParseGlassTint(string s)
         {
             switch ((s ?? "").Trim().ToLowerInvariant())
@@ -146,6 +155,9 @@ namespace KitchenDesigner.Core.MCP
         };
 
         public static string Name(DrawerSystem s) => s == DrawerSystem.Movento ? "movento" : "gtv";
+
+        public static string Name(LaundryMachineKind k) =>
+            k == LaundryMachineKind.Dryer ? "dryer" : "washer";
 
         public static string Name(DrawerColor c) => c switch
         {
