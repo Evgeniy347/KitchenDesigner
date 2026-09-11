@@ -134,7 +134,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (!(Host.Target is ScrewLegElement leg)) return;
             if (index < 0 || index >= ScrewLegSpec.Threads.Length) return;
-            leg.Thread = ScrewLegSpec.Threads[index];
+            ChoiceRowUndo.Commit(leg, () => leg.Thread = ScrewLegSpec.Threads[index]);
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.RefreshHighlight(leg);
         }
