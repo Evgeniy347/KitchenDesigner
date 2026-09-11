@@ -59,12 +59,39 @@ public class DragValidationIsIncrementalTests : ElementTestBase
             new Vector3(0.6f, 0.36f, 0f));
         MakePrimitiveElement("Shelf", new Vector3Int(564, 18, 560),
             new Vector3(0.3f, 0.4f, 0f));
-        MakePrimitiveElement("Floor", new Vector3Int(4000, 18, 4000),
-            new Vector3(0f, -0.009f, 0f));
+        MakeFloorAnchor();
+        AssertTheSceneHasAnAnchor();
 
         _mover!.BeginDragOn(dragged);
         _mover.SaveDragMaterial(dragged);
         return dragged;
+    }
+
+    /// <summary>Пол — не «деталь, названная Floor». Роль решается в одном месте,
+    /// <c>ValidationSnapshot.KindOf</c>, и полом там считается носитель
+    /// <see cref="BasePlate"/> либо <c>FloorElement</c>. Примитив с подходящим
+    /// именем якорем не является.</summary>
+    private KitchenElement MakeFloorAnchor()
+    {
+        var floor = MakePrimitiveElement("Floor", new Vector3Int(4000, 18, 4000),
+            new Vector3(0f, -0.009f, 0f));
+        floor.gameObject.AddComponent<BasePlate>();
+        return floor;
+    }
+
+    /// <summary>Страж стенда, а не продукта, и он обязан стоять до первого
+    /// замера. Сцена без якоря — законная причина ОТКАЗАТЬ в заморозке: там
+    /// корень обхода связности зависит от порядка списка (см.
+    /// <c>ValidationLocalityTests.SceneWithoutAnchors_...</c>). Без этой проверки
+    /// «заморозок ноль» читается как «шов не подключён», хотя шов подключён и
+    /// отказывает правильно — именно так этот файл и покраснел в первый раз.</summary>
+    private static void AssertTheSceneHasAnAnchor()
+    {
+        var snapshots = new List<ValidationElement>();
+        ValidationSnapshot.Build(PartRegistry.GetAll(), snapshots);
+        Assert.IsTrue(ValidationCore.HasAnchor(snapshots),
+            "в сцене стенда обязан быть якорь: без него заморозка отказывает по СВОЕЙ "
+            + "причине, и тесты ниже мерили бы не шов, а этот отказ");
     }
 
     /// <summary>Ответ, который приложение отдаёт подсветке, против независимой
@@ -100,11 +127,15 @@ public class DragValidationIsIncrementalTests : ElementTestBase
     {
         var dragged = StartDragging();
         int before = ConstraintValidator.GestureFreezes;
+        ConstraintValidator.TakeSceneValidations();
 
         _mover!.DragFrameOn(dragged.transform.position + new Vector3(0.05f, 0f, 0f));
         SceneChangeTracker.Poll();
         _mover.DragFrameOn(dragged.transform.position + new Vector3(0.05f, 0f, 0f));
 
+        Assert.GreaterOrEqual(ConstraintValidator.TakeSceneValidations(), 1,
+            "кадр жеста обязан вообще дойти до валидации сцены — если нет, то ноль заморозок "
+            + "ниже означает не «шов не подключён», а «кадр сюда не заходил»");
         Assert.Greater(ConstraintValidator.GestureFreezes, before,
             "кадр жеста обязан заморозить сцену — иначе инкрементальный проход не подключён "
             + "и каждый кадр по-прежнему стоит полную валидацию");
