@@ -14,11 +14,11 @@ namespace KitchenDesigner.Core
         public const int DEFAULT_HEIGHT_MM = 850;
         public const int DEFAULT_DEPTH_MM = 600;
 
-        public const int WASHER_HATCH_DIAMETER_MM = 320;
-        public const int DRYER_HATCH_DIAMETER_MM = 360;
+        public const float WASHER_HATCH_WIDTH_FRACTION = 0.5f;
+        public const float DRYER_HATCH_WIDTH_FRACTION = 0.8f;
 
         public const int HATCH_RIM_WIDTH_MM = 25;
-        public const int HATCH_MARGIN_MM = 60;
+        public const int HATCH_MIN_SURROUND_MM = 20;
         public const int HATCH_THICKNESS_MM = 18;
         public const int GLASS_THICKNESS_MM = 10;
         public const int GLASS_PROUD_MM = 6;
@@ -35,8 +35,9 @@ namespace KitchenDesigner.Core
 
         public const int MIN_HATCH_DIAMETER_MM = 2 * HATCH_RIM_WIDTH_MM + 2;
 
-        public const int MIN_WIDTH_MM = MIN_HATCH_DIAMETER_MM + 2 * HATCH_MARGIN_MM;
-        public const int MIN_HEIGHT_MM = CONTROL_PANEL_HEIGHT_MM + MIN_WIDTH_MM;
+        public const int MIN_WIDTH_MM = 2 * MIN_HATCH_DIAMETER_MM + 2 * HATCH_MIN_SURROUND_MM;
+        public const int MIN_HEIGHT_MM =
+            CONTROL_PANEL_HEIGHT_MM + 2 * HATCH_MIN_SURROUND_MM + MIN_HATCH_DIAMETER_MM;
         public const int MIN_DEPTH_MM = 60;
 
         public const int IdxShell = 0;
@@ -71,8 +72,13 @@ namespace KitchenDesigner.Core
         public static string NameOf(LaundryMachineKind kind) =>
             kind == LaundryMachineKind.Dryer ? DryerName : WasherName;
 
-        public static int NominalHatchDiameterMM(LaundryMachineKind kind) =>
-            kind == LaundryMachineKind.Dryer ? DRYER_HATCH_DIAMETER_MM : WASHER_HATCH_DIAMETER_MM;
+        public static float HatchWidthFraction(LaundryMachineKind kind) =>
+            kind == LaundryMachineKind.Dryer
+                ? DRYER_HATCH_WIDTH_FRACTION
+                : WASHER_HATCH_WIDTH_FRACTION;
+
+        public static float NominalHatchDiameterMM(LaundryMachineKind kind,
+            Vector3Int dimensionsMM) => ClampMM(dimensionsMM).x * HatchWidthFraction(kind);
 
         public static Vector3Int DefaultDimensionsMM =>
             new Vector3Int(DEFAULT_WIDTH_MM, DEFAULT_HEIGHT_MM, DEFAULT_DEPTH_MM);
@@ -96,11 +102,15 @@ namespace KitchenDesigner.Core
             _ => "HatchGlass",
         };
 
+        public static float FrontOpeningHeightMM(Vector3Int dimensionsMM) =>
+            ClampMM(dimensionsMM).y - CONTROL_PANEL_HEIGHT_MM;
+
         public static float HatchDiameterMM(LaundryMachineKind kind, Vector3Int dimensionsMM)
         {
             var d = ClampMM(dimensionsMM);
-            float roomAcross = Mathf.Min(d.x, d.y - CONTROL_PANEL_HEIGHT_MM) - 2 * HATCH_MARGIN_MM;
-            return Mathf.Min(NominalHatchDiameterMM(kind), roomAcross);
+            float roomAcross = Mathf.Min(d.x, FrontOpeningHeightMM(d))
+                - 2 * HATCH_MIN_SURROUND_MM;
+            return Mathf.Min(NominalHatchDiameterMM(kind, d), roomAcross);
         }
 
         public static float GlassDiameterMM(LaundryMachineKind kind, Vector3Int dimensionsMM) =>
@@ -122,6 +132,13 @@ namespace KitchenDesigner.Core
             return new Vector3(d.x, d.y, d.z - FRONT_FACE_SETBACK_MM);
         }
 
+        public static Vector3 ShellCenterMM(Vector3Int dimensionsMM) =>
+            new Vector3(0f, 0f, -FRONT_FACE_SETBACK_MM * 0.5f);
+
+        public static Vector2 BoreCenterInShellMM(Vector3Int dimensionsMM) =>
+            new Vector2(0f - ShellCenterMM(dimensionsMM).x,
+                HatchCenterYMM - ShellCenterMM(dimensionsMM).y);
+
         public static (Vector3 centerMM, Vector3 sizeMM)[] BodyPartsMM(
             LaundryMachineKind kind, Vector3Int dimensionsMM)
         {
@@ -135,7 +152,7 @@ namespace KitchenDesigner.Core
 
             return new[]
             {
-                (new Vector3(0f, 0f, -FRONT_FACE_SETBACK_MM * 0.5f), ShellSizeMM(d)),
+                (ShellCenterMM(d), ShellSizeMM(d)),
 
                 (new Vector3(0f, halfH - CONTROL_PANEL_HEIGHT_MM * 0.5f,
                      frontFaceZ + CONTROL_PANEL_THICKNESS_MM * 0.5f),

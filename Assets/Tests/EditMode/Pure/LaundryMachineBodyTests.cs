@@ -6,11 +6,11 @@ using KitchenDesigner.Core;
 /// два — приём тот же, что у ящика Movento (<see cref="DrawerSystem"/>): вид
 /// приезжает перечислением, а не вторым классом.
 ///
-/// Общего у двух машин всё, кроме ОДНОГО числа — диаметра люка: у сушильной он
-/// больше. Числа названы (<c>WASHER_HATCH_DIAMETER_MM</c>,
-/// <c>DRYER_HATCH_DIAMETER_MM</c>), от них же считаются обод, стекло и барабан,
-/// поэтому вид не может подействовать на что-то ещё незаметно — это здесь и
-/// проверяется, в обе стороны.
+/// Общего у двух машин всё, кроме диаметра люка, и он задан ДОЛЕЙ ШИРИНЫ корпуса:
+/// <c>WASHER_HATCH_WIDTH_FRACTION</c> = 0,5 и <c>DRYER_HATCH_WIDTH_FRACTION</c> = 0,8.
+/// От того же числа считаются обод, стекло и расточка барабана, поэтому вид не может
+/// подействовать на что-то ещё незаметно. Долю спрашивают на нескольких ширинах: на
+/// одной она неотличима от совпавшего числа.
 ///
 /// Размеры берутся НЕсимметричные (`conventions/SHAPE-AND-SCREENSHOTS.md` →
 /// «A mesh and its metadata must describe the SAME shape»): на кубе 600×600×600
@@ -53,19 +53,48 @@ public class LaundryMachineBodyTests
         Assert.IsFalse(LaundryMachineBody.TryKindOf("", out _), "пустая строка — тоже отказ");
     }
 
+    /// <summary>Диаметр люка — ДОЛЯ ширины корпуса: 50 % у стиральной, 80 % у сушильной.
+    /// Спрашивается на ТРЁХ ширинах, а не на одной: на одной «80 %» неотличимо от числа,
+    /// случайно совпавшего с ответом. Высота берётся с запасом, чтобы в этом тесте
+    /// ограничение по месту не подменяло долю — за ограничение отвечает отдельный тест
+    /// ниже, с противоположным входом.</summary>
     [Test]
-    public void TheDryerHatch_IsWiderThanTheWasherHatch()
+    public void TheHatchDiameter_IsAFractionOfTheWidth_OnEveryWidth()
     {
-        Assert.Greater(LaundryMachineBody.DRYER_HATCH_DIAMETER_MM,
-            LaundryMachineBody.WASHER_HATCH_DIAMETER_MM,
-            "у сушильной люк больше — это единственное, чем машины отличаются размером");
+        foreach (var width in new[] { 600, 800, 1000 })
+        {
+            var dims = new Vector3Int(width, width * 2, 600);
 
-        var dims = LaundryMachineBody.DefaultDimensionsMM;
-        Assert.AreEqual(LaundryMachineBody.WASHER_HATCH_DIAMETER_MM,
-            LaundryMachineBody.HatchDiameterMM(Washer, dims), 0.001f,
-            "на обычном корпусе люк берётся номинальным, а не выводится из ширины");
-        Assert.AreEqual(LaundryMachineBody.DRYER_HATCH_DIAMETER_MM,
-            LaundryMachineBody.HatchDiameterMM(Dryer, dims), 0.001f);
+            Assert.AreEqual(width * LaundryMachineBody.WASHER_HATCH_WIDTH_FRACTION,
+                LaundryMachineBody.HatchDiameterMM(Washer, dims), 0.001f,
+                "люк стиральной занимает половину ширины корпуса; ширина " + width);
+            Assert.AreEqual(width * LaundryMachineBody.DRYER_HATCH_WIDTH_FRACTION,
+                LaundryMachineBody.HatchDiameterMM(Dryer, dims), 0.001f,
+                "люк сушильной занимает 80 процентов ширины корпуса; ширина " + width);
+        }
+
+        Assert.Greater(LaundryMachineBody.DRYER_HATCH_WIDTH_FRACTION,
+            LaundryMachineBody.WASHER_HATCH_WIDTH_FRACTION,
+            "у сушильной люк больше — это единственное, чем машины отличаются размером");
+    }
+
+    /// <summary>Противоположный вход к доле: корпус, в котором доля не помещается. Люк
+    /// ужимается по МЕСТУ, и доля перестаёт выполняться — именно поэтому её нельзя
+    /// проверять на одном размере и нельзя проверять только зажатый случай.</summary>
+    [Test]
+    public void AShortBody_SqueezesTheHatch_SoTheFractionYieldsToTheRoom()
+    {
+        var squat = new Vector3Int(1000, 400, 600);
+        float nominal = 1000 * LaundryMachineBody.DRYER_HATCH_WIDTH_FRACTION;
+        float room = LaundryMachineBody.FrontOpeningHeightMM(squat)
+            - 2 * LaundryMachineBody.HATCH_MIN_SURROUND_MM;
+
+        Assert.Less(room, nominal,
+            "вход выбран так, чтобы доля НЕ помещалась — иначе проверка ниже не может "
+            + "провалиться");
+        Assert.AreEqual(room, LaundryMachineBody.HatchDiameterMM(Dryer, squat), 0.001f,
+            "в низкий корпус люк входит по месту, а не по доле: он обязан оставить "
+            + "стенку материала сверху и снизу");
     }
 
     [Test]
@@ -92,7 +121,8 @@ public class LaundryMachineBodyTests
         var dryer = LaundryMachineBody.ClosedPartsMM(Dryer, dims);
 
         Assert.AreEqual(washer[LaundryMachineBody.IdxShell], dryer[LaundryMachineBody.IdxShell],
-            "корпус у двух машин один и тот же");
+            "габаритная коробка корпуса у двух машин одна и та же — отличается только "
+            + "расточка в ней, а она идёт за люком");
         Assert.AreEqual(washer[LaundryMachineBody.IdxControlPanel],
             dryer[LaundryMachineBody.IdxControlPanel],
             "панель управления у двух машин одна и та же");
@@ -110,12 +140,15 @@ public class LaundryMachineBodyTests
         var narrow = new Vector3Int(LaundryMachineBody.MIN_WIDTH_MM, 850, 600);
         float hatch = LaundryMachineBody.HatchDiameterMM(Dryer, narrow);
 
-        Assert.Less(hatch, LaundryMachineBody.DRYER_HATCH_DIAMETER_MM,
-            "в узкий корпус номинальный люк не влезает и обязан ужаться");
-        Assert.AreEqual(narrow.x - 2 * LaundryMachineBody.HATCH_MARGIN_MM, hatch, 0.001f,
-            "ужимается ровно до ширины без двух отступов");
+        Assert.Less(hatch, LaundryMachineBody.NominalHatchDiameterMM(Dryer, narrow),
+            "в самый узкий корпус доля не влезает и люк обязан ужаться");
+        Assert.AreEqual(narrow.x - 2 * LaundryMachineBody.HATCH_MIN_SURROUND_MM, hatch, 0.001f,
+            "ужимается ровно до ширины без двух стенок материала");
         Assert.Greater(LaundryMachineBody.GlassDiameterMM(Dryer, narrow), 0f,
             "и стекло при этом обязано остаться видимым");
+        Assert.GreaterOrEqual(hatch, LaundryMachineBody.MIN_HATCH_DIAMETER_MM,
+            "самый узкий законный корпус обязан оставлять люк не меньше минимального — "
+            + "иначе замок габарита пропускает машину без люка");
     }
 
     [Test]
@@ -227,6 +260,69 @@ public class LaundryMachineBodyTests
             + "иначе тёмного круга в белом кольце не видно");
         Assert.AreEqual(Asymmetric.z * 0.5f, glassFace, 0.001f,
             "стекло — самая передняя точка машины и лежит ровно на её объявленной грани");
+    }
+
+    /// <summary>Дефект, который увидел пользователь: «дверца ниже чем барабан». Высоту
+    /// считали ДВЕ формулы — люк от середины проёма под панелью управления, а расточка от
+    /// середины самого корпуса, — и расходились они ровно на половину панели. Совпадали бы
+    /// они только при нулевой панели, так что «работало» это никогда.
+    ///
+    /// Теперь опора одна: <c>HatchCenterYMM</c>. Расточка получает свой центр ПЕРЕСЧЁТОМ
+    /// из неё в систему координат корпуса, а не собственной формулой, и тест сверяет все
+    /// три высоты на разных габаритах, включая узкий корпус, где люк ужимается.</summary>
+    [Test]
+    public void TheHatch_AndTheBore_ShareOneVerticalAxis_AtEverySize()
+    {
+        foreach (var dims in new[]
+                 {
+                     LaundryMachineBody.DefaultDimensionsMM,
+                     new Vector3Int(700, 900, 550),
+                     new Vector3Int(1000, 400, 600),
+                     LaundryMachineBody.ClampMM(new Vector3Int(1, 1, 1)),
+                 })
+            foreach (var kind in new[] { Washer, Dryer })
+            {
+                var parts = LaundryMachineBody.ClosedPartsMM(kind, dims);
+                float hatchY = parts[LaundryMachineBody.IdxHatchRim].centerMM.y;
+                float glassY = parts[LaundryMachineBody.IdxHatchGlass].centerMM.y;
+                float drumBackY = parts[LaundryMachineBody.IdxDrumBack].centerMM.y;
+
+                float boreY = LaundryMachineBody.ShellCenterMM(dims).y
+                    + LaundryMachineBody.BoreCenterInShellMM(dims).y;
+
+                Assert.AreEqual(hatchY, boreY, 0.001f,
+                    "центр расточки барабана не совпал с центром люка при " + dims
+                    + ": дверца окажется выше или ниже выреза");
+                Assert.AreEqual(hatchY, glassY, 0.001f,
+                    "стекло не по центру обода при " + dims);
+                Assert.AreEqual(hatchY, drumBackY, 0.001f,
+                    "дно барабана не по центру расточки при " + dims);
+
+                float boreX = LaundryMachineBody.ShellCenterMM(dims).x
+                    + LaundryMachineBody.BoreCenterInShellMM(dims).x;
+                Assert.AreEqual(parts[LaundryMachineBody.IdxHatchRim].centerMM.x, boreX, 0.001f,
+                    "и по горизонтали тоже — ось у люка и выреза одна");
+            }
+    }
+
+    /// <summary>Сторож на само правило «опора одна»: сдвинь корпус по высоте, и пересчёт
+    /// обязан поехать вместе с ним. Если бы <c>BoreCenterInShellMM</c> просто возвращала
+    /// <c>HatchCenterYMM</c> числом, эта проверка молчала бы — и первый же сдвиг корпуса
+    /// вернул бы тот же дефект.</summary>
+    [Test]
+    public void TheBoreCenter_IsDerivedFromTheShellPose_NotWrittenOutTwice()
+    {
+        var dims = LaundryMachineBody.DefaultDimensionsMM;
+
+        Assert.AreEqual(LaundryMachineBody.HatchCenterYMM,
+            LaundryMachineBody.ShellCenterMM(dims).y
+                + LaundryMachineBody.BoreCenterInShellMM(dims).y, 0.001f,
+            "пересчёт из системы корпуса обязан давать ровно ту высоту люка, от которой "
+            + "он и выведен");
+        Assert.AreEqual(LaundryMachineBody.HatchCenterYMM
+                - LaundryMachineBody.ShellCenterMM(dims).y,
+            LaundryMachineBody.BoreCenterInShellMM(dims).y, 0.001f,
+            "и это именно РАЗНОСТЬ, а не второе написание того же числа");
     }
 
     [Test]

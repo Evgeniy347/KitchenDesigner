@@ -102,6 +102,7 @@ namespace KitchenDesigner.Core
             DisposeShellMesh();
             _shellMesh = DrumRecessMesh.Build(
                 LaundryMachineBody.ShellSizeMM(DimensionsMM),
+                LaundryMachineBody.BoreCenterInShellMM(DimensionsMM),
                 LaundryMachineBody.DrumDiameterMM(_kind, DimensionsMM),
                 LaundryMachineBody.DrumDepthMM(DimensionsMM));
             Boxes.SetMesh(LaundryMachineBody.IdxShell, _shellMesh);

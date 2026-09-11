@@ -11,7 +11,8 @@ namespace KitchenDesigner.Core
 
         private const float AxisAlignedDirection = 1e-6f;
 
-        public static Mesh Build(Vector3 sizeMM, float boreDiameterMM, float boreDepthMM)
+        public static Mesh Build(Vector3 sizeMM, Vector2 boreCenterMM, float boreDiameterMM,
+            float boreDepthMM)
         {
             float toU = AppConstants.MM_TO_UNITS;
             float w = sizeMM.x * toU;
@@ -19,6 +20,7 @@ namespace KitchenDesigner.Core
             float d = sizeMM.z * toU;
             float r = boreDiameterMM * 0.5f * toU;
             float depth = boreDepthMM * toU;
+            var bore = new Vector2(boreCenterMM.x * toU, boreCenterMM.y * toU);
 
             float halfW = w * 0.5f;
             float halfH = h * 0.5f;
@@ -30,11 +32,12 @@ namespace KitchenDesigner.Core
             var uvs = new List<Vector2>();
             var triangles = new List<int>();
 
-            var angles = RingAngles(halfW, halfH);
+            var angles = RingAngles(bore, halfW, halfH);
 
-            AddFrontRing(vertices, normals, uvs, triangles, angles, r, halfW, halfH, halfD);
-            AddBoreWall(vertices, normals, uvs, triangles, angles, r, halfD, boreBottomZ);
-            AddBoreBottom(vertices, normals, uvs, triangles, angles, r, boreBottomZ);
+            AddFrontRing(vertices, normals, uvs, triangles, angles, bore, r, halfW, halfH, halfD);
+            AddBoreWall(vertices, normals, uvs, triangles, angles, bore, r, halfD, boreBottomZ);
+            AddBoreBottom(vertices, normals, uvs, triangles, angles, bore, r, boreBottomZ,
+                halfW, halfH);
             AddOuterFaces(vertices, normals, uvs, triangles, halfW, halfH, halfD);
 
             var mesh = new Mesh { name = "DrumRecess" };
@@ -46,16 +49,21 @@ namespace KitchenDesigner.Core
             return mesh;
         }
 
-        private static List<float> RingAngles(float halfW, float halfH)
+        private static List<float> RingAngles(Vector2 from, float halfW, float halfH)
         {
             var angles = new List<float>(Segments + 4);
             for (int i = 0; i < Segments; i++) angles.Add(i * Mathf.PI * 2f / Segments);
 
-            float corner = Mathf.Atan2(halfH, halfW);
-            angles.Add(corner);
-            angles.Add(Mathf.PI - corner);
-            angles.Add(Mathf.PI + corner);
-            angles.Add(Mathf.PI * 2f - corner);
+            foreach (var corner in new[]
+                     {
+                         new Vector2(halfW, halfH), new Vector2(-halfW, halfH),
+                         new Vector2(-halfW, -halfH), new Vector2(halfW, -halfH),
+                     })
+            {
+                float angle = Mathf.Atan2(corner.y - from.y, corner.x - from.x);
+                if (angle < 0f) angle += Mathf.PI * 2f;
+                angles.Add(angle);
+            }
 
             angles.Sort();
 
@@ -69,33 +77,35 @@ namespace KitchenDesigner.Core
             return unique;
         }
 
-        private static Vector2 OnRectangle(float angle, float halfW, float halfH)
+        private static Vector2 OnRectangle(Vector2 from, float angle, float halfW, float halfH)
         {
             float cos = Mathf.Cos(angle);
             float sin = Mathf.Sin(angle);
+
             float byWidth = Mathf.Abs(cos) < AxisAlignedDirection
                 ? float.MaxValue
-                : halfW / Mathf.Abs(cos);
+                : ((cos > 0f ? halfW : -halfW) - from.x) / cos;
             float byHeight = Mathf.Abs(sin) < AxisAlignedDirection
                 ? float.MaxValue
-                : halfH / Mathf.Abs(sin);
+                : ((sin > 0f ? halfH : -halfH) - from.y) / sin;
+
             float t = Mathf.Min(byWidth, byHeight);
-            return new Vector2(cos * t, sin * t);
+            return new Vector2(from.x + cos * t, from.y + sin * t);
         }
 
         private static Vector2 FaceUv(Vector2 point, float halfW, float halfH) =>
             new Vector2(point.x / (halfW * 2f) + 0.5f, point.y / (halfH * 2f) + 0.5f);
 
         private static void AddFrontRing(List<Vector3> vertices, List<Vector3> normals,
-            List<Vector2> uvs, List<int> triangles, List<float> angles,
+            List<Vector2> uvs, List<int> triangles, List<float> angles, Vector2 bore,
             float r, float halfW, float halfH, float z)
         {
             int start = vertices.Count;
             for (int i = 0; i < angles.Count; i++)
             {
                 float angle = angles[i];
-                var inner = new Vector2(Mathf.Cos(angle) * r, Mathf.Sin(angle) * r);
-                var outer = OnRectangle(angle, halfW, halfH);
+                var inner = bore + new Vector2(Mathf.Cos(angle) * r, Mathf.Sin(angle) * r);
+                var outer = OnRectangle(bore, angle, halfW, halfH);
 
                 vertices.Add(new Vector3(inner.x, inner.y, z));
                 normals.Add(Vector3.forward);
@@ -125,7 +135,7 @@ namespace KitchenDesigner.Core
         }
 
         private static void AddBoreWall(List<Vector3> vertices, List<Vector3> normals,
-            List<Vector2> uvs, List<int> triangles, List<float> angles,
+            List<Vector2> uvs, List<int> triangles, List<float> angles, Vector2 bore,
             float r, float frontZ, float bottomZ)
         {
             int start = vertices.Count;
@@ -136,11 +146,11 @@ namespace KitchenDesigner.Core
                 float sin = Mathf.Sin(angle);
                 var inward = new Vector3(-cos, -sin, 0f);
 
-                vertices.Add(new Vector3(cos * r, sin * r, frontZ));
+                vertices.Add(new Vector3(bore.x + cos * r, bore.y + sin * r, frontZ));
                 normals.Add(inward);
                 uvs.Add(new Vector2(i / (float)angles.Count, 1f));
 
-                vertices.Add(new Vector3(cos * r, sin * r, bottomZ));
+                vertices.Add(new Vector3(bore.x + cos * r, bore.y + sin * r, bottomZ));
                 normals.Add(inward);
                 uvs.Add(new Vector2(i / (float)angles.Count, 0f));
             }
@@ -164,21 +174,23 @@ namespace KitchenDesigner.Core
         }
 
         private static void AddBoreBottom(List<Vector3> vertices, List<Vector3> normals,
-            List<Vector2> uvs, List<int> triangles, List<float> angles, float r, float z)
+            List<Vector2> uvs, List<int> triangles, List<float> angles, Vector2 bore,
+            float r, float z, float halfW, float halfH)
         {
             int center = vertices.Count;
-            vertices.Add(new Vector3(0f, 0f, z));
+            vertices.Add(new Vector3(bore.x, bore.y, z));
             normals.Add(Vector3.forward);
-            uvs.Add(new Vector2(0.5f, 0.5f));
+            uvs.Add(FaceUv(bore, halfW, halfH));
 
             int ring = vertices.Count;
             for (int i = 0; i < angles.Count; i++)
             {
                 float cos = Mathf.Cos(angles[i]);
                 float sin = Mathf.Sin(angles[i]);
-                vertices.Add(new Vector3(cos * r, sin * r, z));
+                var point = bore + new Vector2(cos * r, sin * r);
+                vertices.Add(new Vector3(point.x, point.y, z));
                 normals.Add(Vector3.forward);
-                uvs.Add(new Vector2(cos * 0.5f + 0.5f, sin * 0.5f + 0.5f));
+                uvs.Add(FaceUv(point, halfW, halfH));
             }
 
             for (int i = 0; i < angles.Count; i++)
