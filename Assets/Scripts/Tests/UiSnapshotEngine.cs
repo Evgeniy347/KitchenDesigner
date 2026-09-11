@@ -15,9 +15,21 @@ namespace KitchenDesigner.Tests
     {
         public static void Capture(GameObject root, string outputPath)
         {
-            var json = SerializeSnapshot(BuildSnapshot(root));
+            var snapshot = BuildSnapshot(root);
+            var json = SerializeSnapshot(snapshot);
             SnapshotFile.Write(outputPath, Normalize(json));
             Debug.Log($"[UISNAPSHOT] Saved: {outputPath}");
+            ReportOverlaps(snapshot, Path.GetFileNameWithoutExtension(outputPath));
+        }
+
+        /// <summary>Единственный инвариант, который сличение без координат дать
+        /// не может. Громкость та же, что у расхождения с эталоном, —
+        /// незапрошенный LogType.Error роняет тест силами Unity Test Framework,
+        /// и NUnit не приходится тащить в Assets/Scripts.</summary>
+        private static void ReportOverlaps(UiSnapshotZero snapshot, string name)
+        {
+            var report = UiNodeOverlap.Report(name, snapshot.Children.Select(n => n.Placed));
+            if (report.Length > 0) Debug.LogError(report);
         }
 
         /// <summary>
@@ -27,12 +39,14 @@ namespace KitchenDesigner.Tests
         /// </summary>
         public static void CaptureVerified(GameObject root, string outputPath)
         {
-            var json = SerializeSnapshot(BuildSnapshot(root));
+            var snapshot = BuildSnapshot(root);
+            var json = SerializeSnapshot(snapshot);
 
             SnapshotFile.Write(outputPath, Normalize(json));
             Debug.Log($"[UISNAPSHOT] Saved: {outputPath}");
 
             var testName = Path.GetFileNameWithoutExtension(outputPath);
+            ReportOverlaps(snapshot, testName);
             MatchGolden(json, testName);
         }
 
@@ -67,6 +81,7 @@ namespace KitchenDesigner.Tests
             public bool IsOn;
             public Vector2 Position;
             public string Name = "";
+            public UiNodeOverlap.Placed Placed;
         }
 
         // ── Build ───────────────────────────────────────────────────────
@@ -121,6 +136,7 @@ namespace KitchenDesigner.Tests
             var node = DetectNode(go);
             if (node != null)
             {
+                node.Placed = PlaceOnCanvas(go, node);
                 seen.Add(go);
                 nodes.Add(node);
 
@@ -130,6 +146,36 @@ namespace KitchenDesigner.Tests
 
             foreach (Transform child in go.transform)
                 Walk(child.gameObject, nodes, seen);
+        }
+
+        /// <summary>Точка узла в ОБЩЕМ для холста пространстве, а не
+        /// anchoredPosition, которая локальна: у восьми переключателей одной
+        /// вкладки она законно одинакова, каждый сидит в своей строке. Угловые
+        /// точки берём у самого RectTransform, поэтому масштаб и вложенность
+        /// учтены без ручной арифметики.</summary>
+        private static UiNodeOverlap.Placed PlaceOnCanvas(GameObject go, UiNode node)
+        {
+            var id = node.Type + " «" + Describe(node) + "» (" + go.name + ")";
+
+            var rt = go.GetComponent<RectTransform>();
+            if (rt == null) return new UiNodeOverlap.Placed(id, 0f, 0f, 0f, 0f);
+
+            var corners = new Vector3[4];
+            rt.GetWorldCorners(corners);
+            float minX = Mathf.Min(corners[0].x, corners[2].x);
+            float maxX = Mathf.Max(corners[0].x, corners[2].x);
+            float minY = Mathf.Min(corners[0].y, corners[2].y);
+            float maxY = Mathf.Max(corners[0].y, corners[2].y);
+
+            return new UiNodeOverlap.Placed(id,
+                (minX + maxX) * 0.5f, (minY + maxY) * 0.5f, maxX - minX, maxY - minY);
+        }
+
+        private static string Describe(UiNode node)
+        {
+            if (!string.IsNullOrEmpty(node.Text)) return node.Text;
+            if (!string.IsNullOrEmpty(node.Label)) return node.Label;
+            return node.Options.Count > 0 ? string.Join("/", node.Options) : "";
         }
 
         private static UiNode? DetectNode(GameObject go)

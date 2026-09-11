@@ -18,6 +18,13 @@
 
   <ItemGroup>
     <Compile Include="..\..\Assets\Tests\EditMode\Geometry\**\*.cs" />
+    <!--
+      Сенсор «два узла в одной точке» линкуется сюда, а не копируется: его
+      зовут ДВЕ стороны — UiSnapshotEngine при съёмке (Unity) и UiNodeOverlapTests
+      на быстром пути (dotnet). Вторая описанная копия одного контура — ровно то,
+      как соврал сайдбар: положение считалось в одном месте, высота в другом.
+    -->
+    <Compile Include="..\..\Assets\Scripts\Tests\UiNodeOverlap.cs" />
     <Compile Include="ParallelAssemblyInfo.cs" />
   </ItemGroup>
 
