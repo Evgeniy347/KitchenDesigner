@@ -309,10 +309,6 @@ namespace KitchenDesigner.Core
                 ? afterDims != _dimsBefore || afterPos != _posBefore
                 : afterPos != _posBefore;
 
-            // Как у перемещения (ElementMover.FinishDrag): нарушение при включённой
-            // блокировке откатывает операцию. Раньше ресайз коммитился без проверки,
-            // и красное состояние (например, пересечение с соседом) фиксировалось
-            // в сцене и в undo-стеке.
             var settings = KitchenSettings.Instance;
             if (changed && settings != null && settings.BlockOnViolation
                 && IntroducedAViolation(out var refusal))
@@ -337,8 +333,6 @@ namespace KitchenDesigner.Core
             PositionHandles(_layoutCamera);
         }
 
-        // Нарушение, ВНЕСЁННОЕ этим жестом, на самой детали или вплотную к ней (AABB в
-        // радиусе snapThreshold * 2) — тот же критерий и тот же шлюз, что при перемещении.
         private bool IntroducedAViolation(out string refusal)
         {
             refusal = string.Empty;
