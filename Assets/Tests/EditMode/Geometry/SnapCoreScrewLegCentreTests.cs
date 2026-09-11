@@ -216,4 +216,77 @@ public class SnapCoreScrewLegCentreTests : SnapCoreTestBase
         Assert.AreEqual(0f, result.position.z, Tol,
             "а поперёк её не уносит: она уже на середине толщины цоколя");
     }
+    // ─ Живой случай 2026-09-11: опора ПРОШЛА цель насквозь ─────────────────
+    //
+    // Прогон свипа на проекте пользователя дал 6683 INTERSECT-AFTER-SNAP, из них
+    // 5187 — про семь винтовых опор и шесть днищ цокольных ящиков. Опора
+    // 14×45×14 стоит пяткой на полу (y 0..45), дно ящика — доска 16 мм на высоте
+    // y 4..20. Грань крепления опоры (её верх, 45 мм) лежит ВЫШЕ дальней стороны
+    // доски: резьбе не во что войти, опора проходит доску насквозь и торчит над
+    // ней на 25 мм. Отбор этого не различал: пара «верх опоры ↔ низ доски»
+    // встречная, зазор 41 мм при пороге 50, перекрытие полное — и посадка честно
+    // уводила опору на 34 мм вбок, на детент «60 мм от кромки», ставя её сквозь
+    // доску. В приложении это и видно: подвёл опору под дно ящика — её отбросило
+    // вбок и насадило на доску.
+    //
+    // Поэтому посадка требует, чтобы над гранью крепления ОСТАВАЛАСЬ толща цели
+    // (SnapFacePairRules.TargetStillHasMaterialAbove). Ослабления тут нет:
+    // правило смотрит только вдоль оси крепления и только на дальнюю сторону
+    // цели, а все посадки, где резьбе есть во что войти, остаются — их держит
+    // вторая половина пары, GuideWall ниже, и весь блок тестов выше.
+
+    private const float ThinBottomY = 12f * MM;
+
+    private static Box PlinthLeg() =>
+        new Box("Leg", new Vector3Int(14, 45, 14), null, false, Vector3.up,
+            60f * MM);
+
+    private static ElementGeometry BigFloor() =>
+        At(Make("Pol", new Vector3Int(10775, 100, 10395)),
+            new Vector3(3387.5f * MM, -50f * MM, 1347.5f * MM));
+
+    /// <summary>Дно цокольного ящика A4: 416×16×506, верх на 20 мм.</summary>
+    private static ElementGeometry DrawerBottom() =>
+        At(Make("Bottom", new Vector3Int(416, 16, 506)),
+            new Vector3(1311f * MM, ThinBottomY, -1562f * MM));
+
+    /// <summary>Царга того же цоколя: 382×80×18, верх на 100 мм — в неё опора и
+    /// вкручена в проекте пользователя.</summary>
+    private static ElementGeometry GuideWall() =>
+        At(Make("GuideWall", new Vector3Int(382, 80, 18)),
+            new Vector3(1294f * MM, 60f * MM, -1853f * MM));
+
+    private static Vector3 LegOnTheFloorAt(float z) =>
+        new Vector3(1425f * MM, 22.5f * MM, z * MM);
+
+    [Test]
+    public void ADrawerBottomTheLegPassesThrough_IsNotOfferedAsASeat()
+    {
+        var scene = new List<ElementGeometry> { BigFloor(), DrawerBottom() };
+
+        var result = SnapCore.TrySnap(PlinthLeg(), scene, LegOnTheFloorAt(-1653f), Threshold);
+
+        Assert.AreNotEqual("Bottom", result.targetName,
+            "верх опоры на 45 мм, доска кончается на 20 — над гранью крепления цели нет, "
+            + "и сажать в неё нечего. Строка лога, с которой это начиналось: "
+            + "«A4_plint_screw_leg_L_back MOVE 200мм dir=(0.00, 0.00, 1.00) → "
+            + "A4_plint_drawer_bottom»");
+    }
+
+    [Test]
+    public void TheSameLegAgainstTheGuideWall_StillSeats()
+    {
+        var scene = new List<ElementGeometry> { BigFloor(), GuideWall() };
+
+        var result = SnapCore.TrySnap(PlinthLeg(), scene, LegOnTheFloorAt(-1849f), Threshold);
+
+        Assert.IsTrue(result.snapped,
+            "царга 80 мм высотой начинается на 20 мм: верх опоры (45 мм) сидит в её толще, "
+            + "над гранью крепления ещё 55 мм материала — посадка обязана быть");
+        Assert.AreEqual("GuideWall", result.targetName,
+            "и целью посадки стала именно царга");
+        Assert.AreEqual(-1853f * MM, result.position.z, 9f * MM,
+            "опора пришла в толщу царги (−1862..−1844): сними проверку дальней стороны — "
+            + "и здесь ничего не изменится, а строка выше снова станет зелёной по ошибке");
+    }
 }

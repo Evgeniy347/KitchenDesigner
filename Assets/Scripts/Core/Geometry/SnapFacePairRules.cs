@@ -47,6 +47,17 @@ namespace KitchenDesigner.Core
             return coDirectional ? SnapPairRole.FarEdgeAlignment : SnapPairRole.Flush;
         }
 
+        public static bool TargetStillHasMaterialAbove(in ElementGeometry moved,
+            in Face movedFace, in ElementGeometry other)
+        {
+            Vector3 n = moved.MountNormal;
+            Vector3 centre = (other.Min + other.Max) * 0.5f;
+            Vector3 half = (other.Max - other.Min) * 0.5f;
+            float far = Vector3.Dot(centre, n)
+                + Mathf.Abs(n.x) * half.x + Mathf.Abs(n.y) * half.y + Mathf.Abs(n.z) * half.z;
+            return Vector3.Dot(movedFace.center, n) < far - Tolerance.EpsilonUnits;
+        }
+
         public static bool LiesOnTheMountAxis(in ElementGeometry moved, in Face face) =>
             Mathf.Abs(Vector3.Dot(face.normal, moved.MountNormal)) >= Tolerance.ParallelDot;
 

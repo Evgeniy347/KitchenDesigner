@@ -291,6 +291,9 @@ namespace KitchenDesigner.Core
         {
             SnapPairRejection.LandsInsideNeighbour =>
                 "снэп загнал бы деталь внутрь соседа — такой кандидат отбрасывается",
+            SnapPairRejection.MountFaceLeftTheTarget =>
+                "грань крепления вышла за дальнюю сторону цели: над ней нет толщи, в которую "
+                + "деталь сажают, — посадки по этой паре не будет",
             SnapPairRejection.AlreadyInPlace => facts.role == SnapPairRole.Centring
                 ? "посадка уже выполнена: деталь стоит по центру, сдвига не будет"
                 : facts.alignmentLandsInsideNeighbour

@@ -8,6 +8,7 @@ namespace KitchenDesigner.Core
         NotParallel,
         CoDirectionalGrooveSeat,
         CoDirectionalMount,
+        MountFaceLeftTheTarget,
         BeyondThreshold,
         NoOverlap,
         OverlapTooSmall,

@@ -82,6 +82,12 @@ namespace KitchenDesigner.Core
 
             if (role == SnapPairRole.Centring)
             {
+                if (!SnapFacePairRules.TargetStillHasMaterialAbove(moved, movedFace, other))
+                {
+                    offer.rejection = SnapPairRejection.MountFaceLeftTheTarget;
+                    return offer;
+                }
+
                 SnapMountSeat.Deltas(moved, movedFace, otherFace, maxDist,
                     out offer.du, out offer.dv, out offer.detentU, out offer.detentV);
                 offer.Land(basePos, movedFace.normal);

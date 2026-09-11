@@ -429,10 +429,8 @@ public class SnapMutationTests
                 else
                 {
                     moved.transform.position = snapRes.position;
-                    // Панели (задники/ДВП) встают в пазы — их AABB пересекает корпус,
-                    // это валидно, не считаем ошибкой.
-                    if (!IsPanel(moved) && !SeatedIntoIt(moved, target)
-                        && SnapSystem.ElementsIntersect(moved, target))
+                    if (SnapSystem.ElementsIntersect(moved, target)
+                        && !LegitimateOverlap(moved, target))
                         AddError($"INTERSECT: {moved.PartName}↔{target.PartName} after snap-back");
                     snapOk++;
                 }
@@ -530,8 +528,8 @@ public class SnapMutationTests
         {
             moved.transform.position = snap.position;
             var snapTarget = others.FirstOrDefault(o => o.PartName == snap.targetName);
-            if (snapTarget != null && !IsPanel(moved) && !SeatedIntoIt(moved, snapTarget)
-                && SnapSystem.ElementsIntersect(moved, snapTarget))
+            if (snapTarget != null && SnapSystem.ElementsIntersect(moved, snapTarget)
+                && !LegitimateOverlap(moved, snapTarget))
                 AddError($"INTERSECT-AFTER-SNAP: {label} → {snap.targetName}");
             snapOk++;
         }
@@ -693,8 +691,8 @@ public class SnapMutationTests
             _countPosSet++;
             var swI = System.Diagnostics.Stopwatch.StartNew();
             var snapTarget = OtherByName(snap.targetName);
-            bool intersects = snapTarget != null && !IsPanel(moved) && !SeatedIntoIt(moved, snapTarget)
-                && SnapSystem.ElementsIntersect(moved, snapTarget);
+            bool intersects = snapTarget != null && SnapSystem.ElementsIntersect(moved, snapTarget)
+                && !LegitimateOverlap(moved, snapTarget);
             _ticksIntersect += swI.ElapsedTicks;
             _countIntersect++;
             if (intersects)
@@ -917,6 +915,37 @@ public class SnapMutationTests
         for (int i = 0; i < faces.Length; i++)
             if (Vector3.Dot(faces[i].normal, mountNormal) >= Tolerance.ParallelDot) return i;
         return -1;
+    }
+
+    /// <summary>Пересечение габаритов после снэпа, которое ЗАКОННО: паз, посадка
+    /// по оси крепления или посадка по устьям. Каждое из трёх записано геометрией,
+    /// а не списком имён деталей, и каждое стоит ПОСЛЕ проверки пересечения —
+    /// снимки для устьев строятся только на тех шагах, где пересечение уже есть.</summary>
+    private bool LegitimateOverlap(KitchenElement moved, KitchenElement target) =>
+        IsPanel(moved) || SeatedIntoIt(moved, target) || SeatedByPorts(moved, target);
+
+    /// <summary>Деталь ПРИСТЫКОВАНА к цели устьем в устье: снэп совместил мышку
+    /// трубы с мышкой соседа, и после этого их габариты налезают друг на друга.
+    ///
+    /// Это не ослабление, а вторая форма той же посадки, что и SeatedIntoIt.
+    /// Посадка по устьям — заявленное поведение продукта, а не промах:
+    /// SnapPortSeatTests.Best_NoFacingPairInRange_StillSeatsTheNearestMouth
+    /// прямо говорит «поднёс — повернулось — соединилось», то есть устье кладётся
+    /// на устье и тогда, когда оси ещё не сведены, а пользователь доворачивает
+    /// деталь потом. Пока этого исключения здесь не было, свип звал ошибкой
+    /// каждый такой стык: прогон 2026-09-11 дал 1496 строк INTERSECT-AFTER-SNAP
+    /// на пятнадцати трубах и фитингах — все до одной про пары «труба ↔ фитинг».
+    ///
+    /// Правило узкое: устья должны СОВПАСТЬ (alreadySeated при допуске контакта
+    /// 0,5 мм). Труба, которую снэп поставил внутрь соседа гранью, а не устьем,
+    /// под исключение не попадает, и деталь без устьев — тоже.</summary>
+    private static bool SeatedByPorts(KitchenElement moved, KitchenElement target)
+    {
+        if (target == null) return false;
+
+        var seat = SnapPortSeat.Best(moved.ToGeometry(), target.ToGeometry(),
+            Tolerance.ContactMm * AppConstants.MM_TO_UNITS);
+        return seat.taken && seat.alreadySeated;
     }
 
     /// <summary>Деталь ВКРУЧЕНА в цель: её грань крепления лежит внутри толщи
