@@ -85,7 +85,7 @@ public class LaundryMachineElementTests
     [Test]
     public void TheKindProperty_IsUndoable_SoTheDropdownGetsUndoForFree()
     {
-        var marked = UndoableProperties.Of(typeof(LaundryMachineElement))
+        var marked = UndoableProperties.For(typeof(LaundryMachineElement))
             .Select(p => p.Name).ToList();
 
         CollectionAssert.Contains(marked, nameof(LaundryMachineElement.Kind),
@@ -270,8 +270,11 @@ public class LaundryMachineElementTests
             var items = machine.GetSpecItems(new List<KitchenElement> { machine }).ToList();
 
             Assert.AreEqual(1, items.Count, kind + ": покупное изделие — ровно одна строка");
-            StringAssert.Contains(LaundryMachineBody.NameOf(kind), items[0].Name,
+            StringAssert.Contains(LaundryMachineBody.NameOf(kind), items[0].name,
                 kind + ": строка ведомости обязана называть вид машины");
+            Assert.AreEqual(SpecUnit.Pieces, items[0].unit,
+                kind + ": машина покупается штукой, а не листом и не метром");
+            Assert.AreEqual(1f, items[0].qty, 0.001f, kind + ": одна машина — одна штука");
         }
     }
 
