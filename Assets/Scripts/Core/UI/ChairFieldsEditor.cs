@@ -15,7 +15,8 @@ namespace KitchenDesigner.Core.UI
             BindCornerRadius<ChairElement>(visibility, chair => chair.CornerRadiusMM,
                 (chair, value) => chair.CornerRadiusMM = value, CornerRadiusNode);
             Bind<ChairElement>(
-                Rows.NumberField("Высота сиденья", visibility, "мм", SeatHeightNode),
+                Rows.NumberField("Высота сиденья", visibility, "мм", SeatHeightNode,
+                    hint: "element.seat.seatHeight"),
                 chair => chair.SeatHeightMM, (chair, value) => chair.SeatHeightMM = value, "0");
         }
     }

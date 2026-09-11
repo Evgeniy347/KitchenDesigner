@@ -34,8 +34,10 @@ namespace KitchenDesigner.Core.UI
                 ColumnHeightNode);
             var riserRow = Rows.NumberField(RiserDiameterLabel, visibility, "мм",
                 RiserDiameterNode);
-            var offsetRow = Rows.NumberField(WallOffsetLabel, visibility, "мм", WallOffsetNode);
-            var reachRow = Rows.NumberField(ArmReachLabel, visibility, "мм", ArmReachNode);
+            var offsetRow = Rows.NumberField(WallOffsetLabel, visibility, "мм", WallOffsetNode,
+                hint: "element.showerColumn.wallOffset");
+            var reachRow = Rows.NumberField(ArmReachLabel, visibility, "мм", ArmReachNode,
+                hint: "element.showerColumn.armReach");
             var headRow = Rows.NumberField(HeadDiameterLabel, visibility, "мм", HeadDiameterNode);
             var thicknessRow = Rows.NumberField(HeadThicknessLabel, visibility, "мм",
                 HeadThicknessNode);

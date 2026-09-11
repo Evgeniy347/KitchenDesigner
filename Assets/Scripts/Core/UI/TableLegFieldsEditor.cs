@@ -11,7 +11,8 @@ namespace KitchenDesigner.Core.UI
 
         public override void Build() =>
             Bind<TableElement>(
-                Rows.NumberField("Сдвиг опор", RowVisibility.For(ElementFacet.Table)),
+                Rows.NumberField("Сдвиг опор", RowVisibility.For(ElementFacet.Table),
+                    hint: "element.table.legInset"),
                 table => table.LegInsetMM, (table, value) => table.LegInsetMM = value,
                 FallbackInsetMM.ToString())
             .Or<RadiusTableElement>(table => table.LegInsetMM,

@@ -26,14 +26,16 @@ namespace KitchenDesigner.Core.UI
         {
             var visibility = RowVisibility.When(() => Host.Target is BathMixerElement);
 
-            var centresRow = Rows.NumberField(CentresLabel, visibility, "мм", CentresNode);
+            var centresRow = Rows.NumberField(CentresLabel, visibility, "мм", CentresNode,
+                hint: "element.bathMixer.centres");
             var bodyLengthRow = Rows.NumberField(BodyLengthLabel, visibility, "мм",
                 BodyLengthNode);
             var bodyDiameterRow = Rows.NumberField(BodyDiameterLabel, visibility, "мм",
                 BodyDiameterNode);
             var reachRow = Rows.NumberField(EscutcheonReachLabel, visibility, "мм",
                 EscutcheonReachNode);
-            var spoutRow = Rows.NumberField(SpoutLengthLabel, visibility, "мм", SpoutLengthNode);
+            var spoutRow = Rows.NumberField(SpoutLengthLabel, visibility, "мм", SpoutLengthNode,
+                hint: "element.bathMixer.spout");
             var outletRow = Rows.NumberField(OutletDiameterLabel, visibility, "мм",
                 OutletDiameterNode);
 

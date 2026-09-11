@@ -19,9 +19,10 @@ namespace KitchenDesigner.Core.UI
                 || Host.Target is WallHungToiletElement);
             var wallHungOnly = RowVisibility.When(() => Host.Target is WallHungToiletElement);
 
-            var seatRow = Rows.NumberField(SeatHeightLabel, anyToilet, "мм", SeatHeightNode);
+            var seatRow = Rows.NumberField(SeatHeightLabel, anyToilet, "мм", SeatHeightNode,
+                hint: "element.toilet.seatHeight");
             var plateRow = Rows.NumberField(FlushPlateHeightLabel, wallHungOnly, "мм",
-                FlushPlateHeightNode);
+                FlushPlateHeightNode, hint: "element.toilet.flushPlate");
 
             Bind<ToiletElement>(seatRow, toilet => toilet.SeatHeightMM,
                     (toilet, value) => toilet.SeatHeightMM = value,

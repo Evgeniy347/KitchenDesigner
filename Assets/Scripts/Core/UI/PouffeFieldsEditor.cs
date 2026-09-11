@@ -15,7 +15,7 @@ namespace KitchenDesigner.Core.UI
             var visibility = RowVisibility.For(ElementFacet.Pouffe);
             var cornerRadiusRow = CornerRadiusRow(visibility, CornerRadiusNode);
             var seatThicknessRow = Rows.NumberField(SeatThicknessLabel, visibility, "мм",
-                SeatThicknessNode);
+                SeatThicknessNode, hint: "element.pouffe.seatThickness");
 
             Bind<PouffeElement>(seatThicknessRow, pouffe => pouffe.SeatThicknessMM,
                 (pouffe, value) => pouffe.SeatThicknessMM = value,

@@ -19,8 +19,10 @@ namespace KitchenDesigner.Core.UI
         public override void Build()
         {
             var visibility = RowVisibility.When(() => Host.Target is BathtubElement);
-            var rimRow = Rows.NumberField(RimWidthLabel, visibility, "мм", RimWidthNode);
-            var bowlDepthRow = Rows.NumberField(BowlDepthLabel, visibility, "мм", BowlDepthNode);
+            var rimRow = Rows.NumberField(RimWidthLabel, visibility, "мм", RimWidthNode,
+                hint: "element.bathtub.rimWidth");
+            var bowlDepthRow = Rows.NumberField(BowlDepthLabel, visibility, "мм", BowlDepthNode,
+                hint: "element.bathtub.bowlDepth");
             var bowlRadiusRow = Rows.NumberField(BowlRadiusLabel, visibility, "мм",
                 BowlRadiusNode);
             var bowlFilletRow = Rows.NumberField(BowlFilletLabel, visibility, "мм",

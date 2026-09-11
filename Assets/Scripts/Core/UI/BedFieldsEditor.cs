@@ -32,7 +32,8 @@ namespace KitchenDesigner.Core.UI
         public override void Build()
         {
             var visibility = RowVisibility.For(ElementFacet.Bed);
-            _size = Rows.Dropdown(SizeLabel, SizeOptions(), OnSizeSelected, visibility, SizeNode);
+            _size = Rows.Dropdown(SizeLabel, SizeOptions(), OnSizeSelected, visibility, SizeNode,
+                hint: "element.bed.size");
             _headboard = Rows.Dropdown(HeadboardLabel, HeadboardOptions(), OnHeadboardSelected,
                 visibility, HeadboardNode);
         }

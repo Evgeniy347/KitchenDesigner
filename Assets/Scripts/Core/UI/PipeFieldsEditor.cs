@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core.UI
             var visibility = RowVisibility.For(ElementFacet.Pipe);
             _size = Rows.Dropdown("Условный проход",
                 new List<string>(PipeElementSpec.Designations()), OnSizeSelected, visibility,
-                "CtxPipeSize");
+                "CtxPipeSize", hint: "element.pipe.nominalBore");
             _outer = ReadOnlyField("Наружный Ø", visibility);
             _inner = ReadOnlyField("Внутренний Ø", visibility);
             _wall = ReadOnlyField("Толщина стенки", visibility);

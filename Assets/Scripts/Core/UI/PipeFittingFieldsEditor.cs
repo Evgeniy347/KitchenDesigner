@@ -24,7 +24,8 @@ namespace KitchenDesigner.Core.UI
 
         public override void Build()
         {
-            _bores[0] = ReadOnlyField("Диаметр 1", ElementFacet.PipeFitting);
+            _bores[0] = ReadOnlyField("Диаметр 1", ElementFacet.PipeFitting,
+                hint: "element.pipeFitting.bore");
             _bores[1] = ReadOnlyField("Диаметр 2", ElementFacet.PipeFittingSecondPort);
             _bores[2] = ReadOnlyField("Диаметр 3", ElementFacet.PipeFittingThirdPort);
             _ports.Build(Rows.Parent);
@@ -48,9 +49,9 @@ namespace KitchenDesigner.Core.UI
             if (element is PipeFittingElement fitting) _ports.Show(fitting);
         }
 
-        private TMP_InputField ReadOnlyField(string label, ElementFacet facet)
+        private TMP_InputField ReadOnlyField(string label, ElementFacet facet, string? hint = null)
         {
-            var field = Rows.NumberField(label, RowVisibility.For(facet));
+            var field = Rows.NumberField(label, RowVisibility.For(facet), "мм", null, hint);
             UIRowEnabled.SetControlEnabled(field, false);
             return field;
         }
