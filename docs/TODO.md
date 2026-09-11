@@ -82,7 +82,7 @@ mode и покадровую цену перетаскивания **нельз�
 списка), `MeasureRenderer.cs:30` и `EdgeOutlineRenderer.cs:68` (материал в `OnDestroy`), плюс
 `PerfHud`, `WallDeviceParts`, `LightPickRenderer`, `McpCommandHandler.Info/Scene`,
 `SpatialGridRenderer`. Свести тем же `DestroyNow.The` — и панель иерархии, дропдаун и ручки
-целиком — это не аддитивный дифф, и каждый кадр придётся смотреть глазами.
+ресайза станут проверяемы в EditMode.
 
 ---
 
