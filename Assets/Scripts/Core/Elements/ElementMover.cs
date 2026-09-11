@@ -258,21 +258,34 @@ namespace KitchenDesigner.Core
 
         private void HandleDuplicate()
         {
-            if (Input.GetKeyDown(KeyCode.D) && !IsDragging && _target != null &&
-                (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+            if (!Input.GetKeyDown(KeyCode.D) || IsDragging) return;
+            if (!CtrlHeld) return;
+
+            var sel = SelectionManager.Instance;
+            var sources = DuplicateSources(sel);
+            if (sources.Count == 0) return;
+
+            var copies = GroupDuplicate.Of(sources,
+                ElementFactoryInstance.DuplicateOffsetForCurrentView(), out var command);
+            if (command == null) return;
+
+            CommandStack.Execute(command);
+            if (sel != null) sel.SelectOnly(copies);
+        }
+
+        private readonly List<KitchenElement> _duplicateSources = new List<KitchenElement>();
+
+        private List<KitchenElement> DuplicateSources(SelectionManager? sel)
+        {
+            _duplicateSources.Clear();
+            if (sel != null && sel.SelectedElements.Count > 1)
             {
-                if (!ModuleEditMode.IsEditable(_target)) return;
-                var dup = ElementFactory.Duplicate(_target);
-                var newElement = dup != null ? dup.GetComponent<KitchenElement>() : null;
-                if (newElement != null)
-                {
-                    if (ModuleEditMode.IsActive)
-                        newElement.GroupId = ModuleEditMode.Active!.id;
-                    CommandStack.Execute(new CreateCommand(dup!));
-                    if (SelectionManager.Instance != null)
-                        SelectionManager.Instance.Select(newElement);
-                }
+                foreach (var e in sel.SelectedElements)
+                    if (e != null) _duplicateSources.Add(e);
+                return _duplicateSources;
             }
+            if (_target != null) _duplicateSources.Add(_target);
+            return _duplicateSources;
         }
 
         private void HandleDelete()
@@ -313,7 +326,9 @@ namespace KitchenDesigner.Core
                     ResizeHandleManager.IsResizing,
                     ResizeHandleManager.PointerOverHandle(),
                     TextureOverlayHandles.Active,
-                    TextureOverlayHandles.PointerOverHandle()))
+                    TextureOverlayHandles.PointerOverHandle(),
+                    GroupHandleManager.IsDragging,
+                    GroupHandleManager.PointerOverHandle()))
                 TryBeginPress();
 
             if (_pressed && Input.GetMouseButton(0))

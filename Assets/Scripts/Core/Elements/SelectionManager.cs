@@ -64,7 +64,9 @@ namespace KitchenDesigner.Core
                     ResizeHandleManager.IsResizing,
                     ResizeHandleManager.PointerOverHandle(),
                     TextureOverlayHandles.Active,
-                    TextureOverlayHandles.PointerOverHandle()))
+                    TextureOverlayHandles.PointerOverHandle(),
+                    GroupHandleManager.IsDragging,
+                    GroupHandleManager.PointerOverHandle()))
                 return;
 
             if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))

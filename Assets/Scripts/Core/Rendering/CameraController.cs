@@ -205,7 +205,8 @@ namespace KitchenDesigner.Core
             bool leftButtonOnEmptySpace = Input.GetMouseButtonDown(0) && !overUI
                 && !PointerHitsBoard()
                 && !ResizeHandleManager.PointerOverHandle()
-                && !TextureOverlayHandles.PointerOverHandle();
+                && !TextureOverlayHandles.PointerOverHandle()
+                && !GroupHandleManager.PointerOverHandle();
 
             if (middleButton || leftButtonOnEmptySpace)
             {

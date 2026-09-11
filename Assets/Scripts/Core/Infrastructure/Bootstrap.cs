@@ -58,6 +58,7 @@ namespace KitchenDesigner.Core
             if (FindAnyObjectByType<WallManager>() == null) gameObject.AddComponent<WallManager>();
             if (FindAnyObjectByType<SceneVisibilityManager>() == null) gameObject.AddComponent<SceneVisibilityManager>();
             if (FindAnyObjectByType<ResizeHandleManager>() == null) gameObject.AddComponent<ResizeHandleManager>();
+            if (FindAnyObjectByType<GroupHandleManager>() == null) gameObject.AddComponent<GroupHandleManager>();
             if (FindAnyObjectByType<TextureOverlayRenderer>() == null) gameObject.AddComponent<TextureOverlayRenderer>();
             if (FindAnyObjectByType<TextureOverlayHandles>() == null) gameObject.AddComponent<TextureOverlayHandles>();
             if (FindAnyObjectByType<UI.ConsoleOverlay>() == null) gameObject.AddComponent<UI.ConsoleOverlay>();
