@@ -1,24 +1,15 @@
-using UnityEngine;
-
 namespace KitchenDesigner.Core.UI
 {
     internal static class SidebarLastGroupPreference
     {
-        private const string Key = "KitchenSidebarLastGroup";
+        internal const string Key = "KitchenSidebarLastGroup";
 
         internal static string? Load()
-            => PlayerPrefs.HasKey(Key) ? PlayerPrefs.GetString(Key) : null;
+            => PreferenceStore.Current.Has(Key) ? PreferenceStore.Current.GetString(Key, "") : null;
 
-        internal static void Save(string groupTitle)
-        {
-            PlayerPrefs.SetString(Key, groupTitle);
-            PlayerPrefs.Save();
-        }
+        internal static void Save(string groupTitle) =>
+            PreferenceStore.Current.SetString(Key, groupTitle);
 
-        internal static void ClearForTests()
-        {
-            PlayerPrefs.DeleteKey(Key);
-            PlayerPrefs.Save();
-        }
+        internal static void ClearForTests() => PreferenceStore.Current.Delete(Key);
     }
 }

@@ -28,14 +28,14 @@ public class SmokeRunKeepsUserPrefsReproTests
     [SetUp]
     public void SaveUserPrefs()
     {
-        _prevLastPath = PlayerPrefs.GetString(StoredLastProject.Key, "");
+        _prevLastPath = PlayerPrefs.GetString(LastProjectMemory.Key, "");
         _prevFirstRun = PlayerPrefs.GetInt(FirstRunMarker.Key, 0);
     }
 
     [TearDown]
     public void RestoreUserPrefs()
     {
-        PlayerPrefs.SetString(StoredLastProject.Key, _prevLastPath);
+        PlayerPrefs.SetString(LastProjectMemory.Key, _prevLastPath);
         PlayerPrefs.SetInt(FirstRunMarker.Key, _prevFirstRun);
         PlayerPrefs.Save();
     }
@@ -43,7 +43,7 @@ public class SmokeRunKeepsUserPrefsReproTests
     [Test]
     public void ProjectFileStore_SmokeRunSavesItsOwnFile_UsersLastProjectStaysInPlayerPrefs()
     {
-        PlayerPrefs.SetString(StoredLastProject.Key, UserProject);
+        PlayerPrefs.SetString(LastProjectMemory.Key, UserProject);
         PlayerPrefs.Save();
 
         var smokeRun = new ProjectFileStore(SmokeRunArgs);
@@ -51,7 +51,7 @@ public class SmokeRunKeepsUserPrefsReproTests
 
         Assert.AreEqual(SmokeProject, smokeRun.LastPath,
             "внутри самого прогона файл всё-таки считается открытым — иначе save/load круг теряет путь");
-        Assert.AreEqual(UserProject, PlayerPrefs.GetString(StoredLastProject.Key, ""),
+        Assert.AreEqual(UserProject, PlayerPrefs.GetString(LastProjectMemory.Key, ""),
             "дымовой прогон не пишет «последний проект» в PlayerPrefs (на Windows это реестр)");
         Assert.AreEqual(UserProject, new ProjectFileStore(OrdinaryRunArgs).LastPath,
             "следующий ОБЫЧНЫЙ запуск пользователя открывает его проект, а не файл дымовой проверки");
@@ -60,13 +60,13 @@ public class SmokeRunKeepsUserPrefsReproTests
     [Test]
     public void ProjectFileStore_OrdinaryRunOpensAFile_LastProjectIsRemembered()
     {
-        PlayerPrefs.SetString(StoredLastProject.Key, "");
+        PlayerPrefs.SetString(LastProjectMemory.Key, "");
         PlayerPrefs.Save();
 
         var ordinaryRun = new ProjectFileStore(OrdinaryRunArgs);
         ordinaryRun.LastPath = UserProject;
 
-        Assert.AreEqual(UserProject, PlayerPrefs.GetString(StoredLastProject.Key, ""),
+        Assert.AreEqual(UserProject, PlayerPrefs.GetString(LastProjectMemory.Key, ""),
             "противоположный вход: без аргумента прогона «последний проект» обязан по-прежнему писаться");
         Assert.AreEqual(UserProject, new ProjectFileStore(OrdinaryRunArgs).LastPath,
             "и переживать перезапуск приложения — это и есть поведение, ради которого ключ существует");
