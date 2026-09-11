@@ -119,10 +119,10 @@ namespace KitchenDesigner.Tests.Geometry
         private static string ElementsDir() => RepoPaths.Subdir("Assets", "Scripts", "Core", "Elements");
 
         private static string[] ElementSources() =>
-            Directory.GetFiles(ElementsDir(), "*.cs", SearchOption.AllDirectories);
+            SourceCorpus.Files(ElementsDir());
 
         private static bool Matches(string file, string what) =>
-            File.ReadAllLines(file).Any(line => Regex.IsMatch(SourceLines.CodeOnly(line), what));
+            SourceCorpus.Lines(file).Any(line => SourceCorpus.Rule(what).IsMatch(SourceLines.CodeOnly(line)));
 
         public static string[] MeshBuildingElements() =>
             ElementSources()

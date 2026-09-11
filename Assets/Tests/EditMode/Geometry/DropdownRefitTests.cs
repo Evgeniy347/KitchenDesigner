@@ -34,9 +34,9 @@ namespace KitchenDesigner.Tests.Geometry
         {
             var offenders = new List<string>();
 
-            foreach (var file in Directory.GetFiles(UiDir(), "*.cs", SearchOption.AllDirectories))
+            foreach (var file in SourceCorpus.Files(UiDir()))
             {
-                var lines = File.ReadAllLines(file);
+                var lines = SourceCorpus.Lines(file);
                 if (!ChangesOptions(lines)) continue;
                 if (SourceLines.CodeOnly(lines).Any(line => line.Contains(Refit))) continue;
                 offenders.Add(Path.GetFileName(file));
@@ -76,7 +76,7 @@ namespace KitchenDesigner.Tests.Geometry
             var factory = Path.Combine(UiDir(), "UIFactory.cs");
 
             Assert.IsTrue(File.Exists(factory), "скан смотрит не туда — по пустому пути он зеленеет");
-            Assert.IsTrue(ChangesOptions(File.ReadAllLines(factory)),
+            Assert.IsTrue(ChangesOptions(SourceCorpus.Lines(factory)),
                 "UIFactory назначает options при сборке списка");
             CollectionAssert.DoesNotContain(FilesChangingOptionsWithoutRefit(), "UIFactory.cs",
                 "и тут же зовёт FitDropdownItems — сканер обязан это видеть");

@@ -74,7 +74,7 @@ namespace KitchenDesigner.Tests.Geometry
         private static string CoreSourceDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
 
         private static string[] Sources() =>
-            Directory.GetFiles(CoreSourceDir(), "*.cs", SearchOption.AllDirectories);
+            SourceCorpus.Files(CoreSourceDir());
 
         private static List<string> Offenders(Regex rule, (string file, string why)[] allowed)
         {
@@ -83,7 +83,7 @@ namespace KitchenDesigner.Tests.Geometry
             {
                 string name = Path.GetFileName(path) ?? string.Empty;
                 if (allowed.Any(a => a.file == name)) continue;
-                if (!rule.IsMatch(File.ReadAllText(path))) continue;
+                if (!rule.IsMatch(SourceCorpus.Text(path))) continue;
                 offenders.Add(name);
             }
             return offenders;
@@ -132,7 +132,7 @@ namespace KitchenDesigner.Tests.Geometry
                 Path.GetFileName(p) == "ScenePipeSnapshot.cs");
             Assert.IsNotNull(path, "снимок сцены исчез — сторож остался бы зелёным ни о чём");
 
-            string text = File.ReadAllText(path!);
+            string text = SourceCorpus.Text(path!);
 
             Assert.IsFalse(MouthArithmetic.IsMatch(text),
                 "положительный контроль к скану выше на КОНКРЕТНОМ файле, ради которого "
@@ -151,7 +151,7 @@ namespace KitchenDesigner.Tests.Geometry
                 Path.GetFileName(p) == "ElementMover.cs");
             Assert.IsNotNull(path, "перетаскивание исчезло — сторож остался бы зелёным ни о чём");
 
-            string text = File.ReadAllText(path!);
+            string text = SourceCorpus.Text(path!);
 
             StringAssert.Contains("SnapCursor", text,
                 "конкуренцию за доворот решает КУРСОР, и взять его негде, кроме мыши: "
@@ -194,7 +194,7 @@ namespace KitchenDesigner.Tests.Geometry
             {
                 string? path = Sources().FirstOrDefault(p => Path.GetFileName(p) == file);
                 if (path == null) continue;
-                if (!rule.IsMatch(File.ReadAllText(path))) silent.Add(file);
+                if (!rule.IsMatch(SourceCorpus.Text(path))) silent.Add(file);
             }
 
             Assert.IsEmpty(silent,

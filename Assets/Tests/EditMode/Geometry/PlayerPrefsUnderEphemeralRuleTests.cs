@@ -43,7 +43,7 @@ namespace KitchenDesigner.Tests.Geometry
         private static string ScriptsDir() => RepoPaths.Subdir("Assets", "Scripts");
 
         private static IEnumerable<string> ProductionFiles() =>
-            Directory.GetFiles(ScriptsDir(), "*.cs", SearchOption.AllDirectories)
+            SourceCorpus.Files(ScriptsDir())
                 .Concat(Directory.GetFiles(RepoPaths.Subdir("Assets", "Editor"), "*.cs",
                     SearchOption.AllDirectories));
 
@@ -54,7 +54,7 @@ namespace KitchenDesigner.Tests.Geometry
             foreach (var file in ProductionFiles())
             {
                 if (Path.GetFileName(file) == TheOnlyAdapter) continue;
-                var keys = PrefsCall.Matches(File.ReadAllText(file))
+                var keys = PrefsCall.Matches(SourceCorpus.Text(file))
                     .Cast<Match>()
                     .Select(m => m.Groups[1].Value.Trim())
                     .Distinct()
@@ -76,7 +76,7 @@ namespace KitchenDesigner.Tests.Geometry
             var adapter = Path.Combine(ScriptsDir(), "Core", "Persistence", TheOnlyAdapter);
             Assert.IsTrue(File.Exists(adapter), "адаптер переехал: " + TheOnlyAdapter);
 
-            var text = File.ReadAllText(adapter);
+            var text = SourceCorpus.Text(adapter);
             StringAssert.Contains("PlayerPrefs", text,
                 "сканируемое множество обязано включать сам адаптер — иначе тест выше "
                 + "зелен на пустом месте");
@@ -93,7 +93,7 @@ namespace KitchenDesigner.Tests.Geometry
                     path.Replace('/', Path.DirectorySeparatorChar));
                 Assert.IsTrue(File.Exists(full), $"держатель ключа переехал: {path}");
 
-                var text = File.ReadAllText(full);
+                var text = SourceCorpus.Text(full);
                 StringAssert.Contains("PreferenceStore", text,
                     $"{path}: {why} — ключ обязан ходить через PreferenceStore");
                 StringAssert.DoesNotContain("PlayerPrefs", text,

@@ -76,11 +76,11 @@ namespace KitchenDesigner.Tests.Geometry
         {
             var counts = new Dictionary<string, int>(StringComparer.Ordinal);
 
-            foreach (var file in Directory.GetFiles(UiDir(), "*.cs", SearchOption.AllDirectories))
+            foreach (var file in SourceCorpus.Files(UiDir()))
             {
                 var name = Path.GetFileName(file);
                 if (name == PaletteFile) continue;
-                counts[name] = LiteralsIn(File.ReadAllLines(file));
+                counts[name] = LiteralsIn(SourceCorpus.Lines(file));
             }
 
             return counts;

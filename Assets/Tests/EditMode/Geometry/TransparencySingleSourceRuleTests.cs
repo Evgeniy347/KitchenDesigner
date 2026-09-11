@@ -34,7 +34,7 @@ namespace KitchenDesigner.Tests.Geometry
         [Test]
         public void NoFileOtherThanTheCanonicalOne_ConfiguresMaterialTransparency()
         {
-            var files = Directory.GetFiles(ScriptsRoot, "*.cs", SearchOption.AllDirectories)
+            var files = SourceCorpus.Files(ScriptsRoot)
                 .Where(f => Path.GetFileName(f) != CanonicalFileName)
                 .ToList();
 
@@ -43,7 +43,7 @@ namespace KitchenDesigner.Tests.Geometry
 
             foreach (var file in files)
             {
-                var source = File.ReadAllText(file);
+                var source = SourceCorpus.Text(file);
                 foreach (var token in TransparencyTokens)
                     Assert.IsFalse(source.Contains(token),
                         $"{Path.GetFileName(file)} пишет {token} напрямую — "

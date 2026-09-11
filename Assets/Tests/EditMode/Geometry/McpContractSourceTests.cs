@@ -15,7 +15,7 @@ namespace KitchenDesigner.Tests.Geometry
             RepoPaths.Subdir("Assets", "Scripts", "Core", "MCP", "Contract");
 
         private static IReadOnlyList<string> ContractFiles() =>
-            Directory.GetFiles(ContractDir(), "*.cs", SearchOption.AllDirectories)
+            SourceCorpus.Files(ContractDir())
                 .OrderBy(f => f, StringComparer.Ordinal).ToList();
 
         [Test]
@@ -35,7 +35,7 @@ namespace KitchenDesigner.Tests.Geometry
             var offenders = new List<string>();
 
             foreach (var file in ContractFiles())
-                foreach (var line in SourceLines.WithoutComments(File.ReadAllLines(file)))
+                foreach (var line in SourceLines.WithoutComments(SourceCorpus.Lines(file)))
                 {
                     var trimmed = line.Trim();
                     if (!trimmed.StartsWith("using ", StringComparison.Ordinal)) continue;
@@ -61,7 +61,7 @@ namespace KitchenDesigner.Tests.Geometry
 
             foreach (var file in ContractFiles())
             {
-                var lines = SourceLines.WithoutComments(File.ReadAllLines(file)).ToList();
+                var lines = SourceLines.WithoutComments(SourceCorpus.Lines(file)).ToList();
                 for (int i = 0; i < lines.Count; i++)
                 {
                     var trimmed = lines[i].Trim();

@@ -42,11 +42,11 @@ namespace KitchenDesigner.Tests.Geometry
         private static Dictionary<string, int> RawButtonsByFile()
         {
             var counts = new Dictionary<string, int>(StringComparer.Ordinal);
-            foreach (var file in Directory.GetFiles(UiDir(), "*.cs", SearchOption.AllDirectories))
+            foreach (var file in SourceCorpus.Files(UiDir()))
             {
                 var name = Path.GetFileName(file);
                 if (name == FactoryFile) continue;
-                int hits = SourceLines.WithoutComments(File.ReadAllLines(file))
+                int hits = SourceLines.WithoutComments(SourceCorpus.Lines(file))
                     .Sum(line => RawButton.Matches(line).Count);
                 if (hits > 0) counts[name] = hits;
             }
@@ -89,7 +89,7 @@ namespace KitchenDesigner.Tests.Geometry
         [Test]
         public void TheScan_SeesTheUiLayer_AndCountsARawButton()
         {
-            var files = Directory.GetFiles(UiDir(), "*.cs", SearchOption.AllDirectories);
+            var files = SourceCorpus.Files(UiDir());
             Assert.Greater(files.Length, 20,
                 "скан по несуществующему пути зеленеет, ничего не проверив: слой UI обязан "
                 + "найтись и быть непустым");

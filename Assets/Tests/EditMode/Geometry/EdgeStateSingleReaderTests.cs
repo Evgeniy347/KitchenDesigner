@@ -48,10 +48,10 @@ namespace KitchenDesigner.Tests.Geometry
         public void RawEdgeCoverage_IsReadByExactlyOneProductionFile()
         {
             var offenders = new List<string>();
-            foreach (var file in Directory.GetFiles(ScriptsDir(), "*.cs", SearchOption.AllDirectories))
+            foreach (var file in SourceCorpus.Files(ScriptsDir()))
             {
                 if (Path.GetFileName(file) == TheOnlyReader) continue;
-                var text = File.ReadAllText(file);
+                var text = SourceCorpus.Text(file);
                 if (!RawCoverageCall.IsMatch(text)) continue;
                 offenders.Add(file.Substring(ScriptsDir().Length + 1)
                     .Replace(Path.DirectorySeparatorChar, '/'));
@@ -72,7 +72,7 @@ namespace KitchenDesigner.Tests.Geometry
             {
                 var full = Path.Combine(ScriptsDir(), "Core", path.Replace('/', Path.DirectorySeparatorChar));
                 Assert.IsTrue(File.Exists(full), $"потребитель переехал: {path}");
-                StringAssert.Contains("HasEdgeEffective", File.ReadAllText(full),
+                StringAssert.Contains("HasEdgeEffective", SourceCorpus.Text(full),
                     $"{path}: {why} — вопрос обязан идти через EdgeBanding.HasEdgeEffective");
             }
         }

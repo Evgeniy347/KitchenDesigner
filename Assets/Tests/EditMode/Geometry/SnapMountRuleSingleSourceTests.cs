@@ -41,7 +41,7 @@ namespace KitchenDesigner.Tests.Geometry
         private static string CoreSourceDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
 
         private static string[] Sources() =>
-            Directory.GetFiles(CoreSourceDir(), "*.cs", SearchOption.AllDirectories);
+            SourceCorpus.Files(CoreSourceDir());
 
         [Test]
         public void TheScan_SeesTheCore_AndIsNotSilentlyEmpty()
@@ -59,7 +59,7 @@ namespace KitchenDesigner.Tests.Geometry
             {
                 string name = Path.GetFileName(path) ?? string.Empty;
                 if (Allowed.Any(a => a.file == name)) continue;
-                if (!MountRule.IsMatch(File.ReadAllText(path))) continue;
+                if (!MountRule.IsMatch(SourceCorpus.Text(path))) continue;
                 offenders.Add(name);
             }
 
@@ -93,7 +93,7 @@ namespace KitchenDesigner.Tests.Geometry
             {
                 string? path = Sources().FirstOrDefault(p => Path.GetFileName(p) == file);
                 if (path == null) continue;
-                if (!MountRule.IsMatch(File.ReadAllText(path))) silent.Add(file);
+                if (!MountRule.IsMatch(SourceCorpus.Text(path))) silent.Add(file);
             }
 
             Assert.IsEmpty(silent,
