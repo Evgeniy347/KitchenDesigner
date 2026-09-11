@@ -15,8 +15,15 @@ namespace KitchenDesigner.Core.UI
         public const string FrostDepthUnknown = "—";
 
         private readonly SettingsRowFactory _rows;
+        private TextMeshProUGUI? _frostDepthValue;
 
         public SettingsConstructionTab(SettingsRowFactory rows) => _rows = rows;
+
+        public static string FrostDepthText(KitchenSettings s) =>
+            FrostDepth.TryNormativeMm(s.ConstructionRegion, s.ConstructionSoil, out float mm)
+                ? Mathf.RoundToInt(mm).ToString(System.Globalization.CultureInfo.InvariantCulture)
+                  + " мм"
+                : FrostDepthUnknown;
 
         public static List<string> MasonryTitles()
         {
@@ -33,17 +40,17 @@ namespace KitchenDesigner.Core.UI
 
             _rows.AddDropdown(page, ref y, RegionId,
                 new List<string>(ConstructionRegionTitles.All), (int)s.ConstructionRegion,
-                v => { s.ConstructionRegion = (ConstructionRegion)v; },
+                v => { s.ConstructionRegion = (ConstructionRegion)v; ShowFrostDepth(s); },
                 read: () => (int)s.ConstructionRegion);
             Hint(RegionId, hint: "settings.construction.region");
 
-            _rows.AddReadOnlyValue(page, ref y, FrostDepthId, FrostDepthUnknown,
-                read: () => FrostDepthUnknown);
+            _frostDepthValue = _rows.AddReadOnlyValue(page, ref y, FrostDepthId, FrostDepthText(s),
+                read: () => FrostDepthText(s));
             Hint(FrostDepthId, hint: "settings.construction.frostDepth");
 
             _rows.AddDropdown(page, ref y, SoilId,
                 new List<string>(SoilKindTitles.All), (int)s.ConstructionSoil,
-                v => { s.ConstructionSoil = (SoilKind)v; },
+                v => { s.ConstructionSoil = (SoilKind)v; ShowFrostDepth(s); },
                 read: () => (int)s.ConstructionSoil);
             Hint(SoilId, hint: "settings.construction.soil");
 
@@ -109,6 +116,11 @@ namespace KitchenDesigner.Core.UI
                     write(parsed);
                     f.text = read().ToString();
                 }, read().ToString(), unit: unit, read: () => read().ToString());
+        }
+
+        private void ShowFrostDepth(KitchenSettings s)
+        {
+            if (_frostDepthValue != null) _frostDepthValue.text = FrostDepthText(s);
         }
 
         private void Hint(string rowKey, string hint) =>

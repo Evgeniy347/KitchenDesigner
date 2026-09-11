@@ -9,8 +9,8 @@ using KitchenDesigner.Core.UI;
 /// <summary>Вкладка «Строительство» — место, где живут дефолты дома: регион,
 /// высота этажа, кладка со швом и запасом, грунт, бетон, подушка. Проверяется
 /// три решения: у каждой строки есть подсказка «i» (docs/UI-GUIDELINES.md §13),
-/// глубина промерзания — ТОЛЬКО ЧТЕНИЕ и до появления таблицы СП 131.13330
-/// показывает прочерк, а не выдуманное число, и дропдауны перечисляют ровно те
+/// глубина промерзания — ТОЛЬКО ЧТЕНИЕ и показывает то, что даёт норматив, а там,
+/// где норматив числа не даёт, — прочерк, и дропдауны перечисляют ровно те
 /// варианты, которые знает модель.</summary>
 public class SettingsConstructionTabTests
 {
@@ -94,24 +94,86 @@ public class SettingsConstructionTabTests
             + "(docs/UI-GUIDELINES.md §13). Найдено: " + badges.Length);
     }
 
-    /// <summary>Глубина промерзания выводится из региона по таблице СП 131.13330,
-    /// которой ещё нет. Пока её нет — прочерк: подставленное «примерно 1 800»
-    /// пошло бы в расчёт ленты и выглядело бы как настоящее число.</summary>
+    /// <summary>Глубина промерзания не вводится руками: она выводится из региона И
+    /// грунта по СП 22.13330.2016 (5.5.3) — вывод формулы разобран в
+    /// FrostDepthTests.</summary>
     [Test]
-    public void TheFrostDepth_IsReadOnly_AndShowsADashUntilTheNormativeTableArrives()
+    public void TheFrostDepth_IsReadOnly_BecauseItIsDerivedNotEntered()
     {
         var row = Row("RowRo_" + SettingsConstructionTab.FrostDepthId);
 
         Assert.IsEmpty(row.GetComponentsInChildren<TMP_InputField>(true),
-            "глубина промерзания не вводится руками — она выводится из региона");
+            "глубина промерзания не вводится руками — она выводится из региона и грунта");
         Assert.IsEmpty(row.GetComponentsInChildren<TMP_Dropdown>(true),
             "и не выбирается из списка");
+    }
 
-        var value = row.Find("Val_" + SettingsConstructionTab.FrostDepthId);
+    /// <summary>Сторож читает ПОСТРОЕННОЕ поле, а не функцию: таблица и формула
+    /// могут быть верными, а поле — так и не подключённым к ним (agents/TEST-DESIGN.md,
+    /// «У сторожа, который читает ИСХОДНИК, обязана быть пара, читающая ПОСТРОЕННЫЙ
+    /// продукт»).</summary>
+    [Test]
+    public void TheFrostDepth_ShowsTheNormativeDepthOfTheChosenRegionAndSoil()
+    {
+        KitchenSettings.Instance.ConstructionRegion = ConstructionRegion.Centre;
+        KitchenSettings.Instance.ConstructionSoil = SoilKind.Loam;
+        _ui!.SetVisible(true);
+
+        Assert.AreEqual("1079 мм", FrostDepthText(),
+            "Москва, суглинок: d_fn = 0,23·√22,0 = 1,079 м. Миллиметры — единица приложения "
+            + "(conventions/UNITS-AND-FILES.md)");
+    }
+
+    [Test]
+    public void TheFrostDepth_FollowsTheSoilDropdown_NotOnlyTheRegion()
+    {
+        KitchenSettings.Instance.ConstructionRegion = ConstructionRegion.Centre;
+        KitchenSettings.Instance.ConstructionSoil = SoilKind.Loam;
+        _ui!.SetVisible(true);
+        string onLoam = FrostDepthText();
+
+        Row("RowDd_" + SettingsConstructionTab.SoilId)
+            .GetComponentInChildren<TMP_Dropdown>(true).value = (int)SoilKind.Sand;
+
+        Assert.AreEqual("1407 мм", FrostDepthText(),
+            "тот же регион на песке промерзает глубже: 0,30·√22,0 = 1,407 м. Было: " + onLoam
+            + ". Поле, которое слушает только регион, показало бы прежнее число");
+    }
+
+    [Test]
+    public void TheFrostDepth_FollowsTheRegionDropdown()
+    {
+        KitchenSettings.Instance.ConstructionRegion = ConstructionRegion.Centre;
+        KitchenSettings.Instance.ConstructionSoil = SoilKind.Loam;
+        _ui!.SetVisible(true);
+
+        Row("RowDd_" + SettingsConstructionTab.RegionId)
+            .GetComponentInChildren<TMP_Dropdown>(true).value = (int)ConstructionRegion.Siberia;
+
+        Assert.AreEqual("1827 мм", FrostDepthText(),
+            "Новосибирск, суглинок: 0,23·√63,1 = 1,827 м. Поле обязано обновляться сразу, "
+            + "а не при следующем открытии окна");
+    }
+
+    /// <summary>Прочерк остался, но теперь он означает названную вещь: норматив
+    /// не даёт d0 для торфа, и выдумывать его нельзя.</summary>
+    [Test]
+    public void TheFrostDepth_ShowsADash_WhereTheNormGivesNoNumber()
+    {
+        KitchenSettings.Instance.ConstructionRegion = ConstructionRegion.Centre;
+        KitchenSettings.Instance.ConstructionSoil = SoilKind.Peat;
+        _ui!.SetVisible(true);
+
+        Assert.AreEqual(SettingsConstructionTab.FrostDepthUnknown, FrostDepthText(),
+            "для торфа d0 в СП 22.13330.2016 (5.5.3) не назван — прочерк, а не чужое число");
+    }
+
+    private string FrostDepthText()
+    {
+        var value = Row("RowRo_" + SettingsConstructionTab.FrostDepthId)
+            .Find("Val_" + SettingsConstructionTab.FrostDepthId);
         Assert.IsNotNull(value, "значение обязано быть чем-то показано");
-        Assert.AreEqual(SettingsConstructionTab.FrostDepthUnknown,
-            value!.GetComponent<TextMeshProUGUI>().text.Replace("​", ""),
-            "до появления таблицы — прочерк, а не выдуманное число");
+        return value!.GetComponent<TextMeshProUGUI>().text.Replace("​", "");
     }
 
     [Test]
