@@ -145,13 +145,15 @@ namespace KitchenDesigner.Core.UI
         private void OnShapeSelected(int index)
         {
             if (Host.Target is LightSourceElement lamp)
-                lamp.Shape = index == 1 ? LampShape.Sphere : LampShape.Plafond;
+                ChoiceRowUndo.Commit(lamp,
+                    () => lamp.Shape = index == 1 ? LampShape.Sphere : LampShape.Plafond);
         }
 
         private void OnShadowSelected(int index)
         {
             if (Host.Target is LightSourceElement lamp)
-                lamp.Shadow = (LampShadow)Mathf.Clamp(index, 0, 2);
+                ChoiceRowUndo.Commit(lamp,
+                    () => lamp.Shadow = (LampShadow)Mathf.Clamp(index, 0, 2));
         }
 
         private void ToggleAdvanced()
