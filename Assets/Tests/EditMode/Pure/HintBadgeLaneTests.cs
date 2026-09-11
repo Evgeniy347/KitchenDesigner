@@ -139,4 +139,81 @@ public class HintBadgeLaneTests
             "ужимание подписи не должно двигать значок: он стоит там же, где и стоял, — "
             + "на общий внутренний зазор за концом слова");
     }
+
+    /// <summary>x подписи строки настроек первого уровня вложенности:
+    /// −(480 − 300)/2 + 20 по числам <c>SettingsRowFactory</c>. Точка отсчёта
+    /// произвольная — утверждения ниже сравнивают края между собой, а не с константой.</summary>
+    private const float IndentedRowAnchoredX = -70f;
+
+    private static readonly float[] Pivots = { 0f, 0.5f };
+
+    private static readonly float[] Columns =
+        { PropertyDropdownLabelWidth, PropertyFieldLabelWidth, LabelWidth };
+
+    private static HintBadgeLane.LabelRect Label(float pivotX, float column) =>
+        new HintBadgeLane.LabelRect(IndentedRowAnchoredX, pivotX, column);
+
+    private static HintBadgeLane.LabelRect Narrowed(float pivotX, float column, float textWidth) =>
+        HintBadgeLane.NarrowedToTextAndLane(Label(pivotX, column), textWidth, Badge, Gap);
+
+    /// <summary>Отступ подписи — это то, что человек видит: подпункт настроек обязан
+    /// стоять со сдвигом под своим родителем. Ужимание подписи под дорожку значка не
+    /// смеет сдвинуть её ЛЕВЫЙ КРАЙ ни на пиксель — ни у подписи с левым пивотом, ни у
+    /// подписи с центральным, у которой одно лишь уменьшение ширины утаскивает край
+    /// вправо на половину ужатия.</summary>
+    [Test]
+    public void NarrowingALabel_LeavesItsLeftEdgeWhereItWas_AtBothPivots()
+    {
+        var offenders = new System.Collections.Generic.List<string>();
+
+        foreach (float pivotX in Pivots)
+        foreach (float column in Columns)
+        {
+            float before = Label(pivotX, column).LeftEdge;
+            float worst = 0f;
+
+            for (float textWidth = 0f; textWidth <= column * 2f; textWidth += 0.5f)
+            {
+                float drift = Mathf.Abs(Narrowed(pivotX, column, textWidth).LeftEdge - before);
+                if (drift > worst) worst = drift;
+            }
+
+            if (worst > 0.001f)
+                offenders.Add($"пивот {pivotX}, колонка {column} px: до {worst:0.##} px");
+        }
+
+        Assert.IsEmpty(offenders,
+            "Левый край подписи обязан остаться на месте: он и есть отступ, по которому "
+            + "видно, что подпункт стоит под родителем. Нарушено: "
+            + string.Join(" | ", offenders));
+    }
+
+    /// <summary>Тот же вопрос со стороны того, кто отступ СЧИТЫВАЕТ: и панель, и
+    /// <c>SettingsPanelUITests.SubOptions_AreIndented_UnderTheirParent</c> берут
+    /// <c>anchoredPosition.x</c> подписи, а не её левый край, и у двух подписей одного
+    /// уровня он обязан совпадать при любых их текстах. Сохранить левый край СДВИГОМ
+    /// при центральном пивоте этого не даёт: центр уезжает на половину ужатия, то есть
+    /// на разную величину под разные слова («Контур стен» — 108 px, «Опускать ближние
+    /// стены» — 41 px, и подпункты разъехались на 67 px). Поэтому подпись ужимается
+    /// вокруг левого края: пивот переезжает туда, и x подписи снова ЕСТЬ её отступ.</summary>
+    [Test]
+    public void TwoLabelsOfOneIndent_KeepOneAnchoredX_WhateverTheirTexts()
+    {
+        foreach (float pivotX in Pivots)
+        foreach (float column in Columns)
+        {
+            var shortWord = Narrowed(pivotX, column, column * 0.15f);
+            var longWord = Narrowed(pivotX, column, column * 0.75f);
+
+            Assert.AreNotEqual(shortWord.Width, longWord.Width,
+                $"пивот {pivotX}, колонка {column} px: подписи ужались одинаково — "
+                + "утверждения ниже проверяют уже не тот случай, подбери ширины текста");
+            Assert.AreEqual(shortWord.AnchoredX, longWord.AnchoredX, 0.001f,
+                $"пивот {pivotX}, колонка {column} px: подписи стоят на одном уровне "
+                + "вложенности, и отступ у них обязан быть один при любой длине слова");
+            Assert.AreEqual(Label(pivotX, column).LeftEdge, shortWord.AnchoredX, 0.001f,
+                $"пивот {pivotX}, колонка {column} px: после ужимания x подписи — это её "
+                + "левый край, а не центр прямоугольника, который у каждого слова свой");
+        }
+    }
 }
