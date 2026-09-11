@@ -258,16 +258,10 @@ namespace KitchenDesigner.Core
             {
                 if (q == null) continue;
                 var filter = q.GetComponent<MeshFilter>();
-                if (filter != null && filter.sharedMesh != null) DestroyNow(filter.sharedMesh);
-                DestroyNow(q);
+                if (filter != null && filter.sharedMesh != null) DestroyNow.The(filter.sharedMesh);
+                DestroyNow.The(q);
             }
             entry.quads.Clear();
-        }
-
-        private static void DestroyNow(Object obj)
-        {
-            if (Application.isPlaying) Destroy(obj);
-            else DestroyImmediate(obj);
         }
     }
 }

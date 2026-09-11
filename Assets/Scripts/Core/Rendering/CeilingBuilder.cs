@@ -34,14 +34,14 @@ namespace KitchenDesigner.Core
         public static void Clear()
         {
             if (_ceiling == null) return;
-            DestroyNow(_ceiling);
+            DestroyNow.The(_ceiling);
             _ceiling = null;
         }
 
         private static void DropColliderSoClicksPassThrough(GameObject go)
         {
             var col = go.GetComponent<Collider>();
-            if (col != null) DestroyNow(col);
+            if (col != null) DestroyNow.The(col);
         }
 
         private static void PaintAsShadowCastingSlab(MeshRenderer renderer)
@@ -55,12 +55,6 @@ namespace KitchenDesigner.Core
             }
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             renderer.receiveShadows = true;
-        }
-
-        private static void DestroyNow(Object target)
-        {
-            if (Application.isPlaying) Object.Destroy(target);
-            else Object.DestroyImmediate(target);
         }
 
         private static List<Bounds> CollectWallBoundsAtFullHeight()

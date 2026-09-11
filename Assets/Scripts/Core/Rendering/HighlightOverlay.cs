@@ -53,11 +53,11 @@ namespace KitchenDesigner.Core
         public static void Hide()
         {
             foreach (var piece in Pieces)
-                if (piece != null) DestroyNow(piece);
+                if (piece != null) DestroyNow.The(piece);
             Pieces.Clear();
 
             foreach (var mesh in OwnedMeshes)
-                if (mesh != null) DestroyNow(mesh);
+                if (mesh != null) DestroyNow.The(mesh);
             OwnedMeshes.Clear();
 
             _shownFor = null;
@@ -226,12 +226,6 @@ namespace KitchenDesigner.Core
             renderer.receiveShadows = false;
 
             Pieces.Add(go);
-        }
-
-        private static void DestroyNow(UnityEngine.Object obj)
-        {
-            if (Application.isPlaying) UnityEngine.Object.Destroy(obj);
-            else UnityEngine.Object.DestroyImmediate(obj);
         }
     }
 }

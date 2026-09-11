@@ -54,7 +54,7 @@ namespace KitchenDesigner.Core
 
             if (Applied.Count == 0)
             {
-                DestroyNow(painted);
+                DestroyNow.The(painted);
                 return;
             }
 
@@ -73,7 +73,7 @@ namespace KitchenDesigner.Core
 
             Applied.Clear();
 
-            if (_painted != null) DestroyNow(_painted);
+            if (_painted != null) DestroyNow.The(_painted);
             _painted = null;
             _shownFor = null;
         }
@@ -101,12 +101,6 @@ namespace KitchenDesigner.Core
             painted.color = color;
             if (painted.HasProperty("_BaseColor")) painted.SetColor("_BaseColor", color);
             return painted;
-        }
-
-        private static void DestroyNow(UnityEngine.Object obj)
-        {
-            if (Application.isPlaying) UnityEngine.Object.Destroy(obj);
-            else UnityEngine.Object.DestroyImmediate(obj);
         }
     }
 }

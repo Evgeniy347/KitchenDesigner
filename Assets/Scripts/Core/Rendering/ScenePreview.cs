@@ -116,10 +116,10 @@ namespace KitchenDesigner.Core
             }
 
             foreach (var material in Painted)
-                if (material != null) DestroyNow(material);
+                if (material != null) DestroyNow.The(material);
             Painted.Clear();
 
-            if (_ghost != null) DestroyNow(_ghost);
+            if (_ghost != null) DestroyNow.The(_ghost);
             _ghost = null;
         }
 
@@ -180,12 +180,6 @@ namespace KitchenDesigner.Core
         {
             var shader = Shader.Find("Universal Render Pipeline/Lit");
             return shader == null ? null : TransparentMaterial.Make(shader, color);
-        }
-
-        private static void DestroyNow(UnityEngine.Object obj)
-        {
-            if (Application.isPlaying) UnityEngine.Object.Destroy(obj);
-            else UnityEngine.Object.DestroyImmediate(obj);
         }
     }
 }

@@ -144,8 +144,7 @@ namespace KitchenDesigner.Core
 
             if (_volumeGo != null)
             {
-                if (Application.isPlaying) UnityEngine.Object.Destroy(_volumeGo);
-                else UnityEngine.Object.DestroyImmediate(_volumeGo);
+                DestroyNow.The(_volumeGo);
                 _volumeGo = null;
             }
 

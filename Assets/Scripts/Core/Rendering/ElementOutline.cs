@@ -101,16 +101,10 @@ namespace KitchenDesigner.Core
             _root.gameObject.SetActive(false);
         }
 
-        private static void DestroyNow(Object target)
-        {
-            if (Application.isPlaying) Object.Destroy(target);
-            else Object.DestroyImmediate(target);
-        }
-
         private static void DropColliderSoClicksReachThePart(GameObject seg)
         {
             var col = seg.GetComponent<Collider>();
-            if (col != null) DestroyNow(col);
+            if (col != null) DestroyNow.The(col);
         }
 
         public void Show(bool selected)
@@ -139,7 +133,7 @@ namespace KitchenDesigner.Core
 
         private void OnDestroy()
         {
-            if (_root != null) DestroyNow(_root.gameObject);
+            if (_root != null) DestroyNow.The(_root.gameObject);
         }
 
         private void UpdateEdges()
