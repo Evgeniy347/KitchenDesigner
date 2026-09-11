@@ -55,9 +55,26 @@ public class SaveFormatDefaultsTests
 
     private static FieldInfo[] PersistedFields(Type t) =>
         t.GetFields(BindingFlags.Instance | BindingFlags.Public)
-            .Where(f => !f.IsInitOnly)
+            .Where(f => !f.IsInitOnly
+                && f.GetCustomAttribute<NonSerializedAttribute>() == null)
             .OrderBy(f => f.Name, StringComparer.Ordinal)
             .ToArray();
+
+    /// <summary>`[NonSerialized]` — не ключ файла, а переносчик внутри процесса
+    /// (сырая запись элемента живёт так от чтения файла до его записи). Требовать
+    /// от него инициализатор нечего: в JSON он не попадает вовсе. Но и отбор
+    /// «пропусти NonSerialized» обязан быть под стражей — иначе однажды он
+    /// пропустит весь формат и зазеленеет вхолостую.</summary>
+    [Test]
+    public void TheScan_SkipsNonSerializedCarriers_ButStillSeesTheFormat()
+    {
+        var names = PersistedFields(typeof(ElementData)).Select(f => f.Name).ToArray();
+
+        CollectionAssert.DoesNotContain(names, nameof(ElementData.rawJson));
+        CollectionAssert.Contains(names, nameof(ElementData.name));
+        CollectionAssert.Contains(names, nameof(ElementData.elementType));
+        Assert.Greater(names.Length, 100, "формат элемента — это сотни ключей, а не горстка");
+    }
 
     [Test]
     public void EveryReferenceField_OfTheSaveFormat_HasAnInitializer()

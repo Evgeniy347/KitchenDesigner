@@ -5,6 +5,10 @@ namespace KitchenDesigner.Core
         public static ElementData FromElement(KitchenElement element)
         {
             var d = new ElementData { name = element.PartName };
+            d.elementType = ElementTypeId.Of(element);
+            var unknown = UnknownTypeMarker.On(element);
+            if (unknown != null && !string.IsNullOrEmpty(unknown.RawRecord))
+                d.rawJson = unknown.RawRecord;
             var dims = element.DimensionsMM;
             d.dimensionsMM = new[] { dims.x, dims.y, dims.z };
 

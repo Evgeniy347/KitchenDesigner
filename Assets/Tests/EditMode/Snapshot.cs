@@ -85,10 +85,20 @@ namespace KitchenDesigner.Core
         private static void WriteFile(string path, string json) =>
             SnapshotFile.Write(path, NormalizeJson(json));
 
+        /// <summary>Номер сборки в сохранении меняется КАЖДЫМ коммитом, а эталон —
+        /// нет. Без этой замены приёмка 100+ эталонов становилась бы частью каждого
+        /// релиза, и настоящий сдвиг формата тонул бы в ней.</summary>
+        public const string AppVersionPlaceholder = "<version>";
+
+        private static readonly System.Text.RegularExpressions.Regex AppVersionLine =
+            new System.Text.RegularExpressions.Regex("\"appVersion\": \"[^\"]*\"");
+
         private static string NormalizeJson(string json)
         {
             if (string.IsNullOrEmpty(json)) return "";
-            return json.Replace("\r\n", "\n").Replace("\r", "\n").TrimEnd();
+            var text = json.Replace("\r\n", "\n").Replace("\r", "\n").TrimEnd();
+            return AppVersionLine.Replace(text,
+                "\"appVersion\": \"" + AppVersionPlaceholder + "\"");
         }
 
         private static string BuildUnifiedDiff(string expected, string actual,

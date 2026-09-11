@@ -283,8 +283,9 @@ namespace KitchenDesigner.Core
 
         public static GameObject Restore(IElementFactory factory, ElementData data)
         {
-            foreach (var (handles, spawn, extras) in ByFlag)
+            for (int i = 0; i < ByFlag.Length; i++)
             {
+                var (handles, spawn, extras) = ByFlag[i];
                 if (!handles(data)) continue;
                 var go = spawn(factory, data);
                 go.transform.rotation = data.Rotation;
@@ -294,6 +295,8 @@ namespace KitchenDesigner.Core
                     ApplyShared(data, el);
                     extras?.Invoke(data, el);
                 }
+                if (UnknownElementType.IsUnknown(data.elementType, i == ByFlag.Length - 1))
+                    UnknownTypeMarker.Attach(go, data.elementType, data.rawJson);
                 return go;
             }
             throw new InvalidOperationException(

@@ -50,6 +50,7 @@ namespace KitchenDesigner.Core
     public class ElementData
     {
         public string name = string.Empty;
+        public string elementType = "";
         public int[] dimensionsMM = new int[3];
         public float[] position = new float[3];
         public float[] rotation = new float[4];
@@ -210,6 +211,8 @@ namespace KitchenDesigner.Core
 		public bool isPipeFitting = false;
 		public string pipeFittingType = KitchenDesigner.Core.Plumbing.PipeFittingNames.TypeId(
 			KitchenDesigner.Core.Plumbing.PipeNodeKind.Elbow);
+
+		[System.NonSerialized] public string? rawJson;
 
         public ElementData() { }
 

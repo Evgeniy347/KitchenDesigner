@@ -25,6 +25,7 @@ namespace KitchenDesigner.Core
             basePlateData ??= BasePlateFromScene();
 
             var data = new ProjectData(items);
+            data.appVersion = BuildInfo.Version;
             data.groups = CaptureGroups();
             data.rooms = new List<RoomData>(ProjectRooms.Items).ToArray();
             data.floorplans = new List<FloorplanScopeData>(ProjectFloorplans.Items).ToArray();
