@@ -219,6 +219,14 @@ namespace KitchenDesigner.Core
             IsResizing = true;
         }
 
+        internal void BeginDragOn(KitchenElement target, int faceIndex)
+        {
+            SetTarget(target);
+            BeginDrag(faceIndex);
+        }
+
+        internal void FinishDragNow() => FinishDrag();
+
         private void UpdateResize()
         {
             float sNow = ClosestParamOnNormalMeters();
@@ -306,11 +314,13 @@ namespace KitchenDesigner.Core
             // и красное состояние (например, пересечение с соседом) фиксировалось
             // в сцене и в undo-стеке.
             var settings = KitchenSettings.Instance;
-            if (changed && settings != null && settings.BlockOnViolation && IntroducedAViolation())
+            if (changed && settings != null && settings.BlockOnViolation
+                && IntroducedAViolation(out var refusal))
             {
                 _target.DimensionsMM = _dimsBefore;
                 _target.transform.position = _posBefore;
                 changed = false;
+                EditRefusalReport.Show(refusal);
             }
 
             if (changed)
@@ -329,15 +339,16 @@ namespace KitchenDesigner.Core
 
         // Нарушение, ВНЕСЁННОЕ этим жестом, на самой детали или вплотную к ней (AABB в
         // радиусе snapThreshold * 2) — тот же критерий и тот же шлюз, что при перемещении.
-        private bool IntroducedAViolation()
+        private bool IntroducedAViolation(out string refusal)
         {
+            refusal = string.Empty;
             var after = SceneViolations.OfScene();
             if (after.IsClean) return false;
             float radius = KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;
             _resizeFocus.Clear();
             if (_target != null) _resizeFocus.Add(_target);
-            return EditGate.IntroducedNear(_violationsAtDragStart, after,
-                _resizeFocus, radius, out _);
+            return EditGate.Refuses(_violationsAtDragStart, after,
+                _resizeFocus, radius, out refusal);
         }
 
         private float ClosestParamOnNormalMeters()

@@ -492,12 +492,14 @@ namespace KitchenDesigner.Core
 
 				var refits = RefitMovedRuns();
 
-				if (KitchenSettings.Instance.BlockOnViolation && MoveSetIntroducedAViolation())
+				if (KitchenSettings.Instance.BlockOnViolation
+					&& MoveSetIntroducedAViolation(out var refusal))
 				{
 					for (int i = refits.Count - 1; i >= 0; i--) refits[i].Undo();
 					if (seatedDimsBefore.HasValue && _target != null)
 						_target.DimensionsMM = seatedDimsBefore.Value;
 					RevertMoveSet();
+					EditRefusalReport.Show(refusal);
 				}
 				else
 					CommandStack.Execute(
@@ -556,14 +558,15 @@ namespace KitchenDesigner.Core
             return scene;
         }
 
-        private bool MoveSetIntroducedAViolation()
+        private bool MoveSetIntroducedAViolation(out string refusal)
         {
+            refusal = string.Empty;
             var after = SceneViolations.OfScene();
             if (after.IsClean) return false;
 
             float radius = KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;
-            return EditGate.IntroducedNear(_violationsAtDragStart, after,
-                DraggedOrTarget(), radius, out _);
+            return EditGate.Refuses(_violationsAtDragStart, after,
+                DraggedOrTarget(), radius, out refusal);
         }
 
         private List<KitchenElement> DraggedOrTarget()
