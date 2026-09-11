@@ -68,7 +68,7 @@ public class PillarAutoFitTests
         var podium = Board(new Vector3(0f, 0.01f, 0f), new Vector3Int(600, 20, 600));
         var pillar = Pillar(new Vector3(0f, 0.08f, 0f), 75);
 
-        float floorY = PillarAutoFit.FloorUnder(pillar.transform.position, Scene(floor, podium, pillar));
+        float floorY = PillarAutoFit.FloorUnder(pillar, Scene(floor, podium, pillar));
 
         Assert.AreEqual(TopOf(podium), floorY, 1e-5f,
             "опора садится на ближайшую поверхность под собой, а не на самый низ сцены");
@@ -81,8 +81,49 @@ public class PillarAutoFitTests
         var farBelow = Board(new Vector3(0f, -0.009f, 0f), new Vector3Int(3000, 18, 3000));
 
         Assert.AreEqual(PillarAutoFit.NoFloorFound,
-            PillarAutoFit.FloorUnder(pillar.transform.position, Scene(farBelow, pillar)), 1e-3f,
+            PillarAutoFit.FloorUnder(pillar, Scene(farBelow, pillar)), 1e-3f,
             "пол в метре под опорой — не её пол: висящую в воздухе опору автоподгонка не трогает");
+    }
+
+    /// <summary>Пол опоры — то, что под её ПЯТОЙ, а не то, что проходит рядом.
+    ///
+    /// Числа взяты из проекта пользователя: дно цокольного ящика верхом на 20 мм
+    /// стоит в 11 мм от края опоры и не пересекает её пятно. Пока годность
+    /// кандидата решалась допуском 50 мм от ЦЕНТРА опоры, проход после загрузки
+    /// «сажал» опору на эту полку и поднимал её над полом на 20 мм — молча, без
+    /// команды и без отмены, а следующее сохранение уносило подмену в файл.</summary>
+    [Test]
+    public void FloorUnder_IgnoresABoardBesideThePillar_EvenWhenItPassesWithinTheMargin()
+    {
+        var floor = Board(new Vector3(0f, -0.009f, 0f), new Vector3Int(3000, 18, 3000));
+        var beside = Board(new Vector3(0.286f, 0.012f, 0f), new Vector3Int(500, 16, 500));
+        var pillar = Pillar(new Vector3(0f, 0.05f, 0f), 70);
+
+        Assert.IsTrue(ElementAabb.Of(beside).CoversInXZ(pillar.transform.position,
+                PillarAutoFit.OverlapMarginUnits),
+            "доска обязана проходить в прежнем допуске от центра — иначе проверять нечего");
+
+        float floorY = PillarAutoFit.FloorUnder(pillar, Scene(floor, beside, pillar));
+
+        Assert.AreEqual(TopOf(floor), floorY, 1e-5f,
+            "доска рядом с опорой не держит её: пол опоры — ближайшая поверхность "
+            + "ПОД её пятном, а не любая в полуметре от центра");
+    }
+
+    /// <summary>Парный к предыдущему: сдвинь ту же доску на 16 мм, чтобы она зашла
+    /// под пяту, — и она СТАНОВИТСЯ полом. Без этой половины запрет читался бы как
+    /// «опора всегда падает на самый низ».</summary>
+    [Test]
+    public void FloorUnder_TakesTheSameBoard_OnceItReachesUnderTheFootprint()
+    {
+        var floor = Board(new Vector3(0f, -0.009f, 0f), new Vector3Int(3000, 18, 3000));
+        var under = Board(new Vector3(0.27f, 0.012f, 0f), new Vector3Int(500, 16, 500));
+        var pillar = Pillar(new Vector3(0f, 0.05f, 0f), 70);
+
+        float floorY = PillarAutoFit.FloorUnder(pillar, Scene(floor, under, pillar));
+
+        Assert.AreEqual(TopOf(under), floorY, 1e-5f,
+            "доска, заходящая под пяту на 5 мм, — это опора для опоры");
     }
 
     [Test]

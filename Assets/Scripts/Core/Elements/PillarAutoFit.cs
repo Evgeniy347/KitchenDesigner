@@ -24,7 +24,7 @@ namespace KitchenDesigner.Core
         {
             if (pillar == null || scene == null) return;
 
-            float floorY = FloorUnder(pillar.transform.position, scene);
+            float floorY = FloorUnder(pillar, scene);
             if (floorY <= NoFloorFound + 1f) return;
 
             StandOn(pillar, floorY);
@@ -38,19 +38,26 @@ namespace KitchenDesigner.Core
             StandOn(pillar, floorY);
         }
 
-        public static float FloorUnder(Vector3 pillarCenter, IReadOnlyList<KitchenElement> scene)
+        public static float FloorUnder(PillarElement pillar, IReadOnlyList<KitchenElement> scene)
         {
+            var foot = ElementAabb.Of(pillar);
+            float centreY = pillar.transform.position.y;
+
             float bestY = float.MinValue;
             foreach (var el in scene)
             {
-                if (el == null) continue;
+                if (el == null || ReferenceEquals(el, pillar)) continue;
                 var aabb = ElementAabb.Of(el);
-                if (aabb.maxY > pillarCenter.y - BelowCentreUnits) continue;
-                if (OverlapsInXZ(pillarCenter, aabb, OverlapMarginUnits) && aabb.maxY > bestY)
+                if (aabb.maxY > centreY - BelowCentreUnits) continue;
+                if (CarriesTheFootprint(foot, aabb) && aabb.maxY > bestY)
                     bestY = aabb.maxY;
             }
-            return bestY >= pillarCenter.y - FloorSearchDepthUnits ? bestY : NoFloorFound;
+            return bestY >= centreY - FloorSearchDepthUnits ? bestY : NoFloorFound;
         }
+
+        public static bool CarriesTheFootprint(in ElementAabb foot, in ElementAabb candidate) =>
+            Tolerance.IntervalsOverlap(foot.minX, foot.maxX, candidate.minX, candidate.maxX)
+            && Tolerance.IntervalsOverlap(foot.minZ, foot.maxZ, candidate.minZ, candidate.maxZ);
 
         public static int GapMM(float gapUnits) =>
             Mathf.FloorToInt(gapUnits / AppConstants.MM_TO_UNITS + Tolerance.ClearanceMm);
