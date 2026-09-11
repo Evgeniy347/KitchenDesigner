@@ -23,7 +23,8 @@ using KitchenDesigner.Core.UI;
 /// </summary>
 public class ContextMenuUndoTests
 {
-    private GameObject? _root;
+    private GameObject? _menuRoot;
+    private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private ProjectLoadStateGuard? _guard;
 
@@ -34,6 +35,40 @@ public class ContextMenuUndoTests
 
     private bool _blockOnViolationBefore;
 
+    /// <summary>Холст и панель строятся ОДИН раз на класс: сборка контекстного меню —
+    /// ~0,31 с, и пять сборок это полторы секунды прогона EditMode за панель, которую
+    /// продукт собирает единожды и дальше только переоткрывает. Почему это тот же
+    /// сценарий, а не экономия в обход смысла, дословно написано над
+    /// <see cref="EveryPanelField_EditIsUndoable"/>: <c>Open</c> и есть полный сброс
+    /// видимого состояния панели, и через него здесь проходит каждый тест.
+    ///
+    /// Холст свой, не потестовый: панель обязана его пережить. Своего
+    /// <c>SelectionManager</c> класс не заводит.</summary>
+    [OneTimeSetUp]
+    public void BuildTheCanvasAndPanelOnce()
+    {
+        _menuRoot = new GameObject("UndoTestRoot");
+        var canvas = _menuRoot.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _menuRoot.AddComponent<CanvasScaler>();
+        _menuRoot.AddComponent<GraphicRaycaster>();
+        BuildMenu();
+    }
+
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menuRoot != null) UnityEngine.Object.DestroyImmediate(_menuRoot);
+        _menu = null;
+        _menuRoot = null;
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь.
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: в EditMode
+    /// <c>Time.frameCount</c> стоит на месте, и окно, взведённое предыдущим тестом,
+    /// съело бы первую правку следующего, а весь класс только и делает, что применяет
+    /// правки. <c>DisarmAll</c> снимает взвод кнопок удаления, а фокус — потому что
+    /// <c>RefreshUnfocused</c> МОЛЧА пропускает сфокусированное поле.</summary>
     [SetUp]
     public void SetUp()
     {
@@ -44,18 +79,21 @@ public class ContextMenuUndoTests
         // валидацию, поэтому блокировку снимаем.
         _blockOnViolationBefore = KitchenSettings.Instance.BlockOnViolation;
         KitchenSettings.Instance.BlockOnViolation = false;
-        _root = new GameObject("UndoTestRoot");
-        var canvas = _root.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        _root.AddComponent<CanvasScaler>();
-        _root.AddComponent<GraphicRaycaster>();
         CommandStack.Clear();
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
     }
 
+    /// <summary><c>Close()</c> обязан идти ДО уничтожения спавнов: он обнуляет
+    /// <c>_target</c> панели, иначе живая панель уехала бы в следующий тест с
+    /// уничтоженной деталью в руках.</summary>
     [TearDown]
     public void TearDown()
     {
         CommandStack.Clear();
+        if (_menu != null) _menu!.Close();
         KitchenSettings.Instance.BlockOnViolation = _blockOnViolationBefore;
         _guard?.Restore();
         foreach (var go in _spawned)
@@ -66,7 +104,6 @@ public class ContextMenuUndoTests
             UnityEngine.Object.DestroyImmediate(go);
         }
         _spawned.Clear();
-        if (_root != null) UnityEngine.Object.DestroyImmediate(_root);
     }
 
     // ── доступ к приватным потрохам панели ──────────────────────────────
@@ -137,13 +174,16 @@ public class ContextMenuUndoTests
         return el;
     }
 
+    /// <summary>Единственный, кто зовёт <c>Build</c>: [OneTimeSetUp] и путь «Open упал» в
+    /// <see cref="EveryPanelField_EditIsUndoable"/>. Ставит панель в <c>_menu</c>, чтобы
+    /// [OneTimeTearDown] снял именно ту, что жива сейчас, а не первую.</summary>
     private ContextMenuUI BuildMenu()
     {
         var go = new GameObject("Ctx");
-        go.transform.SetParent(_root!.transform);
-        var ctx = go.AddComponent<ContextMenuUI>();
-        ctx.Build(_root!.transform);
-        return ctx;
+        go.transform.SetParent(_menuRoot!.transform);
+        _menu = go.AddComponent<ContextMenuUI>();
+        _menu!.Build(_menuRoot!.transform);
+        return _menu!;
     }
 
     // TMP_InputField хранит служебный zero-width space — он ломает разбор числа.
@@ -168,7 +208,7 @@ public class ContextMenuUndoTests
     [Test]
     public void Cooktop_DepthEdit_IsUndoneInOneStep()
     {
-        var ctx = BuildMenu();
+        var ctx = _menu!;
         var go = new GameObject("Cooktop");
         _spawned.Add(go);
         var cooktop = go.AddComponent<CooktopElement>();
@@ -215,7 +255,7 @@ public class ContextMenuUndoTests
     {
         var failures = new List<string>();
         int checkedFields = 0;
-        var ctx = BuildMenu();
+        var ctx = _menu!;
 
         foreach (var type in ElementTypes())
         {
@@ -298,7 +338,7 @@ public class ContextMenuUndoTests
     [Test]
     public void PositionField_EditIsUndoable()
     {
-        var ctx = BuildMenu();
+        var ctx = _menu!;
         var el = Spawn(typeof(KitchenElement));
         ctx.Open(el);
         CommandStack.Clear();
@@ -324,7 +364,7 @@ public class ContextMenuUndoTests
     [Test]
     public void RenameField_EditIsUndoable()
     {
-        var ctx = BuildMenu();
+        var ctx = _menu!;
         var el = Spawn(typeof(KitchenElement));
         ctx.Open(el);
         CommandStack.Clear();

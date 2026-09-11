@@ -53,11 +53,46 @@ using KitchenDesigner.Core.UI;
 public class PipePanelChoiceUndoGuardTests
 {
     private GameObject? _root;
+    private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private ProjectLoadStateGuard? _guard;
     private bool _blockOnViolationBefore;
     private bool _ignoreLogsBefore;
 
+    /// <summary>Холст и панель строятся ОДИН раз на класс: сборка контекстного меню —
+    /// ~0,31 с, и пять сборок это полторы секунды прогона EditMode за панель, которую
+    /// продукт собирает единожды и дальше только переоткрывает
+    /// (<see cref="ContextMenuLayoutTests"/>). Через <c>Open</c> здесь проходит каждый
+    /// тест, а <c>Open</c> и есть полный сброс видимого состояния панели.
+    ///
+    /// На потестовом холсте не осталось ничего потестового: <c>_root</c> нёс только
+    /// холст и саму панель. Своего <c>SelectionManager</c> класс не заводит.</summary>
+    [OneTimeSetUp]
+    public void BuildTheCanvasAndPanelOnce()
+    {
+        UIFactory.EnsureEventSystem();
+        _root = new GameObject("PipeChoiceUndoRoot");
+        var canvas = _root.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _root.AddComponent<CanvasScaler>();
+        _root.AddComponent<GraphicRaycaster>();
+        BuildMenu();
+    }
+
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_root != null) UnityEngine.Object.DestroyImmediate(_root);
+        _menu = null;
+        _root = null;
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь.
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: в EditMode
+    /// <c>Time.frameCount</c> стоит на месте, и окно, взведённое предыдущим тестом,
+    /// съело бы первую правку следующего. <c>DisarmAll</c> снимает взвод кнопок
+    /// удаления, а фокус — потому что <c>RefreshUnfocused</c> МОЛЧА пропускает
+    /// сфокусированное поле, а <c>EventSystem</c> в EditMode один на весь прогон.</summary>
     [SetUp]
     public void SetUp()
     {
@@ -71,26 +106,27 @@ public class PipePanelChoiceUndoGuardTests
         // механику отмены, а не валидацию.
         _blockOnViolationBefore = KitchenSettings.Instance.BlockOnViolation;
         KitchenSettings.Instance.BlockOnViolation = false;
-        UIFactory.EnsureEventSystem();
-        _root = new GameObject("PipeChoiceUndoRoot");
-        var canvas = _root.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        _root.AddComponent<CanvasScaler>();
-        _root.AddComponent<GraphicRaycaster>();
         CommandStack.Clear();
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
     }
 
+    /// <summary><c>Close()</c> обязан идти ДО <c>ClearScene</c>: он обнуляет <c>_target</c>
+    /// панели, иначе живая панель уехала бы в следующий тест с уничтоженной деталью в
+    /// руках.</summary>
     [TearDown]
     public void TearDown()
     {
         CommandStack.Clear();
+        if (_menu != null) _menu!.Close();
         KitchenSettings.Instance.BlockOnViolation = _blockOnViolationBefore;
         _guard?.Restore();
         ClearScene();
         _spawned.Clear();
         PartRegistry.Clear();
         ElementFactory.ClearPools();
-        if (_root != null) UnityEngine.Object.DestroyImmediate(_root);
         LogAssert.ignoreFailingMessages = _ignoreLogsBefore;
     }
 
@@ -140,13 +176,16 @@ public class PipePanelChoiceUndoGuardTests
         return el;
     }
 
+    /// <summary>Единственный, кто зовёт <c>Build</c>: [OneTimeSetUp] и путь «Open упал» в
+    /// <see cref="EveryChoiceRowOfThePropertiesPanel_IsUndoableInOneStep"/>. Ставит панель
+    /// в <c>_menu</c>, чтобы [OneTimeTearDown] снял ту, что жива сейчас.</summary>
     private ContextMenuUI BuildMenu()
     {
         var go = new GameObject("Ctx");
         go.transform.SetParent(_root!.transform);
-        var ctx = go.AddComponent<ContextMenuUI>();
-        ctx.Build(_root!.transform);
-        return ctx;
+        _menu = go.AddComponent<ContextMenuUI>();
+        _menu!.Build(_root!.transform);
+        return _menu!;
     }
 
     private sealed class State
@@ -261,7 +300,7 @@ public class PipePanelChoiceUndoGuardTests
     {
         var failures = new List<string>();
         int checkedControls = 0;
-        var ctx = BuildMenu();
+        var ctx = _menu!;
 
         foreach (var type in SweptTypes())
         {
@@ -374,7 +413,7 @@ public class PipePanelChoiceUndoGuardTests
 
         foreach (var gap in KnownGaps)
         {
-            var ctx = BuildMenu();
+            var ctx = _menu!;
             var el = Spawn(typeof(KitchenElement));
             ctx.Open(el);
 
@@ -423,7 +462,7 @@ public class PipePanelChoiceUndoGuardTests
     [Test]
     public void DrawerSystemChoice_IsUndoneInOneStep()
     {
-        var ctx = BuildMenu();
+        var ctx = _menu!;
         var drawer = (DrawerElement)Spawn(typeof(DrawerElement));
         ctx.Open(drawer);
         CommandStack.Clear();
@@ -453,7 +492,7 @@ public class PipePanelChoiceUndoGuardTests
     [Test]
     public void PipeNominalBoreChoice_IsUndoneInOneStep()
     {
-        var ctx = BuildMenu();
+        var ctx = _menu!;
         var pipe = (PipeElement)Spawn(typeof(PipeElement));
         ctx.Open(pipe);
         CommandStack.Clear();
