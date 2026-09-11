@@ -38,7 +38,7 @@ namespace KitchenDesigner.Core.UI
             var isWall = RowVisibility.When(
                 () => Host.Target != null && Host.Target.GetComponent<Wall>() != null);
             _loadBearing = Rows.Toggle(LoadBearingNode, LoadBearingLabel, true, OnLoadBearingToggled,
-                isWall, RowGap);
+                isWall, RowGap, hint: "element.wall.loadBearing");
 
             var masonryRow = Rows.NamedDropdown(MasonryNode, MasonryLabel, MasonryOptions(),
                 OnMasonryPicked, isWall);

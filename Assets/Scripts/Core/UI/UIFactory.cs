@@ -399,7 +399,7 @@ namespace KitchenDesigner.Core.UI
             return slider;
         }
 
-        public static Toggle CreateToggle(string name, Transform parent, string label, bool value, Vector2 anchoredPos, Vector2 size, System.Action<bool> onChanged)
+        public static Toggle CreateToggle(string name, Transform parent, string label, bool value, Vector2 anchoredPos, Vector2 size, System.Action<bool> onChanged, float reservedRightLaneW = 0f)
         {
             var rect = CreateRect(name, parent);
             rect.sizeDelta = size;
@@ -414,7 +414,8 @@ namespace KitchenDesigner.Core.UI
 
             const float textInset = 36f;
             CreateLabel(name + "_Label", rect, label, 16,
-                new Vector2(textInset * 0.5f, 0), new Vector2(size.x - textInset, size.y), TextAnchor.MiddleLeft);
+                new Vector2((textInset - reservedRightLaneW) * 0.5f, 0),
+                new Vector2(size.x - textInset - reservedRightLaneW, size.y), TextAnchor.MiddleLeft);
 
             toggle.isOn = value;
             if (onChanged != null)

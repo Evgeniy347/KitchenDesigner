@@ -175,11 +175,15 @@ namespace KitchenDesigner.Core.UI
         }
 
         public Toggle Toggle(string nodeName, string caption, bool value, Action<bool> onChanged,
-            RowVisibility visibility, float gapAfter)
+            RowVisibility visibility, float gapAfter, string? hint = null)
         {
+            float lane = hint == null ? 0f : HintBadge.LaneWidth;
             var toggle = UIFactory.CreateToggle(nodeName, _parent, caption, value,
-                Vector2.zero, new Vector2(RowWidth, ToggleH), onChanged);
+                Vector2.zero, new Vector2(RowWidth, ToggleH), onChanged, lane);
             visibility.Register(_layout, ToggleH, gapAfter, toggle.GetComponent<RectTransform>());
+            if (hint != null)
+                HintBadge.Attach(toggle.transform,
+                    new Vector2(RowWidth * 0.5f - UIStyle.HintBadgeSize * 0.5f, 0f), hint);
             return toggle;
         }
 
