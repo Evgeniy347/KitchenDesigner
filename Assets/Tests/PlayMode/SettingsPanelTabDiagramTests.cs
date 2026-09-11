@@ -1,6 +1,10 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
@@ -13,6 +17,54 @@ public class SettingsPanelTabDiagramTests
 {
     private const int PanelW = 600;
     private const int PanelH = 900;
+    private const string PagePath = "SettingsPanel/SettingsPanelBody/SettingsPanelBodyContent";
+
+    /// <summary>
+    /// Вкладка — это ПОДПИСЬ на кнопке и ИМЯ её страницы, а не номер на полосе. Восьмая
+    /// вкладка «Строительство» (3ffa6d09) встала третьей, и снимки, выбиравшие вкладку по
+    /// индексу `Tab_N`, разъехались на одну позицию: `ui_settings_tab_control` снял страницу
+    /// строительства, `..._light` — фотографию, `..._mcp` — свет, `..._photo` — управление,
+    /// `..._about` — MCP, а страница «О программе» не снималась вовсе. Прими такие кандидаты —
+    /// и пять эталонов замрут под чужими именами.
+    ///
+    /// Отсюда одна таблица: подпись → имя страницы, а из имени страницы выводятся и имя файла
+    /// снимка, и имя теста, который его снимает. Порядок в таблице — порядок кнопок на полосе,
+    /// и он сверяется с живой панелью в
+    /// <see cref="EveryTabOnTheStrip_HasASnapshotNamedAfterItsCaption"/>.
+    /// </summary>
+    private sealed class TabCase
+    {
+        public TabCase(string caption, string page)
+        {
+            Caption = caption;
+            Page = page;
+        }
+
+        public string Caption { get; }
+        public string Page { get; }
+        private string Key => Page.Substring("Tab_".Length);
+        public string Snapshot => "settings_tab_" + Key.ToLowerInvariant() + ".png";
+        public string CaptureMethod => "Tab" + Key + "_SavesPng";
+    }
+
+    private static readonly TabCase[] Tabs =
+    {
+        new TabCase("Проект", "Tab_Project"),
+        new TabCase("Вид", "Tab_View"),
+        new TabCase("Строительство", "Tab_Construction"),
+        new TabCase("Управление", "Tab_Control"),
+        new TabCase("Фото режим", "Tab_Photo"),
+        new TabCase("Свет", "Tab_Light"),
+        new TabCase("MCP", "Tab_Mcp"),
+        new TabCase("О программе", "Tab_About"),
+    };
+
+    private static TabCase Tab(string page)
+    {
+        var tab = Tabs.FirstOrDefault(t => t.Page == page);
+        Assert.IsNotNull(tab, $"страницы {page} нет в таблице вкладок");
+        return tab!;
+    }
 
     private GameObject? _canvasGo;
     private GameObject? _camGo;
@@ -79,16 +131,67 @@ public class SettingsPanelTabDiagramTests
         return (canvas, cam, ui);
     }
 
-    private void SwitchToTab(int index)
+    private static string Caption(Transform tabButton)
+    {
+        var label = tabButton.GetComponentInChildren<TextMeshProUGUI>();
+        return label == null ? "" : label.text.Replace("​", "");
+    }
+
+    private IEnumerable<Transform> TabButtons()
     {
         var panel = _canvasGo!.transform.Find("SettingsPanel");
-        if (panel == null) return;
+        Assert.IsNotNull(panel, "окно настроек не построилось — снимать нечего");
+        foreach (Transform child in panel!)
+            if (child.name.StartsWith("Tab_", System.StringComparison.Ordinal))
+                yield return child;
+    }
 
-        var tabBtn = panel.Find($"Tab_{index}");
-        if (tabBtn == null) return;
+    /// <summary>
+    /// Выбор вкладки по ПОДПИСИ, а не по индексу: так же, как это делает человек, и так же,
+    /// как `SettingsPanelUITests.SwitchTab_OnlyActivePageVisible` (66bb02b5). Вставка вкладки
+    /// в середину полосы номера сдвигает, а подписи — нет.
+    /// </summary>
+    private void ClickTab(string caption)
+    {
+        foreach (var button in TabButtons())
+        {
+            if (Caption(button) != caption) continue;
+            var btn = button.GetComponent<Button>();
+            Assert.IsNotNull(btn, $"вкладка «{caption}» без кнопки — нажать её нечем");
+            btn!.onClick.Invoke();
+            return;
+        }
+        Assert.Fail($"кнопки вкладки «{caption}» на полосе нет");
+    }
 
-        var btn = tabBtn.GetComponent<Button>();
-        if (btn != null) btn.onClick.Invoke();
+    private string TheOnlyVisiblePage()
+    {
+        var content = _canvasGo!.transform.Find(PagePath);
+        Assert.IsNotNull(content, "область прокрутки окна настроек: " + PagePath);
+
+        var visible = new List<string>();
+        foreach (Transform child in content!)
+            if (child.name.StartsWith("Tab_", System.StringComparison.Ordinal) && child.gameObject.activeSelf)
+                visible.Add(child.name);
+
+        Assert.AreEqual(1, visible.Count,
+            "видна обязана быть ровно одна страница — иначе в снимок попадут параметры двух "
+            + "вкладок сразу. Активны: " + string.Join(", ", visible));
+        return visible[0];
+    }
+
+    private IEnumerator CaptureTab(TabCase tab)
+    {
+        BuildPanel();
+        ClickTab(tab.Caption);
+        yield return null;
+
+        Assert.AreEqual(tab.Page, TheOnlyVisiblePage(),
+            $"снимок «{tab.Snapshot}» обязан показывать страницу вкладки «{tab.Caption}» "
+            + $"({tab.Page}). Эталон, замерший под чужим именем, хуже красного теста: "
+            + "следующий человек будет отлаживать, почему в снимке «Свет» настройки фотографии.");
+
+        yield return CaptureAndSave(tab.Snapshot);
     }
 
     private IEnumerator CaptureAndSave(string fileName)
@@ -122,68 +225,69 @@ public class SettingsPanelTabDiagramTests
         UiSnapshotEngine.CaptureVerified(_canvasGo, jsonPath);
     }
 
+    // ── Сенсор: имя снимка обязано сойтись с подписью вкладки ───────────
+
+    /// <summary>
+    /// Девятая вкладка обязана уронить ИМЕННО этот тест — на своей подписи, — а не молча
+    /// перемешать чужие эталоны. Сторожатся три вещи разом: полоса кнопок совпадает с
+    /// таблицей <see cref="Tabs"/> подпись-в-подпись и по порядку; клик по подписи открывает
+    /// ровно ту страницу, из имени которой выведено имя файла снимка; у каждой строки таблицы
+    /// есть свой снимающий тест. Раньше не сторожилось ничто — сдвиг пяти эталонов поймал
+    /// человек, читавший дифф глазами.
+    /// </summary>
     [UnityTest]
-    public IEnumerator TabProject_SavesPng()
+    public IEnumerator EveryTabOnTheStrip_HasASnapshotNamedAfterItsCaption()
     {
         BuildPanel();
-        SwitchToTab(0);
         yield return null;
-        yield return CaptureAndSave("settings_tab_project.png");
+
+        var onScreen = TabButtons().Select(Caption).ToList();
+        CollectionAssert.AreEqual(Tabs.Select(t => t.Caption).ToList(), onScreen,
+            "полоса вкладок и таблица снимков разошлись. Новая вкладка заводится в `Tabs` "
+            + "вместе со своим тестом `Tab{Имя}_SavesPng`, иначе снимки сдвинутся на позицию "
+            + "и замрут под чужими именами. На полосе: " + string.Join(", ", onScreen));
+
+        foreach (var tab in Tabs)
+        {
+            ClickTab(tab.Caption);
+            Assert.AreEqual(tab.Page, TheOnlyVisiblePage(),
+                $"клик по «{tab.Caption}» обязан открыть {tab.Page} — страницу, чьё имя стоит "
+                + $"в имени снимка «{tab.Snapshot}»");
+
+            var capture = GetType().GetMethod(tab.CaptureMethod,
+                BindingFlags.Public | BindingFlags.Instance);
+            Assert.IsNotNull(capture,
+                $"у вкладки «{tab.Caption}» нет снимающего теста {tab.CaptureMethod}(): "
+                + $"эталон {tab.Snapshot} никто не обновит, и вкладка останется неснятой");
+            Assert.IsNotEmpty(capture!.GetCustomAttributes(typeof(UnityTestAttribute), false),
+                $"{tab.CaptureMethod}() существует, но не помечен [UnityTest] — прогон его "
+                + $"не запустит, и эталон {tab.Snapshot} останется старым");
+        }
     }
 
-    // Семь вкладок: «Проект» (0), «Вид» (1), «Управление» (2),
-    // «Фото режим» (3), «Свет» (4), «MCP» (5), «О программе» (6).
-    [UnityTest]
-    public IEnumerator TabView_SavesPng()
-    {
-        BuildPanel();
-        SwitchToTab(1);
-        yield return null;
-        yield return CaptureAndSave("settings_tab_view.png");
-    }
+    // ── Снимки: одна вкладка — один тест, вкладка выбирается по подписи ─
 
     [UnityTest]
-    public IEnumerator TabControl_SavesPng()
-    {
-        BuildPanel();
-        SwitchToTab(2);
-        yield return null;
-        yield return CaptureAndSave("settings_tab_control.png");
-    }
+    public IEnumerator TabProject_SavesPng() => CaptureTab(Tab("Tab_Project"));
 
     [UnityTest]
-    public IEnumerator TabPhoto_SavesPng()
-    {
-        BuildPanel();
-        SwitchToTab(3);
-        yield return null;
-        yield return CaptureAndSave("settings_tab_photo.png");
-    }
+    public IEnumerator TabView_SavesPng() => CaptureTab(Tab("Tab_View"));
 
     [UnityTest]
-    public IEnumerator TabLight_SavesPng()
-    {
-        BuildPanel();
-        SwitchToTab(4);
-        yield return null;
-        yield return CaptureAndSave("settings_tab_light.png");
-    }
+    public IEnumerator TabConstruction_SavesPng() => CaptureTab(Tab("Tab_Construction"));
 
     [UnityTest]
-    public IEnumerator TabMcp_SavesPng()
-    {
-        BuildPanel();
-        SwitchToTab(5);
-        yield return null;
-        yield return CaptureAndSave("settings_tab_mcp.png");
-    }
+    public IEnumerator TabControl_SavesPng() => CaptureTab(Tab("Tab_Control"));
 
     [UnityTest]
-    public IEnumerator TabAbout_SavesPng()
-    {
-        BuildPanel();
-        SwitchToTab(6);
-        yield return null;
-        yield return CaptureAndSave("settings_tab_about.png");
-    }
+    public IEnumerator TabPhoto_SavesPng() => CaptureTab(Tab("Tab_Photo"));
+
+    [UnityTest]
+    public IEnumerator TabLight_SavesPng() => CaptureTab(Tab("Tab_Light"));
+
+    [UnityTest]
+    public IEnumerator TabMcp_SavesPng() => CaptureTab(Tab("Tab_Mcp"));
+
+    [UnityTest]
+    public IEnumerator TabAbout_SavesPng() => CaptureTab(Tab("Tab_About"));
 }
