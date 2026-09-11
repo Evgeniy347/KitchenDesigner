@@ -74,7 +74,7 @@ public class ContextMenuRefreshBugTests
         var es = UnityEngine.EventSystems.EventSystem.current;
         if (es != null) es.SetSelectedGameObject(null);
 
-        _element = CreateBoard("Доска", new Vector3Int(400, 400, 18), Vector3.zero);
+        _element = CreateBoard("Doska", new Vector3Int(400, 400, 18), Vector3.zero);
         _ctx!.Open(_element);
     }
 
@@ -116,7 +116,7 @@ public class ContextMenuRefreshBugTests
     [Test]
     public void Dimensions_InitiallyCorrectAfterOpen()
     {
-        var board = CreateBoard("Свежая", new Vector3Int(419, 433, 23), new Vector3(0.9f, 0f, 0f));
+        var board = CreateBoard("Svezhaya", new Vector3Int(419, 433, 23), new Vector3(0.9f, 0f, 0f));
         _ctx!.Open(board);
 
         Assert.AreEqual("419", FieldText("F_Ширина"), "initial width");
@@ -133,17 +133,17 @@ public class ContextMenuRefreshBugTests
     [Test]
     public void OpeningASecondElement_ShowsTheSecondElementsValues()
     {
-        var a = CreateBoard("Первая", new Vector3Int(311, 317, 19), new Vector3(1.1f, 0f, 0f));
+        var a = CreateBoard("Pervaya", new Vector3Int(311, 317, 19), new Vector3(1.1f, 0f, 0f));
         _ctx!.Open(a);
         Assert.AreEqual("311", FieldText("F_Ширина"), "предусловие: панель показывает A");
 
-        var b = CreateBoard("Вторая", new Vector3Int(523, 541, 27), new Vector3(2.3f, 0f, 0f));
+        var b = CreateBoard("Vtoraya", new Vector3Int(523, 541, 27), new Vector3(2.3f, 0f, 0f));
         _ctx!.Open(b);
 
         Assert.AreEqual("523", FieldText("F_Ширина"), "ширина осталась от A");
         Assert.AreEqual("541", FieldText("F_Высота"), "высота осталась от A");
         Assert.AreEqual("27", FieldText("F_Глубина"), "глубина осталась от A");
-        Assert.AreEqual("Вторая", FieldText("F_Название"), "имя осталось от A");
+        Assert.AreEqual("Vtoraya", FieldText("F_Название"), "имя осталось от A");
     }
 
     [Test]
@@ -161,6 +161,10 @@ public class ContextMenuRefreshBugTests
             $"z field: expected 3511 мм, got '{FieldText("F_Z, мм")}'");
     }
 
+    /// <summary>Кириллица здесь законна, а в остальном классе — нет: имя кладётся
+    /// прямо в свойство <c>PartName</c>, минуя <see cref="ElementNaming"/>, и это и
+    /// есть «переименовали снаружи». Всё, что идёт через фабрику или через поле
+    /// панели (<c>DrawerLinks.Rename</c>), нормализуется — см. <c>Spawn</c>.</summary>
     [Test]
     public void Name_DoesNotUpdate_WhenElementRenamedExternally()
     {
@@ -177,9 +181,8 @@ public class ContextMenuRefreshBugTests
         _ctx!.Close();
         DestroyAllElements();
 
-        var shelfGo = ElementFactory.CreateRadialShelf(600, 400, 18, 137, "Полка", Vector3.zero);
-        shelfGo.transform.SetParent(_canvasGo!.transform);
-        var shelf = shelfGo.GetComponent<RadialShelfElement>();
+        var shelf = Spawn<RadialShelfElement>(
+            ElementFactory.CreateRadialShelf(600, 400, 18, 137, "Polka", Vector3.zero), "Polka");
         _ctx!.Open(shelf);
 
         Assert.AreEqual("137", FieldText("F_Радиус угла"), "initial corner radius");
@@ -197,11 +200,9 @@ public class ContextMenuRefreshBugTests
         _ctx!.Close();
         DestroyAllElements();
 
-        var facadeGo = ElementFactory.CreateFacade(
-            new Vector3Int(450, 700, 18), "Створка", Vector3.zero,
-            gapLeft: 3, gapRight: 3, gapTop: 2, gapBottom: 2);
-        facadeGo.transform.SetParent(_canvasGo!.transform);
-        var facade = facadeGo.GetComponent<FacadeElement>();
+        var facade = Spawn<FacadeElement>(ElementFactory.CreateFacade(
+            new Vector3Int(450, 700, 18), "Stvorka", Vector3.zero,
+            gapLeft: 3, gapRight: 3, gapTop: 2, gapBottom: 2), "Stvorka");
         _ctx!.Open(facade);
 
         facade.GapLeft = 11;
@@ -230,23 +231,21 @@ public class ContextMenuRefreshBugTests
         _ctx!.Close();
         DestroyAllElements();
 
-        var drawer = CreateDrawer("Ящик-появление", new Vector3(0f, 0.043f, 0f));
+        var drawer = CreateDrawer("Yaschik-poyavlenie", new Vector3(0f, 0.043f, 0f));
         _ctx!.Open(drawer);
 
         var dd = GetDrawerFacadeDropdown();
         Assert.AreEqual(1, dd.options.Count, "только '(нет фасада)' до появления фасадов");
 
         // Создаём фасад в контакте с ящиком (позиция из DrawerFacadeContactTests).
-        var facadeGo = ElementFactory.CreateFacade(
-            new Vector3Int(400, 86, 18), "Ф-появился", new Vector3(0f, 0.043f, 0.184f));
-        facadeGo.transform.SetParent(_canvasGo!.transform);
+        CreateFacade("F-poyavilsya", new Vector3(0f, 0.043f, 0.184f));
 
         // Вызываем RebuildDrawerFacadeOptions напрямую — именно это делает хук.
         CallRebuildDrawerFacadeOptions();
 
         Assert.AreEqual(2, dd.options.Count,
             "BUG: новый фасад не появился в списке после обновления дропдауна");
-        Assert.AreEqual("Ф-появился", dd.options[1].text);
+        Assert.AreEqual("F-poyavilsya", dd.options[1].text);
     }
 
     [Test]
@@ -255,19 +254,19 @@ public class ContextMenuRefreshBugTests
         _ctx!.Close();
         DestroyAllElements();
 
-        var drawer = CreateDrawer("Ящик-осиротел", new Vector3(0f, 0.043f, 0f));
-        CreateFacade("Ф-осиротел", new Vector3(0f, 0.043f, 0.184f));
+        var drawer = CreateDrawer("Yaschik-osirotel", new Vector3(0f, 0.043f, 0f));
+        CreateFacade("F-osirotel", new Vector3(0f, 0.043f, 0.184f));
 
-        drawer.AttachedFacadeName = "Ф-осиротел";
+        drawer.AttachedFacadeName = "F-osirotel";
         _ctx!.Open(drawer);
 
         var dd = GetDrawerFacadeDropdown();
-        Assert.AreEqual(2, dd.options.Count, "опции: '(нет фасада)' + 'Ф-осиротел'");
-        Assert.AreEqual("Ф-осиротел", dd.options[1].text);
+        Assert.AreEqual(2, dd.options.Count, "опции: '(нет фасада)' + 'F-osirotel'");
+        Assert.AreEqual("F-osirotel", dd.options[1].text);
 
         // Удаляем фасад из сцены.
-        var facadeEl = FindElementByName("Ф-осиротел");
-        Assert.IsNotNull(facadeEl, "фасад Ф-осиротел должен существовать");
+        var facadeEl = FindElementByName("F-osirotel");
+        Assert.IsNotNull(facadeEl, "фасад F-osirotel должен существовать");
         Object.DestroyImmediate(facadeEl!.gameObject);
         PartRegistry.Clear(); // гарантия, что в реестре чисто
 
@@ -276,7 +275,7 @@ public class ContextMenuRefreshBugTests
 
         Assert.AreEqual(2, dd.options.Count,
             "BUG: осиротевший фасад исчез из списка после удаления");
-        Assert.AreEqual("Ф-осиротел", dd.options[1].text,
+        Assert.AreEqual("F-osirotel", dd.options[1].text,
             "BUG: имя осиротевшего фасада не сохранилось в списке");
     }
 
@@ -286,14 +285,14 @@ public class ContextMenuRefreshBugTests
         _ctx!.Close();
         DestroyAllElements();
 
-        var drawer = CreateDrawer("Ящик-красный", new Vector3(0f, 0.043f, 0f));
-        CreateFacade("Ф-красный", new Vector3(0f, 0.043f, 0.184f));
+        var drawer = CreateDrawer("Yaschik-krasnyy", new Vector3(0f, 0.043f, 0f));
+        CreateFacade("F-krasnyy", new Vector3(0f, 0.043f, 0.184f));
 
-        drawer.AttachedFacadeName = "Ф-красный";
+        drawer.AttachedFacadeName = "F-krasnyy";
         _ctx!.Open(drawer);
 
         // Удаляем фасад — он становится осиротевшим.
-        var facadeEl = FindElementByName("Ф-красный");
+        var facadeEl = FindElementByName("F-krasnyy");
         Assert.IsNotNull(facadeEl);
         Object.DestroyImmediate(facadeEl!.gameObject);
         PartRegistry.Clear();
@@ -306,7 +305,7 @@ public class ContextMenuRefreshBugTests
 
         // Перестраиваем и устанавливаем значение — caption должен стать красным.
         CallRebuildDrawerFacadeOptions();
-        CallSetDrawerFacadeValue("Ф-красный");
+        CallSetDrawerFacadeValue("F-krasnyy");
 
         Assert.AreEqual(Color.red, dd.captionText.color,
             "BUG: caption осиротевшего фасада не покраснел");
@@ -318,12 +317,10 @@ public class ContextMenuRefreshBugTests
         _ctx!.Close();
         DestroyAllElements();
 
-        var drawer = CreateDrawer("Ящик-живой", new Vector3(0f, 0.043f, 0f));
-        var facadeGo = ElementFactory.CreateFacade(
-            new Vector3Int(400, 86, 18), "Ф-живой", new Vector3(0f, 0.043f, 0.184f));
-        facadeGo.transform.SetParent(_canvasGo!.transform);
+        var drawer = CreateDrawer("Yaschik-zhivoy", new Vector3(0f, 0.043f, 0f));
+        CreateFacade("F-zhivoy", new Vector3(0f, 0.043f, 0.184f));
 
-        drawer.AttachedFacadeName = "Ф-живой";
+        drawer.AttachedFacadeName = "F-zhivoy";
         _ctx!.Open(drawer);
 
         var dd = GetDrawerFacadeDropdown();
@@ -332,7 +329,7 @@ public class ContextMenuRefreshBugTests
         dd.captionText.color = Color.red;
 
         CallRebuildDrawerFacadeOptions();
-        CallSetDrawerFacadeValue("Ф-живой");
+        CallSetDrawerFacadeValue("F-zhivoy");
 
         Assert.AreEqual(UIStyle.Text, dd.captionText.color,
             "BUG: caption валидного фасада не использует нормальный цвет UIStyle.Text");
@@ -344,14 +341,14 @@ public class ContextMenuRefreshBugTests
         _ctx!.Close();
         DestroyAllElements();
 
-        var drawer = CreateDrawer("Ящик-сброс", new Vector3(0f, 0.043f, 0f));
-        CreateFacade("Ф-сброс", new Vector3(0f, 0.043f, 0.184f));
+        var drawer = CreateDrawer("Yaschik-sbros", new Vector3(0f, 0.043f, 0f));
+        CreateFacade("F-sbros", new Vector3(0f, 0.043f, 0.184f));
 
-        drawer.AttachedFacadeName = "Ф-сброс";
+        drawer.AttachedFacadeName = "F-sbros";
         _ctx!.Open(drawer);
 
         // Удаляем фасад — осиротел.
-        var facadeEl = FindElementByName("Ф-сброс");
+        var facadeEl = FindElementByName("F-sbros");
         Assert.IsNotNull(facadeEl);
         Object.DestroyImmediate(facadeEl!.gameObject);
         PartRegistry.Clear();
@@ -360,7 +357,7 @@ public class ContextMenuRefreshBugTests
         dd.captionText.color = UIStyle.Text;
 
         CallRebuildDrawerFacadeOptions();
-        CallSetDrawerFacadeValue("Ф-сброс");
+        CallSetDrawerFacadeValue("F-sbros");
 
         Assert.AreEqual(Color.red, dd.captionText.color, "caption должен быть красным");
 
@@ -377,23 +374,20 @@ public class ContextMenuRefreshBugTests
         _ctx!.Close();
         DestroyAllElements();
 
-        var drawer = CreateDrawer("Ящик-отодвинут", new Vector3(0f, 0.043f, 0f));
-        var facadeGo = ElementFactory.CreateFacade(
-            new Vector3Int(400, 86, 18), "Ф-отодвинут", new Vector3(0f, 0.043f, 0.184f));
-        facadeGo.transform.SetParent(_canvasGo!.transform);
+        var drawer = CreateDrawer("Yaschik-otodvinut", new Vector3(0f, 0.043f, 0f));
+        var facade = CreateFacade("F-otodvinut", new Vector3(0f, 0.043f, 0.184f));
 
-        drawer.AttachedFacadeName = "Ф-отодвинут";
+        drawer.AttachedFacadeName = "F-otodvinut";
         _ctx!.Open(drawer);
 
         // Отодвигаем фасад далеко — он больше не в контакте, но в реестре есть.
-        var facade = facadeGo.GetComponent<FacadeElement>();
         facade.transform.position = new Vector3(10f, 0.043f, 0.184f);
 
         var dd = GetDrawerFacadeDropdown();
         dd.captionText.color = UIStyle.Text;
 
         CallRebuildDrawerFacadeOptions();
-        CallSetDrawerFacadeValue("Ф-отодвинут");
+        CallSetDrawerFacadeValue("F-otodvinut");
 
         Assert.AreEqual(Color.red, dd.captionText.color,
             "BUG: фасад отодвинут (не в контакте), но caption не красный");
@@ -409,15 +403,32 @@ public class ContextMenuRefreshBugTests
         Assert.IsNotNull(node, $"виджет {nodeName} должен существовать в панели");
         var inputField = node!.GetComponent<TMP_InputField>();
         Assert.IsNotNull(inputField, $"{nodeName} должен быть полем ввода");
-        return inputField!.text.Replace("200b", "");
+        // TMP_InputField несёт служебный zero-width space; сравнивается видимый текст.
+        return inputField!.text.Replace("\u200b", "");
     }
 
-    private KitchenElement CreateBoard(string name, Vector3Int dims, Vector3 pos)
+    /// <summary>Единственная дверь, через которую этот класс кладёт деталь в сцену, —
+    /// и сторож на её имя. Фабрика прогоняет любое имя через
+    /// <see cref="ElementNaming.Normalize"/>, а тот транслитерирует: «Вторая» попадает
+    /// в сцену как «Vtoraya», «Ф-живой» — как «F-zhivoy». Класс покраснел на этом
+    /// шестью тестами разом: панель честно показывала имя ИЗ СЦЕНЫ, тест сравнивал с
+    /// тем, что отдал фабрике, а привязка <c>AttachedFacadeName</c> указывала на имя,
+    /// которого в сцене нет, — валидный фасад числился осиротевшим, и список фасадов
+    /// нёс лишнюю опцию. Проверка стоит на месте создания, поэтому следующее
+    /// кириллическое имя упадёт здесь и с объяснением, а не через три ассерта на
+    /// цвете caption'а.</summary>
+    private T Spawn<T>(GameObject go, string requested) where T : KitchenElement
     {
-        var go = ElementFactory.CreatePart(dims, name, pos);
         go.transform.SetParent(_canvasGo!.transform);
-        return go.GetComponent<KitchenElement>();
+        var element = go.GetComponent<T>();
+        Assert.IsNotNull(element, $"{requested}: ожидался компонент {typeof(T).Name}");
+        Assert.AreEqual(requested, element.PartName,
+            $"фабрика переименовала '{requested}' в '{element.PartName}': {ElementNaming.Rule}");
+        return element;
     }
+
+    private KitchenElement CreateBoard(string name, Vector3Int dims, Vector3 pos) =>
+        Spawn<KitchenElement>(ElementFactory.CreatePart(dims, name, pos), name);
 
     private void DestroyAllElements()
     {
@@ -428,19 +439,13 @@ public class ContextMenuRefreshBugTests
 
     // ── drawer facade helpers ───────────────────────────────────────────
 
-    private DrawerElement CreateDrawer(string name, Vector3 pos)
-    {
-        var go = ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400, name, pos);
-        go.transform.SetParent(_canvasGo!.transform);
-        return go.GetComponent<DrawerElement>();
-    }
+    private DrawerElement CreateDrawer(string name, Vector3 pos) =>
+        Spawn<DrawerElement>(
+            ElementFactory.CreateDrawer(DrawerType.A, 350, DrawerColor.Anthracite, 400, name, pos), name);
 
-    private FacadeElement CreateFacade(string name, Vector3 pos)
-    {
-        var go = ElementFactory.CreateFacade(new Vector3Int(400, 86, 18), name, pos, 2, 2, 2, 2);
-        go.transform.SetParent(_canvasGo!.transform);
-        return go.GetComponent<FacadeElement>();
-    }
+    private FacadeElement CreateFacade(string name, Vector3 pos) =>
+        Spawn<FacadeElement>(
+            ElementFactory.CreateFacade(new Vector3Int(400, 86, 18), name, pos, 2, 2, 2, 2), name);
 
     private KitchenElement? FindElementByName(string name)
     {
