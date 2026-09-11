@@ -119,20 +119,19 @@ public class PipePanelChoiceUndoGuardTests
     /// строку починили, а из списка забыли убрать, а всякая НЕназванная строка обязана
     /// класть команду сама.</summary>
     private static readonly Dictionary<string, string> KnownGaps =
-        new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            ["CtxType"] = "ElementTypeConverter.ConvertStructural — конверсия типа ПЕРЕСОБИРАЕТ "
-                          + "элемент: ElementConverter.Convert уничтожает компонент и вешает "
-                          + "новый, поэтому SetPropertiesCommand (он держит ссылку на элемент) "
-                          + "тут не годится, нужна отдельная команда пересоздания. Смена "
-                          + "СИСТЕМЫ ящика той же строкой уже закрыта — её стережёт "
-                          + "DrawerSystemChoice_IsUndoneInOneStep",
-        };
+        new Dictionary<string, string>(StringComparer.Ordinal);
 
     /// <summary>Типы берутся у общего перебора <c>EveryElementType</c>, а не выписаны руками
     /// и не выведены своим отражением: новый тип элемента попадает под сторожа сам, и второго
     /// списка типов в наборе не заводится.</summary>
     private static IEnumerable<Type> SweptTypes() => EveryElementType.Declared();
+
+    /// <summary>Подопытный адресуется ОБЪЕКТОМ сцены, а компонент перечитывается после
+    /// каждого шага: строка «Тип» пересобирает элемент — уничтожает компонент и вешает на
+    /// тот же <c>GameObject</c> другой, — поэтому сохранённая ссылка на <c>KitchenElement</c>
+    /// после неё мертва. Ровно так же адресует деталь и сама <c>ConvertElementCommand</c>.</summary>
+    private static KitchenElement? Live(GameObject go) =>
+        go != null ? go.GetComponent<KitchenElement>() : null;
 
     private KitchenElement Spawn(Type type)
     {
@@ -266,11 +265,12 @@ public class PipePanelChoiceUndoGuardTests
 
         foreach (var type in SweptTypes())
         {
-            KitchenElement el;
+            GameObject subject;
             try
             {
-                el = Spawn(type);
-                ctx.Open(el);
+                var spawned = Spawn(type);
+                subject = spawned.gameObject;
+                ctx.Open(spawned);
             }
             catch (Exception e)
             {
@@ -285,11 +285,12 @@ public class PipePanelChoiceUndoGuardTests
             foreach (var control in ChoiceControls())
             {
                 if (control == null || !control.gameObject.activeInHierarchy) continue;
-                if (el == null) break;
+                var live = Live(subject);
+                if (live == null) break;
                 if (KnownGaps.ContainsKey(control.gameObject.name)) continue;
 
                 CommandStack.Clear();
-                var before = StateOf(el);
+                var before = StateOf(live);
                 var what = Describe(control);
                 bool picked;
                 try
@@ -306,16 +307,17 @@ public class PipePanelChoiceUndoGuardTests
 
                 if (!picked) continue;
 
-                if (el == null)
+                var swapped = Live(subject);
+                if (swapped == null)
                 {
-                    failures.Add($"{type.Name}: {what} — строка УНИЧТОЖИЛА подопытный элемент. "
-                                 + "Пересборку элемента сторож проверить не может: либо строка "
-                                 + "обязана обойтись без пересборки, либо её имя узла "
-                                 + "заносится в KnownGaps с владельцем");
+                    failures.Add($"{type.Name}: {what} — строка УНИЧТОЖИЛА подопытный объект "
+                                 + "сцены целиком. Пересобрать КОМПОНЕНТ на том же объекте "
+                                 + "можно (так работает строка «Тип»), уничтожить объект — "
+                                 + "нельзя: после этого нечего ни отменять, ни проверять");
                     break;
                 }
 
-                var after = StateOf(el);
+                var after = StateOf(swapped);
                 // Строка ничего не правит (списки свёрнутой секции текстур лишь готовят
                 // «Добавить») — стеречь тут нечего.
                 if (Same(before, after)) continue;
@@ -332,13 +334,13 @@ public class PipePanelChoiceUndoGuardTests
                 }
 
                 CommandStack.Undo();
-                var undone = StateOf(el);
+                var undone = StateOf(Live(subject)!);
                 if (!Same(before, undone))
                     failures.Add($"{type.Name}: {what} — отмена не вернула состояние\n"
                                  + $"    было:  {before.Text}\n    стало: {undone.Text}");
 
                 CommandStack.Redo();
-                var redone = StateOf(el);
+                var redone = StateOf(Live(subject)!);
                 if (!Same(after, redone))
                     failures.Add($"{type.Name}: {what} — повтор не вернул правку\n"
                                  + $"    ждали: {after.Text}\n    вышло: {redone.Text}");
@@ -413,10 +415,11 @@ public class PipePanelChoiceUndoGuardTests
             + string.Join("\n", stale));
     }
 
-    /// <summary>Строка «Тип» делает ДВА разных дела, и стеречь её сводным перебором нельзя:
-    /// у детали она пересобирает элемент (признанный долг <c>CtxType</c>, элемент под сторожем
-    /// умирает), а у ящика — просто меняет систему. Половина, которая правит свойство, обязана
-    /// отменяться, и проверяется она здесь поимённо.</summary>
+    /// <summary>Строка «Тип» делает ДВА разных дела: у детали она пересобирает элемент
+    /// (<c>ConvertElementCommand</c>, круг «конверсия → отмена → повтор» разобран попарно в
+    /// <c>ElementTypeConversionUndoTests</c>), а у ящика — просто меняет систему. Обе половины
+    /// обязаны отменяться; сводный перебор видит их обе, а эта — половина ящика — названа
+    /// поимённо, чтобы регрессия читалась именем.</summary>
     [Test]
     public void DrawerSystemChoice_IsUndoneInOneStep()
     {
