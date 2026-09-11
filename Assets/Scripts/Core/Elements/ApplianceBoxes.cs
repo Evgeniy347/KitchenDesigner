@@ -43,6 +43,16 @@ namespace KitchenDesigner.Core
             go.transform.localScale = sizeMM * toU;
         }
 
+        public void PlaceUnscaled(int idx, Vector3 centerMM, Quaternion localRotation)
+        {
+            if (idx < 0 || idx >= _children.Count) return;
+            var go = _children[idx];
+            if (go == null) return;
+            go.transform.localPosition = centerMM * AppConstants.MM_TO_UNITS;
+            go.transform.localRotation = localRotation;
+            go.transform.localScale = Vector3.one;
+        }
+
         public void SetMesh(int idx, Mesh mesh)
         {
             if (idx < 0 || idx >= _children.Count) return;

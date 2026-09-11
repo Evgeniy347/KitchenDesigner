@@ -53,7 +53,8 @@ namespace KitchenDesigner.Core.UI
                         AppConstants.HalfHeightUnits(DishwasherElement.ModelDimensionsMM.y),
                         pos => ElementFactory.CreateDishwasher(item.name, pos));
                     break;
-                case SidebarItemKind.LaundryMachine:
+                case SidebarItemKind.WashingMachine:
+                case SidebarItemKind.Dryer:
                 {
                     var kind = SidebarPresetResolution.LaundryKindOf(item.preset.laundryKind);
                     PlaceCenteredOnGround(item.dims.y, pos =>

@@ -71,17 +71,41 @@ public class LaundryMachineElementTests
     }
 
     [Test]
-    public void ChangingTheKind_RenamesIt_AndTouchesNothingElse()
+    public void ChangingTheKind_RenamesIt_AndRebuildsOnlyTheHatch()
     {
         var machine = Make(LaundryMachineKind.Washer, new Vector3Int(607, 853, 563), "Kind");
         var dimsBefore = machine.DimensionsMM;
+        var shellBefore = machine.transform.GetChild(LaundryMachineBody.IdxShell).localPosition;
+        float hatchBefore = HatchWidthInScene(machine);
 
         machine.Kind = LaundryMachineKind.Dryer;
 
         Assert.AreEqual(LaundryMachineBody.DryerName, machine.DisplayTypeName);
         Assert.AreEqual(dimsBefore, machine.DimensionsMM,
             "смена вида меняет подпись, а не габарит — иначе пользователь потеряет размеры");
+        Assert.AreEqual(shellBefore, machine.transform.GetChild(LaundryMachineBody.IdxShell)
+            .localPosition, "корпус у двух машин общий и с места не двигается");
+        Assert.Greater(HatchWidthInScene(machine), hatchBefore + 0.01f,
+            "у сушильной люк шире, и это обязано доехать до СЦЕНЫ: неизменившийся обод "
+            + "значит, что смена вида не пересобрала геометрию");
     }
+
+    [Test]
+    public void ChangingTheKindBack_ReturnsTheHatch_SoTheKindIsNotAOneWayDoor()
+    {
+        var machine = MakeDefault(LaundryMachineKind.Washer, "KindBack");
+        float washer = HatchWidthInScene(machine);
+
+        machine.Kind = LaundryMachineKind.Dryer;
+        machine.Kind = LaundryMachineKind.Washer;
+
+        Assert.AreEqual(washer, HatchWidthInScene(machine), 0.001f,
+            "противоположный вход: обратная смена вида обязана вернуть прежний люк, "
+            + "иначе отмена покажет не то, что было");
+    }
+
+    private static float HatchWidthInScene(LaundryMachineElement machine) =>
+        machine.transform.GetChild(LaundryMachineBody.IdxHatchRim).localScale.x;
 
     [Test]
     public void TheKindProperty_IsUndoable_SoTheDropdownGetsUndoForFree()
@@ -142,9 +166,10 @@ public class LaundryMachineElementTests
         var washer = group.items[4];
         var dryer = group.items[5];
 
-        Assert.AreEqual(SidebarItemKind.LaundryMachine, washer.kind);
-        Assert.AreEqual(SidebarItemKind.LaundryMachine, dryer.kind,
-            "оба пункта ведут в один и тот же вид: класс один, названий два");
+        Assert.AreEqual(SidebarItemKind.WashingMachine, washer.kind);
+        Assert.AreEqual(SidebarItemKind.Dryer, dryer.kind,
+            "плитки сайдбара группируются ПО SidebarItemKind: общий вид склеил бы две "
+            + "машины в одну плитку, и подпись у неё осталась бы от первой строки");
         Assert.AreEqual(LaundryMachineBody.WASHER_TYPE_ID, washer.preset.laundryKind);
         Assert.AreEqual(LaundryMachineBody.DRYER_TYPE_ID, dryer.preset.laundryKind,
             "второй пункт обязан нести ДРУГОЙ вид — одинаковый пресет дал бы две "
@@ -152,8 +177,43 @@ public class LaundryMachineElementTests
         Assert.AreEqual(LaundryMachineBody.DefaultDimensionsMM, washer.dims,
             "в каталоге стоят размеры по умолчанию: 600 на 850 на 600 мм");
         Assert.AreEqual(washer.dims, dryer.dims,
-            "обе машины выглядят одинаково, значит и размеры в каталоге у них одни");
+            "корпус у машин общий, значит и размеры в каталоге у них одни");
     }
+
+    /// <summary>Дефект, который увидел пользователь: обе кнопки были подписаны «Стиральная».
+    /// Причина не в подписях, а в том, что <c>SidebarTileBuilder</c> собирает плитку по
+    /// <c>SidebarItemKind</c> — общий вид склеивал две строки в ОДНУ плитку, а подпись
+    /// плитки берётся от первой из них, так что сушильной в интерфейсе не было вовсе,
+    /// хотя пресеты уже были разные и объекты создавались верные. Поэтому вопрос задаётся
+    /// не пресетам, а ПРОДУКТУ — тому самому набору плиток, который строит сайдбар, и
+    /// именно той строке, которую он покажет на кнопке.</summary>
+    [Test]
+    public void TheTwoMachines_AreTwoTiles_WithDIFFERENTCaptions()
+    {
+        var group = SidebarCatalog.Build().Find(g => g.title == "Техника");
+        var tiles = SidebarTileBuilder.BuildTiles(group.items);
+
+        var machineTiles = tiles.FindAll(t => t.presets.Count > 0
+            && (t.presets[0].kind == SidebarItemKind.WashingMachine
+                || t.presets[0].kind == SidebarItemKind.Dryer));
+
+        Assert.AreEqual(2, machineTiles.Count,
+            "две машины — две плитки. Одна плитка значит, что они склеились и вторая "
+            + "спряталась в переключатель пресетов под чужой подписью");
+
+        var captions = machineTiles.ConvertAll(CaptionOf);
+        Assert.AreNotEqual(captions[0], captions[1],
+            "обе кнопки подписаны одинаково — ровно то, что увидел пользователь: "
+            + "подписи «" + captions[0] + "» и «" + captions[1] + "»");
+        CollectionAssert.Contains(captions, LaundryMachineBody.WasherName);
+        CollectionAssert.Contains(captions, LaundryMachineBody.DryerName,
+            "сушильной машины в каталоге не видно ни под каким именем");
+    }
+
+    /// <summary>Та же строка, что рисует <c>SidebarUI</c> на кнопке плитки: у плитки с
+    /// одним пресетом это имя пресета, у плитки с несколькими — заголовок плитки.</summary>
+    private static string CaptionOf(SidebarTileBuilder.Tile tile) =>
+        tile.presets.Count > 1 ? tile.title : tile.presets[0].DisplayName;
 
     [Test]
     public void TheHatch_ReachesTheSceneAsADisc_NotAsACube()
@@ -162,17 +222,75 @@ public class LaundryMachineElementTests
 
         var rim = machine.transform.GetChild(LaundryMachineBody.IdxHatchRim)
             .GetComponent<MeshFilter>();
-        var panel = machine.transform.GetChild(LaundryMachineBody.IdxFrontPanel)
+        var panel = machine.transform.GetChild(LaundryMachineBody.IdxControlPanel)
             .GetComponent<MeshFilter>();
 
         Assert.IsNotNull(rim, "у обода люка нет MeshFilter");
-        Assert.IsNotNull(panel, "у передней стенки нет MeshFilter");
+        Assert.IsNotNull(panel, "у панели управления нет MeshFilter");
         Assert.Greater(rim!.sharedMesh.vertexCount, panel!.sharedMesh.vertexCount,
-            "круглый люк не может быть кубом: у диска из 24 сегментов вершин заметно больше, "
-            + "чем у коробки. Равное число значит, что диск не поставили и люк остался "
-            + "прямоугольным");
+            "круглый люк не может быть кубом: у диска вершин заметно больше, чем у коробки. "
+            + "Равное число значит, что диск не поставили и люк остался прямоугольным");
         Assert.AreNotSame(panel.sharedMesh, rim.sharedMesh,
-            "обод и стенка делят один меш — значит подмена меша не сработала");
+            "обод и панель делят один меш — значит подмена меша не сработала");
+    }
+
+    [Test]
+    public void TheShell_IsBoredForTheDrum_NotLeftAPlainCube()
+    {
+        var machine = MakeDefault(LaundryMachineKind.Washer, "Drum");
+
+        var shell = machine.transform.GetChild(LaundryMachineBody.IdxShell)
+            .GetComponent<MeshFilter>();
+        Assert.IsNotNull(shell, "у корпуса нет MeshFilter");
+
+        var mesh = shell!.sharedMesh;
+        Assert.IsNotNull(mesh, "у корпуса нет меша");
+        Assert.Greater(mesh!.vertexCount, 24,
+            "у куба 24 вершины; корпус с расточкой под барабан заведомо богаче — "
+            + "столько же значит, что дверцу открыли, а за ней плоская стенка");
+
+        Assert.AreEqual(Vector3.one, machine.transform.GetChild(LaundryMachineBody.IdxShell).localScale,
+            "корпус собран в настоящих миллиметрах, поэтому масштаб на нём обязан быть "
+            + "единичным: иначе круглая расточка растянулась бы в овал");
+
+        var size = mesh.bounds.size / AppConstants.MM_TO_UNITS;
+        var expected = LaundryMachineBody.ShellSizeMM(LaundryMachineBody.DefaultDimensionsMM);
+        Assert.AreEqual(expected.x, size.x, 0.5f, "меш корпуса шире или уже объявленного");
+        Assert.AreEqual(expected.y, size.y, 0.5f, "меш корпуса выше или ниже объявленного");
+        Assert.AreEqual(expected.z, size.z, 0.5f, "меш корпуса глубже или мельче объявленного");
+    }
+
+    [Test]
+    public void EveryTriangleOfTheShell_IsWoundTheWayItsNormalPoints()
+    {
+        var machine = MakeDefault(LaundryMachineKind.Dryer, "Winding");
+        var mesh = machine.transform.GetChild(LaundryMachineBody.IdxShell)
+            .GetComponent<MeshFilter>().sharedMesh;
+
+        var vertices = mesh.vertices;
+        var normals = mesh.normals;
+        var triangles = mesh.triangles;
+
+        int wrong = 0;
+        int degenerate = 0;
+        for (int i = 0; i < triangles.Length; i += 3)
+        {
+            var a = vertices[triangles[i]];
+            var cross = Vector3.Cross(vertices[triangles[i + 1]] - a, vertices[triangles[i + 2]] - a);
+            if (cross.sqrMagnitude < 1e-12f) { degenerate++; continue; }
+
+            var declared = normals[triangles[i]] + normals[triangles[i + 1]]
+                + normals[triangles[i + 2]];
+            if (Vector3.Dot(cross.normalized, declared.normalized) <= 0f) wrong++;
+        }
+
+        Assert.AreEqual(0, wrong,
+            "треугольник намотан против собственной нормали: отсечение задних граней съест его, "
+            + "и сквозь корпус будет видно насквозь. Ни коробка, ни счёт вершин этого не ловят. "
+            + "Вывернутых треугольников: " + wrong);
+        Assert.AreEqual(0, degenerate,
+            "вырожденный треугольник нулевой площади: у кольца совпали два угла. Таких: "
+            + degenerate);
     }
 
     [Test]
@@ -193,14 +311,16 @@ public class LaundryMachineElementTests
     public void Resizing_RebuildsTheBody_OnEveryAxis()
     {
         var machine = MakeDefault(LaundryMachineKind.Washer, "Resize");
-        var shell = machine.transform.GetChild(LaundryMachineBody.IdxShell);
+        var shell = machine.transform.GetChild(LaundryMachineBody.IdxShell)
+            .GetComponent<MeshFilter>();
 
         machine.DimensionsMM = new Vector3Int(900, 1100, 700);
 
-        Assert.AreEqual(0.9f, shell.localScale.x, 0.001f, "корпус не поехал за шириной");
-        Assert.AreEqual(1.1f, shell.localScale.y, 0.001f, "корпус не поехал за высотой");
-        Assert.AreEqual((700 - LaundryMachineBody.FRONT_THICKNESS_MM) * 0.001f,
-            shell.localScale.z, 0.001f, "корпус не поехал за глубиной");
+        var size = shell.sharedMesh.bounds.size / AppConstants.MM_TO_UNITS;
+        Assert.AreEqual(900f, size.x, 0.5f, "корпус не поехал за шириной");
+        Assert.AreEqual(1100f, size.y, 0.5f, "корпус не поехал за высотой");
+        Assert.AreEqual(700f - LaundryMachineBody.FRONT_FACE_SETBACK_MM, size.z, 0.5f,
+            "корпус не поехал за глубиной");
         Assert.AreEqual(new Vector3Int(900, 1100, 700), machine.DimensionsMM);
     }
 
@@ -218,7 +338,8 @@ public class LaundryMachineElementTests
     private float OpenHatchReach(Vector3Int dims, string name)
     {
         var machine = Make(LaundryMachineKind.Washer, dims, name);
-        var hinge = LaundryMachineBody.HingeLocalMM(dims) * AppConstants.MM_TO_UNITS;
+        var hinge = LaundryMachineBody.HingeLocalMM(LaundryMachineKind.Washer, dims)
+            * AppConstants.MM_TO_UNITS;
         machine.SetOpen(true);
         machine.StepDoor(DropDoor.OPEN_SECONDS);
         return DoorOf(machine).localPosition.z - hinge.z;

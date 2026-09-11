@@ -14,13 +14,14 @@ namespace KitchenDesigner.Core
 
         private ApplianceBoxes? _boxes;
         private DropDoor? _door;
+        private Mesh? _shellMesh;
 
         private ApplianceBoxes Boxes =>
             _boxes ??= new ApplianceBoxes(transform, LaundryMachineBody.PartName);
 
         private DropDoor Door => _door ??= new DropDoor(Boxes, LaundryMachineBody.BodyPartCount,
-            () => LaundryMachineBody.DoorPartsMM(DimensionsMM),
-            () => LaundryMachineBody.HingeLocalMM(DimensionsMM), HingeAxis);
+            () => LaundryMachineBody.DoorPartsMM(_kind, DimensionsMM),
+            () => LaundryMachineBody.HingeLocalMM(_kind, DimensionsMM), HingeAxis);
 
         public override bool CanFollowAnAttachParent => false;
 
@@ -30,8 +31,15 @@ namespace KitchenDesigner.Core
         public LaundryMachineKind Kind
         {
             get => _kind;
-            set => _kind = value;
+            set
+            {
+                if (_kind == value) return;
+                _kind = value;
+                ApplyDimensions();
+            }
         }
+
+        public float HatchDiameterMM => LaundryMachineBody.HatchDiameterMM(_kind, DimensionsMM);
 
         public bool IsOpen => _open;
 
@@ -49,6 +57,9 @@ namespace KitchenDesigner.Core
         {
             yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
         }
+
+        public override Vector2Int DecorSurfaceMM =>
+            new Vector2Int(DimensionsMM.x, DimensionsMM.y);
 
         protected override Vector3 EffectiveScale => FurnitureLayout.PhysicalScale(DimensionsMM);
 
@@ -70,12 +81,34 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < LaundryMachineBody.PartCount; i++)
                 if (LaundryMachineBody.IsRound(i)) Boxes.SetMesh(i, HatchDiscMesh.Unit());
 
-            var body = LaundryMachineBody.BodyPartsMM(DimensionsMM);
-            for (int i = 0; i < LaundryMachineBody.BodyPartCount; i++)
+            RebuildShellMesh();
+
+            var body = LaundryMachineBody.BodyPartsMM(_kind, DimensionsMM);
+            Boxes.PlaceUnscaled(LaundryMachineBody.IdxShell, body[LaundryMachineBody.IdxShell].centerMM,
+                Quaternion.identity);
+            for (int i = 1; i < LaundryMachineBody.BodyPartCount; i++)
                 Boxes.Place(i, body[i].centerMM, body[i].sizeMM, Quaternion.identity);
 
             ApplyDoorPose();
             ApplyMaterials();
+        }
+
+        private void RebuildShellMesh()
+        {
+            DisposeShellMesh();
+            _shellMesh = DrumRecessMesh.Build(
+                LaundryMachineBody.ShellSizeMM(DimensionsMM),
+                LaundryMachineBody.DrumDiameterMM(_kind, DimensionsMM),
+                LaundryMachineBody.DrumDepthMM(DimensionsMM));
+            Boxes.SetMesh(LaundryMachineBody.IdxShell, _shellMesh);
+        }
+
+        private void DisposeShellMesh()
+        {
+            if (_shellMesh == null) return;
+            if (Application.isPlaying) Destroy(_shellMesh);
+            else DestroyImmediate(_shellMesh);
+            _shellMesh = null;
         }
 
         internal void ApplyDoorPose()
@@ -122,7 +155,7 @@ namespace KitchenDesigner.Core
             Door.WorldBoxes(transform, progress, into);
 
         public override MeshRenderer? DecorRenderer =>
-            Boxes.RendererOf(LaundryMachineBody.IdxFrontPanel);
+            Boxes.RendererOf(LaundryMachineBody.IdxShell);
 
         private void ApplyMaterials()
         {
@@ -131,6 +164,7 @@ namespace KitchenDesigner.Core
                 Boxes.SetMaterial(i, i switch
                 {
                     LaundryMachineBody.IdxControlPanel => ApplianceMaterials.LaundryPanel,
+                    LaundryMachineBody.IdxDrumBack => ApplianceMaterials.LaundryDrum,
                     LaundryMachineBody.IdxHatchGlass => ApplianceMaterials.LaundryGlass,
                     _ => front,
                 });
@@ -148,7 +182,6 @@ namespace KitchenDesigner.Core
             var front = SanitaryDecor.ChosenOrFactory(MaterialId, material,
                 ApplianceMaterials.LaundryBody);
             Boxes.SetMaterial(LaundryMachineBody.IdxShell, front);
-            Boxes.SetMaterial(LaundryMachineBody.IdxFrontPanel, front);
             Boxes.SetMaterial(LaundryMachineBody.IdxHatchRim, front);
         }
 
@@ -157,6 +190,7 @@ namespace KitchenDesigner.Core
         protected override void OnElementDestroyed()
         {
             DestroyChildren();
+            DisposeShellMesh();
         }
     }
 }

@@ -176,7 +176,7 @@ namespace KitchenDesigner.Core.UI
 
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, "Стиральная",
                 LaundryMachineItem(LaundryMachineKind.Washer));
-            yield return SidebarCatalogRow.PresetRow(SidebarGroupKey.Appliance,
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, "Сушильная",
                 LaundryMachineItem(LaundryMachineKind.Dryer));
 
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, "Унитаз",
@@ -316,7 +316,10 @@ namespace KitchenDesigner.Core.UI
         private static Item LaundryMachineItem(LaundryMachineKind kind)
         {
             var item = new Item(LaundryMachineBody.NameOf(kind),
-                LaundryMachineBody.DefaultDimensionsMM, SidebarItemKind.LaundryMachine);
+                LaundryMachineBody.DefaultDimensionsMM,
+                kind == LaundryMachineKind.Dryer
+                    ? SidebarItemKind.Dryer
+                    : SidebarItemKind.WashingMachine);
             item.preset.laundryKind = LaundryMachineBody.TypeId(kind);
             return item;
         }
