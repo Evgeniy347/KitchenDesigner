@@ -48,6 +48,16 @@
     },
     {
       "type": "Label",
+      "text": "Нижний порог кромки",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Пространственная сетка",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
       "text": "Автосохранение",
       "position": [-90, 0]
     },
@@ -58,17 +68,7 @@
     },
     {
       "type": "Label",
-      "text": "Нижний порог кромки",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
       "text": "Привязка к деталям",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Пространственная сетка",
       "position": [-90, 0]
     },
     {
@@ -95,6 +95,16 @@
       "type": "Label",
       "text": "Шаг сетки",
       "position": [-70, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "InputField",

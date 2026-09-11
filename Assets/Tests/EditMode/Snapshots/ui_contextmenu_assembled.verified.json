@@ -17,6 +17,16 @@
       "position": [0, 0]
     },
     {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -93,7 +103,7 @@
     {
       "type": "Label",
       "text": "Дверца",
-      "position": [-103, -267]
+      "position": [-166, -267]
     },
     {
       "type": "Dropdown",
@@ -109,7 +119,7 @@
     {
       "type": "Label",
       "text": "Заполнение",
-      "position": [-103, -338]
+      "position": [-166, -338]
     },
     {
       "type": "Dropdown",

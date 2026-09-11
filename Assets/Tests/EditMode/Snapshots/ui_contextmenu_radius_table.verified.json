@@ -17,6 +17,11 @@
       "position": [0, 0]
     },
     {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -77,7 +82,7 @@
     {
       "type": "Label",
       "text": "Сдвиг опор",
-      "position": [-80, -197]
+      "position": [-150, -197]
     },
     {
       "type": "InputField",

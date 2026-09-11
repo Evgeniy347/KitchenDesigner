@@ -17,6 +17,11 @@
       "position": [0, 0]
     },
     {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -89,7 +94,7 @@
     {
       "type": "Label",
       "text": "Средняя секция",
-      "position": [-80, -228]
+      "position": [-150, -228]
     },
     {
       "type": "InputField",

@@ -49,17 +49,32 @@
     {
       "type": "Label",
       "text": "Скорость WASD",
-      "position": [-90, 0]
+      "position": [-240, 0]
     },
     {
       "type": "Label",
       "text": "Скорость ←→↑↓",
-      "position": [-90, 0]
+      "position": [-240, 0]
     },
     {
       "type": "Label",
       "text": "Чувствительность мыши",
-      "position": [-90, 0]
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",

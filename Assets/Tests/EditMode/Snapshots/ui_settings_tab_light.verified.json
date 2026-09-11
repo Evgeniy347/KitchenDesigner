@@ -48,6 +48,31 @@
     },
     {
       "type": "Label",
+      "text": "Отскок от пола",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Потолок сверху",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Предел отскока",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Стены сбоку",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Тонемаппинг",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
       "text": "Дальность теней",
       "position": [-90, 0]
     },
@@ -73,22 +98,7 @@
     },
     {
       "type": "Label",
-      "text": "Отскок от пола",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
       "text": "Порог свечения",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Потолок сверху",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Предел отскока",
       "position": [-90, 0]
     },
     {
@@ -113,22 +123,12 @@
     },
     {
       "type": "Label",
-      "text": "Стены сбоку",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
       "text": "Тени от ламп",
       "position": [-90, 0]
     },
     {
       "type": "Label",
       "text": "Тени сцены",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Тонемаппинг",
       "position": [-90, 0]
     },
     {
@@ -145,6 +145,31 @@
       "type": "Label",
       "text": "Эффекты",
       "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",

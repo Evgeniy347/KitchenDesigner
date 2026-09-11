@@ -17,6 +17,21 @@
       "position": [0, 0]
     },
     {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -47,7 +62,7 @@
       "label": "Название",
       "value": "Yaschik_A_350",
       "interactable": true,
-      "position": [40, -83]
+      "position": [38, -83]
     },
     {
       "type": "Label",
@@ -88,7 +103,7 @@
     {
       "type": "Label",
       "text": "Тип ящика",
-      "position": [-103, -232]
+      "position": [-166, -232]
     },
     {
       "type": "Dropdown",
@@ -99,7 +114,7 @@
     {
       "type": "Label",
       "text": "Длина",
-      "position": [-103, -267]
+      "position": [-166, -267]
     },
     {
       "type": "Dropdown",
@@ -121,7 +136,7 @@
     {
       "type": "Label",
       "text": "Ширина короба",
-      "position": [-80, -337]
+      "position": [-150, -337]
     },
     {
       "type": "InputField",

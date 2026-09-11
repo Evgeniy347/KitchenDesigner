@@ -49,17 +49,57 @@
     {
       "type": "Label",
       "text": "Высота этажа",
-      "position": [-90, 0]
+      "position": [-240, 0]
     },
     {
       "type": "Label",
       "text": "Глубина промерзания",
-      "position": [-90, 0]
+      "position": [-240, 0]
     },
     {
       "type": "Label",
       "text": "Грунт",
-      "position": [-90, 0]
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Запас",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Класс бетона",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Подушка: песок",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Подушка: щебень",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Регион",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Технология",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Трамбовка",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Шов",
+      "position": [-240, 0]
     },
     {
       "type": "Label",
@@ -68,42 +108,7 @@
     },
     {
       "type": "Label",
-      "text": "Запас",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
       "text": "Кладка",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Класс бетона",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Подушка: песок",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Подушка: щебень",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Регион",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Технология",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Трамбовка",
       "position": [-90, 0]
     },
     {
@@ -114,11 +119,6 @@
     {
       "type": "Label",
       "text": "Фундамент",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Шов",
       "position": [-90, 0]
     },
     {

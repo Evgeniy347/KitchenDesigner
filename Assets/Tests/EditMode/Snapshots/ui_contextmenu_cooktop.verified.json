@@ -17,6 +17,11 @@
       "position": [0, 0]
     },
     {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -36,7 +41,7 @@
       "label": "Название",
       "value": "Varochnaya",
       "interactable": true,
-      "position": [40, -48]
+      "position": [38, -48]
     },
     {
       "type": "Label",
@@ -77,7 +82,7 @@
     {
       "type": "Label",
       "text": "Ширина выреза",
-      "position": [-80, -197]
+      "position": [-150, -197]
     },
     {
       "type": "InputField",

@@ -17,6 +17,11 @@
       "position": [0, 0]
     },
     {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -77,7 +82,7 @@
     {
       "type": "Label",
       "text": "Тип кровати",
-      "position": [-103, -197]
+      "position": [-166, -197]
     },
     {
       "type": "Dropdown",

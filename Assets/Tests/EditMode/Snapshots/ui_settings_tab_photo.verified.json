@@ -49,17 +49,112 @@
     {
       "type": "Label",
       "text": "AO в полном разрешении",
-      "position": [-90, 0]
+      "position": [-240, 0]
     },
     {
       "type": "Label",
       "text": "AO по прямому свету",
-      "position": [-90, 0]
+      "position": [-240, 0]
     },
     {
       "type": "Label",
       "text": "Ambient occlusion",
-      "position": [-90, 0]
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Виньетка",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Выборок SSGI",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Затухание AO",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Карта теней",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Ламп на объект",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Масштаб рендера",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Мягкие тени",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Отражённый свет (SSGI, опытный)",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Потолок по стенам",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Радиус AO",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Радиус SSGI",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Разрешение SSGI",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Расширенный диапазон (HDR)",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Свечение (bloom)",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сглаживание",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сглаживание SSGI",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила AO",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила SSGI",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Суперсэмплинг",
+      "position": [-240, 0]
     },
     {
       "type": "Label",
@@ -73,107 +168,12 @@
     },
     {
       "type": "Label",
-      "text": "Виньетка",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Выборок SSGI",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Затухание AO",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Карта теней",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Ламп на объект",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Масштаб рендера",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Мягкие тени",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
       "text": "Отражённый свет (SSGI)",
       "position": [-90, 0]
     },
     {
       "type": "Label",
-      "text": "Отражённый свет (SSGI, опытный)",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Потолок по стенам",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Радиус AO",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Радиус SSGI",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Разрешение SSGI",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
       "text": "Разрешение и тени",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Расширенный диапазон (HDR)",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Свечение (bloom)",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Сглаживание",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Сглаживание SSGI",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Сила AO",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Сила SSGI",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Суперсэмплинг",
       "position": [-90, 0]
     },
     {
@@ -185,6 +185,116 @@
       "type": "Label",
       "text": "Фоторежим",
       "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Button",

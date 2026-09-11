@@ -17,6 +17,11 @@
       "position": [0, 0]
     },
     {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -47,7 +52,7 @@
       "label": "Название",
       "value": "Fasad_600x400",
       "interactable": true,
-      "position": [40, -83]
+      "position": [38, -83]
     },
     {
       "type": "Label",
@@ -93,7 +98,7 @@
     {
       "type": "Label",
       "text": "Дверца",
-      "position": [-103, -267]
+      "position": [-166, -267]
     },
     {
       "type": "Dropdown",
