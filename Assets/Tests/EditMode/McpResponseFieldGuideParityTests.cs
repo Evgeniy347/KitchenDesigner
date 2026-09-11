@@ -42,6 +42,7 @@ public class McpResponseFieldGuideParityTests
             ["cooktop"] = "свойства варочной, только для CooktopElement",
             ["oven"] = "свойства духовки, только для OvenElement",
             ["dishwasher"] = "свойства посудомойки, только для DishwasherElement",
+            ["laundryMachine"] = "свойства стиральной или сушильной машины, только для LaundryMachineElement: вид (washer/dryer), показываемое человеку название и состояние люка. Вид и название — одно и то же решение, показанные с двух сторон: класс один, названия два",
             ["window"] = "свойства окна, только для WindowElement",
             ["door"] = "свойства двери, только для DoorElement",
         };

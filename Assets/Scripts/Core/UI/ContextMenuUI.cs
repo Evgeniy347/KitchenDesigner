@@ -337,6 +337,7 @@ namespace KitchenDesigner.Core.UI
             _sofaFields.Build();
             _bedFields.Build();
             _pouffeFields.Build();
+            _laundryFields.Build();
             _toiletFields.Build();
             _bathtubFields.Build();
             _bathMixerFields.Build();

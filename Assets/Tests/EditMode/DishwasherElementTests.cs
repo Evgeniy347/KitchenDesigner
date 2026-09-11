@@ -537,7 +537,9 @@ public class DishwasherElementTests : McpTestFixture
     {
         var group = SidebarCatalog.Build().Find(g => g.title == "Техника");
 
-        Assert.AreEqual(4, group.items.Count, "общая варочная, модельная варочная, духовка, посудомойка");
+        Assert.AreEqual(6, group.items.Count,
+            "общая варочная, модельная варочная, духовка, посудомойка, стиральная, сушильная — "
+            + "машины дописаны В КОНЕЦ группы, поэтому места духовки и посудомойки не сдвинулись");
         var dw = group.items[3];
         Assert.AreEqual(SidebarItemKind.Dishwasher, dw.kind, "посудомойка — четвёртый пункт «Техники»");
         Assert.AreEqual(DishwasherElement.MODEL, dw.preset.applianceModel);

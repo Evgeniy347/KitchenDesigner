@@ -4,6 +4,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.UI;
 
 /// <summary>Стиральная и сушильная машина — ОДИН класс с двумя названиями
 /// (<see cref="LaundryMachineKind"/>), тот же приём, что у ящика Movento. Здесь
@@ -123,6 +124,35 @@ public class LaundryMachineElementTests
             Assert.AreEqual(LaundryMachineBody.DefaultDimensionsMM, machine.DimensionsMM,
                 kind + ": размеры по умолчанию — 600 на 850 на 600 мм");
         }
+    }
+
+    /// <summary>Счётчик «в группе четыре пункта» у духовки и посудомойки вырос до шести — и
+    /// это не подгонка числа, а ровно то, что здесь записано: машины дописаны В КОНЕЦ
+    /// «Техники», поэтому места духовки (третье) и посудомойки (четвёртое) не сдвинулись.
+    /// Утверждение о хвосте живёт тут, у своего предмета, а не в чужих файлах.</summary>
+    [Test]
+    public void TheCatalogue_PutsBothMachines_AtTheTailOfTheApplianceGroup()
+    {
+        var group = SidebarCatalog.Build().Find(g => g.title == "Техника");
+
+        Assert.AreEqual(SidebarItemKind.Dishwasher, group.items[3].kind,
+            "посудомойка обязана остаться четвёртой: машины дописываются ПОСЛЕ неё, "
+            + "а не втискиваются в середину группы");
+
+        var washer = group.items[4];
+        var dryer = group.items[5];
+
+        Assert.AreEqual(SidebarItemKind.LaundryMachine, washer.kind);
+        Assert.AreEqual(SidebarItemKind.LaundryMachine, dryer.kind,
+            "оба пункта ведут в один и тот же вид: класс один, названий два");
+        Assert.AreEqual(LaundryMachineBody.WASHER_TYPE_ID, washer.preset.laundryKind);
+        Assert.AreEqual(LaundryMachineBody.DRYER_TYPE_ID, dryer.preset.laundryKind,
+            "второй пункт обязан нести ДРУГОЙ вид — одинаковый пресет дал бы две "
+            + "кнопки, заводящие одну и ту же стиральную машину");
+        Assert.AreEqual(LaundryMachineBody.DefaultDimensionsMM, washer.dims,
+            "в каталоге стоят размеры по умолчанию: 600 на 850 на 600 мм");
+        Assert.AreEqual(washer.dims, dryer.dims,
+            "обе машины выглядят одинаково, значит и размеры в каталоге у них одни");
     }
 
     [Test]
