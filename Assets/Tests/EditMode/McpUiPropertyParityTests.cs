@@ -13,7 +13,6 @@ using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
 using KitchenDesigner.Core.MCP.Contract;
-using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.UI;
 
 /// <summary>Расхождение между тем, что человек правит в панели свойств, и тем,
@@ -101,29 +100,58 @@ public class McpUiPropertyParityTests : McpTestFixture
 
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
-    private bool _blockOnViolation;
+    private ProjectLoadStateGuard? _globals;
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс: Build стоит ~0,30 с против
+    /// ~5 мс у Open. Общая панель безопасна здесь ровно потому, что каждый
+    /// слепок и без того начинается с Open на СВЕЖЕМ элементе, а Open
+    /// перезаливает списки материалов (MaterialOptions.Fill в ShowFor),
+    /// сворачивает секции, забывает предпросмотр и перетрекивает поля.
+    /// Остальное — защёлку кадра правок и фокус поля — снимает [SetUp].</summary>
+    [OneTimeSetUp]
+    public void BuildPanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("ParityCanvas");
         var go = new GameObject("CtxMenu");
         _menu = go.AddComponent<ContextMenuUI>();
         _menu.Build(_canvas.transform);
-        _blockOnViolation = KitchenSettings.Instance.BlockOnViolation;
+    }
+
+    [OneTimeTearDown]
+    public void DestroyPanelOnce()
+    {
+        if (_menu != null) UnityEngine.Object.DestroyImmediate(_menu.gameObject);
+        if (_canvas != null) UnityEngine.Object.DestroyImmediate(_canvas.gameObject);
+    }
+
+    [SetUp]
+    public void Setup()
+    {
+        _globals = ProjectLoadStateGuard.Capture();
         KitchenSettings.Instance.BlockOnViolation = false;
+        if (_menu != null) ForgetPreviousApply();
+        Unfocus();
     }
 
     [TearDown]
     public void Teardown()
     {
-        KitchenSettings.Instance.BlockOnViolation = _blockOnViolation;
+        if (_menu != null) _menu.Close();
+        DestroySpawned();
         CommandStack.Clear();
-        if (_menu != null) UnityEngine.Object.DestroyImmediate(_menu.gameObject);
-        if (_canvas != null) UnityEngine.Object.DestroyImmediate(_canvas.gameObject);
         MaterialCatalog.Reset();
         ElementFactory.ClearPools();
+        if (_globals != null) _globals.Restore();
+    }
+
+    /// <summary>Сфокусированное поле RefreshUnfocused пропускает, а при общей
+    /// панели фокус переживает тест.</summary>
+    private static void Unfocus()
+    {
+        var es = UnityEngine.Object
+            .FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
+        if (es != null) es.SetSelectedGameObject(null);
     }
 
     /// <summary>Ручной сброс сцены МЕЖДУ образцами внутри одного теста — не
@@ -145,91 +173,26 @@ public class McpUiPropertyParityTests : McpTestFixture
     // ---------- образцы ----------
 
     /// <summary>По одному живому экземпляру каждого класса элемента. Список
-    /// строится не руками: он берётся из фабрики через
-    /// <see cref="Specimen"/>, а полнота проверяется
-    /// <see cref="EveryElementClassInTheProject_HasASpecimen"/> — забытый класс
-    /// краснеет, а не выпадает из сверки молча.</summary>
+    /// здесь больше не пишется руками: он берётся из
+    /// <see cref="EveryElementType.Makers"/> — той самой фабричной таблицы,
+    /// которой пользуются сторожа ведомости, врезок и подсветки. Свои тридцать
+    /// девять создателей стояли тут ВТОРЫМ источником правды рядом с настоящей
+    /// фабрикой и разошлись бы с ней молча: сверка поверхностей продолжала бы
+    /// идти по образцу, которого фабрика больше не собирает. Заодно
+    /// <see cref="EveryElementClassInTheProject_HasASpecimen"/> из «мой список
+    /// полон» превращается в «фабрика полна».
+    ///
+    /// Стена добавляется отдельно, и это не недосмотр: <see cref="Wall"/> — не
+    /// подкласс KitchenElement, а СОСЕДНИЙ компонент на том же объекте, поэтому
+    /// в таблице типов элементов её и нет. Именно на ней держится
+    /// <see cref="TheProbe_ActuallyDrivesTheNeighbourSurface"/>.</summary>
     private static IEnumerable<(string label, Func<GameObject> make)> Specimens()
     {
-        yield return ("KitchenElement", () => ElementFactory.CreatePart(
-            new Vector3Int(600, 400, 18), PROBE, Vector3.zero));
-        yield return ("Wall", () => ElementFactory.CreateWall(
-            new Vector3Int(2000, 2500, 100), PROBE, Vector3.zero));
-        yield return ("FacadeElement", () => ElementFactory.CreateFacade(
-            new Vector3Int(600, 716, 18), PROBE, Vector3.zero));
-        yield return ("AssembledFacadeElement", () => ElementFactory.CreateAssembledFacade(
-            new Vector3Int(600, 716, 18), PROBE, Vector3.zero, AssembledFill.Blind));
-        yield return ("PanelElement", () => ElementFactory.CreatePanel(
-            new Vector3Int(600, 400, 3), PROBE, Vector3.zero));
-        yield return ("RadialShelfElement", () => ElementFactory.CreateRadialShelf(
-            600, 400, 18, 200, PROBE, Vector3.zero));
-        yield return ("DrawerElement", () => ElementFactory.CreateDrawer(
-            DrawerType.A, 350, DrawerColor.Anthracite, 400, PROBE, Vector3.zero, DrawerSystem.Gtv));
-        yield return ("TableElement", () => ElementFactory.CreateTable(
-            new Vector3Int(1200, 750, 700), PROBE, Vector3.zero));
-        yield return ("RadiusTableElement", () => ElementFactory.CreateRadiusTable(
-            new Vector3Int(1200, 750, 700), PROBE, Vector3.zero));
-        yield return ("StoolElement", () => ElementFactory.CreateStool(
-            new Vector3Int(StoolElement.DefaultWidthMM, StoolElement.DefaultHeightMM,
-                StoolElement.DefaultDepthMM), 0, PROBE, Vector3.zero));
-        yield return ("ChairElement", () => ElementFactory.CreateChair(
-            new Vector3Int(ChairElement.DefaultWidthMM, ChairElement.DefaultHeightMM,
-                ChairElement.DefaultDepthMM), 0, AppConstants.CHAIR_SEAT_HEIGHT_DEFAULT,
-            PROBE, Vector3.zero));
-        yield return ("SofaElement", () => ElementFactory.CreateSofa(
-            new Vector3Int(SofaElement.DefaultWidthMM, SofaElement.DefaultHeightMM,
-                SofaElement.DefaultDepthMM), SofaElement.DefaultCornerRadiusMM,
-            SofaElement.DefaultSeatHeightMM, PROBE, Vector3.zero));
-        yield return ("PouffeElement", () => ElementFactory.CreatePouffe(
-            new Vector3Int(PouffeElement.DefaultWidthMM, PouffeElement.DefaultHeightMM,
-                PouffeElement.DefaultDepthMM), PouffeElement.DefaultCornerRadiusMM,
-            PouffeElement.DefaultSeatThicknessMM, PROBE, Vector3.zero));
-        yield return ("ToiletElement", () => ElementFactory.CreateToilet(
-            ToiletElement.DefaultSeatHeightMM, PROBE, Vector3.zero));
-        yield return ("WallHungToiletElement", () => ElementFactory.CreateWallHungToilet(
-            WallHungToiletElement.DefaultSeatHeightMM,
-            WallHungToiletElement.DefaultFlushPlateHeightMM, PROBE, Vector3.zero));
-        yield return ("BathtubElement", () => ElementFactory.CreateBathtub(
-            BathtubLayout.DefaultDimensionsMM, BathtubElement.DefaultRimWidthMM,
-            BathtubElement.DefaultBowlDepthMM, BathtubElement.DefaultBowlRadiusMM,
-            BathtubElement.DefaultBowlFilletMM, PROBE, Vector3.zero));
-        yield return ("BathMixerElement", () => ElementFactory.CreateBathMixer(
-            BathMixerSpec.Default, PROBE, Vector3.zero));
-        yield return ("ShowerColumnElement", () => ElementFactory.CreateShowerColumn(
-            ShowerColumnSpec.Default, PROBE, Vector3.zero));
-        yield return ("SocketElement", () => ElementFactory.CreateSocket(
-            WallDeviceSpec.Default, PROBE, Vector3.zero));
-        yield return ("LightSwitchElement", () => ElementFactory.CreateLightSwitch(
-            WallDeviceSpec.Default, true, null, PROBE, Vector3.zero));
-        yield return ("BedElement", () => ElementFactory.CreateBed(
-            new Vector3Int(BedElement.DefaultWidthMM, BedElement.DefaultHeightMM,
-                BedElement.DefaultDepthMM), true, true, PROBE, Vector3.zero));
-        yield return ("PillarElement", () => ElementFactory.CreatePillar(
-            PillarElement.MidHeightMM_Default, PROBE, Vector3.zero));
-        yield return ("ScrewLegElement", () => ElementFactory.CreateScrewLeg(PROBE, Vector3.zero));
-        yield return ("SinkElement", () => ElementFactory.CreateSink(PROBE, Vector3.zero));
-        yield return ("CooktopElement", () => ElementFactory.CreateCooktop(PROBE, Vector3.zero));
-        yield return ("OvenElement", () => ElementFactory.CreateOven(PROBE, Vector3.zero));
-        yield return ("DishwasherElement", () => ElementFactory.CreateDishwasher(PROBE, Vector3.zero));
-        yield return ("WindowElement", () => ElementFactory.CreateWindow(
-            new Vector3Int(900, 1200, 100), PROBE, Vector3.zero));
-        yield return ("DoorElement", () => ElementFactory.CreateDoor(
-            new Vector3Int(900, 2000, 100), PROBE, Vector3.zero));
-        yield return ("FloorElement", () => ElementFactory.CreateFloor(
-            new Vector3Int(FloorElement.DEFAULT_SIZE_MM, FloorElement.DEFAULT_THICKNESS_MM,
-                FloorElement.DEFAULT_SIZE_MM), PROBE, Vector3.zero));
-        yield return ("LightSourceElement", () => ElementFactory.CreateLightSource(PROBE, Vector3.zero));
-        yield return ("PipeElement", () => ElementFactory.CreatePipe(
-            PipeSpec.Dn20, PipeElementSpec.DEFAULT_LENGTH_MM, PROBE, Vector3.zero));
-        yield return ("PipeElbowElement", () => ElementFactory.CreatePipeElbow(PROBE, Vector3.zero));
-        yield return ("PipeCouplingElement",
-            () => ElementFactory.CreatePipeCoupling(PROBE, Vector3.zero));
-        yield return ("PipeTeeElement", () => ElementFactory.CreatePipeTee(PROBE, Vector3.zero));
-        yield return ("PipeCapElement", () => ElementFactory.CreatePipeCap(PROBE, Vector3.zero));
-        yield return ("PipeSupplyElement",
-            () => ElementFactory.CreatePipeSupply(PROBE, Vector3.zero));
-        yield return ("PipeReturnElement",
-            () => ElementFactory.CreatePipeReturn(PROBE, Vector3.zero));
+        yield return (nameof(Wall), () => ElementFactory.CreateWall(
+            new Vector3Int(2003, 2503, 103), PROBE, Vector3.zero));
+
+        foreach (var (type, make) in EveryElementType.Makers)
+            yield return (type.Name, () => make(PROBE));
     }
 
     private KitchenElement Spawn(Func<GameObject> make)
@@ -860,9 +823,13 @@ public class McpUiPropertyParityTests : McpTestFixture
     }
 
     /// <summary>Классы элементов берутся из исходников третьим источником,
-    /// который не знает ни про панель, ни про контракт. Забытый в списке
-    /// образцов класс иначе выпал бы из сверки молча — ровно так, как из MCP
-    /// выпадали мойка и пуфик.</summary>
+    /// который не знает ни про панель, ни про контракт. Забытый класс иначе
+    /// выпал бы из сверки молча — ровно так, как из MCP выпадали мойка и пуфик.
+    ///
+    /// Образцы теперь берутся из фабричной таблицы, поэтому этот сторож
+    /// спрашивает уже не «полон ли мой список», а «полна ли ФАБРИКА»: класс без
+    /// создателя в EveryElementType.Makers выпадает не только из сверки панели с
+    /// MCP, но и из сторожей ведомости, врезок и подсветки — всех сразу.</summary>
     [Test]
     public void EveryElementClassInTheProject_HasASpecimen()
     {
@@ -873,7 +840,7 @@ public class McpUiPropertyParityTests : McpTestFixture
 
         Assert.IsEmpty(missing,
             "класс элемента есть в исходниках, но образца для сверки поверхностей у него "
-            + "нет — расхождение панели и MCP по нему никто не увидит. Добавить образец в "
-            + "Specimens(). Без образца: " + string.Join(", ", missing));
+            + "нет — расхождение панели и MCP по нему никто не увидит. Добавить создателя "
+            + "в EveryElementType.Makers. Без образца: " + string.Join(", ", missing));
     }
 }
