@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// Стражи ВИДИМОСТИ значка подсказки «i» (docs/UI-GUIDELINES.md → §13).
@@ -185,6 +186,59 @@ public class HintBadgeVisibilityTests
             "Значок «i», севший внутрь контрола, обязан стоять в свободной дорожке "
             + "HintBadge.LaneWidth: он перехватывает клик своей картинкой, и всё, что он "
             + "накрыл, перестаёт нажиматься. Перекрытия: " + string.Join(" | ", overlaps));
+    }
+
+    /// <summary>Четвёртый способ отнять подсказку — поставить значок ТОЧНО в точку,
+    /// которой в снимке представлена сама подпись: центр её прямоугольника. Так и вышло
+    /// у ящика — «i» строки «Длина» (подпись 44 px в колонке 126 px) села ровно в центр
+    /// колонки, и <c>UiNodeOverlap</c> нашёл два узла в одной точке. Поймал это только
+    /// PlayMode-снимок, то есть самый дорогой прогон в репозитории; здесь тот же вопрос
+    /// задан EditMode-панелью каждого типа. Допуск берётся из самого инварианта, чтобы
+    /// сторож и снимок не разошлись.</summary>
+    [Test]
+    public void EveryElementType_HintBadge_StandsClearOfTheCentreOfItsOwnLabel()
+    {
+        var offenders = new List<string>();
+
+        foreach (var (type, _) in EveryElementType.Makers)
+        {
+            var element = EveryElementType.Spawn(type, "Проба_" + type.Name);
+            _menu!.Open(element);
+            CollectBadgesOnLabelCentres(type.Name, offenders);
+            _menu!.Close();
+            EveryElementType.ClearScene();
+        }
+
+        var wall = SpawnWall();
+        _menu!.Open(wall);
+        CollectBadgesOnLabelCentres("Wall", offenders);
+
+        Assert.IsEmpty(offenders,
+            "Значок «i» и подпись, которую он поясняет, — два узла снимка, и точка узла это "
+            + "центр его прямоугольника. Совпали центры — значок стоит в геометрической "
+            + "середине подписи, а не в дорожке за её текстом, и золотой снимок краснеет "
+            + "инвариантом UiNodeOverlap (допуск " + UiNodeOverlap.CellPixels + " px). "
+            + "Подпись с подсказкой обязана ужиматься до «текст + дорожка значка» "
+            + "(HintBadge.AttachAfterLabel), тогда её центр уезжает влево от дорожки. "
+            + "Нарушители: " + string.Join(" | ", offenders));
+    }
+
+    private void CollectBadgesOnLabelCentres(string typeName, List<string> offenders)
+    {
+        foreach (var badge in VisibleBadges())
+        {
+            var owner = badge.transform.parent as RectTransform;
+            if (owner == null || owner.GetComponent<TMP_Text>() == null) continue;
+
+            var badgeRect = WorldRect((RectTransform)badge.transform);
+            var labelRect = WorldRect(owner);
+            float dx = Mathf.Abs(badgeRect.center.x - labelRect.center.x);
+            float dy = Mathf.Abs(badgeRect.center.y - labelRect.center.y);
+            if (dx >= UiNodeOverlap.CellPixels || dy >= UiNodeOverlap.CellPixels) continue;
+
+            offenders.Add($"{typeName}: {badge.name} в центре «{owner.name}» "
+                + $"(расхождение {dx:F1}×{dy:F1} px)");
+        }
     }
 
     private void CollectMisplaced(string typeName, List<string> offenders)

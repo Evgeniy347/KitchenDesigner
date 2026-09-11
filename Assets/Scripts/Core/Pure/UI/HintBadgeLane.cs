@@ -4,6 +4,10 @@ namespace KitchenDesigner.Core.UI
 {
     public static class HintBadgeLane
     {
+        public static float LabelWidthWithLane(float labelWidth, float textWidth,
+            float badgeSize, float gap) =>
+            Mathf.Min(labelWidth, textWidth + gap + badgeSize);
+
         public static float AfterLabel(float labelCenterX, float labelWidth, float textWidth,
             float badgeSize, float gap)
         {

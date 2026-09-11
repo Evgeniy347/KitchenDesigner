@@ -45,10 +45,25 @@ namespace KitchenDesigner.Core.UI
 
             var labelRect = label.rectTransform;
             float textWidth = label.GetPreferredValues(label.text).x;
-            float x = HintBadgeLane.AfterLabel(0f, labelRect.rect.width,
+            float laneWidth = NarrowToTextAndLane(labelRect, textWidth);
+            float x = HintBadgeLane.AfterLabel(0f, laneWidth,
                 textWidth, UIStyle.HintBadgeSize, UIStyle.GapInner);
 
             return Attach(labelRect, new Vector2(x, 0f), hint);
+        }
+
+        private static float NarrowToTextAndLane(RectTransform labelRect, float textWidth)
+        {
+            float width = labelRect.rect.width;
+            if (labelRect.anchorMin != labelRect.anchorMax) return width;
+
+            float narrowed = HintBadgeLane.LabelWidthWithLane(width, textWidth,
+                UIStyle.HintBadgeSize, UIStyle.GapInner);
+            labelRect.sizeDelta = new Vector2(narrowed, labelRect.sizeDelta.y);
+            labelRect.anchoredPosition = new Vector2(
+                labelRect.anchoredPosition.x - (width - narrowed) * labelRect.pivot.x,
+                labelRect.anchoredPosition.y);
+            return narrowed;
         }
 
         public void OnPointerClick(PointerEventData eventData)
