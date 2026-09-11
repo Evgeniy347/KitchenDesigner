@@ -161,9 +161,13 @@ public class ElementDuplicatorTests
             + "ветке лестницы и её можно было забыть");
     }
 
+    /// <summary>Камеры в EditMode нет, направления взгляда тоже — смещение остаётся
+    /// историческим «+X». Assume, а не Assert: посторонняя камера в сцене сделала бы
+    /// этот тест красным на исправном коде.</summary>
     [Test]
-    public void Duplicate_OffsetsTheCopy_SoItDoesNotHideInsideTheOriginal()
+    public void Duplicate_WithNoCameraAtAll_OffsetsTheCopy_SoItDoesNotHideInsideTheOriginal()
     {
+        Assume.That(Camera.main, Is.Null, "сцена теста обязана быть без главной камеры");
         var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "Board", Vector3.zero);
         var source = go.GetComponent<KitchenElement>();
 
@@ -171,6 +175,52 @@ public class ElementDuplicatorTests
 
         Assert.AreEqual(ElementFactoryInstance.DUPLICATE_OFFSET_UNITS,
             copy.transform.position.x - source.transform.position.x, 1e-4f);
+    }
+
+    /// <summary>Путь пользователя целиком: камера в сцене, Ctrl+D зовёт эту же фабрику.
+    /// Смещение всегда по +X прятало копию ровно за оригиналом, когда зритель смотрел
+    /// вдоль X, — тут камера смотрит именно так, и копия обязана выйти НА зрителя.</summary>
+    [Test]
+    public void Duplicate_WithTheCameraLookingAlongX_MovesTheCopyBackTowardsTheViewer()
+    {
+        var offset = OffsetOfACopySeenFrom(ManagedRotation.Euler(0f, 90f, 0f));
+
+        Assert.AreEqual(-ElementFactoryInstance.DUPLICATE_OFFSET_UNITS, offset.x, 1e-4f,
+            "камера смотрит вдоль +X, зритель со стороны −X — копия идёт туда");
+        Assert.AreEqual(0f, offset.z, 1e-4f, "и никуда больше");
+    }
+
+    [Test]
+    public void Duplicate_WithTheCameraLookingAlongMinusZ_MovesTheCopyAlongZ_NotAlongX()
+    {
+        var offset = OffsetOfACopySeenFrom(ManagedRotation.Euler(0f, 180f, 0f));
+
+        Assert.AreEqual(ElementFactoryInstance.DUPLICATE_OFFSET_UNITS, offset.z, 1e-4f,
+            "камера смотрит вдоль −Z, зритель со стороны +Z — копия идёт туда");
+        Assert.AreEqual(0f, offset.x, 1e-4f,
+            "ось выбирается по камере, а не константой +X");
+    }
+
+    private static Vector3 OffsetOfACopySeenFrom(Quaternion cameraRotation)
+    {
+        var cameraGo = new GameObject("MainCamera") { tag = "MainCamera" };
+        try
+        {
+            cameraGo.AddComponent<Camera>();
+            cameraGo.transform.rotation = cameraRotation;
+            Assume.That(Camera.main, Is.Not.Null, "фабрика читает ракурс через Camera.main");
+
+            var go = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "Board", Vector3.zero);
+            var source = go.GetComponent<KitchenElement>();
+
+            var copy = ElementFactory.Duplicate(source);
+
+            return copy.transform.position - source.transform.position;
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(cameraGo);
+        }
     }
 
     private static KitchenElement Made(GameObject go)

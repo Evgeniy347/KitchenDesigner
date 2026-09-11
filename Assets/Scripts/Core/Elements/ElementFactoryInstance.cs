@@ -145,8 +145,16 @@ namespace KitchenDesigner.Core
         public GameObject Duplicate(KitchenElement source)
         {
             if (source == null) return null!;
-            var offset = source.transform.position + new Vector3(DUPLICATE_OFFSET_UNITS, 0f, 0f);
-            return ElementDuplicators.Copy(this, source, offset);
+            return ElementDuplicators.Copy(this, source,
+                source.transform.position + DuplicateOffsetForCurrentView());
+        }
+
+        public static Vector3 DuplicateOffsetForCurrentView()
+        {
+            var camera = Camera.main;
+            return DuplicateOffset.ForViewDirection(
+                camera != null ? camera.transform.forward : Vector3.zero,
+                DUPLICATE_OFFSET_UNITS);
         }
 
         public GameObject CreateWall(Vector3Int dimensionsMM, string name, Vector3 position)
