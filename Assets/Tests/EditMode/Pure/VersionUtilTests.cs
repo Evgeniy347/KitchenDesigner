@@ -59,7 +59,7 @@ public class VersionUtilTests
     }
 
     [Test]
-    public void Compare_Basic()
+    public void Compare_OrdersByMajorThenMinor_AndSaysEqualForTheSameVersion()
     {
         Assert.AreEqual(0, VersionUtil.Compare("0.632", "0.632"));
         Assert.AreEqual(1, VersionUtil.Compare("0.700", "0.632"));
