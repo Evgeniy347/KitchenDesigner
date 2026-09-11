@@ -100,7 +100,8 @@ namespace KitchenDesigner.Core.UI
         private void OnPostCountSelected(int index)
         {
             if (!(Host.Target is IWallDevice device)) return;
-            device.PostCount = index + WallDeviceLayout.MinPostCount;
+            ChoiceRowUndo.Commit(Host.Target,
+                () => device.PostCount = index + WallDeviceLayout.MinPostCount);
         }
 
         private void OnPoweredToggled(bool on)
