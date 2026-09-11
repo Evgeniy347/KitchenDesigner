@@ -47,7 +47,7 @@ namespace KitchenDesigner.Tests.Geometry
                 : type;
 
         public static string[] ProductionSources() =>
-            Directory.GetFiles(RepoPaths.Subdir("Assets", "Scripts"), "*.cs", SearchOption.AllDirectories);
+            SourceCorpus.Files(RepoPaths.Subdir("Assets", "Scripts"));
 
         public static List<string> FromSources()
         {
@@ -55,7 +55,7 @@ namespace KitchenDesigner.Tests.Geometry
             var abstractTypes = new HashSet<string>(StringComparer.Ordinal);
 
             foreach (var file in ProductionSources())
-                foreach (var line in SourceLines.CodeOnly(File.ReadAllLines(file)))
+                foreach (var line in SourceLines.CodeOnly(SourceCorpus.Lines(file)))
                 {
                     var m = ClassDeclaration.Match(line);
                     if (m.Success) baseOf[m.Groups[1].Value] = m.Groups[2].Value;

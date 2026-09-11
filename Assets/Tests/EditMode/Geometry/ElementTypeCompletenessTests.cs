@@ -115,7 +115,7 @@ namespace KitchenDesigner.Tests.Geometry
                 return File.Exists(path) ? new[] { path } : Array.Empty<string>();
             }
 
-            return Directory.GetFiles(RepoPaths.Subdir(root), "*.cs", SearchOption.AllDirectories);
+            return SourceCorpus.Files(RepoPaths.Subdir(root));
         }
 
         /// <summary>Код места одной строкой, без комментариев и без содержимого
@@ -125,7 +125,7 @@ namespace KitchenDesigner.Tests.Geometry
         {
             var sb = new StringBuilder();
             foreach (var file in FilesOf(root))
-                foreach (var line in SourceLines.CodeOnly(File.ReadAllLines(file)))
+                foreach (var line in SourceLines.CodeOnly(SourceCorpus.Lines(file)))
                 {
                     sb.Append(line);
                     sb.Append('\n');
@@ -135,10 +135,12 @@ namespace KitchenDesigner.Tests.Geometry
 
         private static bool Covered(string code, string type, Key key)
         {
-            if (key != Key.Creates && Regex.IsMatch(code, @"\b" + Regex.Escape(type) + @"\b"))
+            if (key != Key.Creates
+                && SourceCorpus.Rule(@"\b" + Regex.Escape(type) + @"\b").IsMatch(code))
                 return true;
             if (key != Key.Names
-                && Regex.IsMatch(code, @"\bCreate" + Regex.Escape(ShortNameOf(type)) + @"\s*\("))
+                && SourceCorpus.Rule(@"\bCreate" + Regex.Escape(ShortNameOf(type)) + @"\s*\(")
+                    .IsMatch(code))
                 return true;
             return false;
         }

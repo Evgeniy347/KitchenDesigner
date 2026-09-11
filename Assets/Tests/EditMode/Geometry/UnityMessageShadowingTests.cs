@@ -82,7 +82,7 @@ namespace KitchenDesigner.Tests.Geometry
                 try { dir = RepoPaths.Subdir(parts); }
                 catch (DirectoryNotFoundException) { continue; }
 
-                foreach (var f in Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories))
+                foreach (var f in SourceCorpus.Files(dir))
                     yield return f;
             }
         }
@@ -131,8 +131,8 @@ namespace KitchenDesigner.Tests.Geometry
 
             foreach (var file in SourceFiles())
             {
-                var text = File.ReadAllText(file);
-                var decls = Regex.Matches(text, ClassDeclPattern).Cast<Match>().ToList();
+                var text = SourceCorpus.Text(file);
+                var decls = SourceCorpus.Rule(ClassDeclPattern).Matches(text).Cast<Match>().ToList();
 
                 for (int i = 0; i < decls.Count; i++)
                 {

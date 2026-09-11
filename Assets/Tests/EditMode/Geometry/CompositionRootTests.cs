@@ -36,10 +36,10 @@ namespace KitchenDesigner.Tests.Geometry
         private static List<string> ConstructionsIn(string file)
         {
             var hits = new List<string>();
-            var lines = File.ReadAllLines(file);
+            var lines = SourceCorpus.Lines(file);
             var code = new List<string>(SourceLines.CodeOnly(lines));
             for (int i = 0; i < code.Count; i++)
-                if (Regex.IsMatch(code[i], ConstructionPattern))
+                if (SourceCorpus.Rule(ConstructionPattern).IsMatch(code[i]))
                     hits.Add(Path.GetFileName(file) + ":" + (i + 1) + "\n    " + lines[i].Trim());
             return hits;
         }
@@ -47,7 +47,7 @@ namespace KitchenDesigner.Tests.Geometry
         private static Dictionary<string, List<string>> ConstructionsByFile()
         {
             var byFile = new Dictionary<string, List<string>>(StringComparer.Ordinal);
-            foreach (var file in Directory.GetFiles(CoreDir(), "*.cs", SearchOption.AllDirectories))
+            foreach (var file in SourceCorpus.Files(CoreDir()))
             {
                 var hits = ConstructionsIn(file);
                 if (hits.Count > 0) byFile[Path.GetFileName(file)] = hits;
@@ -98,7 +98,7 @@ namespace KitchenDesigner.Tests.Geometry
         public void EveryAllowedFile_StillExists_AndExplainsWhy()
         {
             var found = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var file in Directory.GetFiles(CoreDir(), "*.cs", SearchOption.AllDirectories))
+            foreach (var file in SourceCorpus.Files(CoreDir()))
                 found.Add(Path.GetFileName(file));
 
             foreach (var (file, why) in MayConstructAnImplementation)
