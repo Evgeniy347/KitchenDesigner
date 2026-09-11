@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core.Construction
     public readonly struct MasonryUnit
     {
         public const string BrickStandard = "ГОСТ 530-2012";
-        public const string AeratedBlockStandard = "ГОСТ 31360-2007";
+        public const string AeratedBlockStandard = "ГОСТ 31360-2024";
         public const string TimberStandard = "ГОСТ 8486-86";
         public const string FrameStandard = "шаг утеплителя 600 мм";
 
