@@ -596,9 +596,8 @@ namespace KitchenDesigner.Core
             var after = SceneViolations.OfScene();
             if (after.IsClean) return false;
 
-            float radius = KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;
             return EditGate.Refuses(_violationsAtDragStart, after,
-                DraggedOrTarget(), radius, out refusal);
+                DraggedOrTarget(), out refusal);
         }
 
         private List<KitchenElement> DraggedOrTarget()

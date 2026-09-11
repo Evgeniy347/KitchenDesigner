@@ -331,11 +331,10 @@ namespace KitchenDesigner.Core
             refusal = string.Empty;
             var after = SceneViolations.OfScene();
             if (after.IsClean) return false;
-            float radius = KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;
             _resizeFocus.Clear();
             if (_target != null) _resizeFocus.Add(_target);
             return EditGate.Refuses(_violationsAtDragStart, after,
-                _resizeFocus, radius, out refusal);
+                _resizeFocus, out refusal);
         }
 
         private float ClosestParamOnNormalMeters()
@@ -387,7 +386,7 @@ namespace KitchenDesigner.Core
         {
             _hovered = null;
             foreach (var h in _handles)
-                if (h != null) Destroy(h.gameObject);
+                if (h != null) DestroyNow.The(h.gameObject);
             _handles.Clear();
         }
     }

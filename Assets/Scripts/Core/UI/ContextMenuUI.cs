@@ -157,6 +157,8 @@ namespace KitchenDesigner.Core.UI
 
         internal void SetWidthFieldTextForTests(string text) => _w!.text = text;
 
+        internal void SetHeightFieldTextForTests(string text) => _h!.text = text;
+
         internal void SimulateApplyForTests() => Apply();
 
         private void Awake()
