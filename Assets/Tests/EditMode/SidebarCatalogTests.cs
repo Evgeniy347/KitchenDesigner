@@ -480,7 +480,10 @@ public class SidebarCatalogTests
     {
         var items = SidebarCatalog.Build()[4].items;
 
-        Assert.AreEqual(4, items.Count);
+        Assert.AreEqual(6, items.Count,
+            "шесть: к четырём встраиваемым добавились стиральная и сушильная машины, и обе "
+            + "дописаны В КОНЕЦ группы — поэтому места ниже по этому тесту не сдвинулись. "
+            + "Хвост группы держит LaundryMachineElementTests");
         Assert.IsTrue(items[0].kind == SidebarItemKind.Cooktop);
         Assert.AreEqual("", items[0].preset.applianceModel,
             "варочная свободного размера идёт первой и модели не имеет: её габариты "
