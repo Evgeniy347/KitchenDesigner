@@ -17,6 +17,7 @@ namespace KitchenDesigner.Core.UI
             string text = HintText.Of(hint);
 
             var rect = UIFactory.CreateRect("Hint_" + hint, parent);
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(UIStyle.HintBadgeSize, UIStyle.HintBadgeSize);
             rect.anchoredPosition = anchoredPos;
 
@@ -44,10 +45,10 @@ namespace KitchenDesigner.Core.UI
 
             var labelRect = label.rectTransform;
             float textWidth = label.GetPreferredValues(label.text).x;
-            float x = HintBadgeLane.AfterLabel(labelRect.anchoredPosition.x, labelRect.rect.width,
+            float x = HintBadgeLane.AfterLabel(0f, labelRect.rect.width,
                 textWidth, UIStyle.HintBadgeSize, UIStyle.GapInner);
 
-            return Attach(labelRect.parent, new Vector2(x, labelRect.anchoredPosition.y), hint);
+            return Attach(labelRect, new Vector2(x, 0f), hint);
         }
 
         public void OnPointerClick(PointerEventData eventData)
