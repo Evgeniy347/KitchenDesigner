@@ -57,6 +57,7 @@ namespace KitchenDesigner.Core
         private readonly List<Vector3> _moveStart = new List<Vector3>();
         private readonly List<KitchenElement> _lonelyTarget = new List<KitchenElement>();
         private SceneViolations _violationsAtDragStart = SceneViolations.Empty;
+        private DragFrameRepeat _settledFrame;
 
         private void Start()
         {
@@ -146,6 +147,7 @@ namespace KitchenDesigner.Core
             if (target == null) return;
             _target = target;
             _violationsAtDragStart = SceneViolations.OfScene();
+            _settledFrame.Forget();
             IsDragging = true;
             _wasMoved = true;
             BuildMoveSet();
@@ -345,6 +347,7 @@ namespace KitchenDesigner.Core
 
         private void CancelDrag()
         {
+            _settledFrame.Forget();
             _showGhost = false;
             _axisLock = DragAxisLock.None;
             _dragWall = null;
@@ -415,6 +418,14 @@ namespace KitchenDesigner.Core
 
             if (!computed) return;
 
+            ApplyDragFrame(newPos);
+        }
+
+        internal void DragFrameOn(Vector3 candidatePosition) => ApplyDragFrame(candidatePosition);
+
+        private void ApplyDragFrame(Vector3 newPos)
+        {
+            if (_target == null) return;
             if (_dragPaint.Count == 0) SaveDragMaterial(_target!);
 
             if (Input.GetKeyDown(KeyCode.X)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.X);
@@ -422,8 +433,6 @@ namespace KitchenDesigner.Core
             newPos = DragGesture.ApplyAxisLock(newPos, _axisLock, _startPosition, _heldDragY,
                 keepsItsOwnHeight: !_targetIsWallOpening);
 
-            var others = PartRegistry.GetAll();
-            if (_moveSet.Count > 1) others.RemoveAll(e => _moveSet.Contains(e));
             var settings = KitchenSettings.Instance;
             bool globalSnap = settings != null && settings.SnapEnabled;
             bool effectiveSnap = DragGesture.SnapAppliesTo(globalSnap, CtrlHeld);
@@ -435,13 +444,19 @@ namespace KitchenDesigner.Core
                     StatusLevel.Info);
                 _wasCtrl = CtrlHeld;
             }
+
+            if (_settledFrame.Repeats(newPos, SceneRevision.Version, effectiveSnap)) return;
+
+            var others = PartRegistry.GetAll();
+            if (_moveSet.Count > 1) others.RemoveAll(e => _moveSet.Contains(e));
             var snap = effectiveSnap
-                ? SnapSystem.TrySnap(_target, others, newPos)
+                ? SnapSystem.TrySnap(_target!, others, newPos)
                 : default;
-            _target.transform.position = WorldBounds.Clamp(snap.snapped ? snap.position : newPos);
+            var settled = WorldBounds.Clamp(snap.snapped ? snap.position : newPos);
+            if (_target!.transform.position != settled) _target!.transform.position = settled;
 
             if (_moveSet.Count > 1)
-                ApplyDelta(_moveSet, _moveStart, _target.transform.position - _startPosition);
+                ApplyDelta(_moveSet, _moveStart, _target!.transform.position - _startPosition);
 
             FollowHeldPipes();
 
@@ -449,10 +464,10 @@ namespace KitchenDesigner.Core
             {
                 _showGhost = true;
                 _ghostPosition = newPos;
-                _ghostRotation = _target.transform.rotation;
+                _ghostRotation = _target!.transform.rotation;
                 if (_ghostMesh == null)
                 {
-                    var mf = _target.GetComponent<MeshFilter>();
+                    var mf = _target!.GetComponent<MeshFilter>();
                     if (mf != null) _ghostMesh = mf.sharedMesh;
                 }
             }
@@ -462,10 +477,13 @@ namespace KitchenDesigner.Core
             }
 
             UpdateDragTint();
+
+            _settledFrame.Remember(newPos, SceneRevision.Version, effectiveSnap);
         }
 
 		private void FinishDrag()
 		{
+			_settledFrame.Forget();
 			_showGhost = false;
 
 			if (_wasMoved)

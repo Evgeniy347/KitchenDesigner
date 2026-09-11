@@ -44,6 +44,26 @@ namespace KitchenDesigner.Core
         private static readonly List<ValidationElement> _snapshots = new List<ValidationElement>();
         private static readonly CoreValidationResult _core = new CoreValidationResult();
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private static int _sceneValidations;
+
+        private static int _elementGeometriesBuilt;
+
+        public static int TakeSceneValidations()
+        {
+            int n = _sceneValidations;
+            _sceneValidations = 0;
+            return n;
+        }
+
+        public static int TakeElementGeometriesBuilt()
+        {
+            int n = _elementGeometriesBuilt;
+            _elementGeometriesBuilt = 0;
+            return n;
+        }
+#endif
+
         public static ValidationResult Validate(List<KitchenElement> all)
         {
             var result = new ValidationResult();
@@ -58,6 +78,11 @@ namespace KitchenDesigner.Core
                 result.isValid = true;
                 return result;
             }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            _sceneValidations++;
+            _elementGeometriesBuilt += _elems.Count;
+#endif
 
             ValidationSnapshot.Build(_elems, _snapshots);
             var core = _core;
