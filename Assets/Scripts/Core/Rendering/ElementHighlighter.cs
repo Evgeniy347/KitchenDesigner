@@ -9,6 +9,26 @@ namespace KitchenDesigner.Core
 
         public int RefreshCount { get; set; }
 
+        private static readonly HashSet<KitchenElement> _violating = new HashSet<KitchenElement>();
+
+        [System.ThreadStatic] private static int _bodiesVisited;
+
+        [System.ThreadStatic] private static int _bodiesRepainted;
+
+        public static int TakeBodiesVisited()
+        {
+            int n = _bodiesVisited;
+            _bodiesVisited = 0;
+            return n;
+        }
+
+        public static int TakeBodiesRepainted()
+        {
+            int n = _bodiesRepainted;
+            _bodiesRepainted = 0;
+            return n;
+        }
+
         public static bool ViolationTintVisible { get; set; } = true;
 
         private void Awake()
@@ -47,6 +67,10 @@ namespace KitchenDesigner.Core
 
             EdgeSubstrate.SyncScene(list);
 
+            _violating.Clear();
+            foreach (var v in result.violations)
+                if (v != null) _violating.Add(v);
+
             foreach (var element in list)
             {
                 if (element == null) continue;
@@ -54,8 +78,7 @@ namespace KitchenDesigner.Core
                     && SelectionManager.Instance.Selected == element)
                     continue;
 
-                bool isValid = !result.violations.Contains(element);
-                ApplyMaterial(element, isValid);
+                ApplyMaterial(element, !_violating.Contains(element));
             }
         }
 
@@ -88,9 +111,11 @@ namespace KitchenDesigner.Core
             var body = ElementRenderers.BodyOf(element);
             if (body.Count == 0) return;
 
+            _bodiesVisited++;
             var paint = PaintFor(element, isValid);
-            PaintBody(element, body, paint,
-                keepAux: paint == ValidityPaint.Own || paint == ValidityPaint.Violation);
+            if (PaintBody(element, body, paint,
+                    keepAux: paint == ValidityPaint.Own || paint == ValidityPaint.Violation) > 0)
+                _bodiesRepainted++;
 
             if (paint == ValidityPaint.SeeThrough || paint == ValidityPaint.SeeThroughViolation)
                 ElementOutline.Ensure(element)?.Show(selected: false);
@@ -98,16 +123,19 @@ namespace KitchenDesigner.Core
                 ElementOutline.For(element)?.Hide();
         }
 
-        private static void PaintBody(KitchenElement element, List<MeshRenderer> body,
+        private static int PaintBody(KitchenElement element, List<MeshRenderer> body,
             ValidityPaint paint, bool keepAux)
         {
+            int repainted = 0;
             foreach (var renderer in body)
             {
                 if (renderer == null) continue;
                 var material = ValidityTint.Of(paint, renderer.sharedMaterial);
                 if (material == null || ReferenceEquals(material, renderer.sharedMaterial)) continue;
                 PaintFlat(element, renderer, material, keepAux);
+                repainted++;
             }
+            return repainted;
         }
 
         internal static void PaintFlat(KitchenElement element, MeshRenderer renderer,
