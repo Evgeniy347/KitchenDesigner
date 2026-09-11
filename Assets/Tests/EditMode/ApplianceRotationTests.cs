@@ -24,24 +24,65 @@ public class ApplianceRotationTests : McpTestFixture
 {
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
+    private ProjectLoadStateGuard? _globals;
 
     private const float ToU = AppConstants.MM_TO_UNITS;
     private const int TopThicknessMM = 38;
 
-    [SetUp]
-    public void SetUp()
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню — ~0,31 с,
+    /// и три сборки это почти секунда прогона EditMode за панель, которую продукт
+    /// собирает единожды и дальше только переоткрывает. Почему это безопасно — в сводке
+    /// <see cref="ContextMenuLayoutTests"/>: боевой сценарий и есть ОДНА панель, а
+    /// <c>Open</c> её же и сбрасывает, и через <c>Open</c> здесь проходит каждый тест,
+    /// который панель вообще трогает.
+    ///
+    /// Своего <c>SelectionManager</c> класс не заводит: в EditMode <c>Awake</c> не
+    /// зовётся и <c>SelectionManager.Instance</c> пуст, так что подписка панели ни на
+    /// что не указывает ни при общей панели, ни при потестовой.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
-        GroupManager.Clear();
-        CommandStack.Clear();
+        UIFactory.EnsureEventSystem();
+        _canvas = UIFactory.CreateCanvas("TestCanvas");
+        var go = new GameObject("CtxMenu");
+        _menu = go.AddComponent<ContextMenuUI>();
+        _menu!.Build(_canvas!.transform);
     }
 
-    [TearDown]
-    public void TearDown()
+    [OneTimeTearDown]
+    public void DropThePanel()
     {
         if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
         if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
         _menu = null;
         _canvas = null;
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь.
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: в EditMode
+    /// <c>Time.frameCount</c> стоит на месте, и окно, взведённое предыдущим тестом,
+    /// съело бы первую правку следующего. <c>DisarmAll</c> снимает взвод кнопок
+    /// удаления, а фокус — потому что <c>RefreshUnfocused</c> МОЛЧА пропускает
+    /// сфокусированное поле, а <c>EventSystem</c> в EditMode один на весь прогон.</summary>
+    [SetUp]
+    public void SetUp()
+    {
+        _globals = ProjectLoadStateGuard.Capture();
+        GroupManager.Clear();
+        CommandStack.Clear();
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
+    }
+
+    /// <summary><c>Close()</c> обязан идти ДО уничтожения спавнов: он обнуляет
+    /// <c>_target</c> панели, иначе живая панель осталась бы с уничтоженной деталью в
+    /// руках и уехала бы с ней в следующий тест.</summary>
+    [TearDown]
+    public void TearDown()
+    {
+        if (_menu != null) _menu!.Close();
 
         foreach (var go in _spawned)
         {
@@ -60,6 +101,7 @@ public class ApplianceRotationTests : McpTestFixture
         CommandStack.Clear();
         ElementFactory.ClearPools();
         MaterialManager.ClearCache();
+        _globals!.Restore();
     }
 
     // ── Сцена ───────────────────────────────────────────────────────────
@@ -242,13 +284,8 @@ public class ApplianceRotationTests : McpTestFixture
 
     // ── Окно свойств ────────────────────────────────────────────────────
 
-    private Transform BuildMenu()
+    private Transform MenuPanel()
     {
-        UIFactory.EnsureEventSystem();
-        _canvas = UIFactory.CreateCanvas("TestCanvas");
-        var go = new GameObject("CtxMenu");
-        _menu = go.AddComponent<ContextMenuUI>();
-        _menu!.Build(_canvas!.transform);
         var panel = _canvas!.transform.Find("ContextMenu");
         Assert.NotNull(panel);
         return panel!;
@@ -281,7 +318,7 @@ public class ApplianceRotationTests : McpTestFixture
     [Test]
     public void ContextMenu_Board_ShowsAllThreeRotationAxes()
     {
-        var panel = BuildMenu();
+        var panel = MenuPanel();
         var go = new GameObject("Board");
         _spawned.Add(go);
         var board = go.AddComponent<KitchenElement>();
@@ -296,7 +333,7 @@ public class ApplianceRotationTests : McpTestFixture
     [Test]
     public void ContextMenu_Appliances_ShowOnlyTheVerticalAxis()
     {
-        var panel = BuildMenu();
+        var panel = MenuPanel();
         var cases = new List<KitchenElement>();
         var hobGo = ElementFactory.CreateCooktop("Hob", Vector3.zero, CooktopElement.MODEL_BOSCH_PUE611BB5E);
         var ovenGo = ElementFactory.CreateOven("Oven", Vector3.zero);
@@ -316,7 +353,7 @@ public class ApplianceRotationTests : McpTestFixture
     [Test]
     public void ContextMenu_ReturnsTheAxesToAPlainBoard()
     {
-        var panel = BuildMenu();
+        var panel = MenuPanel();
         var hobGo = ElementFactory.CreateOven("Oven", Vector3.zero);
         _spawned.Add(hobGo);
         var go = new GameObject("Board");

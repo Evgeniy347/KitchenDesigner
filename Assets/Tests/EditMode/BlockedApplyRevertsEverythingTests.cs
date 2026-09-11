@@ -28,15 +28,54 @@ public class BlockedApplyRevertsEverythingTests
 {
     private GameObject? _root;
     private readonly List<GameObject> _spawned = new List<GameObject>();
-    private bool _blockBefore;
     private StatusBarUI? _statusBar;
+    private GameObject? _menuRoot;
+    private ContextMenuUI? _menu;
+    private ProjectLoadStateGuard? _globals;
 
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню — ~0,31 с, а
+    /// четыре теста строили её заново, хотя продукт собирает панель единожды и дальше
+    /// только переоткрывает (<see cref="ContextMenuLayoutTests"/>). Через <c>Open</c>
+    /// здесь проходит каждый тест, который панель трогает, — а <c>Open</c> и есть тот
+    /// сброс, которым живёт боевой сценарий.
+    ///
+    /// Холст панели — СВОЙ, отдельно от потестового <c>_root</c>: на <c>_root</c> висит
+    /// <see cref="StatusBarUI"/>, которому нужен свежий экземпляр в каждом тесте, и
+    /// пережить тест он не может. Своего <c>SelectionManager</c> класс не заводит.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
+    {
+        _menuRoot = new GameObject("BlockedApplyMenuRoot");
+        var canvas = _menuRoot.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _menuRoot.AddComponent<CanvasScaler>();
+        _menuRoot.AddComponent<GraphicRaycaster>();
+        var go = new GameObject("Ctx");
+        go.transform.SetParent(_menuRoot.transform);
+        _menu = go.AddComponent<ContextMenuUI>();
+        _menu!.Build(_menuRoot.transform);
+    }
+
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menuRoot != null) Object.DestroyImmediate(_menuRoot);
+        _menu = null;
+        _menuRoot = null;
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь.
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: в EditMode
+    /// <c>Time.frameCount</c> стоит на месте, и окно, взведённое предыдущим тестом,
+    /// съело бы первую правку следующего, а весь класс только и делает, что применяет
+    /// правки. <c>DisarmAll</c> снимает взвод кнопок удаления, а фокус — потому что
+    /// <c>RefreshUnfocused</c> МОЛЧА пропускает сфокусированное поле.</summary>
     [SetUp]
     public void SetUp()
     {
+        _globals = ProjectLoadStateGuard.Capture();
         PartRegistry.Clear();
         CommandStack.Clear();
-        _blockBefore = KitchenSettings.Instance.BlockOnViolation;
         KitchenSettings.Instance.BlockOnViolation = true;
         _root = new GameObject("BlockedApplyRoot");
         var canvas = _root.AddComponent<Canvas>();
@@ -44,13 +83,20 @@ public class BlockedApplyRevertsEverythingTests
         _root.AddComponent<CanvasScaler>();
         _root.AddComponent<GraphicRaycaster>();
         _statusBar = _root.AddComponent<StatusBarUI>();
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
     }
 
+    /// <summary><c>Close()</c> обязан идти ДО уничтожения спавнов: он обнуляет
+    /// <c>_target</c> панели, иначе живая панель уехала бы в следующий тест с
+    /// уничтоженной деталью в руках.</summary>
     [TearDown]
     public void TearDown()
     {
         CommandStack.Clear();
-        KitchenSettings.Instance.BlockOnViolation = _blockBefore;
+        if (_menu != null) _menu!.Close();
         foreach (var go in _spawned)
         {
             if (go == null) continue;
@@ -62,6 +108,7 @@ public class BlockedApplyRevertsEverythingTests
         _statusBar = null;
         if (_root != null) Object.DestroyImmediate(_root);
         PartRegistry.Clear();
+        _globals!.Restore();
     }
 
     private KitchenElement SpawnPart(string name) => SpawnPart(name, Vector3.zero);
@@ -113,20 +160,11 @@ public class BlockedApplyRevertsEverythingTests
         return string.Join("; ", lines);
     }
 
-    private ContextMenuUI BuildMenu()
-    {
-        var go = new GameObject("Ctx");
-        go.transform.SetParent(_root!.transform);
-        var ctx = go.AddComponent<ContextMenuUI>();
-        ctx.Build(_root!.transform);
-        return ctx;
-    }
-
     [Test]
     public void ApplyThatIntroducesAViolation_LeavesNoEditInTheScene_AndNoUndoRecord()
     {
         var (el, _) = SpawnTouchingPair();
-        var ctx = BuildMenu();
+        var ctx = _menu!;
         ctx.Open(el);
         CommandStack.Clear();
 
@@ -157,7 +195,7 @@ public class BlockedApplyRevertsEverythingTests
     public void BlockedApply_NamesTheViolationItRefused_InTheStatusBar()
     {
         var (el, _) = SpawnTouchingPair();
-        var ctx = BuildMenu();
+        var ctx = _menu!;
         ctx.Open(el);
 
         // EditMode не вызывает MonoBehaviour-колбэки сам по себе (см. c45d2279):
@@ -194,7 +232,7 @@ public class BlockedApplyRevertsEverythingTests
         Assert.IsFalse(ConstraintValidator.Validate(PartRegistry.GetAll()).isValid,
             "предусловие: одинокая деталь нарушает и до правки — на этом весь тест и держится");
 
-        var ctx = BuildMenu();
+        var ctx = _menu!;
         ctx.Open(el);
         CommandStack.Clear();
 
@@ -222,7 +260,7 @@ public class BlockedApplyRevertsEverythingTests
     {
         var el = SpawnPart("Деталь");
         KitchenSettings.Instance.BlockOnViolation = false;
-        var ctx = BuildMenu();
+        var ctx = _menu!;
         ctx.Open(el);
         CommandStack.Clear();
 
