@@ -36,6 +36,13 @@ and never make a foreign fix that could change behaviour.
   the compiler exclusively through the coordinator. Workers must cut their portions smaller and
   commit sooner than feels necessary — and after every rename, grep for BOTH the old and the new
   name before moving on.
+  **Три холодных прогона подряд встали на одних и тех же двух ошибках, и обе стоили по 20 с
+  очереди к Unity на каждого, кто ждал.** `CS8602` — разыменование возможного null: `Assert.IsTrue(x != null)`
+  тип НЕ сужает, нужен `x!`; и тот же `x!` нужен в тернарнике `alive ? x.gameObject : null`.
+  `CS0104` — `Object` неоднозначен между `UnityEngine.Object` и `object` в файле без
+  `using Object = UnityEngine.Object`; пиши полным именем. Оба живут в EditMode-тестах,
+  то есть ровно там, куда `dotnet` не заглядывает. Проверять их глазами ДО коммита дешевле,
+  чем узнавать из чужого прогона.
 - **Guard files have ONE owner — the coordinator.** Ratchets (`CommentRatchetTests`,
   `ToleranceLiteralTests`, `TestQualityRatchetTests`, …) are edited by nobody else; workers report
   numbers. Two agents editing one file produced a commit that does not build on its own.

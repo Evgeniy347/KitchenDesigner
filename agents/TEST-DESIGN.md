@@ -252,3 +252,18 @@ silence the pair — it is to measure the reason in the same function that decid
 requirement into its opposite: the sweep now fails if the snap DOES drag such a part
 (`ALIGN-PULL`), the same shape the screw leg got as `MOUNT-PULL`. A silenced pair is a sensor
 deleted; an inverted one is a sensor kept.
+
+**Сторож, отбирающий по СИНТАКСИСУ записи, обязан иметь тест на каждое эквивалентное
+написание того же.** `LayerDependencyDirectionTests` считал ссылки по строкам `using` и не
+видел `KitchenDesigner.Core.UI.UIStyle` полным именем; соседний `CompositionRootTests` искал
+`new\s+[A-Z]\w*Instance` и не видел `new KitchenDesigner.Core.Infrastructure.PartRegistryInstance(`.
+Оба зеленели вхолостую. Правило, отобранное по написанию, обходится опечаткой в стиле, поэтому
+шаблон обязан покрывать `using`, `using static`, псевдоним, полное имя, `global::` и короткий
+префикс — и каждое из них обязано быть в тестах самого сторожа, а не подразумеваться.
+
+**Ранний выход стережёт СЧЁТЧИК построенного, а не секундомер.** `ScrewLegHostLink.ApplyAll`
+строила геометрию каждого элемента-хозяина на каждом кадре перетаскивания, даже когда в сцене
+нет ни одной винтовой опоры. Время в batch флаки и зеленеет на выкинутом раннем выходе; счёт
+дорогой половины (`HostGeometriesBuiltByLastApplyAll`) краснеет сразу и в обе стороны — ноль
+построек без читателя и ненулевое их число, когда читатель есть. Функция, которую зовут каждым
+кадром, вообще начинается с вопроса «есть ли у того, что я сейчас построю, хоть один читатель».

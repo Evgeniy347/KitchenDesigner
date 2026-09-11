@@ -221,3 +221,10 @@ Two obligations follow, and both are cheap:
   loader that recomputes a saved value rewrites the user's work on open — silently, with no undo.
   If a migration IS wanted, it needs its own sentinel and its own test that it does not run
   twice (see «A field that must tell "old file" from "value 0"» above).
+
+## Новое ПОЛЕ в `CommandRecord` дёшево, новый вложенный ОБЪЕКТ — дорог
+
+`JsonUtility` материализует вложенный объект в КАЖДОЙ записи истории, а пустой массив пишет
+как `[]`. Поэтому снимок состояния для отмены едет массивом из одного элемента: ни один эталон
+с пустым `undoHistory` от этого не шевелится. Так в формат легла отмена смены типа элемента —
+два поля (`convertTo`, `convertState`) и ни одного нового объекта.

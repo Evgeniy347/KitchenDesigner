@@ -326,3 +326,16 @@ every frame, so a field that is right is displayed right. And the cost is knowab
 candidate list out of the per-leg loop turned `L × N` geometry builds into `N`, which is about
 half of ONE of the two full validations a drag already pays for per frame, and exactly zero when
 nothing moved. A field updated «where we remembered» differs from a stale one only by luck.
+
+## Откат без сказанного вслух отказа — это дефект, а не тихий успех
+
+Перетаскивание и ресайз откатывались МОЛЧА: деталь возвращалась на место, и для пользователя
+это выглядело как «инструмент не работает». Текст отказа при этом существовал, но был частной
+собственностью панели свойств. Общим обязано стать РЕШЕНИЕ и его формулировка — `EditGate.Refuses`
+одним вызовом отвечает «отказано» и выдаёт текст, — а не способ отката: панель откатывает снимок
+свойств, `ElementMover` ещё и пересборку трубных пролётов, и сводить их силой в одну процедуру
+значит потерять часть отката.
+
+И сенсор на полноту отката снимает отпечаток ВСЕЙ сцены до и после, а не тех полей, которые
+кто-то вспомнил: у каждого из трёх путей был свой тест про свои поля, и ни один не спрашивал
+про соседа, поэтому разница в полноте не ловилась ничем.
