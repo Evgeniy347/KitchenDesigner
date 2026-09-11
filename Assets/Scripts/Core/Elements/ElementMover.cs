@@ -642,7 +642,7 @@ namespace KitchenDesigner.Core
         {
             if (_dragPaint.Count == 0 || _target == null) return;
 
-            var tint = DragGesture.TintFor(MoveSetIntroducedAViolation());
+            var tint = DragGesture.TintFor(MoveSetIntroducedAViolation(out _));
             foreach (var paint in _dragPaint)
             {
                 if (paint.painted == null) continue;
