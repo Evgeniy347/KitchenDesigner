@@ -245,13 +245,7 @@ namespace KitchenDesigner.Core
             }
 
             if (!HasAnchor(all))
-            {
-                int start = 0;
-                for (int i = 0; i < n; i++)
-                    if (hasContact[i]) { start = i; break; }
-                visited[start] = true;
-                queue.Enqueue(start);
-            }
+                SeedGroundAtLowestStandingLevel(all, hasContact, visited, queue);
 
             while (queue.Count > 0)
             {
@@ -277,6 +271,24 @@ namespace KitchenDesigner.Core
             GroupUnsupportedByConnectivity(adjacency, result);
 
             result.IsValid = result.Violations.Count == 0;
+        }
+
+        private static void SeedGroundAtLowestStandingLevel(IReadOnlyList<ValidationElement> all,
+            bool[] hasContact, bool[] visited, Queue<int> queue)
+        {
+            int n = all.Count;
+            float lowestBottom = float.PositiveInfinity;
+            for (int i = 0; i < n; i++)
+                if (hasContact[i] && all[i].Geometry.Min.y < lowestBottom)
+                    lowestBottom = all[i].Geometry.Min.y;
+
+            float groundLevel = lowestBottom + ContactDistUnits;
+            for (int i = 0; i < n; i++)
+            {
+                if (!hasContact[i] || all[i].Geometry.Min.y > groundLevel) continue;
+                visited[i] = true;
+                queue.Enqueue(i);
+            }
         }
 
         private static void GroupUnsupportedByConnectivity(List<int>[] adjacency,

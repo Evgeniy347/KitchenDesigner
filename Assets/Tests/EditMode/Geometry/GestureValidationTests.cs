@@ -178,7 +178,8 @@ public class GestureValidationTests
         {
             parts[0] = Part("A0", new Vector3(i * 10, 9, 0), new Vector3(800, 18, 400));
             Assert.IsFalse(gesture.TryValidate(parts, live),
-                "без якоря корень обхода зависит от порядка списка — отказ обязан повториться");
+                "без якоря землёй считается самый нижний уровень ВСЕЙ сцены — " +
+                "локальный пересчёт этого не видит, отказ обязан повториться");
         }
 
         Assert.AreEqual(0, gesture.Freezes, "заморозки не случилось ни разу");

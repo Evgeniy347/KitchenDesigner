@@ -87,10 +87,10 @@ public class ValidationCoreTests
     }
 
     [Test]
-    public void WithoutAnchors_FirstConnectedComponentIsGrounded()
+    public void WithoutAnchors_TheLowestLevelIsGrounded()
     {
-        // Ни пола, ни стен: заземляется первая связная компонента, и «висящих»
-        // деталей нет — иначе вся сцена без пола была бы красной.
+        // Ни пола, ни стен: землёй становится самый нижний уровень сцены, и
+        // «висящих» деталей нет — иначе вся сцена без пола была бы красной.
         var a = Part("A", new Vector3(0, 9, 0), new Vector3(800, 18, 400));
         var b = Part("B", new Vector3(0, 27, 0), new Vector3(800, 18, 400));
         var r = Validate(a, b);
