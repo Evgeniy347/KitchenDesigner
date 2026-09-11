@@ -70,11 +70,27 @@ namespace KitchenDesigner.Tests.Geometry
                 + "консоли) — композиционный корень; больше про MCP не знает никто"),
         };
 
-        private static readonly string UiReferencePattern =
-            @"using\s+KitchenDesigner\s*\.\s*Core\s*\.\s*UI\s*;|(?<![\w.])UI\s*\.\s*[A-Z]\w*";
+        /// <summary>Три формы ОДНОЙ зависимости, и сторож обязан видеть все три.
+        /// Долго видел две: <c>using</c> и квалификатор <c>UI.</c>. Третья —
+        /// полное имя <c>KitchenDesigner.Core.UI.UIStyle</c> прямо в выражении —
+        /// проходила мимо, потому что перед <c>UI</c> стоит точка и запрет
+        /// <c>(?&lt;![\w.])</c> гасил совпадение. Так обошли сторожа один раз
+        /// вручную (conventions/STRUCTURE.md → «Обойти сторожа — это нарушить
+        /// правило и спрятать нарушение»), и этого хватило: правило, которое
+        /// обходится опечаткой в стиле, правилом не является.
+        ///
+        /// Префикс <c>KitchenDesigner.</c> необязателен: внутри
+        /// <c>namespace KitchenDesigner.Core.*</c> короткое <c>Core.UI.UIStyle</c>
+        /// компилируется так же и значит то же самое.</summary>
+        private static string ReferencePattern(string layer) =>
+            @"using\s+(?:static\s+)?KitchenDesigner\s*\.\s*Core\s*\.\s*" + layer + @"\s*;"
+            + @"|(?<![\w.])(?:global\s*::\s*)?(?:KitchenDesigner\s*\.\s*)?Core\s*\.\s*"
+            + layer + @"\s*\.\s*[A-Z]\w*"
+            + @"|(?<![\w.])" + layer + @"\s*\.\s*[A-Z]\w*";
 
-        private static readonly string McpReferencePattern =
-            @"using\s+KitchenDesigner\s*\.\s*Core\s*\.\s*MCP\s*;|(?<![\w.])MCP\s*\.\s*[A-Z]\w*";
+        private static readonly string UiReferencePattern = ReferencePattern("UI");
+
+        private static readonly string McpReferencePattern = ReferencePattern("MCP");
 
         private static string CoreDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
 
@@ -234,6 +250,51 @@ namespace KitchenDesigner.Tests.Geometry
                 "поле с UI в имени — не пространство имён");
             Assert.IsFalse(Regex.IsMatch("        private string _ui = \"x\";", UiReferencePattern),
                 "строчное ui не квалификатор");
+        }
+
+        /// <summary>Форма, которая обходила сторожа: полное имя типа вместо
+        /// <c>using</c>. Каждая строка здесь — настоящая зависимость слоя от UI,
+        /// записанная так, как её пишет тот, кто не хочет добавлять using.</summary>
+        [Test]
+        public void TheScan_SeesAFullyQualifiedName_NotOnlyAUsing()
+        {
+            Assert.IsTrue(Regex.IsMatch(
+                    "            var c = KitchenDesigner.Core.UI.UIStyle.HighlightError;",
+                    UiReferencePattern),
+                "полное имя — такая же зависимость, как using, и именно ею сторожа обошли");
+            Assert.IsTrue(Regex.IsMatch(
+                    "            var c = Core.UI.UIStyle.HighlightError;", UiReferencePattern),
+                "внутри KitchenDesigner.* короткий префикс Core. значит ровно то же самое");
+            Assert.IsTrue(Regex.IsMatch(
+                    "            global::KitchenDesigner.Core.UI.StatusBarUI.Instance?.Show();",
+                    UiReferencePattern),
+                "global:: — та же ссылка, лишь записанная от корня");
+            Assert.IsTrue(Regex.IsMatch(
+                    "using static KitchenDesigner.Core.UI.UIStyle;", UiReferencePattern),
+                "using static тянет тот же тип из того же слоя");
+            Assert.IsTrue(Regex.IsMatch(
+                    "using Style = KitchenDesigner.Core.UI.UIStyle;", UiReferencePattern),
+                "псевдоним прячет имя слоя от читателя, но не от компилятора");
+            Assert.IsTrue(Regex.IsMatch(
+                    "            KitchenDesigner.Core.MCP.McpBridge.Stop();", McpReferencePattern),
+                "то же правило и для MCP — пара сторожей обязана видеть одинаково");
+        }
+
+        /// <summary>Обратная сторона: полное имя ловится по СЛОЮ, а не по строке
+        /// «KitchenDesigner.Core». Объявление собственного пространства имён и
+        /// соседние слои остаться чистыми обязаны, иначе новый шаблон закроет
+        /// потолки шумом и его придётся ослаблять обратно.</summary>
+        [Test]
+        public void TheFullNameForm_DoesNotFireOnNamespacesAndNeighbourLayers()
+        {
+            Assert.IsFalse(Regex.IsMatch("namespace KitchenDesigner.Core.UI", UiReferencePattern),
+                "объявление пространства имён — не ссылка вверх: так живёт Core/Pure/UI");
+            Assert.IsFalse(Regex.IsMatch("using KitchenDesigner.Core.Elements;", UiReferencePattern),
+                "соседний слой не имеет отношения к UI");
+            Assert.IsFalse(Regex.IsMatch(
+                    "            var g = KitchenDesigner.Core.Rendering.GUIHelper.Draw();",
+                    UiReferencePattern),
+                "имя типа, начинающееся на UI, внутри другого слоя — не слой UI");
         }
     }
 }

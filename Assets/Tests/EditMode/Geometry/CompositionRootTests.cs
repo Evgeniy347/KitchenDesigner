@@ -22,7 +22,14 @@ namespace KitchenDesigner.Tests.Geometry
             ("SaveLoadManager.cs", "тот же ленивый _fallback статического фасада"),
         };
 
-        private const string ConstructionPattern = @"new\s+[A-Z]\w*Instance\s*\(";
+        /// <summary>Квалификатор перед именем необязателен: тот же сторож соседнего
+        /// правила (<see cref="LayerDependencyDirectionTests"/>) обходили именно полным
+        /// именем типа вместо using, и здесь дыра была та же — <c>new</c> плюс
+        /// <c>KitchenDesigner.Core.Infrastructure.PartRegistryInstance(</c> проходило
+        /// мимо, потому что сразу после <c>new</c> стоит не имя класса, а начало
+        /// пространства имён.</summary>
+        private const string ConstructionPattern =
+            @"new\s+(?:[A-Za-z_]\w*\s*\.\s*)*[A-Z]\w*Instance\s*\(";
 
         private static string CoreDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
 
@@ -120,6 +127,13 @@ namespace KitchenDesigner.Tests.Geometry
                 "упоминание типа в объявлении — не конструирование");
             Assert.IsFalse(Regex.IsMatch("(PartRegistryInstance)GameContext.Services!.PartRegistry",
                 ConstructionPattern), "приведение типа — тем более");
+
+            Assert.IsTrue(Regex.IsMatch(
+                    "new KitchenDesigner.Core.Infrastructure.PartRegistryInstance()",
+                    ConstructionPattern),
+                "полное имя — то же конструирование; именно этой записью обходят сторожей");
+            Assert.IsFalse(Regex.IsMatch("new List<PartRegistryInstance>()", ConstructionPattern),
+                "коллекция ИЗ услуг услугой не является — иначе правило станет шумом");
         }
 
         [Test]
