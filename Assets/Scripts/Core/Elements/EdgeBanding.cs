@@ -89,8 +89,18 @@ namespace KitchenDesigner.Core
         private readonly List<Face[]> _faces = new List<Face[]>();
         private readonly List<Sphere> _spheres = new List<Sphere>();
 
+        [System.ThreadStatic] private static int _indexBuilds;
+
+        public static int TakeIndexBuilds()
+        {
+            int n = _indexBuilds;
+            _indexBuilds = 0;
+            return n;
+        }
+
         public static SceneFaces Of(IReadOnlyList<KitchenElement>? all)
         {
+            _indexBuilds++;
             var scene = new SceneFaces();
             if (all == null) return scene;
             foreach (var element in all)

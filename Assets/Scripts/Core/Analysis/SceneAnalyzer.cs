@@ -54,12 +54,14 @@ namespace KitchenDesigner.Core.Analysis
         private static void CollectEdgeCover(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
             float minReportedCoverageRatio = MinReportedCoverageRatio();
+            var scene = SceneFaces.Of(all);
 
-            foreach (var e in all)
+            for (int k = 0; k < scene.Count; k++)
             {
+                var e = scene.ElementAt(k);
                 if (e == null || !e.EdgeBandingEnabled) continue;
 
-                var coverage = EdgeBanding.Coverage(e, all);
+                var coverage = EdgeBanding.Coverage(e, scene, k);
                 var partiallyCoveredSides = new List<string>();
 
                 KitchenElement? dominantCoverer = null;
