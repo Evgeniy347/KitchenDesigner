@@ -456,7 +456,10 @@ namespace KitchenDesigner.Core.MCP
                         + "convert_elements works only on board, facade, assembled_facade and radial_shelf");
                     continue;
                 }
-                var converted = ElementConverter.Convert(element, target);
+                var converted = ElementConverter.GetElementType(element) == target
+                    ? element
+                    : ConvertElementCommand.Run(element, target, null);
+                if (converted == null) { errors.Add($"Could not convert '{op.name}'"); continue; }
                 if (converted is AssembledFacadeElement assembled && !string.IsNullOrEmpty(op.fill))
                     assembled.Fill = McpWireEnums.ParseFill(op.fill);
                 results.Add(converted);
