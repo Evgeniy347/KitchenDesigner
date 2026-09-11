@@ -141,6 +141,16 @@ namespace KitchenDesigner.Tests.Pure
         }
 
         [Test]
+        public void Apply_WithNoRawRecordAtAll_ReturnsTheSameInstance()
+        {
+            string fresh = ProjectWithTwoElements;
+
+            Assert.AreSame(fresh, RawElementRecords.Apply(fresh, new List<string?> { null, "" }),
+                "обычное сохранение не должно платить разбором текста за то, чего в нём нет: "
+                + "автосохранение зовёт запись по таймеру");
+        }
+
+        [Test]
         public void Apply_KeepsTheIndentationOfTheArrayItem()
         {
             string fresh = @"{

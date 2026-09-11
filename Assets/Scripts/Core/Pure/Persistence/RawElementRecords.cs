@@ -21,6 +21,7 @@ namespace KitchenDesigner.Core
         public static string Apply(string projectJson, IReadOnlyList<string?> rawByIndex)
         {
             if (string.IsNullOrEmpty(projectJson) || rawByIndex == null) return projectJson;
+            if (!AnyRecord(rawByIndex)) return projectJson;
             var array = ElementsArray(projectJson);
             if (!array.Found) return projectJson;
 
@@ -84,6 +85,13 @@ namespace KitchenDesigner.Core
             }
             sb.Append('\n').Append(indent).Append('}');
             return sb.ToString();
+        }
+
+        private static bool AnyRecord(IReadOnlyList<string?> rawByIndex)
+        {
+            for (int i = 0; i < rawByIndex.Count; i++)
+                if (!string.IsNullOrEmpty(rawByIndex[i])) return true;
+            return false;
         }
 
         private static JsonSpan ElementsArray(string projectJson)

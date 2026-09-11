@@ -5,6 +5,8 @@ namespace KitchenDesigner.Core
 {
     internal static class ProjectJson
     {
+        private const string TypeKey = "\"" + nameof(ElementData.elementType) + "\"";
+
         public static string Serialize(ProjectData data) =>
             RawElementRecords.Apply(JsonUtility.ToJson(data, true), RawRecordsOf(data));
 
@@ -31,6 +33,7 @@ namespace KitchenDesigner.Core
         private static void AttachRawRecords(ProjectData? data, string json)
         {
             if (data == null || data.elements == null) return;
+            if (json.IndexOf(TypeKey, System.StringComparison.Ordinal) < 0) return;
             var records = RawElementRecords.Extract(json);
             int count = records.Count < data.elements.Length ? records.Count : data.elements.Length;
             for (int i = 0; i < count; i++)
