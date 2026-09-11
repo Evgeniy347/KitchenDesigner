@@ -24,17 +24,63 @@ public class DishwasherElementTests : McpTestFixture
 {
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
+    private ProjectLoadStateGuard? _globals;
 
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню — ~0,31 с,
+    /// и четыре сборки это 1,2 с прогона EditMode за панель, которую продукт собирает
+    /// единожды и дальше только переоткрывает. Почему это безопасно — в сводке
+    /// <see cref="ContextMenuLayoutTests"/>: боевой сценарий и есть ОДНА панель, а
+    /// <c>Open</c> её же и сбрасывает, и через <c>Open</c> проходит каждый из четырёх
+    /// тестов, которые панель трогают.
+    ///
+    /// Своего <c>SelectionManager</c> класс не заводит: в EditMode <c>Awake</c> не
+    /// зовётся и <c>SelectionManager.Instance</c> пуст, так что подписка панели ни на
+    /// что не указывает ни при общей панели, ни при потестовой.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
+    {
+        UIFactory.EnsureEventSystem();
+        _canvas = UIFactory.CreateCanvas("TestCanvas");
+        var go = new GameObject("CtxMenu");
+        _menu = go.AddComponent<ContextMenuUI>();
+        _menu!.Build(_canvas!.transform);
+    }
+
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        _menu = null;
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        _canvas = null;
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь.
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: в EditMode
+    /// <c>Time.frameCount</c> стоит на месте, и окно, взведённое предыдущим тестом,
+    /// съело бы первую правку следующего. <c>DisarmAll</c> снимает взвод кнопок
+    /// удаления, а фокус — потому что <c>RefreshUnfocused</c> МОЛЧА пропускает
+    /// сфокусированное поле, а <c>EventSystem</c> в EditMode один на весь прогон.</summary>
     [SetUp]
     public void SetUp()
     {
+        _globals = ProjectLoadStateGuard.Capture();
         GroupManager.Clear();
         CommandStack.Clear();
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
     }
 
+    /// <summary><c>Close()</c> обязан идти ДО уничтожения спавнов: он обнуляет
+    /// <c>_target</c> панели, иначе живая панель уехала бы в следующий тест с
+    /// уничтоженной машиной в руках.</summary>
     [TearDown]
     public void TearDown()
     {
+        if (_menu != null) _menu!.Close();
+
         foreach (var go in _spawned)
         {
             if (go == null) continue;
@@ -44,11 +90,6 @@ public class DishwasherElementTests : McpTestFixture
         }
         _spawned.Clear();
 
-        if (_menu != null) Object.DestroyImmediate(_menu.gameObject);
-        _menu = null;
-        if (_canvas != null) Object.DestroyImmediate(_canvas.gameObject);
-        _canvas = null;
-
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null) Object.DestroyImmediate(e.gameObject);
 
@@ -57,6 +98,7 @@ public class DishwasherElementTests : McpTestFixture
         CommandStack.Clear();
         ElementFactory.ClearPools();
         MaterialManager.ClearCache();
+        _globals!.Restore();
     }
 
     private DishwasherElement Make(string name = "Dishwasher")
@@ -803,7 +845,7 @@ public class DishwasherElementTests : McpTestFixture
     [Test]
     public void FacadeOnBrackets_IsOfferedNotOrphanedAndRaisesNoDwh02()
     {
-        var panel = BuildMenu();
+        var panel = MenuPanel();
         var dw = Make("DW-chain");
         var facade = MakeFacadeAtGap(dw, "DW_chain_front", 5f);
         dw.AttachedFacadeName = facade.PartName;
@@ -1739,13 +1781,8 @@ public class DishwasherElementTests : McpTestFixture
 
     // ── Окно свойств ────────────────────────────────────────────────────
 
-    private Transform BuildMenu()
+    private Transform MenuPanel()
     {
-        UIFactory.EnsureEventSystem();
-        _canvas = UIFactory.CreateCanvas("TestCanvas");
-        var go = new GameObject("CtxMenu");
-        _menu = go.AddComponent<ContextMenuUI>();
-        _menu!.Build(_canvas!.transform);
         var panel = _canvas!.transform.Find("ContextMenu");
         Assert.IsNotNull(panel);
         return panel!;
@@ -1767,7 +1804,7 @@ public class DishwasherElementTests : McpTestFixture
     [Test]
     public void ContextMenu_ShowsTheDoorButtonForTheDishwasherOnly()
     {
-        var panel = BuildMenu();
+        var panel = MenuPanel();
         var dw = Make("DW-ui");
         var boardGo = ElementFactory.CreatePart(new Vector3Int(800, 400, 18), "Board", Vector3.zero);
         _spawned.Add(boardGo);
@@ -1795,7 +1832,7 @@ public class DishwasherElementTests : McpTestFixture
     [Test]
     public void ContextMenu_FacadeOnDishwasher_OpenButtonDrivesTheDishwasher()
     {
-        var panel = BuildMenu();
+        var panel = MenuPanel();
         var dw = Make("DW-facade-btn");
         var facade = MakeFacadeFor(dw, "DW_facade_btn_front");
         dw.AttachedFacadeName = facade.PartName;
@@ -1821,7 +1858,7 @@ public class DishwasherElementTests : McpTestFixture
     [Test]
     public void ContextMenu_FacadeOnDishwasher_PanelAndHingeModeRowStayVisible()
     {
-        var panel = BuildMenu();
+        var panel = MenuPanel();
         var dw = Make("DW-mode-row");
         var facade = MakeFacadeFor(dw, "DW_mode_row_front");
         dw.AttachedFacadeName = facade.PartName;
