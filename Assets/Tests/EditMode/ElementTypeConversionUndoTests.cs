@@ -370,26 +370,44 @@ public class ElementTypeConversionUndoTests
 
     /// <summary>Окно свойств держит собственный <c>_target</c>, и ядро о нём не знает —
     /// поэтому команда зовёт обратный вызов на КАЖДОМ шаге, а не только при первой
-    /// конверсии. Без этого после Ctrl+Z панель показывает мёртвый элемент.</summary>
+    /// конверсии. Без этого после Ctrl+Z панель показывает мёртвый элемент.
+    ///
+    /// Список копит НЕ сами компоненты, а снятые с них факты: следующий шаг уничтожает
+    /// компонент, отданный предыдущим, и сохранённая ссылка к моменту проверки уже мертва —
+    /// обращение к её <c>gameObject</c> роняло сам тест MissingReferenceException. Живость
+    /// каждого компонента поэтому фиксируется в момент передачи, там же, где её видит
+    /// настоящий подписчик — панель свойств.</summary>
     [Test]
     public void EveryStepOfTheConversion_HandsTheNewComponentToTheCaller()
     {
         var element = EveryElementType.Spawn(typeof(KitchenElement), "SUBJECT");
         var subject = element.gameObject;
-        var handed = new List<KitchenElement>();
+        var handed = new List<(bool alive, GameObject? host, Type type)>();
 
-        ConvertElementCommand.Run(element, ElementConverter.TargetType.AssembledFacade, handed.Add);
+        void Record(KitchenElement given)
+        {
+            bool alive = given != null;
+            handed.Add((alive, alive ? given.gameObject : null, given.GetType()));
+        }
+
+        ConvertElementCommand.Run(element, ElementConverter.TargetType.AssembledFacade, Record);
         CommandStack.Undo();
         CommandStack.Redo();
 
         Assert.AreEqual(3, handed.Count,
             "конверсия, отмена и повтор — три шага, и каждый обязан назвать новый компонент");
-        foreach (var given in handed)
-            Assert.AreSame(subject, given.gameObject,
+        for (int step = 0; step < handed.Count; step++)
+        {
+            Assert.IsTrue(handed[step].alive,
+                $"шаг {step} отдал уже уничтоженный компонент — панель получила бы мертвеца");
+            Assert.AreSame(subject, handed[step].host,
                 "шаг обязан отдавать компонент того же объекта сцены");
-        Assert.IsTrue(handed[0] is AssembledFacadeElement, "первый шаг — конверсия");
-        Assert.AreEqual(typeof(KitchenElement), handed[1].GetType(), "второй шаг — отмена");
-        Assert.IsTrue(handed[2] is AssembledFacadeElement, "третий шаг — повтор");
+        }
+        Assert.IsTrue(typeof(AssembledFacadeElement).IsAssignableFrom(handed[0].type),
+            "первый шаг — конверсия");
+        Assert.AreEqual(typeof(KitchenElement), handed[1].type, "второй шаг — отмена");
+        Assert.IsTrue(typeof(AssembledFacadeElement).IsAssignableFrom(handed[2].type),
+            "третий шаг — повтор");
     }
 
     /// <summary>Пара таблиц об одном и том же (тип живого элемента и тип его снимка)
