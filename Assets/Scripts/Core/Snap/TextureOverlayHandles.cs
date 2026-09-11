@@ -409,8 +409,7 @@ namespace KitchenDesigner.Core
             _handles.Clear();
         }
 
-        private static Material? MaterialFor(bool hovered) =>
-            HandleMaterials.For(hovered ? UI.UIStyle.MeasureHover : UI.UIStyle.HighlightChanged);
+        private static Material? MaterialFor(bool hovered) => HandleHover.OverlayMaterial(hovered);
 
         private Material? HandleMaterial() =>
             _material != null ? _material : (_material = MaterialFor(false));

@@ -123,15 +123,8 @@ namespace KitchenDesigner.Core
             return _hovered;
         }
 
-        private static void Paint(ResizeHandle? handle, bool hovered)
-        {
-            if (handle == null) return;
-            var material = HandleMaterials.For(hovered
-                ? UIStyle.MeasureHover
-                : HandleMaterials.ForAxis(handle.faceIndex / 2));
-            foreach (var renderer in handle.GetComponentsInChildren<MeshRenderer>())
-                if (renderer != null) renderer.sharedMaterial = material;
-        }
+        private static void Paint(ResizeHandle? handle, bool hovered) =>
+            HandleHover.Paint(handle, hovered);
 
         internal static bool HandlesAvailableFor(KitchenElement? target) =>
             target != null
@@ -350,16 +343,7 @@ namespace KitchenDesigner.Core
             var cam = _layoutCamera;
             if (cam == null) return float.NaN;
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            Vector3 lineDir = _normal;
-            Vector3 rayDir = ray.direction.normalized;
-            float b = Vector3.Dot(lineDir, rayDir);
-            float denom = 1f - b * b;
-            bool lookingAlongTheNormal = Mathf.Abs(denom) < Tolerance.EpsilonUnits;
-            if (lookingAlongTheNormal) return float.NaN;
-            Vector3 w0 = _faceCenter0 - ray.origin;
-            float dW = Vector3.Dot(lineDir, w0);
-            float eW = Vector3.Dot(rayDir, w0);
-            return (b * eW - dW) / denom;
+            return HandleAxisRay.ParamAlongAxis(ray.origin, ray.direction, _faceCenter0, _normal);
         }
 
         public static bool SupportsHandleResize(KitchenElement? element) =>
@@ -396,33 +380,7 @@ namespace KitchenDesigner.Core
         {
             _layoutCamera = cam;
             if (_target == null) return;
-            var faces = _target.GetFaces();
-
-            var box = HandlePlacement.BoxOf(faces);
-            int thinAxis = cam != null ? HandlePlacement.ThinAxis(box) : -1;
-            PinholeView view = cam != null ? HandleView.Of(cam) : default;
-
-            foreach (var h in _handles)
-            {
-                if (h == null || h.faceIndex >= faces.Length) continue;
-                var f = faces[h.faceIndex];
-                Vector3 n = f.normal.sqrMagnitude > Tolerance.EpsilonSqr ? f.normal.normalized : Vector3.forward;
-                Vector3 up = Mathf.Abs(Vector3.Dot(n, Vector3.up)) > Tolerance.UpDotThreshold ? Vector3.forward : Vector3.up;
-                Vector3 pos = f.center;
-
-                float scale = cam != null
-                    ? HandleScale.ForScreen(view, pos, Metrics)
-                    : HandleScale.WorldSized;
-
-                bool alreadyOutsideThePlate = h.faceIndex / 2 == thinAxis;
-                if (thinAxis >= 0 && !alreadyOutsideThePlate)
-                    pos += HandlePlacement.CameraOffset(
-                        box, thinAxis, cam!.transform.position, Metrics.Gap * scale);
-
-                h.transform.SetPositionAndRotation(pos, Quaternion.LookRotation(n, up));
-                h.transform.localScale = Vector3.one * scale;
-                h.grabPoint = pos + n * (Metrics.GrabCenterZ * scale);
-            }
+            HandleLayout.Place(_target.GetFaces(), _handles, cam, Metrics);
         }
 
         private void ClearHandles()
