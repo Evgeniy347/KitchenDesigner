@@ -110,7 +110,7 @@ namespace KitchenDesigner.Core.UI
             float value, Action<float> onChanged, Func<float>? read = null)
         {
             var rowRect = CreateRow("RowSld_" + label, parent, y);
-            CreateRowLabel("Lbl_" + label, rowRect, label, 0f);
+            _rowLabels[label] = CreateRowLabel("Lbl_" + label, rowRect, label, 0f);
 
             var valueLabel = UIFactory.CreateLabel("Val_" + label, rowRect, FormatMultiplier(value),
                 UIStyle.FontBody, new Vector2(ContentW * 0.5f - 20, 0), new Vector2(40, RowH),
