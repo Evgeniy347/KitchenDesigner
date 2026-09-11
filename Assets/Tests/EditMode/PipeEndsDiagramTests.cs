@@ -25,9 +25,26 @@ public class PipeEndsDiagramTests
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
+    private ProjectLoadStateGuard? _globals;
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню — ~0,31 с,
+    /// и одиннадцать сборок это 3,4 с из прогона EditMode. Почему это безопасно — в
+    /// сводке <see cref="ContextMenuLayoutTests"/>: боевой сценарий и есть ОДНА панель,
+    /// переоткрываемая через <c>Open</c>, и <c>Open</c> же её и сбрасывает.
+    ///
+    /// Два теста панель не открывают вовсе:
+    /// <see cref="TheDiagram_KeepsItsWidgetNames"/> и
+    /// <see cref="BothEnds_OfferTheSameList_EmptyItemFirstThenEveryFittingKind"/>
+    /// читают то, что собрано в <c>Build</c>, — им общая панель ровно та же самая.
+    ///
+    /// Своего <c>SelectionManager</c> класс не заводит, и это НЕ упущение: в EditMode
+    /// <c>Awake</c> не зовётся, <c>SelectionManager.Instance</c> остаётся пустым, и
+    /// панель подписывается на пустоту и в старом виде тоже. Требование «менеджер живёт
+    /// со сборки панели до <c>[OneTimeTearDown]</c>» относится к наборам, которые его
+    /// создают (<see cref="MaterialPreviewTests"/>): создать его потестово при общей
+    /// панели значило бы оставить панель подписанной на разрушенный объект.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
@@ -36,12 +53,38 @@ public class PipeEndsDiagramTests
         _menu!.Build(_canvas!.transform);
     }
 
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь.
+    /// <c>ForgetLastApplyFrame</c> — окно склейки правок: в EditMode
+    /// <c>Time.frameCount</c> стоит на месте, и окно, взведённое предыдущим тестом,
+    /// съело бы первую правку следующего. <c>DisarmAll</c> снимает взвод кнопок
+    /// удаления, а фокус — потому что <c>RefreshUnfocused</c> МОЛЧА пропускает
+    /// сфокусированное поле, а <c>EventSystem</c> в EditMode один на весь прогон.</summary>
+    [SetUp]
+    public void Setup()
+    {
+        _globals = ProjectLoadStateGuard.Capture();
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
+    }
+
+    /// <summary><c>Close()</c> обязан идти ДО <c>DestroyImmediate</c> спавнов: он
+    /// обнуляет <c>_target</c> панели, снимает подсветку участков и гасит превью,
+    /// иначе живая панель осталась бы с уничтоженной деталью в руках, а красный
+    /// участок и призрак уехали бы в следующий тест.</summary>
     [TearDown]
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        if (_menu != null) _menu!.Close();
         foreach (var element in PartRegistry.GetAll())
             if (element != null) _spawned.Add(element.gameObject);
         foreach (var go in _spawned)
@@ -49,6 +92,7 @@ public class PipeEndsDiagramTests
         _spawned.Clear();
         PartRegistry.Clear();
         ElementFactory.ClearPools();
+        _globals!.Restore();
     }
 
     private PipeElement Pipe()

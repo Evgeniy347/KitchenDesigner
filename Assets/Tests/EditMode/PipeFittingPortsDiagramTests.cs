@@ -20,9 +20,22 @@ public class PipeFittingPortsDiagramTests
     private Canvas? _canvas;
     private ContextMenuUI? _menu;
     private readonly List<GameObject> _spawned = new List<GameObject>();
+    private ProjectLoadStateGuard? _globals;
 
-    [SetUp]
-    public void Setup()
+    /// <summary>Панель строится ОДИН раз на класс: сборка контекстного меню — ~0,31 с,
+    /// и десять сборок это 3,1 с из прогона EditMode. Почему это безопасно — в сводке
+    /// <see cref="ContextMenuLayoutTests"/>: боевой сценарий и есть ОДНА панель,
+    /// переоткрываемая через <c>Open</c>, и через <c>Open</c> здесь проходит КАЖДЫЙ
+    /// тест без исключений. Больше того, именно переоткрытие общей панели на другом
+    /// виде фитинга и есть предмет
+    /// <see cref="ReopeningThePanel_OnADifferentFittingKind_ShowsThatKindsOwnPortCount"/>:
+    /// потестовая сборка проверяла там свежую панель, то есть половину сценария.
+    ///
+    /// Своего <c>SelectionManager</c> класс не заводит: в EditMode <c>Awake</c> не
+    /// зовётся и <c>SelectionManager.Instance</c> пуст, так что подписка панели ни на
+    /// что не указывает ни при общей панели, ни при потестовой.</summary>
+    [OneTimeSetUp]
+    public void BuildThePanelOnce()
     {
         UIFactory.EnsureEventSystem();
         _canvas = UIFactory.CreateCanvas("TestCanvas");
@@ -31,12 +44,35 @@ public class PipeFittingPortsDiagramTests
         _menu!.Build(_canvas!.transform);
     }
 
+    [OneTimeTearDown]
+    public void DropThePanel()
+    {
+        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
+        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+    }
+
+    /// <summary>Панель переживает тест — значит потестовое состояние сбрасывается здесь:
+    /// окно склейки правок (<c>ForgetLastApplyFrame</c>, в EditMode <c>Time.frameCount</c>
+    /// стоит на месте), взвод кнопок удаления и фокус, который <c>RefreshUnfocused</c>
+    /// МОЛЧА пропускает, а <c>EventSystem</c> в EditMode один на весь прогон.</summary>
+    [SetUp]
+    public void Setup()
+    {
+        _globals = ProjectLoadStateGuard.Capture();
+        ((IContextMenuHost)_menu!).Fields.ForgetLastApplyFrame();
+        ConfirmDeleteButton.DisarmAll();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        if (es != null) es.SetSelectedGameObject(null);
+    }
+
+    /// <summary><c>Close()</c> обязан идти ДО <c>DestroyImmediate</c> спавнов: он
+    /// обнуляет <c>_target</c> панели, снимает красное устье и гасит призрака —
+    /// иначе всё это уехало бы в следующий тест на живой панели.</summary>
     [TearDown]
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) Object.DestroyImmediate(_menu!.gameObject);
-        if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
+        if (_menu != null) _menu!.Close();
         foreach (var element in PartRegistry.GetAll())
             if (element != null) _spawned.Add(element.gameObject);
         foreach (var go in _spawned)
@@ -44,6 +80,7 @@ public class PipeFittingPortsDiagramTests
         _spawned.Clear();
         PartRegistry.Clear();
         ElementFactory.ClearPools();
+        _globals!.Restore();
     }
 
     private PipeFittingElement Elbow()
