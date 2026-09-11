@@ -7,8 +7,27 @@ namespace KitchenDesigner.Core
     {
         public const int SeparatingAxisCount = 15;
 
+        [ThreadStatic] private static int _separatingAxisTests;
+
+        public static int TakeSeparatingAxisTests()
+        {
+            int n = _separatingAxisTests;
+            _separatingAxisTests = 0;
+            return n;
+        }
+
+        public static bool SpheresReach(in OrientedBox a, in OrientedBox b)
+        {
+            float reach = a.Half.magnitude + b.Half.magnitude;
+            return (b.Center - a.Center).sqrMagnitude <= reach * reach;
+        }
+
         public static float PenetrationUnits(in OrientedBox a, in OrientedBox b)
         {
+            if (!SpheresReach(a, b)) return 0f;
+
+            _separatingAxisTests++;
+
             Span<Vector3> axes = stackalloc Vector3[SeparatingAxisCount];
             int count = 0;
             for (int i = 0; i < 3; i++) axes[count++] = a.Axis(i);

@@ -49,6 +49,10 @@ namespace KitchenDesigner.Core
 
         private static int _elementGeometriesBuilt;
 
+        private static int _nearContactPairsScanned;
+
+        public static int NearContactPairsScannedByLastCall => _nearContactPairsScanned;
+
         public static int TakeSceneValidations()
         {
             int n = _sceneValidations;
@@ -178,12 +182,19 @@ namespace KitchenDesigner.Core
 
             int n = all.Count;
             var bodies = new ElementGeometry[n][];
+            var mins = new Vector3[n];
+            var maxs = new Vector3[n];
             for (int i = 0; i < n; i++)
             {
                 var e = all[i];
                 if (e == null || IsAnchor(e) || IsIgnoredInPairs(e)) continue;
                 bodies[i] = ValidationSnapshot.SolidBodies(e);
+                Envelope(bodies[i], out mins[i], out maxs[i]);
             }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            _nearContactPairsScanned = 0;
+#endif
 
             for (int i = 0; i < n; i++)
             {
@@ -191,6 +202,10 @@ namespace KitchenDesigner.Core
                 for (int j = i + 1; j < n; j++)
                 {
                     if (bodies[j] == null) continue;
+                    if (!EnvelopesReach(mins[i], maxs[i], mins[j], maxs[j], broadPhase)) continue;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    _nearContactPairsScanned++;
+#endif
                     if (AnyFaceToFace(bodies[i], bodies[j], contactDist)) continue;
                     if (PanelEngagesGroove(all[i], all[j]) || PanelEngagesGroove(all[j], all[i])) continue;
                     if (IsDishwasherFacadePair(all[i], all[j])) continue;
@@ -206,6 +221,23 @@ namespace KitchenDesigner.Core
             }
             return result;
         }
+
+        private static void Envelope(ElementGeometry[] bodies, out Vector3 min, out Vector3 max)
+        {
+            min = bodies[0].Min;
+            max = bodies[0].Max;
+            for (int i = 1; i < bodies.Length; i++)
+            {
+                min = Vector3.Min(min, bodies[i].Min);
+                max = Vector3.Max(max, bodies[i].Max);
+            }
+        }
+
+        private static bool EnvelopesReach(in Vector3 minA, in Vector3 maxA,
+            in Vector3 minB, in Vector3 maxB, float reach) =>
+            Tolerance.IntervalsOverlap(minA.x, maxA.x, minB.x, maxB.x, -reach)
+            && Tolerance.IntervalsOverlap(minA.y, maxA.y, minB.y, maxB.y, -reach)
+            && Tolerance.IntervalsOverlap(minA.z, maxA.z, minB.z, maxB.z, -reach);
 
         private static bool AnyFaceToFace(ElementGeometry[] a, ElementGeometry[] b, float contactDist)
         {
