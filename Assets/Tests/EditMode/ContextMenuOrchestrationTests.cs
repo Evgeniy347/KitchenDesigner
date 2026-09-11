@@ -15,10 +15,7 @@ public class ContextMenuOrchestrationTests
     /// и девять сборок это 2,8 с из прогона EditMode при бюджете 170 с. Почему это
     /// безопасно — в сводке <see cref="ContextMenuLayoutTests"/>: боевой сценарий и есть
     /// ОДНА панель, переоткрываемая через <c>Open</c>, и через <c>Open</c> проходит
-    /// КАЖДЫЙ тест этого класса без исключений.
-    ///
-    /// Своё, отдельное от прочих секций, у этого класса — отложенное закрытие: см.
-    /// <see cref="ForgetDeferredClose"/>.</summary>
+    /// КАЖДЫЙ тест этого класса без исключений.</summary>
     [OneTimeSetUp]
     public void BuildThePanelOnce()
     {
@@ -53,38 +50,19 @@ public class ContextMenuOrchestrationTests
         ConfirmDeleteButton.DisarmAll();
         var es = UnityEngine.EventSystems.EventSystem.current;
         if (es != null) es.SetSelectedGameObject(null);
-        ForgetDeferredClose();
-    }
-
-    /// <summary>Вторая защёлка кадра, и она принадлежит ИМЕННО этому классу:
-    /// <c>OnSelectionChanged(null)</c> не закрывает панель сразу, а взводит
-    /// <c>_deferCloseFrame</c>, и <c>Close()</c> его НЕ снимает (а <c>Open</c> не
-    /// снимает потому, что приходящий из него <c>OnSelectionChanged</c> отсекается
-    /// флагом <c>_openInProgress</c>). Со своей панелью на тест защёлка умирала вместе
-    /// с панелью; с общей — <see cref="Deselecting_DoesNotClosethePanelInTheSameFrame"/>
-    /// оставляет её взведённой, и следующий тест, который зовёт
-    /// <c>ProcessDeferredClose</c>, закрыл бы панель, как только его кадр окажется
-    /// НОВЕЕ взведённого. Внутри одного кадра EditMode это не срабатывает, поэтому и
-    /// падало бы не всегда — что хуже, чем всегда.
-    ///
-    /// Снимается защёлка единственным путём, который для неё есть: панель открывают на
-    /// проходной детали и повторяют выбор того же элемента — <c>OnSelectionChanged</c>
-    /// с непустым элементом обнуляет <c>_deferCloseFrame</c>, а <c>element ==
-    /// _target</c> не даёт ей переоткрыться.</summary>
-    private void ForgetDeferredClose()
-    {
-        var scratch = ElementFactory.CreatePart(new Vector3Int(120, 120, 12), "Сброс", Vector3.zero);
-        var element = scratch.GetComponent<KitchenElement>();
-        _menu!.Open(element);
-        _menu!.OnSelectionChanged(element);
-        _menu!.Close();
-        Object.DestroyImmediate(scratch);
-        PartRegistry.Clear();
     }
 
     /// <summary><c>Close()</c> обязан идти ДО <c>DestroyImmediate</c> спавнов: он
     /// обнуляет <c>_target</c>, иначе живая панель осталась бы с уничтоженным элементом
-    /// в руках.</summary>
+    /// в руках.
+    ///
+    /// Он же снимает защёлку отложенного закрытия, и потому в <c>[SetUp]</c> её больше
+    /// не сбрасывают руками: раньше <c>Close()</c> защёлку НЕ снимал, взведённая в
+    /// <see cref="Deselecting_DoesNotClosethePanelInTheSameFrame"/> она переезжала в
+    /// следующий тест и гасила ему панель, как только кадр оказывался новее
+    /// взведённого. Чинить это в <c>[SetUp]</c> было лечением симптома: та же защёлка
+    /// точно так же переживала закрытие и у живого пользователя — см.
+    /// <see cref="PanelOpenedAfterDeselect_StaysOpen"/>.</summary>
     [TearDown]
     public void Teardown()
     {
@@ -179,6 +157,50 @@ public class ContextMenuOrchestrationTests
         Assert.IsTrue(PanelOpen(),
             "закрытие откладывается до конца кадра: снятие выделения — первая половина "
             + "переключения на другой элемент, и закрыться прямо здесь значит мигнуть панелью");
+    }
+
+    /// <summary>Защёлка отложенного закрытия принадлежит ОДНОЙ жизни панели и обязана
+    /// умереть вместе с ней. Пока её снимал только <c>OnSelectionChanged</c> с непустым
+    /// элементом, она переживала и закрытие, и следующее открытие: панель, открытую не
+    /// через <c>SelectionManager</c> (клик мимо детали снял выделение, затем панель
+    /// подняли из кода), ближайший <c>Update</c> гасил сам собой — пользователь видел,
+    /// как панель мигнула и пропала.
+    ///
+    /// Проверка не про кадр, а про состояние, и потому не зависит от порядка тестов: в
+    /// EditMode <c>Time.frameCount</c> внутри теста не растёт, и «сработает ли
+    /// <c>ProcessDeferredClose</c>» тут ответа не даёт вовсе — а взведённая защёлка
+    /// видна сразу.</summary>
+    [Test]
+    public void PanelOpenedAfterDeselect_StaysOpen()
+    {
+        _menu!.Open(Board("Полка"));
+        _menu!.OnSelectionChanged(null);
+        Assume.That(_menu!.DeferredCloseIsPending, Is.True,
+            "предусловие: снятие выделения взводит отложенное закрытие");
+
+        _menu!.Close();
+        _menu!.Open(Board("Другая"));
+        _menu!.ProcessDeferredClose();
+
+        Assert.IsFalse(_menu!.DeferredCloseIsPending,
+            "открытие — начало новой жизни панели: отложенное закрытие, взведённое до "
+            + "него, к этой панели уже не относится");
+        Assert.IsTrue(PanelOpen(), "иначе панель мигнула бы и пропала без причины");
+    }
+
+    /// <summary>Второй конец той же жизни. Закрытая панель не может иметь незакрытого
+    /// дела: без этого защёлка тихо ждала в поле и стреляла в первую же панель,
+    /// открытую после неё, — в том числе через тест, идущий следом.</summary>
+    [Test]
+    public void Closing_ForgetsTheDeferredClose()
+    {
+        _menu!.Open(Board("Полка"));
+        _menu!.OnSelectionChanged(null);
+
+        _menu!.Close();
+
+        Assert.IsFalse(_menu!.DeferredCloseIsPending,
+            "панель уже закрыта — закрывать её второй раз нечему");
     }
 
     [Test]

@@ -451,6 +451,10 @@ namespace KitchenDesigner.Core.UI
 
         private int _deferCloseFrame = -1;
 
+        internal bool DeferredCloseIsPending => _deferCloseFrame >= 0;
+
+        private void ForgetDeferredClose() => _deferCloseFrame = -1;
+
         internal void OnSelectionChanged(KitchenElement? element)
         {
             if (_openInProgress) return;
@@ -460,16 +464,16 @@ namespace KitchenDesigner.Core.UI
                 _deferCloseFrame = Time.frameCount;
                 return;
             }
-            _deferCloseFrame = -1;
+            ForgetDeferredClose();
             if (element != _target)
                 Open(element);
         }
 
         internal void ProcessDeferredClose()
         {
-            if (_deferCloseFrame >= 0 && _deferCloseFrame < Time.frameCount)
+            if (DeferredCloseIsPending && _deferCloseFrame < Time.frameCount)
             {
-                _deferCloseFrame = -1;
+                ForgetDeferredClose();
                 Close();
             }
         }
@@ -585,6 +589,7 @@ namespace KitchenDesigner.Core.UI
             _openInProgress = true;
             try
             {
+                ForgetDeferredClose();
                 _textures.EndPreview();
                 _materials.EndPreview();
                 _target = element;
@@ -653,6 +658,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Close()
         {
+            ForgetDeferredClose();
             SideHighlighter.Hide();
             HoverPreviewGate.HideAll();
             _textures.EndPreview();
