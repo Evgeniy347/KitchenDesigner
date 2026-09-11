@@ -8,6 +8,10 @@ namespace KitchenDesigner.Core
 
             ElementRestorers.ApplyShared(data, element);
 
+            var dimensions = data.Dimensions;
+            if (dimensions.x > 0 && dimensions.y > 0 && dimensions.z > 0)
+                element.DimensionsMM = dimensions;
+
             if (element is RadialShelfElement radial)
                 radial.CornerRadius = data.cornerRadius;
 
