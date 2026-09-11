@@ -13,7 +13,11 @@ namespace KitchenDesigner.Core
             IReadOnlyList<KitchenElement>? others)
             => BareFaceMask(element, others == null ? null : SceneFaces.Of(others));
 
-        public static int BareFaceMask(KitchenElement? element, SceneFaces? scene)
+        public static int BareFaceMask(KitchenElement? element, SceneFaces? scene) =>
+            BareFaceMask(element, scene, SceneFaces.NotInScene);
+
+        public static int BareFaceMask(KitchenElement? element, SceneFaces? scene,
+            int indexInScene)
         {
             if (element == null || !element.SupportsEdges) return 0;
             var layout = EdgeBanding.LayoutOf(element.DimensionsMM);
@@ -27,7 +31,7 @@ namespace KitchenDesigner.Core
 
             if (scene == null) return 0;
 
-            var coverage = EdgeBanding.Coverage(element, scene);
+            var coverage = EdgeBanding.Coverage(element, scene, indexInScene);
             int mask = 0;
             foreach (EdgeSide side in EdgeStates.All)
                 if (!EdgeBanding.HasEdgeEffective(element, coverage, side))
@@ -47,10 +51,11 @@ namespace KitchenDesigner.Core
             using var _ = PerfMarkers.EdgeSubstrateSync.Auto();
 
             var scene = SceneFaces.Of(all);
-            foreach (var element in all)
+            for (int k = 0; k < scene.Count; k++)
             {
+                var element = scene.ElementAt(k);
                 if (element == null || !element.SupportsEdges) continue;
-                element.SetBareFaceMask(BareFaceMask(element, scene));
+                element.SetBareFaceMask(BareFaceMask(element, scene, k));
             }
         }
 

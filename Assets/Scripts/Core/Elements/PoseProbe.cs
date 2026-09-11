@@ -20,21 +20,21 @@ namespace KitchenDesigner.Core
 
             var savedPos = pose.position;
             var savedRot = pose.rotation;
-            bool savedChanged = pose.hasChanged;
-            bool moves = savedPos != position || savedRot != rotation;
-            if (!moves) return measure();
+            if (savedPos == position && savedRot == rotation) return measure();
 
             _posesMoved++;
-            try
+            return SceneChangeTracker.Unnoticed(pose, () =>
             {
-                pose.SetPositionAndRotation(position, rotation);
-                return measure();
-            }
-            finally
-            {
-                pose.SetPositionAndRotation(savedPos, savedRot);
-                pose.hasChanged = savedChanged;
-            }
+                try
+                {
+                    pose.SetPositionAndRotation(position, rotation);
+                    return measure();
+                }
+                finally
+                {
+                    pose.SetPositionAndRotation(savedPos, savedRot);
+                }
+            });
         }
     }
 }

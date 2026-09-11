@@ -12,6 +12,14 @@ namespace KitchenDesigner.Core
 
         public static void NoteMembershipChanged() => _membershipChanged = true;
 
+        public static T Unnoticed<T>(Transform pose, System.Func<T> body)
+        {
+            if (pose == null) return body();
+            bool seen = pose.hasChanged;
+            try { return body(); }
+            finally { pose.hasChanged = seen; }
+        }
+
         public static void NoteSelfAnimated(KitchenElement element)
         {
             if (element != null) _selfAnimated.Add(element);

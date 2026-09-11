@@ -79,6 +79,15 @@ namespace KitchenDesigner.Core
         public static readonly PerfMarker ErrorPanelAnalyze = Reg("ErrorPanelUI.Analyze");
         public static readonly PerfMarker ToolbarRefresh = Reg("ToolbarUI.Refresh");
 
+        public static readonly PerfMarker MoverDragFrame = Reg("ElementMover.ApplyDragFrame");
+        public static readonly PerfMarker MoverDragTint = Reg("ElementMover.UpdateDragTint");
+        public static readonly PerfMarker MoverFinishDrag = Reg("ElementMover.FinishDrag");
+        public static readonly PerfMarker SnapTrySnap = Reg("SnapSystem.TrySnap");
+        public static readonly PerfMarker ValidateScene = Reg("ConstraintValidator.Validate");
+        public static readonly PerfMarker ValidationSnapshotBuild = Reg("ValidationSnapshot.Build");
+        public static readonly PerfMarker HighlighterRefresh = Reg("ElementHighlighter.RefreshHighlights");
+        public static readonly PerfMarker EdgeBandingCoverage = Reg("EdgeBanding.Coverage");
+
         public static readonly PerfMarker DoorSnapToWall = Reg("DoorElement.SnapToWall");
         public static readonly PerfMarker WindowSnapToWall = Reg("WindowElement.SnapToWall");
 
@@ -91,6 +100,19 @@ namespace KitchenDesigner.Core
                 "OpeningCollision.BuildObstacles",
                 "OpeningCollision.ScanForBlock",
             },
+            ["ElementMover.ApplyDragFrame"] = new[]
+            {
+                "SnapSystem.TrySnap",
+                "ElementMover.UpdateDragTint",
+            },
+            ["ElementMover.UpdateDragTint"] = new[] { "ConstraintValidator.Validate" },
+            ["ConstraintValidator.Validate"] = new[] { "ValidationSnapshot.Build" },
+            ["ElementHighlighter.RefreshHighlights"] = new[]
+            {
+                "ConstraintValidator.Validate",
+                "EdgeSubstrate.SyncScene",
+            },
+            ["EdgeSubstrate.SyncScene"] = new[] { "EdgeBanding.Coverage" },
             ["SceneAnalyzer.Analyze"] = new[]
             {
                 "SceneAnalyzer.CollectCollisions",

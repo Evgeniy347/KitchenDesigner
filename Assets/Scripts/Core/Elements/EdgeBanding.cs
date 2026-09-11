@@ -104,13 +104,25 @@ namespace KitchenDesigner.Core
             return scene;
         }
 
+        public const int NotInScene = -1;
+
         public int Count => _elements.Count;
         public KitchenElement ElementAt(int i) => _elements[i];
         public Face[] FacesAt(int i) => _faces[i];
         public Sphere SphereAt(int i) => _spheres[i];
 
+        [System.ThreadStatic] private static int _linearLookups;
+
+        public static int TakeLinearLookups()
+        {
+            int n = _linearLookups;
+            _linearLookups = 0;
+            return n;
+        }
+
         public Sphere SphereOf(KitchenElement element)
         {
+            _linearLookups++;
             for (int i = 0; i < _elements.Count; i++)
                 if (_elements[i] == element) return _spheres[i];
             return BoundingSphere(element, element.GetFaces());
@@ -180,13 +192,19 @@ namespace KitchenDesigner.Core
         public static EdgeCoverage Coverage(KitchenElement element, IReadOnlyList<KitchenElement> others)
             => Coverage(element, SceneFaces.Of(others));
 
-        public static EdgeCoverage Coverage(KitchenElement element, SceneFaces scene)
+        public static EdgeCoverage Coverage(KitchenElement element, SceneFaces scene) =>
+            Coverage(element, scene, SceneFaces.NotInScene);
+
+        public static EdgeCoverage Coverage(KitchenElement element, SceneFaces scene,
+            int indexInScene)
         {
             if (element == null || scene == null) return NoEdge;
             var layout = LayoutOf(element.DimensionsMM);
             if (!layout.IsValid) return NoEdge;
 
-            var faces = element.GetFaces();
+            using var _ = PerfMarkers.EdgeBandingCoverage.Auto();
+
+            var faces = indexInScene >= 0 ? scene.FacesAt(indexInScene) : element.GetFaces();
             var ends = new[]
             {
                 faces[layout.FaceIndex(EdgeSide.L1)],
@@ -199,7 +217,7 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < 4; i++) covers[i] = new List<Rect>();
 
             float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
-            var sphere = scene.SphereOf(element);
+            var sphere = indexInScene >= 0 ? scene.SphereAt(indexInScene) : scene.SphereOf(element);
             for (int k = 0; k < scene.Count; k++)
             {
                 var other = scene.ElementAt(k);

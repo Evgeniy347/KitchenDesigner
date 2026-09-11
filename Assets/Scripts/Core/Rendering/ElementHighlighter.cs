@@ -38,6 +38,8 @@ namespace KitchenDesigner.Core
                 return;
             }
 
+            using var _ = PerfMarkers.HighlighterRefresh.Auto();
+
             RefreshCount++;
 
             var list = PartRegistry.GetAll();

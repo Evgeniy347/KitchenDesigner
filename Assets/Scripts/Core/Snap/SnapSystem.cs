@@ -73,6 +73,7 @@ namespace KitchenDesigner.Core
             if (!KitchenSettings.Instance.SnapEnabled) return default;
             if (!moved.gameObject.activeInHierarchy) return default;
 
+            using var _ = PerfMarkers.SnapTrySnap.Auto();
             return TrySnap(moved, others.ToGeometryFor(moved), testPosition);
         }
 

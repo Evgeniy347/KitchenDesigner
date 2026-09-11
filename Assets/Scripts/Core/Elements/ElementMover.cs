@@ -440,6 +440,8 @@ namespace KitchenDesigner.Core
         private void ApplyDragFrame(Vector3 newPos)
         {
             if (_target == null) return;
+            using var _ = PerfMarkers.MoverDragFrame.Auto();
+
             if (_dragPaint.Count == 0) SaveDragMaterial(_target!);
 
             if (Input.GetKeyDown(KeyCode.X)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.X);
@@ -497,6 +499,7 @@ namespace KitchenDesigner.Core
 
 		private void FinishDrag()
 		{
+			using var _ = PerfMarkers.MoverFinishDrag.Auto();
 			_settledFrame.Forget();
 			_showGhost = false;
 
@@ -672,6 +675,8 @@ namespace KitchenDesigner.Core
         private void UpdateDragTint()
         {
             if (_dragPaint.Count == 0 || _target == null) return;
+            using var tintFrame = PerfMarkers.MoverDragTint.Auto();
+
 
             var tint = DragGesture.TintFor(MoveSetIntroducedAViolation(out _));
             foreach (var paint in _dragPaint)

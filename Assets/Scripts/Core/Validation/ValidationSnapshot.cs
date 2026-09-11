@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
     {
         public static void Build(List<KitchenElement> elements, List<ValidationElement> into)
         {
+            using var _ = PerfMarkers.ValidationSnapshotBuild.Auto();
+
             into.Clear();
             if (elements == null || elements.Count == 0) return;
 

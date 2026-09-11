@@ -70,6 +70,8 @@ namespace KitchenDesigner.Core
 
         public static ValidationResult Validate(List<KitchenElement> all)
         {
+            using var _ = PerfMarkers.ValidateScene.Auto();
+
             var result = new ValidationResult();
 
             _elems.Clear();
