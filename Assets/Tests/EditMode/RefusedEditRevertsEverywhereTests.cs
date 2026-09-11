@@ -65,11 +65,11 @@ public class RefusedEditRevertsEverywhereTests
             if (go == null) continue;
             var el = go.GetComponent<KitchenElement>();
             if (el != null) PartRegistry.Unregister(el);
-            Object.DestroyImmediate(go);
+            UnityEngine.Object.DestroyImmediate(go);
         }
         _spawned.Clear();
         _statusBar = null;
-        if (_root != null) Object.DestroyImmediate(_root);
+        if (_root != null) UnityEngine.Object.DestroyImmediate(_root);
         PartRegistry.Clear();
     }
 

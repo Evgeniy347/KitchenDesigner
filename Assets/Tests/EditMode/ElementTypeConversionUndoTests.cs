@@ -387,7 +387,7 @@ public class ElementTypeConversionUndoTests
         void Record(KitchenElement given)
         {
             bool alive = given != null;
-            handed.Add((alive, alive ? given.gameObject : null, given.GetType()));
+            handed.Add((alive, alive ? given!.gameObject : null, given!.GetType()));
         }
 
         ConvertElementCommand.Run(element, ElementConverter.TargetType.AssembledFacade, Record);
