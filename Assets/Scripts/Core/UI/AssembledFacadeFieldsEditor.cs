@@ -38,7 +38,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (!(Host.Target is AssembledFacadeElement assembled)) return;
             if (index < 0 || index >= FillOrder.Length) return;
-            assembled.Fill = FillOrder[index];
+            ChoiceRowUndo.Commit(assembled, () => assembled.Fill = FillOrder[index]);
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.RefreshHighlight(assembled);
         }
