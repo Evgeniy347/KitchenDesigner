@@ -12,6 +12,8 @@ namespace KitchenDesigner.Core.UI
         private string _text = string.Empty;
         private TextMeshProUGUI? _glyph;
 
+        public string Key { get; private set; } = string.Empty;
+
         public static HintBadge Attach(Transform parent, Vector2 anchoredPos, string hint)
         {
             string text = HintText.Of(hint);
@@ -34,6 +36,7 @@ namespace KitchenDesigner.Core.UI
             var self = rect.gameObject.AddComponent<HintBadge>();
             self._text = text;
             self._glyph = glyph;
+            self.Key = hint;
 
             PointerHover.Attach(rect.gameObject, self.OnEnter, self.OnExit);
             return self;
@@ -41,7 +44,13 @@ namespace KitchenDesigner.Core.UI
 
         public static HintBadge? AttachAfterLabel(TextMeshProUGUI? label, string hint)
         {
-            if (label == null) return null;
+            if (label == null)
+            {
+                Debug.LogError("Подсказка «" + hint + "» потеряна: подписи, к которой ведёт ключ, "
+                    + "в реестре строк панели нет, и значок «i» не приклеился ни к чему. "
+                    + "Проверьте ключ строки в Hint(...) и то, что строка регистрирует свою подпись.");
+                return null;
+            }
 
             var labelRect = label.rectTransform;
             float textWidth = label.GetPreferredValues(label.text).x;

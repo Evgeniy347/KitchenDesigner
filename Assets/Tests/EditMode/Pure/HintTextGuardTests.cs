@@ -28,6 +28,9 @@ public class HintTextGuardTests
 
     private static readonly Regex Declared = new Regex(@"\bhint\s*:\s*""([^""]*)""");
     private static readonly Regex AnyHintArgument = new Regex(@"\bhint\s*:");
+    private static readonly Regex AnyHintCall = new Regex(@"\bHint\(");
+    private static readonly Regex HintedRow = new Regex(
+        @"\bHint\(\s*(""[^""]*""|[A-Za-z_]\w*)\s*,\s*hint\s*:\s*""([^""]*)""\s*\)");
 
     private static string CoreDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
 
@@ -53,6 +56,13 @@ public class HintTextGuardTests
             .SelectMany(p => Declared.Matches(p.line).Cast<Match>()
                 .Select(m => (p.file, m.Groups[1].Value)))
             .ToList();
+
+    /// <summary>Тот же скан читает и сторож видимости
+    /// (<c>HintBadgeVisibilityTests</c>): он строит настоящие панели и требует, чтобы у
+    /// каждого заявленного здесь ключа ВЫРОС значок. Второе описание одного множества
+    /// разъехалось бы с первым, как разъезжается любая вторая копия таблицы
+    /// (conventions/STRUCTURE.md → «A capability table has a twin in the contract»).</summary>
+    public static IReadOnlyList<(string file, string key)> DeclaredKeys() => KeysInCode();
 
     [Test]
     public void TheScan_FindsTheSamplePanel()
@@ -106,6 +116,60 @@ public class HintTextGuardTests
             + string.Join(" | ", computed));
     }
 
+    /// <summary>Третий способ отнять у человека подсказку, и самый тихий: ключ и текст
+    /// безупречны, а значок не приклеился. <c>HintBadge.AttachAfterLabel</c> возвращал
+    /// null, когда подписи с таким ключом строки в реестре панели нет, — и обе проверки
+    /// выше зеленели, потому что спрашивают про наполнение, а не про строку. Так три «i»
+    /// вкладки «Управление» прожили день: ползунок не регистрировал свою подпись
+    /// (ecf6f365), ключи были на месте, значков не было ни одного.
+    ///
+    /// На быстром пути это спрашивается приблизительно: ключ строки, написанный в
+    /// <c>Hint(...)</c>, обязан встретиться в этом же файле ещё и в строке, СОЗДАЮЩЕЙ
+    /// строку панели. Опечатку в ключе это ловит за две секунды и без Unity. Настоящий
+    /// вопрос — «значок вырос на построенной панели» — задаёт
+    /// <c>HintBadgeVisibilityTests.EveryDeclaredHintKey_GrewABadge_OnTheRealPanel</c>:
+    /// без сцены реестра строк не существует.</summary>
+    [Test]
+    public void EveryHintedRowKey_NamesARowTheSamePanelCreates()
+    {
+        var lost = new List<string>();
+        var unparsed = new List<string>();
+        int asked = 0;
+
+        foreach (var panel in CodeLines().GroupBy(p => p.file))
+        {
+            var lines = panel.Select(p => p.line).ToList();
+            foreach (var line in lines)
+            {
+                if (!AttachesAHint(line)) continue;
+                var row = HintedRow.Match(line);
+                if (!row.Success)
+                {
+                    unparsed.Add(panel.Key + ": " + line.Trim());
+                    continue;
+                }
+
+                asked++;
+                var rowKey = row.Groups[1].Value;
+                bool created = lines.Any(other => !AttachesAHint(other)
+                    && other.Contains(rowKey) && other.Contains("Add"));
+                if (!created)
+                    lost.Add(panel.Key + " → " + rowKey + " (ключ " + row.Groups[2].Value + ")");
+            }
+        }
+
+        Assert.IsEmpty(unparsed,
+            "Строка с Hint(...) записана не в разобранной форме «Hint(ключСтроки, hint: \"ключ\")», "
+            + "и скан её не понял, — а непонятая строка проверкой ниже не покрыта: "
+            + string.Join(" | ", unparsed));
+        Assert.That(asked, Is.GreaterThanOrEqualTo(20),
+            "скан не нашёл размеченных строк панелей — проверка ниже зеленела бы вхолостую");
+        Assert.IsEmpty(lost,
+            "Ключ строки, к которому ведёт подсказка, не создаёт в этой панели ни одной строки: "
+            + "HintBadge.AttachAfterLabel получит из реестра null, и значка «i» человек не "
+            + "увидит — при безупречных ключе и тексте. Потеряны: " + string.Join(", ", lost));
+    }
+
     [Test]
     public void EveryKeyInTheDictionary_FollowsTheNamingShape()
     {
@@ -143,6 +207,13 @@ public class HintTextGuardTests
         Assert.That(HintText.All.Count, Is.GreaterThanOrEqualTo(5),
             "пустой словарь сделал бы все проверки выше зелёными и бессмысленными");
     }
+
+    /// <summary>Имя `Hint` занято дважды: панель настроек так зовёт свою однострочку
+    /// «повесить значок», а `ContextMenuRowFactory.Hint` — это СТРОКА-пояснение в панели
+    /// свойств («Клик по стороне: авто → есть → убрать»), к подсказкам «i» отношения не
+    /// имеющая. Отличает их именованный аргумент `hint:`: он есть только у первой.</summary>
+    private static bool AttachesAHint(string line) =>
+        AnyHintCall.IsMatch(line) && AnyHintArgument.IsMatch(line);
 
     private static bool IsCyrillic(char c) => c >= 'А' && c <= 'я';
 

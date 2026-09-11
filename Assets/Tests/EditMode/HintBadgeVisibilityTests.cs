@@ -100,6 +100,70 @@ public class HintBadgeVisibilityTests
             + "значок ребёнком подписи. Безнадзорные значки: " + string.Join(" | ", orphans));
     }
 
+    /// <summary>Самый тихий способ отнять подсказку: ключ заявлен, текст написан, а значка
+    /// нет вообще. <c>HintBadge.AttachAfterLabel</c> возвращал null, когда подписи с таким
+    /// ключом строки в реестре панели нет, и наполнение оставалось безупречным —
+    /// <c>HintTextGuardTests</c> спрашивает про ключи и тексты, а не про строки. Так три
+    /// «i» вкладки «Управление» прожили день: ползунок не регистрировал свою подпись
+    /// (ecf6f365), а поймал это человек глазами.
+    ///
+    /// Вопрос задаётся ПРОДУКТУ: обе настоящие панели строятся, и у каждого ключа из
+    /// скана обязан найтись выросший значок. Множество ключей берётся из того же скана,
+    /// которым живёт сторож наполнения (<c>HintTextGuardTests.DeclaredKeys</c>), — второе
+    /// описание того же множества разъехалось бы с первым.</summary>
+    [Test]
+    public void EveryDeclaredHintKey_GrewABadge_OnTheRealPanel()
+    {
+        var declared = HintTextGuardTests.DeclaredKeys();
+        Assert.That(declared.Count, Is.GreaterThanOrEqualTo(5),
+            "скан по «hint:» не нашёл ни одного размеченного контрола — тогда проверка ниже "
+            + "зеленеет вхолостую, что бы ни случилось с панелями");
+
+        var grown = new HashSet<string>();
+        CollectKeys(Panel(), grown);
+        CollectKeysOfTheSettingsWindow(grown);
+
+        var lost = new List<string>();
+        foreach (var (file, key) in declared)
+            if (!grown.Contains(key)) lost.Add(file + " → " + key);
+
+        Assert.IsEmpty(lost,
+            "Ключ подсказки заявлен, а значок «i» не вырос ни на одной построенной панели. "
+            + "Чаще всего это подпись, которой нет в реестре строк панели: "
+            + "HintBadge.AttachAfterLabel получает null и ставить значок не на что — "
+            + "наполнение при этом безупречно, и человек не видит ничего. Панель названа "
+            + "файлом, в котором ключ объявлен; если это ТРЕТЬЯ панель, её сборку надо "
+            + "добавить в этот тест. Не выросли: " + string.Join(" | ", lost));
+    }
+
+    /// <summary>Окно настроек строится здесь, а не в <c>OneTimeSetUp</c>: остальным стражам
+    /// класса оно не нужно, а уцелеть оно не имеет права — вкладки подписаны на статические
+    /// <c>EditModeManager.Changed</c> и <c>PhotoMode.Changed</c>, и отписка живёт в
+    /// <c>OnDestroy</c> (agents/TEST-DESIGN.md → «!= null … load-bearing»). Отсюда
+    /// try/finally: панель уничтожается и тогда, когда сборка упала на полпути.</summary>
+    private static void CollectKeysOfTheSettingsWindow(HashSet<string> into)
+    {
+        var canvas = UIFactory.CreateCanvas("SettingsCanvasForHints");
+        try
+        {
+            var settings = canvas.gameObject.AddComponent<SettingsPanelUI>();
+            settings.Build(canvas.transform);
+            var window = canvas.transform.Find("SettingsPanel");
+            if (window != null) CollectKeys(window!, into);
+        }
+        finally
+        {
+            EditModeManager.Reset();
+            Object.DestroyImmediate(canvas.gameObject);
+        }
+    }
+
+    private static void CollectKeys(Transform root, HashSet<string> into)
+    {
+        foreach (var badge in root.GetComponentsInChildren<HintBadge>(true))
+            into.Add(badge.Key);
+    }
+
     [Test]
     public void EveryElementType_VisibleHintBadge_StandsOnTheControlItExplains()
     {
