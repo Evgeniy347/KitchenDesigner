@@ -129,7 +129,7 @@ public class ElementTypeConversionUndoTests
     private static KitchenElement Live(GameObject go)
     {
         Assert.IsTrue(go != null, "конверсия не вправе уничтожать сам объект сцены");
-        var element = go.GetComponent<KitchenElement>();
+        var element = go!.GetComponent<KitchenElement>();
         Assert.IsTrue(element != null,
             "после конверсии на объекте обязан висеть KitchenElement нового типа");
         return element!;
