@@ -15,7 +15,7 @@ using KitchenDesigner.Core;
 /// Два сенсора — `OpeningCollision.TakeBuildObstacleCalls()` и `SceneRevision.TakeBumps()`.
 ///
 /// Дефект возвращается, если кто-то снимет `SceneChangeTracker.NoteSelfAnimated` в `StepDoor`
-/// или начнёт пересчитывать предел мимо `_obstacleCheckRevision`: тогда счётчики вырастают с
+/// или начнёт пересчитывать предел мимо калитки `OpeningScanRepeat`: тогда счётчики вырастают с
 /// 1–2 до числа кадров жеста, и эти тесты краснеют. Проверено ревертом обеих правок.
 /// </summary>
 public class FacadeOpeningCostTests

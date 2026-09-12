@@ -89,6 +89,7 @@ namespace KitchenDesigner.Core
 
         private ApplianceBoxes? _boxes;
         private DropDoor? _door;
+        private OpeningScanRepeat _scanGate;
 
         private ApplianceBoxes Boxes => _boxes ??= new ApplianceBoxes(transform, DishwasherBody.ChildName);
 
@@ -117,6 +118,7 @@ namespace KitchenDesigner.Core
 
         public void OnAttachedFacadeChanged(FacadeElement? oldFacade, FacadeElement? newFacade)
         {
+            _scanGate.Forget();
             if (oldFacade != null && oldFacade.IsPassenger) oldFacade.IsPassenger = false;
             if (newFacade != null)
             {
@@ -187,12 +189,15 @@ namespace KitchenDesigner.Core
 
             var (worldPos, worldRot) = DropDoor.RiderPose(transform, doorRotation,
                 Door.HingeLocalUnits, facade.ClosedPosition, facade.ClosedRotation);
-            facade.transform.SetPositionAndRotation(worldPos, worldRot);
+            var t = facade.transform;
+            if (t.position == worldPos && t.rotation == worldRot) return;
+            t.SetPositionAndRotation(worldPos, worldRot);
         }
 
         public void SetOpen(bool open)
         {
             _open = open;
+            _scanGate.Forget();
             SyncAttachedFacade();
             if (Door.IsAnimatingTowards(open))
             {
@@ -238,11 +243,20 @@ namespace KitchenDesigner.Core
 
         private float MaxSafeDoorProgress()
         {
+            var t = transform;
+            if (_scanGate.Repeats(SceneRevision.Version, t.position, t.rotation, RestExtents))
+                return _scanGate.SafeProgress;
+
             var exclude = new List<KitchenElement>();
             var facade = FindAttachedFacade();
             if (facade != null) exclude.Add(facade);
-            return OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
+
+            _scanGate.Remember(SceneRevision.Version, t.position, t.rotation, RestExtents,
+                OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude));
+            return _scanGate.SafeProgress;
         }
+
+        private Vector3 RestExtents => transform.localScale;
 
         public void GetOpenBoxes(float progress, List<OrientedBox> into)
         {

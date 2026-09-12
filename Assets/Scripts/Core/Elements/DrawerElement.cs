@@ -52,8 +52,7 @@ namespace KitchenDesigner.Core
         private float _t;
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
-        private float _cachedSafeProgress = 1f;
-        private int _obstacleCheckRevision = -1;
+        private OpeningScanRepeat _scanGate;
         private bool _parkedAtLimit;
 
         [Undoable]
@@ -183,7 +182,7 @@ namespace KitchenDesigner.Core
                 : (value != DoubleDrawerState.Closed);
             if (willOpen && _t <= 0f) CaptureClosed();
             _open = willOpen;
-            _obstacleCheckRevision = -1;
+            _scanGate.Forget();
             SyncAttachedFacade();
             if (!Mathf.Approximately(_t, willOpen ? 1f : 0f)) enabled = true;
 
@@ -326,7 +325,7 @@ namespace KitchenDesigner.Core
             {
                 _closedPos = followedPos;
                 _closedRot = lower.ClosedRotation;
-                _obstacleCheckRevision = -1;
+                _scanGate.Forget();
             }
             ApplyAnimPose();
         }
@@ -373,7 +372,8 @@ namespace KitchenDesigner.Core
 
         private float SafeProgress()
         {
-            if (_obstacleCheckRevision == SceneRevision.Version) return _cachedSafeProgress;
+            if (_scanGate.Repeats(SceneRevision.Version, _closedPos, _closedRot, RestExtents))
+                return _scanGate.SafeProgress;
 
             var exclude = new List<KitchenElement> { this };
             var f = FindAttachedFacade();
@@ -386,16 +386,19 @@ namespace KitchenDesigner.Core
                 if (pairFacade != null) exclude.Add(pairFacade);
             }
 
-            _cachedSafeProgress = OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
-            _obstacleCheckRevision = SceneRevision.Version;
-            return _cachedSafeProgress;
+            _scanGate.Remember(SceneRevision.Version, _closedPos, _closedRot, RestExtents,
+                OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude));
+            return _scanGate.SafeProgress;
         }
+
+        private Vector3 RestExtents => transform.localScale;
 
         public bool IsParkedAtALimit => _parkedAtLimit;
 
         private bool StillBlockedOnThisRevision =>
-            _open && _obstacleCheckRevision == SceneRevision.Version
-            && Mathf.Approximately(_t, _cachedSafeProgress);
+            _open
+            && _scanGate.Repeats(SceneRevision.Version, _closedPos, _closedRot, RestExtents)
+            && Mathf.Approximately(_t, _scanGate.SafeProgress);
 
         public void GetOpenBoxes(float progress, List<OrientedBox> into)
         {
@@ -412,7 +415,7 @@ namespace KitchenDesigner.Core
         {
             if (open && _t <= 0f) CaptureClosed();
             _open = open;
-            _obstacleCheckRevision = -1;
+            _scanGate.Forget();
             SyncAttachedFacade();
             if (!Mathf.Approximately(_t, open ? 1f : 0f))
             {
@@ -440,7 +443,7 @@ namespace KitchenDesigner.Core
         {
             _closedPos = transform.position;
             _closedRot = transform.rotation;
-            _obstacleCheckRevision = -1;
+            _scanGate.Forget();
         }
 
         private void ApplyAnimPose()

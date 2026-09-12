@@ -1255,6 +1255,67 @@ public class DishwasherElementTests : McpTestFixture
             "и в тот же поворот: поза покоя не переписывается на ходу");
     }
 
+    /// <summary>СЕНСОР РАБОТЫ, а не времени: сколько раз дверца спросила у сцены
+    /// «докуда мне можно». В дампе пользователя (perf_20260912_185912.csv) фаза
+    /// открытия дала 149 кадров дороже 33 мс, и в 128 из них
+    /// <c>OpeningCollision.FindMaxProgress</c> стоил 39,5 мс — при том, что в 121
+    /// кадре из 138 ничего не двигалось. У фасада и ящика кэш был, у посудомойки
+    /// не было вовсе: <c>DropDoor.Step</c> зовёт <c>MaxSafeDoorProgress</c> каждый
+    /// кадр, а упёршаяся дверца не доезжает до цели НИКОГДА — значит и кадры не
+    /// кончаются.
+    ///
+    /// Вторая половина приёма — условная запись позы: безусловное
+    /// <c>SetPositionAndRotation</c> тем же значением поднимает
+    /// <c>Transform.hasChanged</c>, <c>SceneChangeTracker.Poll</c> крутит
+    /// <c>SceneRevision.Bump</c>, и кадр сам обесценивает ключ своей же калитки.
+    /// Поэтому держать проверку надо ИМЕННО на упёршейся дверце: только там
+    /// прогресс стоит, а кадры идут.</summary>
+    [Test]
+    public void BlockedDoor_StopsScanningForObstacles_UntilOneActuallyMoves()
+    {
+        var dw = Make("DW-scan");
+        var facade = MakeFacadeFor(dw, "DW_scan_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+        dw.ApplyDoorPose();
+
+        var wall = Board("DW_scan_wall", new Vector3(0f, 0f, 600f), new Vector3Int(600, 800, 200));
+
+        dw.SetOpen(true);
+        for (int i = 0; i < 40; i++) { dw.StepDoor(0.02f); SceneChangeTracker.Poll(); }
+
+        float parked = dw.DoorProgress;
+        Assert.Greater(parked, 0f, "дверца тронулась");
+        Assert.Less(parked, 1f, "и упёрлась в доску — скан для того и существует");
+
+        SceneChangeTracker.Poll();
+        SceneChangeTracker.Poll();
+        OpeningCollision.TakeBuildObstacleCalls();
+
+        for (int i = 0; i < 30; i++) { dw.StepDoor(0.02f); SceneChangeTracker.Poll(); }
+
+        int scans = OpeningCollision.TakeBuildObstacleCalls();
+        Assert.AreEqual(0, scans,
+            $"тридцать кадров упёршейся дверцы не стоят ни одного скана: ни сцена, ни поза "
+            + $"покоя не менялись. Получено {scans} — значит либо калитки нет, либо кадр "
+            + "обесценил её ключ, записав ту же позу ещё раз");
+        Assert.AreEqual(parked, dw.DoorProgress, 1e-5f,
+            "и стоит она ровно там, где её остановило препятствие");
+
+        wall.transform.position += new Vector3(0f, 0f, 2f);
+        SceneChangeTracker.Poll();
+        dw.StepDoor(0.02f);
+
+        Assert.AreEqual(1, OpeningCollision.TakeBuildObstacleCalls(),
+            "ОБРАТНЫЙ ВХОД: препятствие сдвинулось — скан обязан произойти, "
+            + "иначе калитка держала бы дверцу запертой навсегда");
+
+        for (int i = 0; i < 40; i++) { dw.StepDoor(0.05f); SceneChangeTracker.Poll(); }
+
+        Assert.AreEqual(1f, dw.DoorProgress, 1e-4f,
+            "путь свободен — дверца доехала до конца");
+    }
+
     /// <summary>«E» на выделенном фасаде, пристёгнутом к посудомойке, идёт
     /// через <c>dw.ToggleOpen()</c> — а не через <c>f.ToggleOpen()</c> (фасад
     /// пассажир, его собственная анимация выключена). Защита от регрессии:

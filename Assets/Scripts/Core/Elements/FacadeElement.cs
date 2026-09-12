@@ -104,8 +104,7 @@ namespace KitchenDesigner.Core
         private float _doorProgress;
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
-        private float _cachedSafeProgress = 1f;
-        private int _obstacleCheckRevision = -1;
+        private OpeningScanRepeat _scanGate;
         private bool _parkedAtLimit;
         private readonly System.Collections.Generic.List<KitchenElement> _ridersOfThisGesture =
             new System.Collections.Generic.List<KitchenElement>();
@@ -137,7 +136,7 @@ namespace KitchenDesigner.Core
         public DoorMode Mode
         {
             get => _mode;
-            set { _mode = value; _obstacleCheckRevision = -1; enabled = true; if (_doorProgress > 0f) ApplyDoor(); }
+            set { _mode = value; _scanGate.Forget(); enabled = true; if (_doorProgress > 0f) ApplyDoor(); }
         }
 
         public void CycleMode() => Mode = FacadeDoor.Next(_mode);
@@ -162,7 +161,7 @@ namespace KitchenDesigner.Core
             }
             if (open && _doorProgress <= 0f) CaptureClosed();
             _openTarget = open;
-            _obstacleCheckRevision = -1;
+            _scanGate.Forget();
             _ridersRevision = -1;
             if (!Mathf.Approximately(_doorProgress, open ? 1f : 0f))
             {
@@ -194,7 +193,7 @@ namespace KitchenDesigner.Core
         {
             _closedPos = transform.position;
             _closedRot = transform.rotation;
-            _obstacleCheckRevision = -1;
+            _scanGate.Forget();
         }
 
         internal void CaptureClosedPose() => CaptureClosed();
@@ -274,7 +273,8 @@ namespace KitchenDesigner.Core
 
         private float SafeProgress()
         {
-            if (_obstacleCheckRevision == SceneRevision.Version) return _cachedSafeProgress;
+            if (_scanGate.Repeats(SceneRevision.Version, _closedPos, _closedRot, RestExtents))
+                return _scanGate.SafeProgress;
 
             var exclude = new System.Collections.Generic.List<KitchenElement>();
             foreach (var el in PartRegistry.All)
@@ -289,16 +289,19 @@ namespace KitchenDesigner.Core
             }
             exclude.AddRange(RidersOfThisGesture());
 
-            _cachedSafeProgress = OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude);
-            _obstacleCheckRevision = SceneRevision.Version;
-            return _cachedSafeProgress;
+            _scanGate.Remember(SceneRevision.Version, _closedPos, _closedRot, RestExtents,
+                OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude));
+            return _scanGate.SafeProgress;
         }
+
+        private Vector3 RestExtents => transform.localScale;
 
         public bool IsParkedAtALimit => _parkedAtLimit;
 
         private bool StillBlockedOnThisRevision =>
-            _openTarget && _obstacleCheckRevision == SceneRevision.Version
-            && Mathf.Approximately(_doorProgress, _cachedSafeProgress);
+            _openTarget
+            && _scanGate.Repeats(SceneRevision.Version, _closedPos, _closedRot, RestExtents)
+            && Mathf.Approximately(_doorProgress, _scanGate.SafeProgress);
 
         private void ApplyDoor()
         {
@@ -306,13 +309,15 @@ namespace KitchenDesigner.Core
             using var _ = PerfMarkers.FacadeApplyDoor.Auto();
             var half = transform.localScale * 0.5f;
             FacadeDoor.Pose(_closedPos, _closedRot, half, _mode, _doorProgress, out var pos, out var rot);
-            transform.SetPositionAndRotation(pos, rot);
+            var t = transform;
+            if (t.position == pos && t.rotation == rot) return;
+            t.SetPositionAndRotation(pos, rot);
         }
 
         internal void ShiftClosedPose(Vector3 worldDelta)
         {
             _closedPos += worldDelta;
-            _obstacleCheckRevision = -1;
+            _scanGate.Forget();
             enabled = true;
             ApplyDoor();
         }
@@ -325,8 +330,7 @@ namespace KitchenDesigner.Core
             _doorProgress = 0f;
             _closedPos = Vector3.zero;
             _closedRot = Quaternion.identity;
-            _cachedSafeProgress = 1f;
-            _obstacleCheckRevision = -1;
+            _scanGate.Forget();
             _parkedAtLimit = false;
             ForgetTheRidersOfThisGesture();
             enabled = true;
