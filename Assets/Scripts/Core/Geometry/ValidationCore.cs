@@ -8,7 +8,12 @@ namespace KitchenDesigner.Core
     {
         [ThreadStatic] private static OverlapMarks? _marksPerThread;
 
+        [ThreadStatic] private static AxisAlignedBoxIndex? _boxesPerThread;
+
         private static OverlapMarks Marks => _marksPerThread ??= new OverlapMarks();
+
+        private static AxisAlignedBoxIndex Boxes =>
+            _boxesPerThread ??= new AxisAlignedBoxIndex();
 
         public static float ContactDistUnits => Tolerance.ContactUnits;
 
@@ -54,6 +59,7 @@ namespace KitchenDesigner.Core
             IReadOnlyList<(int lo, int hi)> pairs, CoreValidationResult result, OverlapMarks marks)
         {
             float contactDist = ContactDistUnits;
+            Boxes.Reset(all.Count);
             _pairsProcessedPerThread += pairs.Count;
             for (int c = 0; c < pairs.Count; c++)
                 ProcessPair(all, pairs[c].lo, pairs[c].hi, contactDist, result, marks);
@@ -91,7 +97,7 @@ namespace KitchenDesigner.Core
 
             if (!FaceContacts.AABBsIntersect(a.Geometry, b.Geometry, contactDist))
             {
-                AddFaceContacts(aIdx, bIdx, a.Faces, b.Faces, contactDist, result);
+                AddFaceContacts(aIdx, bIdx, a.Geometry, b.Geometry, contactDist, result);
                 return;
             }
 
@@ -183,10 +189,15 @@ namespace KitchenDesigner.Core
             a.Is(ElementKind.Opening) || b.Is(ElementKind.Opening) ||
             WallCentreline.MeetAtSharedCorner(a.Centreline, b.Centreline);
 
-        private static void AddFaceContacts(int aIdx, int bIdx, Face[] facesA, Face[] facesB,
-            float contactDist, CoreValidationResult result)
+        private static void AddFaceContacts(int aIdx, int bIdx, in ElementGeometry a,
+            in ElementGeometry b, float contactDist, CoreValidationResult result)
         {
-            foreach (var hit in new FaceContactScan(facesA, facesB, FaceAlignment.ParallelEitherWay,
+            if (Boxes.TryAppendContacts(aIdx, bIdx, a, b, contactDist,
+                    Tolerance.ContactUnits, result.Contacts))
+                return;
+
+            foreach (var hit in new FaceContactScan(a.Faces, b.Faces,
+                         FaceAlignment.ParallelEitherWay,
                          FaceContactScan.NoLowerGapBound, contactDist, 0f))
             {
                 result.Contacts.Add(new CoreContact(aIdx, bIdx, hit.IndexA, hit.IndexB,

@@ -90,10 +90,12 @@ public class AxisAlignedContactFastPathTests
         Assert.That(boxes.Count, Is.GreaterThan(300),
             "Сцена пользователя разобралась не целиком — дальше мерить нечего");
 
+        var scene = SavedSceneBoxes.AsValidationElements(boxes);
+        Boxes.Reset(scene.Count);
         var skewed = new List<string>();
-        foreach (var box in boxes)
-            if (!AxisAlignedBoxContacts.IsAxisAligned(box.Rotation))
-                skewed.Add(box.Name);
+        for (int i = 0; i < scene.Count; i++)
+            if (!Boxes.Handles(i, scene[i].Geometry))
+                skewed.Add(scene[i].Name);
 
         int aligned = boxes.Count - skewed.Count;
         float share = (float)aligned / boxes.Count;
@@ -121,7 +123,7 @@ public class AxisAlignedContactFastPathTests
         int aabbsApart = 0;
         foreach (var (lo, hi) in pairs)
         {
-            if (boxes[lo].HasValue && boxes[hi].HasValue) bothAligned++;
+            if (boxes[lo] && boxes[hi]) bothAligned++;
             if (!FaceContacts.AABBsIntersect(scene[lo].Geometry, scene[hi].Geometry,
                     ValidationCore.ContactDistUnits))
                 aabbsApart++;
@@ -164,11 +166,11 @@ public class AxisAlignedContactFastPathTests
         var strict = new List<CoreContact>();
         foreach (var (lo, hi) in pairs)
         {
-            if (!boxes[lo].HasValue || !boxes[hi].HasValue) continue;
-            AxisAlignedBoxContacts.AppendContacts(lo, hi, boxes[lo]!.Value, boxes[hi]!.Value,
-                contactDist, 0f, loose);
-            AxisAlignedBoxContacts.AppendContacts(lo, hi, boxes[lo]!.Value, boxes[hi]!.Value,
-                contactDist, Tolerance.ContactUnits, strict);
+            if (!boxes[lo] || !boxes[hi]) continue;
+            Boxes.TryAppendContacts(lo, hi, scene[lo].Geometry,
+                scene[hi].Geometry, contactDist, 0f, loose);
+            Boxes.TryAppendContacts(lo, hi, scene[lo].Geometry,
+                scene[hi].Geometry, contactDist, Tolerance.ContactUnits, strict);
         }
 
         var supportedLoose = SupportedParts(loose, scene.Count);
@@ -227,20 +229,20 @@ public class AxisAlignedContactFastPathTests
 
         foreach (var (lo, hi) in pairs)
         {
-            if (!boxes[lo].HasValue || !boxes[hi].HasValue) continue;
+            if (!boxes[lo] || !boxes[hi]) continue;
             compared++;
 
             general.Clear();
             interval.Clear();
             GeneralContacts(lo, hi, scene[lo].Faces, scene[hi].Faces, contactDist, general);
-            AxisAlignedBoxContacts.AppendContacts(lo, hi, boxes[lo]!.Value, boxes[hi]!.Value,
-                contactDist, interval);
+            Boxes.TryAppendContacts(lo, hi, scene[lo].Geometry,
+                scene[hi].Geometry, contactDist, Tolerance.ContactUnits, interval);
 
             var byFaces = new Dictionary<int, CoreContact>(general.Count);
             foreach (var contact in general) byFaces[Key(contact)] = contact;
 
-            var boxA = boxes[lo]!.Value;
-            var boxB = boxes[hi]!.Value;
+            var boxA = scene[lo].Geometry;
+            var boxB = scene[hi].Geometry;
 
             foreach (var contact in interval)
             {
@@ -307,7 +309,7 @@ public class AxisAlignedContactFastPathTests
         var apart = new List<(int lo, int hi)>();
         foreach (var (lo, hi) in pairs)
         {
-            if (!boxes[lo].HasValue || !boxes[hi].HasValue) continue;
+            if (!boxes[lo] || !boxes[hi]) continue;
             if (FaceContacts.AABBsIntersect(scene[lo].Geometry, scene[hi].Geometry, contactDist))
                 continue;
             apart.Add((lo, hi));
@@ -332,8 +334,8 @@ public class AxisAlignedContactFastPathTests
             foreach (var (lo, hi) in apart)
             {
                 sink.Clear();
-                AxisAlignedBoxContacts.AppendContacts(lo, hi, boxes[lo]!.Value, boxes[hi]!.Value,
-                    contactDist, sink);
+                Boxes.TryAppendContacts(lo, hi, scene[lo].Geometry,
+                    scene[hi].Geometry, contactDist, Tolerance.ContactUnits, sink);
             }
         }
 
@@ -444,12 +446,15 @@ public class AxisAlignedContactFastPathTests
         return pairs;
     }
 
-    private static List<AxisAlignedBox?> BoxesOf(IReadOnlyList<ValidationElement> scene)
+    private static readonly AxisAlignedBoxIndex Boxes = new AxisAlignedBoxIndex();
+
+    private static List<bool> BoxesOf(IReadOnlyList<ValidationElement> scene)
     {
-        var boxes = new List<AxisAlignedBox?>(scene.Count);
+        Boxes.Reset(scene.Count);
+        var handled = new List<bool>(scene.Count);
         for (int i = 0; i < scene.Count; i++)
-            boxes.Add(AxisAlignedBox.TryOf(scene[i], out var box) ? box : (AxisAlignedBox?)null);
-        return boxes;
+            handled.Add(Boxes.Handles(i, scene[i].Geometry));
+        return handled;
     }
 
     private static int Key(in CoreContact contact) => contact.FaceA * Face.BoxFaceCount
@@ -466,9 +471,27 @@ public class AxisAlignedContactFastPathTests
         for (int i = 0; i < lines.Count && i < count; i++) yield return lines[i];
     }
 
-    private static float Overlap(in AxisAlignedBox a, in AxisAlignedBox b,
-        in CoreContact contact) =>
-        AxisAlignedBox.MinOverlap(a, b, a.AxisOfFace(contact.FaceA));
+    /// <summary>Меньшее из двух перекрытий сечения — размер, по которому пара стоит
+    /// на границе «перекрытие есть / перекрытия нет». Им расхождение двух путей
+    /// отделяется от настоящего; площадь для этого не годится, потому что
+    /// перекрытие в полмикрона, умноженное на высоту стены 2,5 м, даёт 1,3 мм².</summary>
+    private static float Overlap(in ElementGeometry a, in ElementGeometry b,
+        in CoreContact contact)
+    {
+        int axis = DominantAxis(a.Faces[contact.FaceA].normal);
+        int u = axis == 2 ? 0 : axis + 1;
+        int v = axis == 0 ? 2 : axis - 1;
+        return Mathf.Min(
+            Mathf.Min(a.Max[u], b.Max[u]) - Mathf.Max(a.Min[u], b.Min[u]),
+            Mathf.Min(a.Max[v], b.Max[v]) - Mathf.Max(a.Min[v], b.Min[v]));
+    }
+
+    private static int DominantAxis(Vector3 normal)
+    {
+        float x = Mathf.Abs(normal.x), y = Mathf.Abs(normal.y), z = Mathf.Abs(normal.z);
+        if (x >= y && x >= z) return 0;
+        return y >= z ? 1 : 2;
+    }
 
     private static List<string> Above(float overlap,
         params List<(float overlap, bool supporting, string line)>[] groups) => Split(overlap, true, groups);
