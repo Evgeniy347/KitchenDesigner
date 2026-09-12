@@ -26,7 +26,17 @@ using KitchenDesigner.Core;
 /// Маска голых граней решает, где ВИДНА подложка кромки. Устаревшая маска — это
 /// молчаливая ложь на экране, которую не покажет ни один счётчик, поэтому у
 /// каждого счётчика здесь есть обратный вход: соседа подвинули к детали и от
-/// неё, у детали сняли кромку — маска обязана измениться.</summary>
+/// неё, у детали сняли кромку — маска обязана измениться.
+///
+/// Направление маски записано здесь, потому что первая редакция этих обратных
+/// входов взяла его наоборот и покраснела на ВЕРНОМ коде: бит стоит там, где
+/// торец БЕЗ кромки. Одинокая доска с кромкой окантована со всех четырёх сторон
+/// и даёт маску 0; сосед, вставший вплотную, СНИМАЕТ кромку со скрытого им
+/// торца — бит появляется; соседа увезли — кромка возвращается, бит уходит.
+/// Поэтому каждый из двух обратных входов сначала закрепляет опорное число (0
+/// врозь, 1 вплотную) и только потом сравнивает разницу: перепутанный знак
+/// обязан падать со словами «перевёрнут смысл маски», а не изображать
+/// устаревший кэш.</summary>
 public class EdgeSubstrateSyncOfOnePartTests : ElementTestBase
 {
     private bool _suppressBefore;
@@ -141,7 +151,7 @@ public class EdgeSubstrateSyncOfOnePartTests : ElementTestBase
     }
 
     [Test]
-    public void NeighbourBroughtIntoContact_ClosesASide()
+    public void NeighbourBroughtIntoContact_TakesTheEdgeBandOffThatSide()
     {
         var scene = ARowOfBoards(2, banded: true);
         WarmTheValidationPass(scene);
@@ -153,14 +163,17 @@ public class EdgeSubstrateSyncOfOnePartTests : ElementTestBase
         EdgeSubstrate.Sync(scene[0]);
         int touching = scene[0].BareFaceMask;
 
-        Assert.AreEqual(BitsIn(apart) - 1, BitsIn(touching),
+        Assert.AreEqual(0, apart,
+            "одинокая доска с кромкой окантована со всех четырёх торцов — голых нет; "
+            + "если здесь не ноль, перевёрнут смысл маски, а не поведение");
+        Assert.AreEqual(BitsIn(apart) + 1, BitsIn(touching),
             $"сосед встал вплотную, а маска не изменилась ({apart} → {touching}): "
-            + "подложка осталась видна там, где её больше не видно — кэш граней "
+            + "кромка осталась на торце, который сосед закрыл, — кэш граней "
             + "не заметил сдвига соседа");
     }
 
     [Test]
-    public void NeighbourTakenAway_OpensTheSideAgain()
+    public void NeighbourTakenAway_PutsTheEdgeBandBack()
     {
         var scene = ARowOfBoards(2, banded: true);
         scene[1].transform.position = new Vector3(0.6f, 0.36f, 0f);
@@ -173,9 +186,12 @@ public class EdgeSubstrateSyncOfOnePartTests : ElementTestBase
         EdgeSubstrate.Sync(scene[0]);
         int apart = scene[0].BareFaceMask;
 
-        Assert.AreEqual(BitsIn(touching) + 1, BitsIn(apart),
+        Assert.AreEqual(1, BitsIn(touching),
+            "сосед стоит вплотную — ровно один торец без кромки; если здесь не один, "
+            + "перевёрнут смысл маски, а не поведение");
+        Assert.AreEqual(BitsIn(touching) - 1, BitsIn(apart),
             $"соседа увезли, а маска осталась прежней ({touching} → {apart}): "
-            + "кромка нарисована там, где торец теперь голый");
+            + "торец остался без кромки, хотя закрывать его больше нечем");
     }
 
     [Test]
