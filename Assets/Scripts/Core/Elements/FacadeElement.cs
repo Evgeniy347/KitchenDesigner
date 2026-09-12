@@ -157,7 +157,6 @@ namespace KitchenDesigner.Core
         {
             if (_isPassenger)
             {
-                if (open && IsDoorClosed) CaptureClosed();
                 _openTarget = open;
                 return;
             }

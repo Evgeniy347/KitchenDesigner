@@ -217,8 +217,12 @@ namespace KitchenDesigner.Core
         private void SyncAttachedFacade()
         {
             var facade = FindAttachedFacade();
-            if (facade != null) facade.SetOpen(_open);
+            if (facade == null) return;
+            if (_open && DoorIsAtRestClosed) facade.CaptureClosedPose();
+            facade.SetOpen(_open);
         }
+
+        private bool DoorIsAtRestClosed => Door.Progress <= 0f;
 
         internal void Update()
         {

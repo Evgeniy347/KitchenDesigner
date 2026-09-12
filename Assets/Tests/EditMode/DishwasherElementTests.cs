@@ -1206,6 +1206,55 @@ public class DishwasherElementTests : McpTestFixture
         Assert.AreEqual(closedRot.w, facade.transform.rotation.w, 1e-4f);
     }
 
+    /// <summary>Спам по «E»: открыть — на полпути закрыть — и тут же открыть снова.
+    /// Ровно так фасад <c>B3_door</c> в проекте пользователя встал СТАТИЧНО, повёрнутым
+    /// на 9,42° вокруг X при <c>doorOpen: false</c>. Арифметика улики сошлась до знака:
+    /// сохранённая поза — это <see cref="DropDoor.RiderPose"/> от последней честной
+    /// закрытой позы из <c>undoHistory</c> при прогрессе 0,1047 (петля −317,5 / +255 мм,
+    /// то есть <c>DishwasherBody.HingeLocalMM</c>).
+    ///
+    /// Механизм: у фасада-пассажира собственная анимация выключена, его
+    /// <c>_doorProgress</c> всегда 0, поэтому <c>IsDoorClosed</c> сводился к
+    /// «цель — закрыто». Второе нажатие сбрасывало цель, третье видело «дверца
+    /// закрыта» и захватывало ТЕКУЩИЙ, приоткрытый трансформ как закрытую позу.
+    /// Испорченная опора живёт дальше вечно: она едет в файл и переживает загрузку.
+    ///
+    /// Три нажатия — минимум, который ловит дефект: первое обязано захватить позу
+    /// покоя честно, второе — прервать ход, третье — попытаться захватить её заново.
+    /// Кадров не ждём: <c>StepDoor</c> берёт dt аргументом.</summary>
+    [Test]
+    public void AttachedFacade_ReopenedMidAnimation_KeepsTheOriginalClosedPose()
+    {
+        var dw = Make("DW-spam");
+        var facade = MakeFacadeFor(dw, "DW_spam_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+        dw.ApplyDoorPose();
+
+        var closedPos = facade.transform.position;
+        var closedRot = facade.transform.rotation;
+
+        dw.ToggleOpen();
+        dw.StepDoor(AppConstants.OPENING_ANIM_DURATION_SECONDS * 0.25f);
+        Assert.Greater(dw.DoorProgress, 0f, "дверца действительно тронулась с места");
+        Assert.Less(dw.DoorProgress, 1f, "и ещё не доехала — это и есть «на полпути»");
+
+        dw.ToggleOpen();
+        dw.ToggleOpen();
+
+        dw.SetOpen(false);
+        dw.StepDoor(10f);
+        dw.ApplyDoorPose();
+
+        Assert.AreEqual(0f, dw.DoorProgress, 1e-4f, "дверца доехала до закрытой");
+        float offsetMM = (facade.transform.position - closedPos).magnitude
+            / AppConstants.MM_TO_UNITS;
+        Assert.AreEqual(0f, offsetMM, 1e-2f,
+            "фасад вернулся в ту же точку, а не в ту, до которой его довезла петля");
+        Assert.AreEqual(0f, Quaternion.Angle(closedRot, facade.transform.rotation), 1e-2f,
+            "и в тот же поворот: поза покоя не переписывается на ходу");
+    }
+
     /// <summary>«E» на выделенном фасаде, пристёгнутом к посудомойке, идёт
     /// через <c>dw.ToggleOpen()</c> — а не через <c>f.ToggleOpen()</c> (фасад
     /// пассажир, его собственная анимация выключена). Защита от регрессии:
