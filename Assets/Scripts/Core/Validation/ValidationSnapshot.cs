@@ -5,6 +5,19 @@ namespace KitchenDesigner.Core
 {
     public static class ValidationSnapshot
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private static int _geometryBuilds;
+
+        public static int TakeGeometryBuilds()
+        {
+            int n = _geometryBuilds;
+            _geometryBuilds = 0;
+            return n;
+        }
+#endif
+
+        private static readonly List<bool> _plainBoard = new List<bool>();
+
         public static void Build(List<KitchenElement> elements, List<ValidationElement> into)
         {
             using var _ = PerfMarkers.ValidationSnapshotBuild.Auto();
@@ -12,13 +25,17 @@ namespace KitchenDesigner.Core
             into.Clear();
             if (elements == null || elements.Count == 0) return;
 
+            BoardSnapshotReuse.BeginPass();
+
             Dictionary<string, int>? wallIndexByName = null;
             Dictionary<string, int>? partIndexByName = null;
             bool hasHosted = false;
+            _plainBoard.Clear();
             for (int i = 0; i < elements.Count; i++)
             {
                 var e = elements[i];
-                if (e == null) continue;
+                _plainBoard.Add(e != null && IsPlainBoard(e));
+                if (e == null || _plainBoard[i]) continue;
                 if (e.GetComponent<Wall>() != null)
                     (wallIndexByName ??= new Dictionary<string, int>())[e.gameObject.name] = i;
                 if (e is CooktopElement || e is ScrewLegElement) hasHosted = true;
@@ -31,9 +48,30 @@ namespace KitchenDesigner.Core
                     if (elements[i] != null) partIndexByName[elements[i].PartName] = i;
             }
 
-            foreach (var e in elements)
-                into.Add(Build(e, wallIndexByName, partIndexByName));
+            for (int i = 0; i < elements.Count; i++)
+            {
+                var e = elements[i];
+                if (_plainBoard[i] && BoardSnapshotReuse.TryReuse(e, out var reused))
+                {
+                    into.Add(reused);
+                    continue;
+                }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                _geometryBuilds++;
+#endif
+                var built = Build(e, wallIndexByName, partIndexByName);
+                if (_plainBoard[i]) BoardSnapshotReuse.Keep(e, built);
+                into.Add(built);
+            }
+
+            BoardSnapshotReuse.DropWhatThisPassNeverSaw(elements.Count);
         }
+
+        public static bool IsPlainBoard(KitchenElement e) =>
+            e.GetType() == typeof(KitchenElement)
+            && e.GetComponent<Wall>() == null
+            && e.GetComponent<BasePlate>() == null;
 
         public static ElementGeometry MainBody(KitchenElement e) =>
             e is ScrewLegElement leg ? leg.BaseBody : e.ToGeometry();
