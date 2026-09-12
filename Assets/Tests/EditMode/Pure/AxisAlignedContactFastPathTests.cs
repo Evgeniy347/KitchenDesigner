@@ -1,0 +1,443 @@
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using NUnit.Framework;
+using UnityEngine;
+using KitchenDesigner.Core;
+using KitchenDesigner.Tests.Geometry;
+
+/// <summary>Приборы к непроверенной идее из <c>docs/TODO.md</c> → P1 §1, хвост 3:
+/// «для деталей, повёрнутых кратно 90°, контакт граней считается интервальной
+/// арифметикой за O(1)».
+///
+/// Здесь не чинится ничего. Здесь отвечают числами на четыре вопроса: какова доля
+/// осевых деталей в сцене пользователя, какова доля ПАР, у которых осевые обе,
+/// совпадают ли множества контактов у общего перебора и у прототипа, и во что
+/// обходится пара тем и другим путём.
+///
+/// Почему замер живёт тестом, а не скриптом: скрипт отвечает один раз и уезжает
+/// вместе с сессией, а вопрос «а сейчас?» возникнет на каждой правке ядра и на
+/// каждом новом файле пользователя. Дорогая часть — только замер времени, она
+/// <c>[Explicit]</c>; доли и сравнение множеств стоят миллисекунды и остаются в
+/// обычном прогоне, где и обязаны краснеть.</summary>
+public class AxisAlignedContactFastPathTests
+{
+    private const string ReportFileName = "axis-aligned-contact-fast-path.md";
+
+    /// <summary>Замер времени <c>[Explicit]</c> и потому идёт ОТДЕЛЬНЫМ прогоном.
+    /// Пиши он в тот же файл — последний запуск затирал бы результат первого, и
+    /// отчёт всегда состоял бы ровно из одной половины.</summary>
+    private const string CostReportFileName = "axis-aligned-contact-cost.md";
+
+    private static readonly List<string> CostReport = new List<string>();
+
+    /// <summary>Осевых деталей в кухне «почти все» — утверждение из постановки.
+    /// Ниже этой доли идея быстрого пути теряет смысл ещё до замера времени,
+    /// поэтому порог стоит здесь, а не в отчёте.</summary>
+    private const float ExpectedAxisAlignedShare = 0.9f;
+
+    /// <summary>Ширина перекрытия, ниже которой «контакт» — не контакт, а знак нуля.
+    /// Взят общий допуск ядра <c>Tolerance.EpsilonUnits</c> = 0,1 мм.
+    ///
+    /// Порог нужен потому, что общий перебор НЕ ИМЕЕТ epsilon на границе перекрытия:
+    /// <c>FaceContacts.FacesOverlap</c> принимает любое строго положительное
+    /// перекрытие, хоть 5e-7 м. Два способа посчитать один и тот же ноль расходятся
+    /// в ЗНАКЕ — общий считает координаты прямоугольника скалярными произведениями
+    /// (поворот на 90° из кватерниона даёт оси с ошибкой ~1e-7), интервальный берёт
+    /// их из AABB. Это свойство ДОПУСКА, а не прототипа, и считается отдельной
+    /// строкой, а не прячется в общий итог.
+    ///
+    /// Мерить порог площадью нельзя, и это стоило одного круга: перекрытие в
+    /// полмикрона, умноженное на высоту стены 2,5 м, даёт 1,3 мм² — «приличную»
+    /// площадь у контакта, которого нет.</summary>
+    private const float NoiseOverlapUnits = Tolerance.EpsilonUnits;
+
+    private static readonly List<string> Report = new List<string>();
+
+    private static List<ValidationElement>? _scene;
+
+    private static List<ValidationElement> Scene =>
+        _scene ??= SavedSceneBoxes.AsValidationElements(SavedSceneBoxes.OfTheUserScene());
+
+    [OneTimeTearDown]
+    public void WriteReports()
+    {
+        Write(Report, ReportFileName, "Осевой быстрый путь контакта граней — доли и множества");
+        Write(CostReport, CostReportFileName, "Осевой быстрый путь контакта граней — цена пары");
+    }
+
+    private static void Write(List<string> lines, string fileName, string title)
+    {
+        if (lines.Count == 0) return;
+        var text = new StringBuilder();
+        text.AppendLine("# " + title);
+        text.AppendLine();
+        text.AppendLine("Источник сцены: `docs/example.save.json` (только чтение), "
+            + "коробки развёрнуты тем же `ElementGeometry.Box`, что и в продакшене.");
+        text.AppendLine();
+        foreach (var line in lines) text.AppendLine(line);
+        File.WriteAllText(Path.Combine(RepoPaths.Subdir("test-results"), fileName),
+            text.ToString());
+        lines.Clear();
+    }
+
+    [Test]
+    public void ExampleScene_PartRotations_AreAxisAlignedAlmostEntirely()
+    {
+        var boxes = SavedSceneBoxes.OfTheUserScene();
+        Assert.That(boxes.Count, Is.GreaterThan(300),
+            "Сцена пользователя разобралась не целиком — дальше мерить нечего");
+
+        var skewed = new List<string>();
+        foreach (var box in boxes)
+            if (!AxisAlignedBoxContacts.IsAxisAligned(box.Rotation))
+                skewed.Add(box.Name);
+
+        int aligned = boxes.Count - skewed.Count;
+        float share = (float)aligned / boxes.Count;
+
+        Report.Add($"## Детали");
+        Report.Add($"- всего в файле: {boxes.Count}");
+        Report.Add($"- повёрнуты кратно 90°: {aligned} ({Percent(share)})");
+        Report.Add($"- повёрнуты произвольно: {skewed.Count}");
+        if (skewed.Count > 0) Report.Add("- неосевые: " + string.Join(", ", skewed));
+        Report.Add("");
+
+        Assert.That(share, Is.GreaterThanOrEqualTo(ExpectedAxisAlignedShare),
+            $"Осевых деталей {aligned} из {boxes.Count} — идея быстрого пути "
+            + "опирается на «в кухне это почти все», и это больше не так");
+    }
+
+    [Test]
+    public void ExampleScene_BroadPhasePairs_HaveAxisAlignedPartsOnBothSides()
+    {
+        var scene = Scene;
+        var pairs = CandidatePairs(scene);
+        var boxes = BoxesOf(scene);
+
+        int bothAligned = 0;
+        int aabbsApart = 0;
+        foreach (var (lo, hi) in pairs)
+        {
+            if (boxes[lo].HasValue && boxes[hi].HasValue) bothAligned++;
+            if (!FaceContacts.AABBsIntersect(scene[lo].Geometry, scene[hi].Geometry,
+                    ValidationCore.ContactDistUnits))
+                aabbsApart++;
+        }
+
+        float share = (float)bothAligned / pairs.Count;
+
+        Report.Add("## Пары широкой фазы");
+        Report.Add($"- пар после широкой фазы: {pairs.Count}");
+        Report.Add($"- осевые обе детали: {bothAligned} ({Percent(share)})");
+        Report.Add($"- коробки НЕ пересекаются (уходят в перебор 6×6): {aabbsApart}");
+        Report.Add($"- сравнений граней на этих парах: {aabbsApart * 36}");
+        Report.Add("- для сверки: снимок живой сцены даёт 9032 пары (`docs/TODO.md` → P1 §1),");
+        Report.Add("  здесь меньше — у составных деталей одна коробка вместо нескольких тел;");
+        Report.Add("  доли это не меняет, абсолютные миллисекунды пересчитываются по числу пар.");
+        Report.Add("");
+
+        Assert.That(share, Is.GreaterThanOrEqualTo(ExpectedAxisAlignedShare),
+            $"Быстрый путь достанется только {bothAligned} парам из {pairs.Count} — "
+            + "ради такой доли его писать незачем");
+    }
+
+    [Test]
+    public void IntervalContacts_OnEveryScenePair_MatchTheGeneralFaceScan()
+    {
+        var scene = Scene;
+        var pairs = CandidatePairs(scene);
+        var boxes = BoxesOf(scene);
+        float contactDist = ValidationCore.ContactDistUnits;
+
+        var general = new List<CoreContact>();
+        var interval = new List<CoreContact>();
+        var missed = new List<(float overlap, bool supporting, string line)>();
+        var extra = new List<(float overlap, bool supporting, string line)>();
+        var flagged = new List<(float overlap, bool supporting, string line)>();
+        int compared = 0;
+        float worstAreaDelta = 0f;
+
+        foreach (var (lo, hi) in pairs)
+        {
+            if (!boxes[lo].HasValue || !boxes[hi].HasValue) continue;
+            compared++;
+
+            general.Clear();
+            interval.Clear();
+            GeneralContacts(lo, hi, scene[lo].Faces, scene[hi].Faces, contactDist, general);
+            AxisAlignedBoxContacts.AppendContacts(lo, hi, boxes[lo]!.Value, boxes[hi]!.Value,
+                contactDist, interval);
+
+            var byFaces = new Dictionary<int, CoreContact>(general.Count);
+            foreach (var contact in general) byFaces[Key(contact)] = contact;
+
+            var boxA = boxes[lo]!.Value;
+            var boxB = boxes[hi]!.Value;
+
+            foreach (var contact in interval)
+            {
+                if (!byFaces.TryGetValue(Key(contact), out var twin))
+                {
+                    extra.Add((Overlap(boxA, boxB, contact), contact.IsFaceToFace,
+                        Describe("лишний у интервального", scene, contact, lo, hi)));
+                    continue;
+                }
+                if (twin.IsFaceToFace != contact.IsFaceToFace)
+                    flagged.Add((Overlap(boxA, boxB, contact), true, Describe(
+                        $"признак опоры разошёлся (общий {twin.IsFaceToFace}, "
+                        + $"интервальный {contact.IsFaceToFace})", scene, contact, lo, hi)));
+                worstAreaDelta = Mathf.Max(worstAreaDelta, Mathf.Abs(twin.Area - contact.Area));
+                byFaces.Remove(Key(contact));
+            }
+
+            foreach (var leftover in byFaces.Values)
+                missed.Add((Overlap(boxA, boxB, leftover), leftover.IsFaceToFace,
+                    Describe("потерян интервальным", scene, leftover, lo, hi)));
+        }
+
+        var real = Above(NoiseOverlapUnits, missed, extra, flagged);
+        var noise = Below(NoiseOverlapUnits, missed, extra, flagged);
+        var supporting = Supporting(missed, extra, flagged);
+
+        Report.Add("## Сравнение множеств контактов");
+        Report.Add($"- пар сравнено: {compared}");
+        Report.Add($"- потеряно интервальным: {missed.Count}");
+        Report.Add($"- лишних у интервального: {extra.Count}");
+        Report.Add($"- разошёлся признак опоры: {flagged.Count}");
+        Report.Add($"- худшее расхождение площади у общих контактов: {worstAreaDelta:G4} ед²");
+        Report.Add($"- расхождений с перекрытием шире {NoiseOverlapUnits * 1000f:F1} мм: "
+            + $"{real.Count}");
+        Report.Add($"- расхождений в шумовой полосе (перекрытие уже порога): {noise.Count}");
+        Report.Add($"- среди расхождений НЕСУЩИХ контактов (влияют на связность): "
+            + $"{supporting.Count}");
+        foreach (var line in First(real, 5)) Report.Add("  - " + line);
+        foreach (var line in First(noise, 5)) Report.Add("  - шум: " + line);
+        Report.Add("");
+
+        Assert.That(supporting, Is.Empty,
+            "Расхождение пришлось на НЕСУЩИЙ контакт: связность читает именно такие, "
+            + "и цена этого — деталь, покрашенная как неподпёртая:\n"
+            + string.Join("\n", First(supporting, 5)));
+
+        Assert.That(real.Count, Is.Zero,
+            "Прототип интервального пути разошёлся с общим перебором граней на контактах "
+            + "с НЕнулевой шириной перекрытия — это дефект прототипа, а не допуска:\n"
+            + string.Join("\n", First(real, 5)));
+    }
+
+    /// <summary>Цена пары. <c>[Explicit]</c>, потому что честный замер — это прогрев
+    /// и сотни повторов по всей сцене, то есть секунды, а обычный прогон ядра стоит
+    /// две. Запускать: <c>dotnet test --filter CostPerPair</c>.</summary>
+    [Test, Explicit]
+    public void IntervalContacts_CostPerPair_IsCheaperThanTheGeneralScan()
+    {
+        var scene = Scene;
+        var pairs = CandidatePairs(scene);
+        var boxes = BoxesOf(scene);
+        float contactDist = ValidationCore.ContactDistUnits;
+
+        var apart = new List<(int lo, int hi)>();
+        foreach (var (lo, hi) in pairs)
+        {
+            if (!boxes[lo].HasValue || !boxes[hi].HasValue) continue;
+            if (FaceContacts.AABBsIntersect(scene[lo].Geometry, scene[hi].Geometry, contactDist))
+                continue;
+            apart.Add((lo, hi));
+        }
+        Assert.That(apart.Count, Is.GreaterThan(100), "Мерить нечего: таких пар почти нет");
+
+        const int WarmUpRounds = 5;
+        const int MeasuredRounds = 50;
+        var sink = new List<CoreContact>(64);
+
+        void GeneralRound()
+        {
+            foreach (var (lo, hi) in apart)
+            {
+                sink.Clear();
+                GeneralContacts(lo, hi, scene[lo].Faces, scene[hi].Faces, contactDist, sink);
+            }
+        }
+
+        void IntervalRound()
+        {
+            foreach (var (lo, hi) in apart)
+            {
+                sink.Clear();
+                AxisAlignedBoxContacts.AppendContacts(lo, hi, boxes[lo]!.Value, boxes[hi]!.Value,
+                    contactDist, sink);
+            }
+        }
+
+        BestOfInterleaved(WarmUpRounds, MeasuredRounds, apart.Count,
+            GeneralRound, IntervalRound, out double generalUs, out double intervalUs);
+
+        var validationResult = new CoreValidationResult();
+        double validationUs = BestRound(WarmUpRounds, MeasuredRounds, 1, () =>
+            ValidationCore.Validate(scene, validationResult));
+
+        CostReport.Add("## Цена пары (лучший круг из " + MeasuredRounds + ", после прогрева)");
+        CostReport.Add($"- полная валидация сцены целиком: {validationUs / 1000.0:F2} мс "
+            + "(знаменатель, без которого доля ничего не значит)");
+        CostReport.Add($"- пар в замере (коробки не пересекаются, обе осевые): {apart.Count}");
+        CostReport.Add($"- общий перебор 6×6: {generalUs:F3} мкс/пара, "
+            + $"{generalUs * apart.Count / 1000.0:F2} мс на сцену");
+        CostReport.Add($"- интервальный путь: {intervalUs:F3} мкс/пара, "
+            + $"{intervalUs * apart.Count / 1000.0:F2} мс на сцену");
+        double savedMs = (generalUs - intervalUs) * apart.Count / 1000.0;
+        CostReport.Add($"- выигрыш: {savedMs:F2} мс (в {generalUs / intervalUs:F1} раза)");
+        CostReport.Add("- " + LastSpread);
+        CostReport.Add($"- выигрыш от полной валидации: "
+            + $"{Percent((float)(savedMs * 1000.0 / validationUs))}");
+        CostReport.Add("");
+
+        Assert.That(intervalUs, Is.LessThan(generalUs),
+            $"Интервальный путь не дешевле общего ({intervalUs:F3} против {generalUs:F3} мкс) — "
+            + "идея быстрого пути не окупается, и это результат замера, а не сбой");
+    }
+
+    /// <summary>Тело <c>ValidationCore.AddFaceContacts</c>, которое там приватно.
+    /// Копия строчка в строчку: любое расхождение параметров скана сделало бы
+    /// сравнение множеств проверкой копии, а не продакшена.</summary>
+    private static void GeneralContacts(int aIdx, int bIdx, Face[] facesA, Face[] facesB,
+        float contactDist, List<CoreContact> into)
+    {
+        foreach (var hit in new FaceContactScan(facesA, facesB, FaceAlignment.ParallelEitherWay,
+                     FaceContactScan.NoLowerGapBound, contactDist, 0f))
+        {
+            into.Add(new CoreContact(aIdx, bIdx, hit.IndexA, hit.IndexB,
+                hit.OverlapArea, hit.OverlapRatio >= Tolerance.MinSupportOverlap));
+        }
+    }
+
+    /// <summary>Два пути меряются ЧЕРЕДУЯСЬ, круг за кругом, и каждому берётся его
+    /// лучший круг. Машина общая: на ней в это же время идут прогоны других агентов,
+    /// и «сначала пятьдесят кругов одного, потом пятьдесят кругов другого» ловит
+    /// чужую нагрузку целиком в одно из двух измерений. Два прогона подряд разошлись
+    /// так вдвое — 0,248 и 0,523 мкс на одном и том же коде.</summary>
+    private static void BestOfInterleaved(int warmUp, int rounds, int pairs,
+        System.Action first, System.Action second, out double firstUs, out double secondUs)
+    {
+        for (int i = 0; i < warmUp; i++) { first(); second(); }
+
+        var firstRounds = new List<double>(rounds);
+        var secondRounds = new List<double>(rounds);
+        var watch = new Stopwatch();
+        for (int i = 0; i < rounds; i++)
+        {
+            firstRounds.Add(Round(watch, first, pairs));
+            secondRounds.Add(Round(watch, second, pairs));
+        }
+
+        firstRounds.Sort();
+        secondRounds.Sort();
+        firstUs = firstRounds[0];
+        secondUs = secondRounds[0];
+        LastSpread = $"разброс кругов: первый путь {firstRounds[0]:F3}…"
+            + $"{firstRounds[rounds / 2]:F3}…{firstRounds[rounds - 1]:F3}, "
+            + $"второй {secondRounds[0]:F3}…{secondRounds[rounds / 2]:F3}…"
+            + $"{secondRounds[rounds - 1]:F3} мкс (мин…медиана…макс)";
+    }
+
+    private static string LastSpread = "";
+
+    private static double Round(Stopwatch watch, System.Action body, int pairs)
+    {
+        watch.Restart();
+        body();
+        watch.Stop();
+        return watch.Elapsed.TotalMilliseconds * 1000.0 / pairs;
+    }
+
+    private static double BestRound(int warmUp, int rounds, int pairs, System.Action body)
+    {
+        for (int i = 0; i < warmUp; i++) body();
+
+        double best = double.MaxValue;
+        var watch = new Stopwatch();
+        for (int i = 0; i < rounds; i++)
+        {
+            watch.Restart();
+            body();
+            watch.Stop();
+            double us = watch.Elapsed.TotalMilliseconds * 1000.0 / pairs;
+            if (us < best) best = us;
+        }
+        return best;
+    }
+
+    private static List<(int lo, int hi)> CandidatePairs(IReadOnlyList<ValidationElement> scene)
+    {
+        ValidationBroadPhase.Clear();
+        var pairs = new List<(int lo, int hi)>(
+            ValidationBroadPhase.CandidatePairsInNestedLoopOrder(
+                scene, ValidationCore.ContactDistUnits));
+        ValidationBroadPhase.Clear();
+        return pairs;
+    }
+
+    private static List<AxisAlignedBox?> BoxesOf(IReadOnlyList<ValidationElement> scene)
+    {
+        var boxes = new List<AxisAlignedBox?>(scene.Count);
+        for (int i = 0; i < scene.Count; i++)
+            boxes.Add(AxisAlignedBox.TryOf(scene[i], out var box) ? box : (AxisAlignedBox?)null);
+        return boxes;
+    }
+
+    private static int Key(in CoreContact contact) => contact.FaceA * Face.BoxFaceCount
+        + contact.FaceB;
+
+    private static string Describe(string what, IReadOnlyList<ValidationElement> scene,
+        in CoreContact contact, int lo, int hi) =>
+        $"{what}: {scene[lo].Name}[грань {contact.FaceA}] — {scene[hi].Name}"
+        + $"[грань {contact.FaceB}], площадь {contact.Area:G4} ед², "
+        + $"опора {contact.IsFaceToFace}";
+
+    private static IEnumerable<string> First(List<string> lines, int count)
+    {
+        for (int i = 0; i < lines.Count && i < count; i++) yield return lines[i];
+    }
+
+    private static float Overlap(in AxisAlignedBox a, in AxisAlignedBox b,
+        in CoreContact contact) =>
+        AxisAlignedBox.MinOverlap(a, b, a.AxisOfFace(contact.FaceA));
+
+    private static List<string> Above(float overlap,
+        params List<(float overlap, bool supporting, string line)>[] groups) => Split(overlap, true, groups);
+
+    private static List<string> Below(float overlap,
+        params List<(float overlap, bool supporting, string line)>[] groups) => Split(overlap, false, groups);
+
+    /// <summary>Расхождения, где потерянный или лишний контакт НЕСУЩИЙ. Именно их
+    /// цена — не «лишняя строка в списке», а другой ответ валидации: связность
+    /// (<c>ValidationCore.CheckConnectivity</c>) читает только контакты с
+    /// <c>IsFaceToFace</c>, и пропажа одного такого красит деталь как
+    /// неподпёртую.</summary>
+    private static List<string> Supporting(
+        params List<(float overlap, bool supporting, string line)>[] groups)
+    {
+        var picked = new List<string>();
+        foreach (var group in groups)
+            foreach (var entry in group)
+                if (entry.supporting)
+                    picked.Add(entry.line);
+        return picked;
+    }
+
+    private static List<string> Split(float threshold, bool above,
+        List<(float overlap, bool supporting, string line)>[] groups)
+    {
+        var picked = new List<string>();
+        foreach (var group in groups)
+            foreach (var entry in group)
+                if (entry.overlap >= threshold == above)
+                    picked.Add($"{entry.line}, перекрытие {entry.overlap * 1000f:G4} мм");
+        return picked;
+    }
+
+    private static string Percent(float share) =>
+        (share * 100f).ToString("F1", CultureInfo.InvariantCulture) + " %";
+}
