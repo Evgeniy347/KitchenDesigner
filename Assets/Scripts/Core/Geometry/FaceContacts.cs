@@ -43,7 +43,10 @@ namespace KitchenDesigner.Core
             Rect bRect = FaceRects.Of(b, u, v);
             FaceRects.SignedOverlap(aRect, bRect, out float overlapU, out float overlapV);
 
-            if (overlapU <= 0f || overlapV <= 0f)
+            if (!Tolerance.IntervalsOverlap(aRect.xMin, aRect.xMax, bRect.xMin, bRect.xMax,
+                    Tolerance.ContactUnits)
+                || !Tolerance.IntervalsOverlap(aRect.yMin, aRect.yMax, bRect.yMin, bRect.yMax,
+                    Tolerance.ContactUnits))
             {
                 overlapArea = 0;
                 overlapRatio = 0;

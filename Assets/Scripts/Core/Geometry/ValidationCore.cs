@@ -10,7 +10,7 @@ namespace KitchenDesigner.Core
 
         private static OverlapMarks Marks => _marksPerThread ??= new OverlapMarks();
 
-        public static float ContactDistUnits => Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+        public static float ContactDistUnits => Tolerance.ContactUnits;
 
         [ThreadStatic] private static int _pairsProcessedPerThread;
 

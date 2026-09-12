@@ -144,6 +144,71 @@ public class AxisAlignedContactFastPathTests
             + "ради такой доли его писать незачем");
     }
 
+    /// <summary>Цена порога 0,5 мм (<c>Tolerance.ContactUnits</c>) на живой сцене:
+    /// что именно он выбрасывает. Считается разностью двух множеств интервального
+    /// пути — с нулевым допуском на перекрытие и с рабочим.
+    ///
+    /// Несущая проверка тут одна и она не про число: НИ ОДНА деталь не должна
+    /// потерять последнюю опору. Пропавший несущий контакт — это не «строка меньше
+    /// в списке», это деталь, покрашенная как висящая в воздухе у пользователя,
+    /// который ничего не трогал.</summary>
+    [Test]
+    public void ContactThreshold_OnTheUserScene_TakesNoPartsLastSupport()
+    {
+        var scene = Scene;
+        var pairs = CandidatePairs(scene);
+        var boxes = BoxesOf(scene);
+        float contactDist = ValidationCore.ContactDistUnits;
+
+        var loose = new List<CoreContact>();
+        var strict = new List<CoreContact>();
+        foreach (var (lo, hi) in pairs)
+        {
+            if (!boxes[lo].HasValue || !boxes[hi].HasValue) continue;
+            AxisAlignedBoxContacts.AppendContacts(lo, hi, boxes[lo]!.Value, boxes[hi]!.Value,
+                contactDist, 0f, loose);
+            AxisAlignedBoxContacts.AppendContacts(lo, hi, boxes[lo]!.Value, boxes[hi]!.Value,
+                contactDist, Tolerance.ContactUnits, strict);
+        }
+
+        var supportedLoose = SupportedParts(loose, scene.Count);
+        var supportedStrict = SupportedParts(strict, scene.Count);
+        var orphaned = new List<string>();
+        for (int i = 0; i < scene.Count; i++)
+            if (supportedLoose[i] > 0 && supportedStrict[i] == 0)
+                orphaned.Add($"{scene[i].Name} (опор было {supportedLoose[i]}, стало 0)");
+
+        int droppedSupporting = 0;
+        foreach (var contact in loose) if (contact.IsFaceToFace) droppedSupporting++;
+        foreach (var contact in strict) if (contact.IsFaceToFace) droppedSupporting--;
+
+        Report.Add("## Цена порога 0,5 мм на сцене пользователя");
+        Report.Add($"- контактов без порога: {loose.Count}");
+        Report.Add($"- контактов с порогом: {strict.Count}");
+        Report.Add($"- выброшено: {loose.Count - strict.Count}, из них несущих: "
+            + $"{droppedSupporting}");
+        Report.Add($"- деталей, потерявших ПОСЛЕДНЮЮ опору: {orphaned.Count}");
+        foreach (var line in First(orphaned, 10)) Report.Add("  - " + line);
+        Report.Add("");
+
+        Assert.That(orphaned, Is.Empty,
+            "Порог перекрытия отобрал у детали последнюю опору — на живой сцене это "
+            + "деталь, ставшая красной без единого действия пользователя:\n"
+            + string.Join("\n", First(orphaned, 10)));
+    }
+
+    private static int[] SupportedParts(List<CoreContact> contacts, int partCount)
+    {
+        var supports = new int[partCount];
+        foreach (var contact in contacts)
+        {
+            if (!contact.IsFaceToFace) continue;
+            supports[contact.A]++;
+            supports[contact.B]++;
+        }
+        return supports;
+    }
+
     [Test]
     public void IntervalContacts_OnEveryScenePair_MatchTheGeneralFaceScan()
     {

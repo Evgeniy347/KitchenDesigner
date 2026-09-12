@@ -38,7 +38,16 @@ internal static class AxisAlignedBoxContacts
         >= AxisDotThreshold;
 
     public static void AppendContacts(int aIdx, int bIdx,
-        in AxisAlignedBox a, in AxisAlignedBox b, float contactDist, List<CoreContact> into)
+        in AxisAlignedBox a, in AxisAlignedBox b, float contactDist, List<CoreContact> into) =>
+        AppendContacts(aIdx, bIdx, a, b, contactDist, Tolerance.ContactUnits, into);
+
+    /// <summary><paramref name="overlapMargin"/> отделяет замер от продакшена: с
+    /// нулём получается множество контактов ДО порога, с
+    /// <c>Tolerance.ContactUnits</c> — после. Разность этих двух множеств и есть
+    /// цена порога, и её считает <c>ContactThreshold_*</c>.</summary>
+    public static void AppendContacts(int aIdx, int bIdx,
+        in AxisAlignedBox a, in AxisAlignedBox b, float contactDist, float overlapMargin,
+        List<CoreContact> into)
     {
         for (int axis = 0; axis < 3; axis++)
         {
@@ -47,7 +56,10 @@ internal static class AxisAlignedBoxContacts
 
             float overlapU = Mathf.Min(a.Max[u], b.Max[u]) - Mathf.Max(a.Min[u], b.Min[u]);
             float overlapV = Mathf.Min(a.Max[v], b.Max[v]) - Mathf.Max(a.Min[v], b.Min[v]);
-            if (overlapU <= 0f || overlapV <= 0f) continue;
+            if (!Tolerance.IntervalsOverlap(a.Min[u], a.Max[u], b.Min[u], b.Max[u], overlapMargin)
+                || !Tolerance.IntervalsOverlap(a.Min[v], a.Max[v], b.Min[v], b.Max[v],
+                    overlapMargin))
+                continue;
 
             float ratio =
                 FaceRects.RatioOfSmallerSide(overlapU, Mathf.Min(a.Side(u), b.Side(u))) *

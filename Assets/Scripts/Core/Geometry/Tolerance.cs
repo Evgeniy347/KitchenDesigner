@@ -6,6 +6,8 @@ namespace KitchenDesigner.Core
     {
         public const float ContactMm = 0.5f;
 
+        public static float ContactUnits => ContactMm * AppConstants.MM_TO_UNITS;
+
         public const float EpsilonUnits = 1e-4f;
 
         public const float ParallelDot = 0.999f;
