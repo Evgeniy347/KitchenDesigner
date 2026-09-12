@@ -264,12 +264,6 @@ namespace KitchenDesigner.Core.UI
                 CommitImmediate(go);
         }
 
-        private static void CommitImmediate(GameObject go)
-        {
-            var element = go.GetComponent<KitchenElement>();
-            if (element == null) return;
-            CommandStack.Execute(new CreateCommand(go));
-            SelectionManager.Instance?.Select(element);
-        }
+        private static void CommitImmediate(GameObject go) => ElementCreation.Commit(go);
     }
 }

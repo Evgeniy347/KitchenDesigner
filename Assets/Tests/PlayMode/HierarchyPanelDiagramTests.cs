@@ -301,8 +301,14 @@ public class HierarchyPanelDiagramTests
     {
         var drawer = ElementFactory.CreateDrawer(DrawerType.B, 450, DrawerColor.Anthracite, 400,
             "Ящик для теста DRW", new Vector3(0f, 0.55f, 0f)).GetComponent<DrawerElement>();
-        ElementFactory.CreateFacade(new Vector3Int(560, 140, 18), "Фасад для теста DRW",
-            new Vector3(0f, 0.55f, -0.27f), 2, 2, 2, 2);
+        var facade = ElementFactory.CreateFacade(new Vector3Int(560, 140, 18), "Фасад для теста DRW",
+            new Vector3(0f, 0.55f, -0.27f), 2, 2, 2, 2).GetComponent<KitchenElement>();
+        // Фабрика — builder, а не жест: в приложении деталь приходит из сайдбара через
+        // ElementCreation.Commit, который кончается MmGrid.Snap. Без этого стенд оставляет
+        // короб ящика гранью на половине миллиметра и ждёт пустую панель от сцены, в
+        // которой приложение не бывает.
+        MmGrid.Snap(drawer);
+        MmGrid.Snap(facade);
         yield return null;
 
         var drawerName = drawer.PartName;

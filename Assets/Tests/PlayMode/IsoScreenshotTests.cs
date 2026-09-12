@@ -296,6 +296,7 @@ public class IsoScreenshotTests : ElementFrameTests
         Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
         var board = SpawnPartAt("IsoBoard", dims, pos);
         Assert.IsNotNull(board);
+        pos = EndOfCreateGesture(board.gameObject);
 
         Vector3 size = MmToUnits(dims);
         var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
@@ -1849,11 +1850,25 @@ public class IsoScreenshotTests : ElementFrameTests
             + string.Join(", ", hidden));
     }
 
+    /// <summary>Фабрика — это builder, а не жест: она ставит деталь ровно туда, куда
+    /// её попросили, и ничего не выравнивает. В приложении деталь приходит из сайдбара
+    /// через <c>ElementCreation.Commit</c>, который кончается <c>MmGrid.Snap</c> — иначе
+    /// пятак опоры Ø25 или фасад духовки 19,5 мм оставляют грань на половине и четверти
+    /// миллиметра, и сцена стенда несёт GRD-01, в которой приложение не бывает. Стенд
+    /// обязан оставлять деталь ТАМ ЖЕ, где её оставляет приложение.</summary>
+    private static Vector3 EndOfCreateGesture(GameObject go)
+    {
+        var element = go.GetComponent<KitchenElement>();
+        if (element != null) MmGrid.Snap(element);
+        return go.transform.position;
+    }
+
     private IEnumerator RenderElementIso(GameObject go, string png, float distanceScale)
     {
         // Дочерние коробки строятся в ApplyDimensions/Start — до кадра их нет.
         yield return null;
 
+        EndOfCreateGesture(go);
         var bounds = RendererBoundsOf(go);
         var (camGo, cam) = CreateIsoCamera(bounds.center, bounds.size, distanceScale);
         _spawned.Add(camGo);

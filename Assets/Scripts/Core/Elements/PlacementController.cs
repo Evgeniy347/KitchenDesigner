@@ -84,8 +84,7 @@ namespace KitchenDesigner.Core
             _pendingGo = null;
             if (go == null || element == null) return;
 
-            CommandStack.Execute(new CreateCommand(go));
-            SelectionManager.Instance?.Select(element);
+            ElementCreation.Commit(go);
             if (ElementHighlighter.Instance != null)
                 ElementHighlighter.Instance.RefreshHighlights();
         }
