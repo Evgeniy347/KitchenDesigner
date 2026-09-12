@@ -397,16 +397,19 @@ namespace KitchenDesigner.Core.MCP
 
         private McpResponse HandleCreateElements(McpRequest req)
         {
+            long stage = McpCallStages.Begin();
             var p = req.Params?.ToObjectStrict<ParamsCreateElements>();
             if (p == null || p.items == null || p.items.Length == 0)
                 return McpResponse.Error(req.id, -32602, "items required (non-empty array)");
 
             var errors = new List<string>();
             var accepted = AcceptCreateItems(p.items, errors);
+            McpCallStages.End("accept", stage);
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1,
                     "create_elements rejected, NOTHING was created: " + string.Join(" | ", errors));
 
+            stage = McpCallStages.Begin();
             var commands = new List<IUndoCommand>();
             var created = new List<KitchenElement>();
             foreach (var (item, elementType) in accepted)
@@ -418,17 +421,28 @@ namespace KitchenDesigner.Core.MCP
                 McpAnchor.PlaceMinCornerAt(spawned, anchorWorld);
                 created.Add(spawned);
             }
+            McpCallStages.End("spawn", stage);
 
+            stage = McpCallStages.Begin();
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP create_elements x{commands.Count}", commands));
+            McpCallStages.End("commandStack", stage);
 
+            stage = McpCallStages.Begin();
             SnapOpeningsOnceEveryWallOfTheBatchIsRegistered(created);
+            McpCallStages.End("snapOpenings", stage);
+
+            stage = McpCallStages.Begin();
             SettleSceneAfterMutation();
+            McpCallStages.End("settle", stage);
+
+            stage = McpCallStages.Begin();
             var all = PartRegistry.GetAll();
             var vr = McpValidationCache.Get(all);
             var elements = new List<ElementInfo>();
             var createdNames = new List<string>();
             foreach (var el in created) { createdNames.Add(el.PartName); elements.Add(ElementInfoBuilder.Build(el, all, false, vr)); }
+            McpCallStages.End("describe", stage);
             Debug.Log($"[MCP] Created {created.Count} elements: {string.Join(", ", createdNames)}");
             return McpResponse.Result(req.id, new { ok = true, created = createdNames, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
         }

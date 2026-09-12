@@ -19,7 +19,9 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -1,
                     $"Refused: '{p.path}' is the demo project file. Save to a different path.");
 
+            long stage = McpCallStages.Begin();
             bool ok = SaveLoadManager.SaveToPath(p.path);
+            McpCallStages.End("writeFile", stage);
             if (!ok)
                 return McpResponse.Error(req.id, -1,
                     $"save_project failed for '{p.path}': {LastSaveLoadLogReason()}");
@@ -41,12 +43,16 @@ namespace KitchenDesigner.Core.MCP
             if (p == null || string.IsNullOrEmpty(p.path))
                 return McpResponse.Error(req.id, -32602, "path required");
 
+            long stage = McpCallStages.Begin();
             bool ok = SaveLoadManager.LoadFromPath(p.path);
+            McpCallStages.End("rebuildScene", stage);
             if (!ok)
                 return McpResponse.Error(req.id, -1,
                     $"load_project failed for '{p.path}': {LastSaveLoadLogReason()}");
 
+            stage = McpCallStages.Begin();
             SettleSceneAfterMutation();
+            McpCallStages.End("settle", stage);
 
             Debug.Log($"[MCP] Loaded project from {p.path}");
             var (elementCount, violationCount) = SceneCounts();

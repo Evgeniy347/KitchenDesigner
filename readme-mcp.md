@@ -66,18 +66,36 @@ claude mcp add --transport http unity-kitchen http://127.0.0.1:9337/mcp
 
 Каждый ответ пишет в лог одну строку `[MCP][Timing] method=… total=…ms
 accepted->queued=…ms queued->started=…ms started->executed=…ms executed->responded=…ms
-validateRecomputes=…`. Стадии — принят (вход в `Serve`), поставлен в очередь (перед
-`_mainThreadActions.Enqueue`), начал выполняться (внутри очереди, перед
-`McpCommandHandler.Handle`), выполнен (сразу после), ответ отправлен (после записи байт).
-`validateRecomputes` — сколько раз за этот вызов реально пересчиталась валидация всей сцены
-(`McpValidationCache`, `Assets/Scripts/Core/MCP/McpValidationCache.cs`) — счётчик работы, а не
-миллисекунды: он не плавает от машины к машине. Для батча из нескольких `tools/call` в одном
-HTTP-теле строка описывает ПОСЛЕДНИЙ вызов батча (упрощение, батчи в реальном использовании
-агентом — редкость).
+validateRecomputes=… sceneScans=… stages=[…]`. Стадии — принят (вход в `Serve`),
+поставлен в очередь (перед `_mainThreadActions.Enqueue`), начал выполняться (внутри
+очереди, перед `McpCommandHandler.Handle`), выполнен (сразу после), ответ отправлен
+(после записи байт). `validateRecomputes` — сколько раз за этот вызов реально пересчиталась
+валидация всей сцены (`McpValidationCache`, `Assets/Scripts/Core/MCP/McpValidationCache.cs`)
+— счётчик работы, а не миллисекунды: он не плавает от машины к машине. Для батча из
+нескольких `tools/call` в одном HTTP-теле строка описывает ПОСЛЕДНИЙ вызов батча
+(упрощение, батчи в реальном использовании агентом — редкость).
+
+`sceneScans` — сколько раз за этот вызов обошли всю сцену (`PartRegistry.GetAll`,
+счётчик `Assets/Scripts/Core/Pure/Diagnostics/SceneScanCounter.cs`). Один обход на
+сцене в 400 деталей стоит 0,7–2,2 МБ мусора и десятки миллисекунд, поэтому это число
+важнее миллисекунд. Счётчик монотонный и чтением не сбрасывается — покадровый
+`SceneScanLog`, который забирает `PerfMonitor`, продолжает работать рядом и не теряет
+свой кадр.
+
+`stages=[…]` — разбивка самого обработчика по именованным участкам
+(`Assets/Scripts/Core/Pure/MCP/McpCallStages.cs`): у `create_elements` это `accept`,
+`spawn`, `commandStack`, `snapOpenings`, `settle`, `describe`, у `load_project` —
+`rebuildScene` и `settle`, у `save_project` — `writeFile`. Повтор одного участка
+схлопывается в `×N`. Участки размечает обработчик; у неразмеченного метода скобок нет.
+
+Вызов, который не идёт на главный поток (`initialize`, `tools/list`), печатает
+`total=…ms answeredWithoutTheScene` вместо этапов: его отметки очереди никто не ставит,
+и раньше разбивка выводила из нулей минус длиной в пять секунд.
 
 Чистая арифметика разбивки (тики → мс, без Unity) — `Assets/Scripts/Core/Pure/MCP/
 McpCallTimingBreakdown.cs`, проверяется `dotnet` в `Assets/Tests/EditMode/Pure/
-McpCallTimingBreakdownTests.cs`.
+McpCallTimingBreakdownTests.cs`; сами приборы — `McpCallStagesTests.cs` и
+`SceneScanCounterTests.cs` там же.
 
 ## Где подробности
 

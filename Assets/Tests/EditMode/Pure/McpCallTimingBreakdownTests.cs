@@ -74,4 +74,64 @@ public class McpCallTimingBreakdownTests
         Assert.That(text, Does.Contain("validateRecomputes=1"),
             "сторож на регресс — счётчик пересчётов сцены за этот вызов, а не только миллисекунды");
     }
+
+    [Test]
+    public void ACallThatNeverReachedTheScene_ReportsNoStages_InsteadOfNegativeOnes()
+    {
+        var b = new McpCallTimingBreakdown(
+            acceptedTicks: Ticks(5.000),
+            queuedTicks: 0,
+            startedTicks: 0,
+            executedTicks: 0,
+            respondedTicks: Ticks(5.046));
+
+        Assert.IsFalse(b.ReachedTheScene);
+        Assert.AreEqual(46.0, b.TotalMs, 0.5, "итог у такого вызова честный: принят -> отвечен");
+        Assert.AreEqual(0.0, b.AcceptedToQueuedMs);
+        Assert.AreEqual(0.0, b.ExecutedToRespondedMs);
+
+        var text = b.Format("initialize", validationRecomputes: 0);
+
+        Assert.That(text, Does.Not.Contain("-"),
+            "initialize и tools/list не идут на главный поток, и их отметки остаются нулём: "
+            + "в логе плеера это печаталось как accepted->queued=-5013,20ms — минус длиной "
+            + "в пять секунд, из-за которого две первые строки разбивки читались как мусор");
+        Assert.That(text, Does.Contain("answeredWithoutTheScene"));
+    }
+
+    [Test]
+    public void ACallThatDidReachTheScene_StillPrintsEveryStage()
+    {
+        var b = new McpCallTimingBreakdown(
+            Ticks(0), Ticks(0.001), Ticks(0.301), Ticks(0.329), Ticks(0.330));
+
+        Assert.IsTrue(b.ReachedTheScene);
+        Assert.That(b.Format("create_elements", 1), Does.Contain("started->executed="),
+            "обычный вызов инструмента печатает разбивку как раньше");
+    }
+
+    [Test]
+    public void Format_CarriesTheSceneScans_AndTheStagesOfTheHandler()
+    {
+        var b = new McpCallTimingBreakdown(
+            Ticks(0), Ticks(0.001), Ticks(0.301), Ticks(0.329), Ticks(0.330));
+
+        var text = b.Format("create_elements", validationRecomputes: 1,
+            stages: "spawn 40,20ms, settle 12,10ms", sceneScans: 3);
+
+        Assert.That(text, Does.Contain("sceneScans=3"),
+            "обход сцены — работа, и её число обязано стоять в той же строке, что и миллисекунды");
+        Assert.That(text, Does.Contain("stages=[spawn 40,20ms, settle 12,10ms]"),
+            "72,87 мс в started->executed были безымянными — теперь этапы называют себя");
+    }
+
+    [Test]
+    public void Format_WithoutStages_DoesNotPrintAnEmptyBracket()
+    {
+        var b = new McpCallTimingBreakdown(
+            Ticks(0), Ticks(0.001), Ticks(0.301), Ticks(0.329), Ticks(0.330));
+
+        Assert.That(b.Format("get_elements", 0), Does.Not.Contain("stages="),
+            "обработчик без разметки этапов не должен печатать пустые скобки");
+    }
 }

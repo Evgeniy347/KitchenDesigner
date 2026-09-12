@@ -9,6 +9,9 @@ namespace KitchenDesigner.Core.MCP
         private long _queuedTicks;
         private long _startedTicks;
         private long _executedTicks;
+        private long _scansBeforeStart;
+        private long _sceneScans;
+        private string _stages = string.Empty;
         private string _method = "?";
 
         public void MarkAccepted() => _acceptedTicks = Stopwatch.GetTimestamp();
@@ -19,16 +22,27 @@ namespace KitchenDesigner.Core.MCP
             _queuedTicks = Stopwatch.GetTimestamp();
         }
 
-        public void MarkStarted() => _startedTicks = Stopwatch.GetTimestamp();
+        public void MarkStarted()
+        {
+            _scansBeforeStart = SceneScanCounter.Scans;
+            McpCallStages.Forget();
+            _startedTicks = Stopwatch.GetTimestamp();
+        }
 
-        public void MarkExecuted() => _executedTicks = Stopwatch.GetTimestamp();
+        public void MarkExecuted()
+        {
+            _executedTicks = Stopwatch.GetTimestamp();
+            _sceneScans = SceneScanCounter.Scans - _scansBeforeStart;
+            _stages = McpCallStages.Take();
+        }
 
         public void MarkRespondedAndLog()
         {
             long respondedTicks = Stopwatch.GetTimestamp();
             var breakdown = new McpCallTimingBreakdown(
                 _acceptedTicks, _queuedTicks, _startedTicks, _executedTicks, respondedTicks);
-            UnityEngine.Debug.Log(breakdown.Format(_method, McpValidationCache.TakeRecomputeCount()));
+            UnityEngine.Debug.Log(breakdown.Format(
+                _method, McpValidationCache.TakeRecomputeCount(), _stages, _sceneScans));
         }
     }
 }
