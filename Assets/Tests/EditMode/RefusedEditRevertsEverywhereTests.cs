@@ -201,8 +201,8 @@ public class RefusedEditRevertsEverywhereTests
             ctx.Open(el);
             return () =>
             {
-                ctx.SetWidthFieldTextForTests("1200");
-                ctx.SimulateApplyForTests();
+                ctx.TestHooks.SetWidthFieldText("1200");
+                ctx.TestHooks.SimulateApply();
             };
         });
     }

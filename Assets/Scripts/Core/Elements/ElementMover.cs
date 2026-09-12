@@ -47,11 +47,7 @@ namespace KitchenDesigner.Core
             public readonly Material painted;
         }
 
-        private Mesh? _ghostMesh;
-        private Material? _ghostMaterial;
-        private Vector3? _ghostPosition;
-        private Quaternion _ghostRotation;
-        private bool _showGhost;
+        private readonly DragGhostRenderer _ghost = new DragGhostRenderer();
 
         private readonly List<KitchenElement> _moveSet = new List<KitchenElement>();
         private readonly List<Vector3> _moveStart = new List<Vector3>();
@@ -67,21 +63,12 @@ namespace KitchenDesigner.Core
             else
                 Debug.LogError("[Mover] No SelectionManager found on same GameObject");
 
-            CreateGhostMaterial();
+            _ghost.CreateMaterial();
         }
 
         private void OnDestroy()
         {
-            DestroyNow.The(_ghostMaterial);
-        }
-
-        private void CreateGhostMaterial()
-        {
-            var shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) return;
-            _ghostMaterial = TransparentMaterial.Make(shader, new Color(0.3f, 0.6f, 1f, 0.2f));
-            _ghostMaterial.SetFloat("_Metallic", 0f);
-            _ghostMaterial.SetFloat("_Smoothness", 0.1f);
+            _ghost.DestroyMaterial();
         }
 
         private void OnSelectionChanged(KitchenElement? element)
@@ -305,11 +292,7 @@ namespace KitchenDesigner.Core
             sel.DeselectAll();
         }
 
-        private void OnRenderObject()
-        {
-            if (_showGhost && _ghostMesh != null && _ghostPosition.HasValue && _ghostMaterial != null)
-                Graphics.DrawMesh(_ghostMesh, _ghostPosition.Value, _ghostRotation, _ghostMaterial, 0);
-        }
+        private void OnRenderObject() => _ghost.Draw();
 
         private void HandleDragInput()
         {
@@ -362,7 +345,7 @@ namespace KitchenDesigner.Core
         private void CancelDrag()
         {
             _settledFrame.Forget();
-            _showGhost = false;
+            _ghost.Hide();
             _axisLock = DragAxisLock.None;
             _dragWall = null;
             _targetIsWallOpening = false;
@@ -477,20 +460,9 @@ namespace KitchenDesigner.Core
             FollowHeldPipes();
 
             if (DragGesture.GhostIsWorthShowing(snap.snapped, snap.position, newPos))
-            {
-                _showGhost = true;
-                _ghostPosition = newPos;
-                _ghostRotation = _target!.transform.rotation;
-                if (_ghostMesh == null)
-                {
-                    var mf = _target!.GetComponent<MeshFilter>();
-                    if (mf != null) _ghostMesh = mf.sharedMesh;
-                }
-            }
+                _ghost.ShowFor(_target!, newPos);
             else
-            {
-                _showGhost = false;
-            }
+                _ghost.Hide();
 
             UpdateDragTint();
 
@@ -501,7 +473,7 @@ namespace KitchenDesigner.Core
 		{
 			using var _ = PerfMarkers.MoverFinishDrag.Auto();
 			_settledFrame.Forget();
-			_showGhost = false;
+			_ghost.Hide();
 
 			if (_wasMoved)
 			{

@@ -185,8 +185,8 @@ public class EditGateSingleRadiusTests
         ArmStatusBar();
         CommandStack.Clear();
 
-        ctx.SetWidthFieldTextForTests("720");
-        ctx.SimulateApplyForTests();
+        ctx.TestHooks.SetWidthFieldText("720");
+        ctx.TestHooks.SimulateApply();
 
         AssertRefused("панель свойств", IssueCatalog.CodeOverlap, Focus,
             mid, new Vector3Int(600, 700, 18), new Vector3(0.6f, 0f, 0f));
@@ -235,8 +235,8 @@ public class EditGateSingleRadiusTests
         ArmStatusBar();
         CommandStack.Clear();
 
-        ctx.SetHeightFieldTextForTests("560");
-        ctx.SimulateApplyForTests();
+        ctx.TestHooks.SetHeightFieldText("560");
+        ctx.TestHooks.SimulateApply();
 
         AssertRefused("панель свойств", IssueCatalog.CodeUnsupported, ShelfNeighbour,
             mid, new Vector3Int(600, 700, 18), new Vector3(0.6f, 0f, 0f));
@@ -288,8 +288,8 @@ public class EditGateSingleRadiusTests
         ctx.Open(mid);
         CommandStack.Clear();
 
-        ctx.SetHeightFieldTextForTests("560");
-        ctx.SimulateApplyForTests();
+        ctx.TestHooks.SetHeightFieldText("560");
+        ctx.TestHooks.SimulateApply();
 
         Assert.AreEqual(560, mid.DimensionsMM.y,
             "без блокировки правка высоты обязана примениться — иначе контроль проверяет не то");

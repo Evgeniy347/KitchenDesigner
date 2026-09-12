@@ -190,9 +190,9 @@ public class BlockedApplyRevertsEverythingTests
 
         var before = SnapshotOf(el);
 
-        ctx.SetNameFieldTextForTests("Переименованная");
-        ctx.SetWidthFieldTextForTests("1200");
-        ctx.SimulateApplyForTests();
+        ctx.TestHooks.SetNameFieldText("Переименованная");
+        ctx.TestHooks.SetWidthFieldText("1200");
+        ctx.TestHooks.SimulateApply();
 
         var after = SnapshotOf(el);
 
@@ -226,9 +226,9 @@ public class BlockedApplyRevertsEverythingTests
         Assert.AreSame(_statusBar, StatusBarUI.Instance,
             "полоса обязана стать текущей сразу после симуляции Awake");
 
-        ctx.SetWidthFieldTextForTests("1200");
+        ctx.TestHooks.SetWidthFieldText("1200");
         _statusBar!.ShowTransient("", KitchenDesigner.Core.Update.StatusLevel.Info);
-        ctx.SimulateApplyForTests();
+        ctx.TestHooks.SimulateApply();
 
         Assert.AreEqual(600, el.DimensionsMM.x, "предусловие: правка обязана быть отклонена");
         Assert.IsNotNull(_statusBar!.ActiveText, "об отказе обязано быть сказано вслух");
@@ -257,8 +257,8 @@ public class BlockedApplyRevertsEverythingTests
         ctx.Open(el);
         CommandStack.Clear();
 
-        ctx.SetWidthFieldTextForTests("1200");
-        ctx.SimulateApplyForTests();
+        ctx.TestHooks.SetWidthFieldText("1200");
+        ctx.TestHooks.SimulateApply();
 
         Assert.AreEqual(1200, el.DimensionsMM.x,
             "конфликт возникал ровно с одной стороны — правку положено применить, а не отклонить");
@@ -292,9 +292,9 @@ public class BlockedApplyRevertsEverythingTests
         ctx.Open(el);
         CommandStack.Clear();
 
-        ctx.SetNameFieldTextForTests("Переименованная");
-        ctx.SetWidthFieldTextForTests("900");
-        ctx.SimulateApplyForTests();
+        ctx.TestHooks.SetNameFieldText("Переименованная");
+        ctx.TestHooks.SetWidthFieldText("900");
+        ctx.TestHooks.SimulateApply();
 
         Assert.AreEqual(900, el.DimensionsMM.x,
             "нарушение было и осталось тем же — блокировать эту правку не за что");
@@ -320,9 +320,9 @@ public class BlockedApplyRevertsEverythingTests
         ctx.Open(el);
         CommandStack.Clear();
 
-        ctx.SetNameFieldTextForTests("Переименованная");
-        ctx.SetWidthFieldTextForTests("900");
-        ctx.SimulateApplyForTests();
+        ctx.TestHooks.SetNameFieldText("Переименованная");
+        ctx.TestHooks.SetWidthFieldText("900");
+        ctx.TestHooks.SimulateApply();
 
         Assert.AreEqual(900, el.DimensionsMM.x, "без блокировки ширина обязана примениться");
         Assert.AreEqual("Pereimenovannaya", el.PartName,

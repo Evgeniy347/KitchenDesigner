@@ -18,8 +18,7 @@ namespace KitchenDesigner.Core.UI
         private KitchenElement? _target;
         private TMP_Text? _titleLabel;
 
-        private TMP_InputField? _name, _w, _h, _d, _x, _y, _z, _rx, _ry, _rz;
-        private TMP_Text? _heightLabel;
+        private TMP_InputField? _name, _x, _y, _z, _rx, _ry, _rz;
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
@@ -72,12 +71,15 @@ namespace KitchenDesigner.Core.UI
         private readonly FacadeFieldsEditor _facadeFields;
         private readonly AssembledFacadeFieldsEditor _assembledFields;
         private readonly ElementFieldsEditor[] _editors;
-        private readonly DimensionFields _size = new();
+        private readonly ContextMenuSizeSection _sizes;
+        private readonly ContextMenuTestHooks _testHooks;
         private ContextMenuRowFactory _rows = null!;
         private readonly List<OpenButtonBinder> _openButtons = new();
 
         public ContextMenuUI()
         {
+            _sizes = new ContextMenuSizeSection(this);
+            _testHooks = new ContextMenuTestHooks(() => _name, _sizes, Apply);
             _textures = new ContextMenuTextureSection(this);
             _lightLinks = new ContextMenuLightLinkSection(this);
             _fields = new ContextMenuFieldTracker(Apply);
@@ -133,7 +135,7 @@ namespace KitchenDesigner.Core.UI
 
         ElementFacet IContextMenuHost.TargetFacets => _facets;
 
-        DimensionFields IContextMenuHost.SizeFields => _size;
+        DimensionFields IContextMenuHost.SizeFields => _sizes.Dimensions;
 
         internal ContextMenuTextureSection Textures => _textures;
 
@@ -153,13 +155,7 @@ namespace KitchenDesigner.Core.UI
 
         internal ElementFieldsEditor[] Editors => _editors;
 
-        internal void SetNameFieldTextForTests(string text) => _name!.text = text;
-
-        internal void SetWidthFieldTextForTests(string text) => _w!.text = text;
-
-        internal void SetHeightFieldTextForTests(string text) => _h!.text = text;
-
-        internal void SimulateApplyForTests() => Apply();
+        internal ContextMenuTestHooks TestHooks => _testHooks;
 
         private void Awake()
         {
@@ -218,11 +214,7 @@ namespace KitchenDesigner.Core.UI
         private void BuildDimensions()
         {
             _name = _rows.NameField();
-            _rows.SectionHeader("CtxSecDims", "Размеры");
-            _w = _size.Width = _rows.NumberField("Ширина", RowVisibility.Always);
-            _h = _size.Height = _rows.NumberField(ElementFieldsEditor.DefaultHeightLabel, RowVisibility.Always);
-            _heightLabel = FindLabelFor(_h);
-            _d = _size.Depth = _rows.NumberField("Глубина", RowVisibility.Always);
+            _sizes.Build();
             _radialFields.Build();
             _cooktopFields.Build();
         }
@@ -446,10 +438,11 @@ namespace KitchenDesigner.Core.UI
 
         private TMP_InputField?[] ArithmeticIntFields()
         {
-            var fields = new List<TMP_InputField?>
-            {
-                _w, _h, _d, _x, _y, _z,
-            };
+            var fields = new List<TMP_InputField?>();
+            _sizes.CollectArithmeticFields(fields);
+            fields.Add(_x);
+            fields.Add(_y);
+            fields.Add(_z);
             foreach (var editor in _editors) fields.AddRange(editor.ArithmeticFields());
             return fields.ToArray();
         }
@@ -569,10 +562,7 @@ namespace KitchenDesigner.Core.UI
             _fields.RefreshUnfocused(_rx, eu.x.ToString("F1"));
             _fields.RefreshUnfocused(_ry, eu.y.ToString("F1"));
             _fields.RefreshUnfocused(_rz, eu.z.ToString("F1"));
-            var dims = _target.DimensionsMM;
-            _fields.RefreshUnfocused(_w, dims.x.ToString());
-            _fields.RefreshUnfocused(_h, dims.y.ToString());
-            _fields.RefreshUnfocused(_d, dims.z.ToString());
+            _sizes.RefreshFrom(_target.DimensionsMM);
             _fields.RefreshUnfocused(_name, _target.PartName);
             RefreshTitle();
 
@@ -618,11 +608,8 @@ namespace KitchenDesigner.Core.UI
                 RefreshTitle();
                 _types.ShowFor(element);
 
-                var dims = element.DimensionsMM;
                 _name!.text = element.PartName;
-                _w!.text = dims.x.ToString();
-                _h!.text = dims.y.ToString();
-                _d!.text = dims.z.ToString();
+                _sizes.WriteFrom(element.DimensionsMM);
                 foreach (var editor in _editors) editor.Show(element);
 
                 _gaps.WriteFrom(element);
@@ -638,7 +625,7 @@ namespace KitchenDesigner.Core.UI
                 _attachedFacade.Rebuild();
                 _attachedFacade.SetValue(facadeHost != null ? facadeHost.AttachedFacadeName : "");
 
-                ShowDimensionLocks(element);
+                _sizes.ShowLocks(element, EditorFor(element));
 
                 _materials.ShowFor(element);
 
@@ -736,7 +723,7 @@ namespace KitchenDesigner.Core.UI
             target.gameObject.name = target.PartName;
 
             var anchor = ResizeShift.Before(target);
-            ApplyDimensionFields(target, oldDims);
+            _sizes.ApplyTo(target, EditorFor(target), oldDims);
             foreach (var editor in _editors) editor.Apply(target);
 
             _materials.ApplySecondarySlotChoice(target);
@@ -792,11 +779,7 @@ namespace KitchenDesigner.Core.UI
 
         private void RefreshAfterApply(KitchenElement target)
         {
-            var newDims = target.DimensionsMM;
-            _w!.text = newDims.x.ToString();
-            if (EditorFor(target)?.HeightShownFromDimensions ?? true)
-                _h!.text = newDims.y.ToString();
-            _d!.text = newDims.z.ToString();
+            _sizes.WriteAfterApply(target.DimensionsMM, EditorFor(target));
             foreach (var editor in _editors) editor.AfterApply(target);
 
             _gaps.WriteFrom(_target);
@@ -869,35 +852,6 @@ namespace KitchenDesigner.Core.UI
             return null;
         }
 
-        private void ApplyDimensionFields(KitchenElement target, Vector3Int oldDims)
-        {
-            var policy = EditorFor(target)?.Dimensions ?? DimensionPolicy.FromFields;
-            if (policy == DimensionPolicy.Computed) return;
-
-            target.DimensionsMM = new Vector3Int(
-                _fields.ParseInt(_w, oldDims.x),
-                _fields.ParseInt(_h, oldDims.y),
-                policy == DimensionPolicy.KeepDepth ? oldDims.z : _fields.ParseInt(_d, oldDims.z));
-        }
-
-        private void ShowDimensionLocks(KitchenElement element)
-        {
-            var editor = EditorFor(element);
-            bool unlocked = !FixedSize.IsFixed(element);
-            _size.SetEditable(_w, unlocked && (editor?.WidthEditable ?? true));
-            _size.SetEditable(_h, unlocked && (editor?.HeightEditable ?? true));
-            _size.SetEditable(_d, unlocked && (editor?.DepthEditable ?? true));
-            if (_heightLabel != null)
-                _heightLabel.text = editor?.HeightLabel ?? ElementFieldsEditor.DefaultHeightLabel;
-        }
-
-        private TMP_Text? FindLabelFor(Selectable? control)
-        {
-            foreach (var (label, ctrl) in _rows.LabelledRows)
-                if (ReferenceEquals(ctrl, control)) return label;
-            return null;
-        }
-
         internal void SyncOpenLabels()
         {
             if (_root == null || !_root.activeSelf || _target == null) return;
@@ -965,10 +919,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target == null) return;
             _fields.Track(_name, _target.PartName);
-            var dims = _target.DimensionsMM;
-            _fields.Track(_w, dims.x.ToString());
-            _fields.Track(_h, dims.y.ToString());
-            _fields.Track(_d, dims.z.ToString());
+            _sizes.Track(_target.DimensionsMM);
             _gaps.Track();
             foreach (var editor in _editors) editor.Track(_target);
             _edges.Track();
