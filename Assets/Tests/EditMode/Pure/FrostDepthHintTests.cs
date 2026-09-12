@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Construction;
@@ -28,8 +30,13 @@ using KitchenDesigner.Core.UI;
 /// </summary>
 public class FrostDepthHintTests
 {
+    private static readonly Regex Metres = new Regex(@"\d\s*м(?![\wа-яА-Я])");
+
     private static ConstructionRegion[] AllRegions =>
         Enum.GetValues(typeof(ConstructionRegion)).Cast<ConstructionRegion>().ToArray();
+
+    private static SoilKind[] AllSoils =>
+        Enum.GetValues(typeof(SoilKind)).Cast<SoilKind>().ToArray();
 
     [Test]
     public void TheHint_StartsWithTheDictionarySentence_SoThereIsNoSecondCopyOfIt()
@@ -53,9 +60,10 @@ public class FrostDepthHintTests
         Assert.That(hint, Does.Contain("СНиП 23-01-99*"),
             "справочные 1,4 м посчитаны по отменённому СНиП 23-01-99*; не назвав его, "
             + "приложение оставляет расхождение со справочником необъяснённым");
-        Assert.That(hint, Does.Contain("≈1,4 м"),
+        Assert.That(hint, Does.Contain("≈1400 мм"),
             "названо должно быть само расхождение, а не только его причина: человек сверяет "
-            + "с числом из справочника, а не с номером норматива");
+            + "с числом из справочника, а не с номером норматива. В миллиметрах — цитата из "
+            + "справочника не даёт права печатать метры на экране, где всё остальное в мм");
     }
 
     [Test]
@@ -122,7 +130,7 @@ public class FrostDepthHintTests
         var hint = FrostDepthHint.For(ConstructionRegion.FarNorth, SoilKind.Sand);
 
         Assert.That(hint, Does.Contain("теплотехнический расчёт по СП 25.13330"),
-            "0,30·√99,8 = 3,00 м — за границей применимости формулы (5.3). Норматив требует "
+            "0,30·√99,8 = 3000 мм — за границей применимости формулы (5.3). Норматив требует "
             + "другого расчёта, которого приложение не делает, и это надо назвать");
         Assert.That(hint, Does.Contain("Воркута"),
             "станция остаётся названной и там, где числа нет");
@@ -138,6 +146,51 @@ public class FrostDepthHintTests
             + "регионе, а не на глубине, этот тест был бы красным");
         Assert.That(FrostDepth.Read(ConstructionRegion.FarNorth, SoilKind.Clay).HasNumber,
             Is.True);
+    }
+
+    /// <summary>Сенсор на правило, а не на строку: docs/UI-GUIDELINES.md §1 — «линейные
+    /// размеры и позиции — всегда миллиметры, целые. Никаких метров в UI». Метры пролезают
+    /// в подсказку легче всего, потому что норматив цитируется метрами («не превышает
+    /// 2,5 м», «≈1,4 м»), и цитата выглядит как основание. Она им не является: человек не
+    /// должен на одном экране пересчитывать метры в миллиметры. Ищется ЧИСЛО, за которым
+    /// стоит «м» не как начало «мм» или слова, — номера самих норм (СП 22.13330,
+    /// СНиП 23-01-99*) под это не подпадают, они имена документов, а не размеры.</summary>
+    [Test]
+    public void NoHintText_AndNoFrostDepthValue_PrintsMetres()
+    {
+        var offenders = new List<string>();
+
+        foreach (var kv in HintText.All)
+            if (Metres.IsMatch(kv.Value)) offenders.Add("HintText[" + kv.Key + "]: " + kv.Value);
+
+        foreach (var region in AllRegions)
+            foreach (var soil in AllSoils)
+            {
+                var hint = FrostDepthHint.For(region, soil);
+                if (Metres.IsMatch(hint)) offenders.Add("подсказка " + region + "/" + soil + ": " + hint);
+
+                var value = FrostDepth.Read(region, soil).Value;
+                if (Metres.IsMatch(value)) offenders.Add("поле " + region + "/" + soil + ": " + value);
+            }
+
+        Assert.IsEmpty(offenders,
+            "Метры на экране: docs/UI-GUIDELINES.md §1 требует целых миллиметров везде, и "
+            + "цитата из норматива исключения не даёт. Нарушения: " + string.Join(" | ", offenders));
+    }
+
+    [Test]
+    public void TheMetreSensor_SeesMetres_AndLetsMillimetresAndNormNumbersThrough()
+    {
+        Assert.IsTrue(Metres.IsMatch("Глубже 2,5 м: теплотехнический расчёт"),
+            "без этого проверка выше зеленела бы на любом тексте, и метры вернулись бы "
+            + "следующей правкой незамеченными");
+        Assert.IsTrue(Metres.IsMatch("справочники дают ≈1,4 м."));
+        Assert.IsFalse(Metres.IsMatch("1079 мм"), "миллиметры — это и есть требуемая форма");
+        Assert.IsFalse(Metres.IsMatch("> 2500 мм"));
+        Assert.IsFalse(Metres.IsMatch("СП 22.13330 не даёт d0 для торфа"),
+            "номер норматива — имя документа, а не размер; сенсор, ловящий его, пришлось бы "
+            + "обходить списком исключений, и он перестал бы значить что-либо");
+        Assert.IsFalse(Metres.IsMatch("по СП 131.13330.2020 и СНиП 23-01-99*"));
     }
 
     [Test]

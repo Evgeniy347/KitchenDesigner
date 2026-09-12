@@ -14,11 +14,11 @@ namespace KitchenDesigner.Core.Construction
         public const float ThermalCalculationAboveMm = 2500f;
 
         public const string UnknownValue = "—";
-        public const string BeyondFormulaValue = "> 2,5 м";
+        public const string BeyondFormulaValue = "> 2500 мм";
 
         public const string NoSoilFactorReason = "Прочерк: СП 22.13330 не даёт d0 для торфа.";
         public const string BeyondFormulaReason =
-            "Глубже 2,5 м: требуется теплотехнический расчёт по СП 25.13330.";
+            "Глубже 2500 мм: требуется теплотехнический расчёт по СП 25.13330.";
         public const string UnknownRegionReason =
             "Прочерк: климата для этого региона в таблице СП 131.13330.2020 нет.";
 
