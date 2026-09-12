@@ -32,8 +32,8 @@ namespace KitchenDesigner.Core
                 if (--_depth > 0) return;
                 if (!_refreshOwed) return;
                 _refreshOwed = false;
-                if (ElementHighlighter.Instance != null)
-                    ElementHighlighter.Instance.RefreshHighlights();
+                var hl = ElementHighlighter.Current;
+                if (hl is not null) hl.RefreshHighlights();
             }
         }
     }

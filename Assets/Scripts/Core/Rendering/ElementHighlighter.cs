@@ -7,7 +7,28 @@ namespace KitchenDesigner.Core
     {
         public static ElementHighlighter? Instance { get; internal set; }
 
+        private static ElementHighlighter? _lastFound;
+
+        public static ElementHighlighter? Current
+        {
+            get
+            {
+                if (StillThere(Instance)) return Instance;
+                if (StillThere(_lastFound)) return _lastFound;
+                var found = FindAnyObjectByType<ElementHighlighter>();
+                _lastFound = IsGone(found) ? null : found;
+                return _lastFound;
+            }
+        }
+
+        private static bool IsGone(ElementHighlighter highlighter) => highlighter == null;
+
+        private static bool StillThere(ElementHighlighter? highlighter) =>
+            highlighter is not null && !IsGone(highlighter);
+
         public int RefreshCount { get; set; }
+
+        public static int RefreshedAtRevision { get; private set; }
 
         private static readonly HashSet<KitchenElement> _violating = new HashSet<KitchenElement>();
 
@@ -61,6 +82,7 @@ namespace KitchenDesigner.Core
             using var _ = PerfMarkers.HighlighterRefresh.Auto();
 
             RefreshCount++;
+            RefreshedAtRevision = SceneRevision.Version;
 
             var list = PartRegistry.GetAll();
             var result = ConstraintValidator.Validate(list);

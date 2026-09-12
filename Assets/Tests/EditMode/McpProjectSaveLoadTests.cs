@@ -40,6 +40,40 @@ public class McpProjectSaveLoadTests : McpTestFixture
     private static string ErrorMessage(McpResponse resp) =>
         JObject.FromObject(resp.data!)["message"]!.Value<string>()!;
 
+    private ElementHighlighter SetupHighlighter()
+    {
+        var go = new GameObject("ElementHighlighter");
+        var hl = go.AddComponent<ElementHighlighter>();
+        _spawned.Add(go);
+        return hl;
+    }
+
+    [Test]
+    public void LoadProject_RefreshesHighlights_AfterMutation()
+    {
+        MakeElement("Board1", new Vector3Int(600, 400, 18), new Vector3(1.5f, 0f, 2.25f));
+        string path = TempPath();
+        Assert.AreEqual("result", _handler!.Handle(MakeReq("save_project", new { path })).type);
+
+        var hl = SetupHighlighter();
+        int before = hl.RefreshCount;
+
+        var loadResp = _handler.Handle(MakeReq("load_project", new { path }));
+
+        Assert.AreEqual("result", loadResp.type,
+            loadResp.type == "error" ? ErrorMessage(loadResp) : "");
+        Assert.Greater(hl.RefreshCount, before,
+            "load_project обязан перекрасить подсветку: загрузка заменяет сцену целиком, "
+            + "и краска от прошлого проекта на новом — это устаревшие нарушения на экране. "
+            + "Раньше перекрасок было ДВЕ (загрузчик и SettleSceneAfterMutation следом), "
+            + "и удаление дубля не смеет превратить их в НОЛЬ");
+        Assert.AreEqual(SceneRevision.Version, ElementHighlighter.RefreshedAtRevision,
+            "перекраска обязана была увидеть УЖЕ досаженные связи: SettleDerivedLinks "
+            + "(винтовые опоры, размеры трубных фитингов) двигает детали и бампит ревизию. "
+            + "Покрасить до досадки — значит показать состояние, которого в сцене уже нет; "
+            + "этот Assert краснеет ровно на перестановке досадки обратно за покраску");
+    }
+
     [Test]
     public void SaveProject_ThenLoadProject_RestoresDimensionsAndPosition()
     {

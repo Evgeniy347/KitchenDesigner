@@ -287,28 +287,10 @@ namespace KitchenDesigner.Core.MCP
                 "Unlock it with set_element_lock {locked:false} — but ONLY if the user explicitly allowed editing this element.");
         }
 
-        private static ElementHighlighter? _lastFoundHighlighter;
-
-        private static bool IsGone(ElementHighlighter highlighter) => highlighter == null;
-
-        private static bool StillThere(ElementHighlighter? highlighter) =>
-            highlighter is not null && !IsGone(highlighter);
-
-        private static ElementHighlighter? TheHighlighter()
-        {
-            var known = ElementHighlighter.Instance;
-            if (StillThere(known)) return known;
-            if (StillThere(_lastFoundHighlighter)) return _lastFoundHighlighter;
-
-            var found = Object.FindAnyObjectByType<ElementHighlighter>();
-            _lastFoundHighlighter = IsGone(found) ? null : found;
-            return _lastFoundHighlighter;
-        }
-
         private static void SettleSceneAfterMutation()
         {
             SceneChangeTracker.SettleDerivedLinks();
-            var hl = TheHighlighter();
+            var hl = ElementHighlighter.Current;
             if (hl is null) return;
             hl.RefreshHighlights();
         }

@@ -102,9 +102,10 @@ namespace KitchenDesigner.Core
 
             SceneElements.ClearKeepingBasePlate(SceneElements.All());
             SceneRestorer.Restore(data);
+            SceneChangeTracker.SettleDerivedLinks();
 
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.RefreshHighlights();
+            var hl = ElementHighlighter.Current;
+            if (hl is not null) hl.RefreshHighlights();
             return true;
         }
     }

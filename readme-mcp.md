@@ -86,7 +86,8 @@ validateRecomputes=… sceneScans=… stages=[…]`. Стадии — приня
 `stages=[…]` — разбивка самого обработчика по именованным участкам
 (`Assets/Scripts/Core/Pure/MCP/McpCallStages.cs`): у `create_elements` это `parseJson`, `acceptItems`,
 `spawn`, `commandStack`, `snapOpenings`, `settle`, `describe`, у `load_project` —
-`rebuildScene` и `settle`, у `save_project` — `writeFile`. Повтор одного участка
+`rebuildScene` (досадка связей и перекраска живут внутри загрузчика, не отдельным
+участком), у `save_project` — `writeFile`. Повтор одного участка
 схлопывается в `×N`. Участки размечает обработчик; у неразмеченного метода скобок нет.
 
 Вызов, который не идёт на главный поток (`initialize`, `tools/list`), печатает

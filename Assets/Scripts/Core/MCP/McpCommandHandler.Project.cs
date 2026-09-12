@@ -50,9 +50,6 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -1,
                     $"load_project failed for '{p.path}': {LastSaveLoadLogReason()}");
 
-            stage = McpCallStages.Begin();
-            SettleSceneAfterMutation();
-            McpCallStages.End("settle", stage);
 
             Debug.Log($"[MCP] Loaded project from {p.path}");
             var (elementCount, violationCount) = SceneCounts();
