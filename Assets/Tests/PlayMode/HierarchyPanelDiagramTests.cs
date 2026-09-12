@@ -286,6 +286,16 @@ public class HierarchyPanelDiagramTests
             }, goldenJson: false);
     }
 
+    /// <summary>Счётчик строк не говорит, ЧТО в панели, и красный «но 1 строк»
+    /// стоит отдельного прогона на то, чтобы это выяснить. Строка называет код,
+    /// деталь и текст каждой оставшейся находки.</summary>
+    private static string NamedIssues(IEnumerable<AnalysisIssue> issues)
+    {
+        var lines = new List<string>();
+        foreach (var i in issues) lines.Add($"    {i.Level,-7} {i.Code,-7} {i.Detail} — {i.Message}");
+        return lines.Count > 0 ? string.Join("\n", lines) : "    (пусто)";
+    }
+
     [UnityTest]
     public IEnumerator ErrorPanel_AutoRemovesDrw01AfterFacadeAttached()
     {
@@ -318,6 +328,7 @@ public class HierarchyPanelDiagramTests
             $"DRW-01 должен исчезнуть после прикрепления фасада, partName={drawerName}");
 
         Assert.AreEqual(0, panel.VisibleIssueCount,
-            $"ErrorPanel должна быть пустой после автообновления, но {panel.VisibleIssueCount} строк");
+            $"ErrorPanel должна быть пустой после автообновления, но {panel.VisibleIssueCount} строк:\n"
+            + NamedIssues(issuesAfter));
     }
 }

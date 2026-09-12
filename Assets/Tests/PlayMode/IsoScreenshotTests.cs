@@ -5,6 +5,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Analysis;
 using KitchenDesigner.Core.UI;
 using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Tests;
@@ -160,9 +161,25 @@ public class IsoScreenshotTests : ElementFrameTests
             // источник, что читает сама панель.
             yield return WaitForIssueBadgeToCatchUpWithScene();
 
+            ReportSceneIssues(panelSnapshotFile);
+
             string dir = Path.Combine(Application.dataPath, "..", "test-results");
             UiSnapshotEngine.CaptureVerified(canvas.gameObject, Path.Combine(dir, panelSnapshotFile));
         }
+    }
+
+    /// <summary>Эталон панели несёт ЧИСЛО находок на значке «Ошибки» и ничего не
+    /// говорит о том, какие они. Разошёлся значок — и виновника ищут отдельным
+    /// прогоном; эта строка называет его сразу. Печатается только когда находки
+    /// есть, поэтому чистый кадр в лог ничего не добавляет.</summary>
+    private static void ReportSceneIssues(string panelSnapshotFile)
+    {
+        var issues = SceneAnalyzer.Analyze();
+        if (issues.Count == 0) return;
+
+        var lines = new List<string>();
+        foreach (var i in issues) lines.Add($"    {i.Level,-7} {i.Code,-7} {i.Detail} — {i.Message}");
+        Debug.Log($"[ISO-ISSUES] {panelSnapshotFile}: {issues.Count}\n" + string.Join("\n", lines));
     }
 
     /// <summary>Сенсор: ToolbarUI.IssueBadgeRevision — ревизия сцены, для
