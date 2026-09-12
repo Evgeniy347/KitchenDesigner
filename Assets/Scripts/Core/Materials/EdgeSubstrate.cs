@@ -42,8 +42,20 @@ namespace KitchenDesigner.Core
         public static void Sync(KitchenElement? element)
         {
             if (element == null) return;
-            element.SetBareFaceMask(BareFaceMask(element, PartRegistry.GetAll()));
+            if (!NeedsTheScene(element))
+            {
+                element.SetBareFaceMask(BareFaceMask(element, (SceneFaces?)null));
+                return;
+            }
+
+            var scene = SceneFaces.Of(PartRegistry.GetAll());
+            element.SetBareFaceMask(BareFaceMask(element, scene,
+                scene.IndexOfSameObject(element)));
         }
+
+        private static bool NeedsTheScene(KitchenElement element) =>
+            element.SupportsEdges && element.EdgeBandingEnabled
+            && EdgeBanding.LayoutOf(element.DimensionsMM).IsValid;
 
         [System.ThreadStatic] private static int _sceneSyncs;
 

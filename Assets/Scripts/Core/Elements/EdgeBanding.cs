@@ -99,6 +99,22 @@ namespace KitchenDesigner.Core
             return n;
         }
 
+        [System.ThreadStatic] private static int _faceBuilds;
+
+        public static int TakeFaceBuilds()
+        {
+            int n = _faceBuilds;
+            _faceBuilds = 0;
+            return n;
+        }
+
+        private static Face[] FacesOf(KitchenElement element)
+        {
+            if (ElementSnapshotReuse.TryReuseGeometry(element, out var kept)) return kept.Faces;
+            _faceBuilds++;
+            return element.GetFaces();
+        }
+
         public static SceneFaces Of(IReadOnlyList<KitchenElement>? all)
         {
             _indexBuilds++;
@@ -107,7 +123,7 @@ namespace KitchenDesigner.Core
             foreach (var element in all)
             {
                 if (element == null) continue;
-                var faces = element.GetFaces();
+                var faces = FacesOf(element);
                 scene._elements.Add(element);
                 scene._faces.Add(faces);
                 scene._spheres.Add(BoundingSphere(element, faces));
@@ -123,6 +139,13 @@ namespace KitchenDesigner.Core
         public Face[] FacesAt(int i) => _faces[i];
         public Sphere SphereAt(int i) => _spheres[i];
         public bool CoversEdgesAt(int i) => _opaque[i];
+
+        public int IndexOfSameObject(KitchenElement element)
+        {
+            for (int i = 0; i < _elements.Count; i++)
+                if (ReferenceEquals(_elements[i], element)) return i;
+            return NotInScene;
+        }
 
         [System.ThreadStatic] private static int _linearLookups;
 
