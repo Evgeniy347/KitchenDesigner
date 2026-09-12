@@ -55,6 +55,7 @@ namespace KitchenDesigner.Core
         private HandleMode _modeHandlesWereBuiltIn;
         private bool _ctrlHeldLastFrame;
         private Camera? _layoutCamera;
+        private ResizeFrameRepeat _settledFrame;
 
         private void Awake() => Instance = this;
 
@@ -209,6 +210,7 @@ namespace KitchenDesigner.Core
 
             _resizingElement = _target;
             _modeAtDragStart = Mode;
+            _settledFrame.Forget();
             IsResizing = true;
         }
 
@@ -220,29 +222,45 @@ namespace KitchenDesigner.Core
 
         internal void FinishDragNow() => FinishDrag();
 
+        internal void ResizeFrameBy(float pointerDeltaMeters) => ApplyResizeFrame(pointerDeltaMeters);
+
         private void UpdateResize()
         {
             float sNow = ClosestParamOnNormalMeters();
             if (float.IsNaN(sNow)) return;
 
-            float rawDelta = sNow - _sParam0;
+            ApplyResizeFrame(sNow - _sParam0);
+        }
+
+        private void ApplyResizeFrame(float rawDelta)
+        {
+            if (_target == null) return;
+
             var settings = KitchenSettings.Instance;
             bool globalSnap = settings != null && settings.SnapEnabled;
             bool snapEnabled = DragGesture.SnapAppliesTo(globalSnap, CtrlHeld);
             FlashCtrlHintOnce(globalSnap);
+
+            if (_settledFrame.Repeats(rawDelta, snapEnabled, SceneRevision.Version,
+                    _target.DimensionsMM, _target.transform.position)) return;
+
             float threshold = settings != null ? settings.SnapThreshold * AppConstants.MM_TO_UNITS : 0f;
 
             ResizeMath.Compute(_dimsBefore, _axisIndex, _normal, _faceCenter0, _uAxis, _vAxis, _faceSize,
                 _centerStart, _sizeStartUnits, rawDelta,
-                PartRegistry.GetAll().ToGeometryFor(_target), _target!.ToGeometry(),
+                PartRegistry.GetAll().ToGeometryFor(_target), _target.ToGeometry(),
                 snapEnabled, threshold, out Vector3Int newDims, out Vector3 _, out _);
 
-            _target!.DimensionsMM = newDims;
-            _target.transform.position = ResizeMath.CenterForAppliedDims(
+            if (_target.DimensionsMM != newDims) _target.DimensionsMM = newDims;
+            var newCenter = ResizeMath.CenterForAppliedDims(
                 _centerStart, _normal, _sizeStartUnits, _target.DimensionsMM, _axisIndex);
+            if (_target.transform.position != newCenter) _target.transform.position = newCenter;
 
             PositionHandles(_layoutCamera);
             if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
+
+            _settledFrame.Remember(rawDelta, snapEnabled, SceneRevision.Version,
+                _target.DimensionsMM, _target.transform.position);
         }
 
         private void FlashCtrlHintOnce(bool globalSnap)
@@ -259,12 +277,25 @@ namespace KitchenDesigner.Core
             float sNow = ClosestParamOnNormalMeters();
             if (float.IsNaN(sNow)) return;
 
-            Vector3 newPos = _centerStart + _normal * (sNow - _sParam0);
+            ApplyMoveFrame(sNow - _sParam0);
+        }
+
+        internal void MoveFrameBy(float pointerDeltaMeters) => ApplyMoveFrame(pointerDeltaMeters);
+
+        private void ApplyMoveFrame(float rawDelta)
+        {
+            if (_target == null) return;
+
+            Vector3 newPos = _centerStart + _normal * rawDelta;
 
             var settings = KitchenSettings.Instance;
             bool globalSnap = settings != null && settings.SnapEnabled;
             bool effectiveSnap = DragGesture.SnapAppliesTo(globalSnap, CtrlHeld);
             FlashCtrlHintOnce(globalSnap);
+
+            if (_settledFrame.Repeats(rawDelta, effectiveSnap, SceneRevision.Version,
+                    _target.DimensionsMM, _target.transform.position)) return;
+
             if (effectiveSnap)
             {
                 var snap = SnapSystem.TrySnap(_target!, PartRegistry.GetAll(), newPos);
@@ -275,14 +306,18 @@ namespace KitchenDesigner.Core
                 }
             }
 
-            _target!.transform.position = newPos;
+            if (_target.transform.position != newPos) _target.transform.position = newPos;
             PositionHandles(_layoutCamera);
             if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
+
+            _settledFrame.Remember(rawDelta, effectiveSnap, SceneRevision.Version,
+                _target.DimensionsMM, _target.transform.position);
         }
 
         private void FinishDrag()
         {
             IsResizing = false;
+            _settledFrame.Forget();
             _resizingElement = null;
             _ctrlHeldLastFrame = false;
 
