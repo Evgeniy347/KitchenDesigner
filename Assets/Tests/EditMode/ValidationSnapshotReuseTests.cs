@@ -33,18 +33,32 @@ public class ValidationSnapshotReuseTests : ElementTestBase
     private const int SceneSize = 400;
 
     private bool _suppressBefore;
+    private bool _snapBefore;
+    private bool _blockBefore;
+    private ElementMover? _mover;
 
     [SetUp]
     public void SetUp()
     {
         PartRegistry.Clear();
+        CommandStack.Clear();
         ElementSnapshotReuse.Clear();
         _suppressBefore = KitchenElement.SuppressVisualRebuild;
+        _snapBefore = KitchenSettings.Instance.SnapEnabled;
+        _blockBefore = KitchenSettings.Instance.BlockOnViolation;
+        KitchenSettings.Instance.BlockOnViolation = false;
+        var go = new GameObject("ElementMover");
+        _spawned.Add(go);
+        _mover = go.AddComponent<ElementMover>();
     }
 
     [TearDown]
     public void TearDown()
     {
+        if (_mover != null) _mover.FinishDragNow();
+        if (_mover != null) _mover.RestoreDragMaterial();
+        KitchenSettings.Instance.SnapEnabled = _snapBefore;
+        KitchenSettings.Instance.BlockOnViolation = _blockBefore;
         KitchenElement.SuppressVisualRebuild = _suppressBefore;
         foreach (var go in _spawned)
             if (go != null) UnityEngine.Object.DestroyImmediate(go);
@@ -52,7 +66,35 @@ public class ValidationSnapshotReuseTests : ElementTestBase
         foreach (var el in PartRegistry.GetAll())
             if (el != null) UnityEngine.Object.DestroyImmediate(el.gameObject);
         PartRegistry.Clear();
+        CommandStack.Clear();
         ElementSnapshotReuse.Clear();
+    }
+
+    /// <summary>Независимый судья кэша: снимок, собранный С кэшем, против
+    /// снимка той же сцены, собранного с нуля. Сравнение — <c>PosedLike</c>,
+    /// то есть имя, роль, группа, пара, индексы, высотный промежуток, габариты
+    /// и КАЖДАЯ грань.
+    ///
+    /// Это ответ на вопрос, на который счётчик пересборок ответить не может.
+    /// Ноль пересборок означает «работы не было» и ничего не говорит о том,
+    /// правильная ли геометрия лежит в ответе; здесь спрашивается сама
+    /// ГЕОМЕТРИЯ.</summary>
+    private static void AssertTheCacheAgreesWithAColdBuild(List<KitchenElement> scene, string when)
+    {
+        var warm = new List<ValidationElement>();
+        ValidationSnapshot.Build(scene, warm);
+
+        ElementSnapshotReuse.Clear();
+        var cold = new List<ValidationElement>();
+        ValidationSnapshot.Build(scene, cold);
+
+        Assert.AreEqual(cold.Count, warm.Count,
+            $"{when}: снимок из кэша и снимок с нуля разной длины");
+        for (int i = 0; i < cold.Count; i++)
+            Assert.IsTrue(warm[i].PosedLike(cold[i]),
+                $"{when}: деталь {cold[i].Name} пришла из кэша НЕ такой, какой её строят "
+                + "заново — это и есть устаревшая геометрия, по которой валидация "
+                + "судит молча");
     }
 
     private DrawerElement MakePrimitiveDrawer(string name, Vector3 pos)
@@ -567,6 +609,96 @@ public class ValidationSnapshotReuseTests : ElementTestBase
         Assert.AreEqual(closedMin, into[0].Geometry.Min,
             "выдвинутый ящик валидируется по ЗАДВИНУТОЙ позе — геометрия обязана остаться "
             + "той же");
+    }
+
+    /// <summary>Сцена кадра жеста ровно того вида, на котором
+    /// <c>DragFrameWorkTests</c> требует работы: деталь, соседка вплотную и пол.
+    /// Соседка стоит так, что её грань совпадает с гранью детали в ИСХОДНОЙ
+    /// позе — именно это и делает стенд ниже осмысленным.</summary>
+    private KitchenElement StartDraggingNextToANeighbour()
+    {
+        var dragged = MakePrimitiveElement("Dragged", new Vector3Int(600, 720, 18),
+            new Vector3(0f, 0.36f, 0f));
+        MakePrimitiveElement("Neighbour", new Vector3Int(600, 720, 18),
+            new Vector3(0.6f, 0.36f, 0f));
+        MakePrimitiveElement("Floor", new Vector3Int(4000, 18, 4000),
+            new Vector3(0f, -0.009f, 0f));
+
+        _mover!.BeginDragOn(dragged);
+        _mover.SaveDragMaterial(dragged);
+        return dragged;
+    }
+
+    /// <summary>ПЕРВЫЙ из двух разделяющих тестов, и он про ПРЕДПОСЫЛКУ, а не
+    /// про кэш. Кандидат в 20 мм вглубь соседки, с включённым прилипанием,
+    /// возвращает деталь ровно туда, где она стояла: грани совпадают, и
+    /// <c>ElementMover</c> в <c>transform</c> вообще ничего не пишет
+    /// («if (position != settled)»). Кадр, названный «сдвинувшим деталь», её
+    /// не сдвинул.
+    ///
+    /// Поэтому ноль пересборок на таком кадре — не ложь кэша, а правда: работы
+    /// не было. Второй ассерт это и доказывает, спрашивая ГЕОМЕТРИЮ, а не
+    /// счётчик: снимок из кэша совпадает со снимком, собранным с нуля.
+    ///
+    /// Пока счётчик показывал размер сцены, эта подмена была не видна: сторож
+    /// говорил «три детали построены» на кадре, где не двигалось ничего.</summary>
+    [Test]
+    public void ADragFrameWhoseSnapPullsThePartBack_MovesNothing_AndTheCacheStaysHonest()
+    {
+        KitchenSettings.Instance.SnapEnabled = true;
+        var dragged = StartDraggingNextToANeighbour();
+        var scene = PartRegistry.GetAll();
+        var start = dragged.transform.position;
+
+        ValidationSnapshot.Build(scene, new List<ValidationElement>());
+        ConstraintValidator.TakeElementGeometriesBuilt();
+
+        _mover!.DragFrameOn(start + new Vector3(0.02f, 0f, 0f));
+
+        Assert.AreEqual(start, dragged.transform.position,
+            "прилипание обязано вернуть деталь к грани соседки, то есть ровно в исходную "
+            + "позу — если деталь всё же уехала, то ноль пересборок означает слепой "
+            + "признак, и чинить надо ключ, а не стенд");
+        Assert.AreEqual(0, ConstraintValidator.TakeElementGeometriesBuilt(),
+            "деталь не сдвинулась ни на микрон — пересобирать нечего, и счётчик обязан "
+            + "показать ноль, а не размер сцены");
+        AssertTheCacheAgreesWithAColdBuild(scene, "кадр, где прилипание вернуло деталь");
+    }
+
+    /// <summary>ВТОРОЙ разделяющий тест: тот же стенд, но прилипание выключено,
+    /// поэтому деталь действительно уезжает. Здесь обязаны сработать оба
+    /// прибора — и счётчик, и геометрия. Если бы дефект был в приборе (счётчик
+    /// не видит пересборку после перевода <c>ConstraintValidator</c> на
+    /// <c>GeometryBuildsInLastPass</c>), красным стал бы именно этот тест, а не
+    /// соседний.</summary>
+    [Test]
+    public void ADragFrameThatReallyMovesThePart_RebuildsItsGeometry()
+    {
+        KitchenSettings.Instance.SnapEnabled = false;
+        var dragged = StartDraggingNextToANeighbour();
+        var scene = PartRegistry.GetAll();
+        var start = dragged.transform.position;
+
+        ValidationSnapshot.Build(scene, new List<ValidationElement>());
+        ConstraintValidator.TakeElementGeometriesBuilt();
+
+        _mover!.DragFrameOn(start + new Vector3(0.05f, 0f, 0f));
+
+        Assert.AreNotEqual(start.x, dragged.transform.position.x,
+            "без прилипания кадр обязан реально сдвинуть деталь — иначе ниже проверяется "
+            + "не работа прибора, а та же подмена предпосылки");
+        Assert.GreaterOrEqual(ConstraintValidator.TakeElementGeometriesBuilt(), 1,
+            "кадр, который РЕАЛЬНО сдвинул деталь, обязан построить её геометрию заново, "
+            + "и счётчик приложения обязан это увидеть: по нему меряют лаги, и он же "
+            + "единственный сенсор на устаревшую геометрию");
+
+        var into = new List<ValidationElement>();
+        ValidationSnapshot.Build(scene, into);
+        int i = scene.IndexOf(dragged);
+        ElementGeometry.BoundsOf(dragged.GetVertices(), out var min, out _);
+        Assert.AreEqual(min.x, into[i].Geometry.Min.x, 1e-6f,
+            "снимок обязан описывать НОВУЮ позу детали, а не ту, с которой начался жест");
+        AssertTheCacheAgreesWithAColdBuild(scene, "кадр, где деталь действительно уехала");
     }
 
     /// <summary>Деталь уехала из сцены — кэш обязан её отпустить, а не держать

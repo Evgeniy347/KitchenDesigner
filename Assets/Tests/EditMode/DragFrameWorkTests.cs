@@ -78,12 +78,21 @@ public class DragFrameWorkTests : ElementTestBase
     [Test]
     public void DragFrameThatMovedThePart_ValidatesTheWholeSceneAtLeastOnce()
     {
+        KitchenSettings.Instance.SnapEnabled = false;
         var dragged = StartDragging();
         ConstraintValidator.TakeSceneValidations();
         ConstraintValidator.TakeElementGeometriesBuilt();
+        var start = dragged.transform.position;
 
-        _mover!.DragFrameOn(dragged.transform.position + new Vector3(0.05f, 0f, 0f));
+        _mover!.DragFrameOn(start + new Vector3(0.05f, 0f, 0f));
 
+        Assert.AreNotEqual(start.x, dragged.transform.position.x,
+            "кадр обязан РЕАЛЬНО сдвинуть деталь, иначе оба требования ниже проверяют не "
+            + "то. Прилипание здесь выключено намеренно: грань детали в исходной позе "
+            + "совпадает с гранью соседки, и кандидат в 50 мм вглубь неё возвращался "
+            + "прилипанием ровно на место — ElementMover не писал в transform вовсе, и "
+            + "сторож с именем «кадр, сдвинувший деталь» стерёг кадр, в котором ничего не "
+            + "двигалось. Пока счётчик показывал размер сцены, подмена была не видна");
         Assert.GreaterOrEqual(ConstraintValidator.TakeSceneValidations(), 1,
             "кадр, сдвинувший деталь, обязан заново спросить у сцены, законно ли она стоит — "
             + "иначе подсветка перетаскивания врёт");
@@ -91,8 +100,9 @@ public class DragFrameWorkTests : ElementTestBase
             "кадр, сдвинувший деталь, обязан построить её геометрию заново. Требование было "
             + "«не меньше трёх, по числу деталей сцены», и это устарело вместе с продуктом: "
             + "снимок переиспользует геометрию деталей, которые за кадр не менялись "
-            + "(ValidationSnapshotReuseTests), поэтому счётчик теперь показывает число "
-            + "ИЗМЕНИВШИХСЯ деталей, а не размер сцены");
+            + "(ValidationSnapshotReuseTests), поэтому счётчик показывает число ИЗМЕНИВШИХСЯ "
+            + "деталей, а не размер сцены. Ноль здесь означает устаревшую геометрию в "
+            + "валидации — то есть молчаливую ложь пользователю");
     }
 
     /// <summary>Главный сенсор. Мышь стоит: кандидат позиции тот же, сцена та же, прилипание
