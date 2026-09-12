@@ -18,7 +18,9 @@ using KitchenDesigner.Core;
 ///
 /// Признак построен на ЗНАЧЕНИЯХ (поза, поза покоя, признак
 /// <c>PoseFollowsTransform</c>, масштаб, габариты, зазоры, пазы, имя, группа,
-/// имя парной детали), а не на <c>Transform.hasChanged</c> и не на
+/// имя парной детали, наличие соседних компонентов <c>Wall</c> и
+/// <c>BasePlate</c> и три числа стены — опущена ли, полная высота, полная
+/// позиция), а не на <c>Transform.hasChanged</c> и не на
 /// <c>SceneRevision</c>. Это не стилистический выбор: запись в <c>transform</c>
 /// тем же значением поднимает <c>hasChanged</c>, <c>SceneChangeTracker.Poll</c>
 /// бампит ревизию каждый кадр перетаскивания — кэш с таким ключом обесценивал
@@ -86,6 +88,16 @@ public class ValidationSnapshotReuseTests : ElementTestBase
 
     private DrawerElement MakeDrawer(string name = "SubjectDrawer") =>
         MakePrimitiveDrawer(name, new Vector3(0f, 0.36f, 0f));
+
+    /// <summary>Стена — через настоящую фабрику: она вешает на объект компонент
+    /// <c>Wall</c>, а именно он решает и роль якоря, и осевую линию.</summary>
+    private KitchenElement MakeWall(string name = "SubjectWall")
+    {
+        var go = ElementFactory.CreateWall(new Vector3Int(3000, 2700, 100), name,
+            new Vector3(0f, 1.35f, -2f));
+        _spawned.Add(go);
+        return go.GetComponent<KitchenElement>();
+    }
 
     /// <summary>Четыреста деталей строятся с погашенной перестройкой мешей:
     /// снимок валидации меша не читает вовсе (геометрия считается из позы,
@@ -201,62 +213,67 @@ public class ValidationSnapshotReuseTests : ElementTestBase
     }
 
     /// <summary>Основание, на котором вообще законно переиспользовать ЦЕЛЫЙ
-    /// <c>ValidationElement</c> прошлого кадра: у детали, взятой в кэш, все
-    /// поля, зависящие от СПИСКА (индекс стены, индекс хозяина, второе тело,
-    /// осевая линия), заведомо пусты, поэтому снимок не зависит от того, кто
-    /// стоит рядом и на каком месте. Роль при этом ПУСТОЙ быть не обязана —
-    /// у ящика и фасада она своя, — но она выводится из типа и зазоров, то есть
-    /// из ключа, а не из соседей.
+    /// <c>ValidationElement</c> прошлого кадра: у детали, взятой в кэш, поля,
+    /// которые считаются ПО СПИСКУ — индекс стены, индекс хозяина, второе тело —
+    /// заведомо пусты, поэтому снимок не зависит от того, кто стоит рядом и на
+    /// каком месте. Роль и осевая линия пустыми быть не обязаны: они выводятся
+    /// из самой детали и её компонентов, то есть из ключа.
     ///
-    /// Расширится <c>ReusesItsSnapshot</c> на тип, у которого эти поля не пусты
-    /// (стена, проём, винтовая опора, варочная), — тест покраснеет раньше, чем
+    /// Перебираются ВСЕ типы настоящей фабрики, а не список из трёх, написанный
+    /// руками: годность решает выведенное правило (<c>ReusesItsSnapshot</c>), и
+    /// новый тип обязан попасть под проверку сам. Появится тип, который признан
+    /// годным и при этом несёт индекс от списка, — тест покраснеет раньше, чем
     /// кэш начнёт врать чужим индексом.</summary>
     [Test]
     public void EverySnapshotKeptBetweenFrames_CarriesNothingThatDependsOnTheRestOfTheScene()
     {
-        var subjects = new KitchenElement[] { MakeBoard(), MakeFacade(), MakeDrawer() };
-        var scene = new List<KitchenElement>(subjects);
+        var scene = new List<KitchenElement> { MakeWall("WallUnderTest") };
+        foreach (var (type, make) in EveryElementType.Makers)
+        {
+            var go = make(type.Name + "_probe");
+            _spawned.Add(go);
+            scene.Add(go.GetComponent<KitchenElement>());
+        }
+
         var into = new List<ValidationElement>();
         ValidationSnapshot.Build(scene, into);
 
-        for (int i = 0; i < subjects.Length; i++)
+        int reusable = 0;
+        for (int i = 0; i < scene.Count; i++)
         {
-            string who = subjects[i].GetType().Name;
-            Assert.IsTrue(ValidationSnapshot.ReusesItsSnapshot(subjects[i]),
-                $"{who}: деталь стенда обязана попадать в кэш — иначе тесты честности "
-                + "мерили бы отказ от переиспользования, а не переиспользование");
+            if (!ValidationSnapshot.ReusesItsSnapshot(scene[i])) continue;
+            reusable++;
 
+            string who = scene[i].GetType().Name;
             Assert.AreEqual(ValidationElement.NoIndex, into[i].AttachedWallIndex,
-                $"{who}: индекс стены зависит от СПИСКА — такой снимок нельзя нести через кадр");
+                $"{who}: индекс стены считается ПО СПИСКУ — такой снимок нельзя нести через кадр");
             Assert.AreEqual(ValidationElement.NoIndex, into[i].HostIndex,
-                $"{who}: индекс хозяина зависит от СПИСКА");
+                $"{who}: индекс хозяина считается ПО СПИСКУ");
             Assert.IsFalse(into[i].HasExtraBody,
-                $"{who}: второе тело считается от хозяина, то есть от СПИСКА");
-            Assert.IsFalse(into[i].Is(ElementKind.Anchor),
-                $"{who}: якорь — роль, которую снимок обязан пересчитывать по сцене");
+                $"{who}: второе тело считается от хозяина, то есть по СПИСКУ");
         }
+
+        Assert.GreaterOrEqual(reusable, 5,
+            "ни один тип не признан годным — правило годности отказало целиком, и все "
+            + "утверждения выше проверены на пустом множестве");
     }
 
-    /// <summary>Отрицательный контроль к правилу «тип ТОЧНО такой»: наследник в
-    /// кэш не берётся. Сборный фасад — не фасад с точки зрения геометрии, и
-    /// признак о его полях ничего не знает.</summary>
+    /// <summary>Отрицательный контроль к правилу годности: тип, который строит
+    /// свою коробку САМ (<c>PillarElement</c> переопределяет
+    /// <c>GetVertices</c>/<c>GetFaces</c>), в кэш не берётся — признак о его
+    /// полях ничего не знает.</summary>
     [Test]
-    public void ASubclassOfACachedType_IsNotReused()
+    public void ATypeThatBuildsItsOwnBox_IsNotReused()
     {
-        KitchenElement.SuppressVisualRebuild = true;
-        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name = "Assembled";
-        var assembled = go.AddComponent<AssembledFacadeElement>();
-        assembled.PartName = "Assembled";
-        PartRegistry.Register(assembled);
+        var go = ElementFactory.CreatePillar(713, "Pillar", Vector3.zero, 87);
         _spawned.Add(go);
-        KitchenElement.SuppressVisualRebuild = _suppressBefore;
+        var pillar = go.GetComponent<KitchenElement>();
 
-        Assert.IsFalse(ValidationSnapshot.ReusesItsSnapshot(assembled),
-            "наследник кэшируемого типа обязан строиться каждый кадр: его геометрия "
-            + "складывается из полей, которых признак не видит");
+        Assert.IsFalse(ValidationSnapshot.ReusesItsSnapshot(pillar),
+            "тип, собирающий свою геометрию сам, обязан строиться каждый кадр: ключ "
+            + "описывает коробку базового класса, а не его");
 
-        var scene = new List<KitchenElement> { assembled };
+        var scene = new List<KitchenElement> { pillar };
         var into = new List<ValidationElement>();
         ValidationSnapshot.Build(scene, into);
         ValidationSnapshot.TakeGeometryBuilds();
@@ -265,6 +282,32 @@ public class ValidationSnapshotReuseTests : ElementTestBase
         Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
             "деталь вне кэша обязана пересобираться на КАЖДОМ кадре — ноль здесь означает, "
             + "что кэш взял её молча");
+    }
+
+    /// <summary>Положительный контроль к тому же правилу, и он обязан стоять
+    /// рядом с отрицательным: наследник, который НЕ трогает геометрию, берётся
+    /// в кэш. Сборный фасад отличается от фасада рамкой в МЕШЕ и строкой в
+    /// ведомости; валидируется он той же коробкой, что и фасад.</summary>
+    [Test]
+    public void AnAssembledFacade_IsReused_BecauseItsBoxIsTheFacadesOwn()
+    {
+        var go = ElementFactory.CreateAssembledFacade(new Vector3Int(451, 719, 19),
+            "Assembled", Vector3.zero, AssembledFill.Glass);
+        _spawned.Add(go);
+        var assembled = go.GetComponent<KitchenElement>();
+
+        Assert.IsTrue(ValidationSnapshot.ReusesItsSnapshot(assembled),
+            "сборный фасад не переопределяет ни одного члена, из которых собирается "
+            + "коробка валидации — значит ключ фасада описывает и его");
+
+        var scene = new List<KitchenElement> { assembled };
+        var into = new List<ValidationElement>();
+        ValidationSnapshot.Build(scene, into);
+        ValidationSnapshot.TakeGeometryBuilds();
+        ValidationSnapshot.Build(scene, into);
+
+        Assert.AreEqual(0, ValidationSnapshot.TakeGeometryBuilds(),
+            "неизменившийся сборный фасад не обязан пересобираться");
     }
 
     private void AssertTheChangeReachedTheSnapshot(string way, KitchenElement subject,
@@ -392,6 +435,82 @@ public class ValidationSnapshotReuseTests : ElementTestBase
         AssertTheChangeReachedTheSnapshot("перепривязка пары ящиков", MakeDrawer(),
             e => ((DrawerElement)e).PairedDrawerName = "Upper",
             s => s.PairedName ?? "");
+
+    [Test]
+    public void MovingAWall_ReachesTheSnapshot() =>
+        AssertTheChangeReachedTheSnapshot("сдвиг стены", MakeWall(),
+            e => e.transform.position += new Vector3(0.05f, 0f, 0f),
+            s => s.Geometry.Min.x);
+
+    /// <summary>Осевая линия стены — не украшение снимка: по ней прилипают
+    /// перегородки и считаются проёмы. Устаревшая осевая линия — это снэп,
+    /// который ведёт деталь не туда, и заметить это можно только глазами.
+    /// Поэтому у стены проверяется именно она, а не габариты.</summary>
+    [Test]
+    public void MovingAWall_ReachesItsCentreline() =>
+        AssertTheChangeReachedTheSnapshot("сдвиг стены: осевая линия", MakeWall(),
+            e => e.transform.position += new Vector3(0f, 0f, 0.25f),
+            s => s.Centreline.Start.z);
+
+    /// <summary>Опущенная стена (режим осмотра сверху) валидируется по ПОЛНОЙ
+    /// высоте: <c>IsLowered</c> подменяет и высоту, и центр обратно на
+    /// запомненные. Значит <c>transform</c> стены уехал, а её коробка обязана
+    /// остаться прежней — пара «пересобрали, но получили то же» здесь и есть
+    /// правило продукта. Без первого ассерта признак мог бы проспать режим,
+    /// без второго — «пересборка» получалась бы ценой стены, которая в
+    /// валидации присела вместе с картинкой.</summary>
+    [Test]
+    public void LoweringAWall_IsRebuiltButKeepsItsFullHeightBox()
+    {
+        var subject = MakeWall();
+        var wall = subject.GetComponent<Wall>();
+        var scene = SceneAround(subject);
+        var into = new List<ValidationElement>();
+
+        ValidationSnapshot.Build(scene, into);
+        var fullSpan = into[0].HeightSpan;
+        var fullTop = into[0].Geometry.Max.y;
+        ValidationSnapshot.TakeGeometryBuilds();
+
+        wall.SetLowered(true, 0.3f);
+        Assert.IsTrue(wall.IsLowered, "стенд обязан реально опустить стену");
+        ValidationSnapshot.Build(scene, into);
+
+        Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
+            "стену опустили — снимок обязан пересобраться: то же число в localScale.y "
+            + "теперь значит другое");
+        Assert.AreEqual(fullSpan.Min, into[0].HeightSpan.Min,
+            "опущенная стена валидируется по ПОЛНОЙ высоте — иначе режим просмотра "
+            + "начинает менять документ");
+        Assert.AreEqual(fullTop, into[0].Geometry.Max.y,
+            "верх коробки опущенной стены обязан остаться на месте");
+    }
+
+    /// <summary>Роль якоря приходит от СОСЕДНЕГО компонента, а не от типа:
+    /// <c>BasePlate</c> вешают на объект в рантайме. Признак обязан спрашивать
+    /// про него каждый кадр, иначе деталь, ставшая полом, останется в кэше
+    /// обычной доской — и вся сцена повиснет без опоры молча.</summary>
+    [Test]
+    public void AddingABasePlateAtRuntime_ReachesTheSnapshot()
+    {
+        var subject = MakeBoard();
+        var scene = SceneAround(subject);
+        var into = new List<ValidationElement>();
+
+        ValidationSnapshot.Build(scene, into);
+        Assert.IsFalse(into[0].Is(ElementKind.Anchor),
+            "доска стенда обязана начинать НЕ якорем, иначе переход ниже не переход");
+        ValidationSnapshot.TakeGeometryBuilds();
+
+        subject.gameObject.AddComponent<BasePlate>();
+        ValidationSnapshot.Build(scene, into);
+
+        Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
+            "деталь стала полом — снимок обязан пересобраться");
+        Assert.IsTrue(into[0].Is(ElementKind.FloorAnchor),
+            "роль «пол» обязана прийти из НОВОГО снимка: по ней ядро решает, на чём "
+            + "стоит вся сцена");
+    }
 
     /// <summary>Самый тонкий из способов, и единственный, который не виден ни в
     /// одном значении позы: фасад переходит в открытую позу. С этого момента

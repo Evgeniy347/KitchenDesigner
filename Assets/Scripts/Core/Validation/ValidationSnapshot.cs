@@ -18,7 +18,21 @@ namespace KitchenDesigner.Core
         }
 #endif
 
-        private static readonly List<bool> _reusable = new List<bool>();
+        private readonly struct Probe
+        {
+            public readonly Wall? Wall;
+            public readonly bool IsFloor;
+            public readonly bool Reusable;
+
+            public Probe(Wall? wall, bool isFloor, bool reusable)
+            {
+                Wall = wall;
+                IsFloor = isFloor;
+                Reusable = reusable;
+            }
+        }
+
+        private static readonly List<Probe> _probes = new List<Probe>();
 
         public static void Build(List<KitchenElement> elements, List<ValidationElement> into)
         {
@@ -35,13 +49,21 @@ namespace KitchenDesigner.Core
             Dictionary<string, int>? wallIndexByName = null;
             Dictionary<string, int>? partIndexByName = null;
             bool hasHosted = false;
-            _reusable.Clear();
+            _probes.Clear();
             for (int i = 0; i < elements.Count; i++)
             {
                 var e = elements[i];
-                _reusable.Add(e != null && ReusesItsSnapshot(e));
-                if (e == null || _reusable[i]) continue;
-                if (e.GetComponent<Wall>() != null)
+                if (e == null)
+                {
+                    _probes.Add(default);
+                    continue;
+                }
+
+                var wall = e.GetComponent<Wall>();
+                _probes.Add(new Probe(wall, e.GetComponent<BasePlate>() != null,
+                    ReusesItsSnapshot(e)));
+
+                if (wall != null)
                     (wallIndexByName ??= new Dictionary<string, int>())[e.gameObject.name] = i;
                 if (e is CooktopElement || e is ScrewLegElement) hasHosted = true;
             }
@@ -56,8 +78,9 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < elements.Count; i++)
             {
                 var e = elements[i];
-                if (_reusable[i]
-                    && ElementSnapshotReuse.TryReuse(e, PairedNameOf(e), out var reused))
+                var probe = _probes[i];
+                if (probe.Reusable && ElementSnapshotReuse.TryReuse(e, probe.Wall, probe.IsFloor,
+                    PairedNameOf(e), out var reused))
                 {
                     into.Add(reused);
                     continue;
@@ -67,22 +90,37 @@ namespace KitchenDesigner.Core
                 _geometryBuilds++;
                 GeometryBuildsInLastPass++;
 #endif
-                var built = Build(e, wallIndexByName, partIndexByName);
-                if (_reusable[i]) ElementSnapshotReuse.Keep(e, built);
+                var built = Build(e, probe.Wall, probe.IsFloor, wallIndexByName, partIndexByName);
+                if (probe.Reusable) ElementSnapshotReuse.Keep(e, probe.Wall, probe.IsFloor, built);
                 into.Add(built);
             }
 
             ElementSnapshotReuse.DropWhatThisPassNeverSaw(elements.Count);
         }
 
+        private static readonly System.Type[] ProvedBoxBuilders =
+            { typeof(KitchenElement), typeof(FacadeElement), typeof(DrawerElement) };
+
+        private static readonly Dictionary<System.Type, bool> _reusableByType =
+            new Dictionary<System.Type, bool>();
+
         public static bool ReusesItsSnapshot(KitchenElement e)
         {
             var type = e.GetType();
-            if (type != typeof(KitchenElement) && type != typeof(FacadeElement)
-                && type != typeof(DrawerElement)) return false;
+            if (_reusableByType.TryGetValue(type, out bool known)) return known;
 
-            return e.GetComponent<Wall>() == null && e.GetComponent<BasePlate>() == null;
+            bool reusable = SnapshotDependsOnNothingButTheElement(type)
+                && ValidationGeometryContract.BoxIsBuiltOnlyBy(type, ProvedBoxBuilders);
+            _reusableByType[type] = reusable;
+            return reusable;
         }
+
+        private static bool SnapshotDependsOnNothingButTheElement(System.Type type) =>
+            !typeof(ScrewLegElement).IsAssignableFrom(type)
+            && !typeof(CooktopElement).IsAssignableFrom(type)
+            && !typeof(WallOpeningElement).IsAssignableFrom(type)
+            && !typeof(ISnapPorts).IsAssignableFrom(type)
+            && !typeof(IMountsOnTarget).IsAssignableFrom(type);
 
         private static string? PairedNameOf(KitchenElement e) =>
             (e as DrawerElement)?.PairedDrawerName ?? (e as ScrewLegElement)?.HostPartName;
@@ -116,7 +154,8 @@ namespace KitchenDesigner.Core
                 ? new[] { MainBody(e), extra }
                 : new[] { MainBody(e) };
 
-        public static ElementKind KindOf(KitchenElement e) => KindOf(e, e.GetComponent<Wall>());
+        public static ElementKind KindOf(KitchenElement e) =>
+            KindOf(e, e.GetComponent<Wall>(), e.GetComponent<BasePlate>() != null);
 
         public static bool IsAnchor(KitchenElement e) =>
             e != null && (KindOf(e) & ElementKind.Anchor) != 0;
@@ -129,11 +168,11 @@ namespace KitchenDesigner.Core
 
         public static FacadeElement? AsFacade(KitchenElement e) => e as FacadeElement;
 
-        private static ValidationElement Build(KitchenElement e, Dictionary<string, int>? wallIndexByName,
+        private static ValidationElement Build(KitchenElement e, Wall? wall, bool hasBasePlate,
+            Dictionary<string, int>? wallIndexByName,
             Dictionary<string, int>? partIndexByName = null)
         {
-            var wall = e.GetComponent<Wall>();
-            var kind = KindOf(e, wall);
+            var kind = KindOf(e, wall, hasBasePlate);
 
             float centerY = wall != null ? wall.FullPosition.y : e.transform.position.y;
             var heightSpan = Span.FromCenter(centerY, e.DimensionsMM.y * AppConstants.MM_TO_UNITS);
@@ -166,11 +205,11 @@ namespace KitchenDesigner.Core
                     : default);
         }
 
-        private static ElementKind KindOf(KitchenElement e, Wall? wall)
+        private static ElementKind KindOf(KitchenElement e, Wall? wall, bool hasBasePlate)
         {
             var kind = ElementKind.None;
 
-            bool isFloor = e.GetComponent<BasePlate>() != null || e is FloorElement;
+            bool isFloor = hasBasePlate || e is FloorElement;
             bool isOpening = e is WallOpeningElement;
 
             if (isFloor) kind |= ElementKind.FloorAnchor;

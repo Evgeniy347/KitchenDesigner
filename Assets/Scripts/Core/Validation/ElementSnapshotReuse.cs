@@ -17,11 +17,23 @@ namespace KitchenDesigner.Core
             private readonly string _name;
             private readonly int _groupId;
             private readonly bool _poseFollowsTransform;
+            private readonly bool _isFloor;
+            private readonly bool _hasWall;
+            private readonly bool _wallLowered;
+            private readonly float _wallFullScaleY;
+            private readonly Vector3 _wallFullPosition;
 
             private Stamp(Vector3 position, Quaternion rotation, Vector3 scale,
                 Vector3 restPosition, Quaternion restRotation, Vector3Int dimensions,
-                BoxGaps gaps, string name, int groupId, bool poseFollowsTransform)
+                BoxGaps gaps, string name, int groupId, bool poseFollowsTransform,
+                bool isFloor, bool hasWall, bool wallLowered, float wallFullScaleY,
+                Vector3 wallFullPosition)
             {
+                _isFloor = isFloor;
+                _hasWall = hasWall;
+                _wallLowered = wallLowered;
+                _wallFullScaleY = wallFullScaleY;
+                _wallFullPosition = wallFullPosition;
                 _poseFollowsTransform = poseFollowsTransform;
                 _position = position;
                 _rotation = rotation;
@@ -34,13 +46,16 @@ namespace KitchenDesigner.Core
                 _groupId = groupId;
             }
 
-            public static Stamp Of(KitchenElement element)
+            public static Stamp Of(KitchenElement element, Wall? wall, bool isFloor)
             {
                 var pose = element.transform;
                 return new Stamp(pose.position, pose.rotation, pose.localScale,
                     element.AttachRestPosition, element.AttachRestRotation,
                     element.DimensionsMM, element.Gaps, element.PartName, element.GroupId,
-                    element.PoseFollowsTransform);
+                    element.PoseFollowsTransform, isFloor, wall != null,
+                    wall != null && wall.IsLowered,
+                    wall != null ? wall.FullScaleY : 0f,
+                    wall != null ? wall.FullPosition : Vector3.zero);
             }
 
             public bool Matches(in Stamp other) =>
@@ -53,7 +68,12 @@ namespace KitchenDesigner.Core
                 && SameGaps(_gaps, other._gaps)
                 && string.Equals(_name, other._name, System.StringComparison.Ordinal)
                 && _groupId == other._groupId
-                && _poseFollowsTransform == other._poseFollowsTransform;
+                && _poseFollowsTransform == other._poseFollowsTransform
+                && _isFloor == other._isFloor
+                && _hasWall == other._hasWall
+                && _wallLowered == other._wallLowered
+                && _wallFullScaleY.Equals(other._wallFullScaleY)
+                && SamePoint(_wallFullPosition, other._wallFullPosition);
 
             private static bool SamePoint(Vector3 a, Vector3 b) =>
                 a.x.Equals(b.x) && a.y.Equals(b.y) && a.z.Equals(b.z);
@@ -81,15 +101,15 @@ namespace KitchenDesigner.Core
 
         public static void BeginPass() => _pass++;
 
-        public static bool TryReuse(KitchenElement element, string? pairedName,
-            out ValidationElement snapshot)
+        public static bool TryReuse(KitchenElement element, Wall? wall, bool isFloor,
+            string? pairedName, out ValidationElement snapshot)
         {
             snapshot = default;
             if (element == null || FaceCache.Enabled) return false;
             if (!_entries.TryGetValue(element, out var entry)) return false;
             if (!string.Equals(entry.Snapshot.PairedName, pairedName,
                 System.StringComparison.Ordinal)) return false;
-            if (!Stamp.Of(element).Matches(entry.Stamp)) return false;
+            if (!Stamp.Of(element, wall, isFloor).Matches(entry.Stamp)) return false;
             if (!SameGrooves(entry.Grooves, element.Grooves)) return false;
 
             entry.Touched = _pass;
@@ -97,13 +117,14 @@ namespace KitchenDesigner.Core
             return true;
         }
 
-        public static void Keep(KitchenElement element, in ValidationElement snapshot)
+        public static void Keep(KitchenElement element, Wall? wall, bool isFloor,
+            in ValidationElement snapshot)
         {
             if (element == null || FaceCache.Enabled) return;
             if (!_entries.TryGetValue(element, out var entry))
                 _entries[element] = entry = new Entry();
 
-            entry.Stamp = Stamp.Of(element);
+            entry.Stamp = Stamp.Of(element, wall, isFloor);
             entry.Grooves = CopyOf(element.Grooves);
             entry.Snapshot = snapshot;
             entry.Touched = _pass;
