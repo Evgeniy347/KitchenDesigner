@@ -87,8 +87,12 @@ public class DragFrameWorkTests : ElementTestBase
         Assert.GreaterOrEqual(ConstraintValidator.TakeSceneValidations(), 1,
             "кадр, сдвинувший деталь, обязан заново спросить у сцены, законно ли она стоит — "
             + "иначе подсветка перетаскивания врёт");
-        Assert.GreaterOrEqual(ConstraintValidator.TakeElementGeometriesBuilt(), 3,
-            "полная валидация строит геометрию КАЖДОЙ детали сцены — на этом и растёт цена");
+        Assert.GreaterOrEqual(ConstraintValidator.TakeElementGeometriesBuilt(), 1,
+            "кадр, сдвинувший деталь, обязан построить её геометрию заново. Требование было "
+            + "«не меньше трёх, по числу деталей сцены», и это устарело вместе с продуктом: "
+            + "снимок переиспользует геометрию деталей, которые за кадр не менялись "
+            + "(ValidationSnapshotReuseTests), поэтому счётчик теперь показывает число "
+            + "ИЗМЕНИВШИХСЯ деталей, а не размер сцены");
     }
 
     /// <summary>Главный сенсор. Мышь стоит: кандидат позиции тот же, сцена та же, прилипание

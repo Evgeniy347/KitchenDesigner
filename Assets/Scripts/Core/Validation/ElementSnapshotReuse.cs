@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public static class BoardSnapshotReuse
+    public static class ElementSnapshotReuse
     {
         private readonly struct Stamp
         {
@@ -16,11 +16,13 @@ namespace KitchenDesigner.Core
             private readonly BoxGaps _gaps;
             private readonly string _name;
             private readonly int _groupId;
+            private readonly bool _poseFollowsTransform;
 
             private Stamp(Vector3 position, Quaternion rotation, Vector3 scale,
                 Vector3 restPosition, Quaternion restRotation, Vector3Int dimensions,
-                BoxGaps gaps, string name, int groupId)
+                BoxGaps gaps, string name, int groupId, bool poseFollowsTransform)
             {
+                _poseFollowsTransform = poseFollowsTransform;
                 _position = position;
                 _rotation = rotation;
                 _scale = scale;
@@ -37,7 +39,8 @@ namespace KitchenDesigner.Core
                 var pose = element.transform;
                 return new Stamp(pose.position, pose.rotation, pose.localScale,
                     element.AttachRestPosition, element.AttachRestRotation,
-                    element.DimensionsMM, element.Gaps, element.PartName, element.GroupId);
+                    element.DimensionsMM, element.Gaps, element.PartName, element.GroupId,
+                    element.PoseFollowsTransform);
             }
 
             public bool Matches(in Stamp other) =>
@@ -49,7 +52,8 @@ namespace KitchenDesigner.Core
                 && _dimensions == other._dimensions
                 && SameGaps(_gaps, other._gaps)
                 && string.Equals(_name, other._name, System.StringComparison.Ordinal)
-                && _groupId == other._groupId;
+                && _groupId == other._groupId
+                && _poseFollowsTransform == other._poseFollowsTransform;
 
             private static bool SamePoint(Vector3 a, Vector3 b) =>
                 a.x.Equals(b.x) && a.y.Equals(b.y) && a.z.Equals(b.z);
@@ -77,11 +81,14 @@ namespace KitchenDesigner.Core
 
         public static void BeginPass() => _pass++;
 
-        public static bool TryReuse(KitchenElement element, out ValidationElement snapshot)
+        public static bool TryReuse(KitchenElement element, string? pairedName,
+            out ValidationElement snapshot)
         {
             snapshot = default;
             if (element == null || FaceCache.Enabled) return false;
             if (!_entries.TryGetValue(element, out var entry)) return false;
+            if (!string.Equals(entry.Snapshot.PairedName, pairedName,
+                System.StringComparison.Ordinal)) return false;
             if (!Stamp.Of(element).Matches(entry.Stamp)) return false;
             if (!SameGrooves(entry.Grooves, element.Grooves)) return false;
 

@@ -93,10 +93,12 @@ namespace KitchenDesigner.Core
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _sceneValidations++;
-            _elementGeometriesBuilt += _elems.Count;
 #endif
 
             ValidationSnapshot.Build(_elems, _snapshots);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            _elementGeometriesBuilt += ValidationSnapshot.GeometryBuildsInLastPass;
+#endif
             var core = _core;
             if (!SceneGesture.InProgress) _gesture.Reset();
             if (!SceneGesture.InProgress || !_gesture.TryValidate(_snapshots, core))

@@ -12,11 +12,13 @@ using KitchenDesigner.Core;
 /// ЗВУЧАЩЕГО признака «эта деталь не менялась» — это молчаливая ложь
 /// пользователю: подсветка показывает вчерашнюю геометрию, и ни один тест
 /// производительности этого не видит. Поэтому каждый способ изменить деталь —
-/// сдвиг, поворот, размер, зазор, паз, имя, группа — стоит здесь отдельным
-/// тестом, а не пунктом в общем цикле: падение обязано НАЗЫВАТЬ способ.
+/// сдвиг, поворот, размер, зазор, паз, имя, группа, смена позы открывания,
+/// перепривязка пары — стоит здесь отдельным тестом, а не пунктом в общем
+/// цикле: падение обязано НАЗЫВАТЬ способ.
 ///
-/// Признак построен на ЗНАЧЕНИЯХ (поза, поза покоя, масштаб, габариты, зазоры,
-/// пазы, имя, группа), а не на <c>Transform.hasChanged</c> и не на
+/// Признак построен на ЗНАЧЕНИЯХ (поза, поза покоя, признак
+/// <c>PoseFollowsTransform</c>, масштаб, габариты, зазоры, пазы, имя, группа,
+/// имя парной детали), а не на <c>Transform.hasChanged</c> и не на
 /// <c>SceneRevision</c>. Это не стилистический выбор: запись в <c>transform</c>
 /// тем же значением поднимает <c>hasChanged</c>, <c>SceneChangeTracker.Poll</c>
 /// бампит ревизию каждый кадр перетаскивания — кэш с таким ключом обесценивал
@@ -34,7 +36,7 @@ public class ValidationSnapshotReuseTests : ElementTestBase
     public void SetUp()
     {
         PartRegistry.Clear();
-        BoardSnapshotReuse.Clear();
+        ElementSnapshotReuse.Clear();
         _suppressBefore = KitchenElement.SuppressVisualRebuild;
     }
 
@@ -48,22 +50,42 @@ public class ValidationSnapshotReuseTests : ElementTestBase
         foreach (var el in PartRegistry.GetAll())
             if (el != null) UnityEngine.Object.DestroyImmediate(el.gameObject);
         PartRegistry.Clear();
-        BoardSnapshotReuse.Clear();
+        ElementSnapshotReuse.Clear();
     }
 
-    /// <summary>Сцена из трёх деталей: две соседки нужны затем, чтобы «пересборок
-    /// ровно одна» означало «кэш живой и всё равно пропустил изменение», а не
-    /// «кэша нет».</summary>
-    private List<KitchenElement> MakeSmallScene()
+    private DrawerElement MakePrimitiveDrawer(string name, Vector3 pos)
     {
-        var scene = new List<KitchenElement>
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = name;
+        go.transform.position = pos;
+        var d = go.AddComponent<DrawerElement>();
+        d.PartName = name;
+        PartRegistry.Register(d);
+        _spawned.Add(go);
+        return d;
+    }
+
+    /// <summary>Сцена вокруг подопытной детали: две соседки нужны затем, чтобы
+    /// «пересборок ровно одна» означало «кэш живой и всё равно пропустил
+    /// изменение», а не «кэша нет».</summary>
+    private List<KitchenElement> SceneAround(KitchenElement subject)
+    {
+        return new List<KitchenElement>
         {
-            MakePrimitiveElement("Subject", new Vector3Int(600, 720, 18), new Vector3(0f, 0.36f, 0f)),
+            subject,
             MakePrimitiveElement("Neighbour", new Vector3Int(600, 720, 18), new Vector3(0.6f, 0.36f, 0f)),
             MakePrimitiveElement("Shelf", new Vector3Int(564, 18, 560), new Vector3(0.3f, 0.4f, 0f)),
         };
-        return scene;
     }
+
+    private KitchenElement MakeBoard(string name = "SubjectBoard") =>
+        MakePrimitiveElement(name, new Vector3Int(600, 720, 18), new Vector3(0f, 0.36f, 0f));
+
+    private FacadeElement MakeFacade(string name = "SubjectFacade") =>
+        MakePrimitiveFacade(name, new Vector3Int(600, 716, 18), new Vector3(0f, 0.36f, 0f));
+
+    private DrawerElement MakeDrawer(string name = "SubjectDrawer") =>
+        MakePrimitiveDrawer(name, new Vector3(0f, 0.36f, 0f));
 
     /// <summary>Четыреста деталей строятся с погашенной перестройкой мешей:
     /// снимок валидации меша не читает вовсе (геометрия считается из позы,
@@ -132,6 +154,30 @@ public class ValidationSnapshotReuseTests : ElementTestBase
             + "измеряет экономию на устаревших данных");
     }
 
+    /// <summary>Тот же счётчик, прочитанный через прибор приложения. Он врал в
+    /// большую сторону: <c>ConstraintValidator</c> прибавлял размер сцены
+    /// безусловно, не зная про переиспользование. Сломанный прибор хуже
+    /// отсутствующего — по нему меряют лаги.</summary>
+    [Test]
+    public void TheValidatorsOwnCounter_ReportsRealRebuilds_NotTheSceneSize()
+    {
+        var scene = SceneAround(MakeBoard());
+
+        ConstraintValidator.Validate(scene);
+        ConstraintValidator.TakeElementGeometriesBuilt();
+
+        ConstraintValidator.Validate(scene);
+        Assert.AreEqual(0, ConstraintValidator.TakeElementGeometriesBuilt(),
+            "вторая валидация той же неизменной сцены не строит ни одной геометрии — "
+            + "счётчик, показывающий здесь размер сцены, измеряет собственную формулу, "
+            + "а не работу");
+
+        scene[0].transform.position += new Vector3(0.05f, 0f, 0f);
+        ConstraintValidator.Validate(scene);
+        Assert.AreEqual(1, ConstraintValidator.TakeElementGeometriesBuilt(),
+            "сдвинули одну деталь из трёх — счётчик обязан показать одну пересборку");
+    }
+
     /// <summary>Обратный вход к сенсору цены и к ловушке, оплаченной прошлой
     /// сессией: запись в <c>transform</c> ТЕМ ЖЕ значением — не изменение.
     /// Признак, построенный на <c>hasChanged</c> или на <c>SceneRevision</c>,
@@ -139,7 +185,7 @@ public class ValidationSnapshotReuseTests : ElementTestBase
     [Test]
     public void WritingTheSamePositionAgain_CostsNoRebuild()
     {
-        var scene = MakeSmallScene();
+        var scene = SceneAround(MakeBoard());
         var into = new List<ValidationElement>();
 
         ValidationSnapshot.Build(scene, into);
@@ -155,34 +201,76 @@ public class ValidationSnapshotReuseTests : ElementTestBase
     }
 
     /// <summary>Основание, на котором вообще законно переиспользовать ЦЕЛЫЙ
-    /// <c>ValidationElement</c> прошлого кадра: у простой детали все поля,
-    /// зависящие от СПИСКА (роль, индекс стены, индекс хозяина, второе тело,
+    /// <c>ValidationElement</c> прошлого кадра: у детали, взятой в кэш, все
+    /// поля, зависящие от СПИСКА (индекс стены, индекс хозяина, второе тело,
     /// осевая линия), заведомо пусты, поэтому снимок не зависит от того, кто
-    /// стоит рядом и на каком месте. Расширится <c>IsPlainBoard</c> — этот тест
-    /// покраснеет раньше, чем кэш начнёт врать чужим индексом.</summary>
+    /// стоит рядом и на каком месте. Роль при этом ПУСТОЙ быть не обязана —
+    /// у ящика и фасада она своя, — но она выводится из типа и зазоров, то есть
+    /// из ключа, а не из соседей.
+    ///
+    /// Расширится <c>ReusesItsSnapshot</c> на тип, у которого эти поля не пусты
+    /// (стена, проём, винтовая опора, варочная), — тест покраснеет раньше, чем
+    /// кэш начнёт врать чужим индексом.</summary>
     [Test]
-    public void APlainBoardSnapshot_CarriesNothingThatDependsOnTheRestOfTheScene()
+    public void EverySnapshotKeptBetweenFrames_CarriesNothingThatDependsOnTheRestOfTheScene()
     {
-        var scene = MakeSmallScene();
-        Assert.IsTrue(ValidationSnapshot.IsPlainBoard(scene[0]),
-            "деталь стенда обязана быть простой доской — иначе тесты ниже мерили бы "
-            + "отказ от переиспользования, а не переиспользование");
+        var subjects = new KitchenElement[] { MakeBoard(), MakeFacade(), MakeDrawer() };
+        var scene = new List<KitchenElement>(subjects);
+        var into = new List<ValidationElement>();
+        ValidationSnapshot.Build(scene, into);
 
-        var snapshot = SnapshotOf(scene, 0);
+        for (int i = 0; i < subjects.Length; i++)
+        {
+            string who = subjects[i].GetType().Name;
+            Assert.IsTrue(ValidationSnapshot.ReusesItsSnapshot(subjects[i]),
+                $"{who}: деталь стенда обязана попадать в кэш — иначе тесты честности "
+                + "мерили бы отказ от переиспользования, а не переиспользование");
 
-        Assert.AreEqual(ElementKind.None, snapshot.Kind, "простая доска не несёт ролей");
-        Assert.AreEqual(ValidationElement.NoIndex, snapshot.AttachedWallIndex,
-            "простая доска не привязана к стене");
-        Assert.AreEqual(ValidationElement.NoIndex, snapshot.HostIndex,
-            "у простой доски нет хозяина");
-        Assert.IsFalse(snapshot.HasExtraBody, "у простой доски одно тело");
-        Assert.IsNull(snapshot.PairedName, "простая доска ни с чем не спарена");
+            Assert.AreEqual(ValidationElement.NoIndex, into[i].AttachedWallIndex,
+                $"{who}: индекс стены зависит от СПИСКА — такой снимок нельзя нести через кадр");
+            Assert.AreEqual(ValidationElement.NoIndex, into[i].HostIndex,
+                $"{who}: индекс хозяина зависит от СПИСКА");
+            Assert.IsFalse(into[i].HasExtraBody,
+                $"{who}: второе тело считается от хозяина, то есть от СПИСКА");
+            Assert.IsFalse(into[i].Is(ElementKind.Anchor),
+                $"{who}: якорь — роль, которую снимок обязан пересчитывать по сцене");
+        }
     }
 
-    private void AssertTheChangeReachedTheSnapshot(string way,
+    /// <summary>Отрицательный контроль к правилу «тип ТОЧНО такой»: наследник в
+    /// кэш не берётся. Сборный фасад — не фасад с точки зрения геометрии, и
+    /// признак о его полях ничего не знает.</summary>
+    [Test]
+    public void ASubclassOfACachedType_IsNotReused()
+    {
+        KitchenElement.SuppressVisualRebuild = true;
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = "Assembled";
+        var assembled = go.AddComponent<AssembledFacadeElement>();
+        assembled.PartName = "Assembled";
+        PartRegistry.Register(assembled);
+        _spawned.Add(go);
+        KitchenElement.SuppressVisualRebuild = _suppressBefore;
+
+        Assert.IsFalse(ValidationSnapshot.ReusesItsSnapshot(assembled),
+            "наследник кэшируемого типа обязан строиться каждый кадр: его геометрия "
+            + "складывается из полей, которых признак не видит");
+
+        var scene = new List<KitchenElement> { assembled };
+        var into = new List<ValidationElement>();
+        ValidationSnapshot.Build(scene, into);
+        ValidationSnapshot.TakeGeometryBuilds();
+        ValidationSnapshot.Build(scene, into);
+
+        Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
+            "деталь вне кэша обязана пересобираться на КАЖДОМ кадре — ноль здесь означает, "
+            + "что кэш взял её молча");
+    }
+
+    private void AssertTheChangeReachedTheSnapshot(string way, KitchenElement subject,
         System.Action<KitchenElement> change, System.Func<ValidationElement, object> read)
     {
-        var scene = MakeSmallScene();
+        var scene = SceneAround(subject);
         var into = new List<ValidationElement>();
 
         ValidationSnapshot.Build(scene, into);
@@ -204,46 +292,163 @@ public class ValidationSnapshotReuseTests : ElementTestBase
 
     [Test]
     public void MovingABoard_ReachesTheSnapshot() =>
-        AssertTheChangeReachedTheSnapshot("сдвиг",
+        AssertTheChangeReachedTheSnapshot("сдвиг доски", MakeBoard(),
             e => e.transform.position += new Vector3(0.05f, 0f, 0f),
             s => s.Geometry.Min.x);
 
     [Test]
     public void RotatingABoard_ReachesTheSnapshot() =>
-        AssertTheChangeReachedTheSnapshot("поворот",
+        AssertTheChangeReachedTheSnapshot("поворот доски", MakeBoard(),
             e => e.transform.rotation = Quaternion.Euler(0f, 30f, 0f),
             s => s.Geometry.Max.z);
 
     [Test]
     public void ResizingABoard_ReachesTheSnapshot() =>
-        AssertTheChangeReachedTheSnapshot("изменение размера",
+        AssertTheChangeReachedTheSnapshot("изменение размера доски", MakeBoard(),
             e => e.DimensionsMM = new Vector3Int(900, 720, 18),
             s => s.Geometry.Max.x);
 
     [Test]
-    public void ChangingAGap_ReachesTheSnapshot() =>
-        AssertTheChangeReachedTheSnapshot("правка зазора в панели",
+    public void ChangingAGapOnABoard_ReachesTheSnapshot() =>
+        AssertTheChangeReachedTheSnapshot("правка зазора доски", MakeBoard(),
             e => e.SetGap(GapSide.Left, 20),
             s => s.Geometry.Min.x);
 
     [Test]
     public void AddingAGroove_ReachesTheSnapshot() =>
-        AssertTheChangeReachedTheSnapshot("смена формы: паз",
+        AssertTheChangeReachedTheSnapshot("смена формы: паз", MakeBoard(),
             e => Assert.IsTrue(e.AddGroove(new GrooveSpec(GrooveKind.Through, GrooveSide.Top)),
                 "паз обязан лечь на деталь стенда, иначе способ не проверен"),
             s => s.Geometry.GrooveSeatFaces.Length);
 
     [Test]
     public void RenamingABoard_ReachesTheSnapshot() =>
-        AssertTheChangeReachedTheSnapshot("переименование",
+        AssertTheChangeReachedTheSnapshot("переименование", MakeBoard(),
             e => e.PartName = "Renamed",
             s => s.Name);
 
     [Test]
     public void RegroupingABoard_ReachesTheSnapshot() =>
-        AssertTheChangeReachedTheSnapshot("смена группы",
+        AssertTheChangeReachedTheSnapshot("смена группы", MakeBoard(),
             e => e.GroupId = 7,
             s => s.GroupId);
+
+    [Test]
+    public void MovingAFacade_ReachesTheSnapshot() =>
+        AssertTheChangeReachedTheSnapshot("сдвиг фасада", MakeFacade(),
+            e => e.transform.position += new Vector3(0.05f, 0f, 0f),
+            s => s.Geometry.Min.x);
+
+    [Test]
+    public void ResizingAFacade_ReachesTheSnapshot() =>
+        AssertTheChangeReachedTheSnapshot("изменение размера фасада", MakeFacade(),
+            e => e.DimensionsMM = new Vector3Int(900, 716, 18),
+            s => s.Geometry.Max.x);
+
+    /// <summary>Зазор навески у фасада — не только геометрия: положительный
+    /// <c>GapMM</c> поднимает <c>FloatingFacade</c>, то есть МЕНЯЕТ РОЛЬ, по
+    /// которой ядро решает, нужна ли детали опора. Устаревшая роль в кэше — это
+    /// «фасад висит в воздухе, и никто не против».</summary>
+    [Test]
+    public void ChangingAFacadeGap_ReachesTheSnapshotAndItsRole()
+    {
+        var subject = MakeFacade();
+        var scene = SceneAround(subject);
+        var into = new List<ValidationElement>();
+
+        ValidationSnapshot.Build(scene, into);
+        Assert.IsFalse(into[0].Is(ElementKind.FloatingFacade),
+            "фасад стенда обязан начинать без зазора навески — иначе переход ниже не переход");
+        ValidationSnapshot.TakeGeometryBuilds();
+
+        subject.SetGap(GapSide.Left, 20);
+        ValidationSnapshot.Build(scene, into);
+
+        Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
+            "зазор фасада изменили — деталь обязана пересобраться");
+        Assert.IsTrue(into[0].Is(ElementKind.FloatingFacade),
+            "роль «висящий фасад» обязана прийти из НОВОГО снимка: по ней ядро решает, "
+            + "требовать ли опору");
+    }
+
+    [Test]
+    public void MovingADrawer_ReachesTheSnapshot() =>
+        AssertTheChangeReachedTheSnapshot("сдвиг ящика", MakeDrawer(),
+            e => e.transform.position += new Vector3(0.05f, 0f, 0f),
+            s => s.Geometry.Min.x);
+
+    [Test]
+    public void RotatingADrawer_ReachesTheSnapshot() =>
+        AssertTheChangeReachedTheSnapshot("поворот ящика", MakeDrawer(),
+            e => e.transform.rotation = Quaternion.Euler(0f, 30f, 0f),
+            s => s.Geometry.Max.z);
+
+    /// <summary>Имя парной детали не геометрия, но оно едет в снимок и решает,
+    /// считать ли две детали одной парой. Оно не входит в Stamp — оно
+    /// сверяется с тем, что лежит в сохранённом снимке; тест держит эту вторую
+    /// половину признака.</summary>
+    [Test]
+    public void RepairingADrawerToAnotherOne_ReachesTheSnapshot() =>
+        AssertTheChangeReachedTheSnapshot("перепривязка пары ящиков", MakeDrawer(),
+            e => ((DrawerElement)e).PairedDrawerName = "Upper",
+            s => s.PairedName ?? "");
+
+    /// <summary>Самый тонкий из способов, и единственный, который не виден ни в
+    /// одном значении позы: фасад переходит в открытую позу. С этого момента
+    /// валидируется ЗАПОМНЕННАЯ закрытая поза, а не <c>transform</c>, — то есть
+    /// смысл тех же чисел меняется на противоположный. Признак держит это через
+    /// <c>PoseFollowsTransform</c>.
+    ///
+    /// Второй ассерт — обратный вход к первому и правило продукта: открытая
+    /// дверца валидируется по закрытой позе, поэтому геометрия обязана остаться
+    /// той же. Без него «пересобрали» можно было бы получить, сломав правило.</summary>
+    [Test]
+    public void AFacadeSwitchingToTheOpenPose_IsRebuilt()
+    {
+        var subject = MakeFacade();
+        var scene = SceneAround(subject);
+        var into = new List<ValidationElement>();
+
+        ValidationSnapshot.Build(scene, into);
+        var closedMin = into[0].Geometry.Min;
+        ValidationSnapshot.TakeGeometryBuilds();
+
+        subject.SetOpen(true);
+        Assert.IsFalse(subject.PoseFollowsTransform,
+            "стенд обязан реально перевести фасад в открытую позу — иначе ниже проверяется "
+            + "не переход, а его отсутствие");
+        ValidationSnapshot.Build(scene, into);
+
+        Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
+            "фасад сменил режим позы — снимок обязан пересобраться: те же числа в transform "
+            + "теперь значат другое");
+        Assert.AreEqual(closedMin, into[0].Geometry.Min,
+            "открытая дверца валидируется по ЗАКРЫТОЙ позе — геометрия обязана остаться той "
+            + "же; иначе «пересобрали» получено ценой сломанного правила");
+    }
+
+    [Test]
+    public void ADrawerSwitchingToTheOpenPose_IsRebuilt()
+    {
+        var subject = MakeDrawer();
+        var scene = SceneAround(subject);
+        var into = new List<ValidationElement>();
+
+        ValidationSnapshot.Build(scene, into);
+        var closedMin = into[0].Geometry.Min;
+        ValidationSnapshot.TakeGeometryBuilds();
+
+        subject.SetOpen(true);
+        Assert.IsFalse(subject.PoseFollowsTransform,
+            "стенд обязан реально выдвинуть ящик — иначе ниже проверяется не переход");
+        ValidationSnapshot.Build(scene, into);
+
+        Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
+            "ящик сменил режим позы — снимок обязан пересобраться");
+        Assert.AreEqual(closedMin, into[0].Geometry.Min,
+            "выдвинутый ящик валидируется по ЗАДВИНУТОЙ позе — геометрия обязана остаться "
+            + "той же");
+    }
 
     /// <summary>Деталь уехала из сцены — кэш обязан её отпустить, а не держать
     /// уничтоженный объект ключом. Урок <c>PartRegistry</c> из
@@ -252,7 +457,7 @@ public class ValidationSnapshotReuseTests : ElementTestBase
     [Test]
     public void ADestroyedBoard_LeavesTheCache()
     {
-        var scene = MakeSmallScene();
+        var scene = SceneAround(MakeBoard());
         var into = new List<ValidationElement>();
         ValidationSnapshot.Build(scene, into);
 
