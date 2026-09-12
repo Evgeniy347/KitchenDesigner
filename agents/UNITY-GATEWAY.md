@@ -68,6 +68,16 @@ Rules that matter:
   инвариантной.** В одном файле на русской машине лежат `0,2048422` и `0.204842`. Разбор корня по
   `InvariantCulture` молча съедает запятую и превращает 0,2 с в 2 048 422 с — а накладные при этом
   становятся отрицательными, что и есть единственный признак беды.
+- **Правка в Unity-слое — сначала ПРОВЕРКА КОМПИЛЯЦИИ, потом полный прогон.** Быстрый набор не
+  собирает ни `Core/UI`, ни `Core/Elements`, ни `Core/Validation`: исполнитель, работающий там,
+  физически не может увидеть свою ошибку компиляции, и зелёные 1 900 тестов не значат ничего.
+  За одну сессию так дважды падал полный прогон на CS8604 — оба раза до единого теста. Падение
+  на компиляции стоит ~15 с, а полный EditMode ~100 с, поэтому дешёвый заход первым: любой прогон,
+  который умрёт на компиляции, умрёт быстро — важно НЕ отправлять его на 100 секунд, а читать
+  `error CS` из `%TEMP%uild-kitchen.log` сразу. Форма починки в этом проекте известна: перегруженный
+  `==` у `UnityEngine.Object` сужает ссылку до «возможно null», поэтому вопрос «уничтожен ли объект»
+  выносится в именованный `private static bool IsGone(X x) => x == null;` — в месте вызова сужения
+  не происходит (`conventions/CORRECTNESS.md`).
 - **`dotnet` FIRST, Unity LAST.** The core AND the scene-free layer compile a second time under
   plain `dotnet` (`Assets/Scripts/Core/Geometry` + `Assets/Scripts/Core/Pure`, with their test
   directories): `.\tools\mutation-test.ps1 -TestsOnly` runs the whole fast set (~1 900 tests and growing) in **~2 s**. Anything you
