@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core
 			SnapCursor cursor = default) =>
 			PillarAutoFit.Seat(this, scene);
 
-		public void RepairJointAfterGridSnap(
+		public void RepairJoint(
 			System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
 			PillarAutoFit.SeatWithoutResizing(this, scene);
 		public const int DiameterMM_Default = 50;
