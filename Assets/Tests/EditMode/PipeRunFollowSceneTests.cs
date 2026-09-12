@@ -159,7 +159,7 @@ public class PipeRunFollowSceneTests : SnapTestBase
 
         Assert.AreEqual(1, run.Holds.Count,
             "удержание существующего стыка — не интерактивный магнит, а целостность "
-            + "данных: PipeDocking.RepairAfterGridSnap, ConnectedMouths и "
+            + "данных: PipeDocking.RepairJoint, ConnectedMouths и "
             + "ReseatAfterRotation все работают независимо от SnapEnabled, и Hold обязан "
             + "быть таким же — иначе выключенный магнит превращает 'труба тянется за "
             + "муфтой' в 'муфта просто слетает', что и было жалобой пользователя");

@@ -10,7 +10,7 @@ using KitchenDesigner.Tests.Geometry;
 /// <summary>Правило связи спрашивали только те, кто ДОКЛАДЫВАЕТ о стыке
 /// (<c>PipeJoint.Connects</c>, <c>PipeRunFit.ForRun</c>), и не спрашивал никто, кто
 /// САЖАЕТ: ни <c>SnapPortDock</c>, ни <c>SnapPortSeat</c>, ни
-/// <c>PipeDocking.Seat</c>, ни <c>PipeDocking.RepairAfterGridSnap</c> — они чисто
+/// <c>PipeDocking.Seat</c>, ни <c>PipeDocking.RepairJoint</c> — они чисто
 /// геометрические.
 ///
 /// Отсюда дефект, который видит пользователь. Он тянет конец трубы А на конец
@@ -135,7 +135,7 @@ public class PipeSeatRuleReproTests : SnapTestBase
         var moved = APipeBroughtUpToTheEndOf(target);
 
         var before = moved.transform.position;
-        moved.RepairJointAfterGridSnap(new List<KitchenElement> { target, moved });
+        moved.RepairJoint(new List<KitchenElement> { target, moved });
 
         Assert.AreEqual(before, moved.transform.position,
             "ремонт по сетке чинит СТЫК; там, где стыка быть не может, чинить нечего");

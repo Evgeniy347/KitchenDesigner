@@ -174,14 +174,14 @@ public class PillarAutoFitTests
     }
 
     [Test]
-    public void RepairAfterGridSnap_SeatsThePillar_ButNeverRecomputesItsHeight()
+    public void RepairJoint_SeatsThePillar_ButNeverRecomputesItsHeight()
     {
         var floor = Board(new Vector3(0f, -0.009f, 0f), new Vector3Int(3000, 18, 3000));
         var board = Board(new Vector3(0f, 0.108f, 0f), new Vector3Int(540, 16, 564));
         var pillar = Pillar(new Vector3(0f, 0.09f, 0f), 50);
         int midByHand = pillar.MidHeightMM;
 
-        pillar.RepairJointAfterGridSnap(Scene(floor, board, pillar));
+        pillar.RepairJoint(Scene(floor, board, pillar));
 
         Assert.AreEqual(midByHand, pillar.MidHeightMM,
             "проход после загрузки чинит СТЫК, а не размер: пересчёт по зазору здесь "

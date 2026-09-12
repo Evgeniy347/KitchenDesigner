@@ -6,6 +6,6 @@ namespace KitchenDesigner.Core
     {
         void SeatAfterMove(IReadOnlyList<KitchenElement> scene, SnapCursor cursor = default);
 
-        void RepairJointAfterGridSnap(IReadOnlyList<KitchenElement> scene);
+        void RepairJoint(IReadOnlyList<KitchenElement> scene);
     }
 }

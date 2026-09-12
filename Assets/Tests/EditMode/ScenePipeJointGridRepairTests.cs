@@ -21,7 +21,7 @@ using KitchenDesigner.Core.Plumbing;
 /// трубу на 0.5 мм по каждой поперечной оси; для двух деталей это ~0.71-1.73 мм —
 /// больше <c>PipeJoint.JoinToleranceMm</c> = 0.5 мм.
 ///
-/// Починка (<c>PipeDocking.RepairAfterGridSnap</c>, вызывается из
+/// Починка (<c>PipeDocking.RepairJoint</c>, вызывается из
 /// <c>SceneRestorer.RepairAutoSeatedJoints</c> для каждого
 /// <c>IAutoSeated</c> на загрузке) — тот же
 /// «максимум связей» через <c>SnapPortDock.Best</c>, что и посадка при перетаскивании,
@@ -71,11 +71,11 @@ public class ScenePipeJointGridRepairTests : SnapTestBase
         PipeNetwork.Build(new ScenePipeSnapshot(scene).Ports()).Links.Count;
 
     [Test]
-    public void RepairJointAfterGridSnap_RestoresTheJointThatIndependentRoundingBroke()
+    public void RepairJoint_RestoresTheJointThatIndependentRoundingBroke()
     {
         // MmGrid.OffsetToGrid больше не трогает элементы с устьями (ISnapPorts) вовсе —
         // это и есть настоящее лечение задачи A, так что MmGrid.Snap(pipe) сейчас всегда
-        // no-op и разорвать стык этим путём уже нельзя. Но RepairJointAfterGridSnap
+        // no-op и разорвать стык этим путём уже нельзя. Но RepairJoint
         // остаётся страховкой для ФАЙЛОВ, сохранённых ДО этого исправления — они несут
         // унаследованное independent-rounding смещение на полмиллиметра по каждой
         // поперечной оси. Имитируем ровно это смещение напрямую, не через MmGrid.
@@ -90,17 +90,17 @@ public class ScenePipeJointGridRepairTests : SnapTestBase
         pipe.transform.position += new Vector3(Units(0.475f), Units(0.275f), Units(-0.5f));
         Assume.That(JoinedLinks(pipe, elbow), Is.EqualTo(0),
             "стенд обязан доказать сам себя: унаследованное смещение рвёт стык — это и "
-            + "есть легаси-состояние, которое чинит RepairJointAfterGridSnap");
+            + "есть легаси-состояние, которое чинит RepairJoint");
 
-        pipe.RepairJointAfterGridSnap(scene);
+        pipe.RepairJoint(scene);
 
         Assert.AreEqual(1, JoinedLinks(pipe, elbow),
-            "RepairJointAfterGridSnap обязан вернуть максимум связей после того, как "
+            "RepairJoint обязан вернуть максимум связей после того, как "
             + "унаследованное округление их разорвало");
     }
 
     [Test]
-    public void RepairJointAfterGridSnap_DoesNothingWhenNoJointWasEverClosed()
+    public void RepairJoint_DoesNothingWhenNoJointWasEverClosed()
     {
         var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Isolated");
         var farAwayElbow = ElementFactory.CreatePipeElbow("FarElb",
@@ -111,10 +111,10 @@ public class ScenePipeJointGridRepairTests : SnapTestBase
         Assume.That(JoinedLinks(pipe, farAwayElbow), Is.EqualTo(0),
             "деталь за пределами GridRepairMaxDistMm не обязана быть соединена");
 
-        pipe.RepairJointAfterGridSnap(scene);
+        pipe.RepairJoint(scene);
 
         Assert.AreEqual(0, JoinedLinks(pipe, farAwayElbow),
-            "RepairJointAfterGridSnap не обязан выдумывать связь там, где её никогда не было "
+            "RepairJoint не обязан выдумывать связь там, где её никогда не было "
             + "— допуск 2 мм рассчитан на округление сетки, а не на магнит через всю сцену");
     }
 
@@ -170,7 +170,7 @@ public class ScenePipeJointGridRepairTests : SnapTestBase
     /// смещением на трубу. <c>SnapPortDock.Best</c> — единственное описание правила
     /// стыка (<c>SnapPortRuleSingleSourceTests</c>) — всегда предлагает элементу
     /// ГЛОБАЛЬНО ближайшую пару портов across всей сцены; уже сомкнутая нога всегда
-    /// меряет ближе, чем просто открытая, так что <c>RepairJointAfterGridSnap</c> для
+    /// меряет ближе, чем просто открытая, так что <c>RepairJoint</c> для
     /// такого фитинга — молчаливый no-op: он бесконечно перевыбирает уже закрытую ногу
     /// и никогда не пробует открытую.</summary>
     [Test]

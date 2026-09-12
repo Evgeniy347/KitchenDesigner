@@ -188,14 +188,14 @@ public class ScrewLegAutoFitTests
     }
 
     [Test]
-    public void RepairAfterGridSnap_SeatsTheLeg_ButNeverRecomputesItsHeight()
+    public void RepairJoint_SeatsTheLeg_ButNeverRecomputesItsHeight()
     {
         var host = BottomPanelAt(0.150f);
         var leg = Leg(new Vector3(0f, 0.100f, 0f));
         leg.ThreadLengthMM = 20;
         int threadByHand = leg.ThreadLengthMM;
 
-        leg.RepairJointAfterGridSnap(Scene(host, leg));
+        leg.RepairJoint(Scene(host, leg));
 
         Assert.AreEqual(threadByHand, leg.ThreadLengthMM,
             "проход после загрузки чинит СТЫК, а не размер: пересчёт резьбы здесь "

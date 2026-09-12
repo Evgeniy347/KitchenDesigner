@@ -195,7 +195,7 @@ namespace KitchenDesigner.Core
             SnapCursor cursor = default) =>
             ScrewLegAutoFit.Seat(this, scene);
 
-        public void RepairJointAfterGridSnap(
+        public void RepairJoint(
             System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
             ScrewLegAutoFit.SeatWithoutResizing(this, scene);
 

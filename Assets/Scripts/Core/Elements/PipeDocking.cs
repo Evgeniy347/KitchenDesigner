@@ -65,7 +65,7 @@ namespace KitchenDesigner.Core
             SeatWithinDistance(element, poseOrigin, poseRotation, scene, cursor, maxDist);
         }
 
-        public static void RepairAfterGridSnap(KitchenElement element,
+        public static void RepairJoint(KitchenElement element,
             IReadOnlyList<KitchenElement> scene)
         {
             if (element == null || scene == null) return;

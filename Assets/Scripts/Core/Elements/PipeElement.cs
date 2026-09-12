@@ -78,9 +78,9 @@ namespace KitchenDesigner.Core
             PipeDocking.Seat(this, ValidationPositionAt(transform.position), ValidationRotation,
                 scene, cursor);
 
-        public void RepairJointAfterGridSnap(
+        public void RepairJoint(
             System.Collections.Generic.IReadOnlyList<KitchenElement> scene) =>
-            PipeDocking.RepairAfterGridSnap(this, scene);
+            PipeDocking.RepairJoint(this, scene);
 
         public System.Collections.Generic.IEnumerable<SpecItem> GetSpecItems(
             System.Collections.Generic.IReadOnlyList<KitchenElement> allElements)

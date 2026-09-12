@@ -100,7 +100,7 @@ namespace KitchenDesigner.Core
 
                     var beforePos = el.transform.position;
                     var beforeRot = el.transform.rotation;
-                    seated.RepairJointAfterGridSnap(scene);
+                    seated.RepairJoint(scene);
                     if (el.transform.position != beforePos || el.transform.rotation != beforeRot)
                         movedAny = true;
                 }
