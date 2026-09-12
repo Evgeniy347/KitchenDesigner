@@ -11,16 +11,19 @@ using KitchenDesigner.Core.Plumbing;
 /// (замер — <c>PipeGapSensorTests</c>, зазоры 1.9689 мм и 1.3698 мм): не порядок
 /// вызовов в <c>ElementMover.FinishDrag</c> (он уже верный, см.
 /// <c>ElementMoverSeatingOrderTests</c>), а <c>SceneRestorer.Restore</c>, который
-/// при ЗАГРУЗКЕ проекта прогоняет <c>MmGrid.Snap</c> по каждой детали НЕЗАВИСИМО и
-/// ни разу не переспрашивает стыки труб — ровно тот же баг задачи A, но на другом
-/// вызывающем пути. У dn20-трубы сечение 27 мм — половина (13.5 мм) всегда дробная,
+/// при ЗАГРУЗКЕ проекта прогонял <c>MmGrid.Snap</c> по каждой детали НЕЗАВИСИМО и
+/// ни разу не переспрашивал стыки труб — ровно тот же баг задачи A, но на другом
+/// вызывающем пути. Этого прохода больше нет вовсе (2026-09-12: загрузка не двигает
+/// ничего, несовпадение с сеткой стало находкой GRD-01), но файлы, сохранённые до
+/// того, несут его след, и починка стыков осталась ради них.
+/// У dn20-трубы сечение 27 мм — половина (13.5 мм) всегда дробная,
 /// так что округление минимальной вершины меша почти для любой позиции сдвигает
 /// трубу на 0.5 мм по каждой поперечной оси; для двух деталей это ~0.71-1.73 мм —
 /// больше <c>PipeJoint.JoinToleranceMm</c> = 0.5 мм.
 ///
 /// Починка (<c>PipeDocking.RepairAfterGridSnap</c>, вызывается из
-/// <c>SceneRestorer.RepairAutoSeatedJointsAfterGridSnap</c> для каждого
-/// <c>IAutoSeated</c> сразу после <c>SnapElementEdgesToMillimetreGrid</c>) — тот же
+/// <c>SceneRestorer.RepairAutoSeatedJoints</c> для каждого
+/// <c>IAutoSeated</c> на загрузке) — тот же
 /// «максимум связей» через <c>SnapPortDock.Best</c>, что и посадка при перетаскивании,
 /// но с фиксированным малым допуском (<c>GridRepairMaxDistMm</c> = 2 мм), не связанным
 /// с пользовательским <c>SnapThreshold</c>: это восстановление целостности данных, а
@@ -116,7 +119,7 @@ public class ScenePipeJointGridRepairTests : SnapTestBase
     }
 
     [Test]
-    public void SceneRestorer_ReconnectsAJointThatItsOwnGridSnapWouldOtherwiseBreak()
+    public void SceneRestorer_KeepsAClosedJointClosedAcrossSaveAndLoad()
     {
         var pipe = PipeWithItsLowerEndAt(Vector3.zero, "Run");
         var elbow = ElbowBroughtUpTo(pipe);
@@ -144,10 +147,9 @@ public class ScenePipeJointGridRepairTests : SnapTestBase
         Assert.IsNotNull(restoredElbow, "уголок обязан вернуться после load");
 
         Assert.AreEqual(1, JoinedLinks(restoredPipe!, restoredElbow!),
-            "SceneRestorer.Restore округляет каждую деталь независимо "
-            + "(SnapElementEdgesToMillimetreGrid) и обязан тут же переспросить стыки труб "
-            + "(RepairAutoSeatedJointsAfterGridSnap) — иначе загрузка проекта САМА рвёт то, "
-            + "что было закрыто на момент сохранения");
+            "стык, закрытый на момент сохранения, обязан пережить круг save→load: ни "
+            + "округление (его на загрузке больше нет), ни починка стыков "
+            + "(RepairAutoSeatedJoints) не имеют права рвать то, что было сомкнуто");
     }
 
     private static int FreeLegIndex(PipeFittingElement fitting, IReadOnlyList<KitchenElement> scene)

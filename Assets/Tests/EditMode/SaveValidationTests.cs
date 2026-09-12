@@ -251,6 +251,16 @@ public class SaveValidationTests
 
     // ── Тест 1: правила SceneAnalyzer ───────────────────────────────────
 
+    /// <summary>GRD-01 в этот baseline не входит намеренно. До 2026-09-12 загрузка
+    /// подтягивала каждую грань к целому миллиметру сама, поэтому таких находок в
+    /// восстановленной сцене не было НИКОГДА — ценой того, что данные пользователя
+    /// менялись на открытии файла, до 0,5 мм на деталь и без шага отмены. Теперь
+    /// загрузка не двигает ничего, и сколько граней чужой мебели стоят мимо сетки —
+    /// свойство ЭТОЙ сцены, а не нашего кода: «правильному» числу тут взяться
+    /// неоткуда. Что находки доходят до отчёта, стережёт
+    /// <see cref="Geometry_ExampleSave_FacesOnMillimeterGrid"/> попарно с независимым
+    /// сканом; что загрузка не двигает — детерминированные сенсоры в
+    /// <c>MillimetreGridFindingTests</c> и <c>SaveRestoreContractTests</c>.</summary>
     [Test]
     public void Analyze_FrozenPipeGapScene_MatchesKnownIssueBaseline()
     {
@@ -265,7 +275,8 @@ public class SaveValidationTests
         Report("Правила SceneAnalyzer", lines.Count > 0 ? lines : new List<string> { "чисто" });
 
         int errors = issues.Count(i => i.Level == IssueLevel.Error);
-        int warnings = issues.Count(i => i.Level == IssueLevel.Warning);
+        int warnings = issues.Count(i => i.Level == IssueLevel.Warning
+            && i.Code != IssueCatalog.CodeOffMillimetreGrid);
         int gap02 = issues.Count(i => i.Code == IssueCatalog.CodeNearContactFar);
 
         var mismatches = new List<string>();
@@ -297,7 +308,15 @@ public class SaveValidationTests
     /// состояние, а не дефект. Это и есть причина, по которой <c>MmGrid.OffsetToGrid</c>
     /// перестал округлять такие детали вовсе (см. <c>ScenePipeJointGridRepairTests</c>) —
     /// посылка «любая деталь стоит гранями на мм» была верна ровно до этого класса
-    /// деталей и здесь устарела.</summary>
+    /// деталей и здесь устарела.
+    ///
+    /// С 2026-09-12 тест не требует нуля. Ноль тут держала ЗАГРУЗКА: она подтягивала
+    /// каждую грань к целому миллиметру сама и тем переписывала данные пользователя
+    /// без шага отмены. Требование стало другим и проверяемым на чужой сцене:
+    /// несовпадение с сеткой обязано быть НАЗВАНО находкой GRD-01, а не исправлено
+    /// молча. Сверяются два множества, полученные РАЗНЫМИ путями — прямой скан по
+    /// минимальным углам и полный <c>SceneAnalyzer.Analyze</c>, — так что деталь,
+    /// до которой сборщик находок не дошёл, красит тест.</summary>
     [Test]
     public void Geometry_ExampleSave_FacesOnMillimeterGrid()
     {
@@ -336,12 +355,36 @@ public class SaveValidationTests
             .ThenByDescending(f => f.devMm).Select(f => f.line).ToList();
         Report("Грани мимо мм-сетки", report.Count > 0 ? report : new List<string> { "чисто" });
 
-        if (found.Count == 0) return;
+        Assert.Greater(elements.Count, 100,
+            "контроль скана: фикстура обязана дать сотню деталей, иначе сверка ниже "
+            + "сравнивает два пустых множества и не проверяет ничего");
 
-        Assert.Fail($"Координат граней мимо мм-сетки: {found.Count} "
-            + $"(деталей в сцене: {elements.Count}).\n"
-            + Summarize(found.Select(f => (f.category, f.line)))
-            + $"\nПолный список: {_reportPath}");
+        var offGridByScan = new SortedSet<string>(System.StringComparer.Ordinal);
+        foreach (var e in elements)
+        {
+            if (e == null) continue;
+            if (!MmGrid.TryMinCornerMm(e, out var minCornerMm)) continue;
+            if (MmGridIssueCatalog.OffMillimetreGrid(minCornerMm,
+                    MmGridMath.OffGridFindingToleranceMm) == null) continue;
+            offGridByScan.Add(e.PartName);
+        }
+
+        var offGridByReport = new SortedSet<string>(
+            SceneAnalyzer.Analyze()
+                .Where(i => i.Code == IssueCatalog.CodeOffMillimetreGrid)
+                .Select(i => i.Detail),
+            System.StringComparer.Ordinal);
+
+        CollectionAssert.AreEqual(offGridByScan, offGridByReport,
+            "каждая деталь, чей минимальный угол стоит мимо мм-сетки, обязана быть НАЗВАНА "
+            + "находкой GRD-01 — и ни одна лишняя. Раньше загрузка такие грани молча "
+            + "подтягивала сама, до 0,5 мм на деталь и без шага отмены, а следующее "
+            + "сохранение закрепляло сдвиг в проекте пользователя; теперь решение за ним, "
+            + "и единственное, чем мы обязаны отвечать, — полный список.\n"
+            + $"скан: {string.Join(", ", offGridByScan)}\n"
+            + $"отчёт: {string.Join(", ", offGridByReport)}\n"
+            + $"Координат граней мимо мм-сетки всего: {found.Count} "
+            + $"(деталей в сцене: {elements.Count}), полный список: {_reportPath}");
     }
 
     // ── Тест 3: подпороговые стыки ──────────────────────────────────────

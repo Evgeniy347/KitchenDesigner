@@ -99,6 +99,9 @@ public class AnalysisContractTests
             IssueCatalog.FromPipeFinding(
                 PipeIssueCatalog.ObstacleCrossed(PipeRun(a), Blocking(b)), a, b),
             IssueCatalog.UnknownType(a, "washer"),
+            IssueCatalog.OffMillimetreGrid(a,
+                MmGridIssueCatalog.OffMillimetreGrid(new Vector3(124.4f, 500f, 300f),
+                    MmGridMath.OffGridFindingToleranceMm)!),
             IssueCatalog.FromConstructionFinding(
                 ConstructionIssueCatalog.WallThicknessOffFormat(a.PartName,
                     MasonryUnit.Of(MasonryTechnology.BrickSingle), 300f,
@@ -118,6 +121,7 @@ public class AnalysisContractTests
             "EDG-01",
             "FAC-01",
             "GAP-01", "GAP-02",
+            "GRD-01",
             "LEG-01", "LEG-02", "LEG-03",
             "PIP-01", "PIP-02", "PIP-03", "PIP-04",
             "SEAT-01",
@@ -157,6 +161,7 @@ public class AnalysisContractTests
             ["DWH-05"] = IssueLevel.Error,
             ["GAP-01"] = IssueLevel.Warning,
             ["GAP-02"] = IssueLevel.Warning,
+            ["GRD-01"] = IssueLevel.Warning,
             ["SEAT-01"] = IssueLevel.Warning,
             ["FAC-01"] = IssueLevel.Warning,
             ["DRW-01"] = IssueLevel.Warning,
@@ -186,7 +191,10 @@ public class AnalysisContractTests
                 + "сборка, которую пользователь вправе доводить в любом порядке. DWH-05 "
                 + "единственный DWH-код уровня Error именно поэтому. TYP-01 — не геометрия "
                 + "вовсе: объект, которого эта версия не знает, показан деталью и ждёт более "
-                + "новой версии, чинить его тут нечем, поэтому это предупреждение");
+                + "новой версии, чинить его тут нечем, поэтому это предупреждение. GRD-01 — "
+                + "предупреждение по той же мерке: 0,4 мм мимо целого миллиметра не мешают "
+                + "деталям стоять, но искажают спецификацию и раскрой, и лечит это жест "
+                + "пользователя, а не загрузка");
 
         CollectionAssert.DoesNotContain(byCode.Values, IssueLevel.Info,
             "уровень Info зарезервирован и каталогом не выдаётся — он живёт только в фильтре "

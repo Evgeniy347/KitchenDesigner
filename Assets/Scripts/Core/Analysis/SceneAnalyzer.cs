@@ -34,6 +34,7 @@ namespace KitchenDesigner.Core.Analysis
             using (PerfMarkers.AnalyzeScrewLegFooting.Auto()) CollectScrewLegFooting(all, issues);
             using (PerfMarkers.AnalyzePipeRuns.Auto()) CollectPipeRuns(all, issues);
             using (PerfMarkers.AnalyzeUnknownTypes.Auto()) CollectUnknownTypes(all, issues);
+            using (PerfMarkers.AnalyzeMillimetreGrid.Auto()) CollectMillimetreGrid(all, issues);
             return issues;
         }
 
@@ -236,6 +237,19 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
+        private static void CollectMillimetreGrid(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var e in all)
+            {
+                if (e == null) continue;
+                if (!MmGrid.TryMinCornerMm(e, out var minCornerMm)) continue;
+                var message = MmGridIssueCatalog.OffMillimetreGrid(minCornerMm,
+                    MmGridMath.OffGridFindingToleranceMm);
+                if (message == null) continue;
+                issues.Add(IssueCatalog.OffMillimetreGrid(e, message));
+            }
+        }
+
         private static KitchenElement? FindByName(List<KitchenElement> all, string? name)
         {
             if (string.IsNullOrEmpty(name)) return null;
@@ -281,6 +295,11 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodePipeSameRoleJoin = "PIP-04";
         public const string CodeWallThicknessOffFormat = "WAL-01";
         public const string CodeUnknownElementType = "TYP-01";
+        public const string CodeOffMillimetreGrid = MmGridIssueCatalog.CodeOffMillimetreGrid;
+
+        public static AnalysisIssue OffMillimetreGrid(KitchenElement element, string message) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeOffMillimetreGrid,
+                Name(element), message, element);
 
         public static AnalysisIssue UnknownType(KitchenElement element, string typeId) =>
             new AnalysisIssue(IssueLevel.Warning, CodeUnknownElementType,

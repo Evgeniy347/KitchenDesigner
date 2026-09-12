@@ -173,12 +173,23 @@ public class SaveRestoreContractTests
             "новое поле точнее старого флага: маска сторон обязана пережить загрузку целиком");
     }
 
+    /// <summary>Загрузка НЕ двигает деталь — ни на сколько. До 2026-09-12
+    /// <c>SceneRestorer.SnapElementEdgesToMillimetreGrid</c> подтягивал каждую грань к
+    /// целому миллиметру прямо на открытии файла: пользователь ничего не делал, деталь
+    /// уезжала до 0,5 мм, шага отмены не появлялось, а следующее сохранение закрепляло
+    /// сдвиг в его файле. Это ровно та механика, что дала дефект с опорой, и правило
+    /// «загрузка чинит СТЫК, а не РАЗМЕР» (conventions/SERIALIZATION.md) закрывает её
+    /// последнее место. Несовпадение с сеткой стало находкой GRD-01 — человек видит
+    /// строку и решает сам; сама находка проверяется в
+    /// <c>MillimetreGridFindingTests</c>.</summary>
     [Test]
-    public void Restore_FractionalEdge_IsPulledOntoTheMillimetreGrid_WithoutResizingThePart()
+    public void Restore_FractionalEdge_StaysExactlyWhereTheFileHadIt()
     {
         var dims = new Vector3Int(600, 18, 500);
-        var el = Register(ElementFactory.CreatePart(dims, "OffGrid", new Vector3(0.0002f, 0.5f, 0f)));
+        var saved = new Vector3(0.0002f, 0.5f, 0f);
+        var el = Register(ElementFactory.CreatePart(dims, "OffGrid", saved));
         var data = ElementCapture.FromElement(el);
+        var savedPosition = data.Position;
         UnityEngine.Object.DestroyImmediate(el.gameObject);
         _spawned.Clear();
         PartRegistry.Clear();
@@ -186,12 +197,16 @@ public class SaveRestoreContractTests
         var restored = RestoreOne(data);
         _spawned.Add(restored.gameObject);
 
-        float minXmm = restored.GetVertices().Min(v => v.x) / AppConstants.MM_TO_UNITS;
-        Assert.AreEqual(Mathf.Round(minXmm), minXmm, MmGrid.EpsMm,
-            "грань на половине миллиметра — проём, в который не встаёт ни одна деталь целого "
-            + "размера; загрузка выравнивает такие грани один раз");
+        float toMm = 1f / AppConstants.MM_TO_UNITS;
+        Assert.AreEqual(savedPosition.x * toMm, restored.transform.position.x * toMm, 1e-4f,
+            "деталь стояла гранью на 0,2 мм мимо сетки — и обязана остаться там же: "
+            + "открытие файла не жест пользователя и не имеет права его данные править");
+        Assert.AreEqual(savedPosition.y * toMm, restored.transform.position.y * toMm, 1e-4f,
+            "то же по Y");
+        Assert.AreEqual(savedPosition.z * toMm, restored.transform.position.z * toMm, 1e-4f,
+            "то же по Z");
         Assert.AreEqual(dims, restored.DimensionsMM,
-            "сетка двигает деталь, но НЕ меняет её габарит: не тот размер чинит человек");
+            "и габарит загрузка не меняет тем более: не тот размер чинит человек");
     }
 
     [Test]

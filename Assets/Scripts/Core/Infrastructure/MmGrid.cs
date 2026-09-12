@@ -4,9 +4,9 @@ namespace KitchenDesigner.Core
 {
     public static class MmGrid
     {
-        public const float EpsMm = 0.01f;
+        public const float EpsMm = MmGridMath.EpsMm;
 
-        public static float RoundMm(float mm) => Mathf.Floor(mm + 0.5f + EpsMm);
+        public static float RoundMm(float mm) => MmGridMath.RoundMm(mm);
 
         public static bool IsAxisAligned(Quaternion rot)
         {
@@ -20,35 +20,34 @@ namespace KitchenDesigner.Core
             return true;
         }
 
-        public static Vector3 OffsetToGrid(KitchenElement element)
+        public static bool TryMinCornerMm(KitchenElement element, out Vector3 minCornerMm)
         {
-            if (element == null) return Vector3.zero;
+            minCornerMm = Vector3.zero;
+            if (element == null) return false;
 
-            if (!element.PoseFollowsTransform) return Vector3.zero;
-            if (!IsAxisAligned(element.transform.rotation)) return Vector3.zero;
-            if (element.GetComponent<ISnapPorts>() != null) return Vector3.zero;
+            if (!element.PoseFollowsTransform) return false;
+            if (!IsAxisAligned(element.transform.rotation)) return false;
+            if (element.GetComponent<ISnapPorts>() != null) return false;
 
             var wall = element.GetComponent<Wall>();
-            if (wall != null && wall.IsLowered) return Vector3.zero;
+            if (wall != null && wall.IsLowered) return false;
 
             var verts = element.GetVertices();
-            if (verts == null || verts.Length == 0) return Vector3.zero;
+            if (verts == null || verts.Length == 0) return false;
 
             Vector3 min = verts[0];
             foreach (var v in verts) min = Vector3.Min(min, v);
 
-            float toMm = 1f / AppConstants.MM_TO_UNITS;
-            var offset = Vector3.zero;
-            bool any = false;
-            for (int axis = 0; axis < 3; axis++)
-            {
-                float mm = min[axis] * toMm;
-                float deltaMm = RoundMm(mm) - mm;
-                if (Mathf.Abs(deltaMm) <= EpsMm) continue;
-                offset[axis] = deltaMm * AppConstants.MM_TO_UNITS;
-                any = true;
-            }
-            return any ? offset : Vector3.zero;
+            minCornerMm = min * (1f / AppConstants.MM_TO_UNITS);
+            return true;
+        }
+
+        public static Vector3 OffsetToGrid(KitchenElement element)
+        {
+            if (!TryMinCornerMm(element, out var minCornerMm)) return Vector3.zero;
+            if (!MmGridMath.TryMeasureOffGrid(minCornerMm, MmGridMath.EpsMm, out var shiftsMm))
+                return Vector3.zero;
+            return shiftsMm * AppConstants.MM_TO_UNITS;
         }
 
         public static bool Snap(KitchenElement element)
