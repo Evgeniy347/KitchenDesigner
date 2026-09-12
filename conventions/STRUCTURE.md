@@ -115,7 +115,7 @@ what makes the rule cheap to follow.
 The inner loop is then:
 
 ```powershell
-.\tools\mutation-test.ps1 -TestsOnly   # core + pure, 1361 tests, ~2 s
+.\tools\mutation-test.ps1 -TestsOnly   # core + pure, the whole fast set, ~2 s
 .\build.cmd -RunTests                  # everything, ~167 s, before committing
 ```
 

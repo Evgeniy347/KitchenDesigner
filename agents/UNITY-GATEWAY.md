@@ -70,7 +70,7 @@ Rules that matter:
   становятся отрицательными, что и есть единственный признак беды.
 - **`dotnet` FIRST, Unity LAST.** The core AND the scene-free layer compile a second time under
   plain `dotnet` (`Assets/Scripts/Core/Geometry` + `Assets/Scripts/Core/Pure`, with their test
-  directories): `.\tools\mutation-test.ps1 -TestsOnly` runs 1361 tests in **~2 s**. Anything you
+  directories): `.\tools\mutation-test.ps1 -TestsOnly` runs the whole fast set (~1 900 tests and growing) in **~2 s**. Anything you
   extract that does not need a scene belongs there — CONVENTIONS.md → "A class without a scene
   lives on the fast path". A cold Unity batch still costs ~10 s of fixed overhead — licence,
   engine, two domain reloads, asset refresh, test collection — *before the first test runs*,

@@ -18,7 +18,7 @@ target here, and nothing on this branch is deployed anywhere — see `DEPLOY.md`
 
 | Suite | Command | Tests | Time |
 |-------|---------|-------|------|
-| `dotnet` (core + pure) | `.\tools\mutation-test.ps1 -TestsOnly` | 1361 (867 + 494) | **~2 s** тестов, ~9 s стены |
+| `dotnet` (core + pure) | `.\tools\mutation-test.ps1 -TestsOnly` | весь быстрый набор, ~1 900 и растёт (core + pure) | **~2 s** тестов, ~9 s стены |
 | EditMode | `build.cmd -RunTests` | 5498 | **~149 s тестов + ~33 s накладных** |
 | PlayMode | `build.cmd -RunPlayMode` | 254 | **~113 s** |
 
@@ -259,7 +259,7 @@ It prints the summary and the first failures itself; the full report stays in
 `.failure.message.'#cdata-section'`).
 
 Faster still: if the code under test lives in `Assets/Scripts/Core/Geometry/` or
-`Assets/Scripts/Core/Pure/`, run it outside Unity — 1361 tests in ~2 s:
+`Assets/Scripts/Core/Pure/`, run it outside Unity — the whole fast set (~1 900 tests today, and growing) in ~2 s:
 
 ```powershell
 .\tools\mutation-test.ps1 -TestsOnly
