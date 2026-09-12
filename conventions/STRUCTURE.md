@@ -60,6 +60,9 @@ Rules that follow from it:
 - The test hooks are a section like any other: `*ForTests` methods do not spread through the
   owner, they gather into one `*TestHooks` class the owner exposes as a single `internal`
   property. Then the hooks are visible as a list instead of interleaved with the production API.
+- Когда единственный вызывающий вынесенной зоны лежит за границами задачи, допустимая форма —
+  однострочная переадресация в старом классе, а в отчёте названы владелец и следующий шаг.
+  Молчаливая переадресация — долг без хозяина.
 - Still in force: one method one job (~40 lines max).
 
 `ContextMenuUI` was the anti-example this section exists to prevent: 3580 lines, a 480-line

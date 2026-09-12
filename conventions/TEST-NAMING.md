@@ -106,6 +106,12 @@ verdict: a failure that lands far from its threshold — 0,23 against 0,9 — is
 broken measurement, while a near miss is the shape of broken behaviour. Chasing the behaviour
 first costs a whole round.
 
+**Порог для «почти ноль» ставится по ЛИНЕЙНОМУ размеру, а не по площади или объёму.**
+Произведение прячет вырожденную размерность за большим вторым множителем: перекрытие граней
+в 0,5 мкм на стене длиной 2,5 м даёт 1,3 мм² и выглядит настоящим контактом. Спрашивать надо
+ширину перекрытия, а не его площадь.
+
+
 **Isolation for a measurement must be decided at DRAW time, not written onto other objects
 beforehand.** The frame bench first tried `renderer.enabled = false` on everything but the
 subject. It changed nothing, byte for byte, because `CameraController.UpdateFloorVisibility`
