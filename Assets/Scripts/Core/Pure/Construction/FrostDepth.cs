@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace KitchenDesigner.Core.Construction
 {
@@ -11,6 +12,15 @@ namespace KitchenDesigner.Core.Construction
         public const float SandyLoamFactorMm = 280f;
         public const float CoarseSandFactorMm = 300f;
         public const float ThermalCalculationAboveMm = 2500f;
+
+        public const string UnknownValue = "—";
+        public const string BeyondFormulaValue = "> 2,5 м";
+
+        public const string NoSoilFactorReason = "Прочерк: СП 22.13330 не даёт d0 для торфа.";
+        public const string BeyondFormulaReason =
+            "Глубже 2,5 м: требуется теплотехнический расчёт по СП 25.13330.";
+        public const string UnknownRegionReason =
+            "Прочерк: климата для этого региона в таблице СП 131.13330.2020 нет.";
 
         public static bool TrySoilFactorMm(SoilKind soil, out float factorMm)
         {
@@ -33,17 +43,31 @@ namespace KitchenDesigner.Core.Construction
             }
         }
 
-        public static bool TryNormativeMm(ConstructionRegion region, SoilKind soil, out float depthMm)
+        public static FrostDepthReading Read(ConstructionRegion region, SoilKind soil)
         {
-            depthMm = 0f;
-            if (!TrySoilFactorMm(soil, out float factorMm)) return false;
-            if (!RegionClimate.TryOf(region, out var climate)) return false;
+            if (!RegionClimate.TryOf(region, out var climate))
+                return new FrostDepthReading(0f, UnknownValue, UnknownRegionReason, string.Empty);
+
+            string station = climate.ReferenceStation;
+            if (!TrySoilFactorMm(soil, out float factorMm))
+                return new FrostDepthReading(0f, UnknownValue, NoSoilFactorReason, station);
 
             double depth = factorMm * Math.Sqrt(climate.NegativeMonthSumDeg);
-            if (depth > ThermalCalculationAboveMm) return false;
+            if (depth > ThermalCalculationAboveMm)
+                return new FrostDepthReading(0f, BeyondFormulaValue, BeyondFormulaReason, station);
 
-            depthMm = (float)depth;
-            return true;
+            return new FrostDepthReading((float)depth, Millimetres(depth), string.Empty, station);
         }
+
+        public static bool TryNormativeMm(ConstructionRegion region, SoilKind soil, out float depthMm)
+        {
+            var reading = Read(region, soil);
+            depthMm = reading.DepthMm;
+            return reading.HasNumber;
+        }
+
+        private static string Millimetres(double depth) =>
+            ((int)Math.Round(depth, MidpointRounding.AwayFromZero))
+                .ToString(CultureInfo.InvariantCulture) + " мм";
     }
 }

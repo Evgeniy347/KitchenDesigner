@@ -261,4 +261,73 @@ public class FrostDepthTests
             + "к первой строке таблицы показал бы московскую глубину для неизвестного "
             + "участка — тихий подлог вместо прочерка");
     }
+
+    /// <summary>Чтение — одна развилка на три ответа поля: число, «> 2,5 м» и прочерк.
+    /// Раньше их было две (поле форматировало само, а `TryNormativeMm` решало отдельно), и
+    /// вторая копия развилки — ровно та ошибка, от которой предостерегает
+    /// conventions/STRUCTURE.md → «A "can I?" method and an "apply it" method».</summary>
+    [Test]
+    public void Reading_ForMoscowClay_IsTheNumberTheFieldShows()
+    {
+        var reading = FrostDepth.Read(ConstructionRegion.Centre, SoilKind.Clay);
+
+        Assert.AreEqual("1079 мм", reading.Value,
+            "0,23·√22,0 = 1,079 м. Москва даёт 1079 мм по действующей климатологии "
+            + "(СП 131.13330.2020), а не 1400 из справочников по отменённому СНиП 23-01-99*: "
+            + "приложение называет источник, и число обязано ему соответствовать");
+        Assert.IsTrue(reading.HasNumber);
+        Assert.That(reading.Reason, Is.Empty, "у числа нет причины отсутствовать");
+    }
+
+    [Test]
+    public void Reading_ForPeat_IsADash_OnEveryRegion_AndSaysWhy()
+    {
+        foreach (var climate in RegionClimate.Table)
+        {
+            var reading = FrostDepth.Read(climate.Region, SoilKind.Peat);
+
+            Assert.AreEqual(FrostDepth.UnknownValue, reading.Value,
+                "торф не зависит от климата: d0 для него не назван вовсе — " + climate.Region);
+            Assert.IsFalse(reading.HasNumber);
+            Assert.That(reading.Reason, Does.Contain("торф"),
+                "прочерк с названной причиной, а не молчаливый — " + climate.Region);
+        }
+    }
+
+    [Test]
+    public void Reading_ForVorkutaOnSand_IsTheBoundOfTheFormula_NotANumberAndNotEmpty()
+    {
+        var reading = FrostDepth.Read(ConstructionRegion.FarNorth, SoilKind.Sand);
+
+        Assert.AreEqual(FrostDepth.BeyondFormulaValue, reading.Value,
+            "0,30·√99,8 = 3,00 м — за границей применимости формулы (5.3). Показать 3000 мм "
+            + "значило бы выдать за нормативное то, чем норматив это не считает; пустое поле "
+            + "не отличить от неработающей программы. Граница названа: «> 2,5 м»");
+        Assert.IsFalse(reading.HasNumber, "числа тут нет, есть граница");
+        Assert.That(reading.Value, Is.Not.EqualTo(FrostDepth.UnknownValue),
+            "это НЕ тот же случай, что торф: там величины нет вовсе, здесь она есть и глубока");
+        Assert.That(reading.Reason, Does.Contain(FrostDepth.ThermalCalculationSource));
+    }
+
+    [Test]
+    public void Reading_GivesANonEmptyReferenceStation_ForEveryRegionTheAppOffers()
+    {
+        foreach (var region in Enum.GetValues(typeof(ConstructionRegion)).Cast<ConstructionRegion>())
+            foreach (var soil in Enum.GetValues(typeof(SoilKind)).Cast<SoilKind>())
+                Assert.That(FrostDepth.Read(region, soil).ReferenceStation, Is.Not.Empty,
+                    "станция названа даже там, где числа нет: она объясняет, ПО ЧЕМУ считан "
+                    + "регион, и от грунта не зависит — " + region + "/" + soil);
+    }
+
+    [Test]
+    public void Reading_OfARegionOutsideTheTable_HasNoStationToName()
+    {
+        var reading = FrostDepth.Read((ConstructionRegion)99, SoilKind.Loam);
+
+        Assert.That(reading.ReferenceStation, Is.Empty,
+            "без строки в таблице называть нечего; выдать здесь чужую станцию значило бы "
+            + "назвать источником то, по чему ничего не считалось. Встречный вход к проверке "
+            + "выше: без него «непустая станция» проходила бы на константе");
+        Assert.AreEqual(FrostDepth.UnknownValue, reading.Value);
+    }
 }

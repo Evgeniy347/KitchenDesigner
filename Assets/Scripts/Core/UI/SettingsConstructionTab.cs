@@ -12,18 +12,16 @@ namespace KitchenDesigner.Core.UI
         public const string MasonryId = "Технология";
         public const string SoilId = "Грунт";
         public const string ConcreteId = "Класс бетона";
-        public const string FrostDepthUnknown = "—";
+        public const string FrostDepthUnknown = FrostDepth.UnknownValue;
 
         private readonly SettingsRowFactory _rows;
         private TextMeshProUGUI? _frostDepthValue;
+        private HintBadge? _frostDepthHint;
 
         public SettingsConstructionTab(SettingsRowFactory rows) => _rows = rows;
 
         public static string FrostDepthText(KitchenSettings s) =>
-            FrostDepth.TryNormativeMm(s.ConstructionRegion, s.ConstructionSoil, out float mm)
-                ? Mathf.RoundToInt(mm).ToString(System.Globalization.CultureInfo.InvariantCulture)
-                  + " мм"
-                : FrostDepthUnknown;
+            FrostDepth.Read(s.ConstructionRegion, s.ConstructionSoil).Value;
 
         public static List<string> MasonryTitles()
         {
@@ -46,7 +44,8 @@ namespace KitchenDesigner.Core.UI
 
             _frostDepthValue = _rows.AddReadOnlyValue(page, ref y, FrostDepthId, FrostDepthText(s),
                 read: () => FrostDepthText(s));
-            Hint(FrostDepthId, hint: "settings.construction.frostDepth");
+            _frostDepthHint = Hint(FrostDepthId, hint: "settings.construction.frostDepth");
+            ShowFrostDepth(s);
 
             _rows.AddDropdown(page, ref y, SoilId,
                 new List<string>(SoilKindTitles.All), (int)s.ConstructionSoil,
@@ -121,9 +120,12 @@ namespace KitchenDesigner.Core.UI
         private void ShowFrostDepth(KitchenSettings s)
         {
             if (_frostDepthValue != null) _frostDepthValue.text = FrostDepthText(s);
+            if (_frostDepthHint != null)
+                _frostDepthHint.Retext(
+                    FrostDepthHint.For(s.ConstructionRegion, s.ConstructionSoil));
         }
 
-        private void Hint(string rowKey, string hint) =>
+        private HintBadge? Hint(string rowKey, string hint) =>
             HintBadge.AttachAfterLabel(_rows.RowLabel(rowKey), hint);
     }
 }

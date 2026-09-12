@@ -76,6 +76,13 @@ namespace KitchenDesigner.Core.UI
             return narrowed.Width;
         }
 
+        public void Retext(string text)
+        {
+            _text = text;
+            var rect = (RectTransform)transform;
+            if (HintBubbleUI.IsPinnedBy(rect)) HintBubbleUI.Pin(rect, _text);
+        }
+
         public void OnPointerClick(PointerEventData eventData)
         {
             var rect = (RectTransform)transform;
