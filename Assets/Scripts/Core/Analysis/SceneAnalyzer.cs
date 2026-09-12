@@ -100,13 +100,13 @@ namespace KitchenDesigner.Core.Analysis
 
         private static void CollectDishwasherFacadeBackGaps(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
-            foreach (var d in ConstraintValidator.FindDishwasherFacadeBackGaps(all))
+            foreach (var d in DishwasherFitting.FindFacadeBackGaps(all))
                 issues.Add(IssueCatalog.DishwasherFacadeBackGap(d.dishwasher, d.facade, d.gapMm));
         }
 
         private static void CollectDishwasherSupport(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
-            foreach (var s in ConstraintValidator.FindDishwasherSupportIssues(all))
+            foreach (var s in DishwasherFitting.FindSupportIssues(all))
                 issues.Add(s.blocker != null
                     ? IssueCatalog.DishwasherSunk(s.dishwasher, s.blocker, s.sinkMm)
                     : IssueCatalog.DishwasherNoSupport(s.dishwasher));

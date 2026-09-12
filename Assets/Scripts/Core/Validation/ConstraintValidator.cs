@@ -275,12 +275,6 @@ namespace KitchenDesigner.Core
             return best;
         }
 
-        public static List<DishwasherBackGapIssue> FindDishwasherFacadeBackGaps(List<KitchenElement> all) =>
-            DishwasherFitting.FindFacadeBackGaps(all);
-
-        public static List<DishwasherSupportIssue> FindDishwasherSupportIssues(List<KitchenElement> all) =>
-            DishwasherFitting.FindSupportIssues(all);
-
         public readonly struct UnseatedPanel
         {
             public readonly KitchenElement panel;
