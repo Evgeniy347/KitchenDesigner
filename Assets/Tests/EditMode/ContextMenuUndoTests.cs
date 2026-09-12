@@ -110,14 +110,37 @@ public class ContextMenuUndoTests
 
     private static readonly BindingFlags Priv = BindingFlags.NonPublic | BindingFlags.Instance;
 
+    /// <summary>Обход полей панели — ОБЪЕДИНЕНИЕ её собственных полей и полей
+    /// вынесенных секций. Пока ширина/высота/глубина лежали прямо в
+    /// <c>ContextMenuUI</c>, отражения по ней хватало; после выноса
+    /// <c>ContextMenuSizeSection</c> обход молча похудел до одних только
+    /// transform-полей, которые тут же и пропускаются, — тест «прошёл»,
+    /// проверив ноль полей и не заметив, что отмена размеров больше не под
+    /// присмотром. Поэтому каждая секция, у которой есть свои числовые поля,
+    /// обязана попадать сюда явно.</summary>
     private static IEnumerable<(string name, TMP_InputField field)> InputFields(ContextMenuUI ctx) =>
+        OwnInputFields(ctx)
+            .Concat(SizeSectionFields(ctx))
+            .OrderBy(p => p.name, StringComparer.Ordinal);
+
+    private static IEnumerable<(string name, TMP_InputField field)> OwnInputFields(ContextMenuUI ctx) =>
         typeof(ContextMenuUI)
             .GetFields(Priv)
             .Where(f => f.FieldType == typeof(TMP_InputField))
-            .OrderBy(f => f.Name, StringComparer.Ordinal)
             .Select(f => (f.Name, (TMP_InputField?)f.GetValue(ctx)))
             .Where(p => p.Item2 != null)
             .Select(p => (p.Name, p.Item2!));
+
+    private static IEnumerable<(string name, TMP_InputField field)> SizeSectionFields(ContextMenuUI ctx)
+    {
+        var sizes = ctx.Sizes;
+        var named = new (string name, TMP_InputField? field)[]
+        {
+            ("_w", sizes.Width), ("_h", sizes.Height), ("_d", sizes.Depth),
+        };
+        foreach (var (name, field) in named)
+            if (field != null) yield return (name, field!);
+    }
 
     private static void InvokeApply(ContextMenuUI ctx) =>
         typeof(ContextMenuUI).GetMethod("Apply", Priv)!.Invoke(ctx, null);
@@ -220,7 +243,7 @@ public class ContextMenuUndoTests
         ctx.Open(cooktop);
         CommandStack.Clear();
 
-        var depth = (TMP_InputField)typeof(ContextMenuUI).GetField("_d", Priv)!.GetValue(ctx)!;
+        var depth = ctx.Sizes.Depth!;
         Assert.AreEqual("550", Clean(depth.text), "поле «Глубина» должно показывать текущую глубину");
 
         depth.text = "500";

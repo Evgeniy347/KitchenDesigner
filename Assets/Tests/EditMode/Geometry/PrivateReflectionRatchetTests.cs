@@ -41,7 +41,7 @@ namespace KitchenDesigner.Tests.Geometry
     {
         private static readonly (string file, int reachIns, int named, string why)[] Budgets =
         {
-            ("EditMode/ContextMenuUndoTests.cs", 1, 4,
+            ("EditMode/ContextMenuUndoTests.cs", 1, 3,
                 "перечисляет приватные поля панели по именам и зовёт приватный Apply — "
                 + "ровно тот случай, из-за которого в ContextMenuUI замерли переименования. "
                 + "Лечится доступом к виджетам по имени объекта сцены, тем путём, которым "

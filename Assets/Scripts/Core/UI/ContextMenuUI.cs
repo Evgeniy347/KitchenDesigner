@@ -145,6 +145,8 @@ namespace KitchenDesigner.Core.UI
 
         internal ContextMenuGapSection Gaps => _gaps;
 
+        internal ContextMenuSizeSection Sizes => _sizes;
+
         internal ContextMenuMaterialSection Materials => _materials;
 
         internal NameDropdownBinder AttachedFacade => _attachedFacade;
