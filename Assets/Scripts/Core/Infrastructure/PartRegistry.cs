@@ -24,7 +24,13 @@ namespace KitchenDesigner.Core
 
         public static void Unregister(KitchenElement element) => Instance.Unregister(element);
 
-        public static List<KitchenElement> GetAll() => Instance.GetAll();
+        public static List<KitchenElement> GetAll(
+            [System.Runtime.CompilerServices.CallerMemberName] string? scannedBy = null,
+            [System.Runtime.CompilerServices.CallerFilePath] string? scannedIn = null)
+        {
+            SceneScanLog.Note(scannedBy, scannedIn);
+            return Instance.GetAll();
+        }
 
         public static void Clear() => Instance.Clear();
 

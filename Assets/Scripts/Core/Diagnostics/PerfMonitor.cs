@@ -209,6 +209,12 @@ namespace KitchenDesigner.Core
             int getAll = PartRegistryInstance.TakeGetAllCalls();
             _getAllSum += getAll;
 
+            float mainMs = _mainThread.Valid ? _mainThread.LastValue * 1e-6f : 0f;
+            ReportTheFrameThatJustEnded(mainMs, gcBytes);
+            _scansOfTheFrameThatJustEnded = SceneScanLog.Take();
+            _getAllOfTheFrameThatJustEnded = getAll;
+            _frameThatJustEnded = Time.frameCount;
+
             if (dtMs > _worstDtMs)
             {
                 _worstDtMs = dtMs;
@@ -218,7 +224,7 @@ namespace KitchenDesigner.Core
                     for (int i = 0; i < _slots.Length; i++) _worstMarkersMs[i] = _slots[i].PreviousFrameMs;
             }
 
-            WriteCsvRow(dtMs, gcBytes, getAll);
+            WriteCsvRow(dtMs, gcBytes, getAll, mainMs);
 
             if (Time.unscaledTime >= _nextHudTime)
             {
@@ -227,7 +233,27 @@ namespace KitchenDesigner.Core
             }
         }
 
-        private void WriteCsvRow(float dtMs, float gcBytes, int getAllCalls)
+        internal const float SlowFrameMs = 60f;
+
+        private string _scansOfTheFrameThatJustEnded = string.Empty;
+        private int _getAllOfTheFrameThatJustEnded;
+        private int _frameThatJustEnded;
+
+        internal static string SlowFrameLine(int frame, float mainMs, float gcBytes,
+            int getAllCalls, string scans) =>
+            $"[Perf] кадр {frame}: {mainMs:F0} мс, мусор {gcBytes / 1024f:F0} КБ, "
+            + $"обходов сцены {getAllCalls} — "
+            + (string.IsNullOrEmpty(scans) ? "обходов не было" : scans);
+
+        private void ReportTheFrameThatJustEnded(float mainMs, float gcBytes)
+        {
+            if (mainMs <= SlowFrameMs || _frameThatJustEnded == 0) return;
+
+            Debug.LogWarning(SlowFrameLine(_frameThatJustEnded, mainMs, gcBytes,
+                _getAllOfTheFrameThatJustEnded, _scansOfTheFrameThatJustEnded));
+        }
+
+        private void WriteCsvRow(float dtMs, float gcBytes, int getAllCalls, float mainMs)
         {
             if (_csv == null || !_csv.Recording || _row == null || _slots == null) return;
 
@@ -235,7 +261,7 @@ namespace KitchenDesigner.Core
             _row[1] = dtMs;
             _row[2] = gcBytes;
             _row[3] = _gcUsed.Valid ? _gcUsed.LastValue / (1024f * 1024f) : 0f;
-            _row[4] = _mainThread.Valid ? _mainThread.LastValue * 1e-6f : 0f;
+            _row[4] = mainMs;
             _row[5] = _drawCalls.Valid ? _drawCalls.LastValue : 0f;
             _row[6] = _batches.Valid ? _batches.LastValue : 0f;
             _row[7] = _setPass.Valid ? _setPass.LastValue : 0f;
@@ -382,6 +408,9 @@ namespace KitchenDesigner.Core
             _worstDtMs = 0f;
             _worstGcBytes = 0f;
             Array.Clear(_histogram, 0, _histogram.Length);
+            SceneScanLog.Forget();
+            _scansOfTheFrameThatJustEnded = string.Empty;
+            _frameThatJustEnded = 0;
             PerfMarkers.DropEverythingMeasuredSoFar();
 
             if (_slots == null) return;
