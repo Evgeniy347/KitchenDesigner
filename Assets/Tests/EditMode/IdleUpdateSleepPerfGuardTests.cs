@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -434,5 +435,133 @@ public class IdleUpdateSleepPerfGuardTests : ElementTestBase
         Assert.IsFalse(drawer.enabled,
             "упёршийся ящик болел тем же: цель никогда не достигнута, поэтому старое условие " +
             "выключения не срабатывало и Update тикал вечно");
+    }
+
+    // ───────── Духовка, стиралка и дверь: та же парковка, тот же будильник ─────────
+
+    private delegate void OpenBoxesOf(float progress, List<OrientedBox> into);
+
+    /// <summary>Препятствие ставится не по угаданным миллиметрам, а ТУДА, ГДЕ ДВЕРЦА
+    /// ОКАЖЕТСЯ РАСПАХНУТОЙ: элемент сам показывает свои коробки открывания, и берётся
+    /// та, что уехала от своей закрытой позы дальше всех. В закрытом положении дверцы
+    /// там заведомо нет, на полном ходу есть — значит препятствие останавливает её
+    /// ГДЕ-ТО ПОСЕРЕДИНЕ у любого типа, и тест не надо подгонять под чужую геометрию:
+    /// у духовки дверца откидная, у стиралки люк на вертикальной оси, у двери створка
+    /// на кромочном пивоте.</summary>
+    private KitchenElement ObstacleWhereTheDoorEndsUp(string name, OpenBoxesOf openBoxes)
+    {
+        var closed = new List<OrientedBox>();
+        var open = new List<OrientedBox>();
+        openBoxes(0f, closed);
+        openBoxes(1f, open);
+        Assert.AreEqual(closed.Count, open.Count,
+            "коробок открывания в обеих позах поровну — иначе их не с чем сравнивать");
+
+        int farthest = 0;
+        float best = -1f;
+        for (int i = 0; i < open.Count; i++)
+        {
+            float d = (open[i].Center - closed[i].Center).sqrMagnitude;
+            if (d > best) { best = d; farthest = i; }
+        }
+        Assert.Greater(best, 1e-6f,
+            "распахнутая дверца обязана стоять не там же, где закрытая — иначе ставить "
+            + "препятствие некуда и тест сторожил бы пустое место");
+
+        return MakePrimitiveElement(name, new Vector3Int(120, 120, 120), open[farthest].Center);
+    }
+
+    /// <summary>Один кадр движка: движок зовёт <c>Update</c> ТОЛЬКО у включённого
+    /// компонента, а <c>Update</c> у всех трёх типов — это ровно
+    /// <c>StepDoor(Time.deltaTime)</c>. Поэтому счётчик ниже и есть счётчик вызовов
+    /// <c>Update</c>, а <c>dt</c> приходит аргументом: ни сна, ни ожидания кадров.</summary>
+    private static int SpendFrames(Behaviour c, System.Action<float> stepDoor, int frames, float dt)
+    {
+        int updates = 0;
+        for (int i = 0; i < frames; i++)
+        {
+            if (c.enabled)
+            {
+                stepDoor(dt);
+                updates++;
+            }
+            SceneChangeTracker.Poll();
+        }
+        return updates;
+    }
+
+    /// <summary>Три сенсора одним проходом, и ни один не сокращается до другого:
+    /// положительный контроль (остановилась на 0 &lt; progress &lt; 1 — парковалось не
+    /// пустое место), счёт вызовов в покое (ноль), обратный вход (препятствие убрали —
+    /// проснулась САМА, без клика и без ручного <c>enabled</c>, и доехала до конца).
+    /// Требование к правильности здесь важнее выигрыша: заснувшая навсегда дверца
+    /// осталась бы приоткрытой на всю жизнь проекта.</summary>
+    private void AssertItParksAndWakesItself(KitchenElement el, System.Action<float> stepDoor,
+        System.Func<float> progress, System.Func<bool> parked, OpenBoxesOf openBoxes, string what)
+    {
+        var obstacle = ObstacleWhereTheDoorEndsUp(what + "-препятствие", openBoxes);
+
+        int spentReachingTheLimit = SpendFrames(el, stepDoor, 60, 0.02f);
+
+        float stoppedAt = progress();
+        Assert.Greater(stoppedAt, 0f, what + ": ПОЛОЖИТЕЛЬНЫЙ КОНТРОЛЬ — дверца тронулась");
+        Assert.Less(stoppedAt, 1f,
+            what + ": ПОЛОЖИТЕЛЬНЫЙ КОНТРОЛЬ — и упёрлась, не доехав до конца");
+        Assert.Less(spentReachingTheLimit, 60,
+            what + $": шестьдесят кадров подряд упёршаяся дверца тратить не имеет права; "
+            + $"потрачено {spentReachingTheLimit}");
+        Assert.IsTrue(parked(), what + ": она стоит ровно у своего предела");
+        Assert.IsFalse(el.enabled, what + ": и потому выключила себе Update");
+
+        int spentAtRest = SpendFrames(el, stepDoor, 100, 0.02f);
+        Assert.AreEqual(0, spentAtRest,
+            what + $": сто кадров покоя не стоят ни одного вызова Update — сцена не менялась, "
+            + $"ехать некуда. Получено {spentAtRest}: значит полный скан препятствий крутится "
+            + "каждый кадр вечно, как было до калитки");
+
+        obstacle.transform.position += Vector3.up * 10f;
+        SceneChangeTracker.Poll();
+
+        Assert.IsTrue(el.enabled,
+            what + ": ОБРАТНЫЙ ВХОД — препятствие убрали, дверца обязана проснуться САМА, "
+            + "без клика и без ручного enabled, иначе она навсегда стоит приоткрытой");
+
+        SpendFrames(el, stepDoor, 120, 0.05f);
+
+        Assert.AreEqual(1f, progress(), 1e-4f,
+            what + ": путь свободен — проснувшаяся дверца доехала до конца сама");
+        Assert.IsFalse(parked(), what + ": у цели она уже не у предела");
+        Assert.IsFalse(el.enabled, what + ": и снова уснула, доехав");
+    }
+
+    [Test]
+    public void OvenElement_BlockedDoor_ParksItsUpdate_AndWakesItself()
+    {
+        var oven = Spawn<OvenElement>(() => ElementFactory.CreateOven("Духовка", Vector3.zero));
+        oven.SetOpen(true);
+
+        AssertItParksAndWakesItself(oven, oven.StepDoor, () => oven.DoorProgress,
+            () => oven.IsParkedAtALimit, oven.GetOpenBoxes, "духовка");
+    }
+
+    [Test]
+    public void LaundryMachineElement_BlockedDoor_ParksItsUpdate_AndWakesItself()
+    {
+        var washer = Spawn<LaundryMachineElement>(() => ElementFactory.CreateLaundryMachine(
+            LaundryMachineKind.Washer, new Vector3Int(600, 850, 600), "Стиралка", Vector3.zero));
+        washer.SetOpen(true);
+
+        AssertItParksAndWakesItself(washer, washer.StepDoor, () => washer.DoorProgress,
+            () => washer.IsParkedAtALimit, washer.GetOpenBoxes, "стиральная машина");
+    }
+
+    [Test]
+    public void DoorElement_BlockedSash_ParksItsUpdate_AndWakesItself()
+    {
+        var door = SpawnDoor();
+        door.SetOpen(true);
+
+        AssertItParksAndWakesItself(door, door.StepDoor, () => door.DoorProgress,
+            () => door.IsParkedAtALimit, door.GetOpenBoxes, "дверь");
     }
 }

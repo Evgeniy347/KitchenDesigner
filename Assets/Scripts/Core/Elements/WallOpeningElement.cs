@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public abstract class WallOpeningElement : KitchenElement, IOpenable, IWallMounted, IPaintsItself, ICutsItsHost
+    public abstract class WallOpeningElement : KitchenElement, IOpenable, IWallMounted, IPaintsItself,
+        ICutsItsHost, IParksAtAGestureLimit
     {
         public override bool CanFollowAnAttachParent => false;
 
@@ -31,12 +32,14 @@ namespace KitchenDesigner.Core
         private int _lastPoseVersion;
         private Wall? _attachedWall;
         private Wall? _seatWall;
+        private OpeningScanRepeat _scanGate;
+        private bool _parkedAtLimit;
 
         [Undoable]
         public DoorMode Mode
         {
             get => _mode;
-            set { _mode = value; ApplyDoorPose(); }
+            set { _mode = value; ForgetTheLimitOfThisShape(); ApplyDoorPose(); }
         }
 
         public bool IsOpen => _isOpen;
@@ -62,6 +65,7 @@ namespace KitchenDesigner.Core
         public override void ApplyDimensions()
         {
             transform.localScale = Vector3.one;
+            ForgetTheLimitOfThisShape();
             UpdateCollider();
             EnsureChildren();
             RebuildGeometry();
@@ -78,6 +82,8 @@ namespace KitchenDesigner.Core
         public void SetOpen(bool open)
         {
             _isOpen = open;
+            _scanGate.Forget();
+            _parkedAtLimit = false;
             if (!Mathf.Approximately(_openT, open ? 1f : 0f))
             {
                 enabled = true;
@@ -92,6 +98,7 @@ namespace KitchenDesigner.Core
             if (_openT <= 0f && !_isOpen) return;
             _isOpen = false;
             _openT = 0f;
+            _parkedAtLimit = false;
             ApplyDoorPose();
         }
 
@@ -107,13 +114,9 @@ namespace KitchenDesigner.Core
         internal void Update()
         {
             StepDoor(Time.deltaTime);
-            if (PoseVersion != _lastPoseVersion)
-            {
-                _lastPoseVersion = PoseVersion;
-                SnapToWall();
-            }
-
-            if (Mathf.Approximately(_openT, _isOpen ? 1f : 0f)) enabled = false;
+            if (PoseVersion == _lastPoseVersion) return;
+            _lastPoseVersion = PoseVersion;
+            SnapToWall();
         }
 
         protected override void OnOwnPoseVersionBumped() => enabled = true;
@@ -121,17 +124,60 @@ namespace KitchenDesigner.Core
         public void StepDoor(float dt)
         {
             float target = _isOpen ? 1f : 0f;
-            if (Mathf.Approximately(_openT, target)) return;
+            if (Mathf.Approximately(_openT, target))
+            {
+                _parkedAtLimit = false;
+                enabled = false;
+                return;
+            }
+
+            if (StillBlockedOnThisRevision)
+            {
+                _parkedAtLimit = true;
+                enabled = false;
+                return;
+            }
+
+            _parkedAtLimit = false;
+
             float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
             _openT = Mathf.MoveTowards(_openT, target, step);
 
             if (_isOpen && _openT > 0f)
             {
-                float safe = OpeningCollision.FindMaxProgress(this, GetOpenBoxes);
+                float safe = MaxSafeProgress();
                 if (safe < _openT) _openT = Mathf.Max(_openT - step, safe);
             }
 
             ApplyDoorPose();
+        }
+
+        public bool IsParkedAtALimit => _parkedAtLimit;
+
+        private bool StillBlockedOnThisRevision =>
+            _isOpen
+            && _scanGate.Repeats(SceneRevision.Version, transform.position, transform.rotation,
+                RestExtents)
+            && Mathf.Approximately(_openT, _scanGate.SafeProgress);
+
+        private Vector3 RestExtents => DimensionsMM;
+
+        private void ForgetTheLimitOfThisShape()
+        {
+            _scanGate.Forget();
+            _parkedAtLimit = false;
+            enabled = true;
+        }
+
+        private float MaxSafeProgress()
+        {
+            var t = transform;
+            if (_scanGate.Repeats(SceneRevision.Version, t.position, t.rotation, RestExtents))
+                return _scanGate.SafeProgress;
+
+            _scanGate.Remember(SceneRevision.Version, t.position, t.rotation, RestExtents,
+                OpeningCollision.FindMaxProgress(this, GetOpenBoxes));
+            return _scanGate.SafeProgress;
         }
 
         public void GetOpenBoxes(float progress, List<OrientedBox> into)

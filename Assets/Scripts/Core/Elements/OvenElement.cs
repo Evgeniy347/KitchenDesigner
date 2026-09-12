@@ -4,7 +4,7 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     public class OvenElement : KitchenElement, IFixedSizeElement, IOpenable, IPaintsItself,
-        IQuantifies
+        IQuantifies, IParksAtAGestureLimit
     {
         public override ElementFront Front =>
             ElementFront.Parts(OvenBody.PartName(OvenBody.IdxGlass),
@@ -36,6 +36,8 @@ namespace KitchenDesigner.Core
 
         private ApplianceBoxes? _boxes;
         private DropDoor? _door;
+        private OpeningScanRepeat _scanGate;
+        private bool _parkedAtLimit;
 
         private ApplianceBoxes Boxes => _boxes ??= new ApplianceBoxes(transform, OvenBody.PartName);
 
@@ -92,6 +94,8 @@ namespace KitchenDesigner.Core
         public void SetOpen(bool open)
         {
             _open = open;
+            _scanGate.Forget();
+            _parkedAtLimit = false;
             if (Door.IsAnimatingTowards(open))
             {
                 enabled = true;
@@ -105,23 +109,55 @@ namespace KitchenDesigner.Core
         {
             bool wasOpen = _open;
             _open = false;
+            _parkedAtLimit = false;
             if (!Door.ForceClose() && !wasOpen) return;
             Door.ApplyPose();
         }
 
-        internal void Update()
-        {
-            StepDoor(Time.deltaTime);
-            if (Mathf.Approximately(Door.Progress, _open ? 1f : 0f)) enabled = false;
-        }
+        internal void Update() => StepDoor(Time.deltaTime);
 
         public void StepDoor(float dt)
         {
+            if (Mathf.Approximately(Door.Progress, _open ? 1f : 0f))
+            {
+                _parkedAtLimit = false;
+                enabled = false;
+                return;
+            }
+
+            if (StillBlockedOnThisRevision)
+            {
+                _parkedAtLimit = true;
+                enabled = false;
+                return;
+            }
+
+            _parkedAtLimit = false;
+
             if (!Door.Step(dt, _open, MaxSafeDoorProgress)) return;
             Door.ApplyPose();
         }
 
-        private float MaxSafeDoorProgress() => OpeningCollision.FindMaxProgress(this, GetOpenBoxes);
+        public bool IsParkedAtALimit => _parkedAtLimit;
+
+        private bool StillBlockedOnThisRevision =>
+            _open
+            && _scanGate.Repeats(SceneRevision.Version, transform.position, transform.rotation,
+                RestExtents)
+            && Mathf.Approximately(Door.Progress, _scanGate.SafeProgress);
+
+        private Vector3 RestExtents => transform.localScale;
+
+        private float MaxSafeDoorProgress()
+        {
+            var t = transform;
+            if (_scanGate.Repeats(SceneRevision.Version, t.position, t.rotation, RestExtents))
+                return _scanGate.SafeProgress;
+
+            _scanGate.Remember(SceneRevision.Version, t.position, t.rotation, RestExtents,
+                OpeningCollision.FindMaxProgress(this, GetOpenBoxes));
+            return _scanGate.SafeProgress;
+        }
 
         public void GetOpenBoxes(float progress, List<OrientedBox> into) =>
             Door.WorldBoxes(transform, progress, into);
