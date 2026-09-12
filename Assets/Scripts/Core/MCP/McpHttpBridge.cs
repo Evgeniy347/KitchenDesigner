@@ -153,7 +153,7 @@ namespace KitchenDesigner.Core.MCP
             using (var reader = new StreamReader(request.InputStream, Encoding.UTF8))
                 body = reader.ReadToEnd();
 
-            var (status, json) = _router!.Handle(body);
+            var (status, json) = _router!.Handle(body, timing.NoteMethod);
             Respond(context, status, json, "application/json; charset=utf-8");
             timing.MarkRespondedAndLog();
             _currentCallTiming = null;

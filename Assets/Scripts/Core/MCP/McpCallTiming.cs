@@ -16,6 +16,8 @@ namespace KitchenDesigner.Core.MCP
 
         public void MarkAccepted() => _acceptedTicks = Stopwatch.GetTimestamp();
 
+        public void NoteMethod(string method) => _method = method;
+
         public void MarkQueued(string method)
         {
             _method = method;

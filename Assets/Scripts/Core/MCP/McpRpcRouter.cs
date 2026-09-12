@@ -26,6 +26,7 @@ namespace KitchenDesigner.Core.MCP
         private readonly McpToolCall _toolCall;
         private readonly string _serverVersion;
         private readonly JsonSerializer _serializer;
+        private Action<string>? _noteMethod;
 
         public McpRpcRouter(Func<McpRequest, McpResponse> dispatch, string serverVersion)
         {
@@ -34,8 +35,9 @@ namespace KitchenDesigner.Core.MCP
             _serializer = JsonSerializer.Create(McpJson.Settings);
         }
 
-        public (int status, string? body) Handle(string bodyJson)
+        public (int status, string? body) Handle(string bodyJson, Action<string>? noteMethod = null)
         {
+            _noteMethod = noteMethod;
             JToken parsed;
             try
             {
@@ -83,6 +85,7 @@ namespace KitchenDesigner.Core.MCP
                 return ErrorEnvelope(id, InvalidRequest, "Invalid request");
 
             var name = method.Value<string>() ?? string.Empty;
+            _noteMethod?.Invoke(name);
             var parameters = request["params"] as JObject ?? new JObject();
 
             try
