@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core
             private readonly Quaternion _restRotation;
             private readonly Vector3Int _dimensions;
             private readonly BoxGaps _gaps;
-            private readonly string _name;
+            private readonly string? _name;
             private readonly int _groupId;
             private readonly bool _poseFollowsTransform;
             private readonly bool _isFloor;
@@ -25,7 +25,7 @@ namespace KitchenDesigner.Core
 
             private Stamp(Vector3 position, Quaternion rotation, Vector3 scale,
                 Vector3 restPosition, Quaternion restRotation, Vector3Int dimensions,
-                BoxGaps gaps, string name, int groupId, bool poseFollowsTransform,
+                BoxGaps gaps, string? name, int groupId, bool poseFollowsTransform,
                 bool isFloor, bool hasWall, bool wallLowered, float wallFullScaleY,
                 Vector3 wallFullPosition)
             {
@@ -136,9 +136,11 @@ namespace KitchenDesigner.Core
 
             var stale = new List<KitchenElement>();
             foreach (var pair in _entries)
-                if (pair.Value.Touched != _pass || pair.Key == null) stale.Add(pair.Key);
+                if (pair.Value.Touched != _pass || IsGone(pair.Key)) stale.Add(pair.Key);
             foreach (var key in stale) _entries.Remove(key);
         }
+
+        private static bool IsGone(KitchenElement element) => element == null;
 
         public static void Clear() => _entries.Clear();
 
