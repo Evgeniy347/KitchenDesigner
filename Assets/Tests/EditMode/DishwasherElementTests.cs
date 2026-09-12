@@ -1316,6 +1316,87 @@ public class DishwasherElementTests : McpTestFixture
             "путь свободен — дверца доехала до конца");
     }
 
+    /// <summary>Один кадр движка для посудомойки: движок зовёт <c>Update</c> ТОЛЬКО
+    /// у включённого компонента, а весь <c>Update</c> — это ровно
+    /// <c>StepDoor(Time.deltaTime)</c>. Поэтому счётчик вызовов здесь и есть счётчик
+    /// вызовов <c>Update</c>, а <c>dt</c> приходит аргументом: ни сна, ни ожидания
+    /// кадров тест не требует.</summary>
+    private static int SpendFrames(DishwasherElement dw, int frames, float dt)
+    {
+        int updates = 0;
+        for (int i = 0; i < frames; i++)
+        {
+            if (dw.enabled)
+            {
+                dw.StepDoor(dt);
+                updates++;
+            }
+            SceneChangeTracker.Poll();
+        }
+        return updates;
+    }
+
+    /// <summary>СЕНСОР КАДРОВ, вторая половина того же дефекта, что и сканы выше.
+    /// Скан из кадра убрала калитка — но сам кадр не кончался: <c>DropDoor.Step</c>
+    /// поджимает прогресс обратно к безопасному и до цели не доходит НИКОГДА, значит
+    /// <c>Update</c> крутится вечно. У фасада и ящика для этого давно есть
+    /// <see cref="IParksAtAGestureLimit"/> и <c>_parkedAtLimit</c>: упёршийся компонент
+    /// гасит себе <c>enabled</c>, а общий будильник
+    /// <c>SceneChangeTracker.SettleDerivedLinks</c> поднимает его обратно, как только
+    /// сцена изменилась. Машина — третья в этом ряду, механизм тот же, а не четвёртый
+    /// самодельный.
+    ///
+    /// Выигрыш тут вторичен: главное требование — ПРОСНУТЬСЯ. Заснувшая навсегда
+    /// дверца осталась бы приоткрытой на всю жизнь проекта, и это дефект куда хуже
+    /// лишнего кадра. Поэтому обратный вход проверяется без клика и без ручного
+    /// <c>enabled = true</c>: препятствие отодвинули — и всё.</summary>
+    [Test]
+    public void BlockedDoor_ParksItsUpdate_AndWakesItselfWhenTheObstacleMoves()
+    {
+        var dw = Make("DW-park");
+        var facade = MakeFacadeFor(dw, "DW_park_front");
+        dw.AttachedFacadeName = facade.PartName;
+        dw.OnAttachedFacadeChanged(null, facade);
+        dw.ApplyDoorPose();
+
+        var wall = Board("DW_park_wall", new Vector3(0f, 0f, 600f), new Vector3Int(600, 800, 200));
+
+        dw.SetOpen(true);
+        int spentReachingTheLimit = SpendFrames(dw, 40, 0.02f);
+
+        float parked = dw.DoorProgress;
+        Assert.Greater(parked, 0f, "ПОЛОЖИТЕЛЬНЫЙ КОНТРОЛЬ: дверца тронулась");
+        Assert.Less(parked, 1f,
+            "ПОЛОЖИТЕЛЬНЫЙ КОНТРОЛЬ: и упёрлась в доску, не доехав до конца — "
+            + "парковаться есть чему, иначе тест сторожил бы пустое место");
+        Assert.Less(spentReachingTheLimit, 40,
+            $"сорок кадров подряд упёршаяся дверца тратить не имеет права; потрачено "
+            + $"{spentReachingTheLimit}");
+        Assert.IsTrue(dw.IsParkedAtALimit,
+            "она стоит ровно у своего предела — именно этот признак читает общий будильник");
+        Assert.IsFalse(dw.enabled, "и потому выключила себе Update");
+
+        int spentAtRest = SpendFrames(dw, 100, 0.02f);
+        Assert.AreEqual(0, spentAtRest,
+            $"сто кадров покоя не стоят ни одного вызова Update: сцена не менялась, "
+            + $"ехать некуда. Получено {spentAtRest} — значит дверца не гасит себя и "
+            + "крутит кадр вечно, как до правки");
+
+        wall.transform.position += new Vector3(0f, 0f, 2f);
+        SceneChangeTracker.Poll();
+
+        Assert.IsTrue(dw.enabled,
+            "ОБРАТНЫЙ ВХОД: препятствие отодвинули — дверца обязана проснуться САМА, "
+            + "без клика и без ручного enabled. Иначе она навсегда стоит приоткрытой");
+
+        SpendFrames(dw, 80, 0.05f);
+
+        Assert.AreEqual(1f, dw.DoorProgress, 1e-4f,
+            "путь свободен — проснувшаяся дверца доехала до конца сама");
+        Assert.IsFalse(dw.IsParkedAtALimit, "у цели она уже не у предела");
+        Assert.IsFalse(dw.enabled, "и снова уснула, доехав");
+    }
+
     /// <summary>«E» на выделенном фасаде, пристёгнутом к посудомойке, идёт
     /// через <c>dw.ToggleOpen()</c> — а не через <c>f.ToggleOpen()</c> (фасад
     /// пассажир, его собственная анимация выключена). Защита от регрессии:

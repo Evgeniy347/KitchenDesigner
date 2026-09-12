@@ -4,7 +4,7 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     public class DishwasherElement : KitchenElement, IFixedSizeElement, IFacadeHost, IOpenable,
-        IPaintsItself, IQuantifies
+        IPaintsItself, IQuantifies, IParksAtAGestureLimit
     {
         public override ElementFront Front =>
             ElementFront.Parts(DishwasherBody.ChildName(DishwasherBody.IdxDoor),
@@ -90,6 +90,7 @@ namespace KitchenDesigner.Core
         private ApplianceBoxes? _boxes;
         private DropDoor? _door;
         private OpeningScanRepeat _scanGate;
+        private bool _parkedAtLimit;
 
         private ApplianceBoxes Boxes => _boxes ??= new ApplianceBoxes(transform, DishwasherBody.ChildName);
 
@@ -119,6 +120,8 @@ namespace KitchenDesigner.Core
         public void OnAttachedFacadeChanged(FacadeElement? oldFacade, FacadeElement? newFacade)
         {
             _scanGate.Forget();
+            _parkedAtLimit = false;
+            enabled = true;
             if (oldFacade != null && oldFacade.IsPassenger) oldFacade.IsPassenger = false;
             if (newFacade != null)
             {
@@ -198,6 +201,7 @@ namespace KitchenDesigner.Core
         {
             _open = open;
             _scanGate.Forget();
+            _parkedAtLimit = false;
             SyncAttachedFacade();
             if (Door.IsAnimatingTowards(open))
             {
@@ -215,6 +219,7 @@ namespace KitchenDesigner.Core
 
             bool wasOpen = _open;
             _open = false;
+            _parkedAtLimit = false;
             if (!Door.ForceClose() && !wasOpen) return;
             ApplyDoorPose();
         }
@@ -229,17 +234,37 @@ namespace KitchenDesigner.Core
 
         private bool DoorIsAtRestClosed => Door.Progress <= 0f;
 
-        internal void Update()
-        {
-            StepDoor(Time.deltaTime);
-            if (Mathf.Approximately(Door.Progress, _open ? 1f : 0f)) enabled = false;
-        }
+        internal void Update() => StepDoor(Time.deltaTime);
 
         public void StepDoor(float dt)
         {
+            if (Mathf.Approximately(Door.Progress, _open ? 1f : 0f))
+            {
+                _parkedAtLimit = false;
+                enabled = false;
+                return;
+            }
+
+            if (StillBlockedOnThisRevision)
+            {
+                _parkedAtLimit = true;
+                enabled = false;
+                return;
+            }
+
+            _parkedAtLimit = false;
+
             if (!Door.Step(dt, _open, MaxSafeDoorProgress)) return;
             ApplyDoorPose();
         }
+
+        public bool IsParkedAtALimit => _parkedAtLimit;
+
+        private bool StillBlockedOnThisRevision =>
+            _open
+            && _scanGate.Repeats(SceneRevision.Version, transform.position, transform.rotation,
+                RestExtents)
+            && Mathf.Approximately(Door.Progress, _scanGate.SafeProgress);
 
         private float MaxSafeDoorProgress()
         {
