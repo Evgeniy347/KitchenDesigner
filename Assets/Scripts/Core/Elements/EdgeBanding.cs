@@ -88,6 +88,7 @@ namespace KitchenDesigner.Core
         private readonly List<KitchenElement> _elements = new List<KitchenElement>();
         private readonly List<Face[]> _faces = new List<Face[]>();
         private readonly List<Sphere> _spheres = new List<Sphere>();
+        private readonly List<bool> _opaque = new List<bool>();
 
         [System.ThreadStatic] private static int _indexBuilds;
 
@@ -110,6 +111,7 @@ namespace KitchenDesigner.Core
                 scene._elements.Add(element);
                 scene._faces.Add(faces);
                 scene._spheres.Add(BoundingSphere(element, faces));
+                scene._opaque.Add(EdgeBanding.CoversEdgesOfNeighbours(element));
             }
             return scene;
         }
@@ -120,6 +122,7 @@ namespace KitchenDesigner.Core
         public KitchenElement ElementAt(int i) => _elements[i];
         public Face[] FacesAt(int i) => _faces[i];
         public Sphere SphereAt(int i) => _spheres[i];
+        public bool CoversEdgesAt(int i) => _opaque[i];
 
         [System.ThreadStatic] private static int _linearLookups;
 
@@ -189,6 +192,24 @@ namespace KitchenDesigner.Core
         public static string FormatThickness(float thicknessMM) =>
             thicknessMM.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
 
+        [System.ThreadStatic] private static int _neighbourProbes;
+
+        public static int TakeNeighbourProbes()
+        {
+            int n = _neighbourProbes;
+            _neighbourProbes = 0;
+            return n;
+        }
+
+        public static bool CoversEdgesOfNeighbours(KitchenElement other)
+        {
+            _neighbourProbes++;
+            return !IsGone(other) && other.gameObject.activeInHierarchy
+                && !IsTransparentToEdges(other);
+        }
+
+        private static bool IsGone(KitchenElement other) => other == null;
+
         private static bool IsTransparentToEdges(KitchenElement other) =>
             other is LightSourceElement || other is SinkElement || other is CooktopElement
             || other is OvenElement || other is DishwasherElement || other is PillarElement
@@ -230,11 +251,10 @@ namespace KitchenDesigner.Core
             var sphere = indexInScene >= 0 ? scene.SphereAt(indexInScene) : scene.SphereOf(element);
             for (int k = 0; k < scene.Count; k++)
             {
-                var other = scene.ElementAt(k);
-                if (other == null || other == element) continue;
-                if (!other.gameObject.activeInHierarchy) continue;
-                if (IsTransparentToEdges(other)) continue;
+                if (k == indexInScene) continue;
+                if (!scene.CoversEdgesAt(k)) continue;
                 if (!sphere.Touches(scene.SphereAt(k), contactDist)) continue;
+                if (ReferenceEquals(scene.ElementAt(k), element)) continue;
 
                 var otherFaces = scene.FacesAt(k);
                 for (int i = 0; i < 4; i++)
