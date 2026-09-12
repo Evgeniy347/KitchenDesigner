@@ -321,3 +321,10 @@ Two things the allow-list needs, or it rots:
   the scan actually found the layer AND that a known offender-prone file is in the scanned set
   and NOT in the allow-list. `UiElementTypeLadderTests` carries all three of these guards.
 
+
+**Статический `Instance`, назначаемый в `Awake`, в EditMode пуст ВСЕГДА.** `Awake` там не
+зовётся вовсе, поэтому замена `Object.FindAnyObjectByType<T>()` на `T.Instance` красит стенды в
+красный — и это стенд, а не дефект приложения. Ослаблять сторожей нельзя, возвращать обход дерева
+тоже: правильная форма — `Instance` как быстрый путь плюс разовый поиск с запоминанием найденного.
+Тогда в приложении запасной путь не выполняется ни разу, в стенде выполняется один раз на тест, и
+худший случай равен тому, что было раньше всегда.
