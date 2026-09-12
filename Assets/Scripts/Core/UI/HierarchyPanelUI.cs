@@ -45,6 +45,15 @@ namespace KitchenDesigner.Core.UI
         private int _fingerprint;
         private bool _ignoreDropdownCallback;
 
+        private static int _rebuilds;
+
+        internal static int TakeRebuilds()
+        {
+            int n = _rebuilds;
+            _rebuilds = 0;
+            return n;
+        }
+
         private void Awake() => Instance = this;
 
         public void Build(Transform canvas)
@@ -174,8 +183,13 @@ namespace KitchenDesigner.Core.UI
             if (_root == null || !_root.activeSelf) return;
             if (Time.unscaledTime < _nextPoll) return;
             _nextPoll = Time.unscaledTime + PollInterval;
-            int fp = ComputeFingerprint();
-            if (fp != _fingerprint) Refresh();
+            PollSceneForChanges();
+        }
+
+        internal void PollSceneForChanges()
+        {
+            int fingerprint = ComputeFingerprint();
+            if (fingerprint != _fingerprint) RebuildRows(fingerprint);
         }
 
         private static int ComputeFingerprint()
@@ -183,7 +197,7 @@ namespace KitchenDesigner.Core.UI
             unchecked
             {
                 int h = 17;
-                foreach (var e in PartRegistry.GetAll())
+                foreach (var e in PartRegistry.All)
                 {
                     if (e == null) continue;
                     h = h * 31 + e.PartName.GetHashCode();
@@ -229,10 +243,13 @@ namespace KitchenDesigner.Core.UI
         }
 
 
-        private void Refresh()
+        private void Refresh() => RebuildRows(ComputeFingerprint());
+
+        private void RebuildRows(int fingerprint)
         {
             if (_content == null) return;
-            _fingerprint = ComputeFingerprint();
+            _fingerprint = fingerprint;
+            _rebuilds++;
 
             for (int i = _content.childCount - 1; i >= 0; i--)
                 DestroyNow.The(_content.GetChild(i).gameObject);
@@ -241,7 +258,7 @@ namespace KitchenDesigner.Core.UI
             if (_searchHint != null) _searchHint.gameObject.SetActive(filter.Length == 0);
 
             var collapsed = filter.Length == 0 ? _collapsed : NoCollapsedGroups;
-            var nodes = SceneTree.Build(PartRegistry.GetAll(), GroupManager.AllGroups(), collapsed);
+            var nodes = SceneTree.Build(PartRegistry.All, GroupManager.AllGroups(), collapsed);
             var sel = SelectionManager.Instance;
 
             float y = 0f;
