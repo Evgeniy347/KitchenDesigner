@@ -137,4 +137,68 @@ public class MillimetreGridFindingTests
             "а несовпадение с сеткой обязано ПОЯВИТЬСЯ в списке: тихая правка заменена на "
             + "находку, решение осталось за человеком");
     }
+
+    /// <summary>Контроль 1 к исключению, которого НЕ БЫЛО СДЕЛАНО. Настенный прибор
+    /// выглядел деталью, которой находка неисполнима: подвинь его — и посадка на стену
+    /// вернёт его обратно. Разбор показал обратное: <c>WallSeating.Seat</c> правит ТОЛЬКО
+    /// расстояние вдоль нормали и оставляет поперечные координаты как есть, а вдоль
+    /// нормали край прибора ложится ровно на ГРАНЬ СТЕНЫ. Стена стоит на сетке — значит
+    /// и край прибора на целом миллиметре, по построению. Находка исполнима, глушить её
+    /// нечем и незачем.
+    ///
+    /// Красный здесь означает ровно одно: разбор неверен и исключение всё-таки нужно.</summary>
+    [Test]
+    public void Analyze_WallMixerSeatedOnAWallThatIsOnTheGrid_YieldsNoGrd01()
+    {
+        var wallGo = ElementFactory.CreateWall(new Vector3Int(3000, 2500, 100), "Stena",
+            new Vector3(0f, 1250f * U, -50f * U));
+        _spawned.Add(wallGo);
+
+        var mixerGo = ElementFactory.CreateBathMixer(BathMixerSpec.Default, "Smesitel",
+            new Vector3(0f, 1100.37f * U, 300f * U));
+        _spawned.Add(mixerGo);
+        var mixer = mixerGo.GetComponent<KitchenElement>();
+
+        MmGrid.Snap(mixer);
+        ((IWallMounted)mixer).SnapToWall();
+
+        CollectionAssert.IsEmpty(Grd01(),
+            "конец жеста ставит прибор на сетку поперёк стены, а посадка — вдоль неё, и"
+            + " обе координаты выходят целыми: поперечные их и оставили, монтажная легла"
+            + " на грань стены, которая сама на целом. Предупреждение, на которое нельзя"
+            + " ответить, было бы шумом — но отвечать тут есть чем");
+    }
+
+    /// <summary>Контроль 2: дверь и окно — тоже IWallMounted, но они РЕЖУТ стену, а не
+    /// стоят на её грани, габариты у них целые, и находка на них настоящая. Возьми
+    /// признак «всё, что связано со стеной» — и этот тест погаснет вместе с сигналом.</summary>
+    [Test]
+    public void Analyze_DoorOffTheGrid_StillYieldsGrd01()
+    {
+        var doorGo = ElementFactory.CreateDoor(new Vector3Int(800, 2000, 100), "Dver",
+            new Vector3(400.3f * U, 1000f * U, 0f));
+        _spawned.Add(doorGo);
+
+        var found = Grd01();
+
+        Assert.AreEqual(1, found.Count, "дверь мимо сетки обязана остаться в отчёте");
+        StringAssert.Contains("X", found[0].Message, "и обязана назвать ось");
+    }
+
+    /// <summary>Контроль 3: признак не должен превратиться в «всё, что касается стены».
+    /// Обычная доска, придвинутая к стене вплотную, ничем на стене не держится — её
+    /// позу выбрал человек, и правило с неё не снимается.</summary>
+    [Test]
+    public void Analyze_PlainBoardStandingAgainstAWall_StaysUnderTheRule()
+    {
+        var wallGo = ElementFactory.CreateWall(new Vector3Int(3000, 2500, 100), "Stena",
+            new Vector3(0f, 1250f * U, -50f * U));
+        _spawned.Add(wallGo);
+
+        BoardWithItsMinCornerAt("Doska", new Vector3(124.4f, 500f, 0f));
+
+        Assert.AreEqual(1, Grd01().Count,
+            "доска у стены — не настенный прибор: стена её не держит и не пересаживает, "
+            + "так что подвинуть её человек может, и находка обязана остаться");
+    }
 }

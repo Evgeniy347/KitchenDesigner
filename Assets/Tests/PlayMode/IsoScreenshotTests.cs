@@ -1340,6 +1340,11 @@ public class IsoScreenshotTests : ElementFrameTests
             new Vector3(fittingPos.x,
                 AppConstants.HalfHeightUnits(FittingWallHeightMM),
                 fittingPos.z - standoff));
+        // Стена — такая же деталь из сайдбара, и её создание тоже кончается жестом.
+        // Двигает он её только поперёк (по монтажной оси грань стены уже на целом),
+        // поэтому посадка прибора от этого не едет: WallSeating.Seat правит ТОЛЬКО
+        // расстояние вдоль нормали, а поперечные координаты оставляет как есть.
+        EndOfCreateGesture(wall.gameObject);
 
         AssertWallCoversTheBackOfTheFitting(wall, fittingDims, fittingPos, name);
     }
@@ -1384,9 +1389,9 @@ public class IsoScreenshotTests : ElementFrameTests
         bool capturePanel = true)
     {
         var dims = BathMixerLayout.DimensionsMM(spec);
-        Vector3 pos = MixerPosition(spec);
+        var mixer = SpawnBathMixer(spec, name, MixerPosition(spec));
+        Vector3 pos = EndOfCreateGesture(mixer.gameObject);
         SpawnWallBehindFitting(name + "Wall", dims, pos);
-        var mixer = SpawnBathMixer(spec, name, pos);
 
         yield return RenderIsoFrame(pos, dims, png, capturePanel);
 
@@ -1397,9 +1402,9 @@ public class IsoScreenshotTests : ElementFrameTests
         Vector3 detailMM, float spanMM, string png)
     {
         var dims = BathMixerLayout.DimensionsMM(spec);
-        Vector3 pos = MixerPosition(spec);
+        var mixer = SpawnBathMixer(spec, name, MixerPosition(spec));
+        Vector3 pos = EndOfCreateGesture(mixer.gameObject);
         SpawnWallBehindFitting(name + "Wall", dims, pos);
-        var mixer = SpawnBathMixer(spec, name, pos);
 
         var bounds = BathMixerLayout.BoundsMM(spec);
         AssertDetailIsOnTheModel(bounds, detailMM, png);
@@ -1432,9 +1437,9 @@ public class IsoScreenshotTests : ElementFrameTests
         bool capturePanel = true)
     {
         var dims = ShowerColumnLayout.DimensionsMM(spec);
-        Vector3 pos = ColumnPosition(spec);
+        var column = SpawnShowerColumn(spec, name, ColumnPosition(spec));
+        Vector3 pos = EndOfCreateGesture(column.gameObject);
         SpawnWallBehindFitting(name + "Wall", dims, pos);
-        var column = SpawnShowerColumn(spec, name, pos);
 
         yield return RenderIsoFrame(pos, dims, png, capturePanel);
 
@@ -1445,9 +1450,9 @@ public class IsoScreenshotTests : ElementFrameTests
         Vector3 detailMM, float spanMM, string png)
     {
         var dims = ShowerColumnLayout.DimensionsMM(spec);
-        Vector3 pos = ColumnPosition(spec);
+        var column = SpawnShowerColumn(spec, name, ColumnPosition(spec));
+        Vector3 pos = EndOfCreateGesture(column.gameObject);
         SpawnWallBehindFitting(name + "Wall", dims, pos);
-        var column = SpawnShowerColumn(spec, name, pos);
 
         var bounds = ShowerColumnLayout.BoundsMM(spec);
         AssertDetailIsOnTheModel(bounds, detailMM, png);
