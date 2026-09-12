@@ -198,14 +198,14 @@ interpretation first, then run.
 - Compilation is shared. Never step away for a test run with a half-written file on disk; the
   next agent to build will collect your errors and waste a cycle on them.
 - **The identity is shared too — commit provenance cannot be established from git.** Every commit
-  in this repository carries the same author, because `git-commit.ps1` uses the identity configured
+  in this repository carries the same author, because the commit helper uses the identity configured
   in the repo and agents have none of their own. `e85cd8b5` (an agent, refactoring Snap) and
   `274e517c` (a snapshot of the user's own working file) are indistinguishable by author, and the
   timestamps do not separate them either — a daytime stamp is exactly what the helper produces when
   the evening window is exhausted. So "I checked the author" is NOT a check. Only the message and
   the contents distinguish us; if you need to know who made a commit, ask the user.
 - **The git index is shared too.** Leaving anything in `git add` between your own commits means
-  the next agent's `git-commit.ps1` sweeps it into an unrelated commit — this has already
+  the next agent sweeps it into an unrelated commit — this has already
   happened once with a staged test rename. Stage nothing you are not committing right now.
   The cause was in the helper, not only in the discipline: `-Files` staged those paths but the
   commit that followed took the WHOLE index. Since `779cec4b` it commits with a pathspec, so
@@ -258,7 +258,7 @@ knows about.
 
 ## Never `--amend` or `reset` in a shared tree
 
-Two incidents in one session, same root. A worker ran `git-commit.ps1 -Amend` with `-Files` and
+Two incidents in one session, same root. A worker ran the commit helper with `-Amend` and `-Files`, and
 the helper committed the WHOLE index anyway, sweeping in a neighbour's unfinished files — the
 `-Amend` branch had no pathspec, the gap that `779cec4b` had already closed for the normal path.
 Another worker went further: `git reset HEAD~1` plus `commit --amend` on the shared index moved a

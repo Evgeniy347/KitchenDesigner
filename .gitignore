@@ -156,3 +156,10 @@ _trash/
 # Installer build output
 # ===========================
 /installer/output/
+
+# ===========================
+# Локальные скрипты обслуживания истории — вне версионирования,
+# живут только на машине. См. F:\repos\KitchenDesigner2\AGENTS.md
+# ===========================
+/tools/git-commit.ps1
+/tools/git-fix-commit-times.ps1

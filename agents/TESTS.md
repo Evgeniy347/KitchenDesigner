@@ -135,7 +135,7 @@ and the like), are the owner's own doing: they snapshot their working project th
 have confirmed this explicitly. Do not report it as an anomaly, do not investigate who
 committed it, do not ask another session about it, do not open a task for it. Note also
 that provenance is not establishable here at all: the repo has ONE git identity, shared
-by the user and by `tools/git-commit.ps1`, so the `Author` field cannot tell an agent's
+by the user and by the commit helper, so the `Author` field cannot tell an agent's
 commit from the owner's. "I checked the author" is not a check.
 
 The hands-off rule above stays in force for us regardless: never modify, revert or
@@ -147,7 +147,7 @@ project — and only falls back to a file named `autosave` when nothing is open.
 `docs/example.save.json` in the app is enough for autosave to rewrite it. Nothing else in
 the repo writes there; all other references only read.
 
-**`git-commit.ps1 -All` sweeps it into your commit.** The file is dirty almost all the time,
+**A commit that stages every tracked change sweeps it in.** The file is dirty almost all the time,
 so `-All` quietly adds 40 000 changed lines of the user's project to a refactoring commit —
 this happened on 2026-08-31 and had to be undone with `git reset HEAD~1 -- docs/example.save.json`
 plus an amend, keeping a copy of the working-tree version aside first. **That remedy is now
