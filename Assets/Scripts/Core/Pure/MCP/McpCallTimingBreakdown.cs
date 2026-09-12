@@ -26,7 +26,7 @@ namespace KitchenDesigner.Core.MCP
             (toTicks - fromTicks) * 1000.0 / Stopwatch.Frequency;
 
         public string Format(string method, int validationRecomputes,
-            string? stages = null, long sceneScans = 0)
+            string? stages = null, long sceneScans = 0, string? sceneScanners = null)
         {
             var head = $"[MCP][Timing] method={method} total={TotalMs:F2}ms ";
             if (!ReachedTheScene)
@@ -36,6 +36,8 @@ namespace KitchenDesigner.Core.MCP
                 + $"accepted->queued={AcceptedToQueuedMs:F2}ms queued->started={QueuedToStartedMs:F2}ms "
                 + $"started->executed={StartedToExecutedMs:F2}ms executed->responded={ExecutedToRespondedMs:F2}ms "
                 + $"validateRecomputes={validationRecomputes} sceneScans={sceneScans}";
+            if (!string.IsNullOrEmpty(sceneScanners))
+                text += $" [{sceneScanners}]";
             if (!string.IsNullOrEmpty(stages))
                 text += $" stages=[{stages}]";
             return text;

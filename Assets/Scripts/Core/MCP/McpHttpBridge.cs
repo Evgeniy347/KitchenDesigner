@@ -74,6 +74,8 @@ namespace KitchenDesigner.Core.MCP
                 return;
             }
 
+            McpWarmup.RunOnce();
+
             _running = true;
             _shuttingDown.Reset();
             _serverThread = new Thread(ServerLoop) { IsBackground = true, Name = "MCP-HTTP" };

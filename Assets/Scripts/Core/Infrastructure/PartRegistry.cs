@@ -29,7 +29,7 @@ namespace KitchenDesigner.Core
             [System.Runtime.CompilerServices.CallerFilePath] string? scannedIn = null)
         {
             SceneScanLog.Note(scannedBy, scannedIn);
-            SceneScanCounter.Note();
+            SceneScanCounter.Note(SceneScanLog.Where(scannedBy, scannedIn));
             return Instance.GetAll();
         }
 

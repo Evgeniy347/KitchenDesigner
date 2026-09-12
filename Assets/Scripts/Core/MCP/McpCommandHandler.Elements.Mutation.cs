@@ -399,12 +399,14 @@ namespace KitchenDesigner.Core.MCP
         {
             long stage = McpCallStages.Begin();
             var p = req.Params?.ToObjectStrict<ParamsCreateElements>();
+            McpCallStages.End("parseJson", stage);
             if (p == null || p.items == null || p.items.Length == 0)
                 return McpResponse.Error(req.id, -32602, "items required (non-empty array)");
 
+            stage = McpCallStages.Begin();
             var errors = new List<string>();
             var accepted = AcceptCreateItems(p.items, errors);
-            McpCallStages.End("accept", stage);
+            McpCallStages.End("acceptItems", stage);
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1,
                     "create_elements rejected, NOTHING was created: " + string.Join(" | ", errors));

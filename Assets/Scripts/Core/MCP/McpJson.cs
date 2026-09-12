@@ -8,9 +8,12 @@ namespace KitchenDesigner.Core.MCP
     {
         public const int TenthMillimetreDecimals = 1;
 
+        public static readonly McpContractResolver Resolver = new McpContractResolver();
+
         public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Ignore,
+            ContractResolver = Resolver,
             Converters = { new RoundedNumberConverter() }
         };
 
@@ -19,7 +22,8 @@ namespace KitchenDesigner.Core.MCP
 
         private static readonly JsonSerializerSettings StrictDeserializationSettings = new JsonSerializerSettings
         {
-            MissingMemberHandling = MissingMemberHandling.Error
+            MissingMemberHandling = MissingMemberHandling.Error,
+            ContractResolver = Resolver
         };
 
         private static readonly JsonSerializer StrictDeserializer = JsonSerializer.Create(StrictDeserializationSettings);

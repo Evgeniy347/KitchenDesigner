@@ -11,6 +11,7 @@ namespace KitchenDesigner.Core.MCP
         private long _executedTicks;
         private long _scansBeforeStart;
         private long _sceneScans;
+        private string _sceneScanners = string.Empty;
         private string _stages = string.Empty;
         private string _method = "?";
 
@@ -35,6 +36,7 @@ namespace KitchenDesigner.Core.MCP
         {
             _executedTicks = Stopwatch.GetTimestamp();
             _sceneScans = SceneScanCounter.Scans - _scansBeforeStart;
+            _sceneScanners = SceneScanCounter.Since(_scansBeforeStart);
             _stages = McpCallStages.Take();
         }
 
@@ -44,7 +46,7 @@ namespace KitchenDesigner.Core.MCP
             var breakdown = new McpCallTimingBreakdown(
                 _acceptedTicks, _queuedTicks, _startedTicks, _executedTicks, respondedTicks);
             UnityEngine.Debug.Log(breakdown.Format(
-                _method, McpValidationCache.TakeRecomputeCount(), _stages, _sceneScans));
+                _method, McpValidationCache.TakeRecomputeCount(), _stages, _sceneScans, _sceneScanners));
         }
     }
 }

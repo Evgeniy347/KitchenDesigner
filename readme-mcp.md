@@ -80,10 +80,11 @@ validateRecomputes=… sceneScans=… stages=[…]`. Стадии — приня
 сцене в 400 деталей стоит 0,7–2,2 МБ мусора и десятки миллисекунд, поэтому это число
 важнее миллисекунд. Счётчик монотонный и чтением не сбрасывается — покадровый
 `SceneScanLog`, который забирает `PerfMonitor`, продолжает работать рядом и не теряет
-свой кадр.
+свой кадр. Следом в квадратных скобках идут ИМЕНА обходивших, повтор одного места —
+`×N`: `sceneScans=4 [McpCommandHandler.HandleCreateElements, ElementHighlighter.RefreshHighlights ×2]`.
 
 `stages=[…]` — разбивка самого обработчика по именованным участкам
-(`Assets/Scripts/Core/Pure/MCP/McpCallStages.cs`): у `create_elements` это `accept`,
+(`Assets/Scripts/Core/Pure/MCP/McpCallStages.cs`): у `create_elements` это `parseJson`, `acceptItems`,
 `spawn`, `commandStack`, `snapOpenings`, `settle`, `describe`, у `load_project` —
 `rebuildScene` и `settle`, у `save_project` — `writeFile`. Повтор одного участка
 схлопывается в `×N`. Участки размечает обработчик; у неразмеченного метода скобок нет.
@@ -96,6 +97,25 @@ validateRecomputes=… sceneScans=… stages=[…]`. Стадии — приня
 McpCallTimingBreakdown.cs`, проверяется `dotnet` в `Assets/Tests/EditMode/Pure/
 McpCallTimingBreakdownTests.cs`; сами приборы — `McpCallStagesTests.cs` и
 `SceneScanCounterTests.cs` там же.
+
+### Прогрев на старте моста
+
+`McpHttpBridge.StartBridge` зовёт `McpWarmup.RunOnce()` ДО того, как поднимется
+слушающий поток, — значит к первому запросу агента прогрев уже состоялся.
+Разбивка дымового прогона 12.09 назвала холод поимённо: первый `create_elements`
+сессии стоил 130,27 мс, второй — 1,96 мс, и разница почти вся в двух этапах —
+`accept` 57,61 мс против 0,05 мс и `exec->resp` 46,40 мс против 0,38 мс. Это
+Newtonsoft, впервые строящий контракты на `ParamsCreateElements` с его
+`CreateItem[]` и на `ElementInfo`.
+
+Прогрев резолвит контракт каждого типа поверхности (`McpWireTypes` выводит список
+рефлексией от `CreateItem`, а не перечислением руками) и один раз прогоняет обе
+трубы целиком — разбор запроса и запись ответа. Резолвер у MCP теперь ОДИН и общий,
+`McpJson.Resolver`; он же считает построенные контракты, и это счётчик РАБОТЫ, на
+котором стоят сенсоры `Assets/Tests/EditMode/McpWarmupTests.cs`: после прогрева
+разбор `create_elements` и запись `ElementInfo` строят НОЛЬ контрактов. Честный
+остаток холода — анонимная обёртка ответа: её тип свой у каждого места вызова,
+заранее прогреть его нельзя, и это один контракт на четыре скалярных поля.
 
 ## Где подробности
 
