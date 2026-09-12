@@ -57,6 +57,9 @@ Rules that follow from it:
 - Adding a feature to a class that already owns a separate zone for that feature is
   FORBIDDEN — create the class instead of appending to the file.
 - Extracted sections are plain C# classes, not `MonoBehaviour`s, owned by the component.
+- The test hooks are a section like any other: `*ForTests` methods do not spread through the
+  owner, they gather into one `*TestHooks` class the owner exposes as a single `internal`
+  property. Then the hooks are visible as a list instead of interleaved with the production API.
 - Still in force: one method one job (~40 lines max).
 
 `ContextMenuUI` was the anti-example this section exists to prevent: 3580 lines, a 480-line
