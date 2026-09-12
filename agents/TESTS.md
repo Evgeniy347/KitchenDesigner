@@ -88,6 +88,16 @@ instead: those cost milliseconds and this costs a player launch.
 never fails the run alone — only a wrong RESULT does; `shutdown_no_orphan` (~1,1 с) is player
 teardown, not a budgeted step.
 
+**Дымовой прогон меряет ПЕРВЫЙ вызов каждого метода, а первый вызов сессии платит холодный
+старт целиком.** Разбивка `[MCP][Timing]` из лога плеера: `create_elements` — 118,87 мс на первом
+вызове и **2,44 мс на втором**; `get_elements` 7,46 → 0,56; `delete_elements` 4,18 → 2,48. Холод
+сидит в обработчике (72,9 мс) и в сериализации ответа (37,1 мс — Newtonsoft впервые строит
+контракты на анонимные типы). Ориентир в 10 мс относится к ГОРЯЧЕМУ вызову; холодный меряется
+отдельно и чинится прогревом, а не правкой обработчика. И помнить про измерялку: клиентская
+надбавка `Invoke-RestMethod` — 3–14 мс на шаг, то есть бюджет местами съедает она сама
+(`delete_elements`: сервер 4,18, скрипт 13,33).
+
+
 **Do not run them on their own.** They are part of publishing a release, not a command an agent
 reaches for. Write them, wire them, leave them; a failed smoke check stops the release, which is
 the only signal they owe anyone.
