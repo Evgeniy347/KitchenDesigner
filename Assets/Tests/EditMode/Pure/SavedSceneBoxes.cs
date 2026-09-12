@@ -36,10 +36,22 @@ internal static class SavedSceneBoxes
 
     public const string RotationKey = "rotation";
 
+    /// <summary>Замороженная копия сцены, на которой стоит baseline
+    /// <c>ValidationInvariantTests</c>. Разбирать её приходится отдельно от живого
+    /// файла пользователя: baseline закреплён ИМЕННО на ней, и объяснять его сдвиг
+    /// числами с другой сцены — значит объяснять не то.</summary>
+    public const string FixtureFileName = "validation-scene.save.json";
+
     public static string SaveFilePath =>
         Path.Combine(RepoPaths.Subdir("docs"), SaveFileName);
 
+    public static string FixturePath =>
+        Path.Combine(RepoPaths.Subdir("Assets", "Tests", "EditMode", "Fixtures"),
+            FixtureFileName);
+
     public static List<SavedBox> OfTheUserScene() => Parse(File.ReadAllText(SaveFilePath));
+
+    public static List<SavedBox> OfTheValidationFixture() => Parse(File.ReadAllText(FixturePath));
 
     public static List<SavedBox> Parse(string projectJson)
     {

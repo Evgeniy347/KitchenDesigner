@@ -42,7 +42,15 @@ public class ValidationInvariantTests
     private static readonly (string Key, int Expected)[] Baseline =
     {
         ("elements",                    274),
-        ("contacts",                   1336),
+        // Было 1336 до a5b7a526 («полоска уже 0,5 мм — не контакт»). Ушли 523
+        // записи, и все — полоски НУЛЕВОЙ ширины: сенсор
+        // ContactThreshold_OnTheValidationFixture_TakesNoPartsLastSupport считает
+        // по этой же фикстуре, что 366 из 370 выброшенных им уже 1 мкм, а самая
+        // широкая — 1,2 мкм при пороге 500. Что ушёл только шум, доказывают не эти
+        // числа, а остальные девять счётчиков ЭТОГО теста: violations,
+        // kind.Unsupported и isolatedGroups остались нулями, то есть ни одна
+        // деталь не осталась без опоры и ни один остров не всплыл.
+        ("contacts",                    813),
         ("violations",                    0),
         ("isolatedGroups",                0),
         ("kind.Overlap",                  0),

@@ -54,12 +54,23 @@ public class AxisAlignedContactFastPathTests
     /// площадь у контакта, которого нет.</summary>
     private const float NoiseOverlapUnits = Tolerance.EpsilonUnits;
 
+    /// <summary>Микрон. Нужен, чтобы отделить «полоска ровно нулевой ширины» от
+    /// «полоска узкая, но настоящая»: без такого деления фраза «ушёл только шум»
+    /// доказывается собственным определением порога и не значит ничего.</summary>
+    private const float MicronUnits = 1e-6f;
+
     private static readonly List<string> Report = new List<string>();
 
     private static List<ValidationElement>? _scene;
 
     private static List<ValidationElement> Scene =>
         _scene ??= SavedSceneBoxes.AsValidationElements(SavedSceneBoxes.OfTheUserScene());
+
+    private static List<ValidationElement>? _fixtureScene;
+
+    private static List<ValidationElement> FixtureScene =>
+        _fixtureScene ??=
+            SavedSceneBoxes.AsValidationElements(SavedSceneBoxes.OfTheValidationFixture());
 
     [OneTimeTearDown]
     public void WriteReports()
@@ -153,11 +164,18 @@ public class AxisAlignedContactFastPathTests
     /// Несущая проверка тут одна и она не про число: НИ ОДНА деталь не должна
     /// потерять последнюю опору. Пропавший несущий контакт — это не «строка меньше
     /// в списке», это деталь, покрашенная как висящая в воздухе у пользователя,
-    /// который ничего не трогал.</summary>
-    [Test]
-    public void ContactThreshold_OnTheUserScene_TakesNoPartsLastSupport()
+    /// который ничего не трогал.
+    ///
+    /// Сцены ДВЕ, и вторая тут не для полноты. Живой файл пользователя отвечает за
+    /// «как это выглядит у него», а замороженная фикстура — тот самый вход, на
+    /// котором стоит baseline <c>ValidationInvariantTests</c>: объяснять сдвиг
+    /// baseline числами с ДРУГОЙ сцены значит объяснять не то. Числа у них разные и
+    /// обязаны быть разными — 411 деталей против 274.</summary>
+    [TestCase(false, TestName = "ContactThreshold_OnTheUserScene_TakesNoPartsLastSupport")]
+    [TestCase(true, TestName = "ContactThreshold_OnTheValidationFixture_TakesNoPartsLastSupport")]
+    public void ContactThreshold_TakesNoPartsLastSupport(bool fixture)
     {
-        var scene = Scene;
+        var scene = fixture ? FixtureScene : Scene;
         var pairs = CandidatePairs(scene);
         var boxes = BoxesOf(scene);
         float contactDist = ValidationCore.ContactDistUnits;
@@ -184,11 +202,34 @@ public class AxisAlignedContactFastPathTests
         foreach (var contact in loose) if (contact.IsFaceToFace) droppedSupporting++;
         foreach (var contact in strict) if (contact.IsFaceToFace) droppedSupporting--;
 
-        Report.Add("## Цена порога 0,5 мм на сцене пользователя");
+        var kept = new HashSet<(int, int, int, int)>();
+        foreach (var contact in strict)
+            kept.Add((contact.A, contact.B, contact.FaceA, contact.FaceB));
+
+        int flat = 0, subTenth = 0, upToHalf = 0;
+        float widest = 0f;
+        foreach (var contact in loose)
+        {
+            if (kept.Contains((contact.A, contact.B, contact.FaceA, contact.FaceB))) continue;
+            float width = Overlap(scene[contact.A].Geometry, scene[contact.B].Geometry, contact);
+            widest = Mathf.Max(widest, width);
+            if (width <= MicronUnits) flat++;
+            else if (width < Tolerance.EpsilonUnits) subTenth++;
+            else upToHalf++;
+        }
+
+        Report.Add(fixture
+            ? "## Цена порога 0,5 мм на фикстуре ValidationInvariantTests"
+            : "## Цена порога 0,5 мм на сцене пользователя");
+        Report.Add($"- деталей в сцене: {scene.Count}");
         Report.Add($"- контактов без порога: {loose.Count}");
         Report.Add($"- контактов с порогом: {strict.Count}");
         Report.Add($"- выброшено: {loose.Count - strict.Count}, из них несущих: "
             + $"{droppedSupporting}");
+        Report.Add($"  - из них полоска нулевой ширины (<= 1 мкм): {flat}");
+        Report.Add($"  - полоска 1 мкм … 0,1 мм: {subTenth}");
+        Report.Add($"  - полоска 0,1 … 0,5 мм: {upToHalf}");
+        Report.Add($"  - самая широкая выброшенная полоска: {widest * 1000f:G4} мм");
         Report.Add($"- деталей, потерявших ПОСЛЕДНЮЮ опору: {orphaned.Count}");
         foreach (var line in First(orphaned, 10)) Report.Add("  - " + line);
         Report.Add("");
@@ -197,6 +238,15 @@ public class AxisAlignedContactFastPathTests
             "Порог перекрытия отобрал у детали последнюю опору — на живой сцене это "
             + "деталь, ставшая красной без единого действия пользователя:\n"
             + string.Join("\n", First(orphaned, 10)));
+
+        Assert.That(droppedSupporting, Is.Zero,
+            $"Порог выбросил {droppedSupporting} НЕСУЩИХ контактов. Последнюю опору пока "
+            + "никто не потерял, но связность читает именно несущие: следующая правка "
+            + "геометрии сделает из этого красную деталь, и искать будут не здесь");
+
+        Assert.That(widest, Is.LessThan(Tolerance.ContactUnits),
+            $"Самая широкая выброшенная полоска {widest * 1000f:G4} мм не уже порога "
+            + "0,5 мм — значит фильтр отработал не по тому числу, по которому заявлен");
     }
 
     private static int[] SupportedParts(List<CoreContact> contacts, int partCount)
