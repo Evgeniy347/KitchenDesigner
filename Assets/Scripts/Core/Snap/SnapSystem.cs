@@ -74,7 +74,7 @@ namespace KitchenDesigner.Core
             if (!moved.gameObject.activeInHierarchy) return default;
 
             using var _ = PerfMarkers.SnapTrySnap.Auto();
-            return TrySnap(moved, others.ToGeometryFor(moved), testPosition);
+            return TrySnap(moved, SnapSceneGeometry.For(others, moved), testPosition);
         }
 
         public static SnapResult TrySnap(KitchenElement moved, IReadOnlyList<ElementGeometry> others,

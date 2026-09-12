@@ -89,6 +89,7 @@ namespace KitchenDesigner.Core
         private sealed class Entry
         {
             public Stamp Stamp;
+            public Stamp GeometryStamp;
             public GrooveSpec[] Grooves = System.Array.Empty<GrooveSpec>();
             public ValidationElement Snapshot;
             public int Touched;
@@ -117,6 +118,21 @@ namespace KitchenDesigner.Core
             return true;
         }
 
+        public static bool TryReuseGeometry(KitchenElement element, out ElementGeometry geometry)
+        {
+            geometry = default;
+            if (element == null || FaceCache.Enabled) return false;
+            if (!_entries.TryGetValue(element, out var entry)) return false;
+            if (!GeometryStampOf(element).Matches(entry.GeometryStamp)) return false;
+            if (!SameGrooves(entry.Grooves, element.Grooves)) return false;
+
+            geometry = entry.Snapshot.Geometry;
+            return !geometry.IsEmpty;
+        }
+
+        private static Stamp GeometryStampOf(KitchenElement element) =>
+            Stamp.Of(element, null, false);
+
         public static void Keep(KitchenElement element, Wall? wall, bool isFloor,
             in ValidationElement snapshot)
         {
@@ -125,6 +141,7 @@ namespace KitchenDesigner.Core
                 _entries[element] = entry = new Entry();
 
             entry.Stamp = Stamp.Of(element, wall, isFloor);
+            entry.GeometryStamp = GeometryStampOf(element);
             entry.Grooves = CopyOf(element.Grooves);
             entry.Snapshot = snapshot;
             entry.Touched = _pass;

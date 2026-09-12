@@ -248,7 +248,7 @@ namespace KitchenDesigner.Core
 
             ResizeMath.Compute(_dimsBefore, _axisIndex, _normal, _faceCenter0, _uAxis, _vAxis, _faceSize,
                 _centerStart, _sizeStartUnits, rawDelta,
-                PartRegistry.GetAll().ToGeometryFor(_target), _target.ToGeometry(),
+                SnapSceneGeometry.For(PartRegistry.GetAll(), _target), _target.ToGeometry(),
                 snapEnabled, threshold, out Vector3Int newDims, out Vector3 _, out _);
 
             if (_target.DimensionsMM != newDims) _target.DimensionsMM = newDims;
