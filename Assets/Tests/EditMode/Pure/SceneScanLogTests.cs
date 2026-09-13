@@ -121,4 +121,43 @@ public class SceneScanLogTests
             "потерять хвост молча — это снова кадр без виновника");
         StringAssert.Contains("Caller0.Do", line);
     }
+
+    /// <summary>Второй путь к списку деталей — свойство <c>PartRegistry.All</c>, и
+    /// назвать вызывающего оно не может: <c>CallerMemberName</c> живёт на параметре,
+    /// а у свойства параметров нет. Значит строка обязана сама признаться, что
+    /// неполна, — иначе её читают как полный список обходивших, чем она весь день и
+    /// притворялась.</summary>
+    [Test]
+    public void Take_AnnouncesTheUnnamedShares_SoTheLineCannotBeReadAsComplete()
+    {
+        SceneScanLog.Note("Refresh", "x/ToolbarUI.cs");
+        SceneScanLog.NoteShare();
+        SceneScanLog.NoteShare();
+
+        string line = SceneScanLog.Take();
+
+        StringAssert.Contains("ToolbarUI.Refresh", line, "поимённая половина на месте");
+        StringAssert.Contains("2 раз", line, "безымянные выдачи обязаны быть посчитаны");
+        StringAssert.Contains("имён нет", line,
+            "и обязаны быть названы безымянными: молчаливый пропуск читается как «никого»");
+    }
+
+    [Test]
+    public void Take_ReportsSharesEvenWhenNobodyWasNamed()
+    {
+        SceneScanLog.NoteShare();
+
+        StringAssert.Contains("PartRegistry.All", SceneScanLog.Take(),
+            "кадр, где список отдавали только без копии, не имеет права выглядеть пустым");
+    }
+
+    [Test]
+    public void Take_ResetsTheShares_WithTheFrame()
+    {
+        SceneScanLog.NoteShare();
+        SceneScanLog.Take();
+
+        Assert.AreEqual(0, SceneScanLog.SharesNoted, "кадр не наследует чужие выдачи");
+        Assert.AreEqual(string.Empty, SceneScanLog.Take(), "и пустой кадр остаётся пустым");
+    }
 }

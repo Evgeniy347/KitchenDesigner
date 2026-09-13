@@ -20,9 +20,29 @@ namespace KitchenDesigner.Core
         {
             get
             {
+                NoteTheListWasSharedWithoutAName();
                 PurgeDead();
                 return _all;
             }
+        }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        [System.Diagnostics.Conditional("KD_PERF")]
+        private static void NoteTheListWasSharedWithoutAName()
+        {
+            SceneScanLog.NoteShare();
+            SceneScanCounter.NoteShare();
+        }
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        [System.Diagnostics.Conditional("DEVELOPMENT_BUILD")]
+        [System.Diagnostics.Conditional("KD_PERF")]
+        private static void NoteTheScanAndWhoAskedForIt(string? scannedBy, string? scannedIn)
+        {
+            string where = SceneScanLog.Where(scannedBy, scannedIn);
+            SceneScanLog.NoteWhere(where);
+            SceneScanCounter.Note(where);
         }
 
         public void Register(KitchenElement element)
@@ -53,8 +73,7 @@ namespace KitchenDesigner.Core
         {
             using var _ = PerfMarkers.PartRegistryGetAll.Auto();
             _getAllCalls++;
-            SceneScanLog.Note(scannedBy, scannedIn);
-            SceneScanCounter.Note(SceneScanLog.Where(scannedBy, scannedIn));
+            NoteTheScanAndWhoAskedForIt(scannedBy, scannedIn);
             PurgeDead();
             return new List<KitchenElement>(_all);
         }

@@ -28,13 +28,18 @@ namespace KitchenDesigner.Core
 
         [ThreadStatic] private static int _timesNoted;
 
+        [ThreadStatic] private static int _sharesNoted;
+
         public static int TimesNoted => _timesNoted;
 
-        public static void Note(string? member, string? file)
+        public static int SharesNoted => _sharesNoted;
+
+        public static void NoteShare() => _sharesNoted++;
+
+        public static void NoteWhere(string where)
         {
             _timesNoted++;
             var scans = _scans ??= new List<Scan>(MostCallersRemembered);
-            string where = Where(member, file);
 
             for (int i = 0; i < scans.Count; i++)
             {
@@ -52,13 +57,16 @@ namespace KitchenDesigner.Core
             scans.Add(new Scan(where, 1));
         }
 
+        public static void Note(string? member, string? file) => NoteWhere(Where(member, file));
+
         public static string Where(string? member, string? file) =>
             TypeNameOf(file) + "." + (string.IsNullOrEmpty(member) ? "?" : member!);
 
         public static string Take()
         {
             var scans = _scans;
-            if ((scans == null || scans.Count == 0) && _callersBeyondTheLimit == 0)
+            if ((scans == null || scans.Count == 0) && _callersBeyondTheLimit == 0
+                && _sharesNoted == 0)
             {
                 Forget();
                 return string.Empty;
@@ -77,6 +85,13 @@ namespace KitchenDesigner.Core
             if (_callersBeyondTheLimit > 0)
                 text.Append(", и ещё ").Append(_callersBeyondTheLimit).Append(" сверх предела");
 
+            if (_sharesNoted > 0)
+            {
+                if (text.Length > 0) text.Append("; ");
+                text.Append("и ").Append(_sharesNoted)
+                    .Append(" раз список отдан без копии через PartRegistry.All — имён нет");
+            }
+
             Forget();
             return text.ToString();
         }
@@ -86,6 +101,7 @@ namespace KitchenDesigner.Core
             _scans?.Clear();
             _callersBeyondTheLimit = 0;
             _timesNoted = 0;
+            _sharesNoted = 0;
         }
 
         private static string TypeNameOf(string? file)

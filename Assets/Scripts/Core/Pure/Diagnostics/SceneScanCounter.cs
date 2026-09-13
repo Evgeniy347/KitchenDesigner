@@ -13,7 +13,13 @@ namespace KitchenDesigner.Core
 
         private static readonly string[] _recent = new string[MostScansRemembered];
 
+        private static long _shares;
+
         public static long Scans => Interlocked.Read(ref _scans);
+
+        public static long Shares => Interlocked.Read(ref _shares);
+
+        public static void NoteShare() => Interlocked.Increment(ref _shares);
 
         public static void Note(string where)
         {
