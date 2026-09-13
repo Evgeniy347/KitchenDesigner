@@ -52,14 +52,60 @@ using KitchenDesigner.Core;
 /// позеленел: это работа пользователя, у `git checkout --` нет отмены.
 /// Правильное решение — дать тесту ЗАМОРОЖЕННУЮ копию сцены, как сделано в
 /// ValidationInvariantTests.
+///
+/// ── КАК ЕГО ЗАПУСКАТЬ ────────────────────────────────────────────────────
+///
+/// Разрешены ровно два способа, и оба — ТОЛЬКО ПО СОГЛАСОВАНИЮ С
+/// ПОЛЬЗОВАТЕЛЕМ:
+///   1) на КОНКРЕТНЫХ деталях по именам — `KD_SNAP_SWEEP_PARTS`;
+///   2) полным перебором по всей сцене — `KD_SNAP_SWEEP_ALL=1`.
+///
+/// Почему согласование, а не «просто долгий тест». Здесь нет способа
+/// запустить Unity дёшево: `tools\unity.ps1` поднимает ЛИЦЕНЗИОННЫЙ клиент
+/// редактора холодным batch-процессом, и на всю машину он один — пока идёт
+/// этот прогон, ни один другой агент не может прогнать ни одного теста
+/// (`agents/UNITY-GATEWAY.md`, замок шлюза). Полный перебор — это минуты
+/// машинного времени, отнятые у очереди, плюс занятая лицензия. Поэтому
+/// решение «гоним полный» принимает пользователь, а не агент.
+///
+/// Поведение ПО УМОЛЧАНИЮ (без переменных) — выборка: по
+/// SampledPerType деталей КАЖДОГО типа, тип берётся у ElementTypeId.Of —
+/// того же, по которому детали различает селектор приложения. Смысл: 24
+/// винтовые опоры проверяют одно и то же правило, четырёх хватает, а вот
+/// пропустить ЦЕЛЫЙ тип нельзя — именно на отдельном типе и находились оба
+/// настоящих дефекта. Типов в сцене больше тридцати, и каждый в выборке есть.
+///
+/// Выборка случайна, поэтому СЕМЯ ПЕЧАТАЕТСЯ ВСЕГДА — и в зелёном прогоне
+/// тоже. Случайная выборка без напечатанного семени невоспроизводима в
+/// принципе: следующий прогон возьмёт другую четвёрку, падение исчезнет — и
+/// будет прочитано как «починилось». Семя задаётся снаружи
+/// (`KD_SNAP_SWEEP_SEED`), по умолчанию случайное.
+///
+/// Именные регрессии сюда не спрятаны: «опора СКВОЗЬ дно ящика» и «устье в
+/// устье» живут отдельными БЫСТРЫМИ тестами обычного прогона
+/// (ScrewLegHostingTests, ValidationScrewLegBodyTests, SnapCoreScrewLegCentreTests,
+/// SnapPortSeatTests, SnapPortDockTests), а здесь те же правила записаны
+/// геометрией — LegitimateOverlap/SeatedIntoIt/SeatedByPorts/SnapPullsAlongFace.
+/// Выборка не может их выбросить: она сокращает, КОГО двигаем, и ничего не
+/// меняет в том, ЧТО утверждается о каждой проверенной паре.
 /// </remarks>
-[Explicit("перебор на 79 с: гонять прицельно, по согласованию — см. remarks")]
+[Explicit("перебор: гонять прицельно (KD_SNAP_SWEEP_PARTS) или полностью (KD_SNAP_SWEEP_ALL=1), и только по согласованию — см. remarks")]
 public class SnapMutationTests
 {
     private const string SaveFileName = "example.save.json";
     private const int BigStepMm = 200;
     private const int SweepMaxMm = 200;
     private const int SweepStepMm = 1;
+
+    /// <summary>Сколько деталей каждого типа берёт выборка по умолчанию.
+    /// Четыре, а не одна: одна деталь не отличит правило типа от случайности
+    /// её собственного места в сцене (угол, сосед, поворот).</summary>
+    private const int SampledPerType = 4;
+
+    private const string SeedVariable = "KD_SNAP_SWEEP_SEED";
+    private const string PartsVariable = "KD_SNAP_SWEEP_PARTS";
+    private const string AllVariable = "KD_SNAP_SWEEP_ALL";
+    private const string RunCommand = @".\tools\unity.ps1 tests -Platform EditMode -Filter SnapMutationTests";
 
     private string _json = "";
     private readonly List<string> _errors = new();
@@ -169,6 +215,106 @@ public class SnapMutationTests
         return objs.Select(g => g.GetComponent<KitchenElement>()).Where(e => e != null).ToList()!;
     }
 
+    /// <summary>Что именно перебирает этот прогон: список имён деталей, семя и
+    /// человекочитаемое «откуда он взялся». Всё это печатается и в зелёном
+    /// прогоне, и в падении — иначе прогон нечем повторить.</summary>
+    private readonly struct SweepPlan
+    {
+        public SweepPlan(List<string> names, int seed, string how, int typeCount, int movableCount)
+        {
+            Names = names;
+            Seed = seed;
+            How = how;
+            TypeCount = typeCount;
+            MovableCount = movableCount;
+        }
+
+        public readonly List<string> Names;
+        public readonly int Seed;
+        public readonly string How;
+        public readonly int TypeCount;
+        public readonly int MovableCount;
+
+        public string Line =>
+            $"{SeedVariable}={Seed} | отбор: {How} | деталей в переборе: {Names.Count} " +
+            $"из {MovableCount} подвижных, типов в сцене: {TypeCount}";
+
+        /// <summary>Команда, которая ПОВТОРИТ ровно этот прогон. Не украшение:
+        /// без неё читатель падения не знает, какое семя было взято, и берёт
+        /// следующее — другую четвёрку, другой результат.</summary>
+        public string RepeatCommand => $"$env:{SeedVariable}={Seed}; {RunCommand}";
+    }
+
+    /// <summary>Семя выборки. Снаружи — переменной окружения, по умолчанию
+    /// случайное: выборка обязана двигаться от прогона к прогону, иначе она
+    /// навсегда закрывает глаза на одни и те же детали.</summary>
+    private static int ResolveSeed()
+    {
+        var raw = System.Environment.GetEnvironmentVariable(SeedVariable);
+        if (!string.IsNullOrWhiteSpace(raw) && int.TryParse(raw!.Trim(), out int given)) return given;
+        return new System.Random().Next(1, int.MaxValue);
+    }
+
+    private static List<string> RequestedParts()
+    {
+        var raw = System.Environment.GetEnvironmentVariable(PartsVariable);
+        if (string.IsNullOrWhiteSpace(raw)) return new List<string>();
+        return raw!.Split(new[] { ',', ';' }, System.StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .Where(s => s.Length > 0)
+            .ToList();
+    }
+
+    private static bool FullSweepRequested()
+    {
+        var raw = System.Environment.GetEnvironmentVariable(AllVariable);
+        if (string.IsNullOrWhiteSpace(raw)) return false;
+        var v = raw!.Trim();
+        return v == "1" || v.Equals("true", System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Кого двигаем в этом прогоне. Три режима, и ни один из них не
+    /// трогает СОСЕДЕЙ: соседом остаётся вся сцена, поэтому утверждения о
+    /// каждой проверенной паре те же, что были при полном переборе.
+    ///
+    /// Порядок внутри типа фиксируется по имени ДО перемешивания — иначе
+    /// одно и то же семя давало бы разную выборку при другом порядке загрузки
+    /// сцены, и напечатанное семя ничего бы не повторяло.</summary>
+    private static SweepPlan PlanSweep(List<KitchenElement> movable, int seed)
+    {
+        int typeCount = movable.Select(ElementTypeId.Of).Distinct().Count();
+
+        var requested = RequestedParts();
+        if (requested.Count > 0)
+        {
+            var known = new HashSet<string>(movable.Select(e => e.PartName));
+            var missing = requested.Where(n => !known.Contains(n)).ToList();
+            Assert.IsEmpty(missing,
+                $"{PartsVariable} называет детали, которых среди подвижных нет: {string.Join(", ", missing)}");
+            return new SweepPlan(requested, seed, $"{PartsVariable} — поимённо", typeCount, movable.Count);
+        }
+
+        if (FullSweepRequested())
+            return new SweepPlan(movable.Select(e => e.PartName).ToList(), seed,
+                $"{AllVariable}=1 — полный перебор", typeCount, movable.Count);
+
+        var rnd = new System.Random(seed);
+        var picked = new List<string>();
+        foreach (var group in movable.GroupBy(ElementTypeId.Of)
+                     .OrderBy(g => g.Key, System.StringComparer.Ordinal))
+        {
+            var names = group.Select(e => e.PartName).OrderBy(n => n, System.StringComparer.Ordinal).ToList();
+            for (int i = names.Count - 1; i > 0; i--)
+            {
+                int j = rnd.Next(i + 1);
+                (names[i], names[j]) = (names[j], names[i]);
+            }
+            picked.AddRange(names.Take(SampledPerType));
+        }
+        return new SweepPlan(picked, seed,
+            $"по {SampledPerType} случайных детали на тип", typeCount, movable.Count);
+    }
+
     private static readonly string[] FaceLabels = { "+X", "-X", "+Y", "-Y", "+Z", "-Z" };
     private static readonly Vector3[] MoveDirs =
     {
@@ -184,8 +330,10 @@ public class SnapMutationTests
         ClearScene();
         var allElements = RestoreScene();
         Assert.IsNotEmpty(allElements, "No KitchenElements in restored scene");
-        var movableNames = allElements.Where(e => e.Transformable && e.gameObject.activeInHierarchy)
-            .Select(e => e.PartName).ToList();
+        var movable = allElements.Where(e => e.Transformable && e.gameObject.activeInHierarchy).ToList();
+        var plan = PlanSweep(movable, ResolveSeed());
+        var movableNames = plan.Names;
+        Assert.IsNotEmpty(movableNames, "Перебор остался без деталей — проверь " + PartsVariable);
         BuildFaceCache(allElements);
 
         // Сцена уже построена — дальше мутируем только геометрию, и меш с
@@ -195,7 +343,9 @@ public class SnapMutationTests
         KitchenElement.SuppressVisualRebuild = true;
 
         TestContext.WriteLine(
-            $"=== Mutation: {SaveFileName} | {movableNames.Count} movable / {allElements.Count} total ===");
+            $"=== Mutation: {SaveFileName} | {allElements.Count} total ===\n" +
+            $"=== {plan.Line} ===\n" +
+            $"=== повторить этот прогон: {plan.RepeatCommand} ===");
 
         int totalSnapOk = 0;
         int totalBigResizeOk = 0;
@@ -298,6 +448,7 @@ public class SnapMutationTests
 
         // ── Report ────────────────────────────────────────────────────────
         var report = new System.Text.StringBuilder();
+        report.AppendLine(plan.Line);
         report.AppendLine($"Phase 0 (existing): {TicksToMs(ticksP0):F0}ms");
         report.AppendLine($"Phase 1 (big grow):  {TicksToMs(ticksP1):F0}ms");
         report.AppendLine($"Phase 2 (big shrink):{TicksToMs(ticksP2):F0}ms");
@@ -339,9 +490,10 @@ public class SnapMutationTests
         TestContext.WriteLine(report.ToString());
 
         if (_errors.Count > 0)
-            Assert.Fail(ErrorSummary(errorsPath));
+            Assert.Fail(ErrorSummary(errorsPath, plan));
         else
-            Assert.Pass($"All snap mutation tests passed. " +
+            Assert.Pass($"All snap mutation tests passed. {plan.Line}. " +
+                $"Повторить: {plan.RepeatCommand}. " +
                 $"Events: existing={totalSnapOk}, bigResize={totalBigResizeOk}, bigMove={totalBigMoveOk}, " +
                 $"sweep={totalSweepSnapEvents}, warnings={_warnings.Count}, time={swTotal.Elapsed.TotalSeconds:F1}s. " +
                 $"Пустой список находок: {errorsPath}.");
@@ -880,10 +1032,22 @@ public class SnapMutationTests
     /// два примера на вид. Разбивка по ДЕТАЛИ — не украшение: двести ошибок с
     /// одной подписью и одним именем детали читаются как одна причина, а двести
     /// разных имён — как разъехавшаяся фикстура.</summary>
-    private string ErrorSummary(string path)
+    private string ErrorSummary(string path, SweepPlan plan)
     {
         var sb = new System.Text.StringBuilder();
         sb.AppendLine($"Snap mutation errors: {_errors.Count}. Полный список: {path}");
+        sb.AppendLine(plan.Line);
+
+        // Две команды, а не одна. Первая повторяет прогон ЦЕЛИКОМ с тем же
+        // семенем — ею проверяют, что находка не приснилась. Вторая гоняет
+        // только провинившиеся детали и стоит секунды вместо минут: без неё
+        // читатель падения платит полным перебором за каждую итерацию починки.
+        var subjects = _errors.Select(SubjectOf).Where(s => s != "?").Distinct().ToList();
+        sb.AppendLine($"повторить весь прогон: {plan.RepeatCommand}");
+        if (subjects.Count > 0)
+            sb.AppendLine($"повторить только эти детали: $env:{PartsVariable}=" +
+                $"'{string.Join(",", subjects.Take(20))}'; {RunCommand}");
+
         sb.AppendLine("по виду:");
         foreach (var g in _errors.GroupBy(TagOf).OrderByDescending(g => g.Count()))
             sb.AppendLine($"  {g.Key}: {g.Count()}");
