@@ -91,7 +91,8 @@ namespace KitchenDesigner.Core
             public Stamp Stamp;
             public Stamp GeometryStamp;
             public GrooveSpec[] Grooves = System.Array.Empty<GrooveSpec>();
-            public ValidationElement Snapshot;
+            public ElementGeometry Geometry;
+            public Vector3[] Vertices = System.Array.Empty<Vector3>();
             public int Touched;
         }
 
@@ -102,19 +103,19 @@ namespace KitchenDesigner.Core
 
         public static void BeginPass() => _pass++;
 
-        public static bool TryReuse(KitchenElement element, Wall? wall, bool isFloor,
-            string? pairedName, out ValidationElement snapshot)
+        public static bool TryReuseBox(KitchenElement element, Wall? wall, bool isFloor,
+            out ElementGeometry geometry, out Vector3[] vertices)
         {
-            snapshot = default;
+            geometry = default;
+            vertices = System.Array.Empty<Vector3>();
             if (element == null || FaceCache.Enabled) return false;
             if (!_entries.TryGetValue(element, out var entry)) return false;
-            if (!string.Equals(entry.Snapshot.PairedName, pairedName,
-                System.StringComparison.Ordinal)) return false;
             if (!Stamp.Of(element, wall, isFloor).Matches(entry.Stamp)) return false;
             if (!SameGrooves(entry.Grooves, element.Grooves)) return false;
 
             entry.Touched = _pass;
-            snapshot = entry.Snapshot;
+            geometry = entry.Geometry;
+            vertices = entry.Vertices;
             return true;
         }
 
@@ -126,7 +127,7 @@ namespace KitchenDesigner.Core
             if (!GeometryStampOf(element).Matches(entry.GeometryStamp)) return false;
             if (!SameGrooves(entry.Grooves, element.Grooves)) return false;
 
-            geometry = entry.Snapshot.Geometry;
+            geometry = entry.Geometry;
             return !geometry.IsEmpty;
         }
 
@@ -134,7 +135,7 @@ namespace KitchenDesigner.Core
             Stamp.Of(element, null, false);
 
         public static void Keep(KitchenElement element, Wall? wall, bool isFloor,
-            in ValidationElement snapshot)
+            in ElementGeometry geometry, Vector3[] vertices)
         {
             if (element == null || FaceCache.Enabled) return;
             if (!_entries.TryGetValue(element, out var entry))
@@ -143,7 +144,8 @@ namespace KitchenDesigner.Core
             entry.Stamp = Stamp.Of(element, wall, isFloor);
             entry.GeometryStamp = GeometryStampOf(element);
             entry.Grooves = CopyOf(element.Grooves);
-            entry.Snapshot = snapshot;
+            entry.Geometry = geometry;
+            entry.Vertices = vertices;
             entry.Touched = _pass;
         }
 

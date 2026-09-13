@@ -16,9 +16,16 @@ using KitchenDesigner.Core;
 /// перепривязка пары — стоит здесь отдельным тестом, а не пунктом в общем
 /// цикле: падение обязано НАЗЫВАТЬ способ.
 ///
+/// Через кадр едет только ДОРОГАЯ часть — коробка (<c>ElementGeometry</c>) и
+/// вершины. Всё, что зависит от СПИСКА, считается поверх кэша на каждом кадре:
+/// роль, высотный промежуток, имя парной детали, индекс стены, индекс хозяина,
+/// второе тело, осевая линия. Из-за этого разделения в кэш вошли типы, которые
+/// прежде не входили только из-за индексов, — проёмы, варочные, мебель и
+/// техника.
+///
 /// Признак построен на ЗНАЧЕНИЯХ (поза, поза покоя, признак
 /// <c>PoseFollowsTransform</c>, масштаб, габариты, зазоры, пазы, имя, группа,
-/// имя парной детали, наличие соседних компонентов <c>Wall</c> и
+/// наличие соседних компонентов <c>Wall</c> и
 /// <c>BasePlate</c> и три числа стены — опущена ли, полная высота, полная
 /// позиция), а не на <c>Transform.hasChanged</c> и не на
 /// <c>SceneRevision</c>. Это не стилистический выбор: запись в <c>transform</c>
@@ -255,22 +262,29 @@ public class ValidationSnapshotReuseTests : ElementTestBase
             + "детали, и пересобирать нечего");
     }
 
-    /// <summary>Основание, на котором вообще законно переиспользовать ЦЕЛЫЙ
-    /// <c>ValidationElement</c> прошлого кадра: у детали, взятой в кэш, поля,
-    /// которые считаются ПО СПИСКУ — индекс стены, индекс хозяина, второе тело —
-    /// заведомо пусты, поэтому снимок не зависит от того, кто стоит рядом и на
-    /// каком месте. Роль и осевая линия пустыми быть не обязаны: они выводятся
-    /// из самой детали и её компонентов, то есть из ключа.
+    /// <summary>Что именно кэш несёт через кадр — и что он нести НЕ вправе.
     ///
-    /// Перебираются ВСЕ типы настоящей фабрики, а не список из трёх, написанный
-    /// руками: годность решает выведенное правило (<c>ReusesItsSnapshot</c>), и
-    /// новый тип обязан попасть под проверку сам. Появится тип, который признан
-    /// годным и при этом несёт индекс от списка, — тест покраснеет раньше, чем
-    /// кэш начнёт врать чужим индексом.</summary>
+    /// Раньше через кадр ехал целый <c>ValidationElement</c>, поэтому годным
+    /// признавался только тот тип, у которого поля от СПИСКА заведомо пусты, и
+    /// 23 % деталей живого проекта оставались вне кэша ровно из-за этих полей.
+    /// Теперь через кадр едет только ДОРОГАЯ часть — коробка
+    /// (<c>ElementGeometry</c>) и вершины, — а всё, что зависит от списка
+    /// (роль, высотный промежуток, имя пары, индекс стены, индекс хозяина,
+    /// второе тело, осевая линия), пересчитывается ПОВЕРХ кэша каждый кадр.
+    ///
+    /// Утверждение поэтому сменилось на более сильное: список меняют, деталей
+    /// не трогают — и снимок обязан совпасть с холодной сборкой ДО ЕДИНОГО
+    /// поля, не заплатив ни одной пересборки геометрии. Перестановка списка —
+    /// самый злой вид такой правки: значения полей те же, а правильные ИНДЕКСЫ
+    /// другие. Кэш, потащивший индекс через кадр, назовёт чужую стену.
+    ///
+    /// Перебираются ВСЕ типы настоящей фабрики, а не список, написанный руками:
+    /// новый тип обязан попасть под проверку сам.</summary>
     [Test]
-    public void EverySnapshotKeptBetweenFrames_CarriesNothingThatDependsOnTheRestOfTheScene()
+    public void EveryIndexThatDependsOnTheList_IsCountedOnTopOfTheCache_NotCarriedThroughAFrame()
     {
-        var scene = new List<KitchenElement> { MakeWall("WallUnderTest") };
+        var wall = MakeWall("WallUnderTest");
+        var scene = new List<KitchenElement> { wall };
         foreach (var (type, make) in EveryElementType.Makers)
         {
             var go = make(type.Name + "_probe");
@@ -278,27 +292,42 @@ public class ValidationSnapshotReuseTests : ElementTestBase
             scene.Add(go.GetComponent<KitchenElement>());
         }
 
+        int openings = 0;
+        foreach (var e in scene)
+            if (e is WallOpeningElement opening)
+            {
+                opening.AttachedWallName = wall.gameObject.name;
+                openings++;
+            }
+        Assert.Greater(openings, 0,
+            "посылка стенда: хотя бы один проём обязан быть привязан к стене, иначе "
+            + "индекс стены ниже сравнивается «минус один против минус одного» и не "
+            + "проверяет ничего");
+
         var into = new List<ValidationElement>();
         ValidationSnapshot.Build(scene, into);
-
-        int reusable = 0;
+        int attached = 0;
         for (int i = 0; i < scene.Count; i++)
-        {
-            if (!ValidationSnapshot.ReusesItsSnapshot(scene[i])) continue;
-            reusable++;
+            if (into[i].AttachedWallIndex != ValidationElement.NoIndex) attached++;
+        Assert.Greater(attached, 0,
+            "посылка стенда: привязка обязана доехать до снимка индексом стены");
 
-            string who = scene[i].GetType().Name;
-            Assert.AreEqual(ValidationElement.NoIndex, into[i].AttachedWallIndex,
-                $"{who}: индекс стены считается ПО СПИСКУ — такой снимок нельзя нести через кадр");
-            Assert.AreEqual(ValidationElement.NoIndex, into[i].HostIndex,
-                $"{who}: индекс хозяина считается ПО СПИСКУ");
-            Assert.IsFalse(into[i].HasExtraBody,
-                $"{who}: второе тело считается от хозяина, то есть по СПИСКУ");
-        }
+        int alwaysRebuilt = 0;
+        foreach (var e in scene)
+            if (!ValidationSnapshot.ReusesItsBox(e)) alwaysRebuilt++;
+        Assert.Less(alwaysRebuilt, scene.Count,
+            "посылка стенда: хотя бы один тип обязан быть в кэше, иначе «ноль лишних "
+            + "пересборок» ниже — это просто «кэша нет»");
 
-        Assert.GreaterOrEqual(reusable, 5,
-            "ни один тип не признан годным — правило годности отказало целиком, и все "
-            + "утверждения выше проверены на пустом множестве");
+        ValidationSnapshot.TakeGeometryBuilds();
+        scene.Reverse();
+        ValidationSnapshot.Build(scene, into);
+        Assert.AreEqual(alwaysRebuilt, ValidationSnapshot.TakeGeometryBuilds(),
+            "список переставили, детали не трогали — заново обязаны собраться РОВНО те, "
+            + $"кто вне кэша по записанной причине ({alwaysRebuilt} шт.). Больше означает, "
+            + "что дорогая часть зря привязана к порядку списка");
+
+        AssertTheCacheAgreesWithAColdBuild(scene, "после перестановки списка");
     }
 
     /// <summary>Отрицательный контроль к правилу годности: тип, который строит
@@ -312,7 +341,7 @@ public class ValidationSnapshotReuseTests : ElementTestBase
         _spawned.Add(go);
         var pillar = go.GetComponent<KitchenElement>();
 
-        Assert.IsFalse(ValidationSnapshot.ReusesItsSnapshot(pillar),
+        Assert.IsFalse(ValidationSnapshot.ReusesItsBox(pillar),
             "тип, собирающий свою геометрию сам, обязан строиться каждый кадр: ключ "
             + "описывает коробку базового класса, а не его");
 
@@ -339,7 +368,7 @@ public class ValidationSnapshotReuseTests : ElementTestBase
         _spawned.Add(go);
         var assembled = go.GetComponent<KitchenElement>();
 
-        Assert.IsTrue(ValidationSnapshot.ReusesItsSnapshot(assembled),
+        Assert.IsTrue(ValidationSnapshot.ReusesItsBox(assembled),
             "сборный фасад не переопределяет ни одного члена, из которых собирается "
             + "коробка валидации — значит ключ фасада описывает и его");
 
@@ -353,8 +382,207 @@ public class ValidationSnapshotReuseTests : ElementTestBase
             "неизменившийся сборный фасад не обязан пересобираться");
     }
 
+    /// <summary>Два доказательства раздельны, и это несущее различие, а не
+    /// стиль. ФОРМУ коробки (<c>GetVertices</c>/<c>GetFaces</c> и их варианты
+    /// с позицией) доказаны строить ровно три типа: признак описывает коробку
+    /// базового класса, и никакая другая форма в него не влезает. ПОЗУ
+    /// (масштаб, положение, поворот) доказан считать длинный список — каждый
+    /// его пункт прочитан руками и оказался чистой функцией от габаритов,
+    /// констант и <c>transform</c>, то есть от того, что уже лежит в признаке.
+    ///
+    /// Одним списком на оба доказательства это делать нельзя: тогда тип,
+    /// добавленный ради своего <c>EffectiveScale</c>, получил бы заодно право
+    /// переопределить <c>GetFacesAt</c> — и кэш начал бы носить форму, о
+    /// которой признак ничего не знает. Тест держит именно эту дыру закрытой.</summary>
+    [Test]
+    public void ProvingThePose_DoesNotAlsoProveTheShape()
+    {
+        Assert.IsTrue(
+            ValidationGeometryContract.ShapeIsBuiltOnlyBy(typeof(TableElement),
+                ValidationSnapshot.ProvedShapeBuilders),
+            "стол не трогает форму коробки — её строит базовый класс");
+        Assert.IsFalse(
+            ValidationGeometryContract.PoseIsBuiltOnlyBy(typeof(TableElement),
+                ValidationSnapshot.ProvedShapeBuilders),
+            "положительный контроль к следующему требованию: стол ПОТОМУ и был вне кэша, "
+            + "что считает позу сам — если он проходит по короткому списку, проверка ниже "
+            + "зелена на пустом месте");
+        Assert.IsTrue(
+            ValidationGeometryContract.PoseIsBuiltOnlyBy(typeof(TableElement),
+                ValidationSnapshot.ProvedPoseBuilders),
+            "стол доказан по позе и обязан быть в кэше");
+
+        Assert.IsFalse(
+            ValidationGeometryContract.ShapeIsBuiltOnlyBy(typeof(PillarElement),
+                ValidationSnapshot.ProvedPoseBuilders),
+            "длинный список доказывает ПОЗУ и не вправе пропускать чужую ФОРМУ: колонна "
+            + "строит коробку сама, и никакой список поз этого не отменяет");
+
+        foreach (var proved in ValidationSnapshot.ProvedShapeBuilders)
+            CollectionAssert.Contains(ValidationSnapshot.ProvedPoseBuilders, proved,
+                $"{proved.Name} доказан по форме, но не по позе — такой тип не пройдёт "
+                + "целиком, и короткий список молча перестанет что-либо значить");
+    }
+
+    /// <summary>Типы, чья коробка НЕ берётся в кэш, с причиной на каждый. Это
+    /// вторая половина таблицы годности: без неё тип мог бы выпасть из кэша
+    /// молча — цена вернулась бы, а зелёный прогон этого бы не заметил.
+    ///
+    /// Причины разные, и это важно: общий отказ «на всякий случай» здесь не
+    /// годится, каждая строка оплачена чтением кода.</summary>
+    private static readonly (string type, string why)[] OutOfTheCacheOnPurpose =
+    {
+        ("PillarElement",
+            "строит коробку сам: переопределяет GetVertices/GetFaces, а признак описывает "
+            + "коробку базового класса — число граней и радиус в него не входят"),
+        ("ScrewLegElement",
+            "её главное тело — BaseBody, а его длина тянется до ПОЛА через хозяина; хозяин "
+            + "в признак не входит, и опора с новым хозяином осталась бы прежней длины"),
+        ("PipeElement", "несёт устья (ISnapPorts): они едут в ElementGeometry и их читает снэп"),
+        ("PipeElbowElement", "устья"),
+        ("PipeCouplingElement", "устья"),
+        ("PipeTeeElement", "устья"),
+        ("PipeCapElement", "устья"),
+        ("PipeSupplyElement", "устья"),
+        ("PipeReturnElement", "устья"),
+    };
+
+    /// <summary>Таблица годности против её близнеца, по ВСЕМ типам фабрики, и
+    /// падает она в обе стороны: тип, вошедший в кэш молча, и тип, молча из
+    /// него выпавший, одинаково красные.
+    ///
+    /// На каждый тип здесь стоит пара: кадр покоя обязан стоить 0 пересборок
+    /// (для годных) или 1 (для негодных — они пересобираются всегда), а кадр
+    /// после СДВИГА обязан стоить ровно 1 в обоих случаях. Без второй половины
+    /// «ноль» читался бы как «кэш работает», а означал бы «кэш ослеп».</summary>
+    [Test]
+    public void EveryElementTypeOfTheFactory_IsEitherCachedAndWokenByAMove_OrRebuiltEveryFrame()
+    {
+        var cached = new List<string>();
+        var always = new List<string>();
+        var resized = new List<string>();
+        var clamped = new List<string>();
+
+        foreach (var (type, make) in EveryElementType.Makers)
+        {
+            var go = make(type.Name + "_probe");
+            _spawned.Add(go);
+            var subject = go.GetComponent<KitchenElement>();
+            var scene = new List<KitchenElement> { subject };
+            var into = new List<ValidationElement>();
+
+            ElementSnapshotReuse.Clear();
+            ValidationSnapshot.Build(scene, into);
+            ValidationSnapshot.TakeGeometryBuilds();
+            ValidationSnapshot.Build(scene, into);
+            int atRest = ValidationSnapshot.TakeGeometryBuilds();
+
+            bool inCache = ValidationSnapshot.ReusesItsBox(subject);
+            (inCache ? cached : always).Add(type.Name);
+
+            Assert.AreEqual(inCache ? 0 : 1, atRest,
+                $"{type.Name}: кадр покоя стоил {atRest} пересборок коробки, а таблица "
+                + $"годности говорит «{(inCache ? "в кэше" : "вне кэша")}». Таблица и "
+                + "поведение разошлись — одно из двух врёт");
+
+            float wasAt = into[0].Geometry.Min.x;
+            subject.transform.position += new Vector3(0.037f, 0f, 0f);
+            ValidationSnapshot.Build(scene, into);
+
+            Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
+                $"{type.Name}: деталь сдвинули на 37 мм, а коробку не пересобрали — "
+                + "валидация будет судить по вчерашней геометрии");
+            Assert.AreNotEqual(wasAt, into[0].Geometry.Min.x,
+                $"{type.Name}: пересборка случилась, а коробка осталась на прежнем месте — "
+                + "счётчик работы сам по себе этого не ловит");
+
+            var wanted = subject.DimensionsMM + new Vector3Int(31, 0, 0);
+            subject.DimensionsMM = wanted;
+            bool tookTheNewSize = subject.DimensionsMM == wanted;
+            ValidationSnapshot.Build(scene, into);
+            int afterResize = ValidationSnapshot.TakeGeometryBuilds();
+
+            if (tookTheNewSize)
+            {
+                resized.Add(type.Name);
+                Assert.AreEqual(1, afterResize,
+                    $"{type.Name}: габариты изменили на 31 мм — это вход дорогой части у "
+                    + "каждого из новых типов: их EffectiveScale считается от габаритов");
+            }
+            else
+            {
+                clamped.Add(type.Name);
+            }
+        }
+
+        TestContext.WriteLine($"в кэше {cached.Count} типов из {cached.Count + always.Count}: "
+            + string.Join(", ", cached));
+        TestContext.WriteLine($"вне кэша {always.Count}: " + string.Join(", ", always));
+        TestContext.WriteLine($"новый размер приняли {resized.Count}, зажали "
+            + $"{clamped.Count}: " + string.Join(", ", clamped));
+
+        Assert.Greater(resized.Count, (cached.Count + always.Count) / 2,
+            "посылка проверена на месте: новый габарит принял лишь "
+            + $"{resized.Count} тип(ов) из {cached.Count + always.Count}, остальные зажали "
+            + "его обратно — требование про габариты проверено почти на пустом множестве. "
+            + "Зажали: " + string.Join(", ", clamped));
+
+        var expected = new List<string>();
+        var reasons = new List<string>();
+        foreach (var (type, why) in OutOfTheCacheOnPurpose)
+        {
+            expected.Add(type);
+            reasons.Add(type + " — " + why);
+        }
+        CollectionAssert.AreEquivalent(expected, always,
+            "состав «вне кэша» разошёлся с записанным. Каждая строка там оплачена "
+            + "чтением кода и несёт причину: " + string.Join("; ", reasons));
+    }
+
+    /// <summary>Проём привязан к стене ИМЕНЕМ, а в снимок едет ИНДЕКСОМ в
+    /// списке. Индекс считается поверх кэша, значит перепривязка к другой стене
+    /// обязана доехать, не стоив ни одной пересборки коробки: сам проём не
+    /// изменился ни на микрон. До разделения проёмы вообще не брались в кэш
+    /// именно из-за этого индекса — 14 деталей живого проекта.</summary>
+    [Test]
+    public void AnOpeningRehungOnAnotherWall_FollowsTheListWithoutRebuildingItsBox()
+    {
+        var first = MakeWall("WallOne");
+        var second = MakeWall("WallTwo");
+        var made = EveryElementType.Spawn(typeof(WindowElement), "Window_probe");
+        _spawned.Add(made.gameObject);
+        var opening = (WallOpeningElement)made;
+        opening.AttachedWallName = first.gameObject.name;
+
+        var scene = new List<KitchenElement> { opening, first, second };
+        var into = new List<ValidationElement>();
+        ValidationSnapshot.Build(scene, into);
+
+        Assert.AreEqual(1, into[0].AttachedWallIndex,
+            "посылка стенда: проём обязан начать привязанным к ПЕРВОЙ стене, иначе "
+            + "переход ниже не переход");
+        ValidationSnapshot.TakeGeometryBuilds();
+
+        opening.AttachedWallName = second.gameObject.name;
+        ValidationSnapshot.Build(scene, into);
+
+        Assert.AreEqual(0, ValidationSnapshot.TakeGeometryBuilds(),
+            "перевесили проём на другую стену — коробка проёма та же, пересобирать нечего");
+        Assert.AreEqual(2, into[0].AttachedWallIndex,
+            "индекс стены обязан идти за списком поверх кэша. Прежний индекс здесь — это "
+            + "проём, который меряется высотой ЧУЖОЙ стены");
+    }
+
+    /// <param name="rebuilds">Сколько пересборок ГЕОМЕТРИИ обязано стоить это
+    /// изменение. Единица — вход дорогой части: поза, масштаб, габариты,
+    /// зазоры, пазы, состояние стены. НОЛЬ — вход дешёвой части, которая
+    /// считается ПОВЕРХ кэша на каждом кадре: роль, высотный промежуток, имя
+    /// пары, индекс стены, индекс хозяина, второе тело, осевая линия. Ноль
+    /// здесь — не поблажка, а более сильное требование: значение обязано
+    /// смениться, НЕ заплатив за геометрию.</param>
     private void AssertTheChangeReachedTheSnapshot(string way, KitchenElement subject,
-        System.Action<KitchenElement> change, System.Func<ValidationElement, object> read)
+        System.Action<KitchenElement> change, System.Func<ValidationElement, object> read,
+        int rebuilds = 1)
     {
         var scene = SceneAround(subject);
         var into = new List<ValidationElement>();
@@ -367,12 +595,12 @@ public class ValidationSnapshotReuseTests : ElementTestBase
         SceneChangeTracker.Poll();
         ValidationSnapshot.Build(scene, into);
 
-        Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
-            $"{way}: изменённую деталь обязано пересобрать, а две нетронутые — нет; "
-            + "иное число означает либо слепой признак, либо мёртвый кэш, и тогда "
-            + "утверждение ниже проверяет не то");
+        Assert.AreEqual(rebuilds, ValidationSnapshot.TakeGeometryBuilds(),
+            $"{way}: изменённую деталь обязано пересобрать ровно {rebuilds} раз, а две "
+            + "нетронутые — нет; иное число означает либо слепой признак, либо мёртвый "
+            + "кэш, и тогда утверждение ниже проверяет не то");
         Assert.AreNotEqual(before, read(into[0]),
-            $"{way}: снимок отдал ПРЕЖНЮЮ геометрию — валидация судит по устаревшим "
+            $"{way}: снимок отдал ПРЕЖНЕЕ значение — валидация судит по устаревшим "
             + "данным, и пользователь видит подсветку, которой в сцене уже нет");
     }
 
@@ -470,14 +698,16 @@ public class ValidationSnapshotReuseTests : ElementTestBase
             s => s.Geometry.Max.z);
 
     /// <summary>Имя парной детали не геометрия, но оно едет в снимок и решает,
-    /// считать ли две детали одной парой. Оно не входит в Stamp — оно
-    /// сверяется с тем, что лежит в сохранённом снимке; тест держит эту вторую
-    /// половину признака.</summary>
+    /// считать ли две детали одной парой. Теперь оно считается ПОВЕРХ кэша на
+    /// каждом кадре — поэтому требуется ноль пересборок геометрии И новое имя.
+    /// Раньше оно сверялось с сохранённым снимком и стоило полную пересборку
+    /// коробки: перепривязка пары платила за геометрию, которая не менялась
+    /// ни на микрон.</summary>
     [Test]
     public void RepairingADrawerToAnotherOne_ReachesTheSnapshot() =>
         AssertTheChangeReachedTheSnapshot("перепривязка пары ящиков", MakeDrawer(),
             e => ((DrawerElement)e).PairedDrawerName = "Upper",
-            s => s.PairedName ?? "");
+            s => s.PairedName ?? "", rebuilds: 0);
 
     [Test]
     public void MovingAWall_ReachesTheSnapshot() =>

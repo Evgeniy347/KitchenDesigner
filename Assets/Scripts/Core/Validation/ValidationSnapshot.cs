@@ -61,7 +61,7 @@ namespace KitchenDesigner.Core
 
                 var wall = e.GetComponent<Wall>();
                 _probes.Add(new Probe(wall, e.GetComponent<BasePlate>() != null,
-                    ReusesItsSnapshot(e)));
+                    ReusesItsBox(e)));
 
                 if (wall != null)
                     (wallIndexByName ??= new Dictionary<string, int>())[e.gameObject.name] = i;
@@ -79,10 +79,11 @@ namespace KitchenDesigner.Core
             {
                 var e = elements[i];
                 var probe = _probes[i];
-                if (probe.Reusable && ElementSnapshotReuse.TryReuse(e, probe.Wall, probe.IsFloor,
-                    PairedNameOf(e), out var reused))
+                if (probe.Reusable && ElementSnapshotReuse.TryReuseBox(e, probe.Wall, probe.IsFloor,
+                    out var keptBody, out var keptVertices))
                 {
-                    into.Add(reused);
+                    into.Add(Assemble(e, keptBody, keptVertices, probe.Wall, probe.IsFloor,
+                        wallIndexByName, partIndexByName));
                     continue;
                 }
 
@@ -90,35 +91,49 @@ namespace KitchenDesigner.Core
                 _geometryBuilds++;
                 GeometryBuildsInLastPass++;
 #endif
-                var built = Build(e, probe.Wall, probe.IsFloor, wallIndexByName, partIndexByName);
-                if (probe.Reusable) ElementSnapshotReuse.Keep(e, probe.Wall, probe.IsFloor, built);
-                into.Add(built);
+                var body = MainBody(e);
+                var vertices = e.GetVertices();
+                if (probe.Reusable)
+                    ElementSnapshotReuse.Keep(e, probe.Wall, probe.IsFloor, body, vertices);
+                into.Add(Assemble(e, body, vertices, probe.Wall, probe.IsFloor,
+                    wallIndexByName, partIndexByName));
             }
 
             ElementSnapshotReuse.DropWhatThisPassNeverSaw(elements.Count);
         }
 
-        private static readonly System.Type[] ProvedBoxBuilders =
+        public static readonly System.Type[] ProvedShapeBuilders =
             { typeof(KitchenElement), typeof(FacadeElement), typeof(DrawerElement) };
+
+        public static readonly System.Type[] ProvedPoseBuilders =
+        {
+            typeof(KitchenElement), typeof(FacadeElement), typeof(DrawerElement),
+            typeof(TableElement), typeof(RadiusTableElement), typeof(StoolElement),
+            typeof(ChairElement), typeof(SofaElement), typeof(PouffeElement),
+            typeof(BedElement), typeof(BathtubElement), typeof(BathMixerElement),
+            typeof(ShowerColumnElement), typeof(ToiletElement), typeof(WallHungToiletElement),
+            typeof(SocketElement), typeof(LightSwitchElement), typeof(RadialShelfElement),
+            typeof(SinkElement), typeof(OvenElement), typeof(DishwasherElement),
+            typeof(LaundryMachineElement), typeof(CooktopElement), typeof(WallOpeningElement),
+        };
 
         private static readonly Dictionary<System.Type, bool> _reusableByType =
             new Dictionary<System.Type, bool>();
 
-        public static bool ReusesItsSnapshot(KitchenElement e)
+        public static bool ReusesItsBox(KitchenElement e)
         {
             var type = e.GetType();
             if (_reusableByType.TryGetValue(type, out bool known)) return known;
 
-            bool reusable = SnapshotDependsOnNothingButTheElement(type)
-                && ValidationGeometryContract.BoxIsBuiltOnlyBy(type, ProvedBoxBuilders);
+            bool reusable = TheBoxIsTheElementsOwnBusiness(type)
+                && ValidationGeometryContract.BoxIsBuiltOnlyBy(type,
+                    ProvedShapeBuilders, ProvedPoseBuilders);
             _reusableByType[type] = reusable;
             return reusable;
         }
 
-        private static bool SnapshotDependsOnNothingButTheElement(System.Type type) =>
+        private static bool TheBoxIsTheElementsOwnBusiness(System.Type type) =>
             !typeof(ScrewLegElement).IsAssignableFrom(type)
-            && !typeof(CooktopElement).IsAssignableFrom(type)
-            && !typeof(WallOpeningElement).IsAssignableFrom(type)
             && !typeof(ISnapPorts).IsAssignableFrom(type)
             && !typeof(IMountsOnTarget).IsAssignableFrom(type);
 
@@ -168,7 +183,8 @@ namespace KitchenDesigner.Core
 
         public static FacadeElement? AsFacade(KitchenElement e) => e as FacadeElement;
 
-        private static ValidationElement Build(KitchenElement e, Wall? wall, bool hasBasePlate,
+        private static ValidationElement Assemble(KitchenElement e, in ElementGeometry body,
+            Vector3[] vertices, Wall? wall, bool hasBasePlate,
             Dictionary<string, int>? wallIndexByName,
             Dictionary<string, int>? partIndexByName = null)
         {
@@ -190,8 +206,8 @@ namespace KitchenDesigner.Core
                 hostIndex = host;
 
             return new ValidationElement(
-                MainBody(e),
-                e.GetVertices(),
+                body,
+                vertices,
                 kind,
                 e.GroupId,
                 PairedNameOf(e),
