@@ -24,7 +24,7 @@ namespace KitchenDesigner.Core
         public static bool SaveOnQuit()
         {
             if (!AutoSaveIsOn()) return false;
-            return SaveIntoTheOpenProjectOrAutosave();
+            return SaveIntoTheOpenProjectOrAutosave(SaveLoadManager.CaptureCurrentJson());
         }
 
         private static bool AutoSaveIsOn()
@@ -34,11 +34,11 @@ namespace KitchenDesigner.Core
             return DemoMode.Current.AutoSaveAllowed;
         }
 
-        private static bool SaveIntoTheOpenProjectOrAutosave()
+        private static bool SaveIntoTheOpenProjectOrAutosave(string json)
         {
             if (SaveLoadManager.HasLastPath)
-                return SaveLoadManager.SaveToLastPath();
-            return SaveLoadManager.SaveProject(AutoSaveName, backup: false);
+                return SaveLoadManager.SaveCapturedJsonToPath(SaveLoadManager.LastPath, json);
+            return SaveLoadManager.SaveCapturedJsonAsProject(AutoSaveName, json, backup: false);
         }
 
         private static float IntervalSecondsRightNow()
@@ -55,16 +55,16 @@ namespace KitchenDesigner.Core
 
                 if (!AutoSaveIsOn()) continue;
 
-                string current = SaveLoadManager.CaptureCurrentJson();
-                if (current == _lastSavedJson) continue;
+                var outcome = AutoSaveCycle.Run(
+                    SaveLoadManager.CaptureCurrentJson,
+                    SaveIntoTheOpenProjectOrAutosave,
+                    _lastSavedJson);
+                _lastSavedJson = outcome.LastSavedJson;
 
-                if (SaveIntoTheOpenProjectOrAutosave())
-                {
-                    _lastSavedJson = current;
+                if (outcome.Wrote)
                     UI.StatusBarUI.Instance?.ShowTransient(
                         "Сохранено: " + System.DateTime.Now.ToString("HH:mm:ss"),
                         StatusLevel.Success);
-                }
             }
         }
     }

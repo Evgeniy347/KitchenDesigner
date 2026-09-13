@@ -49,8 +49,14 @@ namespace KitchenDesigner.Core
         {
             if (string.IsNullOrEmpty(path)) return false;
             if (DemoMode.Current.IsDemoFile(path)) return false;
-            bool ok = _files.Write(path, CaptureCurrentScene());
-            if (!ok) return false;
+            return SaveCapturedJsonToPath(path, CaptureCurrentJson());
+        }
+
+        public bool SaveCapturedJsonToPath(string path, string json)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+            if (DemoMode.Current.IsDemoFile(path)) return false;
+            if (!_files.WriteJson(path, json)) return false;
             LastPath = path;
             DemoMode.Current.ProjectSavedTo(path);
             return true;
@@ -58,13 +64,15 @@ namespace KitchenDesigner.Core
 
         public bool SaveToLastPath() => HasLastPath && SaveToPath(LastPath);
 
-        public bool SaveProject(string name, bool backup = true)
+        public bool SaveProject(string name, bool backup = true) =>
+            SaveCapturedJsonAsProject(name, CaptureCurrentJson(), backup);
+
+        public bool SaveCapturedJsonAsProject(string name, string json, bool backup = true)
         {
-            var data = CaptureCurrentScene();
             string path = PathForName(name);
             if (backup && File.Exists(path))
                 _files.ArchiveExisting(path);
-            return _files.Write(path, data);
+            return _files.WriteJson(path, json);
         }
 
         public bool LoadFromPath(string path)

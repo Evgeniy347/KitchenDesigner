@@ -20,6 +20,8 @@ namespace KitchenDesigner.Core
         bool SaveToFile(string path, ProjectData data);
         ProjectData? LoadFromFile(string path);
         bool SaveProject(string name, bool backup = true);
+        bool SaveCapturedJsonToPath(string path, string json);
+        bool SaveCapturedJsonAsProject(string name, string json, bool backup = true);
         string CaptureCurrentJson();
         bool LoadProject(string name);
         string[] GetSaveFiles();

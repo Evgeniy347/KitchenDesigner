@@ -47,14 +47,17 @@ namespace KitchenDesigner.Core
         public string PathForName(string name) =>
             Path.Combine(SavesDirectory, name + ".json");
 
-        public bool Write(string path, ProjectData data)
+        public bool Write(string path, ProjectData data) =>
+            WriteJson(path, ProjectJson.Serialize(data));
+
+        public bool WriteJson(string path, string json)
         {
             try
             {
                 var dir = Path.GetDirectoryName(path);
                 if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                     Directory.CreateDirectory(dir);
-                File.WriteAllText(path, ProjectJson.Serialize(data));
+                File.WriteAllText(path, json);
                 return true;
             }
             catch (Exception ex)

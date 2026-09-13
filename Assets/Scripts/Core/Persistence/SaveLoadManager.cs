@@ -44,6 +44,12 @@ namespace KitchenDesigner.Core
         public static ProjectData? LoadFromFile(string path) => Instance.LoadFromFile(path);
 
         public static string PathForName(string name) => Instance.PathForName(name);
+        public static bool SaveCapturedJsonToPath(string path, string json) =>
+            Instance.SaveCapturedJsonToPath(path, json);
+
+        public static bool SaveCapturedJsonAsProject(string name, string json, bool backup = true) =>
+            Instance.SaveCapturedJsonAsProject(name, json, backup);
+
         public static bool SaveProject(string name, bool backup = true) =>
             Instance.SaveProject(name, backup);
         public static string CaptureCurrentJson() => Instance.CaptureCurrentJson();
