@@ -105,6 +105,7 @@ namespace KitchenDesigner.Core
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
         private OpeningScanRepeat _scanGate;
+        private readonly OpeningScanMemory _scanMemory = new OpeningScanMemory();
         private bool _parkedAtLimit;
         private readonly System.Collections.Generic.List<KitchenElement> _ridersOfThisGesture =
             new System.Collections.Generic.List<KitchenElement>();
@@ -136,7 +137,7 @@ namespace KitchenDesigner.Core
         public DoorMode Mode
         {
             get => _mode;
-            set { _mode = value; _scanGate.Forget(); enabled = true; if (_doorProgress > 0f) ApplyDoor(); }
+            set { _mode = value; ForgetTheScan(); enabled = true; if (_doorProgress > 0f) ApplyDoor(); }
         }
 
         public void CycleMode() => Mode = FacadeDoor.Next(_mode);
@@ -161,7 +162,7 @@ namespace KitchenDesigner.Core
             }
             if (open && _doorProgress <= 0f) CaptureClosed();
             _openTarget = open;
-            _scanGate.Forget();
+            ForgetTheScan();
             _ridersRevision = -1;
             if (!Mathf.Approximately(_doorProgress, open ? 1f : 0f))
             {
@@ -193,7 +194,7 @@ namespace KitchenDesigner.Core
         {
             _closedPos = transform.position;
             _closedRot = transform.rotation;
-            _scanGate.Forget();
+            ForgetTheScan();
         }
 
         internal void CaptureClosedPose() => CaptureClosed();
@@ -290,11 +291,17 @@ namespace KitchenDesigner.Core
             exclude.AddRange(RidersOfThisGesture());
 
             _scanGate.Remember(SceneRevision.Version, _closedPos, _closedRot, RestExtents,
-                OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude));
+                OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude, memory: _scanMemory));
             return _scanGate.SafeProgress;
         }
 
         private Vector3 RestExtents => transform.localScale;
+
+        private void ForgetTheScan()
+        {
+            _scanGate.Forget();
+            _scanMemory.Forget();
+        }
 
         public bool IsParkedAtALimit => _parkedAtLimit;
 
@@ -317,7 +324,7 @@ namespace KitchenDesigner.Core
         internal void ShiftClosedPose(Vector3 worldDelta)
         {
             _closedPos += worldDelta;
-            _scanGate.Forget();
+            ForgetTheScan();
             enabled = true;
             ApplyDoor();
         }
@@ -330,7 +337,7 @@ namespace KitchenDesigner.Core
             _doorProgress = 0f;
             _closedPos = Vector3.zero;
             _closedRot = Quaternion.identity;
-            _scanGate.Forget();
+            ForgetTheScan();
             _parkedAtLimit = false;
             ForgetTheRidersOfThisGesture();
             enabled = true;

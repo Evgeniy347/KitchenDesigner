@@ -53,6 +53,7 @@ namespace KitchenDesigner.Core
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
         private OpeningScanRepeat _scanGate;
+        private readonly OpeningScanMemory _scanMemory = new OpeningScanMemory();
         private bool _parkedAtLimit;
 
         [Undoable]
@@ -182,7 +183,7 @@ namespace KitchenDesigner.Core
                 : (value != DoubleDrawerState.Closed);
             if (willOpen && _t <= 0f) CaptureClosed();
             _open = willOpen;
-            _scanGate.Forget();
+            ForgetTheScan();
             SyncAttachedFacade();
             if (!Mathf.Approximately(_t, willOpen ? 1f : 0f)) enabled = true;
 
@@ -325,7 +326,7 @@ namespace KitchenDesigner.Core
             {
                 _closedPos = followedPos;
                 _closedRot = lower.ClosedRotation;
-                _scanGate.Forget();
+                ForgetTheScan();
             }
             ApplyAnimPose();
         }
@@ -387,11 +388,17 @@ namespace KitchenDesigner.Core
             }
 
             _scanGate.Remember(SceneRevision.Version, _closedPos, _closedRot, RestExtents,
-                OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude));
+                OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude, memory: _scanMemory));
             return _scanGate.SafeProgress;
         }
 
         private Vector3 RestExtents => transform.localScale;
+
+        private void ForgetTheScan()
+        {
+            _scanGate.Forget();
+            _scanMemory.Forget();
+        }
 
         public bool IsParkedAtALimit => _parkedAtLimit;
 
@@ -415,7 +422,7 @@ namespace KitchenDesigner.Core
         {
             if (open && _t <= 0f) CaptureClosed();
             _open = open;
-            _scanGate.Forget();
+            ForgetTheScan();
             SyncAttachedFacade();
             if (!Mathf.Approximately(_t, open ? 1f : 0f))
             {
@@ -443,7 +450,7 @@ namespace KitchenDesigner.Core
         {
             _closedPos = transform.position;
             _closedRot = transform.rotation;
-            _scanGate.Forget();
+            ForgetTheScan();
         }
 
         private void ApplyAnimPose()

@@ -214,6 +214,138 @@ public class FacadeOpeningCostTests
             + "(гасится только собственное движение анимируемой дверцы) и сдвинуть ревизию");
     }
 
+    /// <summary>КОРЕНЬ семнадцати миллисекунд. `BuildObstacles` не отсеивает по расстоянию
+    /// вовсе: если сосед не КАСАЕТСЯ закрытой коробки, `ContactShadow.ActivePieces` кладёт
+    /// его в препятствия ЦЕЛИКОМ (`Touches` ложно → `into.Add(neighbour)`). На проекте
+    /// пользователя это 411 коробок, и каждая из 128 ступеней скана проверяла их все.
+    ///
+    /// Отсев по достижимости: дверца метёт заведомо ограниченный объём, и всё, что вне
+    /// него, не может ей помешать НИКОГДА. Объём считается один раз по тем же 128
+    /// ступеням (это дёшево: `getBoxes` строит одну-две коробки) и расширяется на
+    /// `TouchGapMm` = 5 мм — запас с трёхсоткратным перекрытием над выпуклостью дуги между
+    /// соседними ступенями (0,7° при радиусе 0,8 м — это 15 мкм) и над порогом
+    /// `MinBlockingPenetrationMm` = 1 мм, на котором вообще считается блокировка.</summary>
+    [Test]
+    public void ObstaclesOutOfReach_AreDroppedBeforeTheScan_AndTheOneOnThePathIsNot()
+    {
+        var f = MakeSlidingFacade();
+        MakeObstacleInFrontOfTheDoor(100f);
+        for (int i = 0; i < 20; i++)
+        {
+            var far = ElementFactory.CreatePart(new Vector3Int(400, 700, 18), "Далеко" + i,
+                new Vector3(3f + i * 0.5f, 0f, 0f));
+            _spawned.Add(far);
+        }
+        SettleTheSceneAndZeroTheSensors();
+
+        f.SetOpen(true);
+        RunGesture(f, bumpEveryFrame: false);
+
+        Assert.AreEqual(1, OpeningCollision.ObstaclesInLastScan,
+            "двадцать одна деталь в сцене, а помешать может ровно одна — та, что на пути; "
+            + "остальные двадцать стоят в трёх метрах и в развёртку дверцы не попадают");
+        Assert.Less(f.DoorProgress, 1f,
+            "и эта одна дверцу ОСТАНОВИЛА — отсев не смеет выбросить настоящее препятствие");
+    }
+
+    /// <summary>Обратный вход к отсеву, без которого он был бы «просто выключить проверку»:
+    /// препятствие подводят к дверце вплотную — и оно обязано появиться в скане и остановить
+    /// её там, где она и должна встать.</summary>
+    [Test]
+    public void ObstacleBroughtIntoReach_ShowsUpInTheScan_AndStopsTheDoor()
+    {
+        var f = MakeSlidingFacade();
+        var wanderer = ElementFactory.CreatePart(new Vector3Int(400, 700, 18), "Пришелец",
+            new Vector3(4f, 0f, 0f)).GetComponent<KitchenElement>()!;
+        _spawned.Add(wanderer.gameObject);
+        SettleTheSceneAndZeroTheSensors();
+
+        f.SetOpen(true);
+        RunGesture(f, bumpEveryFrame: false);
+
+        Assert.AreEqual(0, OpeningCollision.ObstaclesInLastScan,
+            "пока деталь в четырёх метрах, скану не с чем работать");
+        Assert.AreEqual(1f, f.DoorProgress, 1e-4f, "и дверца открылась полностью");
+
+        f.ForceClose();
+        wanderer.transform.position = new Vector3(0f, 0f, (9f + 100f + 9f)
+            * AppConstants.MM_TO_UNITS);
+        SettleTheSceneAndZeroTheSensors();
+
+        f.SetOpen(true);
+        RunGesture(f, bumpEveryFrame: false);
+
+        Assert.AreEqual(1, OpeningCollision.ObstaclesInLastScan,
+            "деталь подвели вплотную — она обязана войти в скан");
+        Assert.Less(f.DoorProgress, 1f,
+            "и остановить дверцу: отсев по достижимости не смеет ослеплять её");
+    }
+
+    /// <summary>Дамп `perf_20260913_080751.csv`: пользователь вёл дверь к стене мышью —
+    /// 96 кадров, ВСЕ дороже 50 мс, среднее 64,5. Из них 19,1 мс — `FacadeElement.StepDoor`,
+    /// и внутри `ScanForBlock` 17,1 мс. Прибор назвал виновника без догадок:
+    /// `FacadeElement.ApplyDoor` на этих кадрах — **ноль из 96**, а
+    /// `ElementMover.ApplyDragFrame` — тоже ноль, зато `DoorElement.SnapToWall` — 96 из 96.
+    /// То есть вели ЧУЖУЮ деталь, а сканировала упёршаяся дверца в стороне, и семнадцать
+    /// миллисекунд скана не меняли её позу НИ РАЗУ.
+    ///
+    /// Калитка `OpeningScanRepeat` тут бессильна по устройству: её ключ — ревизия сцены,
+    /// а при ведении детали сцена меняется каждый кадр ПО-НАСТОЯЩЕМУ. Отвечает на это
+    /// `OpeningScanMemory`: препятствия пересобираются (это дёшево, 1,6 мс — и это
+    /// тот самый «индекс, построенный один раз»), но если набор коробок совпал с прошлым
+    /// вплоть до бита, ответ берётся готовым, а 128 шагов скана не делаются вовсе.
+    /// Совпал вход — совпадёт и ответ; ошибиться тут нечем.</summary>
+    [Test]
+    public void SomethingElseBeingLedAcrossTheScene_DoesNotRescanTheBlockedDoor()
+    {
+        var f = MakeSlidingFacade();
+        var obstacle = MakeObstacleInFrontOfTheDoor(100f);
+        var bystander = ElementFactory.CreatePart(new Vector3Int(400, 2000, 18), "Ведомая дверь",
+            new Vector3(5f, 0f, 0f)).GetComponent<KitchenElement>()!;
+        _spawned.Add(bystander.gameObject);
+        SettleTheSceneAndZeroTheSensors();
+
+        f.SetOpen(true);
+        RunGesture(f, bumpEveryFrame: false);
+        float stopped = f.DoorProgress;
+        Assert.Less(stopped, 1f,
+            "дверца обязана упереться — иначе сканировать было бы нечего и тест ни о чём");
+
+        SettleTheSceneAndZeroTheSensors();
+        OpeningCollision.TakeScanForBlockCalls();
+
+        for (int i = 0; i < GestureFrames; i++)
+        {
+            bystander.transform.position += new Vector3(0.01f, 0f, 0f);
+            SceneChangeTracker.Poll();
+            f.StepDoor(Dt);
+        }
+
+        int scans = OpeningCollision.TakeScanForBlockCalls();
+        int builds = OpeningCollision.TakeBuildObstacleCalls();
+        Assert.AreEqual(0, scans,
+            $"чужая деталь ездит в пяти метрах — препятствия у ЭТОЙ дверцы те же самые, "
+            + $"и пересчитывать предел незачем. Получено {scans} сканов за {GestureFrames} "
+            + "кадров: столько же раз прогнаны 128 шагов по всей сцене");
+        Assert.Greater(builds, 0,
+            "а вот препятствия пересобираться обязаны — иначе дверца не узнала бы о "
+            + "настоящем изменении, и тест был бы зелёным по неверной причине");
+        Assert.AreEqual(stopped, f.DoorProgress, 1e-6f,
+            "и стоит дверца ровно там, где её остановило препятствие");
+
+        obstacle.transform.position += new Vector3(0f, 0f, 0.05f);
+        SceneChangeTracker.Poll();
+        f.StepDoor(Dt);
+
+        Assert.AreEqual(1, OpeningCollision.TakeScanForBlockCalls(),
+            "ОБРАТНЫЙ ВХОД: сдвинулось НАСТОЯЩЕЕ препятствие — скан обязан произойти");
+
+        RunGesture(f, bumpEveryFrame: false);
+        Assert.Greater(f.DoorProgress, stopped,
+            "препятствие отодвинули на 50 мм — дверца обязана поехать дальше, "
+            + "а не остаться на старом пределе");
+    }
+
     /// <summary>Сторож самого сенсора: без глушения он действительно считает по вызову на кадр.
     /// Тест, который не может покраснеть, ничего не стоит — здесь красный воспроизводится
     /// принудительным бампом, то есть ровно тем, что делал `SceneChangeTracker` до правки.</summary>

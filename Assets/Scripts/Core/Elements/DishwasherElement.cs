@@ -90,6 +90,7 @@ namespace KitchenDesigner.Core
         private ApplianceBoxes? _boxes;
         private DropDoor? _door;
         private OpeningScanRepeat _scanGate;
+        private readonly OpeningScanMemory _scanMemory = new OpeningScanMemory();
         private bool _parkedAtLimit;
 
         private ApplianceBoxes Boxes => _boxes ??= new ApplianceBoxes(transform, DishwasherBody.ChildName);
@@ -119,7 +120,7 @@ namespace KitchenDesigner.Core
 
         public void OnAttachedFacadeChanged(FacadeElement? oldFacade, FacadeElement? newFacade)
         {
-            _scanGate.Forget();
+            ForgetTheScan();
             _parkedAtLimit = false;
             enabled = true;
             if (oldFacade != null && oldFacade.IsPassenger) oldFacade.IsPassenger = false;
@@ -200,7 +201,7 @@ namespace KitchenDesigner.Core
         public void SetOpen(bool open)
         {
             _open = open;
-            _scanGate.Forget();
+            ForgetTheScan();
             _parkedAtLimit = false;
             SyncAttachedFacade();
             if (Door.IsAnimatingTowards(open))
@@ -277,11 +278,17 @@ namespace KitchenDesigner.Core
             if (facade != null) exclude.Add(facade);
 
             _scanGate.Remember(SceneRevision.Version, t.position, t.rotation, RestExtents,
-                OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude));
+                OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude, memory: _scanMemory));
             return _scanGate.SafeProgress;
         }
 
         private Vector3 RestExtents => transform.localScale;
+
+        private void ForgetTheScan()
+        {
+            _scanGate.Forget();
+            _scanMemory.Forget();
+        }
 
         public void GetOpenBoxes(float progress, List<OrientedBox> into)
         {
