@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core
         private ApplianceBoxes? _boxes;
         private DropDoor? _door;
         private Mesh? _shellMesh;
-        private OpeningScanRepeat _scanGate;
+        private readonly OpeningScanMemo _scan = new OpeningScanMemo();
         private bool _parkedAtLimit;
 
         private ApplianceBoxes Boxes =>
@@ -131,7 +131,7 @@ namespace KitchenDesigner.Core
         public void SetOpen(bool open)
         {
             _open = open;
-            _scanGate.Forget();
+            _scan.Forget();
             _parkedAtLimit = false;
             if (!Door.IsAnimatingTowards(open)) return;
             enabled = true;
@@ -176,30 +176,20 @@ namespace KitchenDesigner.Core
         public bool IsParkedAtALimit => _parkedAtLimit;
 
         private bool StillBlockedOnThisRevision =>
-            _open
-            && _scanGate.Repeats(SceneRevision.Version, transform.position, transform.rotation,
-                RestExtents)
-            && Mathf.Approximately(Door.Progress, _scanGate.SafeProgress);
+            _open && _scan.StillBlocksAt(ScanKey, Door.Progress);
 
-        private Vector3 RestExtents => DimensionsMM;
+        private OpeningScanKey ScanKey => new OpeningScanKey(SceneRevision.Version,
+            transform.position, transform.rotation, DimensionsMM);
 
         private void ForgetTheLimitOfThisShape()
         {
-            _scanGate.Forget();
+            _scan.Forget();
             _parkedAtLimit = false;
             enabled = true;
         }
 
-        private float MaxSafeDoorProgress()
-        {
-            var t = transform;
-            if (_scanGate.Repeats(SceneRevision.Version, t.position, t.rotation, RestExtents))
-                return _scanGate.SafeProgress;
-
-            _scanGate.Remember(SceneRevision.Version, t.position, t.rotation, RestExtents,
-                OpeningCollision.FindMaxProgress(this, GetOpenBoxes));
-            return _scanGate.SafeProgress;
-        }
+        private float MaxSafeDoorProgress() =>
+            _scan.SafeProgressFor(this, ScanKey, GetOpenBoxes);
 
         public void GetOpenBoxes(float progress, List<OrientedBox> into) =>
             Door.WorldBoxes(transform, progress, into);

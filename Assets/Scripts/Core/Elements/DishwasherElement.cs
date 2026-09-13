@@ -89,8 +89,7 @@ namespace KitchenDesigner.Core
 
         private ApplianceBoxes? _boxes;
         private DropDoor? _door;
-        private OpeningScanRepeat _scanGate;
-        private readonly OpeningScanMemory _scanMemory = new OpeningScanMemory();
+        private readonly OpeningScanMemo _scan = new OpeningScanMemo();
         private bool _parkedAtLimit;
 
         private ApplianceBoxes Boxes => _boxes ??= new ApplianceBoxes(transform, DishwasherBody.ChildName);
@@ -120,7 +119,7 @@ namespace KitchenDesigner.Core
 
         public void OnAttachedFacadeChanged(FacadeElement? oldFacade, FacadeElement? newFacade)
         {
-            ForgetTheScan();
+            _scan.Forget();
             _parkedAtLimit = false;
             enabled = true;
             if (oldFacade != null && oldFacade.IsPassenger) oldFacade.IsPassenger = false;
@@ -201,7 +200,7 @@ namespace KitchenDesigner.Core
         public void SetOpen(bool open)
         {
             _open = open;
-            ForgetTheScan();
+            _scan.Forget();
             _parkedAtLimit = false;
             SyncAttachedFacade();
             if (Door.IsAnimatingTowards(open))
@@ -262,33 +261,22 @@ namespace KitchenDesigner.Core
         public bool IsParkedAtALimit => _parkedAtLimit;
 
         private bool StillBlockedOnThisRevision =>
-            _open
-            && _scanGate.Repeats(SceneRevision.Version, transform.position, transform.rotation,
-                RestExtents)
-            && Mathf.Approximately(Door.Progress, _scanGate.SafeProgress);
+            _open && _scan.StillBlocksAt(ScanKey, Door.Progress);
 
         private float MaxSafeDoorProgress()
         {
-            var t = transform;
-            if (_scanGate.Repeats(SceneRevision.Version, t.position, t.rotation, RestExtents))
-                return _scanGate.SafeProgress;
+            var key = ScanKey;
+            if (_scan.Repeats(key)) return _scan.SafeProgress;
 
             var exclude = new List<KitchenElement>();
             var facade = FindAttachedFacade();
             if (facade != null) exclude.Add(facade);
 
-            _scanGate.Remember(SceneRevision.Version, t.position, t.rotation, RestExtents,
-                OpeningCollision.FindMaxProgress(this, GetOpenBoxes, exclude, memory: _scanMemory));
-            return _scanGate.SafeProgress;
+            return _scan.SafeProgressFor(this, key, GetOpenBoxes, exclude);
         }
 
-        private Vector3 RestExtents => transform.localScale;
-
-        private void ForgetTheScan()
-        {
-            _scanGate.Forget();
-            _scanMemory.Forget();
-        }
+        private OpeningScanKey ScanKey => new OpeningScanKey(SceneRevision.Version,
+            transform.position, transform.rotation, transform.localScale);
 
         public void GetOpenBoxes(float progress, List<OrientedBox> into)
         {

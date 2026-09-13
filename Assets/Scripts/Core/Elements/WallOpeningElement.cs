@@ -32,7 +32,7 @@ namespace KitchenDesigner.Core
         private int _lastPoseVersion;
         private Wall? _attachedWall;
         private Wall? _seatWall;
-        private OpeningScanRepeat _scanGate;
+        private readonly OpeningScanMemo _scan = new OpeningScanMemo();
         private bool _parkedAtLimit;
 
         [Undoable]
@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core
         public void SetOpen(bool open)
         {
             _isOpen = open;
-            _scanGate.Forget();
+            _scan.Forget();
             _parkedAtLimit = false;
             if (!Mathf.Approximately(_openT, open ? 1f : 0f))
             {
@@ -155,30 +155,20 @@ namespace KitchenDesigner.Core
         public bool IsParkedAtALimit => _parkedAtLimit;
 
         private bool StillBlockedOnThisRevision =>
-            _isOpen
-            && _scanGate.Repeats(SceneRevision.Version, transform.position, transform.rotation,
-                RestExtents)
-            && Mathf.Approximately(_openT, _scanGate.SafeProgress);
+            _isOpen && _scan.StillBlocksAt(ScanKey, _openT);
 
-        private Vector3 RestExtents => DimensionsMM;
+        private OpeningScanKey ScanKey => new OpeningScanKey(SceneRevision.Version,
+            transform.position, transform.rotation, DimensionsMM);
 
         private void ForgetTheLimitOfThisShape()
         {
-            _scanGate.Forget();
+            _scan.Forget();
             _parkedAtLimit = false;
             enabled = true;
         }
 
-        private float MaxSafeProgress()
-        {
-            var t = transform;
-            if (_scanGate.Repeats(SceneRevision.Version, t.position, t.rotation, RestExtents))
-                return _scanGate.SafeProgress;
-
-            _scanGate.Remember(SceneRevision.Version, t.position, t.rotation, RestExtents,
-                OpeningCollision.FindMaxProgress(this, GetOpenBoxes));
-            return _scanGate.SafeProgress;
-        }
+        private float MaxSafeProgress() =>
+            _scan.SafeProgressFor(this, ScanKey, GetOpenBoxes);
 
         public void GetOpenBoxes(float progress, List<OrientedBox> into)
         {
