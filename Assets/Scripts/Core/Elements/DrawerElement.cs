@@ -53,7 +53,7 @@ namespace KitchenDesigner.Core
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
         private readonly OpeningScanMemo _scan = new OpeningScanMemo();
-        private bool _parkedAtLimit;
+        private GestureLimitParking _parking;
 
         [Undoable]
         public DrawerSystem System
@@ -334,20 +334,10 @@ namespace KitchenDesigner.Core
         {
             using var _ = PerfMarkers.DrawerStepAnimation.Auto();
             float target = _open ? 1f : 0f;
-            if (Mathf.Approximately(_t, target))
-            {
-                if (_t <= 0f) CaptureClosed();
-                _parkedAtLimit = false;
-                return;
-            }
+            bool reachedTarget = Mathf.Approximately(_t, target);
+            if (reachedTarget && _t <= 0f) CaptureClosed();
 
-            if (StillBlockedOnThisRevision)
-            {
-                _parkedAtLimit = true;
-                return;
-            }
-
-            _parkedAtLimit = false;
+            if (!_parking.RunsThisFrame(reachedTarget, StillBlockedOnThisRevision)) return;
 
             float progressBeforeThisFrame = _t;
             float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
@@ -392,7 +382,7 @@ namespace KitchenDesigner.Core
         private OpeningScanKey ScanKey => new OpeningScanKey(SceneRevision.Version,
             _closedPos, _closedRot, transform.localScale);
 
-        public bool IsParkedAtALimit => _parkedAtLimit;
+        public bool IsParkedAtALimit => _parking.IsParked;
 
         private bool StillBlockedOnThisRevision => _open && _scan.StillBlocksAt(ScanKey, _t);
 
@@ -429,7 +419,7 @@ namespace KitchenDesigner.Core
             if (_t <= 0f && !_open) return;
             _open = false;
             _t = 0f;
-            _parkedAtLimit = false;
+            _parking.Release();
             transform.SetPositionAndRotation(_closedPos, _closedRot);
         }
 

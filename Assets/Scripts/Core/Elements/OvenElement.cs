@@ -37,7 +37,7 @@ namespace KitchenDesigner.Core
         private ApplianceBoxes? _boxes;
         private DropDoor? _door;
         private readonly OpeningScanMemo _scan = new OpeningScanMemo();
-        private bool _parkedAtLimit;
+        private GestureLimitParking _parking;
 
         private ApplianceBoxes Boxes => _boxes ??= new ApplianceBoxes(transform, OvenBody.PartName);
 
@@ -95,7 +95,7 @@ namespace KitchenDesigner.Core
         {
             _open = open;
             _scan.Forget();
-            _parkedAtLimit = false;
+            _parking.Release();
             if (Door.IsAnimatingTowards(open))
             {
                 enabled = true;
@@ -109,7 +109,7 @@ namespace KitchenDesigner.Core
         {
             bool wasOpen = _open;
             _open = false;
-            _parkedAtLimit = false;
+            _parking.Release();
             if (!Door.ForceClose() && !wasOpen) return;
             Door.ApplyPose();
         }
@@ -118,27 +118,18 @@ namespace KitchenDesigner.Core
 
         public void StepDoor(float dt)
         {
-            if (Mathf.Approximately(Door.Progress, _open ? 1f : 0f))
+            bool reachedTarget = Mathf.Approximately(Door.Progress, _open ? 1f : 0f);
+            if (!_parking.RunsThisFrame(reachedTarget, StillBlockedOnThisRevision))
             {
-                _parkedAtLimit = false;
                 enabled = false;
                 return;
             }
-
-            if (StillBlockedOnThisRevision)
-            {
-                _parkedAtLimit = true;
-                enabled = false;
-                return;
-            }
-
-            _parkedAtLimit = false;
 
             if (!Door.Step(dt, _open, MaxSafeDoorProgress)) return;
             Door.ApplyPose();
         }
 
-        public bool IsParkedAtALimit => _parkedAtLimit;
+        public bool IsParkedAtALimit => _parking.IsParked;
 
         private bool StillBlockedOnThisRevision =>
             _open && _scan.StillBlocksAt(ScanKey, Door.Progress);

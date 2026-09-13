@@ -90,7 +90,7 @@ namespace KitchenDesigner.Core
         private ApplianceBoxes? _boxes;
         private DropDoor? _door;
         private readonly OpeningScanMemo _scan = new OpeningScanMemo();
-        private bool _parkedAtLimit;
+        private GestureLimitParking _parking;
 
         private ApplianceBoxes Boxes => _boxes ??= new ApplianceBoxes(transform, DishwasherBody.ChildName);
 
@@ -120,7 +120,7 @@ namespace KitchenDesigner.Core
         public void OnAttachedFacadeChanged(FacadeElement? oldFacade, FacadeElement? newFacade)
         {
             _scan.Forget();
-            _parkedAtLimit = false;
+            _parking.Release();
             enabled = true;
             if (oldFacade != null && oldFacade.IsPassenger) oldFacade.IsPassenger = false;
             if (newFacade != null)
@@ -201,7 +201,7 @@ namespace KitchenDesigner.Core
         {
             _open = open;
             _scan.Forget();
-            _parkedAtLimit = false;
+            _parking.Release();
             SyncAttachedFacade();
             if (Door.IsAnimatingTowards(open))
             {
@@ -219,7 +219,7 @@ namespace KitchenDesigner.Core
 
             bool wasOpen = _open;
             _open = false;
-            _parkedAtLimit = false;
+            _parking.Release();
             if (!Door.ForceClose() && !wasOpen) return;
             ApplyDoorPose();
         }
@@ -238,27 +238,18 @@ namespace KitchenDesigner.Core
 
         public void StepDoor(float dt)
         {
-            if (Mathf.Approximately(Door.Progress, _open ? 1f : 0f))
+            bool reachedTarget = Mathf.Approximately(Door.Progress, _open ? 1f : 0f);
+            if (!_parking.RunsThisFrame(reachedTarget, StillBlockedOnThisRevision))
             {
-                _parkedAtLimit = false;
                 enabled = false;
                 return;
             }
-
-            if (StillBlockedOnThisRevision)
-            {
-                _parkedAtLimit = true;
-                enabled = false;
-                return;
-            }
-
-            _parkedAtLimit = false;
 
             if (!Door.Step(dt, _open, MaxSafeDoorProgress)) return;
             ApplyDoorPose();
         }
 
-        public bool IsParkedAtALimit => _parkedAtLimit;
+        public bool IsParkedAtALimit => _parking.IsParked;
 
         private bool StillBlockedOnThisRevision =>
             _open && _scan.StillBlocksAt(ScanKey, Door.Progress);

@@ -105,7 +105,7 @@ namespace KitchenDesigner.Core
         private Vector3 _closedPos;
         private Quaternion _closedRot = Quaternion.identity;
         private readonly OpeningScanMemo _scan = new OpeningScanMemo();
-        private bool _parkedAtLimit;
+        private GestureLimitParking _parking;
         private readonly System.Collections.Generic.List<KitchenElement> _ridersOfThisGesture =
             new System.Collections.Generic.List<KitchenElement>();
         private int _ridersRevision = -1;
@@ -177,7 +177,7 @@ namespace KitchenDesigner.Core
             _openTarget = false;
             _doorProgress = 0f;
             ForgetTheRidersOfThisGesture();
-            _parkedAtLimit = false;
+            _parking.Release();
             enabled = false;
             transform.SetPositionAndRotation(_closedPos, _closedRot);
 
@@ -204,7 +204,7 @@ namespace KitchenDesigner.Core
         {
             if (_isPassenger)
             {
-                _parkedAtLimit = false;
+                _parking.Release();
                 enabled = false;
                 return;
             }
@@ -212,23 +212,18 @@ namespace KitchenDesigner.Core
             using var _ = PerfMarkers.FacadeStepDoor.Auto();
 
             float target = _openTarget ? 1f : 0f;
-            if (Mathf.Approximately(_doorProgress, target))
+            bool reachedTarget = Mathf.Approximately(_doorProgress, target);
+            if (reachedTarget)
             {
                 if (_doorProgress <= 0f) CaptureClosed();
                 ForgetTheRidersOfThisGesture();
-                _parkedAtLimit = false;
-                enabled = false;
-                return;
             }
 
-            if (StillBlockedOnThisRevision)
+            if (!_parking.RunsThisFrame(reachedTarget, StillBlockedOnThisRevision))
             {
-                _parkedAtLimit = true;
                 enabled = false;
                 return;
             }
-
-            _parkedAtLimit = false;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _activeStepDoors++;
@@ -295,7 +290,7 @@ namespace KitchenDesigner.Core
         private OpeningScanKey ScanKey => new OpeningScanKey(SceneRevision.Version,
             _closedPos, _closedRot, transform.localScale);
 
-        public bool IsParkedAtALimit => _parkedAtLimit;
+        public bool IsParkedAtALimit => _parking.IsParked;
 
         private bool StillBlockedOnThisRevision =>
             _openTarget && _scan.StillBlocksAt(ScanKey, _doorProgress);
@@ -328,7 +323,7 @@ namespace KitchenDesigner.Core
             _closedPos = Vector3.zero;
             _closedRot = Quaternion.identity;
             _scan.Forget();
-            _parkedAtLimit = false;
+            _parking.Release();
             ForgetTheRidersOfThisGesture();
             enabled = true;
         }

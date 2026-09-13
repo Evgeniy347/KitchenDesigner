@@ -564,4 +564,20 @@ public class IdleUpdateSleepPerfGuardTests : ElementTestBase
         AssertItParksAndWakesItself(door, door.StepDoor, () => door.DoorProgress,
             () => door.IsParkedAtALimit, door.GetOpenBoxes, "дверь");
     }
+
+    /// <summary>Шестой и последний носитель парковки. Проверка здесь не «ещё один тип за
+    /// компанию»: парковка переехала в общий <c>GestureLimitParking</c>, и обратный вход
+    /// обязан быть у КАЖДОГО из шести, иначе собранный тип держит пятерых, а шестого
+    /// усыпляет навсегда. Ровно так однажды и разъехалась память скана: три носителя из
+    /// шести тихо жили без неё.</summary>
+    [Test]
+    public void DishwasherElement_BlockedDoor_ParksItsUpdate_AndWakesItself()
+    {
+        var dw = Spawn<DishwasherElement>(
+            () => ElementFactory.CreateDishwasher("Посудомойка", Vector3.zero));
+        dw.SetOpen(true);
+
+        AssertItParksAndWakesItself(dw, dw.StepDoor, () => dw.DoorProgress,
+            () => dw.IsParkedAtALimit, dw.GetOpenBoxes, "посудомойка");
+    }
 }

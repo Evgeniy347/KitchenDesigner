@@ -33,7 +33,7 @@ namespace KitchenDesigner.Core
         private Wall? _attachedWall;
         private Wall? _seatWall;
         private readonly OpeningScanMemo _scan = new OpeningScanMemo();
-        private bool _parkedAtLimit;
+        private GestureLimitParking _parking;
 
         [Undoable]
         public DoorMode Mode
@@ -83,7 +83,7 @@ namespace KitchenDesigner.Core
         {
             _isOpen = open;
             _scan.Forget();
-            _parkedAtLimit = false;
+            _parking.Release();
             if (!Mathf.Approximately(_openT, open ? 1f : 0f))
             {
                 enabled = true;
@@ -98,7 +98,7 @@ namespace KitchenDesigner.Core
             if (_openT <= 0f && !_isOpen) return;
             _isOpen = false;
             _openT = 0f;
-            _parkedAtLimit = false;
+            _parking.Release();
             ApplyDoorPose();
         }
 
@@ -124,21 +124,12 @@ namespace KitchenDesigner.Core
         public void StepDoor(float dt)
         {
             float target = _isOpen ? 1f : 0f;
-            if (Mathf.Approximately(_openT, target))
+            bool reachedTarget = Mathf.Approximately(_openT, target);
+            if (!_parking.RunsThisFrame(reachedTarget, StillBlockedOnThisRevision))
             {
-                _parkedAtLimit = false;
                 enabled = false;
                 return;
             }
-
-            if (StillBlockedOnThisRevision)
-            {
-                _parkedAtLimit = true;
-                enabled = false;
-                return;
-            }
-
-            _parkedAtLimit = false;
 
             float step = OpenSeconds > 0f ? dt / OpenSeconds : 1f;
             _openT = Mathf.MoveTowards(_openT, target, step);
@@ -152,7 +143,7 @@ namespace KitchenDesigner.Core
             ApplyDoorPose();
         }
 
-        public bool IsParkedAtALimit => _parkedAtLimit;
+        public bool IsParkedAtALimit => _parking.IsParked;
 
         private bool StillBlockedOnThisRevision =>
             _isOpen && _scan.StillBlocksAt(ScanKey, _openT);
@@ -163,7 +154,7 @@ namespace KitchenDesigner.Core
         private void ForgetTheLimitOfThisShape()
         {
             _scan.Forget();
-            _parkedAtLimit = false;
+            _parking.Release();
             enabled = true;
         }
 
