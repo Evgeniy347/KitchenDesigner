@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
@@ -22,16 +23,27 @@ using KitchenDesigner.Core.UI;
 /// до следующего чужого изменения — молчаливая ложь, которая хуже лишнего обхода.
 /// Поэтому имена читаются каждый опрос, но БЕЗ копии реестра.</para>
 ///
+/// <para>Вторая болезнь, найденная тем же прибором и тремя дампами пользователя: КАЖДЫЙ
+/// клик по детали стоил 72,4–77,6 мс, и все они уходили в этой панели —
+/// <c>OnSceneSelectionChanged</c> сносил и строил заново ВСЕ строки дерева ради того,
+/// чтобы перекрасить одну. Прочие слушатели выделения стоили нули, а цена панели не
+/// зависела от числа выделенных рендереров (1, 8, 9, 11) — она платила за весь список.
+/// Отсюда второй счётчик: число ПОСТРОЕННЫХ СТРОК.</para>
+///
 /// <para>Обратные входы ниже — по одному на способ изменить состав дерева: добавили,
-/// удалили, переименовали, перенесли в группу, переименовали группу, прикрепили фасад.
-/// Без них «ноль перестроений» читалось бы как «панель мертва».</para></summary>
+/// удалили, переименовали, перенесли в группу, переименовали группу, прикрепили фасад,
+/// выделили деталь в свёрнутой группе. Без них «ноль перестроений» читалось бы как
+/// «панель мертва».</para></summary>
 public class HierarchyPanelPollWorkTests
 {
     private const int QuietPolls = 20;
 
     private GameObject _canvasGo = null!;
     private GameObject _panelHost = null!;
+    private GameObject _selectionGo = null!;
     private HierarchyPanelUI _panel = null!;
+    private SelectionManager _selection = null!;
+    private SelectionManager? _selectionBefore;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     [SetUp]
@@ -44,10 +56,16 @@ public class HierarchyPanelPollWorkTests
         _canvasGo = new GameObject("Canvas");
         _canvasGo.AddComponent<Canvas>();
 
+        _selectionBefore = SelectionManager.Instance;
+        _selectionGo = new GameObject("Selection");
+        _selection = _selectionGo.AddComponent<SelectionManager>();
+        SelectionManager.Instance = _selection;
+
         _panelHost = new GameObject("HierarchyPanelHost");
         _panel = _panelHost.AddComponent<HierarchyPanelUI>();
         _panel.Build(_canvasGo.transform);
         HierarchyPanelUI.TakeRebuilds();
+        HierarchyPanelUI.TakeRowsBuilt();
     }
 
     [TearDown]
@@ -55,6 +73,8 @@ public class HierarchyPanelPollWorkTests
     {
         if (_panelHost != null) Object.DestroyImmediate(_panelHost);
         if (_canvasGo != null) Object.DestroyImmediate(_canvasGo);
+        if (_selectionGo != null) Object.DestroyImmediate(_selectionGo);
+        SelectionManager.Instance = _selectionBefore;
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -62,11 +82,15 @@ public class HierarchyPanelPollWorkTests
         GroupManager.Clear();
         ProjectWindows.Clear();
         HierarchyPanelUI.TakeRebuilds();
+        HierarchyPanelUI.TakeRowsBuilt();
     }
 
+    /// <summary>Куб, а не пустой <c>GameObject</c>: выделение красит РЕНДЕРЕР, и деталь
+    /// без него проверяла бы путь, которого у пользователя нет.</summary>
     private KitchenElement MakeElement(string name)
     {
-        var go = new GameObject(name);
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = name;
         var element = go.AddComponent<KitchenElement>();
         element.PartName = name;
         element.DimensionsMM = new Vector3Int(600, 400, 18);
@@ -130,7 +154,21 @@ public class HierarchyPanelPollWorkTests
         _panel.SetVisible(true);
         _panel.PollSceneForChanges();
         HierarchyPanelUI.TakeRebuilds();
+        HierarchyPanelUI.TakeRowsBuilt();
     }
+
+    private Color TintOf(string label)
+    {
+        foreach (Transform row in Content)
+        {
+            if (LabelOf(row) != label) continue;
+            var image = row.Find("Main").GetComponent<Image>();
+            if (image != null) return image.color;
+        }
+        return Color.clear;
+    }
+
+    private bool IsPainted(string label) => TintOf(label) == UIStyle.RowSelected;
 
     /// <summary>Главный сенсор: сцена стоит на месте — опрос обязан быть даровым.</summary>
     [Test]
@@ -271,6 +309,107 @@ public class HierarchyPanelPollWorkTests
 
         Assert.IsTrue(HasRowNamed("Пенал"), "группа обязана показаться под новым именем");
         Assert.IsFalse(HasRowNamed("Шкаф"), "и не остаться под старым");
+    }
+
+    /// <summary>Главный сенсор ВТОРОЙ болезни, найденной прибором: клик по детали стоил
+    /// 72,4–77,6 мс (три дампа, 15 кадров) — это <c>OnSceneSelectionChanged</c> сносил и
+    /// строил заново ВСЕ строки дерева ради того, чтобы перекрасить одну. Цена не зависела
+    /// от числа выделенных рендереров (1, 8, 9, 11) — панель платила за весь список.
+    /// Выделение не меняет состав дерева, поэтому строк обязано строиться НОЛЬ.</summary>
+    [Test]
+    public void SelectionChanged_RepaintsTheRows_WithoutBuildingASingleOne()
+    {
+        var shelf = MakeElement("Полка");
+        var side = MakeElement("Боковина");
+        _selection.Select(shelf);
+        ShowAndSettle();
+        Assume.That(IsPainted("Полка"), Is.True, "предпосылка: выделенная строка покрашена");
+
+        _selection.Select(side);
+
+        int rows = HierarchyPanelUI.TakeRowsBuilt();
+        int rebuilds = HierarchyPanelUI.TakeRebuilds();
+        TestContext.WriteLine($"смена выделения: строк построено {rows}, перестроений {rebuilds}");
+
+        Assert.AreEqual(0, rows,
+            "смена выделения не меняет состав дерева: строить заново нечего. Число, равное "
+            + "числу строк списка, и есть те самые 75 мс на каждый клик — снос и постройка "
+            + "всех GameObject строки ради одной перекраски");
+        Assert.AreEqual(0, rebuilds, "и ни одного перестроения");
+
+        Assert.IsTrue(IsPainted("Боковина"),
+            "но перекраска обязана состояться: выделение переехало на другую строку");
+        Assert.IsFalse(IsPainted("Полка"),
+            "а со старой — сойти, иначе в дереве окажутся два выделения");
+    }
+
+    /// <summary>Обратный вход к нулям выше: если вместе с выделением изменился и состав,
+    /// дерево обязано перестроиться В ТОТ ЖЕ КАДР, а не ждать опроса. Так и создаётся
+    /// новая деталь — её регистрируют и тут же выделяют.</summary>
+    [Test]
+    public void SelectionChanged_AfterTheSceneGrew_RebuildsRightAway()
+    {
+        MakeElement("Полка");
+        ShowAndSettle();
+
+        var fresh = MakeElement("Боковина");
+        _selection.Select(fresh);
+
+        Assert.Greater(HierarchyPanelUI.TakeRowsBuilt(), 0,
+            "новая деталь появилась и сразу выделена — перекраской тут не обойтись");
+        Assert.Contains("Боковина", RowLabels(),
+            "и показать её обязано немедленно: ждать полсекунды до следующего опроса — "
+            + "значит полсекунды показывать неправду");
+        Assert.IsTrue(IsPainted("Боковина"), "и сразу выделенной");
+    }
+
+    /// <summary>Второй обратный вход: выделение детали внутри свёрнутой группы
+    /// РАСКРЫВАЕТ её, то есть меняет видимый состав — тут перестроение обязательно.</summary>
+    [Test]
+    public void SelectionInsideACollapsedGroup_ExpandsIt_AndRebuilds()
+    {
+        var shelf = MakeElement("Полка");
+        var group = GroupManager.Create("Шкаф");
+        GroupManager.MoveTo(shelf, group);
+        _panel.SetVisible(true);
+        _panel.ToggleCollapse(group.id);
+        Assume.That(RowLabels(), Has.No.Member("Полка"),
+            "предпосылка: группа свёрнута и строки детали в дереве нет");
+        HierarchyPanelUI.TakeRebuilds();
+        HierarchyPanelUI.TakeRowsBuilt();
+
+        _selection.Select(shelf);
+
+        Assert.Greater(HierarchyPanelUI.TakeRowsBuilt(), 0,
+            "раскрытие группы меняет видимый состав дерева — одной перекраской не обойтись");
+        Assert.Contains("Полка", RowLabels(),
+            "выделенная деталь обязана стать видимой: выделение, спрятанное в свёрнутой "
+            + "группе, пользователю не показывает ничего");
+    }
+
+    /// <summary>Скрытая панель не платит вовсе — а показанная показывает правду: до
+    /// починки спрятанное окно «Сцена» тратило те же 75 мс на каждый клик.</summary>
+    [Test]
+    public void SelectionChanged_WhileHidden_CostsNothing_AndTheTreeIsTrueWhenShownAgain()
+    {
+        var shelf = MakeElement("Полка");
+        var side = MakeElement("Боковина");
+        ShowAndSettle();
+        _panel.SetVisible(false);
+        HierarchyPanelUI.TakeRebuilds();
+        HierarchyPanelUI.TakeRowsBuilt();
+
+        _selection.Select(shelf);
+        _selection.Select(side);
+
+        Assert.AreEqual(0, HierarchyPanelUI.TakeRowsBuilt(),
+            "скрытое окно не показывает ничего, значит и строить ему нечего");
+
+        _panel.SetVisible(true);
+
+        Assert.IsTrue(IsPainted("Боковина"),
+            "а по возвращении обязано показать ТЕКУЩЕЕ выделение, а не то, на котором его "
+            + "спрятали: экономия, пережившая показ, превращается в ложь");
     }
 
     /// <summary>Третье слагаемое отпечатка — прикреплённый фасад: он уезжает из

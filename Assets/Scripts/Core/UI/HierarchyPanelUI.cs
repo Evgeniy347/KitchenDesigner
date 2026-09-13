@@ -45,12 +45,22 @@ namespace KitchenDesigner.Core.UI
         private int _fingerprint;
         private bool _ignoreDropdownCallback;
 
+        private readonly HierarchyRowHighlights _highlights = new HierarchyRowHighlights();
+
         private static int _rebuilds;
+        private static int _rowsBuilt;
 
         internal static int TakeRebuilds()
         {
             int n = _rebuilds;
             _rebuilds = 0;
+            return n;
+        }
+
+        internal static int TakeRowsBuilt()
+        {
+            int n = _rowsBuilt;
+            _rowsBuilt = 0;
             return n;
         }
 
@@ -218,17 +228,24 @@ namespace KitchenDesigner.Core.UI
 
         private void OnSceneSelectionChanged(KitchenElement? selected)
         {
-            ExpandGroupsOfSelectedElements();
-            Refresh();
+            bool expanded = ExpandGroupsOfSelectedElements();
+            if (_root == null || !_root.activeSelf) return;
+            if (expanded) { Refresh(); return; }
+
+            int fingerprint = ComputeFingerprint();
+            if (fingerprint != _fingerprint) RebuildRows(fingerprint);
+            else _highlights.Repaint(SelectionManager.Instance);
         }
 
-        private void ExpandGroupsOfSelectedElements()
+        private bool ExpandGroupsOfSelectedElements()
         {
             var sel = SelectionManager.Instance;
-            if (sel == null) return;
+            if (sel == null) return false;
+            bool expanded = false;
             foreach (var e in sel.SelectedElements)
-                if (e != null && e.GroupId != 0)
-                    _collapsed.Remove(e.GroupId);
+                if (e != null && e.GroupId != 0 && _collapsed.Remove(e.GroupId))
+                    expanded = true;
+            return expanded;
         }
 
         public bool IsVisible => _root != null && _root.activeSelf;
@@ -250,6 +267,7 @@ namespace KitchenDesigner.Core.UI
             if (_content == null) return;
             _fingerprint = fingerprint;
             _rebuilds++;
+            _highlights.Forget();
 
             for (int i = _content.childCount - 1; i >= 0; i--)
                 DestroyNow.The(_content.GetChild(i).gameObject);
@@ -320,7 +338,6 @@ namespace KitchenDesigner.Core.UI
 
             string label;
             Color rowColor;
-            bool highlighted = false;
 
             if (node.isRoot)
             {
@@ -329,17 +346,13 @@ namespace KitchenDesigner.Core.UI
             }
             else if (node.group != null)
             {
-                int count = GroupManager.MembersOf(node.group).Count;
-                label = $"{node.group.name} ({count})";
+                label = $"{node.group.name} ({GroupManager.MembersOf(node.group).Count})";
                 rowColor = RowGroupColor;
-                highlighted = sel != null && count > 0 && AllSelected(sel, node.group);
             }
             else
             {
-                var el = node.element!;
-                label = el.PartName;
+                label = node.element!.PartName;
                 rowColor = RowElementColor;
-                highlighted = sel != null && sel.IsSelected(el);
             }
 
             var mainBtn = UIFactory.CreateButton("Main", row, "", Vector2.zero, new Vector2(mainW, RowH),
@@ -347,7 +360,10 @@ namespace KitchenDesigner.Core.UI
             var mRt = mainBtn.GetComponent<RectTransform>();
             mRt.anchorMin = mRt.anchorMax = mRt.pivot = new Vector2(0, 0.5f);
             mRt.anchoredPosition = new Vector2(mainX, 0);
-            mainBtn.GetComponent<Image>().color = highlighted ? UIStyle.RowSelected : rowColor;
+            var tint = mainBtn.GetComponent<Image>();
+            tint.color = HierarchyRowHighlights.Highlighted(node, sel) ? UIStyle.RowSelected : rowColor;
+            _highlights.Remember(tint, node, rowColor);
+            _rowsBuilt++;
 
             var text = mainBtn.GetComponentInChildren<TMP_Text>();
             if (text != null)
@@ -369,13 +385,6 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
-        private static bool AllSelected(SelectionManager sel, LinkGroup g)
-        {
-            foreach (var m in GroupManager.MembersOf(g))
-                if (!sel.IsSelected(m)) return false;
-            return true;
-        }
-
         private void OpenGroupMenu(LinkGroup g)
         {
             var members = GroupManager.MembersOf(g);
@@ -389,7 +398,7 @@ namespace KitchenDesigner.Core.UI
             if (GroupMenuUI.Instance != null) GroupMenuUI.Instance.Open(members[0]);
         }
 
-        private void ToggleCollapse(int groupId)
+        internal void ToggleCollapse(int groupId)
         {
             if (!_collapsed.Remove(groupId))
                 _collapsed.Add(groupId);
