@@ -57,10 +57,19 @@ edit→check cycle while answering a question nobody was asking at that moment.
 
 | What | Cost | Run it with |
 |------|------|-------------|
-| `SnapMutationTests` — brute-force sweep over every face pair | **335 s** (79 s before the port-seat rule; was 69% of all EditMode) | `unity.ps1 tests -Platform EditMode -Filter SnapMutationTests` |
+| `SnapMutationTests` — свип по парам граней, ВЫБОРКА по 4 детали каждого типа | ~100 с (полный перебор — KD_SNAP_SWEEP_ALL=1, ~430 с, **только по согласованию с пользователем**) | `unity.ps1 tests -Platform EditMode -Filter SnapMutationTests` |
 | `PerfProfileTests` — 660 profiler frames | **72 s** | `tools\artifacts.ps1 -Only perf` |
 | `ProjectLoadPerfTests` — разбивка времени открытия проекта | **12 s** | `unity.ps1 tests -Platform EditMode -Filter ProjectLoadPerfTests` |
 | `DrawerAnimationGifTests`, `OverviewScreenshotTests`, `GapsScreenshotTests` — draw `docs/*.png`, `docs/*.gif` | **88 s** | `tools\artifacts.ps1` |
+
+Выборка стратифицирована по типу (`ElementTypeId.Of`), так что ни один тип не выпадает целиком:
+34 типа, 13 из них дают по 4 детали, остальные — сколько есть, итого ~19 % подвижных деталей.
+Соседом каждой пары остаётся ВСЯ сцена — сокращено, кого двигаем, а не что утверждается.
+**Семя печатается ВСЕГДА, и в зелёном прогоне тоже** — случайная выборка без напечатанного семени
+невоспроизводима: следующий прогон возьмёт другую четвёрку, и падение исчезнет, не будучи
+починенным. Повтор — переменная `KD_SNAP_SWEEP_SEED` со значением из падения; прицельно по именам,
+секунды вместо минут — `KD_SNAP_SWEEP_PARTS` со списком имён через запятую. Сводка падения печатает
+обе команды готовыми.
 
 - **`SnapMutationTests` before any real change to `SnapSystem`/`ResizeSnap`.** The sweep
   finds holes no point test sees; skipping it there is how «растягивается, но не
