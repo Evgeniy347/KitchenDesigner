@@ -32,7 +32,20 @@ using KitchenDesigner.Core;
 /// маска, которую забыли посчитать, — это подложка, нарисованная там, где её не
 /// видно, и кромка на голом торце, и никакой счётчик обходов этого не покажет.
 /// Направление маски (бит стоит там, где торец БЕЗ кромки) записано в
-/// <see cref="EdgeSubstrateSyncOfOnePartTests"/>.</summary>
+/// <see cref="EdgeSubstrateSyncOfOnePartTests"/>.
+///
+/// И ещё одна посылка, которая уже подвела эту фикстуру на полном прогоне:
+/// **кромка у доски включена ПО УМОЛЧАНИЮ** (<c>PartData._edgeBanding = true</c>).
+/// Деталь, у которой кромку не сняли ЯВНО, — это обычный лист, он честно
+/// откладывается, и тест «деталь без кромки не платит» меряет тогда не отсев, а
+/// цену самой области. Поэтому такую деталь строит <c>AnUnbandedBoardAt</c>,
+/// который снимает кромку и тут же это проверяет: смена умолчания обязана
+/// падать словами про умолчание, а не изображать дефект отсева.
+///
+/// Цена области и цена детали здесь разведены тремя отдельными входами: область
+/// из одних лишь деталей без кромки не стоит НИ ОДНОГО прохода; область из
+/// листов стоит ровно один; добавление детали без кромки в такую область не
+/// добавляет обхода.</summary>
 public class EdgeSubstratePostponedSyncTests : ElementTestBase
 {
     private const int SceneSize = 12;
@@ -152,12 +165,23 @@ public class EdgeSubstratePostponedSyncTests : ElementTestBase
             "проход обязан быть один и на закрытии ВНЕШНЕЙ области");
     }
 
+    private KitchenElement AnUnbandedBoardAt(float x)
+    {
+        var board = MakePrimitiveElement("Plain" + x, new Vector3Int(600, 720, 18),
+            new Vector3(x, 0.36f, 0f));
+        board.EdgeBandingEnabled = false;
+        Assert.IsFalse(board.EdgeBandingEnabled,
+            "кромка у доски включена ПО УМОЛЧАНИЮ (PartData._edgeBanding = true), и фикстура "
+            + "обязана снять её явно: деталь, у которой кромка осталась, — обычный лист, "
+            + "который честно откладывается, и тест про отсев меряет тогда цену области");
+        return board;
+    }
+
     [Test]
     public void APartThatNeedsNoScene_IsAnsweredInsideTheScope_WithoutAWalk()
     {
         ARowOfBandedBoards(SceneSize);
-        var unbanded = MakePrimitiveElement("Plain", new Vector3Int(600, 720, 18),
-            new Vector3(-2f, 0.36f, 0f));
+        var unbanded = AnUnbandedBoardAt(-2f);
 
         long mark = SceneScanCounter.Scans;
         using (EdgeSubstrate.PostponeToOnePass()) EdgeSubstrate.Sync(unbanded);
@@ -166,6 +190,42 @@ public class EdgeSubstratePostponedSyncTests : ElementTestBase
         Assert.AreEqual(0, walks, "детали без кромки сцена не нужна ни внутри области, ни вне её");
         Assert.AreEqual(4, BitsIn(unbanded.BareFaceMask),
             "без кромки голы все четыре торца, и ответ этот известен сразу");
+    }
+
+    [Test]
+    public void AScopeOfPartsThatNeedNoScene_CostsNoPassAtAll()
+    {
+        ARowOfBandedBoards(SceneSize);
+        var plain = new List<KitchenElement>();
+        for (int i = 0; i < 6; i++) plain.Add(AnUnbandedBoardAt(-2f - i));
+
+        long mark = SceneScanCounter.Scans;
+        using (EdgeSubstrate.PostponeToOnePass())
+            foreach (var board in plain) EdgeSubstrate.Sync(board);
+
+        Assert.AreEqual(0, SceneScanCounter.Scans - mark,
+            "откладывать было нечего — проход на закрытии области не за чем: "
+            + $"обошёл сцену [{SceneScanCounter.Since(mark)}]");
+    }
+
+    [Test]
+    public void APartThatNeedsNoScene_AddsNoWalk_ToABatchThatDoesNeedOne()
+    {
+        var all = ARowOfBandedBoards(SceneSize);
+        var plain = AnUnbandedBoardAt(-2f);
+
+        long mark = SceneScanCounter.Scans;
+        using (EdgeSubstrate.PostponeToOnePass())
+        {
+            foreach (var board in all) EdgeSubstrate.Sync(board);
+            EdgeSubstrate.Sync(plain);
+        }
+
+        Assert.AreEqual(1, SceneScanCounter.Scans - mark,
+            "область стоит один проход независимо от состава, и деталь без кромки "
+            + "не платит ЗА СЕБЯ: с ней обходов столько же, сколько без неё");
+        Assert.AreEqual(4, BitsIn(plain.BareFaceMask),
+            "и ответ ей выдан сразу, а не отложен до прохода");
     }
 
     [Test]
