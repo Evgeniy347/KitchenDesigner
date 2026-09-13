@@ -38,6 +38,8 @@ namespace KitchenDesigner.Core
 
         private void Update()
         {
+            using var _ = PerfMarkers.SelectionUpdate.Auto();
+
             if (PlacementController.IsActive)
                 return;
 
@@ -95,6 +97,9 @@ namespace KitchenDesigner.Core
 
         public void HandleClickOnElement(KitchenElement? element, bool ctrlHeld)
         {
+            using var marker = PerfMarkers.SelectionHandleClick.Auto();
+            using var once = OneNotificationPerGesture();
+
             _collapseCandidate = null;
 
             var group = element != null ? GroupManager.GroupOf(element) : null;
@@ -184,6 +189,8 @@ namespace KitchenDesigner.Core
 
         private KitchenElement? ResolveClickTarget(Vector3 screenPoint, bool shiftHeld)
         {
+            using var _ = PerfMarkers.SelectionResolveClickTarget.Auto();
+
             Ray ray = Camera.main.ScreenPointToRay(screenPoint);
             return RaycastTransparentAware(ray, shiftHeld);
         }
@@ -240,21 +247,62 @@ namespace KitchenDesigner.Core
             return PickElementFromOrderedColliders(cols, shiftHeld);
         }
 
+        private int _gestureDepth;
+        private bool _notificationOwed;
+
+        private OneNotification OneNotificationPerGesture() => new OneNotification(this);
+
+        private readonly struct OneNotification : System.IDisposable
+        {
+            private readonly SelectionManager _owner;
+
+            public OneNotification(SelectionManager owner)
+            {
+                _owner = owner;
+                owner._gestureDepth++;
+            }
+
+            public void Dispose()
+            {
+                if (--_owner._gestureDepth > 0) return;
+                if (!_owner._notificationOwed) return;
+                _owner._notificationOwed = false;
+                _owner.NotifySelectionChanged(_owner._selected);
+            }
+        }
+
+        private void NotifySelectionChanged(KitchenElement? selected)
+        {
+            if (_gestureDepth > 0)
+            {
+                _notificationOwed = true;
+                return;
+            }
+
+            using var _ = PerfMarkers.SelectionNotifyListeners.Auto();
+            SelectionWorkLog.Note(SelectionWork.ListenersNotified);
+            ListenerCost.Dispatch<KitchenElement>(OnSelectionChanged, selected);
+        }
+
         public void Select(KitchenElement element)
         {
             if (_selected == element)
                 return;
+
+            using var once = OneNotificationPerGesture();
 
             DeselectAll();
 
             _selected = element;
             _selectedElements.Add(element);
             HighlightSelected(element, true);
-            OnSelectionChanged?.Invoke(_selected);
+            NotifySelectionChanged(_selected);
         }
 
         public void ToggleInSelection(KitchenElement element)
         {
+            using var once = OneNotificationPerGesture();
+
             if (_selectedElements.Contains(element))
             {
                 _selectedElements.Remove(element);
@@ -272,11 +320,13 @@ namespace KitchenDesigner.Core
                 _selected = element;
             }
 
-            OnSelectionChanged?.Invoke(_selected);
+            NotifySelectionChanged(_selected);
         }
 
         public void SelectOnly(IList<KitchenElement> elements)
         {
+            using var once = OneNotificationPerGesture();
+
             DeselectAll();
             if (elements == null) return;
             foreach (var e in elements)
@@ -287,29 +337,44 @@ namespace KitchenDesigner.Core
         {
             if (_selectedElements.Contains(element)) return;
 
+            using var once = OneNotificationPerGesture();
+
             if (_selectedElements.Count == 0)
                 _selected = element;
 
             _selectedElements.Add(element);
             HighlightSelected(element, true);
-            OnSelectionChanged?.Invoke(_selected);
+            NotifySelectionChanged(_selected);
         }
 
         public void DeselectAll()
         {
             if (_selectedElements.Count == 0) return;
 
+            using var once = OneNotificationPerGesture();
+
             var toRestore = new List<KitchenElement>(_selectedElements);
             _selectedElements.Clear();
             _selected = null;
 
-            foreach (var e in toRestore)
+            RestoreEvery(toRestore);
+
+            NotifySelectionChanged(null);
+        }
+
+        private void RestoreEvery(List<KitchenElement> elements)
+        {
+            if (elements.Count <= 1)
             {
-                if (e != null)
-                    RestoreMaterial(e);
+                foreach (var e in elements)
+                    if (e != null) RestoreMaterial(e);
+                return;
             }
 
-            OnSelectionChanged?.Invoke(null);
+            using var batch = HighlightBatch.Open();
+            SelectionWorkLog.Note(SelectionWork.SceneValidationAsked);
+            foreach (var e in elements)
+                if (e != null) RestoreMaterial(e);
         }
 
         public void Deselect()
@@ -321,12 +386,14 @@ namespace KitchenDesigner.Core
                 return;
             }
 
+            using var once = OneNotificationPerGesture();
+
             _selectedElements.Remove(_selected);
             RestoreMaterial(_selected);
             _selected = _selectedElements.Count > 0
                 ? _selectedElements[_selectedElements.Count - 1]
                 : null;
-            OnSelectionChanged?.Invoke(_selected);
+            NotifySelectionChanged(_selected);
         }
 
         public bool IsSelected(KitchenElement element)
@@ -361,6 +428,8 @@ namespace KitchenDesigner.Core
 
         private void HighlightSelected(KitchenElement element, bool isMulti)
         {
+            using var _ = PerfMarkers.SelectionHighlight.Auto();
+
             if (_highlightSuppressed == element) return;
             if (PhotoMode.Active) return;
 
@@ -379,7 +448,9 @@ namespace KitchenDesigner.Core
                     var seeThrough = ElementHighlighter.MakeTransparent(
                         entry.material.shader, new Color(1f, 0.9f, 0.4f, 0.12f));
                     seeThrough.name = TintMaterialName;
+                    SelectionWorkLog.Note(SelectionWork.TintCreated);
                     entry.renderer.material = seeThrough;
+                    SelectionWorkLog.Note(SelectionWork.RendererPainted);
                     entry.painted = seeThrough;
                 }
                 ElementOutline.Ensure(element)!.Show(selected: true);
@@ -391,6 +462,7 @@ namespace KitchenDesigner.Core
             {
                 if (entry.renderer == null || entry.material == null) continue;
                 var mat = new Material(entry.material);
+                SelectionWorkLog.Note(SelectionWork.TintCreated);
                 mat.name = TintMaterialName;
                 mat.EnableKeyword("_EMISSION");
                 mat.SetColor("_EmissionColor", new Color(0.8f, 0.7f, 0.1f) * intensity);
@@ -398,6 +470,7 @@ namespace KitchenDesigner.Core
                     ? new Color(1f, 0.97f, 0.7f, 1f)
                     : new Color(1f, 0.95f, 0.6f, 1f));
                 entry.renderer.material = mat;
+                SelectionWorkLog.Note(SelectionWork.RendererPainted);
                 entry.painted = mat;
             }
         }
@@ -445,6 +518,8 @@ namespace KitchenDesigner.Core
 
         private void RestoreMaterial(KitchenElement element)
         {
+            using var _ = PerfMarkers.SelectionRestoreMaterial.Auto();
+
             if (_savedMaterials.TryGetValue(element, out var saved))
             {
                 foreach (var entry in saved)
@@ -453,6 +528,7 @@ namespace KitchenDesigner.Core
                     if (entry.painted != null && !WearsOurTint(entry.renderer, entry.painted))
                         continue;
                     entry.renderer.material = entry.material;
+                    SelectionWorkLog.Note(SelectionWork.RendererPainted);
                 }
             }
             _savedMaterials.Remove(element);
@@ -460,8 +536,21 @@ namespace KitchenDesigner.Core
             if (_highlightSuppressed == element && !_selectedElements.Contains(element))
                 _highlightSuppressed = null;
 
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.ApplyForElement(element);
+            RepaintValidity(element);
+        }
+
+        private static void RepaintValidity(KitchenElement element)
+        {
+            if (HighlightBatch.Suspended)
+            {
+                HighlightBatch.Defer();
+                return;
+            }
+
+            SelectionWorkLog.Note(SelectionWork.SceneValidationAsked);
+
+            var highlighter = ElementHighlighter.Instance;
+            if (highlighter != null) highlighter.ApplyForElement(element);
         }
     }
 }

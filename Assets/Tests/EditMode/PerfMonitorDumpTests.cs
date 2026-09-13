@@ -9,6 +9,40 @@ public class PerfMonitorDumpTests
 {
     private const int FramesPerSecondAssumedForBudgets = 60;
 
+    /// <summary>Строка медленного кадра — единственное место, где подписчик выделения может
+    /// назвать себя по имени. Колонки CSV фиксированы списком <c>PerfMarkers</c>, а имя
+    /// маркера обязано называть файл, в котором он замеряется
+    /// (<see cref="PerfMarkerCoverageTests"/>), — значит маркера с именем чужого класса
+    /// завести нельзя, и без этой строки дамп снова будет знать СУММУ рассылки и не знать
+    /// виновника. Ради него всё и затевалось: 185 мс кадра-клика не покрывал ни один
+    /// маркер.</summary>
+    [Test]
+    public void SlowFrameLine_NamesTheSelectionListeners_AndTheWorkOfTheFrame()
+    {
+        var line = PerfMonitor.SlowFrameLine(3001, 206.8f, 6468598f, 3, 3,
+            "SelectionManager.RestoreMaterial ×3",
+            "проверок сцены 1, оповещений 1",
+            "ContextMenuUI 92.10мс, ResizeHandleManager 8.00мс ×2");
+
+        StringAssert.Contains("кадр 3001", line);
+        StringAssert.Contains("ContextMenuUI 92.10мс", line,
+            "дамп открывают ради этого имени");
+        StringAssert.Contains("оповещений 1", line,
+            "счёт работы выделения обязан ехать рядом с ценой: одно оповещение по 90 мс "
+            + "и три по 30 лечатся разным");
+    }
+
+    [Test]
+    public void SlowFrameLine_SaysNothingAboutSelection_WhenTheFrameDidNotTouchIt()
+    {
+        var line = PerfMonitor.SlowFrameLine(10, 70f, 1024f, 0, 0, "", "", "");
+
+        StringAssert.DoesNotContain("выделение", line,
+            "пустой раздел в каждой строке медленного кадра — это шум, в котором тонет "
+            + "непустой");
+        StringAssert.DoesNotContain("слушатели", line);
+    }
+
     private static PerfMonitor.MarkerSlot Slot(string name, params float[] framesMs)
     {
         var slot = new PerfMonitor.MarkerSlot { Name = name };

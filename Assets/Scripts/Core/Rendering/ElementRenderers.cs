@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
     {
         public static List<MeshRenderer> BodyOf(KitchenElement? element)
         {
+            using var _ = PerfMarkers.ElementRenderersBodyOf.Auto();
+
             var result = new List<MeshRenderer>();
             if (element == null) return result;
             Collect(element, element.transform, result);

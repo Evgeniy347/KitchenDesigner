@@ -95,6 +95,14 @@ namespace KitchenDesigner.Core
         public static readonly PerfMarker DoorSnapToWall = Reg("DoorElement.SnapToWall");
         public static readonly PerfMarker WindowSnapToWall = Reg("WindowElement.SnapToWall");
 
+        public static readonly PerfMarker SelectionUpdate = Reg("SelectionManager.Update");
+        public static readonly PerfMarker SelectionResolveClickTarget = Reg("SelectionManager.ResolveClickTarget");
+        public static readonly PerfMarker SelectionHandleClick = Reg("SelectionManager.HandleClickOnElement");
+        public static readonly PerfMarker SelectionHighlight = Reg("SelectionManager.HighlightSelected");
+        public static readonly PerfMarker SelectionRestoreMaterial = Reg("SelectionManager.RestoreMaterial");
+        public static readonly PerfMarker SelectionNotifyListeners = Reg("SelectionManager.NotifySelectionChanged");
+        public static readonly PerfMarker ElementRenderersBodyOf = Reg("ElementRenderers.BodyOf");
+
         public static IReadOnlyList<string> NamesInDeclarationOrder => _namesFilledByEveryRegBelow;
 
         public static readonly IReadOnlyDictionary<string, string[]> NestedInto = new Dictionary<string, string[]>()
@@ -123,6 +131,23 @@ namespace KitchenDesigner.Core
                 "ElementHighlighter.ApplyForElement",
             },
             ["EdgeSubstrate.SyncScene"] = new[] { "EdgeBanding.Coverage" },
+            ["SelectionManager.Update"] = new[]
+            {
+                "SelectionManager.ResolveClickTarget",
+                "SelectionManager.HandleClickOnElement",
+            },
+            ["SelectionManager.HandleClickOnElement"] = new[]
+            {
+                "SelectionManager.HighlightSelected",
+                "SelectionManager.RestoreMaterial",
+                "SelectionManager.NotifySelectionChanged",
+            },
+            ["SelectionManager.HighlightSelected"] = new[] { "ElementRenderers.BodyOf" },
+            ["SelectionManager.RestoreMaterial"] = new[]
+            {
+                "ElementHighlighter.ApplyForElement",
+                "ElementRenderers.BodyOf",
+            },
             ["SceneAnalyzer.Analyze"] = new[]
             {
                 "SceneAnalyzer.CollectCollisions",

@@ -213,6 +213,8 @@ namespace KitchenDesigner.Core
             ReportTheFrameThatJustEnded(mainMs, gcBytes);
             _namedOfTheFrameThatJustEnded = SceneScanLog.TimesNoted;
             _scansOfTheFrameThatJustEnded = SceneScanLog.Take();
+            _selectionWorkOfTheFrameThatJustEnded = SelectionWorkLog.Take();
+            _listenersOfTheFrameThatJustEnded = ListenerCostLog.Take();
             _getAllOfTheFrameThatJustEnded = getAll;
             _frameThatJustEnded = Time.frameCount;
 
@@ -237,17 +239,24 @@ namespace KitchenDesigner.Core
         internal const float SlowFrameMs = 60f;
 
         private string _scansOfTheFrameThatJustEnded = string.Empty;
+        private string _selectionWorkOfTheFrameThatJustEnded = string.Empty;
+        private string _listenersOfTheFrameThatJustEnded = string.Empty;
         private int _getAllOfTheFrameThatJustEnded;
         private int _namedOfTheFrameThatJustEnded;
         private int _frameThatJustEnded;
 
         internal static string SlowFrameLine(int frame, float mainMs, float gcBytes,
-            int getAllCalls, int namedCalls, string scans) =>
+            int getAllCalls, int namedCalls, string scans, string selectionWork, string listeners) =>
             $"[Perf] кадр {frame}: {mainMs:F0} мс, мусор {gcBytes / 1024f:F0} КБ, "
             + $"обходов сцены {getAllCalls} — "
             + (getAllCalls == 0 ? "обходов не было"
                : string.IsNullOrEmpty(scans) ? NamesLost(getAllCalls, namedCalls)
-               : scans + NamesMissing(getAllCalls, namedCalls));
+               : scans + NamesMissing(getAllCalls, namedCalls))
+            + Section("выделение", selectionWork)
+            + Section("слушатели выделения", listeners);
+
+        internal static string Section(string caption, string body) =>
+            string.IsNullOrEmpty(body) ? string.Empty : $"; {caption}: {body}";
 
         private static string NamesLost(int getAllCalls, int namedCalls) =>
             $"имя не названо ни у одного из {getAllCalls} (названо {namedCalls})";
@@ -262,7 +271,8 @@ namespace KitchenDesigner.Core
 
             Debug.LogWarning(SlowFrameLine(_frameThatJustEnded, mainMs, gcBytes,
                 _getAllOfTheFrameThatJustEnded, _namedOfTheFrameThatJustEnded,
-                _scansOfTheFrameThatJustEnded));
+                _scansOfTheFrameThatJustEnded, _selectionWorkOfTheFrameThatJustEnded,
+                _listenersOfTheFrameThatJustEnded));
         }
 
         private void WriteCsvRow(float dtMs, float gcBytes, int getAllCalls, float mainMs)
@@ -421,7 +431,11 @@ namespace KitchenDesigner.Core
             _worstGcBytes = 0f;
             Array.Clear(_histogram, 0, _histogram.Length);
             SceneScanLog.Forget();
+            SelectionWorkLog.Forget();
+            ListenerCostLog.Forget();
             _scansOfTheFrameThatJustEnded = string.Empty;
+            _selectionWorkOfTheFrameThatJustEnded = string.Empty;
+            _listenersOfTheFrameThatJustEnded = string.Empty;
             _frameThatJustEnded = 0;
             PerfMarkers.DropEverythingMeasuredSoFar();
 
