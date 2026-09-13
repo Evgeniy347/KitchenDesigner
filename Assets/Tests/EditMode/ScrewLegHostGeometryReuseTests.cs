@@ -30,7 +30,14 @@ using KitchenDesigner.Core;
 ///
 /// Связь опоры с хозяином уезжает в сохранённый проект — через неё тянется длина
 /// резьбы до пола. Поэтому счётчиков тут мало: у каждой опоры обязан остаться ТОТ ЖЕ
-/// хозяин и ТОТ ЖЕ заход, а на перепривязке — пересчитаться.</summary>
+/// хозяин и ТОТ ЖЕ заход, а на перепривязке — пересчитаться.
+///
+/// Числа фикстуры проверяются НА МЕСТЕ, а не подразумеваются: дно левого корпуса на
+/// 150 мм, правого на 160, резьба после посадки кончается на 175, отсюда заход 25 в
+/// левом и 15 в правом. Первая редакция подразумевала высоту опоры и ждала 25 после
+/// переноса — и покраснела на верном коде числом 37, уведя расследование в
+/// несуществующий дефект кэша. Посылка стоит утверждением в <c>AScrewedLeg</c>,
+/// перенос идёт через <c>DragSideways</c>.</summary>
 public class ScrewLegHostGeometryReuseTests
 {
     private const float U = AppConstants.MM_TO_UNITS;
@@ -84,6 +91,8 @@ public class ScrewLegHostGeometryReuseTests
 
         Assert.AreEqual("ДноЛевое", leg.HostPartName,
             "исходная посадка неверна — всё, что тест измерит дальше, ничего не значит");
+        Assert.AreEqual(25, leg.InsertionIntoHostMM,
+            "исходный заход — 25 мм: резьба кончается на 175 мм, дно левого корпуса на 150");
         return (left, right, leg);
     }
 
@@ -170,14 +179,27 @@ public class ScrewLegHostGeometryReuseTests
         var (_, _, leg) = AScrewedLeg();
         WarmTheValidationPass();
 
-        leg.transform.position = new Vector3(1f, 0.110f, 0f);
-        SceneChangeTracker.Poll();
+        DragSideways(leg, 1f);
 
         Assert.AreEqual("ДноПравое", leg.HostPartName,
             "опору перенесли к другому корпусу, а связь осталась старой: снимок "
             + "заморозил хозяина — это и есть та тихая ложь, ради которой калитки здесь нет");
-        Assert.AreEqual(25, leg.InsertionIntoHostMM,
-            "и заход обязан пересчитаться по НОВОМУ хозяину, у которого дно на 160 мм");
+        Assert.AreEqual(15, leg.InsertionIntoHostMM,
+            "резьба кончается на 175 мм, дно правого корпуса на 160 мм — заход 15 мм; "
+            + "25 здесь означало бы мерку по ПРЕЖНЕМУ хозяину, то есть замороженную снимком");
+    }
+
+    /// <summary>Перенос строго по горизонтали, высота берётся у самой опоры.
+    /// Первая редакция этого теста ставила высоту руками (110 мм) и ждала 25 мм —
+    /// и покраснела на ВЕРНОМ коде с числом 37. Арифметика сходится до миллиметра:
+    /// <c>SeatAfterMove</c> опускает опору на 88 мм, рука подняла её до 110, то есть
+    /// на 22 мм, и заход вырос ровно на столько же — 15 + 22 = 37. Приложение опору
+    /// по высоте при переносе не двигает, так что фикстура мерила жест, которого
+    /// нет.</summary>
+    private static void DragSideways(ScrewLegElement leg, float x)
+    {
+        leg.transform.position = new Vector3(x, leg.transform.position.y, 0f);
+        SceneChangeTracker.Poll();
     }
 
     [Test]
@@ -186,8 +208,7 @@ public class ScrewLegHostGeometryReuseTests
         var (_, _, leg) = AScrewedLeg();
         WarmTheValidationPass();
 
-        leg.transform.position = new Vector3(5f, 0.100f, 0f);
-        SceneChangeTracker.Poll();
+        DragSideways(leg, 5f);
 
         Assert.IsNull(leg.HostPartName,
             "опора уехала от всех корпусов — хозяина у неё быть не может");
