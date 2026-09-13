@@ -222,6 +222,60 @@ public class DragValidationIsIncrementalTests : ElementTestBase
         AssertTheAppAgreesWithAFullPass("после жеста");
     }
 
+    /// <summary>Правило, которое до сих пор ВЫВОДИЛОСЬ читателем из двух
+    /// классов, а теперь стоит в имени теста: ответ, оставшийся от жеста, и
+    /// есть ответ покоя.
+    ///
+    /// После конца жеста <c>ValidationReuse</c> держит результат, посчитанный
+    /// <c>FrozenValidation.Revalidate</c> по ЗАМОРОЖЕННОМУ графу, и полной
+    /// валидации не запускает, пока вход не изменится. Законно это ровно
+    /// настолько, насколько инкрементальный проход равен полному, — и это
+    /// равенство проверено (<c>IncrementalPass_MatchesFullValidation_*</c>,
+    /// <c>GestureValidationTests</c>). Но правило, собираемое читателем из двух
+    /// наборов в разных папках, живёт до первого, кто его не соберёт: тогда
+    /// инкрементальный ответ тихо станет ответом покоя, и «ноль валидаций на
+    /// кадре покоя» будет означать «мы досматриваем вчерашний сон».
+    ///
+    /// Обе посылки проверяются на месте, и обе несущие. Без первой («деталь
+    /// реально уехала») жеста не было вовсе. Без второй («кадр покоя не считал
+    /// заново») сравнение сверяло бы полный проход с полным проходом и
+    /// проходило бы всегда.</summary>
+    [Test]
+    public void TheAnswerLeftOverFromAGesture_IsTheSameAsAFullValidationAtRest()
+    {
+        KitchenSettings.Instance.SnapEnabled = false;
+        var dragged = StartDragging();
+        int freezesBefore = ConstraintValidator.GestureFreezes;
+        var start = dragged.transform.position;
+
+        for (int i = 0; i < 4; i++)
+        {
+            _mover!.DragFrameOn(dragged.transform.position + new Vector3(0.02f, 0f, 0f));
+            SceneChangeTracker.Poll();
+        }
+
+        Assert.AreNotEqual(start.x, dragged.transform.position.x,
+            "посылка стенда: за четыре кадра деталь обязана уехать, иначе жеста не было "
+            + "и «ответ от жеста» ниже — это ответ полного прохода");
+        Assert.Greater(ConstraintValidator.GestureFreezes, freezesBefore,
+            "посылка стенда: ответ обязан прийти с ЗАМОРОЖЕННОГО графа. Без заморозки "
+            + "жест считался полным проходом, и утверждение ниже сверяло бы полный проход "
+            + "с полным проходом");
+
+        _mover!.FinishDragNow();
+        ConstraintValidator.TakeSceneValidations();
+
+        ConstraintValidator.Validate(PartRegistry.GetAll());
+        int recomputed = ConstraintValidator.TakeSceneValidations();
+        Assert.AreEqual(0, recomputed,
+            $"посылка стенда: кадр покоя после жеста сделал {recomputed} полных валидаций, "
+            + "то есть отдал СВЕЖИЙ ответ, а не оставшийся от жеста. Именно оставшийся и "
+            + "проверяется ниже — со свежим сравнение бессмысленно");
+
+        AssertTheAppAgreesWithAFullPass(
+            "покой после жеста: ответ достался от замороженного графа");
+    }
+
     /// <summary>Жест кончился — замороженный граф обязан быть отпущен. Иначе
     /// следующая правка сцены командой, отменой или MCP считалась бы по графу
     /// прошлого перетаскивания.</summary>

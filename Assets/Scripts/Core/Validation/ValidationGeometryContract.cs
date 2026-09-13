@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -21,6 +22,39 @@ namespace KitchenDesigner.Core
             "EffectiveScale", "ValidationPosition", "ValidationRotation",
             "AttachRestPosition", "AttachRestRotation", "PoseFollowsTransform",
         };
+
+        public static IReadOnlyList<string> MembersTheBoxIsBuiltFrom => TheBoxIsBuiltFrom;
+
+        private static readonly string[] TheBoxIsBuiltFrom = Gather();
+
+        private static string[] Gather()
+        {
+            var all = new List<string>();
+            all.AddRange(ShapeMethodsWithoutArguments);
+            all.AddRange(ShapeMethodsTakingAPosition);
+            all.AddRange(PoseMethodsTakingAPosition);
+            all.AddRange(PoseProperties);
+            return all.ToArray();
+        }
+
+        public static IReadOnlyList<string> VirtualMembersOf(Type type)
+        {
+            var names = new List<string>();
+
+            foreach (var property in type.GetProperties(Declared))
+            {
+                var getter = property.GetGetMethod(nonPublic: true);
+                if (getter != null && getter.IsVirtual && !getter.IsFinal) names.Add(property.Name);
+            }
+
+            foreach (var method in type.GetMethods(Declared))
+            {
+                if (method.IsSpecialName || !method.IsVirtual || method.IsFinal) continue;
+                if (!names.Contains(method.Name)) names.Add(method.Name);
+            }
+
+            return names;
+        }
 
         public static bool ShapeIsBuiltOnlyBy(Type type, Type[] proved)
         {
