@@ -470,6 +470,7 @@ namespace KitchenDesigner.Core
             _worstGcBytes = 0f;
             Array.Clear(_histogram, 0, _histogram.Length);
             SceneScanLog.Forget();
+            PartRegistryInstance.TakeGetAllCalls();
             SelectionWorkLog.Forget();
             ListenerCostLog.Forget();
             PerfMarkers.DropEverythingMeasuredSoFar();
