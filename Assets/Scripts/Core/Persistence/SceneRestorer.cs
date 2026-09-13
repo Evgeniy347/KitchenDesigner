@@ -8,6 +8,7 @@ namespace KitchenDesigner.Core
     {
         public static List<GameObject> Restore(ProjectData data)
         {
+            using var masks = EdgeSubstrate.PostponeToOnePass();
             using var batch = HighlightBatch.Open();
 
             var created = new List<GameObject>();
