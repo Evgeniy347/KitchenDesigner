@@ -43,7 +43,12 @@ namespace KitchenDesigner.Core
         public int GroupId
         {
             get => _data.GroupId;
-            set => _data.GroupId = value;
+            set
+            {
+                if (_data.GroupId == value) return;
+                _data.GroupId = value;
+                GroupMembershipRevision.Bump();
+            }
         }
 
         [NotUndoable("декор ставится через SetMaterialCommand — одной записи в поле мало, нужен MaterialManager")]

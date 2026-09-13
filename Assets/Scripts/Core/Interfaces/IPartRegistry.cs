@@ -7,7 +7,9 @@ namespace KitchenDesigner.Core
         IReadOnlyList<KitchenElement> All { get; }
         void Register(KitchenElement element);
         void Unregister(KitchenElement element);
-        List<KitchenElement> GetAll();
+        List<KitchenElement> GetAll(
+            [System.Runtime.CompilerServices.CallerMemberName] string? scannedBy = null,
+            [System.Runtime.CompilerServices.CallerFilePath] string? scannedIn = null);
         void Clear();
 
         IReadOnlyList<Wall> Walls { get; }

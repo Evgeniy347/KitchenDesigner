@@ -87,6 +87,9 @@ namespace KitchenDesigner.Core
         public static readonly PerfMarker ValidateScene = Reg("ConstraintValidator.Validate");
         public static readonly PerfMarker ValidationSnapshotBuild = Reg("ValidationSnapshot.Build");
         public static readonly PerfMarker HighlighterRefresh = Reg("ElementHighlighter.RefreshHighlights");
+        public static readonly PerfMarker HighlighterApplyForElement = Reg("ElementHighlighter.ApplyForElement");
+        public static readonly PerfMarker GroupMembersOf = Reg("GroupService.MembersOf");
+        public static readonly PerfMarker PlacementMoveToCursor = Reg("PlacementController.MoveToCursor");
         public static readonly PerfMarker EdgeBandingCoverage = Reg("EdgeBanding.Coverage");
 
         public static readonly PerfMarker DoorSnapToWall = Reg("DoorElement.SnapToWall");
@@ -112,6 +115,12 @@ namespace KitchenDesigner.Core
             {
                 "ConstraintValidator.Validate",
                 "EdgeSubstrate.SyncScene",
+            },
+            ["ElementHighlighter.ApplyForElement"] = new[] { "ConstraintValidator.Validate" },
+            ["PlacementController.MoveToCursor"] = new[]
+            {
+                "SnapSystem.TrySnap",
+                "ElementHighlighter.ApplyForElement",
             },
             ["EdgeSubstrate.SyncScene"] = new[] { "EdgeBanding.Coverage" },
             ["SceneAnalyzer.Analyze"] = new[]

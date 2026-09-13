@@ -11,6 +11,9 @@ namespace KitchenDesigner.Core
         private KitchenElement? _pending;
         private GameObject? _pendingGo;
 
+        private readonly System.Collections.Generic.List<KitchenElement> _others =
+            new System.Collections.Generic.List<KitchenElement>();
+
         private void Awake() => Instance = this;
 
         public void Begin(KitchenElement element)
@@ -51,6 +54,8 @@ namespace KitchenDesigner.Core
             var cam = Camera.main;
             if (cam == null || pending == null) return;
 
+            using var _ = PerfMarkers.PlacementMoveToCursor.Auto();
+
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             var ground = new Plane(Vector3.up, Vector3.zero);
             Vector3 point = ground.Raycast(ray, out float enter)
@@ -65,15 +70,18 @@ namespace KitchenDesigner.Core
 
             Vector3 pos = GridManager.SnapToGridXZ(point);
 
-            var others = PartRegistry.GetAll();
-            others.Remove(pending);
-            var snap = SnapSystem.TrySnap(pending, others, pos);
+            var scene = PartRegistry.GetAll();
+            _others.Clear();
+            for (int i = 0; i < scene.Count; i++)
+                if (!ReferenceEquals(scene[i], pending)) _others.Add(scene[i]);
+
+            var snap = SnapSystem.TrySnap(pending, _others, pos);
             pending.transform.position = WorldBounds.Clamp(snap.snapped ? snap.position : pos);
 
             if (pending is PartCutoutElement cutout) cutout.SnapToPart();
 
-            if (ElementHighlighter.Instance != null)
-                ElementHighlighter.Instance.ApplyForElement(pending);
+            var highlighter = ElementHighlighter.Current;
+            if (highlighter is not null) highlighter.ApplyForElement(pending, scene);
         }
 
         private void Commit()

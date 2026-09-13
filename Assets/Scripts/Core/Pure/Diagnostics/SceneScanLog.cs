@@ -26,8 +26,13 @@ namespace KitchenDesigner.Core
 
         [ThreadStatic] private static int _callersBeyondTheLimit;
 
+        [ThreadStatic] private static int _timesNoted;
+
+        public static int TimesNoted => _timesNoted;
+
         public static void Note(string? member, string? file)
         {
+            _timesNoted++;
             var scans = _scans ??= new List<Scan>(MostCallersRemembered);
             string where = Where(member, file);
 
@@ -54,7 +59,10 @@ namespace KitchenDesigner.Core
         {
             var scans = _scans;
             if ((scans == null || scans.Count == 0) && _callersBeyondTheLimit == 0)
+            {
+                Forget();
                 return string.Empty;
+            }
 
             var text = new StringBuilder();
             if (scans != null)
@@ -77,6 +85,7 @@ namespace KitchenDesigner.Core
         {
             _scans?.Clear();
             _callersBeyondTheLimit = 0;
+            _timesNoted = 0;
         }
 
         private static string TypeNameOf(string? file)

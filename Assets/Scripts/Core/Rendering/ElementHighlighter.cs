@@ -107,9 +107,16 @@ namespace KitchenDesigner.Core
         public void ApplyForElement(KitchenElement element)
         {
             if (element == null) return;
+            ApplyForElement(element, PartRegistry.GetAll());
+        }
 
-            var list = PartRegistry.GetAll();
-            var result = ConstraintValidator.Validate(list);
+        public void ApplyForElement(KitchenElement element, List<KitchenElement> scene)
+        {
+            if (element == null || scene == null) return;
+
+            using var _ = PerfMarkers.HighlighterApplyForElement.Auto();
+
+            var result = ConstraintValidator.Validate(scene);
 
             bool isValid = !result.violations.Contains(element);
             ApplyMaterial(element, isValid);

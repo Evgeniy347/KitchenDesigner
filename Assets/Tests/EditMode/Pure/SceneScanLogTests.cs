@@ -78,6 +78,38 @@ public class SceneScanLogTests
     }
 
     [Test]
+    public void TimesNoted_CountsEveryScan_SoAFrameCannotLoseNamesSilently()
+    {
+        for (int i = 0; i < 5; i++) SceneScanLog.Note("All", "x/SceneElements.cs");
+        SceneScanLog.Note("Analyze", "x/SceneAnalyzer.cs");
+
+        Assert.AreEqual(6, SceneScanLog.TimesNoted,
+            "счёт имён — второй свидетель к счёту обходов; кадр 2789 потерял 548 имён "
+            + "именно потому, что сравнивать было не с чем");
+    }
+
+    [Test]
+    public void TimesNoted_ResetsWithTheFrame()
+    {
+        SceneScanLog.Note("Refresh", "x/ToolbarUI.cs");
+        SceneScanLog.Take();
+
+        Assert.AreEqual(0, SceneScanLog.TimesNoted,
+            "не сброшенный счётчик перенёс бы чужие обходы в следующий кадр");
+    }
+
+    [Test]
+    public void TimesNoted_ResetsEvenWhenTheFrameHadNothingToShow()
+    {
+        SceneScanLog.Note("Refresh", "x/ToolbarUI.cs");
+        SceneScanLog.Forget();
+        SceneScanLog.Note("All", "x/SceneElements.cs");
+        SceneScanLog.Take();
+
+        Assert.AreEqual(0, SceneScanLog.TimesNoted);
+    }
+
+    [Test]
     public void MoreDistinctCallersThanTheLimit_AreCountedNotDropped()
     {
         for (int i = 0; i < SceneScanLog.MostCallersRemembered + 3; i++)

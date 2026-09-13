@@ -8,6 +8,22 @@ namespace KitchenDesigner.Core
         private readonly Dictionary<int, LinkGroup> _groups = new Dictionary<int, LinkGroup>();
         private int _nextId = 1;
 
+        private readonly Dictionary<int, List<KitchenElement>> _membersByGroupId =
+            new Dictionary<int, List<KitchenElement>>();
+
+        private int _indexedAtMembership = -1;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private static int _indexRebuilds;
+
+        public static int TakeIndexRebuilds()
+        {
+            int n = _indexRebuilds;
+            _indexRebuilds = 0;
+            return n;
+        }
+#endif
+
         public event Action? Changed;
 
         private void RaiseChanged() => Changed?.Invoke();
@@ -49,11 +65,32 @@ namespace KitchenDesigner.Core
 
         public List<KitchenElement> MembersOf(LinkGroup g)
         {
-            var list = new List<KitchenElement>();
-            if (g == null) return list;
+            if (g == null) return new List<KitchenElement>();
+
+            using var _ = PerfMarkers.GroupMembersOf.Auto();
+
+            RebuildIndexIfMembershipMoved();
+            return _membersByGroupId.TryGetValue(g.id, out var members)
+                ? new List<KitchenElement>(members)
+                : new List<KitchenElement>();
+        }
+
+        private void RebuildIndexIfMembershipMoved()
+        {
+            if (_indexedAtMembership == GroupMembershipRevision.Version) return;
+            _indexedAtMembership = GroupMembershipRevision.Version;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            _indexRebuilds++;
+#endif
+            _membersByGroupId.Clear();
             foreach (var e in PartRegistry.GetAll())
-                if (e != null && e.GroupId == g.id) list.Add(e);
-            return list;
+            {
+                if (e == null || e.GroupId == 0) continue;
+                if (!_membersByGroupId.TryGetValue(e.GroupId, out var bucket))
+                    _membersByGroupId[e.GroupId] = bucket = new List<KitchenElement>();
+                bucket.Add(e);
+            }
         }
 
         public IEnumerable<LinkGroup> AllGroups() => _groups.Values;

@@ -32,6 +32,7 @@ namespace KitchenDesigner.Core
             _all.Add(element);
             RegisterWall(element.GetComponent<Wall>());
             SceneChangeTracker.NoteMembershipChanged();
+            GroupMembershipRevision.Bump();
             SceneRevision.Bump();
             SceneVisibilityManager.Invalidate();
         }
@@ -41,14 +42,19 @@ namespace KitchenDesigner.Core
             if (!_all.Remove(element)) return;
             if (element != null) UnregisterWall(element.GetComponent<Wall>());
             SceneChangeTracker.NoteMembershipChanged();
+            GroupMembershipRevision.Bump();
             SceneRevision.Bump();
             SceneVisibilityManager.Invalidate();
         }
 
-        public List<KitchenElement> GetAll()
+        public List<KitchenElement> GetAll(
+            [System.Runtime.CompilerServices.CallerMemberName] string? scannedBy = null,
+            [System.Runtime.CompilerServices.CallerFilePath] string? scannedIn = null)
         {
             using var _ = PerfMarkers.PartRegistryGetAll.Auto();
             _getAllCalls++;
+            SceneScanLog.Note(scannedBy, scannedIn);
+            SceneScanCounter.Note(SceneScanLog.Where(scannedBy, scannedIn));
             PurgeDead();
             return new List<KitchenElement>(_all);
         }
@@ -59,6 +65,7 @@ namespace KitchenDesigner.Core
             if (_all.Count == 0) return;
             _all.Clear();
             SceneChangeTracker.NoteMembershipChanged();
+            GroupMembershipRevision.Bump();
             SceneRevision.Bump();
         }
 
@@ -88,6 +95,7 @@ namespace KitchenDesigner.Core
             int removed = _all.RemoveAll(e => e == null);
             if (removed == 0) return;
             SceneChangeTracker.NoteMembershipChanged();
+            GroupMembershipRevision.Bump();
             SceneRevision.Bump();
             SceneVisibilityManager.Invalidate();
         }

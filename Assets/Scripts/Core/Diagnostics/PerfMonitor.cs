@@ -211,6 +211,7 @@ namespace KitchenDesigner.Core
 
             float mainMs = _mainThread.Valid ? _mainThread.LastValue * 1e-6f : 0f;
             ReportTheFrameThatJustEnded(mainMs, gcBytes);
+            _namedOfTheFrameThatJustEnded = SceneScanLog.TimesNoted;
             _scansOfTheFrameThatJustEnded = SceneScanLog.Take();
             _getAllOfTheFrameThatJustEnded = getAll;
             _frameThatJustEnded = Time.frameCount;
@@ -237,20 +238,31 @@ namespace KitchenDesigner.Core
 
         private string _scansOfTheFrameThatJustEnded = string.Empty;
         private int _getAllOfTheFrameThatJustEnded;
+        private int _namedOfTheFrameThatJustEnded;
         private int _frameThatJustEnded;
 
         internal static string SlowFrameLine(int frame, float mainMs, float gcBytes,
-            int getAllCalls, string scans) =>
+            int getAllCalls, int namedCalls, string scans) =>
             $"[Perf] кадр {frame}: {mainMs:F0} мс, мусор {gcBytes / 1024f:F0} КБ, "
             + $"обходов сцены {getAllCalls} — "
-            + (string.IsNullOrEmpty(scans) ? "обходов не было" : scans);
+            + (getAllCalls == 0 ? "обходов не было"
+               : string.IsNullOrEmpty(scans) ? NamesLost(getAllCalls, namedCalls)
+               : scans + NamesMissing(getAllCalls, namedCalls));
+
+        private static string NamesLost(int getAllCalls, int namedCalls) =>
+            $"имя не названо ни у одного из {getAllCalls} (названо {namedCalls})";
+
+        private static string NamesMissing(int getAllCalls, int namedCalls) =>
+            namedCalls >= getAllCalls ? string.Empty
+                : $" (без имени: {getAllCalls - namedCalls})";
 
         private void ReportTheFrameThatJustEnded(float mainMs, float gcBytes)
         {
             if (mainMs <= SlowFrameMs || _frameThatJustEnded == 0) return;
 
             Debug.LogWarning(SlowFrameLine(_frameThatJustEnded, mainMs, gcBytes,
-                _getAllOfTheFrameThatJustEnded, _scansOfTheFrameThatJustEnded));
+                _getAllOfTheFrameThatJustEnded, _namedOfTheFrameThatJustEnded,
+                _scansOfTheFrameThatJustEnded));
         }
 
         private void WriteCsvRow(float dtMs, float gcBytes, int getAllCalls, float mainMs)

@@ -28,9 +28,7 @@ namespace KitchenDesigner.Core
             [System.Runtime.CompilerServices.CallerMemberName] string? scannedBy = null,
             [System.Runtime.CompilerServices.CallerFilePath] string? scannedIn = null)
         {
-            SceneScanLog.Note(scannedBy, scannedIn);
-            SceneScanCounter.Note(SceneScanLog.Where(scannedBy, scannedIn));
-            return Instance.GetAll();
+            return Instance.GetAll(scannedBy, scannedIn);
         }
 
         public static void Clear() => Instance.Clear();

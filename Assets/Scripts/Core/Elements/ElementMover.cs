@@ -710,10 +710,10 @@ namespace KitchenDesigner.Core
             var name = win != null ? win.AttachedWallName
                      : door != null ? door.AttachedWallName : "";
             if (string.IsNullOrEmpty(name)) return null;
-            foreach (var el in PartRegistry.GetAll())
+            var walls = PartRegistry.Walls;
+            for (int i = 0; i < walls.Count; i++)
             {
-                if (el == null) continue;
-                var wall = el.GetComponent<Wall>();
+                var wall = walls[i];
                 if (wall != null && wall.gameObject.name == name)
                     return wall;
             }
