@@ -66,7 +66,7 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < all.Count; i++)
             {
                 if (_frozen!.IsMover(i)) continue;
-                if (all[i].PosedLike(_posedAtFreeze[i])) continue;
+                if (all[i].ValidatesTheSameAs(_posedAtFreeze[i])) continue;
                 _movers.Add(i);
                 drifted = true;
             }

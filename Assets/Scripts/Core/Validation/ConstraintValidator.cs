@@ -46,25 +46,20 @@ namespace KitchenDesigner.Core
 
         private static readonly GestureValidation _gesture = new GestureValidation();
 
+        private static readonly ValidationReuse _reuse = new ValidationReuse();
+
         public static int GestureFreezes => _gesture.Freezes;
 
         public static int GesturePairsInLastFrame => _gesture.PairsInLastFrame;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        private static int _sceneValidations;
-
         private static int _elementGeometriesBuilt;
 
         private static int _nearContactPairsScanned;
 
         public static int NearContactPairsScannedByLastCall => _nearContactPairsScanned;
 
-        public static int TakeSceneValidations()
-        {
-            int n = _sceneValidations;
-            _sceneValidations = 0;
-            return n;
-        }
+        public static int TakeSceneValidations() => _reuse.TakeFullValidations();
 
         public static int TakeElementGeometriesBuilt()
         {
@@ -91,17 +86,14 @@ namespace KitchenDesigner.Core
                 return result;
             }
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-            _sceneValidations++;
-#endif
-
             ValidationSnapshot.Build(_elems, _snapshots);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _elementGeometriesBuilt += ValidationSnapshot.GeometryBuildsInLastPass;
 #endif
             var core = _core;
             if (!SceneGesture.InProgress) _gesture.Reset();
-            if (!SceneGesture.InProgress || !_gesture.TryValidate(_snapshots, core))
+            if (_reuse.NeedsAFreshAnswer(_snapshots)
+                && (!SceneGesture.InProgress || !_gesture.TryValidate(_snapshots, core)))
                 ValidationCore.Validate(_snapshots, core);
 
             foreach (var c in core.Contacts)

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -48,30 +49,65 @@ namespace KitchenDesigner.Core
             | ElementKind.SelfSupported
             | ElementKind.Decor | ElementKind.Recessed | ElementKind.FloatingFacade);
 
-        public bool PosedLike(in ValidationElement other)
+        public bool ValidatesTheSameAs(in ValidationElement other) =>
+            Kind == other.Kind
+            && GroupId == other.GroupId
+            && AttachedWallIndex == other.AttachedWallIndex
+            && HostIndex == other.HostIndex
+            && HasExtraBody == other.HasExtraBody
+            && string.Equals(PairedName, other.PairedName, StringComparison.Ordinal)
+            && HeightSpan.Min.Equals(other.HeightSpan.Min)
+            && HeightSpan.Max.Equals(other.HeightSpan.Max)
+            && SameCentreline(Centreline, other.Centreline)
+            && SameSolid(Geometry, other.Geometry)
+            && (!HasExtraBody || SameEnvelope(ExtraBody, other.ExtraBody))
+            && SamePoints(Vertices, other.Vertices);
+
+        private static bool SameSolid(in ElementGeometry a, in ElementGeometry b) =>
+            a.Id == b.Id
+            && a.IsPanel == b.IsPanel
+            && string.Equals(a.Name, b.Name, StringComparison.Ordinal)
+            && SameEnvelope(a, b)
+            && SameFaces(a.Faces, b.Faces)
+            && SameFaces(a.GrooveSeatFaces, b.GrooveSeatFaces)
+            && SameFaces(a.GrooveWallFaces, b.GrooveWallFaces);
+
+        private static bool SameEnvelope(in ElementGeometry a, in ElementGeometry b) =>
+            SamePoint(a.Min, b.Min) && SamePoint(a.Max, b.Max);
+
+        private static bool SameCentreline(in WallCentreline a, in WallCentreline b) =>
+            a.IsDefined == b.IsDefined
+            && (!a.IsDefined
+                || (SamePoint(a.Start, b.Start) && SamePoint(a.End, b.End)
+                    && SamePoint(a.Direction, b.Direction)));
+
+        private static bool SameFaces(Face[]? a, Face[]? b)
         {
-            if (Name != other.Name
-                || Kind != other.Kind || GroupId != other.GroupId || PairedName != other.PairedName
-                || AttachedWallIndex != other.AttachedWallIndex || HostIndex != other.HostIndex
-                || HasExtraBody != other.HasExtraBody
-                || HeightSpan.Min != other.HeightSpan.Min || HeightSpan.Max != other.HeightSpan.Max
-                || Geometry.Min != other.Geometry.Min || Geometry.Max != other.Geometry.Max)
-                return false;
-
-            if (HasExtraBody
-                && (ExtraBody.Min != other.ExtraBody.Min || ExtraBody.Max != other.ExtraBody.Max))
-                return false;
-
-            var mine = Geometry.Faces;
-            var theirs = other.Geometry.Faces;
-            if (mine == null || theirs == null) return mine == theirs;
-            if (mine.Length != theirs.Length) return false;
-            for (int i = 0; i < mine.Length; i++)
-                if (mine[i].center != theirs[i].center || mine[i].normal != theirs[i].normal
-                    || mine[i].size != theirs[i].size)
-                    return false;
+            if (ReferenceEquals(a, b)) return true;
+            if (a == null || b == null || a.Length != b.Length) return false;
+            for (int i = 0; i < a.Length; i++)
+                if (!SameFace(a[i], b[i])) return false;
             return true;
         }
+
+        private static bool SameFace(in Face a, in Face b) =>
+            SamePoint(a.center, b.center)
+            && SamePoint(a.normal, b.normal)
+            && a.size.x.Equals(b.size.x) && a.size.y.Equals(b.size.y)
+            && SamePoint(a.rightAxis, b.rightAxis)
+            && SamePoint(a.upAxis, b.upAxis);
+
+        private static bool SamePoints(Vector3[]? a, Vector3[]? b)
+        {
+            if (ReferenceEquals(a, b)) return true;
+            if (a == null || b == null || a.Length != b.Length) return false;
+            for (int i = 0; i < a.Length; i++)
+                if (!SamePoint(a[i], b[i])) return false;
+            return true;
+        }
+
+        private static bool SamePoint(in Vector3 a, in Vector3 b) =>
+            a.x.Equals(b.x) && a.y.Equals(b.y) && a.z.Equals(b.z);
 
         public bool SharesModuleWith(in ValidationElement other) =>
             GroupId != NoGroup && GroupId == other.GroupId;
