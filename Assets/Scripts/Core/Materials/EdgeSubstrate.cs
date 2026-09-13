@@ -39,12 +39,44 @@ namespace KitchenDesigner.Core
             return mask;
         }
 
+        private static int _openScopes;
+        private static int _postponed;
+
+        public static bool Postponing => _openScopes > 0;
+
+        public static int PostponedSyncs => _postponed;
+
+        public static System.IDisposable PostponeToOnePass() => new Postponement();
+
+        private sealed class Postponement : System.IDisposable
+        {
+            private bool _closed;
+
+            public Postponement() => _openScopes++;
+
+            public void Dispose()
+            {
+                if (_closed) return;
+                _closed = true;
+                if (--_openScopes > 0) return;
+                if (_postponed == 0) return;
+                _postponed = 0;
+                SyncEveryMask(PartRegistry.GetAll());
+            }
+        }
+
         public static void Sync(KitchenElement? element)
         {
             if (element == null) return;
             if (!NeedsTheScene(element))
             {
                 element.SetBareFaceMask(BareFaceMask(element, (SceneFaces?)null));
+                return;
+            }
+
+            if (Postponing)
+            {
+                _postponed++;
                 return;
             }
 
@@ -70,7 +102,13 @@ namespace KitchenDesigner.Core
         {
             if (all == null) return;
             if (SceneGesture.InProgress) return;
+            if (Postponing) { _postponed++; return; }
 
+            SyncEveryMask(all);
+        }
+
+        private static void SyncEveryMask(IReadOnlyList<KitchenElement> all)
+        {
             using var _ = PerfMarkers.EdgeSubstrateSync.Auto();
             _sceneSyncs++;
 
