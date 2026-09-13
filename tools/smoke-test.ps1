@@ -14,7 +14,12 @@
       3) чтение его свойств через MCP (get_elements) и сверка с тем, что задавали;
       4) удаление элемента через MCP (delete_elements) и что он пропал из сцены;
       5) сохранение и загрузка проекта во временный файл и сверка результата;
-      6) завершение приложения по команде и что процесс не остаётся висеть.
+      6) завершение приложения по команде — WM_CLOSE во ВСЕ окна процесса, включая
+         скрытое, — и двумя отдельными проверками: выход штатный (shutdown_graceful),
+         а не по истёкшему таймауту с убийством, и процесс не остался висеть
+         (shutdown_no_orphan). Убитый принудительно плеер не проходит первую: он не
+         выполнил OnApplicationQuit, то есть не остановил мост, не сбросил настройки
+         и не автосохранился.
 
     Шаг 5 поднимает приложение с -mcpSaveDir <временный каталог>, которым скрипт владеет сам:
     он создаётся перед запуском и удаляется в конце прогона независимо от результата.
@@ -55,6 +60,10 @@
 .PARAMETER StartupTimeoutSec
     Сколько ждать, пока приложение поднимет MCP-сервер, прежде чем считать старт проваленным.
 
+.PARAMETER ShutdownWaitMs
+    Сколько ждать штатного выхода после WM_CLOSE, прежде чем убивать процесс. Истёкшее
+    ожидание — это провал shutdown_graceful, а не норма.
+
 .EXAMPLE
     powershell -File tools\smoke-test.ps1
     powershell -File tools\smoke-test.ps1 -ExePath Build\KitchenDesigner.exe -Port 19881
@@ -63,6 +72,7 @@ param(
     [string]$ExePath,
     [int]$Port = 19881,
     [int]$StartupTimeoutSec = 30,
+    [int]$ShutdownWaitMs = 5000,
     [int]$PerTestBudgetMs = 10
 )
 
@@ -122,9 +132,13 @@ function Add-Result {
 if (-not ([System.Management.Automation.PSTypeName]'SmokeTest.NativeMethods').Type) {
     Add-Type -Namespace SmokeTest -Name NativeMethods -MemberDefinition @'
 [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+[DllImport("user32.dll", SetLastError=true)] public static extern IntPtr FindWindowExW(IntPtr parent, IntPtr childAfter, IntPtr className, IntPtr windowName);
+[DllImport("user32.dll", SetLastError=true)] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+[DllImport("user32.dll", SetLastError=true)] public static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 '@
 }
 $SW_HIDE = 0
+$WM_CLOSE = 0x0010
 
 function Hide-PlayerWindow {
     # Safety net only: the player hides ITSELF via -hideWindow (DisplaySettings.
@@ -158,21 +172,58 @@ function Wait-ForPlayerWindowToHide {
     }
 }
 
-function Stop-SmokeProcess {
+function Request-PlayerClose {
+    # CloseMainWindow() is useless here and that cost a 3.3s "shutdown" for weeks:
+    # it posts WM_CLOSE to Process.MainWindowHandle, and Windows resolves that handle
+    # by walking VISIBLE top-level windows only. The smoke player runs with -hideWindow,
+    # so MainWindowHandle is IntPtr.Zero, CloseMainWindow() returns false without
+    # sending anything, and the run just waited out WaitForExit(3000) before killing
+    # the player. The exit was never graceful - the check only ever proved that
+    # Stop-Process -Force works.
+    # Enumerating top-level windows ourselves finds hidden ones too. FindWindowExW with
+    # a null parent walks the desktop's top-level list and needs no callback delegate,
+    # which PowerShell cannot hand to Add-Type cleanly.
+    # The class/window name arguments are IntPtr, not string, ON PURPOSE: declared as
+    # string, PowerShell marshals $null as an EMPTY string, which matches no window, and
+    # the enumeration silently yields ZERO handles. Measured on this machine while
+    # writing this: 0 windows with string parameters, 318 with IntPtr::Zero.
     param($Process)
-    if ($null -eq $Process) { return }
-    try {
-        if (-not $Process.HasExited) {
-            $Process.CloseMainWindow() | Out-Null
-            $Process.WaitForExit(3000) | Out-Null
+    $posted = 0
+    $handle = [IntPtr]::Zero
+    while ($true) {
+        $handle = [SmokeTest.NativeMethods]::FindWindowExW([IntPtr]::Zero, $handle, [IntPtr]::Zero, [IntPtr]::Zero)
+        if ($handle -eq [IntPtr]::Zero) { break }
+        $owner = 0
+        [SmokeTest.NativeMethods]::GetWindowThreadProcessId($handle, [ref]$owner) | Out-Null
+        if ($owner -ne $Process.Id) { continue }
+        if ([SmokeTest.NativeMethods]::PostMessage($handle, $WM_CLOSE, [IntPtr]::Zero, [IntPtr]::Zero)) {
+            $posted++
         }
+    }
+    return $posted
+}
+
+function Stop-SmokeProcess {
+    # Returns how the player ended: 'already-gone', 'graceful' or 'forced'.
+    # 'forced' is a FAILURE the caller reports, not a tidy-up: a player that has to be
+    # killed never ran OnApplicationQuit, so it never flushed settings, never stopped
+    # the MCP bridge and never autosaved.
+    param($Process)
+    if ($null -eq $Process) { return 'already-gone' }
+    try { if ($Process.HasExited) { return 'already-gone' } } catch { return 'already-gone' }
+
+    try {
+        $posted = Request-PlayerClose -Process $Process
+        if ($posted -gt 0 -and $Process.WaitForExit($ShutdownWaitMs)) { return 'graceful' }
     } catch { }
+
     try {
         if (-not $Process.HasExited) {
             Stop-Process -Id $Process.Id -Force -ErrorAction SilentlyContinue
-            $Process.WaitForExit(3000) | Out-Null
+            $Process.WaitForExit($ShutdownWaitMs) | Out-Null
         }
     } catch { }
+    return 'forced'
 }
 
 Write-Host "=== Smoke test: $ExePath (port $Port) ===" -ForegroundColor Cyan
@@ -311,11 +362,13 @@ catch {
 finally {
     # ---- 7) shutdown: must exit and leave no process ----
     $t = [System.Diagnostics.Stopwatch]::StartNew()
-    Stop-SmokeProcess -Process $proc
+    $ending = Stop-SmokeProcess -Process $proc
     Start-Sleep -Milliseconds 200
     $stillThere = Get-Process -Id $proc.Id -ErrorAction SilentlyContinue
     $t.Stop()
-    Add-Result -Name 'shutdown_no_orphan' -Passed ($null -eq $stillThere) -Ms $t.Elapsed.TotalMilliseconds -Budgeted $false
+    Add-Result -Name 'shutdown_graceful' -Passed ($ending -ne 'forced') -Ms $t.Elapsed.TotalMilliseconds `
+        -Detail "ending=$ending" -Budgeted $false
+    Add-Result -Name 'shutdown_no_orphan' -Passed ($null -eq $stillThere) -Ms 0 -Budgeted $false
 
     # ---- own temp -mcpSaveDir: clean up regardless of outcome ----
     Remove-Item -LiteralPath $tempSaveDir -Recurse -Force -ErrorAction SilentlyContinue
