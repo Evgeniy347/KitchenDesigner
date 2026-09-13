@@ -13,6 +13,8 @@ namespace KitchenDesigner.Core
 
         internal static int HostGeometriesBuiltByLastApplyAll { get; private set; }
 
+        internal static int HostGeometriesRebuiltByLastApplyAll { get; private set; }
+
         public static string Derive(ScrewLegElement leg, IReadOnlyList<KitchenElement> scene)
         {
             if (leg == null || scene == null) return "";
@@ -34,6 +36,7 @@ namespace KitchenDesigner.Core
             using var _ = PerfMarkers.ScrewLegHostLinkApplyAll.Auto();
 
             HostGeometriesBuiltByLastApplyAll = 0;
+            HostGeometriesRebuiltByLastApplyAll = 0;
             _batchLegs.Clear();
             _batchOwners.Clear();
             _batchCandidates.Clear();
@@ -41,7 +44,7 @@ namespace KitchenDesigner.Core
                 if (scene[i] is ScrewLegElement leg) _batchLegs.Add(leg);
             if (_batchLegs.Count == 0) return 0;
 
-            CollectHosts(scene, _batchOwners, _batchCandidates);
+            HostGeometriesRebuiltByLastApplyAll = CollectHosts(scene, _batchOwners, _batchCandidates);
             HostGeometriesBuiltByLastApplyAll = _batchCandidates.Count;
 
             int changed = 0;
@@ -54,19 +57,27 @@ namespace KitchenDesigner.Core
             return changed;
         }
 
-        private static void CollectHosts(IReadOnlyList<KitchenElement> scene,
+        private static int CollectHosts(IReadOnlyList<KitchenElement> scene,
             List<KitchenElement> owners, List<ElementGeometry> candidates)
         {
             owners.Clear();
             candidates.Clear();
+            int rebuilt = 0;
             for (int i = 0; i < scene.Count; i++)
             {
                 var e = scene[i];
                 if (e == null || string.IsNullOrEmpty(e.PartName)) continue;
                 if (!CanHost(e)) continue;
                 owners.Add(e);
+                if (ElementSnapshotReuse.TryReuseGeometry(e, out var kept))
+                {
+                    candidates.Add(kept);
+                    continue;
+                }
+                rebuilt++;
                 candidates.Add(e.ToGeometry());
             }
+            return rebuilt;
         }
 
         private static string HostNameFor(ScrewLegElement leg,
