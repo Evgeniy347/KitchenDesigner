@@ -122,21 +122,56 @@ public class DragValidationIsIncrementalTests : ElementTestBase
 
     /// <summary>Положительный контроль, и он обязан стоять первым: если жест не
     /// доходит до инкрементального прохода вовсе, «мало пар» ниже было бы
-    /// зелёным на пустом месте.</summary>
+    /// зелёным на пустом месте.
+    ///
+    /// Прилипание здесь выключено намеренно, и это ТА ЖЕ ловушка, которую
+    /// <c>DragFrameWorkTests.DragFrameThatMovedThePart_ValidatesTheWholeSceneAtLeastOnce</c>
+    /// уже назвал на этом же стенде: грань детали в исходной позе совпадает с
+    /// гранью соседки (обе 600 мм, центры 0 и 0,6 м, общая грань на x = 0,3 м),
+    /// и кандидат в 50 мм вглубь неё возвращался прилипанием ровно на место —
+    /// <c>ElementMover</c> не писал в <c>transform</c> вовсе. Кадр не менял в
+    /// сцене НИЧЕГО, а тест назывался «кадр жеста».
+    ///
+    /// Подмена была не видна, пока <c>TakeSceneValidations</c> считал ВЫЗОВЫ:
+    /// вызов был, и счётчик показывал единицу. Считать он теперь стал РАБОТУ —
+    /// полные валидации, — и кадр, ничего не изменивший, честно показал ноль.
+    /// Это не ослабление: два соседних теста того же прогона запирают вывод с
+    /// обеих сторон. <c>DragFrameThatMovedThePart_…</c> (прилипание выключено,
+    /// деталь действительно едет) даёт ≥ 1 валидацию и ≥ 1 пересборку геометрии
+    /// — значит калитка движение видит;
+    /// <c>TheHighlightAgreesWithAFullPass_BeforeDuringAndAfterTheDrag</c>
+    /// сверяет список нарушителей с независимым полным проходом на КАЖДОМ из
+    /// шести кадров жеста и совпадает — значит калитка не слепа. Остаётся ровно
+    /// одно объяснение нуля: деталь не двигалась.
+    ///
+    /// Поэтому предпосылка теперь ПРОВЕРЯЕМАЯ и стоит первой: стенд обязан
+    /// доказать, что деталь уехала. Отвалится шов — упадут требования ниже;
+    /// перестанет двигаться стенд — упадёт предпосылка и НАЗОВЁТ себя, а не
+    /// уведёт в несуществующий дефект шва.</summary>
     [Test]
     public void ADragFrame_GoesThroughTheFrozenGraph()
     {
+        KitchenSettings.Instance.SnapEnabled = false;
         var dragged = StartDragging();
         int before = ConstraintValidator.GestureFreezes;
         ConstraintValidator.TakeSceneValidations();
+        var start = dragged.transform.position;
 
-        _mover!.DragFrameOn(dragged.transform.position + new Vector3(0.05f, 0f, 0f));
+        _mover!.DragFrameOn(start + new Vector3(0.05f, 0f, 0f));
         SceneChangeTracker.Poll();
-        _mover.DragFrameOn(dragged.transform.position + new Vector3(0.05f, 0f, 0f));
+        var afterFirstFrame = dragged.transform.position;
+        _mover.DragFrameOn(afterFirstFrame + new Vector3(0.05f, 0f, 0f));
 
+        TestContext.WriteLine($"деталь: старт x={start.x:F4}, после кадра "
+            + $"x={afterFirstFrame.x:F4}, сейчас x={dragged.transform.position.x:F4}");
+
+        Assert.AreNotEqual(start.x, afterFirstFrame.x,
+            "стенд обязан РЕАЛЬНО сдвинуть деталь, иначе оба требования ниже стерегут не "
+            + "то. Ноль валидаций у кадра, не изменившего в сцене ни одного числа, — это "
+            + "калитка по входу работает как задумано, а не отвалившийся шов");
         Assert.GreaterOrEqual(ConstraintValidator.TakeSceneValidations(), 1,
-            "кадр жеста обязан вообще дойти до валидации сцены — если нет, то ноль заморозок "
-            + "ниже означает не «шов не подключён», а «кадр сюда не заходил»");
+            "кадр жеста, сдвинувший деталь, обязан дойти до валидации сцены — если нет, то "
+            + "ноль заморозок ниже означает не «шов не подключён», а «кадр сюда не заходил»");
         Assert.Greater(ConstraintValidator.GestureFreezes, before,
             "кадр жеста обязан заморозить сцену — иначе инкрементальный проход не подключён "
             + "и каждый кадр по-прежнему стоит полную валидацию");
