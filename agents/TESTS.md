@@ -71,6 +71,11 @@ edit→check cycle while answering a question nobody was asking at that moment.
 секунды вместо минут — `KD_SNAP_SWEEP_PARTS` со списком имён через запятую. Сводка падения печатает
 обе команды готовыми.
 
+**Где семя на ЗЕЛЁНОМ прогоне.** Сводка шлюза его не печатает — она показывает только итог, а
+семя уходит в отчёт NUnit. Достать: `grep -o "SEED=[0-9]*" test-results/tmp/TestResults.xml`.
+Это важно именно на зелёном: выборка случайная, и знать, какая четвёрка прошла, нужно раньше, чем
+что-то упало. На красном семя и готовые команды повтора печатаются в сообщении падения.
+
 - **`SnapMutationTests` before any real change to `SnapSystem`/`ResizeSnap`.** The sweep
   finds holes no point test sees; skipping it there is how «растягивается, но не
   перетаскивается» ships.
