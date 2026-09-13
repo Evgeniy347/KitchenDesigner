@@ -183,10 +183,11 @@ namespace KitchenDesigner.Core.Analysis
 
         private static void CollectAttachLinks(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
+            var byName = AttachLinks.PartsByName.Of(all);
             foreach (var e in all)
             {
                 if (e == null || string.IsNullOrEmpty(e.AttachedToName)) continue;
-                var parent = AttachLinks.Parent(e);
+                var parent = AttachLinks.Parent(e, byName);
                 if (parent == null) continue;
                 if (!AttachLinks.InContact(e, parent))
                     issues.Add(IssueCatalog.AttachDetached(e, parent));
@@ -195,10 +196,11 @@ namespace KitchenDesigner.Core.Analysis
 
         private static void CollectScrewLegMounting(List<KitchenElement> all, List<AnalysisIssue> issues)
         {
+            var byName = AttachLinks.PartsByName.Of(all);
             foreach (var e in all)
             {
                 if (!(e is ScrewLegElement leg)) continue;
-                var host = AttachLinks.Parent(leg);
+                var host = AttachLinks.Parent(leg, byName);
                 if (host == null) continue;
                 if (ScrewLegCentring.TryFindOffCentre(leg, host, out var offCentre))
                     issues.Add(IssueCatalog.ScrewLegOffCentre(leg, host, offCentre));

@@ -16,13 +16,64 @@ namespace KitchenDesigner.Core
             e != null && e.CanCarryAttachedParts && !(e is IPartCutout)
             && e.GetComponent<Wall>() == null && e.GetComponent<BasePlate>() == null;
 
+        [System.ThreadStatic] private static int _partsLookedAtWhileSearchingForAParent;
+
+        public static int TakePartsLookedAt()
+        {
+            int n = _partsLookedAtWhileSearchingForAParent;
+            _partsLookedAtWhileSearchingForAParent = 0;
+            return n;
+        }
+
         public static KitchenElement? Parent(KitchenElement? e)
         {
             if (e == null || string.IsNullOrEmpty(e.AttachedToName)) return null;
             foreach (var other in PartRegistry.All)
-                if (other != null && other != e && other.PartName == e.AttachedToName)
-                    return CanBeParent(other) ? other : null;
+            {
+                _partsLookedAtWhileSearchingForAParent++;
+                if (IsGone(other) || ReferenceEquals(other, e)) continue;
+                if (other.PartName != e.AttachedToName) continue;
+                return CanBeParent(other) ? other : null;
+            }
             return null;
+        }
+
+        private static bool IsGone(KitchenElement other) => other == null;
+
+        public static KitchenElement? Parent(KitchenElement? e, PartsByName byName)
+        {
+            if (e == null || byName == null || string.IsNullOrEmpty(e.AttachedToName))
+                return null;
+
+            var other = byName.First(e.AttachedToName);
+            if (other == null) return null;
+            if (ReferenceEquals(other, e)) return Parent(e);
+            return CanBeParent(other) ? other : null;
+        }
+
+        public sealed class PartsByName
+        {
+            private readonly Dictionary<string, KitchenElement> _first =
+                new Dictionary<string, KitchenElement>(System.StringComparer.Ordinal);
+
+            public static PartsByName Of(IReadOnlyList<KitchenElement>? parts)
+            {
+                var index = new PartsByName();
+                if (parts == null) return index;
+
+                for (int i = 0; i < parts.Count; i++)
+                {
+                    var part = parts[i];
+                    if (IsGone(part)) continue;
+                    string name = part.PartName;
+                    if (string.IsNullOrEmpty(name) || index._first.ContainsKey(name)) continue;
+                    index._first[name] = part;
+                }
+                return index;
+            }
+
+            public KitchenElement? First(string? name) =>
+                !string.IsNullOrEmpty(name) && _first.TryGetValue(name!, out var part) ? part : null;
         }
 
         public static void Children(KitchenElement? parent, List<KitchenElement> into)
