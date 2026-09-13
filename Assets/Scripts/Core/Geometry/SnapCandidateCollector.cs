@@ -40,8 +40,29 @@ namespace KitchenDesigner.Core
             foreach (var other in others)
             {
                 if (other.IsEmpty || other.Id == part.Geometry.Id) continue;
+                _neighboursSeen++;
+                if (!moved.WithinReachOf(other, maxDist)) continue;
+                _neighboursExamined++;
                 CollectAgainst(part, other, into);
             }
+        }
+
+        [System.ThreadStatic] private static int _neighboursSeen;
+
+        [System.ThreadStatic] private static int _neighboursExamined;
+
+        public static int TakeNeighboursSeen()
+        {
+            int n = _neighboursSeen;
+            _neighboursSeen = 0;
+            return n;
+        }
+
+        public static int TakeNeighboursExamined()
+        {
+            int n = _neighboursExamined;
+            _neighboursExamined = 0;
+            return n;
         }
 
         private static void CollectAgainst(in MovedPart part, in ElementGeometry other,

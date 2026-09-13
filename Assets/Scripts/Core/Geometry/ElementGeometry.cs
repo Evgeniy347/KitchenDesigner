@@ -50,6 +50,11 @@ namespace KitchenDesigner.Core
 
         public bool IsEmpty => Faces == null || Faces.Length == 0;
 
+        public bool WithinReachOf(in ElementGeometry other, float slack) =>
+            Min.x - slack <= other.Max.x && other.Min.x - slack <= Max.x &&
+            Min.y - slack <= other.Max.y && other.Min.y - slack <= Max.y &&
+            Min.z - slack <= other.Max.z && other.Min.z - slack <= Max.z;
+
         public ElementGeometry WithoutPorts() => !HasPorts
             ? this
             : new ElementGeometry(Id, Name, Faces, GrooveSeatFaces, GrooveWallFaces, Min, Max,
