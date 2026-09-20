@@ -6,6 +6,7 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Keybinding;
 
 /// <summary>
 /// Настройки кухни хранятся ЧЕТЫРЬМЯ параллельными списками одних и тех же
@@ -63,6 +64,14 @@ public class KitchenSettingsContractTests
                 foreach (ViewField field in Enum.GetValues(typeof(ViewField)))
                     preset.Set(field, !preset.Get(field));
             }
+            else if (value is KeyBindings bindings)
+            {
+                foreach (var action in InputActionCatalog.All)
+                {
+                    bindings.SetPrimary(action, new KeyChord(KeyCode.F2, shift: true));
+                    bindings.SetAlt(action, new KeyChord(KeyCode.F3, alt: true));
+                }
+            }
             else if (value is bool flag) f.SetValue(s, !flag);
             else if (value is float number) f.SetValue(s, number * 0.5f);
             else if (f.FieldType.IsEnum)
@@ -82,6 +91,12 @@ public class KitchenSettingsContractTests
             if (value is ViewPreset preset)
                 foreach (ViewField field in Enum.GetValues(typeof(ViewField)))
                     map[f.Name + "." + field] = preset.Get(field).ToString();
+            else if (value is KeyBindings bindings)
+                foreach (var action in InputActionCatalog.All)
+                {
+                    map[f.Name + "." + action + ".primary"] = KeyChord.Format(bindings.Primary(action));
+                    map[f.Name + "." + action + ".alt"] = KeyChord.Format(bindings.Alt(action));
+                }
             else
                 map[f.Name] = Convert.ToString(value, CultureInfo.InvariantCulture) ?? "null";
         }

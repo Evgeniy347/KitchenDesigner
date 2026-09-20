@@ -319,6 +319,7 @@ namespace KitchenDesigner.Core
             _arrowSpeed = 1f;
             ResetPhotoLook();
             ResetConstruction();
+            ResetKeyBindings();
         }
 
         public KitchenSettingsData ToData()
@@ -374,6 +375,7 @@ namespace KitchenDesigner.Core
             };
             CapturePhotoTuning(data);
             CaptureConstruction(data);
+            CaptureKeyBindings(data);
             return data;
         }
 
@@ -397,6 +399,7 @@ namespace KitchenDesigner.Core
             _arrowSpeed = Mathf.Clamp(data.arrowSpeed, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
             ApplyPhotoSettings(data);
             ApplyConstruction(data);
+            ApplyKeyBindings(data);
         }
 
         private void ApplyViewPresets(KitchenSettingsData data)

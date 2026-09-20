@@ -89,5 +89,7 @@ namespace KitchenDesigner.Core
         public int constructionSandMm = KitchenSettings.CONSTRUCTION_SAND_DEFAULT_MM;
         public int constructionGravelMm = KitchenSettings.CONSTRUCTION_GRAVEL_DEFAULT_MM;
         public bool constructionCompacted = true;
+
+        public KeyBindingOverrideData[] keyBindings = System.Array.Empty<KeyBindingOverrideData>();
     }
 }
