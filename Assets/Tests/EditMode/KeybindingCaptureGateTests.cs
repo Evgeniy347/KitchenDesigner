@@ -2,56 +2,48 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Keybinding;
 using KitchenDesigner.Core.UI;
 
 /// <summary>
-/// Время жизни скрытого поля-гейта, которым строка привязки перехватывает клавишу.
+/// Пока строка привязки ждёт клавишу, горячие клавиши сцены обязаны молчать - иначе
+/// назначаемая клавиша заодно двигает камеру или открывает панель.
 ///
-/// Первая версия строила это поле один раз, при сборке окна, и оставляла в сцене
-/// навсегда. Стоило это 53 красных PlayMode-снимка (поле попало в кадры сцен, где
-/// настройки даже не открывались), но снимки тут — симптом. Дефект в другом:
-/// <c>CameraController.IsTypingInInputField</c> — ГЛОБАЛЬНЫЙ гейт горячих клавиш,
-/// и он спрашивает ровно одно — «на выбранном объекте есть TMP_InputField». Вечно
-/// живущее невидимое поле ввода означает, что один случайный фокус на нём молча
-/// отнимает у пользователя всю клавиатуру сцены, и повторяется это «иногда» —
-/// худший класс бага.
+/// Первая версия держала это на невидимом <c>TMP_InputField</c>, который жил один раз, при
+/// сборке окна, и оставался в сцене навсегда - 53 красных PlayMode-снимка (поле попало в
+/// кадры сцен, где настройки даже не открывали).
 ///
-/// Поэтому гейт существует ровно столько, сколько идёт захват, и проверяется это
-/// с обоих концов: пока захват идёт — поле есть и горячие клавиши погашены; как
-/// только он кончился любым путём (клавиша, Escape, закрытие окна), в сцене не
-/// остаётся ни одного следа.
+/// Вторая версия (коммит 53344414) чинила время жизни поля, но глушение по-прежнему стояло
+/// на фокусе `EventSystem`: `CameraController.IsTypingInInputField` спрашивает, есть ли
+/// `TMP_InputField` на выбранном объекте. `EventSystem.current` - это первый элемент
+/// статического списка, который соседние тестовые классы то поднимают, то сносят по ходу
+/// прогона (`ContextMenuRefreshBugTests`, `FieldHighlightTests`, `SettingsPanelUITests` и
+/// другие) - "система событий в сцене есть" была совпадением расписания, а не инвариантом.
+/// Захват писал `EventSystem.current?.SetSelectedGameObject(...)` (C#-null), а гашение
+/// спрашивало `es == null` (Unity-null) - на пустом списке или на уничтоженном элементе эти
+/// два вопроса расходились, и полный прогон EditMode падал там, где одиночный зеленел.
 ///
-/// Второй заход сюда оплачен красным сенсором в полном прогоне EditMode при зелёном
-/// одиночном: `EventSystem.current` — это `m_EventSystems[0]`, статический список,
-/// который наполняется в `OnEnable` и чистится в `OnDisable`, а соседние наборы
-/// заводят и СНОСЯТ свою «EventSystem» по ходу прогона. Захват спрашивал про неё
-/// `EventSystem.current?.` — то есть C#-null, — а гашение горячих клавиш
-/// (`CameraController.IsTypingInInputField`) спрашивает `es == null`, то есть
-/// Unity-null. На пустом списке и на уничтоженном объекте два вопроса дают РАЗНЫЕ
-/// ответы: захват считал, что фокус занял, гашение считало, что системы событий нет.
-/// Ровно поэтому падал третий ассерт при живых первых двух.
+/// Третья версия (эта) убирает фокус, `EventSystem` и скрытое поле целиком. Глушение - это
+/// явное владение внутри `InputMap` (`MuteSceneInput`/`UnmuteSceneInput`/`IsMutedBy`):
+/// включивший обязан выключить, посторонний не может снять чужое глушение, а если владелец
+/// умирает, не выключив его сам, `InputMap` видит это через Unity-null-сравнение владельца
+/// (`_muteOwner != null` на уничтоженном объекте - `false`) и глушение снимается само.
+/// `IsCapturing` на гейте - не отдельный флаг, а прямое чтение того же владения
+/// (`InputMap.IsMutedBy(this)`): одно состояние, а не два описания одного и того же.
 /// </summary>
 public class KeybindingCaptureGateTests
 {
-    private GameObject? _canvasGo;
+    private GameObject? _hostGo;
     private KeybindingCaptureGate? _gate;
 
     [SetUp]
     public void SetUp()
     {
-        UIFactory.EnsureEventSystem();
-        _canvasGo = new GameObject("CaptureGateCanvas");
-        var canvas = _canvasGo.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        _canvasGo.AddComponent<CanvasScaler>();
-        _canvasGo.AddComponent<GraphicRaycaster>();
-
-        var gate = _canvasGo.AddComponent<KeybindingCaptureGate>();
-        gate.Build(_canvasGo.transform);
+        _hostGo = new GameObject("CaptureGateHost");
+        var gate = _hostGo.AddComponent<KeybindingCaptureGate>();
+        gate.Build(_hostGo.transform);
         _gate = gate;
     }
 
@@ -59,67 +51,33 @@ public class KeybindingCaptureGateTests
     public void TearDown()
     {
         _gate?.CancelIfCapturing();
-        if (_canvasGo != null) UnityEngine.Object.DestroyImmediate(_canvasGo!);
-        var events = UnityEngine.EventSystems.EventSystem.current;
-        if (events != null) events.SetSelectedGameObject(null);
-        UIFactory.EnsureEventSystem();
+        if (_hostGo != null) UnityEngine.Object.DestroyImmediate(_hostGo);
+        InputMap.ReleaseAnyMuteForTests();
         CommandStack.Clear();
     }
 
-    /// <summary>Тот самый порядок прогона, на котором сенсор покраснел, — только
-    /// воспроизведённый нарочно, а не вытянутый из соседей. Классы вокруг заводят
-    /// «EventSystem» по условию «а нет ли уже» и сносят её в своём teardown
-    /// (<c>ContextMenuRefreshBugTests</c>, <c>FieldHighlightTests</c>,
-    /// <c>MaterialPreviewTests</c>, <c>SettingsConstructionTabTests</c>,
-    /// <c>SettingsPanelUITests</c>, <c>SettingsPanelLayoutDiagramTests</c>), поэтому
-    /// «система событий в сцене есть» — это НЕ инвариант, а совпадение расписания.
-    /// Захват обязан работать и без неё: тест на старом коде красный, потому что
-    /// прежний `Begin` писал `EventSystem.current?.SetSelectedGameObject(...)` и на
-    /// отсутствующей системе молча не делал ничего.</summary>
     [Test]
-    public void Capture_TakesTheKeyboard_EvenWhenTheSceneLostItsEventSystem()
-    {
-        foreach (var stale in UnityEngine.Object.FindObjectsByType<UnityEngine.EventSystems.EventSystem>(
-                     FindObjectsSortMode.None))
-            UnityEngine.Object.DestroyImmediate(stale.gameObject);
-
-        Assert.IsNull(UnityEngine.EventSystems.EventSystem.current,
-            "сцена обязана остаться без системы событий — иначе тест проверяет не то, "
-            + "ради чего написан");
-
-        _gate!.Begin(_ => { });
-
-        Assert.IsTrue(CameraController.IsTypingInInputField(),
-            "захват обязан сам поднять систему событий и занять клавиатуру: иначе гашение "
-            + "горячих клавиш зависит от того, какой сосед по прогону оставил свою "
-            + "EventSystem живой, а какой снёс");
-        Assert.AreEqual(1, GuardNamesInTheScene().Count);
-    }
-
-    [Test]
-    public void GateJustBuilt_PutsNothingInTheScene()
+    public void GateJustBuilt_IsNotCapturing_AndDoesNotMuteTheScene()
     {
         Assert.IsFalse(_gate!.IsCapturing, "собранный гейт не захватывает ничего сам по себе");
-        CollectionAssert.IsEmpty(GuardNamesInTheScene(),
-            "пока захвата нет, скрытого поля ввода в сцене быть не должно: именно оно "
-            + "попало в 53 снимка сцен, где окно настроек не открывали");
+        Assert.IsFalse(InputMap.SceneInputMuted, "и не глушит горячие клавиши до первого Begin");
     }
 
     [Test]
-    public void WhileCapturing_TheGuardExists_AndSceneHotkeysAreGated()
+    public void WhileCapturing_SceneHotkeysAreMuted()
     {
         _gate!.Begin(_ => { });
 
         Assert.IsTrue(_gate!.IsCapturing);
-        Assert.AreEqual(1, GuardNamesInTheScene().Count,
-            "на время захвата поле есть — без этого проверки «после захвата пусто» "
-            + "зеленели бы, даже если бы поле не создавалось никогда");
-        Assert.IsTrue(CameraController.IsTypingInInputField(),
+        Assert.IsTrue(InputMap.IsMutedBy(_gate!),
+            "гейт обязан быть владельцем глушения - а не просто одним из тех, кто его включил");
+        Assert.IsFalse(
+            InputMap.DownWithSimulatedKeyForTests(InputAction.CameraMoveForward, KeyCode.W),
             "ради этого гейт и существует: пока ждём клавишу, WASD/F1/зум сцены молчат");
     }
 
     [Test]
-    public void AfterEscape_NothingIsLeftInTheScene_AndHotkeysComeBack()
+    public void AfterEscape_MuteIsLifted_AndHotkeysComeBack()
     {
         var results = new List<KeyChordCapture.Result>();
         _gate!.Begin(results.Add);
@@ -130,13 +88,12 @@ public class KeybindingCaptureGateTests
         Assert.AreEqual(1, results.Count);
         Assert.IsTrue(results[0].WasCancelled, "Escape отменяет захват, а не назначает клавишу");
         Assert.IsFalse(_gate!.IsCapturing);
-        CollectionAssert.IsEmpty(GuardNamesInTheScene(), "после отмены в сцене пусто");
-        Assert.IsFalse(CameraController.IsTypingInInputField(),
-            "горячие клавиши сцены обязаны ожить сразу после отмены");
+        Assert.IsFalse(InputMap.SceneInputMuted, "после отмены горячие клавиши сцены обязаны ожить сразу");
+        Assert.IsTrue(InputMap.DownWithSimulatedKeyForTests(InputAction.CameraMoveForward, KeyCode.W));
     }
 
     [Test]
-    public void AfterAChordIsCaptured_NothingIsLeftInTheScene()
+    public void AfterAChordIsCaptured_MuteIsLifted()
     {
         var results = new List<KeyChordCapture.Result>();
         _gate!.Begin(results.Add);
@@ -148,15 +105,14 @@ public class KeybindingCaptureGateTests
         Assert.IsFalse(results[0].WasCancelled);
         Assert.AreEqual(new KeyChord(KeyCode.K, ctrl: true, shift: true), results[0].Chord);
         Assert.IsFalse(_gate!.IsCapturing);
-        CollectionAssert.IsEmpty(GuardNamesInTheScene(), "после успешного назначения в сцене пусто");
-        Assert.IsFalse(CameraController.IsTypingInInputField());
+        Assert.IsFalse(InputMap.SceneInputMuted, "после успешного назначения глушение обязано сняться");
     }
 
-    /// <summary>Голый модификатор захват не заканчивает — значит и поле остаётся на
-    /// месте: «пусто в сцене» обязано наступать ровно тогда, когда захват КОНЧИЛСЯ,
-    /// а не при первом же нажатии чего угодно.</summary>
+    /// <summary>Голый модификатор захват не заканчивает - значит и глушение остаётся: "молчание
+    /// снято" обязано наступать ровно тогда, когда захват КОНЧИЛСЯ, а не при первом же
+    /// нажатии чего угодно.</summary>
     [Test]
-    public void ABareModifier_KeepsTheCaptureAndItsGuardAlive()
+    public void ABareModifier_KeepsTheCaptureAndTheMuteAlive()
     {
         var results = new List<KeyChordCapture.Result>();
         _gate!.Begin(results.Add);
@@ -164,82 +120,80 @@ public class KeybindingCaptureGateTests
         bool swallowed = _gate!.Read(KeyCode.LeftControl, ctrl: true, alt: false, shift: false);
 
         Assert.IsTrue(swallowed, "нажатие модификатора тоже не уходит в приложение");
-        CollectionAssert.IsEmpty(results, "один Ctrl — ещё не привязка");
+        CollectionAssert.IsEmpty(results, "один Ctrl - ещё не привязка");
         Assert.IsTrue(_gate!.IsCapturing);
-        Assert.AreEqual(1, GuardNamesInTheScene().Count);
+        Assert.IsTrue(InputMap.SceneInputMuted);
     }
 
     [Test]
-    public void SecondBegin_ReplacesTheFirstCapture_WithoutLeavingASecondGuard()
+    public void SecondBegin_ReplacesTheFirstCapture_WithoutLosingMuteOwnership()
     {
         var first = new List<KeyChordCapture.Result>();
         _gate!.Begin(first.Add);
         _gate!.Begin(_ => { });
 
         Assert.AreEqual(1, first.Count, "первый захват обязан завершиться");
-        Assert.IsTrue(first[0].WasCancelled, "и именно отменой — клавишу ему никто не давал");
-        Assert.AreEqual(1, GuardNamesInTheScene().Count,
-            "второе поле поверх первого — это два невидимых инпута в сцене вместо нуля");
+        Assert.IsTrue(first[0].WasCancelled, "и именно отменой - клавишу ему никто не давал");
+        Assert.IsTrue(_gate!.IsCapturing, "второй захват тем же гейтом обязан идти дальше");
+        Assert.IsTrue(InputMap.IsMutedBy(_gate!),
+            "владение глушением не должно потеряться между первым и вторым Begin");
     }
 
     [Test]
-    public void DestroyingTheOwner_MidCapture_LeavesNothingBehind()
+    public void DestroyingTheOwner_MidCapture_LiftsTheMute()
     {
         _gate!.Begin(_ => { });
-        Assume.That(GuardNamesInTheScene().Count, Is.EqualTo(1));
+        Assume.That(InputMap.SceneInputMuted, Is.True);
 
-        UnityEngine.Object.DestroyImmediate(_canvasGo!);
-        _canvasGo = null;
+        UnityEngine.Object.DestroyImmediate(_hostGo!);
+        _hostGo = null;
         _gate = null;
 
-        CollectionAssert.IsEmpty(GuardNamesInTheScene(),
-            "уничтожение владельца во время захвата не оставляет висящего поля ввода");
+        Assert.IsFalse(InputMap.SceneInputMuted,
+            "уничтожение владельца во время захвата не должно оставлять сцену немой");
     }
 
     // ── настоящее окно настроек ─────────────────────────────
 
     [Test]
-    public void SettingsWindow_BuiltButNeverCaptured_HasNoGuardInTheScene()
+    public void SettingsWindow_BuiltButNeverCaptured_DoesNotMuteTheScene()
     {
         var host = NewSettingsWindow(out var settings);
         try
         {
-            CollectionAssert.IsEmpty(GuardNamesInTheScene(),
-                "снимки 53 сцен ловили именно это: окно собрано, захвата не было, "
-                + "а поле ввода уже в дереве UI");
-            Assert.IsFalse(CameraController.IsTypingInInputField(),
-                "и горячие клавиши сцены ничем не заняты");
-            Assert.IsNotNull(settings, "окно обязано было собраться — иначе проверка пуста по ошибке");
+            Assert.IsFalse(InputMap.SceneInputMuted,
+                "окно собрано, захвата не было - горячие клавиши сцены ничем не заняты");
+            Assert.IsNotNull(settings, "окно обязано было собраться - иначе проверка пуста по ошибке");
         }
         finally
         {
             EditModeManager.Reset();
             UnityEngine.Object.DestroyImmediate(host);
+            InputMap.ReleaseAnyMuteForTests();
         }
     }
 
     [Test]
-    public void ClosingTheSettingsWindow_MidCapture_LeavesNoGuard()
+    public void ClosingTheSettingsWindow_MidCapture_LiftsTheMute()
     {
         var host = NewSettingsWindow(out var settings);
         try
         {
             settings!.OpenControlsTab();
             CellButton(host, "KbBtn_Undo_P").onClick.Invoke();
-            Assume.That(GuardNamesInTheScene().Count, Is.EqualTo(1),
-                "клик по ячейке обязан начать захват — иначе закрывать нечего");
+            Assume.That(InputMap.SceneInputMuted, Is.True,
+                "клик по ячейке обязан начать захват - иначе закрывать нечего");
 
             settings!.SetVisible(false);
 
-            CollectionAssert.IsEmpty(GuardNamesInTheScene(),
-                "закрытие окна прямо во время захвата не оставляет поле ввода в сцене");
-            Assert.IsFalse(CameraController.IsTypingInInputField(),
-                "и не оставляет горячие клавиши сцены погашенными");
+            Assert.IsFalse(InputMap.SceneInputMuted,
+                "закрытие окна прямо во время захвата не должно оставлять горячие клавиши сцены немыми");
         }
         finally
         {
             EditModeManager.Reset();
             UnityEngine.Object.DestroyImmediate(host);
+            InputMap.ReleaseAnyMuteForTests();
         }
     }
 
@@ -256,23 +210,5 @@ public class KeybindingCaptureGateTests
         var button = host.GetComponentsInChildren<Button>(true).FirstOrDefault(b => b.name == name);
         Assert.IsNotNull(button, "кнопки ячейки привязки «" + name + "» в окне нет");
         return button!;
-    }
-
-    private static List<string> GuardNamesInTheScene()
-    {
-        var found = new List<string>();
-        foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
-            CollectGuards(root.transform, root.name, found);
-        return found;
-    }
-
-    private static void CollectGuards(Transform node, string path, List<string> into)
-    {
-        if (node.name == KeybindingCaptureGate.GuardName) into.Add(path);
-        for (int i = 0; i < node.childCount; i++)
-        {
-            var child = node.GetChild(i);
-            CollectGuards(child, path + "/" + child.name, into);
-        }
     }
 }

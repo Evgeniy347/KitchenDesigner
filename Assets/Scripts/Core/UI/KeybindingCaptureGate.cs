@@ -1,77 +1,27 @@
 using System;
-using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using KitchenDesigner.Core.Keybinding;
 
 namespace KitchenDesigner.Core.UI
 {
     public sealed class KeybindingCaptureGate : MonoBehaviour
     {
-        public const string GuardName = "KeybindingCaptureGuard";
-
-        private Transform? _canvas;
-        private TMP_InputField? _focusGuard;
         private Action<KeyChordCapture.Result>? _onDone;
 
-        public bool IsCapturing => _focusGuard != null;
+        public bool IsCapturing => InputMap.IsMutedBy(this);
 
         public void Build(Transform canvas)
         {
-            _canvas = canvas;
             enabled = false;
         }
 
         public void Begin(Action<KeyChordCapture.Result> onDone)
         {
-            if (_canvas == null) return;
-            var canvas = _canvas;
             CancelIfCapturing();
 
-            var field = UIFactory.CreateInputField(
-                GuardName, canvas, string.Empty, Vector2.zero, Vector2.zero);
-            field.readOnly = true;
-            field.GetComponent<UnityEngine.UI.Image>().raycastTarget = false;
-
-            _focusGuard = field;
             _onDone = onDone;
             enabled = true;
-            TakeTheKeyboard(field.gameObject);
-        }
-
-        private static void TakeTheKeyboard(GameObject guard)
-        {
-            var events = WorkingEventSystem();
-            if (events == null)
-            {
-                Debug.LogError("Захват привязки не смог занять клавиатуру: в сцене нет "
-                    + "работающей EventSystem. Горячие клавиши сцены останутся живыми, и "
-                    + "нажатая клавиша уйдёт ещё и в камеру.");
-                return;
-            }
-
-            events.SetSelectedGameObject(guard);
-
-            if (!CameraController.IsTypingInInputField())
-                Debug.LogError("Захват привязки занял фокус, но гашение горячих клавиш не "
-                    + "включилось: EventSystem.currentSelectedGameObject не стал полем "
-                    + "захвата. Клавиша уйдёт и в сцену тоже.");
-        }
-
-        private static EventSystem? WorkingEventSystem()
-        {
-            var events = EventSystem.current;
-            if (events != null) return events;
-
-            UIFactory.EnsureEventSystem();
-            events = EventSystem.current;
-            if (events != null) return events;
-
-            var live = UnityEngine.Object.FindAnyObjectByType<EventSystem>();
-            if (live == null) return null;
-
-            EventSystem.current = live;
-            return live;
+            InputMap.MuteSceneInput(this);
         }
 
         public void CancelIfCapturing()
@@ -105,41 +55,24 @@ namespace KitchenDesigner.Core.UI
             if (Read(e.keyCode, e.control, e.alt, e.shift)) e.Use();
         }
 
-        private void Update()
-        {
-            if (!IsCapturing) return;
-            var es = EventSystem.current;
-            if (es == null) return;
-            if (es.currentSelectedGameObject == _focusGuard!.gameObject) return;
-            CancelIfCapturing();
-        }
-
         private void Finish(KeyChordCapture.Result result)
         {
             var callback = _onDone;
             _onDone = null;
-            DropTheFocusGuard();
+            StopCapturing();
             callback?.Invoke(result);
         }
 
-        private void DropTheFocusGuard()
+        private void StopCapturing()
         {
-            var guard = _focusGuard;
-            _focusGuard = null;
-            if (guard == null) return;
             enabled = false;
-
-            var es = EventSystem.current;
-            if (es != null && es.currentSelectedGameObject == guard.gameObject)
-                es.SetSelectedGameObject(null);
-
-            DestroyNow.The(guard.gameObject);
+            InputMap.UnmuteSceneInput(this);
         }
 
         private void OnDisable()
         {
             _onDone = null;
-            DropTheFocusGuard();
+            StopCapturing();
         }
     }
 
