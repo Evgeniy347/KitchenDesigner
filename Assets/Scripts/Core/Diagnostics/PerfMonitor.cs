@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using KitchenDesigner.Core.Keybinding;
 using Unity.Profiling;
 using UnityEngine;
 
@@ -151,10 +152,8 @@ namespace KitchenDesigner.Core
 
         private void HandleHotkeys()
         {
-            if (!Input.GetKeyDown(KeyCode.F9)) return;
-
-            bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-            ApplyF9(shift);
+            if (InputMap.Down(InputAction.PerfMonitorToggleRecording)) ApplyF9(shiftHeld: true);
+            else if (InputMap.Down(InputAction.PerfMonitorToggle)) ApplyF9(shiftHeld: false);
         }
 
         internal void ApplyF9(bool shiftHeld)
