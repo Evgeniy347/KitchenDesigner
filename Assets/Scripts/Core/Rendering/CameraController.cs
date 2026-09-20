@@ -1,3 +1,4 @@
+using KitchenDesigner.Core.Keybinding;
 using TMPro;
 using UnityEngine;
 
@@ -253,20 +254,20 @@ namespace KitchenDesigner.Core
 
         private void HandleKeyboard()
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1)) SetView(0, 0);
-            else if (Input.GetKeyDown(KeyCode.Alpha2)) SetView(0, 90);
-            else if (Input.GetKeyDown(KeyCode.Alpha3)) SetView(90, 0);
+            if (InputMap.Down(InputAction.ViewTop)) SetView(0, 0);
+            else if (InputMap.Down(InputAction.ViewSide)) SetView(0, 90);
+            else if (InputMap.Down(InputAction.ViewFront)) SetView(90, 0);
 
-            if (Input.GetKeyDown(KeyCode.F))
+            if (InputMap.Down(InputAction.CameraFocusSelection))
                 FocusOnSelection();
 
-            if (Input.GetKeyDown(KeyCode.F1) && UI.UIManager.Instance != null)
+            if (InputMap.Down(InputAction.ToggleHelp) && UI.UIManager.Instance != null)
                 UI.UIManager.Instance.ToggleHelp();
 
-            if (Input.GetKeyDown(KeyCode.F10))
+            if (InputMap.Down(InputAction.TogglePhotoMode))
                 PhotoMode.Toggle();
 
-            if (Input.GetKeyDown(KeyCode.E))
+            if (InputMap.Down(InputAction.ActivateSelected))
                 ActivateSelected();
 
             HandleWASD();
@@ -325,11 +326,12 @@ namespace KitchenDesigner.Core
 
         private void HandleWASD()
         {
-            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) return;
             float dt = Time.deltaTime;
             Vector2 input = new Vector2(
-                (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f),
-                (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f));
+                (InputMap.Held(InputAction.CameraMoveRight) ? 1f : 0f)
+                    - (InputMap.Held(InputAction.CameraMoveLeft) ? 1f : 0f),
+                (InputMap.Held(InputAction.CameraMoveForward) ? 1f : 0f)
+                    - (InputMap.Held(InputAction.CameraMoveBack) ? 1f : 0f));
             bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             ApplyWASDMovement(input, dt, shift);
         }
@@ -382,8 +384,10 @@ namespace KitchenDesigner.Core
         {
             float dt = Time.deltaTime;
             Vector2 input = new Vector2(
-                (Input.GetKey(KeyCode.RightArrow) ? 1f : 0f) - (Input.GetKey(KeyCode.LeftArrow) ? 1f : 0f),
-                (Input.GetKey(KeyCode.UpArrow) ? 1f : 0f) - (Input.GetKey(KeyCode.DownArrow) ? 1f : 0f));
+                (InputMap.Held(InputAction.CameraRotateRight) ? 1f : 0f)
+                    - (InputMap.Held(InputAction.CameraRotateLeft) ? 1f : 0f),
+                (InputMap.Held(InputAction.CameraRotateUp) ? 1f : 0f)
+                    - (InputMap.Held(InputAction.CameraRotateDown) ? 1f : 0f));
             ApplyArrowOrbitIfOwned(input, dt);
         }
 
@@ -413,9 +417,9 @@ namespace KitchenDesigner.Core
         {
             if (IsTypingInInputField()) return;
             float direction = 0f;
-            if (Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.KeypadPlus))
+            if (InputMap.Held(InputAction.CameraZoomIn))
                 direction = 1f;
-            else if (Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.KeypadMinus))
+            else if (InputMap.Held(InputAction.CameraZoomOut))
                 direction = -1f;
             ApplyZoomMovement(direction, Time.deltaTime);
         }
