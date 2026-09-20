@@ -10,6 +10,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Keybinding;
 using KitchenDesigner.Core.UI;
 using KitchenDesigner.Tests;
 
@@ -278,6 +279,150 @@ public class SettingsPanelTabDiagramTests
 
     [UnityTest]
     public IEnumerator TabControl_SavesPng() => CaptureTab(Tab("Tab_Control"));
+
+    /// <summary>
+    /// Конфликт привязок — единственное, о чём вкладка «Управление» сообщает ЦВЕТОМ, и
+    /// до этого снимка его не проверял никто: чистые тесты доказывают, что список
+    /// конфликтов СЧИТАЕТСЯ верно, а между «`KeybindingConflicts` вернул пару» и
+    /// «человек увидел красное» лежит весь слой раскраски — `KeybindingRowUI`, палитра,
+    /// порядок refresh. Ровно тот шов, где фича умирает молча.
+    ///
+    /// Цвет в json-эталон не попадает (снимок пишет имена, тексты и геометрию), поэтому
+    /// краску здесь спрашивают ассертами, а кадр остаётся для глаза. И спрашивают её
+    /// ПАРОЙ ПРОТИВОПОЛОЖНЫХ ВХОДОВ: две конфликтующие ячейки обязаны покраснеть, а
+    /// соседняя, ни с кем не конфликтующая, обязана остаться обычной. Без второй половины
+    /// тест зеленел бы и в том случае, если бы красным красилось ВСЁ подряд.
+    /// </summary>
+    [UnityTest]
+    public IEnumerator TabControlConflict_SavesPng()
+    {
+        var built = BuildPanel();
+
+        var settings = KitchenSettings.Instance;
+        Assert.IsNotNull(settings, "без настроек привязок нет — конфликтовать нечему");
+        var taken = KeyBindingDefaults.PrimaryOf(InputAction.DuplicateSelected);
+        settings!.KeyBindings.SetPrimary(InputAction.SaveProject, taken);
+
+        ClickTab("Управление");
+        built.ui.SetVisible(true);
+        yield return null;
+
+        ScrollRowIntoView("KbRow_DuplicateSelected");
+        yield return null;
+
+        var scroll = BodyScroll();
+        foreach (var row in new[]
+                 {
+                     "KbRow_DeleteSelected", "KbRow_DuplicateSelected", "KbRow_SaveProject",
+                 })
+            AssertRowIsInFrame(scroll, row);
+
+        var clash = CellCaption("KbBtn_SaveProject_P");
+        var other = CellCaption("KbBtn_DuplicateSelected_P");
+        var calm = CellCaption("KbBtn_DeleteSelected_P");
+
+        Assert.AreEqual("! " + KeyChordDisplay.Of(taken), other.text,
+            "соседняя строка показывает тот самый аккорд, который мы отняли, уже с маркером — "
+            + "иначе конфликта в кадре нет и снимать нечего");
+        Assert.AreEqual(other.text, clash.text,
+            "обе стороны конфликта показывают ОДИН аккорд — на то он и конфликт");
+        AssertColor(UIStyle.HighlightError, clash.color, "«Сохранить проект»");
+        AssertColor(UIStyle.HighlightError, other.color, "«Дублировать»");
+        StringAssert.StartsWith("! ", clash.text,
+            "цвет не единственный носитель смысла: у конфликта есть ещё и маркер");
+        StringAssert.StartsWith("! ", other.text, "маркер стоит у ОБЕИХ сторон конфликта");
+
+        AssertColor(UIStyle.Text, calm.color,
+            "«Удалить объект(ы)» ни с кем не конфликтует и обязана остаться обычной: "
+            + "тест, в котором краснеет всё, зеленел бы и при полностью сломанной логике");
+        Assert.IsFalse(calm.text.StartsWith("!", System.StringComparison.Ordinal),
+            "маркер конфликта у непричастной строки — та же поломка, что и лишняя краска");
+
+        yield return CaptureAndSave("settings_tab_control_conflict.png");
+    }
+
+    private ScrollRect BodyScroll()
+    {
+        var body = _canvasGo!.transform.Find("SettingsPanel/SettingsPanelBody");
+        Assert.IsNotNull(body, "области прокрутки окна настроек нет — подводить нечего");
+        var scroll = body!.GetComponent<ScrollRect>();
+        Assert.IsNotNull(scroll, "SettingsPanelBody без ScrollRect");
+        return scroll!;
+    }
+
+    private RectTransform FindRow(string rowName)
+    {
+        var page = _canvasGo!.transform.Find(PagePath + "/Tab_Control");
+        Assert.IsNotNull(page, "страницы вкладки «Управление» нет");
+        var row = page!.Find(rowName) as RectTransform;
+        Assert.IsNotNull(row, $"строки привязки «{rowName}» на вкладке нет");
+        return row!;
+    }
+
+    /// <summary>Прокрутка считается от самой строки, а не подбирается числом: содержимое
+    /// вкладки растёт с каждым новым действием, и застывшая доля прокрутки увела бы кадр
+    /// с конфликта молча. Что строки ДЕЙСТВИТЕЛЬНО попали в кадр, проверяется отдельно —
+    /// эталон, снятый мимо нужного места, хуже красного теста.</summary>
+    private void ScrollRowIntoView(string rowName)
+    {
+        var scroll = BodyScroll();
+        var content = scroll.content;
+        var viewport = scroll.viewport;
+        Assert.IsNotNull(content, "у прокрутки нет содержимого");
+        Assert.IsNotNull(viewport, "у прокрутки нет окна просмотра");
+
+        float rowY = content!.InverseTransformPoint(FindRow(rowName).position).y;
+        float viewportH = viewport!.rect.height;
+        float offset = -rowY - viewportH * 0.5f;
+        float maxOffset = Mathf.Max(0f, content.rect.height - viewportH);
+
+        content.anchoredPosition = new Vector2(
+            content.anchoredPosition.x, Mathf.Clamp(offset, 0f, maxOffset));
+    }
+
+    private void AssertRowIsInFrame(ScrollRect scroll, string rowName)
+    {
+        var visible = WorldRectOf(scroll.viewport);
+        var row = WorldRectOf(FindRow(rowName));
+
+        Assert.IsTrue(row.yMin >= visible.yMin && row.yMax <= visible.yMax,
+            $"строка «{rowName}» не попала в кадр (строка {row.yMin:F0}..{row.yMax:F0}, "
+            + $"окно {visible.yMin:F0}..{visible.yMax:F0}). Снимок без обеих конфликтующих "
+            + "строк и без одной спокойной ничего не доказывает.");
+    }
+
+    private static Rect WorldRectOf(RectTransform rect)
+    {
+        var corners = new Vector3[4];
+        rect.GetWorldCorners(corners);
+        return Rect.MinMaxRect(corners[0].x, corners[0].y, corners[2].x, corners[2].y);
+    }
+
+    private TextMeshProUGUI CellCaption(string buttonName)
+    {
+        var panel = _canvasGo!.transform.Find("SettingsPanel");
+        Assert.IsNotNull(panel, "окно настроек не построилось");
+
+        var button = panel!.GetComponentsInChildren<Button>(true)
+            .FirstOrDefault(b => b.name == buttonName);
+        Assert.IsNotNull(button, $"ячейки привязки «{buttonName}» в окне нет");
+
+        var caption = button!.GetComponentInChildren<TextMeshProUGUI>(true);
+        Assert.IsNotNull(caption, $"у ячейки «{buttonName}» нет подписи");
+        return caption!;
+    }
+
+    private static void AssertColor(Color expected, Color actual, string what)
+    {
+        bool same = Mathf.Approximately(expected.r, actual.r)
+            && Mathf.Approximately(expected.g, actual.g)
+            && Mathf.Approximately(expected.b, actual.b)
+            && Mathf.Approximately(expected.a, actual.a);
+
+        Assert.IsTrue(same,
+            $"цвет ячейки {what}: ожидался {expected}, на экране {actual}. Красный во "
+            + "вкладке значит ровно одно — конфликт привязки.");
+    }
 
     [UnityTest]
     public IEnumerator TabPhoto_SavesPng() => CaptureTab(Tab("Tab_Photo"));
