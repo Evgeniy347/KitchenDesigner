@@ -36,7 +36,42 @@ namespace KitchenDesigner.Core.UI
             _focusGuard = field;
             _onDone = onDone;
             enabled = true;
-            EventSystem.current?.SetSelectedGameObject(field.gameObject);
+            TakeTheKeyboard(field.gameObject);
+        }
+
+        private static void TakeTheKeyboard(GameObject guard)
+        {
+            var events = WorkingEventSystem();
+            if (events == null)
+            {
+                Debug.LogError("Захват привязки не смог занять клавиатуру: в сцене нет "
+                    + "работающей EventSystem. Горячие клавиши сцены останутся живыми, и "
+                    + "нажатая клавиша уйдёт ещё и в камеру.");
+                return;
+            }
+
+            events.SetSelectedGameObject(guard);
+
+            if (!CameraController.IsTypingInInputField())
+                Debug.LogError("Захват привязки занял фокус, но гашение горячих клавиш не "
+                    + "включилось: EventSystem.currentSelectedGameObject не стал полем "
+                    + "захвата. Клавиша уйдёт и в сцену тоже.");
+        }
+
+        private static EventSystem? WorkingEventSystem()
+        {
+            var events = EventSystem.current;
+            if (events != null) return events;
+
+            UIFactory.EnsureEventSystem();
+            events = EventSystem.current;
+            if (events != null) return events;
+
+            var live = UnityEngine.Object.FindAnyObjectByType<EventSystem>();
+            if (live == null) return null;
+
+            EventSystem.current = live;
+            return live;
         }
 
         public void CancelIfCapturing()

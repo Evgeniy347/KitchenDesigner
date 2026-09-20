@@ -24,6 +24,16 @@ using KitchenDesigner.Core.UI;
 /// с обоих концов: пока захват идёт — поле есть и горячие клавиши погашены; как
 /// только он кончился любым путём (клавиша, Escape, закрытие окна), в сцене не
 /// остаётся ни одного следа.
+///
+/// Второй заход сюда оплачен красным сенсором в полном прогоне EditMode при зелёном
+/// одиночном: `EventSystem.current` — это `m_EventSystems[0]`, статический список,
+/// который наполняется в `OnEnable` и чистится в `OnDisable`, а соседние наборы
+/// заводят и СНОСЯТ свою «EventSystem» по ходу прогона. Захват спрашивал про неё
+/// `EventSystem.current?.` — то есть C#-null, — а гашение горячих клавиш
+/// (`CameraController.IsTypingInInputField`) спрашивает `es == null`, то есть
+/// Unity-null. На пустом списке и на уничтоженном объекте два вопроса дают РАЗНЫЕ
+/// ответы: захват считал, что фокус занял, гашение считало, что системы событий нет.
+/// Ровно поэтому падал третий ассерт при живых первых двух.
 /// </summary>
 public class KeybindingCaptureGateTests
 {
@@ -52,7 +62,38 @@ public class KeybindingCaptureGateTests
         if (_canvasGo != null) UnityEngine.Object.DestroyImmediate(_canvasGo!);
         var events = UnityEngine.EventSystems.EventSystem.current;
         if (events != null) events.SetSelectedGameObject(null);
+        UIFactory.EnsureEventSystem();
         CommandStack.Clear();
+    }
+
+    /// <summary>Тот самый порядок прогона, на котором сенсор покраснел, — только
+    /// воспроизведённый нарочно, а не вытянутый из соседей. Классы вокруг заводят
+    /// «EventSystem» по условию «а нет ли уже» и сносят её в своём teardown
+    /// (<c>ContextMenuRefreshBugTests</c>, <c>FieldHighlightTests</c>,
+    /// <c>MaterialPreviewTests</c>, <c>SettingsConstructionTabTests</c>,
+    /// <c>SettingsPanelUITests</c>, <c>SettingsPanelLayoutDiagramTests</c>), поэтому
+    /// «система событий в сцене есть» — это НЕ инвариант, а совпадение расписания.
+    /// Захват обязан работать и без неё: тест на старом коде красный, потому что
+    /// прежний `Begin` писал `EventSystem.current?.SetSelectedGameObject(...)` и на
+    /// отсутствующей системе молча не делал ничего.</summary>
+    [Test]
+    public void Capture_TakesTheKeyboard_EvenWhenTheSceneLostItsEventSystem()
+    {
+        foreach (var stale in UnityEngine.Object.FindObjectsByType<UnityEngine.EventSystems.EventSystem>(
+                     FindObjectsSortMode.None))
+            UnityEngine.Object.DestroyImmediate(stale.gameObject);
+
+        Assert.IsNull(UnityEngine.EventSystems.EventSystem.current,
+            "сцена обязана остаться без системы событий — иначе тест проверяет не то, "
+            + "ради чего написан");
+
+        _gate!.Begin(_ => { });
+
+        Assert.IsTrue(CameraController.IsTypingInInputField(),
+            "захват обязан сам поднять систему событий и занять клавиатуру: иначе гашение "
+            + "горячих клавиш зависит от того, какой сосед по прогону оставил свою "
+            + "EventSystem живой, а какой снёс");
+        Assert.AreEqual(1, GuardNamesInTheScene().Count);
     }
 
     [Test]
