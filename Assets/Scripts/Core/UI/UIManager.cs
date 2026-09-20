@@ -19,7 +19,7 @@ namespace KitchenDesigner.Core.UI
         private Canvas? _canvas;
         private ContextMenuUI? _contextMenu;
         private GroupMenuUI? _groupMenu;
-        private HelpUI? _help;
+        private SettingsPanelUI? _settingsPanel;
         private PlacementController? _placement;
         private ElementSpawner? _spawner;
         private ProjectFileActions? _fileActions;
@@ -39,9 +39,9 @@ namespace KitchenDesigner.Core.UI
             specPanel.Build(_canvas.transform);
             _panels[ToolbarPanel.Specification] = specPanel;
 
-            var settingsPanel = gameObject.AddComponent<SettingsPanelUI>();
-            settingsPanel.Build(_canvas.transform);
-            _panels[ToolbarPanel.Settings] = settingsPanel;
+            _settingsPanel = gameObject.AddComponent<SettingsPanelUI>();
+            _settingsPanel.Build(_canvas.transform);
+            _panels[ToolbarPanel.Settings] = _settingsPanel;
 
             var sidebar = gameObject.AddComponent<SidebarUI>();
             sidebar.Build(_canvas.transform);
@@ -92,9 +92,6 @@ namespace KitchenDesigner.Core.UI
 
             var moduleBanner = gameObject.AddComponent<ModuleEditBannerUI>();
             moduleBanner.Build(_canvas.transform);
-
-            _help = gameObject.AddComponent<HelpUI>();
-            _help.Build(_canvas.transform);
 
             var demoDialog = gameObject.AddComponent<DemoModeDialogUI>();
             demoDialog.Build(_canvas.transform);
@@ -173,7 +170,7 @@ namespace KitchenDesigner.Core.UI
 
         public void ToggleHelp()
         {
-            if (_help != null) _help.Toggle();
+            _settingsPanel?.OpenControlsTab();
         }
     }
 }

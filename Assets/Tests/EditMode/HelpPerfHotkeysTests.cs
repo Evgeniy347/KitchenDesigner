@@ -1,44 +1,26 @@
 using System.IO;
 using NUnit.Framework;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Keybinding;
 using KitchenDesigner.Core.UI;
 
-/// <summary>Справка F1 — единственное место, где пользователь узнаёт про профилировщик,
-/// и она рукописная копия того, что умеет <c>PerfMonitor</c>. Копия расходится молча:
-/// строка про клавишу остаётся верной на вид и после того, как клавишу поменяли. Поэтому
-/// каждая строка справки про замер проверяется здесь ПРОТИВ самого замера, а не против
-/// памяти автора.</summary>
+/// <summary>Справка F1 раньше была единственным местом, где пользователь узнавал про
+/// профилировщик, и рукописной копией того, что умеет <c>PerfMonitor</c>. Она ушла на
+/// вкладку «Управление»: саму клавишу теперь называет строка привязки (её меняют, и текст
+/// не отстаёт, потому что это не текст, а форматирование живого <c>KeyChord</c>), а путь
+/// к файлу записи — единственное, что строка привязки не показывает, — переехал в
+/// подсказку «i» этой строки. Тест по-прежнему сверяет описание с РЕАЛЬНЫМ поведением
+/// <c>PerfMonitor</c>, а не с памятью автора.</summary>
 public class HelpPerfHotkeysTests
 {
-    private GameObject? _canvasGo;
-    private string _helpText = "";
     private bool _measuringWasOn;
 
     [SetUp]
-    public void SetUp()
-    {
-        _measuringWasOn = PerfMonitor.Enabled;
-
-        _canvasGo = new GameObject("HelpHotkeyTestCanvas");
-        var canvas = _canvasGo.AddComponent<Canvas>();
-        _canvasGo.AddComponent<CanvasScaler>();
-        _canvasGo.AddComponent<GraphicRaycaster>();
-        _canvasGo.AddComponent<HelpUI>().Build(canvas.transform);
-
-        var body = _canvasGo.transform.Find("HelpPanel/HelpText");
-        Assert.IsNotNull(body, "справка обязана построить свой текст — иначе проверять нечего");
-        _helpText = body!.GetComponent<TextMeshProUGUI>().text;
-    }
+    public void SetUp() => _measuringWasOn = PerfMonitor.Enabled;
 
     [TearDown]
-    public void TearDown()
-    {
-        UnityEngine.Object.DestroyImmediate(_canvasGo!);
-        PerfMonitor.Enabled = _measuringWasOn;
-    }
+    public void TearDown() => PerfMonitor.Enabled = _measuringWasOn;
 
     private static PerfMonitor NewMonitor(GameObject host)
     {
@@ -48,9 +30,11 @@ public class HelpPerfHotkeysTests
     }
 
     [Test]
-    public void Help_SaysF9TurnsTheMeasurementOn_AndF9ReallyTogglesIt()
+    public void PerfMonitorToggle_DefaultsToF9_AndF9ReallyTogglesIt()
     {
-        StringAssert.Contains("F9 ", _helpText, "справка обязана называть клавишу замера");
+        Assert.AreEqual("F9",
+            KeyChord.Format(KeyBindingDefaults.PrimaryOf(InputAction.PerfMonitorToggle)),
+            "строка привязки называет клавишу замера сама, по умолчанию — просто F9");
 
         var host = new GameObject("PerfHost");
         try
@@ -76,10 +60,11 @@ public class HelpPerfHotkeysTests
     /// выключен, и никогда его не выключает. Если бы справка описала его как второй
     /// переключатель, пользователь жал бы его на включённом замере и терял бы запись.</summary>
     [Test]
-    public void Help_SaysShiftF9StartsTheRecording_AndShiftF9NeverTurnsTheMeasurementOff()
+    public void PerfMonitorToggleRecording_DefaultsToShiftF9_AndNeverTurnsTheMeasurementOff()
     {
-        StringAssert.Contains("Shift + F9", _helpText,
-            "запись CSV висит именно на Shift+F9 — справка обязана назвать сочетание целиком");
+        Assert.AreEqual("Shift+F9",
+            KeyChord.Format(KeyBindingDefaults.PrimaryOf(InputAction.PerfMonitorToggleRecording)),
+            "запись CSV висит именно на Shift+F9 по умолчанию");
 
         var host = new GameObject("PerfHost");
         try
@@ -106,10 +91,11 @@ public class HelpPerfHotkeysTests
     /// <summary>Путь из справки — обещание, по которому пользователь идёт искать файл.
     /// Сверяется он с тем путём, который лог реально возвращает, а не с константой рядом.</summary>
     [Test]
-    public void Help_NamesTheFolderAndTheFileName_TheCsvLogReallyWrites()
+    public void PerfRecordingHint_NamesTheFolderAndTheFileName_TheCsvLogReallyWrites()
     {
-        StringAssert.Contains("test-results/perf/perf_", _helpText,
-            "справка обязана сказать, ГДЕ искать файл и как он называется");
+        string hint = HintText.Of("settings.control.perfRecordingFile");
+        StringAssert.Contains("test-results/perf/perf_", hint,
+            "подсказка обязана сказать, ГДЕ искать файл и как он называется");
 
         var log = new PerfCsvLog(new[] { "frame", "dt_ms" }, 4);
         log.Start();

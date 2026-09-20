@@ -19,6 +19,8 @@ namespace KitchenDesigner.Core.UI
         private static readonly string[] TabLabels =
             { "Проект", "Вид", "Строительство", "Управление", "Фото режим", "Свет", "MCP", "О программе" };
 
+        private const int ControlTabIndex = 3;
+
         private readonly SettingsRowFactory _rows = new();
         private readonly SettingsTabStrip _tabs = new();
 
@@ -26,8 +28,10 @@ namespace KitchenDesigner.Core.UI
         private WindowBody? _body;
         private SettingsProjectTab? _projectTab;
         private SettingsViewTab? _viewTab;
+        private SettingsControlTab? _controlTab;
         private SettingsPhotoTab? _photoTab;
         private SettingsMcpTab? _mcpTab;
+        private KeybindingCaptureGate? _captureGate;
 
         public void Build(Transform canvas)
         {
@@ -54,16 +58,25 @@ namespace KitchenDesigner.Core.UI
 
             _body = WindowBody.Create(panel.rectTransform, BodyTopInset, BodyBottomInset,
                 PanelSidePad * 0.5f);
-            _tabs.AfterSwitch = () => _body?.Fit();
+            _tabs.AfterSwitch = () =>
+            {
+                _body?.Fit();
+                if (_tabs.CurrentIndex != ControlTabIndex) _captureGate?.CancelIfCapturing();
+            };
+
+            _captureGate = gameObject.AddComponent<KeybindingCaptureGate>();
+            _captureGate.Build(canvas);
 
             _projectTab = new SettingsProjectTab(_rows, RefreshDependentStates);
             _viewTab = new SettingsViewTab(_rows, RefreshDependentStates);
+            _controlTab = new SettingsControlTab(_rows);
             _photoTab = new SettingsPhotoTab(_rows);
 
             _projectTab.Build(AddPage("Tab_Project"), s, ContentTopY);
             _viewTab.Build(AddPage("Tab_View"), ContentTopY);
             new SettingsConstructionTab(_rows).Build(AddPage("Tab_Construction"), s, ContentTopY);
-            new SettingsControlTab(_rows).Build(AddPage("Tab_Control"), s, ContentTopY);
+            _controlTab.Build(AddPage("Tab_Control"), s, ContentTopY, _captureGate,
+                () => _body?.Fit());
             _photoTab.Build(AddPage("Tab_Photo"), s, ContentTopY);
             new SettingsLightTab(_rows).Build(AddPage("Tab_Light"), s, ContentTopY);
             _mcpTab = new SettingsMcpTab(_rows);
@@ -99,6 +112,14 @@ namespace KitchenDesigner.Core.UI
             _rows.ReadBackFromSettings();
             _photoTab?.RefreshPresetLabel();
             _mcpTab?.Refresh();
+            _controlTab?.RefreshConflicts();
+        }
+
+        public void OpenControlsTab()
+        {
+            SetVisible(true);
+            _tabs.Switch(ControlTabIndex);
+            _body?.Fit();
         }
 
         private void RefreshDependentStates()
@@ -122,7 +143,11 @@ namespace KitchenDesigner.Core.UI
         public void SetVisible(bool visible)
         {
             if (_root != null) _root.SetActive(visible);
-            if (!visible) return;
+            if (!visible)
+            {
+                _captureGate?.CancelIfCapturing();
+                return;
+            }
             SyncFromSettings();
             _photoTab?.SyncActiveToggle();
             RefreshDependentStates();

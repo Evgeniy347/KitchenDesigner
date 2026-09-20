@@ -18,6 +18,8 @@ namespace KitchenDesigner.Core.UI
 
         public Action? AfterSwitch { get; set; }
 
+        public int CurrentIndex { get; private set; }
+
         public GameObject AddPage(Transform parent, string name, float originY)
         {
             var page = new GameObject(name);
@@ -84,6 +86,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Switch(int index)
         {
+            CurrentIndex = index;
             for (int i = 0; i < _buttons.Count; i++)
                 _buttons[i].GetComponent<Image>().color =
                     i == index ? UIStyle.SurfaceActive : UIStyle.SurfaceInactive;
