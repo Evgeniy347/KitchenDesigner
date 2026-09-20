@@ -1,4 +1,5 @@
 using System;
+using KitchenDesigner.Core.Keybinding;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -62,7 +63,7 @@ namespace KitchenDesigner.Core.UI
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.BackQuote) && !CameraController.IsTypingInInputField())
+            if (InputMap.Down(InputAction.ToggleDevConsole) && !CameraController.IsTypingInInputField())
             {
                 _root!.SetActive(!_root.activeSelf);
                 _shownRevision = NothingShownYet;
