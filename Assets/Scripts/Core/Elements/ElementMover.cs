@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.Keybinding;
 using KitchenDesigner.Core.UI;
 using KitchenDesigner.Core.Update;
 
@@ -245,8 +246,8 @@ namespace KitchenDesigner.Core
 
         private void HandleDuplicate()
         {
-            if (!Input.GetKeyDown(KeyCode.D) || IsDragging) return;
-            if (!CtrlHeld) return;
+            if (IsDragging) return;
+            if (!InputMap.Down(InputAction.DuplicateSelected)) return;
 
             var sel = SelectionManager.Instance;
             var sources = DuplicateSources(sel);
@@ -278,7 +279,7 @@ namespace KitchenDesigner.Core
         private void HandleDelete()
         {
             if (IsDragging) return;
-            if (!Input.GetKeyDown(KeyCode.Delete)) return;
+            if (!InputMap.Down(InputAction.DeleteSelected)) return;
 
             var sel = SelectionManager.Instance;
             if (sel == null) return;
@@ -427,8 +428,8 @@ namespace KitchenDesigner.Core
 
             if (_dragPaint.Count == 0) SaveDragMaterial(_target!);
 
-            if (Input.GetKeyDown(KeyCode.X)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.X);
-            if (Input.GetKeyDown(KeyCode.Z)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.Z);
+            if (InputMap.Down(InputAction.DragAxisLockX)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.X);
+            if (InputMap.Down(InputAction.DragAxisLockZ)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.Z);
             newPos = DragGesture.ApplyAxisLock(newPos, _axisLock, _startPosition, _heldDragY,
                 keepsItsOwnHeight: !_targetIsWallOpening);
 
