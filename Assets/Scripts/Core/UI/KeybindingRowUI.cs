@@ -155,17 +155,16 @@ namespace KitchenDesigner.Core.UI
 
         private void BeginCapture(Cell cell)
         {
-            if (_captureGate.IsCapturing) return;
-
-            cell.Label.text = "...";
-            cell.Button.GetComponent<Image>().color = UIStyle.Accent;
-
             _captureGate.Begin(result =>
             {
                 if (!result.WasCancelled) Commit(cell, result.Chord);
                 RefreshAll();
                 _afterChange();
             });
+
+            if (!_captureGate.IsCapturing) return;
+            cell.Label.text = "...";
+            cell.Button.GetComponent<Image>().color = UIStyle.Accent;
         }
 
         private void ClearCell(Cell cell)

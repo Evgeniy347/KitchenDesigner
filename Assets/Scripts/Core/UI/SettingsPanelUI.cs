@@ -103,6 +103,7 @@ namespace KitchenDesigner.Core.UI
         private void OnDestroy()
         {
             ProjectWindows.Unregister(this);
+            _captureGate?.CancelIfCapturing();
             _photoTab?.Dispose();
             _viewTab?.Dispose();
         }
