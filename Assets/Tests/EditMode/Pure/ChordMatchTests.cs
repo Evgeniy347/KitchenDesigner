@@ -85,4 +85,60 @@ public class ChordMatchTests
         Assert.IsFalse(ChordMatch.ModifiersMatch(chord, ctrlHeld: true, altHeld: true, shiftHeld: false),
             "лишний зажатый Alt делает это другим аккордом, а не тем же Ctrl+S с довеском");
     }
+
+    [Test]
+    public void RequiredModifiersOnly_DefaultKeyWithoutModifier_Fires_EvenWithCtrlHeld()
+    {
+        var chord = new KeyChord(KeyCode.X);
+
+        Assert.IsTrue(
+            ChordMatch.Fires(chord, keyEvent: true, ctrlHeld: true, altHeld: false, shiftHeld: false,
+                mode: ChordMatchMode.RequiredModifiersOnly),
+            "блокировка оси X по умолчанию обязана срабатывать и при зажатом Ctrl - он занят "
+            + "инверсией прилипания в том же перетаскивании, а не переопределён этим действием");
+    }
+
+    [Test]
+    public void RequiredModifiersOnly_ExplicitlyBoundModifier_DoesNotFire_WhenNotHeld()
+    {
+        var chord = new KeyChord(KeyCode.X, ctrl: true);
+
+        Assert.IsFalse(
+            ChordMatch.Fires(chord, keyEvent: true, ctrlHeld: false, altHeld: false, shiftHeld: false,
+                mode: ChordMatchMode.RequiredModifiersOnly),
+            "если пользователь сам переназначил блокировку оси на Ctrl+X, модификатор снова "
+            + "обязателен - без Ctrl аккорд не тот, что попросили");
+    }
+
+    [Test]
+    public void RequiredModifiersOnly_ExplicitlyBoundModifier_Fires_WhenHeld()
+    {
+        var chord = new KeyChord(KeyCode.X, ctrl: true);
+
+        Assert.IsTrue(
+            ChordMatch.Fires(chord, keyEvent: true, ctrlHeld: true, altHeld: false, shiftHeld: false,
+                mode: ChordMatchMode.RequiredModifiersOnly));
+    }
+
+    [Test]
+    public void RequiredModifiersOnly_ExplicitlyBoundModifier_StillFires_WithAnUnrelatedExtraModifierHeld()
+    {
+        var chord = new KeyChord(KeyCode.X, ctrl: true);
+
+        Assert.IsTrue(
+            ChordMatch.Fires(chord, keyEvent: true, ctrlHeld: true, altHeld: false, shiftHeld: true,
+                mode: ChordMatchMode.RequiredModifiersOnly),
+            "лишний Shift, не входящий в назначенный аккорд, не должен блокировать срабатывание "
+            + "в этом режиме - иначе он не отличался бы от ExactModifiers");
+    }
+
+    [Test]
+    public void ExactModifiers_IsStillTheDefaultMode_ForBackwardCompatibleCallers()
+    {
+        var chord = new KeyChord(KeyCode.D);
+
+        Assert.IsFalse(ChordMatch.Fires(chord, keyEvent: true, ctrlHeld: true, altHeld: false, shiftHeld: false),
+            "вызов без явного режима обязан остаться строгим - иначе баг D/Ctrl+D из "
+            + "CameraController вернётся для всех остальных действий");
+    }
 }

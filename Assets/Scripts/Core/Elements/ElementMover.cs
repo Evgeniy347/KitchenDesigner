@@ -428,8 +428,10 @@ namespace KitchenDesigner.Core
 
             if (_dragPaint.Count == 0) SaveDragMaterial(_target!);
 
-            if (InputMap.Down(InputAction.DragAxisLockX)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.X);
-            if (InputMap.Down(InputAction.DragAxisLockZ)) _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.Z);
+            if (InputMap.Down(InputAction.DragAxisLockX, ChordMatchMode.RequiredModifiersOnly))
+                _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.X);
+            if (InputMap.Down(InputAction.DragAxisLockZ, ChordMatchMode.RequiredModifiersOnly))
+                _axisLock = DragGesture.Toggle(_axisLock, DragAxisLock.Z);
             newPos = DragGesture.ApplyAxisLock(newPos, _axisLock, _startPosition, _heldDragY,
                 keepsItsOwnHeight: !_targetIsWallOpening);
 
