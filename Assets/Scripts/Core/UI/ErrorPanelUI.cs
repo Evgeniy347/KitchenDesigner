@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using KitchenDesigner.Core.Analysis;
+using KitchenDesigner.Core.Keybinding;
 using TMPro;
 using UnityEngine;
 
@@ -238,13 +239,13 @@ namespace KitchenDesigner.Core.UI
         {
             if (CameraController.IsTypingInInputField()) return;
 
-            if (Input.GetKeyDown(KeyCode.C) && AnyCtrl())
+            if (InputMap.Down(InputAction.ErrorPanelCopy))
             {
                 CopySelectedToClipboard();
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.A) && AnyCtrl())
+            if (InputMap.Down(InputAction.ErrorPanelSelectAll))
             {
                 SelectAll();
                 return;
