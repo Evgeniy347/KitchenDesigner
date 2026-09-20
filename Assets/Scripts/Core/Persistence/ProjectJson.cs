@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.Keybinding;
 
 namespace KitchenDesigner.Core
 {
@@ -8,7 +9,8 @@ namespace KitchenDesigner.Core
         private const string TypeKey = "\"" + nameof(ElementData.elementType) + "\"";
 
         public static string Serialize(ProjectData data) =>
-            RawElementRecords.Apply(JsonUtility.ToJson(data, true), RawRecordsOf(data));
+            KeyBindingsJsonTrim.RemoveWhenEmpty(
+                RawElementRecords.Apply(JsonUtility.ToJson(data, true), RawRecordsOf(data)));
 
         public static ProjectData? Deserialize(string json)
         {
