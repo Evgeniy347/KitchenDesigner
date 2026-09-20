@@ -6,6 +6,7 @@ namespace KitchenDesigner.Core.Keybinding
     public static class KeyBindingDefaults
     {
         private static readonly KeyChord[] Primary = BuildPrimary();
+        private static readonly KeyChord[] Alt = BuildAlt();
 
         private static KeyChord[] BuildPrimary()
         {
@@ -53,8 +54,22 @@ namespace KitchenDesigner.Core.Keybinding
             return table;
         }
 
+        private static KeyChord[] BuildAlt()
+        {
+            var byAction = new Dictionary<InputAction, KeyChord>
+            {
+                [InputAction.CameraZoomIn] = new KeyChord(KeyCode.KeypadPlus),
+                [InputAction.CameraZoomOut] = new KeyChord(KeyCode.KeypadMinus),
+                [InputAction.Redo] = new KeyChord(KeyCode.Z, ctrl: true, shift: true),
+            };
+
+            var table = new KeyChord[InputActionCatalog.All.Length];
+            foreach (var pair in byAction) table[(int)pair.Key] = pair.Value;
+            return table;
+        }
+
         public static KeyChord PrimaryOf(InputAction action) => Primary[(int)action];
 
-        public static KeyChord AltOf(InputAction action) => KeyChord.Empty;
+        public static KeyChord AltOf(InputAction action) => Alt[(int)action];
     }
 }
