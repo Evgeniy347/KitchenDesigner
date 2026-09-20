@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using KitchenDesigner.Core.Keybinding;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -622,7 +623,7 @@ namespace KitchenDesigner.Core.UI
         {
             KeyCode.UpArrow, KeyCode.DownArrow, KeyCode.LeftArrow, KeyCode.RightArrow,
             KeyCode.Return, KeyCode.KeypadEnter, KeyCode.Escape,
-            KeyCode.LeftBracket, KeyCode.RightBracket, KeyCode.Slash,
+            KeyCode.LeftBracket, KeyCode.RightBracket,
         };
 
         private void HandleKeyboardShortcuts()
@@ -631,6 +632,12 @@ namespace KitchenDesigner.Core.UI
             {
                 _focusSearchNextFrame = false;
                 FocusSearchField();
+                return;
+            }
+
+            if (InputMap.Down(InputAction.CatalogOpenSearch))
+            {
+                HandleCatalogOpenSearchShortcut();
                 return;
             }
 
@@ -672,15 +679,18 @@ namespace KitchenDesigner.Core.UI
                 return;
             }
 
-            if (key == KeyCode.Slash)
-            {
-                SetExpanded(true);
-                _focusSearchNextFrame = true;
-                return;
-            }
-
             if (key == KeyCode.Escape && !_pinned && _expanded && OwnsEscape(catalogCollapsible: true))
                 SetExpanded(false);
+        }
+
+        private void HandleCatalogOpenSearchShortcut()
+        {
+            if (IsSearchFieldFocused()) return;
+            if (IsTypingElsewhere()) return;
+            if (_kbSelectedTile != null) return;
+
+            SetExpanded(true);
+            _focusSearchNextFrame = true;
         }
 
         private void FocusSearchField()
