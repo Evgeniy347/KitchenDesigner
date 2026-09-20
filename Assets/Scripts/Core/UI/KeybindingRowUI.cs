@@ -33,6 +33,7 @@ namespace KitchenDesigner.Core.UI
             public bool Primary;
             public Button Button = null!;
             public TextMeshProUGUI Label = null!;
+            public GameObject Clear = null!;
         }
 
         public KeybindingRowUI(KitchenSettings settings, KeybindingCaptureGate captureGate, Action afterChange)
@@ -143,12 +144,17 @@ namespace KitchenDesigner.Core.UI
 
             x += ChordBtnW + GapSmall;
 
-            var clear = UIFactory.CreateDangerButton("KbClr_" + action + (primary ? "_P" : "_A"), rowRect,
+            var clear = UIFactory.CreateButton("KbClr_" + action + (primary ? "_P" : "_A"), rowRect,
                 UIStyle.GlyphClose, new Vector2(x + ClearBtnW * 0.5f, 0f), new Vector2(ClearBtnW, RowH - 4f),
                 () => ClearCell(cell));
             var clearCaption = clear.GetComponentInChildren<TextMeshProUGUI>();
-            if (clearCaption != null) clearCaption.fontSize = 12;
+            if (clearCaption != null)
+            {
+                clearCaption.fontSize = 12;
+                clearCaption.color = UIStyle.TextSecondary;
+            }
             TooltipUI.Attach(clear.gameObject, "Очистить");
+            cell.Clear = clear.gameObject;
 
             x += ClearBtnW;
         }
@@ -192,15 +198,22 @@ namespace KitchenDesigner.Core.UI
                 bool inConflict = KeybindingConflicts.IsInConflict(conflicts, chord);
 
                 cell.Label.text = ChordText(chord, inConflict);
-                cell.Label.color = inConflict ? UIStyle.HighlightError : UIStyle.Text;
+                cell.Label.color = ChordColor(chord, inConflict);
                 cell.Button.GetComponent<Image>().color = UIFactory.ButtonColor;
+                cell.Clear.SetActive(!chord.IsEmpty);
             }
         }
 
         private static string ChordText(KeyChord chord, bool inConflict)
         {
-            string text = chord.IsEmpty ? "—" : KeyChord.Format(chord);
+            string text = chord.IsEmpty ? "—" : KeyChordDisplay.Of(chord);
             return inConflict ? "! " + text : text;
+        }
+
+        private static Color ChordColor(KeyChord chord, bool inConflict)
+        {
+            if (inConflict) return UIStyle.HighlightError;
+            return chord.IsEmpty ? UIStyle.TextSecondary : UIStyle.Text;
         }
 
         private string ConflictTooltip(Cell cell)
