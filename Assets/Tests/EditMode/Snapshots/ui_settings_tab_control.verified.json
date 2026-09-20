@@ -48,6 +48,11 @@
     },
     {
       "type": "Label",
+      "text": "Замер производительности: запись в файл",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
       "text": "Скорость WASD",
       "position": [-240, 0]
     },
@@ -63,6 +68,161 @@
     },
     {
       "type": "Label",
+      "text": "Действие",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Открыть/закрыть дверь, окно, фасад; переключить выключатель",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера: фокус на выделенном",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера: назад",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера: вперёд",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера: влево",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера: вправо",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера: поворот вниз",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера: поворот влево",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера: поворот вправо",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера: поворот вверх",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера: приблизить",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера: отдалить",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Раскрыть каталог и перейти в поиск",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Удалить объект(ы)",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Перетаскивание: ограничить осью X",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Перетаскивание: ограничить осью Z",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Дублировать",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Панель ошибок: скопировать выделенное",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Панель ошибок: выделить всё",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Замер производительности: вкл/выкл",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Повторить",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сохранить проект",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Консоль разработчика: показать/скрыть",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Показать справку",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Переключить фоторежим",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Отменить",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Вид спереди",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Вид сбоку",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Вид сверху",
+      "position": [-130, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
       "text": "i",
       "position": [0, 0]
     },
@@ -75,6 +235,541 @@
       "type": "Label",
       "text": "i",
       "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Каталог",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Диагностика",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Выделение и правка",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Виды",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Окна и справка",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Каталог деталей: в поле поиска ↓ переходит в сетку плиток; в сетке ← → ↑ ↓ — соседняя плитка, Enter ставит выбранную, [ / ] меняет вариант, Escape снимает выделение плитки",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Пока фокус в другом поле ввода, каталог не читает ни Enter, ни стрелки, ни [ / ], ни Escape — выделение плитки остаётся, но молчит",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "СКМ / ЛКМ по пустому месту — панорамирование",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "ПКМ + движение — поворот камеры на месте",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Колёсико мыши — вперёд / назад (зум)",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Ctrl + перетаскивание или ресайз — обратная привязка (вкл/выкл)",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Escape закрывает по одному хозяину за нажатие: перетаскивание → пикер связи со светом → измерение → пипетка → подтверждение удаления → контекстное меню → меню группы → плитка каталога → каталог → панель дня/ночи → музыка",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Мышь и другое, не привязано к клавише",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Горячие клавиши",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "E",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "F",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "S",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "W",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "A",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "D",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "↓",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "←",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "→",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "↑",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "=",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "-",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "/",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Delete",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "X",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Z",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Ctrl+D",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Ctrl+C",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Ctrl+A",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Shift+F9",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "F9",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Ctrl+Y",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Ctrl+S",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "`",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "F1",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "F10",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Ctrl+Z",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "3",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "2",
+      "position": [34, 0]
+    },
+    {
+      "type": "Button",
+      "text": "1",
+      "position": [34, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Основная",
+      "position": [45, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [94, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Num +",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Num -",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Ctrl+Shift+Z",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [161, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Альтернативная",
+      "position": [172, 0]
     },
     {
       "type": "Label",
@@ -90,6 +785,21 @@
       "type": "Label",
       "text": "1.0×",
       "position": [220, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [221, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [221, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [221, 0]
     },
     {
       "type": "Button",
