@@ -70,6 +70,10 @@ namespace KitchenDesigner.Core.MCP
                 () => S.WasdSpeed, v => S.WasdSpeed = v),
             SettingKey.Number("arrow_speed", "arrowSpeed",
                 () => S.ArrowSpeed, v => S.ArrowSpeed = v),
+            SettingKey.Flag("mouse_invert_x", "mouseInvertX",
+                () => S.MouseInvertX, v => S.MouseInvertX = v),
+            SettingKey.Flag("mouse_invert_y", "mouseInvertY",
+                () => S.MouseInvertY, v => S.MouseInvertY = v),
 
             SettingKey.Number("construction_region", "constructionRegion",
                 () => (int)S.ConstructionRegion, v => S.ConstructionRegion = (ConstructionRegion)(int)v),
