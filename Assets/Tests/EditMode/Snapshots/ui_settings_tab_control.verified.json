@@ -48,6 +48,16 @@
     },
     {
       "type": "Label",
+      "text": "Инверсия мыши по вертикали",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Инверсия мыши по горизонтали",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
       "text": "Скорость WASD",
       "position": [-240, 0]
     },
@@ -240,6 +250,16 @@
       "type": "Label",
       "text": "Вид сверху",
       "position": [-147, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
@@ -880,6 +900,18 @@
       "type": "Label",
       "text": "1.0×",
       "position": [220, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Инверсия мыши по вертикали",
+      "isOn": false,
+      "position": [224, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Tgl_Инверсия мыши по горизонтали",
+      "isOn": false,
+      "position": [224, 0]
     },
     {
       "type": "Button",
