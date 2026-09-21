@@ -32,7 +32,7 @@ namespace KitchenDesigner.Core.UI
                 Descend(node.GetChild(i), region, regionTop, into);
         }
 
-        private static bool ClipsItsOwnContent(GameObject go) =>
+        public static bool ClipsItsOwnContent(GameObject go) =>
             go.GetComponent<ScrollRect>() != null
             || go.GetComponent<Mask>() != null
             || go.GetComponent<RectMask2D>() != null

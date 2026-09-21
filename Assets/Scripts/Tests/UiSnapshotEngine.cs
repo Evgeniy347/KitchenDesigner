@@ -129,14 +129,23 @@ namespace KitchenDesigner.Tests
             public List<UiNode> Children = new();
         }
 
-        private static void Walk(GameObject go, List<UiNode> nodes, HashSet<GameObject> seen)
+        private static void Walk(GameObject go, List<UiNode> nodes, HashSet<GameObject> seen) =>
+            Walk(go, nodes, seen, null);
+
+        /// <summary>`clip` — окно ближайшего предка, который режет своё содержимое
+        /// (прокрутка, маска, поле ввода). Узел, целиком уехавший за это окно, в
+        /// снимок ПОПАДАЕТ — состав снимка не зависит от прокрутки, иначе эталон
+        /// пришлось бы принимать заново на каждый сдвиг, — но помечается `Clipped`,
+        /// и проверка наложений его не считает: на экране его нет.</summary>
+        private static void Walk(GameObject go, List<UiNode> nodes, HashSet<GameObject> seen,
+            Rect? clip)
         {
             if (!go.activeSelf || seen.Contains(go)) return;
 
             var node = DetectNode(go);
             if (node != null)
             {
-                node.Placed = PlaceOnCanvas(go, node);
+                node.Placed = PlaceOnCanvas(go, node, clip);
                 seen.Add(go);
                 nodes.Add(node);
 
@@ -144,8 +153,39 @@ namespace KitchenDesigner.Tests
                     MarkLabelSeen(go, seen);
             }
 
+            var inside = KitchenDesigner.Core.UI.RectSpans.ClipsItsOwnContent(go)
+                ? Narrowed(clip, WorldRectOf(go))
+                : clip;
+
             foreach (Transform child in go.transform)
-                Walk(child.gameObject, nodes, seen);
+                Walk(child.gameObject, nodes, seen, inside);
+        }
+
+        private static Rect? WorldRectOf(GameObject go)
+        {
+            var rt = go.GetComponent<RectTransform>();
+            if (rt == null) return null;
+
+            var corners = new Vector3[4];
+            rt.GetWorldCorners(corners);
+            return Rect.MinMaxRect(
+                Mathf.Min(corners[0].x, corners[2].x), Mathf.Min(corners[0].y, corners[2].y),
+                Mathf.Max(corners[0].x, corners[2].x), Mathf.Max(corners[0].y, corners[2].y));
+        }
+
+        /// <summary>Вложенные маски режут по пересечению: внутренняя не вправе
+        /// показать то, что уже отрезала внешняя.</summary>
+        private static Rect? Narrowed(Rect? outer, Rect? inner)
+        {
+            if (inner == null) return outer;
+            if (outer == null) return inner;
+
+            float minX = Mathf.Max(outer.Value.xMin, inner.Value.xMin);
+            float minY = Mathf.Max(outer.Value.yMin, inner.Value.yMin);
+            float maxX = Mathf.Min(outer.Value.xMax, inner.Value.xMax);
+            float maxY = Mathf.Min(outer.Value.yMax, inner.Value.yMax);
+
+            return Rect.MinMaxRect(minX, minY, Mathf.Max(minX, maxX), Mathf.Max(minY, maxY));
         }
 
         /// <summary>Точка узла в ОБЩЕМ для холста пространстве, а не
@@ -153,7 +193,7 @@ namespace KitchenDesigner.Tests
         /// вкладки она законно одинакова, каждый сидит в своей строке. Угловые
         /// точки берём у самого RectTransform, поэтому масштаб и вложенность
         /// учтены без ручной арифметики.</summary>
-        private static UiNodeOverlap.Placed PlaceOnCanvas(GameObject go, UiNode node)
+        private static UiNodeOverlap.Placed PlaceOnCanvas(GameObject go, UiNode node, Rect? clip)
         {
             var id = node.Type + " «" + Describe(node) + "» (" + go.name + ")";
 
@@ -167,8 +207,12 @@ namespace KitchenDesigner.Tests
             float minY = Mathf.Min(corners[0].y, corners[2].y);
             float maxY = Mathf.Max(corners[0].y, corners[2].y);
 
+            bool clipped = clip.HasValue
+                && (maxX <= clip.Value.xMin || minX >= clip.Value.xMax
+                    || maxY <= clip.Value.yMin || minY >= clip.Value.yMax);
+
             return new UiNodeOverlap.Placed(id,
-                (minX + maxX) * 0.5f, (minY + maxY) * 0.5f, maxX - minX, maxY - minY);
+                (minX + maxX) * 0.5f, (minY + maxY) * 0.5f, maxX - minX, maxY - minY, clipped);
         }
 
         private static string Describe(UiNode node)

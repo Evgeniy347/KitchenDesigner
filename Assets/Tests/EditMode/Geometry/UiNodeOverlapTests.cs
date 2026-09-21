@@ -105,6 +105,47 @@ namespace KitchenDesigner.Tests.Geometry
                 "а два видимых — свалка, и исключение не вправе её прикрыть");
         }
 
+        /// <summary>Второе исключение — узел, целиком уехавший за свою маску
+        /// прокрутки. Панель настроек едет внутри маски, а её шапка стоит
+        /// неподвижно, поэтому при подходящем смещении прокрутки строка,
+        /// скрытая под шапкой, вставала «в одну точку» с кнопкой вкладки:
+        /// `Button «MCP» (Tab_6)` и `Button «—» (KbBtn_ToggleHelp_A)`. Человек
+        /// второй не видел вовсе — её срезала маска.
+        ///
+        /// Проверяется ПАРОЙ, иначе исключение однажды проглотит настоящую
+        /// свалку: скрытый узел не считается, а два ВИДИМЫХ в той же точке
+        /// по-прежнему красные. Сторож, переставший падать, — не сторож
+        /// (`agents/TEST-DESIGN.md`).</summary>
+        [Test]
+        public void ANodeClippedAwayByItsScrollMask_IsExcluded_ButTwoVisibleOnesStillCollide()
+        {
+            var underTheHeader = new List<UiNodeOverlap.Placed>
+            {
+                At("Button «MCP» (Tab_6)", 165f, 356f),
+                new UiNodeOverlap.Placed("Button «—» (KbBtn_ToggleHelp_A)",
+                    165f, 356f, 90f, 28f, clipped: true),
+            };
+
+            Assert.IsEmpty(UiNodeOverlap.Collisions(underTheHeader),
+                "узел за краем маски не виден на экране: считать его свалкой значит "
+                + "краснеть от прокрутки, а не от вёрстки");
+            Assert.IsFalse(UiNodeOverlap.Draws(underTheHeader[1]),
+                "срезанный маской узел ничего не рисует — по тому же правилу, по которому "
+                + "не рисует узел нулевой площади");
+
+            underTheHeader.Add(At("Button «Закрыть» (SetClose)", 165f, 356f));
+
+            Assert.AreEqual(1, UiNodeOverlap.Collisions(underTheHeader).Count,
+                "а два ВИДИМЫХ узла в той же точке обязаны остаться свалкой — исключение "
+                + "не вправе её прикрыть");
+            StringAssert.Contains("Tab_6", UiNodeOverlap.Collisions(underTheHeader)[0],
+                "группа обязана назвать оба видимых узла, иначе по сообщению не найти, что с чем");
+            StringAssert.DoesNotContain("KbBtn_ToggleHelp_A",
+                UiNodeOverlap.Collisions(underTheHeader)[0],
+                "скрытый узел не имеет права попасть даже в имена группы: по нему пошли бы "
+                + "искать дефект, которого на экране нет");
+        }
+
         /// <summary>Сообщение обязано быть одинаковым при любом порядке обхода
         /// сцены: иначе дифф двух прогонов неизменившегося кода читается как
         /// изменение.</summary>
