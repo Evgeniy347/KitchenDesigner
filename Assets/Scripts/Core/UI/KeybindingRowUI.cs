@@ -12,15 +12,19 @@ namespace KitchenDesigner.Core.UI
         private const float ContentW = SettingsRowFactory.ContentW;
         private const float RowH = 32f;
         private const float RowGap = 6f;
-        private const float LabelW = 220f;
-        private const float ChordBtnW = 96f;
-        private const float ClearBtnW = 18f;
-        private const float GapSmall = 3f;
-        private const float GapMed = 6f;
-        private const float GapGroup = 10f;
+        private const float ClearBtnW = KeybindingCellLayout.ClearWidth;
+        private const float GapSmall = KeybindingCellLayout.GapBeforeClear;
+        private const float GapMed = KeybindingCellLayout.GapAfterLabel;
+        private const float GapGroup = KeybindingCellLayout.GapBetweenCells;
         private const float HeaderH = 22f;
-        private const int ChordFontMax = 14;
-        private const int ChordFontMin = 8;
+        private const int ChordFontMax = KeybindingCellLayout.MaxCaptionFontSize;
+        private const int ChordFontMin = KeybindingCellLayout.MinCaptionFontSize;
+
+        private static readonly float ChordBtnW =
+            KeybindingCellLayout.CellWidth(KeybindingCaption.LongestLength());
+
+        private static readonly float LabelW =
+            KeybindingCellLayout.LabelWidth(ContentW, ChordBtnW);
 
         private readonly KitchenSettings _settings;
         private readonly KeybindingCaptureGate _captureGate;

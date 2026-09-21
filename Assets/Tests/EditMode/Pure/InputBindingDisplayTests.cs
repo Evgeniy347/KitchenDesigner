@@ -10,7 +10,7 @@ using KitchenDesigner.Tests.Geometry;
 /// <summary>
 /// У привязки, как и у аккорда, два представления: `InputBinding.Format` — это ХРАНЕНИЕ
 /// (оно уходит в json и разбирается обратно), `InputBindingDisplay` — подпись на кнопке.
-/// Вкладка по-русски, поэтому жест читается «ПКМ с движением», а в файле проекта лежит
+/// Вкладка по-русски, поэтому жест читается «ПКМ+движение», а в файле проекта лежит
 /// «RMB+Move». Проверки те же три, что и у нумпада: хранение цело, подпись по-русски и
 /// — сенсор — эти строки РАЗНЫЕ.
 /// </summary>
@@ -32,7 +32,7 @@ public class InputBindingDisplayTests
     {
         Assert.AreEqual("ЛКМ", InputBindingDisplay.Of(
             InputBinding.FromGesture(new MouseGesture(MouseButtonKind.Left))));
-        Assert.AreEqual("ПКМ с движением", InputBindingDisplay.Of(
+        Assert.AreEqual("ПКМ+движение", InputBindingDisplay.Of(
             InputBinding.FromGesture(new MouseGesture(MouseButtonKind.Right, withMotion: true))));
         Assert.AreEqual("Колесо", InputBindingDisplay.Of(
             InputBinding.FromGesture(MouseGesture.Wheel())));
@@ -100,7 +100,7 @@ public class InputBindingDisplayTests
     }
 
     /// <summary>Тот же запрет, что и у клавишной подписи, и по той же причине: попади
-    /// подпись в сохранение — в файл уедет «ПКМ с движением», чего `InputBinding.Parse`
+    /// подпись в сохранение — в файл уедет «ПКМ+движение», чего `InputBinding.Parse`
     /// не разберёт, и привязка молча вернётся к заводской.</summary>
     [Test]
     public void TheDisplayFormatter_IsUsedByTheUiOnly_NeverBySaveOrLoad()

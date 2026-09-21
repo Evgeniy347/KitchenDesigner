@@ -15,7 +15,7 @@ namespace KitchenDesigner.Core.UI
         };
 
         private const string WheelReading = "Колесо";
-        private const string MotionReading = " с движением";
+        private const string MotionReading = "+движение";
 
         public static string Of(InputBinding binding)
         {
