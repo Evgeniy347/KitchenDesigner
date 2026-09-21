@@ -51,6 +51,8 @@
     "mouseSensitivity": 2.0,
     "wasdSpeed": 0.5,
     "arrowSpeed": 1.5,
+    "mouseInvertX": false,
+    "mouseInvertY": false,
     "photoQuality": 2,
     "photoShadows": true,
     "photoSoftShadows": true,
