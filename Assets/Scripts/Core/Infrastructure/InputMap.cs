@@ -37,7 +37,7 @@ namespace KitchenDesigner.Core
         public static bool Down(InputAction action, ChordMatchMode mode = ChordMatchMode.ExactModifiers) =>
             !SceneInputMuted && Fires(action, Input.GetKeyDown, mode);
 
-        public static bool Held(InputAction action, ChordMatchMode mode = ChordMatchMode.ExactModifiers) =>
+        public static bool Held(InputAction action, ChordMatchMode mode = ChordMatchMode.RequiredModifiersOnly) =>
             !SceneInputMuted && Fires(action, Input.GetKey, mode);
 
         public static bool Up(InputAction action, ChordMatchMode mode = ChordMatchMode.ExactModifiers) =>
@@ -69,6 +69,12 @@ namespace KitchenDesigner.Core
             bool ctrl = false, bool alt = false, bool shift = false,
             ChordMatchMode mode = ChordMatchMode.ExactModifiers) =>
             !SceneInputMuted && FiresCore(action, k => k == pressedKey, ctrl, alt, shift, mode);
+
+        internal static bool HeldWithSimulatedKeyForTests(
+            InputAction action, KeyCode heldKey,
+            bool ctrl = false, bool alt = false, bool shift = false,
+            ChordMatchMode mode = ChordMatchMode.RequiredModifiersOnly) =>
+            !SceneInputMuted && FiresCore(action, k => k == heldKey, ctrl, alt, shift, mode);
 
         internal static void ReleaseAnyMuteForTests() => _muteOwner = null;
     }
