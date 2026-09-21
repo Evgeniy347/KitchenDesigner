@@ -12,10 +12,19 @@ using KitchenDesigner.Core.UI;
 /// правку, например только что назначенную привязку.
 ///
 /// Особенность, из-за которой это не копия тумблера: перетаскивание выдаёт десятки
-/// изменений значения, а шаг отмены обязан быть ОДИН. Граница жеста — нажатие и
-/// отпускание: на нажатии запоминается значение, на отпускании кладётся одна команда
-/// «было → стало». Отдельное изменение без перетаскивания (клик по дорожке, стрелки с
-/// клавиатуры) — само по себе законченное действие и кладёт свой шаг.
+/// изменений значения, а шаг отмены обязан быть ОДИН. Граница жеста — его КОНЕЦ:
+/// изменения только копятся, а одна команда «было → стало» кладётся на отпускании
+/// указателя, а для клавиатуры — на уходе фокуса.
+///
+/// Первая версия считала началом жеста нажатие указателя — и давала по ДВА шага.
+/// `Slider.OnPointerDown` сам меняет значение, когда клик пришёлся мимо ручки
+/// («Outside the slider handle — jump to this point instead», Slider.cs:669), а порядок
+/// вызова двух обработчиков на одном объекте решает, кто узнает о жесте первым: слайдер
+/// добавлен раньше, поэтому его прыжок успевал стать отдельной командой ДО того, как
+/// бухгалтерия жеста понимала, что жест начался. Отсюда же бралась «исходная точка»
+/// 0,1 — минимум ползунка, куда прыгало значение от клика в координату (0,0).
+/// Конец жеста таким свойством не обладает: к отпусканию все изменения кадра уже
+/// случились, и порядок обработчиков ничего не решает.
 ///
 /// Проверяется на настоящей панели: `CommandStack` живёт в `Core/Commands`, вне быстрого
 /// пути, и копия стека в чистом слое была бы тестом, который не может упасть.
@@ -79,16 +88,42 @@ public class SettingsSliderUndoTests
     }
 
     [Test]
-    public void AChangeWithoutADrag_IsItsOwnStep()
+    public void AClickOnTheTrack_IsItsOwnStep()
     {
         var settings = KitchenSettings.Instance;
         var slider = SliderNamed(WasdSpeed);
         float started = settings.WasdSpeed;
 
+        Press(slider);
         slider.value = 2f;
+        Release(slider);
 
         Assert.AreEqual(1, CommandStack.UndoCount,
-            "клик по дорожке и стрелки с клавиатуры — законченные действия, у каждого свой шаг");
+            "клик по дорожке — законченное действие, у него свой шаг");
+
+        CommandStack.Undo();
+        Assert.AreEqual(started, settings.WasdSpeed, 0.001f);
+    }
+
+    /// <summary>Стрелки с клавиатуры не дают ни нажатия, ни отпускания указателя, поэтому
+    /// жест закрывается уходом фокуса: несколько нажатий подряд — одна правка, как одно
+    /// перетаскивание.</summary>
+    [Test]
+    public void ArrowKeysThenLeavingTheSlider_LeaveOneStepForTheWholeRun()
+    {
+        var settings = KitchenSettings.Instance;
+        var slider = SliderNamed(WasdSpeed);
+        float started = settings.WasdSpeed;
+
+        slider.value = 1.5f;
+        slider.value = 2f;
+
+        Assert.AreEqual(2f, settings.WasdSpeed, 0.001f,
+            "значение пишется сразу — человек видит результат, пока подбирает его");
+
+        Deselect(slider);
+
+        Assert.AreEqual(1, CommandStack.UndoCount, "весь подбор — один шаг отмены");
 
         CommandStack.Undo();
         Assert.AreEqual(started, settings.WasdSpeed, 0.001f);
@@ -142,6 +177,10 @@ public class SettingsSliderUndoTests
     private static void Release(Slider slider) =>
         ExecuteEvents.Execute(slider.gameObject, new PointerEventData(EventSystem.current),
             ExecuteEvents.pointerUpHandler);
+
+    private static void Deselect(Slider slider) =>
+        ExecuteEvents.Execute(slider.gameObject, new BaseEventData(EventSystem.current),
+            ExecuteEvents.deselectHandler);
 
     private Slider SliderNamed(string label)
     {

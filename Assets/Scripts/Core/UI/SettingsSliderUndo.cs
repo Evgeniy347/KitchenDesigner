@@ -5,76 +5,52 @@ using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
-    internal sealed class SettingsSliderUndo
+    internal sealed class SettingsSliderUndo : MonoBehaviour, IPointerUpHandler, IDeselectHandler
     {
-        private readonly Slider _slider;
-        private readonly string _title;
-        private readonly Action<float> _write;
-        private readonly Action _afterApply;
+        private Slider _slider = null!;
+        private string _title = "";
+        private Action<float> _write = _ => { };
+        private Action _afterApply = () => { };
 
-        private float _committed;
-        private bool _dragging;
-
-        private SettingsSliderUndo(Slider slider, string title, Action<float> write, Action afterApply)
-        {
-            _slider = slider;
-            _title = title;
-            _write = write;
-            _afterApply = afterApply;
-            _committed = slider.value;
-        }
+        private float _from;
+        private bool _changed;
 
         public static SettingsSliderUndo Attach(Slider slider, string title,
             Action<float> write, Action afterApply)
         {
-            var undo = new SettingsSliderUndo(slider, title, write, afterApply);
+            var undo = slider.gameObject.AddComponent<SettingsSliderUndo>();
+            undo._slider = slider;
+            undo._title = title;
+            undo._write = write;
+            undo._afterApply = afterApply;
+            undo._from = slider.value;
 
-            var trigger = slider.gameObject.GetComponent<EventTrigger>()
-                ?? slider.gameObject.AddComponent<EventTrigger>();
-            Listen(trigger, EventTriggerType.PointerDown, undo.BeginDrag);
-            Listen(trigger, EventTriggerType.PointerUp, undo.EndDrag);
-
-            slider.onValueChanged.AddListener(_ => undo.ValueChanged());
+            slider.onValueChanged.AddListener(_ => undo._changed = true);
             return undo;
         }
 
-        public void Sync() => _committed = _slider.value;
-
-        private void BeginDrag()
-        {
-            _dragging = true;
-            _committed = _slider.value;
-        }
-
-        private void EndDrag()
-        {
-            _dragging = false;
-            PushOneStep();
-        }
-
-        private void ValueChanged()
-        {
-            if (_dragging) return;
-            PushOneStep();
-        }
-
-        private void PushOneStep()
+        public void Sync()
         {
             if (_slider == null) return;
+            _from = _slider.value;
+            _changed = false;
+        }
 
-            float from = _committed;
+        public void Flush()
+        {
+            if (_slider == null || !_changed) return;
+
+            float from = _from;
             float to = _slider.value;
-            if (Mathf.Approximately(from, to)) return;
+            _changed = false;
+            _from = to;
 
-            _committed = to;
+            if (Mathf.Approximately(from, to)) return;
             SetSettingCommand.Push(_title, _write, from, to, _afterApply);
         }
 
-        private static void Listen(EventTrigger trigger, EventTriggerType type, Action action)
-        {
-            var entry = new EventTrigger.Entry { eventID = type };
-            entry.callback.AddListener(_ => action());
-            trigger.triggers.Add(entry);
-        }
+        public void OnPointerUp(PointerEventData eventData) => Flush();
+
+        public void OnDeselect(BaseEventData eventData) => Flush();
     }
 }
