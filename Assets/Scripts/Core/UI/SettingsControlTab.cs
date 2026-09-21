@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core.UI
@@ -22,7 +23,9 @@ namespace KitchenDesigner.Core.UI
         };
 
         private readonly SettingsRowFactory _rows;
+        private readonly List<RectTransform> _referenceRects = new();
         private KeybindingRowUI? _bindings;
+        private float _referenceTop;
 
         public SettingsControlTab(SettingsRowFactory rows) => _rows = rows;
 
@@ -50,9 +53,22 @@ namespace KitchenDesigner.Core.UI
 
             _bindings = new KeybindingRowUI(s, captureGate, gestureGate, afterBindingChange);
             _bindings.Build(page, ref y);
+            _bindings.AfterRelayout = ShiftReferenceBlock;
 
             y -= SectionGap;
+            _referenceTop = y;
             BuildReferenceBlock(page, ref y);
+        }
+
+        private void ShiftReferenceBlock(float listBottom)
+        {
+            float delta = listBottom - SectionGap - _referenceTop;
+            if (Mathf.Approximately(delta, 0f)) return;
+
+            foreach (var rect in _referenceRects)
+                rect.anchoredPosition += new Vector2(0f, delta);
+
+            _referenceTop += delta;
         }
 
         public void RefreshConflicts() => _bindings?.RefreshAll();
@@ -63,6 +79,7 @@ namespace KitchenDesigner.Core.UI
                 "KbRefSection", page, "Мышь и другое, не привязано к клавише",
                 SettingsRowFactory.ContentW);
             header.anchoredPosition = new Vector2(0f, y - 9f);
+            _referenceRects.Add(header);
             y -= 18f + SettingsRowFactory.GapPx;
 
             foreach (var line in ReferenceLines)
@@ -81,6 +98,7 @@ namespace KitchenDesigner.Core.UI
                 rect.sizeDelta = new Vector2(SettingsRowFactory.ContentW, height);
                 rect.anchoredPosition = new Vector2(0f, y - height * 0.5f);
                 label.rectTransform.sizeDelta = new Vector2(SettingsRowFactory.ContentW, height);
+                _referenceRects.Add(rect);
 
                 y -= height + 4f;
             }

@@ -20,17 +20,16 @@ namespace KitchenDesigner.Core.UI
         private const int ChordFontMax = KeybindingCellLayout.MaxCaptionFontSize;
         private const int ChordFontMin = KeybindingCellLayout.MinCaptionFontSize;
 
-        private static readonly float ChordBtnW =
-            KeybindingCellLayout.CellWidth(KeybindingCaption.LongestLength());
-
-        private static readonly float LabelW =
-            KeybindingCellLayout.LabelWidth(ContentW, ChordBtnW);
-
         private readonly KitchenSettings _settings;
         private readonly KeybindingCaptureGate _captureGate;
         private readonly KeybindingGestureGate _gestureGate;
         private readonly Action _afterChange;
         private readonly List<Cell> _cells = new();
+        private readonly List<Node> _nodes = new();
+
+        private float _topY;
+        private float _cellW;
+        private float _labelW;
 
         private sealed class Cell
         {
@@ -40,6 +39,23 @@ namespace KitchenDesigner.Core.UI
             public TextMeshProUGUI Label = null!;
             public GameObject Clear = null!;
         }
+
+        private sealed class Node
+        {
+            public RectTransform Rect = null!;
+            public TextMeshProUGUI? Label;
+            public string Text = string.Empty;
+            public bool HasHint;
+            public float FixedHeight;
+            public Cell? Primary;
+            public Cell? Alt;
+            public RectTransform? Hint;
+            public TextMeshProUGUI[] ColumnLabels = Array.Empty<TextMeshProUGUI>();
+        }
+
+        public Action<float>? AfterRelayout { get; set; }
+
+        public float BottomY { get; private set; }
 
         public KeybindingRowUI(KitchenSettings settings, KeybindingCaptureGate captureGate,
             KeybindingGestureGate gestureGate, Action afterChange)
@@ -55,86 +71,98 @@ namespace KitchenDesigner.Core.UI
         public void Build(Transform parent, ref float y)
         {
             _cells.Clear();
-            BuildColumnHeader(parent, ref y);
+            _nodes.Clear();
+            _topY = y;
+            AdoptWidthsForTheCurrentBindings();
+
+            BuildColumnHeader(parent);
 
             foreach (var row in KeybindingRowList.Build())
             {
-                if (row.IsGroupHeader) BuildGroupHeader(parent, ref y, row.Group);
-                else BuildActionRow(parent, ref y, row.Action);
+                if (row.IsGroupHeader) BuildGroupHeader(parent, row.Group);
+                else BuildActionRow(parent, row.Action);
             }
 
+            y = LayOut();
             RefreshAll();
         }
 
-        private void BuildColumnHeader(Transform parent, ref float y)
+        private void AdoptWidthsForTheCurrentBindings()
+        {
+            _cellW = KeybindingCellLayout.CellWidth(ContentW,
+                KeybindingCaption.LongestBoundLength(Bindings));
+            _labelW = KeybindingCellLayout.LabelWidth(ContentW, _cellW);
+        }
+
+        private void BuildColumnHeader(Transform parent)
         {
             var rowRect = UIFactory.CreateRect("KbColHdr", parent);
             rowRect.sizeDelta = new Vector2(ContentW, RowH);
-            rowRect.anchoredPosition = new Vector2(0f, y - RowH * 0.5f);
 
-            CreateColumnLabel("KbColHdrAction", rowRect, "Действие", -ContentW * 0.5f, LabelW,
-                TextAnchor.MiddleLeft);
+            var action = ColumnLabel("KbColHdrAction", rowRect, "Действие", TextAnchor.MiddleLeft);
+            var primary = ColumnLabel("KbColHdrPrimary", rowRect, "Основная", TextAnchor.MiddleCenter);
+            var alt = ColumnLabel("KbColHdrAlt", rowRect, "Альтернативная", TextAnchor.MiddleCenter);
 
-            float x = -ContentW * 0.5f + LabelW + GapMed;
-            CreateColumnLabel("KbColHdrPrimary", rowRect, "Основная", x, ChordBtnW + GapSmall + ClearBtnW,
-                TextAnchor.MiddleCenter);
-
-            x += ChordBtnW + GapSmall + ClearBtnW + GapGroup;
-            CreateColumnLabel("KbColHdrAlt", rowRect, "Альтернативная", x, ChordBtnW + GapSmall + ClearBtnW,
-                TextAnchor.MiddleCenter);
-
-            y -= RowH + RowGap;
+            _nodes.Add(new Node
+            {
+                Rect = rowRect,
+                FixedHeight = RowH,
+                ColumnLabels = new[] { action, primary, alt },
+            });
         }
 
-        private static void CreateColumnLabel(string name, Transform parent, string text, float left,
-            float width, TextAnchor align)
+        private static TextMeshProUGUI ColumnLabel(string name, Transform parent, string text,
+            TextAnchor align)
         {
             var label = UIFactory.CreateLabel(name, parent, text, UIStyle.FontSmall,
-                new Vector2(left + width * 0.5f, 0f), new Vector2(width, RowH), align);
+                Vector2.zero, new Vector2(10f, RowH), align);
             label.color = UIStyle.TextSecondary;
+            return label;
         }
 
-        private void BuildGroupHeader(Transform parent, ref float y, InputActionGroup group)
+        private void BuildGroupHeader(Transform parent, InputActionGroup group)
         {
             var header = UIFactory.CreateSectionHeader(
                 "KbGroup_" + group, parent, InputActionGroupTitles.Of(group), ContentW);
-            header.anchoredPosition = new Vector2(0f, y - HeaderH * 0.5f);
-            y -= HeaderH + RowGap;
+            _nodes.Add(new Node { Rect = header, FixedHeight = HeaderH });
         }
 
-        private void BuildActionRow(Transform parent, ref float y, InputAction action)
+        private void BuildActionRow(Transform parent, InputAction action)
         {
             string name = InputActionCatalog.DisplayNameOf(action);
+            bool hasHint = action == InputAction.PerfMonitorToggleRecording;
 
             var rowRect = UIFactory.CreateRect("KbRow_" + action, parent);
             rowRect.sizeDelta = new Vector2(ContentW, RowH);
-            rowRect.anchoredPosition = new Vector2(0f, y);
 
             var label = UIFactory.CreateLabel("KbLbl_" + action, rowRect, name, UIStyle.FontSmall,
-                new Vector2(-ContentW * 0.5f + LabelW * 0.5f, 0f), new Vector2(LabelW, RowH),
-                TextAnchor.UpperLeft);
+                Vector2.zero, new Vector2(10f, RowH), TextAnchor.UpperLeft);
             label.enableWordWrapping = true;
-            float rowHeight = Mathf.Max(RowH, label.GetPreferredValues(name, LabelW, 0f).y);
 
-            rowRect.sizeDelta = new Vector2(ContentW, rowHeight);
-            rowRect.anchoredPosition = new Vector2(0f, y - rowHeight * 0.5f);
-            label.rectTransform.sizeDelta = new Vector2(LabelW, rowHeight);
+            var node = new Node
+            {
+                Rect = rowRect,
+                Label = label,
+                Text = name,
+                HasHint = hasHint,
+                Primary = BuildCell(rowRect, action, primary: true),
+                Alt = BuildCell(rowRect, action, primary: false),
+            };
+            _nodes.Add(node);
 
-            float x = -ContentW * 0.5f + LabelW + GapMed;
-            BuildCell(rowRect, action, primary: true, ref x);
-            x += GapGroup;
-            BuildCell(rowRect, action, primary: false, ref x);
+            if (!hasHint) return;
 
-            if (action == InputAction.PerfMonitorToggleRecording)
-                HintBadge.AttachAfterLabel(label, hint: "settings.control.perfRecordingFile");
-
-            y -= rowHeight + RowGap;
+            var badge = HintBadge.Attach(label.transform, Vector2.zero,
+                hint: "settings.control.perfRecordingFile");
+            node.Hint = (RectTransform)badge.transform;
         }
 
-        private void BuildCell(Transform rowRect, InputAction action, bool primary, ref float x)
+        private Cell BuildCell(Transform rowRect, InputAction action, bool primary)
         {
-            var button = UIFactory.CreateButton("KbBtn_" + action + (primary ? "_P" : "_A"), rowRect,
-                string.Empty, new Vector2(x + ChordBtnW * 0.5f, 0f), new Vector2(ChordBtnW, RowH - 4f), null);
+            string suffix = primary ? "_P" : "_A";
+
+            var button = UIFactory.CreateButton("KbBtn_" + action + suffix, rowRect,
+                string.Empty, Vector2.zero, new Vector2(10f, RowH - 4f), null);
             var caption = button.GetComponentInChildren<TextMeshProUGUI>();
             if (caption != null)
             {
@@ -142,17 +170,22 @@ namespace KitchenDesigner.Core.UI
                 caption.fontSizeMin = ChordFontMin;
                 caption.fontSizeMax = ChordFontMax;
                 caption.enableWordWrapping = false;
+                caption.overflowMode = TextOverflowModes.Ellipsis;
             }
 
-            var cell = new Cell { Action = action, Primary = primary, Button = button, Label = caption! };
+            var cell = new Cell
+            {
+                Action = action,
+                Primary = primary,
+                Button = button,
+                Label = caption!,
+            };
             _cells.Add(cell);
             button.onClick.AddListener(() => BeginCapture(cell));
-            TooltipUI.Attach(button.gameObject, () => ConflictTooltip(cell));
+            TooltipUI.Attach(button.gameObject, () => CellTooltip(cell));
 
-            x += ChordBtnW + GapSmall;
-
-            var clear = UIFactory.CreateButton("KbClr_" + action + (primary ? "_P" : "_A"), rowRect,
-                UIStyle.GlyphClose, new Vector2(x + ClearBtnW * 0.5f, 0f), new Vector2(ClearBtnW, RowH - 4f),
+            var clear = UIFactory.CreateButton("KbClr_" + action + suffix, rowRect,
+                UIStyle.GlyphClose, Vector2.zero, new Vector2(ClearBtnW, RowH - 4f),
                 () => ClearCell(cell));
             var clearCaption = clear.GetComponentInChildren<TextMeshProUGUI>();
             if (clearCaption != null)
@@ -163,7 +196,76 @@ namespace KitchenDesigner.Core.UI
             TooltipUI.Attach(clear.gameObject, "Очистить");
             cell.Clear = clear.gameObject;
 
-            x += ClearBtnW;
+            return cell;
+        }
+
+        private float LayOut()
+        {
+            float left = -ContentW * 0.5f;
+            float y = _topY;
+
+            foreach (var node in _nodes)
+            {
+                float height = node.FixedHeight > 0f ? node.FixedHeight : RowHeightOf(node);
+                node.Rect.sizeDelta = new Vector2(ContentW, height);
+                node.Rect.anchoredPosition = new Vector2(0f, y - height * 0.5f);
+
+                if (node.ColumnLabels.Length == 3) LayOutColumnHeader(node, left);
+                else if (node.Label != null) LayOutActionRow(node, left, height);
+
+                y -= height + RowGap;
+            }
+
+            BottomY = y;
+            return y;
+        }
+
+        private void LayOutColumnHeader(Node node, float left)
+        {
+            float cellsLane = _cellW + GapSmall + ClearBtnW;
+            Place(node.ColumnLabels[0], left, _labelW, RowH);
+            Place(node.ColumnLabels[1], left + _labelW + GapMed, cellsLane, RowH);
+            Place(node.ColumnLabels[2], left + _labelW + GapMed + cellsLane + GapGroup, cellsLane, RowH);
+        }
+
+        private void LayOutActionRow(Node node, float left, float height)
+        {
+            float textW = KeybindingCellLayout.LabelTextWidth(_labelW, node.HasHint);
+            Place(node.Label!, left, textW, height);
+
+            if (node.Hint != null)
+                node.Hint.anchoredPosition =
+                    new Vector2(KeybindingCellLayout.HintBadgeCentreX(textW), 0f);
+
+            float x = left + _labelW + GapMed;
+            x = PlaceCell(node.Primary!, x);
+            x += GapGroup;
+            PlaceCell(node.Alt!, x);
+        }
+
+        private float PlaceCell(Cell cell, float x)
+        {
+            Place((RectTransform)cell.Button.transform, x, _cellW, RowH - 4f);
+            x += _cellW + GapSmall;
+            Place((RectTransform)cell.Clear.transform, x, ClearBtnW, RowH - 4f);
+            return x + ClearBtnW;
+        }
+
+        private static void Place(TMP_Text label, float left, float width, float height) =>
+            Place(label.rectTransform, left, width, height);
+
+        private static void Place(RectTransform rect, float left, float width, float height)
+        {
+            rect.sizeDelta = new Vector2(width, height);
+            rect.anchoredPosition = new Vector2(left + width * 0.5f, 0f);
+        }
+
+        private float RowHeightOf(Node node)
+        {
+            if (node.Label == null) return RowH;
+            float textW = KeybindingCellLayout.LabelTextWidth(_labelW, node.HasHint);
+            float preferred = node.Label.GetPreferredValues(node.Text, textW, 0f).y;
+            return Mathf.Max(RowH, preferred);
         }
 
         private void BeginCapture(Cell cell)
@@ -223,6 +325,11 @@ namespace KitchenDesigner.Core.UI
 
         public void RefreshAll()
         {
+            float wasCell = _cellW;
+            AdoptWidthsForTheCurrentBindings();
+            if (!Mathf.Approximately(wasCell, _cellW) && _nodes.Count > 0)
+                AfterRelayout?.Invoke(LayOut());
+
             var conflicts = Bindings.FindConflicts();
             foreach (var cell in _cells)
             {
@@ -239,7 +346,7 @@ namespace KitchenDesigner.Core.UI
         private static string BindingText(InputBinding binding, bool inConflict)
         {
             string text = binding.IsEmpty ? "—" : InputBindingDisplay.Of(binding);
-            return inConflict ? "! " + text : text;
+            return inConflict ? KeybindingCaption.ConflictMarker + text : text;
         }
 
         private static Color BindingColor(InputBinding binding, bool inConflict)
@@ -248,16 +355,18 @@ namespace KitchenDesigner.Core.UI
             return binding.IsEmpty ? UIStyle.TextSecondary : UIStyle.Text;
         }
 
-        private string ConflictTooltip(Cell cell)
+        private string CellTooltip(Cell cell)
         {
             var binding = KeybindingEditing.Read(Bindings, cell.Action, cell.Primary);
             var conflicts = Bindings.FindConflicts();
             string others = KeybindingConflicts.DescribeOthers(conflicts, cell.Action, binding);
-            if (!string.IsNullOrEmpty(others)) return "Конфликт с: " + others;
+            if (!string.IsNullOrEmpty(others))
+                return InputBindingDisplay.Of(binding) + " — конфликт с: " + others;
 
-            return WantsAGesture(cell.Action)
+            string how = WantsAGesture(cell.Action)
                 ? "Нажмите, затем сделайте жест мышью. Esc отменяет."
                 : "Нажмите, затем клавишу. Esc отменяет.";
+            return binding.IsEmpty ? how : InputBindingDisplay.Of(binding) + ". " + how;
         }
     }
 }

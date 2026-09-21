@@ -10,6 +10,23 @@ namespace KitchenDesigner.Core.UI
         public static string WorstCaseOf(InputBinding binding) =>
             ConflictMarker + InputBindingDisplay.Of(WithEveryModifier(binding));
 
+        public static int LongestBoundLength(KeyBindings bindings)
+        {
+            int longest = 0;
+            foreach (var action in InputActionCatalog.All)
+            {
+                longest = Longer(longest, bindings.PrimaryBinding(action));
+                longest = Longer(longest, bindings.AltBinding(action));
+            }
+            return longest;
+        }
+
+        private static int Longer(int longest, InputBinding binding)
+        {
+            int length = InputBindingDisplay.Of(binding).Length;
+            return length > longest ? length : longest;
+        }
+
         public static IEnumerable<string> WorstCases()
         {
             foreach (var gesture in EveryGestureShape())
