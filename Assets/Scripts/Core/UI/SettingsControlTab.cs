@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core.UI
     {
         private const float ReferenceLineH = 20f;
         private const float SectionGap = 16f;
+        private const string InvertYLabel = "Инверсия мыши по вертикали";
+        private const string InvertXLabel = "Инверсия мыши по горизонтали";
 
         private static readonly string[] ReferenceLines =
         {
@@ -44,6 +46,18 @@ namespace KitchenDesigner.Core.UI
             _rows.AddSpeedSlider(page, ref y, "Скорость ←→↑↓", s.ArrowSpeed,
                 v => s.ArrowSpeed = v, read: () => s.ArrowSpeed);
             Hint("Скорость ←→↑↓", hint: "settings.control.arrowSpeed");
+
+            _rows.AddToggle(page, ref y, InvertYLabel, s.MouseInvertY,
+                v => SetSettingCommand.Push(InvertYLabel, x => s.MouseInvertY = x,
+                    s.MouseInvertY, v, _rows.ReadBackFromSettings),
+                read: () => s.MouseInvertY);
+            Hint(InvertYLabel, hint: "settings.control.mouseInvertY");
+
+            _rows.AddToggle(page, ref y, InvertXLabel, s.MouseInvertX,
+                v => SetSettingCommand.Push(InvertXLabel, x => s.MouseInvertX = x,
+                    s.MouseInvertX, v, _rows.ReadBackFromSettings),
+                read: () => s.MouseInvertX);
+            Hint(InvertXLabel, hint: "settings.control.mouseInvertX");
 
             y -= SectionGap;
             var header = UIFactory.CreateSectionHeader(
