@@ -16,21 +16,20 @@ namespace KitchenDesigner.Core.UI
 
         public const int MinCaptionFontSize = 8;
         public const int MaxCaptionFontSize = 14;
-        public const float CharWidthPerPoint = 0.5f;
+        public const float FallbackCharWidthPerPoint = 0.85f;
 
-        public static float WidthForCaption(int captionChars, int fontSize) =>
-            captionChars * CharWidthPerPoint * fontSize;
+        public static float FallbackWidthFor(int captionChars, int fontSize) =>
+            captionChars * FallbackCharWidthPerPoint * fontSize;
 
-        public static float NeededCellWidth(int captionChars) =>
-            WidthForCaption(captionChars, MaxCaptionFontSize) + CellPadding;
+        public static float NeededCellWidth(float captionWidth) => captionWidth + CellPadding;
 
         public static float SpareForCells(float rowWidth, float labelWidth) =>
             (rowWidth - GapAfterLabel - labelWidth
                 - 2f * (MarkerLaneWidth + GapBeforeClear + ClearWidth) - GapBetweenCells) * 0.5f;
 
-        public static float CellWidth(float rowWidth, int longestBoundCaptionChars)
+        public static float CellWidth(float rowWidth, float longestCaptionWidth)
         {
-            float needed = NeededCellWidth(longestBoundCaptionChars);
+            float needed = NeededCellWidth(longestCaptionWidth);
             float ceiling = SpareForCells(rowWidth, MinLabelWidth);
             if (needed > ceiling) return ceiling;
             return needed < MinCellWidth ? MinCellWidth : needed;
@@ -46,23 +45,18 @@ namespace KitchenDesigner.Core.UI
         public static float HintBadgeCentreX(float labelTextWidth) =>
             labelTextWidth * 0.5f + HintLaneWidth * 0.5f;
 
-        public static bool MarkerFitsItsLane() =>
-            WidthForCaption(KeybindingCaption.MarkerText.Length, MaxCaptionFontSize)
-                <= MarkerLaneWidth;
+        public static bool MarkerFitsItsLane(float markerWidth) => markerWidth <= MarkerLaneWidth;
 
-        public static int FontSizeFor(int captionChars, float areaWidth)
+        public static bool CaptionFits(float captionWidth, float cellWidth) =>
+            captionWidth <= cellWidth;
+
+        public static int FontSizeFor(float captionWidthAtFullSize, float areaWidth)
         {
-            if (captionChars <= 0) return MaxCaptionFontSize;
+            if (captionWidthAtFullSize <= 0f) return MaxCaptionFontSize;
+            if (captionWidthAtFullSize <= areaWidth) return MaxCaptionFontSize;
 
-            int fits = (int)(areaWidth / (captionChars * CharWidthPerPoint));
-            if (fits > MaxCaptionFontSize) return MaxCaptionFontSize;
-            return fits < MinCaptionFontSize ? MinCaptionFontSize : fits;
+            int shrunk = (int)(MaxCaptionFontSize * areaWidth / captionWidthAtFullSize);
+            return shrunk < MinCaptionFontSize ? MinCaptionFontSize : shrunk;
         }
-
-        public static bool Fits(string caption, float cellWidth) =>
-            WidthForCaption(caption.Length, MinCaptionFontSize) <= cellWidth;
-
-        public static bool FitsComfortably(string caption, float cellWidth) =>
-            WidthForCaption(caption.Length, MaxCaptionFontSize) <= cellWidth;
     }
 }

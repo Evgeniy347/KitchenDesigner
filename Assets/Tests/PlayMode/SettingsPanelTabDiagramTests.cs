@@ -336,6 +336,7 @@ public class SettingsPanelTabDiagramTests
             "«Удалить объект(ы)» ни с кем не конфликтует и обязана остаться обычной: "
             + "тест, в котором краснеет всё, зеленел бы и при полностью сломанной логике");
         AssertMarkerHidden("KbMark_DeleteSelected_P");
+        AssertNoCaptionIsClipped();
 
         yield return CaptureAndSave("settings_tab_control_conflict.png");
     }
@@ -384,6 +385,7 @@ public class SettingsPanelTabDiagramTests
         AssertColor(UIStyle.Text, calm.color,
             "«Камера: зум колёсиком» ни с кем не конфликтует и обязана остаться обычной");
         AssertMarkerHidden("KbMark_CameraZoomWheel_P");
+        AssertNoCaptionIsClipped();
 
         yield return CaptureAndSave("settings_tab_control_gesture_conflict.png");
     }
@@ -445,6 +447,38 @@ public class SettingsPanelTabDiagramTests
         return Rect.MinMaxRect(corners[0].x, corners[0].y, corners[2].x, corners[2].y);
     }
 
+    /// <summary>Единственное место, где «подпись не обрезана» можно спросить ЧЕСТНО:
+    /// здесь текст меряет сам TMP настоящими метриками шрифта. Быстрые проверки в чистом
+    /// слое считают раскладку домашней оценкой «доля кегля на знак», а она для кириллицы
+    /// занижена — четыре итерации подряд кадр приезжал с многоточием, а быстрый набор
+    /// оставался зелёным. Поэтому вопрос «влезло ли» задаётся ровно там, где рисуют.</summary>
+    private void AssertNoCaptionIsClipped()
+    {
+        var panel = _canvasGo!.transform.Find("SettingsPanel");
+        Assert.IsNotNull(panel, "окно настроек не построилось");
+
+        var clipped = new List<string>();
+        int asked = 0;
+
+        foreach (var caption in panel!.GetComponentsInChildren<TextMeshProUGUI>(true))
+        {
+            if (!caption.name.StartsWith("KbBtn_", System.StringComparison.Ordinal)) continue;
+            if (caption.font == null) continue;
+
+            asked++;
+            float needs = caption.GetPreferredValues(caption.text).x;
+            float has = caption.rectTransform.rect.width;
+            if (!KeybindingCellLayout.CaptionFits(needs, has + 0.5f))
+                clipped.Add($"{caption.name}: «{caption.text}» просит {needs:F0} px, дано {has:F0}");
+        }
+
+        Assert.That(asked, Is.GreaterThan(0),
+            "ни одной подписи привязки не нашлось — проверка зеленела бы вхолостую");
+        CollectionAssert.IsEmpty(clipped,
+            "подпись не помещается в свою ячейку и уедет в многоточие: человек увидит, ЧТО "
+            + "конфликт есть, и не увидит, С ЧЕМ. " + string.Join(" | ", clipped));
+    }
+
     /// <summary>Маркер спрашивается ПРЕДМЕТНО, а не по префиксу в тексте подписи: он
     /// перестал быть частью текста именно потому, что в этом виде его срезало вместе с
     /// подписью, и ни один тест этого не заметил.</summary>
@@ -455,6 +489,13 @@ public class SettingsPanelTabDiagramTests
         Assert.AreEqual(KeybindingCaption.MarkerText, marker.text);
         Assert.That(marker.rectTransform.rect.width, Is.GreaterThan(0f),
             "нулевая ширина дорожки — тот же невидимый маркер, только тихо");
+
+        if (marker.font != null)
+            Assert.IsTrue(
+                KeybindingCellLayout.MarkerFitsItsLane(marker.GetPreferredValues(marker.text).x),
+                "маркер не помещается в свою дорожку по НАСТОЯЩИМ метрикам шрифта — правило "
+                + "живёт в чистом слое, а число обязан давать тот, кто рисует");
+
         AssertColor(UIStyle.HighlightError, marker.color, "маркер конфликта");
     }
 

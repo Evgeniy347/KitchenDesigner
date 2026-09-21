@@ -13,9 +13,9 @@ namespace KitchenDesigner.Core.UI
             CellWidth = cellWidth;
         }
 
-        public static KeybindingRowRuler For(float rowWidth, int longestBoundCaptionChars)
+        public static KeybindingRowRuler For(float rowWidth, float longestCaptionWidth)
         {
-            float cell = KeybindingCellLayout.CellWidth(rowWidth, longestBoundCaptionChars);
+            float cell = KeybindingCellLayout.CellWidth(rowWidth, longestCaptionWidth);
             return new KeybindingRowRuler(rowWidth,
                 KeybindingCellLayout.LabelWidth(rowWidth, cell), cell);
         }

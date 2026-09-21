@@ -30,7 +30,9 @@ public class KeybindingRowWidthGuardTests
     public void TheDerivedColumns_FillTheRow_WithoutOverflowingIt()
     {
         var ruler = KeybindingRowRuler.For(SettingsRowFactory.ContentW,
-            KeybindingCaption.LongestBoundLength(new KeyBindings()));
+            KeybindingCellLayout.FallbackWidthFor(
+                KeybindingCaption.LongestBoundLength(new KeyBindings()),
+                KeybindingCellLayout.MaxCaptionFontSize));
 
         Assert.AreEqual(SettingsRowFactory.ContentW * 0.5f, ruler.RightEdge, 0.01f,
             "дорожки строки обязаны кончаться ровно на правом краю той ширины, которую "

@@ -69,7 +69,6 @@ namespace KitchenDesigner.Core.UI
             _cells.Clear();
             _nodes.Clear();
             _topY = y;
-            AdoptWidthsForTheCurrentBindings();
 
             BuildColumnHeader(parent);
 
@@ -79,12 +78,41 @@ namespace KitchenDesigner.Core.UI
                 else BuildActionRow(parent, row.Action);
             }
 
+            AdoptWidthsForTheCurrentBindings();
             y = LayOut();
             RefreshAll();
         }
 
         private void AdoptWidthsForTheCurrentBindings() =>
-            _ruler = KeybindingRowRuler.For(ContentW, KeybindingCaption.LongestBoundLength(Bindings));
+            _ruler = KeybindingRowRuler.For(ContentW, MeasureTheLongestCaption());
+
+        private float MeasureTheLongestCaption()
+        {
+            var probe = _cells.Count > 0 ? _cells[0].Label : null;
+            bool canMeasure = probe != null && probe.font != null;
+            float previousSize = canMeasure ? probe!.fontSize : 0f;
+            if (canMeasure) probe!.fontSize = ChordFontMax;
+
+            float widest = 0f;
+            foreach (var action in InputActionCatalog.All)
+            {
+                widest = Mathf.Max(widest,
+                    CaptionWidth(probe, canMeasure, Bindings.PrimaryBinding(action)));
+                widest = Mathf.Max(widest,
+                    CaptionWidth(probe, canMeasure, Bindings.AltBinding(action)));
+            }
+
+            if (canMeasure) probe!.fontSize = previousSize;
+            return widest;
+        }
+
+        private static float CaptionWidth(TextMeshProUGUI? probe, bool canMeasure, InputBinding binding)
+        {
+            string text = KeybindingCaption.CellText(binding);
+            return canMeasure
+                ? probe!.GetPreferredValues(text, 0f, 0f).x
+                : KeybindingCellLayout.FallbackWidthFor(text.Length, ChordFontMax);
+        }
 
         private void BuildColumnHeader(Transform parent)
         {
@@ -350,7 +378,13 @@ namespace KitchenDesigner.Core.UI
         private void ShowTheMarker(Cell cell, bool inConflict, string text)
         {
             cell.Marker.SetActive(inConflict);
-            cell.Label.fontSize = KeybindingCellLayout.FontSizeFor(text.Length, _ruler.CellWidth);
+
+            cell.Label.fontSize = ChordFontMax;
+            float atFullSize = cell.Label.font != null
+                ? cell.Label.GetPreferredValues(text, 0f, 0f).x
+                : KeybindingCellLayout.FallbackWidthFor(text.Length, ChordFontMax);
+
+            cell.Label.fontSize = KeybindingCellLayout.FontSizeFor(atFullSize, _ruler.CellWidth);
         }
 
         private static Color BindingColor(InputBinding binding, bool inConflict)
