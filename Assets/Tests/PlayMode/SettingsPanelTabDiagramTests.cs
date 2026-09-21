@@ -301,7 +301,7 @@ public class SettingsPanelTabDiagramTests
         var settings = KitchenSettings.Instance;
         Assert.IsNotNull(settings, "без настроек привязок нет — конфликтовать нечему");
         var taken = KeyBindingDefaults.PrimaryOf(InputAction.DuplicateSelected);
-        settings!.KeyBindings.SetPrimary(InputAction.SaveProject, taken);
+        settings!.KeyBindings.SetPrimaryBinding(InputAction.SaveProject, taken);
 
         ClickTab("Управление");
         built.ui.SetVisible(true);
@@ -321,7 +321,7 @@ public class SettingsPanelTabDiagramTests
         var other = CellCaption("KbBtn_DuplicateSelected_P");
         var calm = CellCaption("KbBtn_DeleteSelected_P");
 
-        Assert.AreEqual("! " + KeyChordDisplay.Of(taken), other.text,
+        Assert.AreEqual("! " + InputBindingDisplay.Of(taken), other.text,
             "соседняя строка показывает тот самый аккорд, который мы отняли, уже с маркером — "
             + "иначе конфликта в кадре нет и снимать нечего");
         Assert.AreEqual(other.text, clash.text,
@@ -339,6 +339,50 @@ public class SettingsPanelTabDiagramTests
             "маркер конфликта у непричастной строки — та же поломка, что и лишняя краска");
 
         yield return CaptureAndSave("settings_tab_control_conflict.png");
+    }
+
+    /// <summary>Тот же сторож для жестов мыши. Отдельным кадром, а не параметром к
+    /// прошлому: жест идёт через другую ветку и захвата, и подписи
+    /// (<c>InputBindingDisplay</c>), и «красное» у него уже однажды могло бы потеряться
+    /// молча — конфликтов между клавишей и жестом модель не признаёт по построению,
+    /// поэтому кадр обязан доказать, что внутри ОДНОГО рода входа краснеет как надо.</summary>
+    [UnityTest]
+    public IEnumerator TabControlGestureConflict_SavesPng()
+    {
+        var built = BuildPanel();
+
+        var settings = KitchenSettings.Instance;
+        Assert.IsNotNull(settings, "без настроек привязок нет — конфликтовать нечему");
+        var taken = KeyBindingDefaults.PrimaryOf(InputAction.CameraPan);
+        Assume.That(taken.IsGesture, "предпосылка: панорамирование по умолчанию — жест мыши");
+        settings!.KeyBindings.SetPrimaryBinding(InputAction.CameraOrbit, taken);
+
+        ClickTab("Управление");
+        built.ui.SetVisible(true);
+        yield return null;
+
+        ScrollRowIntoView("KbRow_CameraPan");
+        yield return null;
+
+        var scroll = BodyScroll();
+        foreach (var row in new[] { "KbRow_CameraOrbit", "KbRow_CameraPan", "KbRow_CameraZoomWheel" })
+            AssertRowIsInFrame(scroll, row);
+
+        var clash = CellCaption("KbBtn_CameraOrbit_P");
+        var other = CellCaption("KbBtn_CameraPan_P");
+        var calm = CellCaption("KbBtn_CameraZoomWheel_P");
+
+        Assert.AreEqual("! " + InputBindingDisplay.Of(taken), other.text,
+            "жест показывается по-русски и с маркером конфликта");
+        Assert.AreEqual(other.text, clash.text, "обе стороны конфликта показывают ОДИН жест");
+        AssertColor(UIStyle.HighlightError, clash.color, "«Камера: поворот на месте»");
+        AssertColor(UIStyle.HighlightError, other.color, "«Камера: панорамирование»");
+
+        AssertColor(UIStyle.Text, calm.color,
+            "«Камера: зум колёсиком» ни с кем не конфликтует и обязана остаться обычной");
+        Assert.IsFalse(calm.text.StartsWith("!", System.StringComparison.Ordinal));
+
+        yield return CaptureAndSave("settings_tab_control_gesture_conflict.png");
     }
 
     private ScrollRect BodyScroll()

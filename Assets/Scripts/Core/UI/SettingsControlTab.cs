@@ -9,9 +9,7 @@ namespace KitchenDesigner.Core.UI
 
         private static readonly string[] ReferenceLines =
         {
-            "ПКМ + движение — поворот камеры на месте",
-            "СКМ / ЛКМ по пустому месту — панорамирование",
-            "Колёсико мыши — вперёд / назад (зум)",
+            "Панорамирование начинается и с ЛКМ по пустому месту, а не только своим жестом",
             "Ctrl + перетаскивание или ресайз — обратная привязка (вкл/выкл)",
             "Escape закрывает по одному хозяину за нажатие: перетаскивание → пикер связи "
                 + "со светом → измерение → пипетка → подтверждение удаления → контекстное "
@@ -29,7 +27,8 @@ namespace KitchenDesigner.Core.UI
         public SettingsControlTab(SettingsRowFactory rows) => _rows = rows;
 
         public void Build(Transform page, KitchenSettings s, float topY,
-            KeybindingCaptureGate captureGate, System.Action afterBindingChange)
+            KeybindingCaptureGate captureGate, KeybindingGestureGate gestureGate,
+            System.Action afterBindingChange)
         {
             float y = topY;
 
@@ -49,7 +48,7 @@ namespace KitchenDesigner.Core.UI
             header.anchoredPosition = new Vector2(0f, y - 9f);
             y -= 18f + SettingsRowFactory.GapPx;
 
-            _bindings = new KeybindingRowUI(s, captureGate, afterBindingChange);
+            _bindings = new KeybindingRowUI(s, captureGate, gestureGate, afterBindingChange);
             _bindings.Build(page, ref y);
 
             y -= SectionGap;

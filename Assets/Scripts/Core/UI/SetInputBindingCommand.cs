@@ -2,20 +2,20 @@ using KitchenDesigner.Core.Keybinding;
 
 namespace KitchenDesigner.Core.UI
 {
-    internal sealed class SetKeyBindingCommand : IUndoCommand
+    internal sealed class SetInputBindingCommand : IUndoCommand
     {
         private readonly KeyBindings _bindings;
         private readonly InputAction _action;
         private readonly bool _primary;
-        private readonly KeyChord _before;
-        private readonly KeyChord _after;
+        private readonly InputBinding _before;
+        private readonly InputBinding _after;
 
         public string Description =>
-            (_primary ? "Основная клавиша: " : "Альтернативная клавиша: ")
+            (_primary ? "Основная привязка: " : "Альтернативная привязка: ")
             + InputActionCatalog.DisplayNameOf(_action);
 
-        public SetKeyBindingCommand(KeyBindings bindings, InputAction action, bool primary,
-            KeyChord before, KeyChord after)
+        public SetInputBindingCommand(KeyBindings bindings, InputAction action, bool primary,
+            InputBinding before, InputBinding after)
         {
             _bindings = bindings;
             _action = action;

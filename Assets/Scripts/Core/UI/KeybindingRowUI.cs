@@ -24,6 +24,7 @@ namespace KitchenDesigner.Core.UI
 
         private readonly KitchenSettings _settings;
         private readonly KeybindingCaptureGate _captureGate;
+        private readonly KeybindingGestureGate _gestureGate;
         private readonly Action _afterChange;
         private readonly List<Cell> _cells = new();
 
@@ -36,10 +37,12 @@ namespace KitchenDesigner.Core.UI
             public GameObject Clear = null!;
         }
 
-        public KeybindingRowUI(KitchenSettings settings, KeybindingCaptureGate captureGate, Action afterChange)
+        public KeybindingRowUI(KitchenSettings settings, KeybindingCaptureGate captureGate,
+            KeybindingGestureGate gestureGate, Action afterChange)
         {
             _settings = settings;
             _captureGate = captureGate;
+            _gestureGate = gestureGate;
             _afterChange = afterChange;
         }
 
@@ -161,31 +164,56 @@ namespace KitchenDesigner.Core.UI
 
         private void BeginCapture(Cell cell)
         {
+            if (WantsAGesture(cell.Action)) BeginGestureCapture(cell);
+            else BeginKeyCapture(cell);
+        }
+
+        private static bool WantsAGesture(InputAction action) =>
+            InputActionCatalog.GroupOf(action) == InputActionGroup.Mouse;
+
+        private void BeginKeyCapture(Cell cell)
+        {
             _captureGate.Begin(result =>
             {
-                if (!result.WasCancelled) Commit(cell, result.Chord);
+                if (!result.WasCancelled) Commit(cell, InputBinding.FromKey(result.Chord));
                 RefreshAll();
                 _afterChange();
             });
 
-            if (!_captureGate.IsCapturing) return;
+            if (_captureGate.IsCapturing) ShowWaiting(cell);
+        }
+
+        private void BeginGestureCapture(Cell cell)
+        {
+            _gestureGate.Begin(result =>
+            {
+                if (!result.WasCancelled) Commit(cell, InputBinding.FromGesture(result.Gesture));
+                RefreshAll();
+                _afterChange();
+            });
+
+            if (_gestureGate.IsCapturing) ShowWaiting(cell);
+        }
+
+        private static void ShowWaiting(Cell cell)
+        {
             cell.Label.text = "...";
             cell.Button.GetComponent<Image>().color = UIStyle.Accent;
         }
 
         private void ClearCell(Cell cell)
         {
-            Commit(cell, KeyChord.Empty);
+            Commit(cell, InputBinding.Empty);
             RefreshAll();
             _afterChange();
         }
 
-        private void Commit(Cell cell, KeyChord chord)
+        private void Commit(Cell cell, InputBinding binding)
         {
             var before = KeybindingEditing.Read(Bindings, cell.Action, cell.Primary);
-            if (before == chord) return;
+            if (before == binding) return;
 
-            var command = new SetKeyBindingCommand(Bindings, cell.Action, cell.Primary, before, chord);
+            var command = new SetInputBindingCommand(Bindings, cell.Action, cell.Primary, before, binding);
             CommandStack.Execute(command);
         }
 
@@ -194,36 +222,38 @@ namespace KitchenDesigner.Core.UI
             var conflicts = Bindings.FindConflicts();
             foreach (var cell in _cells)
             {
-                var chord = KeybindingEditing.Read(Bindings, cell.Action, cell.Primary);
-                bool inConflict = KeybindingConflicts.IsInConflict(conflicts, chord);
+                var binding = KeybindingEditing.Read(Bindings, cell.Action, cell.Primary);
+                bool inConflict = KeybindingConflicts.IsInConflict(conflicts, binding);
 
-                cell.Label.text = ChordText(chord, inConflict);
-                cell.Label.color = ChordColor(chord, inConflict);
+                cell.Label.text = BindingText(binding, inConflict);
+                cell.Label.color = BindingColor(binding, inConflict);
                 cell.Button.GetComponent<Image>().color = UIFactory.ButtonColor;
-                cell.Clear.SetActive(!chord.IsEmpty);
+                cell.Clear.SetActive(!binding.IsEmpty);
             }
         }
 
-        private static string ChordText(KeyChord chord, bool inConflict)
+        private static string BindingText(InputBinding binding, bool inConflict)
         {
-            string text = chord.IsEmpty ? "—" : KeyChordDisplay.Of(chord);
+            string text = binding.IsEmpty ? "—" : InputBindingDisplay.Of(binding);
             return inConflict ? "! " + text : text;
         }
 
-        private static Color ChordColor(KeyChord chord, bool inConflict)
+        private static Color BindingColor(InputBinding binding, bool inConflict)
         {
             if (inConflict) return UIStyle.HighlightError;
-            return chord.IsEmpty ? UIStyle.TextSecondary : UIStyle.Text;
+            return binding.IsEmpty ? UIStyle.TextSecondary : UIStyle.Text;
         }
 
         private string ConflictTooltip(Cell cell)
         {
-            var chord = KeybindingEditing.Read(Bindings, cell.Action, cell.Primary);
+            var binding = KeybindingEditing.Read(Bindings, cell.Action, cell.Primary);
             var conflicts = Bindings.FindConflicts();
-            string others = KeybindingConflicts.DescribeOthers(conflicts, cell.Action, chord);
-            return string.IsNullOrEmpty(others)
-                ? "Нажмите, затем клавишу. Esc отменяет."
-                : "Конфликт с: " + others;
+            string others = KeybindingConflicts.DescribeOthers(conflicts, cell.Action, binding);
+            if (!string.IsNullOrEmpty(others)) return "Конфликт с: " + others;
+
+            return WantsAGesture(cell.Action)
+                ? "Нажмите, затем сделайте жест мышью. Esc отменяет."
+                : "Нажмите, затем клавишу. Esc отменяет.";
         }
     }
 }

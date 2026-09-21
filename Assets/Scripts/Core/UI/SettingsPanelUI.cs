@@ -32,6 +32,7 @@ namespace KitchenDesigner.Core.UI
         private SettingsPhotoTab? _photoTab;
         private SettingsMcpTab? _mcpTab;
         private KeybindingCaptureGate? _captureGate;
+        private KeybindingGestureGate? _gestureGate;
 
         public void Build(Transform canvas)
         {
@@ -61,11 +62,15 @@ namespace KitchenDesigner.Core.UI
             _tabs.AfterSwitch = () =>
             {
                 _body?.Fit();
-                if (_tabs.CurrentIndex != ControlTabIndex) _captureGate?.CancelIfCapturing();
+                if (_tabs.CurrentIndex == ControlTabIndex) return;
+                _captureGate?.CancelIfCapturing();
+                _gestureGate?.CancelIfCapturing();
             };
 
             _captureGate = gameObject.AddComponent<KeybindingCaptureGate>();
             _captureGate.Build(canvas);
+            _gestureGate = gameObject.AddComponent<KeybindingGestureGate>();
+            _gestureGate.Build(canvas);
 
             _projectTab = new SettingsProjectTab(_rows, RefreshDependentStates);
             _viewTab = new SettingsViewTab(_rows, RefreshDependentStates);
@@ -75,7 +80,7 @@ namespace KitchenDesigner.Core.UI
             _projectTab.Build(AddPage("Tab_Project"), s, ContentTopY);
             _viewTab.Build(AddPage("Tab_View"), ContentTopY);
             new SettingsConstructionTab(_rows).Build(AddPage("Tab_Construction"), s, ContentTopY);
-            _controlTab.Build(AddPage("Tab_Control"), s, ContentTopY, _captureGate,
+            _controlTab.Build(AddPage("Tab_Control"), s, ContentTopY, _captureGate, _gestureGate,
                 () => _body?.Fit());
             _photoTab.Build(AddPage("Tab_Photo"), s, ContentTopY);
             new SettingsLightTab(_rows).Build(AddPage("Tab_Light"), s, ContentTopY);
@@ -104,6 +109,7 @@ namespace KitchenDesigner.Core.UI
         {
             ProjectWindows.Unregister(this);
             _captureGate?.CancelIfCapturing();
+            _gestureGate?.CancelIfCapturing();
             _photoTab?.Dispose();
             _viewTab?.Dispose();
         }
@@ -147,6 +153,7 @@ namespace KitchenDesigner.Core.UI
             if (!visible)
             {
                 _captureGate?.CancelIfCapturing();
+                _gestureGate?.CancelIfCapturing();
                 return;
             }
             SyncFromSettings();
