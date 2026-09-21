@@ -33,7 +33,7 @@ public class HelpPerfHotkeysTests
     public void PerfMonitorToggle_DefaultsToF9_AndF9ReallyTogglesIt()
     {
         Assert.AreEqual("F9",
-            KeyChord.Format(KeyBindingDefaults.PrimaryOf(InputAction.PerfMonitorToggle)),
+            InputBinding.Format(KeyBindingDefaults.PrimaryOf(InputAction.PerfMonitorToggle)),
             "строка привязки называет клавишу замера сама, по умолчанию — просто F9");
 
         var host = new GameObject("PerfHost");
@@ -63,7 +63,7 @@ public class HelpPerfHotkeysTests
     public void PerfMonitorToggleRecording_DefaultsToShiftF9_AndNeverTurnsTheMeasurementOff()
     {
         Assert.AreEqual("Shift+F9",
-            KeyChord.Format(KeyBindingDefaults.PrimaryOf(InputAction.PerfMonitorToggleRecording)),
+            InputBinding.Format(KeyBindingDefaults.PrimaryOf(InputAction.PerfMonitorToggleRecording)),
             "запись CSV висит именно на Shift+F9 по умолчанию");
 
         var host = new GameObject("PerfHost");

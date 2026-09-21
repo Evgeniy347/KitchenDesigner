@@ -22,7 +22,7 @@ public class KitchenSettingsKeyBindingsTests
     public void KitchenSettings_ToData_OneOverriddenAction_WritesExactlyOneRecord()
     {
         var settings = new KitchenSettings();
-        settings.KeyBindings.SetPrimary(InputAction.CameraFocusSelection, new KeyChord(KeyCode.K));
+        settings.KeyBindings.SetPrimaryBinding(InputAction.CameraFocusSelection, InputBinding.FromKey(new KeyChord(KeyCode.K)));
 
         var data = settings.ToData();
 
@@ -45,16 +45,16 @@ public class KitchenSettingsKeyBindingsTests
         var action = InputAction.Undo;
         var primary = new KeyChord(KeyCode.U);
         var alt = new KeyChord(KeyCode.Z, ctrl: true, alt: true);
-        settings.KeyBindings.SetPrimary(action, primary);
-        settings.KeyBindings.SetAlt(action, alt);
+        settings.KeyBindings.SetPrimaryBinding(action, InputBinding.FromKey(primary));
+        settings.KeyBindings.SetAltBinding(action, InputBinding.FromKey(alt));
 
         var data = settings.ToData();
         var restored = new KitchenSettings();
         restored.ApplyFrom(data);
 
-        Assert.AreEqual(primary, restored.KeyBindings.Primary(action),
+        Assert.AreEqual(InputBinding.FromKey(primary), restored.KeyBindings.PrimaryBinding(action),
             "переопределённая основная привязка обязана пережить save -> load");
-        Assert.AreEqual(alt, restored.KeyBindings.Alt(action),
+        Assert.AreEqual(InputBinding.FromKey(alt), restored.KeyBindings.AltBinding(action),
             "переопределённая альтернативная привязка обязана пережить save -> load");
     }
 
@@ -79,7 +79,7 @@ public class KitchenSettingsKeyBindingsTests
     public void KitchenSettings_ApplyFrom_UntouchedActions_StayAtTheirDefaults_AfterARoundTrip()
     {
         var settings = new KitchenSettings();
-        settings.KeyBindings.SetPrimary(InputAction.Undo, new KeyChord(KeyCode.U));
+        settings.KeyBindings.SetPrimaryBinding(InputAction.Undo, InputBinding.FromKey(new KeyChord(KeyCode.U)));
 
         var data = settings.ToData();
         var restored = new KitchenSettings();
@@ -94,7 +94,7 @@ public class KitchenSettingsKeyBindingsTests
     {
         var oldProjectData = new KitchenSettingsData();
         var settings = new KitchenSettings();
-        settings.KeyBindings.SetPrimary(InputAction.Undo, new KeyChord(KeyCode.U));
+        settings.KeyBindings.SetPrimaryBinding(InputAction.Undo, InputBinding.FromKey(new KeyChord(KeyCode.U)));
 
         settings.ApplyFrom(oldProjectData);
 
@@ -108,7 +108,7 @@ public class KitchenSettingsKeyBindingsTests
     public void KitchenSettings_ResetToDefaults_ClearsEveryKeyBindingOverride()
     {
         var settings = new KitchenSettings();
-        settings.KeyBindings.SetPrimary(InputAction.Undo, new KeyChord(KeyCode.U));
+        settings.KeyBindings.SetPrimaryBinding(InputAction.Undo, InputBinding.FromKey(new KeyChord(KeyCode.U)));
 
         settings.ResetToDefaults();
 

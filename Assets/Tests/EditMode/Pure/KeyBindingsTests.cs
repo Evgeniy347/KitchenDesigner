@@ -17,7 +17,7 @@ public class KeyBindingsTests
     public void KeyBindings_Alt_IsEmpty_WhenNoOverride()
     {
         var bindings = new KeyBindings();
-        Assert.IsTrue(bindings.Alt(InputAction.Undo).IsEmpty,
+        Assert.IsTrue(bindings.AltBinding(InputAction.Undo).IsEmpty,
             "альтернативная привязка по умолчанию не заполнена ни для одного действия");
     }
 
@@ -27,9 +27,9 @@ public class KeyBindingsTests
         var bindings = new KeyBindings();
         var chord = new KeyChord(KeyCode.K);
 
-        bindings.SetPrimary(InputAction.CameraFocusSelection, chord);
+        bindings.SetPrimaryBinding(InputAction.CameraFocusSelection, InputBinding.FromKey(chord));
 
-        Assert.AreEqual(chord, bindings.Primary(InputAction.CameraFocusSelection));
+        Assert.AreEqual(InputBinding.FromKey(chord), bindings.PrimaryBinding(InputAction.CameraFocusSelection));
         Assert.IsFalse(bindings.IsDefault(InputAction.CameraFocusSelection));
     }
 
@@ -39,7 +39,7 @@ public class KeyBindingsTests
         var bindings = new KeyBindings();
         var action = InputAction.CameraFocusSelection;
 
-        bindings.SetPrimary(action, new KeyChord(KeyCode.K));
+        bindings.SetPrimaryBinding(action, InputBinding.FromKey(new KeyChord(KeyCode.K)));
         bindings.SetPrimaryBinding(action, KeyBindingDefaults.PrimaryOf(action));
 
         Assert.IsTrue(bindings.IsDefault(action),
@@ -53,8 +53,8 @@ public class KeyBindingsTests
         var bindings = new KeyBindings();
         var action = InputAction.Undo;
 
-        bindings.SetAlt(action, new KeyChord(KeyCode.U));
-        bindings.SetAlt(action, KeyChord.Empty);
+        bindings.SetAltBinding(action, InputBinding.FromKey(new KeyChord(KeyCode.U)));
+        bindings.SetAltBinding(action, InputBinding.Empty);
 
         Assert.IsTrue(bindings.IsDefault(action));
     }
@@ -63,8 +63,8 @@ public class KeyBindingsTests
     public void KeyBindings_ClearOverrides_RestoresEveryActionToItsDefault()
     {
         var bindings = new KeyBindings();
-        bindings.SetPrimary(InputAction.Undo, new KeyChord(KeyCode.U));
-        bindings.SetAlt(InputAction.Redo, new KeyChord(KeyCode.R));
+        bindings.SetPrimaryBinding(InputAction.Undo, InputBinding.FromKey(new KeyChord(KeyCode.U)));
+        bindings.SetAltBinding(InputAction.Redo, InputBinding.FromKey(new KeyChord(KeyCode.R)));
 
         bindings.ClearOverrides();
 
@@ -86,13 +86,13 @@ public class KeyBindingsTests
     {
         var bindings = new KeyBindings();
         var shared = new KeyChord(KeyCode.K);
-        bindings.SetPrimary(InputAction.CameraFocusSelection, shared);
-        bindings.SetPrimary(InputAction.ToggleDevConsole, shared);
+        bindings.SetPrimaryBinding(InputAction.CameraFocusSelection, InputBinding.FromKey(shared));
+        bindings.SetPrimaryBinding(InputAction.ToggleDevConsole, InputBinding.FromKey(shared));
 
         var conflicts = bindings.FindConflicts();
 
         Assert.AreEqual(1, conflicts.Count);
-        Assert.AreEqual(shared, conflicts[0].Chord);
+        Assert.AreEqual(InputBinding.FromKey(shared), conflicts[0].Binding);
         CollectionAssert.AreEquivalent(
             new[] { InputAction.CameraFocusSelection, InputAction.ToggleDevConsole },
             conflicts[0].Actions);
@@ -104,8 +104,8 @@ public class KeyBindingsTests
         var bindings = new KeyBindings();
         var shared = new KeyChord(KeyCode.K);
 
-        bindings.SetPrimary(InputAction.CameraFocusSelection, shared);
-        bindings.SetAlt(InputAction.ToggleDevConsole, shared);
+        bindings.SetPrimaryBinding(InputAction.CameraFocusSelection, InputBinding.FromKey(shared));
+        bindings.SetAltBinding(InputAction.ToggleDevConsole, InputBinding.FromKey(shared));
 
         var conflicts = bindings.FindConflicts();
 
@@ -123,8 +123,8 @@ public class KeyBindingsTests
         var chord = new KeyChord(KeyCode.K);
         var action = InputAction.CameraFocusSelection;
 
-        bindings.SetPrimary(action, chord);
-        bindings.SetAlt(action, chord);
+        bindings.SetPrimaryBinding(action, InputBinding.FromKey(chord));
+        bindings.SetAltBinding(action, InputBinding.FromKey(chord));
 
         Assert.IsEmpty(bindings.FindConflicts(),
             "один и тот же chord в обеих привязках ОДНОГО действия — не конфликт, "

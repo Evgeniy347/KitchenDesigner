@@ -23,7 +23,7 @@ public class ProjectJsonKeyBindingsTests
         var settings = new KitchenSettings();
         var action = InputAction.Undo;
         var primary = new KeyChord(KeyCode.U);
-        settings.KeyBindings.SetPrimary(action, primary);
+        settings.KeyBindings.SetPrimaryBinding(action, InputBinding.FromKey(primary));
 
         var data = new ProjectData { settings = settings.ToData() };
         var json = ProjectJson.Serialize(data);
@@ -39,7 +39,7 @@ public class ProjectJsonKeyBindingsTests
         var restoredSettings = new KitchenSettings();
         restoredSettings.ApplyFrom(restored.settings);
 
-        Assert.AreEqual(primary, restoredSettings.KeyBindings.Primary(action),
+        Assert.AreEqual(InputBinding.FromKey(primary), restoredSettings.KeyBindings.PrimaryBinding(action),
             "переопределение обязано пережить serialize -> deserialize через ProjectJson");
     }
 

@@ -6,22 +6,22 @@ namespace KitchenDesigner.Core.UI
 {
     public static class KeybindingConflicts
     {
-        public static bool IsInConflict(IReadOnlyList<KeyBindingConflict> conflicts, KeyChord chord)
+        public static bool IsInConflict(IReadOnlyList<KeyBindingConflict> conflicts, InputBinding binding)
         {
-            if (chord.IsEmpty) return false;
+            if (binding.IsEmpty) return false;
             for (int i = 0; i < conflicts.Count; i++)
-                if (conflicts[i].Chord == chord) return true;
+                if (conflicts[i].Binding == binding) return true;
             return false;
         }
 
         public static string DescribeOthers(
-            IReadOnlyList<KeyBindingConflict> conflicts, InputAction action, KeyChord chord)
+            IReadOnlyList<KeyBindingConflict> conflicts, InputAction action, InputBinding binding)
         {
-            if (chord.IsEmpty) return string.Empty;
+            if (binding.IsEmpty) return string.Empty;
 
             for (int i = 0; i < conflicts.Count; i++)
             {
-                if (conflicts[i].Chord != chord) continue;
+                if (conflicts[i].Binding != binding) continue;
 
                 var others = conflicts[i].Actions;
                 var sb = new StringBuilder();

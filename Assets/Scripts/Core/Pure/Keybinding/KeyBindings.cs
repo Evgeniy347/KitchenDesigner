@@ -28,23 +28,8 @@ namespace KitchenDesigner.Core.Keybinding
             else _altOverrides[action] = binding;
         }
 
-        public KeyChord Primary(InputAction action)
-        {
-            var binding = PrimaryBinding(action);
-            return binding.IsKey ? binding.Key : KeyChord.Empty;
-        }
-
-        public KeyChord Alt(InputAction action)
-        {
-            var binding = AltBinding(action);
-            return binding.IsKey ? binding.Key : KeyChord.Empty;
-        }
-
         public void SetPrimary(InputAction action, KeyChord chord) =>
             SetPrimaryBinding(action, InputBinding.FromKey(chord));
-
-        public void SetAlt(InputAction action, KeyChord chord) =>
-            SetAltBinding(action, InputBinding.FromKey(chord));
 
         public bool IsDefault(InputAction action) =>
             !_primaryOverrides.ContainsKey(action) && !_altOverrides.ContainsKey(action);

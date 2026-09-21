@@ -31,6 +31,8 @@ namespace KitchenDesigner.Core.Keybinding
 
         public KeyChord Key => _key;
 
+        public KeyChord KeyOrEmpty => IsKey ? _key : KeyChord.Empty;
+
         public MouseGesture Gesture => _gesture;
 
         public bool Equals(InputBinding other)

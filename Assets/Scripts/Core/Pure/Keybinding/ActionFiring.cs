@@ -34,8 +34,10 @@ namespace KitchenDesigner.Core.Keybinding
             bool alt = state.IsKeyHeld(KeyCode.LeftAlt) || state.IsKeyHeld(KeyCode.RightAlt);
             bool shift = state.IsKeyHeld(KeyCode.LeftShift) || state.IsKeyHeld(KeyCode.RightShift);
 
-            return FiresVia(bindings, action, bindings.Primary(action), keyEvent, ctrl, alt, shift, resolution)
-                || FiresVia(bindings, action, bindings.Alt(action), keyEvent, ctrl, alt, shift, resolution);
+            return FiresVia(bindings, action, bindings.PrimaryBinding(action).KeyOrEmpty,
+                       keyEvent, ctrl, alt, shift, resolution)
+                || FiresVia(bindings, action, bindings.AltBinding(action).KeyOrEmpty,
+                       keyEvent, ctrl, alt, shift, resolution);
         }
 
         private static bool FiresVia(
@@ -58,8 +60,8 @@ namespace KitchenDesigner.Core.Keybinding
             foreach (var candidate in InputActionCatalog.All)
             {
                 if (candidate == self) continue;
-                if (bindings.Primary(candidate) == chord) return true;
-                if (bindings.Alt(candidate) == chord) return true;
+                if (bindings.PrimaryBinding(candidate).KeyOrEmpty == chord) return true;
+                if (bindings.AltBinding(candidate).KeyOrEmpty == chord) return true;
             }
             return false;
         }
