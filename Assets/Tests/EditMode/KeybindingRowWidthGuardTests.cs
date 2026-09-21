@@ -1,7 +1,6 @@
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Keybinding;
 using KitchenDesigner.Core.UI;
@@ -30,7 +29,8 @@ public class KeybindingRowWidthGuardTests
     [Test]
     public void TheDerivedColumns_FillTheRow_WithoutOverflowingIt()
     {
-        float cell = KeybindingCellLayout.CellWidth(KeybindingCaption.LongestLength());
+        float cell = KeybindingCellLayout.CellWidth(SettingsRowFactory.ContentW,
+            KeybindingCaption.LongestBoundLength(new KeyBindings()));
         float label = KeybindingCellLayout.LabelWidth(SettingsRowFactory.ContentW, cell);
 
         float used = label + KeybindingCellLayout.GapAfterLabel
