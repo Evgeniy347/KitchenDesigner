@@ -29,19 +29,15 @@ public class KeybindingRowWidthGuardTests
     [Test]
     public void TheDerivedColumns_FillTheRow_WithoutOverflowingIt()
     {
-        float cell = KeybindingCellLayout.CellWidth(SettingsRowFactory.ContentW,
+        var ruler = KeybindingRowRuler.For(SettingsRowFactory.ContentW,
             KeybindingCaption.LongestBoundLength(new KeyBindings()));
-        float label = KeybindingCellLayout.LabelWidth(SettingsRowFactory.ContentW, cell);
 
-        float used = label + KeybindingCellLayout.GapAfterLabel
-            + 2f * cell + 2f * (KeybindingCellLayout.GapBeforeClear + KeybindingCellLayout.ClearWidth)
-            + KeybindingCellLayout.GapBetweenCells;
-
-        Assert.AreEqual(SettingsRowFactory.ContentW, used, 0.01f,
-            "колонки обязаны складываться ровно в ширину строки: остаток означает, что "
-            + "подпись действия или ячейка считают ширину по-своему");
-        Assert.That(label, Is.GreaterThanOrEqualTo(KeybindingCellLayout.MinLabelWidth),
-            $"подписи действия осталось {label:F0} px");
+        Assert.AreEqual(SettingsRowFactory.ContentW * 0.5f, ruler.RightEdge, 0.01f,
+            "дорожки строки обязаны кончаться ровно на правом краю той ширины, которую "
+            + "панель реально раскладывает: остаток или перелёт означают, что линейка и "
+            + "панель считают разметку по-разному");
+        Assert.That(ruler.LabelWidth, Is.GreaterThanOrEqualTo(KeybindingCellLayout.MinLabelWidth),
+            $"подписи действия осталось {ruler.LabelWidth:F0} px");
     }
 
     /// <summary>Ширина колонок считается от того, что РЕАЛЬНО назначено, поэтому список

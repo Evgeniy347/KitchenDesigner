@@ -27,11 +27,10 @@ public class KeybindingCaptionFitTests
 {
     private const float Row = KeybindingCellLayout.DefaultRowWidth;
 
-    private static float CellForDefaults()
-    {
-        var bindings = new KeyBindings();
-        return KeybindingCellLayout.CellWidth(Row, KeybindingCaption.LongestBoundLength(bindings));
-    }
+    private static float CellForDefaults() => RulerForDefaults().CellWidth;
+
+    private static KeybindingRowRuler RulerForDefaults() =>
+        KeybindingRowRuler.For(Row, KeybindingCaption.LongestBoundLength(new KeyBindings()));
 
     [Test]
     public void OutOfTheBox_EveryBoundCaptionFitsItsCell_AtFullSize()
@@ -99,25 +98,77 @@ public class KeybindingCaptionFitTests
             + KeybindingCaption.Longest());
     }
 
+    /// <summary>ТРЕБОВАНИЕ целиком, а не сегодняшний симптом: в конфликтующей строке
+    /// человек обязан увидеть И маркер целиком, И подпись целиком.
+    ///
+    /// Эту проверку пришлось переписывать трижды, и каждый раз она стерегла ровно ту
+    /// половину, которую только что починили. Сперва маркер был префиксом внутри подписи
+    /// — его срезало вместе с текстом, а тест смотрел на суммарную ширину. Потом маркер
+    /// получил дорожку ВНУТРИ ячейки — маркер стало видно, но дорожка отняла место у
+    /// подписи, и обрезалась уже она, а тест смотрел только на маркер. Поэтому теперь
+    /// проверка спрашивает обе половины СРАЗУ и по одной линейке
+    /// (<see cref="KeybindingRowRuler"/>), которой размечает строку сама панель.</summary>
     [Test]
-    public void TheWorstCaseCaption_StillFitsTheCell_AtTheSmallestFontSize()
+    public void InAConflict_BothTheMarkerAndTheWholeCaption_AreVisible()
     {
-        float cell = KeybindingCellLayout.CellWidth(Row, KeybindingCaption.LongestLength());
+        var bindings = new KeyBindings();
+        var ruler = RulerForDefaults();
 
-        Assert.IsTrue(KeybindingCellLayout.Fits(KeybindingCaption.Longest(), cell),
-            "на минимальном кегле в ячейку обязана влезать и самая длинная подпись каталога: "
-            + KeybindingCaption.Longest());
+        Assert.IsTrue(KeybindingCellLayout.MarkerFitsItsLane(),
+            $"маркер «{KeybindingCaption.MarkerText}» не помещается в свою дорожку "
+            + $"{ruler.MarkerWidth:F0} px — его срежет, а это единственный носитель смысла "
+            + "для тех, кто не различает красный");
+
+        var clipped = InputActionCatalog.All
+            .SelectMany(a => new[] { bindings.PrimaryBinding(a), bindings.AltBinding(a) })
+            .Where(b => !b.IsEmpty)
+            .Select(KeybindingCaption.CellText)
+            .Where(text => !KeybindingCellLayout.FitsComfortably(text, ruler.CellWidth))
+            .Distinct()
+            .ToList();
+
+        CollectionAssert.IsEmpty(clipped,
+            $"подпись не помещается в ячейку {ruler.CellWidth:F0} px на полном кегле — "
+            + "её срежет многоточием, и человек увидит, ЧТО конфликт есть, но не увидит, "
+            + "С ЧЕМ: " + string.Join(" | ", clipped));
     }
 
-    /// <summary>Маркер конфликта пропал из кадра, и ни один тест этого не заметил.
-    /// Он жил ПРЕФИКСОМ ВНУТРИ подписи («! СКМ+движение»), а ширину ячейки считали по
-    /// подписи БЕЗ него — в конфликтующей ячейке текст упирался в края и маркер срезало
-    /// слева. Бьёт это точно по цели: маркер — это та самая форма, которой пользуются
-    /// вместо цвета, и пропадал он ровно в том состоянии, ради которого написан.
-    ///
-    /// Теперь маркер — отдельная дорожка слева, как значок «i» у названия: у подписи
-    /// отбирается ширина дорожки, и срезать маркер нечем, потому что он больше не часть
-    /// текста. Эти три проверки и есть сенсор на «маркер обрезан».</summary>
+    /// <summary>Вторая половина того же требования: за дорожку маркера не платит подпись.
+    /// Дорожка живёт в зазоре СЛЕВА от ячейки, поэтому ширина подписи одна и та же в
+    /// конфликте и без него — таблица не переезжает, когда конфликт появляется и уходит.</summary>
+    [Test]
+    public void TheMarkerLane_SitsOutsideTheCell_SoTheCaptionNeverPaysForIt()
+    {
+        var ruler = RulerForDefaults();
+
+        Assert.AreEqual(ruler.MarkerLeft(primary: true) + ruler.MarkerWidth,
+            ruler.CellLeft(primary: true), 0.01f,
+            "дорожка маркера обязана кончаться ровно там, где начинается ячейка: заедет "
+            + "внутрь — отнимет место у подписи, оставит зазор — оторвётся от своей ячейки");
+        Assert.AreEqual(ruler.MarkerLeft(primary: false) + ruler.MarkerWidth,
+            ruler.CellLeft(primary: false), 0.01f, "то же у альтернативной ячейки");
+
+        Assert.That(ruler.MarkerLeft(primary: true),
+            Is.GreaterThanOrEqualTo(ruler.LabelLeft + ruler.LabelWidth - 0.01f),
+            "и начинаться правее колонки названий, а не поверх неё");
+    }
+
+    [Test]
+    public void TheRowLanes_FollowOneAnother_WithoutOverlapOrGapAtTheEnd()
+    {
+        var ruler = RulerForDefaults();
+
+        Assert.That(ruler.CellLeft(primary: true) + ruler.CellWidth,
+            Is.LessThanOrEqualTo(ruler.ClearLeft(primary: true) + 0.01f),
+            "ячейка налезает на крестик очистки");
+        Assert.That(ruler.ClearLeft(primary: true) + ruler.ClearWidth,
+            Is.LessThanOrEqualTo(ruler.MarkerLeft(primary: false) + 0.01f),
+            "первая пара налезает на вторую");
+        Assert.AreEqual(ruler.RowWidth * 0.5f, ruler.RightEdge, 0.01f,
+            "строка обязана кончаться ровно на правом краю: остаток или перелёт означают, "
+            + "что панель и линейка считают разметку по-разному");
+    }
+
     [Test]
     public void TheConflictMarker_IsNotPartOfTheCaptionText()
     {
@@ -131,41 +182,6 @@ public class KeybindingCaptionFitTests
                 + "текстом, как только подпись перестанет влезать, — а это ровно то "
                 + "состояние, в котором маркер и нужен");
         }
-    }
-
-    [Test]
-    public void TheConflictMarker_GetsItsOwnLane_TakenFromTheCaption()
-    {
-        float cell = CellForDefaults();
-
-        float calm = KeybindingCellLayout.CaptionAreaWidth(cell, inConflict: false);
-        float clashing = KeybindingCellLayout.CaptionAreaWidth(cell, inConflict: true);
-
-        Assert.AreEqual(cell, calm, 0.01f,
-            "без конфликта подпись занимает всю ячейку — за дорожку никто не платит");
-        Assert.AreEqual(cell - KeybindingCellLayout.MarkerLaneWidth, clashing, 0.01f,
-            "в конфликте дорожка маркера вычитается из области текста, а не накладывается "
-            + "на неё");
-        Assert.That(clashing, Is.GreaterThan(0f), "от ячейки обязано что-то остаться подписи");
-    }
-
-    [Test]
-    public void AConflictingCaption_StaysReadable_InsideTheNarrowedArea()
-    {
-        var bindings = new KeyBindings();
-        float cell = CellForDefaults();
-        float area = KeybindingCellLayout.CaptionAreaWidth(cell, inConflict: true);
-
-        var unreadable = InputActionCatalog.All
-            .Select(a => KeybindingCaption.CellText(bindings.PrimaryBinding(a)))
-            .Where(text => KeybindingCellLayout.FontSizeFor(text.Length, area)
-                <= KeybindingCellLayout.MinCaptionFontSize)
-            .Distinct()
-            .ToList();
-
-        CollectionAssert.IsEmpty(unreadable,
-            $"в конфликте подписи остаётся {area:F0} px, и на ней текст ужимается до предела "
-            + "— дальше его режет многоточием: " + string.Join(" | ", unreadable));
     }
 
     [Test]

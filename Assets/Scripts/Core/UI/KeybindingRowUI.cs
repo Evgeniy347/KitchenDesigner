@@ -13,12 +13,8 @@ namespace KitchenDesigner.Core.UI
         private const float RowH = 32f;
         private const float RowGap = 6f;
         private const float ClearBtnW = KeybindingCellLayout.ClearWidth;
-        private const float GapSmall = KeybindingCellLayout.GapBeforeClear;
-        private const float GapMed = KeybindingCellLayout.GapAfterLabel;
-        private const float GapGroup = KeybindingCellLayout.GapBetweenCells;
         private const float HeaderH = 22f;
         private const int ChordFontMax = KeybindingCellLayout.MaxCaptionFontSize;
-        private const int ChordFontMin = KeybindingCellLayout.MinCaptionFontSize;
 
         private readonly KitchenSettings _settings;
         private readonly KeybindingCaptureGate _captureGate;
@@ -28,8 +24,7 @@ namespace KitchenDesigner.Core.UI
         private readonly List<Node> _nodes = new();
 
         private float _topY;
-        private float _cellW;
-        private float _labelW;
+        private KeybindingRowRuler _ruler;
 
         private sealed class Cell
         {
@@ -88,12 +83,8 @@ namespace KitchenDesigner.Core.UI
             RefreshAll();
         }
 
-        private void AdoptWidthsForTheCurrentBindings()
-        {
-            _cellW = KeybindingCellLayout.CellWidth(ContentW,
-                KeybindingCaption.LongestBoundLength(Bindings));
-            _labelW = KeybindingCellLayout.LabelWidth(ContentW, _cellW);
-        }
+        private void AdoptWidthsForTheCurrentBindings() =>
+            _ruler = KeybindingRowRuler.For(ContentW, KeybindingCaption.LongestBoundLength(Bindings));
 
         private void BuildColumnHeader(Transform parent)
         {
@@ -179,7 +170,7 @@ namespace KitchenDesigner.Core.UI
                 Label = caption!,
             };
             _cells.Add(cell);
-            cell.Marker = BuildMarker(button, "KbMark_" + action + suffix);
+            cell.Marker = BuildMarker(rowRect, "KbMark_" + action + suffix);
             button.onClick.AddListener(() => BeginCapture(cell));
             TooltipUI.Attach(button.gameObject, () => CellTooltip(cell));
 
@@ -198,29 +189,20 @@ namespace KitchenDesigner.Core.UI
             return cell;
         }
 
-        private static GameObject BuildMarker(Button button, string name)
+        private static GameObject BuildMarker(Transform rowRect, string name)
         {
-            var marker = UIFactory.CreateLabel(name, button.transform,
+            var marker = UIFactory.CreateLabel(name, rowRect,
                 KeybindingCaption.MarkerText, ChordFontMax, Vector2.zero,
                 new Vector2(KeybindingCellLayout.MarkerLaneWidth, RowH - 4f),
                 TextAnchor.MiddleCenter);
             marker.color = UIStyle.HighlightError;
             marker.raycastTarget = false;
-
-            var rect = marker.rectTransform;
-            rect.anchorMin = new Vector2(0f, 0f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 0.5f);
-            rect.offsetMin = new Vector2(0f, 0f);
-            rect.offsetMax = new Vector2(KeybindingCellLayout.MarkerLaneWidth, 0f);
-
             marker.gameObject.SetActive(false);
             return marker.gameObject;
         }
 
         private float LayOut()
         {
-            float left = -ContentW * 0.5f;
             float y = _topY;
 
             foreach (var node in _nodes)
@@ -229,8 +211,8 @@ namespace KitchenDesigner.Core.UI
                 node.Rect.sizeDelta = new Vector2(ContentW, height);
                 node.Rect.anchoredPosition = new Vector2(0f, y - height * 0.5f);
 
-                if (node.ColumnLabels.Length == 3) LayOutColumnHeader(node, left);
-                else if (node.Label != null) LayOutActionRow(node, left, height);
+                if (node.ColumnLabels.Length == 3) LayOutColumnHeader(node);
+                else if (node.Label != null) LayOutActionRow(node, height);
 
                 y -= height + RowGap;
             }
@@ -239,35 +221,36 @@ namespace KitchenDesigner.Core.UI
             return y;
         }
 
-        private void LayOutColumnHeader(Node node, float left)
+        private void LayOutColumnHeader(Node node)
         {
-            float cellsLane = _cellW + GapSmall + ClearBtnW;
-            Place(node.ColumnLabels[0], left, _labelW, RowH);
-            Place(node.ColumnLabels[1], left + _labelW + GapMed, cellsLane, RowH);
-            Place(node.ColumnLabels[2], left + _labelW + GapMed + cellsLane + GapGroup, cellsLane, RowH);
+            Place(node.ColumnLabels[0], _ruler.LabelLeft, _ruler.LabelWidth, RowH);
+            Place(node.ColumnLabels[1], _ruler.ColumnHeaderLeft(primary: true),
+                _ruler.ColumnHeaderWidth, RowH);
+            Place(node.ColumnLabels[2], _ruler.ColumnHeaderLeft(primary: false),
+                _ruler.ColumnHeaderWidth, RowH);
         }
 
-        private void LayOutActionRow(Node node, float left, float height)
+        private void LayOutActionRow(Node node, float height)
         {
-            float textW = KeybindingCellLayout.LabelTextWidth(_labelW, node.HasHint);
-            Place(node.Label!, left, textW, height);
+            float textW = KeybindingCellLayout.LabelTextWidth(_ruler.LabelWidth, node.HasHint);
+            Place(node.Label!, _ruler.LabelLeft, textW, height);
 
             if (node.Hint != null)
                 node.Hint.anchoredPosition =
                     new Vector2(KeybindingCellLayout.HintBadgeCentreX(textW), 0f);
 
-            float x = left + _labelW + GapMed;
-            x = PlaceCell(node.Primary!, x);
-            x += GapGroup;
-            PlaceCell(node.Alt!, x);
+            PlaceCell(node.Primary!);
+            PlaceCell(node.Alt!);
         }
 
-        private float PlaceCell(Cell cell, float x)
+        private void PlaceCell(Cell cell)
         {
-            Place((RectTransform)cell.Button.transform, x, _cellW, RowH - 4f);
-            x += _cellW + GapSmall;
-            Place((RectTransform)cell.Clear.transform, x, ClearBtnW, RowH - 4f);
-            return x + ClearBtnW;
+            Place((RectTransform)cell.Marker.transform,
+                _ruler.MarkerLeft(cell.Primary), _ruler.MarkerWidth, RowH - 4f);
+            Place((RectTransform)cell.Button.transform,
+                _ruler.CellLeft(cell.Primary), _ruler.CellWidth, RowH - 4f);
+            Place((RectTransform)cell.Clear.transform,
+                _ruler.ClearLeft(cell.Primary), _ruler.ClearWidth, RowH - 4f);
         }
 
         private static void Place(TMP_Text label, float left, float width, float height) =>
@@ -282,7 +265,7 @@ namespace KitchenDesigner.Core.UI
         private float RowHeightOf(Node node)
         {
             if (node.Label == null) return RowH;
-            float textW = KeybindingCellLayout.LabelTextWidth(_labelW, node.HasHint);
+            float textW = KeybindingCellLayout.LabelTextWidth(_ruler.LabelWidth, node.HasHint);
             float preferred = node.Label.GetPreferredValues(node.Text, textW, 0f).y;
             return Mathf.Max(RowH, preferred);
         }
@@ -344,9 +327,9 @@ namespace KitchenDesigner.Core.UI
 
         public void RefreshAll()
         {
-            float wasCell = _cellW;
+            float wasCell = _ruler.CellWidth;
             AdoptWidthsForTheCurrentBindings();
-            if (!Mathf.Approximately(wasCell, _cellW) && _nodes.Count > 0)
+            if (!Mathf.Approximately(wasCell, _ruler.CellWidth) && _nodes.Count > 0)
                 AfterRelayout?.Invoke(LayOut());
 
             var conflicts = Bindings.FindConflicts();
@@ -367,11 +350,7 @@ namespace KitchenDesigner.Core.UI
         private void ShowTheMarker(Cell cell, bool inConflict, string text)
         {
             cell.Marker.SetActive(inConflict);
-
-            float area = KeybindingCellLayout.CaptionAreaWidth(_cellW, inConflict);
-            cell.Label.rectTransform.offsetMin =
-                new Vector2(inConflict ? KeybindingCellLayout.MarkerLaneWidth : 0f, 0f);
-            cell.Label.fontSize = KeybindingCellLayout.FontSizeFor(text.Length, area);
+            cell.Label.fontSize = KeybindingCellLayout.FontSizeFor(text.Length, _ruler.CellWidth);
         }
 
         private static Color BindingColor(InputBinding binding, bool inConflict)
