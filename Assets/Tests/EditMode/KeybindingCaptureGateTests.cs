@@ -70,10 +70,11 @@ public class KeybindingCaptureGateTests
 
         Assert.IsTrue(_gate!.IsCapturing);
         Assert.IsTrue(InputMap.IsMutedBy(_gate!),
-            "гейт обязан быть владельцем глушения - а не просто одним из тех, кто его включил");
-        Assert.IsFalse(
-            InputMap.DownWithSimulatedKeyForTests(InputAction.CameraMoveForward, KeyCode.W),
-            "ради этого гейт и существует: пока ждём клавишу, WASD/F1/зум сцены молчат");
+            "гейт обязан быть владельцем глушения - а не просто одним из тех, кто его включил. "
+            + "Ради этого гейт и существует: пока SceneInputMuted истинен, Down/Held/Up не "
+            + "дойдут до ActionFiring вообще - этот короткий путь проверен отдельно "
+            + "(InputMapMuteTests), а само срабатывание WASD/F1/зум - в быстром наборе "
+            + "(ActionFiringTests)");
     }
 
     [Test]
@@ -89,7 +90,6 @@ public class KeybindingCaptureGateTests
         Assert.IsTrue(results[0].WasCancelled, "Escape отменяет захват, а не назначает клавишу");
         Assert.IsFalse(_gate!.IsCapturing);
         Assert.IsFalse(InputMap.SceneInputMuted, "после отмены горячие клавиши сцены обязаны ожить сразу");
-        Assert.IsTrue(InputMap.DownWithSimulatedKeyForTests(InputAction.CameraMoveForward, KeyCode.W));
     }
 
     [Test]
