@@ -162,7 +162,7 @@ namespace KitchenDesigner.Core
             if (_isOrbiting) OrbitByMouse();
             if (_isPanning) PanByMouse();
 
-            if (Mathf.Abs(scroll) > 0.01f && !overUI)
+            if (Mathf.Abs(scroll) > 0.01f && !overUI && InputMap.Down(InputAction.CameraZoomWheel))
                 ApplyScrollInput(scroll * ScrollNotchesPerAxisUnit
                     * _zoomStep * _zoomSpeed);
 
@@ -175,7 +175,7 @@ namespace KitchenDesigner.Core
 
         private void TrackRightMouseButton(bool overUI)
         {
-            if (Input.GetMouseButtonDown(1) && !overUI)
+            if (InputMap.Down(InputAction.CameraOrbit) && !overUI)
             {
                 _rmbPressed = true;
                 _rmbMoved = false;
@@ -183,7 +183,7 @@ namespace KitchenDesigner.Core
                 _lastMouse = Input.mousePosition;
             }
 
-            if (_rmbPressed && !_rmbMoved && Input.GetMouseButton(1) &&
+            if (_rmbPressed && !_rmbMoved && InputMap.Held(InputAction.CameraOrbit) &&
                 ((Vector2)Input.mousePosition - _rmbDownPos).magnitude > RmbDragPixels)
             {
                 _rmbMoved = true;
@@ -191,7 +191,7 @@ namespace KitchenDesigner.Core
                 _lastMouse = Input.mousePosition;
             }
 
-            if (Input.GetMouseButtonUp(1))
+            if (InputMap.Up(InputAction.CameraOrbit))
             {
                 if (_rmbPressed && !_rmbMoved)
                     HandleRmbClick();
@@ -202,7 +202,7 @@ namespace KitchenDesigner.Core
 
         private void TrackPanStart(bool overUI)
         {
-            bool middleButton = Input.GetMouseButtonDown(2);
+            bool middleButton = InputMap.Down(InputAction.CameraPan);
             bool leftButtonOnEmptySpace = Input.GetMouseButtonDown(0) && !overUI
                 && !PointerHitsBoard()
                 && !ResizeHandleManager.PointerOverHandle()
@@ -218,8 +218,8 @@ namespace KitchenDesigner.Core
 
         private void DropDragStatesWhenButtonsAreReleased()
         {
-            if (_isOrbiting && !Input.GetMouseButton(1)) _isOrbiting = false;
-            if (_isPanning && !Input.GetMouseButton(0) && !Input.GetMouseButton(2)) _isPanning = false;
+            if (_isOrbiting && !InputMap.Held(InputAction.CameraOrbit)) _isOrbiting = false;
+            if (_isPanning && !Input.GetMouseButton(0) && !InputMap.Held(InputAction.CameraPan)) _isPanning = false;
         }
 
         private void OrbitByMouse()

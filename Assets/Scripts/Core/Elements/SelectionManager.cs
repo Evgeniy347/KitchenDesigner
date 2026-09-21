@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.Keybinding;
 
 namespace KitchenDesigner.Core
 {
@@ -78,10 +79,10 @@ namespace KitchenDesigner.Core
                 UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
                 return;
 
-            if (Input.GetMouseButtonDown(0))
+            if (InputMap.Down(InputAction.SelectMultiClick) || InputMap.Down(InputAction.SelectClick))
             {
                 bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-                bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+                bool ctrlHeld = InputMap.Down(InputAction.SelectMultiClick);
 
                 var clicked = ResolveClickTarget(Input.mousePosition, shiftHeld);
 
