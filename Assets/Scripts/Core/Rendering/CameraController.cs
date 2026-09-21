@@ -224,7 +224,9 @@ namespace KitchenDesigner.Core
 
         private void OrbitByMouse()
         {
-            Vector3 delta = Input.mousePosition - _lastMouse;
+            Vector3 raw = Input.mousePosition - _lastMouse;
+            Vector2 delta = MouseOrbitInvert.Apply(
+                raw, KitchenSettings.Instance.MouseInvertX, KitchenSettings.Instance.MouseInvertY);
             float sens = MouseSensitivity;
             ApplyOrbit(delta.x * _orbitSpeed * 0.1f * sens,
                       -delta.y * _orbitSpeed * 0.1f * sens);

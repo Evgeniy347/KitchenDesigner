@@ -25,6 +25,8 @@ namespace KitchenDesigner.Core
         [SerializeField] private float _mouseSensitivity = 1f;
         [SerializeField] private float _wasdSpeed = 1f;
         [SerializeField] private float _arrowSpeed = 1f;
+        [SerializeField] private bool _mouseInvertX = false;
+        [SerializeField] private bool _mouseInvertY = false;
 
         public const float MIN_INPUT_SPEED = 0.1f;
         public const float MAX_INPUT_SPEED = 3f;
@@ -166,6 +168,18 @@ namespace KitchenDesigner.Core
         {
             get => _arrowSpeed;
             set => _arrowSpeed = Mathf.Clamp(value, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
+        }
+
+        public bool MouseInvertX
+        {
+            get => _mouseInvertX;
+            set => _mouseInvertX = value;
+        }
+
+        public bool MouseInvertY
+        {
+            get => _mouseInvertY;
+            set => _mouseInvertY = value;
         }
 
         public PhotoQualityPreset PhotoQuality
@@ -317,6 +331,8 @@ namespace KitchenDesigner.Core
             _mouseSensitivity = 1f;
             _wasdSpeed = 1f;
             _arrowSpeed = 1f;
+            _mouseInvertX = false;
+            _mouseInvertY = false;
             ResetPhotoLook();
             ResetConstruction();
             ResetKeyBindings();
@@ -351,6 +367,8 @@ namespace KitchenDesigner.Core
                 mouseSensitivity = _mouseSensitivity,
                 wasdSpeed = _wasdSpeed,
                 arrowSpeed = _arrowSpeed,
+                mouseInvertX = _mouseInvertX,
+                mouseInvertY = _mouseInvertY,
                 photoQuality = (int)_photoQuality,
                 photoShadows = _photoShadows,
                 photoSoftShadows = _photoSoftShadows,
@@ -397,6 +415,8 @@ namespace KitchenDesigner.Core
             _mouseSensitivity = Mathf.Clamp(data.mouseSensitivity, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
             _wasdSpeed = Mathf.Clamp(data.wasdSpeed, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
             _arrowSpeed = Mathf.Clamp(data.arrowSpeed, MIN_INPUT_SPEED, MAX_INPUT_SPEED);
+            _mouseInvertX = data.mouseInvertX;
+            _mouseInvertY = data.mouseInvertY;
             ApplyPhotoSettings(data);
             ApplyConstruction(data);
             ApplyKeyBindings(data);

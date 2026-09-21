@@ -32,6 +32,8 @@ namespace KitchenDesigner.Core
         public float mouseSensitivity = 1f;
         public float wasdSpeed = 1f;
         public float arrowSpeed = 1f;
+        public bool mouseInvertX = false;
+        public bool mouseInvertY = false;
 
         public int photoQuality = (int)PhotoQualityPreset.High;
         public bool photoShadows = true;
