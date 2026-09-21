@@ -124,12 +124,16 @@ namespace KitchenDesigner.Core.UI
                     onChanged(v);
                     if (valueLabel != null) valueLabel.text = FormatMultiplier(v);
                 });
+
+            var undo = SettingsSliderUndo.Attach(slider, label, onChanged, ReadBackFromSettings);
+
             if (read != null)
                 _readBackFromSettings.Add(() =>
                 {
                     if (slider == null) return;
                     float v = read();
                     slider.SetValueWithoutNotify(v);
+                    undo.Sync();
                     if (valueLabel != null) valueLabel.text = FormatMultiplier(v);
                 });
 
@@ -157,12 +161,17 @@ namespace KitchenDesigner.Core.UI
                     if (valueLabel != null) valueLabel.text = format(iv);
                 });
             slider.wholeNumbers = true;
+
+            var undo = SettingsSliderUndo.Attach(slider, label,
+                v => onChanged(Mathf.RoundToInt(v)), ReadBackFromSettings);
+
             if (read != null)
                 _readBackFromSettings.Add(() =>
                 {
                     if (slider == null) return;
                     int v = read();
                     slider.SetValueWithoutNotify(v);
+                    undo.Sync();
                     if (valueLabel != null) valueLabel.text = format(v);
                 });
 
