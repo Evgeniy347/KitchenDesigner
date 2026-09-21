@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using KitchenDesigner.Core.Keybinding;
 
-internal sealed class FakeKeyState : IInputState
+public sealed class FakeKeyState : IInputState
 {
     private readonly HashSet<KeyCode> _held = new HashSet<KeyCode>();
     private readonly HashSet<KeyCode> _down = new HashSet<KeyCode>();

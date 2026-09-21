@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core.Keybinding;
@@ -23,18 +23,18 @@ public class ActionFiringTests
     public readonly struct Case
     {
         public readonly InputAction Action;
-        public readonly KeyCode Key;
+        public readonly Action<FakeKeyState> PressTrigger;
         public readonly KeyCode? OwnModifier;
         public readonly KeyCode FreeExtraModifier;
         public readonly KeyCode? ClaimedExtraModifier;
         public readonly InputAction? ClaimedBy;
 
         public Case(
-            InputAction action, KeyCode key, KeyCode? ownModifier, KeyCode freeExtraModifier,
+            InputAction action, Action<FakeKeyState> pressTrigger, KeyCode? ownModifier, KeyCode freeExtraModifier,
             KeyCode? claimedExtraModifier = null, InputAction? claimedBy = null)
         {
             Action = action;
-            Key = key;
+            PressTrigger = pressTrigger;
             OwnModifier = ownModifier;
             FreeExtraModifier = freeExtraModifier;
             ClaimedExtraModifier = claimedExtraModifier;
@@ -44,41 +44,52 @@ public class ActionFiringTests
         public override string ToString() => Action.ToString();
     }
 
+    private static Action<FakeKeyState> Key(KeyCode key) => s => s.Press(key);
+    private static Action<FakeKeyState> Button(MouseButtonKind button) => s => s.PressButton(button);
+    private static readonly Action<FakeKeyState> WheelTrigger = s => s.MoveWheel();
+
     private static readonly Case[] Cases =
     {
-        new Case(InputAction.CameraMoveForward, KeyCode.W, null, KeyCode.LeftShift),
-        new Case(InputAction.CameraMoveBack, KeyCode.S, null, KeyCode.LeftShift,
+        new Case(InputAction.CameraMoveForward, Key(KeyCode.W), null, KeyCode.LeftShift),
+        new Case(InputAction.CameraMoveBack, Key(KeyCode.S), null, KeyCode.LeftShift,
             KeyCode.LeftControl, InputAction.SaveProject),
-        new Case(InputAction.CameraMoveLeft, KeyCode.A, null, KeyCode.LeftShift,
+        new Case(InputAction.CameraMoveLeft, Key(KeyCode.A), null, KeyCode.LeftShift,
             KeyCode.LeftControl, InputAction.ErrorPanelSelectAll),
-        new Case(InputAction.CameraMoveRight, KeyCode.D, null, KeyCode.LeftShift,
+        new Case(InputAction.CameraMoveRight, Key(KeyCode.D), null, KeyCode.LeftShift,
             KeyCode.LeftControl, InputAction.DuplicateSelected),
-        new Case(InputAction.CameraRotateLeft, KeyCode.LeftArrow, null, KeyCode.LeftShift),
-        new Case(InputAction.CameraRotateRight, KeyCode.RightArrow, null, KeyCode.LeftShift),
-        new Case(InputAction.CameraRotateUp, KeyCode.UpArrow, null, KeyCode.LeftShift),
-        new Case(InputAction.CameraRotateDown, KeyCode.DownArrow, null, KeyCode.LeftShift),
-        new Case(InputAction.CameraZoomIn, KeyCode.Equals, null, KeyCode.LeftShift),
-        new Case(InputAction.CameraZoomOut, KeyCode.Minus, null, KeyCode.LeftShift),
-        new Case(InputAction.CameraFocusSelection, KeyCode.F, null, KeyCode.LeftControl),
-        new Case(InputAction.DeleteSelected, KeyCode.Delete, null, KeyCode.LeftControl),
-        new Case(InputAction.ActivateSelected, KeyCode.E, null, KeyCode.LeftControl),
-        new Case(InputAction.CatalogOpenSearch, KeyCode.Slash, null, KeyCode.LeftControl),
-        new Case(InputAction.ViewTop, KeyCode.Alpha1, null, KeyCode.LeftControl),
-        new Case(InputAction.ViewSide, KeyCode.Alpha2, null, KeyCode.LeftControl),
-        new Case(InputAction.ViewFront, KeyCode.Alpha3, null, KeyCode.LeftControl),
-        new Case(InputAction.ToggleHelp, KeyCode.F1, null, KeyCode.LeftControl),
-        new Case(InputAction.TogglePhotoMode, KeyCode.F10, null, KeyCode.LeftControl),
-        new Case(InputAction.ToggleDevConsole, KeyCode.BackQuote, null, KeyCode.LeftControl),
-        new Case(InputAction.SaveProject, KeyCode.S, KeyCode.LeftControl, KeyCode.LeftAlt),
-        new Case(InputAction.DuplicateSelected, KeyCode.D, KeyCode.LeftControl, KeyCode.LeftAlt),
-        new Case(InputAction.ErrorPanelCopy, KeyCode.C, KeyCode.LeftControl, KeyCode.LeftAlt),
-        new Case(InputAction.ErrorPanelSelectAll, KeyCode.A, KeyCode.LeftControl, KeyCode.LeftAlt),
-        new Case(InputAction.Redo, KeyCode.Y, KeyCode.LeftControl, KeyCode.LeftAlt),
-        new Case(InputAction.Undo, KeyCode.Z, KeyCode.LeftControl, KeyCode.LeftAlt,
+        new Case(InputAction.CameraRotateLeft, Key(KeyCode.LeftArrow), null, KeyCode.LeftShift),
+        new Case(InputAction.CameraRotateRight, Key(KeyCode.RightArrow), null, KeyCode.LeftShift),
+        new Case(InputAction.CameraRotateUp, Key(KeyCode.UpArrow), null, KeyCode.LeftShift),
+        new Case(InputAction.CameraRotateDown, Key(KeyCode.DownArrow), null, KeyCode.LeftShift),
+        new Case(InputAction.CameraZoomIn, Key(KeyCode.Equals), null, KeyCode.LeftShift),
+        new Case(InputAction.CameraZoomOut, Key(KeyCode.Minus), null, KeyCode.LeftShift),
+        new Case(InputAction.CameraFocusSelection, Key(KeyCode.F), null, KeyCode.LeftControl),
+        new Case(InputAction.DeleteSelected, Key(KeyCode.Delete), null, KeyCode.LeftControl),
+        new Case(InputAction.ActivateSelected, Key(KeyCode.E), null, KeyCode.LeftControl),
+        new Case(InputAction.CatalogOpenSearch, Key(KeyCode.Slash), null, KeyCode.LeftControl),
+        new Case(InputAction.ViewTop, Key(KeyCode.Alpha1), null, KeyCode.LeftControl),
+        new Case(InputAction.ViewSide, Key(KeyCode.Alpha2), null, KeyCode.LeftControl),
+        new Case(InputAction.ViewFront, Key(KeyCode.Alpha3), null, KeyCode.LeftControl),
+        new Case(InputAction.ToggleHelp, Key(KeyCode.F1), null, KeyCode.LeftControl),
+        new Case(InputAction.TogglePhotoMode, Key(KeyCode.F10), null, KeyCode.LeftControl),
+        new Case(InputAction.ToggleDevConsole, Key(KeyCode.BackQuote), null, KeyCode.LeftControl),
+        new Case(InputAction.SaveProject, Key(KeyCode.S), KeyCode.LeftControl, KeyCode.LeftAlt),
+        new Case(InputAction.DuplicateSelected, Key(KeyCode.D), KeyCode.LeftControl, KeyCode.LeftAlt),
+        new Case(InputAction.ErrorPanelCopy, Key(KeyCode.C), KeyCode.LeftControl, KeyCode.LeftAlt),
+        new Case(InputAction.ErrorPanelSelectAll, Key(KeyCode.A), KeyCode.LeftControl, KeyCode.LeftAlt),
+        new Case(InputAction.Redo, Key(KeyCode.Y), KeyCode.LeftControl, KeyCode.LeftAlt),
+        new Case(InputAction.Undo, Key(KeyCode.Z), KeyCode.LeftControl, KeyCode.LeftAlt,
             KeyCode.LeftShift, InputAction.Redo),
-        new Case(InputAction.PerfMonitorToggle, KeyCode.F9, null, KeyCode.LeftControl,
+        new Case(InputAction.PerfMonitorToggle, Key(KeyCode.F9), null, KeyCode.LeftControl,
             KeyCode.LeftShift, InputAction.PerfMonitorToggleRecording),
-        new Case(InputAction.PerfMonitorToggleRecording, KeyCode.F9, KeyCode.LeftShift, KeyCode.LeftControl),
+        new Case(InputAction.PerfMonitorToggleRecording, Key(KeyCode.F9), KeyCode.LeftShift, KeyCode.LeftControl),
+
+        new Case(InputAction.CameraOrbit, Button(MouseButtonKind.Right), null, KeyCode.LeftControl),
+        new Case(InputAction.CameraPan, Button(MouseButtonKind.Middle), null, KeyCode.LeftControl),
+        new Case(InputAction.CameraZoomWheel, WheelTrigger, null, KeyCode.LeftControl),
+        new Case(InputAction.SelectClick, Button(MouseButtonKind.Left), null, KeyCode.LeftShift,
+            KeyCode.LeftControl, InputAction.SelectMultiClick),
+        new Case(InputAction.SelectMultiClick, Button(MouseButtonKind.Left), KeyCode.LeftControl, KeyCode.LeftAlt),
     };
 
     private static KeyBindings DefaultBindings() => new KeyBindings();
@@ -86,17 +97,20 @@ public class ActionFiringTests
     [TestCaseSource(nameof(Cases))]
     public void ActionFiring_Down_FiresWithItsOwnChord(Case c)
     {
-        var state = new FakeKeyState().Press(c.Key);
+        var state = new FakeKeyState();
+        c.PressTrigger(state);
         if (c.OwnModifier != null) state.Hold(c.OwnModifier.Value);
 
         Assert.IsTrue(ActionFiring.Down(DefaultBindings(), state, c.Action),
-            $"{c.Action}: собственный аккорд обязан срабатывать без единого лишнего модификатора");
+            $"{c.Action}: собственный аккорд/жест обязан срабатывать без единого лишнего модификатора");
     }
 
     [TestCaseSource(nameof(Cases))]
     public void ActionFiring_Down_FiresWithAnUnclaimedExtraModifierHeld(Case c)
     {
-        var state = new FakeKeyState().Press(c.Key).Hold(c.FreeExtraModifier);
+        var state = new FakeKeyState();
+        c.PressTrigger(state);
+        state.Hold(c.FreeExtraModifier);
         if (c.OwnModifier != null) state.Hold(c.OwnModifier.Value);
 
         Assert.IsTrue(ActionFiring.Down(DefaultBindings(), state, c.Action),
@@ -109,16 +123,18 @@ public class ActionFiringTests
     {
         if (c.ClaimedExtraModifier == null)
         {
-            Assert.Pass($"{c.Action}: для этой клавиши нет занятого соседями сочетания - "
+            Assert.Pass($"{c.Action}: для этого триггера нет занятого соседями сочетания - "
                 + "нечего проверять на блокировку");
             return;
         }
 
-        var state = new FakeKeyState().Press(c.Key).Hold(c.ClaimedExtraModifier.Value);
+        var state = new FakeKeyState();
+        c.PressTrigger(state);
+        state.Hold(c.ClaimedExtraModifier.Value);
         if (c.OwnModifier != null) state.Hold(c.OwnModifier.Value);
 
         Assert.IsFalse(ActionFiring.Down(DefaultBindings(), state, c.Action),
-            $"{c.Action}: {c.Key}+{c.ClaimedExtraModifier} занят действием {c.ClaimedBy} - "
+            $"{c.Action}: добавленный {c.ClaimedExtraModifier} занят действием {c.ClaimedBy} - "
             + $"{c.Action} не должен срабатывать вместе с ним");
     }
 
@@ -212,5 +228,28 @@ public class ActionFiringTests
         Assert.IsFalse(ActionFiring.Down(bindings, state, InputAction.CameraMoveBack),
             "с занятостью (текущее поведение) то же нажатие обязано молчать - S+Ctrl занят "
             + "SaveProject");
+    }
+
+    [Test]
+    public void UserRebindsAGesture_ChangesWhatTheFacadeReactsTo()
+    {
+        var bindings = new KeyBindings();
+        var lmb = new FakeKeyState().PressButton(MouseButtonKind.Left);
+        var rmbClick = new FakeKeyState().PressButton(MouseButtonKind.Right);
+
+        Assert.IsTrue(ActionFiring.Down(bindings, lmb, InputAction.SelectClick),
+            "предпосылка: по умолчанию SelectClick - это ЛКМ");
+        Assert.IsFalse(ActionFiring.Down(bindings, rmbClick, InputAction.SelectClick),
+            "предпосылка: ПКМ пока не назначен на выделение");
+
+        bindings.SetPrimaryBinding(InputAction.SelectClick,
+            InputBinding.FromGesture(new MouseGesture(MouseButtonKind.Right)));
+
+        Assert.IsFalse(ActionFiring.Down(bindings, lmb, InputAction.SelectClick),
+            "после переназначения старый жест (ЛКМ) обязан замолчать - фасад реагирует на "
+            + "привязку, а не запомнил исходную клавишу");
+        Assert.IsTrue(ActionFiring.Down(bindings, rmbClick, InputAction.SelectClick),
+            "и новый жест (ПКМ) обязан реально включить выделение - переназначение меняет то, "
+            + "на что реагирует фасад, а не только то, что показывает вкладка «Управление»");
     }
 }
