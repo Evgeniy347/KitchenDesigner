@@ -98,6 +98,17 @@ namespace KitchenDesigner.Core.Keybinding
                 [InputAction.ToggleDevConsole] =
                     new InputActionInfo(InputActionGroup.Diagnostics,
                         "Консоль разработчика: показать/скрыть"),
+
+                [InputAction.CameraOrbit] =
+                    new InputActionInfo(InputActionGroup.Mouse, "Камера: поворот на месте"),
+                [InputAction.CameraPan] =
+                    new InputActionInfo(InputActionGroup.Mouse, "Камера: панорамирование"),
+                [InputAction.CameraZoomWheel] =
+                    new InputActionInfo(InputActionGroup.Mouse, "Камера: зум колёсиком"),
+                [InputAction.SelectClick] =
+                    new InputActionInfo(InputActionGroup.Mouse, "Выделить деталь"),
+                [InputAction.SelectMultiClick] =
+                    new InputActionInfo(InputActionGroup.Mouse, "Добавить деталь к выделению"),
             };
 
             var table = new InputActionInfo[All.Length];

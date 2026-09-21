@@ -22,8 +22,8 @@ namespace KitchenDesigner.Core
                 overrides.Add(new KeyBindingOverrideData
                 {
                     action = action.ToString(),
-                    primary = KeyChord.Format(_keyBindings.Primary(action)),
-                    alt = KeyChord.Format(_keyBindings.Alt(action)),
+                    primary = InputBinding.Format(_keyBindings.PrimaryBinding(action)),
+                    alt = InputBinding.Format(_keyBindings.AltBinding(action)),
                 });
             }
             data.keyBindings = overrides.ToArray();
@@ -38,8 +38,8 @@ namespace KitchenDesigner.Core
             {
                 if (!System.Enum.TryParse<InputAction>(entry.action, out var action)) continue;
 
-                _keyBindings.SetPrimary(action, KeyChord.Parse(entry.primary));
-                _keyBindings.SetAlt(action, KeyChord.Parse(entry.alt));
+                _keyBindings.SetPrimaryBinding(action, InputBinding.Parse(entry.primary));
+                _keyBindings.SetAltBinding(action, InputBinding.Parse(entry.alt));
             }
         }
     }

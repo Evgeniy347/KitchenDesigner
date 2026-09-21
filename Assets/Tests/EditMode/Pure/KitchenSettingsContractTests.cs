@@ -68,8 +68,9 @@ public class KitchenSettingsContractTests
             {
                 foreach (var action in InputActionCatalog.All)
                 {
-                    bindings.SetPrimary(action, new KeyChord(KeyCode.F2, shift: true));
-                    bindings.SetAlt(action, new KeyChord(KeyCode.F3, alt: true));
+                    bindings.SetPrimaryBinding(action, InputBinding.FromKey(new KeyChord(KeyCode.F2, shift: true)));
+                    bindings.SetAltBinding(action,
+                        InputBinding.FromGesture(new MouseGesture(MouseButtonKind.XButton1, withMotion: true)));
                 }
             }
             else if (value is bool flag) f.SetValue(s, !flag);
@@ -94,8 +95,8 @@ public class KitchenSettingsContractTests
             else if (value is KeyBindings bindings)
                 foreach (var action in InputActionCatalog.All)
                 {
-                    map[f.Name + "." + action + ".primary"] = KeyChord.Format(bindings.Primary(action));
-                    map[f.Name + "." + action + ".alt"] = KeyChord.Format(bindings.Alt(action));
+                    map[f.Name + "." + action + ".primary"] = InputBinding.Format(bindings.PrimaryBinding(action));
+                    map[f.Name + "." + action + ".alt"] = InputBinding.Format(bindings.AltBinding(action));
                 }
             else
                 map[f.Name] = Convert.ToString(value, CultureInfo.InvariantCulture) ?? "null";

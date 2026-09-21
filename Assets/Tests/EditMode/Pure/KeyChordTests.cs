@@ -74,15 +74,17 @@ public class KeyChordTests
     }
 
     [Test]
-    public void KeyChord_Parse_RoundTripsThroughFormat_ForEveryDefaultBinding()
+    public void KeyChord_Parse_RoundTripsThroughFormat_ForEveryDefaultKeyBinding()
     {
         foreach (var action in InputActionCatalog.All)
         {
             var primary = KeyBindingDefaults.PrimaryOf(action);
-            var text = KeyChord.Format(primary);
+            if (!primary.IsKey) continue;
+
+            var text = KeyChord.Format(primary.Key);
             var reparsed = KeyChord.Parse(text);
 
-            Assert.AreEqual(primary, reparsed,
+            Assert.AreEqual(primary.Key, reparsed,
                 $"привязка по умолчанию для {action} обязана пережить печать в текст и разбор обратно");
         }
     }

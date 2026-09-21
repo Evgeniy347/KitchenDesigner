@@ -37,5 +37,11 @@ namespace KitchenDesigner.Core.Keybinding
         PerfMonitorToggle,
         PerfMonitorToggleRecording,
         ToggleDevConsole,
+
+        CameraOrbit,
+        CameraPan,
+        CameraZoomWheel,
+        SelectClick,
+        SelectMultiClick,
     }
 }

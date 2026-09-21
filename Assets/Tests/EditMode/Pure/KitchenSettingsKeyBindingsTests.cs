@@ -59,6 +59,23 @@ public class KitchenSettingsKeyBindingsTests
     }
 
     [Test]
+    public void KitchenSettings_ApplyFrom_RestoresAMouseGestureOverride_AfterARoundTrip()
+    {
+        var settings = new KitchenSettings();
+        var action = InputAction.CameraPan;
+        var gesture = InputBinding.FromGesture(new MouseGesture(MouseButtonKind.XButton1, withMotion: true));
+        settings.KeyBindings.SetPrimaryBinding(action, gesture);
+
+        var data = settings.ToData();
+        var restored = new KitchenSettings();
+        restored.ApplyFrom(data);
+
+        Assert.AreEqual(gesture, restored.KeyBindings.PrimaryBinding(action),
+            "жест мыши, назначенный вместо привязки по умолчанию, обязан пережить save -> load "
+            + "так же, как клавиатурный аккорд");
+    }
+
+    [Test]
     public void KitchenSettings_ApplyFrom_UntouchedActions_StayAtTheirDefaults_AfterARoundTrip()
     {
         var settings = new KitchenSettings();

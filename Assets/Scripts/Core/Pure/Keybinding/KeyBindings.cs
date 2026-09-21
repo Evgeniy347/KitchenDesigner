@@ -5,28 +5,46 @@ namespace KitchenDesigner.Core.Keybinding
 {
     public sealed class KeyBindings
     {
-        private readonly Dictionary<InputAction, KeyChord> _primaryOverrides =
-            new Dictionary<InputAction, KeyChord>();
-        private readonly Dictionary<InputAction, KeyChord> _altOverrides =
-            new Dictionary<InputAction, KeyChord>();
+        private readonly Dictionary<InputAction, InputBinding> _primaryOverrides =
+            new Dictionary<InputAction, InputBinding>();
+        private readonly Dictionary<InputAction, InputBinding> _altOverrides =
+            new Dictionary<InputAction, InputBinding>();
 
-        public KeyChord Primary(InputAction action) =>
-            _primaryOverrides.TryGetValue(action, out var chord) ? chord : KeyBindingDefaults.PrimaryOf(action);
+        public InputBinding PrimaryBinding(InputAction action) =>
+            _primaryOverrides.TryGetValue(action, out var binding) ? binding : KeyBindingDefaults.PrimaryOf(action);
 
-        public KeyChord Alt(InputAction action) =>
-            _altOverrides.TryGetValue(action, out var chord) ? chord : KeyBindingDefaults.AltOf(action);
+        public InputBinding AltBinding(InputAction action) =>
+            _altOverrides.TryGetValue(action, out var binding) ? binding : KeyBindingDefaults.AltOf(action);
 
-        public void SetPrimary(InputAction action, KeyChord chord)
+        public void SetPrimaryBinding(InputAction action, InputBinding binding)
         {
-            if (chord == KeyBindingDefaults.PrimaryOf(action)) _primaryOverrides.Remove(action);
-            else _primaryOverrides[action] = chord;
+            if (binding == KeyBindingDefaults.PrimaryOf(action)) _primaryOverrides.Remove(action);
+            else _primaryOverrides[action] = binding;
         }
 
-        public void SetAlt(InputAction action, KeyChord chord)
+        public void SetAltBinding(InputAction action, InputBinding binding)
         {
-            if (chord.IsEmpty) _altOverrides.Remove(action);
-            else _altOverrides[action] = chord;
+            if (binding.IsEmpty) _altOverrides.Remove(action);
+            else _altOverrides[action] = binding;
         }
+
+        public KeyChord Primary(InputAction action)
+        {
+            var binding = PrimaryBinding(action);
+            return binding.IsKey ? binding.Key : KeyChord.Empty;
+        }
+
+        public KeyChord Alt(InputAction action)
+        {
+            var binding = AltBinding(action);
+            return binding.IsKey ? binding.Key : KeyChord.Empty;
+        }
+
+        public void SetPrimary(InputAction action, KeyChord chord) =>
+            SetPrimaryBinding(action, InputBinding.FromKey(chord));
+
+        public void SetAlt(InputAction action, KeyChord chord) =>
+            SetAltBinding(action, InputBinding.FromKey(chord));
 
         public bool IsDefault(InputAction action) =>
             !_primaryOverrides.ContainsKey(action) && !_altOverrides.ContainsKey(action);
@@ -42,15 +60,15 @@ namespace KitchenDesigner.Core.Keybinding
 
         public IReadOnlyList<KeyBindingConflict> FindConflicts()
         {
-            var byChord = new Dictionary<KeyChord, HashSet<InputAction>>();
+            var byBinding = new Dictionary<InputBinding, HashSet<InputAction>>();
 
             foreach (var action in InputActionCatalog.All)
             {
-                AddOccupant(byChord, Primary(action), action);
-                AddOccupant(byChord, Alt(action), action);
+                AddOccupant(byBinding, PrimaryBinding(action), action);
+                AddOccupant(byBinding, AltBinding(action), action);
             }
 
-            return byChord
+            return byBinding
                 .Where(pair => pair.Value.Count > 1)
                 .Select(pair => new KeyBindingConflict(pair.Key, pair.Value.OrderBy(a => (int)a).ToArray()))
                 .OrderBy(c => c.Actions[0])
@@ -58,13 +76,13 @@ namespace KitchenDesigner.Core.Keybinding
         }
 
         private static void AddOccupant(
-            Dictionary<KeyChord, HashSet<InputAction>> byChord, KeyChord chord, InputAction action)
+            Dictionary<InputBinding, HashSet<InputAction>> byBinding, InputBinding binding, InputAction action)
         {
-            if (chord.IsEmpty) return;
-            if (!byChord.TryGetValue(chord, out var actions))
+            if (binding.IsEmpty) return;
+            if (!byBinding.TryGetValue(binding, out var actions))
             {
                 actions = new HashSet<InputAction>();
-                byChord[chord] = actions;
+                byBinding[binding] = actions;
             }
             actions.Add(action);
         }

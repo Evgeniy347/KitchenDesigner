@@ -10,7 +10,7 @@ public class KeyBindingsTests
     {
         var bindings = new KeyBindings();
         Assert.AreEqual(KeyBindingDefaults.PrimaryOf(InputAction.CameraMoveForward),
-            bindings.Primary(InputAction.CameraMoveForward));
+            bindings.PrimaryBinding(InputAction.CameraMoveForward));
     }
 
     [Test]
@@ -40,7 +40,7 @@ public class KeyBindingsTests
         var action = InputAction.CameraFocusSelection;
 
         bindings.SetPrimary(action, new KeyChord(KeyCode.K));
-        bindings.SetPrimary(action, KeyBindingDefaults.PrimaryOf(action));
+        bindings.SetPrimaryBinding(action, KeyBindingDefaults.PrimaryOf(action));
 
         Assert.IsTrue(bindings.IsDefault(action),
             "возврат основной привязки к дефолтному значению — это не «переопределение на дефолт», "
@@ -137,5 +137,55 @@ public class KeyBindingsTests
         var bindings = new KeyBindings();
         Assert.IsEmpty(bindings.FindConflicts(),
             "множество пустых альтернативных привязок не должно засчитываться как конфликт");
+    }
+
+    [Test]
+    public void KeyBindings_FindConflicts_DetectsTwoActionsSharingAMouseGesture()
+    {
+        var bindings = new KeyBindings();
+        var shared = InputBinding.FromGesture(new MouseGesture(MouseButtonKind.XButton1, withMotion: true));
+        bindings.SetPrimaryBinding(InputAction.CameraPan, shared);
+        bindings.SetPrimaryBinding(InputAction.CameraOrbit, shared);
+
+        var conflicts = bindings.FindConflicts();
+
+        Assert.AreEqual(1, conflicts.Count,
+            "два жеста мыши сталкиваются точно так же, как два аккорда клавиш");
+        Assert.AreEqual(shared, conflicts[0].Binding);
+        CollectionAssert.AreEquivalent(
+            new[] { InputAction.CameraPan, InputAction.CameraOrbit }, conflicts[0].Actions);
+    }
+
+    [Test]
+    public void KeyBindings_FindConflicts_AKeyAndAGesture_NeverConflict_TestedFromTheKeySide()
+    {
+        var bindings = new KeyBindings();
+
+        bindings.SetPrimaryBinding(InputAction.CameraFocusSelection,
+            InputBinding.FromKey(new KeyChord(KeyCode.K)));
+        bindings.SetPrimaryBinding(InputAction.CameraOrbit,
+            InputBinding.FromGesture(new MouseGesture(MouseButtonKind.Right)));
+
+        Assert.IsEmpty(bindings.FindConflicts(),
+            "клавиша и жест мыши физически не спорят друг с другом — они никогда не конфликт, "
+            + "даже когда оба заняты и ничего больше не совпадает");
+    }
+
+    [Test]
+    public void KeyBindings_FindConflicts_AKeyAndAGesture_NeverConflict_TestedFromTheGestureSide()
+    {
+        var bindings = new KeyBindings();
+        var gesture = InputBinding.FromGesture(new MouseGesture(MouseButtonKind.Left, ctrl: true));
+
+        bindings.SetPrimaryBinding(InputAction.SelectMultiClick, gesture);
+        bindings.SetPrimaryBinding(InputAction.DuplicateSelected,
+            InputBinding.FromKey(new KeyChord(KeyCode.D, ctrl: true)));
+
+        var conflicts = bindings.FindConflicts();
+
+        Assert.IsFalse(conflicts.Any(c => c.Actions.Contains(InputAction.SelectMultiClick)
+            && c.Actions.Contains(InputAction.DuplicateSelected)),
+            "Ctrl+ЛКМ (жест) и Ctrl+D (клавиша) не должны попасть в один список конфликтов, "
+            + "хотя оба несут модификатор Ctrl");
     }
 }
