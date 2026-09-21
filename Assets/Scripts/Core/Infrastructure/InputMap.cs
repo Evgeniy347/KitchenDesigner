@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
     public static class InputMap
     {
         private static UnityEngine.Object? _muteOwner;
-        private static readonly IKeyState _liveState = new UnityKeyState();
+        private static readonly IInputState _liveState = new UnityInputState();
 
         public static bool SceneInputMuted => _muteOwner != null;
 
@@ -50,10 +50,31 @@ namespace KitchenDesigner.Core
         internal static void ReleaseAnyMuteForTests() => _muteOwner = null;
     }
 
-    internal sealed class UnityKeyState : IKeyState
+    internal sealed class UnityInputState : IInputState
     {
+        public const float WheelDeadZone = 0.01f;
+
         public bool IsKeyDown(KeyCode key) => Input.GetKeyDown(key);
         public bool IsKeyHeld(KeyCode key) => Input.GetKey(key);
         public bool IsKeyUp(KeyCode key) => Input.GetKeyUp(key);
+
+        public bool IsButtonDown(MouseButtonKind button) => TryIndex(button, out var i) && Input.GetMouseButtonDown(i);
+        public bool IsButtonHeld(MouseButtonKind button) => TryIndex(button, out var i) && Input.GetMouseButton(i);
+        public bool IsButtonUp(MouseButtonKind button) => TryIndex(button, out var i) && Input.GetMouseButtonUp(i);
+
+        public bool WheelMoved => Mathf.Abs(Input.GetAxis("Mouse ScrollWheel")) > WheelDeadZone;
+
+        private static bool TryIndex(MouseButtonKind button, out int index)
+        {
+            switch (button)
+            {
+                case MouseButtonKind.Left: index = 0; return true;
+                case MouseButtonKind.Right: index = 1; return true;
+                case MouseButtonKind.Middle: index = 2; return true;
+                case MouseButtonKind.XButton1: index = 3; return true;
+                case MouseButtonKind.XButton2: index = 4; return true;
+                default: index = -1; return false;
+            }
+        }
     }
 }
