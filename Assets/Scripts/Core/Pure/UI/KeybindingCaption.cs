@@ -5,10 +5,14 @@ namespace KitchenDesigner.Core.UI
 {
     public static class KeybindingCaption
     {
-        public const string ConflictMarker = "! ";
+        public const string MarkerText = "!";
+        public const string EmptyCellText = "—";
+
+        public static string CellText(InputBinding binding) =>
+            binding.IsEmpty ? EmptyCellText : InputBindingDisplay.Of(binding);
 
         public static string WorstCaseOf(InputBinding binding) =>
-            ConflictMarker + InputBindingDisplay.Of(WithEveryModifier(binding));
+            InputBindingDisplay.Of(WithEveryModifier(binding));
 
         public static int LongestBoundLength(KeyBindings bindings)
         {

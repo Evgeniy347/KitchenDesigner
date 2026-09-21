@@ -38,6 +38,7 @@ namespace KitchenDesigner.Core.UI
             public Button Button = null!;
             public TextMeshProUGUI Label = null!;
             public GameObject Clear = null!;
+            public GameObject Marker = null!;
         }
 
         private sealed class Node
@@ -166,9 +167,6 @@ namespace KitchenDesigner.Core.UI
             var caption = button.GetComponentInChildren<TextMeshProUGUI>();
             if (caption != null)
             {
-                caption.enableAutoSizing = true;
-                caption.fontSizeMin = ChordFontMin;
-                caption.fontSizeMax = ChordFontMax;
                 caption.enableWordWrapping = false;
                 caption.overflowMode = TextOverflowModes.Ellipsis;
             }
@@ -181,6 +179,7 @@ namespace KitchenDesigner.Core.UI
                 Label = caption!,
             };
             _cells.Add(cell);
+            cell.Marker = BuildMarker(button, "KbMark_" + action + suffix);
             button.onClick.AddListener(() => BeginCapture(cell));
             TooltipUI.Attach(button.gameObject, () => CellTooltip(cell));
 
@@ -197,6 +196,26 @@ namespace KitchenDesigner.Core.UI
             cell.Clear = clear.gameObject;
 
             return cell;
+        }
+
+        private static GameObject BuildMarker(Button button, string name)
+        {
+            var marker = UIFactory.CreateLabel(name, button.transform,
+                KeybindingCaption.MarkerText, ChordFontMax, Vector2.zero,
+                new Vector2(KeybindingCellLayout.MarkerLaneWidth, RowH - 4f),
+                TextAnchor.MiddleCenter);
+            marker.color = UIStyle.HighlightError;
+            marker.raycastTarget = false;
+
+            var rect = marker.rectTransform;
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 0.5f);
+            rect.offsetMin = new Vector2(0f, 0f);
+            rect.offsetMax = new Vector2(KeybindingCellLayout.MarkerLaneWidth, 0f);
+
+            marker.gameObject.SetActive(false);
+            return marker.gameObject;
         }
 
         private float LayOut()
@@ -335,18 +354,24 @@ namespace KitchenDesigner.Core.UI
             {
                 var binding = KeybindingEditing.Read(Bindings, cell.Action, cell.Primary);
                 bool inConflict = KeybindingConflicts.IsInConflict(conflicts, binding);
+                string text = KeybindingCaption.CellText(binding);
 
-                cell.Label.text = BindingText(binding, inConflict);
+                cell.Label.text = text;
                 cell.Label.color = BindingColor(binding, inConflict);
                 cell.Button.GetComponent<Image>().color = UIFactory.ButtonColor;
                 cell.Clear.SetActive(!binding.IsEmpty);
+                ShowTheMarker(cell, inConflict, text);
             }
         }
 
-        private static string BindingText(InputBinding binding, bool inConflict)
+        private void ShowTheMarker(Cell cell, bool inConflict, string text)
         {
-            string text = binding.IsEmpty ? "—" : InputBindingDisplay.Of(binding);
-            return inConflict ? KeybindingCaption.ConflictMarker + text : text;
+            cell.Marker.SetActive(inConflict);
+
+            float area = KeybindingCellLayout.CaptionAreaWidth(_cellW, inConflict);
+            cell.Label.rectTransform.offsetMin =
+                new Vector2(inConflict ? KeybindingCellLayout.MarkerLaneWidth : 0f, 0f);
+            cell.Label.fontSize = KeybindingCellLayout.FontSizeFor(text.Length, area);
         }
 
         private static Color BindingColor(InputBinding binding, bool inConflict)

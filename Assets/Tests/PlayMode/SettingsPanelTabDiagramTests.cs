@@ -321,22 +321,21 @@ public class SettingsPanelTabDiagramTests
         var other = CellCaption("KbBtn_DuplicateSelected_P");
         var calm = CellCaption("KbBtn_DeleteSelected_P");
 
-        Assert.AreEqual("! " + InputBindingDisplay.Of(taken), other.text,
-            "соседняя строка показывает тот самый аккорд, который мы отняли, уже с маркером — "
-            + "иначе конфликта в кадре нет и снимать нечего");
+        Assert.AreEqual(InputBindingDisplay.Of(taken), other.text,
+            "соседняя строка показывает тот самый аккорд, который мы отняли — иначе "
+            + "конфликта в кадре нет и снимать нечего");
         Assert.AreEqual(other.text, clash.text,
             "обе стороны конфликта показывают ОДИН аккорд — на то он и конфликт");
         AssertColor(UIStyle.HighlightError, clash.color, "«Сохранить проект»");
         AssertColor(UIStyle.HighlightError, other.color, "«Дублировать»");
-        StringAssert.StartsWith("! ", clash.text,
+        AssertMarkerVisible("KbMark_SaveProject_P",
             "цвет не единственный носитель смысла: у конфликта есть ещё и маркер");
-        StringAssert.StartsWith("! ", other.text, "маркер стоит у ОБЕИХ сторон конфликта");
+        AssertMarkerVisible("KbMark_DuplicateSelected_P", "маркер стоит у ОБЕИХ сторон конфликта");
 
         AssertColor(UIStyle.Text, calm.color,
             "«Удалить объект(ы)» ни с кем не конфликтует и обязана остаться обычной: "
             + "тест, в котором краснеет всё, зеленел бы и при полностью сломанной логике");
-        Assert.IsFalse(calm.text.StartsWith("!", System.StringComparison.Ordinal),
-            "маркер конфликта у непричастной строки — та же поломка, что и лишняя краска");
+        AssertMarkerHidden("KbMark_DeleteSelected_P");
 
         yield return CaptureAndSave("settings_tab_control_conflict.png");
     }
@@ -372,15 +371,19 @@ public class SettingsPanelTabDiagramTests
         var other = CellCaption("KbBtn_CameraPan_P");
         var calm = CellCaption("KbBtn_CameraZoomWheel_P");
 
-        Assert.AreEqual("! " + InputBindingDisplay.Of(taken), other.text,
-            "жест показывается по-русски и с маркером конфликта");
+        Assert.AreEqual(InputBindingDisplay.Of(taken), other.text,
+            "жест показывается по-русски, а маркер конфликта стоит своей дорожкой рядом");
         Assert.AreEqual(other.text, clash.text, "обе стороны конфликта показывают ОДИН жест");
         AssertColor(UIStyle.HighlightError, clash.color, "«Камера: поворот на месте»");
         AssertColor(UIStyle.HighlightError, other.color, "«Камера: панорамирование»");
+        AssertMarkerVisible("KbMark_CameraOrbit_P",
+            "у жеста маркер терялся: он был префиксом внутри подписи, а подпись занимала "
+            + "ячейку целиком — именно этот случай кадр и обязан стеречь");
+        AssertMarkerVisible("KbMark_CameraPan_P", "маркер стоит у ОБЕИХ сторон конфликта");
 
         AssertColor(UIStyle.Text, calm.color,
             "«Камера: зум колёсиком» ни с кем не конфликтует и обязана остаться обычной");
-        Assert.IsFalse(calm.text.StartsWith("!", System.StringComparison.Ordinal));
+        AssertMarkerHidden("KbMark_CameraZoomWheel_P");
 
         yield return CaptureAndSave("settings_tab_control_gesture_conflict.png");
     }
@@ -440,6 +443,34 @@ public class SettingsPanelTabDiagramTests
         var corners = new Vector3[4];
         rect.GetWorldCorners(corners);
         return Rect.MinMaxRect(corners[0].x, corners[0].y, corners[2].x, corners[2].y);
+    }
+
+    /// <summary>Маркер спрашивается ПРЕДМЕТНО, а не по префиксу в тексте подписи: он
+    /// перестал быть частью текста именно потому, что в этом виде его срезало вместе с
+    /// подписью, и ни один тест этого не заметил.</summary>
+    private void AssertMarkerVisible(string markerName, string why)
+    {
+        var marker = Marker(markerName);
+        Assert.IsTrue(marker.gameObject.activeInHierarchy, why);
+        Assert.AreEqual(KeybindingCaption.MarkerText, marker.text);
+        Assert.That(marker.rectTransform.rect.width, Is.GreaterThan(0f),
+            "нулевая ширина дорожки — тот же невидимый маркер, только тихо");
+        AssertColor(UIStyle.HighlightError, marker.color, "маркер конфликта");
+    }
+
+    private void AssertMarkerHidden(string markerName) =>
+        Assert.IsFalse(Marker(markerName).gameObject.activeInHierarchy,
+            "маркер конфликта у непричастной строки — та же поломка, что и лишняя краска");
+
+    private TextMeshProUGUI Marker(string markerName)
+    {
+        var panel = _canvasGo!.transform.Find("SettingsPanel");
+        Assert.IsNotNull(panel, "окно настроек не построилось");
+
+        var marker = panel!.GetComponentsInChildren<TextMeshProUGUI>(true)
+            .FirstOrDefault(t => t.name == markerName);
+        Assert.IsNotNull(marker, $"маркера конфликта «{markerName}» в окне нет");
+        return marker!;
     }
 
     private TextMeshProUGUI CellCaption(string buttonName)

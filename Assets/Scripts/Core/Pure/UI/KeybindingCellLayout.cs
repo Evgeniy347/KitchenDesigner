@@ -8,6 +8,7 @@ namespace KitchenDesigner.Core.UI
         public const float GapBeforeClear = 3f;
         public const float GapBetweenCells = 10f;
         public const float HintLaneWidth = 32f;
+        public const float MarkerLaneWidth = 12f;
 
         public const float MinLabelWidth = 150f;
         public const float MinCellWidth = 60f;
@@ -44,6 +45,18 @@ namespace KitchenDesigner.Core.UI
 
         public static float HintBadgeCentreX(float labelTextWidth) =>
             labelTextWidth * 0.5f + HintLaneWidth * 0.5f;
+
+        public static float CaptionAreaWidth(float cellWidth, bool inConflict) =>
+            inConflict ? cellWidth - MarkerLaneWidth : cellWidth;
+
+        public static int FontSizeFor(int captionChars, float areaWidth)
+        {
+            if (captionChars <= 0) return MaxCaptionFontSize;
+
+            int fits = (int)(areaWidth / (captionChars * CharWidthPerPoint));
+            if (fits > MaxCaptionFontSize) return MaxCaptionFontSize;
+            return fits < MinCaptionFontSize ? MinCaptionFontSize : fits;
+        }
 
         public static bool Fits(string caption, float cellWidth) =>
             WidthForCaption(caption.Length, MinCaptionFontSize) <= cellWidth;
