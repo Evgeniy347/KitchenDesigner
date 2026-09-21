@@ -373,7 +373,7 @@
     },
     {
       "type": "Button",
-      "text": "ПКМ+движение",
+      "text": "СКМ+движение",
       "position": [16, 0]
     },
     {
@@ -468,7 +468,7 @@
     },
     {
       "type": "Button",
-      "text": "Ctrl+D",
+      "text": "Ctrl+S",
       "position": [16, 0]
     },
     {
