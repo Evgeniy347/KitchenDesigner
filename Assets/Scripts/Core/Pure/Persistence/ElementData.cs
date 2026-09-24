@@ -157,6 +157,18 @@ namespace KitchenDesigner.Core
 		public int midHeightMM = 75;
 		public bool isFloor = false;
 		public int[] floorPolygonXZ = System.Array.Empty<int>();
+		public bool isFoundation = false;
+		public int foundationSoilKind = (int)SoilKind.Unknown;
+		public int foundationSandMm = KitchenSettings.CONSTRUCTION_SAND_DEFAULT_MM;
+		public int foundationGravelMm = KitchenSettings.CONSTRUCTION_GRAVEL_DEFAULT_MM;
+		public bool foundationCompacted = true;
+		public int foundationConcreteGrade = (int)ConcreteGrade.B20;
+		public int foundationRebarDiameterMm =
+			KitchenDesigner.Core.Construction.FoundationRebarDefaults.DiameterMm;
+		public int foundationRebarStepMm =
+			KitchenDesigner.Core.Construction.FoundationRebarDefaults.StepMm;
+		public int foundationCoverMm =
+			KitchenDesigner.Core.Construction.FoundationRebarDefaults.CoverMm;
 		public bool isLightSource = false;
 		public int lightTemperatureK = LampSpec.DEFAULT_TEMPERATURE_K;
 		public int lightPowerW = LampSpec.DEFAULT_POWER_W;

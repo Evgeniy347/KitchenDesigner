@@ -343,6 +343,7 @@ namespace KitchenDesigner.Core.UI
             _showerColumnFields.Build();
             _wallDeviceFields.Build();
             _wallFields.Build();
+            _foundationFields.Build();
             _pillarFields.Build();
             _screwLegFields.Build();
             _pipeFields.Build();

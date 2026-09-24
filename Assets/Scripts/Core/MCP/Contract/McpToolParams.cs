@@ -156,6 +156,29 @@ namespace KitchenDesigner.Core.MCP.Contract
                   + "Does not change the mortar. Omit to keep.", Min = 0)]
         public int? masonry_waste_pct;
 
+        [McpParam("Foundation strip only: soil under it — drives the minimum sole width check "
+                  + "and the read-only frost-depth reading. New strips take the project default "
+                  + "from the construction settings tab. Omit to keep.",
+            Enum = new[] { "sand", "sandy_loam", "loam", "clay", "peat", "unknown" })]
+        public string? foundation_soil;
+        [McpParam("Foundation strip only: sand cushion thickness in MM. Omit to keep.", Min = 0)]
+        public int? foundation_sand_mm;
+        [McpParam("Foundation strip only: gravel cushion thickness in MM, on top of the sand. "
+                  + "Omit to keep.", Min = 0)]
+        public int? foundation_gravel_mm;
+        [McpParam("Foundation strip only: whether the cushion is compacted. Omit to keep.")]
+        public bool? foundation_compacted;
+        [McpParam("Foundation strip only: concrete grade of THIS strip. Omit to keep.",
+            Enum = new[] { "B15", "B20", "B25" })]
+        public string? foundation_concrete;
+        [McpParam("Foundation strip only: reinforcement bar diameter in MM. Omit to keep.", Min = 1)]
+        public int? foundation_rebar_diameter_mm;
+        [McpParam("Foundation strip only: stirrup step along the strip in MM. Omit to keep.", Min = 1)]
+        public int? foundation_rebar_step_mm;
+        [McpParam("Foundation strip only: concrete cover over the reinforcement in MM. Omit to keep.",
+            Min = 0)]
+        public int? foundation_cover_mm;
+
         [McpParam("Gap in MM on the left side. Omit to keep.", Min = 0)] public int? gap_left;
         [McpParam("Gap in MM on the right side. Omit to keep.", Min = 0)] public int? gap_right;
         [McpParam("Gap in MM on the top side. Omit to keep.", Min = 0)] public int? gap_top;
@@ -489,7 +512,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "pipe", "pipe_elbow", "pipe_coupling", "pipe_tee", "pipe_cap", "pipe_supply", "pipe_return", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch", "washing_machine", "dryer" })]
+            Enum = new[] { "board", "wall", "floor", "foundation", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "pipe", "pipe_elbow", "pipe_coupling", "pipe_tee", "pipe_cap", "pipe_supply", "pipe_return", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch", "washing_machine", "dryer" })]
         public string? type;
 
         [McpParam("X of the MINIMUM world corner in MM — the same number get returns in anchor[0].")] public float anchor_x_mm;

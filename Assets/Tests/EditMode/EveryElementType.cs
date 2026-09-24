@@ -52,6 +52,7 @@ public static class EveryElementType
         (typeof(PipeSupplyElement), n => ElementFactory.CreatePipeSupply(n, Vector3.zero)),
         (typeof(PipeReturnElement), n => ElementFactory.CreatePipeReturn(n, Vector3.zero)),
         (typeof(FloorElement), n => ElementFactory.CreateFloor(new Vector3Int(3007, 23, 3011), n, Vector3.zero)),
+        (typeof(FoundationElement), n => ElementFactory.CreateFoundation(617, 719, n, Vector3.zero)),
         (typeof(LightSourceElement), n => ElementFactory.CreateLightSource(n, Vector3.zero)),
         (typeof(SinkElement), n => ElementFactory.CreateSink(n, Vector3.zero)),
         (typeof(CooktopElement), n => ElementFactory.CreateCooktop(n, Vector3.zero)),

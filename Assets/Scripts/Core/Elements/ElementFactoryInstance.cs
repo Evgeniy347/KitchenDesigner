@@ -488,6 +488,19 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, pillar);
         }
 
+        public GameObject CreateFoundation(int widthMM, int depthMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewCube(name, "Фундамент", position);
+            ElementRoot.SwapBoxColliderForMeshCollider(go);
+
+            var foundation = go.AddComponent<FoundationElement>();
+            foundation.PartName = go.name;
+            foundation.DimensionsMM = new Vector3Int(widthMM, depthMM, widthMM);
+
+            if (DefaultMaterial != null) MaterialManager.ApplyById(foundation, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(go, foundation);
+        }
+
         public GameObject CreatePipe(string sizeId, int lengthMM, string name, Vector3 position)
         {
             var go = ElementRoot.NewCube(name, "Труба", position);

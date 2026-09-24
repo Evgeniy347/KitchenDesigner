@@ -101,6 +101,9 @@ namespace KitchenDesigner.Core
 		public static GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position) =>
 			Instance.CreateFloor(dimensionsMM, name, position);
 
+		public static GameObject CreateFoundation(int widthMM, int depthMM, string name, Vector3 position) =>
+			Instance.CreateFoundation(widthMM, depthMM, name, position);
+
 		public static GameObject CreateLightSource(string name, Vector3 position) =>
 			Instance.CreateLightSource(name, position);
 

@@ -150,6 +150,10 @@ namespace KitchenDesigner.Core.UI
                 case SidebarItemKind.Wall:
                     _spawned = ElementFactory.CreateWall(item.dims, item.name, Vector3.zero);
                     break;
+                case SidebarItemKind.Foundation:
+                    _spawned = ElementFactory.CreateFoundation(item.dims.x, item.dims.y, item.name,
+                        Vector3.zero);
+                    break;
                 case SidebarItemKind.Board:
                 default:
                     _spawned = ElementFactory.CreatePart(item.dims, item.name, Vector3.zero);

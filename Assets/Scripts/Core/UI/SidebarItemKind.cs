@@ -33,6 +33,7 @@ namespace KitchenDesigner.Core.UI
         Socket,
         LightSwitch,
         Floor,
+        Foundation,
         LightSource,
         Window,
         Door,

@@ -247,6 +247,18 @@ namespace KitchenDesigner.Core
 				d.lightShadow = (int)lightEl.Shadow;
 			}
 			d.midHeightMM = pillar != null ? pillar.MidHeightMM : PillarElement.MidHeightMM_Default;
+			if (element is FoundationElement foundation)
+			{
+				d.isFoundation = true;
+				d.foundationSoilKind = (int)foundation.SoilKind;
+				d.foundationSandMm = foundation.SandMm;
+				d.foundationGravelMm = foundation.GravelMm;
+				d.foundationCompacted = foundation.Compacted;
+				d.foundationConcreteGrade = (int)foundation.ConcreteGrade;
+				d.foundationRebarDiameterMm = foundation.RebarDiameterMm;
+				d.foundationRebarStepMm = foundation.RebarStepMm;
+				d.foundationCoverMm = foundation.CoverMm;
+			}
 			if (element is ScrewLegElement screwLeg)
 			{
 				d.isScrewLeg = true;

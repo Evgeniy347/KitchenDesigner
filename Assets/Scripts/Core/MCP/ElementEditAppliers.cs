@@ -195,6 +195,21 @@ namespace KitchenDesigner.Core.MCP
                     machine.Kind = McpWireEnums.ParseLaundryKind(op.laundry_kind);
                 if (op.is_open.HasValue) machine.SetOpen(op.is_open.Value);
             }),
+            For<FoundationElement>((op, foundation) =>
+            {
+                if (op.foundation_soil != null)
+                    foundation.SoilKind = McpWireEnums.ParseSoilKind(op.foundation_soil);
+                if (op.foundation_sand_mm.HasValue) foundation.SandMm = op.foundation_sand_mm.Value;
+                if (op.foundation_gravel_mm.HasValue) foundation.GravelMm = op.foundation_gravel_mm.Value;
+                if (op.foundation_compacted.HasValue) foundation.Compacted = op.foundation_compacted.Value;
+                if (op.foundation_concrete != null)
+                    foundation.ConcreteGrade = McpWireEnums.ParseConcreteGrade(op.foundation_concrete);
+                if (op.foundation_rebar_diameter_mm.HasValue)
+                    foundation.RebarDiameterMm = op.foundation_rebar_diameter_mm.Value;
+                if (op.foundation_rebar_step_mm.HasValue)
+                    foundation.RebarStepMm = op.foundation_rebar_step_mm.Value;
+                if (op.foundation_cover_mm.HasValue) foundation.CoverMm = op.foundation_cover_mm.Value;
+            }),
             (op, el) =>
             {
                 var wall = el.GetComponent<Wall>();

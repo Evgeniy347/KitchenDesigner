@@ -416,6 +416,13 @@ BedElement            Bed (type:""bed"", 1800x900x2000 mm by default — width x
                       without a headboard and 700 with one. Carcass and mattress
                       decors via tabletop_material/legs_material.
 PillarElement         Pillar (type:""pillar"", mid_height_mm, diameter_mm).
+FoundationElement     Strip foundation along every CURRENT load-bearing wall
+                      (type:""foundation""). Width/height are the sole width
+                      and depth (create_elements dim_x/dim_y); the strip's
+                      own LENGTH is derived from the load-bearing wall
+                      network every time the mesh rebuilds and has no field
+                      of its own. foundation_* fields (see get_elements
+                      fields) feed the specification, not the mesh.
 ScrewLegElement       Screw-in levelling leg with a threaded insert
                       (type:""screw_leg""). A foot (screw_base_diameter_mm x
                       screw_base_height_mm, 25x8 mm by default) plus a threaded
@@ -592,6 +599,14 @@ lightSwitch           Light switch only: {isOn, lights, maxLights}. lights are
                       names keeps following the global light instead. maxLights
                       is the ceiling; a write past it is dropped, not an error,
                       which is why the ceiling is reported next to the list.
+foundation            Strip foundation only: {soilKind, sandMm, gravelMm,
+                      compacted, concreteGrade, rebarDiameterMm, rebarStepMm,
+                      coverMm, frostDepthText}. soilKind/concreteGrade are
+                      strings (see edit_elements foundation_soil /
+                      foundation_concrete). frostDepthText is READ-ONLY, the
+                      same text the properties panel shows, derived from the
+                      project's construction region and THIS strip's own
+                      soil - there is no matching edit field.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
   {name, kind, anchorMm:[x,z] corner, sizeMm:[width,height,depth], rotYDeg,

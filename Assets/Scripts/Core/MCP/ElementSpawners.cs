@@ -133,6 +133,10 @@ namespace KitchenDesigner.Core.MCP
 
                 ["screw_leg"] = (item, pos) => ElementFactory.CreateScrewLeg(item.name, pos),
 
+                ["foundation"] = (item, pos) => ElementFactory.CreateFoundation(
+                    item.width ?? FoundationElement.DEFAULT_WIDTH_MM,
+                    item.height ?? FoundationElement.DEFAULT_DEPTH_MM, item.name, pos),
+
                 ["pipe"] = (item, pos) => ElementFactory.CreatePipe(
                     item.pipe_size ?? PipeSpec.DEFAULT_SIZE,
                     item.height ?? PipeElementSpec.DEFAULT_LENGTH_MM, item.name, pos),

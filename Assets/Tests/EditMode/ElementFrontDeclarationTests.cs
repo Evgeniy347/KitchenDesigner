@@ -34,7 +34,9 @@ public class ElementFrontDeclarationTests
     /// нет. Потолок, а не факт: он обязан только падать. Новый тип, тихо
     /// присоединившийся к этой группе, — ровно тот случай, ради которого
     /// сторож написан, и он краснеет здесь ещё до того, как кадр снимут.</summary>
-    private const int FacelessCeiling = 33;
+    // 34: FoundationElement joined honestly — a strip along the whole load-bearing
+    // wall network has no one characteristic face, same reason as a pipe or a slab.
+    private const int FacelessCeiling = 34;
 
     private static IReadOnlyList<ElementSurfaceSweep.Row> Rows => ElementSurfaceSweep.Rows;
 

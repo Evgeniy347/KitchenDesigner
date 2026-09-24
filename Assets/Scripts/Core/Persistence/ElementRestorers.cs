@@ -130,6 +130,21 @@ namespace KitchenDesigner.Core
              (factory, d) => factory.CreatePillar(d.midHeightMM, d.name, d.Position, d.Dimensions.x),
              null),
 
+            (d => d.isFoundation,
+             (factory, d) => factory.CreateFoundation(d.Dimensions.x, d.Dimensions.y, d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is not FoundationElement foundation) return;
+                 foundation.SoilKind = (SoilKind)d.foundationSoilKind;
+                 foundation.SandMm = d.foundationSandMm;
+                 foundation.GravelMm = d.foundationGravelMm;
+                 foundation.Compacted = d.foundationCompacted;
+                 foundation.ConcreteGrade = (ConcreteGrade)d.foundationConcreteGrade;
+                 foundation.RebarDiameterMm = d.foundationRebarDiameterMm;
+                 foundation.RebarStepMm = d.foundationRebarStepMm;
+                 foundation.CoverMm = d.foundationCoverMm;
+             }),
+
             (d => d.isPipe,
              (factory, d) => factory.CreatePipe(d.pipeSizeId, d.pipeLengthMM, d.name, d.Position),
              null),

@@ -69,6 +69,7 @@ namespace KitchenDesigner.Core.UI
                 SidebarItemKind.Door => EditModeManager.Category.Always,
                 SidebarItemKind.Wall => EditModeManager.Category.Room,
                 SidebarItemKind.Floor => EditModeManager.Category.Room,
+                SidebarItemKind.Foundation => EditModeManager.Category.Room,
                 _ => EditModeManager.Category.Regular,
             };
         }
@@ -223,6 +224,9 @@ namespace KitchenDesigner.Core.UI
                 SocketItem("Розетка"));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, "Выключатель",
                 LightSwitchItem("Выключатель"));
+
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Фундамент",
+                FoundationItem("Фундамент"));
         }
 
         private static IEnumerable<(SidebarGroupKey Group, Item Item)> RowsWithTileTitleInherited()
@@ -352,6 +356,11 @@ namespace KitchenDesigner.Core.UI
                 SinkElement.OUTER_WIDTH_MM, SinkElement.TotalHeightMM,
                 SinkElement.OUTER_DEPTH_MM), SidebarItemKind.Sink);
         }
+
+        private static Item FoundationItem(string name) =>
+            new Item(name, new Vector3Int(FoundationElement.DEFAULT_WIDTH_MM,
+                FoundationElement.DEFAULT_DEPTH_MM, FoundationElement.DEFAULT_WIDTH_MM),
+                SidebarItemKind.Foundation);
 
         private static Item PillarItem(string name, int midHeightMM)
         {

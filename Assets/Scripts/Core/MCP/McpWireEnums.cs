@@ -154,6 +154,46 @@ namespace KitchenDesigner.Core.MCP
             _ => "brick_single",
         };
 
+        public static SoilKind ParseSoilKind(string s)
+        {
+            switch ((s ?? "").Trim().ToLowerInvariant())
+            {
+                case "sand": return SoilKind.Sand;
+                case "sandy_loam": return SoilKind.SandyLoam;
+                case "loam": return SoilKind.Loam;
+                case "clay": return SoilKind.Clay;
+                case "peat": return SoilKind.Peat;
+                default: return SoilKind.Unknown;
+            }
+        }
+
+        public static string Name(SoilKind s) => s switch
+        {
+            SoilKind.Sand => "sand",
+            SoilKind.SandyLoam => "sandy_loam",
+            SoilKind.Loam => "loam",
+            SoilKind.Clay => "clay",
+            SoilKind.Peat => "peat",
+            _ => "unknown",
+        };
+
+        public static ConcreteGrade ParseConcreteGrade(string s)
+        {
+            switch ((s ?? "").Trim().ToUpperInvariant())
+            {
+                case "B15": return ConcreteGrade.B15;
+                case "B25": return ConcreteGrade.B25;
+                default: return ConcreteGrade.B20;
+            }
+        }
+
+        public static string Name(ConcreteGrade g) => g switch
+        {
+            ConcreteGrade.B15 => "B15",
+            ConcreteGrade.B25 => "B25",
+            _ => "B20",
+        };
+
         public static string Name(DrawerSystem s) => s == DrawerSystem.Movento ? "movento" : "gtv";
 
         public static string Name(LaundryMachineKind k) =>

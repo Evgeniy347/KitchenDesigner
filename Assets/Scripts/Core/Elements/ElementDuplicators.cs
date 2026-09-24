@@ -106,6 +106,27 @@ namespace KitchenDesigner.Core
                      ((PillarElement)source).DiameterMM),
              CopyMaterial),
 
+            (el => el is FoundationElement,
+             (factory, source, pos) => factory.CreateFoundation(
+                 source.DimensionsMM.x, source.DimensionsMM.y, source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (FoundationElement)source;
+                 var made = copy.GetComponent<FoundationElement>();
+                 if (made != null)
+                 {
+                     made.SoilKind = src.SoilKind;
+                     made.SandMm = src.SandMm;
+                     made.GravelMm = src.GravelMm;
+                     made.Compacted = src.Compacted;
+                     made.ConcreteGrade = src.ConcreteGrade;
+                     made.RebarDiameterMm = src.RebarDiameterMm;
+                     made.RebarStepMm = src.RebarStepMm;
+                     made.CoverMm = src.CoverMm;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is PipeElement,
              (factory, source, pos) =>
                  factory.CreatePipe(((PipeElement)source).SizeId, ((PipeElement)source).LengthMM,

@@ -198,6 +198,10 @@ namespace KitchenDesigner.Core.UI
                     PlaceCenteredOnGround(item.dims.y, pos =>
                         ElementFactory.CreateWall(item.dims, item.name, pos));
                     break;
+                case SidebarItemKind.Foundation:
+                    CommitImmediate(ElementFactory.CreateFoundation(item.dims.x, item.dims.y,
+                        item.name, Vector3.zero));
+                    break;
                 case SidebarItemKind.Board:
                 default:
                     BeginPlacement(CreateBoardGo(item.dims, item.name));

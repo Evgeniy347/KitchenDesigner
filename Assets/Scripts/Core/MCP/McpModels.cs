@@ -98,6 +98,7 @@ namespace KitchenDesigner.Core.MCP
 		public LightSwitchInfo? lightSwitch;
 		public BedInfo? bed;
 		public PillarInfo? pillar;
+		public FoundationInfo? foundation;
 		public ScrewLegInfo? screwLeg;
 		public PipeInfo? pipe;
 		public PipeFittingInfo? pipeFitting;
@@ -469,6 +470,20 @@ namespace KitchenDesigner.Core.MCP
 	{
 		public int midHeightMM;
 		public int diameterMM;
+	}
+
+	[Serializable]
+	public class FoundationInfo
+	{
+		public string soilKind = "unknown";
+		public int sandMm;
+		public int gravelMm;
+		public bool compacted;
+		public string concreteGrade = "B20";
+		public int rebarDiameterMm;
+		public int rebarStepMm;
+		public int coverMm;
+		public string frostDepthText = "";
 	}
 
 	[Serializable]

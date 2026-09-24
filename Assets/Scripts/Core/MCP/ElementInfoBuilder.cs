@@ -282,6 +282,19 @@ namespace KitchenDesigner.Core.MCP
                 diameterMM = pillar.DiameterMM
             }),
 
+            For<FoundationElement>((info, foundation) => info.foundation = new FoundationInfo
+            {
+                soilKind = McpWireEnums.Name(foundation.SoilKind),
+                sandMm = foundation.SandMm,
+                gravelMm = foundation.GravelMm,
+                compacted = foundation.Compacted,
+                concreteGrade = McpWireEnums.Name(foundation.ConcreteGrade),
+                rebarDiameterMm = foundation.RebarDiameterMm,
+                rebarStepMm = foundation.RebarStepMm,
+                coverMm = foundation.CoverMm,
+                frostDepthText = foundation.FrostDepthText,
+            }),
+
             For<PipeElement>((info, pipe) => info.pipe = new PipeInfo
             {
                 sizeId = pipe.SizeId,

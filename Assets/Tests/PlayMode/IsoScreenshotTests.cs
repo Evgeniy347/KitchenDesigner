@@ -1742,6 +1742,34 @@ public class IsoScreenshotTests : ElementFrameTests
         Object.DestroyImmediate(camGo);
     }
 
+    /// <summary>Лента по Г-образному контуру двух несущих стен (то же построение, что
+    /// в FoundationLayoutTests, но настоящими Wall, а не голыми WallCentreline) —
+    /// иначе одиночная лента без единой стены дала бы пустой меш и нечего снимать.</summary>
+    [UnityTest]
+    public IEnumerator IsoFoundation_LShapeWalls()
+    {
+        var wallA = ElementFactory.CreateWall(new Vector3Int(4000, 2700, 250),
+            "IsoFoundationWallA", new Vector3(2f, 1.35f, 0f));
+        _spawned.Add(wallA);
+        var wallB = ElementFactory.CreateWall(new Vector3Int(250, 2700, 3000),
+            "IsoFoundationWallB", new Vector3(4f, 1.35f, 1.5f));
+        _spawned.Add(wallB);
+
+        var go = ElementFactory.CreateFoundation(FoundationElement.DEFAULT_WIDTH_MM,
+            FoundationElement.DEFAULT_DEPTH_MM, "IsoFoundation", Vector3.zero);
+        _spawned.Add(go);
+        var foundation = go.GetComponent<FoundationElement>();
+        Assert.IsNotNull(foundation);
+
+        Vector3 size = MmToUnits(new Vector3Int(7000, FoundationElement.DEFAULT_DEPTH_MM, 4000));
+        var (camGo, cam) = CreateIsoCamera(Vector3.zero, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_foundation.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
     /// <summary>Мойка, врезанная в столешницу: борт лежит на пласти, чаша уходит
     /// в сквозной проём, сзади стоит смеситель.</summary>
     [UnityTest]
