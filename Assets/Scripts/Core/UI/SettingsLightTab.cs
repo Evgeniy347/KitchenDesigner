@@ -15,6 +15,7 @@ namespace KitchenDesigner.Core.UI
             _rows.AddHeader(page, ref y, "Заполняющий свет");
             AddPhotoSlider(page, ref y, "Окружающий свет", 0, KitchenSettings.PHOTO_AMBIENT_MAX_PCT,
                 s.PhotoAmbientPct, Percent, v => s.PhotoAmbientPct = v, () => s.PhotoAmbientPct);
+            Hint("Окружающий свет", hint: "settings.light.ambient");
             AddPhotoSlider(page, ref y, "Отскок от пола", 0, KitchenSettings.PHOTO_FLOOR_BOUNCE_MAX_PCT,
                 s.PhotoFloorBouncePct, Percent, v => s.PhotoFloorBouncePct = v, () => s.PhotoFloorBouncePct);
             Hint("Отскок от пола", hint: "settings.light.floorBounce");
@@ -38,36 +39,45 @@ namespace KitchenDesigner.Core.UI
             AddPhotoSlider(page, ref y, "Экспозиция",
                 KitchenSettings.PHOTO_EXPOSURE_MIN_PCT, KitchenSettings.PHOTO_EXPOSURE_MAX_PCT,
                 s.PhotoExposurePct, ExposureValue, v => s.PhotoExposurePct = v, () => s.PhotoExposurePct);
+            Hint("Экспозиция", hint: "settings.light.exposure");
             AddPhotoSlider(page, ref y, "Контраст",
                 KitchenSettings.PHOTO_COLOR_MIN_PCT, KitchenSettings.PHOTO_COLOR_MAX_PCT,
                 s.PhotoContrastPct, Percent, v => s.PhotoContrastPct = v, () => s.PhotoContrastPct);
+            Hint("Контраст", hint: "settings.light.contrast");
             AddPhotoSlider(page, ref y, "Насыщенность",
                 KitchenSettings.PHOTO_COLOR_MIN_PCT, KitchenSettings.PHOTO_COLOR_MAX_PCT,
                 s.PhotoSaturationPct, Percent, v => s.PhotoSaturationPct = v, () => s.PhotoSaturationPct);
+            Hint("Насыщенность", hint: "settings.light.saturation");
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddHeader(page, ref y, "Эффекты");
             AddPhotoSlider(page, ref y, "Сила свечения", 0, KitchenSettings.PHOTO_BLOOM_MAX_PCT,
                 s.PhotoBloomPct, Percent, v => s.PhotoBloomPct = v, () => s.PhotoBloomPct);
+            Hint("Сила свечения", hint: "settings.light.bloomStrength");
             AddPhotoSlider(page, ref y, "Порог свечения", 0, KitchenSettings.PHOTO_BLOOM_THRESHOLD_MAX_PCT,
                 s.PhotoBloomThresholdPct, Percent, v => s.PhotoBloomThresholdPct = v,
                 () => s.PhotoBloomThresholdPct);
+            Hint("Порог свечения", hint: "settings.light.bloomThreshold");
             AddPhotoSlider(page, ref y, "Предел свечения",
                 KitchenSettings.PHOTO_BLOOM_CLAMP_MIN_PCT, KitchenSettings.PHOTO_BLOOM_CLAMP_MAX_PCT,
                 s.PhotoBloomClampPct, Percent, v => s.PhotoBloomClampPct = v,
                 () => s.PhotoBloomClampPct);
+            Hint("Предел свечения", hint: "settings.light.bloomClamp");
             AddPhotoSlider(page, ref y, "Сила виньетки", 0, FullPercent,
                 s.PhotoVignettePct, Percent, v => s.PhotoVignettePct = v, () => s.PhotoVignettePct);
+            Hint("Сила виньетки", hint: "settings.light.vignetteStrength");
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddHeader(page, ref y, "Тени сцены");
             AddPhotoSlider(page, ref y, "Сила теней солнца", 0, FullPercent,
                 s.PhotoSunShadowStrengthPct, Percent, v => s.PhotoSunShadowStrengthPct = v,
                 () => s.PhotoSunShadowStrengthPct);
+            Hint("Сила теней солнца", hint: "settings.light.sunShadowStrength");
             AddPhotoSlider(page, ref y, "Дальность теней",
                 KitchenSettings.PHOTO_SHADOW_DISTANCE_MIN_M, KitchenSettings.PHOTO_SHADOW_DISTANCE_MAX_M,
                 s.PhotoShadowDistanceM, Meters, v => s.PhotoShadowDistanceM = v,
                 () => s.PhotoShadowDistanceM);
+            Hint("Дальность теней", hint: "settings.light.shadowDistance");
             _rows.AddToggle(page, ref y, "Тени от ламп", s.PhotoLampShadows,
                 v =>
                 {
@@ -75,6 +85,7 @@ namespace KitchenDesigner.Core.UI
                     LightSourceElement.RefreshAll();
                     PhotoMode.RefreshIfActive();
                 }, read: () => s.PhotoLampShadows);
+            Hint("Тени от ламп", hint: "settings.light.lampShadows");
         }
 
         private const int FullPercent = 100;

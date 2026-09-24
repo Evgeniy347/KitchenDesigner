@@ -63,18 +63,7 @@ public class HintCoverageGuardTests
         ["WallOpeningFieldsEditor.cs → Rows.Dropdown(Стекло…)"] = NextPortion,
 
         ["SettingKeys.photo_active"] = NextPortion,
-        ["SettingKeys.photo_ambient"] = NextPortion,
-        ["SettingKeys.photo_bloom_clamp"] = NextPortion,
-        ["SettingKeys.photo_bloom_strength"] = NextPortion,
-        ["SettingKeys.photo_bloom_threshold"] = NextPortion,
-        ["SettingKeys.photo_contrast"] = NextPortion,
-        ["SettingKeys.photo_exposure"] = NextPortion,
-        ["SettingKeys.photo_lamp_shadows"] = NextPortion,
-        ["SettingKeys.photo_saturation"] = NextPortion,
-        ["SettingKeys.photo_shadow_distance_mm"] = NextPortion,
         ["SettingKeys.photo_shadows"] = NextPortion,
-        ["SettingKeys.photo_sun_shadow_strength"] = NextPortion,
-        ["SettingKeys.photo_vignette_strength"] = NextPortion,
 
         ["SettingKeys.photo_quality"] =
             "«Качество» — кнопка-циклер (BuildPresetRow), а не строка _rows.AddXxx; у неё нет "
