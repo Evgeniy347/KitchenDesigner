@@ -25,6 +25,7 @@ namespace KitchenDesigner.Core.UI
 
             _rows.AddToggle(page, ref y, "Сетка", s.GridEnabled,
                 v => { s.GridEnabled = v; _dependentStatesChanged(); }, read: () => s.GridEnabled);
+            Hint("Сетка", hint: "settings.project.grid");
 
             _gridStepField = _rows.AddInput(page, ref y, "Шаг сетки", s.GridStep.ToString(),
                 TMP_InputField.ContentType.IntegerNumber,
@@ -35,10 +36,12 @@ namespace KitchenDesigner.Core.UI
                     s.GridStep = val;
                     f.text = s.GridStep.ToString();
                 }, s.GridStep.ToString(), unit: "мм", indent: true, read: () => s.GridStep.ToString());
+            Hint("Шаг сетки", hint: "settings.project.gridStep");
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddToggle(page, ref y, "Привязка к деталям", s.SnapEnabled,
                 v => { s.SnapEnabled = v; _dependentStatesChanged(); }, read: () => s.SnapEnabled);
+            Hint("Привязка к деталям", hint: "settings.project.snap");
 
             _snapThresholdField = _rows.AddInput(page, ref y, "Порог привязки",
                 s.SnapThreshold.ToString("F0"),
@@ -54,13 +57,16 @@ namespace KitchenDesigner.Core.UI
                     f.text = s.SnapThreshold.ToString("F0");
                 }, s.SnapThreshold.ToString("F0"), unit: "мм", indent: true,
                 read: () => s.SnapThreshold.ToString("F0"));
+            Hint("Порог привязки", hint: "settings.project.snapThreshold");
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddToggle(page, ref y, "Блокировать недопустимые изменения", s.BlockOnViolation,
                 v => { s.BlockOnViolation = v; }, read: () => s.BlockOnViolation);
+            Hint("Блокировать недопустимые изменения", hint: "settings.project.blockOnViolation");
 
             _rows.AddToggle(page, ref y, "Автосохранение", s.AutoSave,
                 v => { s.AutoSave = v; _dependentStatesChanged(); }, read: () => s.AutoSave);
+            Hint("Автосохранение", hint: "settings.project.autoSave");
 
             _autoSaveIntervalField = _rows.AddInput(page, ref y, "Интервал автосохранения",
                 s.AutoSaveInterval.ToString(),
@@ -73,6 +79,7 @@ namespace KitchenDesigner.Core.UI
                     f.text = s.AutoSaveInterval.ToString();
                 }, s.AutoSaveInterval.ToString(), unit: "с", indent: true,
                 read: () => s.AutoSaveInterval.ToString());
+            Hint("Интервал автосохранения", hint: "settings.project.autoSaveInterval");
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddToggle(page, ref y, "Пространственная сетка", s.SpatialGrid,
@@ -95,6 +102,7 @@ namespace KitchenDesigner.Core.UI
             y -= SettingsRowFactory.GapPx;
             _rows.AddToggle(page, ref y, "Свободное панорамирование", s.CameraPanFree,
                 v => { s.CameraPanFree = v; }, read: () => s.CameraPanFree);
+            Hint("Свободное панорамирование", hint: "settings.project.cameraPanFree");
         }
 
         public void RefreshDependentStates(KitchenSettings s)

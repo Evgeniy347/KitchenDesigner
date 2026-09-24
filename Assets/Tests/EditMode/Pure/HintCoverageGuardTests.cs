@@ -62,12 +62,6 @@ public class HintCoverageGuardTests
         ["WallDeviceFieldsEditor.cs → Rows.NumberField(PlateWidthLabel…)"] = NextPortion,
         ["WallOpeningFieldsEditor.cs → Rows.Dropdown(Стекло…)"] = NextPortion,
 
-        ["SettingKeys.auto_save"] = NextPortion,
-        ["SettingKeys.auto_save_interval"] = NextPortion,
-        ["SettingKeys.block_on_violation"] = NextPortion,
-        ["SettingKeys.camera_pan_free"] = NextPortion,
-        ["SettingKeys.grid_enabled"] = NextPortion,
-        ["SettingKeys.grid_step"] = NextPortion,
         ["SettingKeys.photo_active"] = NextPortion,
         ["SettingKeys.photo_ambient"] = NextPortion,
         ["SettingKeys.photo_bloom_clamp"] = NextPortion,
@@ -81,8 +75,6 @@ public class HintCoverageGuardTests
         ["SettingKeys.photo_shadows"] = NextPortion,
         ["SettingKeys.photo_sun_shadow_strength"] = NextPortion,
         ["SettingKeys.photo_vignette_strength"] = NextPortion,
-        ["SettingKeys.snap_enabled"] = NextPortion,
-        ["SettingKeys.snap_threshold"] = NextPortion,
 
         ["SettingKeys.photo_quality"] =
             "«Качество» — кнопка-циклер (BuildPresetRow), а не строка _rows.AddXxx; у неё нет "
