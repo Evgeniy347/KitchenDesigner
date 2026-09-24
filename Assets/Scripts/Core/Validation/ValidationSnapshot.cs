@@ -233,9 +233,12 @@ namespace KitchenDesigner.Core
             bool isFloor = hasBasePlate || e is FloorElement;
             bool isOpening = e is WallOpeningElement;
 
+            bool isFoundation = e is FoundationElement;
+
             if (isFloor) kind |= ElementKind.FloorAnchor;
             if (isOpening) kind |= ElementKind.Opening;
-            if (isFloor || isOpening || wall != null) kind |= ElementKind.Anchor;
+            if (isFoundation) kind |= ElementKind.Foundation;
+            if (isFloor || isOpening || isFoundation || wall != null) kind |= ElementKind.Anchor;
 
             if (e is DrawerElement) kind |= ElementKind.Drawer;
             if (e is ScrewLegElement) kind |= ElementKind.ScrewLeg;

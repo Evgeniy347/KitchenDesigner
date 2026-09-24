@@ -16,5 +16,6 @@ namespace KitchenDesigner.Core
         Facade = 1 << 7,
         ScrewLeg = 1 << 8,
         SelfSupported = 1 << 9,
+        Foundation = 1 << 10,
     }
 }

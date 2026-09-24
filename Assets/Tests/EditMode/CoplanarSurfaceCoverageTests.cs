@@ -160,6 +160,7 @@ public class CoplanarSurfaceCoverageTests
         { typeof(BathMixerElement), OneCombinedMesh },
         { typeof(ShowerColumnElement), OneCombinedMesh },
         { typeof(ScrewLegElement), OneCombinedMesh },
+        { typeof(FoundationElement), OneCombinedMesh },
         { typeof(LightSourceElement),
             "светильник — источник света с одной лампой-мешем; тела из нескольких "
             + "поверхностей у него нет вовсе" },

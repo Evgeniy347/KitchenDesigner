@@ -94,6 +94,10 @@ public class McpResponseUnitContractTests
             ["ElementInfoBuilder.cs :: sizeId"] = "pipe.SizeId — идентификатор строки ГОСТ "
                 + "3262-75 («dn20»), а не длина: сами размеры трубы уходят рядом и с "
                 + "единицей — nominalBoreMM, outerDiameterMM, wallThicknessMM",
+            ["ElementInfoBuilder.cs :: frostDepthText"] = "FrostDepth.Read(...).Value — готовая "
+                + "строка панели («1079 мм» / «—» / «> 2500 мм»), единица уже внутри текста; "
+                + "числа отдельным полем нет, потому что за границей формулы (5.3) числа сама "
+                + "СП 22.13330 не даёт — только формат, см. FrostDepth.BeyondFormulaValue",
             ["McpCommandHandler.Bulk.cs :: widthAxis"] = "ось ширины модуля — буква x или z",
             ["McpCommandHandler.Helpers.cs :: widthAxis"] = "то же самое",
             ["McpCommandHandler.Elements.Query.cs :: gaps"] = "список AxisGapInfo",

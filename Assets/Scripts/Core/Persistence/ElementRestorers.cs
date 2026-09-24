@@ -135,6 +135,7 @@ namespace KitchenDesigner.Core
              (d, el) =>
              {
                  if (el is not FoundationElement foundation) return;
+                 foundation.DimensionsMM = d.Dimensions;
                  foundation.SoilKind = (SoilKind)d.foundationSoilKind;
                  foundation.SandMm = d.foundationSandMm;
                  foundation.GravelMm = d.foundationGravelMm;

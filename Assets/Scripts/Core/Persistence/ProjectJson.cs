@@ -11,7 +11,8 @@ namespace KitchenDesigner.Core
         public static string Serialize(ProjectData data) =>
             LevelsJsonTrim.RemoveWhenEmpty(
                 KeyBindingsJsonTrim.RemoveWhenEmpty(
-                    RawElementRecords.Apply(JsonUtility.ToJson(data, true), RawRecordsOf(data))));
+                    FoundationJsonTrim.RemoveWhenNotFoundation(
+                        RawElementRecords.Apply(JsonUtility.ToJson(data, true), RawRecordsOf(data)))));
 
         public static ProjectData? Deserialize(string json)
         {
