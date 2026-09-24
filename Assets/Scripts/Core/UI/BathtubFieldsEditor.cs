@@ -24,9 +24,9 @@ namespace KitchenDesigner.Core.UI
             var bowlDepthRow = Rows.NumberField(BowlDepthLabel, visibility, "мм", BowlDepthNode,
                 hint: "element.bathtub.bowlDepth");
             var bowlRadiusRow = Rows.NumberField(BowlRadiusLabel, visibility, "мм",
-                BowlRadiusNode);
+                BowlRadiusNode, hint: "element.bathtub.bowlRadius");
             var bowlFilletRow = Rows.NumberField(BowlFilletLabel, visibility, "мм",
-                BowlFilletNode);
+                BowlFilletNode, hint: "element.bathtub.bowlFillet");
 
             Bind<BathtubElement>(rimRow, tub => tub.RimWidthMM,
                 (tub, value) => tub.RimWidthMM = value,
