@@ -35,8 +35,6 @@ public class HintCoverageGuardTests
         ["PipeFieldsEditor.cs → ReadOnlyField(Наружный Ø…)"] = NextPortion,
         ["PipeFieldsEditor.cs → ReadOnlyField(Толщина стенки…)"] = NextPortion,
         ["PipeFieldsEditor.cs → Rows.NumberField(label…)"] = NextPortion,
-        ["PipeFittingFieldsEditor.cs → ReadOnlyField(Диаметр 2…)"] = NextPortion,
-        ["PipeFittingFieldsEditor.cs → ReadOnlyField(Диаметр 3…)"] = NextPortion,
 
 
         ["SettingKeys.photo_quality"] =

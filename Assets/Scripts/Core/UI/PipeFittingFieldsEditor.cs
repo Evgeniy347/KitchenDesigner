@@ -26,8 +26,10 @@ namespace KitchenDesigner.Core.UI
         {
             _bores[0] = ReadOnlyField("Диаметр 1", ElementFacet.PipeFitting,
                 hint: "element.pipeFitting.bore");
-            _bores[1] = ReadOnlyField("Диаметр 2", ElementFacet.PipeFittingSecondPort);
-            _bores[2] = ReadOnlyField("Диаметр 3", ElementFacet.PipeFittingThirdPort);
+            _bores[1] = ReadOnlyField("Диаметр 2", ElementFacet.PipeFittingSecondPort,
+                hint: "element.pipeFitting.bore");
+            _bores[2] = ReadOnlyField("Диаметр 3", ElementFacet.PipeFittingThirdPort,
+                hint: "element.pipeFitting.bore");
             _ports.Build(Rows.Parent);
         }
 
