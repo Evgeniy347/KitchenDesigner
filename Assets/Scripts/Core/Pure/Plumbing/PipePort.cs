@@ -22,5 +22,7 @@ namespace KitchenDesigner.Core.Plumbing
 
         public string? DeclaredSizeId =>
             PipeNodePorts.DeclaresOwnSize(OwnerKind) ? PipeSpec.NormalizeSize(SizeId) : null;
+
+        internal Ports.Port AsPort() => new Ports.Port(ElementId, PortIndex, PositionMm, OutwardAxis, SizeId);
     }
 }
