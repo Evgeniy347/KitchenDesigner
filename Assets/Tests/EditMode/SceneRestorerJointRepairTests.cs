@@ -84,7 +84,7 @@ public class SceneRestorerJointRepairTests
         var data = CaptureSeatedLeg(out float naturalSeatY);
         LegDataOf(data).position[1] = naturalSeatY + 5f * AppConstants.MM_TO_UNITS;
 
-        SaveLoadManager.RestoreScene(data);
+        _spawned.AddRange(SaveLoadManager.RestoreScene(data));
 
         var leg = PartRegistry.GetAll().OfType<ScrewLegElement>().First();
         Assert.AreEqual(naturalSeatY, leg.transform.position.y, 0f,
@@ -99,7 +99,7 @@ public class SceneRestorerJointRepairTests
         float savedY = naturalSeatY + 0.3f * Tolerance.EpsilonUnits;
         LegDataOf(data).position[1] = savedY;
 
-        SaveLoadManager.RestoreScene(data);
+        _spawned.AddRange(SaveLoadManager.RestoreScene(data));
 
         var leg = PartRegistry.GetAll().OfType<ScrewLegElement>().First();
         Assert.AreEqual(savedY, leg.transform.position.y, 0f,
