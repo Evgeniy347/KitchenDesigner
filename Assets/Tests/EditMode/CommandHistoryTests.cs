@@ -32,6 +32,7 @@ public class CommandHistoryTests
     {
         CommandStack.Clear();
         LevelRegistry.Reset();
+        ProjectCreationDate.Value = "";
     }
 
     [TearDown]
@@ -39,6 +40,7 @@ public class CommandHistoryTests
     {
         CommandStack.Clear();
         LevelRegistry.Reset();
+        ProjectCreationDate.Value = "";
         foreach (var go in _spawned)
         {
             if (go == null) continue;

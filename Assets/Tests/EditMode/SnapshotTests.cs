@@ -89,6 +89,11 @@ public class SnapshotTests
         // so a single RestoreScene call anywhere earlier in the run seeds it for
         // every snapshot after that point.
         LevelRegistry.Reset();
+        // Ещё один project-level статик, сериализуемый в снапшот: ProjectCreationDate
+        // живёт весь процесс, а не сцену, и SceneRestorer выставляет его из ЛЮБОГО
+        // ранее загруженного проекта. CreatedAtUtcJsonTrim вырезает поле из JSON,
+        // только когда оно пустое, — непустое значение снова просочится в снапшот.
+        ProjectCreationDate.Value = "";
         // Тонировка тоже project-level и тоже сериализуется в снапшот: её ставит
         // RestoreScene из файла проекта, а грузит его SnapMutationTests (живой
         // docs/example.save.json). Стоит десктопу сохранить проект с выключенной
