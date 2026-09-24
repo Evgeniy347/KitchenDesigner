@@ -29,9 +29,9 @@ namespace KitchenDesigner.Core.UI
             _size = Rows.Dropdown("Условный проход",
                 new List<string>(PipeElementSpec.Designations()), OnSizeSelected, visibility,
                 "CtxPipeSize", hint: "element.pipe.nominalBore");
-            _outer = ReadOnlyField("Наружный Ø", visibility);
-            _inner = ReadOnlyField("Внутренний Ø", visibility);
-            _wall = ReadOnlyField("Толщина стенки", visibility);
+            _outer = ReadOnlyField("Наружный Ø", visibility, hint: "element.pipe.derived");
+            _inner = ReadOnlyField("Внутренний Ø", visibility, hint: "element.pipe.derived");
+            _wall = ReadOnlyField("Толщина стенки", visibility, hint: "element.pipe.derived");
             _ends.Build(Rows.Parent);
         }
 
@@ -57,9 +57,9 @@ namespace KitchenDesigner.Core.UI
             _ends.Show(pipe);
         }
 
-        private TMP_InputField ReadOnlyField(string label, RowVisibility visibility)
+        private TMP_InputField ReadOnlyField(string label, RowVisibility visibility, string? hint = null)
         {
-            var field = Rows.NumberField(label, visibility);
+            var field = Rows.NumberField(label, visibility, "мм", null, hint);
             UIRowEnabled.SetControlEnabled(field, false);
             return field;
         }

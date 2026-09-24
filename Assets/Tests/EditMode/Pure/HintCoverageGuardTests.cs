@@ -31,10 +31,6 @@ public class HintCoverageGuardTests
     /// не добавляет новые вокруг них.</summary>
     private static readonly Dictionary<string, string> KnownGaps = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["PipeFieldsEditor.cs → ReadOnlyField(Внутренний Ø…)"] = NextPortion,
-        ["PipeFieldsEditor.cs → ReadOnlyField(Наружный Ø…)"] = NextPortion,
-        ["PipeFieldsEditor.cs → ReadOnlyField(Толщина стенки…)"] = NextPortion,
-        ["PipeFieldsEditor.cs → Rows.NumberField(label…)"] = NextPortion,
 
 
         ["SettingKeys.photo_quality"] =
