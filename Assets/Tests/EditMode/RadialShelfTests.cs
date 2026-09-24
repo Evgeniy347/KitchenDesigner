@@ -455,11 +455,11 @@ public class RadialShelfTests
         return false;
     }
 
-    private static RadialShelfElement CreateShelf(string name, int width, int depth, int thickness,
+    private RadialShelfElement CreateShelf(string name, int width, int depth, int thickness,
         int cornerRadius, Vector3 pos)
     {
-        var go = ElementFactory.CreateRadialShelf(width, depth, thickness, cornerRadius, name, pos);
-        return go.GetComponent<RadialShelfElement>();
+        _go = ElementFactory.CreateRadialShelf(width, depth, thickness, cornerRadius, name, pos);
+        return _go.GetComponent<RadialShelfElement>();
     }
 
     // ── Дефект: радиусная полка молча выпадала из ведомости раскроя ──────────

@@ -8,7 +8,9 @@
 		"KitchenDesigner.Editor",
 		"Unity.TextMeshPro",
 		"KitchenDesigner.Tests.Shared",
-		"KitchenDesigner.Tests.Helpers"
+		"KitchenDesigner.Tests.Helpers",
+		"UnityEngine.TestRunner",
+		"UnityEditor.TestRunner"
 	],
 	"includePlatforms": [
 		"Editor"

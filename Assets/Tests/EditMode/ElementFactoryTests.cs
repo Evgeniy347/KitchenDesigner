@@ -22,6 +22,7 @@ public class ElementFactoryTests
                 ElementFactory.DestroyElement(el.gameObject);
         }
         PartRegistry.Clear();
+        ElementFactory.ClearPools();
         if (_extraObjects != null)
         {
             var children = new System.Collections.Generic.List<GameObject>();

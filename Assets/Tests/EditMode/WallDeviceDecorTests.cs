@@ -54,6 +54,7 @@ public class WallDeviceDecorTests
         var socket = go.AddComponent<SocketElement>();
         socket.PartName = "Розетка";
         socket.ApplyDimensions();
+        PartRegistry.Register(socket);
         return socket;
     }
 
@@ -63,6 +64,7 @@ public class WallDeviceDecorTests
         var source = go.AddComponent<LightSwitchElement>();
         source.PartName = "Выключатель";
         source.ApplyDimensions();
+        PartRegistry.Register(source);
         return source;
     }
 

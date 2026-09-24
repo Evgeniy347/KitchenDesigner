@@ -17,6 +17,7 @@ public class ElementFactorySandboxTests
         foreach (var el in PartRegistry.GetAll())
             if (el != null) ElementFactory.DestroyElement(el.gameObject);
         PartRegistry.Clear();
+        ElementFactory.ClearPools();
     }
 
     [Test]

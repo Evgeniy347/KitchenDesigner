@@ -26,6 +26,8 @@ public class ElementActivatorTests
     public void TearDown()
     {
         CommandStack.Clear();
+        foreach (var el in PartRegistry.GetAll())
+            if (el != null) Object.DestroyImmediate(el.gameObject);
         PartRegistry.Clear();
     }
 
