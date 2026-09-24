@@ -39,5 +39,29 @@ namespace KitchenDesigner.Tests.Geometry
             Assert.AreEqual(0f, MeshArea.TotalMm2(new Vector3[0], new int[0]), 1e-6f,
                 "нет треугольников — нет и площади, сумма по пустому индексу не должна падать");
         }
+
+        [Test]
+        public void IsWoundOutward_TrueWhenTheNormalPointsAwayFromTheInteriorPoint()
+        {
+            var vertices = new[] { Vector3.zero, Vector3.right, Vector3.up };
+            var triangles = new[] { 0, 1, 2 };
+            var interiorPoint = new Vector3(0f, 0f, -1f);
+
+            Assert.IsTrue(MeshArea.IsWoundOutward(vertices, triangles, interiorPoint),
+                "(0,0,0)-(1,0,0)-(0,1,0) даёт нормаль +Z; смотрящая из (0,0,-1) точка видит её "
+                + "снаружи");
+        }
+
+        [Test]
+        public void IsWoundOutward_FalseWhenOneTriangleFacesTheInteriorPoint()
+        {
+            var vertices = new[] { Vector3.zero, Vector3.right, Vector3.up };
+            var triangles = new[] { 0, 2, 1 };
+            var interiorPoint = new Vector3(0f, 0f, -1f);
+
+            Assert.IsFalse(MeshArea.IsWoundOutward(vertices, triangles, interiorPoint),
+                "те же три вершины в обратном порядке — нормаль −Z, то есть смотрит НА "
+                + "внутреннюю точку, а не от неё");
+        }
     }
 }

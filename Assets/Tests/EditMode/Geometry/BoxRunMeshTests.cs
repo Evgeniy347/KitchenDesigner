@@ -59,6 +59,17 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
+        public void Build_IsWoundConsistentlyOutward()
+        {
+            var (vertices, triangles) = BuildSample();
+            var interiorPoint = new Vector3(0f, 0f, LengthMm * 0.5f);
+
+            Assert.IsTrue(MeshArea.IsWoundOutward(vertices, triangles, interiorPoint),
+                "коробка выпуклая — середина её оси гарантированно внутри, и нормаль КАЖДОГО "
+                + "треугольника обязана смотреть от неё, а не внутрь тела");
+        }
+
+        [Test]
         public void UnfoldedAreaM2_ExcludesTheEndCaps()
         {
             float areaM2 = BoxRunMesh.UnfoldedAreaM2(Vector3.zero, new Vector3(0f, 0f, LengthMm),
