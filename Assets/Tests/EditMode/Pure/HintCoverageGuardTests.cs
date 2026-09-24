@@ -31,7 +31,6 @@ public class HintCoverageGuardTests
     /// не добавляет новые вокруг них.</summary>
     private static readonly Dictionary<string, string> KnownGaps = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["BedFieldsEditor.cs → Rows.Dropdown(HeadboardLabel…)"] = NextPortion,
         ["DrawerBoxFieldsEditor.cs → Rows.Dropdown(Цвет…)"] = NextPortion,
         ["DrawerBoxFieldsEditor.cs → Rows.NamedDropdown(CtxDrawerUpperLen…)"] = NextPortion,
         ["LightFieldsEditor.cs → Bind(Верхний радиус…)"] = NextPortion,

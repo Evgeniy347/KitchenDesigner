@@ -35,7 +35,7 @@ namespace KitchenDesigner.Core.UI
             _size = Rows.Dropdown(SizeLabel, SizeOptions(), OnSizeSelected, visibility, SizeNode,
                 hint: "element.bed.size");
             _headboard = Rows.Dropdown(HeadboardLabel, HeadboardOptions(), OnHeadboardSelected,
-                visibility, HeadboardNode);
+                visibility, HeadboardNode, hint: "element.bed.headboard");
         }
 
         public override void Show(KitchenElement element) => WriteDropdowns(element);
