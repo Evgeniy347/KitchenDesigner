@@ -62,8 +62,6 @@ public class HintCoverageGuardTests
         ["WallDeviceFieldsEditor.cs → Rows.NumberField(PlateWidthLabel…)"] = NextPortion,
         ["WallOpeningFieldsEditor.cs → Rows.Dropdown(Стекло…)"] = NextPortion,
 
-        ["SettingKeys.photo_active"] = NextPortion,
-        ["SettingKeys.photo_shadows"] = NextPortion,
 
         ["SettingKeys.photo_quality"] =
             "«Качество» — кнопка-циклер (BuildPresetRow), а не строка _rows.AddXxx; у неё нет "

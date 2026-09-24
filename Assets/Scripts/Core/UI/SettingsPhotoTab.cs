@@ -22,6 +22,7 @@ namespace KitchenDesigner.Core.UI
 
             _photoActiveToggle = _rows.AddToggle(page, ref y, "Фоторежим", PhotoMode.Active,
                 v => PhotoMode.SetActive(v));
+            Hint("Фоторежим", hint: "settings.photo.active");
             PhotoMode.Changed -= SyncActiveToggle;
             PhotoMode.Changed += SyncActiveToggle;
 
@@ -31,6 +32,7 @@ namespace KitchenDesigner.Core.UI
             y -= SettingsRowFactory.GapPx;
             AddPresetLinkedToggle(page, ref y, "Тени", s.PhotoShadows,
                 v => s.PhotoShadows = v, () => s.PhotoShadows);
+            Hint("Тени", hint: "settings.photo.shadows");
             AddPresetLinkedToggle(page, ref y, "Мягкие тени", s.PhotoSoftShadows,
                 v => s.PhotoSoftShadows = v, () => s.PhotoSoftShadows);
             Hint("Мягкие тени", hint: "settings.photo.softShadows");
