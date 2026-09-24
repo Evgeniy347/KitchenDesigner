@@ -369,7 +369,13 @@ function Invoke-Unity {
 
     $proc = $null
     try {
-        $proc = Start-Process -FilePath $unity -ArgumentList $UnityArgs -PassThru
+        # -WindowStyle Hidden: cold batch is still a GUI-subsystem exe, and without
+        # this it briefly shows/activates its own startup window before batch mode
+        # takes hold — measured: Unity.exe becomes the FOREGROUND window ~0.4 s in,
+        # stealing keyboard focus from whatever the user was typing in, even on a
+        # plain EditMode run with no PlayMode graphics involved. Hidden suppresses
+        # that; it does not affect -batchMode's own headless behaviour otherwise.
+        $proc = Start-Process -FilePath $unity -ArgumentList $UnityArgs -WindowStyle Hidden -PassThru
 
         $deadline = (Get-Date).AddMinutes($TimeoutMinutes)
         $lastProgress = Get-Date
