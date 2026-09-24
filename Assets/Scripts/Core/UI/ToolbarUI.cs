@@ -70,7 +70,7 @@ namespace KitchenDesigner.Core.UI
             AddPanelToggle(bar.transform, "Settings", IconFactory.Gear, ToolbarPanel.Settings, ref x, "Настройки");
             AddIconButton(bar.transform, "Save", IconFactory.Floppy, ref x, host.SaveCurrent, "Сохранить");
             AddIconButton(bar.transform, "SaveAs", IconFactory.FloppyPlus, ref x, host.SaveAs, "Сохранить как");
-            AddIconButton(bar.transform, "Load", IconFactory.Folder, ref x, host.LoadDialog, "Загрузить");
+            AddPanelToggle(bar.transform, "Load", IconFactory.Folder, ToolbarPanel.LoadProject, ref x, "Загрузить");
             AddSeparator(bar.transform, ref x);
 
             _undoButton = AddIconButton(bar.transform, "Undo", IconFactory.Undo, ref x, Undo, "Отменить");

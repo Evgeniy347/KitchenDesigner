@@ -77,6 +77,10 @@ namespace KitchenDesigner.Core.UI
             projectInstructionsPanel.Build(windowLayer);
             _panels[ToolbarPanel.ProjectInstructions] = projectInstructionsPanel;
 
+            var loadProjectWindow = gameObject.AddComponent<LoadProjectWindowUI>();
+            loadProjectWindow.Build(windowLayer);
+            _panels[ToolbarPanel.LoadProject] = loadProjectWindow;
+
             var measureProperties = gameObject.AddComponent<MeasurePropertiesUI>();
             measureProperties.Build(windowLayer);
 
@@ -144,7 +148,8 @@ namespace KitchenDesigner.Core.UI
             if (cam == null) return Vector3.zero;
 
             Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-            var ground = new Plane(Vector3.up, Vector3.zero);
+            float levelY = LevelRegistry.CurrentFloorElevationMm * AppConstants.MM_TO_UNITS;
+            var ground = new Plane(Vector3.up, new Vector3(0f, levelY, 0f));
             if (ground.Raycast(ray, out float enter))
                 return ray.GetPoint(enter);
             return cam.transform.position + cam.transform.forward * 2f;
