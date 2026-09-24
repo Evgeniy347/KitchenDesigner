@@ -122,6 +122,10 @@ Rules that matter:
 - **Never pipe a run through `Select-Object -Last N`.** It cuts off the `Total:` line and the
   head of the failure list, which is exactly what you needed. Write the output to a file under
   `test-results/` and grep that.
+- **A run must never take the user's screen.** Unity.exe is launched with `-WindowStyle Hidden`:
+  without it the cold batch became the foreground window ~0.4 s in and stole keyboard focus
+  from the user mid-sentence. Any new launch line keeps that flag; verify with
+  `tools/window-sensor.ps1` (zero new windows, zero foreground changes).
 
 ## Only ONE Unity per machine, whatever the project
 
