@@ -101,6 +101,7 @@ public class ElementConverterTests
         Assert.AreEqual(src.DimensionsMM, dst.DimensionsMM);
         Assert.AreEqual(src.Movable, dst.Movable);
         Assert.AreEqual(src.GroupId, dst.GroupId);
+        Assert.AreEqual(src.LevelId, dst.LevelId);
         Assert.AreEqual(src.MaterialId, dst.MaterialId);
         Assert.AreEqual(src.Transparent, dst.Transparent);
     }
@@ -113,6 +114,7 @@ public class ElementConverterTests
         var src = Make<KitchenElement>("Src", new Vector3Int(600, 400, 18), Vector3.zero);
         src.Movable = false;
         src.GroupId = 5;
+        src.LevelId = "L5";
         src.MaterialId = "oak";
         src.Transparent = false;
 
@@ -170,6 +172,7 @@ public class ElementConverterTests
         var src = Make<KitchenElement>("Src", new Vector3Int(800, 500, 18), Vector3.zero);
         src.Movable = true;
         src.GroupId = 3;
+        src.LevelId = "L3";
         src.MaterialId = "white";
         src.Transparent = false;
 
@@ -201,6 +204,7 @@ public class ElementConverterTests
             1, 3, 0, 5, DoorMode.HingeFrontRight, true);
         src.Movable = true;
         src.GroupId = 7;
+        src.LevelId = "L7";
         src.MaterialId = "cherry";
         src.Transparent = false;
 
@@ -220,6 +224,7 @@ public class ElementConverterTests
             1, 2, 3, 4, DoorMode.DrawerOut, true);
         src.Movable = false;
         src.GroupId = 9;
+        src.LevelId = "L9";
         src.MaterialId = "wenge";
         src.Transparent = false;
 
@@ -246,6 +251,7 @@ public class ElementConverterTests
             2, 2, 2, 2, AssembledFill.Glass, 3);
         src.Movable = true;
         src.GroupId = 11;
+        src.LevelId = "L11";
         src.MaterialId = "glass_grey";
         src.Transparent = true;
 
@@ -265,6 +271,7 @@ public class ElementConverterTests
             0, 0, 0, 0, AssembledFill.Open, 2);
         src.Movable = false;
         src.GroupId = 13;
+        src.LevelId = "L13";
         src.MaterialId = "black";
         src.Transparent = false;
 
@@ -288,6 +295,7 @@ public class ElementConverterTests
         var src = Make<KitchenElement>("Src", new Vector3Int(500, 18, 400), Vector3.zero);
         src.Movable = true;
         src.GroupId = 21;
+        src.LevelId = "L21";
         src.MaterialId = "oak";
 
         var result = (RadialShelfElement)ElementConverter.Convert(
@@ -296,6 +304,7 @@ public class ElementConverterTests
         Assert.AreEqual("Src", result.PartName);
         Assert.AreEqual(true, result.Movable);
         Assert.AreEqual(21, result.GroupId);
+        Assert.AreEqual("L21", result.LevelId);
         Assert.AreEqual("oak", result.MaterialId);
         Assert.AreEqual(200, result.CornerRadius);
         Assert.AreEqual(new Vector3Int(500, 18, 400), result.DimensionsMM);
@@ -307,6 +316,7 @@ public class ElementConverterTests
         var src = Make<RadialShelfElement>("Src", new Vector3Int(400, 25, 400), Vector3.zero);
         src.Movable = false;
         src.GroupId = 23;
+        src.LevelId = "L23";
         src.MaterialId = "cherry";
 
         var result = ElementConverter.Convert(src, ElementConverter.TargetType.Part);
@@ -326,6 +336,7 @@ public class ElementConverterTests
             1, 2, 3, 4, DoorMode.HingeFrontRight, true);
         src.Movable = false;
         src.GroupId = 31;
+        src.LevelId = "L31";
         src.MaterialId = "wenge";
 
         var result = (RadialShelfElement)ElementConverter.Convert(
@@ -336,6 +347,7 @@ public class ElementConverterTests
         Assert.AreEqual("Src", result.PartName);
         Assert.AreEqual(false, result.Movable);
         Assert.AreEqual(31, result.GroupId);
+        Assert.AreEqual("L31", result.LevelId);
         Assert.AreEqual("wenge", result.MaterialId);
         Assert.AreEqual(18, result.CornerRadius, "default 200 clamped to min(width, depth)=18");
         Assert.AreEqual(new Vector3Int(500, 350, 18), result.DimensionsMM);
@@ -350,6 +362,7 @@ public class ElementConverterTests
             1, 2, 3, 4, AssembledFill.Glass, 3);
         src.Movable = true;
         src.GroupId = 33;
+        src.LevelId = "L33";
         src.MaterialId = "oak";
 
         var result = (RadialShelfElement)ElementConverter.Convert(
@@ -360,6 +373,7 @@ public class ElementConverterTests
         Assert.AreEqual("Src", result.PartName);
         Assert.AreEqual(true, result.Movable);
         Assert.AreEqual(33, result.GroupId);
+        Assert.AreEqual("L33", result.LevelId);
         Assert.AreEqual("oak", result.MaterialId);
         Assert.AreEqual(18, result.CornerRadius, "default 200 clamped to min(width, depth)=18");
         Assert.AreEqual(new Vector3Int(700, 400, 18), result.DimensionsMM);
@@ -373,6 +387,7 @@ public class ElementConverterTests
         var src = Make<RadialShelfElement>("Src", new Vector3Int(500, 18, 500), Vector3.zero);
         src.Movable = false;
         src.GroupId = 35;
+        src.LevelId = "L35";
         src.MaterialId = "cherry";
 
         var result = (FacadeElement)ElementConverter.Convert(
@@ -398,6 +413,7 @@ public class ElementConverterTests
         var src = Make<RadialShelfElement>("Src", new Vector3Int(600, 25, 600), Vector3.zero);
         src.Movable = true;
         src.GroupId = 37;
+        src.LevelId = "L37";
         src.MaterialId = "white";
 
         var result = (AssembledFacadeElement)ElementConverter.Convert(
@@ -643,7 +659,7 @@ public class ElementConverterTests
 
     private static readonly HashSet<string> CommonProperties = new HashSet<string>
     {
-        "PartName", "DimensionsMM", "Movable", "GroupId", "MaterialId", "Transparent", "Data"
+        "PartName", "DimensionsMM", "Movable", "GroupId", "LevelId", "MaterialId", "Transparent", "Data"
     };
 
     private static readonly HashSet<string> FacadeProperties = new HashSet<string>
@@ -660,7 +676,7 @@ public class ElementConverterTests
     private static readonly HashSet<string> AllCovered = new HashSet<string>
     {
         // KitchenElement
-        "PartName", "DimensionsMM", "Movable", "GroupId", "MaterialId", "Transparent", "Data",
+        "PartName", "DimensionsMM", "Movable", "GroupId", "LevelId", "MaterialId", "Transparent", "Data",
         // Прикрепление к родителю: переносится, пока новый тип может быть
         // ребёнком — см. Part_To_RadialShelf_KeepsAttachment / Part_To_Facade_DropsAttachment.
         "AttachedToName",

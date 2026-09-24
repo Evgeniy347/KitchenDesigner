@@ -27,6 +27,7 @@ namespace KitchenDesigner.Core
             var dims = source.DimensionsMM;
             var movable = source.Movable;
             var groupId = source.GroupId;
+            var levelId = source.LevelId;
             var materialId = source.MaterialId;
             var transparent = source.Transparent;
             var attachedToName = source.AttachedToName;
@@ -88,6 +89,7 @@ namespace KitchenDesigner.Core
             result.PartName = ElementNaming.Normalize(partName, result);
             result.Movable = movable;
             result.GroupId = groupId;
+            result.LevelId = levelId;
             result.MaterialId = materialId;
             result.Transparent = transparent;
             result.AttachedToName = AttachLinks.CanBeChild(result) ? attachedToName : "";
