@@ -58,17 +58,30 @@ public class LevelMigrationRoundTripTests
         _guard = null;
     }
 
+    /// <summary>dn20-труба несёт сечение 27 мм, чья половина (13,5 мм) всегда дробная —
+    /// округление вершины меша при восстановлении почти для любой позиции сдвигает
+    /// трубу/фитинг до ~1 мм на стыке (ScenePipeJointGridRepairTests, строки 19-22).
+    /// <c>PipeDocking.RepairJoint</c> (зовётся из <c>SceneRestorer.RepairAutoSeatedJoints</c>
+    /// для КАЖДОГО <c>IAutoSeated</c>, не только для одной детали) закрывает это на
+    /// загрузке — задокументированное и проверенное поведение, не находка этого стража.
+    /// Узел из пяти связанных деталей назван в <c>PipeGapSensorTests.AllFiveNames</c>
+    /// (Truba, Otvod_92, Otvod_91, Podacha, Obratka); в исключение попадают только те,
+    /// что реально дрейфуют в этой фикстуре — не весь узел заранее.</summary>
+    private const string DnGridRoundingRepairReason =
+        "pipe-gap-scene.save.json заморожен с НАРОЧНО разомкнутыми стыками dn20-трубопровода: " +
+        "PipeDocking.RepairJoint закрывает их на загрузке (округление вершины меша у дробной " +
+        "половины сечения, ~0,1-1 мм на деталь) — задокументированное и проверенное поведение, " +
+        "см. ScenePipeJointGridRepairTests и сеть узла PipeGapSensorTests.AllFiveNames";
+
     /// <summary>Деталь, у которой сдвиг при восстановлении ЗАДОКУМЕНТИРОВАН и ОЖИДАЕМ —
     /// не находка этого стража, а поведение другого, уже принятого. Формат — как
     /// <c>ValidationSnapshotReuseTests.OutOfTheCacheOnPurpose</c>: имя и причина рядом,
     /// так что расширение списка — осознанная правка, а не тихий обход красноты.</summary>
     private static readonly (string name, string why)[] ExemptFromExactCoordinateCheck =
     {
-        ("Truba",
-            "pipe-gap-scene.save.json заморожен с НАРОЧНО разомкнутым стыком: " +
-            "PipeDocking.RepairJoint закрывает его при восстановлении (сдвиг ~0,775 мм, " +
-            "в основном по Y) — задокументированное и проверенное поведение, см. " +
-            "PipeGapSensorTests (строки 11-27) и ScenePipeJointGridRepairTests"),
+        ("Truba", DnGridRoundingRepairReason),
+        ("Otvod_91", DnGridRoundingRepairReason),
+        ("Obratka", DnGridRoundingRepairReason),
     };
 
     private static string ExemptionReason(string elementName) =>
