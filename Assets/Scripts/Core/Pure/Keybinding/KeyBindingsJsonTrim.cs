@@ -23,33 +23,7 @@ namespace KitchenDesigner.Core.Keybinding
             if (!keyBindings.Found) return projectJson;
             if (keyBindings.Text(projectJson).Trim() != EmptyArrayText) return projectJson;
 
-            return RemoveMember(projectJson, settings, KeyBindingsKey);
-        }
-
-        private static string RemoveMember(string source, JsonSpan objectSpan, string key)
-        {
-            var members = JsonText.Members(source, objectSpan);
-            int index = members.FindIndex(m => m.Key == key);
-            if (index < 0) return source;
-
-            int prevBoundary = index == 0 ? objectSpan.Start + 1 : members[index - 1].Value.End;
-            int keyStart = source.IndexOf('"', prevBoundary);
-            if (keyStart < 0) return source;
-
-            int valueEnd = members[index].Value.End;
-            int afterValue = JsonText.SkipWhitespace(source, valueEnd);
-            bool hasTrailingComma = afterValue < objectSpan.End && source[afterValue] == ',';
-            int removalEnd = hasTrailingComma ? afterValue + 1 : valueEnd;
-
-            if (!hasTrailingComma && index > 0)
-            {
-                int prevValueEnd = members[index - 1].Value.End;
-                int commaPos = JsonText.SkipWhitespace(source, prevValueEnd);
-                if (commaPos < objectSpan.End && source[commaPos] == ',')
-                    return source.Substring(0, commaPos) + source.Substring(removalEnd);
-            }
-
-            return source.Substring(0, keyStart) + source.Substring(removalEnd);
+            return JsonText.RemoveMember(projectJson, settings, KeyBindingsKey);
         }
     }
 }

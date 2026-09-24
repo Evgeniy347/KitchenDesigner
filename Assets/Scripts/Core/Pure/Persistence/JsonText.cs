@@ -82,6 +82,26 @@ namespace KitchenDesigner.Core
             return items;
         }
 
+        public static string RemoveMember(string source, JsonSpan objectSpan, string key)
+        {
+            var members = Members(source, objectSpan);
+            int index = members.FindIndex(m => m.Key == key);
+            if (index < 0) return source;
+
+            int valueEnd = members[index].Value.End;
+
+            if (index == 0)
+            {
+                int afterValue = SkipWhitespace(source, valueEnd);
+                bool hasTrailingComma = afterValue < objectSpan.End && source[afterValue] == ',';
+                int endCut = hasTrailingComma ? afterValue + 1 : valueEnd;
+                return source.Substring(0, objectSpan.Start + 1) + source.Substring(endCut);
+            }
+
+            int startCut = members[index - 1].Value.End;
+            return source.Substring(0, startCut) + source.Substring(valueEnd);
+        }
+
         public static string LineIndentBefore(string source, int index)
         {
             int lineStart = index;

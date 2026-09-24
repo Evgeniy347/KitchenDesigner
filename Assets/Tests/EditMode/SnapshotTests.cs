@@ -83,6 +83,12 @@ public class SnapshotTests
         ProjectInstructions.Reset();
         ProjectRooms.Reset();
         ProjectFloorplans.Reset();
+        // Same leak, new registry: LevelRegistry is project-level too, and unlike
+        // rooms/floorplans it is NEVER naturally empty after a restore — an empty
+        // ProjectData.levels synthesises exactly one "1 этаж" level (LevelResolution),
+        // so a single RestoreScene call anywhere earlier in the run seeds it for
+        // every snapshot after that point.
+        LevelRegistry.Reset();
         // Тонировка тоже project-level и тоже сериализуется в снапшот: её ставит
         // RestoreScene из файла проекта, а грузит его SnapMutationTests (живой
         // docs/example.save.json). Стоит десктопу сохранить проект с выключенной

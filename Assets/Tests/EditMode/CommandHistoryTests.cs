@@ -28,12 +28,17 @@ public class CommandHistoryTests
     }
 
     [SetUp]
-    public void Setup() => CommandStack.Clear();
+    public void Setup()
+    {
+        CommandStack.Clear();
+        LevelRegistry.Reset();
+    }
 
     [TearDown]
     public void Teardown()
     {
         CommandStack.Clear();
+        LevelRegistry.Reset();
         foreach (var go in _spawned)
         {
             if (go == null) continue;

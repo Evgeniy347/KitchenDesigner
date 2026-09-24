@@ -9,8 +9,9 @@ namespace KitchenDesigner.Core
         private const string TypeKey = "\"" + nameof(ElementData.elementType) + "\"";
 
         public static string Serialize(ProjectData data) =>
-            KeyBindingsJsonTrim.RemoveWhenEmpty(
-                RawElementRecords.Apply(JsonUtility.ToJson(data, true), RawRecordsOf(data)));
+            LevelsJsonTrim.RemoveWhenEmpty(
+                KeyBindingsJsonTrim.RemoveWhenEmpty(
+                    RawElementRecords.Apply(JsonUtility.ToJson(data, true), RawRecordsOf(data))));
 
         public static ProjectData? Deserialize(string json)
         {
