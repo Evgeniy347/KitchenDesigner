@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using KitchenDesigner.Core.Ports;
 
 namespace KitchenDesigner.Core.Plumbing
@@ -22,23 +21,17 @@ namespace KitchenDesigner.Core.Plumbing
         public const float FlowArrowShaftFactor = 0.4f;
         public const float FlowArrowGapFillFactor = 0.9f;
 
-        private static readonly PipeAxis[] TwoWayStraight = { PipeAxis.Down, PipeAxis.Up };
-        private static readonly PipeAxis[] TwoWayCorner = { PipeAxis.Down, PipeAxis.Right };
-        private static readonly PipeAxis[] ThreeWay = { PipeAxis.Down, PipeAxis.Up, PipeAxis.Right };
-        private static readonly PipeAxis[] OneWay = { PipeAxis.Up };
-        private static readonly PipeAxis[] None = new PipeAxis[0];
-
         public static bool IsFitting(PipeNodeKind kind) => kind != PipeNodeKind.Pipe;
 
-        public static IReadOnlyList<PipeAxis> Legs(PipeNodeKind kind) => kind switch
+        public static LegFrame Legs(PipeNodeKind kind) => kind switch
         {
-            PipeNodeKind.Elbow => TwoWayCorner,
-            PipeNodeKind.Coupling => TwoWayStraight,
-            PipeNodeKind.Tee => ThreeWay,
-            PipeNodeKind.Cap => OneWay,
-            PipeNodeKind.Supply => OneWay,
-            PipeNodeKind.Return => OneWay,
-            _ => None,
+            PipeNodeKind.Elbow => LegFrame.TwoWayCorner,
+            PipeNodeKind.Coupling => LegFrame.TwoWayStraight,
+            PipeNodeKind.Tee => LegFrame.ThreeWay,
+            PipeNodeKind.Cap => LegFrame.OneWay,
+            PipeNodeKind.Supply => LegFrame.OneWay,
+            PipeNodeKind.Return => LegFrame.OneWay,
+            _ => LegFrame.None,
         };
 
         public static bool HasFlange(PipeNodeKind kind) =>

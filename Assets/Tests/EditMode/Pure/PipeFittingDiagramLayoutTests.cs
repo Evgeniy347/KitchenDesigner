@@ -11,7 +11,7 @@ using NUnit.Framework;
 /// сама посадка, поэтому новый вид получает её бесплатно.</summary>
 public class PipeFittingDiagramLayoutTests
 {
-    private static IReadOnlyList<PipeAxis> LegsOf(PipeNodeKind kind) => PipeFittingSpec.Legs(kind);
+    private static IReadOnlyList<PipeAxis> LegsOf(PipeNodeKind kind) => PipeFittingSpec.Legs(kind).Axes;
 
     [Test]
     public void ElbowsTwoSlots_PointTheSameWayAsItsTwoLegs()

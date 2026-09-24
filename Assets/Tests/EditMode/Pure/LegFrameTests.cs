@@ -43,4 +43,11 @@ public class LegFrameTests
         Assert.AreEqual(PipeAxis.Up, LegFrame.ThreeWay.Axes[1]);
         Assert.AreEqual(PipeAxis.Right, LegFrame.ThreeWay.Axes[2]);
     }
+
+    [Test]
+    public void Indexer_AgreesWithAxes()
+    {
+        for (int i = 0; i < LegFrame.ThreeWay.Count; i++)
+            Assert.AreEqual(LegFrame.ThreeWay.Axes[i], LegFrame.ThreeWay[i]);
+    }
 }

@@ -23,5 +23,7 @@ namespace KitchenDesigner.Core.Ports
         public IReadOnlyList<PipeAxis> Axes => _axes;
 
         public int Count => _axes.Length;
+
+        public PipeAxis this[int index] => _axes[index];
     }
 }
