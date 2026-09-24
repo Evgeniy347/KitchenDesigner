@@ -15,6 +15,7 @@ namespace KitchenDesigner.Core.UI
         private const float ButtonGap = 10f;
         private const float BottomPad = UIStyle.WindowPad;
         private const float RowHeightFloor = LoadProjectRowsView.RowHeight;
+        private const float ScrollbarReserve = WindowBody.BarW + ScrollArea.BarInset;
 
         private readonly ProjectFileActions _actions = new();
         private readonly LoadProjectRowsView _rows = new();
@@ -128,14 +129,14 @@ namespace KitchenDesigner.Core.UI
             _panel!.sizeDelta = new Vector2(PanelW, height);
 
             float rightColumnX = UIStyle.WindowPad + LeftColumnW + ColumnGap;
-            float rowWidth = PanelW - rightColumnX - UIStyle.WindowPad - WindowBody.BarW;
+            float rowWidth = PanelW - rightColumnX - UIStyle.WindowPad - ScrollbarReserve;
             float topOfBody = TitleTopPad + TitleH + BelowTitleGap;
             float columnHeight = Mathf.Max(RowHeightFloor, height - topOfBody - BottomPad);
 
             _body!.anchorMin = new Vector2(0, 1);
             _body.anchorMax = new Vector2(0, 1);
             _body.pivot = new Vector2(0, 1);
-            _body.sizeDelta = new Vector2(rowWidth + WindowBody.BarW, columnHeight);
+            _body.sizeDelta = new Vector2(rowWidth + ScrollbarReserve, columnHeight);
             _body.anchoredPosition = new Vector2(rightColumnX, -topOfBody);
 
             for (int i = _body.childCount - 1; i >= 0; i--)

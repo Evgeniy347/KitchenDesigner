@@ -50,11 +50,26 @@ public class LoadProjectWindowDiagramTests
         yield return null;
     }
 
+    // Дата в столбце "Изменён" читается с диска (File.GetLastWriteTimeUtc), а не из
+    // JSON — File.WriteAllText сам метит файл текущим моментом, и без явной
+    // перестановки золотой UI-снапшот несёт время ПРОГОНА и красится на следующий
+    // день. Оба штампа (mtime и, на будущее, ctime) фиксируются одним значением для
+    // всех фикстур этого класса, чтобы дата в кадре не зависела от часов машины.
+    private static readonly System.DateTime FixedModifiedUtc =
+        new System.DateTime(2026, 4, 1, 9, 15, 0, System.DateTimeKind.Utc);
+
     private string MakeProjectFile(string name, string appVersion, string createdAtUtc)
     {
         string path = Path.Combine(Application.temporaryCachePath, name);
         File.WriteAllText(path,
             "{\"version\":1,\"appVersion\":\"" + appVersion + "\",\"createdAtUtc\":\"" + createdAtUtc + "\"}");
+        File.SetLastWriteTimeUtc(path, FixedModifiedUtc);
+        File.SetCreationTimeUtc(path,
+            System.DateTime.TryParse(createdAtUtc, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.AdjustToUniversal
+                | System.Globalization.DateTimeStyles.AssumeUniversal, out var created)
+                ? created
+                : FixedModifiedUtc);
         _tempFiles.Add(path);
         return path;
     }
