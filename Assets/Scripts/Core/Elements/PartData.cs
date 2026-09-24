@@ -12,6 +12,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private Vector3Int _dimensionsMM = new Vector3Int(800, 400, 18);
         [SerializeField] private bool _movable = true;
         [SerializeField] private int _groupId = 0;
+        [SerializeField] private string _levelId = "";
         [SerializeField] private string _materialId = MaterialCatalog.DefaultId;
         [SerializeField] private int _gapLeft;
         [SerializeField] private int _gapRight;
@@ -48,6 +49,12 @@ namespace KitchenDesigner.Core
         {
             get => _groupId;
             set => _groupId = value;
+        }
+
+        public string LevelId
+        {
+            get => _levelId;
+            set => _levelId = value ?? "";
         }
 
         public string MaterialId

@@ -288,6 +288,7 @@ namespace KitchenDesigner.Core
 				(d.edgeManualMask | d.edgeSuppressedMask) == EdgeManual.AllMask;
 
 			d.groupId = element.GroupId;
+			d.levelId = element.LevelId;
             d.materialId = element.MaterialId;
             d.transparent = element.Transparent;
             return d;

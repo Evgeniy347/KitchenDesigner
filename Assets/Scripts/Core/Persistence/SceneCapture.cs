@@ -29,6 +29,7 @@ namespace KitchenDesigner.Core
             data.groups = CaptureGroups();
             data.rooms = new List<RoomData>(ProjectRooms.Items).ToArray();
             data.floorplans = new List<FloorplanScopeData>(ProjectFloorplans.Items).ToArray();
+            data.levels = new List<Level>(LevelRegistry.Items).ToArray();
 
             if (CameraController.Instance != null)
                 data.camera = CameraController.Instance.GetState();

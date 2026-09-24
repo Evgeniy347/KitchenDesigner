@@ -164,6 +164,43 @@ public class LevelMigrationRoundTripTests
         AssertFixtureUntouched(fixtureName, hashBefore);
     }
 
+    /// <summary>
+    /// Ни одна из четырёх фикстур не несёт <c>levels</c> — это старые сохранения, снятые
+    /// до появления этажей. После восстановления они обязаны читаться как РОВНО один
+    /// уровень «1 этаж» на отметке 0, и любая деталь (даже вовсе без <c>levelId</c>)
+    /// обязана разрешаться именно в него — что и есть «миграция бесплатна» из
+    /// docs/todo_evolution.md §3.4.
+    /// </summary>
+    [TestCaseSource(nameof(FixtureNames))]
+    public void AfterMigration_ExactlyOneLevelExists_AndEveryElementResolvesToIt(string fixtureName)
+    {
+        var json = ReadFixture(fixtureName, out var hashBefore);
+        var data = SaveLoadManager.Deserialize(json);
+        Assert.IsNotNull(data, $"{fixtureName}: проект должен читаться из JSON");
+        Assert.IsEmpty(data!.levels, $"{fixtureName}: фикстура обязана быть СТАРЫМ файлом без levels");
+
+        SaveLoadManager.RestoreScene(data);
+
+        Assert.AreEqual(1, LevelRegistry.Items.Count,
+            $"{fixtureName}: старый файл обязан мигрировать ровно в один уровень");
+        var only = LevelRegistry.Items[0];
+        Assert.AreEqual(0, only.floorElevationMm, $"{fixtureName}: единственный уровень обязан быть на отметке 0");
+        Assert.AreEqual(LevelResolution.DefaultLevelName, only.name);
+
+        var effective = new Level[LevelRegistry.Items.Count];
+        for (int i = 0; i < effective.Length; i++) effective[i] = LevelRegistry.Items[i];
+
+        foreach (var ed in data.elements)
+        {
+            if (ed == null) continue;
+            var resolved = LevelResolution.ResolveElementLevel(ed.levelId, effective);
+            Assert.AreSame(only, resolved,
+                $"{fixtureName}/{ed.name}: деталь обязана разрешаться в единственный мигрированный уровень");
+        }
+
+        AssertFixtureUntouched(fixtureName, hashBefore);
+    }
+
     private static void ClearScene()
     {
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
@@ -178,5 +215,6 @@ public class LevelMigrationRoundTripTests
         ProjectInstructions.Reset();
         ProjectRooms.Reset();
         ProjectFloorplans.Reset();
+        LevelRegistry.Reset();
     }
 }

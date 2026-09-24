@@ -81,6 +81,8 @@ namespace KitchenDesigner.Core
             ProjectInstructions.Text = data.projectInstructions ?? "";
             ProjectRooms.Set(data.rooms);
             ProjectFloorplans.Set(data.floorplans);
+            LevelRegistry.Set(LevelResolution.EffectiveLevels(
+                data.levels, KitchenSettings.Instance.ConstructionFloorHeightMm));
         }
 
         private const int MaxJointRepairRoundsUntilNoPartMoves = 8;

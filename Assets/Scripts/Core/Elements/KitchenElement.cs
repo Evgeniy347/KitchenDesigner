@@ -51,6 +51,13 @@ namespace KitchenDesigner.Core
             }
         }
 
+        [NotUndoable("перевод на другой уровень идёт своей командой MoveToLevelCommand")]
+        public string LevelId
+        {
+            get => _data.LevelId;
+            set => _data.LevelId = value ?? "";
+        }
+
         [NotUndoable("декор ставится через SetMaterialCommand — одной записи в поле мало, нужен MaterialManager")]
         public virtual string MaterialId
         {

@@ -308,6 +308,7 @@ namespace KitchenDesigner.Core
             el.Movable = data.movable;
             el.AttachedToName = data.attachedToName ?? "";
             el.GroupId = data.groupId;
+            el.LevelId = data.levelId;
             el.Transparent = data.transparent;
             MaterialManager.ApplyById(el, data.materialId);
 
