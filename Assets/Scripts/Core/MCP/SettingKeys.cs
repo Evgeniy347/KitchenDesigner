@@ -96,6 +96,9 @@ namespace KitchenDesigner.Core.MCP
             SettingKey.Flag("construction_compacted", "constructionCompacted",
                 () => S.ConstructionCompacted, v => S.ConstructionCompacted = v),
 
+            SettingKey.Number("neighbour_levels", "neighbourLevelsMode",
+                () => (int)S.NeighbourLevels, v => S.NeighbourLevels = (NeighbourLevelsMode)(int)v),
+
             SettingKey.Flag("photo_active", "photoActive",
                 () => PhotoMode.Active, PhotoMode.SetActive),
             SettingKey.Number("photo_quality", "photoQuality",

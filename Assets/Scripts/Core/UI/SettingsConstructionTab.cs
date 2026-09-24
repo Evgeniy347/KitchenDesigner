@@ -12,6 +12,7 @@ namespace KitchenDesigner.Core.UI
         public const string MasonryId = "Технология";
         public const string SoilId = "Грунт";
         public const string ConcreteId = "Класс бетона";
+        public const string NeighbourLevelsId = "Соседние этажи";
         public const string FrostDepthUnknown = FrostDepth.UnknownValue;
 
         private readonly SettingsRowFactory _rows;
@@ -59,6 +60,12 @@ namespace KitchenDesigner.Core.UI
             AddMillimetres(page, ref y, "Высота этажа",
                 () => s.ConstructionFloorHeightMm, v => s.ConstructionFloorHeightMm = v);
             Hint("Высота этажа", hint: "settings.construction.floorHeight");
+
+            _rows.AddDropdown(page, ref y, NeighbourLevelsId,
+                new List<string>(NeighbourLevelsModeTitles.All), (int)s.NeighbourLevels,
+                v => { s.NeighbourLevels = (NeighbourLevelsMode)v; },
+                read: () => (int)s.NeighbourLevels);
+            Hint(NeighbourLevelsId, hint: "settings.construction.neighbourLevels");
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddHeader(page, ref y, "Кладка");
