@@ -7,6 +7,7 @@ namespace KitchenDesigner.Core
     {
         public int version = AppConstants.SAVE_FORMAT_VERSION;
         public string appVersion = "";
+        public string createdAtUtc = "";
         public ElementData[] elements = new ElementData[0];
         public GroupData[] groups = new GroupData[0];
         public RoomData[] rooms = new RoomData[0];
