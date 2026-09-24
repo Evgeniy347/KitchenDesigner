@@ -55,6 +55,7 @@ namespace KitchenDesigner.Core
         public float[] position = new float[3];
         public float[] rotation = new float[4];
         public bool movable = true;
+        public string levelId = "";
         public bool isWall = false;
         public string wallKind = "";
         public float[] wallEndShape = System.Array.Empty<float>();

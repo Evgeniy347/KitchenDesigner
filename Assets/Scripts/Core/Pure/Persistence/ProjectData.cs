@@ -11,6 +11,7 @@ namespace KitchenDesigner.Core
         public GroupData[] groups = new GroupData[0];
         public RoomData[] rooms = new RoomData[0];
         public FloorplanScopeData[] floorplans = new FloorplanScopeData[0];
+        public Level[] levels = new Level[0];
         public CameraState camera = new CameraState();
 
         public string handleMode = "Resize";
