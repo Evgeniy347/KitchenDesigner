@@ -190,7 +190,7 @@ public class LoadProjectWindowDiagramTests
         Assert.IsNotNull(versionLabel);
         var tmp = versionLabel!.GetComponent<TMPro.TMP_Text>();
         Assert.AreEqual(UIStyle.HighlightError, tmp.color);
-        Assert.IsTrue(tmp.text.StartsWith("!"), "несовпадение версии помечено не только цветом, но и '!'");
+        Assert.IsTrue(tmp.text.Contains("!"), "несовпадение версии помечено не только цветом, но и '!'");
 
         yield return CaptureAndVerify(PanelW, PanelH, "load_project_window_version_mismatch.png");
     }

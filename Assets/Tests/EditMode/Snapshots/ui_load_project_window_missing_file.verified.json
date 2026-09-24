@@ -1,0 +1,35 @@
+{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Button",
+      "text": "! Не найден: lpw_missing_gone.kdproj",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Загрузить проект",
+      "position": [0, -6]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Button",
+      "text": "lpw_missing_real.kdproj",
+      "position": [0, -54]
+    },
+    {
+      "type": "Button",
+      "text": "Новый проект",
+      "position": [12, -62]
+    },
+    {
+      "type": "Button",
+      "text": "Загрузить",
+      "position": [12, -112]
+    }
+  ]
+}

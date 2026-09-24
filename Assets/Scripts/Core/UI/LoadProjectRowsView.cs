@@ -45,15 +45,18 @@ namespace KitchenDesigner.Core.UI
             rt.anchoredPosition = Vector2.zero;
         }
 
+        private const float RowSidePad = 10f;
+        private const float MetaColGap = 6f;
+        private const float CreatedColFraction = 0.39f;
+        private const float VersionColFraction = 0.22f;
+
         private static void BuildRow(RectTransform content, float rowWidth, float y,
             RecentProjectRow row, Action<string> onOpen)
         {
             var rowRect = UIFactory.CreateRect("Row", content);
-            rowRect.anchorMin = new Vector2(0, 1);
-            rowRect.anchorMax = new Vector2(1, 1);
-            rowRect.pivot = new Vector2(0.5f, 1f);
+            AnchorTopLeftOfRow(rowRect);
             rowRect.anchoredPosition = new Vector2(0, y);
-            rowRect.sizeDelta = new Vector2(0, RowHeight);
+            rowRect.sizeDelta = new Vector2(rowWidth, RowHeight);
 
             var bg = rowRect.gameObject.AddComponent<Image>();
             bg.color = row.FileExists ? RowNormalColor : RowMissingColor;
@@ -69,7 +72,7 @@ namespace KitchenDesigner.Core.UI
             string fileName = System.IO.Path.GetFileName(row.Path);
             string title = row.FileExists ? fileName : ("! Не найден: " + fileName);
             var titleLabel = UIFactory.CreateLabel("Title", rowRect, title, UIStyle.FontBody,
-                new Vector2(10, -4), new Vector2(rowWidth - 20, 22), TextAnchor.UpperLeft);
+                new Vector2(RowSidePad, -4), new Vector2(rowWidth - 2 * RowSidePad, 22), TextAnchor.UpperLeft);
             titleLabel.color = row.FileExists ? UIStyle.Text : UIStyle.HighlightError;
             titleLabel.overflowMode = TextOverflowModes.Ellipsis;
             titleLabel.enableWordWrapping = false;
@@ -77,22 +80,39 @@ namespace KitchenDesigner.Core.UI
 
             if (!row.FileExists) return;
 
-            string meta = "Создан " + row.CreatedLabel + "  ·  Изменён " + row.ModifiedLabel + "  ·  Версия ";
-            var metaLabel = UIFactory.CreateLabel("Meta", rowRect, meta, UIStyle.FontSmall,
-                new Vector2(10, -26), new Vector2(rowWidth - 90, 18), TextAnchor.UpperLeft);
-            metaLabel.color = UIStyle.TextSecondary;
-            metaLabel.overflowMode = TextOverflowModes.Ellipsis;
-            metaLabel.enableWordWrapping = false;
-            AnchorTopLeftOfRow(metaLabel.rectTransform);
+            BuildMetaColumns(rowRect, rowWidth, row);
+        }
 
-            metaLabel.ForceMeshUpdate();
-            float metaWidth = metaLabel.GetPreferredValues(meta, rowWidth - 90, 18).x;
+        private static void BuildMetaColumns(RectTransform rowRect, float rowWidth, RecentProjectRow row)
+        {
+            float available = rowWidth - 2 * RowSidePad - 2 * MetaColGap;
+            float createdW = available * CreatedColFraction;
+            float versionW = available * VersionColFraction;
+            float modifiedW = available - createdW - versionW;
 
-            string versionText = (row.VersionMismatch ? "! " : "") + row.VersionLabel;
-            var versionLabel = UIFactory.CreateLabel("Version", rowRect, versionText, UIStyle.FontSmall,
-                new Vector2(10 + metaWidth, -26), new Vector2(90, 18), TextAnchor.UpperLeft);
-            versionLabel.color = row.VersionMismatch ? UIStyle.HighlightError : UIStyle.TextSecondary;
-            AnchorTopLeftOfRow(versionLabel.rectTransform);
+            var createdLabel = BuildMetaColumn(rowRect, "Created", "Создан " + row.CreatedLabel,
+                RowSidePad, createdW, UIStyle.TextSecondary);
+
+            float versionX = RowSidePad + createdW + MetaColGap;
+            string versionText = "Версия " + (row.VersionMismatch ? "! " : "") + row.VersionLabel;
+            BuildMetaColumn(rowRect, "Version", versionText, versionX, versionW,
+                row.VersionMismatch ? UIStyle.HighlightError : UIStyle.TextSecondary);
+
+            float modifiedX = versionX + versionW + MetaColGap;
+            BuildMetaColumn(rowRect, "Modified", "Изменён " + row.ModifiedLabel,
+                modifiedX, modifiedW, UIStyle.TextSecondary);
+        }
+
+        private static TMP_Text BuildMetaColumn(RectTransform rowRect, string name, string text,
+            float x, float width, Color color)
+        {
+            var label = UIFactory.CreateLabel(name, rowRect, text, UIStyle.FontSmall,
+                new Vector2(x, -26), new Vector2(width, 18), TextAnchor.UpperLeft);
+            label.color = color;
+            label.overflowMode = TextOverflowModes.Ellipsis;
+            label.enableWordWrapping = false;
+            AnchorTopLeftOfRow(label.rectTransform);
+            return label;
         }
 
         private static void AnchorTopLeftOfRow(RectTransform rt)

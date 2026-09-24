@@ -4,7 +4,7 @@ namespace KitchenDesigner.Core.UI
 {
     public class LoadProjectWindowUI : MonoBehaviour, IProjectWindow
     {
-        private const float PanelW = 640f;
+        private const float PanelW = 720f;
         private const float PreferredPanelH = 480f;
         private const float TitleH = 40f;
         private const float TitleTopPad = 6f;

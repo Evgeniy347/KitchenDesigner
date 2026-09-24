@@ -1,0 +1,75 @@
+{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Button",
+      "text": "lpw_many_0.kdproj",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Загрузить проект",
+      "position": [0, -6]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Button",
+      "text": "lpw_many_1.kdproj",
+      "position": [0, -54]
+    },
+    {
+      "type": "Button",
+      "text": "Новый проект",
+      "position": [12, -62]
+    },
+    {
+      "type": "Button",
+      "text": "lpw_many_2.kdproj",
+      "position": [0, -108]
+    },
+    {
+      "type": "Button",
+      "text": "Загрузить",
+      "position": [12, -112]
+    },
+    {
+      "type": "Button",
+      "text": "lpw_many_3.kdproj",
+      "position": [0, -162]
+    },
+    {
+      "type": "Button",
+      "text": "lpw_many_4.kdproj",
+      "position": [0, -216]
+    },
+    {
+      "type": "Button",
+      "text": "lpw_many_5.kdproj",
+      "position": [0, -270]
+    },
+    {
+      "type": "Button",
+      "text": "lpw_many_6.kdproj",
+      "position": [0, -324]
+    },
+    {
+      "type": "Button",
+      "text": "lpw_many_7.kdproj",
+      "position": [0, -378]
+    },
+    {
+      "type": "Button",
+      "text": "lpw_many_8.kdproj",
+      "position": [0, -432]
+    },
+    {
+      "type": "Button",
+      "text": "lpw_many_9.kdproj",
+      "position": [0, -486]
+    }
+  ]
+}
