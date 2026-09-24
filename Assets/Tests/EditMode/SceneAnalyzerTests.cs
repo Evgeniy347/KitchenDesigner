@@ -376,4 +376,52 @@ public class SceneAnalyzerTests
             .ConvertAll(i => i.Code + ": " + i.Message);
         Assert.IsEmpty(about, "опора установлена правильно:\n    " + string.Join("\n    ", about));
     }
+
+    // ── Разбивка Analyze по этапам (§4.2-3) ────────────────────────────
+
+    /// <summary>Сенсора не было вовсе — «73 мс за вызов» ничего не говорило о
+    /// том, ЧТО внутри дорого. TakeStageBreakdown называет каждый из проходов
+    /// Analyze по имени; здесь достаточно двух деталей, чтобы каждый проход
+    /// хоть что-то обошёл и оставил свою запись.</summary>
+    [Test]
+    public void TakeStageBreakdown_NamesEveryPassOfTheLastAnalyze()
+    {
+        MakeBoard("a", new Vector3Int(600, 400, 18), Vector3.zero);
+        MakeBoard("b", new Vector3Int(600, 400, 18), new Vector3(0, 0, 1f));
+
+        SceneAnalyzer.Analyze();
+        string breakdown = SceneAnalyzer.TakeStageBreakdown();
+
+        Assert.IsNotEmpty(breakdown,
+            "Analyze прошёлся по сцене — разбивка обязана назвать хотя бы один проход");
+        StringAssert.Contains("collisions", breakdown);
+        StringAssert.Contains("nearContacts", breakdown);
+        StringAssert.Contains("millimetreGrid", breakdown);
+    }
+
+    /// <summary>Взятая разбивка не переживает следующий вызов — иначе второй
+    /// Analyze молча унаследовал бы времена первого, как это уже чинили для
+    /// SceneScanLog.Take().</summary>
+    [Test]
+    public void TakeStageBreakdown_IsEmptyAfterBeingTaken()
+    {
+        MakeBoard("a", new Vector3Int(600, 400, 18), Vector3.zero);
+
+        SceneAnalyzer.Analyze();
+        SceneAnalyzer.TakeStageBreakdown();
+
+        Assert.AreEqual(string.Empty, SceneAnalyzer.TakeStageBreakdown(),
+            "разбивка обязана быть одноразовой — иначе следующий читатель увидит чужой вызов");
+    }
+
+    /// <summary>Пустая сцена не прогоняет ни один проход — разбивке неоткуда
+    /// взяться, и притворяться, что она есть, нельзя.</summary>
+    [Test]
+    public void TakeStageBreakdown_IsEmpty_WhenTheSceneHasNothingToAnalyze()
+    {
+        SceneAnalyzer.Analyze();
+
+        Assert.AreEqual(string.Empty, SceneAnalyzer.TakeStageBreakdown(),
+            "сцена пуста — Analyze вышел до единого прохода, разбивке не из чего сложиться");
+    }
 }
