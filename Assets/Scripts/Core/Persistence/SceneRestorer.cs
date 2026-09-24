@@ -104,6 +104,10 @@ namespace KitchenDesigner.Core
                     var beforePos = el.transform.position;
                     var beforeRot = el.transform.rotation;
                     seated.RepairJoint(scene);
+
+                    if (Vector3.Distance(el.transform.position, beforePos) <= Tolerance.EpsilonUnits)
+                        el.transform.position = beforePos;
+
                     if (el.transform.position != beforePos || el.transform.rotation != beforeRot)
                         movedAny = true;
                 }
