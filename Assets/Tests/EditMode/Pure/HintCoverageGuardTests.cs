@@ -31,8 +31,6 @@ public class HintCoverageGuardTests
     /// не добавляет новые вокруг них.</summary>
     private static readonly Dictionary<string, string> KnownGaps = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-
-
         ["SettingKeys.photo_quality"] =
             "«Качество» — кнопка-циклер (BuildPresetRow), а не строка _rows.AddXxx; у неё нет "
             + "своего rowKey, на который можно повесить Hint — нужен отдельный механизм, вне "
@@ -41,10 +39,6 @@ public class HintCoverageGuardTests
             "SnapSystem.VerboseLog — отладочный флаг без строки в какой-либо панели настроек; "
             + "решение, заводить ли для него UI вообще, не входит в эту порцию",
     };
-
-    /// <summary>Наполнение идёт порциями по панели, один коммит на порцию
-    /// (docs/todo_evolution.md §1.3) — эта запись ещё не наполнена в ТЕКУЩЕЙ порции.</summary>
-    private const string NextPortion = "наполнение этой панели не входит в текущую порцию — следующая порция";
 
     [Test]
     public void TheScan_FindsControlsInARealFile()
