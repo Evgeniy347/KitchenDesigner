@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -360,6 +361,32 @@ public class ThumbnailRendererTests
 
         UnityEngine.Object.DestroyImmediate(rt);
         yield return null;
+    }
+
+    // Часть 2: сенсор кэша миниатюр не построить, пока цену прогрева не с чем
+    // сравнить — а строки лога до сих пор не было вовсе. Считает РЕНДЕР, не
+    // очередь SidebarUI (та молотит по два тайла в кадр и в PlayMode её не
+    // выманить без полноценного UI), поэтому здесь бьётся именно контракт
+    // прибора: печатает один раз количество и суммарное время, дальше молчит,
+    // пока кто-то явно не сбросит счётчик.
+    [UnityTest]
+    public IEnumerator LogWarmupBatchOnceIdle_PrintsCountAndTime_ThenStaysSilent()
+    {
+        ThumbnailRenderer.ForgetWarmupForTests();
+
+        var rt1 = ThumbnailRenderer.Render(Kinds[0].spawn);
+        var rt2 = ThumbnailRenderer.Render(Kinds[1].spawn);
+        yield return null;
+
+        LogAssert.Expect(LogType.Log, new Regex(@"^\[Perf\] ThumbnailRenderer: 2 плиток за \d+ мс$"));
+        ThumbnailRenderer.LogWarmupBatchOnceIdle();
+
+        ThumbnailRenderer.LogWarmupBatchOnceIdle();
+        LogAssert.NoUnexpectedReceived();
+
+        UnityEngine.Object.DestroyImmediate(rt1);
+        UnityEngine.Object.DestroyImmediate(rt2);
+        ThumbnailRenderer.ForgetWarmupForTests();
     }
 
     [UnityTest]

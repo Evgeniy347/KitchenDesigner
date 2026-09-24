@@ -617,6 +617,9 @@ namespace KitchenDesigner.Core.UI
                 tile.stub.gameObject.SetActive(false);
                 tile.thumbnailReady = true;
             }
+
+            if (budget < ThumbnailsPerFrame && _pendingThumbnails.Count == 0)
+                ThumbnailRenderer.LogWarmupBatchOnceIdle();
         }
 
         private static readonly KeyCode[] NavKeys =

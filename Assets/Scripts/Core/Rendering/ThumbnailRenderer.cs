@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -29,6 +30,10 @@ namespace KitchenDesigner.Core
 
         private const float ContextFreeMinDistanceUnits = 0.01f;
 
+        private static int _warmupCount;
+        private static long _warmupTicks;
+        private static bool _warmupLogged;
+
         public static RenderTexture Render(Func<GameObject> spawn, int size = DefaultSize) =>
             Render(spawn, size, size, out _);
 
@@ -37,6 +42,32 @@ namespace KitchenDesigner.Core
             Render(spawn, size, size, out framing);
 
         public static RenderTexture Render(Func<GameObject> spawn, int widthPx, int heightPx,
+            out ThumbnailFraming framing)
+        {
+            long began = Stopwatch.GetTimestamp();
+            var rt = RenderCore(spawn, widthPx, heightPx, out framing);
+            _warmupCount++;
+            _warmupTicks += Stopwatch.GetTimestamp() - began;
+            return rt;
+        }
+
+        public static void LogWarmupBatchOnceIdle()
+        {
+            if (_warmupLogged || _warmupCount == 0) return;
+            _warmupLogged = true;
+            double ms = _warmupTicks * 1000.0 / Stopwatch.Frequency;
+            UnityEngine.Debug.Log(
+                $"[Perf] ThumbnailRenderer: {_warmupCount} плиток за {ms:F0} мс");
+        }
+
+        internal static void ForgetWarmupForTests()
+        {
+            _warmupCount = 0;
+            _warmupTicks = 0;
+            _warmupLogged = false;
+        }
+
+        private static RenderTexture RenderCore(Func<GameObject> spawn, int widthPx, int heightPx,
             out ThumbnailFraming framing)
         {
             if (spawn == null) throw new ArgumentNullException(nameof(spawn));
