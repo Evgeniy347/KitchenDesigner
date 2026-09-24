@@ -31,8 +31,6 @@ public class HintCoverageGuardTests
     /// не добавляет новые вокруг них.</summary>
     private static readonly Dictionary<string, string> KnownGaps = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["LightFieldsEditor.cs → Bind(Верхний радиус…)"] = NextPortion,
-        ["LightFieldsEditor.cs → Bind(Радиус при 100 %…)"] = NextPortion,
         ["PipeFieldsEditor.cs → ReadOnlyField(Внутренний Ø…)"] = NextPortion,
         ["PipeFieldsEditor.cs → ReadOnlyField(Наружный Ø…)"] = NextPortion,
         ["PipeFieldsEditor.cs → ReadOnlyField(Толщина стенки…)"] = NextPortion,

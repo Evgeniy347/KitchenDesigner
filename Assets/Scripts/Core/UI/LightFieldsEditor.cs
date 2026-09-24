@@ -84,11 +84,11 @@ namespace KitchenDesigner.Core.UI
             Bind("Верхний конус", "%", advanced, l => l.UpConePct, (l, v) => l.UpConePct = v,
                 LampSpec.DEFAULT_UP_CONE_PCT, hint: "element.light.upCone");
             Bind("Верхний радиус", "%", advanced, l => l.UpRangePct, (l, v) => l.UpRangePct = v,
-                LampSpec.DEFAULT_UP_RANGE_PCT);
+                LampSpec.DEFAULT_UP_RANGE_PCT, hint: "element.light.upRange");
             Bind("Радиус при 0 %", "мм", advanced, l => l.RangeMinMM, (l, v) => l.RangeMinMM = v,
                 LampSpec.DEFAULT_RANGE_MIN_MM, hint: "element.light.range");
             Bind("Радиус при 100 %", "мм", advanced, l => l.RangeMaxMM, (l, v) => l.RangeMaxMM = v,
-                LampSpec.DEFAULT_RANGE_MAX_MM);
+                LampSpec.DEFAULT_RANGE_MAX_MM, hint: "element.light.rangeMax");
             Bind("Светоотдача", "лм/Вт", advanced, l => l.EfficacyLmPerW,
                 (l, v) => l.EfficacyLmPerW = v, LampSpec.DEFAULT_EFFICACY_LM_PER_W,
                 hint: "element.light.efficacy");
