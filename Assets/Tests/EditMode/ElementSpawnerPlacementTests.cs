@@ -30,6 +30,11 @@ public class ElementSpawnerPlacementTests
         _gridStepBefore = KitchenSettings.Instance.GridStep;
         KitchenSettings.Instance.GridEnabled = true;
         KitchenSettings.Instance.GridStep = GridStepMm;
+        // Project-level state serialised nowhere here but READ by CenteredOnGroundPoint /
+        // GroundPointAtHeightUnaffectedByGrid: a level left CURRENT by an earlier restore
+        // elsewhere in the run would silently add its elevation to every Y here — same leak
+        // class as SnapshotTests.ResetScene (AGENTS.md), just for a registry, not a snapshot.
+        LevelRegistry.Reset();
 
         _spawner = new ElementSpawner(() => new Vector3(GroundX, 0f, GroundZ), () => null);
     }
@@ -37,6 +42,7 @@ public class ElementSpawnerPlacementTests
     [TearDown]
     public void TearDown()
     {
+        LevelRegistry.Reset();
         if (KitchenSettings.Instance == null) return;
         KitchenSettings.Instance.GridEnabled = _gridEnabledBefore;
         KitchenSettings.Instance.GridStep = _gridStepBefore;

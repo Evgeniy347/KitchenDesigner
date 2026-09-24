@@ -39,6 +39,10 @@ public class PlacementHeightTests
     public void SetUp()
     {
         PartRegistry.Clear();
+        // PlacementController.MoveToCursor now reads LevelRegistry (L4): a level left
+        // current by an earlier test would offset every Y asserted below, same leak
+        // class as SnapshotTests.ResetScene (AGENTS.md).
+        LevelRegistry.Reset();
 
         var camGo = new GameObject("Main Camera");
         camGo.tag = "MainCamera";
@@ -60,6 +64,7 @@ public class PlacementHeightTests
         foreach (var el in PartRegistry.GetAll())
             if (el != null) Object.DestroyImmediate(el.gameObject);
         PartRegistry.Clear();
+        LevelRegistry.Reset();
     }
 
     [Test]

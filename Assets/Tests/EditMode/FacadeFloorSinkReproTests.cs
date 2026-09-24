@@ -43,6 +43,10 @@ public class FacadeFloorSinkReproTests
 
         PartRegistry.Clear();
         CommandStack.Clear();
+        // PlacementController.MoveToCursor now reads LevelRegistry (L4): a level left
+        // current by an earlier test would offset the Y positions asserted below, same
+        // leak class as SnapshotTests.ResetScene (AGENTS.md).
+        LevelRegistry.Reset();
 
         var camGo = new GameObject("Main Camera");
         camGo.tag = "MainCamera";
@@ -69,6 +73,7 @@ public class FacadeFloorSinkReproTests
         PartRegistry.Clear();
         CommandStack.Clear();
         ElementFactory.ClearPools();
+        LevelRegistry.Reset();
     }
 
     // ── На курсоре: PlacementController перебивает Y каждый кадр ──

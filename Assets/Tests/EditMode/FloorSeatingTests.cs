@@ -32,7 +32,15 @@ public class FloorSeatingTests
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     [SetUp]
-    public void SetUp() => PartRegistry.Clear();
+    public void SetUp()
+    {
+        PartRegistry.Clear();
+        // Project-level state, read by FloorSeating's level filter (L4): a level left
+        // over from an earlier test would change which support the footprint search
+        // considers "the same level", same leak class as SnapshotTests.ResetScene
+        // (AGENTS.md).
+        LevelRegistry.Reset();
+    }
 
     [TearDown]
     public void TearDown()
@@ -41,6 +49,7 @@ public class FloorSeatingTests
         _spawned.Clear();
         PartRegistry.Clear();
         ElementFactory.ClearPools();
+        LevelRegistry.Reset();
     }
 
     private KitchenElement Slab(string name, Vector3 centre, Vector3Int dims)
@@ -107,17 +116,25 @@ public class FloorSeatingTests
             + "к нулю» уничтожало бы ванну на подиуме при каждом перетаскивании");
     }
 
+    /// <summary>L4 (план LEVELS) переопределило старое поведение этого теста. Раньше
+    /// сцена без единой опоры означала «сажать не на что», и ванна оставалась висеть
+    /// там, где её отпустили — «посадка не имеет права выдумывать нулевую отметку».
+    /// С уровнями это больше не так: отметка не выдумывается, она уже ИЗВЕСТНА — это
+    /// пол СОБСТВЕННОГО уровня детали (0 по умолчанию, пока не создан второй этаж),
+    /// и посадка обязана на него сесть, даже когда в сцене нет ни единой физической
+    /// плиты пола. Разница с <see cref="ABathtubDroppedInTheAir_LandsOnTheFloor"/> —
+    /// именно в отсутствии плиты: там пол даёт SLAB, здесь его нет вовсе.</summary>
     [Test]
-    public void ABathtubWithNothingUnderIt_IsLeftWhereItWasDropped()
+    public void ABathtubWithNothingUnderIt_SeatsOnItsOwnLevelFloor()
     {
         var tub = Bathtub(new Vector3(0f, 1.2f, 0f));
-        float before = tub.transform.position.y;
 
         tub.SeatOnFloor(Scene(tub));
 
-        Assert.AreEqual(before, tub.transform.position.y, Tolerance.EpsilonUnits,
-            "без пола сажать не на что: посадка не имеет права выдумывать нулевую "
-            + "отметку в сцене, где пола ещё нет");
+        Assert.AreEqual(0f, BottomOf(tub), Tolerance.EpsilonUnits,
+            "без единой опоры в сцене деталь обязана сесть на пол СВОЕГО уровня "
+            + "(по умолчанию 0) — уровень всегда знает свой пол, даже когда "
+            + "физической плиты пола ещё нет на сцене");
     }
 
     [Test]

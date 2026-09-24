@@ -56,8 +56,10 @@ namespace KitchenDesigner.Core
 
             using var _ = PerfMarkers.PlacementMoveToCursor.Auto();
 
+            float levelFloorUnits = LevelRegistry.CurrentFloorElevationMm * AppConstants.MM_TO_UNITS;
+
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            var ground = new Plane(Vector3.up, Vector3.zero);
+            var ground = new Plane(Vector3.up, new Vector3(0f, levelFloorUnits, 0f));
             Vector3 point = ground.Raycast(ray, out float enter)
                 ? ray.GetPoint(enter)
                 : cam.transform.position + cam.transform.forward * 2f;
@@ -65,7 +67,7 @@ namespace KitchenDesigner.Core
             point.y = pending is LightSourceElement || pending is SinkElement
                 || pending is CooktopElement || pending is IKeepsPlacementHeight
                 ? pending.transform.position.y
-                : AppConstants.HalfHeightUnits(pending.DimensionsMM.y)
+                : levelFloorUnits + AppConstants.HalfHeightUnits(pending.DimensionsMM.y)
                     + GappedBox.BottomSkirtUnits(pending.Gaps);
 
             Vector3 pos = GridManager.SnapToGridXZ(point);

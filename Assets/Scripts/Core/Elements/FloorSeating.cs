@@ -13,8 +13,11 @@ namespace KitchenDesigner.Core
             var footprintX = new Span(box.minX, box.maxX);
             var footprintZ = new Span(box.minZ, box.maxZ);
 
+            var level = LevelRegistry.LevelOf(element);
+            float levelFloorY = level.floorElevationMm * AppConstants.MM_TO_UNITS;
+
             float? top = FloorDrop.SupportTopUnder(footprintX, footprintZ, box.minY,
-                SupportsUnder(scene, element));
+                SupportsUnder(scene, element, level), levelFloorY);
             if (!top.HasValue || !FloorDrop.WorthSeating(box.minY, top.Value)) return;
 
             var p = element.transform.position;
@@ -23,12 +26,13 @@ namespace KitchenDesigner.Core
         }
 
         private static List<FloorSupport> SupportsUnder(IReadOnlyList<KitchenElement> scene,
-            KitchenElement element)
+            KitchenElement element, Level level)
         {
             var supports = new List<FloorSupport>();
             foreach (var el in scene)
             {
                 if (el == null || ReferenceEquals(el, element)) continue;
+                if (LevelRegistry.LevelOf(el).id != level.id) continue;
                 var aabb = ElementAabb.Of(el);
                 supports.Add(new FloorSupport(new Span(aabb.minX, aabb.maxX),
                     new Span(aabb.minZ, aabb.maxZ), aabb.maxY));

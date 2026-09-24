@@ -7,8 +7,6 @@ namespace KitchenDesigner.Core
     {
         public const float OverlapMarginUnits = 0.002f;
 
-        public const float WorldFloorY = 0f;
-
         private const float SameLevelEpsilonUnits = 1e-4f;
 
         public static void Seat(ScrewLegElement leg, IReadOnlyList<KitchenElement> scene) =>
@@ -45,12 +43,14 @@ namespace KitchenDesigner.Core
             var centre = leg.transform.position;
             float legBottom = ElementAabb.Of(leg).minY;
             float reach = legBottom + ScrewLegSpec.MAX_THREAD_LENGTH_MM * AppConstants.MM_TO_UNITS;
+            var legLevel = LevelRegistry.LevelOf(leg);
 
             KitchenElement? best = null;
             float bestY = float.MaxValue;
             foreach (var el in scene)
             {
                 if (el == null || ReferenceEquals(el, leg) || !CanHost(el)) continue;
+                if (LevelRegistry.LevelOf(el).id != legLevel.id) continue;
                 var aabb = ElementAabb.Of(el);
                 if (aabb.minY < legBottom + SameLevelEpsilonUnits || aabb.minY > reach) continue;
                 if (!aabb.CoversInXZ(centre, OverlapMarginUnits)) continue;
@@ -65,10 +65,12 @@ namespace KitchenDesigner.Core
             IReadOnlyList<KitchenElement> scene)
         {
             var centre = leg.transform.position;
-            float bestY = WorldFloorY;
+            var legLevel = LevelRegistry.LevelOf(leg);
+            float bestY = legLevel.floorElevationMm * AppConstants.MM_TO_UNITS;
             foreach (var el in scene)
             {
                 if (el == null || ReferenceEquals(el, leg) || ReferenceEquals(el, host)) continue;
+                if (LevelRegistry.LevelOf(el).id != legLevel.id) continue;
                 var aabb = ElementAabb.Of(el);
                 if (aabb.maxY > mountY - SameLevelEpsilonUnits || aabb.maxY <= bestY) continue;
                 if (!aabb.CoversInXZ(centre, OverlapMarginUnits)) continue;

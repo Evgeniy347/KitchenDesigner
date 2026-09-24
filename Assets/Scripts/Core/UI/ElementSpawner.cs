@@ -227,16 +227,19 @@ namespace KitchenDesigner.Core.UI
         internal Vector3 CenteredOnGroundPoint(int heightMM)
         {
             Vector3 pos = _groundPointInFrontOfCamera();
-            pos.y = AppConstants.HalfHeightUnits(heightMM);
+            pos.y = CurrentLevelFloorUnits + AppConstants.HalfHeightUnits(heightMM);
             return GridManager.SnapToGrid(pos);
         }
 
         internal Vector3 GroundPointAtHeightUnaffectedByGrid(float centerYMeters)
         {
             Vector3 pos = GridManager.SnapToGrid(_groundPointInFrontOfCamera());
-            pos.y = centerYMeters;
+            pos.y = CurrentLevelFloorUnits + centerYMeters;
             return pos;
         }
+
+        private static float CurrentLevelFloorUnits =>
+            LevelRegistry.CurrentFloorElevationMm * AppConstants.MM_TO_UNITS;
 
         private void PlaceCenteredOnGround(int heightMM, Func<Vector3, GameObject> create) =>
             BeginPlacement(LiftByBottomSkirt(create(CenteredOnGroundPoint(heightMM))));
@@ -261,6 +264,7 @@ namespace KitchenDesigner.Core.UI
         {
             var element = go.GetComponent<KitchenElement>();
             if (element == null) return;
+            element.LevelId = LevelRegistry.CurrentId;
             var placement = _placement();
             if (placement != null)
                 placement.Begin(element);
@@ -268,6 +272,11 @@ namespace KitchenDesigner.Core.UI
                 CommitImmediate(go);
         }
 
-        private static void CommitImmediate(GameObject go) => ElementCreation.Commit(go);
+        private static void CommitImmediate(GameObject go)
+        {
+            var element = go.GetComponent<KitchenElement>();
+            if (element != null) element.LevelId = LevelRegistry.CurrentId;
+            ElementCreation.Commit(go);
+        }
     }
 }

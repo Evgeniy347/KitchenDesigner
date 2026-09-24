@@ -7,9 +7,9 @@ namespace KitchenDesigner.Core
         public static float ContactUnits => Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
 
         public static float? SupportTopUnder(Span footprintX, Span footprintZ, float bottomY,
-            IReadOnlyList<FloorSupport> supports)
+            IReadOnlyList<FloorSupport> supports, float? levelFloorY = null)
         {
-            if (supports == null) return null;
+            if (supports == null) return levelFloorY;
 
             float highestThatCanCarry = bottomY + ContactUnits;
             float best = float.MinValue;
@@ -22,7 +22,7 @@ namespace KitchenDesigner.Core
                 best = support.TopY;
                 found = true;
             }
-            return found ? best : (float?)null;
+            return found ? best : levelFloorY;
         }
 
         public static bool WorthSeating(float bottomY, float supportTopY) =>

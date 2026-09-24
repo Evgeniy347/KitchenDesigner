@@ -47,6 +47,11 @@ namespace KitchenDesigner.Tests.Geometry
             FloorDrop.SupportTopUnder(Metres(-0.85f, 0.85f), Metres(-0.35f, 0.35f), bottomY,
                 new List<FloorSupport>(supports));
 
+        private static float? TopUnderWithLevelFloor(float bottomY, float levelFloorY,
+            params FloorSupport[] supports) =>
+            FloorDrop.SupportTopUnder(Metres(-0.85f, 0.85f), Metres(-0.35f, 0.35f), bottomY,
+                new List<FloorSupport>(supports), levelFloorY);
+
         [Test]
         public void AnEmptyScene_HasNothingToSeatOn()
         {
@@ -110,6 +115,38 @@ namespace KitchenDesigner.Tests.Geometry
                 "контакт с точностью до Tolerance.ContactMm — это контакт, а не «опора "
                 + "выше меня»: иначе округление позиции к миллиметровой сетке отбирало бы "
                 + "у элемента ту самую поверхность, на которой он стоит");
+        }
+
+        /// <summary>L4 (план LEVELS): второй этаж без единой опоры под собой — обычная
+        /// картина сразу после появления уровня — обязан сажать на СВОЙ пол, а не
+        /// проваливаться в мировой ноль (тот принадлежит только первому уровню) и не
+        /// зависать без посадки вовсе, как раньше делала пустая сцена.</summary>
+        [Test]
+        public void AnEmptyScene_WithALevelFloor_SeatsOnTheLevelFloor_NotOnWorldZero()
+        {
+            Assert.AreEqual(3f, TopUnderWithLevelFloor(3.5f, 3f)!.Value, Tolerance.EpsilonUnits,
+                "без единой опоры второй этаж (пол на 3 м) обязан сажать деталь на 3 м, "
+                + "а не на мировой ноль первого этажа и не оставлять её висеть");
+        }
+
+        [Test]
+        public void ARealSupportUnderTheFootprint_StillWinsOverTheLevelFloor()
+        {
+            var top = TopUnderWithLevelFloor(0.6f, 3f, Slab(0.15f, -1f, 1f, -1f, 1f));
+
+            Assert.AreEqual(0.15f, top!.Value, Tolerance.EpsilonUnits,
+                "пол уровня — только подстраховка на пустом месте: опора под пятном "
+                + "всегда важнее, иначе шкаф проваливался бы сквозь тумбу на пол этажа");
+        }
+
+        [Test]
+        public void ASupportMissingTheFootprint_StillFallsBackToTheLevelFloor()
+        {
+            var top = TopUnderWithLevelFloor(1.5f, 3f, Slab(0.15f, 2f, 3f, -1f, 1f));
+
+            Assert.AreEqual(3f, top!.Value, Tolerance.EpsilonUnits,
+                "плита, не пересекающая пятно, не в счёт — решает пол уровня, как и при "
+                + "полностью пустой сцене");
         }
 
         [Test]

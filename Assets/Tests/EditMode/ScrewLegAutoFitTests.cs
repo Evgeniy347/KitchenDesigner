@@ -16,7 +16,14 @@ public class ScrewLegAutoFitTests
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     [SetUp]
-    public void SetUp() => PartRegistry.Clear();
+    public void SetUp()
+    {
+        PartRegistry.Clear();
+        // Project-level state, read by ScrewLegAutoFit's level filter (L4): a level
+        // left over from an earlier test would shift WorldFloorY away from 0 for every
+        // leg here, same leak class as SnapshotTests.ResetScene (AGENTS.md).
+        LevelRegistry.Reset();
+    }
 
     [TearDown]
     public void TearDown()
@@ -24,6 +31,7 @@ public class ScrewLegAutoFitTests
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         PartRegistry.Clear();
+        LevelRegistry.Reset();
     }
 
     private KitchenElement Board(string name, Vector3 pos, Vector3Int dims)
