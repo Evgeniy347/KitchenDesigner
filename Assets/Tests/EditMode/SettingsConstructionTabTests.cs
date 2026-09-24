@@ -75,6 +75,7 @@ public class SettingsConstructionTabTests
         Assert.IsNotNull(Row("RowRo_" + SettingsConstructionTab.FrostDepthId));
         Assert.IsNotNull(Row("RowDd_" + SettingsConstructionTab.SoilId));
         Assert.IsNotNull(Row("RowFld_Высота этажа"));
+        Assert.IsNotNull(Row("RowDd_" + SettingsConstructionTab.NeighbourLevelsId));
         Assert.IsNotNull(Row("RowDd_" + SettingsConstructionTab.MasonryId));
         Assert.IsNotNull(Row("RowFld_Шов"));
         Assert.IsNotNull(Row("RowFld_Запас"));
@@ -89,8 +90,8 @@ public class SettingsConstructionTabTests
     {
         var badges = Page().GetComponentsInChildren<HintBadge>(true);
 
-        Assert.AreEqual(11, badges.Length,
-            "у каждого контрола вкладки — своя «i»: одиннадцать строк, одиннадцать значков "
+        Assert.AreEqual(12, badges.Length,
+            "у каждого контрола вкладки — своя «i»: двенадцать строк, двенадцать значков "
             + "(docs/UI-GUIDELINES.md §13). Найдено: " + badges.Length);
     }
 

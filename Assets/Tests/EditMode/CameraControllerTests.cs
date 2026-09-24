@@ -61,6 +61,28 @@ public class CameraControllerTests
     }
 
     [Test]
+    public void FollowLevelChange_ShiftsTheTargetY_ByTheElevationDelta_ButLeavesThePhotoTargetAlone()
+    {
+        _controller!.SetState(new CameraState
+        {
+            valid = true,
+            targetX = 1f, targetY = 0.5f, targetZ = 2f,
+            angleX = 10f, angleY = 20f, distance = 4f,
+            photoTargetX = 1f, photoTargetY = 0.5f, photoTargetZ = 2f,
+        });
+
+        _controller!.FollowLevelChange(0, 3000);
+
+        var s = _controller!.GetState();
+        Assert.AreEqual(1f, s.targetX, 0.001f, "X не участвует в смене этажа");
+        Assert.AreEqual(0.5f + 3f, s.targetY, 0.001f,
+            "камера обязана подняться ровно на разницу отметок (3000 мм = 3 м)");
+        Assert.AreEqual(2f, s.targetZ, 0.001f, "Z не участвует в смене этажа");
+        Assert.AreEqual(0.5f, s.photoTargetY, 0.001f,
+            "цель фоторежима — отдельная сохранённая поза; смена этажа обычной камеры её не трогает");
+    }
+
+    [Test]
     public void PhotoDistance_RoundTrips_Independently()
     {
         _controller!.SetState(new CameraState

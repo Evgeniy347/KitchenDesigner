@@ -104,5 +104,6 @@
     "constructionSandMm": 100,
     "constructionGravelMm": 100,
     "constructionCompacted": true,
+    "neighbourLevelsMode": 0,
     "keyBindings": []
 }
