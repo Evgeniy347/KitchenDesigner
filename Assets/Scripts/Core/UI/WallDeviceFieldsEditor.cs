@@ -39,8 +39,10 @@ namespace KitchenDesigner.Core.UI
             var anyDevice = RowVisibility.When(() => Host.Target is IWallDevice);
             var switchOnly = RowVisibility.When(() => Host.Target is ILightSwitch);
 
-            var widthRow = Rows.NumberField(PlateWidthLabel, anyDevice, "мм", PlateWidthNode);
-            var heightRow = Rows.NumberField(PlateHeightLabel, anyDevice, "мм", PlateHeightNode);
+            var widthRow = Rows.NumberField(PlateWidthLabel, anyDevice, "мм", PlateWidthNode,
+                hint: "element.wallDevice.plateWidth");
+            var heightRow = Rows.NumberField(PlateHeightLabel, anyDevice, "мм", PlateHeightNode,
+                hint: "element.wallDevice.plateHeight");
             var protrusionRow = Rows.NumberField(ProtrusionLabel, anyDevice, "мм", ProtrusionNode,
                 hint: "element.wallDevice.protrusion");
 
