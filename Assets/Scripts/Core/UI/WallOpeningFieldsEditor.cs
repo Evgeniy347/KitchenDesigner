@@ -23,7 +23,7 @@ namespace KitchenDesigner.Core.UI
         {
             _tint = Rows.Dropdown("Стекло", new List<string> { "Прозрачное", "Тонированное" },
                 OnTintSelected, RowVisibility.ForExcept(ElementFacet.Window, ElementFacet.Door),
-                "CtxTint");
+                "CtxTint", hint: "element.window.tint");
 
             _sillProtrusion = Rows.NumberField("Подоконник",
                 RowVisibility.ForExcept(ElementFacet.Window, ElementFacet.Door),

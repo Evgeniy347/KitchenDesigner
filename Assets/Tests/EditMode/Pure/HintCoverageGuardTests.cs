@@ -43,7 +43,6 @@ public class HintCoverageGuardTests
         ["PipeFieldsEditor.cs → Rows.NumberField(label…)"] = NextPortion,
         ["PipeFittingFieldsEditor.cs → ReadOnlyField(Диаметр 2…)"] = NextPortion,
         ["PipeFittingFieldsEditor.cs → ReadOnlyField(Диаметр 3…)"] = NextPortion,
-        ["WallOpeningFieldsEditor.cs → Rows.Dropdown(Стекло…)"] = NextPortion,
 
 
         ["SettingKeys.photo_quality"] =
