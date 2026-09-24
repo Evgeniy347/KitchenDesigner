@@ -21,6 +21,8 @@
 #define AppName      "Kitchen Designer"
 #define AppPublisher "Evgeniy347"
 #define AppExe       "KitchenDesigner.exe"
+#define ProjectExt   ".kdproj"
+#define ProjectProgId "KitchenDesigner.Project"
 ; Стабильный AppId (GUID) - НЕ менять между релизами. Без фигурных скобок,
 ; чтобы [Setup] AppId и реестровый ключ в [Code] гарантированно совпадали
 ; (Inno по-разному раскрывает {{/}} в разных местах).
@@ -60,6 +62,9 @@ UninstallDisplayIcon={app}\{#AppExe}
 CloseApplications=yes
 CloseApplicationsFilter=*.exe,*.dll
 RestartApplications=no
+; Регистрирует .kdproj в HKCU\Software\Classes (без UAC - тот же уровень прав,
+; что и сама установка) и просит Inno уведомить проводник после [Registry].
+ChangesAssociations=yes
 
 Compression=lzma2/max
 SolidCompression=yes
@@ -100,6 +105,19 @@ Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; \
   Tasks: desktopicon
+
+[Registry]
+; HKCU, не HKLM - установка сама per-user (PrivilegesRequired=lowest), поэтому и
+; ассоциация регистрируется без прав администратора и снимается тем же деинсталлятором,
+; ничего не трогая у других пользователей той же машины.
+Root: HKCU; Subkey: "Software\Classes\{#ProjectExt}"; ValueType: string; ValueName: ""; \
+  ValueData: "{#ProjectProgId}"; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}"; ValueType: string; ValueName: ""; \
+  ValueData: "Проект Kitchen Designer"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}\DefaultIcon"; ValueType: string; ValueName: ""; \
+  ValueData: "{app}\{#AppExe},0"
+Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}\shell\open\command"; ValueType: string; ValueName: ""; \
+  ValueData: """{app}\{#AppExe}"" ""%1"""
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; \
