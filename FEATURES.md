@@ -53,6 +53,7 @@
 | Element conversion | ElementConverter | ElementConverterTests | Persistence/ |
 | Auto-save | AutoSaveManager | AutoSaveQuitTests | Persistence/ |
 | File dialogs | NativeFileDialog | — | Persistence/ |
+| Этажность (docs/todo_evolution.md §3.4) | Level, LevelResolution (Pure — старый файл без levels мигрирует бесплатно: пустой список → ровно один «1 этаж» на отметке 0, элемент без levelId/с чужим id разрешается в первый уровень, ничего не пишется обратно во вход), LevelPlacement (Pure — «+» над верхним: отметка = верхний.floorElevationMm + его heightMm, id = max+1), ProjectData.levels + ElementData.levelId (формат), KitchenElement.LevelId (NotUndoable — перевод уровня идёт своей командой), LevelRegistry (Infrastructure — эффективный список уровней текущего проекта), SceneRestorer/SceneCapture (строят/пишут LevelRegistry через LevelResolution), MoveToLevelCommand, CreateLevelCommand, DeleteLevelCommand (один шаг отмены каждая; удаление неизвестного id падает при создании команды, а не портит отмену) | LevelResolutionTests, LevelPlacementTests (Pure, быстрый путь), LevelMigrationRoundTripTests (L0 — открытие старого файла не двигает ни одной координаты, на замороженных фикстурах Fixtures/levels-baseline.save.json + validation-scene + pipe-gap-scene + pillar-beside-plinth), LevelCaptureRestoreTests, LevelCommandsTests (Undo байт в байт) | Pure/Persistence/, Infrastructure/, Persistence/, Commands/ |
 
 ## MCP / AI
 
