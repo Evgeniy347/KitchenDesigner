@@ -79,6 +79,7 @@ namespace KitchenDesigner.Core
             ProjectWindows.Apply(data.windows);
 
             ProjectInstructions.Text = data.projectInstructions ?? "";
+            ProjectCreationDate.Value = data.createdAtUtc ?? "";
             ProjectRooms.Set(data.rooms);
             ProjectFloorplans.Set(data.floorplans);
             LevelRegistry.Set(LevelResolution.EffectiveLevels(

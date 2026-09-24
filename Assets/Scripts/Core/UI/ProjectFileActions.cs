@@ -34,7 +34,22 @@ namespace KitchenDesigner.Core.UI
                 suggested, SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return;
             if (SaveLoadManager.SaveToPath(path))
+            {
+                RecentProjects.Remember(path!);
                 ShowSaved(System.IO.Path.GetFileName(path));
+            }
+        }
+
+        public void NewProjectDialog()
+        {
+            string? path = NativeFileDialog.SaveDialog("Новый проект кухни",
+                SuggestedNameForANewFile(), SaveLoadManager.LastDirectory);
+            if (string.IsNullOrEmpty(path)) return;
+            if (SaveLoadManager.CreateEmptyProjectAt(path!))
+            {
+                RecentProjects.Remember(path!);
+                ShowSaved(System.IO.Path.GetFileName(path));
+            }
         }
 
         public void LoadDialog()
@@ -42,19 +57,25 @@ namespace KitchenDesigner.Core.UI
             string? path = NativeFileDialog.OpenDialog("Открыть проект кухни",
                 SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return;
-            NewerVersionPrompt.Confirm(ProjectFileVersion.Of(path!), BuildInfo.Version,
-                () => Open(path!));
+            OpenExisting(path!);
+        }
+
+        public void OpenExisting(string path)
+        {
+            NewerVersionPrompt.Confirm(ProjectFileVersion.Of(path), BuildInfo.Version,
+                () => Open(path));
         }
 
         private static void Open(string path)
         {
             if (!SaveLoadManager.LoadFromPath(path)) return;
+            RecentProjects.Remember(path);
             Toast("Загружено: " + System.IO.Path.GetFileName(path));
             PhotoLookMigrationNotice.ShowIfPending();
         }
 
         private static string SuggestedNameForANewFile() =>
-            DemoMode.Current.IsActive ? DemoModeStrings.SuggestedFileName : "kitchen.json";
+            DemoMode.Current.IsActive ? DemoModeStrings.SuggestedFileName : "kitchen.kdproj";
 
         private static void Toast(string msg) => ToastNotification.ShowIfAvailable(msg);
 

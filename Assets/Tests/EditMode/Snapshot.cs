@@ -93,12 +93,22 @@ namespace KitchenDesigner.Core
         private static readonly System.Text.RegularExpressions.Regex AppVersionLine =
             new System.Text.RegularExpressions.Regex("\"appVersion\": \"[^\"]*\"");
 
+        /// <summary>Дата создания проекта зависит от момента запуска процесса
+        /// (ProjectCreationDate.Value), а эталон — нет. Та же причина маскировки, что и у
+        /// appVersion.</summary>
+        public const string CreatedAtPlaceholder = "<date>";
+
+        private static readonly System.Text.RegularExpressions.Regex CreatedAtLine =
+            new System.Text.RegularExpressions.Regex("\"createdAtUtc\": \"[^\"]*\"");
+
         private static string NormalizeJson(string json)
         {
             if (string.IsNullOrEmpty(json)) return "";
             var text = json.Replace("\r\n", "\n").Replace("\r", "\n").TrimEnd();
-            return AppVersionLine.Replace(text,
+            text = AppVersionLine.Replace(text,
                 "\"appVersion\": \"" + AppVersionPlaceholder + "\"");
+            return CreatedAtLine.Replace(text,
+                "\"createdAtUtc\": \"" + CreatedAtPlaceholder + "\"");
         }
 
         private static string BuildUnifiedDiff(string expected, string actual,

@@ -9,15 +9,17 @@ namespace KitchenDesigner.Core
 {
     public static class NativeFileDialog
     {
-        private const string JsonFilter = "Проект кухни (*.json)\0*.json\0Все файлы (*.*)\0*.*\0\0";
+        private const string KdprojFilter =
+            "Проект кухни (*.kdproj;*.json)\0*.kdproj;*.json\0Все файлы (*.*)\0*.*\0\0";
         private const string CsvFilter = "CSV (*.csv)\0*.csv\0Все файлы (*.*)\0*.*\0\0";
 
         public static string? OpenDialog(string title, string initialDir)
         {
 #if UNITY_EDITOR
-            return UnityEditor.EditorUtility.OpenFilePanel(title, SafeDir(initialDir), "json");
+            return UnityEditor.EditorUtility.OpenFilePanelWithFilters(title, SafeDir(initialDir),
+                new[] { "Проект кухни", "kdproj,json" });
 #elif UNITY_STANDALONE_WIN
-            return WinDialog(title, "", initialDir, false);
+            return WinDialog(title, "", initialDir, false, KdprojFilter, ProjectFileExtension.Current.TrimStart('.'));
 #else
             Debug.LogWarning("[FileDialog] Системный диалог недоступен на этой платформе");
             return null;
@@ -29,11 +31,13 @@ namespace KitchenDesigner.Core
 #if UNITY_EDITOR
             string dir = SafeDir(initialDir);
             string name = string.IsNullOrEmpty(defaultName) ? "project" : Path.GetFileNameWithoutExtension(defaultName);
-            return UnityEditor.EditorUtility.SaveFilePanel(title, dir, name, "json");
+            return UnityEditor.EditorUtility.SaveFilePanel(title, dir, name,
+                ProjectFileExtension.Current.TrimStart('.'));
 #elif UNITY_STANDALONE_WIN
-            string? path = WinDialog(title, defaultName, initialDir, true);
-            if (!string.IsNullOrEmpty(path) && !path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-                path += ".json";
+            string? path = WinDialog(title, defaultName, initialDir, true, KdprojFilter,
+                ProjectFileExtension.Current.TrimStart('.'));
+            if (!string.IsNullOrEmpty(path) && !ProjectFileExtension.IsSupported(path))
+                path += ProjectFileExtension.Current;
             return path;
 #else
             Debug.LogWarning("[FileDialog] Системный диалог недоступен на этой платформе");
@@ -105,7 +109,7 @@ namespace KitchenDesigner.Core
         private const int OFN_NOCHANGEDIR     = 0x00000008;
 
         private static string? WinDialog(string title, string defaultName, string initialDir, bool save,
-            string filter = JsonFilter, string defExt = "json")
+            string filter = KdprojFilter, string defExt = "kdproj")
         {
             try
             {

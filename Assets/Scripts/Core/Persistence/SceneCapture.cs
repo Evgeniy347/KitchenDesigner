@@ -26,6 +26,7 @@ namespace KitchenDesigner.Core
 
             var data = new ProjectData(items);
             data.appVersion = BuildInfo.Version;
+            data.createdAtUtc = ProjectCreationDate.Value;
             data.groups = CaptureGroups();
             data.rooms = new List<RoomData>(ProjectRooms.Items).ToArray();
             data.floorplans = new List<FloorplanScopeData>(ProjectFloorplans.Items).ToArray();

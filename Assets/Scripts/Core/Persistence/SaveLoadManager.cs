@@ -29,6 +29,7 @@ namespace KitchenDesigner.Core
         public static bool SaveToLastPath() => Instance.SaveToLastPath();
         public static bool LoadFromPath(string path) => Instance.LoadFromPath(path);
         public static bool LoadLastSession() => Instance.LoadLastSession();
+        public static bool CreateEmptyProjectAt(string path) => Instance.CreateEmptyProjectAt(path);
 
         public static ProjectData CaptureScene(IEnumerable<KitchenElement> elements) =>
             Instance.CaptureScene(elements);

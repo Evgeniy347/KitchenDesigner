@@ -12,6 +12,7 @@ namespace KitchenDesigner.Core
         bool SaveToLastPath();
         bool LoadFromPath(string path);
         bool LoadLastSession();
+        bool CreateEmptyProjectAt(string path);
         ProjectData CaptureScene(IEnumerable<KitchenElement> elements);
         string Serialize(ProjectData data);
         ProjectData? Deserialize(string json);

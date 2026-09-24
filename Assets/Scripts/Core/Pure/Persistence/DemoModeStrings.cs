@@ -12,6 +12,6 @@ namespace KitchenDesigner.Core
 
         public const string CancelButton = "Отмена";
 
-        public const string SuggestedFileName = "Моя кухня.json";
+        public const string SuggestedFileName = "Моя кухня.kdproj";
     }
 }

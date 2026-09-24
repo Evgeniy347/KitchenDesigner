@@ -85,6 +85,23 @@ namespace KitchenDesigner.Core
 
         public bool LoadProject(string name) => ReplaceSceneWithFile(PathForName(name));
 
+        public bool CreateEmptyProjectAt(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+
+            using var batch = HighlightBatch.Open();
+
+            SceneElements.ClearKeepingBasePlate(SceneElements.All());
+            SceneRestorer.Restore(new ProjectData());
+            ProjectCreationDate.Value = System.DateTime.UtcNow.ToString("o");
+            SceneChangeTracker.SettleDerivedLinks();
+
+            var hl = ElementHighlighter.Current;
+            if (hl is not null) hl.RefreshHighlights();
+
+            return SaveToPath(path);
+        }
+
         public bool LoadLastSession()
         {
             if (HasLastPath && File.Exists(LastPath))
@@ -110,6 +127,8 @@ namespace KitchenDesigner.Core
 
             SceneElements.ClearKeepingBasePlate(SceneElements.All());
             SceneRestorer.Restore(data);
+            if (string.IsNullOrEmpty(ProjectCreationDate.Value))
+                ProjectCreationDate.Value = ProjectFileCreatedAt.FallbackFromFileSystemUtc(path);
             SceneChangeTracker.SettleDerivedLinks();
 
             var hl = ElementHighlighter.Current;

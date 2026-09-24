@@ -23,7 +23,10 @@ namespace KitchenDesigner.Core
         internal static bool OpenDemoOrLastSession(ISaveLoadManager saveLoad)
         {
             bool firstRunRecorded = FirstRunMarker.Recorded;
-            FirstRunMarker.Record(Environment.GetCommandLineArgs());
+            var args = Environment.GetCommandLineArgs();
+            FirstRunMarker.Record(args);
+
+            if (TryOpenFromCommandLine(saveLoad, args)) return true;
 
             string demo = DemoPath;
             bool wanted = DemoMode.ShouldOpenDemo(
@@ -31,6 +34,13 @@ namespace KitchenDesigner.Core
 
             if (wanted && OpenDemo(saveLoad, demo)) return true;
             return saveLoad.LoadLastSession();
+        }
+
+        internal static bool TryOpenFromCommandLine(ISaveLoadManager saveLoad, string[] args)
+        {
+            string? path = CommandLineProjectPath.Parse(args);
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return false;
+            return saveLoad.LoadFromPath(path!);
         }
 
         private static bool OpenDemo(ISaveLoadManager saveLoad, string demoPath)
