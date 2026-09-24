@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 /// <summary>Правила замыкания и пересечений трассы.
 ///

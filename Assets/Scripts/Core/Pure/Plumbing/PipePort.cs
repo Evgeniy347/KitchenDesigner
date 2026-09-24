@@ -1,3 +1,5 @@
+using KitchenDesigner.Core.Ports;
+
 namespace KitchenDesigner.Core.Plumbing
 {
     public readonly struct PipePort
@@ -23,6 +25,6 @@ namespace KitchenDesigner.Core.Plumbing
         public string? DeclaredSizeId =>
             PipeNodePorts.DeclaresOwnSize(OwnerKind) ? PipeSpec.NormalizeSize(SizeId) : null;
 
-        internal Ports.Port AsPort() => new Ports.Port(ElementId, PortIndex, PositionMm, OutwardAxis, SizeId);
+        internal Port AsPort() => new Port(ElementId, PortIndex, PositionMm, OutwardAxis, SizeId);
     }
 }

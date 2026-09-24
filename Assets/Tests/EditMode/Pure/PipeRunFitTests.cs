@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 /// <summary>Труба Truba_2 и отвод Truba_pipe_elbow из проекта пользователя
 /// (docs/example.save.json, сам файл тест не читает — числа сняты с него и заморожены).

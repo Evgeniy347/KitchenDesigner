@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 /// <summary>Выводимые диаметры фитингов.
 ///

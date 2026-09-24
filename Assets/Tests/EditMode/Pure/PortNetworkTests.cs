@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.Ports;
 
 /// <summary>Generic-алгоритм сети портов: кто с кем сошёлся и какие концы остались

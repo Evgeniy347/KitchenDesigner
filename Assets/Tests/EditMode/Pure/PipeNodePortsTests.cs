@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 /// <summary>Сколько портов у элемента трассы и кто из них объявляет свой диаметр.
 ///

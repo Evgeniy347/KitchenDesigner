@@ -1,4 +1,4 @@
-namespace KitchenDesigner.Core.Plumbing
+namespace KitchenDesigner.Core.Ports
 {
     public readonly struct PointMm
     {

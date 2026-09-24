@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Ports;
 
 namespace KitchenDesigner.Core.Plumbing
 {

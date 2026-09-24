@@ -6,6 +6,7 @@ using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Analysis;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 /// <summary>Сенсор задачи A/B: печатает ФАКТИЧЕСКИЙ зазор устье-в-устье между трубой
 /// и обоими отводами на реальной сцене пользователя (замороженная копия

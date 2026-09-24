@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 /// <summary>Что происходит со связями, когда один вид узла трассы меняют на другой.
 ///

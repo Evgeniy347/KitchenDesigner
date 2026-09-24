@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using KitchenDesigner.Core;
 using UnityEngine;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 using NUnit.Framework;
 
 /// <summary>Геометрия фитинга — целиком арифметика от условного прохода, и она

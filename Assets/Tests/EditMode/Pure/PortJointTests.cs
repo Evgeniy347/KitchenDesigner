@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using KitchenDesigner.Core;
-using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.Ports;
 
 /// <summary>Когда два порта generic-слоя считаются соединёнными — геометрия контакта БЕЗ

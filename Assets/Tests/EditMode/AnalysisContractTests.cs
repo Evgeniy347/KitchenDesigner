@@ -6,6 +6,7 @@ using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Analysis;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 using KitchenDesigner.Core.Construction;
 
 /// <summary>Контракт каталога проблем: набор кодов, уровень каждого кода и

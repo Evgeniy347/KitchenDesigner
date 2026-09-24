@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 using NUnit.Framework;
 
 /// <summary>Схема концов фитинга обязана иметь СТОЛЬКО позиций, сколько у него портов, и

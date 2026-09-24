@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 /// <summary>Правило посадки новой детали на конец трубы, когда рядом есть ещё один
 /// свободный порт (задача C): обязательный стык — с трубой, всё остальное — бонус.

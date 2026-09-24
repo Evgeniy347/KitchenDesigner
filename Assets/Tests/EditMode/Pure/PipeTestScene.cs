@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 /// <summary>Сборщик трассы для тестов ядра прокладки труб.
 ///

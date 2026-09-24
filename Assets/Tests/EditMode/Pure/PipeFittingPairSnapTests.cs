@@ -7,6 +7,7 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 using KitchenDesigner.Tests.Geometry;
 
 /// <summary>Замер стыковки ФИТИНГ ↔ ФИТИНГ: отдельно «прилипло по коробкам» и

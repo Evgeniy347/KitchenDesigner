@@ -10,7 +10,7 @@ namespace KitchenDesigner.Core.Ports
         {
             if (string.Equals(a.ElementId, b.ElementId, StringComparison.Ordinal)) return false;
             if (a.PositionMm.DistanceMmTo(b.PositionMm) > JoinToleranceMm) return false;
-            return Plumbing.PipeAxis.AreOpposite(a.OutwardAxis, b.OutwardAxis);
+            return PipeAxis.AreOpposite(a.OutwardAxis, b.OutwardAxis);
         }
     }
 }

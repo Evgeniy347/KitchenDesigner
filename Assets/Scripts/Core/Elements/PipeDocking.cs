@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using KitchenDesigner.Core.Analysis;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 namespace KitchenDesigner.Core
 {

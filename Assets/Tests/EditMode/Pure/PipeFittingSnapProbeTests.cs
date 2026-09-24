@@ -4,6 +4,7 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 /// <summary>Что происходит, когда фитинг подносят к торцу трубы.
 ///

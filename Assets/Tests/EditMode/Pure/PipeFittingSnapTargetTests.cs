@@ -3,6 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 /// <summary>ТРЕБОВАНИЕ «поднёс — соединилось», записанное раньше кода и теперь
 /// закрытое: <c>[Ignore]</c> снят вместе с посадкой по устьям (<c>SnapPortSeat</c>).

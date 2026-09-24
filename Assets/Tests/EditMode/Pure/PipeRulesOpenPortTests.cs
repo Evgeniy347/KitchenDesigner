@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using KitchenDesigner.Core.Plumbing;
+using KitchenDesigner.Core.Ports;
 
 /// <summary>PIP-01 обобщено с «открытого конца трубы» на «несоединённый порт любого узла
 /// трассы» — незакрытый порт подачи, обратки, заглушки, отвода, муфты или тройника это та

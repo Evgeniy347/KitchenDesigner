@@ -1,3 +1,5 @@
+using KitchenDesigner.Core.Ports;
+
 namespace KitchenDesigner.Core.Plumbing
 {
     public readonly struct BoxMm
