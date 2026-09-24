@@ -32,7 +32,6 @@ namespace KitchenDesigner.Core
         private static void NoteTheListWasSharedWithoutAName()
         {
             SceneScanLog.NoteShare();
-            SceneScanCounter.NoteShare();
         }
 
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
@@ -40,9 +39,7 @@ namespace KitchenDesigner.Core
         [System.Diagnostics.Conditional("KD_PERF")]
         private static void NoteTheScanAndWhoAskedForIt(string? scannedBy, string? scannedIn)
         {
-            string where = SceneScanLog.Where(scannedBy, scannedIn);
-            SceneScanLog.NoteWhere(where);
-            SceneScanCounter.Note(where);
+            SceneScanLog.NoteWhere(SceneScanLog.Where(scannedBy, scannedIn));
         }
 
         public void Register(KitchenElement element)

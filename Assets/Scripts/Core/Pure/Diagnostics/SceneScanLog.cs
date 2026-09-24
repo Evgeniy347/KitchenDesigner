@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace KitchenDesigner.Core
 {
@@ -8,53 +9,47 @@ namespace KitchenDesigner.Core
     {
         public const int MostCallersRemembered = 16;
 
-        private readonly struct Scan
-        {
-            public readonly string Where;
-            public readonly int Times;
+        internal const int MostPositionsRemembered = 64;
 
-            public Scan(string where, int times)
-            {
-                Where = where;
-                Times = times;
-            }
-
-            public Scan OneMore() => new Scan(Where, Times + 1);
-        }
-
-        [ThreadStatic] private static List<Scan>? _scans;
-
-        [ThreadStatic] private static int _callersBeyondTheLimit;
+        [ThreadStatic] private static NamedTally? _frame;
 
         [ThreadStatic] private static int _timesNoted;
 
         [ThreadStatic] private static int _sharesNoted;
 
+        private static long _scans;
+
+        private static long _shares;
+
+        private static readonly string[] _recent = new string[MostPositionsRemembered];
+
         public static int TimesNoted => _timesNoted;
 
         public static int SharesNoted => _sharesNoted;
 
-        public static void NoteShare() => _sharesNoted++;
+        internal static long Position => Interlocked.Read(ref _scans);
+
+        internal static long SharesPosition => Interlocked.Read(ref _shares);
+
+        public static void NoteShare()
+        {
+            _sharesNoted++;
+            NoteSharePosition();
+        }
+
+        internal static void NoteSharePosition() => Interlocked.Increment(ref _shares);
 
         public static void NoteWhere(string where)
         {
             _timesNoted++;
-            var scans = _scans ??= new List<Scan>(MostCallersRemembered);
+            (_frame ??= new NamedTally(MostCallersRemembered)).Add(where, 0);
+            NotePosition(where);
+        }
 
-            for (int i = 0; i < scans.Count; i++)
-            {
-                if (!string.Equals(scans[i].Where, where, System.StringComparison.Ordinal))
-                    continue;
-                scans[i] = scans[i].OneMore();
-                return;
-            }
-
-            if (scans.Count >= MostCallersRemembered)
-            {
-                _callersBeyondTheLimit++;
-                return;
-            }
-            scans.Add(new Scan(where, 1));
+        internal static void NotePosition(string where)
+        {
+            long taken = Interlocked.Increment(ref _scans);
+            _recent[(taken - 1) % MostPositionsRemembered] = where;
         }
 
         public static void Note(string? member, string? file) => NoteWhere(Where(member, file));
@@ -64,26 +59,17 @@ namespace KitchenDesigner.Core
 
         public static string Take()
         {
-            var scans = _scans;
-            if ((scans == null || scans.Count == 0) && _callersBeyondTheLimit == 0
-                && _sharesNoted == 0)
+            var frame = _frame;
+            if ((frame == null || frame.IsEmpty) && _sharesNoted == 0)
             {
                 Forget();
                 return string.Empty;
             }
 
             var text = new StringBuilder();
-            if (scans != null)
-            {
-                for (int i = 0; i < scans.Count; i++)
-                {
-                    if (i > 0) text.Append(", ");
-                    text.Append(scans[i].Where);
-                    if (scans[i].Times > 1) text.Append(" ×").Append(scans[i].Times);
-                }
-            }
-            if (_callersBeyondTheLimit > 0)
-                text.Append(", и ещё ").Append(_callersBeyondTheLimit).Append(" сверх предела");
+            if (frame != null)
+                text.Append(frame.Format((name, _, times) =>
+                    times > 1 ? name + " ×" + times : name));
 
             if (_sharesNoted > 0)
             {
@@ -98,10 +84,37 @@ namespace KitchenDesigner.Core
 
         public static void Forget()
         {
-            _scans?.Clear();
-            _callersBeyondTheLimit = 0;
+            _frame?.Clear();
             _timesNoted = 0;
             _sharesNoted = 0;
+        }
+
+        internal static string SincePosition(long mark)
+        {
+            long now = Position;
+            if (now <= mark) return string.Empty;
+
+            long from = now - mark > MostPositionsRemembered ? now - MostPositionsRemembered : mark;
+            var names = new List<string>();
+            var times = new List<int>();
+            for (long taken = from + 1; taken <= now; taken++)
+            {
+                string where = _recent[(taken - 1) % MostPositionsRemembered] ?? "?";
+                int at = names.IndexOf(where);
+                if (at >= 0) times[at]++;
+                else { names.Add(where); times.Add(1); }
+            }
+
+            var text = new StringBuilder();
+            if (from > mark)
+                text.Append("старше предела: ").Append(from - mark).Append(", ");
+            for (int i = 0; i < names.Count; i++)
+            {
+                if (i > 0) text.Append(", ");
+                text.Append(names[i]);
+                if (times[i] > 1) text.Append('×').Append(times[i]);
+            }
+            return text.ToString();
         }
 
         private static string TypeNameOf(string? file)
