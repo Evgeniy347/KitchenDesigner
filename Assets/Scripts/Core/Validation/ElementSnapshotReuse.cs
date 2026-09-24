@@ -22,12 +22,13 @@ namespace KitchenDesigner.Core
             private readonly bool _wallLowered;
             private readonly float _wallFullScaleY;
             private readonly Vector3 _wallFullPosition;
+            private readonly int _extraShapeSignature;
 
             private Stamp(Vector3 position, Quaternion rotation, Vector3 scale,
                 Vector3 restPosition, Quaternion restRotation, Vector3Int dimensions,
                 BoxGaps gaps, string? name, int groupId, bool poseFollowsTransform,
                 bool isFloor, bool hasWall, bool wallLowered, float wallFullScaleY,
-                Vector3 wallFullPosition)
+                Vector3 wallFullPosition, int extraShapeSignature)
             {
                 _isFloor = isFloor;
                 _hasWall = hasWall;
@@ -44,9 +45,11 @@ namespace KitchenDesigner.Core
                 _gaps = gaps;
                 _name = name;
                 _groupId = groupId;
+                _extraShapeSignature = extraShapeSignature;
             }
 
-            public static Stamp Of(KitchenElement element, Wall? wall, bool isFloor)
+            public static Stamp Of(KitchenElement element, Wall? wall, bool isFloor,
+                int extraShapeSignature = 0)
             {
                 var pose = element.transform;
                 return new Stamp(pose.position, pose.rotation, pose.localScale,
@@ -55,7 +58,8 @@ namespace KitchenDesigner.Core
                     element.PoseFollowsTransform, isFloor, wall != null,
                     wall != null && wall.IsLowered,
                     wall != null ? wall.FullScaleY : 0f,
-                    wall != null ? wall.FullPosition : Vector3.zero);
+                    wall != null ? wall.FullPosition : Vector3.zero,
+                    extraShapeSignature);
             }
 
             public bool Matches(in Stamp other) =>
@@ -73,7 +77,8 @@ namespace KitchenDesigner.Core
                 && _hasWall == other._hasWall
                 && _wallLowered == other._wallLowered
                 && _wallFullScaleY.Equals(other._wallFullScaleY)
-                && SamePoint(_wallFullPosition, other._wallFullPosition);
+                && SamePoint(_wallFullPosition, other._wallFullPosition)
+                && _extraShapeSignature == other._extraShapeSignature;
 
             private static bool SamePoint(Vector3 a, Vector3 b) =>
                 a.x.Equals(b.x) && a.y.Equals(b.y) && a.z.Equals(b.z);
@@ -92,6 +97,7 @@ namespace KitchenDesigner.Core
             public Stamp GeometryStamp;
             public GrooveSpec[] Grooves = System.Array.Empty<GrooveSpec>();
             public ElementGeometry Geometry;
+            public ElementGeometry SnapGeometry;
             public Vector3[] Vertices = System.Array.Empty<Vector3>();
             public int Touched;
         }
@@ -104,13 +110,14 @@ namespace KitchenDesigner.Core
         public static void BeginPass() => _pass++;
 
         public static bool TryReuseBox(KitchenElement element, Wall? wall, bool isFloor,
-            out ElementGeometry geometry, out Vector3[] vertices)
+            int extraShapeSignature, out ElementGeometry geometry, out Vector3[] vertices)
         {
             geometry = default;
             vertices = System.Array.Empty<Vector3>();
             if (element == null || FaceCache.Enabled) return false;
             if (!_entries.TryGetValue(element, out var entry)) return false;
-            if (!Stamp.Of(element, wall, isFloor).Matches(entry.Stamp)) return false;
+            if (!Stamp.Of(element, wall, isFloor, extraShapeSignature).Matches(entry.Stamp))
+                return false;
             if (!SameGrooves(entry.Grooves, element.Grooves)) return false;
 
             entry.Touched = _pass;
@@ -127,7 +134,7 @@ namespace KitchenDesigner.Core
             if (!GeometryStampOf(element).Matches(entry.GeometryStamp)) return false;
             if (!SameGrooves(entry.Grooves, element.Grooves)) return false;
 
-            geometry = entry.Geometry;
+            geometry = entry.SnapGeometry;
             return !geometry.IsEmpty;
         }
 
@@ -135,16 +142,18 @@ namespace KitchenDesigner.Core
             Stamp.Of(element, null, false);
 
         public static void Keep(KitchenElement element, Wall? wall, bool isFloor,
-            in ElementGeometry geometry, Vector3[] vertices)
+            int extraShapeSignature, in ElementGeometry geometry, in ElementGeometry snapGeometry,
+            Vector3[] vertices)
         {
             if (element == null || FaceCache.Enabled) return;
             if (!_entries.TryGetValue(element, out var entry))
                 _entries[element] = entry = new Entry();
 
-            entry.Stamp = Stamp.Of(element, wall, isFloor);
+            entry.Stamp = Stamp.Of(element, wall, isFloor, extraShapeSignature);
             entry.GeometryStamp = GeometryStampOf(element);
             entry.Grooves = CopyOf(element.Grooves);
             entry.Geometry = geometry;
+            entry.SnapGeometry = snapGeometry;
             entry.Vertices = vertices;
             entry.Touched = _pass;
         }

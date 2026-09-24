@@ -79,8 +79,9 @@ namespace KitchenDesigner.Core
             {
                 var e = elements[i];
                 var probe = _probes[i];
+                int extraShapeSignature = ExtraShapeSignatureOf(e);
                 if (probe.Reusable && ElementSnapshotReuse.TryReuseBox(e, probe.Wall, probe.IsFloor,
-                    out var keptBody, out var keptVertices))
+                    extraShapeSignature, out var keptBody, out var keptVertices))
                 {
                     into.Add(Assemble(e, keptBody, keptVertices, probe.Wall, probe.IsFloor,
                         wallIndexByName, partIndexByName));
@@ -92,9 +93,11 @@ namespace KitchenDesigner.Core
                 GeometryBuildsInLastPass++;
 #endif
                 var body = MainBody(e);
+                var snapGeometry = e is ScrewLegElement ? e.ToGeometry() : body;
                 var vertices = e.GetVertices();
                 if (probe.Reusable)
-                    ElementSnapshotReuse.Keep(e, probe.Wall, probe.IsFloor, body, vertices);
+                    ElementSnapshotReuse.Keep(e, probe.Wall, probe.IsFloor, extraShapeSignature,
+                        body, snapGeometry, vertices);
                 into.Add(Assemble(e, body, vertices, probe.Wall, probe.IsFloor,
                     wallIndexByName, partIndexByName));
             }
@@ -115,6 +118,7 @@ namespace KitchenDesigner.Core
             typeof(SocketElement), typeof(LightSwitchElement), typeof(RadialShelfElement),
             typeof(SinkElement), typeof(OvenElement), typeof(DishwasherElement),
             typeof(LaundryMachineElement), typeof(CooktopElement), typeof(WallOpeningElement),
+            typeof(ScrewLegElement),
         };
 
         private static readonly Dictionary<System.Type, bool> _reusableByType =
@@ -133,9 +137,10 @@ namespace KitchenDesigner.Core
         }
 
         private static bool TheBoxIsTheElementsOwnBusiness(System.Type type) =>
-            !typeof(ScrewLegElement).IsAssignableFrom(type)
-            && !typeof(ISnapPorts).IsAssignableFrom(type)
-            && !typeof(IMountsOnTarget).IsAssignableFrom(type);
+            !typeof(ISnapPorts).IsAssignableFrom(type);
+
+        private static int ExtraShapeSignatureOf(KitchenElement e) =>
+            e is ScrewLegElement leg ? leg.BaseHeightMM * 100 + leg.ThreadDiameterMM : 0;
 
         private static string? PairedNameOf(KitchenElement e) =>
             (e as DrawerElement)?.PairedDrawerName ?? (e as ScrewLegElement)?.HostPartName;

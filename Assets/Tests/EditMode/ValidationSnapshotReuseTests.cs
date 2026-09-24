@@ -435,9 +435,6 @@ public class ValidationSnapshotReuseTests : ElementTestBase
         ("PillarElement",
             "строит коробку сам: переопределяет GetVertices/GetFaces, а признак описывает "
             + "коробку базового класса — число граней и радиус в него не входят"),
-        ("ScrewLegElement",
-            "её главное тело — BaseBody, а его длина тянется до ПОЛА через хозяина; хозяин "
-            + "в признак не входит, и опора с новым хозяином осталась бы прежней длины"),
         ("PipeElement", "несёт устья (ISnapPorts): они едут в ElementGeometry и их читает снэп"),
         ("PipeElbowElement", "устья"),
         ("PipeCouplingElement", "устья"),
@@ -571,6 +568,64 @@ public class ValidationSnapshotReuseTests : ElementTestBase
         Assert.AreEqual(2, into[0].AttachedWallIndex,
             "индекс стены обязан идти за списком поверх кэша. Прежний индекс здесь — это "
             + "проём, который меряется высотой ЧУЖОЙ стены");
+    }
+
+    /// <summary>§4.2-4: ScrewLegElement перешла в кэш — раньше была в
+    /// <c>OutOfTheCacheOnPurpose</c> (боялись хозяина). Здесь она неподвижна:
+    /// коробка обязана прийти из кэша, как у любого другого доказанного типа.</summary>
+    [Test]
+    public void AScrewLeg_ReusesItsBox_WhenNothingAboutItChanged()
+    {
+        var go = ElementFactory.CreateScrewLeg("Опора_кэш", Vector3.zero);
+        _spawned.Add(go);
+        var leg = go.GetComponent<ScrewLegElement>();
+        var scene = new List<KitchenElement> { leg };
+        var into = new List<ValidationElement>();
+
+        ValidationSnapshot.Build(scene, into);
+        ValidationSnapshot.TakeGeometryBuilds();
+        ValidationSnapshot.Build(scene, into);
+
+        Assert.AreEqual(0, ValidationSnapshot.TakeGeometryBuilds(),
+            "опора неподвижна — коробка обязана прийти из кэша");
+        AssertTheCacheAgreesWithAColdBuild(scene, "неподвижная опора");
+    }
+
+    /// <summary>Ключевой сенсор перехода в кэш. У опоры коробка — <c>BaseBody</c>,
+    /// чьё смещение по оси зависит от <c>ThreadLengthMM</c> отдельно, а не от
+    /// суммы <c>BaseHeightMM + ThreadLengthMM</c> — а именно эту сумму, и только
+    /// её, несёт <c>DimensionsMM</c> в общем признаке кэша. Здесь база растёт на
+    /// 5 мм, а резьба падает на 5 мм: сумма (значит и <c>DimensionsMM.y</c>)
+    /// остаётся той же, а <c>BaseBody</c> — нет. Признак, построенный только на
+    /// общих полях, прочитал бы «деталь не менялась» и отдал бы вчерашнюю
+    /// коробку молча.</summary>
+    [Test]
+    public void AScrewLegWithTheSameOverallHeight_ButADifferentBaseThreadSplit_StillRebuilds()
+    {
+        var go = ElementFactory.CreateScrewLeg("Опора_сплит", Vector3.zero);
+        _spawned.Add(go);
+        var leg = go.GetComponent<ScrewLegElement>();
+        var scene = new List<KitchenElement> { leg };
+
+        AssertTheCacheAgreesWithAColdBuild(scene, "исходная разбивка базы/резьбы");
+
+        var into = new List<ValidationElement>();
+        ValidationSnapshot.Build(scene, into);
+        ValidationSnapshot.TakeGeometryBuilds();
+
+        int heightBefore = leg.DimensionsMM.y;
+        leg.BaseHeightMM += 5;
+        leg.ThreadLengthMM -= 5;
+        Assert.AreEqual(heightBefore, leg.DimensionsMM.y,
+            "предпосылка стенда: общая высота (сумма) обязана остаться прежней — иначе "
+            + "тест проверяет не тот случай, а обычную смену размера");
+
+        ValidationSnapshot.Build(scene, into);
+        Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
+            "DimensionsMM (сумма) не сдвинулся, а BaseBody — сдвинулся: признак кэша "
+            + "обязан ловить именно РАЗБИВКУ базы/резьбы, а не только их сумму");
+
+        AssertTheCacheAgreesWithAColdBuild(scene, "после смены разбивки при той же сумме");
     }
 
     /// <param name="rebuilds">Сколько пересборок ГЕОМЕТРИИ обязано стоить это
