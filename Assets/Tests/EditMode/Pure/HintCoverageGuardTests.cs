@@ -31,10 +31,6 @@ public class HintCoverageGuardTests
     /// не добавляет новые вокруг них.</summary>
     private static readonly Dictionary<string, string> KnownGaps = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["BathMixerFieldsEditor.cs → Rows.NumberField(BodyDiameterLabel…)"] = NextPortion,
-        ["BathMixerFieldsEditor.cs → Rows.NumberField(BodyLengthLabel…)"] = NextPortion,
-        ["BathMixerFieldsEditor.cs → Rows.NumberField(EscutcheonReachLabel…)"] = NextPortion,
-        ["BathMixerFieldsEditor.cs → Rows.NumberField(OutletDiameterLabel…)"] = NextPortion,
         ["BathtubFieldsEditor.cs → Rows.NumberField(BowlFilletLabel…)"] = NextPortion,
         ["BathtubFieldsEditor.cs → Rows.NumberField(BowlRadiusLabel…)"] = NextPortion,
         ["BedFieldsEditor.cs → Rows.Dropdown(HeadboardLabel…)"] = NextPortion,

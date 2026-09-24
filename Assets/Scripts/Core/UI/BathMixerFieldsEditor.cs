@@ -29,15 +29,15 @@ namespace KitchenDesigner.Core.UI
             var centresRow = Rows.NumberField(CentresLabel, visibility, "мм", CentresNode,
                 hint: "element.bathMixer.centres");
             var bodyLengthRow = Rows.NumberField(BodyLengthLabel, visibility, "мм",
-                BodyLengthNode);
+                BodyLengthNode, hint: "element.bathMixer.bodyLength");
             var bodyDiameterRow = Rows.NumberField(BodyDiameterLabel, visibility, "мм",
-                BodyDiameterNode);
+                BodyDiameterNode, hint: "element.bathMixer.bodyDiameter");
             var reachRow = Rows.NumberField(EscutcheonReachLabel, visibility, "мм",
-                EscutcheonReachNode);
+                EscutcheonReachNode, hint: "element.bathMixer.escutcheonReach");
             var spoutRow = Rows.NumberField(SpoutLengthLabel, visibility, "мм", SpoutLengthNode,
                 hint: "element.bathMixer.spout");
             var outletRow = Rows.NumberField(OutletDiameterLabel, visibility, "мм",
-                OutletDiameterNode);
+                OutletDiameterNode, hint: "element.bathMixer.outletDiameter");
 
             Bind<BathMixerElement>(bodyDiameterRow, mixer => mixer.BodyDiameterMM,
                 (mixer, value) => mixer.BodyDiameterMM = value,
