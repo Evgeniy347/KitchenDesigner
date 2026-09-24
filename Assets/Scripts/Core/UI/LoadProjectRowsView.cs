@@ -40,8 +40,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(0, 0), new Vector2(rowWidth, RowHeight), TextAnchor.MiddleCenter);
             label.color = UIStyle.TextSecondary;
             var rt = label.rectTransform;
-            rt.anchorMin = new Vector2(0, 1);
-            rt.anchorMax = new Vector2(1, 1);
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
             rt.anchoredPosition = Vector2.zero;
         }
@@ -74,8 +73,7 @@ namespace KitchenDesigner.Core.UI
             titleLabel.color = row.FileExists ? UIStyle.Text : UIStyle.HighlightError;
             titleLabel.overflowMode = TextOverflowModes.Ellipsis;
             titleLabel.enableWordWrapping = false;
-            var tRt = titleLabel.rectTransform;
-            tRt.anchorMin = new Vector2(0, 1); tRt.anchorMax = new Vector2(1, 1); tRt.pivot = new Vector2(0.5f, 1f);
+            AnchorTopLeftOfRow(titleLabel.rectTransform);
 
             if (!row.FileExists) return;
 
@@ -83,8 +81,9 @@ namespace KitchenDesigner.Core.UI
             var metaLabel = UIFactory.CreateLabel("Meta", rowRect, meta, UIStyle.FontSmall,
                 new Vector2(10, -26), new Vector2(rowWidth - 90, 18), TextAnchor.UpperLeft);
             metaLabel.color = UIStyle.TextSecondary;
-            var mRt = metaLabel.rectTransform;
-            mRt.anchorMin = new Vector2(0, 1); mRt.anchorMax = new Vector2(1, 1); mRt.pivot = new Vector2(0.5f, 1f);
+            metaLabel.overflowMode = TextOverflowModes.Ellipsis;
+            metaLabel.enableWordWrapping = false;
+            AnchorTopLeftOfRow(metaLabel.rectTransform);
 
             metaLabel.ForceMeshUpdate();
             float metaWidth = metaLabel.GetPreferredValues(meta, rowWidth - 90, 18).x;
@@ -93,8 +92,14 @@ namespace KitchenDesigner.Core.UI
             var versionLabel = UIFactory.CreateLabel("Version", rowRect, versionText, UIStyle.FontSmall,
                 new Vector2(10 + metaWidth, -26), new Vector2(90, 18), TextAnchor.UpperLeft);
             versionLabel.color = row.VersionMismatch ? UIStyle.HighlightError : UIStyle.TextSecondary;
-            var vRt = versionLabel.rectTransform;
-            vRt.anchorMin = new Vector2(0, 1); vRt.anchorMax = new Vector2(0, 1); vRt.pivot = new Vector2(0, 1f);
+            AnchorTopLeftOfRow(versionLabel.rectTransform);
+        }
+
+        private static void AnchorTopLeftOfRow(RectTransform rt)
+        {
+            rt.anchorMin = new Vector2(0, 1);
+            rt.anchorMax = new Vector2(0, 1);
+            rt.pivot = new Vector2(0, 1);
         }
     }
 }

@@ -59,6 +59,8 @@ public class LoadProjectWindowDiagramTests
         return path;
     }
 
+    private RenderTexture? _rt;
+
     private LoadProjectWindowUI BuildWindow(int width, int height)
     {
         _canvasGo = new GameObject("TestCanvas");
@@ -84,6 +86,17 @@ public class LoadProjectWindowDiagramTests
         cam.cullingMask = 1 << _canvasGo.layer;
         canvas.worldCamera = cam;
 
+        _rt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
+        cam.targetTexture = _rt;
+
+        // Вне игры Unity не гоняет полный layout-проход ScreenSpaceCamera на каждый
+        // кадр батч-тестов, поэтому Canvas.rect остаётся дефолтным разрешением
+        // прогона (640x480), пока его не выставить руками — LoadWindowLayout читает
+        // именно этот rect, и без явного значения тест «маленький экран» всегда
+        // видел бы одну и ту же (неверную) высоту.
+        var canvasRect = (RectTransform)canvas.transform;
+        canvasRect.sizeDelta = new Vector2(width, height);
+
         var ui = _canvasGo.AddComponent<LoadProjectWindowUI>();
         ui.Build(canvas.transform);
         return ui;
@@ -91,8 +104,7 @@ public class LoadProjectWindowDiagramTests
 
     private IEnumerator CaptureAndVerify(int width, int height, string pngName)
     {
-        var rt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
-        _camGo!.GetComponent<Camera>().targetTexture = rt;
+        var rt = _rt!;
         yield return null;
         yield return null;
 
@@ -107,7 +119,7 @@ public class LoadProjectWindowDiagramTests
         File.WriteAllBytes(path, tex.EncodeToPNG());
 
         RenderTexture.active = null;
-        _camGo.GetComponent<Camera>().targetTexture = null;
+        _camGo!.GetComponent<Camera>().targetTexture = null;
         Object.DestroyImmediate(rt);
         Object.DestroyImmediate(tex);
 
@@ -206,7 +218,7 @@ public class LoadProjectWindowDiagramTests
     [UnityTest]
     public IEnumerator SmallScreen_HeightStaysAtMostHalfTheScreen()
     {
-        const int smallW = 700, smallH = 420;
+        const int smallW = 1024, smallH = 576;
         var a = MakeProjectFile("lpw_small_a.kdproj", BuildInfo.Version, "2026-01-05T10:00:00Z");
         RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = new[] { a };
 
