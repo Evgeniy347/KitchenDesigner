@@ -46,7 +46,8 @@ namespace KitchenDesigner.Core.UI
                 hint: "element.drawer.length");
 
             var colorNames = new List<string> { "Антрацит", "Белый", "Чёрный" };
-            _color = Rows.Dropdown("Цвет", colorNames, OnColorChanged, drawerOnly, "CtxDrawerColor");
+            _color = Rows.Dropdown("Цвет", colorNames, OnColorChanged, drawerOnly, "CtxDrawerColor",
+                hint: "element.drawer.color");
 
             _boxWidth = Rows.NumberField("Ширина короба", drawerOnly,
                 hint: "element.drawer.boxWidth");
@@ -56,9 +57,12 @@ namespace KitchenDesigner.Core.UI
 
             var upperLenNames = new List<string>();
             foreach (var l in DrawerConstants.ValidLengths) upperLenNames.Add($"{l} мм");
-            (_, _upperLength) = Rows.NamedDropdown("CtxDrawerUpperLen", "Верхний ящик",
+            var upperLenRow = Rows.NamedDropdown("CtxDrawerUpperLen", "Верхний ящик",
                 upperLenNames, OnUpperLengthChanged,
                 RowVisibility.For(ElementFacet.Drawer, HasUpper));
+            _upperLength = upperLenRow.dropdown;
+            HintBadge.AttachAfterLabel(upperLenRow.label as TextMeshProUGUI,
+                hint: "element.drawer.upperLength");
 
             Rows.WideButton("CtxDrawerRemoveUpper", "Убрать верхний ящик", RemoveUpper,
                 RowVisibility.For(ElementFacet.Drawer, HasUpper), ActionGap);
