@@ -3,6 +3,7 @@ namespace KitchenDesigner.Core
     public static class FoundationJsonTrim
     {
         private const string ElementsKey = "elements";
+        private const string BasePlateKey = "basePlate";
         private const string IsFoundationKey = "isFoundation";
         private const string FalseText = "false";
 
@@ -17,6 +18,13 @@ namespace KitchenDesigner.Core
         {
             if (string.IsNullOrEmpty(projectJson)) return projectJson;
 
+            projectJson = RemoveFromElementsArray(projectJson);
+            projectJson = RemoveFromNamedObject(projectJson, BasePlateKey);
+            return projectJson;
+        }
+
+        private static string RemoveFromElementsArray(string projectJson)
+        {
             var root = JsonText.RootObject(projectJson);
             if (!root.Found) return projectJson;
 
@@ -31,6 +39,17 @@ namespace KitchenDesigner.Core
                 projectJson = RemoveFromElement(projectJson, item);
             }
             return projectJson;
+        }
+
+        private static string RemoveFromNamedObject(string projectJson, string key)
+        {
+            var root = JsonText.RootObject(projectJson);
+            if (!root.Found) return projectJson;
+
+            var obj = JsonText.MemberValue(projectJson, root, key);
+            if (!obj.Found || projectJson[obj.Start] != '{') return projectJson;
+
+            return RemoveFromElement(projectJson, obj);
         }
 
         private static string RemoveFromElement(string source, JsonSpan objectSpan)

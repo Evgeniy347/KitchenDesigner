@@ -3,6 +3,53 @@ using KitchenDesigner.Core;
 
 public class FoundationJsonTrimTests
 {
+    /// <summary>ProjectData.basePlate — это НЕ элемент массива elements, а отдельный
+    /// именованный объект в корне (тот же снимок ElementCapture.FromElement, что и любой
+    /// элемент, просто под другим ключом): LevelsJsonTrim уже стрижёт его отдельно ради
+    /// levelId ровно по этой причине. Первая версия FoundationJsonTrim проверяла только
+    /// массив elements и проходила мимо basePlate молча — SnapshotTests.Snapshot_Board_Default
+    /// сериализует сцену с базовой плитой, и её девятка полей пережила обрезку: кандидат
+    /// расходился с эталоном, хотя единственный элемент сцены был честно обрезан.</summary>
+    private const string ProjectWithABasePlate =
+        "{\n" +
+        "    \"version\": 1,\n" +
+        "    \"elements\": [],\n" +
+        "    \"basePlateValid\": true,\n" +
+        "    \"basePlate\": {\n" +
+        "        \"name\": \"BasePlate\",\n" +
+        "        \"isFoundation\": false,\n" +
+        "        \"foundationSoilKind\": 5,\n" +
+        "        \"foundationSandMm\": 100,\n" +
+        "        \"foundationGravelMm\": 100,\n" +
+        "        \"foundationCompacted\": true,\n" +
+        "        \"foundationConcreteGrade\": 1,\n" +
+        "        \"foundationRebarDiameterMm\": 12,\n" +
+        "        \"foundationRebarStepMm\": 300,\n" +
+        "        \"foundationCoverMm\": 40,\n" +
+        "        \"isLightSource\": false\n" +
+        "    },\n" +
+        "    \"lightsOn\": true\n" +
+        "}";
+
+    [Test]
+    public void RemoveWhenNotFoundation_ABasePlate_DropsAllNineFoundationKeys_TooNotOnlyTheArray()
+    {
+        var trimmed = FoundationJsonTrim.RemoveWhenNotFoundation(ProjectWithABasePlate);
+
+        StringAssert.DoesNotContain("isFoundation", trimmed);
+        StringAssert.DoesNotContain("foundationSoilKind", trimmed);
+        StringAssert.DoesNotContain("foundationCoverMm", trimmed);
+
+        var root = JsonText.RootObject(trimmed);
+        var basePlate = JsonText.MemberValue(trimmed, root, "basePlate");
+        Assert.IsTrue(basePlate.Found, "basePlate — не мусор, сама запись обязана остаться");
+        Assert.IsTrue(JsonText.MemberValue(trimmed, basePlate, "name").Found);
+        Assert.IsTrue(JsonText.MemberValue(trimmed, basePlate, "isLightSource").Found,
+            "поле ПОСЛЕ удалённой девятки внутри basePlate обязано пережить срез");
+        Assert.IsTrue(JsonText.MemberValue(trimmed, root, "lightsOn").Found,
+            "корневое поле ПОСЛЕ basePlate обязано пережить срез именованного объекта");
+    }
+
     private const string ProjectWithAPlainBoard =
         "{\n" +
         "    \"version\": 1,\n" +

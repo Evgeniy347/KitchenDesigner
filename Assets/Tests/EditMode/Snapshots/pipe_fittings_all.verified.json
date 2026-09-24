@@ -1342,7 +1342,8 @@
         "constructionConcrete": 1,
         "constructionSandMm": 100,
         "constructionGravelMm": 100,
-        "constructionCompacted": true
+        "constructionCompacted": true,
+        "neighbourLevelsMode": 0
     },
     "lightsOn": true,
     "musicTrack": 0,
