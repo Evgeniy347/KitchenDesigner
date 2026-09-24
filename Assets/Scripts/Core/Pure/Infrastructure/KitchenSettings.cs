@@ -335,6 +335,7 @@ namespace KitchenDesigner.Core
             _mouseInvertY = false;
             ResetPhotoLook();
             ResetConstruction();
+            ResetLevels();
             ResetKeyBindings();
         }
 
@@ -393,6 +394,7 @@ namespace KitchenDesigner.Core
             };
             CapturePhotoTuning(data);
             CaptureConstruction(data);
+            CaptureLevels(data);
             CaptureKeyBindings(data);
             return data;
         }
@@ -419,6 +421,7 @@ namespace KitchenDesigner.Core
             _mouseInvertY = data.mouseInvertY;
             ApplyPhotoSettings(data);
             ApplyConstruction(data);
+            ApplyLevels(data);
             ApplyKeyBindings(data);
         }
 

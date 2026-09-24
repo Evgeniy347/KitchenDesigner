@@ -127,12 +127,24 @@ namespace KitchenDesigner.Core
             if (ModuleEditMode.IsActive && !ModuleEditMode.IsEditable(element))
                 return ValidityPaint.Dimmed;
 
+            if (IsDimmedByNeighbourLevel(element))
+                return ValidityPaint.Dimmed;
+
             bool violating = !isValid && ViolationTintVisible;
 
             if (PhotoMode.ResolveTransparent(element.Transparent))
                 return violating ? ValidityPaint.SeeThroughViolation : ValidityPaint.SeeThrough;
 
             return violating ? ValidityPaint.Violation : ValidityPaint.Own;
+        }
+
+        private static bool IsDimmedByNeighbourLevel(KitchenElement element)
+        {
+            var decision = LevelVisibility.Decide(
+                LevelRegistry.LevelOf(element).floorElevationMm,
+                LevelRegistry.Current.floorElevationMm,
+                KitchenSettings.Instance.NeighbourLevels);
+            return decision == LevelVisibilityDecision.Dimmed;
         }
 
         internal static void ApplyMaterial(KitchenElement element, bool isValid)

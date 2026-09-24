@@ -92,6 +92,8 @@ namespace KitchenDesigner.Core
         public int constructionGravelMm = KitchenSettings.CONSTRUCTION_GRAVEL_DEFAULT_MM;
         public bool constructionCompacted = true;
 
+        public int neighbourLevelsMode = (int)NeighbourLevelsMode.Show;
+
         public KeyBindingOverrideData[] keyBindings = System.Array.Empty<KeyBindingOverrideData>();
     }
 }

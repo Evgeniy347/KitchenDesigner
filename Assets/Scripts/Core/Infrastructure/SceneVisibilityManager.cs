@@ -35,7 +35,13 @@ namespace KitchenDesigner.Core
         public static bool ShouldBeVisible(KitchenElement element, in ViewState view)
         {
             if (element is LightSourceElement && view.HideLightSources) return false;
-            return view.ObjectsVisible;
+            if (!view.ObjectsVisible) return false;
+
+            var decision = LevelVisibility.Decide(
+                LevelRegistry.LevelOf(element).floorElevationMm,
+                LevelRegistry.Current.floorElevationMm,
+                KitchenSettings.Instance.NeighbourLevels);
+            return decision != LevelVisibilityDecision.Hidden;
         }
     }
 
@@ -51,7 +57,9 @@ namespace KitchenDesigner.Core
         {
             using var _ = PerfMarkers.SceneVisibilityApply.Auto();
             var view = ViewResolver.Current;
-            int hash = (view.ObjectsVisible ? 1 : 0) | (view.HideLightSources ? 2 : 0);
+            int hash = (view.ObjectsVisible ? 1 : 0) | (view.HideLightSources ? 2 : 0)
+                | ((int)KitchenSettings.Instance.NeighbourLevels << 2);
+            hash = hash * 397 ^ LevelRegistry.CurrentId.GetHashCode();
             if (hash == _appliedHash) return;
             _appliedHash = hash;
 

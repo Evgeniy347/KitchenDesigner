@@ -204,9 +204,9 @@ namespace KitchenDesigner.Core
             hit = default;
             if (!shiftHeld)
             {
-                if (Physics.Raycast(ray, out hit))
-                    return hit.collider.GetComponentInParent<KitchenElement>();
-                return null;
+                if (!Physics.Raycast(ray, out hit)) return null;
+                var el = hit.collider.GetComponentInParent<KitchenElement>();
+                return el != null && IsOnCurrentLevel(el) ? el : null;
             }
 
             var allHits = Physics.RaycastAll(ray);
@@ -214,12 +214,15 @@ namespace KitchenDesigner.Core
             foreach (var h in allHits)
             {
                 var el = h.collider.GetComponentInParent<KitchenElement>();
-                if (el == null || el.Transparent) continue;
+                if (el == null || el.Transparent || !IsOnCurrentLevel(el)) continue;
                 hit = h;
                 return el;
             }
             return null;
         }
+
+        private static bool IsOnCurrentLevel(KitchenElement element) =>
+            LevelRegistry.LevelOf(element).id == LevelRegistry.CurrentId;
 
         public static bool IsGizmoCollider(Collider c) =>
             c != null && (c.GetComponentInParent<ResizeHandle>() != null

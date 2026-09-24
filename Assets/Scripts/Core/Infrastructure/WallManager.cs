@@ -55,7 +55,8 @@ namespace KitchenDesigner.Core
                     continue;
                 }
 
-                bool lower = lowerMode
+                bool onCurrentLevel = LevelRegistry.LevelOf(e).id == LevelRegistry.CurrentId;
+                bool lower = onCurrentLevel && lowerMode
                     && (view.LowerAllWalls
                         || WallCutaway.ShouldLower(e.transform.position, sceneCenter, camF));
                 wall.SetLowered(lower, loweredUnits);
