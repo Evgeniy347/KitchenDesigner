@@ -32,6 +32,11 @@
       "position": [0, 0]
     },
     {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -125,7 +130,7 @@
     {
       "type": "Label",
       "text": "Цвет",
-      "position": [-103, -302]
+      "position": [-166, -302]
     },
     {
       "type": "Dropdown",

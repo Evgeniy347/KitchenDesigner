@@ -158,6 +158,16 @@
     },
     {
       "type": "Label",
+      "text": "Тени",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Фоторежим",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
       "text": "Ambient occlusion",
       "position": [-90, 0]
     },
@@ -178,13 +188,13 @@
     },
     {
       "type": "Label",
-      "text": "Тени",
-      "position": [-90, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "Фоторежим",
-      "position": [-90, 0]
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",

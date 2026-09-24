@@ -22,6 +22,11 @@
       "position": [0, 0]
     },
     {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -93,7 +98,7 @@
     {
       "type": "Label",
       "text": "Изголовье",
-      "position": [-103, -232]
+      "position": [-166, -232]
     },
     {
       "type": "Dropdown",

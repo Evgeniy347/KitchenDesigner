@@ -32,6 +32,21 @@
       "position": [0, 0]
     },
     {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -115,7 +130,7 @@
     {
       "type": "Label",
       "text": "Наружный Ø",
-      "position": [-80, -232]
+      "position": [-150, -232]
     },
     {
       "type": "InputField",
@@ -127,7 +142,7 @@
     {
       "type": "Label",
       "text": "Внутренний Ø",
-      "position": [-80, -263]
+      "position": [-150, -263]
     },
     {
       "type": "InputField",
@@ -139,7 +154,7 @@
     {
       "type": "Label",
       "text": "Толщина стенки",
-      "position": [-80, -294]
+      "position": [-150, -294]
     },
     {
       "type": "InputField",

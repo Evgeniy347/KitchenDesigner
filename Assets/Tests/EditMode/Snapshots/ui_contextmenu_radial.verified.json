@@ -17,6 +17,11 @@
       "position": [0, 0]
     },
     {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
@@ -47,7 +52,7 @@
       "label": "Название",
       "value": "Radiusnaya_300",
       "interactable": true,
-      "position": [40, -83]
+      "position": [38, -83]
     },
     {
       "type": "Label",
@@ -88,7 +93,7 @@
     {
       "type": "Label",
       "text": "Радиус угла",
-      "position": [-80, -232]
+      "position": [-150, -232]
     },
     {
       "type": "InputField",

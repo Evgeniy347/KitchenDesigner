@@ -48,7 +48,22 @@
     },
     {
       "type": "Label",
+      "text": "Автосохранение",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Блокировать недопустимые изменения",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
       "text": "Нижний порог кромки",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Привязка к деталям",
       "position": [-240, 0]
     },
     {
@@ -58,43 +73,68 @@
     },
     {
       "type": "Label",
-      "text": "Автосохранение",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Блокировать недопустимые изменения",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Привязка к деталям",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
       "text": "Свободное панорамирование",
-      "position": [-90, 0]
+      "position": [-240, 0]
     },
     {
       "type": "Label",
       "text": "Сетка",
-      "position": [-90, 0]
+      "position": [-240, 0]
     },
     {
       "type": "Label",
       "text": "Интервал автосохранения",
-      "position": [-70, 0]
+      "position": [-220, 0]
     },
     {
       "type": "Label",
       "text": "Порог привязки",
-      "position": [-70, 0]
+      "position": [-220, 0]
     },
     {
       "type": "Label",
       "text": "Шаг сетки",
-      "position": [-70, 0]
+      "position": [-220, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",

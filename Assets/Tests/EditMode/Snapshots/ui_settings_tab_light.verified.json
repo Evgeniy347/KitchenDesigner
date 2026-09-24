@@ -48,7 +48,32 @@
     },
     {
       "type": "Label",
+      "text": "Дальность теней",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Контраст",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Насыщенность",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Окружающий свет",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
       "text": "Отскок от пола",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Порог свечения",
       "position": [-240, 0]
     },
     {
@@ -63,7 +88,32 @@
     },
     {
       "type": "Label",
+      "text": "Предел свечения",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила виньетки",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила свечения",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила теней солнца",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
       "text": "Стены сбоку",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Тени от ламп",
       "position": [-240, 0]
     },
     {
@@ -73,8 +123,8 @@
     },
     {
       "type": "Label",
-      "text": "Дальность теней",
-      "position": [-90, 0]
+      "text": "Экспозиция",
+      "position": [-240, 0]
     },
     {
       "type": "Label",
@@ -83,57 +133,7 @@
     },
     {
       "type": "Label",
-      "text": "Контраст",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Насыщенность",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Окружающий свет",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Порог свечения",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Предел свечения",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Сила виньетки",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Сила свечения",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Сила теней солнца",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Тени от ламп",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
       "text": "Тени сцены",
-      "position": [-90, 0]
-    },
-    {
-      "type": "Label",
-      "text": "Экспозиция",
       "position": [-90, 0]
     },
     {
@@ -145,6 +145,61 @@
       "type": "Label",
       "text": "Эффекты",
       "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
