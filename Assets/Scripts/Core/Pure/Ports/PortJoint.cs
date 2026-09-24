@@ -12,5 +12,11 @@ namespace KitchenDesigner.Core.Ports
             if (a.PositionMm.DistanceMmTo(b.PositionMm) > JoinToleranceMm) return false;
             return PipeAxis.AreOpposite(a.OutwardAxis, b.OutwardAxis);
         }
+
+        public static bool ProfilesCompatible(string? a, string? b)
+        {
+            if (a == null || b == null) return true;
+            return string.Equals(a, b, StringComparison.Ordinal);
+        }
     }
 }

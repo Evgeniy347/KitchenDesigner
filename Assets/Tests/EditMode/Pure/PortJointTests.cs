@@ -76,4 +76,26 @@ public class PortJointTests
             PortAt("b", 0, Origin, PipeAxis.Left)),
             "нулевая ось не задаёт направления — соединение по ней было бы выдумкой");
     }
+
+    [Test]
+    public void PortJoint_ProfilesCompatible_100x200_DoesNotSeatOn_200x100()
+    {
+        Assert.IsFalse(PortJoint.ProfilesCompatible("rect100x200", "rect200x100"),
+            "прямоугольное устье не поворачивается само собой: 100×200 и 200×100 — разные профили");
+    }
+
+    [Test]
+    public void PortJoint_ProfilesCompatible_100x200_SeatsOn_100x200()
+    {
+        Assert.IsTrue(PortJoint.ProfilesCompatible("rect100x200", "rect100x200"));
+    }
+
+    [Test]
+    public void PortJoint_ProfilesCompatible_WhenEitherProfileIsUnspecified()
+    {
+        Assert.IsTrue(PortJoint.ProfilesCompatible(null, "rect100x200"),
+            "труба сегодня не заявляет профиль на стыке (диаметр выводится с трассы) — неуказанный профиль не блокирует");
+        Assert.IsTrue(PortJoint.ProfilesCompatible("rect100x200", null));
+        Assert.IsTrue(PortJoint.ProfilesCompatible(null, null));
+    }
 }
