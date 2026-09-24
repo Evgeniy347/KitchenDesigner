@@ -32,7 +32,8 @@ namespace KitchenDesigner.Core.UI
                 OnThreadSelected, visibility, "CtxScrewThread", hint: "element.screwLeg.thread");
             _threadLength = Rows.NumberField("Длина резьбы", visibility,
                 hint: "element.screwLeg.threadLength");
-            _baseDiameter = Rows.NumberField("Ø основания", visibility);
+            _baseDiameter = Rows.NumberField("Ø основания", visibility,
+                hint: "element.screwLeg.baseDiameter");
             _baseHeight = Rows.NumberField("Высота основания", visibility,
                 hint: "element.screwLeg.baseHeight");
             _hostSection.Build();

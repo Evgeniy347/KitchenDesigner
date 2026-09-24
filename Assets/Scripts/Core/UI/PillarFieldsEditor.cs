@@ -23,7 +23,8 @@ namespace KitchenDesigner.Core.UI
 
         public override void Build()
         {
-            _diameter = Rows.NumberField("Диаметр", RowVisibility.For(ElementFacet.Pillar));
+            _diameter = Rows.NumberField("Диаметр", RowVisibility.For(ElementFacet.Pillar),
+                hint: "element.pillar.diameter");
             _midHeight = Rows.NumberField("Средняя секция", RowVisibility.For(ElementFacet.Pillar),
                 hint: "element.pillar.midHeight");
         }

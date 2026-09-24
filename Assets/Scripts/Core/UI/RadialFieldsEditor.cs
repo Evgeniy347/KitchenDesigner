@@ -11,7 +11,8 @@ namespace KitchenDesigner.Core.UI
         public override bool Handles(KitchenElement element) => element is RadialShelfElement;
 
         public override void Build() =>
-            _radius = Rows.NumberField("Радиус угла", RowVisibility.For(ElementFacet.Radial));
+            _radius = Rows.NumberField("Радиус угла", RowVisibility.For(ElementFacet.Radial),
+                hint: "element.radial.cornerRadius");
 
         public override System.Collections.Generic.IEnumerable<TMP_InputField?> ArithmeticFields()
         {
