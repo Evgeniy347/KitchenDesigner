@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -24,7 +25,11 @@ using KitchenDesigner.Core;
 ///
 /// Тест обязан покраснеть, если открытие сдвинет Y хотя бы на 1 мм — сравнение везде
 /// идёт БЕЗ допуска (точное равенство float), поэтому доказывать это отдельно не нужно:
-/// достаточно испортить ЛЮБУЮ координату при восстановлении, чтобы упасть.
+/// достаточно испортить ЛЮБУЮ координату при восстановлении, чтобы упасть. Единственное
+/// исключение — <see cref="ExemptFromExactCoordinateCheck"/>, деталь с ЗАДОКУМЕНТИРОВАННЫМ
+/// и уже проверенным в другом месте сдвигом; список требует причины на каждую запись.
+/// Все найденные дрейфы координат агрегируются в одно сообщение, а не только первый —
+/// иначе второй и третий дрейф прячутся за первым же упавшим Assert.
 /// </summary>
 public class LevelMigrationRoundTripTests
 {
@@ -52,6 +57,25 @@ public class LevelMigrationRoundTripTests
         _guard?.Restore();
         _guard = null;
     }
+
+    /// <summary>Деталь, у которой сдвиг при восстановлении ЗАДОКУМЕНТИРОВАН и ОЖИДАЕМ —
+    /// не находка этого стража, а поведение другого, уже принятого. Формат — как
+    /// <c>ValidationSnapshotReuseTests.OutOfTheCacheOnPurpose</c>: имя и причина рядом,
+    /// так что расширение списка — осознанная правка, а не тихий обход красноты.</summary>
+    private static readonly (string name, string why)[] ExemptFromExactCoordinateCheck =
+    {
+        ("Truba",
+            "pipe-gap-scene.save.json заморожен с НАРОЧНО разомкнутым стыком: " +
+            "PipeDocking.RepairJoint закрывает его при восстановлении (сдвиг ~0,775 мм, " +
+            "в основном по Y) — задокументированное и проверенное поведение, см. " +
+            "PipeGapSensorTests (строки 11-27) и ScenePipeJointGridRepairTests"),
+    };
+
+    private static string ExemptionReason(string elementName) =>
+        ExemptFromExactCoordinateCheck.FirstOrDefault(e => e.name == elementName).why;
+
+    private static bool IsExemptFromExactCoordinateCheck(string elementName) =>
+        ExemptionReason(elementName) != null;
 
     private static string FullPath(string fixtureName) =>
         Path.Combine(Application.dataPath, "Tests/EditMode", fixtureName);
@@ -95,33 +119,56 @@ public class LevelMigrationRoundTripTests
             .GroupBy(e => e.PartName)
             .ToDictionary(g => g.Key, g => g.First());
 
+        var drifts = new List<string>();
         int checkedCount = 0;
+        int exemptedCount = 0;
         foreach (var ed in data!.elements)
         {
             if (ed == null || string.IsNullOrEmpty(ed.name)) continue;
             Assert.IsTrue(liveByName.TryGetValue(ed.name, out var live),
                 $"{fixtureName}: деталь {ed.name} из файла не нашлась в восстановленной сцене");
 
+            if (IsExemptFromExactCoordinateCheck(ed.name))
+            {
+                exemptedCount++;
+                TestContext.WriteLine(
+                    $"{fixtureName}/{ed.name}: пропущена проверка точных координат — {ExemptionReason(ed.name)}");
+                continue;
+            }
+
             var wantPos = ed.Position;
             var gotPos = live!.transform.position;
-            Assert.AreEqual(wantPos.x, gotPos.x, 0f, $"{fixtureName}/{ed.name}: X сдвинулся при загрузке");
-            Assert.AreEqual(wantPos.y, gotPos.y, 0f, $"{fixtureName}/{ed.name}: Y сдвинулся при загрузке");
-            Assert.AreEqual(wantPos.z, gotPos.z, 0f, $"{fixtureName}/{ed.name}: Z сдвинулся при загрузке");
+            CompareField(drifts, ed.name, "position.x", wantPos.x, gotPos.x);
+            CompareField(drifts, ed.name, "position.y", wantPos.y, gotPos.y);
+            CompareField(drifts, ed.name, "position.z", wantPos.z, gotPos.z);
 
             var wantRot = ed.Rotation;
             var gotRot = live.transform.rotation;
-            Assert.AreEqual(wantRot.x, gotRot.x, 0f, $"{fixtureName}/{ed.name}: rotation.x изменился");
-            Assert.AreEqual(wantRot.y, gotRot.y, 0f, $"{fixtureName}/{ed.name}: rotation.y изменился");
-            Assert.AreEqual(wantRot.z, gotRot.z, 0f, $"{fixtureName}/{ed.name}: rotation.z изменился");
-            Assert.AreEqual(wantRot.w, gotRot.w, 0f, $"{fixtureName}/{ed.name}: rotation.w изменился");
+            CompareField(drifts, ed.name, "rotation.x", wantRot.x, gotRot.x);
+            CompareField(drifts, ed.name, "rotation.y", wantRot.y, gotRot.y);
+            CompareField(drifts, ed.name, "rotation.z", wantRot.z, gotRot.z);
+            CompareField(drifts, ed.name, "rotation.w", wantRot.w, gotRot.w);
 
-            Assert.AreEqual(ed.Dimensions, live.DimensionsMM,
-                $"{fixtureName}/{ed.name}: dimensionsMM изменились при загрузке");
+            if (ed.Dimensions != live.DimensionsMM)
+                drifts.Add($"{ed.name}: dimensionsMM {ed.Dimensions} -> {live.DimensionsMM}");
+
             checkedCount++;
         }
-        Assert.Greater(checkedCount, 0, $"{fixtureName}: фикстура не содержит именованных деталей — нечего проверять");
+        Assert.Greater(checkedCount + exemptedCount, 0,
+            $"{fixtureName}: фикстура не содержит именованных деталей — нечего проверять");
+
+        Assert.IsEmpty(drifts,
+            $"{fixtureName}: {drifts.Count} дрейф(а/ов) координат при загрузке (все, не только первый):\n"
+            + string.Join("\n", drifts));
 
         AssertFixtureUntouched(fixtureName, hashBefore);
+    }
+
+    private static void CompareField(
+        List<string> drifts, string elementName, string field, float want, float got)
+    {
+        if (want == got) return;
+        drifts.Add($"{elementName}.{field}: {want:R} -> {got:R} (Δ={got - want:R})");
     }
 
     [TestCaseSource(nameof(FixtureNames))]
