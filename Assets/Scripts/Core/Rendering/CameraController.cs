@@ -130,6 +130,17 @@ namespace KitchenDesigner.Core
         public static bool HasSavedPhotoAngles(CameraState s) =>
             s.photoAngleX != 0f || s.photoAngleY != 0f;
 
+        /// <summary>Called by whoever switches the current level (the toolbar action lands
+        /// in L6a) so the camera keeps looking at the same relative spot on the new floor
+        /// instead of staying pinned to the old level's height. Photo mode's own target is
+        /// deliberately left alone - it is a separate, saved pose.</summary>
+        public void FollowLevelChange(int fromFloorElevationMm, int toFloorElevationMm)
+        {
+            _target = CameraLevelFollow.ShiftTargetForLevelChange(
+                _target, fromFloorElevationMm, toFloorElevationMm);
+            UpdateCameraPosition();
+        }
+
         public void SetState(CameraState s)
         {
             CancelFocus();

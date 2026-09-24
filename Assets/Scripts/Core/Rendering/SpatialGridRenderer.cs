@@ -18,7 +18,7 @@ namespace KitchenDesigner.Core
         private static readonly Color MajorLineColor = new Color(0.6f, 0.8f, 1f, 0.5f);
         private static readonly Color MinorLineColor = new Color(1f, 1f, 1f, 0.18f);
 
-        private const float FloorY = 0f;
+        private static float FloorY => LevelRegistry.CurrentFloorElevationMm * AppConstants.MM_TO_UNITS;
 
         private void Awake()
         {
