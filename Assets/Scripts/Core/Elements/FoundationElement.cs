@@ -95,6 +95,10 @@ namespace KitchenDesigner.Core
         public string FrostDepthText =>
             FrostDepth.Read(KitchenSettings.Instance.ConstructionRegion, _soilKind).Value;
 
+        private IReadOnlyList<FoundationPolyline> _builtPolylines = System.Array.Empty<FoundationPolyline>();
+
+        public IReadOnlyList<FoundationPolyline> BuiltPolylines => _builtPolylines;
+
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {
             var centrelines = FoundationWallSurvey.LoadBearingCentrelines(allElements);
@@ -110,6 +114,7 @@ namespace KitchenDesigner.Core
             if (SuppressVisualRebuild) return;
 
             var centrelines = FoundationWallSurvey.LoadBearingCentrelines(PartRegistry.GetAll());
+            _builtPolylines = FoundationLayout.MergeIntoPolylines(centrelines);
             var mesh = FoundationStripMesh.Build(centrelines, transform.position,
                 DimensionsMM.x, DimensionsMM.y);
             AdoptOwnedMesh(mesh);

@@ -60,7 +60,9 @@ namespace KitchenDesigner.Core.Analysis
             using (PerfMarkers.AnalyzeUnknownTypes.Auto()) CollectUnknownTypes(all, issues);
             t = NoteStage("unknownTypes", t);
             using (PerfMarkers.AnalyzeMillimetreGrid.Auto()) CollectMillimetreGrid(all, issues);
-            NoteStage("millimetreGrid", t);
+            t = NoteStage("millimetreGrid", t);
+            using (PerfMarkers.AnalyzeFoundation.Auto()) CollectFoundation(all, issues);
+            NoteStage("foundation", t);
 
             LogBreakdownIfSlow(began);
             return issues;
@@ -313,6 +315,14 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
+        private static void CollectFoundation(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            var foundations = SceneFoundationSnapshot.Foundations(all);
+            var walls = SceneFoundationSnapshot.LoadBearingWalls(all);
+            foreach (var finding in Construction.FoundationRules.Collect(foundations, walls))
+                issues.Add(IssueCatalog.FromConstructionFinding(finding, FindByName(all, finding.ElementId)));
+        }
+
         private static KitchenElement? FindByName(List<KitchenElement> all, string? name)
         {
             if (string.IsNullOrEmpty(name)) return null;
@@ -359,6 +369,12 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeWallThicknessOffFormat = "WAL-01";
         public const string CodeUnknownElementType = "TYP-01";
         public const string CodeOffMillimetreGrid = MmGridIssueCatalog.CodeOffMillimetreGrid;
+        public const string CodeFoundationDepthBelowFrost = Construction.FoundationFindings.CodeDepthBelowFrost;
+        public const string CodeFoundationSoleTooNarrow = Construction.FoundationFindings.CodeSoleTooNarrow;
+        public const string CodeFoundationCushionTooThin = Construction.FoundationFindings.CodeCushionTooThin;
+        public const string CodeFoundationRebarProtection = Construction.FoundationFindings.CodeRebarProtection;
+        public const string CodeFoundationWallNotCovered = Construction.FoundationFindings.CodeWallNotCovered;
+        public const string CodeFloorSlabGapToSupportingWall = Construction.FloorSlabRules.CodeGapToSupportingWall;
 
         public static AnalysisIssue OffMillimetreGrid(KitchenElement element, string message) =>
             new AnalysisIssue(IssueLevel.Warning, CodeOffMillimetreGrid,

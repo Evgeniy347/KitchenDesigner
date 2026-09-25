@@ -107,6 +107,18 @@ public class AnalysisContractTests
                 ConstructionIssueCatalog.WallThicknessOffFormat(a.PartName,
                     MasonryUnit.Of(MasonryTechnology.BrickSingle), 300f,
                     MasonryUnit.ThicknessSeries(MasonryTechnology.BrickSingle, 10f)), a),
+            IssueCatalog.FromConstructionFinding(
+                FoundationFindings.DepthBelowFrost(a.PartName, SoilKind.Clay, 1200f, 900f), a),
+            IssueCatalog.FromConstructionFinding(
+                FoundationFindings.SoleTooNarrow(a.PartName, SoilKind.Clay, 380f, 780f, 600f), a),
+            IssueCatalog.FromConstructionFinding(
+                FoundationFindings.CushionTooThin(a.PartName, 50f, 50f), a),
+            IssueCatalog.FromConstructionFinding(
+                FoundationFindings.RebarCoverTooThin(a.PartName, 10f, 12f), a),
+            IssueCatalog.FromConstructionFinding(
+                FoundationFindings.WallNotCovered(a.PartName), a),
+            IssueCatalog.FromConstructionFinding(
+                FloorSlabRules.GapToSupportingWall(a.PartName, 8f), a),
         };
     }
 
@@ -121,6 +133,8 @@ public class AnalysisContractTests
             "DWH-01", "DWH-02", "DWH-03", "DWH-04", "DWH-05",
             "EDG-01",
             "FAC-01",
+            "FLR-01",
+            "FND-01", "FND-02", "FND-03", "FND-04", "FND-05",
             "GAP-01", "GAP-02",
             "GRD-01",
             "LEG-01", "LEG-02", "LEG-03",
@@ -180,6 +194,12 @@ public class AnalysisContractTests
             ["PIP-04"] = IssueLevel.Error,
             ["WAL-01"] = IssueLevel.Warning,
             ["TYP-01"] = IssueLevel.Warning,
+            ["FLR-01"] = IssueLevel.Warning,
+            ["FND-01"] = IssueLevel.Error,
+            ["FND-02"] = IssueLevel.Error,
+            ["FND-03"] = IssueLevel.Warning,
+            ["FND-04"] = IssueLevel.Warning,
+            ["FND-05"] = IssueLevel.Error,
         };
 
         CollectionAssert.AreEquivalent(expected.Keys, byCode.Keys,
