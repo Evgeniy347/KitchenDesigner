@@ -104,6 +104,13 @@ namespace KitchenDesigner.Core.UI
             _rows.AddToggle(page, ref y, "Трамбовка", s.ConstructionCompacted,
                 v => { s.ConstructionCompacted = v; }, read: () => s.ConstructionCompacted);
             Hint("Трамбовка", hint: "settings.construction.compacted");
+
+            y -= SettingsRowFactory.GapPx;
+            _rows.AddHeader(page, ref y, "Перекрытие");
+
+            AddMillimetres(page, ref y, "Толщина плиты",
+                () => s.ConstructionSlabThicknessMm, v => s.ConstructionSlabThicknessMm = v);
+            Hint("Толщина плиты", hint: "settings.construction.slabThickness");
         }
 
         private void AddMillimetres(Transform page, ref float y, string label,

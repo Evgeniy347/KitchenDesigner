@@ -15,6 +15,9 @@ namespace KitchenDesigner.Core
         public const int CONSTRUCTION_SAND_DEFAULT_MM = 100;
         public const int CONSTRUCTION_GRAVEL_DEFAULT_MM = 100;
         public const int CONSTRUCTION_BEDDING_MAX_MM = 500;
+        public const int CONSTRUCTION_SLAB_THICKNESS_DEFAULT_MM = 200;
+        public const int CONSTRUCTION_SLAB_THICKNESS_MIN_MM = 100;
+        public const int CONSTRUCTION_SLAB_THICKNESS_MAX_MM = 400;
 
         [SerializeField] private ConstructionRegion _constructionRegion = ConstructionRegion.Urals;
         [SerializeField] private int _constructionFloorHeightMm = CONSTRUCTION_FLOOR_HEIGHT_DEFAULT_MM;
@@ -26,6 +29,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _constructionSandMm = CONSTRUCTION_SAND_DEFAULT_MM;
         [SerializeField] private int _constructionGravelMm = CONSTRUCTION_GRAVEL_DEFAULT_MM;
         [SerializeField] private bool _constructionCompacted = true;
+        [SerializeField] private int _constructionSlabThicknessMm = CONSTRUCTION_SLAB_THICKNESS_DEFAULT_MM;
 
         public ConstructionRegion ConstructionRegion
         {
@@ -92,6 +96,13 @@ namespace KitchenDesigner.Core
             set => _constructionCompacted = value;
         }
 
+        public int ConstructionSlabThicknessMm
+        {
+            get => _constructionSlabThicknessMm;
+            set => _constructionSlabThicknessMm = Mathf.Clamp(value,
+                CONSTRUCTION_SLAB_THICKNESS_MIN_MM, CONSTRUCTION_SLAB_THICKNESS_MAX_MM);
+        }
+
         internal void ResetConstruction()
         {
             _constructionRegion = ConstructionRegion.Urals;
@@ -104,6 +115,7 @@ namespace KitchenDesigner.Core
             _constructionSandMm = CONSTRUCTION_SAND_DEFAULT_MM;
             _constructionGravelMm = CONSTRUCTION_GRAVEL_DEFAULT_MM;
             _constructionCompacted = true;
+            _constructionSlabThicknessMm = CONSTRUCTION_SLAB_THICKNESS_DEFAULT_MM;
         }
 
         private void CaptureConstruction(KitchenSettingsData data)
@@ -118,6 +130,7 @@ namespace KitchenDesigner.Core
             data.constructionSandMm = _constructionSandMm;
             data.constructionGravelMm = _constructionGravelMm;
             data.constructionCompacted = _constructionCompacted;
+            data.constructionSlabThicknessMm = _constructionSlabThicknessMm;
         }
 
         private void ApplyConstruction(KitchenSettingsData data)
@@ -132,6 +145,8 @@ namespace KitchenDesigner.Core
             _constructionSandMm = data.constructionSandMm;
             _constructionGravelMm = data.constructionGravelMm;
             _constructionCompacted = data.constructionCompacted;
+            _constructionSlabThicknessMm = Mathf.Clamp(data.constructionSlabThicknessMm,
+                CONSTRUCTION_SLAB_THICKNESS_MIN_MM, CONSTRUCTION_SLAB_THICKNESS_MAX_MM);
         }
     }
 }

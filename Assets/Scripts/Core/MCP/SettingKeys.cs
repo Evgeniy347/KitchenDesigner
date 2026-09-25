@@ -95,6 +95,8 @@ namespace KitchenDesigner.Core.MCP
                 () => S.ConstructionGravelMm, v => S.ConstructionGravelMm = (int)v),
             SettingKey.Flag("construction_compacted", "constructionCompacted",
                 () => S.ConstructionCompacted, v => S.ConstructionCompacted = v),
+            SettingKey.Number("construction_slab_thickness", "constructionSlabThicknessMm",
+                () => S.ConstructionSlabThicknessMm, v => S.ConstructionSlabThicknessMm = (int)v),
 
             SettingKey.Number("neighbour_levels", "neighbourLevelsMode",
                 () => (int)S.NeighbourLevels, v => S.NeighbourLevels = (NeighbourLevelsMode)(int)v),

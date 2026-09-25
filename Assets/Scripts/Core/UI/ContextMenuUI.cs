@@ -69,6 +69,7 @@ namespace KitchenDesigner.Core.UI
         private readonly WallOpeningFieldsEditor _openingFields;
         private readonly WallFieldsEditor _wallFields;
         private readonly FoundationFieldsEditor _foundationFields;
+        private readonly FloorSlabFieldsEditor _floorSlabFields;
         private readonly FacadeFieldsEditor _facadeFields;
         private readonly AssembledFacadeFieldsEditor _assembledFields;
         private readonly ElementFieldsEditor[] _editors;
@@ -112,6 +113,7 @@ namespace KitchenDesigner.Core.UI
             _openingFields = new WallOpeningFieldsEditor(this);
             _wallFields = new WallFieldsEditor(this);
             _foundationFields = new FoundationFieldsEditor(this);
+            _floorSlabFields = new FloorSlabFieldsEditor(this);
             _facadeFields = new FacadeFieldsEditor(this);
             _assembledFields = new AssembledFacadeFieldsEditor(this);
             _editors = new ElementFieldsEditor[]
@@ -121,7 +123,7 @@ namespace KitchenDesigner.Core.UI
                 _tableFields, _stoolFields, _chairFields, _sofaFields, _bedFields,
                 _pouffeFields, _laundryFields, _toiletFields, _bathtubFields, _bathMixerFields,
                 _showerColumnFields, _wallDeviceFields, _openingFields, _wallFields,
-                _foundationFields, _lights,
+                _foundationFields, _floorSlabFields, _lights,
                 _assembledFields, _facadeFields,
             };
         }
@@ -344,6 +346,7 @@ namespace KitchenDesigner.Core.UI
             _wallDeviceFields.Build();
             _wallFields.Build();
             _foundationFields.Build();
+            _floorSlabFields.Build();
             _pillarFields.Build();
             _screwLegFields.Build();
             _pipeFields.Build();
