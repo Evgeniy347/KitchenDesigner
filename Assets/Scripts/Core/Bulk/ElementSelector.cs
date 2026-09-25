@@ -158,6 +158,7 @@ namespace KitchenDesigner.Core.Bulk
                 return LaundryMachineBody.TypeId(machine.Kind);
             if (e is FloorElement) return "floor";
             if (e is FoundationElement) return "foundation";
+            if (e is FloorSlabElement) return "floor_slab";
             if (e.GetComponent<Wall>() != null) return "wall";
             return "board";
         }

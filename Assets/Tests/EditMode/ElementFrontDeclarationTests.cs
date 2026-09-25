@@ -36,7 +36,9 @@ public class ElementFrontDeclarationTests
     /// сторож написан, и он краснеет здесь ещё до того, как кадр снимут.</summary>
     // 34: FoundationElement joined honestly — a strip along the whole load-bearing
     // wall network has no one characteristic face, same reason as a pipe or a slab.
-    private const int FacelessCeiling = 34;
+    // 35: FloorSlabElement joined honestly too — a horizontal slab is seen from above
+    // or below, never from one characteristic side, same reason as the floor finish.
+    private const int FacelessCeiling = 35;
 
     private static IReadOnlyList<ElementSurfaceSweep.Row> Rows => ElementSurfaceSweep.Rows;
 

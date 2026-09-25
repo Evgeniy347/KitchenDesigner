@@ -70,6 +70,7 @@ namespace KitchenDesigner.Core.UI
                 SidebarItemKind.Wall => EditModeManager.Category.Room,
                 SidebarItemKind.Floor => EditModeManager.Category.Room,
                 SidebarItemKind.Foundation => EditModeManager.Category.Room,
+                SidebarItemKind.FloorSlab => EditModeManager.Category.Room,
                 _ => EditModeManager.Category.Regular,
             };
         }
@@ -227,6 +228,8 @@ namespace KitchenDesigner.Core.UI
 
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Фундамент",
                 FoundationItem("Фундамент"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Перекрытие",
+                FloorSlabItem("Перекрытие"));
         }
 
         private static IEnumerable<(SidebarGroupKey Group, Item Item)> RowsWithTileTitleInherited()
@@ -361,6 +364,11 @@ namespace KitchenDesigner.Core.UI
             new Item(name, new Vector3Int(FoundationElement.DEFAULT_WIDTH_MM,
                 FoundationElement.DEFAULT_DEPTH_MM, FoundationElement.DEFAULT_WIDTH_MM),
                 SidebarItemKind.Foundation);
+
+        private static Item FloorSlabItem(string name) =>
+            new Item(name, new Vector3Int(FloorSlabElement.DEFAULT_LENGTH_MM,
+                KitchenSettings.Instance.ConstructionSlabThicknessMm, FloorSlabElement.DEFAULT_WIDTH_MM),
+                SidebarItemKind.FloorSlab);
 
         private static Item PillarItem(string name, int midHeightMM)
         {

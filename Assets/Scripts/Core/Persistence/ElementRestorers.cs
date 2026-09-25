@@ -1,4 +1,5 @@
 using System;
+using KitchenDesigner.Core.Construction;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -144,6 +145,18 @@ namespace KitchenDesigner.Core
                  foundation.RebarDiameterMm = d.foundationRebarDiameterMm;
                  foundation.RebarStepMm = d.foundationRebarStepMm;
                  foundation.CoverMm = d.foundationCoverMm;
+             }),
+
+            (d => d.isFloorSlab,
+             (factory, d) => factory.CreateFloorSlab(d.Dimensions.x, d.Dimensions.z, d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is not FloorSlabElement slab) return;
+                 slab.DimensionsMM = d.Dimensions;
+                 slab.Technology = (SlabTechnology)d.slabTechnology;
+                 slab.ConcreteGrade = (ConcreteGrade)d.slabConcreteGrade;
+                 slab.RebarDiameterMm = d.slabRebarDiameterMm;
+                 slab.RebarStepMm = d.slabRebarStepMm;
              }),
 
             (d => d.isPipe,

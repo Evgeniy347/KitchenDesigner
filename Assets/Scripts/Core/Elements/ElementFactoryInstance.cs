@@ -501,6 +501,20 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, foundation);
         }
 
+        public GameObject CreateFloorSlab(int lengthMM, int widthMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewCube(name, "Перекрытие", position);
+
+            var slab = go.AddComponent<FloorSlabElement>();
+            slab.PartName = go.name;
+            slab.Movable = true;
+            slab.DimensionsMM = new Vector3Int(lengthMM,
+                KitchenSettings.Instance.ConstructionSlabThicknessMm, widthMM);
+
+            if (DefaultMaterial != null) MaterialManager.ApplyById(slab, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(go, slab);
+        }
+
         public GameObject CreatePipe(string sizeId, int lengthMM, string name, Vector3 position)
         {
             var go = ElementRoot.NewCube(name, "Труба", position);

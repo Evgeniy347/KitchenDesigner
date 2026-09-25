@@ -1770,6 +1770,28 @@ public class IsoScreenshotTests : ElementFrameTests
         Object.DestroyImmediate(camGo);
     }
 
+    /// <summary>Плита перекрытия — плоский прямоугольный короб, в отличие от ленты фундамента
+    /// строить рядом ничего не нужно: базовый ApplyDimensions уже даёт правильный меш из
+    /// одной DimensionsMM.</summary>
+    [UnityTest]
+    public IEnumerator IsoFloorSlab_DefaultSize()
+    {
+        var go = ElementFactory.CreateFloorSlab(FloorSlabElement.DEFAULT_LENGTH_MM,
+            FloorSlabElement.DEFAULT_WIDTH_MM, "IsoFloorSlab", Vector3.zero);
+        _spawned.Add(go);
+        var slab = go.GetComponent<FloorSlabElement>();
+        Assert.IsNotNull(slab);
+
+        Vector3 size = MmToUnits(new Vector3Int(FloorSlabElement.DEFAULT_LENGTH_MM,
+            slab.ThicknessMm, FloorSlabElement.DEFAULT_WIDTH_MM));
+        var (camGo, cam) = CreateIsoCamera(Vector3.zero, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_floor_slab.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
     /// <summary>Мойка, врезанная в столешницу: борт лежит на пласти, чаша уходит
     /// в сквозной проём, сзади стоит смеситель.</summary>
     [UnityTest]

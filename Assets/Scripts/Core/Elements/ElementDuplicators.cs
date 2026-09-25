@@ -127,6 +127,24 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is FloorSlabElement,
+             (factory, source, pos) => factory.CreateFloorSlab(
+                 source.DimensionsMM.x, source.DimensionsMM.z, source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (FloorSlabElement)source;
+                 var made = copy.GetComponent<FloorSlabElement>();
+                 if (made != null)
+                 {
+                     made.DimensionsMM = src.DimensionsMM;
+                     made.Technology = src.Technology;
+                     made.ConcreteGrade = src.ConcreteGrade;
+                     made.RebarDiameterMm = src.RebarDiameterMm;
+                     made.RebarStepMm = src.RebarStepMm;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is PipeElement,
              (factory, source, pos) =>
                  factory.CreatePipe(((PipeElement)source).SizeId, ((PipeElement)source).LengthMM,

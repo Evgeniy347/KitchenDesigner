@@ -169,6 +169,13 @@ namespace KitchenDesigner.Core
 			KitchenDesigner.Core.Construction.FoundationRebarDefaults.StepMm;
 		public int foundationCoverMm =
 			KitchenDesigner.Core.Construction.FoundationRebarDefaults.CoverMm;
+		public bool isFloorSlab = false;
+		public int slabTechnology = (int)KitchenDesigner.Core.Construction.SlabTechnology.Slab;
+		public int slabConcreteGrade = (int)ConcreteGrade.B20;
+		public int slabRebarDiameterMm =
+			KitchenDesigner.Core.Construction.FoundationRebarDefaults.DiameterMm;
+		public int slabRebarStepMm =
+			KitchenDesigner.Core.Construction.FoundationRebarDefaults.StepMm;
 		public bool isLightSource = false;
 		public int lightTemperatureK = LampSpec.DEFAULT_TEMPERATURE_K;
 		public int lightPowerW = LampSpec.DEFAULT_POWER_W;

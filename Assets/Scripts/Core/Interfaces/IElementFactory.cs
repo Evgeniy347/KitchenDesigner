@@ -40,6 +40,7 @@ namespace KitchenDesigner.Core
 			int diameterMM = PillarElement.DiameterMM_Default);
 		GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position);
 		GameObject CreateFoundation(int widthMM, int depthMM, string name, Vector3 position);
+		GameObject CreateFloorSlab(int lengthMM, int widthMM, string name, Vector3 position);
 		GameObject CreateLightSource(string name, Vector3 position);
 		GameObject CreateSink(string name, Vector3 position);
 		GameObject CreateCooktop(string name, Vector3 position, string model = "");

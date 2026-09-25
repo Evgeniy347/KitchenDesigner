@@ -259,6 +259,14 @@ namespace KitchenDesigner.Core
 				d.foundationRebarStepMm = foundation.RebarStepMm;
 				d.foundationCoverMm = foundation.CoverMm;
 			}
+			if (element is FloorSlabElement slab)
+			{
+				d.isFloorSlab = true;
+				d.slabTechnology = (int)slab.Technology;
+				d.slabConcreteGrade = (int)slab.ConcreteGrade;
+				d.slabRebarDiameterMm = slab.RebarDiameterMm;
+				d.slabRebarStepMm = slab.RebarStepMm;
+			}
 			if (element is ScrewLegElement screwLeg)
 			{
 				d.isScrewLeg = true;
