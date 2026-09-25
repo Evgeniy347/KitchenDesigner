@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -16,6 +17,13 @@ namespace KitchenDesigner.Core.UI
         internal const float PanelHeight = 320f;
         internal const float RowHeight = 28f;
         internal const float RowsTopY = 118f;
+        internal const float AddButtonHeight = 30f;
+
+        private const float NameW = 130f;
+        private const float ElevationW = 65f;
+        private const float HeightW = 65f;
+        private const float DeleteW = 24f;
+        private const float FieldGap = 3f;
 
         private GameObject? _root;
         private Transform? _rowsParent;
@@ -45,6 +53,10 @@ namespace KitchenDesigner.Core.UI
             var rowsRect = UIFactory.CreateRect("LvRows", panel.transform);
             _rowsParent = rowsRect;
 
+            UIFactory.CreateButton("LvAdd", panel.transform, "+",
+                new Vector2(0, -(PanelHeight * 0.5f) + AddButtonHeight * 0.5f + 10f),
+                new Vector2(PanelWidth - 20f, AddButtonHeight), AddLevel);
+
             _root.SetActive(false);
         }
 
@@ -59,18 +71,79 @@ namespace KitchenDesigner.Core.UI
             float y = PanelHeight * 0.5f - RowsTopY;
             foreach (var level in levels)
             {
-                BuildRow(level, y);
+                BuildRow(levels.Count, level, y);
                 y -= RowHeight;
             }
         }
 
-        private void BuildRow(Level level, float y)
+        private void BuildRow(int levelCount, Level level, float y)
         {
             if (_rowsParent == null) return;
-            var label = UIFactory.CreateLabel("LvRow_" + level.id, _rowsParent,
-                $"{level.name} · {level.floorElevationMm} мм", 15,
-                new Vector2(0, y), new Vector2(PanelWidth - 20f, RowHeight - 4f), TextAnchor.MiddleLeft);
-            _rowObjects.Add(label.gameObject);
+
+            float x = -(NameW + ElevationW + HeightW + DeleteW + FieldGap * 3f) * 0.5f;
+
+            var nameField = UIFactory.CreateInputField("LvName_" + level.id, _rowsParent, level.name,
+                new Vector2(x + NameW * 0.5f, y), new Vector2(NameW, RowHeight - 4f));
+            nameField.onEndEdit.AddListener(v => ApplyName(level, v));
+            _rowObjects.Add(nameField.gameObject);
+            x += NameW + FieldGap;
+
+            var elevationField = UIFactory.CreateNumberField("LvElevation_" + level.id, _rowsParent,
+                level.floorElevationMm.ToString(), new Vector2(x + ElevationW * 0.5f, y),
+                new Vector2(ElevationW, RowHeight - 4f), "");
+            elevationField.contentType = TMP_InputField.ContentType.IntegerNumber;
+            elevationField.onEndEdit.AddListener(v => ApplyElevation(level, v, elevationField));
+            _rowObjects.Add(elevationField.gameObject);
+            x += ElevationW + FieldGap;
+
+            var heightField = UIFactory.CreateNumberField("LvHeight_" + level.id, _rowsParent,
+                level.heightMm.ToString(), new Vector2(x + HeightW * 0.5f, y),
+                new Vector2(HeightW, RowHeight - 4f), "");
+            heightField.contentType = TMP_InputField.ContentType.IntegerNumber;
+            heightField.onEndEdit.AddListener(v => ApplyHeight(level, v, heightField));
+            _rowObjects.Add(heightField.gameObject);
+            x += HeightW + FieldGap;
+
+            var deleteButton = UIFactory.CreateButton("LvDelete_" + level.id, _rowsParent,
+                UIStyle.GlyphClose, new Vector2(x + DeleteW * 0.5f, y),
+                new Vector2(DeleteW, RowHeight - 4f), null);
+            _rowObjects.Add(deleteButton.gameObject);
+            if (levelCount <= 1)
+                deleteButton.interactable = false;
+            else
+                ConfirmDeleteButton.Attach(deleteButton, () => DeleteLevel(level));
+        }
+
+        private static void ApplyName(Level level, string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName)) return;
+            level.name = newName;
+        }
+
+        private static void ApplyElevation(Level level, string text, TMP_InputField field)
+        {
+            if (int.TryParse(text, out int mm)) level.floorElevationMm = mm;
+            field.SetTextWithoutNotify(level.floorElevationMm.ToString());
+        }
+
+        private static void ApplyHeight(Level level, string text, TMP_InputField field)
+        {
+            if (int.TryParse(text, out int mm) && mm > 0) level.heightMm = mm;
+            field.SetTextWithoutNotify(level.heightMm.ToString());
+        }
+
+        private void AddLevel()
+        {
+            var current = LevelRegistry.Snapshot();
+            var next = LevelPlacement.NextAbove(current, KitchenSettings.Instance.ConstructionFloorHeightMm);
+            CommandStack.Execute(new CreateLevelCommand(next));
+            Refresh();
+        }
+
+        private void DeleteLevel(Level level)
+        {
+            CommandStack.Execute(new DeleteLevelCommand(level.id));
+            Refresh();
         }
 
         private void ClearRows()
