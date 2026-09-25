@@ -296,6 +296,15 @@ namespace KitchenDesigner.Core.MCP
                 frostDepthText = foundation.FrostDepthText,
             }),
 
+            For<FloorSlabElement>((info, slab) => info.floorSlab = new FloorSlabInfo
+            {
+                technology = McpWireEnums.Name(slab.Technology),
+                thicknessMm = slab.ThicknessMm,
+                concreteGrade = McpWireEnums.Name(slab.ConcreteGrade),
+                rebarDiameterMm = slab.RebarDiameterMm,
+                rebarStepMm = slab.RebarStepMm,
+            }),
+
             For<PipeElement>((info, pipe) => info.pipe = new PipeInfo
             {
                 sizeId = pipe.SizeId,

@@ -98,12 +98,6 @@ namespace KitchenDesigner.Tests.Geometry
             ("слой MCP", "LightSourceElement",
              "светильник заводится только из сайдбара; заводить ли его через MCP — решение о "
              + "продукте, а не пропущенная строка"),
-
-            ("слой MCP", "FloorSlabElement",
-             "MCP/*.cs прямо сейчас правит параллельный агент (level_id по всему слою, "
-             + "agents/FLEET.md -> «Два воркера не должны править общие реестры одновременно»); "
-             + "create_elements/edit_elements для floor_slab — следующий коммит, как только "
-             + "слой освободится"),
         };
 
         private static string ShortNameOf(string type) => ElementTypeCatalog.ShortNameOf(type);

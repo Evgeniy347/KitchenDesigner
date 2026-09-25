@@ -483,6 +483,7 @@
         "constructionSandMm": 100,
         "constructionGravelMm": 100,
         "constructionCompacted": true,
+        "constructionSlabThicknessMm": 200,
         "neighbourLevelsMode": 0
     },
     "lightsOn": true,

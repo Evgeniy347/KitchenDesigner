@@ -423,6 +423,14 @@ FoundationElement     Strip foundation along every CURRENT load-bearing wall
                       network every time the mesh rebuilds and has no field
                       of its own. foundation_* fields (see get_elements
                       fields) feed the specification, not the mesh.
+FloorSlabElement      Horizontal floor slab (type:""floor_slab""). Plain
+                      rectangular box: width/depth (create_elements dim_x/
+                      dim_z) is the footprint, thickness rides dim_y (default
+                      from the construction settings tab). floor_slab_*
+                      fields (see get_elements fields) feed the specification
+                      -- technology ""joists"" has no quantities yet, so its
+                      concrete/rebar numbers stay at whatever they last were
+                      and are simply not used.
 ScrewLegElement       Screw-in levelling leg with a threaded insert
                       (type:""screw_leg""). A foot (screw_base_diameter_mm x
                       screw_base_height_mm, 25x8 mm by default) plus a threaded
@@ -611,6 +619,12 @@ foundation            Strip foundation only: {soilKind, sandMm, gravelMm,
                       same text the properties panel shows, derived from the
                       project's construction region and THIS strip's own
                       soil - there is no matching edit field.
+floorSlab             Floor slab only: {technology, thicknessMm, concreteGrade,
+                      rebarDiameterMm, rebarStepMm}. technology/concreteGrade
+                      are strings (see edit_elements floor_slab_technology /
+                      floor_slab_concrete). thicknessMm is READ-ONLY here -
+                      it is the element's dim_y, set via edit_elements height
+                      like any other dimension, not a separate field.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
   {name, kind, anchorMm:[x,z] corner, sizeMm:[width,height,depth], rotYDeg,

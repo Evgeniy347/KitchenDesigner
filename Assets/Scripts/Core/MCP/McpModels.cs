@@ -100,6 +100,7 @@ namespace KitchenDesigner.Core.MCP
 		public BedInfo? bed;
 		public PillarInfo? pillar;
 		public FoundationInfo? foundation;
+		public FloorSlabInfo? floorSlab;
 		public ScrewLegInfo? screwLeg;
 		public PipeInfo? pipe;
 		public PipeFittingInfo? pipeFitting;
@@ -485,6 +486,16 @@ namespace KitchenDesigner.Core.MCP
 		public int rebarStepMm;
 		public int coverMm;
 		public string frostDepthText = "";
+	}
+
+	[Serializable]
+	public class FloorSlabInfo
+	{
+		public string technology = "slab";
+		public int thicknessMm;
+		public string concreteGrade = "B20";
+		public int rebarDiameterMm;
+		public int rebarStepMm;
 	}
 
 	[Serializable]

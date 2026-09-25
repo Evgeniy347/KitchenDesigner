@@ -210,6 +210,17 @@ namespace KitchenDesigner.Core.MCP
                     foundation.RebarStepMm = op.foundation_rebar_step_mm.Value;
                 if (op.foundation_cover_mm.HasValue) foundation.CoverMm = op.foundation_cover_mm.Value;
             }),
+            For<FloorSlabElement>((op, slab) =>
+            {
+                if (op.floor_slab_technology != null)
+                    slab.Technology = McpWireEnums.ParseSlabTechnology(op.floor_slab_technology);
+                if (op.floor_slab_concrete != null)
+                    slab.ConcreteGrade = McpWireEnums.ParseConcreteGrade(op.floor_slab_concrete);
+                if (op.floor_slab_rebar_diameter_mm.HasValue)
+                    slab.RebarDiameterMm = op.floor_slab_rebar_diameter_mm.Value;
+                if (op.floor_slab_rebar_step_mm.HasValue)
+                    slab.RebarStepMm = op.floor_slab_rebar_step_mm.Value;
+            }),
             (op, el) =>
             {
                 var wall = el.GetComponent<Wall>();

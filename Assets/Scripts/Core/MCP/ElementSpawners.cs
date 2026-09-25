@@ -137,6 +137,10 @@ namespace KitchenDesigner.Core.MCP
                     item.width ?? FoundationElement.DEFAULT_WIDTH_MM,
                     item.height ?? FoundationElement.DEFAULT_DEPTH_MM, item.name, pos),
 
+                ["floor_slab"] = (item, pos) => ElementFactory.CreateFloorSlab(
+                    item.width ?? FloorSlabElement.DEFAULT_LENGTH_MM,
+                    item.depth ?? FloorSlabElement.DEFAULT_WIDTH_MM, item.name, pos),
+
                 ["pipe"] = (item, pos) => ElementFactory.CreatePipe(
                     item.pipe_size ?? PipeSpec.DEFAULT_SIZE,
                     item.height ?? PipeElementSpec.DEFAULT_LENGTH_MM, item.name, pos),

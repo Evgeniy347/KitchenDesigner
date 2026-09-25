@@ -1776,8 +1776,10 @@ public class IsoScreenshotTests : ElementFrameTests
     [UnityTest]
     public IEnumerator IsoFloorSlab_DefaultSize()
     {
+        var restingOnGrade = new Vector3(0f,
+            KitchenSettings.Instance.ConstructionSlabThicknessMm * 0.5f * AppConstants.MM_TO_UNITS, 0f);
         var go = ElementFactory.CreateFloorSlab(FloorSlabElement.DEFAULT_LENGTH_MM,
-            FloorSlabElement.DEFAULT_WIDTH_MM, "IsoFloorSlab", Vector3.zero);
+            FloorSlabElement.DEFAULT_WIDTH_MM, "IsoFloorSlab", restingOnGrade);
         _spawned.Add(go);
         var slab = go.GetComponent<FloorSlabElement>();
         Assert.IsNotNull(slab);

@@ -90,9 +90,10 @@ public class SettingsConstructionTabTests
     {
         var badges = Page().GetComponentsInChildren<HintBadge>(true);
 
-        Assert.AreEqual(12, badges.Length,
-            "у каждого контрола вкладки — своя «i»: двенадцать строк, двенадцать значков "
-            + "(docs/UI-GUIDELINES.md §13). Найдено: " + badges.Length);
+        Assert.AreEqual(13, badges.Length,
+            "у каждого контрола вкладки — своя «i»: тринадцать строк (S2 добавил «Толщина "
+            + "плиты» перекрытия), тринадцать значков (docs/UI-GUIDELINES.md §13). Найдено: "
+            + badges.Length);
     }
 
     /// <summary>Глубина промерзания не вводится руками: она выводится из региона И

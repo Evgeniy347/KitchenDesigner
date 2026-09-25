@@ -194,6 +194,11 @@ namespace KitchenDesigner.Core.MCP
             _ => "B20",
         };
 
+        public static SlabTechnology ParseSlabTechnology(string s) =>
+            (s ?? "").Trim().ToLowerInvariant() == "joists" ? SlabTechnology.Joists : SlabTechnology.Slab;
+
+        public static string Name(SlabTechnology t) => t == SlabTechnology.Joists ? "joists" : "slab";
+
         public static string Name(DrawerSystem s) => s == DrawerSystem.Movento ? "movento" : "gtv";
 
         public static string Name(LaundryMachineKind k) =>
