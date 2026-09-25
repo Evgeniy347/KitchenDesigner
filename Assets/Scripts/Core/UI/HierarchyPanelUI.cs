@@ -220,6 +220,11 @@ namespace KitchenDesigner.Core.UI
                     h = h * 31 + g.id;
                     h = h * 31 + g.name.GetHashCode();
                 }
+                foreach (var lvl in LevelRegistry.Items)
+                {
+                    h = h * 31 + lvl.id.GetHashCode();
+                    h = h * 31 + lvl.floorElevationMm;
+                }
                 return h;
             }
         }
@@ -276,7 +281,7 @@ namespace KitchenDesigner.Core.UI
             if (_searchHint != null) _searchHint.gameObject.SetActive(filter.Length == 0);
 
             var collapsed = filter.Length == 0 ? _collapsed : NoCollapsedGroups;
-            var nodes = SceneTree.Build(PartRegistry.All, GroupManager.AllGroups(), collapsed);
+            var nodes = BuildNodesGroupedByLevel(collapsed);
             var sel = SelectionManager.Instance;
 
             float y = 0f;
@@ -289,6 +294,47 @@ namespace KitchenDesigner.Core.UI
             _content.sizeDelta = new Vector2(0, -y + 4);
 
             RefreshMoveDropdown();
+        }
+
+        private static List<SceneTree.Node> BuildNodesGroupedByLevel(ISet<int>? collapsed)
+        {
+            var levels = new List<Level>(LevelRegistry.Items);
+            if (levels.Count <= 1)
+                return SceneTree.Build(PartRegistry.All, GroupManager.AllGroups(), collapsed);
+
+            levels.Sort((a, b) => b.floorElevationMm.CompareTo(a.floorElevationMm));
+
+            var nodes = new List<SceneTree.Node>();
+            foreach (var level in levels)
+            {
+                var elementsOnLevel = ElementsOnLevel(level);
+                var groupsOnLevel = GroupsOnLevel(level, elementsOnLevel);
+                var levelNodes = SceneTree.Build(elementsOnLevel, groupsOnLevel, collapsed);
+                levelNodes[0].rootLabel = level.name;
+                nodes.AddRange(levelNodes);
+            }
+            return nodes;
+        }
+
+        private static List<KitchenElement> ElementsOnLevel(Level level)
+        {
+            var result = new List<KitchenElement>();
+            foreach (var e in PartRegistry.GetAll())
+                if (e != null && LevelRegistry.LevelOf(e).id == level.id) result.Add(e);
+            return result;
+        }
+
+        private static List<LinkGroup> GroupsOnLevel(Level level, List<KitchenElement> elementsOnLevel)
+        {
+            var result = new List<LinkGroup>();
+            foreach (var g in GroupManager.AllGroups())
+            {
+                bool hasMemberHere = false;
+                foreach (var e in elementsOnLevel)
+                    if (e.GroupId == g.id) { hasMemberHere = true; break; }
+                if (hasMemberHere) result.Add(g);
+            }
+            return result;
         }
 
         private static bool MatchesFilter(SceneTree.Node node, string filter)
@@ -341,7 +387,7 @@ namespace KitchenDesigner.Core.UI
 
             if (node.isRoot)
             {
-                label = "Кухня";
+                label = node.rootLabel ?? "Кухня";
                 rowColor = RowRootColor;
             }
             else if (node.group != null)

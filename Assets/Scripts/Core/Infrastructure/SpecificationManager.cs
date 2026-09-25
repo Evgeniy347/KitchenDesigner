@@ -181,9 +181,13 @@ namespace KitchenDesigner.Core
 
             var all = new List<KitchenElement>(elements);
 
+            bool prefixByLevel = LevelRegistry.Items.Count > 1;
+
             foreach (var e in all)
             {
                 if (e == null) continue;
+
+                string levelPrefix = prefixByLevel ? LevelRegistry.LevelOf(e).name + " / " : "";
 
                 var quantifiers = e.GetComponents<IQuantifies>();
                 var route = ElementSpecCoverage.Taken(ElementSpecCoverage.Declared(
@@ -193,7 +197,7 @@ namespace KitchenDesigner.Core
                 {
                     foreach (var quantifies in quantifiers)
                         foreach (var item in quantifies.GetSpecItems(all))
-                            AccumulateItem(groups, order, item);
+                            AccumulateItem(groups, order, item, levelPrefix);
                     continue;
                 }
 
@@ -203,7 +207,7 @@ namespace KitchenDesigner.Core
                     string decor = MaterialCatalog.Get(e.MaterialId).displayName;
                     foreach (var part in composite.GetSpecParts())
                         Accumulate(groups, order, $"{e.PartName}·{part.suffix}",
-                            part.dimsMM, part.materialKind ?? decor, "", default);
+                            part.dimsMM, part.materialKind ?? decor, "", default, levelPrefix);
                     continue;
                 }
 
@@ -212,15 +216,15 @@ namespace KitchenDesigner.Core
                 string boardDecor = MaterialCatalog.Get(e.MaterialId).displayName;
                 var edges = EdgeColumns.For(e, all);
                 Accumulate(groups, order, e.PartName, e.DimensionsMM,
-                    boardDecor, GroovesLabel(e), edges);
+                    boardDecor, GroovesLabel(e), edges, levelPrefix);
 
                 var layout = EdgeBanding.LayoutOf(e.DimensionsMM);
                 if (layout.IsValid)
                 {
-                    AddEdgeBandingItem(groups, order, edges.l1, layout.SideLengthMM(EdgeSide.L1), boardDecor);
-                    AddEdgeBandingItem(groups, order, edges.l2, layout.SideLengthMM(EdgeSide.L2), boardDecor);
-                    AddEdgeBandingItem(groups, order, edges.w1, layout.SideLengthMM(EdgeSide.W1), boardDecor);
-                    AddEdgeBandingItem(groups, order, edges.w2, layout.SideLengthMM(EdgeSide.W2), boardDecor);
+                    AddEdgeBandingItem(groups, order, edges.l1, layout.SideLengthMM(EdgeSide.L1), boardDecor, levelPrefix);
+                    AddEdgeBandingItem(groups, order, edges.l2, layout.SideLengthMM(EdgeSide.L2), boardDecor, levelPrefix);
+                    AddEdgeBandingItem(groups, order, edges.w1, layout.SideLengthMM(EdgeSide.W1), boardDecor, levelPrefix);
+                    AddEdgeBandingItem(groups, order, edges.w2, layout.SideLengthMM(EdgeSide.W2), boardDecor, levelPrefix);
                 }
             }
 
@@ -266,9 +270,10 @@ namespace KitchenDesigner.Core
         }
 
         private static void Accumulate(Dictionary<string, SpecLine> groups, List<string> order,
-            string name, Vector3Int dims, string material, string grooves, EdgeColumns edges)
+            string name, Vector3Int dims, string material, string grooves, EdgeColumns edges,
+            string levelPrefix = "")
         {
-            string key = $"{dims.x}x{dims.y}x{dims.z}|{material}|{grooves}|{edges.Key}";
+            string key = $"{levelPrefix}{dims.x}x{dims.y}x{dims.z}|{material}|{grooves}|{edges.Key}";
             if (!groups.TryGetValue(key, out var line))
             {
                 float faceArea = BoardFaceArea.FaceAreaM2(dims);
@@ -284,7 +289,7 @@ namespace KitchenDesigner.Core
                     edgeL2 = edges.l2,
                     edgeW1 = edges.w1,
                     edgeW2 = edges.w2,
-                    section = SpecSections.Furniture,
+                    section = levelPrefix + SpecSections.Furniture,
                     unit = SpecUnit.AreaM2,
                     hasDims = true,
                     isBoardArea = true,
@@ -298,9 +303,10 @@ namespace KitchenDesigner.Core
             groups[key] = line;
         }
 
-        private static void AccumulateItem(Dictionary<string, SpecLine> groups, List<string> order, SpecItem item)
+        private static void AccumulateItem(Dictionary<string, SpecLine> groups, List<string> order, SpecItem item,
+            string levelPrefix = "")
         {
-            string key = item.GroupKey();
+            string key = levelPrefix + item.GroupKey();
             if (!groups.TryGetValue(key, out var line))
             {
                 line = new SpecLine
@@ -312,7 +318,7 @@ namespace KitchenDesigner.Core
                     totalAreaM2 = 0f,
                     material = item.material,
                     grooves = "",
-                    section = item.section,
+                    section = levelPrefix + item.section,
                     unit = item.unit,
                     hasDims = item.hasDims,
                     isBoardArea = item.hasDims && item.unit == SpecUnit.AreaM2,
@@ -331,10 +337,11 @@ namespace KitchenDesigner.Core
         }
 
         private static void AddEdgeBandingItem(Dictionary<string, SpecLine> groups, List<string> order,
-            string thicknessLabel, int sideLengthMM, string material)
+            string thicknessLabel, int sideLengthMM, string material, string levelPrefix = "")
         {
             if (string.IsNullOrEmpty(thicknessLabel)) return;
-            AccumulateItem(groups, order, EdgeBandingSpecItems.For(thicknessLabel, sideLengthMM, material));
+            AccumulateItem(groups, order, EdgeBandingSpecItems.For(thicknessLabel, sideLengthMM, material),
+                levelPrefix);
         }
     }
 }

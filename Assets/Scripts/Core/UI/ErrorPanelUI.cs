@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.UI
         private GameObject? _root;
         private MultiSelectDropdown? _levelFilter;
         private MultiSelectDropdown? _codeFilter;
+        private MultiSelectDropdown? _floorFilter;
         private TMP_InputField? _searchField;
         private TMP_Text? _searchHint;
         private TMP_Text? _countLabel;
@@ -130,6 +131,10 @@ namespace KitchenDesigner.Core.UI
             hRt.offsetMin = new Vector2(8, 0); hRt.offsetMax = Vector2.zero;
             _searchHint = hint;
 
+            Caption(parent, "FltFloorLbl", "Этаж", new Vector2(SearchX + 316f, FilterLabelY));
+            _floorFilter = MultiSelectDropdown.Create("FltFloor", parent, "Все",
+                new Vector2(SearchX + 316f, FilterFieldY), new Vector2(110, FilterFieldH), RebuildRows);
+
             var refresh = UIFactory.CreateButton("ErrRefresh", parent, "Обновить",
                 new Vector2(PanelW - Pad - 120f, FilterFieldY), new Vector2(120, FilterFieldH), Analyze);
             UIFactory.AnchorTopLeft(refresh.GetComponent<RectTransform>());
@@ -157,6 +162,7 @@ namespace KitchenDesigner.Core.UI
 
             _levelFilter?.SetOptions(LevelsPresentIn(_allIssues));
             _codeFilter?.SetOptions(CodesPresentIn(_allIssues));
+            _floorFilter?.SetOptions(FloorsPresentIn(_allIssues));
 
             RebuildRows();
         }
@@ -180,6 +186,19 @@ namespace KitchenDesigner.Core.UI
                 if (!codes.Contains(iss.Code)) codes.Add(iss.Code);
             codes.Sort(System.StringComparer.Ordinal);
             return codes;
+        }
+
+        private static List<string> FloorsPresentIn(List<AnalysisIssue> issues)
+        {
+            var floors = new List<string>();
+            foreach (var iss in issues)
+            {
+                if (iss.Target == null) continue;
+                string name = LevelRegistry.LevelOf(iss.Target).name;
+                if (!floors.Contains(name)) floors.Add(name);
+            }
+            floors.Sort(System.StringComparer.Ordinal);
+            return floors;
         }
 
         private void RebuildRows()
@@ -227,6 +246,8 @@ namespace KitchenDesigner.Core.UI
         {
             if (_levelFilter != null && !_levelFilter.IsAllowed(IssueDisplay.LevelName(iss.Level))) return false;
             if (_codeFilter != null && !_codeFilter.IsAllowed(iss.Code)) return false;
+            if (_floorFilter != null && iss.Target != null
+                && !_floorFilter.IsAllowed(LevelRegistry.LevelOf(iss.Target).name)) return false;
             if (search.Length == 0) return true;
 
             return Contains(iss.Code, search) || Contains(iss.Detail, search) || Contains(iss.Message, search);

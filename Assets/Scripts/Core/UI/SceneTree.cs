@@ -13,6 +13,7 @@ namespace KitchenDesigner.Core.UI
             public bool isRoot;
             public bool hasChildren;
             public bool collapsed;
+            public string? rootLabel;
         }
 
         public static List<Node> Build(
