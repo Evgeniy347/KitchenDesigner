@@ -1,0 +1,45 @@
+using System.Collections.Generic;
+using UnityEngine;
+using KitchenDesigner.Core.Construction;
+
+namespace KitchenDesigner.Core
+{
+    public class VentGapElement : WallLayerElement, IQuantifies
+    {
+        public override string DisplayTypeName => "Вентзазор";
+
+        public override ElementFront Front =>
+            ElementFront.NoSeparateFacePart("обрешётка вентзазора идёт по всей грани стены — лицевой детали нет");
+
+        [SerializeField] private int _battenStepMm = WallLayerDefaults.VentGapBattenStepMm;
+
+        [Undoable]
+        public int ThicknessMm
+        {
+            get => DimensionsMM.z;
+            set
+            {
+                var d = DimensionsMM;
+                d.z = Mathf.Clamp(value, WallLayerDefaults.MinThicknessMm, WallLayerDefaults.MaxThicknessMm);
+                DimensionsMM = d;
+            }
+        }
+
+        [Undoable]
+        public int BattenStepMm
+        {
+            get => _battenStepMm;
+            set => _battenStepMm = Mathf.Clamp(value,
+                WallLayerDefaults.MinBattenStepMm, WallLayerDefaults.MaxBattenStepMm);
+        }
+
+        public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
+        {
+            double runningM = WallLayerQuantities.VentGapBattenRunningMetres(
+                DimensionsMM.x, DimensionsMM.y, _battenStepMm);
+
+            yield return new SpecItem(SpecSections.Walls, "Обрешётка вентзазора", "", SpecUnit.LinearMeters,
+                (float)runningM);
+        }
+    }
+}
