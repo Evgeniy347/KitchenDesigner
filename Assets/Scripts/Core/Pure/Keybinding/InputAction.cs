@@ -43,5 +43,8 @@ namespace KitchenDesigner.Core.Keybinding
         CameraZoomWheel,
         SelectClick,
         SelectMultiClick,
+
+        LevelUp,
+        LevelDown,
     }
 }

@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core.UI
 {
     public class MusicPanelUI : MonoBehaviour, IProjectWindow
     {
+        public static MusicPanelUI? Instance { get; private set; }
+
         internal const float PanelWidth = 280f;
         internal const float PanelHeight = 184f;
 
@@ -25,6 +27,8 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
+            Instance = this;
+
             var panel = UIFactory.CreatePanel("MusicPanel", canvas, Vector2.zero,
                 new Vector2(PanelWidth, PanelHeight));
             UIFactory.AnchorTopRight(panel.rectTransform);

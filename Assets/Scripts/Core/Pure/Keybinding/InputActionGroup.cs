@@ -9,6 +9,7 @@ namespace KitchenDesigner.Core.Keybinding
         WindowsAndHelp,
         Diagnostics,
         Mouse,
+        Levels,
     }
 
     public static class InputActionGroupTitles
@@ -16,7 +17,7 @@ namespace KitchenDesigner.Core.Keybinding
         public static readonly string[] All =
         {
             "Камера", "Выделение и правка", "Каталог", "Виды", "Окна и справка", "Диагностика",
-            "Мышь",
+            "Мышь", "Этажи",
         };
 
         public static string Of(InputActionGroup group)

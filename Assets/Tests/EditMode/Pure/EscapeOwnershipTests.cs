@@ -249,12 +249,24 @@ public class EscapeOwnershipTests
     }
 
     [Test]
-    public void MusicPanel_IsTheLastResort()
+    public void MusicPanel_WinsOverLevelsWindow_ButNotOverDayNightPanel()
     {
-        Assert.AreEqual(EscapeOwner.MusicPanel, EscapeOwnership.Resolve(new EscapeClaims { MusicOpen = true }));
+        var claims = new EscapeClaims { MusicOpen = true, LevelsWindowOpen = true };
+        Assert.AreEqual(EscapeOwner.MusicPanel, EscapeOwnership.Resolve(claims));
 
-        var claims = new EscapeClaims { MusicOpen = true, DayNightOpen = true };
+        claims.DayNightOpen = true;
         Assert.AreEqual(EscapeOwner.DayNightPanel, EscapeOwnership.Resolve(claims),
-            "музыкальная панель — самый общий, последний хозяин в списке");
+            "музыкальная панель уступает более специфичному хозяину");
+    }
+
+    [Test]
+    public void LevelsWindow_IsTheLastResort()
+    {
+        Assert.AreEqual(EscapeOwner.LevelsWindow,
+            EscapeOwnership.Resolve(new EscapeClaims { LevelsWindowOpen = true }));
+
+        var claims = new EscapeClaims { LevelsWindowOpen = true, MusicOpen = true };
+        Assert.AreEqual(EscapeOwner.MusicPanel, EscapeOwnership.Resolve(claims),
+            "окно «Этажи» — самый общий, последний хозяин в списке");
     }
 }

@@ -81,6 +81,10 @@ namespace KitchenDesigner.Core.UI
             loadProjectWindow.Build(windowLayer);
             _panels[ToolbarPanel.LoadProject] = loadProjectWindow;
 
+            var levelsWindow = gameObject.AddComponent<LevelsWindowUI>();
+            levelsWindow.Build(windowLayer);
+            _panels[ToolbarPanel.Levels] = levelsWindow;
+
             var measureProperties = gameObject.AddComponent<MeasurePropertiesUI>();
             measureProperties.Build(windowLayer);
 

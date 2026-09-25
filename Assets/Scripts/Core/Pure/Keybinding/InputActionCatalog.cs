@@ -109,6 +109,11 @@ namespace KitchenDesigner.Core.Keybinding
                     new InputActionInfo(InputActionGroup.Mouse, "Выделить деталь"),
                 [InputAction.SelectMultiClick] =
                     new InputActionInfo(InputActionGroup.Mouse, "Добавить деталь к выделению"),
+
+                [InputAction.LevelUp] =
+                    new InputActionInfo(InputActionGroup.Levels, "Этаж выше"),
+                [InputAction.LevelDown] =
+                    new InputActionInfo(InputActionGroup.Levels, "Этаж ниже"),
             };
 
             var table = new InputActionInfo[All.Length];

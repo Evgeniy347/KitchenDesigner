@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using KitchenDesigner.Core.Analysis;
+using KitchenDesigner.Core.Keybinding;
 using KitchenDesigner.Core.Update;
 using TMPro;
 using UnityEngine;
@@ -39,6 +40,8 @@ namespace KitchenDesigner.Core.UI
         private Image? _errorsIcon;
         private TMP_Text? _issueCountLabel;
         private int _issueBadgeRevision = -1;
+        private TMP_Text? _levelLabel;
+        private const float LevelLabelWidth = 100f;
 
         public int IssueBadgeRevision => _issueBadgeRevision;
 
@@ -75,6 +78,9 @@ namespace KitchenDesigner.Core.UI
 
             _undoButton = AddIconButton(bar.transform, "Undo", IconFactory.Undo, ref x, Undo, "Отменить");
             _redoButton = AddIconButton(bar.transform, "Redo", IconFactory.Redo, ref x, Redo, "Повторить");
+            AddSeparator(bar.transform, ref x);
+
+            AddLevelSwitcher(bar.transform, ref x);
             AddSeparator(bar.transform, ref x);
 
             _handleModeButton = AddIconButton(bar.transform, "HandleMode", HandleModeIcon(), ref x,
@@ -123,6 +129,33 @@ namespace KitchenDesigner.Core.UI
 
             if (_issueBadgeThrottle.DueAfterSceneSettled(SceneRevision.Version, Time.unscaledTime))
                 RefreshIssueBadge();
+
+            if (_levelLabel != null) _levelLabel.text = LevelRegistry.Current.name;
+
+            if (!CameraController.IsTypingInInputField())
+            {
+                if (InputMap.Down(InputAction.LevelUp)) LevelSwitch.Up();
+                else if (InputMap.Down(InputAction.LevelDown)) LevelSwitch.Down();
+            }
+        }
+
+        private void AddLevelSwitcher(Transform parent, ref float x)
+        {
+            var upButton = AddBarButton(parent, "LevelUp", UIStyle.GlyphUp, ref x, LevelSwitch.Up);
+            TooltipUI.Attach(upButton.gameObject, "Этаж выше (PageUp)");
+
+            _levelLabel = UIFactory.CreateLabel("LevelLabel", parent, "", 15,
+                new Vector2(x, ButtonY), new Vector2(LevelLabelWidth, ButtonH), TextAnchor.MiddleCenter);
+            UIFactory.AnchorTopLeft(_levelLabel.rectTransform);
+            _levelLabel.rectTransform.anchoredPosition = new Vector2(x, ButtonY);
+            x += LevelLabelWidth + ButtonGap;
+
+            var downButton = AddBarButton(parent, "LevelDown", UIStyle.GlyphDropdown, ref x, LevelSwitch.Down);
+            TooltipUI.Attach(downButton.gameObject, "Этаж ниже (PageDown)");
+
+            var levelsButton = AddBarButton(parent, "LevelsWindow", "Этажи…", ref x,
+                () => _host!.TogglePanel(ToolbarPanel.Levels));
+            _toggles.Add((levelsButton, () => _host!.IsPanelVisible(ToolbarPanel.Levels)));
         }
 
         private Button AddPanelToggle(Transform parent, string name, Sprite icon,

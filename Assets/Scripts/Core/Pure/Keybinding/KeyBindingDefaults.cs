@@ -58,6 +58,9 @@ namespace KitchenDesigner.Core.Keybinding
                     InputBinding.FromGesture(new MouseGesture(MouseButtonKind.Left)),
                 [InputAction.SelectMultiClick] =
                     InputBinding.FromGesture(new MouseGesture(MouseButtonKind.Left, ctrl: true)),
+
+                [InputAction.LevelUp] = InputBinding.FromKey(new KeyChord(KeyCode.PageUp)),
+                [InputAction.LevelDown] = InputBinding.FromKey(new KeyChord(KeyCode.PageDown)),
             };
 
             var table = new InputBinding[InputActionCatalog.All.Length];

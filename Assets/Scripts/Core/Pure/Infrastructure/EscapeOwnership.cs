@@ -15,6 +15,7 @@ namespace KitchenDesigner.Core
         CatalogCollapse,
         DayNightPanel,
         MusicPanel,
+        LevelsWindow,
     }
 
     public struct EscapeClaims
@@ -31,6 +32,7 @@ namespace KitchenDesigner.Core
         public bool CatalogCollapsible;
         public bool DayNightOpen;
         public bool MusicOpen;
+        public bool LevelsWindowOpen;
     }
 
     public static class EscapeOwnership
@@ -49,6 +51,7 @@ namespace KitchenDesigner.Core
             if (claims.CatalogCollapsible) return EscapeOwner.CatalogCollapse;
             if (claims.DayNightOpen) return EscapeOwner.DayNightPanel;
             if (claims.MusicOpen) return EscapeOwner.MusicPanel;
+            if (claims.LevelsWindowOpen) return EscapeOwner.LevelsWindow;
             return EscapeOwner.None;
         }
     }
