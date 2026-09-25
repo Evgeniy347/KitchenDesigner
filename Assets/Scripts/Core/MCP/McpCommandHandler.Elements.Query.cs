@@ -81,7 +81,8 @@ namespace KitchenDesigner.Core.MCP
                         dimXMm = el.DimensionsMM.x, dimYMm = el.DimensionsMM.y, dimZMm = el.DimensionsMM.z,
                         rotYDeg = el.transform.eulerAngles.y,
                         locked = !el.Movable,
-                        hasViolations = vr != null && vr.violations.Contains(el)
+                        hasViolations = vr != null && vr.violations.Contains(el),
+                        levelId = LevelRegistry.LevelOf(el).id
                     });
                 }
                 elements = list;

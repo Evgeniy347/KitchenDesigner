@@ -46,6 +46,7 @@ namespace KitchenDesigner.Core.MCP
                 attachDetached = string.IsNullOrEmpty(el.AttachedToName) ? (bool?)null : AttachLinks.IsDetached(el),
                 moduleId = group != null ? group.id : 0,
                 moduleName = group != null ? group.name : null,
+                levelId = LevelRegistry.LevelOf(el).id,
                 materialId = el.MaterialId,
                 hasViolations = hasViolations,
                 aabbMinXMm = McpAnchor.ToMm(aabb.minX), aabbMinYMm = McpAnchor.ToMm(aabb.minY), aabbMinZMm = McpAnchor.ToMm(aabb.minZ),

@@ -68,6 +68,7 @@ namespace KitchenDesigner.Core.MCP
                 ApplyEdgeEdits(op, el);
                 if (op.attached_to_name != null && AttachLinks.CanBeChild(el))
                     el.AttachedToName = op.attached_to_name;
+                if (op.level_id != null) el.LevelId = op.level_id;
                 ElementEditAppliers.ApplyTypeSpecific(op, el);
                 if (op.new_name != null && op.new_name != el.PartName)
                 {
@@ -421,6 +422,7 @@ namespace KitchenDesigner.Core.MCP
                 commands.Add(new CreateCommand(go));
                 var spawned = go.GetComponent<KitchenElement>();
                 McpAnchor.PlaceMinCornerAt(spawned, anchorWorld);
+                spawned.LevelId = string.IsNullOrEmpty(item.level_id) ? LevelRegistry.CurrentId : item.level_id;
                 created.Add(spawned);
             }
             McpCallStages.End("spawn", stage);

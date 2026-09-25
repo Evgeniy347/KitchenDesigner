@@ -268,6 +268,10 @@ namespace KitchenDesigner.Core.MCP
                 });
             }
 
+            var levels = new List<object>();
+            foreach (var lvl in LevelRegistry.Items)
+                levels.Add(new { id = lvl.id, name = lvl.name, floorElevationMm = lvl.floorElevationMm, heightMm = lvl.heightMm });
+
             return McpResponse.Result(req.id, new
             {
                 roomCount = rooms.Count,
@@ -277,6 +281,7 @@ namespace KitchenDesigner.Core.MCP
                 modules,
                 loose,
                 rooms,
+                levels,
             });
         }
 

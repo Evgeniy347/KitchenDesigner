@@ -56,6 +56,7 @@ namespace KitchenDesigner.Core.MCP
         public bool transparent;
         public int moduleId;
         public string? moduleName;
+        public string levelId = string.Empty;
         public string materialId = string.Empty;
         public bool hasViolations;
         public float aabbMinXMm, aabbMinYMm, aabbMinZMm;

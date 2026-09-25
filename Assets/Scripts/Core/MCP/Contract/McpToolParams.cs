@@ -122,6 +122,10 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Target X of the MINIMUM world corner in MM — the same number get returns in anchor[0]. Omit to keep.")] public float? anchor_x_mm;
         [McpParam("Target Y of the MINIMUM world corner in MM — the bottom of the element. Omit to keep.")] public float? anchor_y_mm;
         [McpParam("Target Z of the MINIMUM world corner in MM — the same number get returns in anchor[1]. Omit to keep.")] public float? anchor_z_mm;
+
+        [McpParam("Move the element to a different level (storey) by id — see level_id in the scene_* tools' "
+            + "output. anchor_y_mm stays an ABSOLUTE world height either way. Omit to keep.")]
+        public string? level_id;
         [McpParam("New width (X) in MM. Omit to keep. Rejected for drawers (their size is parametric).", Min = 1)] public int? width;
         [McpIgnore] public int? dimX;
         [McpParam("New height (Y) in MM. Omit to keep. Rejected for drawers.", Min = 1)] public int? height;
@@ -519,6 +523,11 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Y of the MINIMUM world corner in MM — the bottom of the element.")] public float anchor_y_mm;
         [McpParam("Z of the MINIMUM world corner in MM — the same number get returns in anchor[1].")] public float anchor_z_mm;
 
+        [McpParam("Level (storey) id to place the element on — see level_id in the scene_* tools' output. "
+            + "Omit to use the currently viewed level. anchor_y_mm stays an ABSOLUTE world height either way; "
+            + "this only tags which floor the element belongs to.")]
+        public string? level_id;
+
         [McpParam("Size along X in MM. Defaults: board 800, assembled facade 450, radial shelf 600, table 2000, window 900, door 900.", Min = 1)]
         public int? width;
         [McpParam("Size along Y in MM. Defaults: board 400, assembled facade 700, table 750, window 1200, door 2000.", Min = 1)]
@@ -791,7 +800,7 @@ namespace KitchenDesigner.Core.MCP.Contract
             "construction_region", "construction_floor_height", "construction_masonry",
             "construction_joint", "construction_waste", "construction_soil",
             "construction_concrete", "construction_sand", "construction_gravel",
-            "construction_compacted", "neighbour_levels",
+            "construction_compacted", "construction_slab_thickness", "neighbour_levels",
             "photo_active", "photo_quality", "photo_shadows", "photo_soft_shadows", "photo_anti_aliasing",
             "photo_supersampling", "photo_ambient_occlusion", "photo_bloom", "photo_vignette",
             "photo_ceiling", "photo_ssgi", "photo_lamp_shadows", "photo_hdr", "photo_ao_full_res",
@@ -809,7 +818,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
         [McpParam("New on/off value. Send this for the on/off settings (snap_enabled, grid_enabled, block_on_violation, auto_save, snap_verbose_log, camera_pan_free, mouse_invert_x, mouse_invert_y, construction_compacted, and every photo_* key that names a toggle: photo_shadows, photo_soft_shadows, photo_anti_aliasing, photo_supersampling, photo_ambient_occlusion, photo_bloom, photo_vignette, photo_ceiling, photo_ssgi, photo_lamp_shadows, photo_hdr).")]
         public bool? value;
-        [McpParam("New numeric value: snap_threshold and grid_step in MM, auto_save_interval in seconds, construction_floor_height / construction_joint / construction_sand / construction_gravel in MM, construction_waste in %, construction_region / construction_masonry / construction_soil / construction_concrete / neighbour_levels as the index of the choice listed in the tool description, edge_partial_threshold in %, mouse_sensitivity / wasd_speed / arrow_speed as a multiplier. Photo mode: photo_quality 0=low 1=medium 2=high 3=custom; photo_ssgi_radius / photo_ao_radius / photo_shadow_distance_mm / photo_ao_falloff_mm in MM; photo_shadowmap in pixels; photo_ssgi_samples and photo_lights_per_object are counts; photo_ssgi_blur in pixels (0 = no denoise); photo_bloom_clamp caps how bright one pixel may contribute to the glow, in % of white — it is what stops an open sky from smearing over the whole frame; everything else in %. Send this instead of value for those keys.")]
+        [McpParam("New numeric value: snap_threshold and grid_step in MM, auto_save_interval in seconds, construction_floor_height / construction_joint / construction_sand / construction_gravel / construction_slab_thickness in MM, construction_waste in %, construction_region / construction_masonry / construction_soil / construction_concrete / neighbour_levels as the index of the choice listed in the tool description, edge_partial_threshold in %, mouse_sensitivity / wasd_speed / arrow_speed as a multiplier. Photo mode: photo_quality 0=low 1=medium 2=high 3=custom; photo_ssgi_radius / photo_ao_radius / photo_shadow_distance_mm / photo_ao_falloff_mm in MM; photo_shadowmap in pixels; photo_ssgi_samples and photo_lights_per_object are counts; photo_ssgi_blur in pixels (0 = no denoise); photo_bloom_clamp caps how bright one pixel may contribute to the glow, in % of white — it is what stops an open sky from smearing over the whole frame; everything else in %. Send this instead of value for those keys.")]
         public float? number;
     }
 

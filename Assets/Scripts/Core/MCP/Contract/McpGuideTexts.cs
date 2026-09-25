@@ -578,6 +578,10 @@ faceGaps              Per-axis nearest OPPOSITE neighbour: {axis, neighbor, gapM
                       (|gap| < 0.5 mm) - that is GOOD, not a violation.
                       Axes with no facing neighbour are omitted.
 moduleId/moduleName   Group membership (0/absent = not grouped).
+levelId               Storey (floor) this element belongs to - see level_id in
+                      edit_elements/create_elements and the levels[] array in
+                      get_scene_tree. anchor_y_mm stays an ABSOLUTE world height
+                      regardless of levelId; this only tags which floor it is on.
 materialId            Decor id (list_materials).
 facadeMode            Facade opening mode (""front_left"", ""drawer_out"", ...).
 drawer / table / radiusTable / stool / chair / sofa / pouffe / bed / toilet /
