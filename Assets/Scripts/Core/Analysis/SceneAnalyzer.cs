@@ -64,7 +64,9 @@ namespace KitchenDesigner.Core.Analysis
             using (PerfMarkers.AnalyzeFoundation.Auto()) CollectFoundation(all, issues);
             t = NoteStage("foundation", t);
             using (PerfMarkers.AnalyzeFloorSlab.Auto()) CollectFloorSlab(all, issues);
-            NoteStage("floorSlab", t);
+            t = NoteStage("floorSlab", t);
+            using (PerfMarkers.AnalyzeWallLayerHosts.Auto()) CollectWallLayerHosts(all, issues);
+            NoteStage("wallLayerHosts", t);
 
             LogBreakdownIfSlow(began);
             return issues;
@@ -256,6 +258,16 @@ namespace KitchenDesigner.Core.Analysis
                 if (parent == null) continue;
                 if (!AttachLinks.InContact(e, parent))
                     issues.Add(IssueCatalog.AttachDetached(e, parent));
+            }
+        }
+
+        private static void CollectWallLayerHosts(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var e in all)
+            {
+                if (!(e is WallLayerElement layer) || string.IsNullOrEmpty(layer.HostWallName)) continue;
+                if (layer.ResolveHostWall() == null)
+                    issues.Add(IssueCatalog.WallLayerHostMissing(layer, layer.HostWallName));
             }
         }
 
@@ -515,6 +527,13 @@ namespace KitchenDesigner.Core.Analysis
                 PairDetail(child, parent),
                 $"Прикреплённая деталь отошла от родителя — {Name(child)} и {Name(parent)} не в контакте",
                 child, parent);
+
+        public static AnalysisIssue WallLayerHostMissing(KitchenElement layer, string hostWallName) =>
+            new AnalysisIssue(IssueLevel.Error, CodeAttachDetached,
+                $"{Name(layer)} ↔ {hostWallName}",
+                $"Слой стены отошёл от родителя — {Name(layer)} привязан к стене «{hostWallName}», "
+                + "а такой стены в сцене больше нет",
+                layer);
 
         public static AnalysisIssue ScrewLegOffCentre(KitchenElement leg, KitchenElement host,
             ScrewLegOffCentre offCentre) =>
