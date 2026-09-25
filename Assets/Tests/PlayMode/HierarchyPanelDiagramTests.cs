@@ -53,6 +53,7 @@ public class HierarchyPanelDiagramTests
     [UnityTearDown]
     public IEnumerator TearDown()
     {
+        LevelRegistry.Reset();
         GroupManager.Clear();
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
             if (e != null) Object.Destroy(e.gameObject);
@@ -230,6 +231,46 @@ public class HierarchyPanelDiagramTests
             setup: () => HierarchyPanelUI.Instance!.SetVisible(true), goldenJson: false);
     }
 
+    /// <summary>Проект с двумя этажами (L7a): модуль и свободная полка на 1-м, одна
+    /// полка на 2-м — дерево обязано показать два корня с именами уровней вместо
+    /// одного «Кухня».</summary>
+    private static void SpawnTwoLevelShowcase()
+    {
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 2800),
+        });
+        LevelRegistry.CurrentId = "1";
+
+        var sideL = ElementFactory.CreatePart(new Vector3Int(18, 720, 500), "А3_боковина_L",
+            new Vector3(0f, 0.36f, 0f)).GetComponent<KitchenElement>();
+        sideL.LevelId = "1";
+        var sideR = ElementFactory.CreatePart(new Vector3Int(18, 720, 500), "А3_боковина_R",
+            new Vector3(0.6f, 0.36f, 0f)).GetComponent<KitchenElement>();
+        sideR.LevelId = "1";
+        var g = GroupManager.Link(new List<KitchenElement> { sideL, sideR });
+        GroupManager.Rename(g!, "Модуль А3");
+
+        var groundShelf = ElementFactory.CreatePart(new Vector3Int(600, 18, 400), "Полка 1 этажа",
+            new Vector3(1.5f, 0.8f, 0f)).GetComponent<KitchenElement>();
+        groundShelf.LevelId = "1";
+
+        var upperShelf = ElementFactory.CreatePart(new Vector3Int(600, 18, 400), "Полка 2 этажа",
+            new Vector3(0f, 3.4f, 0f)).GetComponent<KitchenElement>();
+        upperShelf.LevelId = "2";
+    }
+
+    [UnityTest]
+    public IEnumerator HierarchyPanel_TwoLevels_GroupsByLevel_SavesPng()
+    {
+        SpawnTwoLevelShowcase();
+        yield return null; // панель подхватит изменения по событию Changed
+
+        yield return Capture("HierarchyPanel", "hierarchy_panel_two_levels.png", 0, 0, recenter: true,
+            setup: () => HierarchyPanelUI.Instance!.SetVisible(true), goldenJson: false);
+    }
+
     [UnityTest]
     public IEnumerator Toolbar_SceneButton_SavesPngAndJson()
     {
@@ -278,6 +319,41 @@ public class HierarchyPanelDiagramTests
 
         // Голден-JSON волатилен (набор строк зависит от геометрии) — только PNG.
         yield return Capture("ErrorPanel", "error_panel.png", 0, 0, recenter: true,
+            setup: () =>
+            {
+                var panel = Object.FindAnyObjectByType<ErrorPanelUI>();
+                Assert.IsNotNull(panel, "ErrorPanelUI not found");
+                panel!.SetVisible(true);
+            }, goldenJson: false);
+    }
+
+    /// <summary>Проект с двумя этажами (L7a): DRW-01 на 1-м этаже, FAC-01 на 2-м —
+    /// фильтр «Этаж» обязан предложить оба и показать обе строки, пока стоит «Все».</summary>
+    private static void SpawnTwoLevelIssueShowcase()
+    {
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 2800),
+        });
+        LevelRegistry.CurrentId = "1";
+
+        var drawer = ElementFactory.CreateDrawer(DrawerType.B, 450, DrawerColor.Anthracite, 400,
+            "Ящик без фасада (1 этаж)", new Vector3(0f, 0.55f, 0f)).GetComponent<KitchenElement>();
+        drawer.LevelId = "1";
+
+        var facade = ElementFactory.CreateFacade(new Vector3Int(560, 720, 18), "Фасад без зазора (2 этаж)",
+            new Vector3(1.2f, 3.55f, 0f), 0, 2, 2, 2).GetComponent<KitchenElement>();
+        facade.LevelId = "2";
+    }
+
+    [UnityTest]
+    public IEnumerator ErrorPanel_TwoLevels_ShowsFloorFilter_SavesPng()
+    {
+        SpawnTwoLevelIssueShowcase();
+        yield return null;
+
+        yield return Capture("ErrorPanel", "error_panel_two_levels.png", 0, 0, recenter: true,
             setup: () =>
             {
                 var panel = Object.FindAnyObjectByType<ErrorPanelUI>();
