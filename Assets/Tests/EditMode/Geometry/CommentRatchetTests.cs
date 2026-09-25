@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 
 namespace KitchenDesigner.Tests.Geometry
@@ -44,7 +45,10 @@ namespace KitchenDesigner.Tests.Geometry
 
         private static string CoreDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
 
-        public static bool StartsAComment(string line)
+        private static readonly Regex NormativeDocRef =
+            new Regex(@"^(ГОСТ|СП|СНиП|ЕНиР|ТР|ISO|EN)\b", RegexOptions.Compiled);
+
+        public static int CommentStartIndex(string line)
         {
             bool inString = false, inChar = false;
             for (int i = 0; i < line.Length; i++)
@@ -57,14 +61,32 @@ namespace KitchenDesigner.Tests.Geometry
                 if (inString || inChar) continue;
 
                 if (c == '/' && i + 1 < line.Length && (line[i + 1] == '/' || line[i + 1] == '*'))
-                    return true;
+                    return i;
             }
 
-            return false;
+            return -1;
+        }
+
+        public static bool StartsAComment(string line) => CommentStartIndex(line) >= 0;
+
+        /// <summary>CONVENTIONS.md → COMMENTS «a normative source on a constant»: a trailing
+        /// "// ГОСТ|СП|СНиП|ЕНиР|ТР|ISO|EN …" on a line that declares a const is exempt from the
+        /// ordinary-comment ceiling. Only a "//" line comment qualifies — "/*" does not, and the
+        /// reference must trail the SAME line as the const, not stand alone above it.</summary>
+        public static bool IsNormativeConstComment(string line)
+        {
+            int idx = CommentStartIndex(line);
+            if (idx < 0 || idx + 1 >= line.Length || line[idx + 1] != '/')
+                return false;
+
+            if (!Regex.IsMatch(line.Substring(0, idx), @"\bconst\b"))
+                return false;
+
+            return NormativeDocRef.IsMatch(line.Substring(idx + 2).Trim());
         }
 
         private static int CommentLines(string file) =>
-            File.ReadAllLines(file).Count(StartsAComment);
+            File.ReadAllLines(file).Count(l => StartsAComment(l) && !IsNormativeConstComment(l));
 
         private static Dictionary<string, int> CountsByDirectory()
         {
@@ -127,6 +149,67 @@ namespace KitchenDesigner.Tests.Geometry
             Assert.IsFalse(StartsAComment("var c = '/';"));
             Assert.IsFalse(StartsAComment("var q = \"\\\"//\\\"\";"),
                 "экранированная кавычка не закрывает строку");
+        }
+
+        [Test]
+        public void IsNormativeConstComment_TrailingDocIdOnAConst_IsTrue()
+        {
+            Assert.IsTrue(IsNormativeConstComment(
+                "        private const float MinSoleMarginMm = 100f; // СП 22.13330.2016"),
+                "СП — признанный код нормативного документа");
+            Assert.IsTrue(IsNormativeConstComment(
+                "        internal const int RebarStepMm = 200; // ГОСТ 34028"),
+                "ГОСТ — признанный код нормативного документа");
+            Assert.IsTrue(IsNormativeConstComment(
+                "        public const int SlabDefaultMm = 200; // EN 1992-1-1"),
+                "EN — признанный код нормативного документа (иностранный стандарт)");
+        }
+
+        [Test]
+        public void IsNormativeConstComment_OppositeInputs_AreFalse()
+        {
+            Assert.IsFalse(IsNormativeConstComment(
+                "        private const float MinSoleMarginMm = 100f; // approx, not sourced"),
+                "хвост не начинается с кода нормы — обычный комментарий, не исключение");
+
+            Assert.IsFalse(IsNormativeConstComment(
+                "        private float MinSoleMarginMm = 100f; // СП 22.13330.2016"),
+                "строка не объявляет const — исключение не для полей вообще");
+
+            Assert.IsFalse(IsNormativeConstComment(
+                "        // СП 22.13330.2016 обосновывает значение ниже"),
+                "ссылка не хвостовая на той же строке, что const — отдельный комментарий сверху");
+
+            Assert.IsFalse(IsNormativeConstComment(
+                "        private const float Gap = 100f; /* СП 22.13330.2016 */"),
+                "блочный комментарий /* */, а исключение — только для хвостового //");
+        }
+
+        [Test]
+        public void NormativeConstComments_AreExcludedFromTheOrdinaryCount()
+        {
+            var dir = Path.Combine(Path.GetTempPath(), "CommentRatchetTests_" + Guid.NewGuid());
+            Directory.CreateDirectory(dir);
+            try
+            {
+                var file = Path.Combine(dir, "Sample.cs");
+                File.WriteAllLines(file, new[]
+                {
+                    "class Sample",
+                    "{",
+                    "    private const float A = 100f; // СП 22.13330.2016",
+                    "    private const float B = 50f; // just a hunch, not sourced",
+                    "}",
+                });
+
+                Assert.AreEqual(1, CommentLines(file),
+                    "строка A — нормативная ссылка на const, исключена; строка B — обычный "
+                    + "комментарий и должна попасть в счёт");
+            }
+            finally
+            {
+                Directory.Delete(dir, recursive: true);
+            }
         }
 
         [Test]
