@@ -20,6 +20,7 @@ namespace KitchenDesigner.Core.UI
         private static Sprite? _brickwork;
         private static Sprite? _search, _tileStub;
         private static Sprite? _dockExpanded, _dockRail;
+        private static Sprite? _layers;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -60,6 +61,7 @@ namespace KitchenDesigner.Core.UI
         public static Sprite TileStub => _tileStub ??= BuildTileStub();
         public static Sprite DockExpanded => _dockExpanded ??= BuildDockExpanded();
         public static Sprite DockRail => _dockRail ??= BuildDockRail();
+        public static Sprite Layers => _layers ??= BuildLayers();
 
         private static Sprite BuildGear()
         {
@@ -478,6 +480,15 @@ namespace KitchenDesigner.Core.UI
             Disc(px, 17, 46, 6, Ink);
             Disc(px, 17, 32, 6, Ink);
             Disc(px, 17, 18, 6, Ink);
+            return Finish(px);
+        }
+
+        private static Sprite BuildLayers()
+        {
+            var px = NewCanvas();
+            Rect(px, 10, 42, 54, 52, Ink);
+            Rect(px, 10, 25, 54, 35, Ink2);
+            Rect(px, 10, 8, 54, 18, Ink);
             return Finish(px);
         }
 

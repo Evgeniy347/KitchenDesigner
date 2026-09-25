@@ -41,7 +41,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _issueCountLabel;
         private int _issueBadgeRevision = -1;
         private TMP_Text? _levelLabel;
-        private const float LevelLabelWidth = 100f;
+        private const float LevelLabelWidth = 40f;
 
         public int IssueBadgeRevision => _issueBadgeRevision;
 
@@ -153,9 +153,7 @@ namespace KitchenDesigner.Core.UI
             var downButton = AddBarButton(parent, "LevelDown", UIStyle.GlyphDropdown, ref x, LevelSwitch.Down);
             TooltipUI.Attach(downButton.gameObject, "Этаж ниже (PageDown)");
 
-            var levelsButton = AddBarButton(parent, "LevelsWindow", "Этажи…", ref x,
-                () => _host!.TogglePanel(ToolbarPanel.Levels));
-            _toggles.Add((levelsButton, () => _host!.IsPanelVisible(ToolbarPanel.Levels)));
+            AddPanelToggle(parent, "LevelsWindow", IconFactory.Layers, ToolbarPanel.Levels, ref x, "Этажи…");
         }
 
         private Button AddPanelToggle(Transform parent, string name, Sprite icon,

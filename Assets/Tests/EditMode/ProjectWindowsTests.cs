@@ -253,7 +253,7 @@ public class ProjectWindowsTests
         ids.Sort(System.StringComparer.Ordinal);
 
         Assert.AreEqual(
-            new[] { "dayNight", "errors", "hierarchy", "loadProject", "music", "projectInstructions", "settings", "specification" },
+            new[] { "dayNight", "errors", "hierarchy", "levels", "loadProject", "music", "projectInstructions", "settings", "specification" },
             ids.ToArray(),
             "WindowId — ключ в файле проекта: переименование обесценивает уже "
             + "сохранённые проекты (окно молча вернётся к дефолту), а новое окно "
