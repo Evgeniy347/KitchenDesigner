@@ -101,6 +101,7 @@ namespace KitchenDesigner.Core.MCP
 		public PillarInfo? pillar;
 		public FoundationInfo? foundation;
 		public FloorSlabInfo? floorSlab;
+		public FenceInfo? fence;
 		public ScrewLegInfo? screwLeg;
 		public PipeInfo? pipe;
 		public PipeFittingInfo? pipeFitting;
@@ -496,6 +497,16 @@ namespace KitchenDesigner.Core.MCP
 		public string concreteGrade = "B20";
 		public int rebarDiameterMm;
 		public int rebarStepMm;
+	}
+
+	[Serializable]
+	public class FenceInfo
+	{
+		public int postSectionMm;
+		public int postStepMm;
+		public int pitDepthMm;
+		public string sheetMark = "C8";
+		public int railCount;
 	}
 
 	[Serializable]

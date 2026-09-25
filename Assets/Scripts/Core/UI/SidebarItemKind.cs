@@ -35,6 +35,7 @@ namespace KitchenDesigner.Core.UI
         Floor,
         Foundation,
         FloorSlab,
+        Fence,
         LightSource,
         Window,
         Door,

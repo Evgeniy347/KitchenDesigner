@@ -38,7 +38,9 @@ public class ElementFrontDeclarationTests
     // wall network has no one characteristic face, same reason as a pipe or a slab.
     // 35: FloorSlabElement joined honestly too — a horizontal slab is seen from above
     // or below, never from one characteristic side, same reason as the floor finish.
-    private const int FacelessCeiling = 35;
+    // 36: FenceElement — a profiled sheet is symmetric through its thickness, same
+    // reason as the pipe and the foundation strip.
+    private const int FacelessCeiling = 36;
 
     private static IReadOnlyList<ElementSurfaceSweep.Row> Rows => ElementSurfaceSweep.Rows;
 

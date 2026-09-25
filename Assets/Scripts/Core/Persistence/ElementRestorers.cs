@@ -159,6 +159,18 @@ namespace KitchenDesigner.Core
                  slab.RebarStepMm = d.slabRebarStepMm;
              }),
 
+            (d => d.isFence,
+             (factory, d) => factory.CreateFence(d.Dimensions.x, d.Dimensions.y, d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is not FenceElement fence) return;
+                 fence.DimensionsMM = d.Dimensions;
+                 fence.PostSectionMm = d.fencePostSectionMm;
+                 fence.PostStepMm = d.fencePostStepMm;
+                 fence.PitDepthMm = d.fencePitDepthMm;
+                 fence.SheetMark = (FenceSheetMark)d.fenceSheetMark;
+             }),
+
             (d => d.isPipe,
              (factory, d) => factory.CreatePipe(d.pipeSizeId, d.pipeLengthMM, d.name, d.Position),
              null),

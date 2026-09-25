@@ -71,6 +71,7 @@ namespace KitchenDesigner.Core.UI
                 SidebarItemKind.Floor => EditModeManager.Category.Room,
                 SidebarItemKind.Foundation => EditModeManager.Category.Room,
                 SidebarItemKind.FloorSlab => EditModeManager.Category.Room,
+                SidebarItemKind.Fence => EditModeManager.Category.Room,
                 _ => EditModeManager.Category.Regular,
             };
         }
@@ -230,6 +231,8 @@ namespace KitchenDesigner.Core.UI
                 FoundationItem("Фундамент"));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Перекрытие",
                 FloorSlabItem("Перекрытие"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Забор",
+                FenceItem("Забор"));
         }
 
         private static IEnumerable<(SidebarGroupKey Group, Item Item)> RowsWithTileTitleInherited()
@@ -369,6 +372,12 @@ namespace KitchenDesigner.Core.UI
             new Item(name, new Vector3Int(FloorSlabElement.DEFAULT_LENGTH_MM,
                 KitchenSettings.Instance.ConstructionSlabThicknessMm, FloorSlabElement.DEFAULT_WIDTH_MM),
                 SidebarItemKind.FloorSlab);
+
+        private static Item FenceItem(string name) =>
+            new Item(name, new Vector3Int(FenceElement.DEFAULT_LENGTH_MM,
+                FenceElement.DEFAULT_HEIGHT_MM,
+                KitchenDesigner.Core.Construction.FenceDefaults.SheetThicknessMm),
+                SidebarItemKind.Fence);
 
         private static Item PillarItem(string name, int midHeightMM)
         {

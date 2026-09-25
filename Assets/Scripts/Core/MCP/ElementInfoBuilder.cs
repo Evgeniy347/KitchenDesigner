@@ -305,6 +305,15 @@ namespace KitchenDesigner.Core.MCP
                 rebarStepMm = slab.RebarStepMm,
             }),
 
+            For<FenceElement>((info, fence) => info.fence = new FenceInfo
+            {
+                postSectionMm = fence.PostSectionMm,
+                postStepMm = fence.PostStepMm,
+                pitDepthMm = fence.PitDepthMm,
+                sheetMark = McpWireEnums.Name(fence.SheetMark),
+                railCount = fence.RailCount,
+            }),
+
             For<PipeElement>((info, pipe) => info.pipe = new PipeInfo
             {
                 sizeId = pipe.SizeId,

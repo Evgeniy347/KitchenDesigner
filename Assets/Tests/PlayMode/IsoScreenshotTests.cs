@@ -1794,6 +1794,31 @@ public class IsoScreenshotTests : ElementFrameTests
         Object.DestroyImmediate(camGo);
     }
 
+    /// <summary>Прямой прогон забора: столбы (LegSet) уходят в яму ниже нуля, лист
+    /// (ProfileExtrusionMesh) стоит от нуля вверх на высоту — элемент сам заведён на
+    /// уровне земли (Vector3.zero), в отличие от плиты перекрытия ему не нужен сдвиг
+    /// для того, чтобы не оказаться наполовину под землёй.</summary>
+    [UnityTest]
+    public IEnumerator IsoFence_DefaultSize()
+    {
+        var go = ElementFactory.CreateFence(FenceElement.DEFAULT_LENGTH_MM,
+            FenceElement.DEFAULT_HEIGHT_MM, "IsoFence", Vector3.zero);
+        _spawned.Add(go);
+        var fence = go.GetComponent<FenceElement>();
+        Assert.IsNotNull(fence);
+
+        float toU = AppConstants.MM_TO_UNITS;
+        float focusY = (FenceElement.DEFAULT_HEIGHT_MM - fence.PitDepthMm) * 0.5f * toU;
+        Vector3 size = MmToUnits(new Vector3Int(FenceElement.DEFAULT_LENGTH_MM,
+            FenceElement.DEFAULT_HEIGHT_MM + fence.PitDepthMm, fence.PostSectionMm * 4));
+        var (camGo, cam) = CreateIsoCamera(new Vector3(0f, focusY, 0f), size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_fence.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
     /// <summary>Мойка, врезанная в столешницу: борт лежит на пласти, чаша уходит
     /// в сквозной проём, сзади стоит смеситель.</summary>
     [UnityTest]

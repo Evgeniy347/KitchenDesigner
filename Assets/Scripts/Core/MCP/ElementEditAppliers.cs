@@ -221,6 +221,14 @@ namespace KitchenDesigner.Core.MCP
                 if (op.floor_slab_rebar_step_mm.HasValue)
                     slab.RebarStepMm = op.floor_slab_rebar_step_mm.Value;
             }),
+            For<FenceElement>((op, fence) =>
+            {
+                if (op.fence_post_section_mm.HasValue) fence.PostSectionMm = op.fence_post_section_mm.Value;
+                if (op.fence_post_step_mm.HasValue) fence.PostStepMm = op.fence_post_step_mm.Value;
+                if (op.fence_pit_depth_mm.HasValue) fence.PitDepthMm = op.fence_pit_depth_mm.Value;
+                if (op.fence_sheet_mark != null)
+                    fence.SheetMark = McpWireEnums.ParseFenceSheetMark(op.fence_sheet_mark);
+            }),
             (op, el) =>
             {
                 var wall = el.GetComponent<Wall>();

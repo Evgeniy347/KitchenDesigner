@@ -431,6 +431,13 @@ FloorSlabElement      Horizontal floor slab (type:""floor_slab""). Plain
                       -- technology ""joists"" has no quantities yet, so its
                       concrete/rebar numbers stay at whatever they last were
                       and are simply not used.
+FenceElement          Straight run of profiled-sheet fence (type:""fence"").
+                      width is the run length, height is the fence height
+                      above grade (create_elements dim_x/dim_y); posts and
+                      pit are procedural, not part of dim_z. fence_* fields
+                      (see get_elements fields) feed the specification --
+                      rail count is DERIVED from height (2 below 2000mm, 3
+                      at or above) and has no field of its own.
 ScrewLegElement       Screw-in levelling leg with a threaded insert
                       (type:""screw_leg""). A foot (screw_base_diameter_mm x
                       screw_base_height_mm, 25x8 mm by default) plus a threaded
@@ -625,6 +632,11 @@ floorSlab             Floor slab only: {technology, thicknessMm, concreteGrade,
                       floor_slab_concrete). thicknessMm is READ-ONLY here -
                       it is the element's dim_y, set via edit_elements height
                       like any other dimension, not a separate field.
+fence                 Fence run only: {postSectionMm, postStepMm, pitDepthMm,
+                      sheetMark, railCount}. sheetMark is a string (see
+                      edit_elements fence_sheet_mark). railCount is
+                      READ-ONLY -- derived from the run's own height, no
+                      matching edit field.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
   {name, kind, anchorMm:[x,z] corner, sizeMm:[width,height,depth], rotYDeg,

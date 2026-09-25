@@ -158,6 +158,10 @@ namespace KitchenDesigner.Core.UI
                     _spawned = ElementFactory.CreateFloorSlab(item.dims.x, item.dims.z, item.name,
                         Vector3.zero);
                     break;
+                case SidebarItemKind.Fence:
+                    _spawned = ElementFactory.CreateFence(item.dims.x, item.dims.y, item.name,
+                        Vector3.zero);
+                    break;
                 case SidebarItemKind.Board:
                 default:
                     _spawned = ElementFactory.CreatePart(item.dims, item.name, Vector3.zero);

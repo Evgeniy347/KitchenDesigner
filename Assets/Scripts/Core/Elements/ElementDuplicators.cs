@@ -145,6 +145,24 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is FenceElement,
+             (factory, source, pos) => factory.CreateFence(
+                 source.DimensionsMM.x, source.DimensionsMM.y, source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (FenceElement)source;
+                 var made = copy.GetComponent<FenceElement>();
+                 if (made != null)
+                 {
+                     made.DimensionsMM = src.DimensionsMM;
+                     made.PostSectionMm = src.PostSectionMm;
+                     made.PostStepMm = src.PostStepMm;
+                     made.PitDepthMm = src.PitDepthMm;
+                     made.SheetMark = src.SheetMark;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is PipeElement,
              (factory, source, pos) =>
                  factory.CreatePipe(((PipeElement)source).SizeId, ((PipeElement)source).LengthMM,

@@ -267,6 +267,14 @@ namespace KitchenDesigner.Core
 				d.slabRebarDiameterMm = slab.RebarDiameterMm;
 				d.slabRebarStepMm = slab.RebarStepMm;
 			}
+			if (element is FenceElement fence)
+			{
+				d.isFence = true;
+				d.fencePostSectionMm = fence.PostSectionMm;
+				d.fencePostStepMm = fence.PostStepMm;
+				d.fencePitDepthMm = fence.PitDepthMm;
+				d.fenceSheetMark = (int)fence.SheetMark;
+			}
 			if (element is ScrewLegElement screwLeg)
 			{
 				d.isScrewLeg = true;

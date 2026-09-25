@@ -107,6 +107,9 @@ namespace KitchenDesigner.Core
 		public static GameObject CreateFloorSlab(int lengthMM, int widthMM, string name, Vector3 position) =>
 			Instance.CreateFloorSlab(lengthMM, widthMM, name, position);
 
+		public static GameObject CreateFence(int lengthMM, int heightMM, string name, Vector3 position) =>
+			Instance.CreateFence(lengthMM, heightMM, name, position);
+
 		public static GameObject CreateLightSource(string name, Vector3 position) =>
 			Instance.CreateLightSource(name, position);
 

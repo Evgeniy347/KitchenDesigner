@@ -199,6 +199,23 @@ namespace KitchenDesigner.Core.MCP
 
         public static string Name(SlabTechnology t) => t == SlabTechnology.Joists ? "joists" : "slab";
 
+        public static FenceSheetMark ParseFenceSheetMark(string s)
+        {
+            switch ((s ?? "").Trim().ToUpperInvariant())
+            {
+                case "C20": return FenceSheetMark.C20;
+                case "HC35": return FenceSheetMark.HC35;
+                default: return FenceSheetMark.C8;
+            }
+        }
+
+        public static string Name(FenceSheetMark m) => m switch
+        {
+            FenceSheetMark.C20 => "C20",
+            FenceSheetMark.HC35 => "HC35",
+            _ => "C8",
+        };
+
         public static string Name(DrawerSystem s) => s == DrawerSystem.Movento ? "movento" : "gtv";
 
         public static string Name(LaundryMachineKind k) =>

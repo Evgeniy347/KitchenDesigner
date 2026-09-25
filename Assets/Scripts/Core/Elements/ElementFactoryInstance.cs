@@ -515,6 +515,20 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, slab);
         }
 
+        public GameObject CreateFence(int lengthMM, int heightMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewCube(name, "Забор", position);
+            ElementRoot.SwapBoxColliderForMeshCollider(go);
+
+            var fence = go.AddComponent<FenceElement>();
+            fence.PartName = go.name;
+            fence.DimensionsMM = new Vector3Int(lengthMM, heightMM,
+                KitchenDesigner.Core.Construction.FenceDefaults.SheetThicknessMm);
+
+            if (DefaultMaterial != null) MaterialManager.ApplyById(fence, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(go, fence);
+        }
+
         public GameObject CreatePipe(string sizeId, int lengthMM, string name, Vector3 position)
         {
             var go = ElementRoot.NewCube(name, "Труба", position);

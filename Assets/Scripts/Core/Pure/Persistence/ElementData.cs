@@ -176,6 +176,11 @@ namespace KitchenDesigner.Core
 			KitchenDesigner.Core.Construction.FoundationRebarDefaults.DiameterMm;
 		public int slabRebarStepMm =
 			KitchenDesigner.Core.Construction.FoundationRebarDefaults.StepMm;
+		public bool isFence = false;
+		public int fencePostSectionMm = KitchenDesigner.Core.Construction.FenceDefaults.PostSectionMm;
+		public int fencePostStepMm = KitchenDesigner.Core.Construction.FenceDefaults.PostStepMm;
+		public int fencePitDepthMm = KitchenDesigner.Core.Construction.FenceDefaults.PitDepthMm;
+		public int fenceSheetMark = (int)KitchenDesigner.Core.Construction.FenceDefaults.SheetMark;
 		public bool isLightSource = false;
 		public int lightTemperatureK = LampSpec.DEFAULT_TEMPERATURE_K;
 		public int lightPowerW = LampSpec.DEFAULT_POWER_W;
