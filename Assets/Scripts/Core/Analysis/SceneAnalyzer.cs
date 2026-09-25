@@ -62,7 +62,9 @@ namespace KitchenDesigner.Core.Analysis
             using (PerfMarkers.AnalyzeMillimetreGrid.Auto()) CollectMillimetreGrid(all, issues);
             t = NoteStage("millimetreGrid", t);
             using (PerfMarkers.AnalyzeFoundation.Auto()) CollectFoundation(all, issues);
-            NoteStage("foundation", t);
+            t = NoteStage("foundation", t);
+            using (PerfMarkers.AnalyzeFloorSlab.Auto()) CollectFloorSlab(all, issues);
+            NoteStage("floorSlab", t);
 
             LogBreakdownIfSlow(began);
             return issues;
@@ -320,6 +322,13 @@ namespace KitchenDesigner.Core.Analysis
             var foundations = SceneFoundationSnapshot.Foundations(all);
             var walls = SceneFoundationSnapshot.LoadBearingWalls(all);
             foreach (var finding in Construction.FoundationRules.Collect(foundations, walls))
+                issues.Add(IssueCatalog.FromConstructionFinding(finding, FindByName(all, finding.ElementId)));
+        }
+
+        private static void CollectFloorSlab(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            var slabs = SceneSlabSnapshot.Slabs(all);
+            foreach (var finding in Construction.FloorSlabRules.Collect(slabs))
                 issues.Add(IssueCatalog.FromConstructionFinding(finding, FindByName(all, finding.ElementId)));
         }
 
