@@ -30,6 +30,12 @@ Forbidden, without exception:
 - commented-out code
 - TODO / FIXME / HACK — open a task, do not leave a note
 
+**One exception, by the user's decision (2026-09-25): a normative source on a constant.** A
+constant whose value comes from a standard carries a trailing reference to the document and
+nothing else: `const float MinSoleMarginMm = 100f; // СП 22.13330.2016`. No explanation, no
+clause prose — just the document id. The ratchet counts these separately
+(`// ГОСТ|СП|СНиП|ЕНиР|ТР|ISO|EN`), so they never raise the ceiling of ordinary comments.
+
 Not comments, therefore allowed: `#pragma`, `#if`/`#endif`, `[NotUndoable("reason")]` and
 other attribute strings, tool directives (`// ReSharper disable` and the like).
 
