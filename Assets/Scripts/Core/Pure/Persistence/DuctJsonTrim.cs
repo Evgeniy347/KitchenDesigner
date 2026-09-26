@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core
             return projectJson;
         }
 
-        private static string RemoveFromElementsArray(string projectJson)
+        internal static string RemoveFromElementsArray(string projectJson)
         {
             var root = JsonText.RootObject(projectJson);
             if (!root.Found) return projectJson;
@@ -50,7 +50,7 @@ namespace KitchenDesigner.Core
             return RemoveFromElement(projectJson, obj);
         }
 
-        private static string RemoveFromElement(string source, JsonSpan objectSpan)
+        internal static string RemoveFromElement(string source, JsonSpan objectSpan)
         {
             source = RemoveFamilyUnlessTrue(source, objectSpan, IsDuctKey, DuctDetailKeys);
             source = RemoveFamilyUnlessTrue(source, objectSpan, IsGrilleKey, GrilleDetailKeys);

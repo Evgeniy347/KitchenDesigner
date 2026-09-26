@@ -19,7 +19,7 @@ namespace KitchenDesigner.Core
             return result;
         }
 
-        private static string RemoveEmptyLevelIdFromElements(string source)
+        internal static string RemoveEmptyLevelIdFromElements(string source)
         {
             var root = JsonText.RootObject(source);
             if (!root.Found) return source;
@@ -27,14 +27,7 @@ namespace KitchenDesigner.Core
             var elements = JsonText.MemberValue(source, root, ElementsKey);
             if (!elements.Found || source[elements.Start] != '[') return source;
 
-            var items = JsonText.ArrayItems(source, elements);
-            for (int i = items.Count - 1; i >= 0; i--)
-            {
-                var item = items[i];
-                if (item.Start >= source.Length || source[item.Start] != '{') continue;
-                source = RemoveEmptyLevelId(source, item);
-            }
-            return source;
+            return JsonText.RewriteArrayItems(source, elements, RemoveEmptyLevelId);
         }
 
         private static string RemoveEmptyLevelIdFromNamedObject(string source, string key)
@@ -48,7 +41,7 @@ namespace KitchenDesigner.Core
             return RemoveEmptyLevelId(source, obj);
         }
 
-        private static string RemoveEmptyLevelId(string source, JsonSpan objectSpan)
+        internal static string RemoveEmptyLevelId(string source, JsonSpan objectSpan)
         {
             var levelId = JsonText.MemberValue(source, objectSpan, LevelIdKey);
             if (!levelId.Found) return source;
@@ -57,7 +50,7 @@ namespace KitchenDesigner.Core
             return JsonText.RemoveMember(source, objectSpan, LevelIdKey);
         }
 
-        private static string RemoveEmptyLevelsArray(string source)
+        internal static string RemoveEmptyLevelsArray(string source)
         {
             var root = JsonText.RootObject(source);
             if (!root.Found) return source;

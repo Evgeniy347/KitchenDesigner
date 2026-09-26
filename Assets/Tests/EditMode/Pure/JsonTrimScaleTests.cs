@@ -20,18 +20,25 @@ using KitchenDesigner.Core;
 /// test exists to catch called it on the FULL document (length L) once per element (N),
 /// total N*L; the fix calls it on each element's own slice, total ~L regardless of N. That
 /// is a machine-independent stand-in for exactly the growth this test guards, not a proxy
-/// for it.</summary>
+/// for it.
+///
+/// 2026-09-26: `LevelsJsonTrim` and `DuctJsonTrim` joined the chain (test-results/review-persistence.md
+/// #1) — the review found they were the two classes NOT covered here, and `LevelsJsonTrim` in
+/// particular still walked the array with `RemoveMember(source, item, ...)` directly instead of
+/// through `RewriteArrayItems`, so this exact guard could not see its O(n^2) shape.</summary>
 public class JsonTrimScaleTests
 {
     private static string RunChainedTrims(int elementCount, out string result)
     {
         string project = BuildProjectWithPlainElements(elementCount);
         JsonText.TakeCharsProcessedByRemoveMember();
-        result = RoofJsonTrim.RemoveWhenNotRoof(
-            WallLayerJsonTrim.RemoveWhenNotWallLayer(
-                FoundationJsonTrim.RemoveWhenNotFoundation(
-                    FloorSlabJsonTrim.RemoveWhenNotFloorSlab(
-                        FenceJsonTrim.RemoveWhenNotFence(project)))));
+        result = LevelsJsonTrim.RemoveWhenEmpty(
+            DuctJsonTrim.RemoveWhenNotDuct(
+                RoofJsonTrim.RemoveWhenNotRoof(
+                    WallLayerJsonTrim.RemoveWhenNotWallLayer(
+                        FoundationJsonTrim.RemoveWhenNotFoundation(
+                            FloorSlabJsonTrim.RemoveWhenNotFloorSlab(
+                                FenceJsonTrim.RemoveWhenNotFence(project)))))));
         return project;
     }
 
@@ -54,6 +61,12 @@ public class JsonTrimScaleTests
             "a plain element's family flags are still removed");
         Assert.IsFalse(first.Contains("wallLayerHostWallName"));
         Assert.IsFalse(first.Contains("isRoof"));
+        Assert.IsFalse(first.Contains("levelId"),
+            "LevelsJsonTrim must also run through RewriteArrayItems, not RemoveMember on the full document");
+        Assert.IsFalse(first.Contains("isDuct"));
+        Assert.IsFalse(first.Contains("ductDiameterMm"));
+        Assert.IsFalse(first.Contains("isGrille"));
+        Assert.IsFalse(first.Contains("grilleAirflowM3PerHour"));
     }
 
     [Test]
@@ -65,13 +78,15 @@ public class JsonTrimScaleTests
         RunChainedTrims(800, out _);
         long large = JsonText.TakeCharsProcessedByRemoveMember();
 
-        Assert.Greater(small, 0, "200 elements through five chained trims must call RemoveMember");
+        Assert.Greater(small, 0, "200 elements through seven chained trims must call RemoveMember");
         Assert.Less(large, small * 8,
             $"element count quadrupled (200 -> 800), but RemoveMember's total characters "
             + $"processed grew from {small} to {large}. RewriteArrayItems hands each trim "
             + "only its own element's slice (O(n) total); growth near 16x means RemoveMember "
             + "is seeing the WHOLE document again on every element, the exact O(n^2) shape "
-            + "this class exists to catch");
+            + "this class exists to catch (this is exactly the shape LevelsJsonTrim had before "
+            + "test-results/review-persistence.md #1: it called RemoveMember(source, item, ...) "
+            + "with `source` the FULL document, once per element)");
     }
 
     private static string MemberOf(string json, string key)
@@ -89,6 +104,7 @@ public class JsonTrimScaleTests
             if (i > 0) sb.Append(",\n");
             sb.Append("    {\n");
             sb.Append("      \"name\": \"E").Append(i).Append("\",\n");
+            sb.Append("      \"levelId\": \"\",\n");
             sb.Append("      \"isFence\": false,\n");
             sb.Append("      \"fencePostSectionMm\": 60,\n");
             sb.Append("      \"isFloorSlab\": false,\n");
@@ -99,6 +115,10 @@ public class JsonTrimScaleTests
             sb.Append("      \"wallLayerHostWallName\": \"\",\n");
             sb.Append("      \"isRoof\": false,\n");
             sb.Append("      \"roofType\": 1,\n");
+            sb.Append("      \"isDuct\": false,\n");
+            sb.Append("      \"ductDiameterMm\": 100,\n");
+            sb.Append("      \"isGrille\": false,\n");
+            sb.Append("      \"grilleAirflowM3PerHour\": 0,\n");
             sb.Append("      \"movable\": true,\n");
             sb.Append("      \"position\": [0.0, 0.0, 0.0]\n");
             sb.Append("    }");

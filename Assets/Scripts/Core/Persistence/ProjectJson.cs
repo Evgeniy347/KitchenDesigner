@@ -9,16 +9,19 @@ namespace KitchenDesigner.Core
         private const string TypeKey = "\"" + nameof(ElementData.elementType) + "\"";
 
         public static string Serialize(ProjectData data) =>
-            LevelsJsonTrim.RemoveWhenEmpty(
-                KeyBindingsJsonTrim.RemoveWhenEmpty(
-                    DuctJsonTrim.RemoveWhenNotDuct(
-                        RoofJsonTrim.RemoveWhenNotRoof(
-                            WallLayerJsonTrim.RemoveWhenNotWallLayer(
-                                FenceJsonTrim.RemoveWhenNotFence(
-                                    FloorSlabJsonTrim.RemoveWhenNotFloorSlab(
-                                        FoundationJsonTrim.RemoveWhenNotFoundation(
-                                            CreatedAtUtcJsonTrim.RemoveWhenEmpty(
-                                                RawElementRecords.Apply(JsonUtility.ToJson(data, true), RawRecordsOf(data)))))))))));
+            LevelsJsonTrim.RemoveEmptyLevelsArray(
+                ConvertStateHistoryJsonTrim.RemoveWhenNotNeeded(
+                    BasePlateFamilyJsonTrim.RemoveWhenNotNeeded(
+                        KeyBindingsJsonTrim.RemoveWhenEmpty(
+                            DuctJsonTrim.RemoveFromElementsArray(
+                                RoofJsonTrim.RemoveFromElementsArray(
+                                    WallLayerJsonTrim.RemoveFromElementsArray(
+                                        FenceJsonTrim.RemoveFromElementsArray(
+                                            FloorSlabJsonTrim.RemoveFromElementsArray(
+                                                FoundationJsonTrim.RemoveFromElementsArray(
+                                                    LevelsJsonTrim.RemoveEmptyLevelIdFromElements(
+                                                        CreatedAtUtcJsonTrim.RemoveWhenEmpty(
+                                                            RawElementRecords.Apply(JsonUtility.ToJson(data, true), RawRecordsOf(data))))))))))))));
 
         public static ProjectData? Deserialize(string json)
         {

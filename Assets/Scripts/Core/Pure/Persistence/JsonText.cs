@@ -109,6 +109,18 @@ namespace KitchenDesigner.Core
             return sb.ToString();
         }
 
+        public static string RewriteNamedObject(string source, JsonSpan objectSpan, Func<string, JsonSpan, string> rewriteItem)
+        {
+            if (!objectSpan.Found || objectSpan.Start >= source.Length || source[objectSpan.Start] != '{')
+                return source;
+
+            string itemText = objectSpan.Text(source);
+            string rewritten = rewriteItem(itemText, RootObject(itemText));
+            if (ReferenceEquals(rewritten, itemText)) return source;
+
+            return source.Substring(0, objectSpan.Start) + rewritten + source.Substring(objectSpan.End);
+        }
+
         [ThreadStatic] private static long _charsProcessedByRemoveMember;
 
         public static long TakeCharsProcessedByRemoveMember()
