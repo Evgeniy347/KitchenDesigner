@@ -424,4 +424,43 @@ public class SceneAnalyzerTests
         Assert.AreEqual(string.Empty, SceneAnalyzer.TakeStageBreakdown(),
             "сцена пуста — Analyze вышел до единого прохода, разбивке не из чего сложиться");
     }
+
+    /// <summary>Холодный первый Analyze (JIT не прогрет, например при `-Filter` на один
+    /// класс) укладывается в &gt;=20мс и сам печатает лог через `LogBreakdownIfSlow`. Тот
+    /// лог не имеет права опустошить разбивку молча — иначе внешний `TakeStageBreakdown()`
+    /// (этот тест, или PerfMonitor) видит пустоту, хотя Analyze только что прошёлся по
+    /// сцене. `ForceSlowPathLogForTests` дёргает тот же код, что и «медленный» Analyze,
+    /// без зависимости от часов — иначе сенсор сам был бы machine-dependent (ПРОИЗВОДИТЕЛЬНОСТЬ.md).</summary>
+    [Test]
+    public void TakeStageBreakdown_SurvivesItsOwnSlowPathLog()
+    {
+        MakeBoard("a", new Vector3Int(600, 400, 18), Vector3.zero);
+        MakeBoard("b", new Vector3Int(600, 400, 18), new Vector3(0, 0, 1f));
+
+        SceneAnalyzer.Analyze();
+        SceneAnalyzer.ForceSlowPathLogForTests();
+
+        string breakdown = SceneAnalyzer.TakeStageBreakdown();
+        Assert.IsNotEmpty(breakdown,
+            "лог «медленного» Analyze не имеет права забрать разбивку у внешнего читателя — "
+            + "это тот же тип гонки, что уже чинили у SceneScanLog.Take() против PerfMonitor");
+    }
+
+    /// <summary>Потолок обязан выводиться из самого списка этапов, а не жить отдельным
+    /// числом: 2026-09-26 в списке этапов уже было 19 записей (floorSlab, wallLayerHosts,
+    /// ventilation добавились без обновления потолка), а MostStagesRemembered молчаливо
+    /// оставался 16 — три новых этапа улетали в «и ещё N сверх предела» без имени.</summary>
+    [Test]
+    public void MostStagesRemembered_CoversEveryNamedPassWithNoOverflow()
+    {
+        MakeBoard("a", new Vector3Int(600, 400, 18), Vector3.zero);
+        MakeBoard("b", new Vector3Int(600, 400, 18), new Vector3(0, 0, 1f));
+
+        SceneAnalyzer.Analyze();
+        string breakdown = SceneAnalyzer.TakeStageBreakdown();
+
+        Assert.That(breakdown, Does.Not.Contain("сверх предела"),
+            "потолок разбивки отстал от числа реальных этапов Analyze — новый этап "
+            + "молча улетает в переполнение без имени");
+    }
 }

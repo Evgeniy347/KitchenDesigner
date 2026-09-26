@@ -14,7 +14,16 @@ namespace KitchenDesigner.Core.Analysis
 
         public const int FacadeMinGapMm = 1;
 
-        public const int MostStagesRemembered = 16;
+        private static readonly string[] StageNames =
+        {
+            "collisions", "edgeCover", "nearContacts", "dishwasherFacadeBackGaps",
+            "dishwasherSupport", "panelSeating", "facadeGaps", "drawerFacadeLinks",
+            "attachLinks", "dishwasherFacadeLinks", "screwLegMounting", "screwLegFooting",
+            "pipeRuns", "unknownTypes", "millimetreGrid", "foundation", "floorSlab",
+            "wallLayerHosts", "ventilation",
+        };
+
+        public static int MostStagesRemembered => StageNames.Length;
 
         private const float SlowAnalyzeMs = 20f;
 
@@ -31,45 +40,46 @@ namespace KitchenDesigner.Core.Analysis
             if (all == null || all.Count == 0) return issues;
             var byName = AttachLinks.PartsByName.Of(all);
 
+            int stage = 0;
             long t = Stopwatch.GetTimestamp();
             using (PerfMarkers.AnalyzeCollisions.Auto()) CollectCollisions(all, issues);
-            t = NoteStage("collisions", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeEdgeCover.Auto()) CollectEdgeCover(all, issues);
-            t = NoteStage("edgeCover", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeNearContacts.Auto()) CollectNearContacts(all, issues);
-            t = NoteStage("nearContacts", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeDishwasherFacadeBackGaps.Auto()) CollectDishwasherFacadeBackGaps(all, issues);
-            t = NoteStage("dishwasherFacadeBackGaps", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeDishwasherSupport.Auto()) CollectDishwasherSupport(all, issues);
-            t = NoteStage("dishwasherSupport", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzePanelSeating.Auto()) CollectPanelSeating(all, issues);
-            t = NoteStage("panelSeating", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeFacadeGaps.Auto()) CollectFacadeGaps(all, issues);
-            t = NoteStage("facadeGaps", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeDrawerFacadeLinks.Auto()) CollectDrawerFacadeLinks(all, byName, issues);
-            t = NoteStage("drawerFacadeLinks", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeAttachLinks.Auto()) CollectAttachLinks(all, byName, issues);
-            t = NoteStage("attachLinks", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeDishwasherFacadeLinks.Auto()) CollectDishwasherFacadeLinks(all, byName, issues);
-            t = NoteStage("dishwasherFacadeLinks", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeScrewLegMounting.Auto()) CollectScrewLegMounting(all, byName, issues);
-            t = NoteStage("screwLegMounting", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeScrewLegFooting.Auto()) CollectScrewLegFooting(all, issues);
-            t = NoteStage("screwLegFooting", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzePipeRuns.Auto()) CollectPipeRuns(all, byName, issues);
-            t = NoteStage("pipeRuns", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeUnknownTypes.Auto()) CollectUnknownTypes(all, issues);
-            t = NoteStage("unknownTypes", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeMillimetreGrid.Auto()) CollectMillimetreGrid(all, issues);
-            t = NoteStage("millimetreGrid", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeFoundation.Auto()) CollectFoundation(all, byName, issues);
-            t = NoteStage("foundation", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeFloorSlab.Auto()) CollectFloorSlab(all, byName, issues);
-            t = NoteStage("floorSlab", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeWallLayerHosts.Auto()) CollectWallLayerHosts(all, issues);
-            t = NoteStage("wallLayerHosts", t);
+            t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeVentilation.Auto()) CollectVentilation(all, byName, issues);
-            NoteStage("ventilation", t);
+            NoteStage(StageNames[stage++], t);
 
             LogBreakdownIfSlow(began);
             return issues;
@@ -84,15 +94,20 @@ namespace KitchenDesigner.Core.Analysis
 
         public static string TakeStageBreakdown()
         {
+            string text = PeekStageBreakdown();
+            _stageBreakdown?.Clear();
+            return text;
+        }
+
+        private static string PeekStageBreakdown()
+        {
             var stages = _stageBreakdown;
             if (stages == null || stages.IsEmpty) return string.Empty;
 
-            string text = stages.Format((name, ticks, times) =>
+            return stages.Format((name, ticks, times) =>
                 times > 1
                     ? name + " " + MsOf(ticks).ToString("F2") + "мс×" + times
                     : name + " " + MsOf(ticks).ToString("F2") + "мс");
-            stages.Clear();
-            return text;
         }
 
         private static void LogBreakdownIfSlow(long began)
@@ -100,11 +115,18 @@ namespace KitchenDesigner.Core.Analysis
             double totalMs = MsOf(Stopwatch.GetTimestamp() - began);
             if (totalMs < SlowAnalyzeMs) return;
 
-            string breakdown = TakeStageBreakdown();
+            LogBreakdownNow(totalMs);
+        }
+
+        private static void LogBreakdownNow(double totalMs)
+        {
+            string breakdown = PeekStageBreakdown();
             if (!string.IsNullOrEmpty(breakdown))
                 UnityEngine.Debug.Log(
                     $"[Perf] SceneAnalyzer.Analyze {totalMs:F1}мс — {breakdown}");
         }
+
+        internal static void ForceSlowPathLogForTests() => LogBreakdownNow(0);
 
         private static double MsOf(long ticks) => ticks * 1000.0 / Stopwatch.Frequency;
 
