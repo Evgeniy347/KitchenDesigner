@@ -15,6 +15,10 @@ Unity-наборы идут в один поток и в одну очередь
 - **Знать своё время.** После прогона посмотреть длительность своего класса в NUnit XML
   (`duration` у `test-suite type="TestFixture"`). Если класс занял больше ~2 с в EditMode
   (~5 с в PlayMode), найти причину до коммита и назвать её в отчёте.
+- **A scale test counts operations, not milliseconds.** `EdgeCoverageBroadPhaseEquivalenceTests`,
+  `JsonTrimScaleTests` and `SnapPerformanceTests` all went red under ordinary shared-machine load
+  on unchanged code (2026-09-26); rewritten to assert a pair/candidate/character count against a
+  ratio (`large < small * 8` as the scene quadruples) instead of `Assert.Less(ms, budget)`.
 
 Случай, ради которого правило записано: `LevelMigrationRoundTripTests` занимал 52 с из ~150 с
 всего EditMode. Причина оказалась не в тесте, а в продакшен-коде: `RawElementRecords.Apply`
