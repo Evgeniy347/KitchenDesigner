@@ -147,6 +147,41 @@ namespace KitchenDesigner.Core
             return NotInScene;
         }
 
+        private List<int>[]? _neighborsCache;
+
+        [System.ThreadStatic] private static int _neighborIndexBuilds;
+
+        public static int TakeNeighborIndexBuilds()
+        {
+            int n = _neighborIndexBuilds;
+            _neighborIndexBuilds = 0;
+            return n;
+        }
+
+        public IReadOnlyList<int> NeighborsOf(int index, float slack)
+        {
+            if (_neighborsCache == null) BuildNeighborsCache(slack);
+            return _neighborsCache![index];
+        }
+
+        private void BuildNeighborsCache(float slack)
+        {
+            _neighborIndexBuilds++;
+            int n = _elements.Count;
+            var cache = new List<int>[n];
+            for (int i = 0; i < n; i++) cache[i] = new List<int>();
+            if (n == 0) { _neighborsCache = cache; return; }
+
+            SphereSweep.AddOverlappingPairs(n, i => (_spheres[i].Center, _spheres[i].Radius), slack,
+                (lo, hi) =>
+                {
+                    cache[lo].Add(hi);
+                    cache[hi].Add(lo);
+                });
+
+            _neighborsCache = cache;
+        }
+
         [System.ThreadStatic] private static int _linearLookups;
 
         public static int TakeLinearLookups()
@@ -258,6 +293,34 @@ namespace KitchenDesigner.Core
 
             using var _ = PerfMarkers.EdgeBandingCoverage.Auto();
 
+            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            var candidates = indexInScene >= 0
+                ? scene.NeighborsOf(indexInScene, contactDist)
+                : BruteForceCandidates(scene.Count, indexInScene);
+            return CoverageOverCandidates(element, scene, layout, indexInScene, contactDist, candidates);
+        }
+
+        internal static EdgeCoverage CoverageBruteForceForTests(KitchenElement element,
+            SceneFaces scene, int indexInScene)
+        {
+            if (element == null || scene == null) return NoEdge;
+            var layout = LayoutOf(element.DimensionsMM);
+            if (!layout.IsValid) return NoEdge;
+
+            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
+            return CoverageOverCandidates(element, scene, layout, indexInScene, contactDist,
+                BruteForceCandidates(scene.Count, indexInScene));
+        }
+
+        private static IEnumerable<int> BruteForceCandidates(int count, int exclude)
+        {
+            for (int k = 0; k < count; k++)
+                if (k != exclude) yield return k;
+        }
+
+        private static EdgeCoverage CoverageOverCandidates(KitchenElement element, SceneFaces scene,
+            in EdgeLayout layout, int indexInScene, float contactDist, IEnumerable<int> candidates)
+        {
             var faces = indexInScene >= 0 ? scene.FacesAt(indexInScene) : element.GetFaces();
             var ends = new[]
             {
@@ -270,9 +333,8 @@ namespace KitchenDesigner.Core
             var covers = new List<Rect>[4];
             for (int i = 0; i < 4; i++) covers[i] = new List<Rect>();
 
-            float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
             var sphere = indexInScene >= 0 ? scene.SphereAt(indexInScene) : scene.SphereOf(element);
-            for (int k = 0; k < scene.Count; k++)
+            foreach (int k in candidates)
             {
                 if (k == indexInScene) continue;
                 if (!scene.CoversEdgesAt(k)) continue;
