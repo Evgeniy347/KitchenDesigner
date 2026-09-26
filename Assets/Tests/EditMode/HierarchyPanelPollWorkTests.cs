@@ -81,6 +81,7 @@ public class HierarchyPanelPollWorkTests
         PartRegistry.Clear();
         GroupManager.Clear();
         ProjectWindows.Clear();
+        LevelRegistry.Reset();
         HierarchyPanelUI.TakeRebuilds();
         HierarchyPanelUI.TakeRowsBuilt();
     }
@@ -415,6 +416,57 @@ public class HierarchyPanelPollWorkTests
     /// <summary>Третье слагаемое отпечатка — прикреплённый фасад: он уезжает из
     /// верхнего уровня под своего хозяина, то есть состав дерева меняется, хотя состав
     /// реестра нет.</summary>
+    /// <summary>M6 (обзор ui-mcp): отпечаток хэшировал только <c>GroupId</c>, не
+    /// <c>LevelId</c> — MCP <c>edit_elements level_id</c> переносит деталь на другой
+    /// этаж, а дерево (сгруппированное по этажам, <c>BuildNodesGroupedByLevel</c>)
+    /// продолжает показывать её на старом, пока что-то ещё не тронет состав сцены.</summary>
+    [Test]
+    public void ElementMovedToAnotherLevel_TheTreeRebuilds()
+    {
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 3000),
+        });
+        var shelf = MakeElement("Полка");
+        shelf.LevelId = "1";
+        ShowAndSettle();
+
+        shelf.LevelId = "2";
+        _panel.PollSceneForChanges();
+
+        Assert.AreEqual(1, HierarchyPanelUI.TakeRebuilds(),
+            "перенос детали на другой этаж меняет ГРУППИРОВКУ дерева, хотя состав "
+            + "реестра и её GroupId остались прежними — отпечаток обязан это заметить");
+    }
+
+    /// <summary>Второй вход того же отпечатка: переименование уровня не меняло
+    /// хэш вовсе (хэшировались только id и отметка), так что корневой ярлык
+    /// («N этаж») застревал со старым именем до постороннего перестроения.</summary>
+    [Test]
+    public void LevelRenamed_TheTreeShowsTheNewRootLabel()
+    {
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 3000),
+        });
+        MakeElement("Полка").LevelId = "1";
+        MakeElement("Боковина").LevelId = "2";
+        ShowAndSettle();
+        Assume.That(HasRowNamed("2 этаж"), Is.True, "предпосылка: корневой ярлык второго этажа виден");
+
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "Мансарда", 3000, 3000),
+        });
+        _panel.PollSceneForChanges();
+
+        Assert.IsTrue(HasRowNamed("Мансарда"), "переименованный этаж обязан показаться под новым именем");
+        Assert.IsFalse(HasRowNamed("2 этаж"), "и не остаться под старым");
+    }
+
     [Test]
     public void FacadeAttachedToAHost_TheTreeRebuilds()
     {

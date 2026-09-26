@@ -212,6 +212,7 @@ namespace KitchenDesigner.Core.UI
                     if (e == null) continue;
                     h = h * 31 + e.PartName.GetHashCode();
                     h = h * 31 + e.GroupId;
+                    h = h * 31 + e.LevelId.GetHashCode();
                     if (e is IFacadeHost host && !string.IsNullOrEmpty(host.AttachedFacadeName))
                         h = h * 31 + host.AttachedFacadeName.GetHashCode();
                 }
@@ -223,6 +224,7 @@ namespace KitchenDesigner.Core.UI
                 foreach (var lvl in LevelRegistry.Items)
                 {
                     h = h * 31 + lvl.id.GetHashCode();
+                    h = h * 31 + lvl.name.GetHashCode();
                     h = h * 31 + lvl.floorElevationMm;
                 }
                 return h;
