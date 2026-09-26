@@ -514,22 +514,47 @@ function Get-DefaultFilter {
 
     Поэтому порогов два, и сообщение обязано назвать виновную половину.
 #>
+$script:TestTimeBudgetFile = Join-Path $repo 'tools\test-time-budget.txt'
+
+<#
+    Бюджет полного (без -Filter) прогона — из tools\test-time-budget.txt, а не зашитый в
+    скрипт: agents/TESTS.md → «Time budget» объясняет формат и как его поднимать. Прицельный
+    прогон (-Filter) и сборка плеера (method) бюджет файла не читают вовсе — они не тот
+    прогон, для которого он снят, и остаются на старых мягких порогах (только
+    предупреждение, см. Report-Time).
+#>
+function Get-TestTimeBudget {
+    param([string]$Part)
+
+    if (-not (Test-Path $script:TestTimeBudgetFile)) {
+        throw "Не найден $script:TestTimeBudgetFile — бюджет времени тестов без него не проверить"
+    }
+    foreach ($line in (Get-Content $script:TestTimeBudgetFile)) {
+        $t = $line.Trim()
+        if (-not $t -or $t.StartsWith('#')) { continue }
+        $fields = $t -split '\s+'
+        if ($fields.Count -lt 4) { continue }
+        if ($fields[0] -eq $Platform -and $fields[1] -eq $Part) {
+            return [double]::Parse($fields[3], [Globalization.CultureInfo]::InvariantCulture)
+        }
+    }
+    return $null
+}
+
 function Get-BudgetSeconds {
     if ($Command -eq 'method') { return 300 }             # сборка плеера, отчёта NUnit нет
     if ($Filter) { return 60 }                            # прицельный прогон
-    # Измерено 2026-09-11: EditMode 149 с NUnit + 33 с накладных на 5 498 тестах.
-    # Порог — с запасом к факту: машина под нагрузкой даёт разброс, и ворота не
-    # должны краснеть от того, что рядом собирается второй проект.
-    # Бюджет поднимается ОСОЗНАННО и вместе с числом тестов, которое его оправдало:
-    # предупреждение, срабатывающее каждый раз, перестают читать.
+    $fromFile = Get-TestTimeBudget -Part 'tests'
+    if ($null -ne $fromFile) { return $fromFile }
+    # Платформы нет в файле (не должно случаться после 2026-09-26) — старый запасной порог.
     if ($Platform -eq 'PlayMode') { return 210 }
-    return 170                                            # полный EditMode, время тестов
+    return 170
 }
 
 function Get-OverheadBudgetSeconds {
-    # Измерено 2026-09-11: 33 с накладных на 5 498 тестах (лицензия 2,4 + два
-    # domain reload 5,1 + компиляция 14,3 + сбор тестов 2,5 + выход ~4).
-    # Порог с тем же запасом к факту, что и у времени тестов.
+    if ($Command -eq 'method' -or $Filter) { return 45 }
+    $fromFile = Get-TestTimeBudget -Part 'overhead'
+    if ($null -ne $fromFile) { return $fromFile }
     return 45
 }
 
@@ -555,10 +580,22 @@ function Get-ReportedTestSeconds {
     } catch { return $null }
 }
 
+<#
+    Полный (без -Filter) прогон РОНЯЕТ ворота при превышении бюджета из
+    tools\test-time-budget.txt — раньше превышение только печаталось жёлтым, и код возврата
+    оставался нулевым, то есть деградация росла молча, пока кто-то не заметил её глазами.
+    Прицельный прогон (-Filter) и сборка плеера (method) остаются мягкими: их бюджет —
+    удобство итерации, а не число, снятое с полного набора, так что для них превышение —
+    по-прежнему предупреждение.
+
+    Возвращает $true, когда САМ бюджет — причина проваленных ворот (используется
+    вызывающим, чтобы перевести зелёный по тестам прогон в красный по времени).
+#>
 function Report-Time {
     param([Diagnostics.Stopwatch]$Sw)
     $wall = $Sw.Elapsed.TotalSeconds
     $tests = Get-ReportedTestSeconds
+    $hardGate = ($Command -eq 'tests' -and -not $Filter)
 
     if ($null -eq $tests) {
         $budget = Get-BudgetSeconds
@@ -567,24 +604,46 @@ function Report-Time {
         } else {
             Write-Host ("  прогон занял {0:N1} с" -f $wall) -ForegroundColor DarkGray
         }
-        return
+        return $false
     }
 
     $overhead = $wall - $tests
     $testBudget = Get-BudgetSeconds
     $overheadBudget = Get-OverheadBudgetSeconds
     Write-Host ("  прогон занял {0:N1} с = тесты {1:N1} с + накладные {2:N1} с" -f $wall, $tests, $overhead) -ForegroundColor DarkGray
+
+    $overBudget = $false
     if ($tests -gt $testBudget) {
-        Write-Host ("  время тестов {0:N0} с при пороге {1} с — вырос набор, накладные ни при чём" -f $tests, $testBudget) -ForegroundColor Yellow
+        $overBudget = $true
+        if ($hardGate) {
+            Write-Host ("  ВОРОТА ВРЕМЕНИ: тесты заняли {0:N0} с при пороге {1} с (tools\test-time-budget.txt) — вырос набор, накладные ни при чём" -f $tests, $testBudget) -ForegroundColor Red
+        } else {
+            Write-Host ("  время тестов {0:N0} с при пороге {1} с — вырос набор, накладные ни при чём" -f $tests, $testBudget) -ForegroundColor Yellow
+        }
     }
     if ($overhead -gt $overheadBudget) {
-        Write-Host ("  накладные {0:N0} с при пороге {1} с — выросла компиляция или старт, тесты ни при чём" -f $overhead, $overheadBudget) -ForegroundColor Yellow
+        $overBudget = $true
+        if ($hardGate) {
+            Write-Host ("  ВОРОТА ВРЕМЕНИ: накладные {0:N0} с при пороге {1} с (tools\test-time-budget.txt) — выросла компиляция или старт, тесты ни при чём" -f $overhead, $overheadBudget) -ForegroundColor Red
+        } else {
+            Write-Host ("  накладные {0:N0} с при пороге {1} с — выросла компиляция или старт, тесты ни при чём" -f $overhead, $overheadBudget) -ForegroundColor Yellow
+        }
     }
+    return ($hardGate -and $overBudget)
 }
 
 function Invoke-Tests {
     $sw = [Diagnostics.Stopwatch]::StartNew()
-    try { return (Invoke-TestsCore) } finally { Report-Time $sw }
+    $result = 1
+    $caught = $null
+    try { $result = Invoke-TestsCore }
+    catch { $caught = $_ }
+    # Report-Time зовётся и на исключении (например «фильтр не поймал ни одного теста» до
+    # отчёта) — она сама умеет печатать время стены без отчёта NUnit, и это не место её терять.
+    $budgetFailed = Report-Time $sw
+    if ($caught) { throw $caught }
+    if ($budgetFailed -and $result -eq 0) { return 1 }
+    return $result
 }
 
 function Invoke-TestsCore {

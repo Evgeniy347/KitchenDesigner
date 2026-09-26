@@ -92,6 +92,8 @@ public static class SceneLeakGuard
             "полная замороженная сцена example.save.json"),
         ("ValidationInvariantTests.Validation_ExampleSave_IsDeterministic",
             "полная замороженная сцена example.save.json"),
+        ("EdgeCoverageBroadPhaseEquivalenceTests.Coverage_OnTheFrozenValidationScene_MatchesTheBruteForceScanForEveryElement",
+            "__TextureOverlays — тот же авто-объект превью текстуры, полная замороженная сцена validation-scene.save.json"),
 
         // Общий на весь прогон EventSystem — agents/TEST-DESIGN.md: «EventSystem
         // в EditMode один на весь прогон». Уничтожать его в TearDown одного

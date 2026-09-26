@@ -19,11 +19,34 @@ target here, and nothing on this branch is deployed anywhere — see `DEPLOY.md`
 | Suite | Command | Tests | Time |
 |-------|---------|-------|------|
 | `dotnet` (core + pure) | `.\tools\mutation-test.ps1 -TestsOnly` | весь быстрый набор, ~1 900 и растёт (core + pure) | **~2 s** тестов, ~9 s стены |
-| EditMode | `build.cmd -RunTests` | 5498 | **~149 s тестов + ~33 s накладных** |
-| PlayMode | `build.cmd -RunPlayMode` | 254 | **~113 s** |
+| EditMode | `build.cmd -RunTests` | 6944 | **~118 s тестов + ~33 s накладных** |
+| PlayMode | `build.cmd -RunPlayMode` | 337 | **~68 s тестов + ~14 s накладных** |
+
+Numbers measured 2026-09-26 (previously 5498/149s+33s EditMode, 254/113s PlayMode on
+2026-09-11 — both suites grew in test count since; wall time grew far less, since most of the
+growth is cheap Pure tests). **The gate now enforces these itself**, not just prints them: see
+"Time budget" below.
 
 The `dotnet` row is not a fourth suite — those files are compiled twice, by Unity and by
 `geometry/*.csproj`. It is the inner loop; the three below are the gate.
+
+## Time budget — the gate FAILS on it, not just prints it
+
+A full (no `-Filter`) `tools\unity.ps1 tests` run compares the NUnit report's own
+`test-run/@duration` (tests, no startup) and wall-minus-that (overhead: licence, two domain
+reloads, compilation, test collection, process exit) against `tools\test-time-budget.txt` —
+the only place the numbers live, one line per `<platform> <part>`. **Either half over budget
+fails the run** (exit code 1, a red `ВОРОТА ВРЕМЕНИ` line naming which half) — before
+2026-09-26 an over-budget run only printed a yellow warning and stayed green, so a slow
+regression could sit unnoticed for weeks. `-Filter` runs and `-Method` (player builds) stay on
+their old soft, hardcoded thresholds (60 s / 300 s, warning only): their budget is an iteration
+convenience, not a number measured on the full suite, and a filtered run failing the gate would
+be exactly the kind of noise the filter exists to avoid.
+
+Raise the budget in the SAME commit that explains why the suite got bigger or slower — the file
+says so at its own top, same spirit as `geometry/mutation-baseline.txt`. The top-5-slowest-classes
+list (`Show-Slowest`, printed on every run) is where to look first: it usually names one or two
+expensive Unity scenes, not a broad slowdown.
 
 **The same script without `-TestsOnly` runs the mutation gate** — minutes, not seconds, and it
 saturates a core, so ask before launching it when the machine is shared. The threshold per
@@ -272,7 +295,7 @@ nothing and assert nothing.
 
 ## Iterating on ONE test class
 
-Use the gateway with a filter — **~11 s against ~149 s** for the whole suite. Filtering now
+Use the gateway with a filter — **~11 s against ~118 s** for the whole suite. Filtering now
 pays for itself: the fixed start is ~10 s, and a filtered run additionally turns Burst
 compilation off (worth 2,3 s, and only there — on a full run it buys exactly nothing).
 Still run the FULL suite before committing.

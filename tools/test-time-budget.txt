@@ -1,0 +1,42 @@
+# Time budget for the test gateway (tools/unity.ps1, called by build.cmd -RunTests /
+# -RunPlayMode). This is the ONLY place the numbers live: Get-TestTimeBudget reads them and
+# Report-Time compares against the FULL (no -Filter) run's NUnit report, then FAILS the run
+# when either half is over budget -- before this file existed, an over-budget run only
+# printed a yellow warning and the exit code stayed green.
+#
+# Line format: <platform> <part> <measured-s> <budget-s>
+#   platform  -- EditMode | PlayMode
+#   part      -- tests (test-run/@duration from the NUnit report) |
+#                overhead (wall time minus tests -- licence, domain reload, compilation, exit)
+#   measured  -- what a FULL run showed on the baseline commit below
+#   budget    -- exceeding this fails the run
+#
+# The suite grew or got slower for a real reason -- raise the budget in the SAME commit that
+# explains why, and update the measured number too. A budget raised quietly, with no reason, is
+# a disabled gate wearing a number.
+#
+# baseline: 2026-09-26, agents/TESTS.md's previous numbers (2026-09-11: EditMode 5498 tests,
+# 149s+33s; PlayMode 254 tests, 113s) were stale. Both suites grew in test count; wall time
+# grew far less, because most of the new tests are cheap Pure ones added alongside a handful of
+# expensive Unity-scene ones (EdgeCoverageBroadPhaseEquivalenceTests ~18s, McpUiPropertyParityTests
+# ~14s on EditMode; IsoScreenshotTests ~16s on PlayMode). EditMode 6944 tests, PlayMode 337-338.
+#
+# tests: budget = measured + ~10%, as the NUnit report's own @duration is a controlled figure
+# (in-process, not subject to whatever else the machine is doing) -- three PlayMode samples in
+# the same session came back 67.6/65.3s, comfortably within 10% of each other.
+#
+# overhead: budget = measured + ~70%, NOT ~10%. It is licence handshake + domain reload +
+# compilation + process exit -- all of it contending for the same CPU/disk `agents/FLEET.md` ->
+# "Only ONE Unity per machine" describes, and it is NOT a controlled, in-process number. Three
+# PlayMode samples taken minutes apart in this same session, no code change in between: 13.7,
+# 21.0, 19.9s -- a ~50% swing from shared-machine noise alone. A 10% margin on overhead would
+# make the gate cry wolf on unrelated contention, which is worse than not having it: agents/
+# TESTS.md's own account of `Get-BudgetSeconds` already warns against exactly this ("порог не
+# должен краснеть от того, что рядом собирается второй проект"). EditMode has only the one
+# sample below; its overhead margin follows the same ~70% rule on principle, not on three
+# samples -- tighten it once more EditMode data exists.
+
+EditMode tests    118.3 130
+EditMode overhead  32.5  55
+PlayMode tests     67.6  74
+PlayMode overhead  21.0  36
