@@ -591,14 +591,44 @@ function Get-ReportedTestSeconds {
     Возвращает $true, когда САМ бюджет — причина проваленных ворот (используется
     вызывающим, чтобы перевести зелёный по тестам прогон в красный по времени).
 #>
+<#
+    Сколько секунд стены ушло на ОЖИДАНИЕ клиента лицензирования, а не на саму
+    работу — второй Unity на машине (agents/UNITY-GATEWAY.md -> "Only ONE Unity
+    per machine") гонит наш процесс в очередь: `[Licensing::Module] Timed-out
+    after 60.01s, waiting for channel: "..."` пишется в лог на КАЖДУЮ такую
+    попытку с точным числом секунд. Это очередь за чужим ресурсом, а не
+    компиляция и не старт движка — накладные не должны краснеть от неё же
+    (agents/TESTS.md -> "порог не должен краснеть от того, что рядом
+    собирается второй проект").
+#>
+function Get-LicenseWaitSeconds {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return 0.0 }
+
+    $seconds = 0.0
+    Select-String -Path $Path -Pattern 'Timed-out after ([\d.]+)s, waiting for channel' |
+        ForEach-Object {
+            foreach ($m in $_.Matches) {
+                $seconds += [double]::Parse($m.Groups[1].Value, [Globalization.CultureInfo]::InvariantCulture)
+            }
+        }
+    return $seconds
+}
+
 function Report-Time {
     param([Diagnostics.Stopwatch]$Sw)
     $wall = $Sw.Elapsed.TotalSeconds
     $tests = Get-ReportedTestSeconds
     $hardGate = ($Command -eq 'tests' -and -not $Filter)
+    $licenseWait = Get-LicenseWaitSeconds -Path $log
+    if ($licenseWait -gt 0) {
+        $msg = "  из них {0:N1} с — очередь за клиентом лицензирования (второй Unity на машине), в накладные не считается" -f $licenseWait
+        Write-Host $msg -ForegroundColor DarkYellow
+    }
 
     if ($null -eq $tests) {
         $budget = Get-BudgetSeconds
+        $wall = $wall - $licenseWait
         if ($wall -gt $budget) {
             Write-Host ("  прогон занял {0:N0} с — БОЛЬШЕ бюджета в {1} с" -f $wall, $budget) -ForegroundColor Yellow
         } else {
@@ -607,7 +637,7 @@ function Report-Time {
         return $false
     }
 
-    $overhead = $wall - $tests
+    $overhead = $wall - $tests - $licenseWait
     $testBudget = Get-BudgetSeconds
     $overheadBudget = Get-OverheadBudgetSeconds
     Write-Host ("  прогон занял {0:N1} с = тесты {1:N1} с + накладные {2:N1} с" -f $wall, $tests, $overhead) -ForegroundColor DarkGray
