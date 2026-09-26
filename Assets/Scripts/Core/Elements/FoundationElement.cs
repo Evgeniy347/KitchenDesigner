@@ -20,8 +20,8 @@ namespace KitchenDesigner.Core
 
         public override bool ParticipatesInGapChecks => false;
 
-        public const int DEFAULT_WIDTH_MM = 600;
-        public const int DEFAULT_DEPTH_MM = 700;
+        public const int DEFAULT_WIDTH_MM = 700;
+        public const int DEFAULT_DEPTH_MM = 2300;
 
         [SerializeField] private SoilKind _soilKind = KitchenSettings.Instance.ConstructionSoil;
         [SerializeField] private int _sandMm = KitchenSettings.Instance.ConstructionSandMm;
