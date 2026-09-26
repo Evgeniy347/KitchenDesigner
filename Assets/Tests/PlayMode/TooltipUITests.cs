@@ -11,6 +11,14 @@ using KitchenDesigner.Core.UI;
 /// PlayMode — потому что показ идёт из Update по Time.unscaledTime.</summary>
 public class TooltipUITests
 {
+    // Реальная задержка показа — TooltipSchedule.DefaultDelaySeconds (0.4 с).
+    // Тесты раньше ждали фиксированную 1 с «на всякий случай» — втрое больше
+    // нужного и на пяти ожиданиях в файле это ~3 с из ~7 с всего набора.
+    // Внутренний класс виден тестовой сборке (InternalsVisibleTo на
+    // KitchenDesigner.Tests.PlayMode в Core/AssemblyInfo.cs), так что запас
+    // считается от источника правды, а не хардкодится числом.
+    private const float AfterHoverDelay = TooltipSchedule.DefaultDelaySeconds + 0.1f;
+
     private GameObject _canvasGo = null!;
 
     [SetUp]
@@ -86,7 +94,7 @@ public class TooltipUITests
             "подсказка не должна вспыхивать в тот же кадр: курсор, просто "
             + "проехавший по тулбару, зажигал бы её на каждой кнопке");
 
-        yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(AfterHoverDelay);
 
         Assert.IsNotNull(TooltipRoot, "после задержки подсказка обязана появиться");
         Assert.IsTrue(PanelShown(TooltipRoot!));
@@ -102,7 +110,7 @@ public class TooltipUITests
 
         Hover(button);
         Unhover(button);
-        yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(AfterHoverDelay);
 
         Assert.IsTrue(TooltipRoot == null || !PanelShown(TooltipRoot!),
             "курсор ушёл раньше срока — отложенный показ обязан сняться");
@@ -116,7 +124,7 @@ public class TooltipUITests
 
         Hover(button);
         button.SetActive(false);
-        yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(AfterHoverDelay);
 
         Assert.IsTrue(TooltipRoot == null || !PanelShown(TooltipRoot!),
             "кнопку выключили, пока подсказка ждала очереди: показывать нечего, "
@@ -131,14 +139,14 @@ public class TooltipUITests
         TooltipUI.Attach(button, () => current);
 
         Hover(button);
-        yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(AfterHoverDelay);
         Assert.AreEqual("Первое значение",
             TooltipRoot!.GetComponentInChildren<TMPro.TMP_Text>().text);
 
         Unhover(button);
         current = "Второе значение";
         Hover(button);
-        yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(AfterHoverDelay);
 
         Assert.AreEqual("Второе значение",
             TooltipRoot!.GetComponentInChildren<TMPro.TMP_Text>().text,
@@ -155,10 +163,10 @@ public class TooltipUITests
         TooltipUI.Attach(second, "Вторая");
 
         Hover(first);
-        yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(AfterHoverDelay);
         TooltipUI.Hide();
         Hover(second);
-        yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(AfterHoverDelay);
 
         int roots = 0;
         foreach (Transform child in _canvasGo.transform)
