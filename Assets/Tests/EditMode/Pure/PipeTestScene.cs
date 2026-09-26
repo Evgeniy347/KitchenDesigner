@@ -23,7 +23,13 @@ internal sealed class PipeTestScene : IPipeSceneSnapshot
 
     public IReadOnlyList<PipeRunSegment> Segments() => _segments;
 
-    public IReadOnlyList<PipeObstacle> Obstacles() => _obstacles;
+    public int ObstaclesCalls { get; private set; }
+
+    public IReadOnlyList<PipeObstacle> Obstacles()
+    {
+        ObstaclesCalls++;
+        return _obstacles;
+    }
 
     public PipeSurvey Survey() => PipeSurvey.Of(_ports);
 

@@ -297,4 +297,40 @@ public class PipeRulesTests
         CollectionAssert.IsEmpty(
             WithCode(PipeRules.Collect(fixedScene), PipeIssueCatalog.CodeSameRoleJoin));
     }
+
+    /// <summary>`Collect(IPipeSceneSnapshot)` used to call `scene.Obstacles()` unconditionally,
+    /// even though `CollectObstacles` only ever reads it inside a loop over `Segments()` — with
+    /// no pipe run in the scene, that obstacle snapshot (a box per non-pipe element, built from
+    /// `KitchenElement.GetVertices()` plus two `GetComponent` calls) was computed and thrown
+    /// away on every single `SceneAnalyzer.Analyze()`. Measured live: the "pipeRuns" stage of
+    /// the stage breakdown cost ~46 ms on a 1600-element scene with ZERO pipes, before this
+    /// fix skipped it entirely.</summary>
+    [Test]
+    public void PipeRules_Collect_SkipsObstacles_WhenTheSceneHasNoPipeSegments()
+    {
+        var scene = new PipeTestScene()
+            .Obstacle("carcass", PipeObstacleKind.Part,
+                PipeTestScene.At(0f, 0f, 0f), PipeTestScene.At(100f, 100f, 100f));
+
+        PipeRules.Collect(scene);
+
+        Assert.AreEqual(0, scene.ObstaclesCalls,
+            "no pipe or fitting was added — Segments() is empty, so Obstacles() must never "
+            + "be called at all, not even once and discarded");
+    }
+
+    [Test]
+    public void PipeRules_Collect_StillReadsObstacles_WhenAPipeIsPresent()
+    {
+        var scene = new PipeTestScene()
+            .Pipe("p", Start, End, PipeSpec.Dn20)
+            .Obstacle("carcass", PipeObstacleKind.Part,
+                PipeTestScene.At(900f, -100f, -100f), PipeTestScene.At(1100f, 100f, 100f));
+
+        var crossed = WithCode(PipeRules.Collect(scene), PipeIssueCatalog.CodeObstacleCrossed);
+
+        Assert.AreEqual(1, scene.ObstaclesCalls,
+            "a real pipe run exists — the skip must not swallow the obstacle check that matters");
+        Assert.AreEqual(1, crossed.Count, "control: the obstacle really does cross the pipe");
+    }
 }

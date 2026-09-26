@@ -8,8 +8,14 @@ namespace KitchenDesigner.Core.Plumbing
         public static bool BlocksRouting(PipeObstacleKind kind) =>
             kind == PipeObstacleKind.Part || kind == PipeObstacleKind.Furniture;
 
-        public static IReadOnlyList<PipeFinding> Collect(IPipeSceneSnapshot scene) =>
-            Collect(PipeSurvey.Of(scene.Ports()), scene.Segments(), scene.Obstacles());
+        public static IReadOnlyList<PipeFinding> Collect(IPipeSceneSnapshot scene)
+        {
+            var segments = scene.Segments();
+            var obstacles = segments.Count > 0
+                ? scene.Obstacles()
+                : (IReadOnlyList<PipeObstacle>)Array.Empty<PipeObstacle>();
+            return Collect(PipeSurvey.Of(scene.Ports()), segments, obstacles);
+        }
 
         public static IReadOnlyList<PipeFinding> Collect(PipeSurvey survey,
             IReadOnlyList<PipeRunSegment> segments, IReadOnlyList<PipeObstacle> obstacles)
