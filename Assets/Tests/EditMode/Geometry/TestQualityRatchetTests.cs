@@ -480,9 +480,10 @@ namespace KitchenDesigner.Tests.Geometry
                     "CommentRatchetTests.cs"))).ToList();
             CollectionAssert.Contains(names, "TheScan_ActuallySeesTheSource",
                 "сканер имён не нашёл известного теста — он читает не то, что думает");
-            Assert.AreEqual(7, names.Count,
-                "в CommentRatchetTests ровно семь [Test] (S2-S4: добавлены три на исключение "
-                + "нормативной ссылки в const): сканер не должен ни терять их, "
+            Assert.AreEqual(8, names.Count,
+                "в CommentRatchetTests ровно восемь [Test] (S2-S4: три на исключение "
+                + "нормативной ссылки в const, плюс один негативный на прозу после "
+                + "идентификатора документа): сканер не должен ни терять их, "
                 + "ни считать вспомогательные методы");
         }
 
