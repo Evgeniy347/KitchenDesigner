@@ -13,46 +13,68 @@ using KitchenDesigner.Tests;
 
 public class ElementPropertyDiagramTests
 {
-    private GameObject? _bootstrap;
-    private GameObject? _mainCamera;
-    private Canvas? _uiCanvas;
+    // Тот же приём, что в IsoScreenshotTests: Bootstrap поднимается ОДИН раз
+    // на класс, а не на каждый тест. Этот набор не трогает NormalView и
+    // прочие глобальные флаги, которые IsoScreenshotTests обязан
+    // восстанавливать между тестами, — CapturePanel сама возвращает всё, что
+    // временно меняет (renderMode, uiScaleMode, anchor панели), так что общий
+    // Bootstrap здесь ничем не рискует. Статика нужна по той же причине: NUnit
+    // создаёт новый экземпляр класса на каждый тест, и поле экземпляра не
+    // пережило бы переход между вызовами [UnitySetUp]. Создание живёт в
+    // SetUp за флагом «ещё не поднимали», а не в [OneTimeSetUp]: эта версия
+    // Unity Test Framework не принимает в нём IEnumerator («Invalid
+    // signature for SetUp or TearDown method»).
+    private static GameObject? _bootstrap;
+    private static GameObject? _mainCamera;
+    private static Canvas? _uiCanvas;
+
+    [OneTimeTearDown]
+    public void OneTimeTearDownOnce()
+    {
+        if (_bootstrap != null) Object.Destroy(_bootstrap);
+        if (_mainCamera != null) Object.Destroy(_mainCamera);
+        _bootstrap = null;
+        _mainCamera = null;
+        _uiCanvas = null;
+    }
 
     [UnitySetUp]
     public IEnumerator SetUp()
     {
         PlayModeTestConfig.ConfigureForTests();
 
-        _mainCamera = new GameObject("Main Camera");
-        _mainCamera.tag = "MainCamera";
-        _mainCamera.AddComponent<Camera>();
-        _mainCamera.transform.position = new Vector3(0f, 3f, -5f);
-        _mainCamera.transform.LookAt(Vector3.zero);
+        if (_bootstrap == null)
+        {
+            _mainCamera = new GameObject("Main Camera");
+            _mainCamera.tag = "MainCamera";
+            _mainCamera.AddComponent<Camera>();
+            _mainCamera.transform.position = new Vector3(0f, 3f, -5f);
+            _mainCamera.transform.LookAt(Vector3.zero);
 
-        SaveLoadManager.LastPath = "";
-        var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
-        if (File.Exists(autoPath)) File.Delete(autoPath);
+            SaveLoadManager.LastPath = "";
+            var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
+            if (File.Exists(autoPath)) File.Delete(autoPath);
 
-        _bootstrap = new GameObject("Bootstrap");
-        _bootstrap.AddComponent<Bootstrap>();
+            _bootstrap = new GameObject("Bootstrap");
+            _bootstrap.AddComponent<Bootstrap>();
+
+            yield return null;
+            yield return null;
+
+            _uiCanvas = UIManager.Instance!.Canvas;
+            Assert.IsNotNull(_uiCanvas, "Canvas should be created by Bootstrap");
+        }
 
         yield return null;
-        yield return null;
-
-        _uiCanvas = UIManager.Instance!.Canvas;
-        Assert.IsNotNull(_uiCanvas, "Canvas should be created by Bootstrap");
     }
 
     [UnityTearDown]
     public IEnumerator TearDown()
     {
+        // BasePlate — тоже KitchenElement, но живёт на общем Bootstrap и не
+        // пересоздаётся каждый тест (см. IsoScreenshotTests.TearDown).
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
-            if (e != null) Object.Destroy(e.gameObject);
-        foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
-            if (c != null) Object.Destroy(c.gameObject);
-        foreach (var es in Object.FindObjectsByType<EventSystem>(FindObjectsSortMode.None))
-            if (es != null) Object.Destroy(es.gameObject);
-        if (_bootstrap != null) Object.Destroy(_bootstrap);
-        if (_mainCamera != null) Object.Destroy(_mainCamera);
+            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
         yield return null;
     }
 
