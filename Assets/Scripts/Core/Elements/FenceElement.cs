@@ -82,6 +82,9 @@ namespace KitchenDesigner.Core
             float halfLength = lengthU * 0.5f;
             float halfSheet = sheetU * 0.5f;
 
+            float capU = FenceDefaults.PostCapAboveSheetMm * toU;
+            float sheetHeightU = Mathf.Max(Tolerance.EpsilonUnits, heightU - capU);
+
             var profile = new[]
             {
                 new Vector2(-halfLength, -halfSheet),
@@ -90,7 +93,7 @@ namespace KitchenDesigner.Core
                 new Vector2(-halfLength, halfSheet),
             };
 
-            var mesh = ProfileExtrusionMesh.Build(profile, lengthU, sheetU, heightU, heightU * 0.5f);
+            var mesh = ProfileExtrusionMesh.Build(profile, lengthU, sheetU, sheetHeightU, sheetHeightU * 0.5f);
             AdoptOwnedMesh(mesh);
 
             var filter = GetComponent<MeshFilter>();
