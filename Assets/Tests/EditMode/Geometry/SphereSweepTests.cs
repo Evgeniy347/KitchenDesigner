@@ -80,4 +80,61 @@ public class SphereSweepTests
 
         Assert.AreEqual(0, calls, "10 м между центрами радиуса 0,4 м — ни одна пара не касается");
     }
+
+    /// <summary>Развёртка мела только по X: кухонный ряд вдоль стены Z (все корпуса на одном
+    /// x, разные z) укладывает ВСЕ интервалы X друг в друга, и сметание вырождается в перебор
+    /// всех пар — O(n^2) под видом O(n log n). Каждая из трёх раскладок ниже кладёт `pairCount`
+    /// касающихся пар (0,5999 м между центрами радиуса 0,3 м — касание с учётом slack) далеко
+    /// друг от друга (3 м) вдоль своей оси; развёртка обязана мести по оси НАИБОЛЬШЕГО разброса
+    /// центров, а не жёстко по X, иначе Z-раскладка и диагональ дают квадратичный рост
+    /// кандидатов там, где X даёт линейный.</summary>
+    private static int PairsFoundAlong(int pairCount, System.Func<int, Vector3> layoutOffset)
+    {
+        const float radius = 0.3f;
+        const float slack = 0.0005f;
+        var spheres = new (Vector3 center, float radius)[pairCount * 2];
+        for (int i = 0; i < pairCount; i++)
+        {
+            Vector3 basePos = layoutOffset(i);
+            spheres[i * 2] = (basePos, radius);
+            spheres[i * 2 + 1] = (basePos + new Vector3(0.5999f, 0, 0), radius);
+        }
+
+        int pairsFound = 0;
+        SphereSweep.AddOverlappingPairs(spheres.Length, i => spheres[i], slack, (a, b) => pairsFound++);
+        return pairsFound;
+    }
+
+    private static void AssertGrowsLinearly(System.Func<int, Vector3> layoutOffset, string layoutName)
+    {
+        int small = PairsFoundAlong(100, layoutOffset);
+        int large = PairsFoundAlong(400, layoutOffset);
+
+        Assert.Greater(small, 0, $"раскладка вдоль {layoutName} обязана дать хоть одну "
+            + "найденную пару — иначе сравнение ничего не проверяет");
+        Assert.Less(large, small * 8,
+            $"раскладка вдоль {layoutName}: сцена выросла в 4 раза (100 пар -> 400), число пар, "
+            + $"которые сметание сочло кандидатами, выросло с {small} до {large}. Развёртка "
+            + "обязана выбирать ось НАИБОЛЬШЕГО разброса центров и мести по ней — рост должен "
+            + "остаться около 4x; рост около 16x (или больше 8x, взятого с запасом) значит, что "
+            + "развёртка мела по чужой оси и выродилась в перебор всех пар");
+    }
+
+    [Test]
+    public void AddOverlappingPairs_GrowsLinearly_OnARunLaidAlongX()
+    {
+        AssertGrowsLinearly(i => new Vector3(i * 3f, 0, 0), "X");
+    }
+
+    [Test]
+    public void AddOverlappingPairs_GrowsLinearly_OnARunLaidAlongZ()
+    {
+        AssertGrowsLinearly(i => new Vector3(0, 0, i * 3f), "Z");
+    }
+
+    [Test]
+    public void AddOverlappingPairs_GrowsLinearly_OnARunLaidAlongADiagonal()
+    {
+        AssertGrowsLinearly(i => new Vector3(i * 3f, 0, i * 3f), "диагонали X=Z");
+    }
 }
