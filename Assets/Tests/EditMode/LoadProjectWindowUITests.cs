@@ -2,6 +2,7 @@ using System.IO;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
@@ -96,7 +97,7 @@ public class LoadProjectWindowUITests
     }
 
     [Test]
-    public void ClickingAnExistingRecentRow_LoadsThatProject()
+    public void ClickingAnExistingRecentRow_LoadsThatProject_AndClosesTheWindow()
     {
         var path = MakeProjectFile("lpwui_existing.kdproj", BuildInfo.Version);
         RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = new[] { path };
@@ -110,6 +111,63 @@ public class LoadProjectWindowUITests
         row!.GetComponent<Button>().onClick.Invoke();
 
         Assert.AreEqual(path, SaveLoadManager.LastPath);
+        Assert.IsFalse(ui.IsVisible,
+            "успешная загрузка из окна обязана закрыть его — иначе поверх сцены остаётся "
+            + "модальное окно выбора проекта");
+    }
+
+    [Test]
+    public void ClickingARecentRow_WhenTheFileIsCorrupt_LoadFails_AndTheWindowStaysOpen()
+    {
+        var path = Path.Combine(Application.temporaryCachePath, "lpwui_corrupt.kdproj");
+        File.WriteAllText(path, "not valid json {");
+        _tempFiles.Add(path);
+        RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = new[] { path };
+        LogAssert.Expect(LogType.Error,
+            new System.Text.RegularExpressions.Regex(@"^\[SaveLoad\] Load failed:"));
+
+        var ui = Build();
+        ui.SetVisible(true);
+
+        var row = _canvasGo!.transform.Find(
+            "LoadProjectWindow/LoadBody/LoadBodyBody/LoadBodyBodyContent/Row");
+        Assert.IsNotNull(row, "файл существует на диске — строка обязана быть кликабельной");
+        row!.GetComponent<Button>().onClick.Invoke();
+
+        Assert.IsTrue(ui.IsVisible,
+            "загрузка провалилась — окно обязано остаться открытым, а не закрыться на отказ");
+    }
+
+    [Test]
+    public void ClickingNewProject_WhenTheNativeDialogIsCancelled_TheWindowStaysOpen()
+    {
+        var ui = Build();
+        ui.SetVisible(true);
+
+        var newBtn = _canvasGo!.transform.Find("LoadProjectWindow/LoadNewProject");
+        Assert.IsNotNull(newBtn);
+        LogAssert.Expect(LogType.Assert, new System.Text.RegularExpressions.Regex("^Cancelling FileDialog"));
+        newBtn!.GetComponent<Button>().onClick.Invoke();
+
+        Assert.IsTrue(ui.IsVisible,
+            "диалог сохранения в batch-режиме редактора всегда возвращает отмену — окно "
+            + "обязано остаться открытым, а не закрыться до того, как известен результат");
+    }
+
+    [Test]
+    public void ClickingLoadFile_WhenTheNativeDialogIsCancelled_TheWindowStaysOpen()
+    {
+        var ui = Build();
+        ui.SetVisible(true);
+
+        var loadBtn = _canvasGo!.transform.Find("LoadProjectWindow/LoadOpenFile");
+        Assert.IsNotNull(loadBtn);
+        LogAssert.Expect(LogType.Assert, new System.Text.RegularExpressions.Regex("^Cancelling FileDialog"));
+        loadBtn!.GetComponent<Button>().onClick.Invoke();
+
+        Assert.IsTrue(ui.IsVisible,
+            "диалог открытия в batch-режиме редактора всегда возвращает отмену — окно "
+            + "обязано остаться открытым, а не закрыться до того, как известен результат");
     }
 
     [Test]

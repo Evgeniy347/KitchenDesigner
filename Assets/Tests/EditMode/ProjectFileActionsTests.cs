@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
 
@@ -81,6 +82,35 @@ public class ProjectFileActionsTests
 
         CollectionAssert.Contains(RecentProjects.Paths(), path,
             "«Сохранить» в уже открытый файл обязано держать его в списке недавних");
+        File.Delete(path);
+    }
+
+    [Test]
+    public void OpenExisting_WhenLoadSucceeds_InvokesCallbackWithTrue()
+    {
+        var path = Path.Combine(Application.temporaryCachePath, "pfa_open_ok.json");
+        File.WriteAllText(path, "{\"version\":1,\"appVersion\":\"" + BuildInfo.Version + "\"}");
+
+        bool? result = null;
+        new ProjectFileActions().OpenExisting(path, ok => result = ok);
+
+        Assert.AreEqual(true, result, "успешная загрузка обязана сообщить об этом через callback");
+        File.Delete(path);
+    }
+
+    [Test]
+    public void OpenExisting_WhenLoadFails_InvokesCallbackWithFalse()
+    {
+        var path = Path.Combine(Application.temporaryCachePath, "pfa_open_corrupt.json");
+        File.WriteAllText(path, "not valid json {");
+        LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex(
+            @"^\[SaveLoad\] Load failed:"));
+
+        bool? result = null;
+        new ProjectFileActions().OpenExisting(path, ok => result = ok);
+
+        Assert.AreEqual(false, result,
+            "битый файл обязан сообщить о провале через callback, а не молчать");
         File.Delete(path);
     }
 }

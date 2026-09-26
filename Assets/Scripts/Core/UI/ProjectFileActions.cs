@@ -1,3 +1,4 @@
+using System;
 using KitchenDesigner.Core.Update;
 
 namespace KitchenDesigner.Core.UI
@@ -37,27 +38,36 @@ namespace KitchenDesigner.Core.UI
                 ShowSaved(System.IO.Path.GetFileName(path));
         }
 
-        public void NewProjectDialog()
+        public void NewProjectDialog(Action<bool>? onDone = null)
         {
             string? path = NativeFileDialog.SaveDialog("Новый проект кухни",
                 SuggestedNameForANewFile(), SaveLoadManager.LastDirectory);
-            if (string.IsNullOrEmpty(path)) return;
-            if (SaveLoadManager.CreateEmptyProjectAt(path!))
-                ShowSaved(System.IO.Path.GetFileName(path));
+            if (string.IsNullOrEmpty(path))
+            {
+                onDone?.Invoke(false);
+                return;
+            }
+            bool ok = SaveLoadManager.CreateEmptyProjectAt(path!);
+            if (ok) ShowSaved(System.IO.Path.GetFileName(path));
+            onDone?.Invoke(ok);
         }
 
-        public void LoadDialog()
+        public void LoadDialog(Action<bool>? onDone = null)
         {
             string? path = NativeFileDialog.OpenDialog("Открыть проект кухни",
                 SaveLoadManager.LastDirectory);
-            if (string.IsNullOrEmpty(path)) return;
-            OpenExisting(path!);
+            if (string.IsNullOrEmpty(path))
+            {
+                onDone?.Invoke(false);
+                return;
+            }
+            OpenExisting(path!, onDone);
         }
 
-        public void OpenExisting(string path)
+        public void OpenExisting(string path, Action<bool>? onDone = null)
         {
             NewerVersionPrompt.Confirm(ProjectFileVersion.Of(path), BuildInfo.Version,
-                () => Open(path));
+                () => onDone?.Invoke(Open(path)));
         }
 
         private static bool Open(string path)

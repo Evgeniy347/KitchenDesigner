@@ -91,23 +91,12 @@ namespace KitchenDesigner.Core.UI
             rt.anchoredPosition = new Vector2(UIStyle.WindowPad, topOffset);
         }
 
-        private void OnNewProject()
-        {
-            SetVisible(false);
-            _actions.NewProjectDialog();
-        }
+        private void OnNewProject() => _actions.NewProjectDialog(ok => { if (ok) SetVisible(false); });
 
-        private void OnLoadFile()
-        {
-            SetVisible(false);
-            _actions.LoadDialog();
-        }
+        private void OnLoadFile() => _actions.LoadDialog(ok => { if (ok) SetVisible(false); });
 
-        private void OpenRecent(string path)
-        {
-            SetVisible(false);
-            _actions.OpenExisting(path);
-        }
+        private void OpenRecent(string path) =>
+            _actions.OpenExisting(path, ok => { if (ok) SetVisible(false); });
 
         private void OnDestroy() => ProjectWindows.Unregister(this);
 
