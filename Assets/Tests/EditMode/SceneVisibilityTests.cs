@@ -39,6 +39,8 @@ public class SceneVisibilityTests
     {
         EditModeManager.Reset();
         PartRegistry.Clear();
+        LevelRegistry.Reset();
+        SceneVisibilityManager.Invalidate();
 
         foreach (var g in _spawned)
             if (g != null) Object.DestroyImmediate(g);
@@ -93,6 +95,63 @@ public class SceneVisibilityTests
             "окно — не «объект»");
         Assert.IsTrue(SceneVisibility.AnyRendererEnabled(door.GetComponent<KitchenElement>()!),
             "дверь — не «объект»");
+    }
+
+    /// <summary>M1: до фикса <c>SceneVisibilityManager.Apply</c> целиком пропускал
+    /// «не объекты» (стены, окна, двери, пол, подложку) — этаж выше текущего оставался
+    /// нарисован независимо от <see cref="NeighbourLevelsMode"/>. Пол и подложка не
+    /// закреплены ни за одним другим менеджером, поэтому их прячет сам Apply.</summary>
+    [Test]
+    public void LevelVisible_HidesFloorAndBasePlateOfTheLevelAbove()
+    {
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 3000),
+        });
+        LevelRegistry.CurrentId = "1";
+
+        var floorUp = Spawn(ElementFactory.CreateFloor(new Vector3Int(3000, 20, 3000), "F2", new Vector3(0f, 3f, 0f)));
+        floorUp.GetComponent<KitchenElement>()!.LevelId = "2";
+        var plateUp = Spawn(ElementFactory.CreatePart(new Vector3Int(3000, 18, 3000), "Plate2", new Vector3(0f, 3f, 0f)));
+        plateUp.AddComponent<BasePlate>();
+        plateUp.GetComponent<KitchenElement>()!.LevelId = "2";
+
+        SceneVisibilityManager.Invalidate();
+        SceneVisibilityManager.Apply();
+
+        Assert.IsFalse(SceneVisibility.AnyRendererEnabled(floorUp.GetComponent<KitchenElement>()!),
+            "пол второго этажа обязан скрыться, пока смотрим первый — иначе он висит над кухней");
+        Assert.IsFalse(SceneVisibility.AnyRendererEnabled(plateUp.GetComponent<KitchenElement>()!),
+            "подложка второго этажа — туда же");
+    }
+
+    /// <summary>Тот же баг для стен, окон и дверей — их рендерер ведёт
+    /// <c>WallManager</c>, поэтому level-видимость проверяется через него, а не через
+    /// <c>SceneVisibilityManager.Apply</c>.</summary>
+    [Test]
+    public void LevelVisible_HidesWallAndOpeningsOfTheLevelAbove_ViaWallManager()
+    {
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 3000),
+        });
+        LevelRegistry.CurrentId = "1";
+
+        var wall = Spawn(ElementFactory.CreateWall(new Vector3Int(3000, 2500, 100), "W2", new Vector3(0f, 4.25f, -1.5f)));
+        var wallEl = wall.GetComponent<KitchenElement>()!;
+        wallEl.LevelId = "2";
+        var win = Spawn(ElementFactory.CreateWindow(new Vector3Int(900, 1200, 100), "Win2", new Vector3(0.6f, 4.2f, -1.5f)));
+        win.GetComponent<WindowElement>()!.SnapToWall();
+        win.GetComponent<KitchenElement>()!.LevelId = "2";
+
+        _wallManager!.LateUpdate();
+
+        Assert.IsFalse(wall.GetComponent<MeshRenderer>()!.enabled,
+            "стена второго этажа обязана скрыться, пока смотрим первый");
+        Assert.IsFalse(SceneVisibility.AnyRendererEnabled(win.GetComponent<KitchenElement>()!),
+            "окно на ней — туда же, иначе оно повиснет без стены за спиной");
     }
 
     [Test]

@@ -35,13 +35,18 @@ namespace KitchenDesigner.Core
                 _wallsVisited++;
 #endif
 
+                bool levelVisible = LevelVisibility.Decide(
+                    LevelRegistry.LevelOf(e).floorElevationMm, LevelRegistry.Current.floorElevationMm,
+                    KitchenSettings.Instance.NeighbourLevels) != LevelVisibilityDecision.Hidden;
+                bool visible = show && levelVisible;
+
                 var renderer = e.GetComponent<MeshRenderer>();
-                if (renderer != null) renderer.enabled = show;
+                if (renderer != null) renderer.enabled = visible;
 
                 var collider = e.GetComponent<Collider>();
-                if (collider != null) collider.enabled = show || RoomMode;
+                if (collider != null) collider.enabled = levelVisible && (show || RoomMode);
 
-                if (!show)
+                if (!visible)
                 {
                     wall.RestoreFull();
                     ApplyOpeningVisibility(wall, hidden: true);

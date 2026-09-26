@@ -32,10 +32,13 @@ namespace KitchenDesigner.Core
             return true;
         }
 
+        public static bool IsDrivenByWallManager(KitchenElement element) =>
+            element is WindowElement || element is DoorElement || element.GetComponent<Wall>() != null;
+
         public static bool ShouldBeVisible(KitchenElement element, in ViewState view)
         {
             if (element is LightSourceElement && view.HideLightSources) return false;
-            if (!view.ObjectsVisible) return false;
+            if (IsObject(element) && !view.ObjectsVisible) return false;
 
             var decision = LevelVisibility.Decide(
                 LevelRegistry.LevelOf(element).floorElevationMm,
@@ -65,7 +68,7 @@ namespace KitchenDesigner.Core
 
             foreach (var e in PartRegistry.All)
             {
-                if (e == null || !SceneVisibility.IsObject(e)) continue;
+                if (e == null || SceneVisibility.IsDrivenByWallManager(e)) continue;
                 SceneVisibility.SetRenderersEnabled(e, SceneVisibility.ShouldBeVisible(e, view));
             }
         }
