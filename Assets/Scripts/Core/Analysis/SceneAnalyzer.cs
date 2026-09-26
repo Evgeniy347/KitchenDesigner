@@ -67,7 +67,9 @@ namespace KitchenDesigner.Core.Analysis
             using (PerfMarkers.AnalyzeFloorSlab.Auto()) CollectFloorSlab(all, byName, issues);
             t = NoteStage("floorSlab", t);
             using (PerfMarkers.AnalyzeWallLayerHosts.Auto()) CollectWallLayerHosts(all, issues);
-            NoteStage("wallLayerHosts", t);
+            t = NoteStage("wallLayerHosts", t);
+            using (PerfMarkers.AnalyzeVentilation.Auto()) CollectVentilation(all, byName, issues);
+            NoteStage("ventilation", t);
 
             LogBreakdownIfSlow(began);
             return issues;
@@ -350,6 +352,15 @@ namespace KitchenDesigner.Core.Analysis
                 issues.Add(IssueCatalog.FromConstructionFinding(finding, FindByName(byName, finding.ElementId)));
         }
 
+        private static void CollectVentilation(List<KitchenElement> all, AttachLinks.PartsByName byName,
+            List<AnalysisIssue> issues)
+        {
+            var survey = SceneDuctSnapshot.Survey(all);
+            foreach (var finding in Ventilation.DuctRules.Collect(survey))
+                issues.Add(IssueCatalog.FromConstructionFinding(finding, FindByName(byName, finding.ElementId),
+                    FindByName(byName, finding.OtherElementId)));
+        }
+
         private static KitchenElement? FindByName(AttachLinks.PartsByName byName, string? name) =>
             byName.First(name);
 
@@ -392,6 +403,9 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeFoundationRebarProtection = Construction.FoundationFindings.CodeRebarProtection;
         public const string CodeFoundationWallNotCovered = Construction.FoundationFindings.CodeWallNotCovered;
         public const string CodeFloorSlabGapToSupportingWall = Construction.FloorSlabRules.CodeGapToSupportingWall;
+        public const string CodeDuctVelocity = Ventilation.DuctIssueCatalog.CodeVelocity;
+        public const string CodeDuctProfileMismatch = Ventilation.DuctIssueCatalog.CodeProfileMismatch;
+        public const string CodeDuctAirExchange = Ventilation.DuctIssueCatalog.CodeAirExchange;
 
         public static AnalysisIssue OffMillimetreGrid(KitchenElement element, string message) =>
             new AnalysisIssue(IssueLevel.Warning, CodeOffMillimetreGrid,
@@ -569,10 +583,11 @@ namespace KitchenDesigner.Core.Analysis
                 finding.Code, PairDetail(element, other), finding.Message, element, other);
 
         public static AnalysisIssue FromConstructionFinding(Construction.ConstructionFinding finding,
-            KitchenElement? element) =>
+            KitchenElement? element, KitchenElement? other = null) =>
             new AnalysisIssue(
                 finding.Level == Construction.ConstructionFindingLevel.Error ? IssueLevel.Error : IssueLevel.Warning,
-                finding.Code, Name(element), finding.Message, element);
+                finding.Code, other != null ? PairDetail(element, other) : Name(element), finding.Message,
+                element, other);
 
         private static string Name(KitchenElement? e) =>
             e != null && !string.IsNullOrEmpty(e.PartName) ? e.PartName : "—";

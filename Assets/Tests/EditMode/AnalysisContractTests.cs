@@ -141,6 +141,7 @@ public class AnalysisContractTests
             "PIP-01", "PIP-02", "PIP-03", "PIP-04",
             "SEAT-01",
             "TYP-01",
+            "VNT-01", "VNT-02", "VNT-03",
             "WAL-01",
         };
 
