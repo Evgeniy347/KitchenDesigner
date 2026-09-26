@@ -13,11 +13,11 @@ using KitchenDesigner.Core;
 /// чужой прибор. Поэтому счётчик здесь ОТДЕЛЬНЫЙ и монотонный: он только растёт,
 /// наблюдатель берёт срез между двумя отметками, и никто ни у кого ничего не отнимает.
 ///
-/// [NonParallelizable]: SceneScanLog._scans/_shares/_recent — process-global, не
+/// [Parallelizable(ParallelScope.None)]: SceneScanLog._scans/_shares/_recent — process-global, не
 /// [ThreadStatic]; под ParallelScope.Fixtures (geometry/pure-tests) сосед на другом потоке
 /// вклинил бы свой Note() между «before» и проверкой точной дельты
 /// (SceneScanCounterIsolationTests).</summary>
-[NonParallelizable]
+[Parallelizable(ParallelScope.None)]
 public class SceneScanCounterTests
 {
     private const string Somewhere = "McpCommandHandler.HandleCreateElements";
