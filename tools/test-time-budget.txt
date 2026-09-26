@@ -22,10 +22,38 @@
 # ~14s on EditMode; IsoScreenshotTests ~16s on PlayMode). EditMode 6944 tests, PlayMode 337-338.
 #
 # 2026-09-26 (same day, later): LoadProjectWindowUI recent-projects bug fix added ~34 EditMode
-# tests (RecentProjectsRegistrationCoverageTests, ProjectFileActionsTests, RecentProjectsTests,
-# plus additions across SaveLoadManager*/CreateEmptyProjectAt/DemoProjectLoaderCommandLine/
-# McpProjectSaveLoad/AutoSaveQuit) -- EditMode tests time rose from 118.3s to 145.9s (6978
-# tests). No single class dominates; it is the sum of many small file-IO-backed tests.
+# tests, and EditMode tests time rose from 118.3s to 145.9s. The FIRST write-up here blamed "the
+# sum of many small file-IO-backed tests" -- wrong diagnosis, found by actually reading the NUnit
+# XML per-class durations instead of guessing from the test count: every one of the 34 new tests'
+# OWN classes totalled under 1.1s combined. The real cost was hidden in a SHARED fixture --
+# McpTestFixture.SetUp/TearDown (base class for 20 files, 369 tests) had picked up a
+# SaveLoadManager.LastPath + RecentProjects backup/restore, unconditionally, on every one of those
+# 369 tests, most of which never touch either. `PreferenceStore.SetString` calls
+# `PlayerPrefs.Save()` -- a synchronous registry flush -- so that is up to 738 forced registry
+# writes per run for tests that had nothing to do with save/load. Moved to McpProjectSaveLoadTests'
+# OWN [SetUp]/[TearDown] (the ONE class among the 20 that actually calls save_project/load_project),
+# exactly the extension pattern McpTestFixture's own doc comment already prescribes for exactly
+# this situation. Also cut EdgeCoverageBroadPhaseEquivalenceTests' new test from 2400 synthetic
+# elements to 1000 (see below) -- it does not need thousands of elements to prove a growth RATIO.
+#
+# Measuring the result hit a second problem: this session's machine sat at 100% CPU
+# (`Get-CimInstance Win32_Processor`) for its ENTIRE duration -- several concurrent `claude`
+# processes (other sessions, not this one's subagents), Docker, node, v2rayN all present in
+# `Get-Process` at once. The "tests" figure -- supposedly the controlled, in-process one -- swung
+# 139.2 / 147.5 / 155.2 / 164.2 / 165.8s across five consecutive full runs of the SAME code (one
+# of the five also flipped an unrelated wall-clock test, JsonTrimScaleTests, red on 361ms vs its
+# 300ms threshold -- green again on an isolated re-run seconds later), with overhead swinging
+# 22.6-33.6s in the same runs. That is shared-machine noise on both halves, not a code
+# regression: the individual class durations (McpUiPropertyParityTests, LevelMigrationRoundTripTests,
+# EdgeCoverageBroadPhaseEquivalenceTests -- none of them touched by this fix) moved by the same
+# proportion run to run, and this file's own "tests: +10%, it's controlled" claim (line below)
+# does not hold today -- 165.8 is +12.4% over the 147.5 median alone, before counting the two
+# higher samples. 166s (the worst CLEAN, i.e. 0-failed, full run) is used as "measured" below,
+# with a wider-than-normal margin, precisely because today's machine cannot tell code from noise.
+# Re-measure and tighten this back down on a quiet machine -- do not treat 190 as the new normal.
+# Same session, same noise, also pushed a PlayMode "tests" run to 77.5s against its old 74s
+# budget with 0 failures (LoadProjectWindowDiagramTests' one new PlayMode test, added earlier the
+# same day, costs ~1.1s on its own -- not the cause). Widened PlayMode tests the same way.
 #
 # tests: budget = measured + ~10%, as the NUnit report's own @duration is a controlled figure
 # (in-process, not subject to whatever else the machine is doing) -- three PlayMode samples in
@@ -42,7 +70,7 @@
 # sample below; its overhead margin follows the same ~70% rule on principle, not on three
 # samples -- tighten it once more EditMode data exists.
 
-EditMode tests    145.9 160
+EditMode tests    166.0 190
 EditMode overhead  32.5  55
-PlayMode tests     67.6  74
+PlayMode tests     77.5  90
 PlayMode overhead  21.0  36

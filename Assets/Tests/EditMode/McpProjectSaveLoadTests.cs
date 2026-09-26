@@ -16,11 +16,15 @@ using KitchenDesigner.Core.MCP;
 public class McpProjectSaveLoadTests : McpTestFixture
 {
     private string? _tempFile;
+    private string? _prevLastPath;
+    private string[]? _recentBackup;
 
     [SetUp]
     public void ConfigureSaveDirectory()
     {
         McpSaveDirectoryStatus.TestDirectory = Application.temporaryCachePath;
+        _prevLastPath = SaveLoadManager.LastPath;
+        _recentBackup = RecentProjectsTestBackup.Capture();
     }
 
     [TearDown]
@@ -29,6 +33,8 @@ public class McpProjectSaveLoadTests : McpTestFixture
         if (!string.IsNullOrEmpty(_tempFile) && File.Exists(_tempFile)) File.Delete(_tempFile);
         DemoMode.ResetCurrent();
         McpSaveDirectoryStatus.ResetForTests();
+        SaveLoadManager.LastPath = _prevLastPath!;
+        RecentProjectsTestBackup.Restore(_recentBackup!);
     }
 
     private string TempPath()

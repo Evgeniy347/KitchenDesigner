@@ -27,14 +27,10 @@ using KitchenDesigner.Core.MCP;
 public abstract class McpTestFixture : ElementTestBase
 {
     protected McpCommandHandler? _handler;
-    private string? _prevLastPath;
-    private string[]? _recentBackup;
 
     [SetUp]
     public void McpFixtureSetUp()
     {
-        _prevLastPath = SaveLoadManager.LastPath;
-        _recentBackup = RecentProjectsTestBackup.Capture();
         _handler = new McpCommandHandler();
         PartRegistry.Clear();
     }
@@ -49,9 +45,6 @@ public abstract class McpTestFixture : ElementTestBase
         foreach (var el in PartRegistry.GetAll())
             if (el != null) Object.DestroyImmediate(el.gameObject);
         PartRegistry.Clear();
-
-        SaveLoadManager.LastPath = _prevLastPath!;
-        RecentProjectsTestBackup.Restore(_recentBackup!);
     }
 
     protected static McpRequest MakeReq(string method, object data) => new McpRequest
