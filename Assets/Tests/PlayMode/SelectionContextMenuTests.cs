@@ -7,45 +7,67 @@ using KitchenDesigner.Core.UI;
 
 public class SelectionContextMenuTests
 {
-    private GameObject? _bootstrap;
-    private GameObject? _camera;
+    // Тот же приём, что в IsoScreenshotTests: Bootstrap поднимается ОДИН раз
+    // на класс (статика — NUnit создаёт новый экземпляр на каждый тест). Этот
+    // набор не мутирует KitchenSettings, так что снимок/восстановление не
+    // нужны — только элементы сцены между тестами.
+    private static GameObject? _bootstrap;
+    private static GameObject? _camera;
+
+    [OneTimeTearDown]
+    public void OneTimeTearDownOnce()
+    {
+        if (_bootstrap != null) Object.Destroy(_bootstrap);
+        if (_camera != null) Object.Destroy(_camera);
+        _bootstrap = null;
+        _camera = null;
+    }
 
     [UnitySetUp]
     public IEnumerator SetUp()
     {
         PlayModeTestConfig.ConfigureForTests();
 
-        _camera = new GameObject("Main Camera");
-        _camera.tag = "MainCamera";
-        _camera.AddComponent<Camera>();
-        _camera.transform.position = new Vector3(0f, 3f, -5f);
-        _camera.transform.LookAt(Vector3.zero);
+        if (_bootstrap == null)
+        {
+            _camera = new GameObject("Main Camera");
+            _camera.tag = "MainCamera";
+            _camera.AddComponent<Camera>();
+            _camera.transform.position = new Vector3(0f, 3f, -5f);
+            _camera.transform.LookAt(Vector3.zero);
 
-        SaveLoadManager.LastPath = "";
-        var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
-        if (System.IO.File.Exists(autoPath)) System.IO.File.Delete(autoPath);
+            SaveLoadManager.LastPath = "";
+            var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
+            if (System.IO.File.Exists(autoPath)) System.IO.File.Delete(autoPath);
 
-        _bootstrap = new GameObject("Bootstrap");
-        _bootstrap.AddComponent<Bootstrap>();
+            _bootstrap = new GameObject("Bootstrap");
+            _bootstrap.AddComponent<Bootstrap>();
 
-        yield return null;
+            yield return null;
+            yield return null;
+        }
+
         yield return null;
     }
 
     [UnityTearDown]
     public IEnumerator TearDown()
     {
+        // Несколько тестов нарочно заканчиваются с ОТКРЫТЫМ меню
+        // (OpenContextMenu_Twice_SameElement_DoesNotThrow,
+        // ContextMenu_Select_SameFrame_KeepsMenu,
+        // RmbClick_OnSelectedElement_OpensContextMenuThroughHandleTips,
+        // ContextMenu_Open_ThenSelectAnother_UpdatesMenu) — раньше это чинил
+        // пересоздаваемый Canvas на следующем [UnitySetUp]. Общий Canvas
+        // держит меню открытым дальше, а следующий тест начинается с
+        // Assert.IsFalse(IsContextMenuVisible()), поэтому закрываем меню и
+        // снимаем выделение здесь же, явно.
+        ContextMenuUI.Instance?.Close();
+        SelectionManager.Instance?.DeselectAll();
+
+        // BasePlate живёт на общем Bootstrap и не пересоздаётся каждый тест.
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null) Object.Destroy(e.gameObject);
-
-        foreach (var c in Object.FindObjectsByType<Canvas>())
-            if (c != null) Object.Destroy(c.gameObject);
-
-        foreach (var es in Object.FindObjectsByType<UnityEngine.EventSystems.EventSystem>())
-            if (es != null) Object.Destroy(es.gameObject);
-
-        if (_bootstrap != null) Object.Destroy(_bootstrap);
-        if (_camera != null) Object.Destroy(_camera);
+            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
         yield return null;
     }
 
