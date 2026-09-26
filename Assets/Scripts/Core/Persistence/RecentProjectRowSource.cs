@@ -10,13 +10,26 @@ namespace KitchenDesigner.Core
             if (!exists)
                 return RecentProjectRow.Describe(path, false, null, BuildInfo.Version, null, null, null);
 
-            string storedVersion = ProjectFileVersion.Of(path);
-            string createdAtUtc = ProjectFileCreatedAt.Of(path);
+            string json = ReadOrEmpty(path);
+            string storedVersion = ProjectFileVersion.In(json);
+            string createdAtUtc = ProjectFileCreatedAt.In(json);
             string fallbackCreated = ProjectFileCreatedAt.FallbackFromFileSystemUtc(path);
             string modified = SafeModifiedUtc(path);
 
             return RecentProjectRow.Describe(path, true, storedVersion, BuildInfo.Version,
                 createdAtUtc, fallbackCreated, modified);
+        }
+
+        private static string ReadOrEmpty(string path)
+        {
+            try
+            {
+                return File.ReadAllText(path);
+            }
+            catch (IOException)
+            {
+                return "";
+            }
         }
 
         private static string SafeModifiedUtc(string path)
