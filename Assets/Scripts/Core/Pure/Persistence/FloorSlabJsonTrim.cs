@@ -29,14 +29,7 @@ namespace KitchenDesigner.Core
             var elements = JsonText.MemberValue(projectJson, root, ElementsKey);
             if (!elements.Found || projectJson[elements.Start] != '[') return projectJson;
 
-            var items = JsonText.ArrayItems(projectJson, elements);
-            for (int i = items.Count - 1; i >= 0; i--)
-            {
-                var item = items[i];
-                if (item.Start >= projectJson.Length || projectJson[item.Start] != '{') continue;
-                projectJson = RemoveFromElement(projectJson, item);
-            }
-            return projectJson;
+            return JsonText.RewriteArrayItems(projectJson, elements, RemoveFromElement);
         }
 
         private static string RemoveFromNamedObject(string projectJson, string key)

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace KitchenDesigner.Core
 {
@@ -80,6 +82,31 @@ namespace KitchenDesigner.Core
                 if (i < arraySpan.End && source[i] == ',') i = SkipWhitespace(source, i + 1);
             }
             return items;
+        }
+
+        public static string RewriteArrayItems(string source, JsonSpan arraySpan, Func<string, JsonSpan, string> rewriteItem)
+        {
+            var items = ArrayItems(source, arraySpan);
+            if (items.Count == 0) return source;
+
+            var sb = new StringBuilder(source.Length);
+            int cursor = 0;
+            foreach (var item in items)
+            {
+                sb.Append(source, cursor, item.Start - cursor);
+                if (item.Start < source.Length && source[item.Start] == '{')
+                {
+                    string itemText = item.Text(source);
+                    sb.Append(rewriteItem(itemText, RootObject(itemText)));
+                }
+                else
+                {
+                    sb.Append(source, item.Start, item.Length);
+                }
+                cursor = item.End;
+            }
+            sb.Append(source, cursor, source.Length - cursor);
+            return sb.ToString();
         }
 
         public static string RemoveMember(string source, JsonSpan objectSpan, string key)
