@@ -314,6 +314,13 @@ namespace KitchenDesigner.Core.MCP
                 railCount = fence.RailCount,
             }),
 
+            For<WallLayerElement>((info, layer) => info.wallLayer = new WallLayerInfo
+            {
+                hostWallName = string.IsNullOrEmpty(layer.HostWallName) ? null : layer.HostWallName,
+                thicknessMm = layer.ThicknessMm,
+                battenStepMm = layer is VentGapElement ventGap ? ventGap.BattenStepMm : (int?)null,
+            }),
+
             For<PipeElement>((info, pipe) => info.pipe = new PipeInfo
             {
                 sizeId = pipe.SizeId,

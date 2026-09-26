@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine;
 using KitchenDesigner.Core.Construction;
 
 namespace KitchenDesigner.Core
@@ -10,18 +9,6 @@ namespace KitchenDesigner.Core
 
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("утеплитель идёт по всей грани стены под облицовкой — лицевой детали нет");
-
-        [Undoable]
-        public int ThicknessMm
-        {
-            get => DimensionsMM.z;
-            set
-            {
-                var d = DimensionsMM;
-                d.z = Mathf.Clamp(value, WallLayerDefaults.MinThicknessMm, WallLayerDefaults.MaxThicknessMm);
-                DimensionsMM = d;
-            }
-        }
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

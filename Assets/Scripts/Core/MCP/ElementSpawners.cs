@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.Construction;
 using KitchenDesigner.Core.MCP.Contract;
 using KitchenDesigner.Core.Plumbing;
 
@@ -144,6 +145,18 @@ namespace KitchenDesigner.Core.MCP
                 ["fence"] = (item, pos) => ElementFactory.CreateFence(
                     item.width ?? FenceElement.DEFAULT_LENGTH_MM,
                     item.height ?? FenceElement.DEFAULT_HEIGHT_MM, item.name, pos),
+
+                ["insulation"] = (item, pos) => ElementFactory.CreateInsulation(
+                    item.wall_layer_host_wall_name ?? "",
+                    item.depth ?? WallLayerDefaults.InsulationThicknessMm, item.name, pos),
+
+                ["vent_gap"] = (item, pos) => ElementFactory.CreateVentGap(
+                    item.wall_layer_host_wall_name ?? "",
+                    item.depth ?? WallLayerDefaults.VentGapThicknessMm, item.name, pos),
+
+                ["cladding"] = (item, pos) => ElementFactory.CreateCladding(
+                    item.wall_layer_host_wall_name ?? "",
+                    item.depth ?? WallLayerDefaults.CladdingThicknessMm, item.name, pos),
 
                 ["pipe"] = (item, pos) => ElementFactory.CreatePipe(
                     item.pipe_size ?? PipeSpec.DEFAULT_SIZE,

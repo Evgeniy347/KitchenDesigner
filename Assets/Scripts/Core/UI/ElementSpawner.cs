@@ -210,6 +210,18 @@ namespace KitchenDesigner.Core.UI
                     PlaceAtHeightUnaffectedByGrid(0f,
                         pos => ElementFactory.CreateFence(item.dims.x, item.dims.y, item.name, pos));
                     break;
+                case SidebarItemKind.Insulation:
+                    PlaceAtHeightUnaffectedByGrid(0f,
+                        pos => ElementFactory.CreateInsulation("", item.dims.z, item.name, pos));
+                    break;
+                case SidebarItemKind.VentGap:
+                    PlaceAtHeightUnaffectedByGrid(0f,
+                        pos => ElementFactory.CreateVentGap("", item.dims.z, item.name, pos));
+                    break;
+                case SidebarItemKind.Cladding:
+                    PlaceAtHeightUnaffectedByGrid(0f,
+                        pos => ElementFactory.CreateCladding("", item.dims.z, item.name, pos));
+                    break;
                 case SidebarItemKind.Board:
                 default:
                     BeginPlacement(CreateBoardGo(item.dims, item.name));

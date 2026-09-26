@@ -162,6 +162,18 @@ namespace KitchenDesigner.Core.UI
                     _spawned = ElementFactory.CreateFence(item.dims.x, item.dims.y, item.name,
                         Vector3.zero);
                     break;
+                case SidebarItemKind.Insulation:
+                    _spawned = ElementFactory.CreateInsulation("", item.dims.z, item.name, Vector3.zero);
+                    _spawned.GetComponent<KitchenElement>()!.DimensionsMM = item.dims;
+                    break;
+                case SidebarItemKind.VentGap:
+                    _spawned = ElementFactory.CreateVentGap("", item.dims.z, item.name, Vector3.zero);
+                    _spawned.GetComponent<KitchenElement>()!.DimensionsMM = item.dims;
+                    break;
+                case SidebarItemKind.Cladding:
+                    _spawned = ElementFactory.CreateCladding("", item.dims.z, item.name, Vector3.zero);
+                    _spawned.GetComponent<KitchenElement>()!.DimensionsMM = item.dims;
+                    break;
                 case SidebarItemKind.Board:
                 default:
                     _spawned = ElementFactory.CreatePart(item.dims, item.name, Vector3.zero);

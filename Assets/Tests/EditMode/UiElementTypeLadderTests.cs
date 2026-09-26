@@ -60,6 +60,7 @@ public class UiElementTypeLadderTests
         ("FoundationFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
         ("FloorSlabFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
         ("FenceFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
+        ("WallLayerFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
         ("BathtubFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
         ("BathMixerFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),
         ("ShowerColumnFieldsEditor.cs", "видимость строк: RowVisibility.When по Host.Target"),

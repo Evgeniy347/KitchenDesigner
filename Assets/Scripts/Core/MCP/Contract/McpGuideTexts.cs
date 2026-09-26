@@ -438,6 +438,17 @@ FenceElement          Straight run of profiled-sheet fence (type:""fence"").
                       (see get_elements fields) feed the specification --
                       rail count is DERIVED from height (2 below 2000mm, 3
                       at or above) and has no field of its own.
+InsulationElement     Wall insulation layer (type:""insulation""). Seats flush
+                      on wall_layer_host_wall_name (or the nearest wall) and
+                      TAKES the wall's length/height, re-cutting its window/
+                      door openings -- width/height are not settable, only
+                      wall_layer_thickness_mm (depth at create time). Moves
+                      with the wall automatically.
+VentGapElement        Ventilated-facade air gap layer (type:""vent_gap"").
+                      Same wall-following rule as InsulationElement, plus
+                      wall_layer_batten_step_mm for the vertical battens.
+CladdingElement       Outer cladding layer (type:""cladding""). Same
+                      wall-following rule as InsulationElement.
 ScrewLegElement       Screw-in levelling leg with a threaded insert
                       (type:""screw_leg""). A foot (screw_base_diameter_mm x
                       screw_base_height_mm, 25x8 mm by default) plus a threaded
@@ -637,6 +648,13 @@ fence                 Fence run only: {postSectionMm, postStepMm, pitDepthMm,
                       edit_elements fence_sheet_mark). railCount is
                       READ-ONLY -- derived from the run's own height, no
                       matching edit field.
+wallLayer             Insulation/vent-gap/cladding layer only: {hostWallName,
+                      thicknessMm, battenStepMm}. hostWallName mirrors
+                      edit_elements wall_layer_host_wall_name (null if the
+                      layer has not found a wall yet). thicknessMm mirrors
+                      wall_layer_thickness_mm. battenStepMm is null except on
+                      a vent-gap layer, where it mirrors
+                      wall_layer_batten_step_mm.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
   {name, kind, anchorMm:[x,z] corner, sizeMm:[width,height,depth], rotYDeg,

@@ -110,6 +110,15 @@ namespace KitchenDesigner.Core
 		public static GameObject CreateFence(int lengthMM, int heightMM, string name, Vector3 position) =>
 			Instance.CreateFence(lengthMM, heightMM, name, position);
 
+		public static GameObject CreateInsulation(string hostWallName, int thicknessMm, string name, Vector3 position) =>
+			Instance.CreateInsulation(hostWallName, thicknessMm, name, position);
+
+		public static GameObject CreateVentGap(string hostWallName, int thicknessMm, string name, Vector3 position) =>
+			Instance.CreateVentGap(hostWallName, thicknessMm, name, position);
+
+		public static GameObject CreateCladding(string hostWallName, int thicknessMm, string name, Vector3 position) =>
+			Instance.CreateCladding(hostWallName, thicknessMm, name, position);
+
 		public static GameObject CreateLightSource(string name, Vector3 position) =>
 			Instance.CreateLightSource(name, position);
 

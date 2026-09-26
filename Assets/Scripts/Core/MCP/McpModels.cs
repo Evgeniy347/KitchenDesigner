@@ -102,6 +102,7 @@ namespace KitchenDesigner.Core.MCP
 		public FoundationInfo? foundation;
 		public FloorSlabInfo? floorSlab;
 		public FenceInfo? fence;
+		public WallLayerInfo? wallLayer;
 		public ScrewLegInfo? screwLeg;
 		public PipeInfo? pipe;
 		public PipeFittingInfo? pipeFitting;
@@ -507,6 +508,14 @@ namespace KitchenDesigner.Core.MCP
 		public int pitDepthMm;
 		public string sheetMark = "C8";
 		public int railCount;
+	}
+
+	[Serializable]
+	public class WallLayerInfo
+	{
+		public string? hostWallName;
+		public int thicknessMm;
+		public int? battenStepMm;
 	}
 
 	[Serializable]

@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Analysis;
+using KitchenDesigner.Core.Construction;
 using KitchenDesigner.Core.UI;
 using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Tests;
@@ -1815,6 +1816,79 @@ public class IsoScreenshotTests : ElementFrameTests
         _spawned.Add(camGo);
 
         yield return RenderToPng(cam, "iso_fence.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
+    /// <summary>Ключевой снимок слоёв стены (WALL LAYERS W2/W3): стена 3000x2500x100 с
+    /// окном 900x1200 посередине, утеплитель прилип к её грани сам (SnapToNearestWall)
+    /// и вырезал у себя ТОТ ЖЕ проём, что и стена — на снимке видно и стену, и
+    /// утеплитель перед ней с одинаковым по месту вырезом под окно.</summary>
+    [UnityTest]
+    public IEnumerator IsoInsulation_OnAWallWithAWindow()
+    {
+        var wallGo = ElementFactory.CreateWall(new Vector3Int(3000, 2500, 100), "IsoLayerWall",
+            new Vector3(0f, 1.25f, 0f));
+        _spawned.Add(wallGo);
+        var winGo = ElementFactory.CreateWindow(new Vector3Int(900, 1200, 100), "IsoLayerWindow",
+            new Vector3(0f, 1.2f, 0f));
+        _spawned.Add(winGo);
+        winGo.GetComponent<WindowElement>()!.SnapToWall();
+
+        var layerGo = ElementFactory.CreateInsulation("", WallLayerDefaults.InsulationThicknessMm,
+            "IsoLayerInsulation", new Vector3(0f, 1.25f, 0.5f));
+        _spawned.Add(layerGo);
+        var layer = layerGo.GetComponent<InsulationElement>();
+        Assert.IsNotNull(layer);
+        Assert.AreEqual("IsoLayerWall", layer!.HostWallName, "слой обязан был прилипнуть к стене сам");
+
+        Vector3 size = MmToUnits(new Vector3Int(3000, 2500, 300));
+        var (camGo, cam) = CreateIsoCamera(new Vector3(0f, 1.25f, 0f), size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_wall_layers_with_window.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoVentGap_DefaultSize()
+    {
+        var wallGo = ElementFactory.CreateWall(new Vector3Int(1200, 1200, 100), "IsoVentGapWall",
+            new Vector3(0f, 0.6f, 0f));
+        _spawned.Add(wallGo);
+
+        var go = ElementFactory.CreateVentGap("IsoVentGapWall", WallLayerDefaults.VentGapThicknessMm,
+            "IsoVentGap", new Vector3(0f, 0.6f, 0.5f));
+        _spawned.Add(go);
+        Assert.IsNotNull(go.GetComponent<VentGapElement>());
+
+        Vector3 size = MmToUnits(new Vector3Int(1200, 1200, WallLayerDefaults.VentGapThicknessMm));
+        var (camGo, cam) = CreateIsoCamera(go.transform.position, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_vent_gap.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
+    [UnityTest]
+    public IEnumerator IsoCladding_DefaultSize()
+    {
+        var wallGo = ElementFactory.CreateWall(new Vector3Int(1200, 1200, 100), "IsoCladdingWall",
+            new Vector3(0f, 0.6f, 0f));
+        _spawned.Add(wallGo);
+
+        var go = ElementFactory.CreateCladding("IsoCladdingWall", WallLayerDefaults.CladdingThicknessMm,
+            "IsoCladding", new Vector3(0f, 0.6f, 0.5f));
+        _spawned.Add(go);
+        Assert.IsNotNull(go.GetComponent<CladdingElement>());
+
+        Vector3 size = MmToUnits(new Vector3Int(1200, 1200, WallLayerDefaults.CladdingThicknessMm));
+        var (camGo, cam) = CreateIsoCamera(go.transform.position, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_cladding.png");
 
         Object.DestroyImmediate(camGo);
     }

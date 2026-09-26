@@ -206,6 +206,18 @@ namespace KitchenDesigner.Core.MCP.Contract
             Enum = new[] { "C8", "C20", "HC35" })]
         public string? fence_sheet_mark;
 
+        [McpParam("Insulation/vent-gap/cladding layer only: the name of the wall it sits flush "
+            + "against — see level_id-style wall_name in the scene_* tools' output. The layer takes "
+            + "the wall's length and height and re-cuts the same window/door openings; only its own "
+            + "thickness is set separately (width/height are rejected for this type). Omit to keep "
+            + "the current host.")]
+        public string? wall_layer_host_wall_name;
+        [McpParam("Insulation/vent-gap/cladding layer only: layer thickness in MM. Omit to keep.",
+            Min = 1)]
+        public int? wall_layer_thickness_mm;
+        [McpParam("Vent-gap layer only: vertical batten step in MM. Omit to keep.", Min = 1)]
+        public int? wall_layer_batten_step_mm;
+
         [McpParam("Gap in MM on the left side. Omit to keep.", Min = 0)] public int? gap_left;
         [McpParam("Gap in MM on the right side. Omit to keep.", Min = 0)] public int? gap_right;
         [McpParam("Gap in MM on the top side. Omit to keep.", Min = 0)] public int? gap_top;
@@ -539,7 +551,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "foundation", "floor_slab", "fence", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "pipe", "pipe_elbow", "pipe_coupling", "pipe_tee", "pipe_cap", "pipe_supply", "pipe_return", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch", "washing_machine", "dryer" })]
+            Enum = new[] { "board", "wall", "floor", "foundation", "floor_slab", "fence", "insulation", "vent_gap", "cladding", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "pipe", "pipe_elbow", "pipe_coupling", "pipe_tee", "pipe_cap", "pipe_supply", "pipe_return", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch", "washing_machine", "dryer" })]
         public string? type;
 
         [McpParam("X of the MINIMUM world corner in MM — the same number get returns in anchor[0].")] public float anchor_x_mm;
@@ -569,6 +581,12 @@ namespace KitchenDesigner.Core.MCP.Contract
                   + "ignored here; height is the length of the run.",
             Enum = new[] { "dn15", "dn20", "dn25", "dn32", "dn40", "dn50" })]
         public string? pipe_size;
+
+        [McpParam("insulation/vent_gap/cladding only: the wall it sits flush against, by name. "
+            + "Omit to seat it on the nearest wall to anchor_x_mm/anchor_z_mm. The layer then takes "
+            + "the wall's own length and height and cuts the same openings — width/height are "
+            + "rejected for this type; only depth (its own thickness) applies.")]
+        public string? wall_layer_host_wall_name;
     }
 
     [Serializable]

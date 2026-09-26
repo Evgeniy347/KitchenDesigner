@@ -162,6 +162,9 @@ public class CoplanarSurfaceCoverageTests
         { typeof(ScrewLegElement), OneCombinedMesh },
         { typeof(FoundationElement), OneCombinedMesh },
         { typeof(FloorSlabElement), OnePlate },
+        { typeof(InsulationElement), OnePlate },
+        { typeof(VentGapElement), OnePlate },
+        { typeof(CladdingElement), OnePlate },
         { typeof(LightSourceElement),
             "светильник — источник света с одной лампой-мешем; тела из нескольких "
             + "поверхностей у него нет вовсе" },

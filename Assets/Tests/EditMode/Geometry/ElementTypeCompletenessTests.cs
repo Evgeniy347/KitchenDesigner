@@ -98,34 +98,7 @@ namespace KitchenDesigner.Tests.Geometry
             ("слой MCP", "LightSourceElement",
              "светильник заводится только из сайдбара; заводить ли его через MCP — решение о "
              + "продукте, а не пропущенная строка"),
-
-            ("фабрика", "InsulationElement", WallLayerRegistriesDeferredToW4),
-            ("фабрика", "VentGapElement", WallLayerRegistriesDeferredToW4),
-            ("фабрика", "CladdingElement", WallLayerRegistriesDeferredToW4),
-            ("реестр дублирования", "InsulationElement", WallLayerRegistriesDeferredToW4),
-            ("реестр дублирования", "VentGapElement", WallLayerRegistriesDeferredToW4),
-            ("реестр дублирования", "CladdingElement", WallLayerRegistriesDeferredToW4),
-            ("восстановление сцены", "InsulationElement", WallLayerRegistriesDeferredToW4),
-            ("восстановление сцены", "VentGapElement", WallLayerRegistriesDeferredToW4),
-            ("восстановление сцены", "CladdingElement", WallLayerRegistriesDeferredToW4),
-            ("селектор массовых операций", "InsulationElement", WallLayerRegistriesDeferredToW4),
-            ("селектор массовых операций", "VentGapElement", WallLayerRegistriesDeferredToW4),
-            ("селектор массовых операций", "CladdingElement", WallLayerRegistriesDeferredToW4),
-            ("слой MCP", "InsulationElement", WallLayerRegistriesDeferredToW4),
-            ("слой MCP", "VentGapElement", WallLayerRegistriesDeferredToW4),
-            ("слой MCP", "CladdingElement", WallLayerRegistriesDeferredToW4),
-            ("изометрический скриншот-тест", "InsulationElement", WallLayerRegistriesDeferredToW4),
-            ("изометрический скриншот-тест", "VentGapElement", WallLayerRegistriesDeferredToW4),
-            ("изометрический скриншот-тест", "CladdingElement", WallLayerRegistriesDeferredToW4),
         };
-
-        /// <summary>part3-plan.md WALL LAYERS: W2 (WallLayerElement) и W3 (Insulation/VentGap/
-        /// CladdingElement) — свои файлы; W4 (эти самые реестры) идёт отдельным шагом, потому
-        /// что реестры сейчас держит параллельный агент задачи SLAB/FENCE (R-EL). Строка должна
-        /// исчезнуть из KnownGaps тем же коммитом, что заводит W4.</summary>
-        private const string WallLayerRegistriesDeferredToW4 =
-            "W2/W3 сделаны, W4 (регистрация во все реестры) — следующий шаг по плану, "
-            + "реестры сейчас заняты параллельной задачей";
 
         private static string ShortNameOf(string type) => ElementTypeCatalog.ShortNameOf(type);
 

@@ -529,6 +529,32 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, fence);
         }
 
+        public GameObject CreateInsulation(string hostWallName, int thicknessMm, string name, Vector3 position) =>
+            CreateWallLayer<InsulationElement>("Утеплитель", hostWallName, thicknessMm, name, position);
+
+        public GameObject CreateVentGap(string hostWallName, int thicknessMm, string name, Vector3 position) =>
+            CreateWallLayer<VentGapElement>("Вентзазор", hostWallName, thicknessMm, name, position);
+
+        public GameObject CreateCladding(string hostWallName, int thicknessMm, string name, Vector3 position) =>
+            CreateWallLayer<CladdingElement>("Облицовка", hostWallName, thicknessMm, name, position);
+
+        private GameObject CreateWallLayer<T>(string fallbackName, string hostWallName, int thicknessMm,
+            string name, Vector3 position) where T : WallLayerElement
+        {
+            var go = ElementRoot.NewCube(name, fallbackName, position);
+
+            var layer = go.AddComponent<T>();
+            layer.PartName = go.name;
+            layer.Movable = true;
+            layer.DimensionsMM = new Vector3Int(100, 100, thicknessMm);
+
+            if (!string.IsNullOrEmpty(hostWallName)) layer.SnapToNamedWall(hostWallName);
+            else layer.SnapToNearestWall();
+
+            if (DefaultMaterial != null) MaterialManager.ApplyById(layer, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(go, layer);
+        }
+
         public GameObject CreatePipe(string sizeId, int lengthMM, string name, Vector3 position)
         {
             var go = ElementRoot.NewCube(name, "Труба", position);

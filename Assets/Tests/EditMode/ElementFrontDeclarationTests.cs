@@ -40,7 +40,9 @@ public class ElementFrontDeclarationTests
     // or below, never from one characteristic side, same reason as the floor finish.
     // 36: FenceElement — a profiled sheet is symmetric through its thickness, same
     // reason as the pipe and the foundation strip.
-    private const int FacelessCeiling = 36;
+    // 37-39: InsulationElement/VentGapElement/CladdingElement — a wall layer runs the
+    // whole face of its host wall, same reason as the wall itself.
+    private const int FacelessCeiling = 39;
 
     private static IReadOnlyList<ElementSurfaceSweep.Row> Rows => ElementSurfaceSweep.Rows;
 

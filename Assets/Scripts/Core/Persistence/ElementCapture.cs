@@ -275,6 +275,17 @@ namespace KitchenDesigner.Core
 				d.fencePitDepthMm = fence.PitDepthMm;
 				d.fenceSheetMark = (int)fence.SheetMark;
 			}
+			if (element is WallLayerElement wallLayer)
+			{
+				d.wallLayerHostWallName = wallLayer.HostWallName;
+				if (wallLayer is InsulationElement) d.isInsulation = true;
+				else if (wallLayer is VentGapElement ventGap)
+				{
+					d.isVentGap = true;
+					d.ventGapBattenStepMm = ventGap.BattenStepMm;
+				}
+				else if (wallLayer is CladdingElement) d.isCladding = true;
+			}
 			if (element is ScrewLegElement screwLeg)
 			{
 				d.isScrewLeg = true;

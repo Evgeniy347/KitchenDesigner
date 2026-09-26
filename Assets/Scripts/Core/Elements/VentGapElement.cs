@@ -14,18 +14,6 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _battenStepMm = WallLayerDefaults.VentGapBattenStepMm;
 
         [Undoable]
-        public int ThicknessMm
-        {
-            get => DimensionsMM.z;
-            set
-            {
-                var d = DimensionsMM;
-                d.z = Mathf.Clamp(value, WallLayerDefaults.MinThicknessMm, WallLayerDefaults.MaxThicknessMm);
-                DimensionsMM = d;
-            }
-        }
-
-        [Undoable]
         public int BattenStepMm
         {
             get => _battenStepMm;

@@ -42,6 +42,9 @@ namespace KitchenDesigner.Core
 		GameObject CreateFoundation(int widthMM, int depthMM, string name, Vector3 position);
 		GameObject CreateFloorSlab(int lengthMM, int widthMM, string name, Vector3 position);
 		GameObject CreateFence(int lengthMM, int heightMM, string name, Vector3 position);
+		GameObject CreateInsulation(string hostWallName, int thicknessMm, string name, Vector3 position);
+		GameObject CreateVentGap(string hostWallName, int thicknessMm, string name, Vector3 position);
+		GameObject CreateCladding(string hostWallName, int thicknessMm, string name, Vector3 position);
 		GameObject CreateLightSource(string name, Vector3 position);
 		GameObject CreateSink(string name, Vector3 position);
 		GameObject CreateCooktop(string name, Vector3 position, string model = "");

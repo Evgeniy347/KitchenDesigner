@@ -171,6 +171,34 @@ namespace KitchenDesigner.Core
                  fence.SheetMark = (FenceSheetMark)d.fenceSheetMark;
              }),
 
+            (d => d.isInsulation,
+             (factory, d) => factory.CreateInsulation(d.wallLayerHostWallName, d.Dimensions.z, d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is not InsulationElement insulation) return;
+                 insulation.HostWallName = d.wallLayerHostWallName;
+                 insulation.DimensionsMM = d.Dimensions;
+             }),
+
+            (d => d.isVentGap,
+             (factory, d) => factory.CreateVentGap(d.wallLayerHostWallName, d.Dimensions.z, d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is not VentGapElement ventGap) return;
+                 ventGap.HostWallName = d.wallLayerHostWallName;
+                 ventGap.BattenStepMm = d.ventGapBattenStepMm;
+                 ventGap.DimensionsMM = d.Dimensions;
+             }),
+
+            (d => d.isCladding,
+             (factory, d) => factory.CreateCladding(d.wallLayerHostWallName, d.Dimensions.z, d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is not CladdingElement cladding) return;
+                 cladding.HostWallName = d.wallLayerHostWallName;
+                 cladding.DimensionsMM = d.Dimensions;
+             }),
+
             (d => d.isPipe,
              (factory, d) => factory.CreatePipe(d.pipeSizeId, d.pipeLengthMM, d.name, d.Position),
              null),

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.Construction;
 
 namespace KitchenDesigner.Core
 {
@@ -15,6 +16,20 @@ namespace KitchenDesigner.Core
             get => _hostWallName;
             set => _hostWallName = value ?? "";
         }
+
+        [Undoable]
+        public int ThicknessMm
+        {
+            get => DimensionsMM.z;
+            set
+            {
+                var d = DimensionsMM;
+                d.z = Mathf.Clamp(value, WallLayerDefaults.MinThicknessMm, WallLayerDefaults.MaxThicknessMm);
+                DimensionsMM = d;
+            }
+        }
+
+        public override Vector2Int DecorSurfaceMM => new Vector2Int(DimensionsMM.x, DimensionsMM.y);
 
         public override bool CanFollowAnAttachParent => false;
 
@@ -35,7 +50,7 @@ namespace KitchenDesigner.Core
         internal static Wall? FindWallByName(string name)
         {
             if (string.IsNullOrEmpty(name)) return null;
-            foreach (var e in PartRegistry.All)
+            foreach (var e in PartRegistry.GetAll())
             {
                 if (e == null || e.PartName != name) continue;
                 var wall = e.GetComponent<Wall>();
@@ -51,6 +66,15 @@ namespace KitchenDesigner.Core
             var wallElement = wall.GetComponent<KitchenElement>();
             _hostWallName = wallElement != null ? wallElement.PartName : "";
             ResyncToHost(wall);
+        }
+
+        public bool SnapToNamedWall(string wallName)
+        {
+            _hostWallName = wallName ?? "";
+            var wall = FindWallByName(_hostWallName);
+            if (wall == null) return false;
+            ResyncToHost(wall);
+            return true;
         }
 
         internal void Update()

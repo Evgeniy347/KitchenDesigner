@@ -34,9 +34,6 @@ public class SpecSectionsTests
     private static readonly Dictionary<string, string> ReservedForFutureSections =
         new Dictionary<string, string>
     {
-        { SpecSections.Walls,
-            "часть 3: кладка/каркас стены и перекрытия отчитаются погонными метрами и м² "
-            + "своими SpecItem, когда появится счётчик стены" },
         { SpecSections.Foundation,
             "часть 3, этап 4 «Фундамент — лента»: FoundationQuantities — выемка, песок, "
             + "щебень, бетон (м³), опалубка (м²), арматура (кг)" },

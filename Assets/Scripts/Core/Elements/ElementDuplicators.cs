@@ -163,6 +163,27 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is InsulationElement,
+             (factory, source, pos) => factory.CreateInsulation(
+                 ((WallLayerElement)source).HostWallName, source.DimensionsMM.z, source.PartName, pos),
+             (source, copy) => CopyMaterial(source, copy)),
+
+            (el => el is VentGapElement,
+             (factory, source, pos) => factory.CreateVentGap(
+                 ((WallLayerElement)source).HostWallName, source.DimensionsMM.z, source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (VentGapElement)source;
+                 var made = copy.GetComponent<VentGapElement>();
+                 if (made != null) made.BattenStepMm = src.BattenStepMm;
+                 CopyMaterial(source, copy);
+             }),
+
+            (el => el is CladdingElement,
+             (factory, source, pos) => factory.CreateCladding(
+                 ((WallLayerElement)source).HostWallName, source.DimensionsMM.z, source.PartName, pos),
+             (source, copy) => CopyMaterial(source, copy)),
+
             (el => el is PipeElement,
              (factory, source, pos) =>
                  factory.CreatePipe(((PipeElement)source).SizeId, ((PipeElement)source).LengthMM,

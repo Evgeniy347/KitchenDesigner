@@ -229,6 +229,15 @@ namespace KitchenDesigner.Core.MCP
                 if (op.fence_sheet_mark != null)
                     fence.SheetMark = McpWireEnums.ParseFenceSheetMark(op.fence_sheet_mark);
             }),
+            For<WallLayerElement>((op, layer) =>
+            {
+                if (op.wall_layer_host_wall_name != null) layer.SnapToNamedWall(op.wall_layer_host_wall_name);
+                if (op.wall_layer_thickness_mm.HasValue) layer.ThicknessMm = op.wall_layer_thickness_mm.Value;
+            }),
+            For<VentGapElement>((op, ventGap) =>
+            {
+                if (op.wall_layer_batten_step_mm.HasValue) ventGap.BattenStepMm = op.wall_layer_batten_step_mm.Value;
+            }),
             (op, el) =>
             {
                 var wall = el.GetComponent<Wall>();

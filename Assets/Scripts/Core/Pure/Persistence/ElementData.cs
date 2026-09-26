@@ -181,6 +181,11 @@ namespace KitchenDesigner.Core
 		public int fencePostStepMm = KitchenDesigner.Core.Construction.FenceDefaults.PostStepMm;
 		public int fencePitDepthMm = KitchenDesigner.Core.Construction.FenceDefaults.PitDepthMm;
 		public int fenceSheetMark = (int)KitchenDesigner.Core.Construction.FenceDefaults.SheetMark;
+		public bool isInsulation = false;
+		public bool isVentGap = false;
+		public bool isCladding = false;
+		public string wallLayerHostWallName = "";
+		public int ventGapBattenStepMm = KitchenDesigner.Core.Construction.WallLayerDefaults.VentGapBattenStepMm;
 		public bool isLightSource = false;
 		public int lightTemperatureK = LampSpec.DEFAULT_TEMPERATURE_K;
 		public int lightPowerW = LampSpec.DEFAULT_POWER_W;

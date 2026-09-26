@@ -72,6 +72,9 @@ namespace KitchenDesigner.Core.UI
                 SidebarItemKind.Foundation => EditModeManager.Category.Room,
                 SidebarItemKind.FloorSlab => EditModeManager.Category.Room,
                 SidebarItemKind.Fence => EditModeManager.Category.Room,
+                SidebarItemKind.Insulation => EditModeManager.Category.Room,
+                SidebarItemKind.VentGap => EditModeManager.Category.Room,
+                SidebarItemKind.Cladding => EditModeManager.Category.Room,
                 _ => EditModeManager.Category.Regular,
             };
         }
@@ -233,6 +236,12 @@ namespace KitchenDesigner.Core.UI
                 FloorSlabItem("Перекрытие"));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Забор",
                 FenceItem("Забор"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Утеплитель",
+                InsulationItem("Утеплитель"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Вентзазор",
+                VentGapItem("Вентзазор"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Облицовка",
+                CladdingItem("Облицовка"));
         }
 
         private static IEnumerable<(SidebarGroupKey Group, Item Item)> RowsWithTileTitleInherited()
@@ -378,6 +387,21 @@ namespace KitchenDesigner.Core.UI
                 FenceElement.DEFAULT_HEIGHT_MM,
                 KitchenDesigner.Core.Construction.FenceDefaults.SheetThicknessMm),
                 SidebarItemKind.Fence);
+
+        private static Item InsulationItem(string name) =>
+            new Item(name, new Vector3Int(1000, 1000,
+                KitchenDesigner.Core.Construction.WallLayerDefaults.InsulationThicknessMm),
+                SidebarItemKind.Insulation);
+
+        private static Item VentGapItem(string name) =>
+            new Item(name, new Vector3Int(1000, 1000,
+                KitchenDesigner.Core.Construction.WallLayerDefaults.VentGapThicknessMm),
+                SidebarItemKind.VentGap);
+
+        private static Item CladdingItem(string name) =>
+            new Item(name, new Vector3Int(1000, 1000,
+                KitchenDesigner.Core.Construction.WallLayerDefaults.CladdingThicknessMm),
+                SidebarItemKind.Cladding);
 
         private static Item PillarItem(string name, int midHeightMM)
         {
