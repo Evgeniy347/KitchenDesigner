@@ -45,6 +45,7 @@ namespace KitchenDesigner.Core.UI
         private readonly ContextMenuGrooveSection _grooves;
         private readonly ContextMenuGapSection _gaps;
         private readonly ContextMenuMaterialSection _materials;
+        private readonly ContextMenuLevelSection _levels;
         private readonly ElementTypeConverter _types;
         private readonly LightFieldsEditor _lights;
         private readonly RadialFieldsEditor _radialFields;
@@ -94,6 +95,7 @@ namespace KitchenDesigner.Core.UI
             _grooves = new ContextMenuGrooveSection(this);
             _gaps = new ContextMenuGapSection(this);
             _materials = new ContextMenuMaterialSection(this);
+            _levels = new ContextMenuLevelSection(this);
             _types = new ElementTypeConverter(this, Open);
             _lights = new LightFieldsEditor(this);
             _radialFields = new RadialFieldsEditor(this);
@@ -165,6 +167,8 @@ namespace KitchenDesigner.Core.UI
 
         internal ContextMenuMaterialSection Materials => _materials;
 
+        internal ContextMenuLevelSection Levels => _levels;
+
         internal NameDropdownBinder AttachedFacade => _attachedFacade;
 
         internal NameDropdownBinder AttachedTo => _attachedTo;
@@ -203,6 +207,7 @@ namespace KitchenDesigner.Core.UI
             BuildAttachmentSection();
             _lights.Build();
             BuildPositionSection(panel.transform);
+            _levels.Build();
             _textures.Build(panel.transform, _materials.Build());
             _lightLinks.Build(panel.transform);
             BuildPropertySection();
@@ -653,6 +658,7 @@ namespace KitchenDesigner.Core.UI
                 _sizes.ShowLocks(element, EditorFor(element));
 
                 _materials.ShowFor(element);
+                _levels.ShowFor(element);
 
             _grooves.Refresh();
             _edges.Refresh();
