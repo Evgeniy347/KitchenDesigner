@@ -47,6 +47,13 @@ public class EdgeSubstrateSyncWorkTests : ElementTestBase
         return all;
     }
 
+    private List<KitchenElement> ARowOfBandedBoards(int count)
+    {
+        var all = ARowOfBoards(count);
+        foreach (var e in all) e.EdgeBandingEnabled = true;
+        return all;
+    }
+
     /// <summary>Главный сенсор: пересборка подложки кромок по всей сцене не имеет права
     /// ни разу искать деталь перебором — индекс у неё уже есть. Число здесь равно числу
     /// деталей, то есть на проекте пользователя — сорока тысячам нативных сравнений.</summary>
@@ -94,5 +101,76 @@ public class EdgeSubstrateSyncWorkTests : ElementTestBase
 
         Assert.AreEqual(without, withIndex,
             "индекс — это способ НАЙТИ деталь в сцене, а не другая деталь");
+    }
+
+    /// <summary>2026-09-26: `EdgeSubstrate.Sync` (одна деталь на кадр перетаскивания —
+    /// `KitchenElement.ApplyDimensions`) строил `SceneFaces` заново и звал `Coverage` через
+    /// `SceneFaces.NeighborsOf`, а тот на ПЕРВЫЙ запрос строит список соседей ДЛЯ ВСЕЙ сцены
+    /// (`SphereSweep` + k списков) — цена целого прохода ради ответа ОДНОМУ элементу, и она
+    /// платится на каждом кадре, а не на весь `SyncScene`. `BareFaceMaskForOnePart` обязан
+    /// искать соседей одной детали линейно (`SceneFaces.LinearNeighborsOf`), не строя общий
+    /// кеш вовсе.</summary>
+    [Test]
+    public void SyncingOnePart_DoesNotBuildTheWholeSceneNeighborCache()
+    {
+        var all = ARowOfBandedBoards(12);
+        var scene = SceneFaces.Of(all);
+        SceneFaces.TakeNeighborIndexBuilds();
+
+        EdgeSubstrate.BareFaceMaskForOnePart(all[6], scene, 6);
+
+        Assert.AreEqual(0, SceneFaces.TakeNeighborIndexBuilds(),
+            "запрос одной детали не имеет права построить список соседей для ВСЕЙ сцены — "
+            + "это цена целого прохода ради одного вызова, и она платится на каждом кадре "
+            + "перетаскивания");
+    }
+
+    /// <summary>Считаем не миллисекунды, а линейные пробы (conventions/PERFORMANCE.md):
+    /// запрос одной детали обязан остаться O(n) — вырасти в 4 раза со сценой, а не в 16,
+    /// как строгий O(n²) перебор.</summary>
+    [Test]
+    public void SyncingOnePart_LinearNeighborProbes_GrowLinearly_NotQuadratically_AsTheSceneGrows()
+    {
+        int small = LinearProbesOfOneSync(100);
+        int large = LinearProbesOfOneSync(400);
+
+        Assert.Greater(small, 0, "сцена из 100 деталей обязана дать хоть одну пробу — иначе "
+            + "сравнение ничего не проверяет");
+        Assert.Less(large, small * 8,
+            $"сцена выросла в 4 раза (100 -> 400 деталей), число линейных проб выросло "
+            + $"с {small} до {large}. Запрос одной детали обязан остаться O(n) — рост должен "
+            + "остаться около 4×; рост около 16× значит, что запрос одной детали снова тянет "
+            + "весь общий кеш соседей");
+    }
+
+    private int LinearProbesOfOneSync(int count)
+    {
+        var all = ARowOfBandedBoards(count);
+        var scene = SceneFaces.Of(all);
+        SceneFaces.TakeLinearNeighborProbes();
+
+        EdgeSubstrate.BareFaceMaskForOnePart(all[count / 2], scene, count / 2);
+        int probes = SceneFaces.TakeLinearNeighborProbes();
+
+        foreach (var e in all)
+            if (e != null) Object.DestroyImmediate(e.gameObject);
+        PartRegistry.Clear();
+        return probes;
+    }
+
+    /// <summary>И ответ обязан не измениться: экономия здесь про цену, а не про результат —
+    /// как и у пары индекс/без индекса выше.</summary>
+    [Test]
+    public void TheMaskForOnePart_EqualsTheWholeSceneMask()
+    {
+        var all = ARowOfBandedBoards(3);
+        var scene = SceneFaces.Of(all);
+
+        int wholeScene = EdgeSubstrate.BareFaceMask(all[1], scene, 1);
+        int onePart = EdgeSubstrate.BareFaceMaskForOnePart(all[1], scene, 1);
+
+        Assert.AreEqual(wholeScene, onePart,
+            "линейный поиск соседей — это способ НАЙТИ соседей той же детали, а не другой "
+            + "ответ");
     }
 }

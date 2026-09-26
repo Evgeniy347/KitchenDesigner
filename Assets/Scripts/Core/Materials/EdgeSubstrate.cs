@@ -17,7 +17,13 @@ namespace KitchenDesigner.Core
             BareFaceMask(element, scene, SceneFaces.NotInScene);
 
         public static int BareFaceMask(KitchenElement? element, SceneFaces? scene,
-            int indexInScene)
+            int indexInScene) => BareFaceMaskCore(element, scene, indexInScene, EdgeBanding.Coverage);
+
+        public static int BareFaceMaskForOnePart(KitchenElement? element, SceneFaces? scene,
+            int indexInScene) => BareFaceMaskCore(element, scene, indexInScene, EdgeBanding.CoverageOfOnePart);
+
+        private static int BareFaceMaskCore(KitchenElement? element, SceneFaces? scene,
+            int indexInScene, System.Func<KitchenElement, SceneFaces, int, EdgeCoverage> coverageOf)
         {
             if (element == null || !element.SupportsEdges) return 0;
             var layout = EdgeBanding.LayoutOf(element.DimensionsMM);
@@ -31,7 +37,7 @@ namespace KitchenDesigner.Core
 
             if (scene == null) return 0;
 
-            var coverage = EdgeBanding.Coverage(element, scene, indexInScene);
+            var coverage = coverageOf(element, scene, indexInScene);
             int mask = 0;
             foreach (EdgeSide side in EdgeStates.All)
                 if (!EdgeBanding.HasEdgeEffective(element, coverage, side))
@@ -81,7 +87,7 @@ namespace KitchenDesigner.Core
             }
 
             var scene = SceneFaces.Of(PartRegistry.GetAll());
-            element.SetBareFaceMask(BareFaceMask(element, scene,
+            element.SetBareFaceMask(BareFaceMaskForOnePart(element, scene,
                 scene.IndexOfSameObject(element)));
         }
 

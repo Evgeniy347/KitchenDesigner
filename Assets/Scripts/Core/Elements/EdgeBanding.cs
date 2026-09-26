@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -164,6 +165,26 @@ namespace KitchenDesigner.Core
             return _neighborsCache![index];
         }
 
+        [System.ThreadStatic] private static int _linearNeighborProbes;
+
+        public static int TakeLinearNeighborProbes()
+        {
+            int n = _linearNeighborProbes;
+            _linearNeighborProbes = 0;
+            return n;
+        }
+
+        public IEnumerable<int> LinearNeighborsOf(int index, float slack)
+        {
+            var sphere = _spheres[index];
+            for (int k = 0; k < _elements.Count; k++)
+            {
+                _linearNeighborProbes++;
+                if (k == index) continue;
+                if (sphere.Touches(_spheres[k], slack)) yield return k;
+            }
+        }
+
         private void BuildNeighborsCache(float slack)
         {
             _neighborIndexBuilds++;
@@ -285,7 +306,17 @@ namespace KitchenDesigner.Core
             Coverage(element, scene, SceneFaces.NotInScene);
 
         public static EdgeCoverage Coverage(KitchenElement element, SceneFaces scene,
-            int indexInScene)
+            int indexInScene) => scene == null
+                ? NoEdge
+                : CoverageCore(element, scene, indexInScene, scene.NeighborsOf);
+
+        public static EdgeCoverage CoverageOfOnePart(KitchenElement element, SceneFaces scene,
+            int indexInScene) => scene == null
+                ? NoEdge
+                : CoverageCore(element, scene, indexInScene, scene.LinearNeighborsOf);
+
+        private static EdgeCoverage CoverageCore(KitchenElement element, SceneFaces scene,
+            int indexInScene, Func<int, float, IEnumerable<int>> neighborsOf)
         {
             if (element == null || scene == null) return NoEdge;
             var layout = LayoutOf(element.DimensionsMM);
@@ -295,7 +326,7 @@ namespace KitchenDesigner.Core
 
             float contactDist = Tolerance.ContactMm * AppConstants.MM_TO_UNITS;
             var candidates = indexInScene >= 0
-                ? scene.NeighborsOf(indexInScene, contactDist)
+                ? neighborsOf(indexInScene, contactDist)
                 : BruteForceCandidates(scene.Count, indexInScene);
             return CoverageOverCandidates(element, scene, layout, indexInScene, contactDist, candidates);
         }
