@@ -32,6 +32,7 @@ namespace KitchenDesigner.Core
         private static readonly int RoofRidgeAxisCount = System.Enum.GetValues(typeof(RoofRidgeAxis)).Length;
 
         private RoofFrame _builtFrame;
+        private bool _hasFootprint;
 
         public RoofFrame BuiltFrame => _builtFrame;
 
@@ -93,7 +94,9 @@ namespace KitchenDesigner.Core
         }
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements) =>
-            RoofSpecItems.Of(_builtFrame, _pitchDeg, _rafterStepMm, RoofDefaults.CoveringWastePct);
+            _hasFootprint
+                ? RoofSpecItems.Of(_builtFrame, _pitchDeg, _rafterStepMm, RoofDefaults.CoveringWastePct)
+                : System.Array.Empty<SpecItem>();
 
         public override void ApplyDimensions()
         {
@@ -107,10 +110,8 @@ namespace KitchenDesigner.Core
 
             var centrelines = FoundationWallSurvey.LoadBearingCentrelines(topLevelElements);
             var footprint = RoofContour.BoundingFootprint(centrelines);
-            bool hasFootprint = footprint.WidthXMm > 0f || footprint.LengthZMm > 0f;
-            _builtFrame = hasFootprint
-                ? RoofPitchPlanes.Build(footprint, _type, _ridgeAxis, _overhangMm)
-                : default;
+            _hasFootprint = footprint.WidthXMm > 0f || footprint.LengthZMm > 0f;
+            _builtFrame = RoofPitchPlanes.Build(footprint, _type, _ridgeAxis, _overhangMm);
 
             float runMm = _builtFrame.Planes != null && _builtFrame.Planes.Count > 0
                 ? _builtFrame.Planes[0].RunMm
