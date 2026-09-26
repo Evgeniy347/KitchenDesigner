@@ -29,6 +29,7 @@ namespace KitchenDesigner.Core.Analysis
             var issues = new List<AnalysisIssue>();
             var all = PartRegistry.GetAll();
             if (all == null || all.Count == 0) return issues;
+            var byName = AttachLinks.PartsByName.Of(all);
 
             long t = Stopwatch.GetTimestamp();
             using (PerfMarkers.AnalyzeCollisions.Auto()) CollectCollisions(all, issues);
@@ -45,25 +46,25 @@ namespace KitchenDesigner.Core.Analysis
             t = NoteStage("panelSeating", t);
             using (PerfMarkers.AnalyzeFacadeGaps.Auto()) CollectFacadeGaps(all, issues);
             t = NoteStage("facadeGaps", t);
-            using (PerfMarkers.AnalyzeDrawerFacadeLinks.Auto()) CollectDrawerFacadeLinks(all, issues);
+            using (PerfMarkers.AnalyzeDrawerFacadeLinks.Auto()) CollectDrawerFacadeLinks(all, byName, issues);
             t = NoteStage("drawerFacadeLinks", t);
-            using (PerfMarkers.AnalyzeAttachLinks.Auto()) CollectAttachLinks(all, issues);
+            using (PerfMarkers.AnalyzeAttachLinks.Auto()) CollectAttachLinks(all, byName, issues);
             t = NoteStage("attachLinks", t);
-            using (PerfMarkers.AnalyzeDishwasherFacadeLinks.Auto()) CollectDishwasherFacadeLinks(all, issues);
+            using (PerfMarkers.AnalyzeDishwasherFacadeLinks.Auto()) CollectDishwasherFacadeLinks(all, byName, issues);
             t = NoteStage("dishwasherFacadeLinks", t);
-            using (PerfMarkers.AnalyzeScrewLegMounting.Auto()) CollectScrewLegMounting(all, issues);
+            using (PerfMarkers.AnalyzeScrewLegMounting.Auto()) CollectScrewLegMounting(all, byName, issues);
             t = NoteStage("screwLegMounting", t);
             using (PerfMarkers.AnalyzeScrewLegFooting.Auto()) CollectScrewLegFooting(all, issues);
             t = NoteStage("screwLegFooting", t);
-            using (PerfMarkers.AnalyzePipeRuns.Auto()) CollectPipeRuns(all, issues);
+            using (PerfMarkers.AnalyzePipeRuns.Auto()) CollectPipeRuns(all, byName, issues);
             t = NoteStage("pipeRuns", t);
             using (PerfMarkers.AnalyzeUnknownTypes.Auto()) CollectUnknownTypes(all, issues);
             t = NoteStage("unknownTypes", t);
             using (PerfMarkers.AnalyzeMillimetreGrid.Auto()) CollectMillimetreGrid(all, issues);
             t = NoteStage("millimetreGrid", t);
-            using (PerfMarkers.AnalyzeFoundation.Auto()) CollectFoundation(all, issues);
+            using (PerfMarkers.AnalyzeFoundation.Auto()) CollectFoundation(all, byName, issues);
             t = NoteStage("foundation", t);
-            using (PerfMarkers.AnalyzeFloorSlab.Auto()) CollectFloorSlab(all, issues);
+            using (PerfMarkers.AnalyzeFloorSlab.Auto()) CollectFloorSlab(all, byName, issues);
             t = NoteStage("floorSlab", t);
             using (PerfMarkers.AnalyzeWallLayerHosts.Auto()) CollectWallLayerHosts(all, issues);
             NoteStage("wallLayerHosts", t);
@@ -203,7 +204,8 @@ namespace KitchenDesigner.Core.Analysis
         private static bool FacadeBelongsToTheLowerHalfOfTheDoublePair(DrawerElement d) =>
             d.IsUpperDrawer && d.IsDouble;
 
-        private static void CollectDrawerFacadeLinks(List<KitchenElement> all, List<AnalysisIssue> issues)
+        private static void CollectDrawerFacadeLinks(List<KitchenElement> all, AttachLinks.PartsByName byName,
+            List<AnalysisIssue> issues)
         {
             foreach (var e in all)
             {
@@ -215,13 +217,14 @@ namespace KitchenDesigner.Core.Analysis
                     continue;
                 }
 
-                var facade = FindFacade(all, d.AttachedFacadeName);
+                var facade = FindFacade(byName, d.AttachedFacadeName);
                 if (facade != null && !DrawerLinks.IsFacadeInContact(d, facade))
                     issues.Add(IssueCatalog.DrawerFacadeOrphaned(d, facade));
             }
         }
 
-        private static void CollectDishwasherFacadeLinks(List<KitchenElement> all, List<AnalysisIssue> issues)
+        private static void CollectDishwasherFacadeLinks(List<KitchenElement> all, AttachLinks.PartsByName byName,
+            List<AnalysisIssue> issues)
         {
             foreach (var e in all)
             {
@@ -232,7 +235,7 @@ namespace KitchenDesigner.Core.Analysis
                     continue;
                 }
 
-                var facade = FindFacade(all, dw.AttachedFacadeName);
+                var facade = FindFacade(byName, dw.AttachedFacadeName);
                 if (facade == null)
                 {
                     issues.Add(IssueCatalog.DishwasherFacadeMissing(dw, dw.AttachedFacadeName));
@@ -248,9 +251,9 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
-        private static void CollectAttachLinks(List<KitchenElement> all, List<AnalysisIssue> issues)
+        private static void CollectAttachLinks(List<KitchenElement> all, AttachLinks.PartsByName byName,
+            List<AnalysisIssue> issues)
         {
-            var byName = AttachLinks.PartsByName.Of(all);
             foreach (var e in all)
             {
                 if (e == null || string.IsNullOrEmpty(e.AttachedToName)) continue;
@@ -271,9 +274,9 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
-        private static void CollectScrewLegMounting(List<KitchenElement> all, List<AnalysisIssue> issues)
+        private static void CollectScrewLegMounting(List<KitchenElement> all, AttachLinks.PartsByName byName,
+            List<AnalysisIssue> issues)
         {
-            var byName = AttachLinks.PartsByName.Of(all);
             foreach (var e in all)
             {
                 if (!(e is ScrewLegElement leg)) continue;
@@ -298,11 +301,12 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
-        private static void CollectPipeRuns(List<KitchenElement> all, List<AnalysisIssue> issues)
+        private static void CollectPipeRuns(List<KitchenElement> all, AttachLinks.PartsByName byName,
+            List<AnalysisIssue> issues)
         {
             foreach (var finding in Plumbing.PipeRules.Collect(new ScenePipeSnapshot(all)))
                 issues.Add(IssueCatalog.FromPipeFinding(finding,
-                    FindByName(all, finding.ElementId), FindByName(all, finding.OtherElementId)));
+                    FindByName(byName, finding.ElementId), FindByName(byName, finding.OtherElementId)));
         }
 
         private static void CollectUnknownTypes(List<KitchenElement> all, List<AnalysisIssue> issues)
@@ -329,36 +333,28 @@ namespace KitchenDesigner.Core.Analysis
             }
         }
 
-        private static void CollectFoundation(List<KitchenElement> all, List<AnalysisIssue> issues)
+        private static void CollectFoundation(List<KitchenElement> all, AttachLinks.PartsByName byName,
+            List<AnalysisIssue> issues)
         {
             var foundations = SceneFoundationSnapshot.Foundations(all);
             var walls = SceneFoundationSnapshot.LoadBearingWalls(all);
             foreach (var finding in Construction.FoundationRules.Collect(foundations, walls))
-                issues.Add(IssueCatalog.FromConstructionFinding(finding, FindByName(all, finding.ElementId)));
+                issues.Add(IssueCatalog.FromConstructionFinding(finding, FindByName(byName, finding.ElementId)));
         }
 
-        private static void CollectFloorSlab(List<KitchenElement> all, List<AnalysisIssue> issues)
+        private static void CollectFloorSlab(List<KitchenElement> all, AttachLinks.PartsByName byName,
+            List<AnalysisIssue> issues)
         {
             var slabs = SceneSlabSnapshot.Slabs(all);
             foreach (var finding in Construction.FloorSlabRules.Collect(slabs))
-                issues.Add(IssueCatalog.FromConstructionFinding(finding, FindByName(all, finding.ElementId)));
+                issues.Add(IssueCatalog.FromConstructionFinding(finding, FindByName(byName, finding.ElementId)));
         }
 
-        private static KitchenElement? FindByName(List<KitchenElement> all, string? name)
-        {
-            if (string.IsNullOrEmpty(name)) return null;
-            foreach (var e in all)
-                if (e != null && e.PartName == name) return e;
-            return null;
-        }
+        private static KitchenElement? FindByName(AttachLinks.PartsByName byName, string? name) =>
+            byName.First(name);
 
-        private static FacadeElement? FindFacade(List<KitchenElement> all, string name)
-        {
-            foreach (var e in all)
-                if (e is FacadeElement f && f.PartName == name)
-                    return f;
-            return null;
-        }
+        private static FacadeElement? FindFacade(AttachLinks.PartsByName byName, string name) =>
+            byName.First(name) as FacadeElement;
     }
 
     public static class IssueCatalog

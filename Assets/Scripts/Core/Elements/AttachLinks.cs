@@ -56,8 +56,18 @@ namespace KitchenDesigner.Core
             private readonly Dictionary<string, KitchenElement> _first =
                 new Dictionary<string, KitchenElement>(System.StringComparer.Ordinal);
 
+            [System.ThreadStatic] private static int _indexBuilds;
+
+            public static int TakeIndexBuilds()
+            {
+                int n = _indexBuilds;
+                _indexBuilds = 0;
+                return n;
+            }
+
             public static PartsByName Of(IReadOnlyList<KitchenElement>? parts)
             {
+                _indexBuilds++;
                 var index = new PartsByName();
                 if (parts == null) return index;
 
