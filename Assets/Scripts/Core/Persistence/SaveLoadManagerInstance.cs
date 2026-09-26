@@ -146,8 +146,6 @@ namespace KitchenDesigner.Core
 
             SceneElements.ClearKeepingBasePlate(SceneElements.All());
             SceneRestorer.Restore(data);
-            if (string.IsNullOrEmpty(ProjectCreationDate.Value))
-                ProjectCreationDate.Value = ProjectFileCreatedAt.FallbackFromFileSystemUtc(path);
             SceneChangeTracker.SettleDerivedLinks();
 
             var hl = ElementHighlighter.Current;

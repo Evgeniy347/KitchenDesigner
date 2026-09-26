@@ -52,13 +52,31 @@ public class ProjectCreationDateRoundTripTests
     }
 
     [Test]
-    public void LoadingAFileWithoutACreationDate_FallsBackToFilesystemTime_AndKeepsIt()
+    public void LoadingAFileWithoutACreationDate_KeepsCreatedAtEmpty_InsteadOfBakingTheFileSystemDate()
     {
         _path = Path.Combine(Application.temporaryCachePath, "creation_date_legacy.json");
         File.WriteAllText(_path, "{\"version\":1,\"appVersion\":\"0.1\",\"elements\":[]}");
 
         Assert.IsTrue(SaveLoadManager.LoadFromPath(_path));
-        Assert.IsFalse(string.IsNullOrEmpty(ProjectCreationDate.Value),
-            "старый файл без даты создания получает дату файловой системы, а не пустую строку");
+        Assert.IsTrue(string.IsNullOrEmpty(ProjectCreationDate.Value),
+            "test-results/review-persistence.md #2: NTFS-время создания файла - это дата "
+            + "копирования/скачивания, а не дата СОЗДАНИЯ проекта; для файла без своего "
+            + "createdAtUtc поле обязано остаться пустым в данных (UI вправе показать дату "
+            + "файла отдельной подписью - ProjectFileCreatedAt.FallbackFromFileSystemUtc "
+            + "остаётся для этого в RecentProjectRowSource), но печь её в createdAtUtc нельзя");
+    }
+
+    [Test]
+    public void ResavingAFileWithoutACreationDate_KeepsCreatedAtEmpty_OnDisk()
+    {
+        _path = Path.Combine(Application.temporaryCachePath, "creation_date_legacy_resave.json");
+        File.WriteAllText(_path, "{\"version\":1,\"appVersion\":\"0.1\",\"elements\":[]}");
+
+        Assert.IsTrue(SaveLoadManager.LoadFromPath(_path));
+        Assert.IsTrue(SaveLoadManager.SaveToPath(_path));
+
+        Assert.IsTrue(string.IsNullOrEmpty(ProjectFileCreatedAt.Of(_path)),
+            "пересохранение старого файла без даты создания не имеет права записать в него "
+            + "НИКАКУЮ дату создания - ни из файловой системы, ни из момента открытия");
     }
 }

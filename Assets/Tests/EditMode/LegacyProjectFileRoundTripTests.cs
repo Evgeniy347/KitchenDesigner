@@ -97,7 +97,11 @@ public class LegacyProjectFileRoundTripTests
 
         Assert.IsFalse(string.IsNullOrEmpty(resaved.appVersion),
             "новое поле версии обязано появиться при пересохранении - оно аддитивное");
-        Assert.IsFalse(string.IsNullOrEmpty(resaved.createdAtUtc),
-            "и дата создания - откуда бы взяться координатному сдвигу, эти поля к нему не имеют отношения");
+        Assert.IsTrue(string.IsNullOrEmpty(resaved.createdAtUtc),
+            "test-results/review-persistence.md #2: дата создания - НЕ аддитивное поле по "
+            + "умолчанию. Фикстура старого формата не несёт createdAtUtc, и печь её из времени "
+            + "создания файла на диске (NTFS - дата копирования/скачивания, а не создания "
+            + "проекта) при пересохранении нельзя; создаётся дата только при СОЗДАНИИ проекта "
+            + "в приложении (SaveLoadManagerInstance.CreateEmptyProjectAt)");
     }
 }
