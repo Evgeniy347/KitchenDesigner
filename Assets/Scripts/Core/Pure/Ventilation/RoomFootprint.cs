@@ -23,7 +23,7 @@ namespace KitchenDesigner.Core.Ventilation
         public bool Contains(float xMm, float zMm) =>
             xMm >= MinXMm && xMm <= MaxXMm && zMm >= MinZMm && zMm <= MaxZMm;
 
-        public float VolumeM3 =>
-            (MaxXMm - MinXMm) * 1e-3f * (MaxZMm - MinZMm) * 1e-3f * (HeightMm * 1e-3f);
+        public double VolumeM3 =>
+            (double)(MaxXMm - MinXMm) * (MaxZMm - MinZMm) * HeightMm * 1e-9;
     }
 }

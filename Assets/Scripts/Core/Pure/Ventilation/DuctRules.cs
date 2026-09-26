@@ -65,14 +65,16 @@ namespace KitchenDesigner.Core.Ventilation
 
         private static void CollectAirExchange(DuctSurvey survey, List<ConstructionFinding> findings)
         {
+            if (survey.Ducts.Count == 0 && survey.Grilles.Count == 0) return;
+
             foreach (var room in survey.Rooms)
             {
-                float suppliedM3PerHour = 0f;
+                double suppliedM3PerHour = 0d;
                 foreach (var grille in survey.Grilles)
                     if (room.Contains(grille.PositionMm.XMm, grille.PositionMm.ZMm))
                         suppliedM3PerHour += grille.AirflowM3PerHour;
 
-                float volumeM3 = room.VolumeM3;
+                double volumeM3 = room.VolumeM3;
                 if (!RoomAirExchange.IsBelowNorm(suppliedM3PerHour, volumeM3)) continue;
 
                 findings.Add(DuctIssueCatalog.AirExchangeBelowNorm(room.ElementId, suppliedM3PerHour,

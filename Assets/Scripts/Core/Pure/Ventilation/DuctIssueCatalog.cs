@@ -21,7 +21,7 @@ namespace KitchenDesigner.Core.Ventilation
                 + $"({profileA} и {profileB}) — нужен переход", otherElementId);
 
         public static ConstructionFinding AirExchangeBelowNorm(string roomElementId,
-            float suppliedM3PerHour, float requiredM3PerHour) =>
+            double suppliedM3PerHour, double requiredM3PerHour) =>
             new ConstructionFinding(ConstructionFindingLevel.Error, CodeAirExchange, roomElementId,
                 $"Воздухообмен помещения «{roomElementId}»: решётки дают "
                 + $"{Round1(suppliedM3PerHour)} м³/ч, требуется не менее "
@@ -36,6 +36,9 @@ namespace KitchenDesigner.Core.Ventilation
         };
 
         private static string Round1(float value) =>
+            value.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+
+        private static string Round1(double value) =>
             value.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
     }
 }

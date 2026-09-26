@@ -194,4 +194,22 @@ public class DuctRulesTests
         Assert.IsTrue(DuctRules.Collect(survey).Any(f => f.Code == DuctIssueCatalog.CodeAirExchange),
             "решётка вне контура пола не должна засчитываться в приток этой комнаты");
     }
+
+    [Test]
+    public void Collect_NoDuctsOrGrillesAnywhereInTheScene_ReportsNoVnt03_EvenThoughSuppliedIsZero()
+    {
+        // Тот же порядок ошибки, что когда-то FND-05: правило по вентиляции не имеет права
+        // звучать в проекте, где вентиляции ещё нет вовсе (0 воздуховодов, 0 решёток) — это
+        // не "нарушение нормы", а "раздел ещё не начат". Обнаружено на закреплённой сцене
+        // pipe-gap-scene.save.json: комната там есть, вентиляции нет, воздухообмен раньше
+        // всё равно звучал.
+        var room = new RoomFootprint("Пол-1", 0f, 2000f, 0f, 2000f, 2500f);
+
+        var survey = DuctSurvey.Of(System.Array.Empty<Port>(), System.Array.Empty<DuctRun>(),
+            System.Array.Empty<GrilleRun>(), new[] { room });
+
+        Assert.IsFalse(DuctRules.Collect(survey).Any(f => f.Code == DuctIssueCatalog.CodeAirExchange),
+            "0 воздуховодов и 0 решёток во всей сцене — раздел вентиляции не начат, а не "
+            + "провален");
+    }
 }
