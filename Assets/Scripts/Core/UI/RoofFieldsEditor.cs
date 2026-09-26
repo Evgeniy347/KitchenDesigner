@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using TMPro;
-using UnityEngine;
 using KitchenDesigner.Core.Construction;
 
 namespace KitchenDesigner.Core.UI
@@ -31,7 +30,7 @@ namespace KitchenDesigner.Core.UI
             var isRoof = RowVisibility.When(() => Host.Target is RoofElement);
 
             _type = Rows.Dropdown("Тип крыши",
-                new List<string> { "Однoскатная", "Двускатная", "Вальмовая" },
+                new List<string> { "Односкатная", "Двускатная", "Вальмовая" },
                 OnTypeSelected, isRoof, TypeNode, hint: "element.roof.type");
 
             _ridgeAxis = Rows.Dropdown("Ось конька",
@@ -40,8 +39,8 @@ namespace KitchenDesigner.Core.UI
 
             var pitchRow = Rows.NumberField("Уклон", isRoof, "°", PitchNode,
                 hint: "element.roof.pitchDeg");
-            Bind<RoofElement>(pitchRow, r => Mathf.RoundToInt(r.PitchDeg),
-                (r, v) => r.PitchDeg = v, RoofDefaults.PitchDeg.ToString("0"));
+            BindDecimal<RoofElement>(pitchRow, r => r.PitchDeg,
+                (r, v) => r.PitchDeg = v, RoofDefaults.PitchDeg.ToString("F1"));
 
             var overhangRow = Rows.NumberField("Свес", isRoof, "мм", OverhangNode,
                 hint: "element.roof.overhangMm");

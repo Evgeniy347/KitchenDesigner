@@ -82,7 +82,84 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
+        private interface IDecimalFieldCase
+        {
+            bool TryRead(KitchenElement element, out float value);
+
+            void Write(KitchenElement element, float value);
+        }
+
+        private sealed class DecimalFieldCase<T> : IDecimalFieldCase where T : class
+        {
+            private readonly Func<T, float> _read;
+            private readonly Action<T, float> _write;
+
+            public DecimalFieldCase(Func<T, float> read, Action<T, float> write)
+            {
+                _read = read;
+                _write = write;
+            }
+
+            public bool TryRead(KitchenElement element, out float value)
+            {
+                if (element is T typed)
+                {
+                    value = _read(typed);
+                    return true;
+                }
+
+                value = 0f;
+                return false;
+            }
+
+            public void Write(KitchenElement element, float value)
+            {
+                if (element is T typed) _write(typed, value);
+            }
+        }
+
+        internal sealed class DecimalFieldBinding
+        {
+            private readonly List<IDecimalFieldCase> _cases = new List<IDecimalFieldCase>();
+
+            internal DecimalFieldBinding(TMP_InputField field, string idleText)
+            {
+                Field = field;
+                IdleText = idleText;
+            }
+
+            public TMP_InputField Field { get; }
+
+            public string IdleText { get; }
+
+            public DecimalFieldBinding Or<T>(Func<T, float> read, Action<T, float> write)
+                where T : class
+            {
+                _cases.Add(new DecimalFieldCase<T>(read, write));
+                return this;
+            }
+
+            public string TextOf(KitchenElement element)
+            {
+                foreach (var branch in _cases)
+                    if (branch.TryRead(element, out float value))
+                        return value.ToString("F1");
+                return IdleText;
+            }
+
+            public void Write(KitchenElement element, ContextMenuFieldTracker fields)
+            {
+                foreach (var branch in _cases)
+                    if (branch.TryRead(element, out float current))
+                    {
+                        branch.Write(element, fields.ParseAngle(Field, current));
+                        return;
+                    }
+            }
+        }
+
         private readonly List<NumberFieldBinding> _bindings = new List<NumberFieldBinding>();
+        private readonly List<DecimalFieldBinding> _decimalBindings = new List<DecimalFieldBinding>();
 
         protected NumberFieldsEditor(IContextMenuHost host) : base(host) { }
 
@@ -92,6 +169,15 @@ namespace KitchenDesigner.Core.UI
             var binding = new NumberFieldBinding(field, idleText);
             binding.Or(read, write);
             _bindings.Add(binding);
+            return binding;
+        }
+
+        protected DecimalFieldBinding BindDecimal<T>(TMP_InputField field, Func<T, float> read,
+            Action<T, float> write, string idleText) where T : class
+        {
+            var binding = new DecimalFieldBinding(field, idleText);
+            binding.Or(read, write);
+            _decimalBindings.Add(binding);
             return binding;
         }
 
@@ -106,6 +192,7 @@ namespace KitchenDesigner.Core.UI
         public override IEnumerable<TMP_InputField?> ArithmeticFields()
         {
             foreach (var binding in _bindings) yield return binding.Field;
+            foreach (var binding in _decimalBindings) yield return binding.Field;
         }
 
         public override void Show(KitchenElement element) => WriteFields(element);
@@ -117,23 +204,29 @@ namespace KitchenDesigner.Core.UI
             if (!Handles(element)) return;
             foreach (var binding in _bindings)
                 Fields.RefreshUnfocused(binding.Field, binding.TextOf(element));
+            foreach (var binding in _decimalBindings)
+                Fields.RefreshUnfocused(binding.Field, binding.TextOf(element));
         }
 
         public override void Apply(KitchenElement element)
         {
             if (!Handles(element)) return;
             foreach (var binding in _bindings) binding.Write(element, Fields);
+            foreach (var binding in _decimalBindings) binding.Write(element, Fields);
         }
 
         public override void Track(KitchenElement element)
         {
             foreach (var binding in _bindings)
                 Fields.Track(binding.Field, binding.TextOf(element));
+            foreach (var binding in _decimalBindings)
+                Fields.Track(binding.Field, binding.TextOf(element));
         }
 
         private void WriteFields(KitchenElement element)
         {
             foreach (var binding in _bindings) binding.Field.text = binding.TextOf(element);
+            foreach (var binding in _decimalBindings) binding.Field.text = binding.TextOf(element);
         }
     }
 }
