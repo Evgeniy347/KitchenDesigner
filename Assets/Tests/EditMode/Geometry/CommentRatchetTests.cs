@@ -46,7 +46,8 @@ namespace KitchenDesigner.Tests.Geometry
         private static string CoreDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
 
         private static readonly Regex NormativeDocRef =
-            new Regex(@"^(ГОСТ|СП|СНиП|ЕНиР|ТР|ISO|EN)\b", RegexOptions.Compiled);
+            new Regex(@"^(ГОСТ|СП|СНиП|ЕНиР|ТР|ISO|EN)\s[\w.\-/]+(\sп\.\d+(\.\d+)*)?$",
+                RegexOptions.Compiled);
 
         public static int CommentStartIndex(string line)
         {
@@ -183,6 +184,26 @@ namespace KitchenDesigner.Tests.Geometry
             Assert.IsFalse(IsNormativeConstComment(
                 "        private const float Gap = 100f; /* СП 22.13330.2016 */"),
                 "блочный комментарий /* */, а исключение — только для хвостового //");
+        }
+
+        [Test]
+        public void IsNormativeConstComment_ProseAfterTheDocId_IsFalse()
+        {
+            Assert.IsFalse(IsNormativeConstComment(
+                "        private const int RebarStepMm = 200; // ГОСТ 34028, шаг арматуры"),
+                "запятая и слова после номера документа — это уже объяснение, а не сам "
+                + "идентификатор; храповик обязан считать эту строку обычным комментарием");
+
+            Assert.IsFalse(IsNormativeConstComment(
+                "        private const int X = 7; // EN: temporary workaround for Unity bug"),
+                "«EN:» — это код стандарта БЕЗ номера и с двоеточием вместо пробела перед "
+                + "текстом; \\b совпадает между N и :, но идентификатора документа тут нет");
+
+            Assert.IsFalse(IsNormativeConstComment(
+                "        public const int SlabDefaultMm = 200; // СП 60.13330.2020, "
+                + "приложение Л, табл. Л.1"),
+                "перечисление приложения и таблицы после номера документа — прозаический "
+                + "хвост, исключение — только для голого идентификатора");
         }
 
         [Test]

@@ -9,9 +9,9 @@ namespace KitchenDesigner.Core.Ventilation
 
     public static class DuctVelocity
     {
-        public const float MainMaxMs = 8f; // СП 60.13330.2020, приложение Л, табл. Л.1
-        public const float BranchMaxMs = 6f; // СП 60.13330.2020, приложение Л, табл. Л.1
-        public const float NearGrilleMaxMs = 2.5f; // СП 60.13330.2020, приложение Л, табл. Л.1
+        public const float MainMaxMs = 8f; // СП 60.13330.2020
+        public const float BranchMaxMs = 6f; // СП 60.13330.2020
+        public const float NearGrilleMaxMs = 2.5f; // СП 60.13330.2020
 
         public static float MaxRecommendedMs(DuctVelocityTier tier) => tier switch
         {
