@@ -30,17 +30,20 @@ public class WallLayerElementTests
         return go;
     }
 
-    private InsulationElement SpawnInsulation(string name, Vector3 nearPosition)
+    private T SpawnLayer<T>(string name, int thicknessMm, Vector3 nearPosition) where T : WallLayerElement
     {
         var go = ElementRoot.NewCube(name, "Слой стены", nearPosition);
         _spawned.Add(go);
-        var layer = go.AddComponent<InsulationElement>();
+        var layer = go.AddComponent<T>();
         layer.PartName = go.name;
         layer.Movable = true;
-        layer.DimensionsMM = new Vector3Int(100, 100, WallLayerDefaults.InsulationThicknessMm);
+        layer.DimensionsMM = new Vector3Int(100, 100, thicknessMm);
         ElementRoot.Publish(go, layer);
         return layer;
     }
+
+    private InsulationElement SpawnInsulation(string name, Vector3 nearPosition) =>
+        SpawnLayer<InsulationElement>(name, WallLayerDefaults.InsulationThicknessMm, nearPosition);
 
     private static void AssertFaceHasHole(Mesh mesh, float cu, float cv, float hu, float hv)
     {
@@ -133,5 +136,79 @@ public class WallLayerElementTests
         foreach (var issue in SceneAnalyzer.Analyze())
             if (issue.Code == "ATT-01") return issue;
         return null;
+    }
+
+    /// <summary>#5 (test-results/review-construction.md): the seat offset used to be
+    /// computed only in <c>ResyncToHost</c>, so a thickness edit moved the mesh's scale
+    /// but left the OLD centre — the new, thicker slab then reaches into the wall.</summary>
+    [Test]
+    public void ChangingThickness_ReSeatsTheLayer_InsteadOfPenetratingTheWall()
+    {
+        SpawnWall(new Vector3Int(3000, 2500, 100), "Wall_Layer_Thick", new Vector3(0f, 1.25f, 0f));
+        var layer = SpawnInsulation("Ins_Layer_Thick", new Vector3(0f, 1.25f, 0.5f));
+        layer.SnapToNearestWall();
+
+        layer.ThicknessMm = 200;
+
+        float wallHalfUnits = 0.05f;
+        float expectedZ = wallHalfUnits + 200 * 0.001f * 0.5f;
+        Assert.AreEqual(expectedZ, layer.transform.position.z, 0.001f,
+            "смена толщины обязана пересадить слой вплотную к стене на НОВУЮ толщину, а не "
+            + "оставить центр на месте — иначе более толстый слой уходит внутрь стены");
+    }
+
+    /// <summary>#6 (test-results/review-construction.md): insulation, vent gap and cladding
+    /// on the same wall face all seated directly on the bare wall and overlapped each other.
+    /// They must stack outward in physical order: wall -> insulation -> vent gap -> cladding.</summary>
+    [Test]
+    public void InsulationVentGapAndCladding_StackOutwardInPhysicalOrder_InsteadOfOverlapping()
+    {
+        SpawnWall(new Vector3Int(3000, 2500, 100), "Wall_Layer_Stack", new Vector3(0f, 1.25f, 0f));
+
+        var insulation = SpawnInsulation("Ins_Layer_Stack", new Vector3(0f, 1.25f, 0.5f));
+        insulation.SnapToNearestWall();
+
+        var ventGap = SpawnLayer<VentGapElement>("Vent_Layer_Stack",
+            WallLayerDefaults.VentGapThicknessMm, new Vector3(0f, 1.25f, 0.5f));
+        ventGap.SnapToNearestWall();
+
+        var cladding = SpawnLayer<CladdingElement>("Clad_Layer_Stack",
+            WallLayerDefaults.CladdingThicknessMm, new Vector3(0f, 1.25f, 0.5f));
+        cladding.SnapToNearestWall();
+
+        const float wallHalf = 0.05f;
+        float insFull = WallLayerDefaults.InsulationThicknessMm * 0.001f;
+        float insHalf = insFull * 0.5f;
+        float ventFull = WallLayerDefaults.VentGapThicknessMm * 0.001f;
+        float ventHalf = ventFull * 0.5f;
+        float cladHalf = WallLayerDefaults.CladdingThicknessMm * 0.001f * 0.5f;
+
+        Assert.AreEqual(wallHalf + insHalf, insulation.transform.position.z, 0.001f,
+            "утеплитель садится прямо на стену");
+        Assert.AreEqual(wallHalf + insFull + ventHalf, ventGap.transform.position.z, 0.001f,
+            "вентзазор обязан встать ЗА утеплителем, а не на голой грани стены");
+        Assert.AreEqual(wallHalf + insFull + ventFull + cladHalf, cladding.transform.position.z, 0.001f,
+            "облицовка обязана встать за вентзазором, а не на голой грани стены");
+    }
+
+    /// <summary>#8 (test-results/review-construction.md): <c>Update()</c> used to resolve the
+    /// host wall by name through <c>PartRegistry.GetAll()</c> — a full scene copy — on EVERY
+    /// frame, even when nothing changed. The reference is now cached and re-resolved by name
+    /// only when <see cref="WallLayerElement.HostWallName"/> itself changes.</summary>
+    [Test]
+    public void RepeatedUpdatesWithNoChange_DoNotRescanTheSceneEveryFrame()
+    {
+        SpawnWall(new Vector3Int(3000, 2500, 100), "Wall_Layer_Perf", new Vector3(0f, 1.25f, 0f));
+        var layer = SpawnInsulation("Ins_Layer_Perf", new Vector3(0f, 1.25f, 0.5f));
+        layer.SnapToNearestWall();
+        layer.Update();
+
+        PartRegistryInstance.TakeGetAllCalls();
+        for (int i = 0; i < 50; i++) layer.Update();
+
+        int scans = PartRegistryInstance.TakeGetAllCalls();
+        Assert.AreEqual(0, scans,
+            "хозяйская стена не менялась ни разу за 50 кадров — обходить сцену незачем "
+            + "(раньше Update() копировал весь реестр элементов на каждый кадр)");
     }
 }

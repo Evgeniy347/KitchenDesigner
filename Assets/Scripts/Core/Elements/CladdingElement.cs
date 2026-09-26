@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Облицовка";
 
+        public override int StackOrder => 2;
+
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("облицовка идёт по всей грани стены — лицевой детали нет");
 

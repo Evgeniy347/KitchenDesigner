@@ -8,6 +8,8 @@ namespace KitchenDesigner.Core
     {
         public override string DisplayTypeName => "Вентзазор";
 
+        public override int StackOrder => 1;
+
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("обрешётка вентзазора идёт по всей грани стены — лицевой детали нет");
 

@@ -26,6 +26,7 @@ namespace KitchenDesigner.Core
                 var d = DimensionsMM;
                 d.z = Mathf.Clamp(value, WallLayerDefaults.MinThicknessMm, WallLayerDefaults.MaxThicknessMm);
                 DimensionsMM = d;
+                RestackWallLayers(_hostWallName);
             }
         }
 
@@ -42,10 +43,21 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("слой идёт по всей грани стены: у него нет одной характерной стороны");
 
+        public virtual int StackOrder => 0;
+
         private int _lastWallPoseVersion = -1;
         private int _lastOpeningsSignature;
 
-        public Wall? ResolveHostWall() => FindWallByName(_hostWallName);
+        private Wall? _cachedHostWall;
+        private string _cachedHostWallName = "";
+
+        public Wall? ResolveHostWall()
+        {
+            if (_cachedHostWallName == _hostWallName && _cachedHostWall != null) return _cachedHostWall;
+            _cachedHostWall = FindWallByName(_hostWallName);
+            _cachedHostWallName = _hostWallName;
+            return _cachedHostWall;
+        }
 
         internal static Wall? FindWallByName(string name)
         {
@@ -66,6 +78,7 @@ namespace KitchenDesigner.Core
             var wallElement = wall.GetComponent<KitchenElement>();
             _hostWallName = wallElement != null ? wallElement.PartName : "";
             ResyncToHost(wall);
+            RestackWallLayers(_hostWallName);
         }
 
         public bool SnapToNamedWall(string wallName)
@@ -74,7 +87,19 @@ namespace KitchenDesigner.Core
             var wall = FindWallByName(_hostWallName);
             if (wall == null) return false;
             ResyncToHost(wall);
+            RestackWallLayers(_hostWallName);
             return true;
+        }
+
+        private static void RestackWallLayers(string wallName)
+        {
+            if (string.IsNullOrEmpty(wallName)) return;
+            foreach (var e in PartRegistry.GetAll())
+            {
+                if (!(e is WallLayerElement layer) || layer.HostWallName != wallName) continue;
+                var layerWall = layer.ResolveHostWall();
+                if (layerWall != null) layer.ResyncToHost(layerWall);
+            }
         }
 
         internal void Update()
@@ -113,6 +138,7 @@ namespace KitchenDesigner.Core
             var facing = Quaternion.Euler(0f, WallMountedPose.YawDegrees(outward), 0f);
 
             float standoffUnits = WallProximity.HalfThicknessUnits(wall)
+                + InnerStackThicknessUnits(wall, outward)
                 + AppConstants.HalfHeightUnits(myThicknessMm);
             var seated = wall.FullPosition + outward * standoffUnits;
 
@@ -120,6 +146,29 @@ namespace KitchenDesigner.Core
 
             int lengthMm = WallCentreline.LengthMM(wallDims);
             DimensionsMM = new Vector3Int(lengthMm, wallDims.y, myThicknessMm);
+        }
+
+        private float InnerStackThicknessUnits(Wall wall, Vector3 outward)
+        {
+            var wallElement = wall.GetComponent<KitchenElement>();
+            string wallName = wallElement != null ? wallElement.PartName : "";
+            if (string.IsNullOrEmpty(wallName)) return 0f;
+
+            int sumMm = 0;
+            foreach (var e in PartRegistry.GetAll())
+            {
+                if (e == this || !(e is WallLayerElement other) || other.StackOrder >= StackOrder) continue;
+                if (other.HostWallName != wallName) continue;
+
+                var otherWall = other.ResolveHostWall();
+                if (otherWall == null) continue;
+                var otherOutward = WallMountedPose.OutwardNormal(
+                    WallProximity.FaceNormal(otherWall), otherWall.FullPosition, other.transform.position);
+                if (Vector3.Dot(otherOutward, outward) <= 0f) continue;
+
+                sumMm += other.DimensionsMM.z;
+            }
+            return sumMm * AppConstants.MM_TO_UNITS;
         }
 
         public override void ApplyDimensions()
