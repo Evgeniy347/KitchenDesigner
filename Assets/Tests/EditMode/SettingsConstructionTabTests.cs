@@ -52,6 +52,10 @@ public class SettingsConstructionTabTests
         if (_canvas != null) Object.DestroyImmediate(_canvas!.gameObject);
         var es = Object.FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
         if (es != null) Object.DestroyImmediate(es.gameObject);
+        foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
+            if (e != null) Object.DestroyImmediate(e.gameObject);
+        PartRegistry.Clear();
+        LevelRegistry.Reset();
     }
 
     private Transform Page()
@@ -232,4 +236,45 @@ public class SettingsConstructionTabTests
 
     private string FieldText(string rowName) =>
         Row(rowName).GetComponentInChildren<TMP_InputField>(true).text;
+
+    /// <summary>M2: до фикса менявшая режим лямбда только писала в
+    /// <see cref="KitchenSettings.NeighbourLevels"/> — приглушение соседнего этажа
+    /// появлялось не сразу, а при следующем случайном <c>RefreshHighlights</c> (клик,
+    /// правка). Дропдаун обязан перекрашивать сцену тем же кадром.</summary>
+    [Test]
+    public void NeighbourLevelsDropdown_SwitchingToDim_RepaintsWithoutAnExplicitRefresh()
+    {
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 3000),
+        });
+        LevelRegistry.CurrentId = "2";
+
+        var highlighterGo = new GameObject("Highlighter");
+        var highlighter = highlighterGo.AddComponent<ElementHighlighter>();
+        try
+        {
+            var go = ElementFactory.CreateWall(new Vector3Int(3000, 2500, 100), "WallBelow", Vector3.zero);
+            var element = go.GetComponent<KitchenElement>();
+            element.LevelId = "1";
+            var own = go.GetComponent<MeshRenderer>().sharedMaterial;
+
+            highlighter.RefreshHighlights();
+            Assert.AreEqual(own, go.GetComponent<MeshRenderer>().sharedMaterial,
+                "предпосылка: в режиме «Показывать» этаж ниже рисуется своим материалом");
+
+            Row("RowDd_" + SettingsConstructionTab.NeighbourLevelsId)
+                .GetComponentInChildren<TMP_Dropdown>(true).value = (int)NeighbourLevelsMode.Dim;
+
+            Assert.AreNotEqual(own, go.GetComponent<MeshRenderer>().sharedMaterial,
+                "смена режима «Соседние этажи» на «Приглушать» обязана перекрасить сцену "
+                + "сразу, без отдельного вызова RefreshHighlights — иначе тонировка виснет "
+                + "до следующей случайной правки сцены");
+        }
+        finally
+        {
+            Object.DestroyImmediate(highlighterGo);
+        }
+    }
 }

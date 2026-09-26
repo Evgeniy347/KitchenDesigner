@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core
 
             SelectionManager.Instance?.DeselectAll();
             SceneVisibilityManager.Invalidate();
+            ElementHighlighter.Current?.RefreshHighlights();
         }
 
         private static Level? Find(string id)

@@ -63,7 +63,12 @@ namespace KitchenDesigner.Core.UI
 
             _rows.AddDropdown(page, ref y, NeighbourLevelsId,
                 new List<string>(NeighbourLevelsModeTitles.All), (int)s.NeighbourLevels,
-                v => { s.NeighbourLevels = (NeighbourLevelsMode)v; },
+                v =>
+                {
+                    s.NeighbourLevels = (NeighbourLevelsMode)v;
+                    SceneVisibilityManager.Invalidate();
+                    ElementHighlighter.Current?.RefreshHighlights();
+                },
                 read: () => (int)s.NeighbourLevels);
             Hint(NeighbourLevelsId, hint: "settings.construction.neighbourLevels");
 
