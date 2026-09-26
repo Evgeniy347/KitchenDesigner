@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core.Ventilation
 {
-    public static class DuctRectSizesAwaitingConfirmation
+    public static class DuctRectSizes
     {
         public static readonly (int WidthMm, int HeightMm)[] Candidates =
         {
