@@ -49,11 +49,19 @@ namespace KitchenDesigner.Core
         }
 
         public static List<(int lo, int hi)> CandidatePairsInNestedLoopOrder(
-            IReadOnlyList<ValidationElement> all, float contactDist)
-        {
-            for (int k = 0; k < all.Count; k++)
+            IReadOnlyList<ValidationElement> all, float contactDist) =>
+            CandidatePairsInNestedLoopOrder(all.Count, k =>
             {
                 SolidBoundsIncludingExtraBody(all[k], out var min, out var max);
+                return (min, max);
+            }, contactDist);
+
+        public static List<(int lo, int hi)> CandidatePairsInNestedLoopOrder(
+            int count, Func<int, (Vector3 min, Vector3 max)> boundsOf, float contactDist)
+        {
+            for (int k = 0; k < count; k++)
+            {
+                var (min, max) = boundsOf(k);
                 Insert(k, min, max, contactDist);
             }
 
