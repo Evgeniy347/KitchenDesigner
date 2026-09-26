@@ -113,43 +113,63 @@
     },
     {
       "type": "Button",
-      "text": "HandleMode",
+      "text": "▲",
       "position": [562, -6]
+    },
+    {
+      "type": "Label",
+      "text": "1 этаж",
+      "position": [606, -6]
+    },
+    {
+      "type": "Button",
+      "text": "▼",
+      "position": [652, -6]
+    },
+    {
+      "type": "Button",
+      "text": "LevelsWindow",
+      "position": [696, -6]
+    },
+    {
+      "type": "Button",
+      "text": "HandleMode",
+      "position": [758, -6]
     },
     {
       "type": "Button",
       "text": "MeasureToggle",
-      "position": [608, -6]
+      "position": [804, -6]
     },
     {
       "type": "Button",
       "text": "Eyedropper",
-      "position": [654, -6]
+      "position": [850, -6]
     },
     {
       "type": "Button",
       "text": "LightsToggle",
-      "position": [716, -6]
+      "position": [912, -6]
     },
     {
       "type": "Button",
       "text": "DayNight",
-      "position": [762, -6]
+      "position": [958, -6]
     },
     {
       "type": "Button",
       "text": "Обычный",
-      "position": [824, -6]
+      "position": [1020, -6]
     },
     {
       "type": "Button",
       "text": "Помещение",
-      "position": [930, -6]
+      "position": [1125, -6]
     },
     {
       "type": "Button",
       "text": "Фото",
-      "position": [1056, -6]
+      "position": [1251, -6]
     },
     {
       "type": "Button",

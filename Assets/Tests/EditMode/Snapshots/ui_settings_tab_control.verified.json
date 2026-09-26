@@ -193,6 +193,16 @@
     },
     {
       "type": "Label",
+      "text": "Этаж ниже",
+      "position": [-147, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Этаж выше",
+      "position": [-147, 0]
+    },
+    {
+      "type": "Label",
       "text": "Замер производительности: вкл/выкл",
       "position": [-147, 0]
     },
@@ -294,6 +304,11 @@
     {
       "type": "Label",
       "text": "Диагностика",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Этажи",
       "position": [0, 0]
     },
     {
@@ -459,6 +474,16 @@
     {
       "type": "Button",
       "text": "Ctrl+A",
+      "position": [16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "PageDown",
+      "position": [16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "PageUp",
       "position": [16, 0]
     },
     {
@@ -708,6 +733,16 @@
     },
     {
       "type": "Button",
+      "text": "×",
+      "position": [82, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [82, 0]
+    },
+    {
+      "type": "Button",
       "text": "—",
       "position": [165, 0]
     },
@@ -774,6 +809,16 @@
     {
       "type": "Button",
       "text": "Num -",
+      "position": [165, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
+      "position": [165, 0]
+    },
+    {
+      "type": "Button",
+      "text": "—",
       "position": [165, 0]
     },
     {

@@ -98,6 +98,11 @@
     },
     {
       "type": "Label",
+      "text": "Толщина плиты",
+      "position": [-240, 0]
+    },
+    {
+      "type": "Label",
       "text": "Трамбовка",
       "position": [-240, 0]
     },
@@ -118,6 +123,11 @@
     },
     {
       "type": "Label",
+      "text": "Перекрытие",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
       "text": "Участок",
       "position": [-90, 0]
     },
@@ -125,6 +135,11 @@
       "type": "Label",
       "text": "Фундамент",
       "position": [-90, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
     },
     {
       "type": "Label",
@@ -241,6 +256,13 @@
       "type": "InputField",
       "label": "Fld_Подушка: щебень",
       "value": "100",
+      "interactable": true,
+      "position": [165, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Fld_Толщина плиты",
+      "value": "200",
       "interactable": true,
       "position": [165, 0]
     },
