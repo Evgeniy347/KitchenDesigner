@@ -37,29 +37,73 @@ public class IsoScreenshotTests : ElementFrameTests
     private const int RenderH = 512;
     private const float IsoFov = 45f;
 
-    private GameObject? _bootstrap;
-    private GameObject? _mainCamera;
+    // Bootstrap поднимает ~25 синглтонов (UIManager, CameraController,
+    // SelectionManager…) и грузит демо-проект — раньше это повторялось на
+    // КАЖДЫЙ тест ([UnitySetUp] пересоздавал Bootstrap с нуля), и профиль
+    // одного теста показал, что именно это, а не рендер и не спавн, съедало
+    // фиксированные ~0,6–0,9 с на тест: даже синхронный [Test] без единого
+    // yield (TheRigStandsOnTheSpoutSideOfAFitting_WithoutTurningTheFittingItself)
+    // стоил те же ~0,6 с, что и самый тяжёлый [UnityTest] — разница пряталась
+    // не в теле теста, а в оснастке вокруг него. Поднимаем Bootstrap ОДИН раз
+    // на весь класс и держим статикой: NUnit создаёт новый экземпляр класса
+    // на каждый тест, и поле экземпляра не пережило бы переход между
+    // вызовами [UnitySetUp] — только static переживает. [OneTimeSetUp] здесь
+    // не годится: эта версия Unity Test Framework не принимает IEnumerator
+    // в OneTimeSetUp («Invalid signature for SetUp or TearDown method»),
+    // поэтому создание вынесено в SetUp за флагом «ещё не поднимали».
+    private static GameObject? _bootstrap;
+    private static GameObject? _mainCamera;
+
+    // Снимок NormalView сразу после загрузки демо-проекта: несколько тестов
+    // осознанно меняют wallsEnabled/lowerNearWalls/lowerAllWalls/edgeOutline
+    // (SpawnWallBehindFitting, IsoRoom_*, IsoDrawer_TypeC_500) и раньше не
+    // возвращали их — при пересоздании Bootstrap демо-проект перезагружался и
+    // сам всё сбрасывал. Общий Bootstrap этого больше не делает, поэтому
+    // между тестами восстанавливаем ИМЕННО то состояние, которое дал бы
+    // свежий Bootstrap — не ResetToDefaults() (демо-проект может отличаться
+    // от дефолтов класса ViewPreset), а точная копия того, что получилось
+    // после его загрузки.
+    private static ViewPreset? _defaultView;
+
     private readonly List<GameObject> _spawned = new List<GameObject>();
+
+    [OneTimeTearDown]
+    public void OneTimeTearDownOnce()
+    {
+        if (_bootstrap != null) Object.Destroy(_bootstrap);
+        if (_mainCamera != null) Object.Destroy(_mainCamera);
+        _bootstrap = null;
+        _mainCamera = null;
+        _defaultView = null;
+    }
 
     [UnitySetUp]
     public IEnumerator SetUp()
     {
         PlayModeTestConfig.ConfigureForTests();
 
-        _mainCamera = new GameObject("Main Camera");
-        _mainCamera!.tag = "MainCamera";
-        _mainCamera!.AddComponent<Camera>();
-        _mainCamera!.transform.position = new Vector3(0f, 3f, -5f);
-        _mainCamera!.transform.LookAt(Vector3.zero);
+        if (_bootstrap == null)
+        {
+            _mainCamera = new GameObject("Main Camera");
+            _mainCamera!.tag = "MainCamera";
+            _mainCamera!.AddComponent<Camera>();
+            _mainCamera!.transform.position = new Vector3(0f, 3f, -5f);
+            _mainCamera!.transform.LookAt(Vector3.zero);
 
-        SaveLoadManager.LastPath = "";
-        var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
-        if (File.Exists(autoPath)) File.Delete(autoPath);
+            SaveLoadManager.LastPath = "";
+            var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
+            if (File.Exists(autoPath)) File.Delete(autoPath);
 
-        _bootstrap = new GameObject("Bootstrap");
-        _bootstrap.AddComponent<Bootstrap>();
+            _bootstrap = new GameObject("Bootstrap");
+            _bootstrap.AddComponent<Bootstrap>();
 
-        yield return null;
+            yield return null;
+            yield return null;
+
+            _defaultView = KitchenSettings.Instance.NormalView.Clone();
+        }
+
+        KitchenSettings.Instance.NormalView.CopyFrom(_defaultView);
         yield return null;
     }
 
@@ -75,12 +119,11 @@ public class IsoScreenshotTests : ElementFrameTests
             if (go != null) Object.Destroy(go);
         _spawned.Clear();
 
+        // BasePlate — тоже KitchenElement, но живёт на общем Bootstrap и не
+        // пересоздаётся каждый тест: удалять её тут значит оставить следующий
+        // тест без пола.
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
-            if (e != null) Object.Destroy(e.gameObject);
-        foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
-            if (c != null) Object.Destroy(c.gameObject);
-        if (_bootstrap != null) Object.Destroy(_bootstrap);
-        if (_mainCamera != null) Object.Destroy(_mainCamera);
+            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
         yield return null;
     }
 
@@ -1816,6 +1859,43 @@ public class IsoScreenshotTests : ElementFrameTests
         _spawned.Add(camGo);
 
         yield return RenderToPng(cam, "iso_fence.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
+    /// <summary>Двускатная крыша (R4/R5) над Г-образным... нет, над ЗАМКНУТЫМ коробом четырёх
+    /// несущих стен (то же построение 4000x3000, что и в IsoFoundation_LShapeWalls и
+    /// SceneFoundationAnalysisTests) — RoofElement сам находит эти стены через PartRegistry,
+    /// строит ограничивающий прямоугольник (RoofContour) и ставит себя на конёк над верхом
+    /// стен без единого явного размера на входе.</summary>
+    [UnityTest]
+    public IEnumerator IsoRoof_GableOverFourWalls()
+    {
+        int wallHeightMm = KitchenSettings.Instance.ConstructionFloorHeightMm;
+        float wallCentreY = wallHeightMm * 0.5f * AppConstants.MM_TO_UNITS;
+        var a = ElementFactory.CreateWall(new Vector3Int(4000, wallHeightMm, 250), "IsoRoofWallA",
+            new Vector3(2f, wallCentreY, 0f));
+        _spawned.Add(a);
+        var b = ElementFactory.CreateWall(new Vector3Int(250, wallHeightMm, 3000), "IsoRoofWallB",
+            new Vector3(4f, wallCentreY, 1.5f));
+        _spawned.Add(b);
+        var c = ElementFactory.CreateWall(new Vector3Int(4000, wallHeightMm, 250), "IsoRoofWallC",
+            new Vector3(2f, wallCentreY, 3f));
+        _spawned.Add(c);
+        var d = ElementFactory.CreateWall(new Vector3Int(250, wallHeightMm, 3000), "IsoRoofWallD",
+            new Vector3(0f, wallCentreY, 1.5f));
+        _spawned.Add(d);
+
+        var go = ElementFactory.CreateRoof("IsoRoof", Vector3.zero);
+        _spawned.Add(go);
+        var roof = go.GetComponent<RoofElement>();
+        Assert.IsNotNull(roof);
+
+        Vector3 size = MmToUnits(new Vector3Int(5500, 4500, 4500));
+        var (camGo, cam) = CreateIsoCamera(new Vector3(2f, 1.8f, 1.5f), size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_roof.png");
 
         Object.DestroyImmediate(camGo);
     }
