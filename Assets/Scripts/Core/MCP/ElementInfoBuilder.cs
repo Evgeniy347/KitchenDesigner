@@ -328,6 +328,20 @@ namespace KitchenDesigner.Core.MCP
                 railCount = fence.RailCount,
             }),
 
+            For<DuctElement>((info, duct) => info.duct = new DuctInfo
+            {
+                profileKind = McpWireEnums.Name(duct.ProfileKind),
+                diameterMm = duct.DiameterMm,
+                widthMm = duct.RectWidthMm,
+                heightMm = duct.RectHeightMm,
+                airflowM3PerHour = duct.AirflowM3PerHour,
+            }),
+
+            For<GrilleElement>((info, grille) => info.grille = new GrilleInfo
+            {
+                airflowM3PerHour = grille.AirflowM3PerHour,
+            }),
+
             For<WallLayerElement>((info, layer) => info.wallLayer = new WallLayerInfo
             {
                 hostWallName = string.IsNullOrEmpty(layer.HostWallName) ? null : layer.HostWallName,

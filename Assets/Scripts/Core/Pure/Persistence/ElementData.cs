@@ -181,6 +181,14 @@ namespace KitchenDesigner.Core
 		public int fencePostStepMm = KitchenDesigner.Core.Construction.FenceDefaults.PostStepMm;
 		public int fencePitDepthMm = KitchenDesigner.Core.Construction.FenceDefaults.PitDepthMm;
 		public int fenceSheetMark = (int)KitchenDesigner.Core.Construction.FenceDefaults.SheetMark;
+		public bool isDuct = false;
+		public int ductProfileKind = 0;
+		public int ductDiameterMm = KitchenDesigner.Core.Ventilation.DuctDefaults.DefaultRoundDiameterMm;
+		public int ductWidthMm = KitchenDesigner.Core.Ventilation.DuctDefaults.DefaultRectWidthMm;
+		public int ductHeightMm = KitchenDesigner.Core.Ventilation.DuctDefaults.DefaultRectHeightMm;
+		public int ductAirflowM3PerHour = KitchenDesigner.Core.Ventilation.DuctDefaults.DefaultAirflowM3PerHour;
+		public bool isGrille = false;
+		public int grilleAirflowM3PerHour = KitchenDesigner.Core.Ventilation.GrilleDefaults.DefaultAirflowM3PerHour;
 		public bool isInsulation = false;
 		public bool isVentGap = false;
 		public bool isCladding = false;

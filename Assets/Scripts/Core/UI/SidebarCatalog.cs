@@ -72,6 +72,8 @@ namespace KitchenDesigner.Core.UI
                 SidebarItemKind.Foundation => EditModeManager.Category.Room,
                 SidebarItemKind.FloorSlab => EditModeManager.Category.Room,
                 SidebarItemKind.Fence => EditModeManager.Category.Room,
+                SidebarItemKind.Duct => EditModeManager.Category.Room,
+                SidebarItemKind.Grille => EditModeManager.Category.Room,
                 SidebarItemKind.Roof => EditModeManager.Category.Room,
                 SidebarItemKind.Insulation => EditModeManager.Category.Room,
                 SidebarItemKind.VentGap => EditModeManager.Category.Room,
@@ -237,6 +239,10 @@ namespace KitchenDesigner.Core.UI
                 FloorSlabItem("Перекрытие"));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Забор",
                 FenceItem("Забор"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Воздуховод",
+                DuctItem("Воздуховод"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Решётка",
+                GrilleItem("Решётка"));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Крыша",
                 RoofItem("Крыша"));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Утеплитель",
@@ -390,6 +396,20 @@ namespace KitchenDesigner.Core.UI
                 FenceElement.DEFAULT_HEIGHT_MM,
                 KitchenDesigner.Core.Construction.FenceDefaults.SheetThicknessMm),
                 SidebarItemKind.Fence);
+
+        private static Item DuctItem(string name) =>
+            new Item(name, new Vector3Int(
+                KitchenDesigner.Core.Ventilation.DuctDefaults.DefaultRoundDiameterMm,
+                KitchenDesigner.Core.Ventilation.DuctDefaults.DefaultLengthMm,
+                KitchenDesigner.Core.Ventilation.DuctDefaults.DefaultRoundDiameterMm),
+                SidebarItemKind.Duct);
+
+        private static Item GrilleItem(string name) =>
+            new Item(name, new Vector3Int(
+                KitchenDesigner.Core.Ventilation.GrilleDefaults.DefaultWidthMm,
+                KitchenDesigner.Core.Ventilation.GrilleDefaults.DefaultHeightMm,
+                KitchenDesigner.Core.Ventilation.GrilleDefaults.DepthMm),
+                SidebarItemKind.Grille);
 
         private static Item RoofItem(string name)
         {

@@ -44,7 +44,10 @@ public class ElementFrontDeclarationTests
     // whole face of its host wall, same reason as the wall itself.
     // 40: RoofElement — several pitches meeting at a ridge, same reason as the fence
     // and the foundation strip: no one side is more characteristic than the others.
-    private const int FacelessCeiling = 40;
+    // 41-42: DuctElement/GrilleElement — a duct run is a body of revolution or an
+    // extruded box with no characteristic side, same reason as the pipe; a grille
+    // panel is symmetric front-to-back until it gets a real wall-mounted face.
+    private const int FacelessCeiling = 42;
 
     private static IReadOnlyList<ElementSurfaceSweep.Row> Rows => ElementSurfaceSweep.Rows;
 

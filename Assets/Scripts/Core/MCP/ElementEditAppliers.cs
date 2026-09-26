@@ -238,6 +238,21 @@ namespace KitchenDesigner.Core.MCP
                 if (op.fence_sheet_mark != null)
                     fence.SheetMark = McpWireEnums.ParseFenceSheetMark(op.fence_sheet_mark);
             }),
+            For<DuctElement>((op, duct) =>
+            {
+                if (op.duct_profile_kind != null)
+                    duct.ProfileKind = McpWireEnums.ParseDuctProfileKind(op.duct_profile_kind);
+                if (op.duct_diameter_mm.HasValue) duct.DiameterMm = op.duct_diameter_mm.Value;
+                if (op.duct_width_mm.HasValue) duct.RectWidthMm = op.duct_width_mm.Value;
+                if (op.duct_height_mm.HasValue) duct.RectHeightMm = op.duct_height_mm.Value;
+                if (op.duct_airflow_m3_per_hour.HasValue)
+                    duct.AirflowM3PerHour = op.duct_airflow_m3_per_hour.Value;
+            }),
+            For<GrilleElement>((op, grille) =>
+            {
+                if (op.grille_airflow_m3_per_hour.HasValue)
+                    grille.AirflowM3PerHour = op.grille_airflow_m3_per_hour.Value;
+            }),
             For<WallLayerElement>((op, layer) =>
             {
                 if (op.wall_layer_host_wall_name != null) layer.SnapToNamedWall(op.wall_layer_host_wall_name);

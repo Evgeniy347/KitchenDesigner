@@ -165,6 +165,13 @@ namespace KitchenDesigner.Core.UI
                     _spawned = ElementFactory.CreateFence(item.dims.x, item.dims.y, item.name,
                         Vector3.zero);
                     break;
+                case SidebarItemKind.Duct:
+                    _spawned = ElementFactory.CreateDuct(item.dims.y, item.name, Vector3.zero);
+                    break;
+                case SidebarItemKind.Grille:
+                    _spawned = ElementFactory.CreateGrille(item.dims.x, item.dims.y, item.name,
+                        Vector3.zero);
+                    break;
                 case SidebarItemKind.Insulation:
                     _spawned = ElementFactory.CreateInsulation("", item.dims.z, item.name, Vector3.zero);
                     _spawned.GetComponent<KitchenElement>()!.DimensionsMM = item.dims;

@@ -146,6 +146,13 @@ namespace KitchenDesigner.Core.MCP
                     item.width ?? FenceElement.DEFAULT_LENGTH_MM,
                     item.height ?? FenceElement.DEFAULT_HEIGHT_MM, item.name, pos),
 
+                ["duct"] = (item, pos) => ElementFactory.CreateDuct(
+                    item.height ?? DuctElement.DEFAULT_LENGTH_MM, item.name, pos),
+
+                ["grille"] = (item, pos) => ElementFactory.CreateGrille(
+                    item.width ?? GrilleElement.DEFAULT_WIDTH_MM,
+                    item.height ?? GrilleElement.DEFAULT_HEIGHT_MM, item.name, pos),
+
                 ["roof"] = (item, pos) => ElementFactory.CreateRoof(item.name, pos),
 
                 ["insulation"] = (item, pos) => ElementFactory.CreateInsulation(

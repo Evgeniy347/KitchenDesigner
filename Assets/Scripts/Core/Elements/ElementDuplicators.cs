@@ -145,6 +145,40 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is DuctElement,
+             (factory, source, pos) => factory.CreateDuct(
+                 source.DimensionsMM.y, source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (DuctElement)source;
+                 var made = copy.GetComponent<DuctElement>();
+                 if (made != null)
+                 {
+                     made.ProfileKind = src.ProfileKind;
+                     made.DiameterMm = src.DiameterMm;
+                     made.RectWidthMm = src.RectWidthMm;
+                     made.RectHeightMm = src.RectHeightMm;
+                     made.DimensionsMM = src.DimensionsMM;
+                     made.AirflowM3PerHour = src.AirflowM3PerHour;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
+            (el => el is GrilleElement,
+             (factory, source, pos) => factory.CreateGrille(
+                 source.DimensionsMM.x, source.DimensionsMM.y, source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (GrilleElement)source;
+                 var made = copy.GetComponent<GrilleElement>();
+                 if (made != null)
+                 {
+                     made.DimensionsMM = src.DimensionsMM;
+                     made.AirflowM3PerHour = src.AirflowM3PerHour;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is FenceElement,
              (factory, source, pos) => factory.CreateFence(
                  source.DimensionsMM.x, source.DimensionsMM.y, source.PartName, pos),

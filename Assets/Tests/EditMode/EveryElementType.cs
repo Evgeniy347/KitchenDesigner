@@ -55,6 +55,8 @@ public static class EveryElementType
         (typeof(FoundationElement), n => ElementFactory.CreateFoundation(617, 719, n, Vector3.zero)),
         (typeof(FloorSlabElement), n => ElementFactory.CreateFloorSlab(3011, 4007, n, Vector3.zero)),
         (typeof(FenceElement), n => ElementFactory.CreateFence(6011, 2017, n, Vector3.zero)),
+        (typeof(DuctElement), n => ElementFactory.CreateDuct(1301, n, Vector3.zero)),
+        (typeof(GrilleElement), n => ElementFactory.CreateGrille(191, 227, n, Vector3.zero)),
         (typeof(RoofElement), n => ElementFactory.CreateRoof(n, Vector3.zero)),
         (typeof(InsulationElement), n => ElementFactory.CreateInsulation("", 101, n, Vector3.zero)),
         (typeof(VentGapElement), n => ElementFactory.CreateVentGap("", 31, n, Vector3.zero)),

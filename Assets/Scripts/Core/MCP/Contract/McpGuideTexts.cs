@@ -438,6 +438,16 @@ FenceElement          Straight run of profiled-sheet fence (type:""fence"").
                       (see get_elements fields) feed the specification --
                       rail count is DERIVED from height (2 below 2000mm, 3
                       at or above) and has no field of its own.
+DuctElement           Straight ventilation duct run (type:""duct""), round or
+                      rectangular (duct_profile_kind). height (dim_y) is the
+                      run length; the cross-section is duct_diameter_mm
+                      (round) or duct_width_mm/duct_height_mm (rect), not
+                      dim_x/dim_z directly. duct_airflow_m3_per_hour is the
+                      designed flow used by the VNT-01 velocity check.
+GrilleElement         Ventilation grille (type:""grille""), a flat standalone
+                      panel -- NOT wall-attached yet. width/height are
+                      dim_x/dim_y. grille_airflow_m3_per_hour feeds the
+                      VNT-03 room air-exchange check.
 RoofElement           Pitch roof over the TOP level's load-bearing walls
                       (type:""roof""). The footprint, ridge height and eave
                       position are derived from those walls every time the
@@ -658,6 +668,12 @@ fence                 Fence run only: {postSectionMm, postStepMm, pitDepthMm,
                       edit_elements fence_sheet_mark). railCount is
                       READ-ONLY -- derived from the run's own height, no
                       matching edit field.
+duct                  Duct only: {profileKind, diameterMm, widthMm, heightMm,
+                      airflowM3PerHour}. profileKind is ""round""/""rect"" (see
+                      edit_elements duct_profile_kind). Only the fields for
+                      the active profile matter -- the other pair still
+                      reports whatever it last held.
+grille                Grille only: {airflowM3PerHour}.
 wallLayer             Insulation/vent-gap/cladding layer only: {hostWallName,
                       thicknessMm, battenStepMm}. hostWallName mirrors
                       edit_elements wall_layer_host_wall_name (null if the

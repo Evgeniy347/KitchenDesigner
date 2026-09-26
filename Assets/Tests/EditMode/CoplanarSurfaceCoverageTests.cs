@@ -176,6 +176,8 @@ public class CoplanarSurfaceCoverageTests
         { typeof(PipeCapElement), OnePipeMesh },
         { typeof(PipeSupplyElement), OnePipeMesh },
         { typeof(PipeReturnElement), OnePipeMesh },
+        { typeof(DuctElement), OnePipeMesh },
+        { typeof(GrilleElement), OnePlate },
     };
 
     /// <summary>Сторож самого сенсора: паре граней вообще должно быть с чем спорить.

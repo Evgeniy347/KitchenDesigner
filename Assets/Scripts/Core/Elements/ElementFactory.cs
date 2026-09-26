@@ -110,6 +110,12 @@ namespace KitchenDesigner.Core
 		public static GameObject CreateFence(int lengthMM, int heightMM, string name, Vector3 position) =>
 			Instance.CreateFence(lengthMM, heightMM, name, position);
 
+		public static GameObject CreateDuct(int lengthMM, string name, Vector3 position) =>
+			Instance.CreateDuct(lengthMM, name, position);
+
+		public static GameObject CreateGrille(int widthMM, int heightMM, string name, Vector3 position) =>
+			Instance.CreateGrille(widthMM, heightMM, name, position);
+
 		public static GameObject CreateRoof(string name, Vector3 position) =>
 			Instance.CreateRoof(name, position);
 

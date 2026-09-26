@@ -213,6 +213,14 @@ namespace KitchenDesigner.Core.UI
                     PlaceAtHeightUnaffectedByGrid(0f,
                         pos => ElementFactory.CreateFence(item.dims.x, item.dims.y, item.name, pos));
                     break;
+                case SidebarItemKind.Duct:
+                    PlaceCenteredOnGround(item.dims.y,
+                        pos => ElementFactory.CreateDuct(item.dims.y, item.name, pos));
+                    break;
+                case SidebarItemKind.Grille:
+                    PlaceAtHeightUnaffectedByGrid(0f,
+                        pos => ElementFactory.CreateGrille(item.dims.x, item.dims.y, item.name, pos));
+                    break;
                 case SidebarItemKind.Insulation:
                     PlaceAtHeightUnaffectedByGrid(0f,
                         pos => ElementFactory.CreateInsulation("", item.dims.z, item.name, pos));

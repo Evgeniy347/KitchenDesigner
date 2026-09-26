@@ -30,7 +30,8 @@ public class McpResponseUnitContractTests
     /// адрес, где искать единицу: он честно говорит читающему агенту «не гадай, здесь
     /// смотри на соседнее поле», а не притворяется, что единица известна заранее.</summary>
     private static readonly string[] UnitTokens =
-        { "mm", "deg", "pct", "px", "sec", "m2", "count", "ratio", "progress", "index", "inunit" };
+        { "mm", "deg", "pct", "px", "sec", "m2", "m3", "count", "ratio", "progress", "index",
+            "inunit" };
 
     /// <summary>Числа ответа, у которых физической единицы НЕТ. Причина обязательна:
     /// без неё через полгода не отличить безразмерную величину от забытого метра.

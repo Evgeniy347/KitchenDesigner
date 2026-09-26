@@ -529,6 +529,34 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, fence);
         }
 
+        public GameObject CreateDuct(int lengthMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewCube(name, "Воздуховод", position);
+            ElementRoot.SwapBoxColliderForMeshCollider(go);
+
+            var duct = go.AddComponent<DuctElement>();
+            duct.PartName = go.name;
+            duct.DimensionsMM = new Vector3Int(
+                KitchenDesigner.Core.Ventilation.DuctDefaults.DefaultRoundDiameterMm, lengthMM,
+                KitchenDesigner.Core.Ventilation.DuctDefaults.DefaultRoundDiameterMm);
+
+            if (DefaultMaterial != null) MaterialManager.ApplyById(duct, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(go, duct);
+        }
+
+        public GameObject CreateGrille(int widthMM, int heightMM, string name, Vector3 position)
+        {
+            var go = ElementRoot.NewCube(name, "Решётка", position);
+
+            var grille = go.AddComponent<GrilleElement>();
+            grille.PartName = go.name;
+            grille.DimensionsMM = new Vector3Int(widthMM, heightMM,
+                KitchenDesigner.Core.Ventilation.GrilleDefaults.DepthMm);
+
+            if (DefaultMaterial != null) MaterialManager.ApplyById(grille, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(go, grille);
+        }
+
         public GameObject CreateRoof(string name, Vector3 position)
         {
             var go = ElementRoot.NewCube(name, "Крыша", position);

@@ -102,6 +102,8 @@ namespace KitchenDesigner.Core.MCP
 		public FoundationInfo? foundation;
 		public FloorSlabInfo? floorSlab;
 		public FenceInfo? fence;
+		public DuctInfo? duct;
+		public GrilleInfo? grille;
 		public RoofInfo? roof;
 		public WallLayerInfo? wallLayer;
 		public ScrewLegInfo? screwLeg;
@@ -509,6 +511,22 @@ namespace KitchenDesigner.Core.MCP
 		public int pitDepthMm;
 		public string sheetMark = "C8";
 		public int railCount;
+	}
+
+	[Serializable]
+	public class DuctInfo
+	{
+		public string profileKind = "round";
+		public int diameterMm;
+		public int widthMm;
+		public int heightMm;
+		public int airflowM3PerHour;
+	}
+
+	[Serializable]
+	public class GrilleInfo
+	{
+		public int airflowM3PerHour;
 	}
 
 	[Serializable]

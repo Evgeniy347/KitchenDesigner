@@ -171,6 +171,28 @@ namespace KitchenDesigner.Core
                  fence.SheetMark = (FenceSheetMark)d.fenceSheetMark;
              }),
 
+            (d => d.isDuct,
+             (factory, d) => factory.CreateDuct(d.Dimensions.y, d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is not DuctElement duct) return;
+                 duct.ProfileKind = (KitchenDesigner.Core.Ventilation.DuctProfileKind)d.ductProfileKind;
+                 duct.DiameterMm = d.ductDiameterMm;
+                 duct.RectWidthMm = d.ductWidthMm;
+                 duct.RectHeightMm = d.ductHeightMm;
+                 duct.DimensionsMM = d.Dimensions;
+                 duct.AirflowM3PerHour = d.ductAirflowM3PerHour;
+             }),
+
+            (d => d.isGrille,
+             (factory, d) => factory.CreateGrille(d.Dimensions.x, d.Dimensions.y, d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is not GrilleElement grille) return;
+                 grille.DimensionsMM = d.Dimensions;
+                 grille.AirflowM3PerHour = d.grilleAirflowM3PerHour;
+             }),
+
             (d => d.isRoof,
              (factory, d) => factory.CreateRoof(d.name, d.Position),
              (d, el) =>

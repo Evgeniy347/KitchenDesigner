@@ -275,6 +275,20 @@ namespace KitchenDesigner.Core
 				d.fencePitDepthMm = fence.PitDepthMm;
 				d.fenceSheetMark = (int)fence.SheetMark;
 			}
+			if (element is DuctElement duct)
+			{
+				d.isDuct = true;
+				d.ductProfileKind = (int)duct.ProfileKind;
+				d.ductDiameterMm = duct.DiameterMm;
+				d.ductWidthMm = duct.RectWidthMm;
+				d.ductHeightMm = duct.RectHeightMm;
+				d.ductAirflowM3PerHour = duct.AirflowM3PerHour;
+			}
+			if (element is GrilleElement grille)
+			{
+				d.isGrille = true;
+				d.grilleAirflowM3PerHour = grille.AirflowM3PerHour;
+			}
 			if (element is RoofElement roof)
 			{
 				d.isRoof = true;

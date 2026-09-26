@@ -1,5 +1,6 @@
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Construction;
+using KitchenDesigner.Core.Ventilation;
 
 namespace KitchenDesigner.Core.MCP
 {
@@ -198,6 +199,14 @@ namespace KitchenDesigner.Core.MCP
             (s ?? "").Trim().ToLowerInvariant() == "joists" ? SlabTechnology.Joists : SlabTechnology.Slab;
 
         public static string Name(SlabTechnology t) => t == SlabTechnology.Joists ? "joists" : "slab";
+
+        public static DuctProfileKind ParseDuctProfileKind(string s) =>
+            string.Equals((s ?? "").Trim(), "rect", System.StringComparison.OrdinalIgnoreCase)
+                ? DuctProfileKind.Rect
+                : DuctProfileKind.Round;
+
+        public static string Name(DuctProfileKind k) =>
+            k == DuctProfileKind.Rect ? "rect" : "round";
 
         public static FenceSheetMark ParseFenceSheetMark(string s)
         {

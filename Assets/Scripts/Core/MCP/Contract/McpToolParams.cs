@@ -206,6 +206,23 @@ namespace KitchenDesigner.Core.MCP.Contract
             Enum = new[] { "C8", "C20", "HC35" })]
         public string? fence_sheet_mark;
 
+        [McpParam("Duct only: round or rectangular cross-section. Omit to keep.",
+            Enum = new[] { "round", "rect" })]
+        public string? duct_profile_kind;
+        [McpParam("Duct only: round profile diameter in MM (100..315). Omit to keep.", Min = 100)]
+        public int? duct_diameter_mm;
+        [McpParam("Duct only: rectangular profile width in MM. Omit to keep.", Min = 1)]
+        public int? duct_width_mm;
+        [McpParam("Duct only: rectangular profile height in MM. Omit to keep.", Min = 1)]
+        public int? duct_height_mm;
+        [McpParam("Duct only: design airflow in m3/h, used for the VNT-01 velocity check. "
+            + "Omit to keep.", Min = 1)]
+        public int? duct_airflow_m3_per_hour;
+
+        [McpParam("Grille only: design airflow in m3/h, used for the VNT-03 room air exchange "
+            + "check. Omit to keep.", Min = 1)]
+        public int? grille_airflow_m3_per_hour;
+
         [McpParam("Roof only: single/gable/hip pitch shape. The footprint is derived automatically "
             + "from the load-bearing walls on the TOP level and is not settable. Omit to keep.",
             Enum = new[] { "single", "gable", "hip" })]
@@ -565,7 +582,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string name = string.Empty;
 
         [McpParam("Element type. Default board. wall = board acting as a structural anchor; floor ignores size/position. An unknown type is rejected and the whole batch with it.",
-            Enum = new[] { "board", "wall", "floor", "foundation", "floor_slab", "fence", "roof", "insulation", "vent_gap", "cladding", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "pipe", "pipe_elbow", "pipe_coupling", "pipe_tee", "pipe_cap", "pipe_supply", "pipe_return", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch", "washing_machine", "dryer" })]
+            Enum = new[] { "board", "wall", "floor", "foundation", "floor_slab", "fence", "duct", "grille", "roof", "insulation", "vent_gap", "cladding", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "pipe", "pipe_elbow", "pipe_coupling", "pipe_tee", "pipe_cap", "pipe_supply", "pipe_return", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch", "washing_machine", "dryer" })]
         public string? type;
 
         [McpParam("X of the MINIMUM world corner in MM — the same number get returns in anchor[0].")] public float anchor_x_mm;
