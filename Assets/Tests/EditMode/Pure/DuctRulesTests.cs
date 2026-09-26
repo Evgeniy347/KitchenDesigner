@@ -196,6 +196,33 @@ public class DuctRulesTests
     }
 
     [Test]
+    public void Collect_DuctExistsButNoGrillesAnywhereInTheScene_ReportsNoVnt03_ForAnyRoom()
+    {
+        // review-construction.md #7: a kitchen hood exhaust duct with zero grilles anywhere
+        // used to raise VNT-03 Error on EVERY FloorElement, because the old guard only bailed
+        // when BOTH counts were zero — a lone duct (which never supplies air in this model,
+        // only grilles do) was enough to let the check run with nothing to measure it against.
+        var profile = DuctProfile.Round(150);
+        var ports = new[]
+        {
+            new Port("hood", 0, new PointMm(0f, 0f, 0f), PipeAxis.Left, profile.ProfileId),
+            new Port("hood", 1, new PointMm(1000f, 0f, 0f), PipeAxis.Right, profile.ProfileId),
+        };
+        var ducts = new[] { new DuctRun("hood", profile, 180f, 0, 1) };
+        var rooms = new[]
+        {
+            new RoomFootprint("Кухня", 0f, 4000f, 0f, 3000f, 2500f),
+            new RoomFootprint("Спальня", 5000f, 8000f, 0f, 3000f, 2500f),
+        };
+
+        var survey = DuctSurvey.Of(ports, ducts, System.Array.Empty<GrilleRun>(), rooms);
+
+        Assert.IsFalse(DuctRules.Collect(survey).Any(f => f.Code == DuctIssueCatalog.CodeAirExchange),
+            "воздуховод без единой решётки в проекте — воздухообмен неизмерим, VNT-03 не звучит "
+            + "ни для одного помещения, включая то, где духовки/решёток вовсе нет");
+    }
+
+    [Test]
     public void Collect_NoDuctsOrGrillesAnywhereInTheScene_ReportsNoVnt03_EvenThoughSuppliedIsZero()
     {
         // Тот же порядок ошибки, что когда-то FND-05: правило по вентиляции не имеет права

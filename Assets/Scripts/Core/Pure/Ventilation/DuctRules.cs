@@ -65,7 +65,7 @@ namespace KitchenDesigner.Core.Ventilation
 
         private static void CollectAirExchange(DuctSurvey survey, List<ConstructionFinding> findings)
         {
-            if (survey.Ducts.Count == 0 && survey.Grilles.Count == 0) return;
+            if (survey.Grilles.Count == 0) return;
 
             foreach (var room in survey.Rooms)
             {
