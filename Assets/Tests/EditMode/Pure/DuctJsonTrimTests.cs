@@ -8,6 +8,55 @@ using KitchenDesigner.Core;
 /// золотые снапшоты молча обрастают лишними строками.</summary>
 public class DuctJsonTrimTests
 {
+    /// <summary>ProjectData.basePlate — отдельный именованный объект в корне, не элемент
+    /// массива elements, и несёт ту же форму ElementData, что и любой элемент сцены
+    /// (FoundationJsonTrim пропустила его точно так же, см. 16ef6b55 и
+    /// FoundationJsonTrimTests). Каждая сцена, включая пустую, сериализует basePlate,
+    /// поэтому пропуск здесь ломает ВСЕ снапшоты сразу, а не только сценарии с воздуховодом.</summary>
+    private const string ProjectWithABasePlate =
+        "{\n" +
+        "    \"version\": 1,\n" +
+        "    \"elements\": [],\n" +
+        "    \"basePlateValid\": true,\n" +
+        "    \"basePlate\": {\n" +
+        "        \"name\": \"BasePlate\",\n" +
+        "        \"isDuct\": false,\n" +
+        "        \"ductProfileKind\": 0,\n" +
+        "        \"ductDiameterMm\": 125,\n" +
+        "        \"ductWidthMm\": 200,\n" +
+        "        \"ductHeightMm\": 200,\n" +
+        "        \"ductAirflowM3PerHour\": 60,\n" +
+        "        \"isGrille\": false,\n" +
+        "        \"grilleAirflowM3PerHour\": 60,\n" +
+        "        \"isLightSource\": false\n" +
+        "    },\n" +
+        "    \"lightsOn\": true\n" +
+        "}";
+
+    [Test]
+    public void RemoveWhenNotDuct_ABasePlate_DropsAllEightKeys_TooNotOnlyTheArray()
+    {
+        var trimmed = DuctJsonTrim.RemoveWhenNotDuct(ProjectWithABasePlate);
+
+        StringAssert.DoesNotContain("isDuct", trimmed);
+        StringAssert.DoesNotContain("ductProfileKind", trimmed);
+        StringAssert.DoesNotContain("ductDiameterMm", trimmed);
+        StringAssert.DoesNotContain("ductWidthMm", trimmed);
+        StringAssert.DoesNotContain("ductHeightMm", trimmed);
+        StringAssert.DoesNotContain("ductAirflowM3PerHour", trimmed);
+        StringAssert.DoesNotContain("isGrille", trimmed);
+        StringAssert.DoesNotContain("grilleAirflowM3PerHour", trimmed);
+
+        var root = JsonText.RootObject(trimmed);
+        var basePlate = JsonText.MemberValue(trimmed, root, "basePlate");
+        Assert.IsTrue(basePlate.Found, "basePlate — не мусор, сама запись обязана остаться");
+        Assert.IsTrue(JsonText.MemberValue(trimmed, basePlate, "name").Found);
+        Assert.IsTrue(JsonText.MemberValue(trimmed, basePlate, "isLightSource").Found,
+            "поле ПОСЛЕ удалённой восьмёрки внутри basePlate обязано пережить срез");
+        Assert.IsTrue(JsonText.MemberValue(trimmed, root, "lightsOn").Found,
+            "корневое поле ПОСЛЕ basePlate обязано пережить срез именованного объекта");
+    }
+
     [Test]
     public void RemoveWhenNotDuct_APlainBoard_DropsAllDuctAndGrilleKeys()
     {
