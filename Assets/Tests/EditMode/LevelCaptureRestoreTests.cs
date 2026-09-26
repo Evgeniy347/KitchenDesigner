@@ -74,6 +74,31 @@ public class LevelCaptureRestoreTests
         Assert.AreEqual(3000, LevelRegistry.Items[1].floorElevationMm);
     }
 
+    /// <summary>H6 (review-ui-mcp): LevelRegistry._currentId переживал загрузку — только
+    /// Reset() (только в тестах) его трогал. Открыть проект A на «2 этаж», затем открыть
+    /// проект B (сохранённый на первом этаже) — B открывался на втором этаже B: новый
+    /// каталог спавнится на чужой высоте, а первый этаж B на время недостижим кликом.</summary>
+    [Test]
+    public void RestoringAProject_ResetsTheCurrentLevel_SoItDoesNotLeakFromThePreviousProject()
+    {
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 3000),
+        });
+        LevelRegistry.CurrentId = "2";
+
+        var project = new ProjectData(System.Array.Empty<ElementData>())
+        {
+            levels = new[] { new Level("1", "1 этаж", 0, 3000) }
+        };
+        SaveLoadManager.RestoreScene(project);
+
+        Assert.AreEqual("1", LevelRegistry.CurrentId,
+            "текущий этаж обязан сброситься на этаж, с которого открывается новый проект, " +
+            "а не унаследоваться из предыдущего сеанса");
+    }
+
     [Test]
     public void SavingTheScene_CapturesTheLevelRegistry_BackIntoProjectData()
     {
