@@ -14,22 +14,38 @@ namespace KitchenDesigner.Core.Construction
             }
         }
 
+        public static void ExtendedSpanAndSlope(RoofFootprint footprint, RoofRidgeAxis ridgeAxis,
+            float overhangMm, out float spanMm, out float slopeMm)
+        {
+            RawAndExtendedSpanAndSlope(footprint, ridgeAxis, overhangMm,
+                out _, out spanMm, out slopeMm);
+        }
+
+        private static void RawAndExtendedSpanAndSlope(RoofFootprint footprint,
+            RoofRidgeAxis ridgeAxis, float overhangMm, out float rawSpanMm,
+            out float extendedSpanMm, out float extendedSlopeMm)
+        {
+            bool ridgeAlongX = RidgeAlongX(footprint, ridgeAxis);
+            float span = ridgeAlongX ? footprint.WidthXMm : footprint.LengthZMm;
+            float slope = ridgeAlongX ? footprint.LengthZMm : footprint.WidthXMm;
+            float overhang = Math.Max(0f, overhangMm);
+            rawSpanMm = Math.Max(0f, span);
+            extendedSpanMm = rawSpanMm + 2f * overhang;
+            extendedSlopeMm = Math.Max(0f, slope) + 2f * overhang;
+        }
+
         public static RoofFrame Build(RoofFootprint footprint, RoofType type,
             RoofRidgeAxis ridgeAxis, float overhangMm)
         {
-            bool ridgeAlongX = RidgeAlongX(footprint, ridgeAxis);
-            float spanMm = ridgeAlongX ? footprint.WidthXMm : footprint.LengthZMm;
-            float slopeMm = ridgeAlongX ? footprint.LengthZMm : footprint.WidthXMm;
-            float overhang = Math.Max(0f, overhangMm);
-            float extendedSpanMm = Math.Max(0f, spanMm) + 2f * overhang;
-            float extendedSlopeMm = Math.Max(0f, slopeMm) + 2f * overhang;
+            RawAndExtendedSpanAndSlope(footprint, ridgeAxis, overhangMm,
+                out float rawSpanMm, out float extendedSpanMm, out float extendedSlopeMm);
 
             switch (type)
             {
                 case RoofType.Single:
                     return Single(extendedSpanMm, extendedSlopeMm);
                 case RoofType.Gable:
-                    return Gable(extendedSpanMm, extendedSlopeMm, Math.Max(0f, spanMm));
+                    return Gable(extendedSpanMm, extendedSlopeMm, rawSpanMm);
                 case RoofType.Hip:
                     return Hip(extendedSpanMm, extendedSlopeMm);
                 default:

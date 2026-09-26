@@ -163,6 +163,7 @@ namespace KitchenDesigner.Core.Bulk
             if (e is InsulationElement) return "insulation";
             if (e is VentGapElement) return "vent_gap";
             if (e is CladdingElement) return "cladding";
+            if (e is RoofElement) return "roof";
             if (e.GetComponent<Wall>() != null) return "wall";
             return "board";
         }

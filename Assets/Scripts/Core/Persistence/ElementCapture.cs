@@ -275,6 +275,15 @@ namespace KitchenDesigner.Core
 				d.fencePitDepthMm = fence.PitDepthMm;
 				d.fenceSheetMark = (int)fence.SheetMark;
 			}
+			if (element is RoofElement roof)
+			{
+				d.isRoof = true;
+				d.roofType = (int)roof.Type;
+				d.roofRidgeAxis = (int)roof.RidgeAxis;
+				d.roofPitchDeg = roof.PitchDeg;
+				d.roofOverhangMm = roof.OverhangMm;
+				d.roofRafterStepMm = roof.RafterStepMm;
+			}
 			if (element is WallLayerElement wallLayer)
 			{
 				d.wallLayerHostWallName = wallLayer.HostWallName;

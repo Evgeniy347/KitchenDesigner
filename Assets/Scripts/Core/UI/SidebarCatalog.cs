@@ -72,6 +72,7 @@ namespace KitchenDesigner.Core.UI
                 SidebarItemKind.Foundation => EditModeManager.Category.Room,
                 SidebarItemKind.FloorSlab => EditModeManager.Category.Room,
                 SidebarItemKind.Fence => EditModeManager.Category.Room,
+                SidebarItemKind.Roof => EditModeManager.Category.Room,
                 SidebarItemKind.Insulation => EditModeManager.Category.Room,
                 SidebarItemKind.VentGap => EditModeManager.Category.Room,
                 SidebarItemKind.Cladding => EditModeManager.Category.Room,
@@ -236,6 +237,8 @@ namespace KitchenDesigner.Core.UI
                 FloorSlabItem("Перекрытие"));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Забор",
                 FenceItem("Забор"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Крыша",
+                RoofItem("Крыша"));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Утеплитель",
                 InsulationItem("Утеплитель"));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Вентзазор",
@@ -387,6 +390,18 @@ namespace KitchenDesigner.Core.UI
                 FenceElement.DEFAULT_HEIGHT_MM,
                 KitchenDesigner.Core.Construction.FenceDefaults.SheetThicknessMm),
                 SidebarItemKind.Fence);
+
+        private static Item RoofItem(string name)
+        {
+            int overhang = KitchenDesigner.Core.Construction.RoofDefaults.OverhangMm;
+            int span = 2 * overhang;
+            int slope = 2 * overhang;
+            float runMm = slope * 0.5f;
+            int rise = Mathf.Max(1, (int)(runMm
+                * Mathf.Tan(KitchenDesigner.Core.Construction.RoofDefaults.PitchDeg * Mathf.Deg2Rad)));
+            return new Item(name, new Vector3Int(Mathf.Max(1, span), rise, Mathf.Max(1, slope)),
+                SidebarItemKind.Roof);
+        }
 
         private static Item InsulationItem(string name) =>
             new Item(name, new Vector3Int(1000, 1000,

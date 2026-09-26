@@ -186,6 +186,12 @@ namespace KitchenDesigner.Core
 		public bool isCladding = false;
 		public string wallLayerHostWallName = "";
 		public int ventGapBattenStepMm = KitchenDesigner.Core.Construction.WallLayerDefaults.VentGapBattenStepMm;
+		public bool isRoof = false;
+		public int roofType = (int)KitchenDesigner.Core.Construction.RoofDefaults.Type;
+		public int roofRidgeAxis = (int)KitchenDesigner.Core.Construction.RoofDefaults.RidgeAxis;
+		public float roofPitchDeg = KitchenDesigner.Core.Construction.RoofDefaults.PitchDeg;
+		public int roofOverhangMm = KitchenDesigner.Core.Construction.RoofDefaults.OverhangMm;
+		public int roofRafterStepMm = KitchenDesigner.Core.Construction.RoofDefaults.RafterStepMm;
 		public bool isLightSource = false;
 		public int lightTemperatureK = LampSpec.DEFAULT_TEMPERATURE_K;
 		public int lightPowerW = LampSpec.DEFAULT_POWER_W;

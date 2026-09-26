@@ -529,6 +529,19 @@ namespace KitchenDesigner.Core
             return ElementRoot.Publish(go, fence);
         }
 
+        public GameObject CreateRoof(string name, Vector3 position)
+        {
+            var go = ElementRoot.NewCube(name, "Крыша", position);
+            ElementRoot.SwapBoxColliderForMeshCollider(go);
+
+            var roof = go.AddComponent<RoofElement>();
+            roof.PartName = go.name;
+            roof.DimensionsMM = new Vector3Int(1, 1, 1);
+
+            if (DefaultMaterial != null) MaterialManager.ApplyById(roof, MaterialCatalog.DefaultId);
+            return ElementRoot.Publish(go, roof);
+        }
+
         public GameObject CreateInsulation(string hostWallName, int thicknessMm, string name, Vector3 position) =>
             CreateWallLayer<InsulationElement>("Утеплитель", hostWallName, thicknessMm, name, position);
 

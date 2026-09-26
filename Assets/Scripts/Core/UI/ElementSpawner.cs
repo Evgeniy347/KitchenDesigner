@@ -202,6 +202,9 @@ namespace KitchenDesigner.Core.UI
                     CommitImmediate(ElementFactory.CreateFoundation(item.dims.x, item.dims.y,
                         item.name, Vector3.zero));
                     break;
+                case SidebarItemKind.Roof:
+                    CommitImmediate(ElementFactory.CreateRoof(item.name, Vector3.zero));
+                    break;
                 case SidebarItemKind.FloorSlab:
                     PlaceAtHeightUnaffectedByGrid(-AppConstants.HalfHeightUnits(item.dims.y),
                         pos => ElementFactory.CreateFloorSlab(item.dims.x, item.dims.z, item.name, pos));

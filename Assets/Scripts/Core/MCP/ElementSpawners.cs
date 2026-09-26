@@ -146,6 +146,8 @@ namespace KitchenDesigner.Core.MCP
                     item.width ?? FenceElement.DEFAULT_LENGTH_MM,
                     item.height ?? FenceElement.DEFAULT_HEIGHT_MM, item.name, pos),
 
+                ["roof"] = (item, pos) => ElementFactory.CreateRoof(item.name, pos),
+
                 ["insulation"] = (item, pos) => ElementFactory.CreateInsulation(
                     item.wall_layer_host_wall_name ?? "",
                     item.depth ?? WallLayerDefaults.InsulationThicknessMm, item.name, pos),

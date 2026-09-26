@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using KitchenDesigner.Core.Construction;
 using UnityEngine;
 
 namespace KitchenDesigner.Core.MCP
@@ -294,6 +295,19 @@ namespace KitchenDesigner.Core.MCP
                 rebarStepMm = foundation.RebarStepMm,
                 coverMm = foundation.CoverMm,
                 frostDepthText = foundation.FrostDepthText,
+            }),
+
+            For<RoofElement>((info, roof) => info.roof = new RoofInfo
+            {
+                type = McpWireEnums.Name(roof.Type),
+                ridgeAxis = McpWireEnums.Name(roof.RidgeAxis),
+                pitchDeg = roof.PitchDeg,
+                overhangMm = roof.OverhangMm,
+                rafterStepMm = roof.RafterStepMm,
+                coveringAreaM2 = (float)RoofQuantities.CoveringAreaM2(
+                    RoofQuantities.PitchAreaM2(roof.BuiltFrame, roof.PitchDeg),
+                    RoofDefaults.CoveringWastePct),
+                ridgeLengthMm = roof.BuiltFrame.RidgeLengthMm,
             }),
 
             For<FloorSlabElement>((info, slab) => info.floorSlab = new FloorSlabInfo

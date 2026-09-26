@@ -210,6 +210,15 @@ namespace KitchenDesigner.Core.MCP
                     foundation.RebarStepMm = op.foundation_rebar_step_mm.Value;
                 if (op.foundation_cover_mm.HasValue) foundation.CoverMm = op.foundation_cover_mm.Value;
             }),
+            For<RoofElement>((op, roof) =>
+            {
+                if (op.roof_type != null) roof.Type = McpWireEnums.ParseRoofType(op.roof_type);
+                if (op.roof_ridge_axis != null)
+                    roof.RidgeAxis = McpWireEnums.ParseRoofRidgeAxis(op.roof_ridge_axis);
+                if (op.roof_pitch_deg.HasValue) roof.PitchDeg = op.roof_pitch_deg.Value;
+                if (op.roof_overhang_mm.HasValue) roof.OverhangMm = op.roof_overhang_mm.Value;
+                if (op.roof_rafter_step_mm.HasValue) roof.RafterStepMm = op.roof_rafter_step_mm.Value;
+            }),
             For<FloorSlabElement>((op, slab) =>
             {
                 if (op.floor_slab_technology != null)

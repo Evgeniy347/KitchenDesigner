@@ -163,6 +163,23 @@ namespace KitchenDesigner.Core
                  CopyMaterial(source, copy);
              }),
 
+            (el => el is RoofElement,
+             (factory, source, pos) => factory.CreateRoof(source.PartName, pos),
+             (source, copy) =>
+             {
+                 var src = (RoofElement)source;
+                 var made = copy.GetComponent<RoofElement>();
+                 if (made != null)
+                 {
+                     made.Type = src.Type;
+                     made.RidgeAxis = src.RidgeAxis;
+                     made.PitchDeg = src.PitchDeg;
+                     made.OverhangMm = src.OverhangMm;
+                     made.RafterStepMm = src.RafterStepMm;
+                 }
+                 CopyMaterial(source, copy);
+             }),
+
             (el => el is InsulationElement,
              (factory, source, pos) => factory.CreateInsulation(
                  ((WallLayerElement)source).HostWallName, source.DimensionsMM.z, source.PartName, pos),

@@ -42,7 +42,9 @@ public class ElementFrontDeclarationTests
     // reason as the pipe and the foundation strip.
     // 37-39: InsulationElement/VentGapElement/CladdingElement — a wall layer runs the
     // whole face of its host wall, same reason as the wall itself.
-    private const int FacelessCeiling = 39;
+    // 40: RoofElement — several pitches meeting at a ridge, same reason as the fence
+    // and the foundation strip: no one side is more characteristic than the others.
+    private const int FacelessCeiling = 40;
 
     private static IReadOnlyList<ElementSurfaceSweep.Row> Rows => ElementSurfaceSweep.Rows;
 

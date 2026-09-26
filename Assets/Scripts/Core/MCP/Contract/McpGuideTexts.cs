@@ -438,6 +438,16 @@ FenceElement          Straight run of profiled-sheet fence (type:""fence"").
                       (see get_elements fields) feed the specification --
                       rail count is DERIVED from height (2 below 2000mm, 3
                       at or above) and has no field of its own.
+RoofElement           Pitch roof over the TOP level's load-bearing walls
+                      (type:""roof""). The footprint, ridge height and eave
+                      position are derived from those walls every time the
+                      mesh rebuilds; width/height/depth are not settable at
+                      all. roof_type picks single/gable/hip, roof_ridge_axis
+                      picks which plan axis the ridge runs along (auto = the
+                      longer side), roof_pitch_deg/roof_overhang_mm/
+                      roof_rafter_step_mm feed both the mesh and the
+                      specification (rafter section is derived from span via
+                      the project's rafter table and has no field of its own).
 InsulationElement     Wall insulation layer (type:""insulation""). Seats flush
                       on wall_layer_host_wall_name (or the nearest wall) and
                       TAKES the wall's length/height, re-cutting its window/

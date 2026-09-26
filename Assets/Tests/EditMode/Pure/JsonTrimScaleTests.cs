@@ -9,9 +9,8 @@ using KitchenDesigner.Core;
 /// per removed key, on every element. That is the exact shape `RawElementRecords.Apply`
 /// had before `a3ca35c0` (O(elements) calls each costing O(document length)), just spread
 /// across five sibling classes instead of one. Measured before the fix: chaining
-/// Fence+FloorSlab+Foundation+WallLayer at 800 synthetic elements took ~700 ms; at 1600 it
-/// was ~2.3 s including Roof (Roof is owned by another agent building the roof feature and
-/// is intentionally left untouched here — see the report). `JsonText.RewriteArrayItems` now
+/// Fence+FloorSlab+Foundation+WallLayer+Roof at 800 synthetic elements took ~700 ms; at 1600
+/// it was ~2.3 s. `JsonText.RewriteArrayItems` now
 /// walks the array ONCE with a StringBuilder and hands each trim only its own element's
 /// substring, so `RemoveMember` there pays for one element, not the document.
 ///
@@ -31,10 +30,11 @@ public class JsonTrimScaleTests
         string project = BuildProjectWithPlainElements(ElementCount);
 
         var sw = Stopwatch.StartNew();
-        string result = WallLayerJsonTrim.RemoveWhenNotWallLayer(
-            FoundationJsonTrim.RemoveWhenNotFoundation(
-                FloorSlabJsonTrim.RemoveWhenNotFloorSlab(
-                    FenceJsonTrim.RemoveWhenNotFence(project))));
+        string result = RoofJsonTrim.RemoveWhenNotRoof(
+            WallLayerJsonTrim.RemoveWhenNotWallLayer(
+                FoundationJsonTrim.RemoveWhenNotFoundation(
+                    FloorSlabJsonTrim.RemoveWhenNotFloorSlab(
+                        FenceJsonTrim.RemoveWhenNotFence(project)))));
         sw.Stop();
 
         var array = JsonText.MemberValue(result, JsonText.RootObject(result), "elements");
@@ -49,9 +49,10 @@ public class JsonTrimScaleTests
         Assert.IsFalse(first.Contains("isFence"),
             "a plain element's family flags are still removed");
         Assert.IsFalse(first.Contains("wallLayerHostWallName"));
+        Assert.IsFalse(first.Contains("isRoof"));
 
         Assert.Less(sw.Elapsed.TotalMilliseconds, BudgetMs,
-            $"{ElementCount} elements through four chained trims took {sw.Elapsed.TotalMilliseconds:F0} ms; "
+            $"{ElementCount} elements through five chained trims took {sw.Elapsed.TotalMilliseconds:F0} ms; "
             + "this class of defect made it grow with the SQUARE of the element count "
             + "(RawElementRecords.Apply before a3ca35c0), not with the count itself");
     }
@@ -79,6 +80,8 @@ public class JsonTrimScaleTests
             sb.Append("      \"isVentGap\": false,\n");
             sb.Append("      \"isCladding\": false,\n");
             sb.Append("      \"wallLayerHostWallName\": \"\",\n");
+            sb.Append("      \"isRoof\": false,\n");
+            sb.Append("      \"roofType\": 1,\n");
             sb.Append("      \"movable\": true,\n");
             sb.Append("      \"position\": [0.0, 0.0, 0.0]\n");
             sb.Append("    }");

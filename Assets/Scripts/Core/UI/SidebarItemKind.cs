@@ -36,6 +36,7 @@ namespace KitchenDesigner.Core.UI
         Foundation,
         FloorSlab,
         Fence,
+        Roof,
         Insulation,
         VentGap,
         Cladding,

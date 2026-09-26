@@ -216,6 +216,35 @@ namespace KitchenDesigner.Core.MCP
             _ => "C8",
         };
 
+        public static RoofType ParseRoofType(string s) => (s ?? "").Trim().ToLowerInvariant() switch
+        {
+            "single" => RoofType.Single,
+            "hip" => RoofType.Hip,
+            _ => RoofType.Gable,
+        };
+
+        public static string Name(RoofType t) => t switch
+        {
+            RoofType.Single => "single",
+            RoofType.Hip => "hip",
+            _ => "gable",
+        };
+
+        public static RoofRidgeAxis ParseRoofRidgeAxis(string s) =>
+            (s ?? "").Trim().ToLowerInvariant() switch
+            {
+                "x" => RoofRidgeAxis.X,
+                "z" => RoofRidgeAxis.Z,
+                _ => RoofRidgeAxis.Auto,
+            };
+
+        public static string Name(RoofRidgeAxis a) => a switch
+        {
+            RoofRidgeAxis.X => "x",
+            RoofRidgeAxis.Z => "z",
+            _ => "auto",
+        };
+
         public static string Name(DrawerSystem s) => s == DrawerSystem.Movento ? "movento" : "gtv";
 
         public static string Name(LaundryMachineKind k) =>

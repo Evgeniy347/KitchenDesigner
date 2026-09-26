@@ -171,6 +171,18 @@ namespace KitchenDesigner.Core
                  fence.SheetMark = (FenceSheetMark)d.fenceSheetMark;
              }),
 
+            (d => d.isRoof,
+             (factory, d) => factory.CreateRoof(d.name, d.Position),
+             (d, el) =>
+             {
+                 if (el is not RoofElement roof) return;
+                 roof.Type = (RoofType)d.roofType;
+                 roof.RidgeAxis = (RoofRidgeAxis)d.roofRidgeAxis;
+                 roof.PitchDeg = d.roofPitchDeg;
+                 roof.OverhangMm = d.roofOverhangMm;
+                 roof.RafterStepMm = d.roofRafterStepMm;
+             }),
+
             (d => d.isInsulation,
              (factory, d) => factory.CreateInsulation(d.wallLayerHostWallName, d.Dimensions.z, d.name, d.Position),
              (d, el) =>

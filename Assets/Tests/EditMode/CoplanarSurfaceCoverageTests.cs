@@ -161,6 +161,7 @@ public class CoplanarSurfaceCoverageTests
         { typeof(ShowerColumnElement), OneCombinedMesh },
         { typeof(ScrewLegElement), OneCombinedMesh },
         { typeof(FoundationElement), OneCombinedMesh },
+        { typeof(RoofElement), OneCombinedMesh },
         { typeof(FloorSlabElement), OnePlate },
         { typeof(InsulationElement), OnePlate },
         { typeof(VentGapElement), OnePlate },
