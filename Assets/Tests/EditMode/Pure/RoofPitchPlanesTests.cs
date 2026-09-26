@@ -112,16 +112,21 @@ public class RoofPitchPlanesTests
     }
 
     [Test]
-    public void RoofPitchPlanes_Hip_RidgeAxisForcedToTheShortSide_RidgeLengthClampsToZero()
+    public void RoofPitchPlanes_Hip_IgnoresRequestedRidgeAxis_AlwaysUsesTheLongSide()
     {
-        var frame = RoofPitchPlanes.Build(Footprint6000By4000, RoofType.Hip, RoofRidgeAxis.Z, 500f);
+        var auto = RoofPitchPlanes.Build(Footprint6000By4000, RoofType.Hip, RoofRidgeAxis.Auto, 500f);
+        var forcedToShortSide = RoofPitchPlanes.Build(Footprint6000By4000, RoofType.Hip, RoofRidgeAxis.Z, 500f);
+        var forcedToLongSide = RoofPitchPlanes.Build(Footprint6000By4000, RoofType.Hip, RoofRidgeAxis.X, 500f);
 
-        Assert.AreEqual(0f, frame.RidgeLengthMm, 1e-3f,
-            "«повернуть» конёк на короткую сторону (X становится осью ската, а не конька) "
-            + "даёт отрицательную по формуле длину конька, 5 000 − 7 000 = −2 000 мм; "
-            + "смета обязана показать ноль, а не отрицательный конёк");
+        Assert.AreEqual(auto.RidgeLengthMm, forcedToShortSide.RidgeLengthMm, 0.5f,
+            "«повернуть» конёк вальмовой крыши на короткую сторону раньше давало отрицательную по "
+            + "формуле длину конька (5 000 − 7 000 = −2 000 мм) и самопересекающиеся скаты в мешe "
+            + "(review-construction.md #9) - вальма физически не может держать конёк на короткой "
+            + "стороне, поэтому запрос молча остаётся на длинной, как при Auto");
+        Assert.AreEqual(auto.RidgeLengthMm, forcedToLongSide.RidgeLengthMm, 0.5f,
+            "явный запрос длинной стороны не должен отличаться от Auto - она и так длинная");
 
-        foreach (var plane in frame.Planes)
+        foreach (var plane in forcedToShortSide.Planes)
             Assert.GreaterOrEqual(plane.RidgeEdgeMm, 0f,
                 "ни один скат не имеет отрицательного верхнего края");
     }

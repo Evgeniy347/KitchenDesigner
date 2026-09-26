@@ -119,6 +119,22 @@ public class RoofFrameGeometryTests
     }
 
     [Test]
+    public void PlaneBoundariesUnits_Hip_RidgeAxisForcedToTheShortSide_ShadowAreaMatchesRoofQuantities()
+    {
+        var footprint = new RoofFootprint(0f, 6000f, 0f, 10000f);
+
+        var boundaries = RoofFrameGeometry.PlaneBoundariesUnits(footprint, RoofType.Hip,
+            RoofRidgeAxis.X, 0f, PitchDeg);
+        var frame = RoofPitchPlanes.Build(footprint, RoofType.Hip, RoofRidgeAxis.X, 0f);
+
+        Assert.AreEqual(RoofQuantities.PlanAreaM2(frame), TotalPlanAreaM2(boundaries), 1e-4,
+            "конёк, принудительно поставленный на короткую сторону (X 6000 короче Z 10000), "
+            + "обязан давать ту же площадь в плане, что и RoofPitchPlanes.Build - у RoofPitchPlanes "
+            + "конёк уже клампится к нулю (RoofPitchPlanesTests), а тут ridgeHalf уходит в минус и "
+            + "трапеция ската превращается в самопересекающийся бант (review-construction.md #9)");
+    }
+
+    [Test]
     public void PlaneBoundariesUnits_ZeroPitch_CollapsesEveryPointToTheEaveHeight()
     {
         var boundaries = RoofFrameGeometry.PlaneBoundariesUnits(WideInX, RoofType.Gable,

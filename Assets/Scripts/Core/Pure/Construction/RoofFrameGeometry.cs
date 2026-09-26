@@ -11,9 +11,10 @@ namespace KitchenDesigner.Core.Construction
         {
             var boundaries = new List<Vector3[]>();
 
-            RoofPitchPlanes.ExtendedSpanAndSlope(footprintMm, ridgeAxis, overhangMm,
+            RoofPitchPlanes.ExtendedSpanAndSlope(footprintMm, type, ridgeAxis, overhangMm,
                 out float spanMm, out float slopeMm);
-            bool ridgeAlongX = RoofPitchPlanes.RidgeAlongX(footprintMm, ridgeAxis);
+            bool ridgeAlongX = RoofPitchPlanes.RidgeAlongX(footprintMm,
+                RoofPitchPlanes.EffectiveRidgeAxis(type, ridgeAxis));
             float tanPitch = Mathf.Tan(pitchDeg * Mathf.Deg2Rad);
 
             float halfSpan = spanMm * 0.5f;

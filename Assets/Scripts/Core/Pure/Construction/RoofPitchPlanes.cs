@@ -14,10 +14,13 @@ namespace KitchenDesigner.Core.Construction
             }
         }
 
-        public static void ExtendedSpanAndSlope(RoofFootprint footprint, RoofRidgeAxis ridgeAxis,
-            float overhangMm, out float spanMm, out float slopeMm)
+        public static RoofRidgeAxis EffectiveRidgeAxis(RoofType type, RoofRidgeAxis requested) =>
+            type == RoofType.Hip ? RoofRidgeAxis.Auto : requested;
+
+        public static void ExtendedSpanAndSlope(RoofFootprint footprint, RoofType type,
+            RoofRidgeAxis ridgeAxis, float overhangMm, out float spanMm, out float slopeMm)
         {
-            RawAndExtendedSpanAndSlope(footprint, ridgeAxis, overhangMm,
+            RawAndExtendedSpanAndSlope(footprint, EffectiveRidgeAxis(type, ridgeAxis), overhangMm,
                 out _, out spanMm, out slopeMm);
         }
 
@@ -37,7 +40,7 @@ namespace KitchenDesigner.Core.Construction
         public static RoofFrame Build(RoofFootprint footprint, RoofType type,
             RoofRidgeAxis ridgeAxis, float overhangMm)
         {
-            RawAndExtendedSpanAndSlope(footprint, ridgeAxis, overhangMm,
+            RawAndExtendedSpanAndSlope(footprint, EffectiveRidgeAxis(type, ridgeAxis), overhangMm,
                 out float rawSpanMm, out float extendedSpanMm, out float extendedSlopeMm);
 
             switch (type)
