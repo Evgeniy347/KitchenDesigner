@@ -445,6 +445,8 @@ namespace KitchenDesigner.Core
                 if (!handles(source)) continue;
                 var copy = spawn(factory, source, position);
                 copy.transform.rotation = source.transform.rotation;
+                var copyElement = copy.GetComponent<KitchenElement>();
+                if (copyElement != null) copyElement.LevelId = source.LevelId;
                 extras?.Invoke(source, copy);
                 return copy;
             }

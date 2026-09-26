@@ -147,6 +147,24 @@ public class ElementDuplicatorTests
             + "чем был оригинал: " + string.Join(", ", wrong));
     }
 
+    /// <summary>H1 (review-ui-mcp): дублирование не переносило LevelId, и копия
+    /// возвращалась на первый уровень (LevelResolution.ResolveElementLevel на пустом/чужом
+    /// id отдаёт effectiveLevels[0]) — на своём этаже её было не выбрать, а на этаже 1 она
+    /// висела в воздухе на реальной высоте оригинала.</summary>
+    [Test]
+    public void Duplicate_CopiesTheSourcesLevelId()
+    {
+        var go = ElementFactory.CreatePart(new Vector3Int(600, 18, 500), "Board", Vector3.zero);
+        var source = go.GetComponent<KitchenElement>();
+        source.LevelId = "2";
+
+        var copy = ElementFactory.Duplicate(source).GetComponent<KitchenElement>();
+
+        Assert.AreEqual("2", copy.LevelId,
+            "копия обязана унаследовать уровень оригинала, иначе она молча падает на " +
+            "первый этаж (LevelResolution.ResolveElementLevel по умолчанию)");
+    }
+
     [Test]
     public void Duplicate_KeepsTheRotationOfTheOriginal()
     {
