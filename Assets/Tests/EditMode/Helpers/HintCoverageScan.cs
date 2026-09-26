@@ -50,15 +50,19 @@ namespace KitchenDesigner.Tests.Geometry
             }
         }
 
-        private enum Coverage
+        public enum Coverage
         {
             Covered,
             Delegated,
             Uncovered,
         }
 
-        private static readonly Regex HintLiteral = new Regex(@"\bhint\s*:\s*""[^""]*""");
-        private static readonly Regex HintNamedIdentifier = new Regex(@"\bhint\s*:\s*[A-Za-z_]\w*\b");
+        // hint: "" — пустая строка не несёт текста, покрытием не считается (нужен непустой
+        // литерал: [^"]+, не [^"]*). hint: null явно отменяет подсказку, а не передаёт её
+        // дальше, поэтому HintNamedIdentifier не должен принимать null за делегирование
+        // (review-perf-tests-tooling.md #9).
+        private static readonly Regex HintLiteral = new Regex(@"\bhint\s*:\s*""[^""]+""");
+        private static readonly Regex HintNamedIdentifier = new Regex(@"\bhint\s*:\s*(?!null\b)[A-Za-z_]\w*\b");
         private static readonly Regex Modifier = new Regex(@"\b(private|protected|public|internal|static)\b");
 
         private static readonly IReadOnlyList<CreatorName> FieldsEditorCreators = new[]
@@ -278,7 +282,7 @@ namespace KitchenDesigner.Tests.Geometry
             return args.Select(a => a.Trim()).Where(a => a.Length > 0).ToList();
         }
 
-        private static Coverage Classify(IReadOnlyList<string> args)
+        public static Coverage Classify(IReadOnlyList<string> args)
         {
             var callContent = string.Join(",", args);
             if (HintLiteral.IsMatch(callContent)) return Coverage.Covered;

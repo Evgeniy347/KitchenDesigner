@@ -97,6 +97,22 @@ public class HintCoverageGuardTests
     }
 
     [Test]
+    public void Classify_EmptyHintLiteral_IsNotCovered()
+    {
+        var result = HintCoverageScan.Classify(new[] { "\"Ширина\"", "hint: \"\"" });
+        Assert.AreNotEqual(HintCoverageScan.Coverage.Covered, result,
+            "hint: \"\" — пустая подсказка не несёт текста, это НЕ покрытие (review-perf-tests-tooling.md #9)");
+    }
+
+    [Test]
+    public void Classify_NullHint_IsNotDelegated()
+    {
+        var result = HintCoverageScan.Classify(new[] { "\"Ширина\"", "hint: null" });
+        Assert.AreEqual(HintCoverageScan.Coverage.Uncovered, result,
+            "hint: null явно отменяет подсказку, это НЕ делегирование (review-perf-tests-tooling.md #9)");
+    }
+
+    [Test]
     public void EveryKnownGap_HasAReason()
     {
         var empty = KnownGaps.Where(kv => string.IsNullOrWhiteSpace(kv.Value)).Select(kv => kv.Key).ToList();
