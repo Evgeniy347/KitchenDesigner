@@ -63,7 +63,7 @@ source carries no comments at all — see CONVENTIONS.md → "Comments live in t
 | `agents/TEST-DESIGN.md` | тест, который может упасть; противоположные входы; `!= null` как несущая проверка; построить недостающий сенсор; приёмка снапшот-эталонов | перед тем как ПИСАТЬ тест |
 | `agents/SUBSYSTEMS.md` | снэп (две реализации, одна геометрия), валидация в ядре, скриншоты через PlayMode, MCP-мост, чек-лист нового свойства | при работе с этими подсистемами |
 | `agents/DEPLOY.md` | деплой, релиз инсталлятора, ASCII+CRLF в `.cmd` | при выкладке и при правке `.cmd` |
-| `CONVENTIONS.md` | **тоже карта** — правила кода лежат в `conventions/*.md`: `STRUCTURE` (SRP, быстрый путь, проверки типа), `COMMENTS`, `SERIALIZATION`, `TEST-NAMING`, `SHAPE-AND-SCREENSHOTS`, `UNITS-AND-FILES`, `CORRECTNESS` | перед правкой любого класса — как минимум `STRUCTURE` и `COMMENTS` |
+| `CONVENTIONS.md` | **тоже карта** — правила кода лежат в `conventions/*.md`: `STRUCTURE` (SRP, быстрый путь, проверки типа), `COMMENTS`, `SERIALIZATION`, `TEST-NAMING`, `SHAPE-AND-SCREENSHOTS`, `UNITS-AND-FILES`, `CORRECTNESS`, `PERFORMANCE` | перед правкой любого класса — как минимум `STRUCTURE` и `COMMENTS` |
 | `FEATURES.md` | карта фича → классы → тесты | в начале задачи по фиче |
 | `docs/TEXTURES.md` | текстуры декоров: физический размер, бесшовность, импорт | перед любой правкой текстур |
 | `docs/NORMATIVE-DEFAULTS.md` | стройка: значения по умолчанию из ГОСТ/СП с источником и степенью проверки; VNT-01/03 | перед тем как задать инженерную константу — не спрашивать пользователя |
