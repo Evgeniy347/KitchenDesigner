@@ -5,8 +5,9 @@ namespace KitchenDesigner.Core.Construction
     public static class FoundationSoleWidth
     {
         public const string Source =
-            "СП 22.13330.2016, минимальный конструктивный напуск подошвы ленты за грань стены "
-            + "(пункт не подтверждён исполнителем — см. NormativeUnverified)";
+            "СП 22.13330.2016, конструктивный минимум ширины подошвы: толщина несущей стены "
+            + "плюс запас на грунт (docs/NORMATIVE-DEFAULTS.md §2 — «не менее толщины несущей "
+            + "стены + 100-150 мм»; пункт не подтверждён исполнителем — см. NormativeUnverified)";
 
         public const float SandMarginMm = 100f;
         public const float SandyLoamMarginMm = 150f;
@@ -47,7 +48,7 @@ namespace KitchenDesigner.Core.Construction
                 return false;
             }
 
-            minWidthMm = Math.Max(0f, wallThicknessMm) + 2f * marginMm;
+            minWidthMm = Math.Max(0f, wallThicknessMm) + marginMm;
             return true;
         }
     }

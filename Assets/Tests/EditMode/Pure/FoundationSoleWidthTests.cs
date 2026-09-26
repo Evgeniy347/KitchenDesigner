@@ -12,14 +12,18 @@ using KitchenDesigner.Core.Construction;
 /// приложение сегодня не считает нигде.
 ///
 /// Поэтому здесь не таблица, вычитанная из конкретного пункта, а КОНСТРУКТИВНЫЙ минимум:
-/// ширина подошвы не меньше толщины стены плюс запас на грунт с каждой стороны — грунт
-/// хуже, запас больше, тем же порядком, что и у FrostDepth («неизвестно» = худший случай
-/// из предложенных). Значения запаса (100/150/200 мм) исполнитель НЕ смог сверить с
-/// конкретным пунктом СП 22.13330 — это практический минимум напуска, который встречается
-/// в справочниках по малоэтажному строительству, а не цитата норматива. Поэтому весь класс
-/// помечен [Category("NormativeUnverified")]: по правилу из §3.6 («если исполнителю
-/// недоступен текст СП — он пишет таблицу с пунктом, который нашёл, и помечает тест»)
-/// менеджер сверяет цифры сам, пользователя не спрашивать.</summary>
+/// ширина подошвы не меньше толщины стены плюс запас на грунт (ОДНИМ слагаемым на всю
+/// подошву, docs/NORMATIVE-DEFAULTS.md §2: «не менее толщины несущей стены + 100-150 мм») —
+/// грунт хуже, запас больше, тем же порядком, что и у FrostDepth («неизвестно» = худший
+/// случай из предложенных). До test-results/review-construction.md #15 запас удваивался
+/// (как будто он откладывается с каждой стороны отдельно), из-за чего минимум для 380-мм
+/// стены на неизвестном грунте (780 мм) превышал дефолтную ширину ленты (700 мм), и свежий
+/// фундамент падал на FND-02 сразу после спавна. Значения запаса (100/150/200 мм)
+/// исполнитель НЕ смог сверить с конкретным пунктом СП 22.13330 — это практический минимум
+/// напуска, который встречается в справочниках по малоэтажному строительству, а не цитата
+/// норматива. Поэтому весь класс помечен [Category("NormativeUnverified")]: по правилу из
+/// §3.6 («если исполнителю недоступен текст СП — он пишет таблицу с пунктом, который
+/// нашёл, и помечает тест») менеджер сверяет цифры сам, пользователя не спрашивать.</summary>
 [Category("NormativeUnverified")]
 public class FoundationSoleWidthTests
 {
@@ -79,23 +83,39 @@ public class FoundationSoleWidthTests
     }
 
     [Test]
-    public void FoundationSoleWidth_BrickWall250_OnLoam_MinimumIs650mm()
+    public void FoundationSoleWidth_BrickWall250_OnLoam_MinimumIs450mm()
     {
         Assert.IsTrue(FoundationSoleWidth.TryMinimumWidthMm(SoilKind.Loam, 250f, out float minWidthMm));
 
-        Assert.AreEqual(650f, minWidthMm, 0.5f,
-            "250 (толщина стены) + 2 × 200 (запас на суглинок с каждой стороны) = 650 мм, "
-            + "посчитано руками");
+        Assert.AreEqual(450f, minWidthMm, 0.5f,
+            "250 (толщина стены) + 200 (запас на суглинок, docs/NORMATIVE-DEFAULTS.md §2 — "
+            + "«толщина стены + 100-150 мм», без удвоения) = 450 мм, посчитано руками");
     }
 
     [Test]
-    public void FoundationSoleWidth_FrameWall150_OnSand_MinimumIs350mm()
+    public void FoundationSoleWidth_FrameWall150_OnSand_MinimumIs250mm()
     {
         Assert.IsTrue(FoundationSoleWidth.TryMinimumWidthMm(SoilKind.Sand, 150f, out float minWidthMm));
 
-        Assert.AreEqual(350f, minWidthMm, 0.5f,
-            "150 (каркасная стена) + 2 × 100 (запас на песок с каждой стороны) = 350 мм, "
-            + "посчитано руками");
+        Assert.AreEqual(250f, minWidthMm, 0.5f,
+            "150 (каркасная стена) + 100 (запас на песок) = 250 мм, посчитано руками");
+    }
+
+    /// <summary>test-results/review-construction.md #15: старая формула (толщина + 2×запас)
+    /// давала для 380-мм кирпичной стены на неизвестном грунте 780 мм — почти вдвое больше
+    /// правила из docs/NORMATIVE-DEFAULTS.md §2 («не менее толщины несущей стены + 100-150 мм»)
+    /// и больше дефолтной ширины ленты FoundationElement.DEFAULT_WIDTH_MM = 700, так что
+    /// свежепоставленный фундамент дефолтных размеров сразу получал FND-02.</summary>
+    [Test]
+    public void FoundationSoleWidth_BrickWall380_OnUnknownSoil_MinimumFitsUnderTheDefaultStripWidth()
+    {
+        Assert.IsTrue(FoundationSoleWidth.TryMinimumWidthMm(SoilKind.Unknown, 380f, out float minWidthMm));
+
+        Assert.AreEqual(580f, minWidthMm, 0.5f,
+            "380 (толщина стены) + 200 (запас на «неизвестно», худший случай) = 580 мм");
+        Assert.LessOrEqual(minWidthMm, 700f,
+            "дефолтная ширина ленты (FoundationElement.DEFAULT_WIDTH_MM = 700) обязана "
+            + "проходить FND-02 для дефолтной 380-мм стены без ручной правки ширины");
     }
 
     [Test]

@@ -83,14 +83,15 @@ public class FoundationRulesCollectTests
     public void Collect_WallCoveredButSoleTooNarrowForTheSoil_ReportsFnd02_NamingTheWall()
     {
         var wall = Wall(new Vector3(2f, 0f, 0f), 4000, 250);
-        var foundation = Foundation("Lenta-1", SoilKind.Loam, 600f, 700f, wall);
+        var foundation = Foundation("Lenta-1", SoilKind.Loam, 400f, 700f, wall);
         var span = new FoundationWallSpan("Wall-A", wall, thicknessMm: 250f);
 
         var findings = FoundationRules.Collect(new[] { foundation }, new[] { span });
 
         var fnd02 = findings.Single(f => f.Code == "FND-02");
         Assert.AreEqual("Wall-A", fnd02.ElementId,
-            "FND-02 обязан называть СТЕНУ, у которой не хватает подошвы, а не ленту");
+            "FND-02 обязан называть СТЕНУ, у которой не хватает подошвы, а не ленту "
+            + "(минимум для суглинка и стены 250 мм — 450 мм, лента у́же на 50 мм)");
     }
 
     [Test]
@@ -103,7 +104,7 @@ public class FoundationRulesCollectTests
         var findings = FoundationRules.Collect(new[] { foundation }, new[] { span });
 
         Assert.IsFalse(findings.Any(f => f.Code == "FND-02"),
-            "700 мм шире минимума 650 мм для суглинка и стены 250 мм — противоположный вход "
+            "700 мм шире минимума 450 мм для суглинка и стены 250 мм — противоположный вход "
             + "к предыдущему тесту");
     }
 
