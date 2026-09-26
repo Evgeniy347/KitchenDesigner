@@ -670,9 +670,9 @@ fence                 Fence run only: {postSectionMm, postStepMm, pitDepthMm,
                       matching edit field.
 duct                  Duct only: {profileKind, diameterMm, widthMm, heightMm,
                       airflowM3PerHour}. profileKind is ""round""/""rect"" (see
-                      edit_elements duct_profile_kind). Only the fields for
-                      the active profile matter -- the other pair still
-                      reports whatever it last held.
+                      edit_elements duct_profile_kind). Only the fields
+                      matching the CURRENT profileKind matter -- the other
+                      pair still reports whatever it last held.
 grille                Grille only: {airflowM3PerHour}.
 wallLayer             Insulation/vent-gap/cladding layer only: {hostWallName,
                       thicknessMm, battenStepMm}. hostWallName mirrors
