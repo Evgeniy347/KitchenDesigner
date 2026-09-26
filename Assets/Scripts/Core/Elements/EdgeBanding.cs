@@ -318,6 +318,15 @@ namespace KitchenDesigner.Core
                 if (k != exclude) yield return k;
         }
 
+        [System.ThreadStatic] private static int _candidatesExamined;
+
+        public static int TakeCandidatesExamined()
+        {
+            int n = _candidatesExamined;
+            _candidatesExamined = 0;
+            return n;
+        }
+
         private static EdgeCoverage CoverageOverCandidates(KitchenElement element, SceneFaces scene,
             in EdgeLayout layout, int indexInScene, float contactDist, IEnumerable<int> candidates)
         {
@@ -336,6 +345,7 @@ namespace KitchenDesigner.Core
             var sphere = indexInScene >= 0 ? scene.SphereAt(indexInScene) : scene.SphereOf(element);
             foreach (int k in candidates)
             {
+                _candidatesExamined++;
                 if (k == indexInScene) continue;
                 if (!scene.CoversEdgesAt(k)) continue;
                 if (!sphere.Touches(scene.SphereAt(k), contactDist)) continue;

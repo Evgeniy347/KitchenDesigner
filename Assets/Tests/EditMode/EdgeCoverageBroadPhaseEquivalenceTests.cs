@@ -146,57 +146,49 @@ public class EdgeCoverageBroadPhaseEquivalenceTests
         Assert.AreEqual(0, mismatches, $"первое расхождение — {firstMismatch}");
     }
 
-    /// <summary>1600 elements, the "edgeCover" stage of `SceneAnalyzer.TakeStageBreakdown()`.
-    /// The coordinator's own acceptance number was 15 ms; measured (warmed up, see below) this
-    /// fix lands at 26-30 ms, not 15 — on the SAME 1600-element scene the pre-fix code (an
-    /// O(elements) scan per qualifying element) took 95 ms, so this is a real ~3.3x cut and the
-    /// complexity class is O(n log n) now, not O(n^2), but the remaining ~26 ms is NOT the
-    /// broad phase any more: swapping it for a second, independent implementation
-    /// (`SphereSweep`, a plain sort-and-sweep with no shared state, replacing the first
-    /// attempt built on the shared `ValidationBroadPhase` grid) made no measurable difference,
-    /// which means the floor is `SceneFaces.Of`'s own `KitchenElement.GetFaces()` calls
-    /// (9-15 ms baseline, unchanged by either broad phase) plus fixed per-call cost
-    /// (`PerfMarkers`, the four-side rect math) that already existed before this fix and was
-    /// simply invisible under the O(n^2) term. Getting under 15 ms needs a DIFFERENT fix
-    /// (caching or batching `GetFaces()`/the per-side allocations), out of scope for "replace
-    /// the O(n^2) scan" — the budget below is set to what THIS fix actually delivers, not to
-    /// the original target, so it stays a real regression guard instead of a flaky one.
-    ///
-    /// Reads the stage off `[Perf] SceneAnalyzer.Analyze` (`Debug.Log`), the only place the
-    /// number survives once `Analyze()` is slow enough to log it (`LogBreakdownIfSlow` consumes
-    /// the breakdown before a plain `TakeStageBreakdown()` call could see it). The FIRST
-    /// `Analyze()` in a cold process pays JIT warm-up for `KitchenElement.GetFaces()` and the
-    /// sweep alike, so this measures the SECOND call — the same lesson `agents/TESTS.md`
-    /// already states for whole test classes.</summary>
+    /// <summary>2026-09-26: заменил замер в МИЛЛИСЕКУНДАХ (было
+    /// `EdgeCoverStage_OnA1600ElementScene_StaysUnderFortyFiveMilliseconds`, читал "edgeCover
+    /// XXмс" из `[Perf] SceneAnalyzer.Analyze`) на счётчик ОПЕРАЦИЙ — по требованию: тест
+    /// красился под соседской нагрузкой на машине (50,5 мс вместо порога 45 мс на том же коде),
+    /// хотя сам `edgeCover` не менялся ни на йоту. Время не годится сенсором для формы роста:
+    /// оно меряет ещё и то, что тест не контролирует (JIT прогрелся не до конца, антивирус
+    /// проснулся, сосед по CPU). Форма роста — то, что этот тест ДОЛЖЕН стеречь (O(n log n),
+    /// не O(n²) после `SphereSweep`), — не зависит от машины: она считается количеством
+    /// (деталь, кандидат) пар, которые `EdgeBanding.CoverageOverCandidates` реально
+    /// перебирает (`EdgeBanding.TakeCandidatesExamined`), а не тем, сколько это заняло по
+    /// часам. Тот же приём, что и `2 × probes(N) == probes(2N)` в других сторожах этого
+    /// проекта (conventions/CORRECTNESS.md).</summary>
     [Test]
-    public void EdgeCoverStage_OnA1600ElementScene_StaysUnderFortyFiveMilliseconds()
+    public void EdgeCoverCandidatesExamined_GrowsLinearly_NotQuadratically_AsTheSceneQuadruples()
     {
-        const int count = 1600;
-        MakeTouchingPairs(count / 2);
+        int small = CandidatesExaminedOverWholeScene(pairCount: 100);
+        int large = CandidatesExaminedOverWholeScene(pairCount: 400);
 
-        string captured = "";
-        void OnLog(string condition, string trace, LogType type)
-        {
-            if (condition.Contains("SceneAnalyzer.Analyze")) captured = condition;
-        }
-        Application.logMessageReceived += OnLog;
-        SceneAnalyzer.Analyze();
-        captured = "";
-        SceneAnalyzer.Analyze();
-        Application.logMessageReceived -= OnLog;
+        Assert.Greater(small, 0, "сцена из 200 элементов обязана дать хоть один кандидат — "
+            + "иначе сравнение ничего не проверяет");
+        Assert.Less(large, small * 8,
+            $"сцена выросла в 4 раза (100 пар -> 400 пар), число проверенных кандидатов "
+            + $"выросло с {small} до {large}. Индексный путь (`SceneFaces.NeighborsOf` через "
+            + "`SphereSweep`) на этой раздельной раскладке даёт кандидатов O(n) — рост "
+            + "должен остаться около 4×. Рост около 16× (или больше 8×, взятого с запасом "
+            + "между 4× и 16×) означает, что перебор снова стал O(n²) и деградировал до "
+            + "`CoverageBruteForceForTests`-подобного поведения");
+    }
 
-        Assert.IsNotEmpty(captured, "Analyze() обязан был отчитаться о разбивке — иначе не по " +
-            "чему мерить эту сборку");
+    private int CandidatesExaminedOverWholeScene(int pairCount)
+    {
+        var elements = MakeTouchingPairs(pairCount);
+        var scene = SceneFaces.Of(elements);
 
-        var match = System.Text.RegularExpressions.Regex.Match(captured,
-            @"edgeCover (\d+(?:[.,]\d+)?)мс");
-        Assert.IsTrue(match.Success, $"не нашёл стадию edgeCover в отчёте: {captured}");
-        float edgeCoverMs = float.Parse(match.Groups[1].Value.Replace(',', '.'),
-            System.Globalization.CultureInfo.InvariantCulture);
+        EdgeBanding.TakeCandidatesExamined();
+        for (int k = 0; k < elements.Count; k++)
+            EdgeBanding.Coverage(elements[k], scene, k);
+        int examined = EdgeBanding.TakeCandidatesExamined();
 
-        Assert.Less(edgeCoverMs, 45f,
-            $"edgeCover на {count} элементах занял {edgeCoverMs:F1} мс — было ~95 мс (O(elements) "
-            + "перебор на каждый элемент), стало O(n log n) через SphereSweep; порог отражает "
-            + "измеренный результат ЭТОЙ правки (см. описание теста), а не исходную цель 15 мс");
+        foreach (var e in elements)
+            if (e != null) Object.DestroyImmediate(e.gameObject);
+        _spawned.RemoveAll(g => g == null);
+
+        return examined;
     }
 }
