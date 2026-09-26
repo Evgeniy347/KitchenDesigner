@@ -168,6 +168,53 @@ namespace KitchenDesigner.Tests.Pure
             StringAssert.Contains("\n        }", applied);
         }
 
+        /// <summary>`Apply` раньше строила результат вырезанием+склейкой ВСЕЙ строки
+        /// (`result.Substring(0, start) + merged + result.Substring(end)`) на КАЖДЫЙ
+        /// элемент с сырой записью — новая копия целого JSON на деталь, то есть
+        /// O(деталей²). На снимке пользовательского проекта (300+ деталей,
+        /// `LevelMigrationRoundTripTests`) это давало ~24 с на один вызов Serialize и
+        /// было основным весом всего класса. Теперь один проход слева направо через
+        /// StringBuilder — тест ниже проверяет РЕЗУЛЬТАТ на масштабе, где старая
+        /// формула уже была бы заметно медленнее, а не саму скорость (таймер в
+        /// тесте — источник флака).</summary>
+        [Test]
+        public void Apply_OnManyElements_MergesEachByItsOwnIndex()
+        {
+            const int count = 400;
+            var sb = new System.Text.StringBuilder();
+            sb.Append("{ \"elements\": [");
+            var raw = new List<string?>(count);
+            for (int i = 0; i < count; i++)
+            {
+                if (i > 0) sb.Append(',');
+                sb.Append("{ \"name\": \"E").Append(i).Append("\", \"movable\": false }");
+                // Только каждый третий несёт сырую запись — как в реальном сейве,
+                // где большинство элементов не хранят неизвестных полей.
+                raw.Add(i % 3 == 0
+                    ? $"{{ \"name\": \"E{i}\", \"spinRpm\": {i}, \"movable\": true }}"
+                    : null);
+            }
+            sb.Append("] }");
+            string fresh = sb.ToString();
+
+            string applied = RawElementRecords.Apply(fresh, raw);
+            var records = RawElementRecords.Extract(applied);
+
+            Assert.AreEqual(count, records.Count);
+            foreach (int i in new[] { 0, 1, 2, 3, count / 2, count / 2 + 1, count - 3, count - 2, count - 1 })
+            {
+                Assert.AreEqual($"\"E{i}\"", MemberOf(records[i], "name"), $"индекс {i}: имя");
+                if (i % 3 == 0)
+                    Assert.AreEqual(i.ToString(), MemberOf(records[i], "spinRpm"),
+                        $"индекс {i}: сырое поле обязано прийти именно от своего элемента");
+                else
+                    Assert.IsFalse(records[i].Contains("spinRpm"),
+                        $"индекс {i}: элемент без сырой записи не должен получить чужую");
+                Assert.AreEqual("false", MemberOf(records[i], "movable"),
+                    $"индекс {i}: свежее значение известного поля побеждает сырое");
+            }
+        }
+
         private static string MemberOf(string json, string key)
         {
             var value = JsonText.MemberValue(json, JsonText.RootObject(json), key);

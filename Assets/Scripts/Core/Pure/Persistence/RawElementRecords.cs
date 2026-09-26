@@ -26,19 +26,26 @@ namespace KitchenDesigner.Core
             if (!array.Found) return projectJson;
 
             var items = JsonText.ArrayItems(projectJson, array);
-            var result = projectJson;
-            for (int i = items.Count - 1; i >= 0; i--)
+            var sb = new StringBuilder(projectJson.Length);
+            int cursor = 0;
+            for (int i = 0; i < items.Count; i++)
             {
-                if (i >= rawByIndex.Count) continue;
-                string? raw = rawByIndex[i];
-                if (string.IsNullOrEmpty(raw)) continue;
-                string indent = JsonText.LineIndentBefore(projectJson, items[i].Start);
-                string merged = Merge(raw!, items[i].Text(projectJson), indent);
-                result = result.Substring(0, items[i].Start)
-                    + merged
-                    + result.Substring(items[i].End);
+                sb.Append(projectJson, cursor, items[i].Start - cursor);
+
+                string? raw = i < rawByIndex.Count ? rawByIndex[i] : null;
+                if (string.IsNullOrEmpty(raw))
+                {
+                    sb.Append(projectJson, items[i].Start, items[i].Length);
+                }
+                else
+                {
+                    string indent = JsonText.LineIndentBefore(projectJson, items[i].Start);
+                    sb.Append(Merge(raw!, items[i].Text(projectJson), indent));
+                }
+                cursor = items[i].End;
             }
-            return result;
+            sb.Append(projectJson, cursor, projectJson.Length - cursor);
+            return sb.ToString();
         }
 
         public static string Merge(string rawRecord, string currentRecord, string indent)
