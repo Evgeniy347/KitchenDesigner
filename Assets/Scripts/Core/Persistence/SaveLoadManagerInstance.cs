@@ -98,10 +98,6 @@ namespace KitchenDesigner.Core
 
             using var batch = HighlightBatch.Open();
 
-            // Keep a full snapshot of the current project (elements, undo/redo history,
-            // settings, camera) so a failed write below can be rolled back instead of leaving
-            // the scene wiped with LastPath still pointing at the OLD file - the next Ctrl+S
-            // would otherwise overwrite that file with the empty scene.
             var backup = CaptureCurrentScene();
 
             SceneElements.ClearKeepingBasePlate(SceneElements.All());
