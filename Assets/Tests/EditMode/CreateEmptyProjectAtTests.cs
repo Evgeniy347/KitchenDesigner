@@ -1,6 +1,8 @@
 using System.IO;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 
 public class CreateEmptyProjectAtTests
@@ -91,5 +93,42 @@ public class CreateEmptyProjectAtTests
 
         Assert.AreNotEqual("2000-01-01T00:00:00Z", ProjectCreationDate.Value);
         Assert.IsFalse(string.IsNullOrEmpty(ProjectFileCreatedAt.Of(_path)));
+    }
+
+    [Test]
+    public void CreateEmptyProjectAt_WhenTheSaveFails_LeavesTheCurrentSceneAndLastPathUntouched()
+    {
+        var plate = Make("BasePlate", new Vector3Int(3000, 18, 3000), Vector3.zero);
+        plate.gameObject.AddComponent<BasePlate>();
+        Make("SomeBoard", new Vector3Int(800, 400, 18), new Vector3(1, 0, 0));
+
+        _path = Path.Combine(Application.temporaryCachePath, "existing_before_failed_new.kdproj");
+        if (File.Exists(_path)) File.Delete(_path);
+        File.WriteAllText(_path, "{}");
+        SaveLoadManager.LastPath = _path;
+
+        // A plain FILE standing where CreateEmptyProjectAt needs a DIRECTORY makes
+        // Directory.CreateDirectory throw inside ProjectFileStore.WriteJson - a deterministic
+        // write failure that needs no filesystem permission games and no invalid path chars.
+        string blockerFile = Path.Combine(Application.temporaryCachePath, "blocker_not_a_directory.tmp");
+        if (Directory.Exists(blockerFile)) Directory.Delete(blockerFile, true);
+        File.WriteAllText(blockerFile, "x");
+        string badPath = Path.Combine(blockerFile, "sub", "new_project.kdproj");
+
+        LogAssert.Expect(LogType.Error, new Regex(@"^\[SaveLoad\] Save failed:"));
+        Assert.IsFalse(SaveLoadManager.CreateEmptyProjectAt(badPath),
+            "запись, у которой на пути к файлу стоит обычный файл вместо папки, обязана провалиться");
+
+        Assert.AreEqual(_path, SaveLoadManager.LastPath,
+            "провалившееся сохранение не должно переключать путь на несуществующий файл");
+        var remaining = Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None);
+        bool boardStillThere = false;
+        foreach (var e in remaining)
+            if (e != null && e.PartName == "SomeBoard") boardStillThere = true;
+        Assert.IsTrue(boardStillThere,
+            "если запись не удалась, сцена не должна быть очищена - иначе следующий Ctrl+S " +
+            "перезапишет старый файл пустым проектом");
+
+        File.Delete(blockerFile);
     }
 }

@@ -98,6 +98,12 @@ namespace KitchenDesigner.Core
 
             using var batch = HighlightBatch.Open();
 
+            // Keep a full snapshot of the current project (elements, undo/redo history,
+            // settings, camera) so a failed write below can be rolled back instead of leaving
+            // the scene wiped with LastPath still pointing at the OLD file - the next Ctrl+S
+            // would otherwise overwrite that file with the empty scene.
+            var backup = CaptureCurrentScene();
+
             SceneElements.ClearKeepingBasePlate(SceneElements.All());
             SceneRestorer.Restore(new ProjectData());
             ProjectCreationDate.Value = System.DateTime.UtcNow.ToString("o");
@@ -106,7 +112,13 @@ namespace KitchenDesigner.Core
             var hl = ElementHighlighter.Current;
             if (hl is not null) hl.RefreshHighlights();
 
-            return SaveToPath(path);
+            if (SaveToPath(path)) return true;
+
+            SceneElements.ClearKeepingBasePlate(SceneElements.All());
+            SceneRestorer.Restore(backup);
+            SceneChangeTracker.SettleDerivedLinks();
+            if (hl is not null) hl.RefreshHighlights();
+            return false;
         }
 
         public bool LoadLastSession()
