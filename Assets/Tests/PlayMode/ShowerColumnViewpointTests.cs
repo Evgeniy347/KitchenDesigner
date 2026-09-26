@@ -95,29 +95,56 @@ public class ShowerColumnViewpointTests : ElementFrameTests
     public static IEnumerable<Vector3> AllViewpoints =>
         new[] { FrontDir, SideDir, ThreeQuarterDir, TopDir };
 
-    private GameObject? _bootstrap;
-    private GameObject? _mainCamera;
+    // Тот же приём, что в IsoScreenshotTests: Bootstrap поднимается ОДИН раз
+    // на класс (статика — NUnit создаёт новый экземпляр на каждый тест).
+    // SpawnWallBehindColumn мутирует KitchenSettings.NormalView (wallsEnabled,
+    // lowerNearWalls, lowerAllWalls) в каждом тесте и раньше не возвращал их —
+    // пересоздаваемый Bootstrap чинил это сам, перезагружая демо-проект.
+    // Общий Bootstrap так не умеет, поэтому снимок NormalView сразу после
+    // загрузки восстанавливается перед каждым тестом.
+    private static GameObject? _bootstrap;
+    private static GameObject? _mainCamera;
+    private static ViewPreset? _defaultView;
+
     private readonly List<GameObject> _spawned = new List<GameObject>();
+
+    [OneTimeTearDown]
+    public void OneTimeTearDownOnce()
+    {
+        if (_bootstrap != null) Object.Destroy(_bootstrap);
+        if (_mainCamera != null) Object.Destroy(_mainCamera);
+        _bootstrap = null;
+        _mainCamera = null;
+        _defaultView = null;
+    }
 
     [UnitySetUp]
     public IEnumerator SetUp()
     {
         PlayModeTestConfig.ConfigureForTests();
 
-        _mainCamera = new GameObject("Main Camera");
-        _mainCamera!.tag = "MainCamera";
-        _mainCamera!.AddComponent<Camera>();
-        _mainCamera!.transform.position = new Vector3(0f, 3f, -5f);
-        _mainCamera!.transform.LookAt(Vector3.zero);
+        if (_bootstrap == null)
+        {
+            _mainCamera = new GameObject("Main Camera");
+            _mainCamera!.tag = "MainCamera";
+            _mainCamera!.AddComponent<Camera>();
+            _mainCamera!.transform.position = new Vector3(0f, 3f, -5f);
+            _mainCamera!.transform.LookAt(Vector3.zero);
 
-        SaveLoadManager.LastPath = "";
-        var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
-        if (File.Exists(autoPath)) File.Delete(autoPath);
+            SaveLoadManager.LastPath = "";
+            var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
+            if (File.Exists(autoPath)) File.Delete(autoPath);
 
-        _bootstrap = new GameObject("Bootstrap");
-        _bootstrap.AddComponent<Bootstrap>();
+            _bootstrap = new GameObject("Bootstrap");
+            _bootstrap.AddComponent<Bootstrap>();
 
-        yield return null;
+            yield return null;
+            yield return null;
+
+            _defaultView = KitchenSettings.Instance.NormalView.Clone();
+        }
+
+        KitchenSettings.Instance.NormalView.CopyFrom(_defaultView);
         yield return null;
     }
 
@@ -128,12 +155,9 @@ public class ShowerColumnViewpointTests : ElementFrameTests
             if (go != null) Object.Destroy(go);
         _spawned.Clear();
 
+        // BasePlate живёт на общем Bootstrap и не пересоздаётся каждый тест.
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
-            if (e != null) Object.Destroy(e.gameObject);
-        foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
-            if (c != null) Object.Destroy(c.gameObject);
-        if (_bootstrap != null) Object.Destroy(_bootstrap);
-        if (_mainCamera != null) Object.Destroy(_mainCamera);
+            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
         yield return null;
     }
 
