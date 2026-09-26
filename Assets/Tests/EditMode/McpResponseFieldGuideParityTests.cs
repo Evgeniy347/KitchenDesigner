@@ -36,9 +36,6 @@ public class McpResponseFieldGuideParityTests
             ["faceObstructions"] = "детали вплотную перед лицевой гранью фасада",
             ["openingViolations"] = "детали, пересекающие траекторию открывания",
             ["pillar"] = "свойства опоры, только для PillarElement",
-            ["roof"] = "свойства крыши, только для RoofElement: вид ската, ось конька, угол "
-                + "уклона, свес, шаг стропил и выводимые из них площадь кровельного покрытия "
-                + "и длина конька",
             ["screwLeg"] = "свойства винтовой опоры, только для ScrewLegElement",
             ["pipe"] = "свойства трубы, только для PipeElement: ДУ, обозначение, длина и выводимые из ДУ диаметры и толщина стенки",
             ["pipeFitting"] = "свойства фитинга трассы, только для отвода, муфты, тройника, заглушки, подачи и обратки: вид, число портов и диаметр КАЖДОГО порта, прочитанный с подведённых труб — незанятый порт отдаёт прочерк, а не значение по умолчанию",
@@ -119,6 +116,22 @@ public class McpResponseFieldGuideParityTests
         CollectionAssert.IsEmpty(stale,
             "поле уже описано в guide — убери его из списка долгов, иначе список "
             + "перестанет быть списком долгов:\n" + string.Join("\n", stale));
+    }
+
+    /// <summary>foundation/floorSlab/fence/duct/grille/wallLayer were all added in the same
+    /// range as roof and all got real prose in the guide; roof instead was parked in
+    /// <see cref="UndocumentedForNow"/> (M8) - a debt the OTHER two tests here cannot see,
+    /// because a known gap that stays undocumented is exactly what that list is FOR. This
+    /// names the field directly so the parity mechanism cannot silently accept the same
+    /// shortcut for it again.</summary>
+    [Test]
+    public void RoofSubObject_IsExplainedInProse_LikeItsSiblingConstructionTypes()
+    {
+        Assert.IsTrue(GuideExplains("roof"),
+            "roof — как foundation/floorSlab/fence/duct/grille/wallLayer — обязан быть описан "
+            + "прозой в guide {topic:\"fields\"}, а не просто занесён в список долгов");
+        Assert.IsFalse(UndocumentedForNow.ContainsKey("roof"),
+            "документированное поле не должно оставаться в списке долгов");
     }
 
     [Test]

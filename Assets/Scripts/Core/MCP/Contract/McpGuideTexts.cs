@@ -681,6 +681,13 @@ wallLayer             Insulation/vent-gap/cladding layer only: {hostWallName,
                       wall_layer_thickness_mm. battenStepMm is null except on
                       a vent-gap layer, where it mirrors
                       wall_layer_batten_step_mm.
+roof                  Roof only: {type, ridgeAxis, pitchDeg, overhangMm,
+                      rafterStepMm, coveringAreaM2, ridgeLengthMm}.
+                      type/ridgeAxis are strings (see edit_elements
+                      roof_type / roof_ridge_axis). coveringAreaM2 and
+                      ridgeLengthMm are READ-ONLY, derived from the built
+                      roof frame (footprint, pitch, covering waste %) -
+                      there is no matching edit field for either.
 
 COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
   {name, kind, anchorMm:[x,z] corner, sizeMm:[width,height,depth], rotYDeg,
