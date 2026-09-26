@@ -132,17 +132,22 @@ namespace KitchenDesigner.Core.UI
 
             if (_levelLabel != null) _levelLabel.text = LevelRegistry.Current.name;
 
-            if (!CameraController.IsTypingInInputField())
+            if (!CameraController.IsTypingInInputField() && LevelSwitchOwnsPageKeys())
             {
                 if (InputMap.Down(InputAction.LevelUp)) LevelSwitch.Up();
                 else if (InputMap.Down(InputAction.LevelDown)) LevelSwitch.Down();
             }
         }
 
+        internal static bool LevelSwitchOwnsPageKeys() =>
+            PageKeyOwnership.Resolve(new PageKeyClaims
+            {
+                ErrorPanelOpenWithIssues = ErrorPanelUI.Instance != null && ErrorPanelUI.Instance.ClaimsPageNavigation,
+            }) == PageKeyOwner.LevelSwitch;
+
         private void AddLevelSwitcher(Transform parent, ref float x)
         {
-            var upButton = AddBarButton(parent, "LevelUp", UIStyle.GlyphUp, ref x, LevelSwitch.Up);
-            TooltipUI.Attach(upButton.gameObject, "Этаж выше (PageUp)");
+            AddIconButton(parent, "LevelUp", IconFactory.CaretUp, ref x, LevelSwitch.Up, "Этаж выше (PageUp)");
 
             _levelLabel = UIFactory.CreateLabel("LevelLabel", parent, "", 15,
                 new Vector2(x, ButtonY), new Vector2(LevelLabelWidth, ButtonH), TextAnchor.MiddleCenter);
@@ -150,8 +155,7 @@ namespace KitchenDesigner.Core.UI
             _levelLabel.rectTransform.anchoredPosition = new Vector2(x, ButtonY);
             x += LevelLabelWidth + ButtonGap;
 
-            var downButton = AddBarButton(parent, "LevelDown", UIStyle.GlyphDropdown, ref x, LevelSwitch.Down);
-            TooltipUI.Attach(downButton.gameObject, "Этаж ниже (PageDown)");
+            AddIconButton(parent, "LevelDown", IconFactory.CaretDown, ref x, LevelSwitch.Down, "Этаж ниже (PageDown)");
 
             AddPanelToggle(parent, "LevelsWindow", IconFactory.Layers, ToolbarPanel.Levels, ref x, "Этажи…");
         }

@@ -8,6 +8,8 @@ namespace KitchenDesigner.Core.UI
 {
     public class ErrorPanelUI : MonoBehaviour, IProjectWindow
     {
+        public static ErrorPanelUI? Instance { get; private set; }
+
         private const float PanelW = 940f;
         private const float PanelH = 640f;
         private const float Pad = 16f;
@@ -38,6 +40,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform layer)
         {
+            Instance = this;
             var panel = UIFactory.CreatePanel("ErrorPanel", layer, Vector2.zero, new Vector2(PanelW, PanelH));
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
@@ -96,7 +99,15 @@ namespace KitchenDesigner.Core.UI
             if (text.Length > 0) GUIUtility.systemCopyBuffer = text;
         }
 
-        private void OnDestroy() => ProjectWindows.Unregister(this);
+        public bool ClaimsPageNavigation =>
+            IsVisible && !CameraController.IsTypingInInputField() && !AnyCtrl() && !AnyShift()
+            && _selection.VisibleCount > 0;
+
+        private void OnDestroy()
+        {
+            ProjectWindows.Unregister(this);
+            if (Instance == this) Instance = null;
+        }
 
         private void Update()
         {
@@ -162,7 +173,7 @@ namespace KitchenDesigner.Core.UI
 
             _levelFilter?.SetOptions(LevelsPresentIn(_allIssues));
             _codeFilter?.SetOptions(CodesPresentIn(_allIssues));
-            _floorFilter?.SetOptions(FloorsPresentIn(_allIssues));
+            _floorFilter?.SetOptionsWithLabels(FloorIdsPresentIn(_allIssues), FloorNameOf);
 
             RebuildRows();
         }
@@ -188,22 +199,29 @@ namespace KitchenDesigner.Core.UI
             return codes;
         }
 
-        private static List<string> FloorsPresentIn(List<AnalysisIssue> issues)
+        internal static List<string> FloorIdsPresentIn(List<AnalysisIssue> issues)
         {
-            var floors = new List<string>();
+            var ids = new List<string>();
             foreach (var iss in issues)
             {
                 if (iss.Target == null) continue;
-                string name = LevelRegistry.LevelOf(iss.Target).name;
-                if (!floors.Contains(name)) floors.Add(name);
+                string id = LevelRegistry.LevelOf(iss.Target).id;
+                if (!ids.Contains(id)) ids.Add(id);
             }
-            floors.Sort(System.StringComparer.Ordinal);
-            return floors;
+            ids.Sort(System.StringComparer.Ordinal);
+            return ids;
+        }
+
+        internal static string FloorNameOf(string levelId)
+        {
+            foreach (var level in LevelRegistry.Snapshot())
+                if (level != null && level.id == levelId) return level.name;
+            return levelId;
         }
 
         private void RebuildRows()
         {
-            _table.ClearRows(Destroy);
+            _table.ClearRows(DestroyNow.The);
             _selection.BeginRebuild();
 
             string search = _searchField != null ? _searchField.text.Trim() : "";
@@ -220,7 +238,7 @@ namespace KitchenDesigner.Core.UI
                 _table.AddRow(captured, y, index,
                     () => HandleRowClick(captured, index, AnyCtrl(), AnyShift()),
                     () => IssueDisplay.RevealIssue(captured),
-                    Destroy);
+                    DestroyNow.The);
                 y -= IssueTableView.RowStep;
                 shown++;
             }
@@ -247,7 +265,7 @@ namespace KitchenDesigner.Core.UI
             if (_levelFilter != null && !_levelFilter.IsAllowed(IssueDisplay.LevelName(iss.Level))) return false;
             if (_codeFilter != null && !_codeFilter.IsAllowed(iss.Code)) return false;
             if (_floorFilter != null && iss.Target != null
-                && !_floorFilter.IsAllowed(LevelRegistry.LevelOf(iss.Target).name)) return false;
+                && !_floorFilter.IsAllowed(LevelRegistry.LevelOf(iss.Target).id)) return false;
             if (search.Length == 0) return true;
 
             return Contains(iss.Code, search) || Contains(iss.Detail, search) || Contains(iss.Message, search);

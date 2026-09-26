@@ -19,6 +19,7 @@ namespace KitchenDesigner.Core.UI
 
         private readonly List<string> _options = new List<string>();
         private readonly HashSet<string> _selected = new HashSet<string>();
+        private readonly Dictionary<string, string> _labels = new Dictionary<string, string>();
 
         private GameObject? _popupOverlay;
 
@@ -55,9 +56,19 @@ namespace KitchenDesigner.Core.UI
 
         public void SetOptions(IEnumerable<string> options)
         {
+            SetOptionsWithLabels(options, value => value);
+        }
+
+        public void SetOptionsWithLabels(IEnumerable<string> values, System.Func<string, string> labelOf)
+        {
             _options.Clear();
-            foreach (var o in options)
-                if (!_options.Contains(o)) _options.Add(o);
+            _labels.Clear();
+            foreach (var value in values)
+            {
+                if (_options.Contains(value)) continue;
+                _options.Add(value);
+                _labels[value] = labelOf(value);
+            }
 
             _selected.RemoveWhere(s => !_options.Contains(s));
             if (_popupOverlay != null) ClosePopup();
@@ -158,7 +169,8 @@ namespace KitchenDesigner.Core.UI
             foreach (var opt in _options)
             {
                 string value = opt;
-                var toggle = UIFactory.CreateToggle("Opt", content, value, _selected.Contains(value),
+                string label = _labels.TryGetValue(value, out var l) ? l : value;
+                var toggle = UIFactory.CreateToggle("Opt", content, label, _selected.Contains(value),
                     Vector2.zero, new Vector2(rowW, RowH), on => OnToggle(value, on));
                 var tRt = toggle.GetComponent<RectTransform>();
                 tRt.anchorMin = tRt.anchorMax = tRt.pivot = new Vector2(0, 1);

@@ -71,7 +71,6 @@ namespace KitchenDesigner.Core.UI
         public const string GlyphCollapsed = "►";
         public const string GlyphExpanded = "▼";
         public const string GlyphDropdown = "▼";
-        public const string GlyphUp = "▲";
         public const string GlyphAngle = "∟";
         public const string GlyphHint = "i";
     }

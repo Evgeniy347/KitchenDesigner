@@ -121,6 +121,24 @@ public class ToolbarModeAndWidthTests
             "иконная кнопка обязана иметь tooltip — UI-GUIDELINES §5");
     }
 
+    /// <summary>L3 (обзор ui-mcp): переключатель этажа рисовал стрелки текстовыми
+    /// глифами `▲`/`▼` (<c>UIStyle.GlyphUp</c>, <c>GlyphDropdown</c> — тот же символ,
+    /// что и у раскрытия дерева) вместо спрайта IconFactory, которым правило D10
+    /// требует рисовать управляющие стрелки (docs/UI-GUIDELINES.md §4).</summary>
+    [TestCase("LevelUp")]
+    [TestCase("LevelDown")]
+    public void LevelSwitcherButtons_AreIconsWithTooltip_NotTextGlyphs(string buttonName)
+    {
+        var btn = _bar.Find(buttonName)!;
+
+        Assert.IsNotNull(btn.Find(buttonName + "_Icon"),
+            $"«{buttonName}» обязана нести спрайт IconFactory, а не текстовый глиф ▲/▼");
+        Assert.IsNull(btn.GetComponentInChildren<TMP_Text>(),
+            "текстового глифа остаться не должно — только значок");
+        Assert.IsNotNull(btn.GetComponent<EventTrigger>(),
+            "иконная кнопка обязана иметь tooltip — UI-GUIDELINES §5");
+    }
+
     [Test]
     public void ModeButtons_StayText_AsTheOneNamedExceptionToTheIconRule()
     {
