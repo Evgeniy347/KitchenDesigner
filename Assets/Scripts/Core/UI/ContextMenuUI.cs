@@ -71,6 +71,8 @@ namespace KitchenDesigner.Core.UI
         private readonly FoundationFieldsEditor _foundationFields;
         private readonly FloorSlabFieldsEditor _floorSlabFields;
         private readonly FenceFieldsEditor _fenceFields;
+        private readonly DuctFieldsEditor _ductFields;
+        private readonly GrilleFieldsEditor _grilleFields;
         private readonly RoofFieldsEditor _roofFields;
         private readonly WallLayerFieldsEditor _wallLayerFields;
         private readonly FacadeFieldsEditor _facadeFields;
@@ -118,6 +120,8 @@ namespace KitchenDesigner.Core.UI
             _foundationFields = new FoundationFieldsEditor(this);
             _floorSlabFields = new FloorSlabFieldsEditor(this);
             _fenceFields = new FenceFieldsEditor(this);
+            _ductFields = new DuctFieldsEditor(this);
+            _grilleFields = new GrilleFieldsEditor(this);
             _roofFields = new RoofFieldsEditor(this);
             _wallLayerFields = new WallLayerFieldsEditor(this);
             _facadeFields = new FacadeFieldsEditor(this);
@@ -129,7 +133,8 @@ namespace KitchenDesigner.Core.UI
                 _tableFields, _stoolFields, _chairFields, _sofaFields, _bedFields,
                 _pouffeFields, _laundryFields, _toiletFields, _bathtubFields, _bathMixerFields,
                 _showerColumnFields, _wallDeviceFields, _openingFields, _wallFields,
-                _foundationFields, _floorSlabFields, _fenceFields, _roofFields, _wallLayerFields,
+                _foundationFields, _floorSlabFields, _fenceFields, _ductFields, _grilleFields,
+                _roofFields, _wallLayerFields,
                 _lights, _assembledFields, _facadeFields,
             };
         }
@@ -354,6 +359,8 @@ namespace KitchenDesigner.Core.UI
             _foundationFields.Build();
             _floorSlabFields.Build();
             _fenceFields.Build();
+            _ductFields.Build();
+            _grilleFields.Build();
             _roofFields.Build();
             _wallLayerFields.Build();
             _pillarFields.Build();

@@ -1863,6 +1863,51 @@ public class IsoScreenshotTests : ElementFrameTests
         Object.DestroyImmediate(camGo);
     }
 
+    /// <summary>Круглый воздуховод (V2), центрированный элемент как труба — поднят на
+    /// половину своей длины, иначе половина ушла бы под землю.</summary>
+    [UnityTest]
+    public IEnumerator IsoDuct_DefaultSize()
+    {
+        float toU = AppConstants.MM_TO_UNITS;
+        float halfLenY = DuctElement.DEFAULT_LENGTH_MM * 0.5f * toU;
+        var go = ElementFactory.CreateDuct(DuctElement.DEFAULT_LENGTH_MM, "IsoDuct",
+            new Vector3(0f, halfLenY, 0f));
+        _spawned.Add(go);
+        var duct = go.GetComponent<DuctElement>();
+        Assert.IsNotNull(duct);
+
+        Vector3 size = MmToUnits(new Vector3Int(duct.DiameterMm, DuctElement.DEFAULT_LENGTH_MM,
+            duct.DiameterMm));
+        var (camGo, cam) = CreateIsoCamera(new Vector3(0f, halfLenY, 0f), size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_duct.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
+    /// <summary>Вентиляционная решётка (V2) — плоская накладка, грейд-анкер как забор:
+    /// поднята на половину высоты, чтобы не уйти под землю.</summary>
+    [UnityTest]
+    public IEnumerator IsoGrille_DefaultSize()
+    {
+        float halfHeightY = AppConstants.HalfHeightUnits(GrilleElement.DEFAULT_HEIGHT_MM);
+        var go = ElementFactory.CreateGrille(GrilleElement.DEFAULT_WIDTH_MM,
+            GrilleElement.DEFAULT_HEIGHT_MM, "IsoGrille", new Vector3(0f, halfHeightY, 0f));
+        _spawned.Add(go);
+        var grille = go.GetComponent<GrilleElement>();
+        Assert.IsNotNull(grille);
+
+        Vector3 size = MmToUnits(new Vector3Int(GrilleElement.DEFAULT_WIDTH_MM,
+            GrilleElement.DEFAULT_HEIGHT_MM, KitchenDesigner.Core.Ventilation.GrilleDefaults.DepthMm));
+        var (camGo, cam) = CreateIsoCamera(new Vector3(0f, halfHeightY, 0f), size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_grille.png");
+
+        Object.DestroyImmediate(camGo);
+    }
+
     /// <summary>Двускатная крыша (R4/R5) над Г-образным... нет, над ЗАМКНУТЫМ коробом четырёх
     /// несущих стен (то же построение 4000x3000, что и в IsoFoundation_LShapeWalls и
     /// SceneFoundationAnalysisTests) — RoofElement сам находит эти стены через PartRegistry,
