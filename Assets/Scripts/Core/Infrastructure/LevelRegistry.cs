@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace KitchenDesigner.Core
@@ -6,6 +7,8 @@ namespace KitchenDesigner.Core
     {
         private static readonly List<Level> _items = new();
         private static string _currentId = "";
+
+        public static event Action? Changed;
 
         public static IReadOnlyList<Level> Items => _items;
 
@@ -34,13 +37,16 @@ namespace KitchenDesigner.Core
         public static void Set(IEnumerable<Level>? levels)
         {
             _items.Clear();
-            if (levels == null) return;
-            foreach (var level in levels) if (level != null) _items.Add(level);
+            if (levels != null)
+                foreach (var level in levels) if (level != null) _items.Add(level);
+            Changed?.Invoke();
         }
 
         public static void Add(Level level)
         {
-            if (level != null) _items.Add(level);
+            if (level == null) return;
+            _items.Add(level);
+            Changed?.Invoke();
         }
 
         public static void Insert(int index, Level level)
@@ -49,6 +55,7 @@ namespace KitchenDesigner.Core
             if (index < 0) index = 0;
             if (index > _items.Count) index = _items.Count;
             _items.Insert(index, level);
+            Changed?.Invoke();
         }
 
         public static int IndexOf(string id)
@@ -62,12 +69,16 @@ namespace KitchenDesigner.Core
         {
             int i = IndexOf(id);
             if (i >= 0) _items.RemoveAt(i);
+            Changed?.Invoke();
         }
 
         public static void Reset()
         {
             _items.Clear();
             _currentId = "";
+            Changed?.Invoke();
         }
+
+        public static void Touch() => Changed?.Invoke();
     }
 }
