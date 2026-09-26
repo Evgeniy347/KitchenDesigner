@@ -255,7 +255,7 @@ namespace KitchenDesigner.Core.MCP
             }),
             For<WallLayerElement>((op, layer) =>
             {
-                if (op.wall_layer_host_wall_name != null) layer.SnapToNamedWall(op.wall_layer_host_wall_name);
+                if (op.wall_layer_host_wall_name != null) RehostWithUndo(layer, op.wall_layer_host_wall_name);
                 if (op.wall_layer_thickness_mm.HasValue) layer.ThicknessMm = op.wall_layer_thickness_mm.Value;
             }),
             For<VentGapElement>((op, ventGap) =>
@@ -285,6 +285,22 @@ namespace KitchenDesigner.Core.MCP
 
         private static Applier For<T>(Action<EditOp, T> apply) where T : class
             => (op, el) => { if (el is T typed) apply(op, typed); };
+
+        private static void RehostWithUndo(WallLayerElement layer, string newHostWallName)
+        {
+            string hostBefore = layer.HostWallName;
+            var posBefore = layer.transform.position;
+            var rotBefore = layer.transform.rotation;
+            var dimsBefore = layer.DimensionsMM;
+
+            if (!layer.SnapToNamedWall(newHostWallName)) return;
+            if (layer.HostWallName == hostBefore) return;
+
+            var command = new WallLayerRehostCommand(layer, hostBefore, layer.HostWallName,
+                posBefore, layer.transform.position, rotBefore, layer.transform.rotation,
+                dimsBefore, layer.DimensionsMM);
+            CommandStack.Execute(command);
+        }
 
         private static void ApplyDecorSlotMaterials(EditOp op, IHasTwoDecorSlots slots)
         {
