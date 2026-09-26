@@ -16,6 +16,17 @@ public class McpPlanGeometryTests : McpTestFixture
     public void TearDown()
     {
         CommandStack.Clear(); ProjectInstructions.Reset();
+        LevelRegistry.Reset();
+    }
+
+    private static void SetUpTwoLevels(string currentId)
+    {
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 3000),
+        });
+        LevelRegistry.CurrentId = currentId;
     }
 
     [Test]
@@ -107,6 +118,42 @@ public class McpPlanGeometryTests : McpTestFixture
         Assert.AreEqual(0.6f, south.GetComponent<MeshFilter>().sharedMesh.bounds.max.x, 0.0001f);
     }
 
+    /// <summary>H2 (обзор ui-mcp): create_walls/create_floor/add_opening никогда не
+    /// метили созданный элемент этажом — LevelId оставался "" и на просмотре
+    /// второго этажа резолвился на первый (LevelResolution.ResolveElementLevel ->
+    /// effectiveLevels[0]), делая деталь некликабельной на СВОЁМ этаже
+    /// (SelectionManager.IsOnCurrentLevel). Правило то же, что у create_elements:
+    /// без level_id — текущий просматриваемый этаж.</summary>
+    [Test]
+    public void CreateWalls_DefaultsToCurrentLevel_WhenLevelIdOmitted()
+    {
+        SetUpTwoLevels("2");
+        ProjectInstructions.Text = "bearing_wall_thickness_mm: 200";
+        _handler!.Handle(MakeReq("create_walls", new
+        {
+            segments = new[] { new { name = "W1", from_x = 0, from_z = 0, to_x = 3000, to_z = 0, kind = "bearing", height = 2700 } }
+        }));
+
+        var wall = PartRegistry.GetAll().Find(e => e.PartName == "W1")!;
+        Assert.AreEqual("2", wall.LevelId,
+            "без явного level_id новая стена обязана попасть на ТЕКУЩИЙ просматриваемый этаж");
+    }
+
+    [Test]
+    public void CreateWalls_TagsExplicitLevelId_OverridingCurrent()
+    {
+        SetUpTwoLevels("1");
+        ProjectInstructions.Text = "bearing_wall_thickness_mm: 200";
+        _handler!.Handle(MakeReq("create_walls", new
+        {
+            level_id = "2",
+            segments = new[] { new { name = "W1", from_x = 0, from_z = 0, to_x = 3000, to_z = 0, kind = "bearing", height = 2700 } }
+        }));
+
+        var wall = PartRegistry.GetAll().Find(e => e.PartName == "W1")!;
+        Assert.AreEqual("2", wall.LevelId, "явный level_id обязан победить текущий просматриваемый этаж");
+    }
+
     [Test]
     public void CreateFloor_BuildsConcavePolygonAndIsIdempotent()
     {
@@ -128,6 +175,20 @@ public class McpPlanGeometryTests : McpTestFixture
         { name = "Floor1", thickness_mm = 100, poly }));
         Assert.AreEqual(1, PartRegistry.GetAll().Count);
         Assert.AreEqual(100, floor.DimensionsMM.y);
+    }
+
+    [Test]
+    public void CreateFloor_DefaultsToCurrentLevel_WhenLevelIdOmitted()
+    {
+        SetUpTwoLevels("2");
+        var poly = new[] { new { x = 0, z = 0 }, new { x = 3000, z = 0 },
+            new { x = 3000, z = 3000 }, new { x = 0, z = 3000 } };
+        _handler!.Handle(MakeReq("create_floor", new
+        { name = "Floor1", top_y_mm = 3000, thickness_mm = 120, poly }));
+
+        var floor = PartRegistry.GetAll().Find(e => e.PartName == "Floor1")!;
+        Assert.AreEqual("2", floor.LevelId,
+            "без явного level_id новый пол обязан попасть на ТЕКУЩИЙ просматриваемый этаж");
     }
 
     [Test]
@@ -200,5 +261,24 @@ public class McpPlanGeometryTests : McpTestFixture
         { name = "Bad", wall = "W", kind = "window", offset_mm = 500, width = 800, height = 1000, sill_mm = 800 }));
         Assert.AreEqual("error", response.type);
         Assert.AreEqual(1, PartRegistry.GetAll().Count);
+    }
+
+    [Test]
+    public void AddOpening_DefaultsToCurrentLevel_WhenLevelIdOmitted()
+    {
+        SetUpTwoLevels("2");
+        ProjectInstructions.Text = "bearing_wall_thickness_mm: 200";
+        _handler!.Handle(MakeReq("create_walls", new
+        {
+            level_id = "2",
+            segments = new[] { new { name = "WallA", from_x = 0, from_z = 0, to_x = 4000, to_z = 0, kind = "bearing", height = 2700 } }
+        }));
+
+        _handler!.Handle(MakeReq("add_opening", new
+        { name = "Win1", wall = "WallA", kind = "window", offset_mm = 1000, width = 1200, height = 1400, sill_mm = 800 }));
+
+        var window = PartRegistry.GetAll().Find(e => e.PartName == "Win1")!;
+        Assert.AreEqual("2", window.LevelId,
+            "без явного level_id новый проём обязан попасть на ТЕКУЩИЙ просматриваемый этаж");
     }
 }

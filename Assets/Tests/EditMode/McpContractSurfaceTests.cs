@@ -87,6 +87,30 @@ public class McpContractSurfaceTests
             + "[McpIgnore] явно:\n" + string.Join("\n", silent));
     }
 
+    /// <summary>L4 (обзор ui-mcp): три описания ссылались на несуществующие
+    /// «scene_* tools» (level_id в edit_elements/create_elements, wall_layer_host_wall_name) —
+    /// правильное имя одно, get_scene_tree, и оно уже названо верно в McpGuideTexts.
+    /// Агент, доверившийся описанию поля, звал бы инструмент, которого нет.</summary>
+    [Test]
+    public void NoParamDescription_PointsAtTheNonExistentSceneStarToolFamily()
+    {
+        var offenders = new List<string>();
+
+        foreach (var type in ReachableParamsTypes())
+            foreach (var field in type.GetFields(PublicInstance))
+            {
+                var param = field.GetCustomAttribute<McpParamAttribute>();
+                if (param == null) continue;
+                if (param.Description.Contains("scene_*"))
+                    offenders.Add(type.Name + "." + field.Name);
+            }
+
+        CollectionAssert.IsEmpty(offenders,
+            "нет инструмента с именем scene_* — есть get_scene_tree. Описание, отсылающее "
+            + "агента за level_id/именами к несуществующей группе инструментов, вводит его в "
+            + "заблуждение вместо того, чтобы помочь:\n" + string.Join("\n", offenders));
+    }
+
     [Test]
     public void NestedOpFields_CarryNoRename_BecauseTheSchemaCannotApplyOne()
     {

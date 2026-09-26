@@ -65,6 +65,7 @@ namespace KitchenDesigner.Core.MCP
             var affected = new List<KitchenElement>();
             var created = new List<string>();
             int updated = 0;
+            string levelId = string.IsNullOrEmpty(p.level_id) ? LevelRegistry.CurrentId : p.level_id;
             for (int i = 0; i < prepared.Count; i++)
             {
                 var x = prepared[i];
@@ -73,6 +74,7 @@ namespace KitchenDesigner.Core.MCP
                     var go = ElementFactory.CreateWall(x.dims, x.item.name, x.pos);
                     go.transform.rotation = x.rot;
                     var el = go.GetComponent<KitchenElement>();
+                    el.LevelId = levelId;
                     var wall = go.GetComponent<Wall>(); wall.LoadBearing = x.item.kind.ToLowerInvariant() == "bearing"; wall.SetEndShape(shapes[i]);
                     MaterialManager.ApplyById(el, x.material);
                     commands.Add(new CreateCommand(go)); affected.Add(el); created.Add(el.PartName);
@@ -183,6 +185,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 var go = ElementFactory.CreateFloor(dims, p.name, pos);
                 var floor = go.GetComponent<FloorElement>(); floor.SetPolygonLocalMm(local);
+                floor.LevelId = string.IsNullOrEmpty(p.level_id) ? LevelRegistry.CurrentId : p.level_id;
                 command = new CreateCommand(go); created.Add(floor.PartName); affected.Add(floor);
             }
             else
@@ -247,6 +250,7 @@ namespace KitchenDesigner.Core.MCP
                     ? ElementFactory.CreateWindow(dims, p.name, pos, GlassTint.Clear, 50)
                     : ElementFactory.CreateDoor(dims, p.name, pos, DoorSashType.Glass);
                 var opening = go.GetComponent<KitchenElement>();
+                opening.LevelId = string.IsNullOrEmpty(p.level_id) ? LevelRegistry.CurrentId : p.level_id;
                 if (opening is WindowElement window) window.AttachToWall(wall);
                 else if (opening is DoorElement door) door.AttachToWall(wall);
                 command = new CreateCommand(go); created.Add(opening.PartName); affected.Add(opening);
@@ -314,7 +318,8 @@ namespace KitchenDesigner.Core.MCP
                     }
                     failedStep = "create walls";
                     failed = HandleCreateWalls(InternalRequest(req.id, new ParamsCreateWalls
-                    { origin_x_mm = compiled.originX, origin_z_mm = compiled.originZ, segments = segments.ToArray() }));
+                    { origin_x_mm = compiled.originX, origin_z_mm = compiled.originZ, segments = segments.ToArray(),
+                        level_id = declaration!.level_id }));
                     if (failed.type == "error") throw new InvalidOperationException();
                 }
                 foreach (var f in compiled.floors)
@@ -325,7 +330,8 @@ namespace KitchenDesigner.Core.MCP
                     failedStep = "create floor " + f.id;
                     failed = HandleCreateFloorV2(InternalRequest(req.id, new ParamsCreateFloorV2
                     { name = f.id, origin_x_mm = compiled.originX, origin_z_mm = compiled.originZ,
-                        top_y_mm = f.topY, thickness_mm = f.thickness, poly = poly.ToArray() }));
+                        top_y_mm = f.topY, thickness_mm = f.thickness, poly = poly.ToArray(),
+                        level_id = declaration!.level_id }));
                     if (failed.type == "error") throw new InvalidOperationException();
                 }
                 foreach (var o in compiled.openings)
@@ -333,7 +339,8 @@ namespace KitchenDesigner.Core.MCP
                     failedStep = "add opening " + o.id;
                     failed = HandleAddOpening(InternalRequest(req.id, new ParamsAddOpening
                     { name = o.id, wall = o.wall, kind = o.kind, offset_mm = o.offset_mm,
-                        width = o.width_mm, height = o.height_mm, sill_mm = o.sill_mm }));
+                        width = o.width_mm, height = o.height_mm, sill_mm = o.sill_mm,
+                        level_id = declaration!.level_id }));
                     if (failed.type == "error") throw new InvalidOperationException();
                 }
 

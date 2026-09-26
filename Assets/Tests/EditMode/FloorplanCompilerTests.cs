@@ -22,6 +22,7 @@ public class FloorplanCompilerTests
             if (e != null) Object.DestroyImmediate(e.gameObject);
         PartRegistry.Clear(); CommandStack.Clear(); ProjectInstructions.Reset();
         ProjectRooms.Reset(); ProjectFloorplans.Reset();
+        LevelRegistry.Reset();
     }
 
     private static ParamsFloorplanDeclaration TwoRooms() => new ParamsFloorplanDeclaration
@@ -171,6 +172,36 @@ public class FloorplanCompilerTests
         Assert.AreEqual(250, Thickness("Cross"), "no override -> bearing instruction");
         Assert.AreEqual(150, Thickness("Facade"), "override wins over the bearing instruction");
         Assert.AreEqual(125, Thickness("Light"), "override stands in for a missing instruction");
+    }
+
+    /// <summary>H2 (обзор ui-mcp): apply_floorplan звало create_walls/create_floor/
+    /// add_opening без level_id — созданные стены/пол/дверь всегда получали LevelId
+    /// "" и на просмотре второго этажа резолвились на первый (LevelResolution.
+    /// ResolveElementLevel -> effectiveLevels[0]), становясь некликабельными на
+    /// своём же этаже.</summary>
+    [Test]
+    public void ApplyFloorplan_TagsCreatedElementsWithTheDeclarationLevel()
+    {
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 3000),
+        });
+        LevelRegistry.CurrentId = "1";
+
+        ProjectInstructions.Text = "partition_wall_thickness_mm: 100\nfloor_thickness_mm: 120";
+        var d = TwoRooms();
+        d.level_id = "2";
+        var response = new McpCommandHandler().Handle(new McpRequest
+        { id = "a", method = "apply_floorplan", Params = JObject.Parse(JsonConvert.SerializeObject(d)) });
+
+        Assert.AreEqual("result", response.type, JsonConvert.SerializeObject(response.data));
+        var wall = PartRegistry.GetAll().Find(e => e.PartName == "wall_B_E")!;
+        Assert.AreEqual("2", wall.LevelId, "стена обязана попасть на этаж, указанный в декларации");
+        var floor = PartRegistry.GetAll().Find(e => e.PartName == "Kitchen_floor")!;
+        Assert.AreEqual("2", floor.LevelId, "пол — туда же");
+        var door = PartRegistry.GetAll().Find(e => e.PartName == "Door1")!;
+        Assert.AreEqual("2", door.LevelId, "и дверь, встроенная в ту же стену");
     }
 
     [Test]

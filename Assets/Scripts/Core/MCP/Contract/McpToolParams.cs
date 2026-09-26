@@ -123,8 +123,8 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Target Y of the MINIMUM world corner in MM — the bottom of the element. Omit to keep.")] public float? anchor_y_mm;
         [McpParam("Target Z of the MINIMUM world corner in MM — the same number get returns in anchor[1]. Omit to keep.")] public float? anchor_z_mm;
 
-        [McpParam("Move the element to a different level (storey) by id — see level_id in the scene_* tools' "
-            + "output. anchor_y_mm stays an ABSOLUTE world height either way. Omit to keep.")]
+        [McpParam("Move the element to a different level (storey) by id — see levels[].id in "
+            + "get_scene_tree's output. anchor_y_mm stays an ABSOLUTE world height either way. Omit to keep.")]
         public string? level_id;
         [McpParam("New width (X) in MM. Omit to keep. Rejected for drawers (their size is parametric).", Min = 1)] public int? width;
         [McpIgnore] public int? dimX;
@@ -238,7 +238,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public int? roof_rafter_step_mm;
 
         [McpParam("Insulation/vent-gap/cladding layer only: the name of the wall it sits flush "
-            + "against — see level_id-style wall_name in the scene_* tools' output. The layer takes "
+            + "against — an exact wall name, as listed by get_scene_tree. The layer takes "
             + "the wall's length and height and re-cuts the same window/door openings; only its own "
             + "thickness is set separately (width/height are rejected for this type). Omit to keep "
             + "the current host.")]
@@ -589,9 +589,9 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Y of the MINIMUM world corner in MM — the bottom of the element.")] public float anchor_y_mm;
         [McpParam("Z of the MINIMUM world corner in MM — the same number get returns in anchor[1].")] public float anchor_z_mm;
 
-        [McpParam("Level (storey) id to place the element on — see level_id in the scene_* tools' output. "
-            + "Omit to use the currently viewed level. anchor_y_mm stays an ABSOLUTE world height either way; "
-            + "this only tags which floor the element belongs to.")]
+        [McpParam("Level (storey) id to place the element on — see levels[].id in get_scene_tree's "
+            + "output. Omit to use the currently viewed level. anchor_y_mm stays an ABSOLUTE world height "
+            + "either way; this only tags which floor the element belongs to.")]
         public string? level_id;
 
         [McpParam("Size along X in MM. Defaults: board 800, assembled facade 450, radial shelf 600, table 2000, window 900, door 900.", Min = 1)]
@@ -659,6 +659,11 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Floor/base Y in MM. Walls extend upward from it.")] public int base_y_mm;
         [McpParam("Wall segments. Existing walls with the same names are updated (idempotent).",
             Required = true, Min = 1)] public WallSegmentMm[] segments = Array.Empty<WallSegmentMm>();
+        [McpParam("Level (storey) id newly created walls are tagged with — see levels[].id in "
+            + "get_scene_tree's output. Omit to use the currently viewed level. base_y_mm/height stay "
+            + "ABSOLUTE world heights either way; this only tags which floor a wall belongs to. "
+            + "Ignored for walls that already exist (updated in place, level unchanged).")]
+        public string? level_id;
     }
 
     [Serializable]
@@ -672,6 +677,10 @@ namespace KitchenDesigner.Core.MCP.Contract
         public int? thickness_mm;
         [McpParam("Simple polygon vertices in MM from origin (clockwise or counter-clockwise).",
             Required = true, Min = 3)] public PlanPointMm[] poly = Array.Empty<PlanPointMm>();
+        [McpParam("Level (storey) id a newly created floor is tagged with — see levels[].id in "
+            + "get_scene_tree's output. Omit to use the currently viewed level. top_y_mm stays an "
+            + "ABSOLUTE world height either way. Ignored when updating an existing floor.")]
+        public string? level_id;
     }
 
     [Serializable]
@@ -687,6 +696,10 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Opening height in MM.", Required = true, Min = 1)] public int height;
         [McpParam("Height from wall base to opening bottom in MM. Must be 0 for a door: a door opening starts at the floor.", Min = 0)]
         public int sill_mm;
+        [McpParam("Level (storey) id a newly created opening is tagged with — see levels[].id in "
+            + "get_scene_tree's output. Omit to use the currently viewed level. Ignored when updating "
+            + "an existing opening.")]
+        public string? level_id;
     }
 
     [Serializable]
@@ -1035,6 +1048,10 @@ namespace KitchenDesigner.Core.MCP.Contract
         [McpParam("Openings on explicit or room-generated walls.")] public FloorplanOpening[] openings = Array.Empty<FloorplanOpening>();
         [McpParam("Room wrappers; each creates a floor and reuses walls by undirected point-pair.")]
         public FloorplanRoom[] rooms = Array.Empty<FloorplanRoom>();
+        [McpParam("Level (storey) id every wall/floor/opening this declaration CREATES is tagged "
+            + "with — see levels[].id in get_scene_tree's output. Omit to use the currently viewed "
+            + "level. All Y/height values stay ABSOLUTE world heights either way.")]
+        public string? level_id;
     }
 
     [Serializable]
