@@ -21,33 +21,48 @@ using KitchenDesigner.Tests;
 /// </summary>
 public class HierarchyPanelDiagramTests
 {
-    private GameObject? _bootstrap;
-    private GameObject? _mainCamera;
-    private Canvas? _uiCanvas;
+    private static GameObject? _bootstrap;
+    private static GameObject? _mainCamera;
+    private static Canvas? _uiCanvas;
+
+    [OneTimeTearDown]
+    public void OneTimeTearDownOnce()
+    {
+        if (_bootstrap != null) Object.Destroy(_bootstrap);
+        if (_mainCamera != null) Object.Destroy(_mainCamera);
+        _bootstrap = null;
+        _mainCamera = null;
+        _uiCanvas = null;
+    }
 
     [UnitySetUp]
     public IEnumerator SetUp()
     {
         PlayModeTestConfig.ConfigureForTests();
 
-        _mainCamera = new GameObject("Main Camera");
-        _mainCamera.tag = "MainCamera";
-        _mainCamera.AddComponent<Camera>();
-        _mainCamera.transform.position = new Vector3(0f, 3f, -5f);
-        _mainCamera.transform.LookAt(Vector3.zero);
+        if (_bootstrap == null)
+        {
+            _mainCamera = new GameObject("Main Camera");
+            _mainCamera.tag = "MainCamera";
+            _mainCamera.AddComponent<Camera>();
+            _mainCamera.transform.position = new Vector3(0f, 3f, -5f);
+            _mainCamera.transform.LookAt(Vector3.zero);
 
-        SaveLoadManager.LastPath = "";
-        var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
-        if (File.Exists(autoPath)) File.Delete(autoPath);
+            SaveLoadManager.LastPath = "";
+            var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
+            if (File.Exists(autoPath)) File.Delete(autoPath);
 
-        _bootstrap = new GameObject("Bootstrap");
-        _bootstrap.AddComponent<Bootstrap>();
+            _bootstrap = new GameObject("Bootstrap");
+            _bootstrap.AddComponent<Bootstrap>();
+
+            yield return null;
+            yield return null;
+
+            _uiCanvas = UIManager.Instance!.Canvas;
+            Assert.IsNotNull(_uiCanvas, "Canvas should be created by Bootstrap");
+        }
 
         yield return null;
-        yield return null;
-
-        _uiCanvas = UIManager.Instance!.Canvas;
-        Assert.IsNotNull(_uiCanvas, "Canvas should be created by Bootstrap");
     }
 
     [UnityTearDown]
@@ -56,14 +71,31 @@ public class HierarchyPanelDiagramTests
         LevelRegistry.Reset();
         GroupManager.Clear();
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
-            if (e != null) Object.Destroy(e.gameObject);
-        foreach (var c in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
-            if (c != null) Object.Destroy(c.gameObject);
-        foreach (var es in Object.FindObjectsByType<EventSystem>(FindObjectsSortMode.None))
-            if (es != null) Object.Destroy(es.gameObject);
-        if (_bootstrap != null) Object.Destroy(_bootstrap);
-        if (_mainCamera != null) Object.Destroy(_mainCamera);
+            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
         yield return null;
+
+        yield return WaitForIssueBadgeToCatchUpWithScene();
+    }
+
+    private static IEnumerator WaitForIssueBadgeToCatchUpWithScene()
+    {
+        // ВАЖНО: сравнивать с ЖИВОЙ SceneRevision.Version на каждом кадре, а не со
+        // снимком, снятым один раз до цикла. Снимок здесь регулярно опаздывал на
+        // один бамп: Object.Destroy() в этом TearDown откладывает Unregister, и тот
+        // приходит в LateUpdate уже ПОСЛЕ того, как корутина резюмируется и успевает
+        // прочитать Version — targetRevision оказывался на 1 меньше того значения,
+        // которого значок действительно достигал. Диагностика (SceneRevision.BumpsBySource)
+        // это и показала: badgeRevision всегда СОВПАДАЛ с currentRevision, только
+        // targetRevision отставал — значок ни разу не «зависал», ждали не то число.
+        float deadline = Time.realtimeSinceStartup + 5f;
+        while (UIManager.Instance!.IssueBadgeRevision != SceneRevision.Version)
+        {
+            Assert.Less(Time.realtimeSinceStartup, deadline,
+                "значок «Ошибки» не догнал ревизию сцены за 5 секунд реального времени "
+                + "между тестами: либо SceneSettleThrottle сломан, либо UIManager.Update "
+                + "перестал вызываться в этом прогоне");
+            yield return null;
+        }
     }
 
     /// <summary>Наполнить сцену: модуль из двух досок, ящик с прикреплённым
