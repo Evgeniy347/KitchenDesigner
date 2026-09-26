@@ -19,7 +19,7 @@ namespace KitchenDesigner.Core
         }
 
         public string SavesDirectory =>
-            Path.Combine(Application.persistentDataPath, "saves");
+            SavesDirectoryOverride.Current ?? Path.Combine(Application.persistentDataPath, "saves");
 
         public string LastPath
         {
