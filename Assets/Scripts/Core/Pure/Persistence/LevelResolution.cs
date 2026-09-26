@@ -23,5 +23,13 @@ namespace KitchenDesigner.Core
             }
             return effectiveLevels[0];
         }
+
+        public static Level TopLevel(Level[] effectiveLevels)
+        {
+            var top = effectiveLevels[0];
+            for (int i = 1; i < effectiveLevels.Length; i++)
+                if (effectiveLevels[i].floorElevationMm > top.floorElevationMm) top = effectiveLevels[i];
+            return top;
+        }
     }
 }

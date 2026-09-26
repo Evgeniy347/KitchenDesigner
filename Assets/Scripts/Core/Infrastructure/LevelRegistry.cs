@@ -25,7 +25,7 @@ namespace KitchenDesigner.Core
         public static Level[] Snapshot()
         {
             if (_items.Count == 0)
-                return new[] { new Level(LevelResolution.DefaultLevelId, LevelResolution.DefaultLevelName, 0, 0) };
+                return LevelResolution.EffectiveLevels(null, KitchenSettings.Instance.ConstructionFloorHeightMm);
             var arr = new Level[_items.Count];
             for (int i = 0; i < arr.Length; i++) arr[i] = _items[i];
             return arr;
