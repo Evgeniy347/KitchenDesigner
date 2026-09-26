@@ -115,7 +115,7 @@ namespace KitchenDesigner.Core
                 return LoadFromPath(LastPath);
 
             if (File.Exists(PathForName(AutoSaveManager.AutoSaveName)))
-                return LoadProject(AutoSaveManager.AutoSaveName);
+                return LoadFromPath(PathForName(AutoSaveManager.AutoSaveName));
 
             return false;
         }

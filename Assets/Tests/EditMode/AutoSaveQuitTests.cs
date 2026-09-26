@@ -99,6 +99,44 @@ public class AutoSaveQuitTests
             + "даже если список был пуст на момент автосохранения");
     }
 
+    // Найдено при работе над регистрацией недавних проектов: LoadLastSession без LastPath
+    // грузила autosave.json через LoadProject, который LastPath не трогает вовсе — значит
+    // восстановленный проект не попадал ни в «Загрузить», ни в цель следующего «Сохранить»
+    // (оно ушло бы в quicksave.json, разветвив работу пользователя на два файла молча).
+    [Test]
+    public void LoadLastSession_RecoveringFromAutosave_AdoptsItAsTheCurrentProject()
+    {
+        KitchenSettings.Instance.AutoSave = true;
+        SaveLoadManager.LastPath = "";
+        Make("RecoveredBoard", new Vector3Int(800, 400, 18), new Vector3(0.2f, 0.1f, 0.3f));
+        Assert.IsTrue(AutoSaveManager.SaveOnQuit(), "предпосылка: autosave.json записан");
+
+        foreach (var go in _spawned)
+        {
+            if (go == null) continue;
+            PartRegistry.Unregister(go.GetComponent<KitchenElement>());
+            Object.DestroyImmediate(go);
+        }
+        _spawned.Clear();
+        SaveLoadManager.LastPath = "";
+        RecentProjectsTestBackup.Restore(new string[0]);
+
+        bool loaded = SaveLoadManager.LoadLastSession();
+
+        Assert.IsTrue(loaded, "запуск без LastPath, но с autosave.json на диске обязан восстановиться");
+        var restored = Object.FindObjectsByType<KitchenElement>();
+        Assert.AreEqual(1, restored.Length);
+        Assert.AreEqual("RecoveredBoard", restored[0].PartName);
+        Assert.AreEqual(_autoSavePath, SaveLoadManager.LastPath,
+            "восстановленный из autosave проект обязан стать ТЕКУЩИМ, иначе следующее "
+            + "«Сохранить» уйдёт в другой файл (quicksave.json) и молча разветвит работу");
+        CollectionAssert.Contains(RecentProjects.Paths(), _autoSavePath,
+            "восстановленный проект обязан появиться в «Загрузить» так же, как любое другое открытие");
+
+        foreach (var e in restored)
+            if (e != null) Object.DestroyImmediate(e.gameObject);
+    }
+
     [Test]
     public void SaveOnQuit_Disabled_DoesNotWrite()
     {
