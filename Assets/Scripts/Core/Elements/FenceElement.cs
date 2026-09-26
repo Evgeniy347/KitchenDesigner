@@ -36,24 +36,36 @@ namespace KitchenDesigner.Core
         public int PostSectionMm
         {
             get => _postSectionMm;
-            set => _postSectionMm = Mathf.Clamp(value,
-                FenceDefaults.MinPostSectionMm, FenceDefaults.MaxPostSectionMm);
+            set
+            {
+                _postSectionMm = Mathf.Clamp(value,
+                    FenceDefaults.MinPostSectionMm, FenceDefaults.MaxPostSectionMm);
+                ApplyDimensions();
+            }
         }
 
         [Undoable]
         public int PostStepMm
         {
             get => _postStepMm;
-            set => _postStepMm = Mathf.Clamp(value,
-                FenceDefaults.MinPostStepMm, FenceDefaults.MaxPostStepMm);
+            set
+            {
+                _postStepMm = Mathf.Clamp(value,
+                    FenceDefaults.MinPostStepMm, FenceDefaults.MaxPostStepMm);
+                ApplyDimensions();
+            }
         }
 
         [Undoable]
         public int PitDepthMm
         {
             get => _pitDepthMm;
-            set => _pitDepthMm = Mathf.Clamp(value,
-                FenceDefaults.MinPitDepthMm, FenceDefaults.MaxPitDepthMm);
+            set
+            {
+                _pitDepthMm = Mathf.Clamp(value,
+                    FenceDefaults.MinPitDepthMm, FenceDefaults.MaxPitDepthMm);
+                ApplyDimensions();
+            }
         }
 
         [Undoable]
