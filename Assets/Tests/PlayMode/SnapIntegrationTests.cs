@@ -8,33 +8,57 @@ using KitchenDesigner.Core;
 /// <summary>PlayMode-тесты снэппинга: симуляция перетаскивания, отмены, подсветки.</summary>
 public class SnapIntegrationTests
 {
-    private GameObject? _bootGo;
-    private GameObject? _camera;
+    // Тот же приём, что в IsoScreenshotTests: Bootstrap поднимается ОДИН раз
+    // на класс (статика — NUnit создаёт новый экземпляр на каждый тест).
+    // Несколько тестов здесь мутируют KitchenSettings (BlockOnViolation,
+    // GridStep, GridEnabled), и раньше это чинил пересоздаваемый demo-проект;
+    // общий Bootstrap снимает и восстанавливает ВЕСЬ KitchenSettingsData —
+    // шире, чем только NormalView, потому что этот набор трогает не View.
+    private static GameObject? _bootGo;
+    private static GameObject? _camera;
+    private static KitchenSettingsData? _defaultSettings;
+
+    [OneTimeTearDown]
+    public void OneTimeTearDownOnce()
+    {
+        if (_bootGo != null) Object.Destroy(_bootGo);
+        if (_camera != null) Object.Destroy(_camera);
+        _bootGo = null;
+        _camera = null;
+        _defaultSettings = null;
+    }
 
     [UnitySetUp]
     public IEnumerator SetUp()
     {
         PlayModeTestConfig.ConfigureForTests();
 
-        _camera = new GameObject("MainCamera");
-        _camera.tag = "MainCamera";
-        _camera.AddComponent<Camera>();
-        _camera.transform.position = new Vector3(2f, 3f, -5f);
-        _camera.transform.LookAt(Vector3.zero);
+        if (_bootGo == null)
+        {
+            _camera = new GameObject("MainCamera");
+            _camera.tag = "MainCamera";
+            _camera.AddComponent<Camera>();
+            _camera.transform.position = new Vector3(2f, 3f, -5f);
+            _camera.transform.LookAt(Vector3.zero);
 
-        _bootGo = new GameObject("Bootstrap");
-        _bootGo.AddComponent<Bootstrap>();
-        yield return null;
+            _bootGo = new GameObject("Bootstrap");
+            _bootGo.AddComponent<Bootstrap>();
+            yield return null;
+            yield return null;
+
+            _defaultSettings = KitchenSettings.Instance.ToData();
+        }
+
+        KitchenSettings.Instance.ApplyFrom(_defaultSettings);
         yield return null;
     }
 
     [UnityTearDown]
     public IEnumerator TearDown()
     {
+        // BasePlate живёт на общем Bootstrap и не пересоздаётся каждый тест.
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null) Object.Destroy(e.gameObject);
-        if (_bootGo != null) Object.Destroy(_bootGo);
-        if (_camera != null) Object.Destroy(_camera);
+            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
         yield return null;
     }
 
