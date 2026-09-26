@@ -22,6 +22,8 @@ namespace KitchenDesigner.Core
 
         public override Vector2Int DecorSurfaceMM => new Vector2Int(DimensionsMM.x, DimensionsMM.y);
 
+        protected override Vector3 EffectiveScale => FurnitureLayout.PhysicalScale(DimensionsMM);
+
         public const int DEFAULT_LENGTH_MM = 6000;
         public const int DEFAULT_HEIGHT_MM = 2000;
 
@@ -80,7 +82,8 @@ namespace KitchenDesigner.Core
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements) =>
             FenceSpecItems.Of(DimensionsMM.x, DimensionsMM.y, _postStepMm, _postSectionMm,
-                _pitDepthMm, FenceDefaults.SheetWorkingWidthMm, FenceSheetMarkTitles.Of(_sheetMark));
+                _pitDepthMm, FenceDefaults.SheetWorkingWidthMmOf(_sheetMark),
+                FenceSheetMarkTitles.Of(_sheetMark));
 
         public override void ApplyDimensions()
         {

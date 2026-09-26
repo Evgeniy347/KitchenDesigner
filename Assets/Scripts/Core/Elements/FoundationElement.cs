@@ -20,6 +20,13 @@ namespace KitchenDesigner.Core
 
         public override bool ParticipatesInGapChecks => false;
 
+        protected override Vector3 EffectiveScale => FurnitureLayout.PhysicalScale(_validationSizeMm);
+
+        protected override Vector3 ValidationPositionAt(Vector3 transformPosition) => _validationCentreWorld;
+
+        private Vector3 _validationCentreWorld;
+        private Vector3Int _validationSizeMm;
+
         public const int DEFAULT_WIDTH_MM = 700;
         public const int DEFAULT_DEPTH_MM = 2300;
 
@@ -96,12 +103,15 @@ namespace KitchenDesigner.Core
             FrostDepth.Read(KitchenSettings.Instance.ConstructionRegion, _soilKind).Value;
 
         private IReadOnlyList<FoundationPolyline> _builtPolylines = System.Array.Empty<FoundationPolyline>();
+        private IReadOnlyList<WallCentreline> _lastBuiltCentrelines = System.Array.Empty<WallCentreline>();
 
         public IReadOnlyList<FoundationPolyline> BuiltPolylines => _builtPolylines;
 
+        internal IReadOnlyList<WallCentreline> LastBuiltCentrelines => _lastBuiltCentrelines;
+
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {
-            var centrelines = FoundationWallSurvey.LoadBearingCentrelines(allElements);
+            var centrelines = FoundationWallSurvey.LoadBearingCentrelinesOnLowestLevel(allElements);
             var quantities = FoundationQuantities.OfLoadBearingWalls(_soilKind, centrelines,
                 DimensionsMM.x, DimensionsMM.y, _sandMm, _gravelMm, _rebarDiameterMm,
                 _rebarStepMm, _coverMm);
@@ -113,8 +123,14 @@ namespace KitchenDesigner.Core
             transform.localScale = Vector3.one;
             if (SuppressVisualRebuild) return;
 
-            var centrelines = FoundationWallSurvey.LoadBearingCentrelines(PartRegistry.GetAll());
+            var centrelines = FoundationWallSurvey.LoadBearingCentrelinesOnLowestLevel(PartRegistry.GetAll());
+            _lastBuiltCentrelines = centrelines;
             _builtPolylines = FoundationLayout.MergeIntoPolylines(centrelines);
+
+            var footprint = FoundationFootprint.Of(_builtPolylines, DimensionsMM.x, DimensionsMM.y);
+            _validationCentreWorld = footprint.CentreWorld;
+            _validationSizeMm = footprint.SizeMm;
+
             var mesh = FoundationStripMesh.Build(centrelines, transform.position,
                 DimensionsMM.x, DimensionsMM.y);
             AdoptOwnedMesh(mesh);

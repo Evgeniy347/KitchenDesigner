@@ -19,6 +19,8 @@ namespace KitchenDesigner.Core
 
         public override bool ParticipatesInGapChecks => false;
 
+        protected override Vector3 EffectiveScale => FurnitureLayout.PhysicalScale(DimensionsMM);
+
         public const int DEFAULT_LENGTH_MM = DuctDefaults.DefaultLengthMm;
 
         [SerializeField] private DuctProfileKind _profileKind = DuctProfileKind.Round;
