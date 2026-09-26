@@ -208,6 +208,7 @@ namespace KitchenDesigner.Core.MCP
             RejectUnparsableGrooves,
             RejectUnparsableTextureOverlays,
             RejectEdgeFields,
+            RejectUnknownLevel,
         };
 
         private static bool IsDrawer(KitchenElement el) => el is DrawerElement;
@@ -332,6 +333,14 @@ namespace KitchenDesigner.Core.MCP
             if (!el.SupportsTextureOverlays) errors.Add("texture_overlays (walls and floors only)");
             else if (!McpSpecCodec.TryParseTextureOverlays(op.texture_overlays, out _, out string overlayError))
                 errors.Add($"texture_overlays: {overlayError}");
+        }
+
+        private static void RejectUnknownLevel(EditTarget target, List<string> errors)
+        {
+            var id = target.op.level_id;
+            if (string.IsNullOrEmpty(id)) return;
+            if (LevelRegistry.IndexOf(id) < 0)
+                errors.Add($"level_id: unknown level '{id}' (see levels[] in get_scene_tree)");
         }
 
         private static void RejectEdgeFields(EditTarget target, List<string> errors)

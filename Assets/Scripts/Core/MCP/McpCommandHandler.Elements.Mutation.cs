@@ -390,6 +390,8 @@ namespace KitchenDesigner.Core.MCP
                     if (!ElementSpawners.ModelBelongsToType(elementType, item.model!))
                     { errors.Add($"Model '{item.model}' does not belong to type '{elementType}' ('{item.name}')"); continue; }
                 }
+                if (!string.IsNullOrEmpty(item.level_id) && LevelRegistry.IndexOf(item.level_id) < 0)
+                { errors.Add($"Unknown level_id '{item.level_id}' for '{item.name}' (see levels[] in get_scene_tree)"); continue; }
 
                 accepted.Add((item, elementType));
             }
