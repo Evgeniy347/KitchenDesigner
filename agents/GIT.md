@@ -48,7 +48,13 @@ move on. The manager knows who owns what.
 ## Temp files
 
 - `tmp-scripts/` — scripts
-- `test-results/` — test output
+- `test-results/` — test output, diffs, dumps, scratch JSON
+
+Nothing else, and **never outside the repository**. 22 `tmp_c_*/tmp_v_*.json` golden diffs were
+once written to the root of drive `F:\` and found by the user, not by an agent. A relative path
+from the wrong working directory is how that happens: build temp paths from the repo root
+(`$PSScriptRoot\..\test-results`, `"$(git rev-parse --show-toplevel)/test-results"`), and delete your
+own temp files when done.
 
 
 ## Новый файл — сначала проверь, занято ли имя
