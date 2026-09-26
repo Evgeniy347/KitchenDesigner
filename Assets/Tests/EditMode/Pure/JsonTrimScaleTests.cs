@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text;
 using NUnit.Framework;
 using KitchenDesigner.Core;
@@ -8,53 +7,71 @@ using KitchenDesigner.Core;
 /// string.Substring + string.Substring on every call — a new copy of the whole project
 /// per removed key, on every element. That is the exact shape `RawElementRecords.Apply`
 /// had before `a3ca35c0` (O(elements) calls each costing O(document length)), just spread
-/// across five sibling classes instead of one. Measured before the fix: chaining
-/// Fence+FloorSlab+Foundation+WallLayer+Roof at 800 synthetic elements took ~700 ms; at 1600
-/// it was ~2.3 s. `JsonText.RewriteArrayItems` now
-/// walks the array ONCE with a StringBuilder and hands each trim only its own element's
-/// substring, so `RemoveMember` there pays for one element, not the document.
+/// across five sibling classes instead of one. `JsonText.RewriteArrayItems` now walks the
+/// array ONCE with a StringBuilder and hands each trim only its own element's substring, so
+/// `RemoveMember` there pays for one element, not the document.
 ///
-/// The threshold below is not tuned to the fix's actual speed (a few ms) — it is set an
-/// order of magnitude above it and comfortably below where the old O(n^2) code lands, so a
-/// slow CI box cannot make this test flaky in either direction: the old code misses it by
-/// ~4x even on a machine several times slower than the one it was measured on, and the new
-/// code clears it by ~10x with plenty of room to spare.</summary>
+/// 2026-09-26: replaced the millisecond budget with a character-count one, following
+/// `EdgeCoverageBroadPhaseEquivalenceTests` (conventions/PERFORMANCE.md: "a scale test
+/// counts operations, not milliseconds") — this test class's own predecessor here went red
+/// under shared-machine load (361ms vs a 300ms budget) on unchanged code the very same
+/// session this fix was written in. `JsonText.TakeCharsProcessedByRemoveMember()` counts the
+/// total length of every string `RemoveMember` was asked to rewrite: the O(n^2) shape this
+/// test exists to catch called it on the FULL document (length L) once per element (N),
+/// total N*L; the fix calls it on each element's own slice, total ~L regardless of N. That
+/// is a machine-independent stand-in for exactly the growth this test guards, not a proxy
+/// for it.</summary>
 public class JsonTrimScaleTests
 {
-    private const int ElementCount = 800;
-    private const int BudgetMs = 300;
-
-    [Test]
-    public void ChainedTrims_OnManyElements_StayLinearAndKeepEveryElement()
+    private static string RunChainedTrims(int elementCount, out string result)
     {
-        string project = BuildProjectWithPlainElements(ElementCount);
-
-        var sw = Stopwatch.StartNew();
-        string result = RoofJsonTrim.RemoveWhenNotRoof(
+        string project = BuildProjectWithPlainElements(elementCount);
+        JsonText.TakeCharsProcessedByRemoveMember();
+        result = RoofJsonTrim.RemoveWhenNotRoof(
             WallLayerJsonTrim.RemoveWhenNotWallLayer(
                 FoundationJsonTrim.RemoveWhenNotFoundation(
                     FloorSlabJsonTrim.RemoveWhenNotFloorSlab(
                         FenceJsonTrim.RemoveWhenNotFence(project)))));
-        sw.Stop();
+        return project;
+    }
+
+    [Test]
+    public void ChainedTrims_OnManyElements_StayLinearAndKeepEveryElement()
+    {
+        const int elementCount = 800;
+        RunChainedTrims(elementCount, out string result);
 
         var array = JsonText.MemberValue(result, JsonText.RootObject(result), "elements");
         var items = JsonText.ArrayItems(result, array);
-        Assert.AreEqual(ElementCount, items.Count,
+        Assert.AreEqual(elementCount, items.Count,
             "trim must not drop or merge elements while rewriting the array");
 
         var first = items[0].Text(result);
         var last = items[items.Count - 1].Text(result);
         Assert.AreEqual("\"E0\"", MemberOf(first, "name"));
-        Assert.AreEqual($"\"E{ElementCount - 1}\"", MemberOf(last, "name"));
+        Assert.AreEqual($"\"E{elementCount - 1}\"", MemberOf(last, "name"));
         Assert.IsFalse(first.Contains("isFence"),
             "a plain element's family flags are still removed");
         Assert.IsFalse(first.Contains("wallLayerHostWallName"));
         Assert.IsFalse(first.Contains("isRoof"));
+    }
 
-        Assert.Less(sw.Elapsed.TotalMilliseconds, BudgetMs,
-            $"{ElementCount} elements through five chained trims took {sw.Elapsed.TotalMilliseconds:F0} ms; "
-            + "this class of defect made it grow with the SQUARE of the element count "
-            + "(RawElementRecords.Apply before a3ca35c0), not with the count itself");
+    [Test]
+    public void ChainedTrims_CharsProcessed_GrowsLinearly_NotQuadratically_AsElementsQuadruple()
+    {
+        RunChainedTrims(200, out _);
+        long small = JsonText.TakeCharsProcessedByRemoveMember();
+
+        RunChainedTrims(800, out _);
+        long large = JsonText.TakeCharsProcessedByRemoveMember();
+
+        Assert.Greater(small, 0, "200 elements through five chained trims must call RemoveMember");
+        Assert.Less(large, small * 8,
+            $"element count quadrupled (200 -> 800), but RemoveMember's total characters "
+            + $"processed grew from {small} to {large}. RewriteArrayItems hands each trim "
+            + "only its own element's slice (O(n) total); growth near 16x means RemoveMember "
+            + "is seeing the WHOLE document again on every element, the exact O(n^2) shape "
+            + "this class exists to catch");
     }
 
     private static string MemberOf(string json, string key)

@@ -109,8 +109,18 @@ namespace KitchenDesigner.Core
             return sb.ToString();
         }
 
+        [ThreadStatic] private static long _charsProcessedByRemoveMember;
+
+        public static long TakeCharsProcessedByRemoveMember()
+        {
+            long n = _charsProcessedByRemoveMember;
+            _charsProcessedByRemoveMember = 0;
+            return n;
+        }
+
         public static string RemoveMember(string source, JsonSpan objectSpan, string key)
         {
+            _charsProcessedByRemoveMember += source.Length;
             var members = Members(source, objectSpan);
             int index = members.FindIndex(m => m.Key == key);
             if (index < 0) return source;
