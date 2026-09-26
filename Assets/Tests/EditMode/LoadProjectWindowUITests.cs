@@ -52,12 +52,36 @@ public class LoadProjectWindowUITests
         return ui;
     }
 
+    /// <summary>L5/L7: this window used to register with <c>ProjectWindows</c>, so its
+    /// visibility was captured by every save/autosave and restored on the next load - an
+    /// autosave firing while the user had the dialog open popped it back up at the next
+    /// launch. It is a modal open/new-project dialog, not a panel worth remembering across
+    /// sessions, so it deliberately stays OUT of that registry now.</summary>
     [Test]
-    public void Build_RegistersWithProjectWindows()
+    public void Build_DoesNotRegisterWithProjectWindows()
     {
         var ui = Build();
         Assert.AreEqual("loadProject", ui.WindowId);
-        CollectionAssert.Contains(new System.Collections.Generic.List<IProjectWindow>(ProjectWindows.All), ui);
+        CollectionAssert.DoesNotContain(
+            new System.Collections.Generic.List<IProjectWindow>(ProjectWindows.All), ui,
+            "окно «Загрузить» — модальный диалог: его видимость не должна попадать в " +
+            "сохранённое состояние проекта и всплывать заново при следующем запуске");
+    }
+
+    [Test]
+    public void CapturingProjectWindowState_WhileTheDialogIsOpen_DoesNotReopenItOnTheNextApply()
+    {
+        var ui = Build();
+        ui.SetVisible(true);
+
+        var captured = ProjectWindows.Capture();
+        ui.SetVisible(false);
+
+        ProjectWindows.Apply(captured);
+
+        Assert.IsFalse(ui.IsVisible,
+            "сохранение (в т.ч. автосохранение) со случайно открытым окном «Загрузить» не " +
+            "должно заставлять его всплывать при восстановлении состояния окон");
     }
 
     [Test]

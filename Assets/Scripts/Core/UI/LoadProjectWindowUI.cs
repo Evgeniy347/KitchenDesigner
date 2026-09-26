@@ -41,7 +41,6 @@ namespace KitchenDesigner.Core.UI
             _panel.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
             WindowDrag.Attach(_panel, UIStyle.DragStripHeight);
-            ProjectWindows.Register(this);
 
             var title = UIFactory.CreateLabel("LoadTitle", panel.transform, "Загрузить проект",
                 UIStyle.FontWindowTitle, new Vector2(0, -TitleTopPad),
@@ -97,8 +96,6 @@ namespace KitchenDesigner.Core.UI
 
         private void OpenRecent(string path) =>
             _actions.OpenExisting(path, ok => { if (ok) SetVisible(false); });
-
-        private void OnDestroy() => ProjectWindows.Unregister(this);
 
         public void Toggle() => SetVisible(_root != null && !_root.activeSelf);
 
