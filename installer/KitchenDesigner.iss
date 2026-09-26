@@ -111,7 +111,7 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; \
 ; ассоциация регистрируется без прав администратора и снимается тем же деинсталлятором,
 ; ничего не трогая у других пользователей той же машины.
 Root: HKCU; Subkey: "Software\Classes\{#ProjectExt}"; ValueType: string; ValueName: ""; \
-  ValueData: "{#ProjectProgId}"; Flags: uninsdeletevalue
+  ValueData: "{#ProjectProgId}"; Flags: uninsdeletevalue uninsdeletekeyifempty
 Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}"; ValueType: string; ValueName: ""; \
   ValueData: "Проект Kitchen Designer"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}\DefaultIcon"; ValueType: string; ValueName: ""; \
