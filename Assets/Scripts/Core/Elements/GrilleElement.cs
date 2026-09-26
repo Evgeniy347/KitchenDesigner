@@ -4,7 +4,7 @@ using KitchenDesigner.Core.Ventilation;
 
 namespace KitchenDesigner.Core
 {
-    public class GrilleElement : KitchenElement, IQuantifies
+    public class GrilleElement : KitchenElement, IQuantifies, IWallMounted, IKeepsPlacementHeight
     {
         public override string DisplayTypeName => "Решётка вентиляции";
 
@@ -23,6 +23,8 @@ namespace KitchenDesigner.Core
         public const int DEFAULT_HEIGHT_MM = GrilleDefaults.DefaultHeightMm;
 
         [SerializeField] private int _airflowM3PerHour = GrilleDefaults.DefaultAirflowM3PerHour;
+
+        private int _lastPoseVersion;
 
         [Undoable]
         public int WidthMm
@@ -54,5 +56,18 @@ namespace KitchenDesigner.Core
         {
             yield return DuctSpecItems.GrilleLine(WidthMm, HeightMm);
         }
+
+        private void Start() => SnapToWall();
+
+        internal void Update()
+        {
+            if (PoseVersion == _lastPoseVersion) { enabled = false; return; }
+            _lastPoseVersion = PoseVersion;
+            SnapToWall();
+        }
+
+        protected override void OnOwnPoseVersionBumped() => enabled = true;
+
+        public void SnapToWall() => WallSeating.Seat(this, GrilleDefaults.DepthMm);
     }
 }
