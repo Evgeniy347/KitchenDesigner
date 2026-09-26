@@ -14,6 +14,12 @@ namespace KitchenDesigner.Core.Update
 
         public UpdateRetryPolicy RetryPolicy { get; set; } = UpdateRetryPolicy.ForInstallerDownload();
 
+        public float IdleSeconds
+        {
+            get => _idleSeconds;
+            set => _idleSeconds = value;
+        }
+
         public void BeginDownload(string url, string targetPath,
             Action<float> onProgress, Action<int, int> onAttemptStarted,
             Action onComplete, Action<string, bool> onFailure)

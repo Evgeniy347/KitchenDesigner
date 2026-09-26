@@ -2,6 +2,9 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -283,6 +286,64 @@ public class UpdateDownloaderTests
         {
             UnityEngine.Object.DestroyImmediate(go);
             try { File.Delete(src); } catch (IOException) { }
+            try { if (File.Exists(dst)) File.Delete(dst); } catch (IOException) { }
+        }
+    }
+
+    // Отсутствие req.timeout на скачивании — не забытая настройка: DownloadStallWatchdog
+    // уже сторожит именно этот случай (см. DownloadStallWatchdogTests в Pure/, где
+    // проверена его логика в изоляции), но НИ ОДИН тест до этого не проверял, что
+    // UnityWebRequestDownloader реально его использует и вправду не виснет. Порт-трюк
+    // соседних тестов (никто не слушает) для этого не годится — там UnityWebRequest сам
+    // разрывает соединение за секунды, до watchdog дело не доходит. Здесь TcpListener
+    // ПРИНИМАЕТ соединение и молчит: запрос уходит, ответа нет никогда, и только
+    // watchdog решает, когда сдаться. IdleSeconds выставлен тестовым, а не боевым
+    // значением (30 с) по той же причине, что и Impatient() — считается СРАБАТЫВАНИЕ,
+    // а не темп.
+    [UnityTest]
+    public IEnumerator Downloader_ConnectionAcceptedButSilent_FailsViaWatchdog_WithoutHanging()
+    {
+        var dst = TempPath("kd-update-dst-");
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        var acceptTask = listener.AcceptTcpClientAsync();
+        acceptTask.ContinueWith(t => { if (t.IsFaulted) { var _ = t.Exception; } },
+            TaskContinuationOptions.OnlyOnFaulted);
+
+        var go = new GameObject("downloader");
+        try
+        {
+            var downloader = go.AddComponent<UnityWebRequestDownloader>();
+            downloader.RetryPolicy = Impatient();
+            downloader.IdleSeconds = 0.1f;
+
+            bool done = false, failed = false;
+            string reason = null;
+            downloader.BeginDownload($"http://127.0.0.1:{port}/kd-installer.exe", dst,
+                _ => { }, (_, _) => { }, () => done = true, (m, _) => { failed = true; reason = m; });
+
+            float elapsed = 0f;
+            while (!done && !failed && elapsed < TimeoutSeconds)
+            {
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            Assert.IsTrue(failed, "соединение принято, но молчит — обязано провалиться по "
+                + "вотчдогу простоя, а не повиснуть на TimeoutSeconds");
+            Assert.IsFalse(done);
+            Assert.Less(elapsed, 3f, $"вотчдог с IdleSeconds={downloader.IdleSeconds} обязан "
+                + $"сработать быстро: прошло {elapsed} с — либо он не подключён к реальному "
+                + "запросу, либо ждёт не тот параметр");
+            StringAssert.Contains("встала", reason,
+                "причина отказа обязана называть простой, а не сетевую ошибку — иначе "
+                + "непонятно, вотчдог сработал или соединение само разорвалось");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(go);
+            listener.Stop();
             try { if (File.Exists(dst)) File.Delete(dst); } catch (IOException) { }
         }
     }
