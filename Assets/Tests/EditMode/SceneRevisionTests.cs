@@ -109,6 +109,15 @@ public class SceneRevisionTests
     }
 
     [Test]
+    public void BumpsBySource_DeadDiagnostic_IsRemoved()
+    {
+        var member = typeof(SceneRevision).GetProperty("BumpsBySource");
+        Assert.IsNull(member,
+            "SceneRevision.BumpsBySource пишется на каждый Bump, но нигде не читается кроме " +
+            "комментария в HierarchyPanelDiagramTests.cs — мёртвая диагностика (review-perf-tests-tooling.md #10)");
+    }
+
+    [Test]
     public void Tracker_Resize_BumpsPoseVersion()
     {
         var e = Make();

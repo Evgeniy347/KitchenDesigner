@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace KitchenDesigner.Core
@@ -12,8 +11,6 @@ namespace KitchenDesigner.Core
             Version++;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _bumps++;
-            _bumpsBySource.TryGetValue(source ?? "?", out int n);
-            _bumpsBySource[source ?? "?"] = n + 1;
 #endif
         }
 
@@ -29,13 +26,11 @@ namespace KitchenDesigner.Core
             Version = 0;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             _bumps = 0;
-            _bumpsBySource.Clear();
 #endif
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private static int _bumps;
-        private static readonly Dictionary<string, int> _bumpsBySource = new Dictionary<string, int>();
 
         public static int TakeBumps()
         {
@@ -43,8 +38,6 @@ namespace KitchenDesigner.Core
             _bumps = 0;
             return n;
         }
-
-        public static IReadOnlyDictionary<string, int> BumpsBySource => _bumpsBySource;
 #endif
     }
 }
