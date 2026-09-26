@@ -28,6 +28,9 @@ namespace KitchenDesigner.Core
         [SerializeField] private int _overhangMm = RoofDefaults.OverhangMm;
         [SerializeField] private int _rafterStepMm = RoofDefaults.RafterStepMm;
 
+        private static readonly int RoofTypeCount = System.Enum.GetValues(typeof(RoofType)).Length;
+        private static readonly int RoofRidgeAxisCount = System.Enum.GetValues(typeof(RoofRidgeAxis)).Length;
+
         private RoofFrame _builtFrame;
 
         public RoofFrame BuiltFrame => _builtFrame;
@@ -38,7 +41,7 @@ namespace KitchenDesigner.Core
             get => _type;
             set
             {
-                _type = value;
+                _type = (RoofType)Mathf.Clamp((int)value, 0, RoofTypeCount - 1);
                 ApplyDimensions();
             }
         }
@@ -49,7 +52,7 @@ namespace KitchenDesigner.Core
             get => _ridgeAxis;
             set
             {
-                _ridgeAxis = value;
+                _ridgeAxis = (RoofRidgeAxis)Mathf.Clamp((int)value, 0, RoofRidgeAxisCount - 1);
                 ApplyDimensions();
             }
         }
@@ -104,7 +107,10 @@ namespace KitchenDesigner.Core
 
             var centrelines = FoundationWallSurvey.LoadBearingCentrelines(topLevelElements);
             var footprint = RoofContour.BoundingFootprint(centrelines);
-            _builtFrame = RoofPitchPlanes.Build(footprint, _type, _ridgeAxis, _overhangMm);
+            bool hasFootprint = footprint.WidthXMm > 0f || footprint.LengthZMm > 0f;
+            _builtFrame = hasFootprint
+                ? RoofPitchPlanes.Build(footprint, _type, _ridgeAxis, _overhangMm)
+                : default;
 
             float runMm = _builtFrame.Planes != null && _builtFrame.Planes.Count > 0
                 ? _builtFrame.Planes[0].RunMm
@@ -134,10 +140,14 @@ namespace KitchenDesigner.Core
             ElementRoot.UseMeshCollider(gameObject, mesh);
             MaterialManager.RefreshTiling(this);
 
-            RoofPitchPlanes.ExtendedSpanAndSlope(footprint, _ridgeAxis, _overhangMm,
+            RoofPitchPlanes.ExtendedSpanAndSlope(footprint, _type, _ridgeAxis, _overhangMm,
                 out float spanMm, out float slopeMm);
-            Data.DimensionsMM = new Vector3Int(Mathf.Max(1, (int)spanMm),
-                Mathf.Max(1, (int)riseMm), Mathf.Max(1, (int)slopeMm));
+            bool ridgeAlongX = RoofPitchPlanes.RidgeAlongX(footprint,
+                RoofPitchPlanes.EffectiveRidgeAxis(_type, _ridgeAxis));
+            float widthXMm = ridgeAlongX ? spanMm : slopeMm;
+            float lengthZMm = ridgeAlongX ? slopeMm : spanMm;
+            Data.DimensionsMM = new Vector3Int(Mathf.Max(1, (int)widthXMm),
+                Mathf.Max(1, (int)riseMm), Mathf.Max(1, (int)lengthZMm));
         }
     }
 }

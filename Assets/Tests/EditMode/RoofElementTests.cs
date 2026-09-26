@@ -94,6 +94,80 @@ public class RoofElementTests
     }
 
     [Test]
+    public void ApplyDimensions_NoWallsYet_GetSpecItemsIsEmpty()
+    {
+        var go = ElementFactory.CreateRoof("Roof", Vector3.zero);
+        _spawned.Add(go);
+        var roof = go.GetComponent<RoofElement>();
+
+        var items = new List<SpecItem>(roof.GetSpecItems(new List<KitchenElement>()));
+
+        Assert.IsEmpty(items,
+            "без единой стены RoofPitchPlanes.Build раньше всё равно строил каркас 1x1 м "
+            + "из чистого свеса (footprint вырожден в точку) и ведомость показывала "
+            + "покрытие/стропила/карниз/водосток фантомной крыши (review-construction.md #13); "
+            + "пустой footprint обязан оставить и ведомость пустой, как уже пуст меш");
+    }
+
+    [Test]
+    public void ApplyDimensions_FootprintNarrowInX_LongInZ_BoxIsNotTransposed()
+    {
+        SpawnWall(new Vector3Int(3000, 2700, 250), "WallA", new Vector3(1.5f, 1.35f, 0f));
+        SpawnWall(new Vector3Int(250, 2700, 9000), "WallB", new Vector3(3f, 1.35f, 4.5f));
+        SpawnWall(new Vector3Int(3000, 2700, 250), "WallC", new Vector3(1.5f, 1.35f, 9f));
+        SpawnWall(new Vector3Int(250, 2700, 9000), "WallD", new Vector3(0f, 1.35f, 4.5f));
+
+        var go = ElementFactory.CreateRoof("Roof", Vector3.zero);
+        _spawned.Add(go);
+        var roof = go.GetComponent<RoofElement>();
+
+        var vertices = roof.GetVertices();
+        float minX = float.PositiveInfinity, maxX = float.NegativeInfinity;
+        float minZ = float.PositiveInfinity, maxZ = float.NegativeInfinity;
+        foreach (var v in vertices)
+        {
+            if (v.x < minX) minX = v.x;
+            if (v.x > maxX) maxX = v.x;
+            if (v.z < minZ) minZ = v.z;
+            if (v.z > maxZ) maxZ = v.z;
+        }
+
+        Assert.Less(maxX - minX, maxZ - minZ,
+            "footprint узкий по X (3 м) и длинный по Z (9 м) - конёк по Auto встаёт вдоль "
+            + "длинной стороны (Z), а короб обязан остаться X-короткий/Z-длинный; раньше "
+            + "Data.DimensionsMM писался как (span, rise, slope) без учёта того, вдоль какой "
+            + "оси на самом деле лежит конёк, и короб выходил повёрнутым на 90° "
+            + "(review-construction.md #14)");
+    }
+
+    [Test]
+    public void Type_Setter_ClampsAnOutOfRangeValue_InsteadOfCrashingOnLoad()
+    {
+        SpawnClosedBoxOfFourLoadBearingWalls();
+        var go = ElementFactory.CreateRoof("Roof", Vector3.zero);
+        _spawned.Add(go);
+        var roof = go.GetComponent<RoofElement>();
+
+        Assert.DoesNotThrow(() => roof.Type = (RoofType)7,
+            "повреждённый save с roofType:7 обязан осесть на ближайшем валидном значении, "
+            + "как уже клампятся SoilKind/ConcreteGrade/SheetMark, а не уронить "
+            + "SceneRestorer.Restore через RoofPitchPlanes.Build (review-construction.md #16)");
+        Assert.IsTrue(System.Enum.IsDefined(typeof(RoofType), roof.Type));
+    }
+
+    [Test]
+    public void RidgeAxis_Setter_ClampsAnOutOfRangeValue_InsteadOfCrashingOnLoad()
+    {
+        SpawnClosedBoxOfFourLoadBearingWalls();
+        var go = ElementFactory.CreateRoof("Roof", Vector3.zero);
+        _spawned.Add(go);
+        var roof = go.GetComponent<RoofElement>();
+
+        Assert.DoesNotThrow(() => roof.RidgeAxis = (RoofRidgeAxis)9);
+        Assert.IsTrue(System.Enum.IsDefined(typeof(RoofRidgeAxis), roof.RidgeAxis));
+    }
+
+    [Test]
     public void PitchDeg_Setter_RebuildsTheMesh_AndTheRidgeRisesWithTheAngle()
     {
         SpawnClosedBoxOfFourLoadBearingWalls();
