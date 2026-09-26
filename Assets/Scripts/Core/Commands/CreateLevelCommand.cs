@@ -15,8 +15,7 @@ namespace KitchenDesigner.Core
 
         public static CreateLevelCommand AboveTop()
         {
-            var current = new Level[LevelRegistry.Items.Count];
-            for (int i = 0; i < current.Length; i++) current[i] = LevelRegistry.Items[i];
+            var current = LevelRegistry.Snapshot();
             var next = LevelPlacement.NextAbove(current, KitchenSettings.Instance.ConstructionFloorHeightMm);
             return new CreateLevelCommand(next);
         }
