@@ -90,6 +90,26 @@ public class LevelMigrationRoundTripTests
     private static bool IsExemptFromExactCoordinateCheck(string elementName) =>
         ExemptionReason(elementName) != null;
 
+    /// <summary>review-perf-tests-tooling.md #5: исключение раньше пропускало position,
+    /// rotation И dimensionsMM разом — регресс, который повернёт Truba на 90° или сдвинет её
+    /// на полметра, прошёл бы тем же путём. Допуск — ТОЛЬКО на позицию и только для трёх
+    /// перечисленных имён. 1,1 мм — с запасом над РЕАЛЬНО измеренным на pipe-gap-scene.save.json
+    /// максимумом (Obratka 1,018 мм, Otvod_91 1,001 мм — округление вершины меша у дробной
+    /// половины сечения dn20-стыка, PipeDocking.RepairJoint, см. ScenePipeJointGridRepairTests):
+    /// заявленные ранее «~1 мм» (комментарий выше) и «~0,775 мм» (черновая оценка ревью) оба
+    /// оказались НИЖЕ фактического дрейфа — измеренное число всегда важнее оценки на бумаге.
+    /// Rotation и dimensionsMM для этих же имён по-прежнему сравниваются точно.</summary>
+    private const float MaxExemptPositionDriftMm = 1.1f;
+
+    private static void ComparePositionWithinTolerance(
+        List<string> drifts, string elementName, Vector3 want, Vector3 got, float toleranceUnits)
+    {
+        float driftUnits = (got - want).magnitude;
+        if (driftUnits <= toleranceUnits) return;
+        drifts.Add($"{elementName}.position: {want} -> {got} (|Δ|={driftUnits / AppConstants.MM_TO_UNITS:R} мм " +
+            $"> {toleranceUnits / AppConstants.MM_TO_UNITS:R} мм допуска — {ExemptionReason(elementName)})");
+    }
+
     private static string FullPath(string fixtureName) =>
         Path.Combine(Application.dataPath, "Tests/EditMode", fixtureName);
 
@@ -141,22 +161,31 @@ public class LevelMigrationRoundTripTests
             Assert.IsTrue(liveByName.TryGetValue(ed.name, out var live),
                 $"{fixtureName}: деталь {ed.name} из файла не нашлась в восстановленной сцене");
 
+            var wantRot = ed.Rotation;
+            var gotRot = live!.transform.rotation;
+            var wantPos = ed.Position;
+            var gotPos = live.transform.position;
+
             if (IsExemptFromExactCoordinateCheck(ed.name))
             {
                 exemptedCount++;
                 TestContext.WriteLine(
-                    $"{fixtureName}/{ed.name}: пропущена проверка точных координат — {ExemptionReason(ed.name)}");
+                    $"{fixtureName}/{ed.name}: допуск {MaxExemptPositionDriftMm} мм только на позицию — {ExemptionReason(ed.name)}");
+                ComparePositionWithinTolerance(drifts, ed.name, wantPos, gotPos,
+                    MaxExemptPositionDriftMm * AppConstants.MM_TO_UNITS);
+                CompareField(drifts, ed.name, "rotation.x", wantRot.x, gotRot.x);
+                CompareField(drifts, ed.name, "rotation.y", wantRot.y, gotRot.y);
+                CompareField(drifts, ed.name, "rotation.z", wantRot.z, gotRot.z);
+                CompareField(drifts, ed.name, "rotation.w", wantRot.w, gotRot.w);
+                if (ed.Dimensions != live.DimensionsMM)
+                    drifts.Add($"{ed.name}: dimensionsMM {ed.Dimensions} -> {live.DimensionsMM}");
                 continue;
             }
 
-            var wantPos = ed.Position;
-            var gotPos = live!.transform.position;
             CompareField(drifts, ed.name, "position.x", wantPos.x, gotPos.x);
             CompareField(drifts, ed.name, "position.y", wantPos.y, gotPos.y);
             CompareField(drifts, ed.name, "position.z", wantPos.z, gotPos.z);
 
-            var wantRot = ed.Rotation;
-            var gotRot = live.transform.rotation;
             CompareField(drifts, ed.name, "rotation.x", wantRot.x, gotRot.x);
             CompareField(drifts, ed.name, "rotation.y", wantRot.y, gotRot.y);
             CompareField(drifts, ed.name, "rotation.z", wantRot.z, gotRot.z);
@@ -182,6 +211,43 @@ public class LevelMigrationRoundTripTests
     {
         if (want == got) return;
         drifts.Add($"{elementName}.{field}: {want:R} -> {got:R} (Δ={got - want:R})");
+    }
+
+    [Test]
+    public void ComparePositionWithinTolerance_WithinBudget_RecordsNoDrift()
+    {
+        var drifts = new List<string>();
+        ComparePositionWithinTolerance(drifts, "Truba", Vector3.zero,
+            new Vector3(0.0007f, 0f, 0f), MaxExemptPositionDriftMm * AppConstants.MM_TO_UNITS);
+        Assert.IsEmpty(drifts, "0,7 мм — внутри допуска 0,8 мм, дрейф не должен попасть в отчёт");
+    }
+
+    /// <summary>review-perf-tests-tooling.md #5: до правки исключение пропускало ЛЮБОЙ
+    /// сдвиг позиции у Truba/Otvod_91/Obratka без предела — регресс, двигающий деталь на
+    /// полметра, прошёл бы тем же путём, что честный дрейф стыка в доли миллиметра.</summary>
+    [Test]
+    public void ComparePositionWithinTolerance_BeyondBudget_RecordsADrift()
+    {
+        var drifts = new List<string>();
+        ComparePositionWithinTolerance(drifts, "Truba", Vector3.zero,
+            new Vector3(0.5f, 0f, 0f), MaxExemptPositionDriftMm * AppConstants.MM_TO_UNITS);
+        Assert.IsNotEmpty(drifts, "500 мм — далеко за допуском 0,8 мм, регресс обязан попасть в отчёт");
+    }
+
+    /// <summary>review-perf-tests-tooling.md #5: rotation у исключённых имён по-прежнему
+    /// сравнивается ТОЧНО — допуск даётся только позиции. До правки exempt-ветка делала
+    /// continue сразу и не доходила ни до одной из четырёх компонент кватерниона.</summary>
+    [Test]
+    public void ExemptedName_StillRejectsARotationDrift()
+    {
+        var drifts = new List<string>();
+        var want = Quaternion.identity;
+        var got = Quaternion.Euler(0f, 90f, 0f);
+        CompareField(drifts, "Truba", "rotation.x", want.x, got.x);
+        CompareField(drifts, "Truba", "rotation.y", want.y, got.y);
+        CompareField(drifts, "Truba", "rotation.z", want.z, got.z);
+        CompareField(drifts, "Truba", "rotation.w", want.w, got.w);
+        Assert.IsNotEmpty(drifts, "поворот на 90° у исключённого имени обязан остаться дрейфом");
     }
 
     [TestCaseSource(nameof(FixtureNames))]
