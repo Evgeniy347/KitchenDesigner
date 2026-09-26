@@ -105,7 +105,7 @@ namespace KitchenDesigner.Core.UI
 
         private TMP_InputField ReadOnlyField(string label, RowVisibility visibility, string hint)
         {
-            var field = Rows.NumberField(label, visibility, "мм", null, hint);
+            var field = Rows.NumberField(label, visibility, "", null, hint);
             UIRowEnabled.SetControlEnabled(field, false);
             return field;
         }
