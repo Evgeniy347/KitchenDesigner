@@ -27,6 +27,7 @@ namespace KitchenDesigner.Core
             }
 
             RestoreProjectState(data);
+            RebuildRoofsAfterLevelsAndSettingsAreRestored(resolved);
             RepairAutoSeatedJoints(resolved);
             SceneChangeTracker.SettleDerivedLinks();
 
@@ -84,6 +85,13 @@ namespace KitchenDesigner.Core
             ProjectFloorplans.Set(data.floorplans);
             LevelRegistry.Set(LevelResolution.EffectiveLevels(
                 data.levels, KitchenSettings.Instance.ConstructionFloorHeightMm));
+            LevelRegistry.CurrentId = "";
+        }
+
+        private static void RebuildRoofsAfterLevelsAndSettingsAreRestored(List<KitchenElement?> elements)
+        {
+            foreach (var el in elements)
+                if (el is RoofElement roof) roof.ApplyDimensions();
         }
 
         private const int MaxJointRepairRoundsUntilNoPartMoves = 8;
