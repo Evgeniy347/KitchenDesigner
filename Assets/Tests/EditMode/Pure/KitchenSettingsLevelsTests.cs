@@ -45,6 +45,24 @@ public class KitchenSettingsLevelsTests
             "значение ниже диапазона обязано прижаться к первому варианту (Show)");
     }
 
+    /// <summary>L9 (review-ui-mcp): ApplyLevels писал сырое число из данных напрямую в
+    /// поле, минуя клампающий сеттер NeighbourLevels — значение вне диапазона (повреждённый
+    /// файл, файл от будущей версии с большим числом режимов) доходило до выпадающего
+    /// списка настроек мусорным числом вместо того, чтобы прижаться к границе.</summary>
+    [Test]
+    public void ApplyFrom_ClampsAnOutOfRangeNeighbourLevelsMode_InsteadOfStoringItRaw()
+    {
+        var data = KitchenSettings.Instance.ToData();
+        data.neighbourLevelsMode = 99;
+
+        var fresh = new KitchenSettings();
+        fresh.ApplyFrom(data);
+
+        Assert.AreEqual(NeighbourLevelsMode.Hide, fresh.NeighbourLevels,
+            "значение выше диапазона обязано прижаться к последнему варианту через тот же " +
+            "клампающий сеттер, каким пользуется NeighbourLevels напрямую");
+    }
+
     [Test]
     public void NeighbourLevels_SurvivesToDataAndApplyFrom()
     {

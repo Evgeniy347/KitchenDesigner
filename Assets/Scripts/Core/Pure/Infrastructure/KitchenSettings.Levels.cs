@@ -25,7 +25,7 @@ namespace KitchenDesigner.Core
 
         private void ApplyLevels(KitchenSettingsData data)
         {
-            _neighbourLevelsMode = (NeighbourLevelsMode)data.neighbourLevelsMode;
+            NeighbourLevels = (NeighbourLevelsMode)data.neighbourLevelsMode;
         }
     }
 }
