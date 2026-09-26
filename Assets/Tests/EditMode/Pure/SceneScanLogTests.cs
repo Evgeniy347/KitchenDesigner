@@ -18,7 +18,14 @@ using KitchenDesigner.Core;
 /// (у половины файлов имя вида <c>McpCommandHandler.Elements.Query.cs</c> — по
 /// первой точке, а не по последней), повторы одного места схлопываются в «×N»
 /// вместо шестнадцати одинаковых строк, а <c>Take</c> отдаёт кадр и сбрасывает
-/// счётчик, иначе следующий кадр унаследует чужие обходы.</summary>
+/// счётчик, иначе следующий кадр унаследует чужие обходы.
+///
+/// [NonParallelizable]: каждый Note() здесь тоже бьёт process-global SceneScanLog._scans и
+/// кольцо _recent (через NotePosition) — под ParallelScope.Fixtures это ломает точную дельту,
+/// которую проверяют SceneScanCounterTests на другом потоке (SceneScanCounterIsolationTests).
+/// Поля _frame/_timesNoted/_sharesNoted, которые проверяет этот файл, — [ThreadStatic] и сами
+/// по себе гонки не боятся; изоляция здесь ради СОСЕДЕЙ, а не ради своих ассертов.</summary>
+[NonParallelizable]
 public class SceneScanLogTests
 {
     [SetUp]

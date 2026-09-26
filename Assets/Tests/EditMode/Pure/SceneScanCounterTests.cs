@@ -11,7 +11,13 @@ using KitchenDesigner.Core;
 /// разрушительно, через <c>Take</c>, который каждый кадр забирает <c>PerfMonitor</c>.
 /// Вызов MCP живёт не по кадрам, и забрать у чужого прибора его кадр значит сломать
 /// чужой прибор. Поэтому счётчик здесь ОТДЕЛЬНЫЙ и монотонный: он только растёт,
-/// наблюдатель берёт срез между двумя отметками, и никто ни у кого ничего не отнимает.</summary>
+/// наблюдатель берёт срез между двумя отметками, и никто ни у кого ничего не отнимает.
+///
+/// [NonParallelizable]: SceneScanLog._scans/_shares/_recent — process-global, не
+/// [ThreadStatic]; под ParallelScope.Fixtures (geometry/pure-tests) сосед на другом потоке
+/// вклинил бы свой Note() между «before» и проверкой точной дельты
+/// (SceneScanCounterIsolationTests).</summary>
+[NonParallelizable]
 public class SceneScanCounterTests
 {
     private const string Somewhere = "McpCommandHandler.HandleCreateElements";

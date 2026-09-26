@@ -29,7 +29,13 @@ using KitchenDesigner.Tests.Geometry;
 ///
 /// Потолок здесь точный, как у <c>CommentRatchetTests</c>: выше — падение с именем
 /// файла, ниже — тоже падение, с просьбой опустить число. Второе не придирка:
-/// незакрытый храповик отдаёт назад ровно то, что только что вычистили.</summary>
+/// незакрытый храповик отдаёт назад ровно то, что только что вычистили.
+///
+/// [NonParallelizable]: TheTwoCountsStayApart_SoOldNumbersKeepTheirMeaning проверяет точную
+/// дельту на process-global SceneScanCounter.Scans/Shares; под ParallelScope.Fixtures сосед
+/// на другом потоке (SceneScanLogTests, SceneScanCounterTests) вклинил бы свой Note() между
+/// «before» и проверкой (SceneScanCounterIsolationTests).</summary>
+[NonParallelizable]
 public class SceneListAccessIsAccountedTests
 {
     private static readonly (string file, int uses)[] TheUnnamedPath =
