@@ -1,0 +1,30 @@
+{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Button",
+      "text": "lpw_seeded_current.kdproj",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Загрузить проект",
+      "position": [0, -6]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Button",
+      "text": "Новый проект",
+      "position": [12, -62]
+    },
+    {
+      "type": "Button",
+      "text": "Загрузить",
+      "position": [12, -112]
+    }
+  ]
+}

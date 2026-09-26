@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core.UI
             }
             else if (SaveLoadManager.SaveProject(QuickSaveName))
             {
-                SaveLoadManager.LastPath = SaveLoadManager.PathForName(QuickSaveName);
+                SaveLoadManager.AdoptCurrentPath(SaveLoadManager.PathForName(QuickSaveName));
                 ShowSaved(QuickSaveName);
             }
         }
@@ -34,10 +34,7 @@ namespace KitchenDesigner.Core.UI
                 suggested, SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return;
             if (SaveLoadManager.SaveToPath(path))
-            {
-                RecentProjects.Remember(path!);
                 ShowSaved(System.IO.Path.GetFileName(path));
-            }
         }
 
         public void NewProjectDialog()
@@ -46,10 +43,7 @@ namespace KitchenDesigner.Core.UI
                 SuggestedNameForANewFile(), SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return;
             if (SaveLoadManager.CreateEmptyProjectAt(path!))
-            {
-                RecentProjects.Remember(path!);
                 ShowSaved(System.IO.Path.GetFileName(path));
-            }
         }
 
         public void LoadDialog()
@@ -66,12 +60,12 @@ namespace KitchenDesigner.Core.UI
                 () => Open(path));
         }
 
-        private static void Open(string path)
+        private static bool Open(string path)
         {
-            if (!SaveLoadManager.LoadFromPath(path)) return;
-            RecentProjects.Remember(path);
+            if (!SaveLoadManager.LoadFromPath(path)) return false;
             Toast("Загружено: " + System.IO.Path.GetFileName(path));
             PhotoLookMigrationNotice.ShowIfPending();
+            return true;
         }
 
         private static string SuggestedNameForANewFile() =>

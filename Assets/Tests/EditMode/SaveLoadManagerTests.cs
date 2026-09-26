@@ -10,6 +10,10 @@ using KitchenDesigner.Core.Plumbing;
 public class SaveLoadManagerTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
+    private string[]? _recentBackup;
+
+    [SetUp]
+    public void SetUpRecents() => _recentBackup = RecentProjectsTestBackup.Capture();
 
     private KitchenElement CreateElement(string name, Vector3Int dims, Vector3 pos)
     {
@@ -25,6 +29,7 @@ public class SaveLoadManagerTests
     [TearDown]
     public void Teardown()
     {
+        RecentProjectsTestBackup.Restore(_recentBackup!);
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -274,12 +279,18 @@ public class SaveLoadManagerTests
         string prevLast = SaveLoadManager.LastPath;
         SaveLoadManager.LastPath = path;
 
+        RecentProjectsTestBackup.Restore(new string[0]);
+
         bool loaded = SaveLoadManager.LoadLastSession();
 
         Assert.IsTrue(loaded);
         var restored = Object.FindObjectsByType<KitchenElement>();
         Assert.AreEqual(1, restored.Length);
         Assert.AreEqual("Saved", restored[0].PartName);
+        CollectionAssert.Contains(RecentProjects.Paths(), path,
+            "запуск приложения, открывающий последний проект, обязан зарегистрировать его в "
+            + "«Загрузить» так же, как любое другое открытие — иначе список пуст в точности "
+            + "тогда, когда пользователь уже работает в проекте");
 
         SaveLoadManager.LastPath = prevLast;
         File.Delete(path);

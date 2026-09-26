@@ -15,14 +15,20 @@ public class LegacyProjectFileRoundTripTests
 {
     private const string FixtureName = "pillar-beside-plinth.save.json";
     private string? _prevLastPath;
+    private string[]? _recentBackup;
 
     [SetUp]
-    public void Setup() => _prevLastPath = SaveLoadManager.LastPath;
+    public void Setup()
+    {
+        _prevLastPath = SaveLoadManager.LastPath;
+        _recentBackup = RecentProjectsTestBackup.Capture();
+    }
 
     [TearDown]
     public void TearDown()
     {
         SaveLoadManager.LastPath = _prevLastPath!;
+        RecentProjectsTestBackup.Restore(_recentBackup!);
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
             if (e != null) Object.DestroyImmediate(e.gameObject);
     }

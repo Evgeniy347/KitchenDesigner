@@ -10,6 +10,7 @@ public class SaveLoadManagerFileTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private string? _prevLastPath;
+    private string[]? _recentBackup;
     private const string ProjName = "sl_filetests_proj";
 
     private KitchenElement Make(string name, Vector3Int dims, Vector3 pos)
@@ -25,12 +26,17 @@ public class SaveLoadManagerFileTests
     }
 
     [SetUp]
-    public void Setup() => _prevLastPath = SaveLoadManager.LastPath;
+    public void Setup()
+    {
+        _prevLastPath = SaveLoadManager.LastPath;
+        _recentBackup = RecentProjectsTestBackup.Capture();
+    }
 
     [TearDown]
     public void Teardown()
     {
         SaveLoadManager.LastPath = _prevLastPath!;
+        RecentProjectsTestBackup.Restore(_recentBackup!);
 
         foreach (var go in _spawned)
         {
@@ -113,6 +119,8 @@ public class SaveLoadManagerFileTests
         Assert.IsTrue(SaveLoadManager.SaveToPath(path));
         Assert.IsTrue(SaveLoadManager.HasLastPath);
         Assert.AreEqual(path, SaveLoadManager.LastPath);
+        CollectionAssert.Contains(RecentProjects.Paths(), path,
+            "SaveToPath делает файл текущим проектом — он обязан появиться в «Загрузить»");
 
         // SaveToLastPath пишет туда же.
         Assert.IsTrue(SaveLoadManager.SaveToLastPath());
@@ -129,6 +137,23 @@ public class SaveLoadManagerFileTests
         var restored = Object.FindObjectsByType<KitchenElement>();
         Assert.AreEqual(1, restored.Length);
 
+        File.Delete(path);
+    }
+
+    [Test]
+    public void LoadFromPath_OfAPathNeverSavedThisSession_StillAddsItToRecentProjects()
+    {
+        Make("Board", new Vector3Int(800, 400, 18), Vector3.zero);
+        var path = Path.Combine(Application.temporaryCachePath, "sl_loadfrompath_recent.json");
+        Assert.IsTrue(SaveLoadManager.SaveToFile(path, SaveLoadManager.CaptureScene(
+            _spawned.ConvertAll(g => g.GetComponent<KitchenElement>()))));
+        RecentProjectsTestBackup.Restore(new string[0]);
+
+        Assert.IsTrue(SaveLoadManager.LoadFromPath(path));
+
+        CollectionAssert.Contains(RecentProjects.Paths(), path,
+            "«Загрузить» -> выбрать файл -> LoadFromPath — обязан зарегистрировать путь, "
+            + "даже если список был пуст и путь никогда раньше не сохранялся этой сессией");
         File.Delete(path);
     }
 

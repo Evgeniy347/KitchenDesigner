@@ -17,6 +17,13 @@ namespace KitchenDesigner.Core
             set => _files.LastPath = value;
         }
 
+        public void AdoptCurrentPath(string path)
+        {
+            LastPath = path;
+            if (!DemoProjectLoader.IsDemoPath(path))
+                RecentProjects.Remember(path);
+        }
+
         public bool HasLastPath => _files.HasLastPath;
 
         public string LastDirectory => _files.LastDirectory;
@@ -57,7 +64,7 @@ namespace KitchenDesigner.Core
             if (string.IsNullOrEmpty(path)) return false;
             if (DemoMode.Current.IsDemoFile(path)) return false;
             if (!_files.WriteJson(path, json)) return false;
-            LastPath = path;
+            AdoptCurrentPath(path);
             DemoMode.Current.ProjectSavedTo(path);
             return true;
         }
@@ -78,7 +85,7 @@ namespace KitchenDesigner.Core
         public bool LoadFromPath(string path)
         {
             if (!ReplaceSceneWithFile(path)) return false;
-            LastPath = path;
+            AdoptCurrentPath(path);
             DemoMode.Current.ProjectLoadedFrom(path);
             return true;
         }

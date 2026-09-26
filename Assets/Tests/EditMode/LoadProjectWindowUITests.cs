@@ -113,9 +113,27 @@ public class LoadProjectWindowUITests
     }
 
     [Test]
+    public void EmptyRecentList_ButACurrentProjectIsOpen_ShowsItsRow()
+    {
+        RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = new string[0];
+        var path = MakeProjectFile("lpwui_seeded_current.kdproj", BuildInfo.Version);
+        SaveLoadManager.LastPath = path;
+
+        var ui = Build();
+        ui.SetVisible(true);
+
+        var row = _canvasGo!.transform.Find(
+            "LoadProjectWindow/LoadBody/LoadBodyBody/LoadBodyBodyContent/Row");
+        Assert.IsNotNull(row,
+            "список недавних пуст, но пользователь уже работает в проекте — окно обязано "
+            + "показать хотя бы его, а не «Недавних проектов пока нет»");
+    }
+
+    [Test]
     public void EmptyRecentList_ShowsAHint_NotABlankArea()
     {
         RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = new string[0];
+        SaveLoadManager.LastPath = "";
 
         var ui = Build();
         ui.SetVisible(true);

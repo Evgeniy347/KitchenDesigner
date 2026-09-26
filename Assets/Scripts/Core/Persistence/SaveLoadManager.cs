@@ -20,6 +20,7 @@ namespace KitchenDesigner.Core
         private static ISaveLoadManager? _fallback;
 
         public static string LastPath { get => Instance.LastPath; set => Instance.LastPath = value; }
+        public static void AdoptCurrentPath(string path) => Instance.AdoptCurrentPath(path);
         public static bool HasLastPath => Instance.HasLastPath;
         public static string LastDirectory => Instance.LastDirectory;
         public static string SavesDirectory =>

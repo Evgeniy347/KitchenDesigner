@@ -6,6 +6,7 @@ namespace KitchenDesigner.Core
     public interface ISaveLoadManager
     {
         string LastPath { get; set; }
+        void AdoptCurrentPath(string path);
         bool HasLastPath { get; }
         string LastDirectory { get; }
         bool SaveToPath(string path);

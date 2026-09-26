@@ -20,6 +20,9 @@ namespace KitchenDesigner.Core
             }
         }
 
+        internal static bool IsDemoPath(string? path) =>
+            !string.IsNullOrEmpty(path) && DemoMode.SamePath(path!, DemoPath);
+
         internal static bool OpenDemoOrLastSession(ISaveLoadManager saveLoad)
         {
             bool firstRunRecorded = FirstRunMarker.Recorded;

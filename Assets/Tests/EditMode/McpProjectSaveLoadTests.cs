@@ -75,6 +75,37 @@ public class McpProjectSaveLoadTests : McpTestFixture
     }
 
     [Test]
+    public void SaveProject_AddsThePath_ToRecentProjects()
+    {
+        MakeElement("Board1", new Vector3Int(600, 400, 18));
+        string path = TempPath();
+        RecentProjectsTestBackup.Restore(new string[0]);
+
+        var resp = _handler!.Handle(MakeReq("save_project", new { path }));
+
+        Assert.AreEqual("result", resp.type, resp.type == "error" ? ErrorMessage(resp) : "");
+        CollectionAssert.Contains(RecentProjects.Paths(), path,
+            "save_project через MCP делает файл текущим проектом так же, как «Сохранить как» "
+            + "из интерфейса — он обязан появиться в «Загрузить» так же");
+    }
+
+    [Test]
+    public void LoadProject_AddsThePath_ToRecentProjects()
+    {
+        MakeElement("Board1", new Vector3Int(600, 400, 18));
+        string path = TempPath();
+        Assert.AreEqual("result", _handler!.Handle(MakeReq("save_project", new { path })).type);
+        RecentProjectsTestBackup.Restore(new string[0]);
+
+        var resp = _handler.Handle(MakeReq("load_project", new { path }));
+
+        Assert.AreEqual("result", resp.type, resp.type == "error" ? ErrorMessage(resp) : "");
+        CollectionAssert.Contains(RecentProjects.Paths(), path,
+            "load_project через MCP обязан зарегистрировать путь так же, как открытие через "
+            + "интерфейс приложения");
+    }
+
+    [Test]
     public void SaveProject_ThenLoadProject_RestoresDimensionsAndPosition()
     {
         var original = MakeElement("Board1", new Vector3Int(600, 400, 18), new Vector3(1.5f, 0f, 2.25f));

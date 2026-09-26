@@ -24,12 +24,14 @@ public class LoadProjectWindowDiagramTests
     private GameObject? _camGo;
     private GameObject? _eventSystem;
     private string[]? _recentBackup;
+    private string? _prevLastPath;
     private readonly List<string> _tempFiles = new();
 
     [UnitySetUp]
     public IEnumerator SetUp()
     {
         _recentBackup = RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values;
+        _prevLastPath = SaveLoadManager.LastPath;
         yield return null;
     }
 
@@ -42,6 +44,7 @@ public class LoadProjectWindowDiagramTests
 
         if (_recentBackup != null)
             RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = _recentBackup;
+        SaveLoadManager.LastPath = _prevLastPath!;
 
         foreach (var f in _tempFiles)
             if (File.Exists(f)) File.Delete(f);
@@ -159,6 +162,28 @@ public class LoadProjectWindowDiagramTests
         yield return null;
 
         yield return CaptureAndVerify(PanelW, PanelH, "load_project_window_normal.png");
+    }
+
+    // Баг-репорт: пользователь работает в проекте, открывает «Загрузить» — список
+    // недавних пуст. RecentProjects.Paths() сидирует список текущим проектом
+    // (SaveLoadManager.LastPath), когда список пуст, а текущий проект есть — этот
+    // кадр показывает результат: одна строка вместо «Недавних проектов пока нет».
+    [UnityTest]
+    public IEnumerator EmptyRecentList_ButACurrentProjectIsOpen_ShowsSeededRow_SavesPng()
+    {
+        var current = MakeProjectFile("lpw_seeded_current.kdproj", BuildInfo.Version, "2026-03-20T12:00:00Z");
+        RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = new string[0];
+        SaveLoadManager.LastPath = current;
+
+        var ui = BuildWindow(PanelW, PanelH);
+        ui.SetVisible(true);
+        yield return null;
+
+        var row = _canvasGo!.transform.Find(
+            "LoadProjectWindow/LoadBody/LoadBodyBody/LoadBodyBodyContent/Row");
+        Assert.IsNotNull(row, "текущий проект обязан появиться строкой вместо пустой подсказки");
+
+        yield return CaptureAndVerify(PanelW, PanelH, "load_project_window_seeded_current_project.png");
     }
 
     [UnityTest]

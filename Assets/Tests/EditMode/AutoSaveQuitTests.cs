@@ -12,6 +12,7 @@ public class AutoSaveQuitTests
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private bool _prevAutoSave;
     private string? _prevLastPath;
+    private string[]? _recentBackup;
     private string? _autoSavePath;
     private byte[]? _autoSaveBackup;
     private string? _openFilePath;
@@ -33,6 +34,7 @@ public class AutoSaveQuitTests
     {
         _prevAutoSave = KitchenSettings.Instance.AutoSave;
         _prevLastPath = SaveLoadManager.LastPath;
+        _recentBackup = RecentProjectsTestBackup.Capture();
         SaveLoadManager.LastPath = ""; // по умолчанию «файл не открыт»
 
         _autoSavePath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
@@ -49,6 +51,7 @@ public class AutoSaveQuitTests
         if (KitchenSettings.Instance != null)
             KitchenSettings.Instance.AutoSave = _prevAutoSave;
         SaveLoadManager.LastPath = _prevLastPath!;
+        RecentProjectsTestBackup.Restore(_recentBackup!);
 
         foreach (var go in _spawned)
         {
@@ -83,6 +86,7 @@ public class AutoSaveQuitTests
     {
         KitchenSettings.Instance.AutoSave = true;
         SaveLoadManager.LastPath = _openFilePath!;
+        RecentProjectsTestBackup.Restore(new string[0]);
         Make("OpenFileBoard", new Vector3Int(800, 400, 18), new Vector3(1f, 0.2f, 0.3f));
 
         Assert.IsTrue(AutoSaveManager.SaveOnQuit());
@@ -90,6 +94,9 @@ public class AutoSaveQuitTests
         StringAssert.Contains("OpenFileBoard", File.ReadAllText(_openFilePath!));
         Assert.IsFalse(File.Exists(_autoSavePath!), "в отдельный autosave НЕ писали");
         Assert.AreEqual(_openFilePath!, SaveLoadManager.LastPath, "открытый файл остался активным");
+        CollectionAssert.Contains(RecentProjects.Paths(), _openFilePath!,
+            "автосохранение целится в уже открытый проект — он обязан оставаться в «Загрузить», "
+            + "даже если список был пуст на момент автосохранения");
     }
 
     [Test]

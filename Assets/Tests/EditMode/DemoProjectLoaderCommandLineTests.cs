@@ -8,15 +8,21 @@ public class DemoProjectLoaderCommandLineTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private string? _prevLastPath;
+    private string[]? _recentBackup;
     private string _path = "";
 
     [SetUp]
-    public void Setup() => _prevLastPath = SaveLoadManager.LastPath;
+    public void Setup()
+    {
+        _prevLastPath = SaveLoadManager.LastPath;
+        _recentBackup = RecentProjectsTestBackup.Capture();
+    }
 
     [TearDown]
     public void TearDown()
     {
         SaveLoadManager.LastPath = _prevLastPath!;
+        RecentProjectsTestBackup.Restore(_recentBackup!);
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
             if (e != null) Object.DestroyImmediate(e.gameObject);
         _spawned.Clear();
@@ -51,6 +57,42 @@ public class DemoProjectLoaderCommandLineTests
         var restored = Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None);
         Assert.AreEqual(1, restored.Length);
         Assert.AreEqual("CmdLineBoard", restored[0].PartName);
+    }
+
+    [Test]
+    public void TryOpenFromCommandLine_WithAKdprojArgument_AddsItToRecentProjects()
+    {
+        Make("Board", new Vector3Int(600, 400, 18), Vector3.zero);
+        _path = Path.Combine(Application.temporaryCachePath, "cmdline_recent.kdproj");
+        Assert.IsTrue(SaveLoadManager.SaveToPath(_path));
+        RecentProjectsTestBackup.Restore(new string[0]);
+
+        bool opened = DemoProjectLoader.TryOpenFromCommandLine(SaveLoadManager.Instance, new[] { _path });
+
+        Assert.IsTrue(opened);
+        CollectionAssert.Contains(RecentProjects.Paths(), _path,
+            "двойной клик по .kdproj — такой же способ открыть проект, как диалог «Загрузить», "
+            + "и обязан попасть в список недавних так же");
+    }
+
+    [Test]
+    public void IsDemoPath_ForTheComputedDemoPath_ReturnsTrue()
+    {
+        Assert.IsTrue(DemoProjectLoader.IsDemoPath(DemoProjectLoader.DemoPath));
+    }
+
+    [Test]
+    public void IsDemoPath_ForAnUnrelatedPath_ReturnsFalse()
+    {
+        Assert.IsFalse(DemoProjectLoader.IsDemoPath(
+            Path.Combine(Application.temporaryCachePath, "not_demo.kdproj")));
+    }
+
+    [Test]
+    public void IsDemoPath_ForNullOrEmpty_ReturnsFalse()
+    {
+        Assert.IsFalse(DemoProjectLoader.IsDemoPath(null));
+        Assert.IsFalse(DemoProjectLoader.IsDemoPath(""));
     }
 
     [Test]

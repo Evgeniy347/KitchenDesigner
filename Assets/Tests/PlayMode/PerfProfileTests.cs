@@ -35,6 +35,8 @@ public class PerfProfileTests
 
     private GameObject? _bootstrap;
     private GameObject? _mainCamera;
+    private string? _prevLastPath;
+    private string[]? _recentBackup;
 
     [UnitySetUp]
     public IEnumerator SetUp()
@@ -45,6 +47,8 @@ public class PerfProfileTests
         _mainCamera.tag = "MainCamera";
         _mainCamera.AddComponent<Camera>();
 
+        _prevLastPath = SaveLoadManager.LastPath;
+        _recentBackup = RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values;
         SaveLoadManager.LastPath = "";
         var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
         if (File.Exists(autoPath)) File.Delete(autoPath);
@@ -60,6 +64,8 @@ public class PerfProfileTests
     public IEnumerator TearDown()
     {
         PerfMonitor.Enabled = false;
+        SaveLoadManager.LastPath = _prevLastPath!;
+        RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = _recentBackup!;
 
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
             if (e != null) Object.Destroy(e.gameObject);

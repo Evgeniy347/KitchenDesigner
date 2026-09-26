@@ -17,6 +17,7 @@ public class DemoModeSaveTests
     private readonly List<GameObject> _spawned = new List<GameObject>();
     private bool _prevAutoSave;
     private string? _prevLastPath;
+    private string[]? _recentBackup;
     private string? _demoPath;
     private string? _myPath;
 
@@ -35,6 +36,7 @@ public class DemoModeSaveTests
     {
         _prevAutoSave = KitchenSettings.Instance.AutoSave;
         _prevLastPath = SaveLoadManager.LastPath;
+        _recentBackup = RecentProjectsTestBackup.Capture();
 
         _demoPath = Path.Combine(Application.temporaryCachePath, "demo_readonly.json");
         _myPath = Path.Combine(Application.temporaryCachePath, "demo_copy.json");
@@ -51,6 +53,7 @@ public class DemoModeSaveTests
         if (KitchenSettings.Instance != null)
             KitchenSettings.Instance.AutoSave = _prevAutoSave;
         SaveLoadManager.LastPath = _prevLastPath!;
+        RecentProjectsTestBackup.Restore(_recentBackup!);
 
         foreach (var go in _spawned)
         {

@@ -5,7 +5,12 @@ namespace KitchenDesigner.Core
         public static void Remember(string path) =>
             RecentProjectsMemory.Remember(System.Environment.GetCommandLineArgs(), path);
 
-        public static string[] Paths() =>
-            RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values;
+        public static string[] Paths()
+        {
+            var stored = RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values;
+            if (stored.Length == 0 && SaveLoadManager.HasLastPath)
+                return new[] { SaveLoadManager.LastPath };
+            return stored;
+        }
     }
 }
