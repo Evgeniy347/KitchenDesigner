@@ -28,11 +28,19 @@ public class ElementPropertyDiagramTests
     private static GameObject? _mainCamera;
     private static Canvas? _uiCanvas;
 
+    // DestroyImmediate, not Destroy: a non-coroutine [OneTimeTearDown] never yields a frame
+    // afterwards, so a queued Destroy can still be alive when the NEXT fixture's [UnitySetUp]
+    // runs right after. BasePlate is ALSO not a child of _bootstrap (Bootstrap.Awake creates
+    // it as its own root object) and every [TearDown] here deliberately skips it — see
+    // IsoScreenshotTests.OneTimeTearDownOnce for the cross-fixture leak this exact pattern
+    // caused (a stray BasePlate skewing a neighbour test's edge-banding geometry query).
     [OneTimeTearDown]
     public void OneTimeTearDownOnce()
     {
-        if (_bootstrap != null) Object.Destroy(_bootstrap);
-        if (_mainCamera != null) Object.Destroy(_mainCamera);
+        if (_bootstrap != null) Object.DestroyImmediate(_bootstrap);
+        if (_mainCamera != null) Object.DestroyImmediate(_mainCamera);
+        var basePlate = Object.FindAnyObjectByType<BasePlate>();
+        if (basePlate != null) Object.DestroyImmediate(basePlate.gameObject);
         _bootstrap = null;
         _mainCamera = null;
         _uiCanvas = null;

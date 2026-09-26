@@ -67,11 +67,27 @@ public class IsoScreenshotTests : ElementFrameTests
 
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
+    // DestroyImmediate, not Destroy: this runs as a plain (non-coroutine) [OneTimeTearDown]
+    // with no frame yield afterwards, and Destroy only queues removal for end-of-frame. The
+    // next fixture's [UnitySetUp] can run before that frame boundary, so its FindObjectsByType
+    // scans (and neighbour-sweep geometry queries, e.g. EdgeBanding.Coverage) still see this
+    // fixture's shared Bootstrap/BasePlate — a real cross-fixture leak this exact shape caused
+    // in SpecificationDiagramTests (a leaked BasePlate near world origin registered as a
+    // "covering" neighbour for one board and skewed its edge-banding key, silently merging it
+    // into a same-size board's row). DestroyImmediate removes the hierarchy synchronously.
+    //
+    // BasePlate itself is NOT a child of _bootstrap (Bootstrap.Awake creates it as its own
+    // root object, guarded by FindAnyObjectByType<BasePlate>() == null) and every [TearDown]
+    // in this fixture deliberately skips it so the next test in the SAME fixture keeps its
+    // floor — so it has to be found and destroyed explicitly here, once, or it outlives this
+    // whole fixture and pollutes every PlayMode fixture that runs after it in the same batch.
     [OneTimeTearDown]
     public void OneTimeTearDownOnce()
     {
-        if (_bootstrap != null) Object.Destroy(_bootstrap);
-        if (_mainCamera != null) Object.Destroy(_mainCamera);
+        if (_bootstrap != null) Object.DestroyImmediate(_bootstrap);
+        if (_mainCamera != null) Object.DestroyImmediate(_mainCamera);
+        var basePlate = Object.FindAnyObjectByType<BasePlate>();
+        if (basePlate != null) Object.DestroyImmediate(basePlate.gameObject);
         _bootstrap = null;
         _mainCamera = null;
         _defaultView = null;

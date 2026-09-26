@@ -18,11 +18,19 @@ public class SnapIntegrationTests
     private static GameObject? _camera;
     private static KitchenSettingsData? _defaultSettings;
 
+    // DestroyImmediate, not Destroy: a non-coroutine [OneTimeTearDown] never yields a frame
+    // afterwards, so a queued Destroy can still be alive when the NEXT fixture's [UnitySetUp]
+    // runs right after. BasePlate is ALSO not a child of _bootGo (Bootstrap.Awake creates it
+    // as its own root object) and every [TearDown] here deliberately skips it — see
+    // IsoScreenshotTests.OneTimeTearDownOnce for the cross-fixture leak this exact pattern
+    // caused (a stray BasePlate skewing a neighbour test's edge-banding geometry query).
     [OneTimeTearDown]
     public void OneTimeTearDownOnce()
     {
-        if (_bootGo != null) Object.Destroy(_bootGo);
-        if (_camera != null) Object.Destroy(_camera);
+        if (_bootGo != null) Object.DestroyImmediate(_bootGo);
+        if (_camera != null) Object.DestroyImmediate(_camera);
+        var basePlate = Object.FindAnyObjectByType<BasePlate>();
+        if (basePlate != null) Object.DestroyImmediate(basePlate.gameObject);
         _bootGo = null;
         _camera = null;
         _defaultSettings = null;
