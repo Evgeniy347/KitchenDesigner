@@ -172,6 +172,7 @@ namespace KitchenDesigner.Core
 
         public static void SetGlobalOn(bool on)
         {
+            if (on != _globalOn) ProjectDirty.Mark();
             _globalOn = on;
             foreach (var ls in Object.FindObjectsByType<LightSourceElement>(FindObjectsSortMode.None))
                 ls.SyncLightState();

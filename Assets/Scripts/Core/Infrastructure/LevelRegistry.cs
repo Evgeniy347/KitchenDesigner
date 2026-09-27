@@ -39,14 +39,14 @@ namespace KitchenDesigner.Core
             _items.Clear();
             if (levels != null)
                 foreach (var level in levels) if (level != null) _items.Add(level);
-            Changed?.Invoke();
+            NotifyChanged();
         }
 
         public static void Add(Level level)
         {
             if (level == null) return;
             _items.Add(level);
-            Changed?.Invoke();
+            NotifyChanged();
         }
 
         public static void Insert(int index, Level level)
@@ -55,7 +55,7 @@ namespace KitchenDesigner.Core
             if (index < 0) index = 0;
             if (index > _items.Count) index = _items.Count;
             _items.Insert(index, level);
-            Changed?.Invoke();
+            NotifyChanged();
         }
 
         public static int IndexOf(string id)
@@ -69,16 +69,22 @@ namespace KitchenDesigner.Core
         {
             int i = IndexOf(id);
             if (i >= 0) _items.RemoveAt(i);
-            Changed?.Invoke();
+            NotifyChanged();
         }
 
         public static void Reset()
         {
             _items.Clear();
             _currentId = "";
-            Changed?.Invoke();
+            NotifyChanged();
         }
 
-        public static void Touch() => Changed?.Invoke();
+        public static void Touch() => NotifyChanged();
+
+        private static void NotifyChanged()
+        {
+            ProjectDirty.Mark();
+            Changed?.Invoke();
+        }
     }
 }

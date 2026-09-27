@@ -19,6 +19,7 @@ namespace KitchenDesigner.Core.Audio
                 int wrapped = MusicPlaylist.Wrap(value);
                 if (wrapped == _track) return;
                 _track = wrapped;
+                ProjectDirty.Mark();
                 Changed?.Invoke();
             }
         }
@@ -31,6 +32,7 @@ namespace KitchenDesigner.Core.Audio
                 int clamped = value < 0 ? 0 : value > 100 ? 100 : value;
                 if (clamped == _volumePct) return;
                 _volumePct = clamped;
+                ProjectDirty.Mark();
                 Changed?.Invoke();
             }
         }

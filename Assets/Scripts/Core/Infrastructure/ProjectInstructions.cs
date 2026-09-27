@@ -2,7 +2,18 @@ namespace KitchenDesigner.Core
 {
     public static class ProjectInstructions
     {
-        public static string Text { get; set; } = "";
+        private static string _text = "";
+
+        public static string Text
+        {
+            get => _text;
+            set
+            {
+                if (value == _text) return;
+                _text = value;
+                ProjectDirty.Mark();
+            }
+        }
 
         public static bool TryGetPositiveMm(string key, out int value)
         {
