@@ -442,6 +442,30 @@ public class ValidationSnapshotReuseTests : ElementTestBase
         ("PipeCapElement", "устья"),
         ("PipeSupplyElement", "устья"),
         ("PipeReturnElement", "устья"),
+        ("FoundationElement",
+            "review-construction.md #1: EffectiveScale/ValidationPositionAt считаются от "
+            + "FoundationWallSurvey (реальных осевых несущих стен) в ApplyDimensions, а не от "
+            + "DimensionsMM/transform.position — общий признак кэша об этой зависимости не "
+            + "знает, и объявляющий тип (FoundationElement, а не проверенный базовый) выводит "
+            + "её из ProvedPoseBuilders (см. PositionIsDerivedNotDragged выше)"),
+    };
+
+    /// <summary>Типы, у которых сдвиг ТРАНСФОРМА не обязан сдвинуть коробку — не потому,
+    /// что кэш соврал, а потому, что их реальное положение (и меш, и <c>ValidationPositionAt</c>)
+    /// считается ЦЕЛИКОМ от чужой геометрии (несущие стены), а не от собственного
+    /// <c>transform.position</c> (review-construction.md #1: раньше лента валидировалась кубом
+    /// 1×1×1 м вокруг пивота, теперь — настоящим следом стен, но это и разорвало связь коробки
+    /// с transform.position). У продукта нет пути двигать эти детали перетаскиванием
+    /// (<c>CanFollowAnAttachParent</c>/<c>ParticipatesInGapChecks</c> = false), поэтому сценарий
+    /// «сдвинули на 37 мм рукой» для них не входной, а искусственный — в отличие от
+    /// PillarElement/Pipe*, для которых сам факт «в кэше или нет» уже проверен парой
+    /// выше, здесь довод не про кэш, а про то, ОТ ЧЕГО считается позиция.</summary>
+    private static readonly (string type, string why)[] PositionIsDerivedNotDragged =
+    {
+        ("FoundationElement",
+            "и меш (FoundationStripMesh.Build), и _validationCentreWorld (ValidationPositionAt) "
+            + "строятся в ApplyDimensions из FoundationWallSurvey — реальных осевых несущих "
+            + "стен, — а не из transform.position детали"),
     };
 
     /// <summary>Таблица годности против её близнеца, по ВСЕМ типам фабрики, и
@@ -482,6 +506,9 @@ public class ValidationSnapshotReuseTests : ElementTestBase
                 + $"годности говорит «{(inCache ? "в кэше" : "вне кэша")}». Таблица и "
                 + "поведение разошлись — одно из двух врёт");
 
+            bool positionIsDerived = System.Array.Exists(PositionIsDerivedNotDragged,
+                p => p.type == type.Name);
+
             float wasAt = into[0].Geometry.Min.x;
             subject.transform.position += new Vector3(0.037f, 0f, 0f);
             ValidationSnapshot.Build(scene, into);
@@ -489,9 +516,15 @@ public class ValidationSnapshotReuseTests : ElementTestBase
             Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
                 $"{type.Name}: деталь сдвинули на 37 мм, а коробку не пересобрали — "
                 + "валидация будет судить по вчерашней геометрии");
-            Assert.AreNotEqual(wasAt, into[0].Geometry.Min.x,
-                $"{type.Name}: пересборка случилась, а коробка осталась на прежнем месте — "
-                + "счётчик работы сам по себе этого не ловит");
+            if (positionIsDerived)
+                Assert.AreEqual(wasAt, into[0].Geometry.Min.x,
+                    $"{type.Name}: позиция считается от чужой геометрии (см. "
+                    + "PositionIsDerivedNotDragged) — сдвиг transform.position детали не "
+                    + "обязан и не должен сдвинуть коробку");
+            else
+                Assert.AreNotEqual(wasAt, into[0].Geometry.Min.x,
+                    $"{type.Name}: пересборка случилась, а коробка осталась на прежнем месте — "
+                    + "счётчик работы сам по себе этого не ловит");
 
             var wanted = subject.DimensionsMM + new Vector3Int(31, 0, 0);
             subject.DimensionsMM = wanted;

@@ -119,6 +119,7 @@ namespace KitchenDesigner.Core
             typeof(SinkElement), typeof(OvenElement), typeof(DishwasherElement),
             typeof(LaundryMachineElement), typeof(CooktopElement), typeof(WallOpeningElement),
             typeof(ScrewLegElement), typeof(RoofElement),
+            typeof(FenceElement), typeof(DuctElement),
         };
 
         private static readonly Dictionary<System.Type, bool> _reusableByType =
