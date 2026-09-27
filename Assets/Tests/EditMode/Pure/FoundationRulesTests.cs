@@ -39,12 +39,16 @@ public class FoundationRulesTests
     }
 
     [Test]
-    public void SoleWidthMeetsMinimum_Wall250OnLoam_700mmIsTrue_600mmIsFalse()
+    public void SoleWidthMeetsMinimum_Wall250OnLoam_500mmIsTrue_400mmIsFalse()
     {
-        Assert.IsTrue(FoundationRules.SoleWidthMeetsMinimum(SoilKind.Loam, 250f, 700f),
-            "минимум для суглинка и стены 250 мм — 650 мм (FoundationSoleWidth); 700 мм шире");
-        Assert.IsFalse(FoundationRules.SoleWidthMeetsMinimum(SoilKind.Loam, 250f, 600f),
-            "600 мм у́же минимума 650 мм — нарушение FND-02");
+        // test-results/review-construction.md #15 / 799a2590: минимум больше не удваивает
+        // запас на грунт (толщина стены + ОДИН запас, не два), поэтому для стены 250 мм на
+        // суглинке (запас 200) минимум — 450 мм, а не 650 (FoundationSoleWidthTests.
+        // FoundationSoleWidth_BrickWall250_OnLoam_MinimumIs450mm считает то же самое руками).
+        Assert.IsTrue(FoundationRules.SoleWidthMeetsMinimum(SoilKind.Loam, 250f, 500f),
+            "минимум для суглинка и стены 250 мм — 450 мм (FoundationSoleWidth); 500 мм шире");
+        Assert.IsFalse(FoundationRules.SoleWidthMeetsMinimum(SoilKind.Loam, 250f, 400f),
+            "400 мм у́же минимума 450 мм — нарушение FND-02");
     }
 
     [Test]
