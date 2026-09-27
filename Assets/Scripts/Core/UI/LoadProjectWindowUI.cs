@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core.UI
         private const float TitleH = 40f;
         private const float TitleTopPad = 6f;
         private const float BelowTitleGap = UIStyle.GapSection;
-        private const float LeftColumnW = 180f;
+        private const float ButtonColumnW = 180f;
         private const float ColumnGap = 16f;
         private const float ButtonH = 40f;
         private const float ButtonGap = 10f;
@@ -51,26 +51,28 @@ namespace KitchenDesigner.Core.UI
 
             UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
 
-            BuildLeftColumn(panel.transform);
+            BuildButtonColumn(panel.transform);
 
             _body = UIFactory.CreateRect("LoadBody", panel.transform);
 
             _root.SetActive(false);
         }
 
-        private void BuildLeftColumn(Transform parent)
+        private void BuildButtonColumn(Transform parent)
         {
             float top = -(TitleTopPad + TitleH + BelowTitleGap);
+            float buttonColumnX = PanelW - UIStyle.WindowPad - ButtonColumnW;
 
             var newProjectBtn = UIFactory.CreateButton("LoadNewProject", parent, "Новый проект",
-                Vector2.zero, new Vector2(LeftColumnW, ButtonH), OnNewProject);
-            PlaceInLeftColumn(newProjectBtn.GetComponent<RectTransform>(), top);
+                Vector2.zero, new Vector2(ButtonColumnW, ButtonH), OnNewProject);
+            PlaceInButtonColumn(newProjectBtn.GetComponent<RectTransform>(), buttonColumnX, top);
 
             var loadBtn = UIFactory.CreateButton("LoadOpenFile", parent, "Загрузить",
-                Vector2.zero, new Vector2(LeftColumnW, ButtonH), OnLoadFile);
-            PlaceInLeftColumn(loadBtn.GetComponent<RectTransform>(), top - ButtonH - ButtonGap);
+                Vector2.zero, new Vector2(ButtonColumnW, ButtonH), OnLoadFile);
+            PlaceInButtonColumn(loadBtn.GetComponent<RectTransform>(), buttonColumnX,
+                top - ButtonH - ButtonGap);
 
-            float separatorX = UIStyle.WindowPad + LeftColumnW + ColumnGap * 0.5f;
+            float separatorX = buttonColumnX - ColumnGap * 0.5f;
             var separator = UIFactory.CreatePanel("LoadColumnSeparator", parent, Vector2.zero,
                 new Vector2(1, 0), UIStyle.Separator);
             var sepRt = separator.rectTransform;
@@ -82,12 +84,12 @@ namespace KitchenDesigner.Core.UI
             separator.raycastTarget = false;
         }
 
-        private static void PlaceInLeftColumn(RectTransform rt, float topOffset)
+        private static void PlaceInButtonColumn(RectTransform rt, float x, float topOffset)
         {
             rt.anchorMin = new Vector2(0, 1);
             rt.anchorMax = new Vector2(0, 1);
             rt.pivot = new Vector2(0, 1);
-            rt.anchoredPosition = new Vector2(UIStyle.WindowPad, topOffset);
+            rt.anchoredPosition = new Vector2(x, topOffset);
         }
 
         private void OnNewProject() => _actions.NewProjectDialog(ok => { if (ok) SetVisible(false); });
@@ -114,8 +116,9 @@ namespace KitchenDesigner.Core.UI
             float height = LoadWindowLayout.HeightFor(PreferredPanelH, availableScreenHeight);
             _panel!.sizeDelta = new Vector2(PanelW, height);
 
-            float rightColumnX = UIStyle.WindowPad + LeftColumnW + ColumnGap;
-            float rowWidth = PanelW - rightColumnX - UIStyle.WindowPad - ScrollbarReserve;
+            float buttonColumnX = PanelW - UIStyle.WindowPad - ButtonColumnW;
+            float listRightEdge = buttonColumnX - ColumnGap;
+            float rowWidth = listRightEdge - UIStyle.WindowPad - ScrollbarReserve;
             float topOfBody = TitleTopPad + TitleH + BelowTitleGap;
             float columnHeight = Mathf.Max(RowHeightFloor, height - topOfBody - BottomPad);
 
@@ -123,7 +126,7 @@ namespace KitchenDesigner.Core.UI
             _body.anchorMax = new Vector2(0, 1);
             _body.pivot = new Vector2(0, 1);
             _body.sizeDelta = new Vector2(rowWidth + ScrollbarReserve, columnHeight);
-            _body.anchoredPosition = new Vector2(rightColumnX, -topOfBody);
+            _body.anchoredPosition = new Vector2(UIStyle.WindowPad, -topOfBody);
 
             for (int i = _body.childCount - 1; i >= 0; i--)
                 DestroyNow.The(_body.GetChild(i).gameObject);

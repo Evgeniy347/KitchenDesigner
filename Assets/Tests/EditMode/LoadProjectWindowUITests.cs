@@ -121,6 +121,27 @@ public class LoadProjectWindowUITests
     }
 
     [Test]
+    public void SetVisible_PlacesTheRecentListLeftOfTheButtonColumn()
+    {
+        var ui = Build();
+        ui.SetVisible(true);
+
+        var list = (RectTransform)_canvasGo!.transform.Find("LoadProjectWindow/LoadBody")!;
+        var buttons = (RectTransform)_canvasGo.transform.Find("LoadProjectWindow/LoadNewProject")!;
+
+        var listCorners = new Vector3[4];
+        list.GetWorldCorners(listCorners);
+        var buttonCorners = new Vector3[4];
+        buttons.GetWorldCorners(buttonCorners);
+
+        Assert.LessOrEqual(listCorners[2].x, buttonCorners[1].x + 0.01f,
+            "список недавних проектов обязан стоять слева от кнопок «Новый проект» / "
+            + "«Загрузить», а не справа от них");
+        Assert.Greater(listCorners[2].x - listCorners[1].x, buttonCorners[2].x - buttonCorners[1].x,
+            "список остаётся более широкой колонкой окна, кнопки — узкой");
+    }
+
+    [Test]
     public void ClickingAnExistingRecentRow_LoadsThatProject_AndClosesTheWindow()
     {
         var path = MakeProjectFile("lpwui_existing.kdproj", BuildInfo.Version);
