@@ -53,7 +53,7 @@
     },
     {
       "type": "Button",
-      "text": "Errors",
+      "text": "1",
       "position": [100, -6]
     },
     {
@@ -98,63 +98,63 @@
     },
     {
       "type": "Button",
-      "text": "▲",
+      "text": "LevelUp",
       "position": [562, -6]
     },
     {
       "type": "Label",
       "text": "1 этаж",
-      "position": [606, -6]
+      "position": [608, -6]
     },
     {
       "type": "Button",
-      "text": "▼",
-      "position": [652, -6]
+      "text": "LevelDown",
+      "position": [654, -6]
     },
     {
       "type": "Button",
       "text": "LevelsWindow",
-      "position": [696, -6]
+      "position": [700, -6]
     },
     {
       "type": "Button",
       "text": "HandleMode",
-      "position": [758, -6]
+      "position": [762, -6]
     },
     {
       "type": "Button",
       "text": "MeasureToggle",
-      "position": [804, -6]
+      "position": [808, -6]
     },
     {
       "type": "Button",
       "text": "Eyedropper",
-      "position": [850, -6]
+      "position": [854, -6]
     },
     {
       "type": "Button",
       "text": "LightsToggle",
-      "position": [912, -6]
+      "position": [916, -6]
     },
     {
       "type": "Button",
       "text": "DayNight",
-      "position": [958, -6]
+      "position": [962, -6]
     },
     {
       "type": "Button",
       "text": "Обычный",
-      "position": [1020, -6]
+      "position": [1024, -6]
     },
     {
       "type": "Button",
       "text": "Помещение",
-      "position": [1125, -6]
+      "position": [1130, -6]
     },
     {
       "type": "Button",
       "text": "Фото",
-      "position": [1251, -6]
+      "position": [1256, -6]
     },
     {
       "type": "Button",
