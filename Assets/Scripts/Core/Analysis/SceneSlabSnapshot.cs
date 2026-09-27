@@ -33,7 +33,7 @@ namespace KitchenDesigner.Core.Analysis
             foreach (var e in all)
             {
                 if (!(e is FloorSlabElement slab)) continue;
-                if (TryWorstGapToASupportingWallMm(slab, walls, out float gapMm))
+                if (TryGapToTheNearestSupportingWallMm(slab, walls, out float gapMm))
                     result.Add(new FloorSlabSurvey(slab.PartName, gapMm));
             }
 
@@ -68,7 +68,7 @@ namespace KitchenDesigner.Core.Analysis
             return tops;
         }
 
-        private static bool TryWorstGapToASupportingWallMm(FloorSlabElement slab,
+        private static bool TryGapToTheNearestSupportingWallMm(FloorSlabElement slab,
             List<LoadBearingWallTop> walls, out float gapMm)
         {
             gapMm = 0f;
@@ -85,17 +85,22 @@ namespace KitchenDesigner.Core.Analysis
             float slabBottomYMm = pos.y / AppConstants.MM_TO_UNITS - slab.ThicknessMm * 0.5f;
 
             bool found = false;
-            float worst = float.NegativeInfinity;
+            float nearest = 0f;
+            float nearestAbs = float.PositiveInfinity;
             foreach (var wall in walls)
             {
                 if (!wall.OverlapsXZ(minXMm, maxXMm, minZMm, maxZMm)) continue;
-                found = true;
                 float gap = slabBottomYMm - wall.TopYMm;
-                if (gap > worst) worst = gap;
+                float absGap = Mathf.Abs(gap);
+                if (found && absGap >= nearestAbs) continue;
+
+                found = true;
+                nearest = gap;
+                nearestAbs = absGap;
             }
 
             if (!found) return false;
-            gapMm = worst;
+            gapMm = nearest;
             return true;
         }
     }
