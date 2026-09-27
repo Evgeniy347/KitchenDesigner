@@ -124,4 +124,40 @@ public class LevelResolutionTests
 
         Assert.AreSame(levels[1], resolved, "id уровня — точный идентификатор, а не заголовок без регистра");
     }
+
+    [Test]
+    public void BottomLevel_TwoLevels_ReturnsTheOneWithTheLowestFloorElevation()
+    {
+        var levels = new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 3000),
+        };
+
+        Assert.AreSame(levels[0], LevelResolution.BottomLevel(levels),
+            "нижний этаж — с минимальной отметкой пола, зеркально TopLevel (максимум)");
+    }
+
+    [Test]
+    public void BottomLevel_LevelsOutOfOrder_StillFindsTheLowestByElevation_NotByArrayPosition()
+    {
+        var levels = new[]
+        {
+            new Level("2", "2 этаж", 3000, 3000),
+            new Level("0", "Подвал", -3000, 2500),
+            new Level("1", "1 этаж", 0, 3000),
+        };
+
+        Assert.AreSame(levels[1], LevelResolution.BottomLevel(levels),
+            "подвал на -3000 ниже первого этажа на 0 и второго на 3000 — порядок в массиве "
+            + "(не первый элемент) не должен влиять на результат");
+    }
+
+    [Test]
+    public void BottomLevel_SingleLevel_ReturnsIt()
+    {
+        var levels = new[] { new Level("1", "1 этаж", 0, 3000) };
+
+        Assert.AreSame(levels[0], LevelResolution.BottomLevel(levels));
+    }
 }

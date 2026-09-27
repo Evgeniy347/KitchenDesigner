@@ -29,7 +29,7 @@ namespace KitchenDesigner.Core.Analysis
             var result = new List<FoundationWallSpan>();
             if (all == null) return result;
 
-            foreach (var e in all)
+            foreach (var e in FoundationWallSurvey.OnLowestLevel(all))
             {
                 if (e == null) continue;
                 var wall = e.GetComponent<Wall>();
