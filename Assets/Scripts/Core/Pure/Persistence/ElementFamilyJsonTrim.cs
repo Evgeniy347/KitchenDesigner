@@ -2,16 +2,18 @@ namespace KitchenDesigner.Core
 {
     internal static class ElementFamilyJsonTrim
     {
-        internal static string RemoveAllFamilyFlags(string source, JsonSpan objectSpan)
+        internal static string RemoveAllFamilyFlags(string source, JsonSpan objectSpan) =>
+            JsonObjectEdit.Apply(source, objectSpan, MarkRemovals);
+
+        internal static void MarkRemovals(JsonObjectEdit element)
         {
-            source = FoundationJsonTrim.RemoveFromElement(source, objectSpan);
-            source = FloorSlabJsonTrim.RemoveFromElement(source, objectSpan);
-            source = FenceJsonTrim.RemoveFromElement(source, objectSpan);
-            source = WallLayerJsonTrim.RemoveFromElement(source, objectSpan);
-            source = RoofJsonTrim.RemoveFromElement(source, objectSpan);
-            source = DuctJsonTrim.RemoveFromElement(source, objectSpan);
-            source = LevelsJsonTrim.RemoveEmptyLevelId(source, objectSpan);
-            return source;
+            FoundationJsonTrim.MarkRemovals(element);
+            FloorSlabJsonTrim.MarkRemovals(element);
+            FenceJsonTrim.MarkRemovals(element);
+            WallLayerJsonTrim.MarkRemovals(element);
+            RoofJsonTrim.MarkRemovals(element);
+            DuctJsonTrim.MarkRemovals(element);
+            LevelsJsonTrim.MarkEmptyLevelId(element);
         }
     }
 }

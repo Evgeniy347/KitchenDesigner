@@ -41,13 +41,12 @@ namespace KitchenDesigner.Core
             return RemoveEmptyLevelId(source, obj);
         }
 
-        internal static string RemoveEmptyLevelId(string source, JsonSpan objectSpan)
-        {
-            var levelId = JsonText.MemberValue(source, objectSpan, LevelIdKey);
-            if (!levelId.Found) return source;
-            if (levelId.Text(source) != EmptyStringText) return source;
+        internal static string RemoveEmptyLevelId(string source, JsonSpan objectSpan) =>
+            JsonObjectEdit.Apply(source, objectSpan, MarkEmptyLevelId);
 
-            return JsonText.RemoveMember(source, objectSpan, LevelIdKey);
+        internal static void MarkEmptyLevelId(JsonObjectEdit element)
+        {
+            if (element.ValueIs(LevelIdKey, EmptyStringText)) element.Remove(LevelIdKey);
         }
 
         internal static string RemoveEmptyLevelsArray(string source)

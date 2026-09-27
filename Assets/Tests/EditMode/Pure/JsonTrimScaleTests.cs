@@ -25,13 +25,20 @@ using KitchenDesigner.Core;
 /// 2026-09-26: `LevelsJsonTrim` and `DuctJsonTrim` joined the chain (test-results/review-persistence.md
 /// #1) — the review found they were the two classes NOT covered here, and `LevelsJsonTrim` in
 /// particular still walked the array with `RemoveMember(source, item, ...)` directly instead of
-/// through `RewriteArrayItems`, so this exact guard could not see its O(n^2) shape.</summary>
+/// through `RewriteArrayItems`, so this exact guard could not see its O(n^2) shape.
+///
+/// 2026-09-27: family trims no longer call RemoveMember per key; they mark keys on one
+/// `JsonObjectEdit` read of the element and write it once. The sensor is therefore the sum of
+/// both counters: RemoveMember (still used for root members) plus `JsonObjectEdit.TakeCharsRead()`.</summary>
 public class JsonTrimScaleTests
 {
+    private static long TakeCharsProcessed() =>
+        JsonText.TakeCharsProcessedByRemoveMember() + JsonObjectEdit.TakeCharsRead();
+
     private static string RunChainedTrims(int elementCount, out string result)
     {
         string project = BuildProjectWithPlainElements(elementCount);
-        JsonText.TakeCharsProcessedByRemoveMember();
+        TakeCharsProcessed();
         result = LevelsJsonTrim.RemoveWhenEmpty(
             DuctJsonTrim.RemoveWhenNotDuct(
                 RoofJsonTrim.RemoveWhenNotRoof(
@@ -73,12 +80,12 @@ public class JsonTrimScaleTests
     public void ChainedTrims_CharsProcessed_GrowsLinearly_NotQuadratically_AsElementsQuadruple()
     {
         RunChainedTrims(200, out _);
-        long small = JsonText.TakeCharsProcessedByRemoveMember();
+        long small = TakeCharsProcessed();
 
         RunChainedTrims(800, out _);
-        long large = JsonText.TakeCharsProcessedByRemoveMember();
+        long large = TakeCharsProcessed();
 
-        Assert.Greater(small, 0, "200 elements through seven chained trims must call RemoveMember");
+        Assert.Greater(small, 0, "200 elements through seven chained trims must read their element slices");
         Assert.Less(large, small * 8,
             $"element count quadrupled (200 -> 800), but RemoveMember's total characters "
             + $"processed grew from {small} to {large}. RewriteArrayItems hands each trim "

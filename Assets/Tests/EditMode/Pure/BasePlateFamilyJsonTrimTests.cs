@@ -15,6 +15,9 @@ using KitchenDesigner.Core;
 /// project file.</summary>
 public class BasePlateFamilyJsonTrimTests
 {
+    private static long TakeCharsProcessed() =>
+        JsonText.TakeCharsProcessedByRemoveMember() + JsonObjectEdit.TakeCharsRead();
+
     private static string BuildProject(int elementCount)
     {
         var sb = new StringBuilder();
@@ -145,14 +148,14 @@ public class BasePlateFamilyJsonTrimTests
         string small = NewElementsOnlyFor(BuildProject(50));
         string large = NewElementsOnlyFor(BuildProject(2000));
 
-        JsonText.TakeCharsProcessedByRemoveMember();
+        TakeCharsProcessed();
         BasePlateFamilyJsonTrim.RemoveWhenNotNeeded(small);
-        long smallChars = JsonText.TakeCharsProcessedByRemoveMember();
+        long smallChars = TakeCharsProcessed();
 
         BasePlateFamilyJsonTrim.RemoveWhenNotNeeded(large);
-        long largeChars = JsonText.TakeCharsProcessedByRemoveMember();
+        long largeChars = TakeCharsProcessed();
 
-        Assert.Greater(smallChars, 0, "basePlate несёт удаляемые ключи, RemoveMember обязан вызваться");
+        Assert.Greater(smallChars, 0, "basePlate несёт удаляемые ключи, его срез обязан быть прочитан");
         Assert.Less(largeChars, smallChars * 3,
             $"elements вырос в 40 раз (50 -> 2000), а обработка basePlate {smallChars} -> {largeChars} "
             + "символов почти не изменилась: единственный проход разбирает СРЕЗ basePlate, "

@@ -210,7 +210,7 @@ namespace KitchenDesigner.Core
             return i == start ? -1 : i;
         }
 
-        private static string Unescape(string raw)
+        internal static string Unescape(string raw)
         {
             if (raw.IndexOf('\\') < 0) return raw;
             var sb = new System.Text.StringBuilder(raw.Length);

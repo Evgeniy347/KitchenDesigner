@@ -47,28 +47,21 @@ namespace KitchenDesigner.Core
             return RemoveFromElement(projectJson, obj);
         }
 
-        internal static string RemoveFromElement(string source, JsonSpan objectSpan)
+        internal static string RemoveFromElement(string source, JsonSpan objectSpan) =>
+            JsonObjectEdit.Apply(source, objectSpan, MarkRemovals);
+
+        internal static void MarkRemovals(JsonObjectEdit element)
         {
-            if (IsTrue(source, objectSpan, IsInsulationKey)
-                || IsTrue(source, objectSpan, IsVentGapKey)
-                || IsTrue(source, objectSpan, IsCladdingKey))
-                return RemoveBattenStepUnlessVentGap(source, objectSpan);
+            if (element.ValueIs(IsInsulationKey, TrueText)
+                || element.ValueIs(IsVentGapKey, TrueText)
+                || element.ValueIs(IsCladdingKey, TrueText))
+            {
+                if (!element.ValueIs(IsVentGapKey, TrueText)) element.Remove(VentGapBattenStepKey);
+                return;
+            }
 
             foreach (var key in FamilyKeys)
-                source = JsonText.RemoveMember(source, objectSpan, key);
-            return source;
-        }
-
-        private static string RemoveBattenStepUnlessVentGap(string source, JsonSpan objectSpan)
-        {
-            if (IsTrue(source, objectSpan, IsVentGapKey)) return source;
-            return JsonText.RemoveMember(source, objectSpan, VentGapBattenStepKey);
-        }
-
-        private static bool IsTrue(string source, JsonSpan objectSpan, string key)
-        {
-            var value = JsonText.MemberValue(source, objectSpan, key);
-            return value.Found && value.Text(source) == TrueText;
+                element.Remove(key);
         }
     }
 }
