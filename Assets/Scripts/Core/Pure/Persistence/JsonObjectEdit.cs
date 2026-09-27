@@ -8,7 +8,8 @@ namespace KitchenDesigner.Core
     {
         private readonly List<JsonSpan> _values = new List<JsonSpan>();
         private readonly List<bool> _removed = new List<bool>();
-        private readonly Dictionary<string, int> _firstIndexByKey = new Dictionary<string, int>();
+        private readonly List<JsonSpan> _keys = new List<JsonSpan>();
+        private readonly JsonKeyIndex _index = new JsonKeyIndex();
         private string _source = "";
         private int _start;
         private int _end;
@@ -51,7 +52,7 @@ namespace KitchenDesigner.Core
             _end = -1;
             _values.Clear();
             _removed.Clear();
-            _firstIndexByKey.Clear();
+            _keys.Clear();
             _removedCount = 0;
             if (objectStart < 0 || objectStart >= source.Length || source[objectStart] != '{') return false;
 
@@ -61,7 +62,7 @@ namespace KitchenDesigner.Core
                 if (source[i] != '"') return false;
                 int keyEnd = JsonText.EndOfValue(source, i);
                 if (keyEnd < 0) return false;
-                string key = JsonText.Unescape(source.Substring(i + 1, keyEnd - i - 2));
+                var key = new JsonSpan(i + 1, keyEnd - 1);
 
                 i = JsonText.SkipWhitespace(source, keyEnd);
                 if (i >= source.Length || source[i] != ':') return false;
@@ -69,7 +70,7 @@ namespace KitchenDesigner.Core
 
                 int valueEnd = JsonText.EndOfValue(source, i);
                 if (valueEnd < 0) return false;
-                if (!_firstIndexByKey.ContainsKey(key)) _firstIndexByKey.Add(key, _values.Count);
+                _keys.Add(key);
                 _values.Add(new JsonSpan(i, valueEnd));
                 _removed.Add(false);
 
@@ -78,15 +79,19 @@ namespace KitchenDesigner.Core
             }
             if (i >= source.Length) return false;
             _end = i + 1;
+            _index.Build(source, _keys);
             _charsRead += _end - objectStart;
             return true;
         }
 
-        public bool Has(string key) => _firstIndexByKey.ContainsKey(key);
+        public bool Has(string key) => IndexOf(key) >= 0;
+
+        private int IndexOf(string key) => _index.FirstIndexOf(key);
 
         public bool ValueIs(string key, string text)
         {
-            if (!_firstIndexByKey.TryGetValue(key, out int index)) return false;
+            int index = IndexOf(key);
+            if (index < 0) return false;
             var value = _values[index];
             return value.Length == text.Length
                 && string.CompareOrdinal(_source, value.Start, text, 0, text.Length) == 0;
@@ -94,7 +99,8 @@ namespace KitchenDesigner.Core
 
         public void Remove(string key)
         {
-            if (!_firstIndexByKey.TryGetValue(key, out int index) || _removed[index]) return;
+            int index = IndexOf(key);
+            if (index < 0 || _removed[index]) return;
             _removed[index] = true;
             _removedCount++;
         }

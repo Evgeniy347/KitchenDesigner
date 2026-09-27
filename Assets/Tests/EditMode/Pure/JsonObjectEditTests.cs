@@ -75,6 +75,35 @@ public class JsonObjectEditTests
     }
 
     [Test]
+    public void Remove_EscapedKey_MatchesItsUnescapedName_AndTheEarlierOccurrenceWins()
+    {
+        string escapedFirst = "{\"\\u0061\": 1, \"b\": 2, \"a\": 3}";
+        string plainFirst = "{\"a\": 1, \"b\": 2, \"\\u0061\": 3}";
+        foreach (string source in new[] { escapedFirst, plainFirst })
+        {
+            var span = JsonText.RootObject(source);
+            Assert.AreEqual(JsonText.RemoveMember(source, span, "a"),
+                JsonObjectEdit.Apply(source, span, edit => edit.Remove("a")),
+                "RemoveMember unescapes key names and removes the FIRST match; the key index must agree: " + source);
+        }
+    }
+
+    [Test]
+    public void Remove_OnAnObjectOfManyKeys_FindsEveryOne()
+    {
+        var keys = new string[300];
+        for (int i = 0; i < keys.Length; i++) keys[i] = "key" + i;
+        string source = BuildPretty(keys, "");
+        string result = JsonObjectEdit.Apply(source, JsonText.RootObject(source), edit =>
+        {
+            for (int i = 0; i < keys.Length; i += 2) edit.Remove(keys[i]);
+        });
+        for (int i = 0; i < keys.Length; i++)
+            Assert.AreEqual(i % 2 == 1, result.Contains("\"" + keys[i] + "\""),
+                $"{keys[i]}: the hash index must neither lose a key nor hit a neighbour");
+    }
+
+    [Test]
     public void ValueIs_ComparesTheRawValueText_OfTheFirstOccurrence()
     {
         var edit = new JsonObjectEdit();

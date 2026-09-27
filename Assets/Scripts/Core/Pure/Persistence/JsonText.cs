@@ -8,9 +8,12 @@ namespace KitchenDesigner.Core
     {
         public static int SkipWhitespace(string source, int index)
         {
-            while (index < source.Length && char.IsWhiteSpace(source[index])) index++;
+            while (index < source.Length && IsWhiteSpace(source[index])) index++;
             return index;
         }
+
+        private static bool IsWhiteSpace(char c) =>
+            c == ' ' || (c < '!' ? char.IsWhiteSpace(c) : c > '~' && char.IsWhiteSpace(c));
 
         public static int EndOfValue(string source, int start)
         {
@@ -204,7 +207,7 @@ namespace KitchenDesigner.Core
             while (i < source.Length)
             {
                 char c = source[i];
-                if (c == ',' || c == '}' || c == ']' || char.IsWhiteSpace(c)) break;
+                if (c == ',' || c == '}' || c == ']' || IsWhiteSpace(c)) break;
                 i++;
             }
             return i == start ? -1 : i;
