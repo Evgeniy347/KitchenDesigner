@@ -76,7 +76,18 @@ public class KitchenSettingsContractTests
             else if (value is bool flag) f.SetValue(s, !flag);
             else if (value is float number) f.SetValue(s, number * 0.5f);
             else if (f.FieldType.IsEnum)
-                f.SetValue(s, Enum.ToObject(f.FieldType, Convert.ToInt32(value) - 1));
+            {
+                // Следующее значение по кругу, а не "value - 1": для перечисления, чей
+                // дефолт совпадает с его же минимумом (NeighbourLevelsMode.Show = 0),
+                // "-1" даёт значение, которого нет ни в одном перечислении и до которого
+                // не дотянуться никаким настоящим сеттером — они все проходят через
+                // клампающее свойство (KitchenSettings.Levels.cs: NeighbourLevels{set}).
+                // Тест обязан мутировать в состояние, которое пользователь МОЖЕТ получить,
+                // а не в артефакт рефлексии поверх приватного поля.
+                var values = Enum.GetValues(f.FieldType);
+                int at = Array.IndexOf(values, value);
+                f.SetValue(s, values.GetValue((at + 1) % values.Length));
+            }
             else if (value is int whole) f.SetValue(s, whole - 1);
             else Assert.Fail($"поле {f.Name} типа {f.FieldType.Name} не умеет меняться — "
                 + "допишите правило, иначе тест перестанет его проверять");
