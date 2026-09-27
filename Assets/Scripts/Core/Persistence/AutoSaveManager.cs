@@ -9,10 +9,14 @@ namespace KitchenDesigner.Core
         public const string AutoSaveName = "autosave";
 
         private string _lastSavedJson = string.Empty;
+        private static readonly AutoSaveRevisionGate Gate = new AutoSaveRevisionGate(SceneRevision.Version);
+
+        public static void MarkSaved() => Gate.MarkSaved(SceneRevision.Version);
 
         private void OnEnable()
         {
             _lastSavedJson = SaveLoadManager.CaptureCurrentJson();
+            MarkSaved();
             StartCoroutine(AutoSaveLoop());
         }
 
@@ -55,7 +59,8 @@ namespace KitchenDesigner.Core
 
                 if (!AutoSaveIsOn()) continue;
 
-                var outcome = AutoSaveCycle.Run(
+                var outcome = Gate.Run(
+                    SceneRevision.Version,
                     SaveLoadManager.CaptureCurrentJson,
                     SaveIntoTheOpenProjectOrAutosave,
                     _lastSavedJson);

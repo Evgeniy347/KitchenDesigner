@@ -65,6 +65,7 @@ namespace KitchenDesigner.Core
             if (DemoMode.Current.IsDemoFile(path)) return false;
             if (!_files.WriteJson(path, json)) return false;
             AdoptCurrentPath(path);
+            AutoSaveManager.MarkSaved();
             DemoMode.Current.ProjectSavedTo(path);
             return true;
         }
