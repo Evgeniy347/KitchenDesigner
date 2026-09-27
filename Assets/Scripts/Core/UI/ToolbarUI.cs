@@ -42,6 +42,7 @@ namespace KitchenDesigner.Core.UI
         private int _issueBadgeRevision = -1;
         private TMP_Text? _levelLabel;
         private const float LevelLabelWidth = 40f;
+        private const float LevelLabelMinFontSize = 8f;
 
         public int IssueBadgeRevision => _issueBadgeRevision;
 
@@ -153,6 +154,10 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(x, ButtonY), new Vector2(LevelLabelWidth, ButtonH), TextAnchor.MiddleCenter);
             UIFactory.AnchorTopLeft(_levelLabel.rectTransform);
             _levelLabel.rectTransform.anchoredPosition = new Vector2(x, ButtonY);
+            _levelLabel.enableWordWrapping = false;
+            _levelLabel.enableAutoSizing = true;
+            _levelLabel.fontSizeMin = LevelLabelMinFontSize;
+            _levelLabel.fontSizeMax = 15;
             x += LevelLabelWidth + ButtonGap;
 
             AddIconButton(parent, "LevelDown", IconFactory.CaretDown, ref x, LevelSwitch.Down, "Этаж ниже (PageDown)");

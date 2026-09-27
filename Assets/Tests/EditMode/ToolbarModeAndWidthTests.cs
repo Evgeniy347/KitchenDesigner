@@ -183,6 +183,21 @@ public class ToolbarModeAndWidthTests
         Assert.AreEqual(spriteBefore, icon.sprite, "второй клик обязан вернуть исходную иконку");
     }
 
+    [Test]
+    public void LevelLabel_ShowsTheDefaultLevelName_OnOneLine_NotWrapped()
+    {
+        var label = _bar.Find("LevelLabel")!.GetComponent<TMP_Text>();
+        label.text = "1 этаж";
+        label.ForceMeshUpdate();
+
+        Assert.IsFalse(label.enableWordWrapping,
+            "перенос по словам на узкой плашке рвёт «1 этаж» на «1» и «этаж» — подпись обязана "
+            + "остаться одной строкой");
+        Assert.AreEqual(1, label.textInfo.lineCount,
+            "«1 этаж» — имя уровня по умолчанию (LevelResolution.DefaultLevelName) — обязано "
+            + "читаться одной строкой, а не двумя");
+    }
+
     // ── D10: помещается на 1366px ноутбука, и не разъезжается на 1920 ──
 
     private static float RightEdgeOfFlow(Transform bar)

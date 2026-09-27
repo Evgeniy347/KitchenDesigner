@@ -20,6 +20,8 @@ namespace KitchenDesigner.Core
         internal const int HudNameColumnWidth = 40;
         internal const int MillisecondsColumnWidth = 6;
         internal const float HudRefreshSeconds = 0.25f;
+        internal const float RecentCsvPathDisplaySeconds = 5f;
+        internal const string RecordHintLine = "Shift+F9 — записать трассировку в файл";
 
         private static readonly float[] HistogramEdgesMs = { 8f, 16f, 33f, 50f };
         private static readonly string[] HistogramLabels = { "<8", "8-16", "16-33", "33-50", ">50" };
@@ -83,6 +85,8 @@ namespace KitchenDesigner.Core
         private PerfCsvLog? _csv;
         private float[]? _row;
         private float _nextHudTime;
+        private string? _lastCsvPath;
+        private float _lastCsvPathUntil;
 
         private AlignedFrameRow? _frameThatJustEnded;
         private float[]? _markersOfThisFrame;
@@ -150,6 +154,8 @@ namespace KitchenDesigner.Core
 
         internal void SimulateLateUpdateForTests() => LateUpdate();
 
+        internal void ForceHudRebuildOnNextSampleForTests() => _nextHudTime = 0f;
+
         private void HandleHotkeys()
         {
             if (InputMap.Down(InputAction.PerfMonitorToggleRecording)) ApplyF9(shiftHeld: true);
@@ -184,6 +190,11 @@ namespace KitchenDesigner.Core
                 Debug.Log(path != null
                     ? $"[Perf] CSV: {rows} кадров -> {path}"
                     : "[Perf] CSV: писать нечего");
+                if (path != null)
+                {
+                    _lastCsvPath = path;
+                    _lastCsvPathUntil = Time.unscaledTime + RecentCsvPathDisplaySeconds;
+                }
                 return path;
             }
 
@@ -441,8 +452,17 @@ namespace KitchenDesigner.Core
                 sb.AppendLine(MarkerLine(_slots[i].Name, previousFrameMs[i], HudNameColumnWidth));
             }
 
-            if (_csv != null && _csv.Recording) sb.AppendLine($"● запись CSV: {_csv.Rows} кадров");
+            sb.AppendLine(RecordingStatusLine());
             return sb.ToString();
+        }
+
+        private string RecordingStatusLine()
+        {
+            if (_csv != null && _csv.Recording)
+                return $"● запись CSV идёт: {_csv.Rows} кадров — Shift+F9 остановит и сохранит";
+            if (_lastCsvPath != null && Time.unscaledTime < _lastCsvPathUntil)
+                return $"CSV сохранён: {_lastCsvPath}";
+            return RecordHintLine;
         }
 
         public static void DumpNow()

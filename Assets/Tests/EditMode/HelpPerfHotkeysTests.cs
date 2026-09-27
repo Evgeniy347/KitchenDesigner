@@ -117,4 +117,87 @@ public class HelpPerfHotkeysTests
             File.Delete(path!);
         }
     }
+
+    [Test]
+    public void Hud_ShowsTheRecordingHint_WhileNotRecording()
+    {
+        var host = new GameObject("PerfHost");
+        try
+        {
+            var monitor = NewMonitor(host);
+            PerfMonitor.Enabled = true;
+            monitor.SimulateLateUpdateForTests();
+
+            StringAssert.Contains(PerfMonitor.RecordHintLine, monitor.HudText,
+                "пока запись не идёт, оверлей обязан коротко напоминать, как её начать");
+
+            monitor.SimulateOnDestroyForTests();
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(host);
+        }
+    }
+
+    [Test]
+    public void Hud_ShowsThatRecordingIsInProgress_InsteadOfTheHint()
+    {
+        var host = new GameObject("PerfHost");
+        try
+        {
+            var monitor = NewMonitor(host);
+            PerfMonitor.Enabled = true;
+            monitor.SetCsvRecording(true);
+            monitor.SimulateLateUpdateForTests();
+
+            StringAssert.Contains("запись CSV идёт", monitor.HudText,
+                "во время записи оверлей обязан сказать, что она идёт, а не показывать "
+                + "общую подсказку про Shift+F9");
+            StringAssert.DoesNotContain(PerfMonitor.RecordHintLine, monitor.HudText);
+
+            string? path = monitor.SetCsvRecording(false);
+            if (path != null) File.Delete(path);
+            monitor.SimulateOnDestroyForTests();
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(host);
+        }
+    }
+
+    /// <summary>Путь печатается в консоль (Debug.Log, значит и в Player.log) и обязан
+    /// быть реальным, существующим файлом — не только строкой. Тот же путь на несколько
+    /// секунд появляется и в самом оверлее, чтобы не заставлять искать его в логе.</summary>
+    [Test]
+    public void StoppingTheRecording_LogsAnAbsolutePathThatExists_AndShowsItInTheHudBriefly()
+    {
+        var host = new GameObject("PerfHost");
+        try
+        {
+            var monitor = NewMonitor(host);
+            PerfMonitor.Enabled = true;
+            monitor.SetCsvRecording(true);
+            monitor.SimulateLateUpdateForTests();
+            monitor.SimulateLateUpdateForTests();
+
+            string? path = monitor.SetCsvRecording(false);
+
+            Assert.IsNotNull(path, "хотя бы один кадр обязан был записан за два тика LateUpdate");
+            Assert.IsTrue(Path.IsPathRooted(path), "в лог и в оверлей обязан идти АБСОЛЮТНЫЙ путь");
+            Assert.IsTrue(File.Exists(path), "путь из лога обязан указывать на реально существующий файл");
+
+            monitor.ForceHudRebuildOnNextSampleForTests();
+            monitor.SimulateLateUpdateForTests();
+            StringAssert.Contains(path!, monitor.HudText,
+                "сразу после остановки записи путь к CSV обязан появиться в самом оверлее, "
+                + "а не только в консоли");
+
+            File.Delete(path!);
+            monitor.SimulateOnDestroyForTests();
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(host);
+        }
+    }
 }

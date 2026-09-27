@@ -9,6 +9,9 @@ namespace KitchenDesigner.Core
         private const int FontSize = 13;
         internal const string MonospaceFontName = "Consolas";
 
+        internal static float ToolbarBottomY = DefaultToolbarBottomY;
+        internal const float DefaultToolbarBottomY = 52f;
+
         private GUIStyle? _style;
         private Texture2D? _background;
 
@@ -16,6 +19,14 @@ namespace KitchenDesigner.Core
             monitorEnabled
             && currentEvent == EventType.Repaint
             && !string.IsNullOrEmpty(hudText);
+
+        internal static Rect ComputeRect(float screenWidth, float toolbarBottomY, float height)
+        {
+            float width = Mathf.Min(Width, Mathf.Max(0f, screenWidth - 2 * Margin));
+            float x = Mathf.Max(Margin, screenWidth - width - Margin);
+            float y = toolbarBottomY + Margin;
+            return new Rect(x, y, width, height);
+        }
 
         private void OnGUI()
         {
@@ -26,7 +37,7 @@ namespace KitchenDesigner.Core
             var style = EnsureStyle();
             var content = new GUIContent(monitor.HudText);
             float height = style.CalcHeight(content, Width);
-            GUI.Label(new Rect(Margin, Margin, Width, height), content, style);
+            GUI.Label(ComputeRect(Screen.width, ToolbarBottomY, height), content, style);
         }
 
         internal GUIStyle EnsureStyle()

@@ -34,6 +34,7 @@ namespace KitchenDesigner.Core.UI
 
             _canvas = UIFactory.CreateCanvas("UICanvas");
             _toolbar.Build(_canvas.transform, this);
+            PerfHud.ToolbarBottomY = ToolbarUI.BarHeight;
 
             var specPanel = gameObject.AddComponent<SpecificationPanelUI>();
             specPanel.Build(_canvas.transform);
