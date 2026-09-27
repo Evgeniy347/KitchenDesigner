@@ -9,19 +9,15 @@ namespace KitchenDesigner.Core
         public static Mesh Build(IReadOnlyList<WallCentreline> loadBearingCentrelines,
             Vector3 originWorld, float widthMm, float depthMm)
         {
-            var mesh = new Mesh();
             var polylines = FoundationLayout.MergeIntoPolylines(loadBearingCentrelines);
-            if (polylines.Count == 0) return mesh;
+            if (polylines.Count == 0) return new Mesh();
 
             float widthUnits = Mathf.Max(0f, widthMm) * AppConstants.MM_TO_UNITS;
             float depthUnits = Mathf.Max(0f, depthMm) * AppConstants.MM_TO_UNITS;
             float halfWidth = widthUnits * 0.5f;
             float centreY = -depthUnits * 0.5f;
 
-            var vertices = new List<Vector3>();
-            var normals = new List<Vector3>();
-            var uvs = new List<Vector2>();
-            var triangles = new List<int>();
+            var accumulator = new MeshAccumulator();
 
             foreach (var polyline in polylines)
             {
@@ -32,21 +28,14 @@ namespace KitchenDesigner.Core
                 {
                     var start = points[i] - originWorld;
                     var end = points[i + 1] - originWorld;
-                    AddSegment(vertices, normals, uvs, triangles, start, end, halfWidth,
-                        widthUnits, depthUnits, centreY);
+                    AddSegment(accumulator, start, end, halfWidth, widthUnits, depthUnits, centreY);
                 }
             }
 
-            mesh.vertices = vertices.ToArray();
-            mesh.normals = normals.ToArray();
-            mesh.uv = uvs.ToArray();
-            mesh.triangles = triangles.ToArray();
-            mesh.RecalculateBounds();
-            return mesh;
+            return accumulator.Build();
         }
 
-        private static void AddSegment(List<Vector3> vertices, List<Vector3> normals,
-            List<Vector2> uvs, List<int> triangles, Vector3 start, Vector3 end,
+        private static void AddSegment(MeshAccumulator accumulator, Vector3 start, Vector3 end,
             float halfWidth, float widthUnits, float depthUnits, float centreY)
         {
             var flat = new Vector3(end.x - start.x, 0f, end.z - start.z);
@@ -66,17 +55,7 @@ namespace KitchenDesigner.Core
 
             var segmentMesh = ProfileExtrusionMesh.Build(profile, length, widthUnits,
                 depthUnits, centreY);
-            Append(vertices, normals, uvs, triangles, segmentMesh);
-        }
-
-        private static void Append(List<Vector3> vertices, List<Vector3> normals,
-            List<Vector2> uvs, List<int> triangles, Mesh segmentMesh)
-        {
-            int offset = vertices.Count;
-            vertices.AddRange(segmentMesh.vertices);
-            normals.AddRange(segmentMesh.normals);
-            uvs.AddRange(segmentMesh.uv);
-            foreach (var index in segmentMesh.triangles) triangles.Add(index + offset);
+            accumulator.Consume(segmentMesh, Vector3.zero);
         }
     }
 }
