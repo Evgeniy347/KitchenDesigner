@@ -106,18 +106,26 @@ public class EdgeCoverageBroadPhaseEquivalenceTests
     /// nobody; a naive dense grid of near-zero-height shelves (tried first here) collapsed every
     /// row into ONE grid cell along Y and made the broad phase itself the bottleneck — this
     /// layout is the fix for that: separation, not density, is what a broad phase needs.</summary>
-    private List<KitchenElement> MakeTouchingPairs(int pairCount)
+    private const float PairSpacingUnits = 3.0f;
+
+    private static Vector3 PairOriginAlongX(int i) => new Vector3(i * PairSpacingUnits, 0f, 0f);
+
+    private static Vector3 PairOriginAlongZ(int i) => new Vector3(0f, 0f, i * PairSpacingUnits);
+
+    private static Vector3 PairOriginAlongDiagonal(int i) =>
+        new Vector3(i * PairSpacingUnits, 0f, i * PairSpacingUnits);
+
+    private List<KitchenElement> MakeTouchingPairs(int pairCount, Func<int, Vector3> pairOrigin)
     {
         var dims = new Vector3Int(600, 18, 400);
-        const float pairSpacingUnits = 3.0f;
         float widthUnits = dims.x * AppConstants.MM_TO_UNITS;
 
         var elements = new List<KitchenElement>(pairCount * 2);
         for (int i = 0; i < pairCount; i++)
         {
-            float x = i * pairSpacingUnits;
-            elements.Add(MakeBoard($"pair{i}_a", dims, new Vector3(x, 0f, 0f)));
-            elements.Add(MakeBoard($"pair{i}_b", dims, new Vector3(x + widthUnits, 0f, 0f)));
+            Vector3 origin = pairOrigin(i);
+            elements.Add(MakeBoard($"pair{i}_a", dims, origin));
+            elements.Add(MakeBoard($"pair{i}_b", dims, origin + new Vector3(widthUnits, 0f, 0f)));
         }
         return elements;
     }
@@ -125,7 +133,7 @@ public class EdgeCoverageBroadPhaseEquivalenceTests
     [Test]
     public void Coverage_OnADenseSyntheticSceneOf1600Elements_MatchesTheBruteForceScan()
     {
-        var elements = MakeTouchingPairs(800);
+        var elements = MakeTouchingPairs(800, PairOriginAlongX);
         var scene = SceneFaces.Of(elements);
         int mismatches = 0;
         var firstMismatch = "";
@@ -157,27 +165,50 @@ public class EdgeCoverageBroadPhaseEquivalenceTests
     /// (деталь, кандидат) пар, которые `EdgeBanding.CoverageOverCandidates` реально
     /// перебирает (`EdgeBanding.TakeCandidatesExamined`), а не тем, сколько это заняло по
     /// часам. Тот же приём, что и `2 × probes(N) == probes(2N)` в других сторожах этого
-    /// проекта (conventions/CORRECTNESS.md).</summary>
+    /// проекта (conventions/CORRECTNESS.md).
+    ///
+    /// 2026-09-26: `SphereSweep` мело только по X, поэтому кухонный ряд вдоль стены Z (все
+    /// корпуса на одном x, разные z) вырождал развёртку в перебор всех пар — рост оставался
+    /// линейным ТОЛЬКО для этой, X-раскладки (`SphereSweepTests` доказывает это на голых
+    /// сферах отдельно). Три раскладки ниже — X, Z и диагональ — кладут одни и те же
+    /// touching-пары по разным осям и должны дать один и тот же линейный рост.</summary>
     [Test]
-    public void EdgeCoverCandidatesExamined_GrowsLinearly_NotQuadratically_AsTheSceneQuadruples()
+    public void EdgeCoverCandidatesExamined_GrowsLinearly_NotQuadratically_AlongX()
     {
-        int small = CandidatesExaminedOverWholeScene(pairCount: 100);
-        int large = CandidatesExaminedOverWholeScene(pairCount: 400);
-
-        Assert.Greater(small, 0, "сцена из 200 элементов обязана дать хоть один кандидат — "
-            + "иначе сравнение ничего не проверяет");
-        Assert.Less(large, small * 8,
-            $"сцена выросла в 4 раза (100 пар -> 400 пар), число проверенных кандидатов "
-            + $"выросло с {small} до {large}. Индексный путь (`SceneFaces.NeighborsOf` через "
-            + "`SphereSweep`) на этой раздельной раскладке даёт кандидатов O(n) — рост "
-            + "должен остаться около 4×. Рост около 16× (или больше 8×, взятого с запасом "
-            + "между 4× и 16×) означает, что перебор снова стал O(n²) и деградировал до "
-            + "`CoverageBruteForceForTests`-подобного поведения");
+        AssertCandidatesGrowLinearly(PairOriginAlongX, "X");
     }
 
-    private int CandidatesExaminedOverWholeScene(int pairCount)
+    [Test]
+    public void EdgeCoverCandidatesExamined_GrowsLinearly_NotQuadratically_AlongZ()
     {
-        var elements = MakeTouchingPairs(pairCount);
+        AssertCandidatesGrowLinearly(PairOriginAlongZ, "Z");
+    }
+
+    [Test]
+    public void EdgeCoverCandidatesExamined_GrowsLinearly_NotQuadratically_AlongADiagonal()
+    {
+        AssertCandidatesGrowLinearly(PairOriginAlongDiagonal, "диагонали X=Z");
+    }
+
+    private void AssertCandidatesGrowLinearly(Func<int, Vector3> pairOrigin, string layoutName)
+    {
+        int small = CandidatesExaminedOverWholeScene(pairCount: 100, pairOrigin);
+        int large = CandidatesExaminedOverWholeScene(pairCount: 400, pairOrigin);
+
+        Assert.Greater(small, 0, $"раскладка вдоль {layoutName}: сцена из 200 элементов "
+            + "обязана дать хоть один кандидат — иначе сравнение ничего не проверяет");
+        Assert.Less(large, small * 8,
+            $"раскладка вдоль {layoutName}: сцена выросла в 4 раза (100 пар -> 400 пар), число "
+            + $"проверенных кандидатов выросло с {small} до {large}. Индексный путь "
+            + "(`SceneFaces.NeighborsOf` через `SphereSweep`) на этой раздельной раскладке "
+            + "даёт кандидатов O(n) — рост должен остаться около 4×. Рост около 16× (или "
+            + "больше 8×, взятого с запасом между 4× и 16×) означает, что перебор снова стал "
+            + "O(n²) и деградировал до `CoverageBruteForceForTests`-подобного поведения");
+    }
+
+    private int CandidatesExaminedOverWholeScene(int pairCount, Func<int, Vector3> pairOrigin)
+    {
+        var elements = MakeTouchingPairs(pairCount, pairOrigin);
         var scene = SceneFaces.Of(elements);
 
         EdgeBanding.TakeCandidatesExamined();
