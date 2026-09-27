@@ -16,7 +16,16 @@ namespace KitchenDesigner.Core.Construction
 
         public const FenceSheetMark SheetMark = FenceSheetMark.C8; // ГОСТ 24045-2016
         public const int SheetWorkingWidthMm = 1150; // ГОСТ 24045-2016
+        public const int SheetWorkingWidthC20Mm = 1000; // ГОСТ 24045-2016
+        public const int SheetWorkingWidthHc35Mm = 1000; // ГОСТ 24045-2016
         public const int SheetThicknessMm = 8;
         public const int PostCapAboveSheetMm = SheetThicknessMm;
+
+        public static int SheetWorkingWidthMmOf(FenceSheetMark mark) => mark switch
+        {
+            FenceSheetMark.C20 => SheetWorkingWidthC20Mm,
+            FenceSheetMark.HC35 => SheetWorkingWidthHc35Mm,
+            _ => SheetWorkingWidthMm,
+        };
     }
 }

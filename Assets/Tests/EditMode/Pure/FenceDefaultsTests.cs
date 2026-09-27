@@ -54,4 +54,36 @@ public class FenceDefaultsTests
             + "(todo_evolution.md §3.3), как шаг арматуры у FoundationRebarDefaults — "
             + "без претензии на цитату норматива");
     }
+
+    /// <summary>test-results/review-construction.md #11: FenceElement.GetSpecItems всегда
+    /// передавал FenceDefaults.SheetWorkingWidthMm (1150, рабочую ширину С8) в FenceSpecItems,
+    /// какая бы марка ни была выбрана — марка меняла только надпись в ведомости, а не число
+    /// листов. НС35 и С20 у́же С8 (docs/NORMATIVE-DEFAULTS.md §3), поэтому ведомость
+    /// недозаказывала материал для более узкого листа.</summary>
+    [Test]
+    [Category("NormativeUnverified")]
+    public void SheetWorkingWidthMmOf_C8_ReturnsTheDefaultWidth()
+    {
+        Assert.AreEqual(FenceDefaults.SheetWorkingWidthMm,
+            FenceDefaults.SheetWorkingWidthMmOf(FenceSheetMark.C8));
+    }
+
+    [Test]
+    [Category("NormativeUnverified")]
+    public void SheetWorkingWidthMmOf_HC35_Is1000_NotTheDefaultС8Width()
+    {
+        Assert.AreEqual(1000, FenceDefaults.SheetWorkingWidthMmOf(FenceSheetMark.HC35),
+            "рабочая ширина НС35 по ГОСТ 24045-2016 — 1000 мм, у́же С8 (1150 мм); "
+            + "ceil(10000/1000)=10 листов, а не ceil(10000/1150)=9");
+    }
+
+    [Test]
+    [Category("NormativeUnverified")]
+    public void SheetWorkingWidthMmOf_C20_Is1000_TheConservativeLowerBoundOfTheDisputedRange()
+    {
+        Assert.AreEqual(1000, FenceDefaults.SheetWorkingWidthMmOf(FenceSheetMark.C20),
+            "источники по С20 расходятся (рабочая ширина 1000-1100 мм, NORMATIVE-DEFAULTS.md "
+            + "§3) — взят нижний край диапазона, чтобы ведомость скорее переоценила число "
+            + "листов, чем недозаказала материал");
+    }
 }

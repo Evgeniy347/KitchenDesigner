@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -106,5 +107,23 @@ public class FenceElementLiveEditTests
 
         Assert.AreEqual(countBefore, PostCount(fence));
         Assert.AreEqual(scaleBefore, Post(fence, 0).localScale.x, 1e-5f);
+    }
+
+    /// <summary>test-results/review-construction.md #11: GetSpecItems всегда заказывал лист
+    /// по рабочей ширине С8 (1150 мм), какая бы марка ни стояла — смена марки меняла только
+    /// подпись материала в ведомости, а число листов оставалось прежним.</summary>
+    [Test]
+    public void GetSpecItems_HC35_OrdersByItsOwnNarrowerWidth_NotTheDefaultС8Width()
+    {
+        var fence = Spawn(10000, 2000);
+        fence.SheetMark = FenceSheetMark.HC35;
+
+        var sheetItem = fence.GetSpecItems(new List<KitchenElement>())
+            .Single(i => i.name == FenceSpecItems.SheetName);
+
+        Assert.AreEqual("НС35", sheetItem.material);
+        Assert.AreEqual(10, sheetItem.qty, 0.01f,
+            "ceil(10000/1000) = 10 листов НС35 (рабочая ширина 1000 мм), а не "
+            + "ceil(10000/1150) = 9, как было бы при рабочей ширине С8");
     }
 }
