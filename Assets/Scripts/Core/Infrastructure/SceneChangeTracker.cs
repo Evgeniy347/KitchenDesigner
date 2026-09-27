@@ -79,6 +79,7 @@ namespace KitchenDesigner.Core
             _membershipChanged = false;
             ScrewLegHostLink.ApplyAll(PartRegistry.All);
             Analysis.PipeFittingSizeLink.ApplyAll(PartRegistry.All);
+            FoundationHostLink.ApplyAll(PartRegistry.All);
             WakeWhoeverParkedAtAGestureLimit();
             SceneRevision.Bump();
         }
