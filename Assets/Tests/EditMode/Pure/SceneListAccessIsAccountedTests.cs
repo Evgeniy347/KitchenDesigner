@@ -40,7 +40,7 @@ public class SceneListAccessIsAccountedTests
 {
     private static readonly (string file, int uses)[] TheUnnamedPath =
     {
-        ("Infrastructure/SceneChangeTracker.cs", 5),
+        ("Infrastructure/SceneChangeTracker.cs", 6),
         ("Elements/WallOpeningElement.cs", 3),
         ("Elements/FacadeElement.cs", 3),
         ("Elements/DrawerLinks.cs", 3),
@@ -66,6 +66,8 @@ public class SceneListAccessIsAccountedTests
         ("Elements/DishwasherElement.cs", 1),
         ("Elements/AttachRider.cs", 1),
         ("Commands/ConvertElementCommand.cs", 1),
+        ("Commands/DeleteLevelCommand.cs", 1),
+        ("Commands/SetLevelElevationCommand.cs", 1),
     };
 
     /// <summary>Каталоги самого прибора: там «PartRegistry.All» встречается как
