@@ -17,6 +17,7 @@ set "FLAG_TESTS="
 set "FLAG_PLAY="
 set "FLAG_BUILD="
 set "FLAG_WIN_DEBUG="
+set "FLAG_PCC="
 set "FILTER="
 
 :parse_args
@@ -26,6 +27,7 @@ if /i "%~1"=="-RunTests" set "FLAG_TESTS=1"
 if /i "%~1"=="-RunPlayMode" set "FLAG_PLAY=1"
 if /i "%~1"=="-BuildOnly" set "FLAG_BUILD=1"
 if /i "%~1"=="-WinDebug" set "FLAG_WIN_DEBUG=1"
+if /i "%~1"=="-PlayerCompile" set "FLAG_PCC=1"
 REM Via goto, not an if-block: inside parentheses %~1 expands BEFORE the shift,
 REM and the filter value is lost.
 if /i "%~1"=="-Filter" goto :take_filter
@@ -50,6 +52,21 @@ if defined FLAG_CLEAN (
     call "%~dp0clean.cmd"
 )
 
+REM ---- Player compile gate ----
+REM Compiles the PLAYER assemblies (Standalone Windows64 defines, no UNITY_EDITOR) without
+REM building a player. Code under "#if !UNITY_EDITOR" is invisible to the editor compile and
+REM to every test, so a full -RunTests / -RunPlayMode (no -Filter) runs this first: it dies
+REM here in seconds, not after the whole suite. -PlayerCompile runs it on its own.
+set "RUN_PCC="
+if defined FLAG_PCC set "RUN_PCC=1"
+if not defined FILTER if defined FLAG_TESTS set "RUN_PCC=1"
+if not defined FILTER if defined FLAG_PLAY set "RUN_PCC=1"
+if defined RUN_PCC (
+    echo === Player compile check ===
+    %gate% method -Method KitchenDesigner.Editor.PlayerCompileCheck.Run -LogSuffix pcc
+    if !errorlevel! neq 0 goto :pcc_failed
+)
+if defined FLAG_PCC if not defined FLAG_TESTS if not defined FLAG_PLAY if not defined FLAG_BUILD if not defined FLAG_WIN_DEBUG goto :done_no_build
 REM ---- Tests ----
 if defined FLAG_TESTS (
     echo === EditMode Tests ===
@@ -100,6 +117,14 @@ exit /b 0
 :done_no_build
 exit /b 0
 
+:pcc_failed
+echo.
+echo =================================
+echo  PLAYER COMPILE FAILED
+echo  Log: %log%.pcc.log
+echo =================================
+findstr /c:"error CS" "%log%.pcc.log" | sort /unique
+exit /b 1
 :tests_failed
 echo [FAIL] Tests failed.
 exit /b 1
