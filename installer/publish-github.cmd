@@ -12,8 +12,9 @@ REM    installer\publish-github.cmd -NotesFile F - file with the Russian changel
 REM                                                written by the agent; see PUBLISH.md
 REM                                                and commits-since-release.ps1.
 REM
-REM  Does: tag v<version> -> push origin -> gh release create/edit + asset upload
-REM  -> prints the download link.
+REM  Does: tag v<version> -> push origin -> draft release -> asset upload (retries,
+REM  size-scaled timeout) -> verify the asset -> publish -> prints the download link.
+REM  Details and the failure/resume behaviour: publish-release.ps1.
 REM
 REM  ASCII ONLY, deliberately: cmd.exe seeks inside a batch file by byte offset and
 REM  mis-parses multibyte characters when the console runs at code page 65001. The
@@ -160,24 +161,19 @@ if errorlevel 1 (
     git -C "%root%" push origin !TAG! >nul 2>nul
 )
 
-set "GHFLAGS="
-if defined PRERELEASE set "GHFLAGS=--prerelease"
-
-REM ---- release (create, or edit + upload; idempotent) ----
-gh release view "!TAG!" -R "!SLUG!" >nul 2>nul
-if errorlevel 1 (
-    echo === [4/5] Creating release !TAG! ===
-    gh release create "!TAG!" "!SETUP!" -R "!SLUG!" --title "Kitchen Designer !VER!" --notes-file "!NOTES!" !GHFLAGS!
-    if errorlevel 1 ( echo [FAIL] gh release create failed & exit /b 1 )
-) else (
-    echo === [4/5] Updating existing release !TAG! ===
-    REM A second run used to upload the asset only and leave the body from the first
-    REM run, so a corrected changelog went nowhere.
-    gh release edit "!TAG!" -R "!SLUG!" --title "Kitchen Designer !VER!" --notes-file "!NOTES!" !GHFLAGS!
-    if errorlevel 1 ( echo [FAIL] gh release edit failed & exit /b 1 )
-    gh release upload "!TAG!" "!SETUP!" -R "!SLUG!" --clobber
-    if errorlevel 1 ( echo [FAIL] gh release upload failed & exit /b 1 )
-)
+REM ---- release: draft -> upload -> verify -> publish (installer\publish-release.ps1) ----
+REM `gh release create <tag> <setup>` used to create the release, push 60 MB and publish in one
+REM call: when the upload hit the time limit it left an EMPTY DRAFT and no explanation. Now the
+REM helper creates a draft without the asset, uploads it with retries and a timeout scaled to
+REM the file size, checks on the GitHub side that the asset is there (state=uploaded, same size)
+REM and only then publishes. Any failure prints the STATE block and exits 1; running this script
+REM again resumes (every step is idempotent). The whole pipeline (build, smokes, upload) is long:
+REM run it in the background, not under a 10 minute tool limit.
+set "PRFLAG="
+if defined PRERELEASE set "PRFLAG=-PreRelease"
+echo === [4/5] Release !TAG!: draft, upload, verify, publish ===
+powershell -NoProfile -ExecutionPolicy Bypass -File "%installerDir%publish-release.ps1" -Tag "!TAG!" -Version "!VER!" -Title "Kitchen Designer !VER!" -SetupPath "!SETUP!" -NotesFile "!NOTES!" -Repo "!SLUG!" -VerifyTag !PRFLAG!
+if errorlevel 1 ( echo [FAIL] release was NOT published - see the STATE block above, then re-run the same command to resume & exit /b 1 )
 del "!NOTES!" >nul 2>nul
 
 echo === [5/5] Done ===
@@ -201,11 +197,11 @@ echo [dry] would smoke-test Build\KitchenDesigner.exe, then install "!SETUP!" ov
 if defined NOTESFILE (echo [dry] changelog from: !NOTESFILE!) else (echo [dry] NO -NotesFile: the changelog will be a placeholder)
 echo [dry] tag !TAG! + push origin
 if defined PRERELEASE (
-    echo [dry] gh release create !TAG! "!SETUP!" --title "Kitchen Designer !VER!" --prerelease  ^(edit+upload if exists^)
+    echo [dry] draft release !TAG! --prerelease, upload with retries, verify the asset, publish ^(publish-release.ps1^)
     echo [dry] download would be: https://github.com/.../releases/download/!TAG!/KitchenDesigner-Setup-!VER!-x64.exe
     echo [dry] releases/latest and the in-app updater will NOT see it.
 ) else (
-    echo [dry] gh release create !TAG! "!SETUP!" --title "Kitchen Designer !VER!"  ^(edit+upload if exists^)
+    echo [dry] draft release !TAG!, upload with retries, verify the asset, publish as latest ^(publish-release.ps1^)
     echo [dry] download would be: https://github.com/.../releases/latest/download/KitchenDesigner-Setup-!VER!-x64.exe
 )
 REM PUBLISH.md promises that -DryRun shows the release body; it never rendered one.
