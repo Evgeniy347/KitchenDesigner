@@ -112,6 +112,14 @@ public class LocalizationGuardTests
                     .Select(m => (Relative(f), m.Groups[1].Value, m.Groups[2].Value))))
             .ToList();
 
+    private static IEnumerable<string> DecorIds()
+    {
+        var json = File.ReadAllText(Path.Combine(RepoPaths.Subdir("Assets", "StreamingAssets", "Textures"), "index.json"), Encoding.UTF8);
+        var textures = JsonText.MemberValue(json, JsonText.RootObject(json), "textures");
+        return JsonText.ArrayItems(json, textures)
+            .Select(item => JsonText.MemberValue(json, item, "id").Text(json).Trim('"'));
+    }
+
     private static HashSet<string> BaseKeys(StringTable table) =>
         new HashSet<string>(table.Keys.Select(StringTable.BaseKey), StringComparer.Ordinal);
 
@@ -119,6 +127,13 @@ public class LocalizationGuardTests
         new HashSet<string>(
             KeysInCode().Select(k => k.key).Concat(HintText.Keys.Select(HintText.TableKey)),
             StringComparer.Ordinal);
+
+    private static HashSet<string> KeysWithAReader()
+    {
+        var keys = UsedKeys();
+        keys.UnionWith(DecorIds().Select(id => DecorNames.KeyPrefix + id));
+        return keys;
+    }
 
     [Test]
     public void TheScan_SeesTheInterfaceCode_AndASampleUiFileIsNotExempt()
@@ -211,7 +226,7 @@ public class LocalizationGuardTests
     [Test]
     public void EveryKeyInTheTables_IsUsedByTheCode()
     {
-        var used = UsedKeys();
+        var used = KeysWithAReader();
         var dead = BaseKeys(Table("ru")).Where(k => !used.Contains(k)).ToList();
 
         Assert.IsEmpty(dead,

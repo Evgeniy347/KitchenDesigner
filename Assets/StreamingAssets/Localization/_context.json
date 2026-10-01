@@ -242,6 +242,226 @@
     "meaning": "Wall of squared timber beams (log-type wall), counted by volume",
     "maxLength": 24
   },
+  "decor.name.belaya_gladkaya_kastamonu": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id belaya_gladkaya_kastamonu); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.belaya_gladkaya_svisskrono": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id belaya_gladkaya_svisskrono); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.belyy_premium_filvud_w1000": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id belyy_premium_filvud_w1000); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.concrete": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id concrete); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.default": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id default); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_charlston_temno_korichnevyy_h3154": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_charlston_temno_korichnevyy_h3154); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_davenport_naturalnyy_svetlyy_h3359": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_davenport_naturalnyy_svetlyy_h3359); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_evropeyskiy": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_evropeyskiy); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_evropeyskiy_tinting": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_evropeyskiy_tinting); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_evropeyskiy_tinting_2": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_evropeyskiy_tinting_2); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_evropeyskiy_tinting_3": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_evropeyskiy_tinting_3); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_galifaks_belyy_h1176": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_galifaks_belyy_h1176); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_galifaks_naturalnyy_h1180": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_galifaks_naturalnyy_h1180); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_galifaks_olovo_h3176": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_galifaks_olovo_h3176); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_galifaks_tabak_h1181": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_galifaks_tabak_h1181); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_gladstoun_pesochnyy_h3309": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_gladstoun_pesochnyy_h3309); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_gladstoun_tabak_h3325": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_gladstoun_tabak_h3325); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_kasella_kashtanovyy_h1369": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_kasella_kashtanovyy_h1369); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_kasella_korichnevyy_h1386": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_kasella_korichnevyy_h1386); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_kasella_naturalnyy_h1385": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_kasella_naturalnyy_h1385); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_kasella_naturalnyy_svetlyy_h1367": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_kasella_naturalnyy_svetlyy_h1367); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_kuneo_korichnevyy_h3317": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_kuneo_korichnevyy_h3317); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_sakramento_korichnevyy_h1142": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_sakramento_korichnevyy_h1142); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_sherman_antratsit_h1346": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_sherman_antratsit_h1346); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.dub_sherman_konyak_h1344": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id dub_sherman_konyak_h1344); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.gtv_anthracite": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id gtv_anthracite); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.gtv_black": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id gtv_black); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.gtv_white": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id gtv_white); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.hdf_neshlifovannaya": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id hdf_neshlifovannaya); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.les_chernyy_u998": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id les_chernyy_u998); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.lhdf_antratsit_shagren_164pe": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id lhdf_antratsit_shagren_164pe); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.lhdf_belaya_shagren_101pe_sm": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id lhdf_belaya_shagren_101pe_sm); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.lhdf_belyy_0101pe": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id lhdf_belyy_0101pe); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.lhdf_belyy_knyazhpogost_101pe": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id lhdf_belyy_knyazhpogost_101pe); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.lhdf_bezhevyy_0522pe": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id lhdf_bezhevyy_0522pe); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.lhdf_chernyy_0190pe": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id lhdf_chernyy_0190pe); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.lhdf_dub_sonoma_shagren_3025pe": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id lhdf_dub_sonoma_shagren_3025pe); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.lhdf_seryy_kamen_0112pe": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id lhdf_seryy_kamen_0112pe); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.mdf_shlifovannaya": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id mdf_shlifovannaya); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.oak": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id oak); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.teplyy_medovyy_dub": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id teplyy_medovyy_dub); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.wenge": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id wenge); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.white": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id white); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
+  "decor.name.yasen_navarra_h1250": {
+    "where": "Decor (material) dropdowns in the properties panel; decor column of the specification",
+    "meaning": "Decor name from the texture catalog (StreamingAssets/Textures/index.json, id yasen_navarra_h1250); keep manufacturer codes as they are",
+    "maxLength": 60
+  },
   "decor.overlaySide.all": {
     "where": "Context menu, Texture section: last option of the face dropdown (the others are letters A-F)",
     "meaning": "Apply the texture overlay to all six faces",

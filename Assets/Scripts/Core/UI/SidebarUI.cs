@@ -476,7 +476,7 @@ namespace KitchenDesigner.Core.UI
 
         internal static EditModeManager.Category ItemCategory(SidebarCatalog.Item it)
         {
-            if (it.name == EditModeManager.KorobName) return EditModeManager.Category.Always;
+            if (EditModeManager.IsBoxName(it.name)) return EditModeManager.Category.Always;
             return it.Category;
         }
 

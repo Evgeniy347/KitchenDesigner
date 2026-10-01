@@ -1,6 +1,7 @@
 using System.Collections;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
@@ -65,6 +66,8 @@ public class LanguageSwitchRebuildTests
         UIManager.Instance!.Canvas!.GetComponentsInChildren<TextMeshProUGUI>(true)
             .Single(t => t.name == "Lbl_" + SettingsProjectTab.LanguageRowId);
 
+    private static readonly string[] Roots = { "SettingsPanel", "Sidebar", "ContextMenu", "DayNightPanel", "ErrorPanel" };
+
     private static int InterfaceCanvases() =>
         Object.FindObjectsByType<Canvas>().Count(c => c.name == "UICanvas");
 
@@ -74,10 +77,13 @@ public class LanguageSwitchRebuildTests
     }
 
     [UnityTest]
-    public IEnumerator SetLanguage_RebuildsTheInterface_AndKeepsTheSettingsTabOpen()
+    public IEnumerator SetLanguage_RebuildsTheInterface_AndReopensWhatWasOpen()
     {
+        var board = ElementFactory.CreatePart(new Vector3Int(600, 400, 16), "Shelf", Vector3.zero)
+            .GetComponent<KitchenElement>();
         var ui = UIManager.Instance!;
         ui.ToggleSettings();
+        ui.OpenContextMenu(board);
         yield return null;
         Assert.AreEqual("Язык", LanguageRowLabel().text, "прогон закреплён за русским исходником");
         Assert.AreEqual(0, ui.SettingsPanel!.CurrentTab);
@@ -93,22 +99,32 @@ public class LanguageSwitchRebuildTests
         Assert.IsTrue(ui.IsPanelVisible(ToolbarPanel.Settings),
             "язык выбирают в настройках — окно не должно захлопнуться у человека перед носом");
         Assert.AreEqual(0, ui.SettingsPanel!.CurrentTab);
+        Assert.AreSame(board, ui.ContextMenu!.OpenTarget,
+            "панель свойств выделенной детали после смены языка открыта на той же детали");
     }
 
     [UnityTest]
-    public IEnumerator SetLanguage_ReopensThePropertiesOfTheSelectedElement()
+    public IEnumerator English_LeavesNoRussianAndNoRawKey_InTheMainWindows()
     {
-        var board = ElementFactory.CreatePart(new Vector3Int(600, 400, 16), "Полка", Vector3.zero)
-            .GetComponent<KitchenElement>();
-        var ui = UIManager.Instance!;
-        ui.OpenContextMenu(board);
-        yield return null;
-        Assert.AreSame(board, ui.ContextMenu!.OpenTarget);
-
         Loc.SetLanguage("en");
         yield return UntilRebuilt();
 
-        Assert.AreSame(board, ui.ContextMenu!.OpenTarget,
-            "панель свойств выделенной детали после смены языка открыта на той же детали");
+        var canvas = UIManager.Instance!.Canvas!;
+        var nativeNames = Loc.Languages.Select(l => l.NativeName).ToHashSet();
+        var ruKeys = Loc.Current.Table(Localizer.SourceLanguage)!.Keys.ToHashSet();
+        var texts = canvas.GetComponentsInChildren<Transform>(true)
+            .Where(t => Roots.Contains(t.name))
+            .SelectMany(root => root.GetComponentsInChildren<TMP_Text>(true))
+            .Where(t => !nativeNames.Contains(t.text))
+            .ToList();
+        Assert.That(texts.Count, Is.GreaterThan(100), "окно настроек и каталог обязаны быть построены — иначе проверять нечего");
+
+        var russian = texts.Where(t => Regex.IsMatch(t.text, "[А-Яа-яЁё]")).Select(t => t.name + ": " + t.text).ToList();
+        var rawKeys = texts.Where(t => ruKeys.Contains(t.text)).Select(t => t.name + ": " + t.text).ToList();
+
+        Assert.IsEmpty(russian, "на английском экране осталась русская подпись — строка не вынесена в таблицу: "
+            + string.Join(" | ", russian.Take(30)));
+        Assert.IsEmpty(rawKeys, "на экране ключ вместо текста — его нет ни в en.json, ни в ru.json: "
+            + string.Join(" | ", rawKeys.Take(30)));
     }
 }

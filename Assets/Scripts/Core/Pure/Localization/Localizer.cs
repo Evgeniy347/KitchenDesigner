@@ -43,6 +43,20 @@ namespace KitchenDesigner.Core
         public StringTable? Table(string language) =>
             _tables.TryGetValue(language, out var table) ? table : null;
 
+        public bool TryGet(string key, out string text)
+        {
+            foreach (var table in _chain)
+                if (table.TryGet(key, out text)) return true;
+            text = "";
+            return false;
+        }
+
+        public IEnumerable<string> Variants(string key)
+        {
+            foreach (var table in _tables.Values)
+                if (table.TryGet(key, out var text)) yield return text;
+        }
+
         public string Get(string key)
         {
             foreach (var table in _chain)

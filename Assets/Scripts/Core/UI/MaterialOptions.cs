@@ -18,7 +18,7 @@ namespace KitchenDesigner.Core.UI
         public static List<string> DisplayNames()
         {
             var names = new List<string>();
-            foreach (var m in MaterialCatalog.All) names.Add(m.displayName);
+            foreach (var m in MaterialCatalog.All) names.Add(DecorNames.Of(m.id, m.displayName));
             return names;
         }
 
@@ -27,7 +27,7 @@ namespace KitchenDesigner.Core.UI
             if (dropdown == null) return;
             var opts = new List<TMP_Dropdown.OptionData>();
             foreach (var m in MaterialCatalog.All)
-                opts.Add(new TMP_Dropdown.OptionData(m.displayName));
+                opts.Add(new TMP_Dropdown.OptionData(DecorNames.Of(m.id, m.displayName)));
             dropdown.options = opts;
             UIFactory.FitDropdownItems(dropdown);
         }

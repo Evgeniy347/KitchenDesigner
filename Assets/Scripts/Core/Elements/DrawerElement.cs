@@ -276,7 +276,8 @@ namespace KitchenDesigner.Core
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {
-            string decor = MaterialCatalog.Get(MaterialId).displayName;
+            var decorDef = MaterialCatalog.Get(MaterialId);
+            string decor = DecorNames.Of(decorDef.id, decorDef.displayName);
 
             if (_system == DrawerSystem.Movento)
             {

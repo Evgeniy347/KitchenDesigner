@@ -213,7 +213,7 @@ namespace KitchenDesigner.Core.UI
                 FittingItem(PipeNodeKind.Return));
 
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, Loc.T("catalog.room.box"),
-                new Item("Короб", new Vector3Int(600, 600, 600)));
+                new Item(Loc.T("catalog.room.box"), new Vector3Int(600, 600, 600)));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, Loc.T("catalog.room.wall"),
                 new Item(Loc.T("catalog.room.wall"), new Vector3Int(2000, 2500, 100), SidebarItemKind.Wall));
             yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, Loc.T("elementType.window"),

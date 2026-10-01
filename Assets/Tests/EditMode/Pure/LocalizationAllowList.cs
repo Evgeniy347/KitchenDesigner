@@ -204,7 +204,6 @@ public static class LocalizationAllowList
             ("Core/UI/ShowerColumnFieldsEditor.cs", "ДиаметрШтангиСтойки", Identifier),
             ("Core/UI/ShowerColumnFieldsEditor.cs", "ДлинаШлангаСтойки", Identifier),
             ("Core/UI/ShowerColumnFieldsEditor.cs", "ТолщинаЛейкиСтойки", Identifier),
-            ("Core/UI/SidebarCatalog.cs", "Короб", Identifier),
             ("Core/UI/SofaFieldsEditor.cs", "ВысотаОснованияДивана", Identifier),
             ("Core/UI/SofaFieldsEditor.cs", "СкруглениеДивана", Identifier),
             ("Core/UI/ToiletFieldsEditor.cs", "ВысотаПанелиСмыва", Identifier),
@@ -226,6 +225,7 @@ public static class LocalizationAllowList
     public static readonly ISet<string> ComputesKeys = new HashSet<string>(StringComparer.Ordinal)
     {
         "Core/Pure/UI/HintText.cs",
+        "Core/Pure/Localization/DecorNames.cs",
     };
 
     public static bool Allows(string file, string literal) =>

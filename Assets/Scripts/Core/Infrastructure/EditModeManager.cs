@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace KitchenDesigner.Core
@@ -42,11 +43,14 @@ namespace KitchenDesigner.Core
 
         public const string KorobName = "Короб";
 
+        public static bool IsBoxName(string name) =>
+            name == KorobName || Loc.Current.Variants("catalog.room.box").Contains(name);
+
         public static Category Categorize(KitchenElement e)
         {
             if (e == null) return Category.Regular;
             if (e is WindowElement || e is DoorElement) return Category.Always;
-            if (e.PartName == KorobName) return Category.Always;
+            if (IsBoxName(e.PartName)) return Category.Always;
             if (e is FloorElement || e.GetComponent<Wall>() != null || e.GetComponent<BasePlate>() != null)
                 return Category.Room;
             return Category.Regular;

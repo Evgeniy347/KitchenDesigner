@@ -206,7 +206,7 @@ namespace KitchenDesigner.Core
                 if (route == SpecRoute.SpecificationParts)
                 {
                     var composite = (ISpecificationParts)e;
-                    string decor = MaterialCatalog.Get(e.MaterialId).displayName;
+                    string decor = DecorName(e.MaterialId);
                     foreach (var part in composite.GetSpecParts())
                         Accumulate(groups, order, $"{e.PartName}·{part.suffix}",
                             part.dimsMM, part.materialKind ?? decor, "", default, levelPrefix);
@@ -215,7 +215,7 @@ namespace KitchenDesigner.Core
 
                 if (route != SpecRoute.FlatBoard) continue;
 
-                string boardDecor = MaterialCatalog.Get(e.MaterialId).displayName;
+                string boardDecor = DecorName(e.MaterialId);
                 var edges = EdgeColumns.For(e, all);
                 Accumulate(groups, order, e.PartName, e.DimensionsMM,
                     boardDecor, GroovesLabel(e), edges, levelPrefix);
@@ -344,6 +344,12 @@ namespace KitchenDesigner.Core
             if (string.IsNullOrEmpty(thicknessLabel)) return;
             AccumulateItem(groups, order, EdgeBandingSpecItems.For(thicknessLabel, sideLengthMM, material),
                 levelPrefix);
+        }
+
+        private static string DecorName(string materialId)
+        {
+            var def = MaterialCatalog.Get(materialId);
+            return DecorNames.Of(def.id, def.displayName);
         }
     }
 }
