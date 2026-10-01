@@ -6,7 +6,7 @@ All in the repository ROOT (`F:\repos\KitchenDesigner2\kd-repose\`), Windows `.c
 
 | Script | Purpose |
 |--------|---------|
-| `build.cmd` | Tests and/or build via the gateway. Flags: `-Clean`, `-RunTests`, `-RunPlayMode`, `-Filter <name>`, `-BuildOnly`, `-WinDebug`. **`-RunTests`/`-RunPlayMode` no longer build the player** — that used to add 7–8 min to every test check; ask for a build explicitly |
+| `build.cmd` | Tests and/or build via the gateway. Flags: `-Clean`, `-RunTests`, `-RunPlayMode`, `-Filter <name>`, `-BuildOnly`, `-WinDebug`. **`-RunTests`/`-RunPlayMode` no longer build the player** — that used to add 7–8 min to every test check; ask for a build explicitly. But without `-Filter` they first compile the PLAYER assemblies (`-PlayerCompile`, ~20 s): code under `#if !UNITY_EDITOR` is invisible to the editor and to every test, and a broken player once surfaced only at release (`2a02e8f2`) |
 | `run-desktop.cmd` | Windows Debug build → launch. `-NoBuild` skips build |
 
 That is the whole list: `build.cmd`, `clean.cmd`, `run-desktop.cmd`. There is no other build

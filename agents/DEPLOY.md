@@ -16,6 +16,7 @@ that validator is not on this branch and not this branch's problem to keep in sy
 ## Desktop release (installer → GitHub)
 
 - Пользователь просит выложить релиз/инсталлятор — ОБЯЗАТЕЛЬНО прочитай **installer/PUBLISH.md** и делай по нему.
+- Публикация идёт через `installer/publish-release.ps1`: черновик → загрузка с повторами → сверка размера на GitHub → публикация. Упала — перезапусти ту же команду, она продолжит. Однажды 60 МБ не влезли в 10 минут и оставили пустой черновик.
 
 ## `.cmd` files: ASCII and CRLF, no exceptions
 
