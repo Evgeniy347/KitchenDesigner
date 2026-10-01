@@ -214,6 +214,14 @@ if (-not $installDir) { Fail "after plain_install there is no uninstall key $uni
 $appExe = Join-Path $installDir 'KitchenDesigner.exe'
 if (-not (Test-Path -LiteralPath $appExe)) { Fail "after plain_install there is no $appExe" }
 
+# ---- the language contract: setup leaves a plain REG_SZ for the app, silent updates keep it ----
+$langKey = 'HKCU:\Software\KitchenDesigner'
+$langBefore = (Get-ItemProperty -LiteralPath $langKey -Name InstallLanguage -ErrorAction SilentlyContinue).InstallLanguage
+if (-not $langBefore) { Fail "after plain_install there is no $langKey\InstallLanguage (the installer's language for the app)" }
+if ((Get-Item -LiteralPath $langKey).GetValueKind('InstallLanguage') -ne 'String') { Fail 'InstallLanguage must be a plain REG_SZ' }
+Write-Host "[OK ] InstallLanguage = $langBefore (REG_SZ)"
+Set-ItemProperty -LiteralPath $langKey -Name InstallLanguage -Value 'sentinel-keep-me'
+
 # ---- pass 2: the auto-update race ----
 $script:cleanupDir = $installDir
 $app = Start-Process -FilePath $appExe -ArgumentList @('-mcpPort', "$Port", '-muteAudio', '-hideWindow', '-ephemeralSession') -PassThru
@@ -240,6 +248,10 @@ while (-not $relaunched -and (Get-Date) -lt $deadline) {
 }
 if (-not $relaunched) { Fail 'update_race: setup installed but did not relaunch the app (/RELAUNCH)' }
 Write-Host "[OK ] update_race - app relaunched (pid $($relaunched.Id)), closing it"
+$langAfter = (Get-ItemProperty -LiteralPath $langKey -Name InstallLanguage).InstallLanguage
+Set-ItemProperty -LiteralPath $langKey -Name InstallLanguage -Value $langBefore
+if ($langAfter -ne 'sentinel-keep-me') { Fail "update_race: the silent update overwrote InstallLanguage (sentinel -> '$langAfter')" }
+Write-Host '[OK ] a silent update leaves InstallLanguage alone'
 Start-Sleep -Seconds $AppStartSec
 Stop-Leftovers $installDir
 

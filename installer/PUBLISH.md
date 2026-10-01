@@ -121,3 +121,16 @@
 - Добавлена привязка досок к родительской доске/фасаду.
 - Исправлено: валидация пассажирского фасада следует за ним при перетаскивании.
 ```
+
+## Язык установщика и язык приложения
+- В `[Languages]` десять языков (по числу `Assets/StreamingAssets/Localization/*.json`; сверяет
+  `InstallerScriptGuardTests`). Диалог выбора — `ShowLanguageDialog=auto`: показывается, только
+  если язык Windows не подошёл ни к одному. Новый язык приложения = новая строка в `[Languages]`
+  + `<имя>.AppLanguageCode=<код файла>` и переводы `[CustomMessages]`.
+- Бандл Inno переводов на упрощённый китайский не имеет: `installer\Languages\ChineseSimplified.isl`
+  даёт только имя и LCID, тексты мастера английские.
+- Контракт с приложением: setup пишет обычную строку `HKCU\Software\KitchenDesigner\InstallLanguage`
+  (REG_SZ, код языка приложения). Приложение читает её при старте ТОЛЬКО если в PlayerPrefs ещё нет
+  «Language» и переносит в PlayerPrefs (`LanguageChoice.InstallerLanguageToKeep`). Тихое
+  автообновление существующее значение не перезаписывает. Приоритет: выбор в приложении >
+  установщик > язык ОС > en. `tools\installer-smoke.ps1` проверяет значение и что обновление его не трогает.
