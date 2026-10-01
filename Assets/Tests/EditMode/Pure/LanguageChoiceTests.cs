@@ -87,4 +87,91 @@ public class LanguageChoiceTests
     {
         Assert.AreEqual(expected, LanguageChoice.Normalize(raw));
     }
+
+    private static readonly string[] AllTen =
+        { "ru", "en", "ar-TN", "de", "es", "fr", "it", "ja", "pt", "zh-Hans" };
+
+    [TestCase("ru-RU", "ru")]
+    [TestCase("en-US", "en")]
+    [TestCase("en-GB", "en")]
+    [TestCase("zh-CN", "zh-Hans")]
+    [TestCase("zh-SG", "zh-Hans")]
+    [TestCase("zh-Hans-CN", "zh-Hans")]
+    [TestCase("ar-TN", "ar-TN")]
+    [TestCase("ar-SA", "ar-TN")]
+    [TestCase("ar-EG", "ar-TN")]
+    [TestCase("ar", "ar-TN")]
+    [TestCase("pt-PT", "pt")]
+    [TestCase("pt-BR", "pt")]
+    [TestCase("pt", "pt")]
+    [TestCase("es-ES", "es")]
+    [TestCase("es-MX", "es")]
+    [TestCase("es-419", "es")]
+    [TestCase("de-DE", "de")]
+    [TestCase("de-AT", "de")]
+    [TestCase("de-CH", "de")]
+    [TestCase("fr-FR", "fr")]
+    [TestCase("fr-CA", "fr")]
+    [TestCase("fr-BE", "fr")]
+    [TestCase("fr-CH", "fr")]
+    [TestCase("it-IT", "it")]
+    [TestCase("it-CH", "it")]
+    [TestCase("ja-JP", "ja")]
+    [TestCase("ko-KR", "en")]
+    [TestCase("tr-TR", "en")]
+    [TestCase("", "en")]
+    public void Decide_EveryOsVariantOfTheTenLanguages_FindsItsFile(string os, string expected)
+    {
+        Assert.AreEqual(expected, LanguageChoice.Decide(null, new[] { os }, AllTen, testRun: false),
+            "язык ОС с регионом обязан попасть в свой файл; без перевода — английский");
+    }
+
+    [Test]
+    public void Decide_InstallerLanguage_WinsOverTheOsLanguage_WhenNothingIsStored()
+    {
+        Assert.AreEqual("de", LanguageChoice.Decide(null, "de", new[] { "fr-FR" }, AllTen, testRun: false),
+            "человек выбрал язык в установщике — это осознанный выбор, он сильнее языка ОС");
+    }
+
+    [Test]
+    public void Decide_StoredLanguage_WinsOverTheInstallerLanguage()
+    {
+        Assert.AreEqual("ja", LanguageChoice.Decide("ja", "de", new[] { "fr-FR" }, AllTen, testRun: false),
+            "язык, выбранный внутри приложения, не должен перетираться ни установщиком, ни обновлением");
+    }
+
+    [Test]
+    public void Decide_InstallerLanguageNotShipped_FallsThroughToTheOs()
+    {
+        Assert.AreEqual("fr", LanguageChoice.Decide(null, "xx", new[] { "fr-FR" }, AllTen, testRun: false));
+    }
+
+    [Test]
+    public void Decide_NothingAtAll_IsEnglish()
+    {
+        Assert.AreEqual("en", LanguageChoice.Decide(null, null, new string?[] { null }, AllTen, testRun: false));
+    }
+
+    [Test]
+    public void Decide_TestRun_IgnoresTheInstallerLanguage()
+    {
+        Assert.AreEqual("ru", LanguageChoice.Decide(null, "de", new[] { "fr" }, AllTen, testRun: true));
+    }
+
+    [TestCase(null, "de", false, "de")]
+    [TestCase("", "de", false, "de")]
+    [TestCase("ja", "de", false, null)]
+    [TestCase("zh-Hans", "de", false, null)]
+    [TestCase("klingon", "de", false, "de")]
+    [TestCase(null, "klingon", false, null)]
+    [TestCase(null, null, false, null)]
+    [TestCase(null, "de", true, null)]
+    [TestCase(null, "zh-CN", false, "zh-Hans")]
+    public void InstallerLanguageToKeep_IsTakenOnlyWhenThePersonHasNoLanguageYet(
+        string? stored, string? installer, bool testRun, string? expected)
+    {
+        Assert.AreEqual(expected, LanguageChoice.InstallerLanguageToKeep(stored, installer, AllTen, testRun),
+            "приложение переписывает язык установщика в PlayerPrefs только при пустом выборе; "
+            + "иначе обновление затирало бы выбор человека, а прогон тестов писал бы в реестр пользователя");
+    }
 }

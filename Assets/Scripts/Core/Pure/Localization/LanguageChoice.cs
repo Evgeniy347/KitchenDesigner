@@ -7,12 +7,19 @@ namespace KitchenDesigner.Core
     public static class LanguageChoice
     {
         public static string Decide(string? stored, IEnumerable<string?> systemLanguages,
+            IReadOnlyCollection<string> available, bool testRun) =>
+            Decide(stored, null, systemLanguages, available, testRun);
+
+        public static string Decide(string? stored, string? installer, IEnumerable<string?> systemLanguages,
             IReadOnlyCollection<string> available, bool testRun)
         {
             if (testRun) return Localizer.SourceLanguage;
 
             var storedCode = Match(stored, available);
             if (storedCode != null) return storedCode;
+
+            var installerCode = Match(installer, available);
+            if (installerCode != null) return installerCode;
 
             foreach (var system in systemLanguages)
             {
@@ -24,6 +31,10 @@ namespace KitchenDesigner.Core
                 ? Localizer.FallbackLanguage
                 : Localizer.SourceLanguage;
         }
+
+        public static string? InstallerLanguageToKeep(string? stored, string? installer,
+            IReadOnlyCollection<string> available, bool testRun) =>
+            testRun || Match(stored, available) != null ? null : Match(installer, available);
 
         public static string? Match(string? language, IReadOnlyCollection<string> available)
         {

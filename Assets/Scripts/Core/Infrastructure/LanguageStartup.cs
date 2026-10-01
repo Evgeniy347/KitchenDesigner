@@ -17,11 +17,17 @@ namespace KitchenDesigner.Core
             PointAtStreamingAssets();
             if (Loc.Languages.Count == 0) Loc.Reload();
             var available = Loc.Languages.Select(l => l.Code).ToList();
+            bool testRun = Audio.AudioOutputPolicy.UnderTestRun;
+            var stored = LanguagePreference.Load();
+            var installer = testRun ? null : InstallLanguage.Read();
+            var adopted = LanguageChoice.InstallerLanguageToKeep(stored, installer, available, testRun);
+            if (adopted != null) LanguagePreference.Save(adopted);
             var chosen = LanguageChoice.Decide(
-                LanguagePreference.Load(),
+                adopted ?? stored,
+                installer,
                 new[] { SafeUiCulture(), SystemLanguageCode.Of(Application.systemLanguage) },
                 available,
-                Audio.AudioOutputPolicy.UnderTestRun);
+                testRun);
             Loc.SetLanguage(chosen);
         }
 
