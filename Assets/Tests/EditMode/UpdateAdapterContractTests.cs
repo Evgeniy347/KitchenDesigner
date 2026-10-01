@@ -86,11 +86,10 @@ public class UpdateAdapterContractTests
     [Test]
     public void InstallerArguments_AreUnderstoodByTheInnoScript()
     {
-        var applier = Source("InnoUpdateApplier.cs");
-        var literal = Regex.Match(applier,
-            @"SilentRelaunchArguments\s*=\s*""(?<args>[^""]*)""", RegexOptions.Singleline);
-        Assert.IsTrue(literal.Success,
-            "аргументы установщика должны быть именованной константой — иначе их не с чем сверять");
+        StringAssert.Contains("InstallerCommandLine.ForSilentRelaunch(installerPath)",
+            Source("InnoUpdateApplier.cs"),
+            "адаптер обязан брать командную строку из InstallerCommandLine — ту, что проверена "
+            + "InstallerCommandLineTests; своя строка в адаптере не сверяется ни с чем");
 
         var iss = File.ReadAllText(Path.Combine(InstallerDir(), "KitchenDesigner.iss"));
         StringAssert.Contains("CloseApplications=yes", iss,
@@ -98,7 +97,7 @@ public class UpdateAdapterContractTests
             + "Inno упрётся в залоченные нашим процессом файлы");
 
         var builtIn = new[] { "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/VERYSILENT" };
-        foreach (var arg in literal.Groups["args"].Value
+        foreach (var arg in KitchenDesigner.Core.Update.InstallerCommandLine.SilentRelaunchSwitches
                      .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
         {
             if (builtIn.Contains(arg, StringComparer.OrdinalIgnoreCase)) continue;

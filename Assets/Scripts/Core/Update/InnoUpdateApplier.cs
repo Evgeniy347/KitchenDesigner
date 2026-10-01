@@ -7,9 +7,6 @@ namespace KitchenDesigner.Core.Update
 {
     public sealed class InnoUpdateApplier : IUpdateApplier
     {
-        public const string SilentRelaunchArguments =
-            "/SILENT /SUPPRESSMSGBOXES /NORESTART /RELAUNCH";
-
         public void ApplyAndRelaunch(string installerPath)
         {
             if (string.IsNullOrEmpty(installerPath)) return;
@@ -33,10 +30,12 @@ namespace KitchenDesigner.Core.Update
         {
             try
             {
+                var arguments = InstallerCommandLine.ForSilentRelaunch(installerPath);
+                UnityEngine.Debug.Log("[Update] запуск установщика: " + installerPath + " " + arguments);
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = installerPath,
-                    Arguments = SilentRelaunchArguments,
+                    Arguments = arguments,
                     UseShellExecute = false,
                 });
                 return true;
