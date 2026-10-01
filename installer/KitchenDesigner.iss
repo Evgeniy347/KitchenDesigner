@@ -29,8 +29,11 @@
 #define AppGuid      "AC0497CF-14C9-4092-98C9-391E5D860283"
 #define UninstKey    "Software\Microsoft\Windows\CurrentVersion\Uninstall\" + AppGuid + "_is1"
 ; Автообновление: сколько setup ждёт выхода старой копии и как часто проверяет.
-#define RelaunchWaitMs 60000
-#define RelaunchPollMs 250
+#define RelaunchAskAfterSec 15
+#define RelaunchRecheckSec 5
+#define RelaunchPollMs 100
+; Имя мьютекса = RunningInstanceMutex.Name в приложении (сверяет InstallerScriptGuardTests).
+#define AppMutexName "KitchenDesigner.RunningInstance"
 
 [Setup]
 AppId={#AppGuid}
@@ -64,6 +67,11 @@ LicenseFile=..\LICENSE
 UninstallDisplayIcon={app}\{#AppExe}
 CloseApplications=yes
 CloseApplicationsFilter=*.exe,*.dll
+; Ручная установка и деинсталляция при открытом приложении - штатный диалог Inno
+; «закройте и нажмите ОК / Отмена». Автообновлению (/RELAUNCH) проверка на
+; старте не нужна: приложение в этот момент ещё закрывается, а тихий режим
+; ответил бы Отмена. Его ждёт [Code] (WaitForTheUpdatingAppToExit).
+AppMutex={code:AppMutexUnlessUpdating}
 RestartApplications=no
 ; Регистрирует .kdproj в HKCU\Software\Classes (без UAC - тот же уровень прав,
 ; что и сама установка) и просит Inno уведомить проводник после [Registry].
@@ -82,6 +90,19 @@ Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"
 #endif
 Name: "en"; MessagesFile: "compiler:Default.isl"
 
+[CustomMessages]
+; Ожидание выхода старой копии при автообновлении (/RELAUNCH). Обычный MsgBox
+; ошибки /SUPPRESSMSGBOXES не глушит - пользователь её увидит.
+en.AppCloseWaitCaption=Updating {#AppName}
+en.AppCloseWaitStatus=Waiting for the application to close…
+en.AppCloseAsk=Close {#AppName} and click OK.
+en.AppCloseCancelled=Update cancelled: {#AppName} is still running. Nothing was installed.
+#ifdef HasRu
+ru.AppCloseWaitCaption=Обновление {#AppName}
+ru.AppCloseWaitStatus=Ожидаем закрытия приложения…
+ru.AppCloseAsk=Закройте {#AppName} и нажмите ОК.
+ru.AppCloseCancelled=Обновление отменено: {#AppName} ещё запущен. Ничего не установлено.
+#endif
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; \
   GroupDescription: "{cm:AdditionalIcons}"
@@ -187,6 +208,11 @@ begin
   Result := Pos('/RELAUNCH', GetCmdTail) > 0;
 end;
 
+function AppMutexUnlessUpdating(Param: String): String;
+begin
+  if RelaunchRequested then Result := '' else Result := '{#AppMutexName}';
+end;
+
 // Файл держит живой процесс: запущенный exe и загруженную dll Windows не даёт
 // открыть на запись. Нет файла - нечего и ждать.
 function FileHeldByRunningProcess(const Path: String): Boolean;
@@ -214,33 +240,84 @@ begin
   else if FileHeldByRunningProcess(Dir + '\UnityCrashHandler64.exe') then Result := 'UnityCrashHandler64.exe';
 end;
 
+// Что ещё держит старая копия. Главный сигнал - именованный мьютекс, который
+// приложение держит всю жизнь (RunningInstanceMutex) и который Windows снимает
+// только когда процесс ЗАВЕРШИЛСЯ. Файлы проверяются вторыми: выпущенные версии
+// до 0.2040 мьютекса не создают, а UnityCrashHandler64 переживает плеер на миг.
+function WhatTheOldCopyStillHolds: String;
+begin
+  if CheckForMutexes('{#AppMutexName}') then Result := 'mutex {#AppMutexName}'
+  else Result := FirstHeldAppFile;
+end;
+
+var
+  AppCloseWaitPage: TOutputMarqueeProgressWizardPage;
+
+procedure InitializeWizard;
+begin
+  AppCloseWaitPage := CreateOutputMarqueeProgressPage(
+    CustomMessage('AppCloseWaitCaption'), '');
+end;
+
+var
+  AppCloseWaitedMs: Integer;
+
+function AppStillRunningAfter(LimitMs: Integer; var Held: String): Boolean;
+var
+  Waited: Integer;
+begin
+  Waited := 0;
+  Held := WhatTheOldCopyStillHolds;
+  while (Held <> '') and (Waited < LimitMs) do
+  begin
+    AppCloseWaitPage.Animate;
+    Sleep({#RelaunchPollMs});
+    Waited := Waited + {#RelaunchPollMs};
+    Held := WhatTheOldCopyStillHolds;
+  end;
+  AppCloseWaitedMs := AppCloseWaitedMs + Waited;
+  Result := Held <> '';
+end;
+
 // Автообновление: приложение запускает setup и только ПОТОМ гасит себя, а
 // Unity-плеер (и его UnityCrashHandler64) выходит секунды. Restart Manager
 // закрыть их не умеет ("Some applications could not be shut down"), а под
 // /SUPPRESSMSGBOXES ответ по умолчанию - Abort -> "Rolling back changes".
-// Поэтому при /RELAUNCH ждём, пока старая копия отпустит свои файлы, и только
-// потом Inno проверяет занятые файлы. PrepareToInstall вызывается ДО этой проверки.
-procedure WaitForTheUpdatingAppToExit;
+// Поэтому при /RELAUNCH ждём выхода старой копии - видимо, на странице
+// прогресса (/SILENT её показывает) - и только потом Inno проверяет занятые
+// файлы: PrepareToInstall вызывается ДО этой проверки. Срока нет: через
+// RelaunchAskAfterSec спрашиваем «закройте и нажмите ОК» (ОК - проверить снова,
+// столько раз, сколько нужно), Отмена - выход без установки, старая версия цела.
+// Обычный MsgBox /SUPPRESSMSGBOXES не глушит - вопрос пользователь увидит.
+function WaitForTheUpdatingAppToExit: Boolean;
 var
-  Waited: Integer;
   Held: String;
+  Cancelled: Boolean;
 begin
-  Waited := 0;
-  Held := FirstHeldAppFile;
+  Result := True;
+  Held := WhatTheOldCopyStillHolds;
   if Held = '' then Exit;
-  Log('Update: waiting for the running app to release ' + Held);
-  while (Held <> '') and (Waited < {#RelaunchWaitMs}) do
-  begin
-    Sleep({#RelaunchPollMs});
-    Waited := Waited + {#RelaunchPollMs};
-    Held := FirstHeldAppFile;
+  Log('Update: waiting for the running app to close (' + Held + ')');
+  AppCloseWaitedMs := 0;
+  Cancelled := False;
+  AppCloseWaitPage.SetText(CustomMessage('AppCloseWaitStatus'), '');
+  AppCloseWaitPage.Show;
+  try
+    if AppStillRunningAfter({#RelaunchAskAfterSec} * 1000, Held) then
+      repeat
+        Log('Update: still running after ' + IntToStr(AppCloseWaitedMs) + ' ms (' + Held + '), asking the user');
+        if MsgBox(CustomMessage('AppCloseAsk'), mbError, MB_OKCANCEL) = IDCANCEL then
+          Cancelled := True;
+      until Cancelled or not AppStillRunningAfter({#RelaunchRecheckSec} * 1000, Held);
+  finally
+    AppCloseWaitPage.Hide;
   end;
-  if Held = '' then
-    Log('Update: app files released after ' + IntToStr(Waited) + ' ms')
+  Result := not Cancelled;
+  if Result then
+    Log('Update: app closed after ' + IntToStr(AppCloseWaitedMs) + ' ms')
   else
-    Log('Update: still held after ' + IntToStr(Waited) + ' ms: ' + Held);
+    Log('Update: cancelled by the user while the app was running; nothing installed');
 end;
-
 // Даунгрейд (ставим версию СТАРЕЕ установленной) почти всегда ошибка юзера ->
 // предупреждаем перед перезаписью. Reinstall/апгрейд проходят без вопроса.
 function PrepareToInstall(var NeedsRestart: Boolean): String;
@@ -249,7 +326,11 @@ var
 begin
   Result := '';
   NeedsRestart := False;
-  if RelaunchRequested then WaitForTheUpdatingAppToExit;
+  if RelaunchRequested and not WaitForTheUpdatingAppToExit then
+  begin
+    Result := CustomMessage('AppCloseCancelled');
+    Exit;
+  end;
   if RegQueryStringValue(HKCU, '{#UninstKey}', 'DisplayVersion', Installed) then
   begin
     if CompareVer(Installed, '{#Version}') > 0 then

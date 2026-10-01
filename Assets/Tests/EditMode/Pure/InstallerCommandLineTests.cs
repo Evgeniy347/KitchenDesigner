@@ -73,8 +73,9 @@ public class InstallerCommandLineTests
         CollectionAssert.DoesNotContain(args, "/NOCLOSEAPPLICATIONS",
             "без Restart Manager занятый файл сразу даёт Abort → откат");
         CollectionAssert.DoesNotContain(args, "/VERYSILENT",
-            "/VERYSILENT прячет и окно прогресса: пользователь, у которого закрылось приложение, "
-            + "не видит, что идёт установка, и запускает старую копию поверх неё");
+            "/VERYSILENT прячет и окно прогресса — а на нём установщик пишет «Ожидаем закрытия "
+            + "приложения…», пока старая копия выходит. Без окна пользователь, у которого закрылось "
+            + "приложение, не видит, что идёт установка, и запускает старую копию поверх неё");
     }
 
     [Test]

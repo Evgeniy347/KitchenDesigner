@@ -84,6 +84,22 @@ public class UpdateAdapterContractTests
     }
 
     [Test]
+    public void ThePlayer_HoldsTheRunningInstanceMutex_FromTheFirstMomentForItsWholeLife()
+    {
+        var marker = Source("RunningInstanceMarker.cs");
+        Assert.AreEqual("#if UNITY_STANDALONE_WIN && !UNITY_EDITOR", FirstMeaningfulLine(marker),
+            "мьютекс держит только собранный плеер: редактор с ним выглядел бы для установщика "
+            + "«запущенной копией», и setup ждал бы закрытия Unity");
+        StringAssert.Contains("new Mutex(false, RunningInstanceMutex.Name)", marker,
+            "имя — общее с KitchenDesigner.iss (AppMutexName), сверяет InstallerScriptGuardTests");
+        StringAssert.Contains("RuntimeInitializeLoadType.SubsystemRegistration", marker,
+            "мьютекс создаётся раньше всего остального: установщик, запущенный в первые "
+            + "секунды, иначе не увидит копию, которая уже держит файлы");
+        StringAssert.Contains("private static Mutex? _held;", marker,
+            "ссылка в статическом поле: собранный сборщиком мусора мьютекс закрылся бы задолго "
+            + "до выхода процесса, и установщик перестал бы ждать");
+    }
+    [Test]
     public void InstallerArguments_AreUnderstoodByTheInnoScript()
     {
         StringAssert.Contains("InstallerCommandLine.ForSilentRelaunch(installerPath)",

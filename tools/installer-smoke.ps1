@@ -4,7 +4,7 @@
     way the in-app updater does, and fails on "Rolling back changes".
 
 .DESCRIPTION
-    Two passes, each with its own Inno /LOG under test-results\installer-smoke\:
+    Three passes, each with its own Inno /LOG under test-results\installer-smoke\:
 
       1) plain_install  - a silent install over whatever is installed (or a first install).
       2) update_race    - the installed app is RUNNING; setup is started with the updater's
@@ -13,6 +13,10 @@
                           -AppExitDelaySec later - the updater's exact order: start setup,
                           then quit. Setup must wait for the old copy, install, and relaunch
                           the app (/RELAUNCH); the relaunched app is closed afterwards.
+      3) update_cancel  - the app is RUNNING and nobody closes it. After RelaunchAskAfterSec
+                          setup must ask "close the app and click OK"; OK while the app still
+                          runs must ask AGAIN; Cancel must end setup with nothing installed,
+                          no rollback, the old version and the running app untouched.
 
     The bug this guards (v0.1906..v0.2037): the updater started setup while the Unity
     player was still exiting; Restart Manager could not close it ("Some applications
@@ -27,7 +31,7 @@
     answer - a silent run would hang on it).
 
     Part of the release path: installer\publish-github.cmd runs it after
-    tools\smoke-test.ps1 and before tagging. Exit 0 = both passes installed cleanly.
+    tools\smoke-test.ps1 and before tagging. Exit 0 = all three passes behaved.
 
 .EXAMPLE
     powershell -File tools\installer-smoke.ps1
@@ -83,6 +87,8 @@ if (-not ([System.Management.Automation.PSTypeName]'InstallerSmoke.NativeMethods
 [DllImport("user32.dll", SetLastError=true)] public static extern IntPtr FindWindowExW(IntPtr parent, IntPtr childAfter, IntPtr className, IntPtr windowName);
 [DllImport("user32.dll", SetLastError=true)] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 [DllImport("user32.dll", SetLastError=true)] public static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+[DllImport("user32.dll", SetLastError=true, EntryPoint="FindWindowExW")] public static extern IntPtr FindDialogW(IntPtr parent, IntPtr childAfter, [MarshalAs(UnmanagedType.LPWStr)] string className, IntPtr windowName);
+[DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr hWnd);
 '@
 }
 
@@ -137,6 +143,37 @@ function Assert-SetupLog([string]$Pass, [string]$Log, [int]$ExitCode) {
     }
     $wait = $lines | Select-String -SimpleMatch 'Update: ' | ForEach-Object { $_.Line.Substring(24).Trim() }
     Write-Host "[OK ] $Pass - installed, exit 0$(if ($wait) { ' - ' + ($wait -join '; ') })"
+}
+
+function Get-SetupDialog($SetupProcess) {
+    $owners = @([uint32]$SetupProcess.Id) + @(Get-CimInstance Win32_Process -Filter "ParentProcessId=$($SetupProcess.Id)" | ForEach-Object { [uint32]$_.ProcessId })
+    $handle = [IntPtr]::Zero
+    while ($true) {
+        $handle = [InstallerSmoke.NativeMethods]::FindDialogW([IntPtr]::Zero, $handle, '#32770', [IntPtr]::Zero)
+        if ($handle -eq [IntPtr]::Zero) { return $null }
+        $owner = 0
+        [InstallerSmoke.NativeMethods]::GetWindowThreadProcessId($handle, [ref]$owner) | Out-Null
+        if ($owners -contains $owner -and [InstallerSmoke.NativeMethods]::IsWindowVisible($handle)) { return $handle }
+    }
+}
+
+function Wait-SetupDialog($SetupProcess, [int]$TimeoutSec) {
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    while ((Get-Date) -lt $deadline -and -not $SetupProcess.HasExited) {
+        $dialog = Get-SetupDialog $SetupProcess
+        if ($dialog) { return $dialog }
+        Start-Sleep -Milliseconds 250
+    }
+    return $null
+}
+
+function Wait-DialogGone($SetupProcess, [int]$TimeoutSec) {
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    while ((Get-Date) -lt $deadline -and (Get-SetupDialog $SetupProcess)) { Start-Sleep -Milliseconds 100 }
+}
+
+function Press-DialogButton($Dialog, [int]$ButtonId) {
+    [InstallerSmoke.NativeMethods]::PostMessage($Dialog, 0x0111, [IntPtr]$ButtonId, [IntPtr]::Zero) | Out-Null
 }
 
 function Start-Setup([string]$Switches, [string]$Log) {
@@ -205,6 +242,40 @@ if (-not $relaunched) { Fail 'update_race: setup installed but did not relaunch 
 Write-Host "[OK ] update_race - app relaunched (pid $($relaunched.Id)), closing it"
 Start-Sleep -Seconds $AppStartSec
 Stop-Leftovers $installDir
+
+# ---- pass 3: the app keeps running; the user is asked, clicks OK, is asked again, cancels ----
+$askAfterSec = [int][regex]::Match($iss, '#define\s+RelaunchAskAfterSec\s+(?<s>\d+)').Groups['s'].Value
+$recheckSec = [int][regex]::Match($iss, '#define\s+RelaunchRecheckSec\s+(?<s>\d+)').Groups['s'].Value
+if ($askAfterSec -le 0 -or $recheckSec -le 0) { Fail 'RelaunchAskAfterSec / RelaunchRecheckSec not found in installer\KitchenDesigner.iss' }
+$versionBefore = (Get-ItemProperty -LiteralPath $uninstKey).DisplayVersion
+$app3 = Start-Process -FilePath $appExe -ArgumentList @('-mcpPort', "$Port", '-muteAudio', '-hideWindow', '-ephemeralSession') -PassThru
+Start-Sleep -Seconds $AppStartSec
+if ($app3.HasExited) { Fail "update_cancel: the installed app exited by itself (exit $($app3.ExitCode))" }
+
+$log3 = Join-Path $logDir "update-cancel-$setupVersion.log"
+$s3 = Start-Setup $updaterSwitches $log3
+$ask1 = Wait-SetupDialog $s3 ($askAfterSec + 20)
+if (-not $ask1) { Fail "update_cancel: no 'close the app and click OK' question within $($askAfterSec + 20) s while the app kept running" }
+Press-DialogButton $ask1 1
+Wait-DialogGone $s3 10
+$ask2 = Wait-SetupDialog $s3 ($recheckSec + 20)
+if (-not $ask2) { Fail 'update_cancel: OK while the app still runs must ask AGAIN, but setup went on without asking' }
+Press-DialogButton $ask2 2
+$code3 = Wait-Setup $s3 'update_cancel'
+
+$lines3 = Get-Content -LiteralPath $log3
+if ($lines3 | Select-String -SimpleMatch 'Rolling back changes') { Fail "update_cancel: Cancel ROLLED BACK instead of stopping before the copy (log: $log3)" }
+if ($lines3 | Select-String -SimpleMatch 'Installation process succeeded') { Fail "update_cancel: setup installed although the user cancelled (log: $log3)" }
+if (-not ($lines3 | Select-String -SimpleMatch 'cancelled by the user')) { Fail "update_cancel: no 'cancelled by the user' in $log3" }
+$asked = @($lines3 | Select-String -SimpleMatch 'asking the user').Count
+if ($asked -lt 2) { Fail "update_cancel: asked $asked time(s), expected 2 (OK, then again)" }
+if ($code3 -eq 0) { Fail 'update_cancel: setup reported success (exit 0) after Cancel' }
+if ($app3.HasExited) { Fail 'update_cancel: Cancel must leave the running app alone, but it is gone' }
+$versionAfter = (Get-ItemProperty -LiteralPath $uninstKey).DisplayVersion
+if ($versionAfter -ne $versionBefore) { Fail "update_cancel: installed version changed $versionBefore -> $versionAfter" }
+Write-Host "[OK ] update_cancel - asked $asked times, Cancel stopped setup (exit $code3), $versionBefore untouched"
+Close-Gracefully $app3
+if (-not $app3.WaitForExit($AppCloseTimeoutSec * 1000)) { Fail "update_cancel: the app did not exit on WM_CLOSE in $AppCloseTimeoutSec s" }
 
 Write-Host "INSTALLER SMOKE OK (logs: $logDir)"
 exit 0

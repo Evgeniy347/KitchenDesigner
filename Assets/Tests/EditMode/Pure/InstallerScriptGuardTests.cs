@@ -68,8 +68,16 @@ public class InstallerScriptGuardTests
         }
     }
 
+    private static string WaitFunction(string code)
+    {
+        var m = Regex.Match(code, @"function\s+WaitForTheUpdatingAppToExit\b.*?^end;",
+            RegexOptions.Singleline | RegexOptions.Multiline);
+        Assert.IsTrue(m.Success, "в [Code] нет WaitForTheUpdatingAppToExit");
+        return m.Value;
+    }
+
     [Test]
-    public void SilentUpdate_WaitsForTheOldCopyToReleaseItsFiles_BeforeTheInUseCheck()
+    public void SilentUpdate_WaitsForTheOldCopy_BeforeTheInUseCheck()
     {
         var iss = Iss();
         var code = Section(iss, "Code");
@@ -77,14 +85,11 @@ public class InstallerScriptGuardTests
             @"function\s+PrepareToInstall\b.*?^end;", RegexOptions.Singleline | RegexOptions.Multiline);
         Assert.IsTrue(prepare.Success, "в [Code] нет PrepareToInstall — ждать выхода старой копии негде");
 
-        StringAssert.Contains("if RelaunchRequested then WaitForTheUpdatingAppToExit;", prepare.Value,
+        StringAssert.Contains("if RelaunchRequested and not WaitForTheUpdatingAppToExit then", prepare.Value,
             "автообновление стартует setup ДО того, как Unity-плеер успел выйти. Restart Manager "
             + "закрыть плеер и UnityCrashHandler64 не может («Some applications could not be shut "
             + "down»), под /SUPPRESSMSGBOXES ответ по умолчанию — Abort, и setup пишет «Rolling back "
             + "changes». PrepareToInstall — последняя точка ДО проверки занятых файлов: ждать надо в ней");
-
-        StringAssert.Contains(@"FileHeldByRunningProcess(Dir + '\{#AppExe}')", code,
-            "ждать надо именно исполняемый файл приложения: его держит старая копия до самого выхода");
 
         StringAssert.Contains("CloseApplications=yes", Section(iss, "Setup"),
             "ожидание не отменяет страховку Restart Manager: без неё зависшая копия "
@@ -92,13 +97,86 @@ public class InstallerScriptGuardTests
     }
 
     [Test]
-    public void RelaunchWait_IsBoundedSoAHungCopyCannotHangTheInstallerForever()
+    public void TheWait_ListensToTheMutexTheAppHolds_AndStillChecksFilesForOlderVersions()
     {
-        var m = Regex.Match(Iss(), @"#define\s+RelaunchWaitMs\s+(?<ms>\d+)");
-        Assert.IsTrue(m.Success, "срок ожидания выхода старой копии обязан быть именованным");
-        var ms = int.Parse(m.Groups["ms"].Value);
-        Assert.That(ms, Is.InRange(10000, 120000),
-            "меньше 10 с — Unity-плеер с D3D12 не успевает выйти (замер: ~4 с, бывает дольше); "
-            + "больше 2 мин — пользователь смотрит на невидимый setup и решает, что всё зависло");
+        var iss = Iss();
+        var name = Regex.Match(iss, @"#define\s+AppMutexName\s+""(?<n>[^""]+)""");
+        Assert.IsTrue(name.Success, "имя мьютекса приложения обязано быть #define AppMutexName");
+        Assert.AreEqual(KitchenDesigner.Core.Update.RunningInstanceMutex.Name, name.Groups["n"].Value,
+            "установщик ждёт мьютекс по имени: разойдись имена — ожидание видит «не запущено», "
+            + "пока плеер ещё выходит, и обновление снова откатывается");
+
+        var code = Section(iss, "Code");
+        StringAssert.Contains("CheckForMutexes('{#AppMutexName}')", code,
+            "мьютекс снимает Windows, когда процесс ЗАВЕРШИЛСЯ — это точный сигнал «старая копия ушла»");
+        StringAssert.Contains(@"FileHeldByRunningProcess(Dir + '\{#AppExe}')", code,
+            "выпущенные версии до 0.2040 мьютекса не создают, а обновляться будут именно они; "
+            + "UnityCrashHandler64 ещё и переживает плеер на миг — файлы остаются вторым сигналом");
+    }
+
+    [Test]
+    public void TheWait_IsVisible_InTheInstallersLanguage()
+    {
+        var iss = Iss();
+        var messages = Section(iss, "CustomMessages");
+        StringAssert.Contains("ru.AppCloseWaitStatus=Ожидаем закрытия приложения…", messages,
+            "пользователь только что нажал «Обновить», окно приложения закрылось — без этой "
+            + "строки он видит пустой прогресс и запускает старую копию поверх установки");
+        StringAssert.Contains("en.AppCloseWaitStatus=", messages, "английский setup тоже говорит, чего ждёт");
+
+        var wait = WaitFunction(Section(iss, "Code"));
+        StringAssert.Contains("AppCloseWaitPage.Show;", wait,
+            "текст показывается страницей прогресса ВО ВРЕМЯ ожидания, а не после него");
+        StringAssert.Contains("CustomMessage('AppCloseWaitStatus')", wait,
+            "строка берётся из [CustomMessages] — на языке установщика, а не вшитая по-русски");
+    }
+
+    [Test]
+    public void TheWait_HasNoDeadline_ItAsksTheUserToCloseTheApp_AgainAndAgain()
+    {
+        var iss = Iss();
+        var m = Regex.Match(iss, @"#define\s+RelaunchAskAfterSec\s+(?<s>\d+)");
+        Assert.IsTrue(m.Success, "через сколько ожидание превращается в вопрос — именованная величина");
+        Assert.That(int.Parse(m.Groups["s"].Value), Is.InRange(8, 60),
+            "раньше ~8 с вопрос выскакивает поверх обычного выхода плеера (замер ~4–9 с); "
+            + "позже минуты пользователь решает, что всё зависло");
+
+        StringAssert.DoesNotContain("RelaunchWaitSec", iss,
+            "срока у ожидания нет: «не закрылся за 60 секунд» пользователь видел, когда плеер "
+            + "падал при выходе и висел в обработке сбоя, — обновление при этом пропадало зря");
+        StringAssert.DoesNotContain("AppCloseTimeout", iss, "ошибки по истечении срока больше нет");
+
+        var wait = WaitFunction(Section(iss, "Code"));
+        StringAssert.Contains("MsgBox(CustomMessage('AppCloseAsk'), mbError, MB_OKCANCEL)", wait,
+            "вопрос — обычный MsgBox: /SUPPRESSMSGBOXES глушит только SuppressibleMsgBox, а этот "
+            + "вопрос пользователь обязан увидеть");
+        StringAssert.Contains("until Cancelled or not AppStillRunningAfter(", wait,
+            "ОК — проверить снова и спросить снова, сколько угодно раз; выйти из цикла можно "
+            + "только закрыв приложение или нажав Отмена");
+        StringAssert.Contains("ru.AppCloseAsk=Закройте {#AppName} и нажмите ОК.", Section(iss, "CustomMessages"));
+    }
+
+    [Test]
+    public void Cancel_LeavesTheOldVersion_NothingIsCopiedSoNothingRollsBack()
+    {
+        var prepare = Regex.Match(Section(Iss(), "Code"),
+            @"function\s+PrepareToInstall\b.*?^end;", RegexOptions.Singleline | RegexOptions.Multiline).Value;
+        StringAssert.Contains("Result := CustomMessage('AppCloseCancelled');", prepare,
+            "непустой результат PrepareToInstall останавливает setup ДО копирования: старая "
+            + "версия на месте, откатывать нечего, а в логе остаётся причина");
+    }
+
+    [Test]
+    public void ManualInstall_UsesInnosOwnAppMutexCheck_ButTheUpdateDoesNot()
+    {
+        var iss = Iss();
+        StringAssert.Contains("AppMutex={code:AppMutexUnlessUpdating}", Section(iss, "Setup"),
+            "ручная установка и деинсталляция при открытом приложении получают штатный "
+            + "диалог Inno «закройте приложение — ОК / Отмена»");
+        StringAssert.Contains("if RelaunchRequested then Result := '' else Result := '{#AppMutexName}';",
+            Section(iss, "Code"),
+            "при /RELAUNCH проверка Inno на старте ловила бы ещё закрывающееся приложение, а "
+            + "под /SUPPRESSMSGBOXES ответила бы Отмена — обновление снова не вставало бы. "
+            + "Его ждёт WaitForTheUpdatingAppToExit");
     }
 }
