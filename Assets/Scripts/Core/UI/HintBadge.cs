@@ -53,10 +53,11 @@ namespace KitchenDesigner.Core.UI
             }
 
             var labelRect = label.rectTransform;
-            float textWidth = label.GetPreferredValues(label.text).x;
+            float textWidth = label.GetPreferredValues(RightToLeftLabel.Rendered(label)).x;
             float laneWidth = NarrowToTextAndLane(labelRect, textWidth);
             float x = HintBadgeLane.AfterLabel(0f, laneWidth,
                 textWidth, UIStyle.HintBadgeSize, UIStyle.GapInner);
+            if (label.isRightToLeftText) x = -x;
 
             return Attach(labelRect, new Vector2(x, 0f), hint);
         }

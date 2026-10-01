@@ -153,6 +153,7 @@ namespace KitchenDesigner.Core.UI
             label.fontSize = fontSize;
             label.color = TextColor;
             label.alignment = MapAlignment(align);
+            RightToLeftLabel.AttachIfNeeded(label);
             return label;
         }
 
@@ -219,14 +220,16 @@ namespace KitchenDesigner.Core.UI
             lRt.anchorMin = Vector2.zero; lRt.anchorMax = Vector2.one;
             lRt.offsetMin = Vector2.zero; lRt.offsetMax = Vector2.zero;
             label.ForceMeshUpdate();
-            float textW = label.GetPreferredValues(title, width, 18f).x;
+            float textW = label.GetPreferredValues(RightToLeftLabel.Rendered(label), width, 18f).x;
 
             var line = CreateRect(name + "_Line", rect);
             line.anchorMin = new Vector2(0, 0.5f);
             line.anchorMax = new Vector2(1, 0.5f);
             line.pivot = new Vector2(0, 0.5f);
-            line.offsetMin = new Vector2(textW + 8f, -0.5f);
-            line.offsetMax = new Vector2(0, 0.5f);
+            float textSide = textW + 8f;
+            bool mirrored = label.isRightToLeftText;
+            line.offsetMin = new Vector2(mirrored ? 0f : textSide, -0.5f);
+            line.offsetMax = new Vector2(mirrored ? -textSide : 0f, 0.5f);
             var lineImg = line.gameObject.AddComponent<Image>();
             lineImg.color = UIStyle.Separator;
             lineImg.raycastTarget = false;
