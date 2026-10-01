@@ -179,4 +179,100 @@ public class InstallerScriptGuardTests
             + "под /SUPPRESSMSGBOXES ответила бы Отмена — обновление снова не вставало бы. "
             + "Его ждёт WaitForTheUpdatingAppToExit");
     }
+
+    private static string[] ShippedAppLanguages() =>
+        Directory.GetFiles(RepoPaths.Subdir("Assets", "StreamingAssets", "Localization"), "*.json")
+            .Select(Path.GetFileNameWithoutExtension)
+            .Where(name => !name!.StartsWith("_"))
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray()!;
+
+    private static string[] InstallerLanguageNames(string iss) =>
+        Regex.Matches(Section(iss, "Languages"), @"^\s*Name:\s*""(?<n>\w+)""", RegexOptions.Multiline)
+            .Cast<Match>().Select(m => m.Groups["n"].Value).ToArray();
+
+    private static string[] AppCodesOfTheInstallerLanguages(string iss) =>
+        Regex.Matches(Section(iss, "CustomMessages"), @"^\w+\.AppLanguageCode=(?<c>\S+)\s*$", RegexOptions.Multiline)
+            .Cast<Match>().Select(m => m.Groups["c"].Value).OrderBy(c => c, StringComparer.Ordinal).ToArray();
+
+    [Test]
+    public void Languages_OfferTheSameTenTheAppShips_AndTheDialogAppearsOnlyWhenNoneMatchesTheOs()
+    {
+        var iss = Iss();
+        CollectionAssert.AreEqual(ShippedAppLanguages(), AppCodesOfTheInstallerLanguages(iss),
+            "каждому файлу Localization/<код>.json нужен язык в установщике с AppLanguageCode=<код>: "
+            + "иначе новый язык приложения нельзя выбрать при установке, а выбранный не доедет до приложения");
+        Assert.AreEqual(10, InstallerLanguageNames(iss).Length, "в [Languages] ровно десять языков");
+
+        var setup = Section(iss, "Setup");
+        StringAssert.Contains("ShowLanguageDialog=auto", setup,
+            "auto: диалог только когда язык ОС не подошёл ни к одному из десяти; no лишал выбора, yes спрашивал бы каждого");
+        StringAssert.Contains("LanguageDetectionMethod=uilanguage", setup,
+            "язык по умолчанию — язык интерфейса Windows");
+    }
+
+    [Test]
+    public void EveryInstallerLanguage_TranslatesEveryOwnMessage()
+    {
+        var messages = Section(Iss(), "CustomMessages");
+        var names = InstallerLanguageNames(Iss());
+        foreach (var language in names)
+            foreach (var key in new[] { "AppLanguageCode", "AppCloseWaitCaption", "AppCloseWaitStatus",
+                         "AppCloseAsk", "AppCloseCancelled", "ProjectFileType" })
+                Assert.IsTrue(Regex.IsMatch(messages, "^" + language + @"\." + key + "=", RegexOptions.Multiline),
+                    language + "." + key + " не задан: без него Inno берёт строку «первого языка, где она есть» "
+                    + "— то есть русскую, и японец увидит русский вопрос о закрытии приложения");
+    }
+
+    [Test]
+    public void ChineseSimplified_HasAnIdentityFile_BecauseInnoShipsNoTranslation()
+    {
+        var iss = Iss();
+        StringAssert.Contains(@"Name: ""zhHans""; MessagesFile: ""Languages\ChineseSimplified.isl""", Section(iss, "Languages"));
+        var isl = File.ReadAllText(Path.Combine(RepoPaths.Subdir("installer", "Languages"), "ChineseSimplified.isl"));
+        StringAssert.Contains("LanguageID=$0804", isl,
+            "LCID упрощённого китайского: по нему автоопределение по языку ОС выбирает этот язык, а не английский");
+        StringAssert.Contains("[CustomMessages]", isl,
+            "встроенные строки Inno (ярлык на рабочем столе и т. д.) без этой секции берутся у первого языка — русского");
+    }
+
+    [Test]
+    public void InstallLanguage_IsAPlainPerUserString_ThatSilentUpdatesNeverOverwrite()
+    {
+        var iss = Iss();
+        var line = Regex.Match(Section(iss, "Registry"), @"^Root:\s*HKCU;\s*Subkey:\s*""Software\\KitchenDesigner"";.*?(?=^Root:|\z)",
+            RegexOptions.Singleline | RegexOptions.Multiline);
+        Assert.IsTrue(line.Success, @"в [Registry] нет записи HKCU\Software\KitchenDesigner (язык установщика для приложения)");
+        var entry = Regex.Replace(line.Value, @"\\\s*\r?\n\s*", " ");
+
+        StringAssert.Contains(@"Subkey: """ + KitchenDesigner.Core.InstallLanguage.RegistryKey + @"""", entry,
+            "ключ тот же, что читает приложение (InstallLanguage.RegistryKey)");
+        StringAssert.Contains(@"ValueName: """ + KitchenDesigner.Core.InstallLanguage.ValueName + @"""", entry);
+        StringAssert.Contains("ValueType: string", entry,
+            "простая REG_SZ; бинарное значение с хэшированным именем Unity из Inno писать хрупко");
+        StringAssert.Contains(@"ValueData: ""{cm:AppLanguageCode}""", entry,
+            "значение — код языка приложения выбранного языка установщика");
+        StringAssert.Contains("Check: ShouldWriteInstallLanguage", entry);
+        StringAssert.Contains("uninsdeletevalue", entry, "деинсталляция убирает свой след");
+
+        var code = Section(iss, "Code");
+        var check = Regex.Match(code, @"function\s+ShouldWriteInstallLanguage.*?^end;",
+            RegexOptions.Singleline | RegexOptions.Multiline);
+        Assert.IsTrue(check.Success, "в [Code] нет ShouldWriteInstallLanguage");
+        StringAssert.Contains("WizardSilent", check.Value,
+            "тихое автообновление выбирает язык по ОС, а не человек — оно не должно решать за него");
+        StringAssert.Contains("RegValueExists(HKCU", check.Value,
+            "тихая установка пишет значение только если его ещё нет (первая установка)");
+
+        StringAssert.DoesNotContain("Language_h", iss,
+            "значение PlayerPrefs «Language» (REG_BINARY, имя с хэшем) установщик не пишет: приоритет и перенос делает приложение");
+        StringAssert.DoesNotContain("DefaultCompany", iss);
+    }
+
+    [Test]
+    public void InstallLanguage_RegistryLocationIsInTheAppsOwnHiveAndKey()
+    {
+        Assert.AreEqual(@"Software\KitchenDesigner", KitchenDesigner.Core.InstallLanguage.RegistryKey);
+        Assert.AreEqual("InstallLanguage", KitchenDesigner.Core.InstallLanguage.ValueName);
+    }
 }

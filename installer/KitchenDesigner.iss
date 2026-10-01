@@ -1,4 +1,4 @@
-; ---------------------------------------------------------------------------
+﻿; ---------------------------------------------------------------------------
 ;  Kitchen Designer — скрипт установщика (Inno Setup 6).
 ;
 ;  Не вызывается напрямую: его запускает installer\build-installer.cmd, который
@@ -59,9 +59,11 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 
-; Автоопределение языка по UI-локали ОС, диалог выбора не показываем.
+; Язык установщика берётся из UI-локали ОС; диалог выбора появляется, только если
+; ни один из десяти языков [Languages] локали не подходит. Выбранный язык уходит в
+; приложение через HKCU\Software\KitchenDesigner\InstallLanguage (см. [Registry]).
 LanguageDetectionMethod=uilanguage
-ShowLanguageDialog=no
+ShowLanguageDialog=auto
 
 LicenseFile=..\LICENSE
 UninstallDisplayIcon={app}\{#AppExe}
@@ -85,24 +87,93 @@ OutputDir=output
 OutputBaseFilename=KitchenDesigner-Setup-{#Version}-x64
 
 [Languages]
+; Имя языка здесь — идентификатор Inno (без дефиса); код для приложения (имя файла
+; Localization/<код>.json) лежит в {cm:AppLanguageCode} каждого языка.
+; Нет перевода в каталоге Inno на этой машине — язык всё равно предлагается, с английскими
+; сообщениями мастера (но с переведёнными [CustomMessages] ниже).
+#define BundledLanguage(Isl) FileExists(CompilerPath + "Languages\" + Isl + ".isl") ? "compiler:Languages\" + Isl + ".isl" : "compiler:Default.isl"
 #ifdef HasRu
 Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"
 #endif
 Name: "en"; MessagesFile: "compiler:Default.isl"
+Name: "arTN"; MessagesFile: "{#BundledLanguage("Arabic")}"
+Name: "de"; MessagesFile: "{#BundledLanguage("German")}"
+Name: "es"; MessagesFile: "{#BundledLanguage("Spanish")}"
+Name: "fr"; MessagesFile: "{#BundledLanguage("French")}"
+Name: "it"; MessagesFile: "{#BundledLanguage("Italian")}"
+Name: "ja"; MessagesFile: "{#BundledLanguage("Japanese")}"
+Name: "pt"; MessagesFile: "{#BundledLanguage("BrazilianPortuguese")}"
+; Перевода мастера на упрощённый китайский в поставке Inno нет: в Languages\ лежит только
+; идентичность языка (название в списке, LCID для автоопределения).
+Name: "zhHans"; MessagesFile: "Languages\ChineseSimplified.isl"
 
 [CustomMessages]
+; AppLanguageCode — код языка приложения (Localization/<код>.json); его пишет [Registry].
 ; Ожидание выхода старой копии при автообновлении (/RELAUNCH). Обычный MsgBox
 ; ошибки /SUPPRESSMSGBOXES не глушит - пользователь её увидит.
+en.AppLanguageCode=en
 en.AppCloseWaitCaption=Updating {#AppName}
 en.AppCloseWaitStatus=Waiting for the application to close…
 en.AppCloseAsk=Close {#AppName} and click OK.
 en.AppCloseCancelled=Update cancelled: {#AppName} is still running. Nothing was installed.
+en.ProjectFileType=Kitchen Designer project
 #ifdef HasRu
+ru.AppLanguageCode=ru
 ru.AppCloseWaitCaption=Обновление {#AppName}
 ru.AppCloseWaitStatus=Ожидаем закрытия приложения…
 ru.AppCloseAsk=Закройте {#AppName} и нажмите ОК.
 ru.AppCloseCancelled=Обновление отменено: {#AppName} ещё запущен. Ничего не установлено.
+ru.ProjectFileType=Проект Kitchen Designer
 #endif
+arTN.AppLanguageCode=ar-TN
+arTN.AppCloseWaitCaption=تحديث {#AppName}
+arTN.AppCloseWaitStatus=في انتظار إغلاق التطبيق…
+arTN.AppCloseAsk=أغلق {#AppName} ثم انقر على «موافق».
+arTN.AppCloseCancelled=تم إلغاء التحديث: {#AppName} ما زال قيد التشغيل. لم يتم تثبيت أي شيء.
+arTN.ProjectFileType=مشروع Kitchen Designer
+de.AppLanguageCode=de
+de.AppCloseWaitCaption={#AppName} wird aktualisiert
+de.AppCloseWaitStatus=Warten, bis die Anwendung geschlossen wird…
+de.AppCloseAsk=Schließen Sie {#AppName} und klicken Sie auf OK.
+de.AppCloseCancelled=Aktualisierung abgebrochen: {#AppName} läuft noch. Es wurde nichts installiert.
+de.ProjectFileType=Kitchen-Designer-Projekt
+es.AppLanguageCode=es
+es.AppCloseWaitCaption=Actualizando {#AppName}
+es.AppCloseWaitStatus=Esperando a que se cierre la aplicación…
+es.AppCloseAsk=Cierre {#AppName} y haga clic en Aceptar.
+es.AppCloseCancelled=Actualización cancelada: {#AppName} sigue en ejecución. No se instaló nada.
+es.ProjectFileType=Proyecto de Kitchen Designer
+fr.AppLanguageCode=fr
+fr.AppCloseWaitCaption=Mise à jour de {#AppName}
+fr.AppCloseWaitStatus=En attente de la fermeture de l'application…
+fr.AppCloseAsk=Fermez {#AppName}, puis cliquez sur OK.
+fr.AppCloseCancelled=Mise à jour annulée : {#AppName} est toujours en cours d'exécution. Rien n'a été installé.
+fr.ProjectFileType=Projet Kitchen Designer
+it.AppLanguageCode=it
+it.AppCloseWaitCaption=Aggiornamento di {#AppName}
+it.AppCloseWaitStatus=In attesa della chiusura dell'applicazione…
+it.AppCloseAsk=Chiudere {#AppName} e fare clic su OK.
+it.AppCloseCancelled=Aggiornamento annullato: {#AppName} è ancora in esecuzione. Non è stato installato nulla.
+it.ProjectFileType=Progetto Kitchen Designer
+ja.AppLanguageCode=ja
+ja.AppCloseWaitCaption={#AppName} を更新しています
+ja.AppCloseWaitStatus=アプリケーションが終了するのを待っています…
+ja.AppCloseAsk={#AppName} を終了してから [OK] をクリックしてください。
+ja.AppCloseCancelled=更新を中止しました。{#AppName} がまだ実行中です。何もインストールされていません。
+ja.ProjectFileType=Kitchen Designer プロジェクト
+pt.AppLanguageCode=pt
+pt.AppCloseWaitCaption=Atualizando o {#AppName}
+pt.AppCloseWaitStatus=Aguardando o fechamento do aplicativo…
+pt.AppCloseAsk=Feche o {#AppName} e clique em OK.
+pt.AppCloseCancelled=Atualização cancelada: o {#AppName} ainda está em execução. Nada foi instalado.
+pt.ProjectFileType=Projeto do Kitchen Designer
+zhHans.AppLanguageCode=zh-Hans
+zhHans.AppCloseWaitCaption=正在更新 {#AppName}
+zhHans.AppCloseWaitStatus=正在等待应用程序关闭…
+zhHans.AppCloseAsk=请关闭 {#AppName}，然后单击“确定”。
+zhHans.AppCloseCancelled=更新已取消：{#AppName} 仍在运行。未安装任何内容。
+zhHans.ProjectFileType=Kitchen Designer 项目
+
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; \
   GroupDescription: "{cm:AdditionalIcons}"
@@ -137,11 +208,20 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; \
 Root: HKCU; Subkey: "Software\Classes\{#ProjectExt}"; ValueType: string; ValueName: ""; \
   ValueData: "{#ProjectProgId}"; Flags: uninsdeletevalue uninsdeletekeyifempty
 Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}"; ValueType: string; ValueName: ""; \
-  ValueData: "Проект Kitchen Designer"; Flags: uninsdeletekey
+  ValueData: "{cm:ProjectFileType}"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}\DefaultIcon"; ValueType: string; ValueName: ""; \
   ValueData: "{app}\{#AppExe},0"
 Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}\shell\open\command"; ValueType: string; ValueName: ""; \
   ValueData: """{app}\{#AppExe}"" ""%1"""
+
+; Язык, выбранный в установщике, — НАЧАЛЬНЫЙ язык приложения. Контракт простой: setup
+; пишет обычную строку REG_SZ, приложение читает её при старте ТОЛЬКО если у человека
+; ещё нет собственного выбора (PlayerPrefs «Language») и переносит её в PlayerPrefs
+; (LanguageStartup / LanguageChoice.InstallerLanguageToKeep). Хэшированное имя
+; значения Unity и REG_BINARY отсюда не пишутся. Тихое автообновление (/SILENT, язык
+; по ОС) существующее значение не трогает (ShouldWriteInstallLanguage), а выбор, уже
+; сохранённый приложением, перебить не может в любом случае — приоритет у приложения.
+Root: HKCU; Subkey: "Software\KitchenDesigner"; ValueType: string; ValueName: "InstallLanguage";   ValueData: "{cm:AppLanguageCode}"; Flags: uninsdeletevalue uninsdeletekeyifempty;   Check: ShouldWriteInstallLanguage
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; \
@@ -206,6 +286,14 @@ end;
 function RelaunchRequested: Boolean;
 begin
   Result := Pos('/RELAUNCH', GetCmdTail) > 0;
+end;
+
+// Тихая установка (автообновление, язык по ОС) ничего не решает за человека, у которого
+// значение уже есть; обычная установка перезаписывает — он только что выбрал язык.
+function ShouldWriteInstallLanguage: Boolean;
+begin
+  Result := not WizardSilent
+    or not RegValueExists(HKCU, 'Software\KitchenDesigner', 'InstallLanguage');
 end;
 
 function AppMutexUnlessUpdating(Param: String): String;
