@@ -112,7 +112,7 @@ namespace KitchenDesigner.Core
         private const int OFN_NOCHANGEDIR     = 0x00000008;
 
         private static string? WinDialog(string title, string defaultName, string initialDir, bool save,
-            string filter = KdprojFilter, string defExt = "kdproj")
+            string filter, string defExt)
         {
             try
             {
