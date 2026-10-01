@@ -125,6 +125,16 @@ echo === [2/5] Smoke-testing the built player ===
 powershell -NoProfile -ExecutionPolicy Bypass -File "%root%\tools\smoke-test.ps1" -ExePath "!playerExe!"
 if errorlevel 1 ( echo [FAIL] Smoke test failed - release NOT published & exit /b 1 )
 
+REM ---- installer update smoke: the player can be fine while the SETUP cannot update it.
+REM v0.1906..v0.2037 shipped installers whose silent update rolled back: setup started
+REM while the old app was still exiting, Restart Manager could not close it and
+REM /SUPPRESSMSGBOXES answered Abort. tools\installer-smoke.ps1 installs !SETUP! silently
+REM over the installed copy twice (plain, then racing a running app with the updater's own
+REM switches) and fails on "Rolling back changes". Close Kitchen Designer before publishing.
+echo === [2/5] Installer update smoke ===
+powershell -NoProfile -ExecutionPolicy Bypass -File "%root%\tools\installer-smoke.ps1" -SetupPath "!SETUP!"
+if errorlevel 1 ( echo [FAIL] Installer update smoke failed - release NOT published & exit /b 1 )
+
 REM ---- repo slug from origin (gh resolves the repo from the current directory) ----
 pushd "%root%"
 for /f "usebackq delims=" %%S in (`gh repo view --json nameWithOwner -q ".nameWithOwner"`) do set "SLUG=%%S"
@@ -187,6 +197,7 @@ exit /b 0
 
 :dry_plan
 echo [dry] would build/installer if missing: "!SETUP!"
+echo [dry] would smoke-test Build\KitchenDesigner.exe, then install "!SETUP!" over the installed copy (tools\installer-smoke.ps1)
 if defined NOTESFILE (echo [dry] changelog from: !NOTESFILE!) else (echo [dry] NO -NotesFile: the changelog will be a placeholder)
 echo [dry] tag !TAG! + push origin
 if defined PRERELEASE (
