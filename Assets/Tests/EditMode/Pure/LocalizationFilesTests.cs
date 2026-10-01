@@ -40,6 +40,31 @@ public class LocalizationFilesTests
     }
 
     [Test]
+    public void ShippedLanguages_AreTheTen_EachUnderItsNativeName_RussianThenEnglishFirst()
+    {
+        var languages = LocalizationFiles.Load("ru").Languages;
+        var expected = new (string Code, string Name, bool Rtl)[]
+        {
+            ("ru", "Русский", false),
+            ("en", "English", false),
+            ("ar-TN", "العربية (تونس)", true),
+            ("de", "Deutsch", false),
+            ("es", "Español", false),
+            ("fr", "Français", false),
+            ("it", "Italiano", false),
+            ("ja", "日本語", false),
+            ("pt", "Português (Brasil)", false),
+            ("zh-Hans", "简体中文", false),
+        };
+
+        CollectionAssert.AreEqual(
+            expected.Select(e => e.Code + "|" + e.Name + "|" + e.Rtl).ToList(),
+            languages.Select(l => l.Code + "|" + l.NativeName + "|" + l.IsRightToLeft).ToList(),
+            "список «Язык» в настройках строится из этих файлов: язык без @name показался бы человеку кодом, "
+            + "а без @rtl арабский разъехался бы слева направо");
+    }
+
+    [Test]
     public void IsLanguageFile_ExcludesUnderscoreFiles()
     {
         Assert.IsTrue(LocalizationFiles.IsLanguageFile("ar.json"));
