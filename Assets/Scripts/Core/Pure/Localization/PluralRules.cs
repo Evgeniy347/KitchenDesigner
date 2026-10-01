@@ -7,7 +7,7 @@ namespace KitchenDesigner.Core
         public static PluralCategory For(string language, long count)
         {
             long n = Math.Abs(count);
-            switch (language)
+            switch (LanguageChoice.Normalize(language))
             {
                 case "ru":
                 case "uk":
@@ -15,6 +15,13 @@ namespace KitchenDesigner.Core
                     return EastSlavic(n);
                 case "ar":
                     return Arabic(n);
+                case "zh":
+                case "ja":
+                case "ko":
+                case "vi":
+                case "th":
+                case "id":
+                    return PluralCategory.Other;
                 default:
                     return n == 1 ? PluralCategory.One : PluralCategory.Other;
             }
