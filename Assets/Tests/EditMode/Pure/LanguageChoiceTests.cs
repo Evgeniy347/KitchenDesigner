@@ -174,4 +174,14 @@ public class LanguageChoiceTests
             "приложение переписывает язык установщика в PlayerPrefs только при пустом выборе; "
             + "иначе обновление затирало бы выбор человека, а прогон тестов писал бы в реестр пользователя");
     }
+
+    [Test]
+    public void InstallLanguageRead_NeverThrows_AndYieldsNothingOrACode()
+    {
+        var value = InstallLanguage.Read();
+
+        Assert.That(value == null || value.Length is > 0 and <= 16, Is.True,
+            "чтение реестра при запуске не имеет права ронять приложение, а значение — быть мусором: "
+            + (value ?? "<нет>"));
+    }
 }
