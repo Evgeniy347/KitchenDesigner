@@ -122,10 +122,14 @@ namespace KitchenDesigner.Core.UI
             _controlTab?.RefreshConflicts();
         }
 
-        public void OpenControlsTab()
+        public void OpenControlsTab() => OpenTab(ControlTabIndex);
+
+        internal int CurrentTab => _tabs.CurrentIndex;
+
+        internal void OpenTab(int index)
         {
             SetVisible(true);
-            _tabs.Switch(ControlTabIndex);
+            _tabs.Switch(index);
             _body?.Fit();
         }
 

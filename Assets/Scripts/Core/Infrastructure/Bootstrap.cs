@@ -11,6 +11,7 @@ namespace KitchenDesigner.Core
             Application.runInBackground = true;
             KeepStackTracesOutOfInfoLogs();
             DefaultGameServices.Install();
+            LanguageStartup.Apply();
             DisplaySettings.ApplyWindowMode();
             PhotoRendererFeatures.SilenceUntilPhotoMode();
         }

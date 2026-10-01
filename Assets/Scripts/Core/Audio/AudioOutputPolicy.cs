@@ -11,5 +11,7 @@ namespace KitchenDesigner.Core.Audio
             Decide(_announcedTestRun, Application.isBatchMode, Environment.GetCommandLineArgs());
 
         public static void SilenceForTestRun() => _announcedTestRun = true;
+
+        public static bool UnderTestRun => _announcedTestRun || Application.isBatchMode;
     }
 }

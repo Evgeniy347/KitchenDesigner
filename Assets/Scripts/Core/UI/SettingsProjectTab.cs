@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -22,6 +24,9 @@ namespace KitchenDesigner.Core.UI
         public void Build(Transform page, KitchenSettings s, float topY)
         {
             float y = topY;
+
+            BuildLanguageRow(page, ref y);
+            y -= SettingsRowFactory.GapPx;
 
             _rows.AddToggle(page, ref y, "Сетка", s.GridEnabled,
                 v => { s.GridEnabled = v; _dependentStatesChanged(); }, read: () => s.GridEnabled);
@@ -103,6 +108,29 @@ namespace KitchenDesigner.Core.UI
             _rows.AddToggle(page, ref y, "Свободное панорамирование", s.CameraPanFree,
                 v => { s.CameraPanFree = v; }, read: () => s.CameraPanFree);
             Hint("Свободное панорамирование", hint: "settings.project.cameraPanFree");
+        }
+
+        private void BuildLanguageRow(Transform page, ref float y)
+        {
+            var languages = Loc.Languages;
+            _rows.AddDropdown(page, ref y, Loc.T("settings.project.language"),
+                languages.Select(l => l.NativeName).ToList(),
+                IndexOfCurrent(languages),
+                index =>
+                {
+                    if (index >= 0 && index < languages.Count) LanguageStartup.Choose(languages[index].Code);
+                },
+                id: LanguageRowId,
+                read: () => IndexOfCurrent(Loc.Languages));
+        }
+
+        internal const string LanguageRowId = "Language";
+
+        private static int IndexOfCurrent(IReadOnlyList<LanguageInfo> languages)
+        {
+            for (int i = 0; i < languages.Count; i++)
+                if (languages[i].Code == Loc.Language) return i;
+            return 0;
         }
 
         public void RefreshDependentStates(KitchenSettings s)

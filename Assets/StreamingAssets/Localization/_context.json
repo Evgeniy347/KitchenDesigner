@@ -1,0 +1,7 @@
+{
+  "settings.project.language": {
+    "where": "Settings window > Project tab, row label of the language dropdown",
+    "meaning": "Interface language of the application",
+    "maxLength": 30
+  }
+}

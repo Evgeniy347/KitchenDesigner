@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,7 +8,9 @@ namespace KitchenDesigner.Core.UI
     {
         public static UIManager? Instance { get; private set; }
 
-        private readonly ToolbarUI _toolbar = new();
+        private ToolbarUI _toolbar = new();
+        private readonly List<Component> _interfaceComponents = new();
+        private bool _languageRebuildPending;
         private readonly Dictionary<ToolbarPanel, IProjectWindow> _panels = new();
 
         private static readonly Dictionary<ToolbarPanel, ToolbarPanel> ClosedWhenOpened = new()
@@ -31,7 +34,21 @@ namespace KitchenDesigner.Core.UI
         private void Awake()
         {
             Instance = this;
+            BuildInterface();
+            _placement = gameObject.AddComponent<PlacementController>();
+            Loc.LanguageChanged += OnLanguageChanged;
+        }
 
+        private void BuildInterface()
+        {
+            var before = new HashSet<Component>(GetComponents<Component>());
+            BuildPanels();
+            foreach (var component in GetComponents<Component>())
+                if (!before.Contains(component)) _interfaceComponents.Add(component);
+        }
+
+        private void BuildPanels()
+        {
             _canvas = UIFactory.CreateCanvas("UICanvas");
             _toolbar.Build(_canvas.transform, this);
             PerfHud.ToolbarBottomY = ToolbarUI.BarHeight;
@@ -107,11 +124,48 @@ namespace KitchenDesigner.Core.UI
 
             var newerVersionDialog = gameObject.AddComponent<NewerVersionDialogUI>();
             newerVersionDialog.Build(_canvas.transform);
-
-            _placement = gameObject.AddComponent<PlacementController>();
         }
 
-        private void OnDestroy() => _toolbar.Dispose();
+        private void OnDestroy()
+        {
+            Loc.LanguageChanged -= OnLanguageChanged;
+            _toolbar.Dispose();
+        }
+
+        private void OnLanguageChanged() => _languageRebuildPending = true;
+
+        internal bool LanguageRebuildPending => _languageRebuildPending;
+
+        private IEnumerator RebuildInterfaceInCurrentLanguage()
+        {
+            var reopen = InterfaceReopenState.Capture(this);
+            TearDownInterface();
+            yield return null;
+            _toolbar = new ToolbarUI();
+            BuildInterface();
+            reopen.Restore(this);
+        }
+
+        private void TearDownInterface()
+        {
+            _toolbar.Dispose();
+            foreach (var component in _interfaceComponents)
+                DestroyNow.The(component);
+            _interfaceComponents.Clear();
+            _panels.Clear();
+            if (_canvas != null) DestroyNow.The(_canvas.gameObject);
+            _canvas = null;
+        }
+
+        internal IEnumerable<ToolbarPanel> VisiblePanels()
+        {
+            foreach (var kv in _panels)
+                if (kv.Value.IsVisible) yield return kv.Key;
+        }
+
+        internal ContextMenuUI? ContextMenu => _contextMenu;
+
+        internal SettingsPanelUI? SettingsPanel => _settingsPanel;
 
         public void TogglePanel(ToolbarPanel panel)
         {
@@ -142,7 +196,13 @@ namespace KitchenDesigner.Core.UI
         private void Update()
         {
             using var _ = PerfMarkers.UIManagerUpdate.Auto();
-            _toolbar.Refresh();
+            if (_languageRebuildPending)
+            {
+                _languageRebuildPending = false;
+                StartCoroutine(RebuildInterfaceInCurrentLanguage());
+                return;
+            }
+            if (_canvas != null) _toolbar.Refresh();
         }
 
         public void SpawnPreset(int index) => Spawner.SpawnPreset(index);

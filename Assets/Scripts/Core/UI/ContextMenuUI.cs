@@ -14,6 +14,8 @@ namespace KitchenDesigner.Core.UI
 
         public bool IsOpen => _root != null && _root.activeSelf;
 
+        internal KitchenElement? OpenTarget => IsOpen ? _target : null;
+
         private GameObject? _root;
         private KitchenElement? _target;
         private TMP_Text? _titleLabel;

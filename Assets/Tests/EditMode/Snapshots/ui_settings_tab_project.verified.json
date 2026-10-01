@@ -98,8 +98,8 @@
     },
     {
       "type": "Label",
-      "text": "i",
-      "position": [0, 0]
+      "text": "Язык",
+      "position": [-90, 0]
     },
     {
       "type": "Label",
@@ -145,6 +145,17 @@
       "type": "Label",
       "text": "i",
       "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Русский", "English"],
+      "selected": 0,
+      "position": [165, 0]
     },
     {
       "type": "InputField",
