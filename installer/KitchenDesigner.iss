@@ -28,6 +28,9 @@
 ; (Inno по-разному раскрывает {{/}} в разных местах).
 #define AppGuid      "AC0497CF-14C9-4092-98C9-391E5D860283"
 #define UninstKey    "Software\Microsoft\Windows\CurrentVersion\Uninstall\" + AppGuid + "_is1"
+; Автообновление: сколько setup ждёт выхода старой копии и как часто проверяет.
+#define RelaunchWaitMs 60000
+#define RelaunchPollMs 250
 
 [Setup]
 AppId={#AppGuid}
@@ -176,6 +179,68 @@ begin
   else if abld > bbld then Result := 1;
 end;
 
+// True, если установщик запущен с ключом /RELAUNCH (так зовёт автообновление).
+// GetCmdTail возвращает всю командную строку после имени setup — ключи видны и в
+// тихом режиме. Обычная установка/удаление ключ не передают -> перезапуска нет.
+function RelaunchRequested: Boolean;
+begin
+  Result := Pos('/RELAUNCH', GetCmdTail) > 0;
+end;
+
+// Файл держит живой процесс: запущенный exe и загруженную dll Windows не даёт
+// открыть на запись. Нет файла - нечего и ждать.
+function FileHeldByRunningProcess(const Path: String): Boolean;
+var
+  Stream: TFileStream;
+begin
+  Result := False;
+  if not FileExists(Path) then Exit;
+  try
+    Stream := TFileStream.Create(Path, fmOpenReadWrite or fmShareExclusive);
+    Stream.Free;
+  except
+    Result := True;
+  end;
+end;
+
+function FirstHeldAppFile: String;
+var
+  Dir: String;
+begin
+  Dir := ExpandConstant('{app}');
+  Result := '';
+  if FileHeldByRunningProcess(Dir + '\{#AppExe}') then Result := '{#AppExe}'
+  else if FileHeldByRunningProcess(Dir + '\UnityPlayer.dll') then Result := 'UnityPlayer.dll'
+  else if FileHeldByRunningProcess(Dir + '\UnityCrashHandler64.exe') then Result := 'UnityCrashHandler64.exe';
+end;
+
+// Автообновление: приложение запускает setup и только ПОТОМ гасит себя, а
+// Unity-плеер (и его UnityCrashHandler64) выходит секунды. Restart Manager
+// закрыть их не умеет ("Some applications could not be shut down"), а под
+// /SUPPRESSMSGBOXES ответ по умолчанию - Abort -> "Rolling back changes".
+// Поэтому при /RELAUNCH ждём, пока старая копия отпустит свои файлы, и только
+// потом Inno проверяет занятые файлы. PrepareToInstall вызывается ДО этой проверки.
+procedure WaitForTheUpdatingAppToExit;
+var
+  Waited: Integer;
+  Held: String;
+begin
+  Waited := 0;
+  Held := FirstHeldAppFile;
+  if Held = '' then Exit;
+  Log('Update: waiting for the running app to release ' + Held);
+  while (Held <> '') and (Waited < {#RelaunchWaitMs}) do
+  begin
+    Sleep({#RelaunchPollMs});
+    Waited := Waited + {#RelaunchPollMs};
+    Held := FirstHeldAppFile;
+  end;
+  if Held = '' then
+    Log('Update: app files released after ' + IntToStr(Waited) + ' ms')
+  else
+    Log('Update: still held after ' + IntToStr(Waited) + ' ms: ' + Held);
+end;
+
 // Даунгрейд (ставим версию СТАРЕЕ установленной) почти всегда ошибка юзера ->
 // предупреждаем перед перезаписью. Reinstall/апгрейд проходят без вопроса.
 function PrepareToInstall(var NeedsRestart: Boolean): String;
@@ -184,6 +249,7 @@ var
 begin
   Result := '';
   NeedsRestart := False;
+  if RelaunchRequested then WaitForTheUpdatingAppToExit;
   if RegQueryStringValue(HKCU, '{#UninstKey}', 'DisplayVersion', Installed) then
   begin
     if CompareVer(Installed, '{#Version}') > 0 then
@@ -192,12 +258,4 @@ begin
                 'сохранёнными проектами. Продолжить?', mbConfirmation, MB_YESNO) = IDNO then
         Result := 'Setup aborted by user: newer version already installed.';
   end;
-end;
-
-// True, если установщик запущен с ключом /RELAUNCH (так зовёт автообновление).
-// GetCmdTail возвращает всю командную строку после имени setup — ключи видны и в
-// тихом режиме. Обычная установка/удаление ключ не передают -> перезапуска нет.
-function RelaunchRequested: Boolean;
-begin
-  Result := Pos('/RELAUNCH', GetCmdTail) > 0;
 end;
