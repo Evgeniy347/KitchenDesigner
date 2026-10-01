@@ -41,6 +41,7 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildInterface()
         {
+            OsFontFallback.ApplyFor(Loc.Language, UIFactory.FontAsset);
             var before = new HashSet<Component>(GetComponents<Component>());
             BuildPanels();
             foreach (var component in GetComponents<Component>())

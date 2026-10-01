@@ -11,18 +11,34 @@ namespace KitchenDesigner.Core
         {
             if (testRun) return Localizer.SourceLanguage;
 
-            var storedCode = Normalize(stored);
-            if (storedCode != null && available.Contains(storedCode)) return storedCode;
+            var storedCode = Match(stored, available);
+            if (storedCode != null) return storedCode;
 
             foreach (var system in systemLanguages)
             {
-                var code = Normalize(system);
-                if (code != null && available.Contains(code)) return code;
+                var code = Match(system, available);
+                if (code != null) return code;
             }
 
             return available.Contains(Localizer.FallbackLanguage)
                 ? Localizer.FallbackLanguage
                 : Localizer.SourceLanguage;
+        }
+
+        public static string? Match(string? language, IReadOnlyCollection<string> available)
+        {
+            if (string.IsNullOrWhiteSpace(language)) return null;
+            var exact = language!.Trim().Replace('_', '-');
+            foreach (var code in available)
+                if (string.Equals(code, exact, StringComparison.OrdinalIgnoreCase)) return code;
+
+            var primary = Normalize(language);
+            if (primary == null) return null;
+            if (available.Contains(primary)) return primary;
+            return available
+                .Where(code => Normalize(code) == primary)
+                .OrderBy(code => code, StringComparer.Ordinal)
+                .FirstOrDefault();
         }
 
         public static string? Normalize(string? language)

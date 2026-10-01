@@ -52,6 +52,31 @@ public class LanguageChoiceTests
         Assert.AreEqual("ru", LanguageChoice.Decide(null, new[] { "de" }, new[] { "ru" }, testRun: false));
     }
 
+    private static readonly string[] WithRegionalFiles = { "ru", "en", "zh-Hans", "ar-TN", "ja" };
+
+    [Test]
+    public void Decide_StoredScriptTaggedLanguage_IsRestoredAfterRestart()
+    {
+        Assert.AreEqual("zh-Hans", LanguageChoice.Decide("zh-Hans", new[] { "en-US" }, WithRegionalFiles, testRun: false),
+            "файл называется zh-Hans.json: сведение к первичному тегу «zh» теряло выбор человека при каждом запуске");
+    }
+
+    [TestCase("zh-CN", "zh-Hans")]
+    [TestCase("ar-SA", "ar-TN")]
+    [TestCase("AR_tn", "ar-TN")]
+    [TestCase("ja-JP", "ja")]
+    public void Decide_SystemLanguage_FindsTheRegionalFile_ByThePrimaryTag(string system, string expected)
+    {
+        Assert.AreEqual(expected, LanguageChoice.Decide(null, new[] { system }, WithRegionalFiles, testRun: false));
+    }
+
+    [Test]
+    public void Match_PlainPrimaryFile_WinsOverARegionalOne()
+    {
+        Assert.AreEqual("ar", LanguageChoice.Match("ar-EG", new[] { "ar-TN", "ar" }),
+            "общий арабский точнее чужого диалекта для египтянина");
+    }
+
     [TestCase("en-US", "en")]
     [TestCase("EN", "en")]
     [TestCase("pt_BR", "pt")]
