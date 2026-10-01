@@ -51,7 +51,9 @@ namespace KitchenDesigner.Editor
                 AssetDatabase.AddObjectToAsset(fontAsset.material, fontAsset);
             }
 
-            AssetDatabase.SaveAssets();
+            FontAssetSaveGuard.AllowSave = true;
+            try { AssetDatabase.SaveAssets(); }
+            finally { FontAssetSaveGuard.AllowSave = false; }
             AssetDatabase.Refresh();
 
             Debug.Log($"[TMP] Created SDF font asset at {AssetPath}");
