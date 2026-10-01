@@ -66,27 +66,29 @@ namespace KitchenDesigner.Core
 
         private static readonly Vector3 X = Vector3.right, Y = Vector3.up, Z = Vector3.forward;
 
-        private static readonly Variant[] Modes =
-        {
-            new Variant(false, true, new Vector3(-1f, 0f, -1f),  Y, "<", "Дверь: слева"),
-            new Variant(false, true, new Vector3( 1f, 0f, -1f), -Y, ">", "Дверь: справа"),
-            new Variant(false, true, new Vector3( 0f, 1f, -1f),  X, "^", "Дверь: сверху"),
-            new Variant(false, true, new Vector3( 0f,-1f, -1f), -X, "v", "Дверь: снизу"),
-            new Variant(false, true, new Vector3(-1f, 0f,  1f), -Y, "[", "Сзади: слева"),
-            new Variant(false, true, new Vector3( 1f, 0f,  1f),  Y, "]", "Сзади: справа"),
-            new Variant(false, true, new Vector3( 0f, 1f,  1f), -X, "{", "Сзади: сверху"),
-            new Variant(false, true, new Vector3( 0f,-1f,  1f),  X, "}", "Сзади: снизу"),
-            new Variant(false, false, new Vector3(-1f, 1f,  0f),  Z, "(", "Угол: верх-лево"),
-            new Variant(false, false, new Vector3( 1f, 1f,  0f),  Z, ")", "Угол: верх-право"),
-            new Variant(false, false, new Vector3(-1f,-1f,  0f),  Z, "\\", "Угол: низ-лево"),
-            new Variant(false, false, new Vector3( 1f,-1f,  0f),  Z, "/", "Угол: низ-право"),
-            new Variant(true, false, Vector3.zero,  Z, "O", "Ящик: вперёд"),
-            new Variant(true, false, Vector3.zero, -Z, "X", "Ящик: назад"),
-            new Variant(true, false, Vector3.zero, -X, "R", "Ящик: вправо"),
-            new Variant(true, false, Vector3.zero,  X, "L", "Ящик: влево"),
-            new Variant(true, false, Vector3.zero, -Y, "U", "Ящик: вверх"),
-            new Variant(true, false, Vector3.zero,  Y, "D", "Ящик: вниз"),
-        };
+        private static readonly LocalizedCache<Variant[]> ModesCache =
+            new LocalizedCache<Variant[]>(() => new Variant[] {
+            new Variant(false, true, new Vector3(-1f, 0f, -1f),  Y, "<", Loc.T("element.facade.openMode.doorLeft")),
+            new Variant(false, true, new Vector3( 1f, 0f, -1f), -Y, ">", Loc.T("element.facade.openMode.doorRight")),
+            new Variant(false, true, new Vector3( 0f, 1f, -1f),  X, "^", Loc.T("element.facade.openMode.doorTop")),
+            new Variant(false, true, new Vector3( 0f,-1f, -1f), -X, "v", Loc.T("element.facade.openMode.doorBottom")),
+            new Variant(false, true, new Vector3(-1f, 0f,  1f), -Y, "[", Loc.T("element.facade.openMode.rearLeft")),
+            new Variant(false, true, new Vector3( 1f, 0f,  1f),  Y, "]", Loc.T("element.facade.openMode.rearRight")),
+            new Variant(false, true, new Vector3( 0f, 1f,  1f), -X, "{", Loc.T("element.facade.openMode.rearTop")),
+            new Variant(false, true, new Vector3( 0f,-1f,  1f),  X, "}", Loc.T("element.facade.openMode.rearBottom")),
+            new Variant(false, false, new Vector3(-1f, 1f,  0f),  Z, "(", Loc.T("element.facade.openMode.cornerTopLeft")),
+            new Variant(false, false, new Vector3( 1f, 1f,  0f),  Z, ")", Loc.T("element.facade.openMode.cornerTopRight")),
+            new Variant(false, false, new Vector3(-1f,-1f,  0f),  Z, "\\", Loc.T("element.facade.openMode.cornerBottomLeft")),
+            new Variant(false, false, new Vector3( 1f,-1f,  0f),  Z, "/", Loc.T("element.facade.openMode.cornerBottomRight")),
+            new Variant(true, false, Vector3.zero,  Z, "O", Loc.T("element.facade.openMode.drawerForward")),
+            new Variant(true, false, Vector3.zero, -Z, "X", Loc.T("element.facade.openMode.drawerBack")),
+            new Variant(true, false, Vector3.zero, -X, "R", Loc.T("element.facade.openMode.drawerRight")),
+            new Variant(true, false, Vector3.zero,  X, "L", Loc.T("element.facade.openMode.drawerLeft")),
+            new Variant(true, false, Vector3.zero, -Y, "U", Loc.T("element.facade.openMode.drawerUp")),
+            new Variant(true, false, Vector3.zero,  Y, "D", Loc.T("element.facade.openMode.drawerDown")),
+        });
+
+        private static Variant[] Modes => ModesCache.Value;
 
         public static int Count => Modes.Length;
 

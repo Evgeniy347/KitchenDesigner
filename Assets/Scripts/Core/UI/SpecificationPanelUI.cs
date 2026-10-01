@@ -38,7 +38,7 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("SpecTitle", panel.transform, "Спецификация", UIStyle.FontWindowTitle,
+            UIFactory.CreateLabel("SpecTitle", panel.transform, Loc.T("spec.title"), UIStyle.FontWindowTitle,
                 new Vector2(0, 290), new Vector2(ContentWidth, 36), TextAnchor.MiddleCenter);
 
             BuildStaticHeaders(panel.transform);
@@ -62,12 +62,7 @@ namespace KitchenDesigner.Core.UI
             headerText.enableWordWrapping = false;
             headerText.overflowMode = TextOverflowModes.Overflow;
             headerText.text =
-                $"№<pos={ColName}>Название" +
-                $"<pos={ColW}>Ш<pos={ColH}>В<pos={ColD}>Г, мм" +
-                $"<pos={ColMaterial}>Материал" +
-                $"<pos={ColPieces}>Дет." +
-                $"<pos={ColQty}>Кол-во" +
-                $"<pos={ColUnit}>Ед.";
+                Loc.F("spec.header", ColName, ColW, ColH, ColD, ColMaterial, ColPieces, ColQty, ColUnit);
         }
 
         private static void BuildSeparator(Transform parent, float y)
@@ -138,10 +133,10 @@ namespace KitchenDesigner.Core.UI
             float closeX = totalW * 0.5f - closeW * 0.5f;
             const float btnY = -296f;
 
-            var export = UIFactory.CreateButton("SpecExport", parent, "Экспорт CSV",
+            var export = UIFactory.CreateButton("SpecExport", parent, Loc.T("spec.exportCsv"),
                 new Vector2(exportX, btnY), new Vector2(exportW, 40), ExportCsv);
             export.GetComponent<Image>().color = UIStyle.Accent;
-            UIFactory.CreateButton("SpecClose", parent, "Закрыть",
+            UIFactory.CreateButton("SpecClose", parent, Loc.T("common.close"),
                 new Vector2(closeX, btnY), new Vector2(closeW, 40), () => SetVisible(false));
             UIFactory.CreateCloseButton(parent, () => SetVisible(false));
         }
@@ -224,11 +219,11 @@ namespace KitchenDesigner.Core.UI
             if (result.lines.Count > 0)
                 sb.AppendLine();
 
-            sb.Append($"<pos={ColName}>Всего, досок:<pos={ColQty}>{result.totalCount}");
+            sb.Append(Loc.F("spec.totalBoards", ColName, ColQty, result.totalCount));
             foreach (var key in SortedSectionUnits(result))
             {
                 sb.AppendLine();
-                sb.Append($"<pos={ColName}>Всего, {SectionLabel(key.section)}, {key.unit.Label()}:" +
+                sb.Append(Loc.F("spec.totalBySection", ColName, SectionLabel(key.section), key.unit.Label()) +
                           $"<pos={ColQty}>{FormatQty(result.totalsBySection[key], key.unit)}" +
                           $"<pos={ColUnit}>{key.unit.Label()}");
             }
@@ -236,7 +231,7 @@ namespace KitchenDesigner.Core.UI
         }
 
         private static string SectionLabel(string section) =>
-            string.IsNullOrEmpty(section) ? "Без раздела" : section;
+            string.IsNullOrEmpty(section) ? Loc.T("spec.noSection") : section;
 
         private static string DimCell(int valueMM, bool hasDims) => SpecCellFormat.DimCell(valueMM, hasDims);
 
@@ -252,8 +247,8 @@ namespace KitchenDesigner.Core.UI
             var totals = SpecTotals.ByUnit(lines.Select(l => (l.unit, l.qtyTotal)));
             var parts = totals.Keys.OrderBy(u => (int)u)
                 .Select(u => $"{FormatQty(totals[u], u)} {u.Label()}");
-            string label = string.IsNullOrEmpty(material) ? "без материала" : material;
-            return $"Итого, {label}: {string.Join(", ", parts)}";
+            string label = string.IsNullOrEmpty(material) ? Loc.T("spec.noMaterial") : material;
+            return Loc.F("spec.materialTotal", label, string.Join(", ", parts));
         }
 
         private static IEnumerable<(string section, SpecUnit unit)> SortedSectionUnits(SpecResult result)
@@ -272,7 +267,7 @@ namespace KitchenDesigner.Core.UI
         {
             var result = SpecificationManager.Build(PartRegistry.All);
             string defaultName = $"KitchenSpec_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv";
-            string? path = NativeFileDialog.SaveCSVDialog("Экспорт спецификации", defaultName,
+            string? path = NativeFileDialog.SaveCSVDialog(Loc.T("spec.exportDialogTitle"), defaultName,
                 Application.persistentDataPath);
             bool userCancelledTheDialog = string.IsNullOrEmpty(path);
             if (userCancelledTheDialog)
@@ -280,7 +275,7 @@ namespace KitchenDesigner.Core.UI
 
             if (SpecificationExport.SaveToFile(result, path!))
             {
-                ToastNotification.ShowIfAvailable("CSV сохранён", 2f);
+                ToastNotification.ShowIfAvailable(Loc.T("spec.csvSaved"), 2f);
             }
             else
             {

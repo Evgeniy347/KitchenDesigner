@@ -4,12 +4,12 @@ namespace KitchenDesigner.Core.Construction
 {
     public static class RoofSpecItems
     {
-        public const string Section = SpecSections.Structures;
-        public const string CoveringName = "Кровельное покрытие";
-        public const string RafterName = "Стропила";
-        public const string RidgeName = "Конёк";
-        public const string EaveName = "Карниз";
-        public const string GutterName = "Водосток";
+        public static string Section => SpecSections.Structures;
+        public static string CoveringName => Loc.T("spec.roof.covering");
+        public static string RafterName => Loc.T("spec.roof.rafters");
+        public static string RidgeName => Loc.T("spec.roof.ridge");
+        public static string EaveName => Loc.T("spec.roof.eave");
+        public static string GutterName => Loc.T("spec.roof.gutter");
 
         public static IEnumerable<SpecItem> Of(RoofFrame frame, float pitchDeg, float rafterStepMm,
             float wastePct)

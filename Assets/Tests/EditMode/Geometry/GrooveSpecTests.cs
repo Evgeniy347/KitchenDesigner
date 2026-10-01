@@ -5,9 +5,8 @@ using KitchenDesigner.Core;
 /// не формальность: по нему сравниваются наборы пазов при сохранении, undo
 /// и пересборке меша. Ошибка в равенстве не падает, а тихо теряет паз.
 ///
-/// Подписи для UI (SideLabel/KindLabel) намеренно не проверяются: это текст
-/// интерфейса, его утверждение в тестах ломается при любой правке формулировки
-/// и ничего не защищает.</summary>
+/// Подписи для UI (вид, сторона, обозначение в спецификации) живут в переводимом
+/// GrooveTexts — их держит GrooveTextsTests.</summary>
 public class GrooveSpecTests
 {
     [Test]
@@ -46,16 +45,6 @@ public class GrooveSpecTests
         CollectionAssert.AllItemsAreUnique(hashes);
     }
 
-    /// <summary>Обозначение попадает в спецификацию, поэтому вид паза в нём
-    /// обязан различаться — иначе глухой и сквозной сольются в одну строку.</summary>
-    [Test]
-    public void Designation_DistinguishesKinds()
-    {
-        Assert.AreNotEqual(
-            GrooveSpec.Designation(GrooveKind.Blind),
-            GrooveSpec.Designation(GrooveKind.Through));
-    }
-
     [Test]
     public void ToString_DistinguishesSides()
     {
@@ -64,21 +53,5 @@ public class GrooveSpecTests
 
         Assert.AreNotEqual(top, left);
         Assert.IsNotEmpty(top);
-    }
-
-    [Test]
-    public void SideLabel_IsDistinctForEverySide()
-    {
-        var labels = new[]
-        {
-            GrooveSpec.SideLabel(GrooveSide.Top),
-            GrooveSpec.SideLabel(GrooveSide.Bottom),
-            GrooveSpec.SideLabel(GrooveSide.Left),
-            GrooveSpec.SideLabel(GrooveSide.Right),
-        };
-
-        CollectionAssert.AllItemsAreUnique(labels);
-        foreach (var label in labels)
-            Assert.IsNotEmpty(label, "пустая подпись стороны не отличима от отсутствующей");
     }
 }

@@ -16,8 +16,14 @@ namespace KitchenDesigner.Core.UI
         private const float NewKindX = 0f, NewKindW = 116f;
         private const float AddX = 116f, AddW = 100f;
 
-        private static readonly string[] SideLabels = { "Верх", "Низ", "Лево", "Право" };
-        private static readonly string[] KindLabels = { "Сквозной", "Глухой" };
+        private static readonly LocalizedCache<string[]> SideLabelsCache =
+            new LocalizedCache<string[]>(() => new string[] { Loc.T("element.groove.sideTop"), Loc.T("element.groove.sideBottom"), Loc.T("element.groove.sideLeft"), Loc.T("element.groove.sideRight") });
+
+        private static string[] SideLabels => SideLabelsCache.Value;
+        private static readonly LocalizedCache<string[]> KindLabelsCache =
+            new LocalizedCache<string[]>(() => new string[] { Loc.T("element.groove.kindThrough"), Loc.T("element.groove.kindStopped") });
+
+        private static string[] KindLabels => KindLabelsCache.Value;
 
         private readonly TMP_Dropdown?[] _rowSide = new TMP_Dropdown?[AppConstants.GROOVE_MAX_PER_PART];
         private readonly TMP_Dropdown?[] _rowKind = new TMP_Dropdown?[AppConstants.GROOVE_MAX_PER_PART];
@@ -40,10 +46,9 @@ namespace KitchenDesigner.Core.UI
             var partOnly = RowVisibility.For(ElementFacet.Part);
             var expanded = RowVisibility.For(ElementFacet.Part, () => Expanded);
 
-            _countLabel = Host.Rows.WideButton("CtxGrooves", "Пазы (0)", Toggle, partOnly, RowGap);
+            _countLabel = Host.Rows.WideButton("CtxGrooves", Loc.T("element.groove.headerEmpty"), Toggle, partOnly, RowGap);
             Host.Rows.Hint("CtxGrooveHint",
-                $"Паз: ширина {AppConstants.GROOVE_WIDTH_MM} мм, глубина {AppConstants.GROOVE_DEPTH_MM} мм,"
-                + $" отступ от кромки {AppConstants.GROOVE_OFFSET_MM} мм",
+                Loc.F("element.groove.hint", AppConstants.GROOVE_WIDTH_MM, AppConstants.GROOVE_DEPTH_MM, AppConstants.GROOVE_OFFSET_MM),
                 HintH, RowSpacing, expanded);
 
             for (int i = 0; i < AppConstants.GROOVE_MAX_PER_PART; i++)
@@ -73,7 +78,7 @@ namespace KitchenDesigner.Core.UI
             _newKind = UIFactory.CreateDropdown("CtxGrooveKind", parent,
                 new List<string>(KindLabels), new Vector2(NewKindX, 0), new Vector2(NewKindW, RowHeight),
                 _ => { });
-            var addBtn = UIFactory.CreateButton("CtxGrooveAdd", parent, "Добавить",
+            var addBtn = UIFactory.CreateButton("CtxGrooveAdd", parent, Loc.T("common.add"),
                 new Vector2(AddX, 0), new Vector2(AddW, RowHeight), AddFromUI);
             Host.Layout.AddFor(ElementFacet.Part, () => Expanded, RowHeight, ActionGap,
                 _newSide.GetComponent<RectTransform>(),
@@ -89,13 +94,13 @@ namespace KitchenDesigner.Core.UI
             var after = new List<GrooveSpec>(Target.Grooves);
             if (after.Contains(spec))
             {
-                ToastNotification.ShowIfAvailable("Такой паз уже есть");
+                ToastNotification.ShowIfAvailable(Loc.T("toast.grooveExists"));
                 return;
             }
             if (after.Count >= AppConstants.GROOVE_MAX_PER_PART)
             {
                 ToastNotification.ShowIfAvailable(
-                    $"Не больше {AppConstants.GROOVE_MAX_PER_PART} пазов на деталь");
+                    Loc.F("toast.grooveLimit", AppConstants.GROOVE_MAX_PER_PART));
                 return;
             }
             after.Add(spec);
@@ -126,7 +131,7 @@ namespace KitchenDesigner.Core.UI
             for (int i = 0; i < after.Count; i++)
                 if (i != index && after[i].Equals(spec))
                 {
-                    ToastNotification.ShowIfAvailable("Такой паз уже есть");
+                    ToastNotification.ShowIfAvailable(Loc.T("toast.grooveExists"));
                     Refresh();
                     return;
                 }
@@ -139,7 +144,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (_countLabel != null)
                 _countLabel.text =
-                    $"Пазы ({Count()})  {(Expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
+                    Loc.F("element.groove.header", Count(), (Expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed));
 
             IReadOnlyList<GrooveSpec>? grooves = CurrentItems();
             for (int i = 0; i < _rowSide.Length; i++)

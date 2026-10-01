@@ -23,9 +23,9 @@ namespace KitchenDesigner.Core.UI
 
         public override void Build()
         {
-            _diameter = Rows.NumberField("Диаметр", RowVisibility.For(ElementFacet.Pillar),
+            _diameter = Rows.NumberField(Loc.T("element.pillar.diameter"), RowVisibility.For(ElementFacet.Pillar),
                 hint: "element.pillar.diameter");
-            _midHeight = Rows.NumberField("Средняя секция", RowVisibility.For(ElementFacet.Pillar),
+            _midHeight = Rows.NumberField(Loc.T("element.pillar.midHeight"), RowVisibility.For(ElementFacet.Pillar),
                 hint: "element.pillar.midHeight");
         }
 

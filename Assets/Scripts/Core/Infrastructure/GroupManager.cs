@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
     public class LinkGroup
     {
         public int id;
-        public string name = "Группа";
+        public string name = Loc.T("group.genericName");
         public bool movable = true;
         public string widthAxis = "x";
     }

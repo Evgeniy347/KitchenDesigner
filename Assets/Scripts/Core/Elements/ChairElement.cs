@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("лицо стула — сиденье, оно часть корневого меша и отдельной деталью не выделено");
 
-        public override string DisplayTypeName => "Стул";
+        public override string DisplayTypeName => Loc.T("elementType.chair");
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

@@ -24,12 +24,12 @@ namespace KitchenDesigner.Core.UI
 
         public void Build()
         {
-            _host.Rows.SectionHeader("CtxSecDims", "Размеры");
-            _dimensions.Width = _host.Rows.NumberField("Ширина", RowVisibility.Always);
+            _host.Rows.SectionHeader("CtxSecDims", Loc.T("element.common.dimensions"));
+            _dimensions.Width = _host.Rows.NumberField(Loc.T("element.common.width"), RowVisibility.Always);
             _dimensions.Height = _host.Rows.NumberField(
                 ElementFieldsEditor.DefaultHeightLabel, RowVisibility.Always);
             _heightLabel = FindLabelFor(_dimensions.Height);
-            _dimensions.Depth = _host.Rows.NumberField("Глубина", RowVisibility.Always);
+            _dimensions.Depth = _host.Rows.NumberField(Loc.T("element.common.depth"), RowVisibility.Always);
         }
 
         public void CollectArithmeticFields(List<TMP_InputField?> fields)

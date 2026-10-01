@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("подушки дивана стоят между подлокотниками: ни одна из них не защищена от собственного подлокотника, поэтому проверяемой лицевой детали у типа нет");
 
-        public override string DisplayTypeName => "Диван";
+        public override string DisplayTypeName => Loc.T("elementType.sofa");
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

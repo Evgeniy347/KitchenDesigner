@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core.UI
         public ContextMenuLevelSection(IContextMenuHost host) => _host = host;
 
         public void Build() =>
-            _dropdown = _host.Rows.Dropdown("Этаж", new List<string>(), OnSelected,
+            _dropdown = _host.Rows.Dropdown(Loc.T("element.common.level"), new List<string>(), OnSelected,
                 RowVisibility.Always, "CtxLevel");
 
         public void ShowFor(KitchenElement element)

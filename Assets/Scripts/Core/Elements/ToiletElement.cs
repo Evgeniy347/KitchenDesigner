@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("чаша и крышка видны и поверх бачка: защищённой лицевой детали у унитаза нет");
 
-        public override string DisplayTypeName => "Унитаз-компакт";
+        public override string DisplayTypeName => Loc.T("elementType.closeCoupledToilet");
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

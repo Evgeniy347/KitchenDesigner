@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("кровать смотрит вверх: матрас и подушки видны с любой стороны");
 
-        public override string DisplayTypeName => "Кровать";
+        public override string DisplayTypeName => Loc.T("elementType.bed");
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

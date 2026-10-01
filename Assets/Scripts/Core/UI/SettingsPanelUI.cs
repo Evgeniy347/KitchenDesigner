@@ -16,8 +16,10 @@ namespace KitchenDesigner.Core.UI
         private const float BodyTopInset = PanelH * 0.5f - ContentTopY - SettingsRowFactory.RowH * 0.5f;
         private const float BodyBottomInset = PanelH * 0.5f + CloseY + CloseH * 0.5f + UIStyle.GapInner;
 
-        private static readonly string[] TabLabels =
-            { "Проект", "Вид", "Строительство", "Управление", "Фото режим", "Свет", "MCP", "О программе" };
+        private static readonly LocalizedCache<string[]> TabLabelsCache =
+            new LocalizedCache<string[]>(() => new string[] { Loc.T("settings.tab.project"), Loc.T("settings.tab.view"), Loc.T("settings.tab.construction"), Loc.T("settings.tab.control"), Loc.T("settings.tab.photo"), Loc.T("settings.tab.light"), "MCP", Loc.T("settings.tab.about") });
+
+        private static string[] TabLabels => TabLabelsCache.Value;
 
         private const int ControlTabIndex = 3;
 
@@ -45,7 +47,7 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("SetTitle", panel.transform, "Настройки", UIStyle.FontWindowTitle,
+            UIFactory.CreateLabel("SetTitle", panel.transform, Loc.T("settings.title"), UIStyle.FontWindowTitle,
                 new Vector2(0, TitleY), new Vector2(PanelW - PanelSidePad, 36), TextAnchor.MiddleCenter);
 
             var s = KitchenSettings.Instance;
@@ -92,7 +94,7 @@ namespace KitchenDesigner.Core.UI
 
             _viewTab.FollowEditMode();
 
-            UIFactory.CreateButton("SetClose", panel.transform, "Закрыть",
+            UIFactory.CreateButton("SetClose", panel.transform, Loc.T("common.close"),
                 new Vector2(0, CloseY), new Vector2(160, CloseH),
                 () => SetVisible(false));
 

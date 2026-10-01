@@ -58,32 +58,6 @@ public class DrawerConstantsTests
     }
 
     [Test]
-    public void GetTypeLabel_ReturnsCorrect()
-    {
-        var types = new[] { DrawerType.A, DrawerType.B, DrawerType.C, DrawerType.D };
-        foreach (var t in types)
-            Assert.IsNotEmpty(DrawerConstants.GetTypeLabel(t), $"type={t} label should not be empty");
-    }
-
-    [Test]
-    public void GetColorName_Anthracite()
-    {
-        Assert.AreEqual("Антрацит", DrawerConstants.GetColorName(DrawerColor.Anthracite));
-    }
-
-    [Test]
-    public void GetColorName_White()
-    {
-        Assert.AreEqual("Белый", DrawerConstants.GetColorName(DrawerColor.White));
-    }
-
-    [Test]
-    public void GetColorName_Black()
-    {
-        Assert.AreEqual("Чёрный", DrawerConstants.GetColorName(DrawerColor.Black));
-    }
-
-    [Test]
     public void AllColors_HaveUniqueMaterialIds()
     {
         var a = DrawerConstants.GetColorMaterialId(DrawerColor.Anthracite);
@@ -92,27 +66,6 @@ public class DrawerConstantsTests
         Assert.AreNotEqual(a, w);
         Assert.AreNotEqual(a, b);
         Assert.AreNotEqual(w, b);
-    }
-
-    [Test]
-    public void GetCycleButtonLabel_Closed()
-    {
-        var label = DrawerConstants.GetCycleButtonLabel(DoubleDrawerState.Closed);
-        StringAssert.Contains("Открыть", label);
-    }
-
-    [Test]
-    public void GetCycleButtonLabel_BothOpen()
-    {
-        var label = DrawerConstants.GetCycleButtonLabel(DoubleDrawerState.BothOpen);
-        StringAssert.Contains("верхний", label);
-    }
-
-    [Test]
-    public void GetCycleButtonLabel_LowerOnly()
-    {
-        var label = DrawerConstants.GetCycleButtonLabel(DoubleDrawerState.LowerOnly);
-        StringAssert.Contains("всё", label);
     }
 
     [Test]
@@ -266,21 +219,16 @@ public class DrawerConstantsTests
     /// <summary>Каждая система ящиков обязана называться по-своему: имена
     /// уходят в спецификацию, где их читает человек на производстве.</summary>
     [Test]
-    public void SystemLabelsAndNames_AreDistinctAndNonEmpty()
+    public void SystemLabels_AreDistinctAndNonEmpty()
     {
         var labels = new System.Collections.Generic.List<string>();
-        var names = new System.Collections.Generic.List<string>();
         foreach (DrawerSystem system in System.Enum.GetValues(typeof(DrawerSystem)))
         {
             var label = DrawerConstants.GetSystemLabel(system);
-            var name = DrawerConstants.GetDefaultName(system);
             Assert.IsNotEmpty(label, $"у системы {system} нет подписи");
-            Assert.IsNotEmpty(name, $"у системы {system} нет имени по умолчанию");
             labels.Add(label);
-            names.Add(name);
         }
 
         CollectionAssert.AllItemsAreUnique(labels);
-        CollectionAssert.AllItemsAreUnique(names);
     }
 }

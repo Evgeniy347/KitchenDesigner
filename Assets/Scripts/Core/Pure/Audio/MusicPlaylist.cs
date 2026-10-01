@@ -10,6 +10,6 @@ namespace KitchenDesigner.Core.Audio
         public static string ResourcePath(int track) =>
             RESOURCE_FOLDER + "/track-" + (Wrap(track) + 1).ToString("00");
 
-        public static string DisplayName(int track) => "Трек " + (Wrap(track) + 1);
+        public static string DisplayName(int track) => Loc.T("window.music.trackPrefix") + (Wrap(track) + 1);
     }
 }

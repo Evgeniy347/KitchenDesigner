@@ -130,10 +130,10 @@ namespace KitchenDesigner.Core.UI
             header.sizeDelta = new Vector2(_contentW, 22);
             header.anchoredPosition = new Vector2(pad, HeaderTopY);
 
-            HeaderCell(header, "Уровень", ColLevel, ColCode - ColLevel);
-            HeaderCell(header, "Код", ColCode, ColDetail - ColCode);
-            HeaderCell(header, "Деталь", ColDetail, ColMessage - ColDetail);
-            HeaderCell(header, "Текст ошибки", ColMessage, _contentW - ColMessage);
+            HeaderCell(header, Loc.T("errors.column.severity"), ColLevel, ColCode - ColLevel);
+            HeaderCell(header, Loc.T("errors.column.code"), ColCode, ColDetail - ColCode);
+            HeaderCell(header, Loc.T("errors.column.part"), ColDetail, ColMessage - ColDetail);
+            HeaderCell(header, Loc.T("errors.column.message"), ColMessage, _contentW - ColMessage);
 
             var sep = UIFactory.CreateRect("ErrHeaderSep", parent);
             UIFactory.AnchorTopLeft(sep);

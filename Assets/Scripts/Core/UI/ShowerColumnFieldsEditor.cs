@@ -11,14 +11,14 @@ namespace KitchenDesigner.Core.UI
         public const string HandDiameterNode = "ДиаметрРучнойЛейки";
         public const string HoseLengthNode = "ДлинаШлангаСтойки";
 
-        public const string ColumnHeightLabel = "Высота стойки";
-        public const string RiserDiameterLabel = "Ø штанги";
-        public const string HeadDiameterLabel = "Ø лейки";
-        public const string HeadThicknessLabel = "Толщина лейки";
-        public const string ArmReachLabel = "Вынос лейки";
-        public const string WallOffsetLabel = "Вылет от стены";
-        public const string HandDiameterLabel = "Ø ручной лейки";
-        public const string HoseLengthLabel = "Длина шланга";
+        public static string ColumnHeightLabel => Loc.T("element.showerColumn.columnHeight");
+        public static string RiserDiameterLabel => Loc.T("element.showerColumn.riserDiameter");
+        public static string HeadDiameterLabel => Loc.T("element.showerColumn.headDiameter");
+        public static string HeadThicknessLabel => Loc.T("element.showerColumn.headThickness");
+        public static string ArmReachLabel => Loc.T("element.showerColumn.armReach");
+        public static string WallOffsetLabel => Loc.T("element.showerColumn.wallOffset");
+        public static string HandDiameterLabel => Loc.T("element.showerColumn.handDiameter");
+        public static string HoseLengthLabel => Loc.T("element.showerColumn.hoseLength");
 
         public ShowerColumnFieldsEditor(IContextMenuHost host) : base(host) { }
 
@@ -30,21 +30,21 @@ namespace KitchenDesigner.Core.UI
         {
             var visibility = RowVisibility.When(() => Host.Target is ShowerColumnElement);
 
-            var heightRow = Rows.NumberField(ColumnHeightLabel, visibility, "мм",
+            var heightRow = Rows.NumberField(ColumnHeightLabel, visibility, Loc.T("unit.mm"),
                 ColumnHeightNode, hint: "element.showerColumn.columnHeight");
-            var riserRow = Rows.NumberField(RiserDiameterLabel, visibility, "мм",
+            var riserRow = Rows.NumberField(RiserDiameterLabel, visibility, Loc.T("unit.mm"),
                 RiserDiameterNode, hint: "element.showerColumn.riserDiameter");
-            var offsetRow = Rows.NumberField(WallOffsetLabel, visibility, "мм", WallOffsetNode,
+            var offsetRow = Rows.NumberField(WallOffsetLabel, visibility, Loc.T("unit.mm"), WallOffsetNode,
                 hint: "element.showerColumn.wallOffset");
-            var reachRow = Rows.NumberField(ArmReachLabel, visibility, "мм", ArmReachNode,
+            var reachRow = Rows.NumberField(ArmReachLabel, visibility, Loc.T("unit.mm"), ArmReachNode,
                 hint: "element.showerColumn.armReach");
-            var headRow = Rows.NumberField(HeadDiameterLabel, visibility, "мм", HeadDiameterNode,
+            var headRow = Rows.NumberField(HeadDiameterLabel, visibility, Loc.T("unit.mm"), HeadDiameterNode,
                 hint: "element.showerColumn.headDiameter");
-            var thicknessRow = Rows.NumberField(HeadThicknessLabel, visibility, "мм",
+            var thicknessRow = Rows.NumberField(HeadThicknessLabel, visibility, Loc.T("unit.mm"),
                 HeadThicknessNode, hint: "element.showerColumn.headThickness");
-            var handRow = Rows.NumberField(HandDiameterLabel, visibility, "мм",
+            var handRow = Rows.NumberField(HandDiameterLabel, visibility, Loc.T("unit.mm"),
                 HandDiameterNode, hint: "element.showerColumn.handDiameter");
-            var hoseRow = Rows.NumberField(HoseLengthLabel, visibility, "мм", HoseLengthNode,
+            var hoseRow = Rows.NumberField(HoseLengthLabel, visibility, Loc.T("unit.mm"), HoseLengthNode,
                 hint: "element.showerColumn.hoseLength");
 
             Bind<ShowerColumnElement>(riserRow, column => column.RiserDiameterMM,

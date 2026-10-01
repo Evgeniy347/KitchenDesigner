@@ -192,9 +192,9 @@ public class GrooveMeshTests
     [Test]
     public void Designation_MatchesCatalogNotation()
     {
-        Assert.AreEqual("Сквозной 16*4*7", GrooveSpec.Designation(GrooveKind.Through));
-        Assert.AreEqual("Глухой 16*4*7", GrooveSpec.Designation(GrooveKind.Blind));
+        Assert.AreEqual("Сквозной 16*4*7", GrooveTexts.Designation(GrooveKind.Through));
+        Assert.AreEqual("Глухой 16*4*7", GrooveTexts.Designation(GrooveKind.Blind));
         Assert.AreEqual("Глухой 16*4*7:Лево",
-            new GrooveSpec(GrooveKind.Blind, GrooveSide.Left).ToString());
+            GrooveTexts.Of(new GrooveSpec(GrooveKind.Blind, GrooveSide.Left)));
     }
 }

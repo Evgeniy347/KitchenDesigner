@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
     public static class LevelResolution
     {
         public const string DefaultLevelId = "1";
-        public const string DefaultLevelName = "1 этаж";
+        public static string DefaultLevelName => Loc.T("level.firstFloorName");
 
         public static Level[] EffectiveLevels(Level[]? levels, int defaultFloorHeightMm)
         {

@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
 {
     public class VentGapElement : WallLayerElement, IQuantifies
     {
-        public override string DisplayTypeName => "Вентзазор";
+        public override string DisplayTypeName => Loc.T("elementType.ventGap");
 
         public override int StackOrder => 1;
 
@@ -28,7 +28,7 @@ namespace KitchenDesigner.Core
             double runningM = WallLayerQuantities.VentGapBattenRunningMetres(
                 DimensionsMM.x, DimensionsMM.y, _battenStepMm);
 
-            yield return new SpecItem(SpecSections.Walls, "Обрешётка вентзазора", "", SpecUnit.LinearMeters,
+            yield return new SpecItem(SpecSections.Walls, Loc.T("spec.item.ventGapBattens"), "", SpecUnit.LinearMeters,
                 (float)runningM);
         }
     }

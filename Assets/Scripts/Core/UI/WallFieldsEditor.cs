@@ -9,13 +9,13 @@ namespace KitchenDesigner.Core.UI
     internal sealed class WallFieldsEditor : ElementFieldsEditor
     {
         public const string LoadBearingNode = "CtxWallLoadBearing";
-        public const string LoadBearingLabel = "Несущая";
+        public static string LoadBearingLabel => Loc.T("element.wall.loadBearing");
         public const string MasonryNode = "CtxWallMasonry";
-        public const string MasonryLabel = "Технология";
+        public static string MasonryLabel => Loc.T("element.wall.masonry");
         public const string JointNode = "КладкаШов";
-        public const string JointLabel = "Шов";
+        public static string JointLabel => Loc.T("element.wall.joint");
         public const string WasteNode = "КладкаЗапас";
-        public const string WasteLabel = "Запас";
+        public static string WasteLabel => Loc.T("element.wall.waste");
 
         private Toggle? _loadBearing;
         private TMP_Dropdown? _masonry;
@@ -46,7 +46,7 @@ namespace KitchenDesigner.Core.UI
             HintBadge.AttachAfterLabel(masonryRow.label as TextMeshProUGUI,
                 hint: "element.wall.masonry");
 
-            var jointRow = Rows.LabelledNumberField(JointLabel, isWall, "мм", JointNode);
+            var jointRow = Rows.LabelledNumberField(JointLabel, isWall, Loc.T("unit.mm"), JointNode);
             _joint = jointRow.field;
             HintBadge.AttachAfterLabel(jointRow.label, hint: "element.wall.joint");
 

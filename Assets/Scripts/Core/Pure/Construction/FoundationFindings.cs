@@ -13,40 +13,31 @@ namespace KitchenDesigner.Core.Construction
         public static ConstructionFinding DepthBelowFrost(string elementId, SoilKind soil,
             float frostDepthMm, float actualDepthMm) =>
             new ConstructionFinding(ConstructionFindingLevel.Error, CodeDepthBelowFrost, elementId,
-                $"Глубина заложения ленты {Mm(actualDepthMm)} мм меньше глубины промерзания "
-                + $"{Mm(frostDepthMm)} мм на пучинистом грунте «{SoilKindTitles.Of(soil)}»: "
-                + "силы морозного пучения зимой выдавят фундамент");
+                Loc.F("issue.fnd01.message", Mm(actualDepthMm), Mm(frostDepthMm), SoilKindTitles.Of(soil)));
 
         public static ConstructionFinding SoleTooNarrow(string elementId, SoilKind soil,
             float wallThicknessMm, float minWidthMm, float actualWidthMm) =>
             new ConstructionFinding(ConstructionFindingLevel.Error, CodeSoleTooNarrow, elementId,
-                $"Ширина подошвы ленты {Mm(actualWidthMm)} мм меньше минимума {Mm(minWidthMm)} "
-                + $"мм для стены {Mm(wallThicknessMm)} мм на грунте «{SoilKindTitles.Of(soil)}»: "
-                + "несущая способность подошвы недостаточна");
+                Loc.F("issue.fnd02.message", Mm(actualWidthMm), Mm(minWidthMm), Mm(wallThicknessMm), SoilKindTitles.Of(soil)));
 
         public static ConstructionFinding CushionTooThin(string elementId, float sandMm,
             float gravelMm) =>
             new ConstructionFinding(ConstructionFindingLevel.Warning, CodeCushionTooThin, elementId,
-                $"Подушка тоньше {Mm(FoundationRules.MinCushionLayerMm)} мм: песок {Mm(sandMm)} "
-                + $"мм, щебень {Mm(gravelMm)} мм — тоньше минимума она не работает как "
-                + "выравнивающий и дренирующий слой");
+                Loc.F("issue.fnd03.message", Mm(FoundationRules.MinCushionLayerMm), Mm(sandMm), Mm(gravelMm)));
 
         public static ConstructionFinding RebarCoverTooThin(string elementId, float coverMm,
             float diameterMm) =>
             new ConstructionFinding(ConstructionFindingLevel.Warning, CodeRebarProtection, elementId,
-                $"Защитный слой арматуры {Mm(coverMm)} мм меньше 2×Ø ({Mm(2f * diameterMm)} мм "
-                + $"для Ø{Mm(diameterMm)}): арматура может оголиться");
+                Loc.F("issue.fnd04.coverThin", Mm(coverMm), Mm(2f * diameterMm), Mm(diameterMm)));
 
         public static ConstructionFinding RebarStepTooWide(string elementId, float stepMm,
             float widthMm) =>
             new ConstructionFinding(ConstructionFindingLevel.Warning, CodeRebarProtection, elementId,
-                $"Шаг арматуры {Mm(stepMm)} мм больше ширины ленты {Mm(widthMm)} мм: каркас "
-                + "не держит форму на такой ширине");
+                Loc.F("issue.fnd04.stepWide", Mm(stepMm), Mm(widthMm)));
 
         public static ConstructionFinding WallNotCovered(string elementId) =>
             new ConstructionFinding(ConstructionFindingLevel.Error, CodeWallNotCovered, elementId,
-                "Несущая стена не покрыта лентой: осевая стены не входит ни в одну полилинию "
-                + "фундамента");
+                Loc.T("issue.fnd05.message"));
 
         private static string Mm(float value) =>
             value.ToString("0.#", CultureInfo.InvariantCulture);

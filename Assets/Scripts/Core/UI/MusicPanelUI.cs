@@ -37,7 +37,7 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("MuTitle", panel.transform, "Музыка", UIStyle.FontTitle,
+            UIFactory.CreateLabel("MuTitle", panel.transform, Loc.T("window.music.title"), UIStyle.FontTitle,
                 new Vector2(0, 64), new Vector2(240, 28), TextAnchor.MiddleCenter);
             _trackLabel = UIFactory.CreateLabel("MuTrack", panel.transform, "", UIStyle.FontSection,
                 new Vector2(0, 32), new Vector2(248, 24), TextAnchor.MiddleCenter);
@@ -62,16 +62,16 @@ namespace KitchenDesigner.Core.UI
             const float size = 40f;
             UIFactory.CreateIconButton("MuPrev", panel, IconFactory.TrackPrev,
                 new Vector2(-56, -6), new Vector2(size, size), () => Skip(-1));
-            TooltipUI.Attach(panel.Find("MuPrev")!.gameObject, "Предыдущий трек");
+            TooltipUI.Attach(panel.Find("MuPrev")!.gameObject, Loc.T("window.music.prev"));
 
             var play = UIFactory.CreateIconButton("MuPlay", panel, IconFactory.Play,
                 new Vector2(0, -6), new Vector2(size, size), TogglePlay);
             _playIcon = play.transform.Find("MuPlay_Icon")?.GetComponent<Image>();
-            TooltipUI.Attach(play.gameObject, "Воспроизведение и пауза");
+            TooltipUI.Attach(play.gameObject, Loc.T("window.music.playPause"));
 
             UIFactory.CreateIconButton("MuNext", panel, IconFactory.TrackNext,
                 new Vector2(56, -6), new Vector2(size, size), () => Skip(1));
-            TooltipUI.Attach(panel.Find("MuNext")!.gameObject, "Следующий трек");
+            TooltipUI.Attach(panel.Find("MuNext")!.gameObject, Loc.T("window.music.next"));
         }
 
         private static void Skip(int delta)
@@ -89,7 +89,7 @@ namespace KitchenDesigner.Core.UI
         private void Refresh()
         {
             if (_trackLabel != null) _trackLabel.text = MusicPlaylist.DisplayName(MusicState.Track);
-            if (_volumeLabel != null) _volumeLabel.text = $"Громкость: {MusicState.VolumePct} %";
+            if (_volumeLabel != null) _volumeLabel.text = Loc.F("window.music.volume", MusicState.VolumePct);
             if (_volumeSlider != null) _volumeSlider.SetValueWithoutNotify(MusicState.VolumePct);
             RefreshPlayIcon();
         }

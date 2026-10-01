@@ -36,7 +36,7 @@ namespace KitchenDesigner.Core.UI
         private static void BuildEmptyHint(RectTransform content, float rowWidth)
         {
             var label = UIFactory.CreateLabel("LoadEmptyHint", content,
-                "Недавних проектов пока нет", UIStyle.FontBody,
+                Loc.T("window.load.noRecent"), UIStyle.FontBody,
                 new Vector2(0, 0), new Vector2(rowWidth, RowHeight), TextAnchor.MiddleCenter);
             label.color = UIStyle.TextSecondary;
             var rt = label.rectTransform;
@@ -70,7 +70,7 @@ namespace KitchenDesigner.Core.UI
             });
 
             string fileName = System.IO.Path.GetFileName(row.Path);
-            string title = row.FileExists ? fileName : ("! Не найден: " + fileName);
+            string title = row.FileExists ? fileName : (Loc.T("window.load.notFound") + fileName);
             var titleLabel = UIFactory.CreateLabel("Title", rowRect, title, UIStyle.FontBody,
                 new Vector2(RowSidePad, -4), new Vector2(rowWidth - 2 * RowSidePad, 22), TextAnchor.UpperLeft);
             titleLabel.color = row.FileExists ? UIStyle.Text : UIStyle.HighlightError;
@@ -90,16 +90,16 @@ namespace KitchenDesigner.Core.UI
             float versionW = available * VersionColFraction;
             float modifiedW = available - createdW - versionW;
 
-            var createdLabel = BuildMetaColumn(rowRect, "Created", "Создан " + row.CreatedLabel,
+            var createdLabel = BuildMetaColumn(rowRect, "Created", Loc.T("window.load.created") + row.CreatedLabel,
                 RowSidePad, createdW, UIStyle.TextSecondary);
 
             float versionX = RowSidePad + createdW + MetaColGap;
-            string versionText = "Версия " + (row.VersionMismatch ? "! " : "") + row.VersionLabel;
+            string versionText = Loc.T("window.load.version") + (row.VersionMismatch ? "! " : "") + row.VersionLabel;
             BuildMetaColumn(rowRect, "Version", versionText, versionX, versionW,
                 row.VersionMismatch ? UIStyle.HighlightError : UIStyle.TextSecondary);
 
             float modifiedX = versionX + versionW + MetaColGap;
-            BuildMetaColumn(rowRect, "Modified", "Изменён " + row.ModifiedLabel,
+            BuildMetaColumn(rowRect, "Modified", Loc.T("window.load.modified") + row.ModifiedLabel,
                 modifiedX, modifiedW, UIStyle.TextSecondary);
         }
 

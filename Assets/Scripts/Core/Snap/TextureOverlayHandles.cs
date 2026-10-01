@@ -49,7 +49,7 @@ namespace KitchenDesigner.Core
 
             if (element.TextureOverlays[index].side == OverlaySide.All)
             {
-                UI.ToastNotification.ShowIfAvailable("Область правится только у одной стороны");
+                UI.ToastNotification.ShowIfAvailable(Loc.T("toast.textureOverlay.oneSideOnly"));
                 return;
             }
 

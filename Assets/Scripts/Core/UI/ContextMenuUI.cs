@@ -27,11 +27,11 @@ namespace KitchenDesigner.Core.UI
 
         private SceneViolations _violationsBeforeApply = SceneViolations.Empty;
 
-        private const string DrawerFacadeLabelText = "Фасад ящика";
-        private const string HostFacadeLabelText = "Фасад";
-        private const string AttachToLabelText = "Прикрепить к";
-        private const string AttachToNoneText = "(не прикреплено)";
-        private const string FacadeNoneText = "(нет фасада)";
+        private static string DrawerFacadeLabelText => Loc.T("element.common.drawerFront");
+        private static string HostFacadeLabelText => Loc.T("element.common.front");
+        private static string AttachToLabelText => Loc.T("element.common.attachTo");
+        private static string AttachToNoneText => Loc.T("element.common.notAttached");
+        private static string FacadeNoneText => Loc.T("element.common.noFront");
         private TMP_Text? _drawerFacadeLabel;
         private NameDropdownBinder _attachedFacade = null!;
         private NameDropdownBinder _attachedTo = null!;
@@ -227,7 +227,7 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildTitleAndType(Transform parent)
         {
-            _titleLabel = UIFactory.CreateLabel("CtxTitle", parent, "Деталь", 20,
+            _titleLabel = UIFactory.CreateLabel("CtxTitle", parent, Loc.T("elementType.part"), 20,
                 Vector2.zero, new Vector2(300, TitleH), TextAnchor.MiddleCenter);
             _titleLabel.overflowMode = TextOverflowModes.Ellipsis;
             _titleLabel.enableWordWrapping = false;
@@ -378,11 +378,11 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildPositionSection(Transform parent)
         {
-            _rows.SectionHeader("CtxSecPos", "Положение");
+            _rows.SectionHeader("CtxSecPos", Loc.T("element.common.position"));
 
-            _x = _rows.TriField("X, мм", TriCol1);
-            _y = _rows.TriField("Y, мм", TriCol2);
-            _z = _rows.TriField("Z, мм", TriCol3);
+            _x = _rows.TriField(Loc.T("element.common.xMm"), TriCol1);
+            _y = _rows.TriField(Loc.T("element.common.yMm"), TriCol2);
+            _z = _rows.TriField(Loc.T("element.common.zMm"), TriCol3);
             _layout.EndTriRow(TriLabelH, 2f, FieldH, RowGap, ElementFacet.None);
 
             _rx = _rows.TriField("X, °", TriCol1);
@@ -394,7 +394,7 @@ namespace KitchenDesigner.Core.UI
             _layout.AddRotationXZ(_layout.PendingTriFields[2]);
             _layout.EndTriRow(TriLabelH, 2f, FieldH, RowGap, ElementFacet.Window);
 
-            var rotLbl = UIFactory.CreateLabel("CtxRotLbl", parent, "Повернуть на 90°:", 15,
+            var rotLbl = UIFactory.CreateLabel("CtxRotLbl", parent, Loc.T("element.common.rotate90"), 15,
                 Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
             _layout.AddExcept(ElementFacet.Window, RotLblH, RotLblGap, rotLbl.rectTransform);
 
@@ -418,7 +418,7 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildPropertySection()
         {
-            _transparentToggle = _rows.Toggle("CtxTransparent", "Прозрачный", false, v =>
+            _transparentToggle = _rows.Toggle("CtxTransparent", Loc.T("element.common.transparent"), false, v =>
             {
                 var target = _target;
                 if (target == null) return;
@@ -429,7 +429,7 @@ namespace KitchenDesigner.Core.UI
                     SelectionManager.Instance.RefreshHighlight(target);
             }, RowVisibility.Always, 7f);
 
-            _lockToggle = _rows.Toggle("CtxLock", "Закрепить", false,
+            _lockToggle = _rows.Toggle("CtxLock", Loc.T("element.common.lock"), false,
                 v =>
                 {
                     var target = _target;
@@ -441,9 +441,9 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildActions(Transform parent)
         {
-            var dup = UIFactory.CreateButton("CtxDup", parent, "Дублировать",
+            var dup = UIFactory.CreateButton("CtxDup", parent, Loc.T("element.common.duplicate"),
                 new Vector2(-91, 0), new Vector2(150, 32), Duplicate);
-            var del = UIFactory.CreateConfirmDeleteButton("CtxDel", parent, "Удалить",
+            var del = UIFactory.CreateConfirmDeleteButton("CtxDel", parent, Loc.T("common.delete"),
                 new Vector2(91, 0), new Vector2(150, 32), Delete);
             _layout.Add(32f, 0f,
                 dup.GetComponent<RectTransform>(),
@@ -932,7 +932,7 @@ namespace KitchenDesigner.Core.UI
             RefreshHighlights();
 
             string expected = $"Delete {deletedName}";
-            ToastNotification.ShowIfAvailable($"Удалено: {deletedName}", 5f, "Отменить", () =>
+            ToastNotification.ShowIfAvailable(Loc.F("toast.deleted", deletedName), 5f, Loc.T("common.undo"), () =>
             {
                 if (CommandStack.CanUndo && CommandStack.PeekUndoDescription() == expected)
                 {

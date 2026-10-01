@@ -103,104 +103,103 @@ namespace KitchenDesigner.Core.UI
 
         private static IEnumerable<GroupMeta> GroupTable() => new[]
         {
-            new GroupMeta(SidebarGroupKey.Board, "Детали", IconFactory.Shelf),
-            new GroupMeta(SidebarGroupKey.Facade, "Фасады", IconFactory.Facade),
-            new GroupMeta(SidebarGroupKey.Drawer, "Ящики", IconFactory.Drawer),
-            new GroupMeta(SidebarGroupKey.Furniture, "Мебель", IconFactory.Furniture),
-            new GroupMeta(SidebarGroupKey.Appliance, "Техника", IconFactory.Appliance),
-            new GroupMeta(SidebarGroupKey.Sanitary, "Сантехника", IconFactory.Faucet),
-            new GroupMeta(SidebarGroupKey.Room, "Помещение", IconFactory.Room),
-            new GroupMeta(SidebarGroupKey.Construction, "Конструкции", IconFactory.Brickwork),
+            new GroupMeta(SidebarGroupKey.Board, Loc.T("catalog.group.board"), IconFactory.Shelf),
+            new GroupMeta(SidebarGroupKey.Facade, Loc.T("catalog.group.facade"), IconFactory.Facade),
+            new GroupMeta(SidebarGroupKey.Drawer, Loc.T("catalog.group.drawer"), IconFactory.Drawer),
+            new GroupMeta(SidebarGroupKey.Furniture, Loc.T("catalog.group.furniture"), IconFactory.Furniture),
+            new GroupMeta(SidebarGroupKey.Appliance, Loc.T("catalog.group.appliance"), IconFactory.Appliance),
+            new GroupMeta(SidebarGroupKey.Sanitary, Loc.T("catalog.group.sanitary"), IconFactory.Faucet),
+            new GroupMeta(SidebarGroupKey.Room, Loc.T("catalog.group.room"), IconFactory.Room),
+            new GroupMeta(SidebarGroupKey.Construction, Loc.T("catalog.group.construction"), IconFactory.Brickwork),
         };
 
-        private static List<Group>? _cache;
+        private static readonly LocalizedCache<List<Group>> Catalog = new LocalizedCache<List<Group>>(BuildGroups);
 
-        public static List<Group> Build()
+        public static List<Group> Build() => Catalog.Value;
+
+        private static List<Group> BuildGroups()
         {
-            if (_cache != null) return _cache;
-
             var rows = RowsWithTileTitleInherited().ToList();
-            _cache = GroupTable().Select(meta => new Group
+            return GroupTable().Select(meta => new Group
             {
                 title = meta.title,
                 icon = meta.icon,
                 items = rows.Where(r => r.Group == meta.key).Select(r => r.Item).ToList(),
             }).ToList();
-            return _cache;
         }
 
         private static IEnumerable<SidebarCatalogRow> TypesAndPresets()
         {
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Board, "Полка",
-                new Item("Полка", new Vector3Int(600, 400, 16)));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Board, "Радиусная полка",
-                new Item("Радиусная полка", new Vector3Int(600, 400, 16), SidebarItemKind.RadialShelf));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Board, "ДВП/ХДФ",
-                new Item("ДВП/ХДФ", new Vector3Int(600, 400, 3), SidebarItemKind.Panel));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Board, Loc.T("catalog.board.shelf"),
+                new Item(Loc.T("catalog.board.shelf"), new Vector3Int(600, 400, 16)));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Board, Loc.T("elementType.radialShelf"),
+                new Item(Loc.T("elementType.radialShelf"), new Vector3Int(600, 400, 16), SidebarItemKind.RadialShelf));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Board, Loc.T("catalog.board.hdf"),
+                new Item(Loc.T("catalog.board.hdf"), new Vector3Int(600, 400, 3), SidebarItemKind.Panel));
 
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Facade, "Фасад",
-                new Item("Фасад щитовой", new Vector3Int(600, 716, 18), SidebarItemKind.Facade));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Facade, Loc.T("catalog.facade.tile"),
+                new Item(Loc.T("catalog.facade.slab"), new Vector3Int(600, 716, 18), SidebarItemKind.Facade));
             yield return SidebarCatalogRow.PresetRow(SidebarGroupKey.Facade,
-                AssembledFacadeItem("Фасад сборный"));
+                AssembledFacadeItem(Loc.T("catalog.facade.assembled")));
 
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Drawer, "Ящик",
-                DrawerItem("Ящик GTV", DefaultDrawerType, DefaultDrawerLengthMM, DefaultDrawerSystem));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Drawer, Loc.T("catalog.drawer.tile"),
+                DrawerItem(Loc.T("catalog.drawer.gtv"), DefaultDrawerType, DefaultDrawerLengthMM, DefaultDrawerSystem));
             yield return SidebarCatalogRow.PresetRow(SidebarGroupKey.Drawer,
-                MoventoDrawerItem("Ящик Movento"));
+                MoventoDrawerItem(Loc.T("catalog.drawer.movento")));
 
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, "Прямоугольный стол",
-                new Item("Прямоугольный стол", new Vector3Int(2000, 750, 1000), SidebarItemKind.Table));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, "Радиусный стол",
-                new Item("Радиусный стол", new Vector3Int(2000, 750, 1000), SidebarItemKind.RadiusTable));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, "Табуретка",
-                new Item("Табуретка", new Vector3Int(StoolElement.DefaultWidthMM,
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, Loc.T("catalog.furniture.rectTable"),
+                new Item(Loc.T("catalog.furniture.rectTable"), new Vector3Int(2000, 750, 1000), SidebarItemKind.Table));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, Loc.T("elementType.radiusTable"),
+                new Item(Loc.T("elementType.radiusTable"), new Vector3Int(2000, 750, 1000), SidebarItemKind.RadiusTable));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, Loc.T("elementType.stool"),
+                new Item(Loc.T("elementType.stool"), new Vector3Int(StoolElement.DefaultWidthMM,
                     StoolElement.DefaultHeightMM, StoolElement.DefaultDepthMM), SidebarItemKind.Stool));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, "Стул",
-                new Item("Стул", new Vector3Int(ChairElement.DefaultWidthMM,
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, Loc.T("elementType.chair"),
+                new Item(Loc.T("elementType.chair"), new Vector3Int(ChairElement.DefaultWidthMM,
                     ChairElement.DefaultHeightMM, ChairElement.DefaultDepthMM), SidebarItemKind.Chair));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, "Диван",
-                new Item("Диван", new Vector3Int(SofaElement.DefaultWidthMM,
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, Loc.T("elementType.sofa"),
+                new Item(Loc.T("elementType.sofa"), new Vector3Int(SofaElement.DefaultWidthMM,
                     SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM), SidebarItemKind.Sofa));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, "Пуфик",
-                new Item("Пуфик", new Vector3Int(PouffeElement.DefaultWidthMM,
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, Loc.T("elementType.pouffe"),
+                new Item(Loc.T("elementType.pouffe"), new Vector3Int(PouffeElement.DefaultWidthMM,
                     PouffeElement.DefaultHeightMM, PouffeElement.DefaultDepthMM), SidebarItemKind.Pouffe));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, "Кровать",
-                new Item("Кровать", new Vector3Int(BedElement.DefaultWidthMM,
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, Loc.T("elementType.bed"),
+                new Item(Loc.T("elementType.bed"), new Vector3Int(BedElement.DefaultWidthMM,
                     BedElement.DefaultHeightMM, BedElement.DefaultDepthMM), SidebarItemKind.Bed));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, "Ножка",
-                PillarItem("Ножка", PillarElement.MidHeightMM_Default));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, "Винтовая опора",
-                ScrewLegItem("Винтовая опора"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, "Мойка", SinkItem("Мойка"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, Loc.T("catalog.furniture.leg"),
+                PillarItem(Loc.T("catalog.furniture.leg"), PillarElement.MidHeightMM_Default));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, Loc.T("elementType.screwLeg"),
+                ScrewLegItem(Loc.T("elementType.screwLeg")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Furniture, Loc.T("elementType.sink"), SinkItem(Loc.T("elementType.sink")));
 
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, "Варочная",
-                CooktopItem("Варочная поверхность"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, Loc.T("elementType.cooktop"),
+                CooktopItem(Loc.T("catalog.appliance.cooktop")));
             yield return SidebarCatalogRow.PresetRow(SidebarGroupKey.Appliance,
-                CooktopModelItem("Варочная " + CooktopElement.MODEL_BOSCH_PUE611BB5E,
+                CooktopModelItem(Loc.T("catalog.appliance.cooktopModelPrefix") + CooktopElement.MODEL_BOSCH_PUE611BB5E,
                     CooktopElement.MODEL_BOSCH_PUE611BB5E));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, "Духовка",
-                OvenItem("Духовка " + OvenElement.MODEL));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, "Посудомойка",
-                DishwasherItem("Посудомойка " + DishwasherElement.MODEL));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, Loc.T("catalog.appliance.oven"),
+                OvenItem(Loc.T("catalog.appliance.ovenPrefix") + OvenElement.MODEL));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, Loc.T("catalog.appliance.dishwasher"),
+                DishwasherItem(Loc.T("catalog.appliance.dishwasherPrefix") + DishwasherElement.MODEL));
 
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, "Стиральная",
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, Loc.T("catalog.appliance.washer"),
                 LaundryMachineItem(LaundryMachineKind.Washer));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, "Сушильная",
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Appliance, Loc.T("catalog.appliance.dryer"),
                 LaundryMachineItem(LaundryMachineKind.Dryer));
 
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, "Унитаз",
-                ToiletItem("Унитаз"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, "Инсталляция",
-                WallHungToiletItem("Инсталляция"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, "Ванна",
-                BathtubItem("Ванна"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, "Смеситель",
-                BathMixerItem("Смеситель"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, "Душевая стойка",
-                ShowerColumnItem("Душевая стойка"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, "Труба",
-                PipeItem("Труба"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, "Фитинг",
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, Loc.T("catalog.sanitary.toilet"),
+                ToiletItem(Loc.T("catalog.sanitary.toilet")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, Loc.T("catalog.sanitary.installation"),
+                WallHungToiletItem(Loc.T("catalog.sanitary.installation")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, Loc.T("elementType.bathtub"),
+                BathtubItem(Loc.T("elementType.bathtub")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, Loc.T("catalog.sanitary.mixer"),
+                BathMixerItem(Loc.T("catalog.sanitary.mixer")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, Loc.T("elementType.showerColumn"),
+                ShowerColumnItem(Loc.T("elementType.showerColumn")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, Loc.T("elementType.pipe"),
+                PipeItem(Loc.T("elementType.pipe")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Sanitary, Loc.T("catalog.sanitary.fitting"),
                 FittingItem(PipeNodeKind.Elbow));
             yield return SidebarCatalogRow.PresetRow(SidebarGroupKey.Sanitary,
                 FittingItem(PipeNodeKind.Coupling));
@@ -213,44 +212,44 @@ namespace KitchenDesigner.Core.UI
             yield return SidebarCatalogRow.PresetRow(SidebarGroupKey.Sanitary,
                 FittingItem(PipeNodeKind.Return));
 
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, "Короб",
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, Loc.T("catalog.room.box"),
                 new Item("Короб", new Vector3Int(600, 600, 600)));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, "Стена",
-                new Item("Стена", new Vector3Int(2000, 2500, 100), SidebarItemKind.Wall));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, "Окно",
-                new Item("Окно", new Vector3Int(900, 1200, 100), SidebarItemKind.Window));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, "Дверь",
-                new Item("Дверь", new Vector3Int(900, 2000, 100), SidebarItemKind.Door));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, "Пол",
-                new Item("Пол", new Vector3Int(
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, Loc.T("catalog.room.wall"),
+                new Item(Loc.T("catalog.room.wall"), new Vector3Int(2000, 2500, 100), SidebarItemKind.Wall));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, Loc.T("elementType.window"),
+                new Item(Loc.T("elementType.window"), new Vector3Int(900, 1200, 100), SidebarItemKind.Window));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, Loc.T("elementType.door"),
+                new Item(Loc.T("elementType.door"), new Vector3Int(900, 2000, 100), SidebarItemKind.Door));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, Loc.T("catalog.room.floor"),
+                new Item(Loc.T("catalog.room.floor"), new Vector3Int(
                     FloorElement.DEFAULT_SIZE_MM,
                     FloorElement.DEFAULT_THICKNESS_MM,
                     FloorElement.DEFAULT_SIZE_MM), SidebarItemKind.Floor));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, "Источник света",
-                LightSourceItem("Источник света"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, "Розетка",
-                SocketItem("Розетка"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, "Выключатель",
-                LightSwitchItem("Выключатель"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, Loc.T("elementType.lightSource"),
+                LightSourceItem(Loc.T("elementType.lightSource")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, Loc.T("elementType.socket"),
+                SocketItem(Loc.T("elementType.socket")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Room, Loc.T("elementType.lightSwitch"),
+                LightSwitchItem(Loc.T("elementType.lightSwitch")));
 
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Фундамент",
-                FoundationItem("Фундамент"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Перекрытие",
-                FloorSlabItem("Перекрытие"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Забор",
-                FenceItem("Забор"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Воздуховод",
-                DuctItem("Воздуховод"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Решётка",
-                GrilleItem("Решётка"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Крыша",
-                RoofItem("Крыша"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Утеплитель",
-                InsulationItem("Утеплитель"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Вентзазор",
-                VentGapItem("Вентзазор"));
-            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, "Облицовка",
-                CladdingItem("Облицовка"));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, Loc.T("elementType.foundation"),
+                FoundationItem(Loc.T("elementType.foundation")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, Loc.T("elementType.floorSlab"),
+                FloorSlabItem(Loc.T("elementType.floorSlab")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, Loc.T("elementType.fence"),
+                FenceItem(Loc.T("elementType.fence")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, Loc.T("elementType.duct"),
+                DuctItem(Loc.T("elementType.duct")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, Loc.T("catalog.construction.grille"),
+                GrilleItem(Loc.T("catalog.construction.grille")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, Loc.T("elementType.roof"),
+                RoofItem(Loc.T("elementType.roof")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, Loc.T("elementType.insulation"),
+                InsulationItem(Loc.T("elementType.insulation")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, Loc.T("elementType.ventGap"),
+                VentGapItem(Loc.T("elementType.ventGap")));
+            yield return SidebarCatalogRow.TypeRow(SidebarGroupKey.Construction, Loc.T("elementType.cladding"),
+                CladdingItem(Loc.T("elementType.cladding")));
         }
 
         private static IEnumerable<(SidebarGroupKey Group, Item Item)> RowsWithTileTitleInherited()

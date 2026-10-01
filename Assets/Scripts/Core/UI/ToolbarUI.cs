@@ -19,11 +19,13 @@ namespace KitchenDesigner.Core.UI
         private const float SwatchSize = 14f;
         private const float TextButtonPad = 20f;
 
-        private static readonly string[] HandleModeTooltips =
-        {
-            "Ручки: растяжение",
-            "Ручки: перенос",
-        };
+        private static readonly LocalizedCache<string[]> HandleModeTooltipsCache =
+            new LocalizedCache<string[]>(() => new string[] {
+            Loc.T("toolbar.handleMode.resize"),
+            Loc.T("toolbar.handleMode.move"),
+        });
+
+        private static string[] HandleModeTooltips => HandleModeTooltipsCache.Value;
 
         private readonly List<(Button button, Func<bool> pressed)> _toggles = new();
         private readonly SceneSettleThrottle _issueBadgeThrottle = new();
@@ -56,29 +58,29 @@ namespace KitchenDesigner.Core.UI
             float x = 8f;
 
             AddPanelToggle(bar.transform, "Spec", IconFactory.Document, ToolbarPanel.Specification, ref x,
-                "Спецификация");
+                Loc.T("toolbar.specification"));
             AddPanelToggle(bar.transform, "Hierarchy", IconFactory.SceneTree, ToolbarPanel.Hierarchy, ref x,
-                "Сцена");
+                Loc.T("toolbar.scene"));
             var errorsButton = AddIconButton(bar.transform, "Errors", IconFactory.Warning,
-                ref x, () => _host!.TogglePanel(ToolbarPanel.Errors), "Ошибки");
+                ref x, () => _host!.TogglePanel(ToolbarPanel.Errors), Loc.T("toolbar.errors"));
             _toggles.Add((errorsButton, () => _host!.IsPanelVisible(ToolbarPanel.Errors)));
             _errorsIcon = errorsButton.transform.Find("Errors_Icon")?.GetComponent<Image>();
             _issueCountLabel = AddBadge(errorsButton.transform);
             _gotoIssueButton = AddIconButton(bar.transform, "GotoIssue", IconFactory.FindIssue,
-                ref x, GotoFirstIssue, "Перейти к первой проблеме");
+                ref x, GotoFirstIssue, Loc.T("toolbar.gotoFirstIssue"));
             _gotoIssueIcon = _gotoIssueButton.transform.Find("GotoIssue_Icon")?.GetComponent<Image>();
             AddPanelToggle(bar.transform, "ProjectInstructions", IconFactory.Book,
-                ToolbarPanel.ProjectInstructions, ref x, "Инструкции");
+                ToolbarPanel.ProjectInstructions, ref x, Loc.T("toolbar.instructions"));
             AddSeparator(bar.transform, ref x);
 
-            AddPanelToggle(bar.transform, "Settings", IconFactory.Gear, ToolbarPanel.Settings, ref x, "Настройки");
-            AddIconButton(bar.transform, "Save", IconFactory.Floppy, ref x, host.SaveCurrent, "Сохранить");
-            AddIconButton(bar.transform, "SaveAs", IconFactory.FloppyPlus, ref x, host.SaveAs, "Сохранить как");
-            AddPanelToggle(bar.transform, "Load", IconFactory.Folder, ToolbarPanel.LoadProject, ref x, "Загрузить");
+            AddPanelToggle(bar.transform, "Settings", IconFactory.Gear, ToolbarPanel.Settings, ref x, Loc.T("toolbar.settings"));
+            AddIconButton(bar.transform, "Save", IconFactory.Floppy, ref x, host.SaveCurrent, Loc.T("toolbar.save"));
+            AddIconButton(bar.transform, "SaveAs", IconFactory.FloppyPlus, ref x, host.SaveAs, Loc.T("toolbar.saveAs"));
+            AddPanelToggle(bar.transform, "Load", IconFactory.Folder, ToolbarPanel.LoadProject, ref x, Loc.T("toolbar.load"));
             AddSeparator(bar.transform, ref x);
 
-            _undoButton = AddIconButton(bar.transform, "Undo", IconFactory.Undo, ref x, Undo, "Отменить");
-            _redoButton = AddIconButton(bar.transform, "Redo", IconFactory.Redo, ref x, Redo, "Повторить");
+            _undoButton = AddIconButton(bar.transform, "Undo", IconFactory.Undo, ref x, Undo, Loc.T("toolbar.undo"));
+            _redoButton = AddIconButton(bar.transform, "Redo", IconFactory.Redo, ref x, Redo, Loc.T("toolbar.redo"));
             AddSeparator(bar.transform, ref x);
 
             AddLevelSwitcher(bar.transform, ref x);
@@ -88,30 +90,30 @@ namespace KitchenDesigner.Core.UI
                 ToggleHandleMode, HandleModeTooltip());
             _handleModeIcon = _handleModeButton.transform.Find("HandleMode_Icon")?.GetComponent<Image>();
             var measureButton = AddIconButton(bar.transform, "MeasureToggle", IconFactory.Ruler,
-                ref x, Measure.MeasureMode.Toggle, "Рулетка");
+                ref x, Measure.MeasureMode.Toggle, Loc.T("toolbar.measure"));
             _toggles.Add((measureButton, () => Measure.MeasureMode.Active));
             var eyedropperButton = AddIconButton(bar.transform, "Eyedropper", IconFactory.Eyedropper,
-                ref x, Tools.EyedropperMode.Toggle, "Пипетка: ПКМ — взять текстуру, ЛКМ — применить");
+                ref x, Tools.EyedropperMode.Toggle, Loc.T("toolbar.eyedropper"));
             _toggles.Add((eyedropperButton, () => Tools.EyedropperMode.Active));
             _eyedropperSwatch = AddSwatch(eyedropperButton.transform);
             AddSeparator(bar.transform, ref x);
 
             var lightsButton = AddIconButton(bar.transform, "LightsToggle", IconFactory.Bulb,
-                ref x, ToggleLights, "Свет");
+                ref x, ToggleLights, Loc.T("toolbar.lights"));
             _toggles.Add((lightsButton, () => LightSourceElement.GlobalOn));
-            AddPanelToggle(bar.transform, "DayNight", IconFactory.Sun, ToolbarPanel.DayNight, ref x, "Солнце");
+            AddPanelToggle(bar.transform, "DayNight", IconFactory.Sun, ToolbarPanel.DayNight, ref x, Loc.T("toolbar.sun"));
             AddSeparator(bar.transform, ref x);
 
-            var normalModeButton = AddBarButton(bar.transform, "ModeNormal", "Обычный", ref x,
+            var normalModeButton = AddBarButton(bar.transform, "ModeNormal", Loc.T("toolbar.mode.normal"), ref x,
                 () => EditModeManager.SetMode(EditMode.Normal));
             _toggles.Add((normalModeButton, () => EditModeManager.LastNonPhotoMode == EditMode.Normal));
-            var roomModeButton = AddBarButton(bar.transform, "ModeRoom", "Помещение", ref x,
+            var roomModeButton = AddBarButton(bar.transform, "ModeRoom", Loc.T("toolbar.mode.room"), ref x,
                 () => EditModeManager.SetMode(EditMode.Room));
             _toggles.Add((roomModeButton, () => EditModeManager.LastNonPhotoMode == EditMode.Room));
-            var photoModeButton = AddBarButton(bar.transform, "ModePhoto", "Фото", ref x, PhotoMode.Toggle);
+            var photoModeButton = AddBarButton(bar.transform, "ModePhoto", Loc.T("toolbar.mode.photo"), ref x, PhotoMode.Toggle);
             _toggles.Add((photoModeButton, () => PhotoMode.Active));
 
-            AddRightPanelToggle(bar.transform, "Music", IconFactory.Note, ToolbarPanel.Music, "Музыка");
+            AddRightPanelToggle(bar.transform, "Music", IconFactory.Note, ToolbarPanel.Music, Loc.T("toolbar.music"));
         }
 
         public void Dispose() { }
@@ -148,7 +150,7 @@ namespace KitchenDesigner.Core.UI
 
         private void AddLevelSwitcher(Transform parent, ref float x)
         {
-            AddIconButton(parent, "LevelUp", IconFactory.CaretUp, ref x, LevelSwitch.Up, "Этаж выше (PageUp)");
+            AddIconButton(parent, "LevelUp", IconFactory.CaretUp, ref x, LevelSwitch.Up, Loc.T("toolbar.levelUp"));
 
             _levelLabel = UIFactory.CreateLabel("LevelLabel", parent, "", 15,
                 new Vector2(x, ButtonY), new Vector2(LevelLabelWidth, ButtonH), TextAnchor.MiddleCenter);
@@ -160,9 +162,9 @@ namespace KitchenDesigner.Core.UI
             _levelLabel.fontSizeMax = 15;
             x += LevelLabelWidth + ButtonGap;
 
-            AddIconButton(parent, "LevelDown", IconFactory.CaretDown, ref x, LevelSwitch.Down, "Этаж ниже (PageDown)");
+            AddIconButton(parent, "LevelDown", IconFactory.CaretDown, ref x, LevelSwitch.Down, Loc.T("toolbar.levelDown"));
 
-            AddPanelToggle(parent, "LevelsWindow", IconFactory.Layers, ToolbarPanel.Levels, ref x, "Этажи…");
+            AddPanelToggle(parent, "LevelsWindow", IconFactory.Layers, ToolbarPanel.Levels, ref x, Loc.T("toolbar.levels"));
         }
 
         private Button AddPanelToggle(Transform parent, string name, Sprite icon,

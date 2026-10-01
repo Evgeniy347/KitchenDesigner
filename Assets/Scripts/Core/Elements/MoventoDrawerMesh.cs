@@ -5,10 +5,10 @@ namespace KitchenDesigner.Core
 {
     public static class MoventoDrawerMesh
     {
-        public const string SUFFIX_SIDE = "Боковина";
-        public const string SUFFIX_FRONT = "Перед";
-        public const string SUFFIX_BACK = "Задник";
-        public const string SUFFIX_BOTTOM = "Дно";
+        public static string SUFFIX_SIDE => Loc.T("drawer.part.side");
+        public static string SUFFIX_FRONT => Loc.T("drawer.part.front");
+        public static string SUFFIX_BACK => Loc.T("drawer.part.back");
+        public static string SUFFIX_BOTTOM => Loc.T("drawer.part.bottom");
 
         public static List<DrawerMesh.Box> ComputeBoxes(int lwMM, DrawerType type, int nlMM)
         {

@@ -7,12 +7,15 @@ namespace KitchenDesigner.Core.UI
 {
     public sealed class SettingsViewTab
     {
-        public const string WallOutlineId = "Контур стен";
-        public const string ObjectOutlineId = "Контур объектов";
+        public static string WallOutlineId => Loc.T("settings.view.wallOutline");
+        public static string ObjectOutlineId => Loc.T("settings.view.objectOutline");
 
         private const float PresetRowH = 46f;
 
-        private static readonly string[] PresetCaptions = { "Обычный", "Помещение", "Фоторежим" };
+        private static readonly LocalizedCache<string[]> PresetCaptionsCache =
+            new LocalizedCache<string[]>(() => new string[] { Loc.T("settings.view.presetNormal"), Loc.T("settings.view.presetRoom"), Loc.T("settings.view.presetPhoto") });
+
+        private static string[] PresetCaptions => PresetCaptionsCache.Value;
 
         private static readonly EditMode[] PresetModes =
             { EditMode.Normal, EditMode.Room, EditMode.Photo };
@@ -40,31 +43,31 @@ namespace KitchenDesigner.Core.UI
             BuildPresetSwitch(page, ref y);
             y -= SettingsRowFactory.GapPx;
 
-            AddViewToggle(page, ref y, ViewField.Walls, "Стены", "Стены", 0);
-            Hint("Стены", hint: "settings.view.walls");
-            AddViewToggle(page, ref y, ViewField.WallOutline, "Контур", WallOutlineId, 1);
+            AddViewToggle(page, ref y, ViewField.Walls, Loc.T("settings.view.walls"), Loc.T("settings.view.walls"), 0);
+            Hint(Loc.T("settings.view.walls"), hint: "settings.view.walls");
+            AddViewToggle(page, ref y, ViewField.WallOutline, Loc.T("settings.view.outline"), WallOutlineId, 1);
             Hint(WallOutlineId, hint: "settings.view.wallOutline");
-            AddViewToggle(page, ref y, ViewField.LowerNearWalls, "Опускать ближние стены",
-                "Опускать ближние стены", 1);
-            Hint("Опускать ближние стены", hint: "settings.view.lowerNearWalls");
-            AddViewToggle(page, ref y, ViewField.LowerAllWalls, "Опускать все стены",
-                "Опускать все стены", 2);
-            Hint("Опускать все стены", hint: "settings.view.lowerAllWalls");
-            AddViewToggle(page, ref y, ViewField.HideOpeningsOnLoweredWalls, "Скрывать окна и двери",
-                "Скрывать окна и двери", 2);
-            Hint("Скрывать окна и двери", hint: "settings.view.hideOpeningsOnLoweredWalls");
+            AddViewToggle(page, ref y, ViewField.LowerNearWalls, Loc.T("settings.view.lowerNearWalls"),
+                Loc.T("settings.view.lowerNearWalls"), 1);
+            Hint(Loc.T("settings.view.lowerNearWalls"), hint: "settings.view.lowerNearWalls");
+            AddViewToggle(page, ref y, ViewField.LowerAllWalls, Loc.T("settings.view.lowerAllWalls"),
+                Loc.T("settings.view.lowerAllWalls"), 2);
+            Hint(Loc.T("settings.view.lowerAllWalls"), hint: "settings.view.lowerAllWalls");
+            AddViewToggle(page, ref y, ViewField.HideOpeningsOnLoweredWalls, Loc.T("settings.view.hideOpeningsOnLoweredWalls"),
+                Loc.T("settings.view.hideOpeningsOnLoweredWalls"), 2);
+            Hint(Loc.T("settings.view.hideOpeningsOnLoweredWalls"), hint: "settings.view.hideOpeningsOnLoweredWalls");
 
             y -= SettingsRowFactory.GapPx;
-            AddViewToggle(page, ref y, ViewField.Objects, "Объекты", "Объекты", 0);
-            Hint("Объекты", hint: "settings.view.objects");
-            AddViewToggle(page, ref y, ViewField.ObjectOutline, "Контур", ObjectOutlineId, 1);
+            AddViewToggle(page, ref y, ViewField.Objects, Loc.T("settings.view.objects"), Loc.T("settings.view.objects"), 0);
+            Hint(Loc.T("settings.view.objects"), hint: "settings.view.objects");
+            AddViewToggle(page, ref y, ViewField.ObjectOutline, Loc.T("settings.view.outline"), ObjectOutlineId, 1);
             Hint(ObjectOutlineId, hint: "settings.view.objectOutline");
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Освещение");
-            AddViewToggle(page, ref y, ViewField.HideLightSources, "Скрыть источники света",
-                "Скрыть источники света", 1);
-            Hint("Скрыть источники света", hint: "settings.view.hideLightSources");
+            _rows.AddHeader(page, ref y, Loc.T("settings.view.section.lighting"));
+            AddViewToggle(page, ref y, ViewField.HideLightSources, Loc.T("settings.view.hideLightSources"),
+                Loc.T("settings.view.hideLightSources"), 1);
+            Hint(Loc.T("settings.view.hideLightSources"), hint: "settings.view.hideLightSources");
 
             EditModeManager.Changed -= FollowEditMode;
             EditModeManager.Changed += FollowEditMode;
@@ -94,7 +97,7 @@ namespace KitchenDesigner.Core.UI
                 if (img != null) img.color = i == _presetTab ? UIStyle.SurfaceActive : UIStyle.SurfaceInactive;
                 var caption = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
                 if (caption == null) continue;
-                caption.text = PresetCaptions[i] + (i == currentIdx ? " (текущий)" : "");
+                caption.text = PresetCaptions[i] + (i == currentIdx ? Loc.T("settings.view.presetCurrent") : "");
             }
 
             foreach (var kv in _toggles)

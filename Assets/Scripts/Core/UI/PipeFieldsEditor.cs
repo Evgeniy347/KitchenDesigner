@@ -21,17 +21,17 @@ namespace KitchenDesigner.Core.UI
 
         public override bool DepthEditable => false;
 
-        public override string HeightLabel => "Длина";
+        public override string HeightLabel => Loc.T("element.pipe.length");
 
         public override void Build()
         {
             var visibility = RowVisibility.For(ElementFacet.Pipe);
-            _size = Rows.Dropdown("Условный проход",
+            _size = Rows.Dropdown(Loc.T("element.pipe.nominalBore"),
                 new List<string>(PipeElementSpec.Designations()), OnSizeSelected, visibility,
                 "CtxPipeSize", hint: "element.pipe.nominalBore");
-            _outer = ReadOnlyField("Наружный Ø", visibility, hint: "element.pipe.derived");
-            _inner = ReadOnlyField("Внутренний Ø", visibility, hint: "element.pipe.derived");
-            _wall = ReadOnlyField("Толщина стенки", visibility, hint: "element.pipe.derived");
+            _outer = ReadOnlyField(Loc.T("element.pipe.outerDiameter"), visibility, hint: "element.pipe.derived");
+            _inner = ReadOnlyField(Loc.T("element.pipe.innerDiameter"), visibility, hint: "element.pipe.derived");
+            _wall = ReadOnlyField(Loc.T("element.pipe.wallThickness"), visibility, hint: "element.pipe.derived");
             _ends.Build(Rows.Parent);
         }
 
@@ -59,7 +59,7 @@ namespace KitchenDesigner.Core.UI
 
         private TMP_InputField ReadOnlyField(string label, RowVisibility visibility, string? hint = null)
         {
-            var field = Rows.NumberField(label, visibility, "мм", null, hint);
+            var field = Rows.NumberField(label, visibility, Loc.T("unit.mm"), null, hint);
             UIRowEnabled.SetControlEnabled(field, false);
             return field;
         }

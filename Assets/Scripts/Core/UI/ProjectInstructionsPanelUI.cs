@@ -24,11 +24,10 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("PiTitle", panel.transform, "Инструкции проекта", UIStyle.FontWindowTitle,
+            UIFactory.CreateLabel("PiTitle", panel.transform, Loc.T("window.instructions.title"), UIStyle.FontWindowTitle,
                 new Vector2(0, 245), new Vector2(590, 34), TextAnchor.MiddleCenter);
             UIFactory.CreateLabel("PiHint", panel.transform,
-                "Соглашения для пользователя и агента. Числа для геометрии задавайте строками " +
-                "key: value, например bearing_wall_thickness_mm: 200.", 14,
+                Loc.T("window.instructions.intro"), 14,
                 new Vector2(0, 202), new Vector2(590, 52), TextAnchor.UpperLeft);
 
             _text = UIFactory.CreateInputField("PiText", panel.transform, ProjectInstructions.Text,
@@ -36,9 +35,9 @@ namespace KitchenDesigner.Core.UI
             _text.lineType = TMP_InputField.LineType.MultiLineNewline;
             _text.textComponent!.alignment = TextAlignmentOptions.TopLeft;
 
-            UIFactory.CreateButton("PiSave", panel.transform, "Сохранить",
+            UIFactory.CreateButton("PiSave", panel.transform, Loc.T("window.instructions.save"),
                 new Vector2(-90, -242), new Vector2(160, 38), Save);
-            UIFactory.CreateButton("PiCancel", panel.transform, "Отмена",
+            UIFactory.CreateButton("PiCancel", panel.transform, Loc.T("common.cancel"),
                 new Vector2(90, -242), new Vector2(160, 38), () => SetVisible(false));
             UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
             _root.SetActive(false);

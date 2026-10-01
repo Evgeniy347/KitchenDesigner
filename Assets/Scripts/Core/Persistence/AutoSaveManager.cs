@@ -75,7 +75,7 @@ namespace KitchenDesigner.Core
 
                 if (outcome.Wrote)
                     UI.StatusBarUI.Instance?.ShowTransient(
-                        "Сохранено: " + System.DateTime.Now.ToString("HH:mm:ss"),
+                        Loc.T("status.saved") + System.DateTime.Now.ToString("HH:mm:ss"),
                         StatusLevel.Success);
             }
         }

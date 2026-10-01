@@ -108,18 +108,6 @@ namespace KitchenDesigner.Core
         public static int GetBottomLift(DrawerType type) =>
             GetMountedTopHeight(type) - GetTypeHeight(type);
 
-        public static string GetTypeLabel(DrawerType type)
-        {
-            switch (type)
-            {
-                case DrawerType.A: return "Низкий (A)";
-                case DrawerType.B: return "Средний (B)";
-                case DrawerType.C: return "Высокий (C)";
-                case DrawerType.D: return "Очень высокий (D)";
-                default: return type.ToString();
-            }
-        }
-
         public static string GetSystemLabel(DrawerSystem system)
         {
             switch (system)
@@ -127,26 +115,6 @@ namespace KitchenDesigner.Core
                 case DrawerSystem.Gtv: return "GTV AXIS PRO";
                 case DrawerSystem.Movento: return "Blum MOVENTO";
                 default: return system.ToString();
-            }
-        }
-
-        public static string GetDefaultName(DrawerSystem system)
-        {
-            switch (system)
-            {
-                case DrawerSystem.Movento: return "Ящик Movento";
-                default: return "Ящик GTV";
-            }
-        }
-
-        public static string GetColorName(DrawerColor color)
-        {
-            switch (color)
-            {
-                case DrawerColor.Anthracite: return "Антрацит";
-                case DrawerColor.White: return "Белый";
-                case DrawerColor.Black: return "Чёрный";
-                default: return color.ToString();
             }
         }
 
@@ -158,17 +126,6 @@ namespace KitchenDesigner.Core
                 case DrawerColor.White: return "gtv_white";
                 case DrawerColor.Black: return "gtv_black";
                 default: return color.ToString().ToLowerInvariant();
-            }
-        }
-
-        public static string GetCycleButtonLabel(DoubleDrawerState state)
-        {
-            switch (state)
-            {
-                case DoubleDrawerState.Closed: return "Открыть оба ящика";
-                case DoubleDrawerState.BothOpen: return "Закрыть верхний ящик";
-                case DoubleDrawerState.LowerOnly: return "Закрыть всё";
-                default: return state.ToString();
             }
         }
 

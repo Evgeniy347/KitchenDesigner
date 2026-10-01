@@ -7,7 +7,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("лицо варочной — её верх: конфорки и обод видны сверху с любой стороны");
 
-        public override string DisplayTypeName => HasFixedSize ? Model : "Варочная";
+        public override string DisplayTypeName => HasFixedSize ? Model : Loc.T("elementType.cooktop");
 
         public override bool ParticipatesInGapChecks => false;
 

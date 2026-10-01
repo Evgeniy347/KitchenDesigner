@@ -7,10 +7,10 @@ namespace KitchenDesigner.Core.UI
     internal sealed class LaundryMachineFieldsEditor : ElementFieldsEditor
     {
         public const string KindNode = "CtxLaundryKind";
-        public const string KindLabel = "Вид машины";
+        public static string KindLabel => Loc.T("element.laundry.kind");
 
-        public const string WasherOption = LaundryMachineBody.WasherName;
-        public const string DryerOption = LaundryMachineBody.DryerName;
+        public static string WasherOption => LaundryMachineBody.WasherName;
+        public static string DryerOption => LaundryMachineBody.DryerName;
 
         private TMP_Dropdown? _kind;
 

@@ -75,18 +75,18 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("HierTitle", panel.transform, "Сцена", UIStyle.FontWindowTitle,
+            UIFactory.CreateLabel("HierTitle", panel.transform, Loc.T("hierarchy.title"), UIStyle.FontWindowTitle,
                 new Vector2(14, -6), new Vector2(120, 28), TextAnchor.MiddleLeft)
                 .rectTransform.SetAnchor(new Vector2(0, 1), new Vector2(14, -6));
 
-            var addBtn = UIFactory.CreateButton("HierAddGroup", panel.transform, "+ Группа",
+            var addBtn = UIFactory.CreateButton("HierAddGroup", panel.transform, Loc.T("hierarchy.addGroup"),
                 Vector2.zero, new Vector2(92, 26), CreateEmptyGroup);
             SetTopRight(addBtn.GetComponent<RectTransform>(), new Vector2(-64, -6));
 
             UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
 
             _moveDropdown = UIFactory.CreateDropdown("HierMoveTo", panel.transform,
-                new List<string> { "Переместить в…" },
+                new List<string> { Loc.T("hierarchy.moveTo") },
                 Vector2.zero, new Vector2(PanelW - 20, 26), OnMoveDropdown);
             var ddRt = _moveDropdown.GetComponent<RectTransform>();
             ddRt.anchorMin = ddRt.anchorMax = new Vector2(0.5f, 1);
@@ -100,7 +100,7 @@ namespace KitchenDesigner.Core.UI
             sfRt.pivot = new Vector2(0.5f, 1);
             sfRt.anchoredPosition = new Vector2(0, -68);
             _searchField.onValueChanged.AddListener(_ => Refresh());
-            var searchHint = UIFactory.CreateLabel("HierSearchHint", _searchField.transform, "Поиск…", 14,
+            var searchHint = UIFactory.CreateLabel("HierSearchHint", _searchField.transform, Loc.T("hierarchy.search"), 14,
                 Vector2.zero, new Vector2(PanelW - 36, 26), TextAnchor.MiddleLeft);
             searchHint.color = UIStyle.TextSecondary;
             searchHint.raycastTarget = false;
@@ -389,7 +389,7 @@ namespace KitchenDesigner.Core.UI
 
             if (node.isRoot)
             {
-                label = node.rootLabel ?? "Кухня";
+                label = node.rootLabel ?? Loc.T("hierarchy.rootKitchen");
                 rowColor = RowRootColor;
             }
             else if (node.group != null)
@@ -478,20 +478,20 @@ namespace KitchenDesigner.Core.UI
         {
             int n = 1;
             foreach (var g in GroupManager.AllGroups()) n++;
-            GroupManager.Create($"Группа {n}");
+            GroupManager.Create(Loc.F("group.defaultName", n));
         }
 
         private void RefreshMoveDropdown()
         {
             if (_moveDropdown == null) return;
             _dropdownGroups.Clear();
-            var options = new List<string> { "Переместить в…", "— вне групп —" };
+            var options = new List<string> { Loc.T("hierarchy.moveTo"), Loc.T("hierarchy.ungrouped") };
             foreach (var g in GroupManager.AllGroups())
             {
                 _dropdownGroups.Add(g);
                 options.Add(g.name);
             }
-            options.Add("+ Новая группа");
+            options.Add(Loc.T("hierarchy.newGroup"));
 
             _ignoreDropdownCallback = true;
             _moveDropdown.ClearOptions();
@@ -518,7 +518,7 @@ namespace KitchenDesigner.Core.UI
             LinkGroup? target = null;
             int newGroupIndex = _dropdownGroups.Count + MoveFirstGroupIndex;
             if (index == newGroupIndex)
-                target = GroupManager.Create($"Группа {_dropdownGroups.Count + 1}");
+                target = GroupManager.Create(Loc.F("group.defaultName", _dropdownGroups.Count + 1));
             else if (index >= MoveFirstGroupIndex)
                 target = _dropdownGroups[index - MoveFirstGroupIndex];
             else if (index == MoveUngroupedIndex)

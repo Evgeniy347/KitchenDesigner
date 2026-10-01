@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core.UI
 {
     internal sealed class LightFieldsEditor : ElementFieldsEditor
     {
-        private const string AdvancedCaption = "Тонкая настройка";
+        private static string AdvancedCaption => Loc.T("element.light.advanced");
 
         private readonly struct Binding
         {
@@ -53,46 +53,46 @@ namespace KitchenDesigner.Core.UI
             var plain = RowVisibility.For(ElementFacet.Light);
             var advanced = RowVisibility.For(ElementFacet.Light, () => _advancedExpanded);
 
-            Bind("Температура", "K", plain, l => l.TemperatureK, (l, v) => l.TemperatureK = v,
+            Bind(Loc.T("element.light.temperature"), "K", plain, l => l.TemperatureK, (l, v) => l.TemperatureK = v,
                 LampSpec.DEFAULT_TEMPERATURE_K, hint: "element.light.temperature");
-            Bind("Мощность", "Вт", plain, l => l.PowerW, (l, v) => l.PowerW = v,
+            Bind(Loc.T("element.light.power"), Loc.T("unit.w"), plain, l => l.PowerW, (l, v) => l.PowerW = v,
                 LampSpec.DEFAULT_POWER_W, hint: "element.light.power");
-            Bind("Рассеивание", "%", plain, l => l.DiffusionPct, (l, v) => l.DiffusionPct = v,
+            Bind(Loc.T("element.light.diffusion"), "%", plain, l => l.DiffusionPct, (l, v) => l.DiffusionPct = v,
                 LampSpec.DEFAULT_DIFFUSION_PCT, hint: "element.light.diffusion");
-            Bind("Угол пучка", "°", plain, l => l.BeamAngleDeg, (l, v) => l.BeamAngleDeg = v,
+            Bind(Loc.T("element.light.beamAngle"), "°", plain, l => l.BeamAngleDeg, (l, v) => l.BeamAngleDeg = v,
                 LampSpec.DEFAULT_BEAM_DEG, hint: "element.light.beamAngle");
-            Bind("Мягкость края", "%", plain, l => l.SoftnessPct, (l, v) => l.SoftnessPct = v,
+            Bind(Loc.T("element.light.softness"), "%", plain, l => l.SoftnessPct, (l, v) => l.SoftnessPct = v,
                 LampSpec.DEFAULT_SOFTNESS_PCT, hint: "element.light.softness");
-            Bind("Свет вверх", "%", plain, l => l.UpLightPct, (l, v) => l.UpLightPct = v,
+            Bind(Loc.T("element.light.upLight"), "%", plain, l => l.UpLightPct, (l, v) => l.UpLightPct = v,
                 LampSpec.DEFAULT_UP_PCT, hint: "element.light.upLight");
 
-            _shape = Rows.Dropdown("Форма потока", new List<string> { "Плафон", "Шар" },
+            _shape = Rows.Dropdown(Loc.T("element.light.shape"), new List<string> { Loc.T("element.light.shapeShade"), Loc.T("element.light.shapeGlobe") },
                 OnShapeSelected, plain, "CtxLightShape", hint: "element.light.shape");
-            _shadow = Rows.Dropdown("Тени лампы", new List<string> { "Нет", "Жёсткие", "Мягкие" },
+            _shadow = Rows.Dropdown(Loc.T("element.light.shadow"), new List<string> { Loc.T("element.light.shadowNone"), Loc.T("element.light.shadowHard"), Loc.T("element.light.shadowSoft") },
                 OnShadowSelected, plain, "CtxLightShadow", hint: "element.light.shadow");
 
-            Bind("Сила тени", "%", plain, l => l.ShadowStrengthPct, (l, v) => l.ShadowStrengthPct = v,
+            Bind(Loc.T("element.light.shadowStrength"), "%", plain, l => l.ShadowStrengthPct, (l, v) => l.ShadowStrengthPct = v,
                 LampSpec.DEFAULT_SHADOW_STRENGTH_PCT, hint: "element.light.shadowStrength");
 
             _advancedLabel = Rows.WideButton("CtxLightAdv",
                 $"{AdvancedCaption}  {UIStyle.GlyphCollapsed}", ToggleAdvanced, plain, RowGap);
 
-            Bind("Свечение плафона", "%", advanced, l => l.GlowPct, (l, v) => l.GlowPct = v,
+            Bind(Loc.T("element.light.glow"), "%", advanced, l => l.GlowPct, (l, v) => l.GlowPct = v,
                 LampSpec.DEFAULT_GLOW_PCT, hint: "element.light.glow");
-            Bind("Отступ вниз", "мм", advanced, l => l.DropMM, (l, v) => l.DropMM = v,
+            Bind(Loc.T("element.light.drop"), Loc.T("unit.mm"), advanced, l => l.DropMM, (l, v) => l.DropMM = v,
                 LampSpec.DEFAULT_DROP_MM, hint: "element.light.drop");
-            Bind("Верхний конус", "%", advanced, l => l.UpConePct, (l, v) => l.UpConePct = v,
+            Bind(Loc.T("element.light.upCone"), "%", advanced, l => l.UpConePct, (l, v) => l.UpConePct = v,
                 LampSpec.DEFAULT_UP_CONE_PCT, hint: "element.light.upCone");
-            Bind("Верхний радиус", "%", advanced, l => l.UpRangePct, (l, v) => l.UpRangePct = v,
+            Bind(Loc.T("element.light.upRange"), "%", advanced, l => l.UpRangePct, (l, v) => l.UpRangePct = v,
                 LampSpec.DEFAULT_UP_RANGE_PCT, hint: "element.light.upRange");
-            Bind("Радиус при 0 %", "мм", advanced, l => l.RangeMinMM, (l, v) => l.RangeMinMM = v,
+            Bind(Loc.T("element.light.range"), Loc.T("unit.mm"), advanced, l => l.RangeMinMM, (l, v) => l.RangeMinMM = v,
                 LampSpec.DEFAULT_RANGE_MIN_MM, hint: "element.light.range");
-            Bind("Радиус при 100 %", "мм", advanced, l => l.RangeMaxMM, (l, v) => l.RangeMaxMM = v,
+            Bind(Loc.T("element.light.rangeMax"), Loc.T("unit.mm"), advanced, l => l.RangeMaxMM, (l, v) => l.RangeMaxMM = v,
                 LampSpec.DEFAULT_RANGE_MAX_MM, hint: "element.light.rangeMax");
-            Bind("Светоотдача", "лм/Вт", advanced, l => l.EfficacyLmPerW,
+            Bind(Loc.T("element.light.efficacy"), Loc.T("unit.lmPerW"), advanced, l => l.EfficacyLmPerW,
                 (l, v) => l.EfficacyLmPerW = v, LampSpec.DEFAULT_EFFICACY_LM_PER_W,
                 hint: "element.light.efficacy");
-            Bind("Калибровка", "лм/ед", advanced, l => l.LumensPerUnit,
+            Bind(Loc.T("element.light.lumensPerUnit"), Loc.T("unit.lmPerUnit"), advanced, l => l.LumensPerUnit,
                 (l, v) => l.LumensPerUnit = v, LampSpec.DEFAULT_LUMENS_PER_UNIT,
                 hint: "element.light.lumensPerUnit");
         }

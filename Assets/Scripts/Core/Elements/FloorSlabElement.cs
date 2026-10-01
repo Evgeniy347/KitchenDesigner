@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
 {
     public class FloorSlabElement : KitchenElement, IKeepsPlacementHeight, IQuantifies
     {
-        public override string DisplayTypeName => "Перекрытие";
+        public override string DisplayTypeName => Loc.T("elementType.floorSlab");
 
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart(

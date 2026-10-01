@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
 {
     public class FenceElement : KitchenElement, IQuantifies
     {
-        public override string DisplayTypeName => "Забор";
+        public override string DisplayTypeName => Loc.T("elementType.fence");
 
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart(

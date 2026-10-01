@@ -27,10 +27,10 @@ namespace KitchenDesigner.Core.UI
 
         public List<string> Build()
         {
-            _host.Rows.SectionHeader("CtxSecMat", "Материал");
+            _host.Rows.SectionHeader("CtxSecMat", Loc.T("element.common.material"));
 
             var options = MaterialOptions.DisplayNames();
-            _base = _host.Rows.Dropdown("Текстура", options, index => Choose(MaterialSlot.Base, index),
+            _base = _host.Rows.Dropdown(Loc.T("element.common.texture"), options, index => Choose(MaterialSlot.Base, index),
                 RowVisibility.When(() => !HasTwoDecorSlots), "CtxMaterial");
             (_primarySlotLabel, _primarySlot) = _host.Rows.NamedDropdown("CtxTableTop",
                 DecorSlots.TabletopLabel, new List<string>(options),

@@ -7,10 +7,10 @@ namespace KitchenDesigner.Core.UI
         public const string BowlRadiusNode = "РадиусЧашиВанны";
         public const string BowlFilletNode = "СкруглениеДнаВанны";
 
-        public const string RimWidthLabel = "Ширина борта";
-        public const string BowlDepthLabel = "Глубина чаши";
-        public const string BowlRadiusLabel = "Радиус чаши";
-        public const string BowlFilletLabel = "Скругление дна";
+        public static string RimWidthLabel => Loc.T("element.bathtub.rimWidth");
+        public static string BowlDepthLabel => Loc.T("element.bathtub.bowlDepth");
+        public static string BowlRadiusLabel => Loc.T("element.bathtub.bowlRadius");
+        public static string BowlFilletLabel => Loc.T("element.bathtub.bowlFillet");
 
         public BathtubFieldsEditor(IContextMenuHost host) : base(host) { }
 
@@ -19,13 +19,13 @@ namespace KitchenDesigner.Core.UI
         public override void Build()
         {
             var visibility = RowVisibility.When(() => Host.Target is BathtubElement);
-            var rimRow = Rows.NumberField(RimWidthLabel, visibility, "мм", RimWidthNode,
+            var rimRow = Rows.NumberField(RimWidthLabel, visibility, Loc.T("unit.mm"), RimWidthNode,
                 hint: "element.bathtub.rimWidth");
-            var bowlDepthRow = Rows.NumberField(BowlDepthLabel, visibility, "мм", BowlDepthNode,
+            var bowlDepthRow = Rows.NumberField(BowlDepthLabel, visibility, Loc.T("unit.mm"), BowlDepthNode,
                 hint: "element.bathtub.bowlDepth");
-            var bowlRadiusRow = Rows.NumberField(BowlRadiusLabel, visibility, "мм",
+            var bowlRadiusRow = Rows.NumberField(BowlRadiusLabel, visibility, Loc.T("unit.mm"),
                 BowlRadiusNode, hint: "element.bathtub.bowlRadius");
-            var bowlFilletRow = Rows.NumberField(BowlFilletLabel, visibility, "мм",
+            var bowlFilletRow = Rows.NumberField(BowlFilletLabel, visibility, Loc.T("unit.mm"),
                 BowlFilletNode, hint: "element.bathtub.bowlFillet");
 
             Bind<BathtubElement>(rimRow, tub => tub.RimWidthMM,

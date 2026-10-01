@@ -12,80 +12,80 @@ namespace KitchenDesigner.Core.UI
         {
             float y = topY;
 
-            _rows.AddHeader(page, ref y, "Заполняющий свет");
-            AddPhotoSlider(page, ref y, "Окружающий свет", 0, KitchenSettings.PHOTO_AMBIENT_MAX_PCT,
+            _rows.AddHeader(page, ref y, Loc.T("settings.light.section.fill"));
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.ambient"), 0, KitchenSettings.PHOTO_AMBIENT_MAX_PCT,
                 s.PhotoAmbientPct, Percent, v => s.PhotoAmbientPct = v, () => s.PhotoAmbientPct);
-            Hint("Окружающий свет", hint: "settings.light.ambient");
-            AddPhotoSlider(page, ref y, "Отскок от пола", 0, KitchenSettings.PHOTO_FLOOR_BOUNCE_MAX_PCT,
+            Hint(Loc.T("settings.light.ambient"), hint: "settings.light.ambient");
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.floorBounce"), 0, KitchenSettings.PHOTO_FLOOR_BOUNCE_MAX_PCT,
                 s.PhotoFloorBouncePct, Percent, v => s.PhotoFloorBouncePct = v, () => s.PhotoFloorBouncePct);
-            Hint("Отскок от пола", hint: "settings.light.floorBounce");
-            AddPhotoSlider(page, ref y, "Потолок сверху", 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
+            Hint(Loc.T("settings.light.floorBounce"), hint: "settings.light.floorBounce");
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.sky"), 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
                 s.PhotoAmbientSkyPct, Percent, v => s.PhotoAmbientSkyPct = v, () => s.PhotoAmbientSkyPct);
-            Hint("Потолок сверху", hint: "settings.light.sky");
-            AddPhotoSlider(page, ref y, "Стены сбоку", 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
+            Hint(Loc.T("settings.light.sky"), hint: "settings.light.sky");
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.equator"), 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
                 s.PhotoAmbientEquatorPct, Percent, v => s.PhotoAmbientEquatorPct = v,
                 () => s.PhotoAmbientEquatorPct);
-            Hint("Стены сбоку", hint: "settings.light.equator");
-            AddPhotoSlider(page, ref y, "Предел отскока", 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
+            Hint(Loc.T("settings.light.equator"), hint: "settings.light.equator");
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.bounceMax"), 0, KitchenSettings.PHOTO_AMBIENT_PART_MAX_PCT,
                 s.PhotoBounceMaxPct, Percent, v => s.PhotoBounceMaxPct = v, () => s.PhotoBounceMaxPct);
-            Hint("Предел отскока", hint: "settings.light.bounceMax");
+            Hint(Loc.T("settings.light.bounceMax"), hint: "settings.light.bounceMax");
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Экспозиция и тон");
-            AddPhotoSlider(page, ref y, "Тонемаппинг",
+            _rows.AddHeader(page, ref y, Loc.T("settings.light.section.exposure"));
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.tonemap"),
                 KitchenSettings.PHOTO_TONEMAP_NONE, KitchenSettings.PHOTO_TONEMAP_ACES,
                 s.PhotoTonemap, TonemapName, v => s.PhotoTonemap = v, () => s.PhotoTonemap);
-            Hint("Тонемаппинг", hint: "settings.light.tonemap");
-            AddPhotoSlider(page, ref y, "Экспозиция",
+            Hint(Loc.T("settings.light.tonemap"), hint: "settings.light.tonemap");
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.exposure"),
                 KitchenSettings.PHOTO_EXPOSURE_MIN_PCT, KitchenSettings.PHOTO_EXPOSURE_MAX_PCT,
                 s.PhotoExposurePct, ExposureValue, v => s.PhotoExposurePct = v, () => s.PhotoExposurePct);
-            Hint("Экспозиция", hint: "settings.light.exposure");
-            AddPhotoSlider(page, ref y, "Контраст",
+            Hint(Loc.T("settings.light.exposure"), hint: "settings.light.exposure");
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.contrast"),
                 KitchenSettings.PHOTO_COLOR_MIN_PCT, KitchenSettings.PHOTO_COLOR_MAX_PCT,
                 s.PhotoContrastPct, Percent, v => s.PhotoContrastPct = v, () => s.PhotoContrastPct);
-            Hint("Контраст", hint: "settings.light.contrast");
-            AddPhotoSlider(page, ref y, "Насыщенность",
+            Hint(Loc.T("settings.light.contrast"), hint: "settings.light.contrast");
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.saturation"),
                 KitchenSettings.PHOTO_COLOR_MIN_PCT, KitchenSettings.PHOTO_COLOR_MAX_PCT,
                 s.PhotoSaturationPct, Percent, v => s.PhotoSaturationPct = v, () => s.PhotoSaturationPct);
-            Hint("Насыщенность", hint: "settings.light.saturation");
+            Hint(Loc.T("settings.light.saturation"), hint: "settings.light.saturation");
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Эффекты");
-            AddPhotoSlider(page, ref y, "Сила свечения", 0, KitchenSettings.PHOTO_BLOOM_MAX_PCT,
+            _rows.AddHeader(page, ref y, Loc.T("settings.light.section.effects"));
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.bloomStrength"), 0, KitchenSettings.PHOTO_BLOOM_MAX_PCT,
                 s.PhotoBloomPct, Percent, v => s.PhotoBloomPct = v, () => s.PhotoBloomPct);
-            Hint("Сила свечения", hint: "settings.light.bloomStrength");
-            AddPhotoSlider(page, ref y, "Порог свечения", 0, KitchenSettings.PHOTO_BLOOM_THRESHOLD_MAX_PCT,
+            Hint(Loc.T("settings.light.bloomStrength"), hint: "settings.light.bloomStrength");
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.bloomThreshold"), 0, KitchenSettings.PHOTO_BLOOM_THRESHOLD_MAX_PCT,
                 s.PhotoBloomThresholdPct, Percent, v => s.PhotoBloomThresholdPct = v,
                 () => s.PhotoBloomThresholdPct);
-            Hint("Порог свечения", hint: "settings.light.bloomThreshold");
-            AddPhotoSlider(page, ref y, "Предел свечения",
+            Hint(Loc.T("settings.light.bloomThreshold"), hint: "settings.light.bloomThreshold");
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.bloomClamp"),
                 KitchenSettings.PHOTO_BLOOM_CLAMP_MIN_PCT, KitchenSettings.PHOTO_BLOOM_CLAMP_MAX_PCT,
                 s.PhotoBloomClampPct, Percent, v => s.PhotoBloomClampPct = v,
                 () => s.PhotoBloomClampPct);
-            Hint("Предел свечения", hint: "settings.light.bloomClamp");
-            AddPhotoSlider(page, ref y, "Сила виньетки", 0, FullPercent,
+            Hint(Loc.T("settings.light.bloomClamp"), hint: "settings.light.bloomClamp");
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.vignetteStrength"), 0, FullPercent,
                 s.PhotoVignettePct, Percent, v => s.PhotoVignettePct = v, () => s.PhotoVignettePct);
-            Hint("Сила виньетки", hint: "settings.light.vignetteStrength");
+            Hint(Loc.T("settings.light.vignetteStrength"), hint: "settings.light.vignetteStrength");
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Тени сцены");
-            AddPhotoSlider(page, ref y, "Сила теней солнца", 0, FullPercent,
+            _rows.AddHeader(page, ref y, Loc.T("settings.light.section.sceneShadows"));
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.sunShadowStrength"), 0, FullPercent,
                 s.PhotoSunShadowStrengthPct, Percent, v => s.PhotoSunShadowStrengthPct = v,
                 () => s.PhotoSunShadowStrengthPct);
-            Hint("Сила теней солнца", hint: "settings.light.sunShadowStrength");
-            AddPhotoSlider(page, ref y, "Дальность теней",
+            Hint(Loc.T("settings.light.sunShadowStrength"), hint: "settings.light.sunShadowStrength");
+            AddPhotoSlider(page, ref y, Loc.T("settings.light.shadowDistance"),
                 KitchenSettings.PHOTO_SHADOW_DISTANCE_MIN_M, KitchenSettings.PHOTO_SHADOW_DISTANCE_MAX_M,
                 s.PhotoShadowDistanceM, Meters, v => s.PhotoShadowDistanceM = v,
                 () => s.PhotoShadowDistanceM);
-            Hint("Дальность теней", hint: "settings.light.shadowDistance");
-            _rows.AddToggle(page, ref y, "Тени от ламп", s.PhotoLampShadows,
+            Hint(Loc.T("settings.light.shadowDistance"), hint: "settings.light.shadowDistance");
+            _rows.AddToggle(page, ref y, Loc.T("settings.light.lampShadows"), s.PhotoLampShadows,
                 v =>
                 {
                     s.PhotoLampShadows = v;
                     LightSourceElement.RefreshAll();
                     PhotoMode.RefreshIfActive();
                 }, read: () => s.PhotoLampShadows);
-            Hint("Тени от ламп", hint: "settings.light.lampShadows");
+            Hint(Loc.T("settings.light.lampShadows"), hint: "settings.light.lampShadows");
         }
 
         private const int FullPercent = 100;
@@ -99,13 +99,13 @@ namespace KitchenDesigner.Core.UI
 
         private static string TonemapName(int v) => v switch
         {
-            KitchenSettings.PHOTO_TONEMAP_NONE => "нет",
-            KitchenSettings.PHOTO_TONEMAP_NEUTRAL => "нейтральный",
+            KitchenSettings.PHOTO_TONEMAP_NONE => Loc.T("settings.light.tonemapNone"),
+            KitchenSettings.PHOTO_TONEMAP_NEUTRAL => Loc.T("settings.light.tonemapNeutral"),
             _ => "ACES",
         };
 
         private static string Percent(int v) => v + " %";
-        private static string Meters(int v) => v + " м";
+        private static string Meters(int v) => v + Loc.T("unit.mSuffix");
         private static string ExposureValue(int v) =>
             (v / 100f).ToString("+0.0;-0.0;0.0", System.Globalization.CultureInfo.InvariantCulture) + " EV";
 

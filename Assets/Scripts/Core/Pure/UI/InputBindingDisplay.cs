@@ -5,17 +5,19 @@ namespace KitchenDesigner.Core.UI
 {
     public static class InputBindingDisplay
     {
-        private static readonly (MouseButtonKind Button, string Reading)[] ButtonReadings =
-        {
-            (MouseButtonKind.Left, "ЛКМ"),
-            (MouseButtonKind.Right, "ПКМ"),
-            (MouseButtonKind.Middle, "СКМ"),
-            (MouseButtonKind.XButton1, "Кнопка 4"),
-            (MouseButtonKind.XButton2, "Кнопка 5"),
-        };
+        private static readonly LocalizedCache<(MouseButtonKind Button, string Reading)[]> ButtonReadingsCache =
+            new LocalizedCache<(MouseButtonKind Button, string Reading)[]>(() => new (MouseButtonKind Button, string Reading)[] {
+            (MouseButtonKind.Left, Loc.T("input.mouse.left")),
+            (MouseButtonKind.Right, Loc.T("input.mouse.right")),
+            (MouseButtonKind.Middle, Loc.T("input.mouse.middle")),
+            (MouseButtonKind.XButton1, Loc.T("input.mouse.button4")),
+            (MouseButtonKind.XButton2, Loc.T("input.mouse.button5")),
+        });
 
-        private const string WheelReading = "Колесо";
-        private const string MotionReading = "+движение";
+        private static (MouseButtonKind Button, string Reading)[] ButtonReadings => ButtonReadingsCache.Value;
+
+        private static string WheelReading => Loc.T("input.mouse.wheel");
+        private static string MotionReading => Loc.T("input.mouse.withMotion");
 
         public static string Of(InputBinding binding)
         {

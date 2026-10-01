@@ -7,7 +7,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("радиусная полка — сектор плиты, лицевой детали нет");
 
-        public override string DisplayTypeName => "Радиусная полка";
+        public override string DisplayTypeName => Loc.T("elementType.radialShelf");
 
         public override bool IsFlatBoardElement => true;
 

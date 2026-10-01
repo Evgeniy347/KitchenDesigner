@@ -8,13 +8,13 @@ namespace KitchenDesigner.Core.UI
     {
         public const string SizeNode = "CtxBedSize";
         public const string HeadboardNode = "CtxBedHeadboard";
-        public const string SizeLabel = "Тип кровати";
-        public const string HeadboardLabel = "Изголовье";
+        public static string SizeLabel => Loc.T("element.bed.size");
+        public static string HeadboardLabel => Loc.T("element.bed.headboard");
 
-        public const string SingleOption = "Односпальная";
-        public const string DoubleOption = "Двуспальная";
-        public const string WithHeadboardOption = "Со спинкой";
-        public const string WithoutHeadboardOption = "Без спинки";
+        public static string SingleOption => Loc.T("element.bed.sizeSingle");
+        public static string DoubleOption => Loc.T("element.bed.sizeDouble");
+        public static string WithHeadboardOption => Loc.T("element.bed.headboardWith");
+        public static string WithoutHeadboardOption => Loc.T("element.bed.headboardWithout");
 
         private TMP_Dropdown? _size;
         private TMP_Dropdown? _headboard;

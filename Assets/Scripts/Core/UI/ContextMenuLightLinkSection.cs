@@ -20,9 +20,9 @@ namespace KitchenDesigner.Core.UI
         public const string AddButtonNode = "CtxLightLinkAddBtn";
         public const string PickButtonNode = "CtxLightLinkPick";
 
-        public const string HeaderCaption = "Светильники";
-        public const string AddCaption = "Добавить";
-        public const string NoLightsInScene = "нет светильников";
+        public static string HeaderCaption => Loc.T("element.lightSwitch.lights");
+        public static string AddCaption => Loc.T("common.add");
+        public static string NoLightsInScene => Loc.T("element.lightSwitch.noLights");
 
         private TMP_Text? _countLabel;
         private TMP_Dropdown? _addDropdown;
@@ -112,7 +112,7 @@ namespace KitchenDesigner.Core.UI
             if (Count() >= SwitchLightLinks.MaxLightsPerSwitch)
             {
                 ToastNotification.ShowIfAvailable(
-                    $"Не больше {SwitchLightLinks.MaxLightsPerSwitch} светильников на выключатель");
+                    Loc.F("toast.lightLinkLimit", SwitchLightLinks.MaxLightsPerSwitch));
                 return;
             }
 

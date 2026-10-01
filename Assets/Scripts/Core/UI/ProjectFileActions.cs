@@ -31,7 +31,7 @@ namespace KitchenDesigner.Core.UI
             string suggested = SaveLoadManager.HasLastPath
                 ? System.IO.Path.GetFileName(SaveLoadManager.LastPath)
                 : SuggestedNameForANewFile();
-            string? path = NativeFileDialog.SaveDialog("Сохранить проект кухни",
+            string? path = NativeFileDialog.SaveDialog(Loc.T("file.dialog.saveProject"),
                 suggested, SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path)) return;
             if (SaveLoadManager.SaveToPath(path))
@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core.UI
 
         public void NewProjectDialog(Action<bool>? onDone = null)
         {
-            string? path = NativeFileDialog.SaveDialog("Новый проект кухни",
+            string? path = NativeFileDialog.SaveDialog(Loc.T("file.dialog.newProject"),
                 SuggestedNameForANewFile(), SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path))
             {
@@ -54,7 +54,7 @@ namespace KitchenDesigner.Core.UI
 
         public void LoadDialog(Action<bool>? onDone = null)
         {
-            string? path = NativeFileDialog.OpenDialog("Открыть проект кухни",
+            string? path = NativeFileDialog.OpenDialog(Loc.T("file.dialog.openProject"),
                 SaveLoadManager.LastDirectory);
             if (string.IsNullOrEmpty(path))
             {
@@ -73,7 +73,7 @@ namespace KitchenDesigner.Core.UI
         private static bool Open(string path)
         {
             if (!SaveLoadManager.LoadFromPath(path)) return false;
-            Toast("Загружено: " + System.IO.Path.GetFileName(path));
+            Toast(Loc.T("toast.loaded") + System.IO.Path.GetFileName(path));
             PhotoLookMigrationNotice.ShowIfPending();
             return true;
         }
@@ -84,7 +84,7 @@ namespace KitchenDesigner.Core.UI
         private static void Toast(string msg) => ToastNotification.ShowIfAvailable(msg);
 
         private static void ShowSaved(string name) =>
-            StatusBarUI.Instance?.ShowTransient("Сохранено: " + name,
+            StatusBarUI.Instance?.ShowTransient(Loc.T("status.saved") + name,
                 StatusLevel.Success, 3f);
     }
 }

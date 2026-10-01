@@ -17,9 +17,9 @@ namespace KitchenDesigner.Core.UI
         public override void Build()
         {
             var cooktopOnly = RowVisibility.When(() => Host.Target is CooktopElement);
-            _width = Rows.NumberField("Ширина выреза", cooktopOnly,
+            _width = Rows.NumberField(Loc.T("element.cooktop.cutoutWidth"), cooktopOnly,
                 hint: "element.cooktop.cutout");
-            _depth = Rows.NumberField("Глубина выреза", cooktopOnly,
+            _depth = Rows.NumberField(Loc.T("element.cooktop.cutoutDepth"), cooktopOnly,
                 hint: "element.cooktop.cutout");
         }
 

@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
 {
     public class FoundationElement : KitchenElement, IQuantifies
     {
-        public override string DisplayTypeName => "Фундамент";
+        public override string DisplayTypeName => Loc.T("elementType.foundation");
 
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart(

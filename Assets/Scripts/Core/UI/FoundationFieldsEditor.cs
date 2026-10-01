@@ -16,7 +16,7 @@ namespace KitchenDesigner.Core.UI
         public const string RebarDiameterNode = "CtxFoundationRebarDiameter";
         public const string RebarStepNode = "CtxFoundationRebarStep";
         public const string CoverNode = "CtxFoundationCover";
-        public const string FrostDepthLabel = "Глубина промерзания";
+        public static string FrostDepthLabel => Loc.T("element.foundation.frostDepth");
 
         private TMP_Dropdown? _soil;
         private TMP_Dropdown? _concrete;
@@ -29,45 +29,45 @@ namespace KitchenDesigner.Core.UI
 
         public override bool DepthEditable => false;
 
-        public override string HeightLabel => "Глубина";
+        public override string HeightLabel => Loc.T("element.foundation.depth");
 
         public override void Build()
         {
             var isFoundation = RowVisibility.When(() => Host.Target is FoundationElement);
 
-            _soil = Rows.Dropdown("Грунт", new List<string>(SoilKindTitles.All), OnSoilSelected,
+            _soil = Rows.Dropdown(Loc.T("element.foundation.soil"), new List<string>(SoilKindTitles.All), OnSoilSelected,
                 isFoundation, SoilNode, hint: "element.foundation.soil");
 
             _frostDepth = ReadOnlyField(FrostDepthLabel, isFoundation,
                 hint: "element.foundation.frostDepth");
 
-            var sandRow = Rows.NumberField("Подушка: песок", isFoundation, "мм", SandNode,
+            var sandRow = Rows.NumberField(Loc.T("element.foundation.sand"), isFoundation, Loc.T("unit.mm"), SandNode,
                 hint: "element.foundation.sand");
             Bind<FoundationElement>(sandRow, f => f.SandMm, (f, v) => f.SandMm = v,
                 KitchenSettings.Instance.ConstructionSandMm.ToString());
 
-            var gravelRow = Rows.NumberField("Подушка: щебень", isFoundation, "мм", GravelNode,
+            var gravelRow = Rows.NumberField(Loc.T("element.foundation.gravel"), isFoundation, Loc.T("unit.mm"), GravelNode,
                 hint: "element.foundation.gravel");
             Bind<FoundationElement>(gravelRow, f => f.GravelMm, (f, v) => f.GravelMm = v,
                 KitchenSettings.Instance.ConstructionGravelMm.ToString());
 
-            _compacted = Rows.Toggle(CompactedNode, "Трамбовка", true, OnCompactedToggled,
+            _compacted = Rows.Toggle(CompactedNode, Loc.T("element.foundation.compacted"), true, OnCompactedToggled,
                 isFoundation, RowGap, hint: "element.foundation.compacted");
 
-            _concrete = Rows.Dropdown("Класс бетона", new List<string>(ConcreteGradeTitles.All),
+            _concrete = Rows.Dropdown(Loc.T("element.foundation.concrete"), new List<string>(ConcreteGradeTitles.All),
                 OnConcreteSelected, isFoundation, ConcreteNode, hint: "element.foundation.concrete");
 
-            var diameterRow = Rows.NumberField("Арматура: Ø", isFoundation, "мм", RebarDiameterNode,
+            var diameterRow = Rows.NumberField(Loc.T("element.foundation.rebarDiameter"), isFoundation, Loc.T("unit.mm"), RebarDiameterNode,
                 hint: "element.foundation.rebarDiameter");
             Bind<FoundationElement>(diameterRow, f => f.RebarDiameterMm,
                 (f, v) => f.RebarDiameterMm = v, FoundationRebarDefaults.DiameterMm.ToString());
 
-            var stepRow = Rows.NumberField("Арматура: шаг", isFoundation, "мм", RebarStepNode,
+            var stepRow = Rows.NumberField(Loc.T("element.foundation.rebarStep"), isFoundation, Loc.T("unit.mm"), RebarStepNode,
                 hint: "element.foundation.rebarStep");
             Bind<FoundationElement>(stepRow, f => f.RebarStepMm, (f, v) => f.RebarStepMm = v,
                 FoundationRebarDefaults.StepMm.ToString());
 
-            var coverRow = Rows.NumberField("Защитный слой", isFoundation, "мм", CoverNode,
+            var coverRow = Rows.NumberField(Loc.T("element.foundation.cover"), isFoundation, Loc.T("unit.mm"), CoverNode,
                 hint: "element.foundation.cover");
             Bind<FoundationElement>(coverRow, f => f.CoverMm, (f, v) => f.CoverMm = v,
                 FoundationRebarDefaults.CoverMm.ToString());

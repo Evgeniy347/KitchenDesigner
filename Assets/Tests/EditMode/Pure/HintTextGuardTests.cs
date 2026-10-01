@@ -29,7 +29,7 @@ public class HintTextGuardTests
     private static readonly Regex AnyHintArgument = new Regex(@"\bhint\s*:");
     private static readonly Regex AnyHintCall = new Regex(@"\bHint\(");
     private static readonly Regex HintedRow = new Regex(
-        @"\bHint\(\s*(""[^""]*""|[A-Za-z_]\w*)\s*,\s*hint\s*:\s*""([^""]*)""\s*\)");
+        @"\bHint\(\s*(Loc\.T\(""[^""]*""\)|""[^""]*""|[A-Za-z_]\w*)\s*,\s*hint\s*:\s*""([^""]*)""\s*\)");
 
 
     [Test]

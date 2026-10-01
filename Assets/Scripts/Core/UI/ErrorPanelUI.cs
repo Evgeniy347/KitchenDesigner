@@ -48,7 +48,7 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("ErrTitle", panel.transform, "Ошибки", UIStyle.FontTitle,
+            UIFactory.CreateLabel("ErrTitle", panel.transform, Loc.T("errors.title"), UIStyle.FontTitle,
                 new Vector2(Pad, -10), new Vector2(200, 28), TextAnchor.MiddleLeft)
                 .rectTransform.SetAnchor(new Vector2(0, 1), new Vector2(Pad, -10));
 
@@ -118,22 +118,22 @@ namespace KitchenDesigner.Core.UI
 
         private void BuildFilters(Transform parent)
         {
-            Caption(parent, "FltLevelLbl", "Уровень", new Vector2(Pad, FilterLabelY));
-            _levelFilter = MultiSelectDropdown.Create("FltLevel", parent, "Все",
+            Caption(parent, "FltLevelLbl", Loc.T("errors.column.severity"), new Vector2(Pad, FilterLabelY));
+            _levelFilter = MultiSelectDropdown.Create("FltLevel", parent, Loc.T("errors.filter.all"),
                 new Vector2(Pad, FilterFieldY), new Vector2(160, FilterFieldH), RebuildRows);
 
-            Caption(parent, "FltCodeLbl", "Код ошибки", new Vector2(Pad + 176, FilterLabelY));
-            _codeFilter = MultiSelectDropdown.Create("FltCode", parent, "Все",
+            Caption(parent, "FltCodeLbl", Loc.T("errors.filter.code"), new Vector2(Pad + 176, FilterLabelY));
+            _codeFilter = MultiSelectDropdown.Create("FltCode", parent, Loc.T("errors.filter.all"),
                 new Vector2(Pad + 176, FilterFieldY), new Vector2(160, FilterFieldH), RebuildRows);
 
-            Caption(parent, "FltSearchLbl", "Поиск по тексту", new Vector2(SearchX, FilterLabelY));
+            Caption(parent, "FltSearchLbl", Loc.T("errors.filter.search"), new Vector2(SearchX, FilterLabelY));
             _searchField = UIFactory.CreateInputField("FltSearch", parent, "",
                 new Vector2(SearchX, FilterFieldY), new Vector2(300, FilterFieldH));
             UIFactory.AnchorTopLeft(_searchField.GetComponent<RectTransform>());
             _searchField.GetComponent<RectTransform>().anchoredPosition = new Vector2(SearchX, FilterFieldY);
             _searchField.onValueChanged.AddListener(_ => RebuildRows());
 
-            var hint = UIFactory.CreateLabel("FltSearchHint", _searchField.transform, "Код, деталь или текст…",
+            var hint = UIFactory.CreateLabel("FltSearchHint", _searchField.transform, Loc.T("errors.filter.searchHint"),
                 UIStyle.FontSmall, Vector2.zero, new Vector2(280, FilterFieldH), TextAnchor.MiddleLeft);
             hint.color = UIStyle.TextSecondary;
             hint.raycastTarget = false;
@@ -142,11 +142,11 @@ namespace KitchenDesigner.Core.UI
             hRt.offsetMin = new Vector2(8, 0); hRt.offsetMax = Vector2.zero;
             _searchHint = hint;
 
-            Caption(parent, "FltFloorLbl", "Этаж", new Vector2(SearchX + 316f, FilterLabelY));
-            _floorFilter = MultiSelectDropdown.Create("FltFloor", parent, "Все",
+            Caption(parent, "FltFloorLbl", Loc.T("errors.filter.floor"), new Vector2(SearchX + 316f, FilterLabelY));
+            _floorFilter = MultiSelectDropdown.Create("FltFloor", parent, Loc.T("errors.filter.all"),
                 new Vector2(SearchX + 316f, FilterFieldY), new Vector2(110, FilterFieldH), RebuildRows);
 
-            var refresh = UIFactory.CreateButton("ErrRefresh", parent, "Обновить",
+            var refresh = UIFactory.CreateButton("ErrRefresh", parent, Loc.T("errors.refresh"),
                 new Vector2(PanelW - Pad - 120f, FilterFieldY), new Vector2(120, FilterFieldH), Analyze);
             UIFactory.AnchorTopLeft(refresh.GetComponent<RectTransform>());
             refresh.GetComponent<RectTransform>().anchoredPosition =
@@ -253,11 +253,11 @@ namespace KitchenDesigner.Core.UI
         {
             if (_countLabel == null) return;
             if (_allIssues.Count == 0)
-                _countLabel.text = "Ошибок не найдено";
+                _countLabel.text = Loc.T("errors.noIssues");
             else if (shown == _allIssues.Count)
-                _countLabel.text = $"Всего: {_allIssues.Count}";
+                _countLabel.text = Loc.F("errors.countTotal", _allIssues.Count);
             else
-                _countLabel.text = $"Показано: {shown} из {_allIssues.Count}";
+                _countLabel.text = Loc.F("errors.countShown", shown, _allIssues.Count);
         }
 
         private bool PassesFilters(AnalysisIssue iss, string search)

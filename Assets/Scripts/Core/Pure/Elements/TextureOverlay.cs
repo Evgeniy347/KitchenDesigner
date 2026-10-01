@@ -73,7 +73,7 @@ namespace KitchenDesigner.Core
             OverlaySide.D => "D",
             OverlaySide.E => "E",
             OverlaySide.F => "F",
-            _ => "(все)",
+            _ => Loc.T("decor.overlaySide.all"),
         };
 
         public override string ToString() =>

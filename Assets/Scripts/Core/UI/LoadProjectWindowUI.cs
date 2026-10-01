@@ -42,7 +42,7 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             WindowDrag.Attach(_panel, UIStyle.DragStripHeight);
 
-            var title = UIFactory.CreateLabel("LoadTitle", panel.transform, "Загрузить проект",
+            var title = UIFactory.CreateLabel("LoadTitle", panel.transform, Loc.T("window.load.title"),
                 UIStyle.FontWindowTitle, new Vector2(0, -TitleTopPad),
                 new Vector2(PanelW - 2 * UIStyle.WindowPad, TitleH), TextAnchor.MiddleCenter);
             var titleRt = title.rectTransform;
@@ -63,11 +63,11 @@ namespace KitchenDesigner.Core.UI
             float top = -(TitleTopPad + TitleH + BelowTitleGap);
             float buttonColumnX = PanelW - UIStyle.WindowPad - ButtonColumnW;
 
-            var newProjectBtn = UIFactory.CreateButton("LoadNewProject", parent, "Новый проект",
+            var newProjectBtn = UIFactory.CreateButton("LoadNewProject", parent, Loc.T("window.load.newProject"),
                 Vector2.zero, new Vector2(ButtonColumnW, ButtonH), OnNewProject);
             PlaceInButtonColumn(newProjectBtn.GetComponent<RectTransform>(), buttonColumnX, top);
 
-            var loadBtn = UIFactory.CreateButton("LoadOpenFile", parent, "Загрузить",
+            var loadBtn = UIFactory.CreateButton("LoadOpenFile", parent, Loc.T("window.load.open"),
                 Vector2.zero, new Vector2(ButtonColumnW, ButtonH), OnLoadFile);
             PlaceInButtonColumn(loadBtn.GetComponent<RectTransform>(), buttonColumnX,
                 top - ButtonH - ButtonGap);

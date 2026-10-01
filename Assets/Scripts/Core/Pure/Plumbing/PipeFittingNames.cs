@@ -28,13 +28,13 @@ namespace KitchenDesigner.Core.Plumbing
 
         public static string Title(PipeNodeKind kind) => kind switch
         {
-            PipeNodeKind.Elbow => "Отвод 90°",
-            PipeNodeKind.Coupling => "Переходная муфта",
-            PipeNodeKind.Tee => "Тройник",
-            PipeNodeKind.Cap => "Заглушка",
-            PipeNodeKind.Supply => "Подача",
-            PipeNodeKind.Return => "Обратка",
-            _ => "Труба",
+            PipeNodeKind.Elbow => Loc.T("plumbing.fitting.elbow90"),
+            PipeNodeKind.Coupling => Loc.T("plumbing.fitting.coupling"),
+            PipeNodeKind.Tee => Loc.T("plumbing.fitting.tee"),
+            PipeNodeKind.Cap => Loc.T("plumbing.fitting.cap"),
+            PipeNodeKind.Supply => Loc.T("plumbing.fitting.supply"),
+            PipeNodeKind.Return => Loc.T("plumbing.fitting.return"),
+            _ => Loc.T("elementType.pipe"),
         };
 
         public static bool TryParseTypeId(string? typeId, out PipeNodeKind kind)

@@ -29,25 +29,25 @@ namespace KitchenDesigner.Core.UI
         {
             var isRoof = RowVisibility.When(() => Host.Target is RoofElement);
 
-            _type = Rows.Dropdown("Тип крыши",
-                new List<string> { "Односкатная", "Двускатная", "Вальмовая" },
+            _type = Rows.Dropdown(Loc.T("element.roof.type"),
+                new List<string> { Loc.T("element.roof.typeShed"), Loc.T("element.roof.typeGable"), Loc.T("element.roof.typeHip") },
                 OnTypeSelected, isRoof, TypeNode, hint: "element.roof.type");
 
-            _ridgeAxis = Rows.Dropdown("Ось конька",
-                new List<string> { "Авто", "X", "Z" },
+            _ridgeAxis = Rows.Dropdown(Loc.T("element.roof.ridgeAxis"),
+                new List<string> { Loc.T("element.roof.ridgeAuto"), "X", "Z" },
                 OnRidgeAxisSelected, isRoof, RidgeAxisNode, hint: "element.roof.ridgeAxis");
 
-            var pitchRow = Rows.NumberField("Уклон", isRoof, "°", PitchNode,
+            var pitchRow = Rows.NumberField(Loc.T("element.roof.pitchDeg"), isRoof, "°", PitchNode,
                 hint: "element.roof.pitchDeg");
             BindDecimal<RoofElement>(pitchRow, r => r.PitchDeg,
                 (r, v) => r.PitchDeg = v, RoofDefaults.PitchDeg.ToString("F1"));
 
-            var overhangRow = Rows.NumberField("Свес", isRoof, "мм", OverhangNode,
+            var overhangRow = Rows.NumberField(Loc.T("element.roof.overhangMm"), isRoof, Loc.T("unit.mm"), OverhangNode,
                 hint: "element.roof.overhangMm");
             Bind<RoofElement>(overhangRow, r => r.OverhangMm, (r, v) => r.OverhangMm = v,
                 RoofDefaults.OverhangMm.ToString());
 
-            var rafterStepRow = Rows.NumberField("Шаг стропил", isRoof, "мм", RafterStepNode,
+            var rafterStepRow = Rows.NumberField(Loc.T("element.roof.rafterStepMm"), isRoof, Loc.T("unit.mm"), RafterStepNode,
                 hint: "element.roof.rafterStepMm");
             Bind<RoofElement>(rafterStepRow, r => r.RafterStepMm, (r, v) => r.RafterStepMm = v,
                 RoofDefaults.RafterStepMm.ToString());

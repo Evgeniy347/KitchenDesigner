@@ -9,7 +9,10 @@ namespace KitchenDesigner.Core.Construction
 
     public static class FenceSheetMarkTitles
     {
-        public static readonly string[] All = { "С8", "С20", "НС35" };
+        private static readonly LocalizedCache<string[]> AllCache =
+            new LocalizedCache<string[]>(() => new string[] { Loc.T("construction.fenceSheet.c8"), Loc.T("construction.fenceSheet.c20"), Loc.T("construction.fenceSheet.hc35") });
+
+        public static string[] All => AllCache.Value;
 
         public static string Of(FenceSheetMark mark)
         {

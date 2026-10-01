@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("стол — столешница на ногах: лицевой детали у него нет");
 
-        public override string DisplayTypeName => "Радиусный стол";
+        public override string DisplayTypeName => Loc.T("elementType.radiusTable");
         public const int LegCrossSectionMM = 50;
         public const int TabletopThicknessMM = 30;
         public const int MinLegInsetFromContourMM = 50;
@@ -120,7 +120,7 @@ namespace KitchenDesigner.Core
             var dims = DimensionsMM;
             yield return new AssembledFacadeMesh.Part
             {
-                suffix = "Столешница",
+                suffix = Loc.T("element.table.part.tabletop"),
                 dimsMM = new Vector3Int(dims.x, TabletopThicknessMM, dims.z),
             };
         }

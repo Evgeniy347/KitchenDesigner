@@ -2,10 +2,10 @@ namespace KitchenDesigner.Core
 {
     internal static class WallDeviceDecor
     {
-        public const string PlateLabel = "Рамка";
+        public static string PlateLabel => Loc.T("decor.slot.devicePlate");
 
-        public const string ContactLabel = "Контакты";
+        public static string ContactLabel => Loc.T("decor.slot.contacts");
 
-        public const string KeyLabel = "Клавиша";
+        public static string KeyLabel => Loc.T("decor.slot.rocker");
     }
 }

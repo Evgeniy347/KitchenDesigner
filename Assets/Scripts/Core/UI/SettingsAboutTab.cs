@@ -12,10 +12,10 @@ namespace KitchenDesigner.Core.UI
         {
             var sb = new StringBuilder();
             sb.AppendLine($"{ProductName} {BuildInfo.Version}");
-            sb.AppendLine($"Сборка: {BuildInfo.BuildDate}");
-            sb.AppendLine($"Платформа: {Application.platform}");
+            sb.AppendLine(Loc.F("settings.about.build", BuildInfo.BuildDate));
+            sb.AppendLine(Loc.F("settings.about.platform", Application.platform));
             sb.AppendLine($"Unity: {Application.unityVersion}");
-            sb.AppendLine($"Графика: {SystemInfo.graphicsDeviceType}");
+            sb.AppendLine(Loc.F("settings.about.graphics", SystemInfo.graphicsDeviceType));
             sb.Append(Copyright);
             return sb.ToString();
         }
@@ -25,11 +25,11 @@ namespace KitchenDesigner.Core.UI
             float y = topY;
 
             AddLine(page, "AboutProduct", ProductName, UIStyle.FontWindowTitle, ref y, 34f);
-            AddLine(page, "AboutVersion", $"Версия: {BuildInfo.Version}", 18, ref y, 32f);
-            AddLine(page, "AboutDate", $"Сборка: {BuildInfo.BuildDate}", UIStyle.FontBody, ref y, 28f);
+            AddLine(page, "AboutVersion", Loc.F("settings.about.version", BuildInfo.Version), 18, ref y, 32f);
+            AddLine(page, "AboutDate", Loc.F("settings.about.build", BuildInfo.BuildDate), UIStyle.FontBody, ref y, 28f);
 
             y -= SettingsRowFactory.GapPx;
-            UIFactory.CreateButton("AboutCopy", page, "Скопировать сведения о сборке",
+            UIFactory.CreateButton("AboutCopy", page, Loc.T("settings.about.copyBuildInfo"),
                 new Vector2(0, y - SettingsRowFactory.RowH * 0.5f),
                 new Vector2(SettingsRowFactory.ContentW * 0.6f, SettingsRowFactory.RowH),
                 () => GUIUtility.systemCopyBuffer = BuildReport());

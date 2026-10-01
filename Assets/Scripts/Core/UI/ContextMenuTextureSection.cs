@@ -50,7 +50,7 @@ namespace KitchenDesigner.Core.UI
             for (int i = 0; i <= (int)OverlaySide.All; i++)
                 sideOptions.Add(TextureOverlaySpec.SideLabel((OverlaySide)i));
 
-            var headerBtn = UIFactory.CreateButton("CtxTextures", parent, "Текстуры (0)",
+            var headerBtn = UIFactory.CreateButton("CtxTextures", parent, Loc.T("element.texture.headerEmpty"),
                 new Vector2(0, 0), new Vector2(RowWidth, BtnH), Toggle);
             _countLabel = headerBtn.GetComponentInChildren<TMP_Text>();
             Host.Layout.AddWhen(Eligible, BtnH, RowGap, headerBtn.GetComponent<RectTransform>());
@@ -92,7 +92,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(TexAddMatW, TexRowH), _ => { });
             DropdownHover.Attach(_addMaterialDropdown,
                 option => PreviewMaterial(PreviewNewRow, option), EndPreview);
-            var addBtn = UIFactory.CreateButton("CtxTexAdd", parent, "Добавить",
+            var addBtn = UIFactory.CreateButton("CtxTexAdd", parent, Loc.T("common.add"),
                 new Vector2(114f, 0), new Vector2(100, TexRowH), AddFromUI);
             AttachSideHover(_addSideDropdown);
 
@@ -154,7 +154,7 @@ namespace KitchenDesigner.Core.UI
             if (after.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT)
             {
                 ToastNotification.ShowIfAvailable(
-                    $"Не больше {TextureOverlayGeometry.MAX_PER_ELEMENT} текстур на элемент");
+                    Loc.F("toast.textureLimit", TextureOverlayGeometry.MAX_PER_ELEMENT));
                 return;
             }
             after.Add(spec);
@@ -273,7 +273,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (_countLabel != null)
                 _countLabel.text =
-                    $"Текстуры ({Count()})  {(Expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
+                    Loc.F("element.texture.header", Count(), (Expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed));
 
             IReadOnlyList<TextureOverlaySpec>? overlays = CurrentItems();
             for (int i = 0; i < _rowSide.Length; i++)

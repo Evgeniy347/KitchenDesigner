@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("ванна — чаша с бортом по кругу, лицевой детали у неё нет");
 
-        public override string DisplayTypeName => "Ванна";
+        public override string DisplayTypeName => Loc.T("elementType.bathtub");
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

@@ -2,15 +2,13 @@ namespace KitchenDesigner.Core
 {
     public static class NewerVersionStrings
     {
-        public const string Title = "Проект новее программы";
+        public static string Title => Loc.T("dialog.newerVersion.title");
 
-        public const string OpenButton = "Открыть";
+        public static string OpenButton => Loc.T("dialog.newerVersion.open");
 
-        public const string CancelButton = "Отмена";
+        public static string CancelButton => Loc.T("common.cancel");
 
         public static string Message(string fileVersion, string appVersion) =>
-            $"Проект сохранён более новой версией программы ({fileVersion} против вашей {appVersion}). "
-            + "Объекты, которых эта версия не знает, будут показаны обычными деталями и помечены "
-            + "нарушением; при сохранении они не потеряются.";
+            Loc.F("dialog.newerVersion.message", fileVersion, appVersion);
     }
 }

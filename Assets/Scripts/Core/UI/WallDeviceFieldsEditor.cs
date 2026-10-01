@@ -13,11 +13,11 @@ namespace KitchenDesigner.Core.UI
         public const string PostCountNode = "CtxWallDevicePosts";
         public const string PoweredNode = "CtxWallSwitchOn";
 
-        public const string PlateWidthLabel = "Ширина рамки";
-        public const string PlateHeightLabel = "Высота рамки";
-        public const string ProtrusionLabel = "Вынос от стены";
-        public const string PostCountLabel = "Постов";
-        public const string PoweredLabel = "Включён";
+        public static string PlateWidthLabel => Loc.T("element.wallDevice.plateWidth");
+        public static string PlateHeightLabel => Loc.T("element.wallDevice.plateHeight");
+        public static string ProtrusionLabel => Loc.T("element.wallDevice.protrusion");
+        public static string PostCountLabel => Loc.T("element.wallDevice.posts");
+        public static string PoweredLabel => Loc.T("element.wallDevice.powered");
 
         private TMP_Dropdown? _posts;
         private Toggle? _powered;
@@ -39,11 +39,11 @@ namespace KitchenDesigner.Core.UI
             var anyDevice = RowVisibility.When(() => Host.Target is IWallDevice);
             var switchOnly = RowVisibility.When(() => Host.Target is ILightSwitch);
 
-            var widthRow = Rows.NumberField(PlateWidthLabel, anyDevice, "мм", PlateWidthNode,
+            var widthRow = Rows.NumberField(PlateWidthLabel, anyDevice, Loc.T("unit.mm"), PlateWidthNode,
                 hint: "element.wallDevice.plateWidth");
-            var heightRow = Rows.NumberField(PlateHeightLabel, anyDevice, "мм", PlateHeightNode,
+            var heightRow = Rows.NumberField(PlateHeightLabel, anyDevice, Loc.T("unit.mm"), PlateHeightNode,
                 hint: "element.wallDevice.plateHeight");
-            var protrusionRow = Rows.NumberField(ProtrusionLabel, anyDevice, "мм", ProtrusionNode,
+            var protrusionRow = Rows.NumberField(ProtrusionLabel, anyDevice, Loc.T("unit.mm"), ProtrusionNode,
                 hint: "element.wallDevice.protrusion");
 
             Bind<IWallDevice>(widthRow, device => device.PlateWidthMM,

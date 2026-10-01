@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("труба — тело вращения");
 
-        public override string DisplayTypeName => "Труба";
+        public override string DisplayTypeName => Loc.T("elementType.pipe");
 
         public override bool CanFollowAnAttachParent => false;
 

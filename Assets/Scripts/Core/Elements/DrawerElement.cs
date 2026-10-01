@@ -14,7 +14,7 @@ namespace KitchenDesigner.Core
 
         public override Quaternion AttachRestRotation => ClosedRotation;
 
-        public override string DisplayTypeName => DrawerConstants.GetDefaultName(System);
+        public override string DisplayTypeName => DrawerTexts.DefaultName(System);
 
         public override CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.AlignsCutout;
 
@@ -24,7 +24,7 @@ namespace KitchenDesigner.Core
         public bool IsClosedPose => !IsOpen && !IsAnimating;
 
         public string OpenActionLabel => FindPaired() != null
-            ? DrawerConstants.GetCycleButtonLabel(DoubleState)
+            ? DrawerTexts.CycleButtonLabel(DoubleState)
             : (IsOpen ? OpenLabels.CloseDrawer : OpenLabels.OpenDrawer);
 
         public void CycleOpenState()
@@ -288,7 +288,7 @@ namespace KitchenDesigner.Core
             }
 
             yield return new SpecItem(SpecSections.Furniture,
-                $"Комплект {DrawerConstants.GetSystemLabel(_system)}", "", SpecUnit.Pieces, 1f,
+                Loc.F("drawer.spec.kit", DrawerConstants.GetSystemLabel(_system)), "", SpecUnit.Pieces, 1f,
                 DimensionsMM, hasDims: true);
 
             var bottom = GtvDrawerBoardParts.BottomDimsMM(_internalWidth, _nominalLength);

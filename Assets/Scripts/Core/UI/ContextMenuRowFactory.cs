@@ -74,19 +74,19 @@ namespace KitchenDesigner.Core.UI
         public IEnumerable<(TMP_Text? label, Selectable? control)> LabelledRows =>
             _registered.Rows;
 
-        public TMP_InputField NumberField(string label, RowVisibility visibility, string unit = "мм",
+        public TMP_InputField NumberField(string label, RowVisibility visibility, string? unit = null,
             string? nodeSuffix = null, string? hint = null) =>
             LabelledNumberField(label, visibility, unit, nodeSuffix, hint).field;
 
         public (TextMeshProUGUI label, TMP_InputField field) LabelledNumberField(string label,
-            RowVisibility visibility, string unit = "мм", string? nodeSuffix = null,
+            RowVisibility visibility, string? unit = null, string? nodeSuffix = null,
             string? hint = null)
         {
             var node = nodeSuffix ?? label;
             var lbl = UIFactory.CreateLabel("L_" + node, _parent, label, 15,
                 new Vector2(LabelX, 0), new Vector2(LabelW, LabelH));
             var field = UIFactory.CreateNumberField("F_" + node, _parent, "",
-                new Vector2(FieldX, 0), new Vector2(FieldW, FieldH), unit);
+                new Vector2(FieldX, 0), new Vector2(FieldW, FieldH), unit ?? Loc.T("unit.mm"));
             _registered.Add(lbl, field);
             visibility.Register(_layout, RowH, RowGap,
                 lbl.rectTransform, field.GetComponent<RectTransform>());
@@ -120,7 +120,7 @@ namespace KitchenDesigner.Core.UI
 
         public TMP_InputField NameField()
         {
-            var lbl = UIFactory.CreateLabel("L_Название", _parent, "Название", 15,
+            var lbl = UIFactory.CreateLabel("L_Название", _parent, Loc.T("element.common.name"), 15,
                 new Vector2(NameLabelX, 0), new Vector2(NameLabelW, LabelH));
             var field = UIFactory.CreateInputField("F_Название", _parent, "",
                 new Vector2(NameFieldX, 0), new Vector2(NameFieldW, FieldH));

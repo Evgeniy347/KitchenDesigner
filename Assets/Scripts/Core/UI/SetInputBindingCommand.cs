@@ -11,7 +11,7 @@ namespace KitchenDesigner.Core.UI
         private readonly InputBinding _after;
 
         public string Description =>
-            (_primary ? "Основная привязка: " : "Альтернативная привязка: ")
+            (_primary ? Loc.T("input.undo.primary") : Loc.T("input.undo.alternative"))
             + InputActionCatalog.DisplayNameOf(_action);
 
         public SetInputBindingCommand(KeyBindings bindings, InputAction action, bool primary,

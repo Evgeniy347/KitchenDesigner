@@ -11,28 +11,23 @@ namespace KitchenDesigner.Core.Ventilation
         public static ConstructionFinding VelocityExceeded(string elementId, float velocityMs,
             float maxMs, DuctVelocityTier tier) =>
             new ConstructionFinding(ConstructionFindingLevel.Warning, CodeVelocity, elementId,
-                $"Воздуховод «{elementId}»: скорость воздуха {Round1(velocityMs)} м/с превышает "
-                + $"рекомендуемую {Round1(maxMs)} м/с ({TierName(tier)})");
+                Loc.F("issue.vnt01.message", elementId, Round1(velocityMs), Round1(maxMs), TierName(tier)));
 
         public static ConstructionFinding ProfileMismatch(string elementId, string otherElementId,
             string profileA, string profileB) =>
             new ConstructionFinding(ConstructionFindingLevel.Error, CodeProfileMismatch, elementId,
-                $"Стык воздуховодов «{elementId}» ↔ «{otherElementId}»: сечения не совпадают "
-                + $"({profileA} и {profileB}) — нужен переход", otherElementId);
+                Loc.F("issue.vnt02.message", elementId, otherElementId, profileA, profileB), otherElementId);
 
         public static ConstructionFinding AirExchangeBelowNorm(string roomElementId,
             double suppliedM3PerHour, double requiredM3PerHour) =>
             new ConstructionFinding(ConstructionFindingLevel.Error, CodeAirExchange, roomElementId,
-                $"Воздухообмен помещения «{roomElementId}»: решётки дают "
-                + $"{Round1(suppliedM3PerHour)} м³/ч, требуется не менее "
-                + $"{Round1(requiredM3PerHour)} м³/ч (кратность {RoomAirExchange.MinAirChangesPerHour} "
-                + "об/ч)");
+                Loc.F("issue.vnt03.message", roomElementId, Round1(suppliedM3PerHour), Round1(requiredM3PerHour), RoomAirExchange.MinAirChangesPerHour));
 
         private static string TierName(DuctVelocityTier tier) => tier switch
         {
-            DuctVelocityTier.Main => "магистраль",
-            DuctVelocityTier.NearGrille => "перед решёткой",
-            _ => "ответвление",
+            DuctVelocityTier.Main => Loc.T("vent.tier.main"),
+            DuctVelocityTier.NearGrille => Loc.T("vent.tier.nearGrille"),
+            _ => Loc.T("vent.tier.branch"),
         };
 
         private static string Round1(float value) =>

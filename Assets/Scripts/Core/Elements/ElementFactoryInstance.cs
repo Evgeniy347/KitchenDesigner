@@ -129,7 +129,7 @@ namespace KitchenDesigner.Core
             depthMM = Mathf.Max(1, depthMM);
             thicknessMM = Mathf.Max(1, thicknessMM);
 
-            var go = ElementRoot.NewCube(name, "Радиусная полка", position);
+            var go = ElementRoot.NewCube(name, Loc.T("elementType.radialShelf"), position);
             var box = go.GetComponent<BoxCollider>();
             if (box != null) Object.DestroyImmediate(box);
 
@@ -206,7 +206,7 @@ namespace KitchenDesigner.Core
             int gapTop = PanelElement.DEFAULT_GAP_MM, int gapBottom = PanelElement.DEFAULT_GAP_MM,
             int gapFront = PanelElement.DEFAULT_GAP_MM, int gapBack = PanelElement.DEFAULT_GAP_MM)
         {
-            var go = ElementRoot.NewCube(name, "ДВП/ХДФ", position);
+            var go = ElementRoot.NewCube(name, Loc.T("elementType.panel"), position);
 
             var panel = go.AddComponent<PanelElement>();
             panel.PartName = go.name;
@@ -225,7 +225,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateAssembledFacade(Vector3Int dimensionsMM, string name, Vector3 position,
             AssembledFill fill = AssembledFill.Blind)
         {
-            var go = ElementRoot.NewCube(name, "Сборный фасад", position);
+            var go = ElementRoot.NewCube(name, Loc.T("elementType.assembledFacade"), position);
 
             var facade = go.AddComponent<AssembledFacadeElement>();
             facade.PartName = go.name;
@@ -245,7 +245,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateDrawer(DrawerType type, int nominalLength, DrawerColor color,
             int internalWidth, string name, Vector3 position, DrawerSystem system = DrawerSystem.Gtv)
         {
-            var go = ElementRoot.NewCube(name, DrawerConstants.GetDefaultName(system), position);
+            var go = ElementRoot.NewCube(name, DrawerTexts.DefaultName(system), position);
 
             var drawer = go.AddComponent<DrawerElement>();
             drawer.PartName = go.name;
@@ -261,7 +261,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateTable(Vector3Int dimensionsMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewCube(name, "Прямоугольный стол", position);
+            var go = ElementRoot.NewCube(name, Loc.T("element.table.defaultName"), position);
             ElementRoot.SwapBoxColliderForMeshCollider(go);
 
             var table = go.AddComponent<TableElement>();
@@ -274,7 +274,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateRadiusTable(Vector3Int dimensionsMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Радиусный стол", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.radiusTable"), position);
 
             var radiusTable = go.AddComponent<RadiusTableElement>();
             radiusTable.PartName = go.name;
@@ -287,7 +287,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateStool(Vector3Int dimensionsMM, int cornerRadiusMM, string name,
             Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Табуретка", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.stool"), position);
 
             var stool = go.AddComponent<StoolElement>();
             stool.PartName = go.name;
@@ -301,7 +301,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateChair(Vector3Int dimensionsMM, int cornerRadiusMM,
             int seatHeightMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Стул", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.chair"), position);
 
             var chair = go.AddComponent<ChairElement>();
             chair.PartName = go.name;
@@ -316,7 +316,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateSofa(Vector3Int dimensionsMM, int cornerRadiusMM,
             int seatHeightMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Диван", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.sofa"), position);
 
             var sofa = go.AddComponent<SofaElement>();
             sofa.PartName = go.name;
@@ -331,7 +331,7 @@ namespace KitchenDesigner.Core
         public GameObject CreatePouffe(Vector3Int dimensionsMM, int cornerRadiusMM,
             int seatThicknessMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Пуфик", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.pouffe"), position);
 
             var pouffe = go.AddComponent<PouffeElement>();
             pouffe.PartName = go.name;
@@ -345,7 +345,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateToilet(int seatHeightMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Унитаз", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("element.toilet.defaultName"), position);
 
             var toilet = go.AddComponent<ToiletElement>();
             toilet.PartName = go.name;
@@ -360,7 +360,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateWallHungToilet(int seatHeightMM, int flushPlateHeightMM,
             string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Унитаз подвесной", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.wallHungToilet"), position);
 
             var toilet = go.AddComponent<WallHungToiletElement>();
             toilet.PartName = go.name;
@@ -376,7 +376,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateBathtub(Vector3Int dimensionsMM, int rimWidthMM,
             int bowlDepthMM, int bowlRadiusMM, int bowlFilletMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Ванна", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.bathtub"), position);
 
             var bathtub = go.AddComponent<BathtubElement>();
             bathtub.PartName = go.name;
@@ -392,7 +392,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateBathMixer(BathMixerSpec spec, string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Смеситель", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("element.bathMixer.defaultName"), position);
 
             var mixer = go.AddComponent<BathMixerElement>();
             mixer.PartName = go.name;
@@ -410,7 +410,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateShowerColumn(ShowerColumnSpec spec, string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "ДушеваяСтойка", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("element.showerColumn.defaultName"), position);
 
             var column = go.AddComponent<ShowerColumnElement>();
             column.PartName = go.name;
@@ -430,7 +430,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateSocket(WallDeviceSpec spec, string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Розетка", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.socket"), position);
 
             var socket = go.AddComponent<SocketElement>();
             socket.PartName = go.name;
@@ -444,7 +444,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateLightSwitch(WallDeviceSpec spec, bool isOn, string[]? lightNames,
             string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Выключатель", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.lightSwitch"), position);
 
             var source = go.AddComponent<LightSwitchElement>();
             source.PartName = go.name;
@@ -460,7 +460,7 @@ namespace KitchenDesigner.Core
         public GameObject CreateBed(Vector3Int dimensionsMM, bool isDouble, bool hasHeadboard,
             string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Кровать", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.bed"), position);
 
             var bed = go.AddComponent<BedElement>();
             bed.PartName = go.name;
@@ -475,7 +475,7 @@ namespace KitchenDesigner.Core
         public GameObject CreatePillar(int midHeightMM, string name, Vector3 position,
             int diameterMM = PillarElement.DiameterMM_Default)
         {
-            var go = ElementRoot.NewCube(name, "Опора", position);
+            var go = ElementRoot.NewCube(name, Loc.T("elementType.pillar"), position);
             ElementRoot.SwapBoxColliderForMeshCollider(go);
 
             var pillar = go.AddComponent<PillarElement>();
@@ -490,7 +490,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateFoundation(int widthMM, int depthMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewCube(name, "Фундамент", position);
+            var go = ElementRoot.NewCube(name, Loc.T("elementType.foundation"), position);
             ElementRoot.SwapBoxColliderForMeshCollider(go);
 
             var foundation = go.AddComponent<FoundationElement>();
@@ -503,7 +503,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateFloorSlab(int lengthMM, int widthMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewCube(name, "Перекрытие", position);
+            var go = ElementRoot.NewCube(name, Loc.T("elementType.floorSlab"), position);
 
             var slab = go.AddComponent<FloorSlabElement>();
             slab.PartName = go.name;
@@ -517,7 +517,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateFence(int lengthMM, int heightMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewCube(name, "Забор", position);
+            var go = ElementRoot.NewCube(name, Loc.T("elementType.fence"), position);
             ElementRoot.SwapBoxColliderForMeshCollider(go);
 
             var fence = go.AddComponent<FenceElement>();
@@ -531,7 +531,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateDuct(int lengthMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewCube(name, "Воздуховод", position);
+            var go = ElementRoot.NewCube(name, Loc.T("elementType.duct"), position);
             ElementRoot.SwapBoxColliderForMeshCollider(go);
 
             var duct = go.AddComponent<DuctElement>();
@@ -546,7 +546,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateGrille(int widthMM, int heightMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewCube(name, "Решётка", position);
+            var go = ElementRoot.NewCube(name, Loc.T("element.grille.defaultName"), position);
 
             var grille = go.AddComponent<GrilleElement>();
             grille.PartName = go.name;
@@ -559,7 +559,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateRoof(string name, Vector3 position)
         {
-            var go = ElementRoot.NewCube(name, "Крыша", position);
+            var go = ElementRoot.NewCube(name, Loc.T("elementType.roof"), position);
             ElementRoot.SwapBoxColliderForMeshCollider(go);
 
             var roof = go.AddComponent<RoofElement>();
@@ -571,13 +571,13 @@ namespace KitchenDesigner.Core
         }
 
         public GameObject CreateInsulation(string hostWallName, int thicknessMm, string name, Vector3 position) =>
-            CreateWallLayer<InsulationElement>("Утеплитель", hostWallName, thicknessMm, name, position);
+            CreateWallLayer<InsulationElement>(Loc.T("elementType.insulation"), hostWallName, thicknessMm, name, position);
 
         public GameObject CreateVentGap(string hostWallName, int thicknessMm, string name, Vector3 position) =>
-            CreateWallLayer<VentGapElement>("Вентзазор", hostWallName, thicknessMm, name, position);
+            CreateWallLayer<VentGapElement>(Loc.T("elementType.ventGap"), hostWallName, thicknessMm, name, position);
 
         public GameObject CreateCladding(string hostWallName, int thicknessMm, string name, Vector3 position) =>
-            CreateWallLayer<CladdingElement>("Облицовка", hostWallName, thicknessMm, name, position);
+            CreateWallLayer<CladdingElement>(Loc.T("elementType.cladding"), hostWallName, thicknessMm, name, position);
 
         private GameObject CreateWallLayer<T>(string fallbackName, string hostWallName, int thicknessMm,
             string name, Vector3 position) where T : WallLayerElement
@@ -598,7 +598,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreatePipe(string sizeId, int lengthMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewCube(name, "Труба", position);
+            var go = ElementRoot.NewCube(name, Loc.T("elementType.pipe"), position);
             ElementRoot.SwapBoxColliderForMeshCollider(go);
 
             var pipe = go.AddComponent<PipeElement>();
@@ -659,7 +659,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateFloor(Vector3Int dimensionsMM, string name, Vector3 position)
         {
-            var go = ElementRoot.NewCube(name, "Пол", position);
+            var go = ElementRoot.NewCube(name, Loc.T("element.floor.defaultName"), position);
 
             var floor = go.AddComponent<FloorElement>();
             floor.PartName = go.name;
@@ -674,7 +674,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateLightSource(string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Источник света", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.lightSource"), position);
 
             var mf = go.AddComponent<MeshFilter>();
             mf.sharedMesh = Resources.GetBuiltinResource<Mesh>("New-Sphere.fbx");
@@ -696,7 +696,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateSink(string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Мойка", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.sink"), position);
 
             var sink = go.AddComponent<SinkElement>();
             sink.PartName = go.name;
@@ -709,7 +709,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateCooktop(string name, Vector3 position, string model = "")
         {
-            var go = ElementRoot.NewEmpty(name, "Варочная", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("elementType.cooktop"), position);
 
             var cooktop = go.AddComponent<CooktopElement>();
             cooktop.PartName = go.name;
@@ -726,7 +726,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateScrewLeg(string name, Vector3 position)
         {
-            var leg = ElementRoot.NewCube(name, "Винтовая опора", position);
+            var leg = ElementRoot.NewCube(name, Loc.T("elementType.screwLeg"), position);
             ElementRoot.SwapBoxColliderForMeshCollider(leg);
 
             var screwLeg = leg.AddComponent<ScrewLegElement>();
@@ -743,7 +743,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateOven(string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Духовка", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("element.oven.defaultName"), position);
 
             var oven = go.AddComponent<OvenElement>();
             oven.PartName = go.name;
@@ -755,7 +755,7 @@ namespace KitchenDesigner.Core
 
         public GameObject CreateDishwasher(string name, Vector3 position)
         {
-            var go = ElementRoot.NewEmpty(name, "Посудомойка", position);
+            var go = ElementRoot.NewEmpty(name, Loc.T("element.dishwasher.defaultName"), position);
 
             var dishwasher = go.AddComponent<DishwasherElement>();
             dishwasher.PartName = go.name;

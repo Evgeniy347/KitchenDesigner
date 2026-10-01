@@ -14,13 +14,11 @@ namespace KitchenDesigner.Core.Construction
         public const float ThermalCalculationAboveMm = 2500f;
 
         public const string UnknownValue = "—";
-        public const string BeyondFormulaValue = "> 2500 мм";
+        public static string BeyondFormulaValue => Loc.T("settings.construction.frostDepthBeyond");
 
-        public const string NoSoilFactorReason = "Прочерк: СП 22.13330 не даёт d0 для торфа.";
-        public const string BeyondFormulaReason =
-            "Глубже 2500 мм: требуется теплотехнический расчёт по СП 25.13330.";
-        public const string UnknownRegionReason =
-            "Прочерк: климата для этого региона в таблице СП 131.13330.2020 нет.";
+        public static string NoSoilFactorReason => Loc.T("settings.construction.frostDepthNoPeatFactor");
+        public static string BeyondFormulaReason => Loc.T("settings.construction.frostDepthBeyondReason");
+        public static string UnknownRegionReason => Loc.T("settings.construction.frostDepthNoClimate");
 
         public static bool TrySoilFactorMm(SoilKind soil, out float factorMm)
         {
@@ -68,6 +66,6 @@ namespace KitchenDesigner.Core.Construction
 
         private static string Millimetres(double depth) =>
             ((int)Math.Round(depth, MidpointRounding.AwayFromZero))
-                .ToString(CultureInfo.InvariantCulture) + " мм";
+                .ToString(CultureInfo.InvariantCulture) + Loc.T("unit.mmSuffix");
     }
 }

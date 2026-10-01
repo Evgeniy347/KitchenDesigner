@@ -49,8 +49,8 @@ namespace KitchenDesigner.Core
         public const int DoorPartCount = 2;
         public const int PartCount = BodyPartCount + DoorPartCount;
 
-        public const string WasherName = "Стиральная машина";
-        public const string DryerName = "Сушильная машина";
+        public static string WasherName => Loc.T("elementType.washer");
+        public static string DryerName => Loc.T("elementType.dryer");
 
         public const string WASHER_TYPE_ID = "washing_machine";
         public const string DRYER_TYPE_ID = "dryer";

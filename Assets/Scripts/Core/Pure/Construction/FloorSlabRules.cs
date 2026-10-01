@@ -12,8 +12,7 @@ namespace KitchenDesigner.Core.Construction
         public static ConstructionFinding GapToSupportingWall(string elementId, float gapToWallMm) =>
             new ConstructionFinding(ConstructionFindingLevel.Warning, CodeGapToSupportingWall,
                 elementId,
-                $"Перекрытие «{elementId}» не опирается на стену по контуру: зазор "
-                + $"{Mm(gapToWallMm)} мм — проверьте опирание плиты");
+                Loc.F("issue.flr01.message", elementId, Mm(gapToWallMm)));
 
         public static IReadOnlyList<ConstructionFinding> Collect(IReadOnlyList<FloorSlabSurvey>? slabs)
         {

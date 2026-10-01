@@ -14,11 +14,13 @@ namespace KitchenDesigner.Core
 
     public static class ConstructionRegionTitles
     {
-        public static readonly string[] All =
-        {
-            "Центр", "Северо-Запад", "Юг", "Поволжье", "Урал", "Сибирь",
-            "Дальний Восток", "Крайний Север",
-        };
+        private static readonly LocalizedCache<string[]> AllCache =
+            new LocalizedCache<string[]>(() => new string[] {
+            Loc.T("region.centre"), Loc.T("region.northWest"), Loc.T("region.south"), Loc.T("region.volga"), Loc.T("region.urals"), Loc.T("region.siberia"),
+            Loc.T("region.farEast"), Loc.T("region.farNorth"),
+        });
+
+        public static string[] All => AllCache.Value;
 
         public static string Of(ConstructionRegion region)
         {

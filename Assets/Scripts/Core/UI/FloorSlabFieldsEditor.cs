@@ -19,7 +19,7 @@ namespace KitchenDesigner.Core.UI
 
         public override bool Handles(KitchenElement element) => element is FloorSlabElement;
 
-        public override string HeightLabel => "Толщина";
+        public override string HeightLabel => Loc.T("element.floorSlab.thickness");
 
         public override void Build()
         {
@@ -27,18 +27,18 @@ namespace KitchenDesigner.Core.UI
             var isSlabTechnology = RowVisibility.When(() =>
                 Host.Target is FloorSlabElement s && s.Technology == SlabTechnology.Slab);
 
-            _technology = Rows.Dropdown("Технология", new List<string> { "Монолитная плита", "Балки" },
+            _technology = Rows.Dropdown(Loc.T("element.floorSlab.technology"), new List<string> { Loc.T("element.floorSlab.monolithic"), Loc.T("element.floorSlab.beams") },
                 OnTechnologySelected, isFloorSlab, TechnologyNode, hint: "element.floorSlab.technology");
 
-            _concrete = Rows.Dropdown("Класс бетона", new List<string>(ConcreteGradeTitles.All),
+            _concrete = Rows.Dropdown(Loc.T("element.floorSlab.concrete"), new List<string>(ConcreteGradeTitles.All),
                 OnConcreteSelected, isSlabTechnology, ConcreteNode, hint: "element.floorSlab.concrete");
 
-            var diameterRow = Rows.NumberField("Арматура: Ø", isSlabTechnology, "мм", RebarDiameterNode,
+            var diameterRow = Rows.NumberField(Loc.T("element.floorSlab.rebarDiameter"), isSlabTechnology, Loc.T("unit.mm"), RebarDiameterNode,
                 hint: "element.floorSlab.rebarDiameter");
             Bind<FloorSlabElement>(diameterRow, s => s.RebarDiameterMm, (s, v) => s.RebarDiameterMm = v,
                 FoundationRebarDefaults.DiameterMm.ToString());
 
-            var stepRow = Rows.NumberField("Арматура: шаг", isSlabTechnology, "мм", RebarStepNode,
+            var stepRow = Rows.NumberField(Loc.T("element.floorSlab.rebarStep"), isSlabTechnology, Loc.T("unit.mm"), RebarStepNode,
                 hint: "element.floorSlab.rebarStep");
             Bind<FloorSlabElement>(stepRow, s => s.RebarStepMm, (s, v) => s.RebarStepMm = v,
                 FoundationRebarDefaults.StepMm.ToString());

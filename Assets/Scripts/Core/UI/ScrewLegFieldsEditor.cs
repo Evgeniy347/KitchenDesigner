@@ -28,13 +28,13 @@ namespace KitchenDesigner.Core.UI
         public override void Build()
         {
             var visibility = RowVisibility.For(ElementFacet.ScrewLeg);
-            _thread = Rows.Dropdown("Резьба", new List<string>(ScrewLegSpec.Threads),
+            _thread = Rows.Dropdown(Loc.T("element.screwLeg.thread"), new List<string>(ScrewLegSpec.Threads),
                 OnThreadSelected, visibility, "CtxScrewThread", hint: "element.screwLeg.thread");
-            _threadLength = Rows.NumberField("Длина резьбы", visibility,
+            _threadLength = Rows.NumberField(Loc.T("element.screwLeg.threadLength"), visibility,
                 hint: "element.screwLeg.threadLength");
-            _baseDiameter = Rows.NumberField("Ø основания", visibility,
+            _baseDiameter = Rows.NumberField(Loc.T("element.screwLeg.baseDiameter"), visibility,
                 hint: "element.screwLeg.baseDiameter");
-            _baseHeight = Rows.NumberField("Высота основания", visibility,
+            _baseHeight = Rows.NumberField(Loc.T("element.screwLeg.baseHeight"), visibility,
                 hint: "element.screwLeg.baseHeight");
             _hostSection.Build();
         }

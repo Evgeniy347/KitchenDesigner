@@ -169,7 +169,7 @@ namespace KitchenDesigner.Core
 
         public virtual bool SupportsGaps => SupportsGrooves;
 
-        public virtual string DisplayTypeName => "Деталь";
+        public virtual string DisplayTypeName => Loc.T("elementType.part");
 
         public virtual ElementFront Front =>
             ElementFront.NoSeparateFacePart("доска — коробка с кромкой: с любой стороны одна и та же грань");

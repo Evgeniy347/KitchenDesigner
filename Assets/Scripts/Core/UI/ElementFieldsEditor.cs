@@ -12,7 +12,7 @@ namespace KitchenDesigner.Core.UI
 
     internal abstract class ElementFieldsEditor
     {
-        public const string DefaultHeightLabel = "Высота";
+        public static string DefaultHeightLabel => Loc.T("element.common.height");
 
         protected ElementFieldsEditor(IContextMenuHost host) => Host = host;
 

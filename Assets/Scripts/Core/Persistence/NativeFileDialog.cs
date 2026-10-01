@@ -9,15 +9,18 @@ namespace KitchenDesigner.Core
 {
     public static class NativeFileDialog
     {
-        private const string KdprojFilter =
-            "Проект кухни (*.kdproj;*.json)\0*.kdproj;*.json\0Все файлы (*.*)\0*.*\0\0";
-        private const string CsvFilter = "CSV (*.csv)\0*.csv\0Все файлы (*.*)\0*.*\0\0";
+        private static string KdprojFilter =>
+            Loc.T("file.filter.kitchenProject") + " (*.kdproj;*.json)\0*.kdproj;*.json\0" + AllFilesFilter;
+
+        private static string CsvFilter => "CSV (*.csv)\0*.csv\0" + AllFilesFilter;
+
+        private static string AllFilesFilter => Loc.T("file.filter.allFiles") + " (*.*)\0*.*\0\0";
 
         public static string? OpenDialog(string title, string initialDir)
         {
 #if UNITY_EDITOR
             return UnityEditor.EditorUtility.OpenFilePanelWithFilters(title, SafeDir(initialDir),
-                new[] { "Проект кухни", "kdproj,json" });
+                new[] { Loc.T("file.filter.kitchenProject"), "kdproj,json" });
 #elif UNITY_STANDALONE_WIN
             return WinDialog(title, "", initialDir, false, KdprojFilter, ProjectFileExtension.Current.TrimStart('.'));
 #else

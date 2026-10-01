@@ -14,11 +14,13 @@ namespace KitchenDesigner.Core.Keybinding
 
     public static class InputActionGroupTitles
     {
-        public static readonly string[] All =
-        {
-            "Камера", "Выделение и правка", "Каталог", "Виды", "Окна и справка", "Диагностика",
-            "Мышь", "Этажи",
-        };
+        private static readonly LocalizedCache<string[]> AllCache =
+            new LocalizedCache<string[]>(() => new string[] {
+            Loc.T("input.group.camera"), Loc.T("input.group.selectionEditing"), Loc.T("input.group.catalog"), Loc.T("input.group.views"), Loc.T("input.group.windowsHelp"), Loc.T("input.group.diagnostics"),
+            Loc.T("input.group.mouse"), Loc.T("input.group.levels"),
+        });
+
+        public static string[] All => AllCache.Value;
 
         public static string Of(InputActionGroup group)
         {

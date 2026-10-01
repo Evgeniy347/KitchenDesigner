@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
 {
     public class GrilleElement : KitchenElement, IQuantifies, IWallMounted, IKeepsPlacementHeight
     {
-        public override string DisplayTypeName => "Решётка вентиляции";
+        public override string DisplayTypeName => Loc.T("elementType.grille");
 
         public override ElementFront Front => ElementFront.NoSeparateFacePart(
             "вентиляционная решётка — плоская накладка без выделенной грани");

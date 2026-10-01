@@ -72,14 +72,14 @@ namespace KitchenDesigner.Core.UI
                 int index = i;
                 var visibility = PortVisibility(i);
                 var (_, dropdown) = _host.Rows.NamedDropdown("CtxFittingPortFitting" + i,
-                    "Порт " + (i + 1), PipeEndsDiagram.Options(Choices),
+                    Loc.T("element.pipeFitting.port") + (i + 1), PipeEndsDiagram.Options(Choices),
                     option => OnChosen(index, option), visibility, "CtxFittingPortLbl" + i);
                 _choices[i] = dropdown;
                 _hover.Watch(dropdown, i);
             }
 
             _host.Rows.Hint("CtxFittingPortsHint",
-                "Выбор детали ставит её на порт устье в устье", HintH, ActionGap,
+                Loc.T("element.pipeFitting.portsHint"), HintH, ActionGap,
                 RowVisibility.For(ElementFacet.PipeFitting), TextAnchor.MiddleCenter);
         }
 
@@ -113,7 +113,7 @@ namespace KitchenDesigner.Core.UI
 
             var outcome = PipeEndFittings.Set(fitting, port, kind, PartRegistry.GetAll());
             if (outcome == PipeEndEdit.OccupiedByPipe)
-                Refuse("На этом порту труба — выбор из списка её не заменяет, удалите трубу сами");
+                Refuse(Loc.T("element.pipeFitting.portOccupied"));
 
             Show(fitting);
         }

@@ -2,9 +2,7 @@ namespace KitchenDesigner.Core.UI
 {
     internal static class PhotoLookMigrationNotice
     {
-        internal const string Text =
-            "Настройки фоторежима сохранены в версии, где постобработка была отключена, "
-            + "и ни на что не влияли. Они возвращены к значениям по умолчанию.";
+        internal static string Text => Loc.T("toast.photoLookReset");
 
         private const float Seconds = 8f;
 

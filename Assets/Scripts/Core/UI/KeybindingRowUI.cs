@@ -119,9 +119,9 @@ namespace KitchenDesigner.Core.UI
             var rowRect = UIFactory.CreateRect("KbColHdr", parent);
             rowRect.sizeDelta = new Vector2(ContentW, RowH);
 
-            var action = ColumnLabel("KbColHdrAction", rowRect, "Действие", TextAnchor.MiddleLeft);
-            var primary = ColumnLabel("KbColHdrPrimary", rowRect, "Основная", TextAnchor.MiddleCenter);
-            var alt = ColumnLabel("KbColHdrAlt", rowRect, "Альтернативная", TextAnchor.MiddleCenter);
+            var action = ColumnLabel("KbColHdrAction", rowRect, Loc.T("input.header.action"), TextAnchor.MiddleLeft);
+            var primary = ColumnLabel("KbColHdrPrimary", rowRect, Loc.T("input.header.primary"), TextAnchor.MiddleCenter);
+            var alt = ColumnLabel("KbColHdrAlt", rowRect, Loc.T("input.header.alternative"), TextAnchor.MiddleCenter);
 
             _nodes.Add(new Node
             {
@@ -211,7 +211,7 @@ namespace KitchenDesigner.Core.UI
                 clearCaption.fontSize = 12;
                 clearCaption.color = UIStyle.TextSecondary;
             }
-            TooltipUI.Attach(clear.gameObject, "Очистить");
+            TooltipUI.Attach(clear.gameObject, Loc.T("input.clear"));
             cell.Clear = clear.gameObject;
 
             return cell;
@@ -399,11 +399,11 @@ namespace KitchenDesigner.Core.UI
             var conflicts = Bindings.FindConflicts();
             string others = KeybindingConflicts.DescribeOthers(conflicts, cell.Action, binding);
             if (!string.IsNullOrEmpty(others))
-                return InputBindingDisplay.Of(binding) + " — конфликт с: " + others;
+                return InputBindingDisplay.Of(binding) + Loc.T("input.conflictWith") + others;
 
             string how = WantsAGesture(cell.Action)
-                ? "Нажмите, затем сделайте жест мышью. Esc отменяет."
-                : "Нажмите, затем клавишу. Esc отменяет.";
+                ? Loc.T("input.captureGesture")
+                : Loc.T("input.captureKey");
             return binding.IsEmpty ? how : InputBindingDisplay.Of(binding) + ". " + how;
         }
     }

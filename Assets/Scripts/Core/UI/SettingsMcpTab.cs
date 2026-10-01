@@ -37,7 +37,7 @@ namespace KitchenDesigner.Core.UI
             catch (IOException)
             {
             }
-            return "Инструкция не найдена рядом с программой. Она же лежит здесь: " + GuideUrl;
+            return Loc.T("settings.mcp.guideMissing") + GuideUrl;
         }
 
         public static int ActivePort() => McpBridgeStatus.Port;
@@ -45,27 +45,14 @@ namespace KitchenDesigner.Core.UI
         public static bool BridgeRunning() => McpBridgeStatus.Running;
 
         public static string StatusText() =>
-            (BridgeRunning() ? "Мост работает" : "Мост остановлен") + $" · порт {ActivePort()}";
+            (BridgeRunning() ? Loc.T("settings.mcp.bridgeRunning") : Loc.T("settings.mcp.bridgeStopped")) + Loc.F("settings.mcp.port", ActivePort());
 
         public static string AgentPrompt() => AgentPrompt(ActivePort());
 
         public static string Url(int port) => "http://127.0.0.1:" + port + McpBridgeStatus.Path;
 
         public static string AgentPrompt(int port) =>
-            "Подключи меня к Kitchen Designer по MCP.\n"
-            + "\n"
-            + "Сервер уже запущен на этом компьютере и ждёт подключения:\n"
-            + $"  {Url(port)}\n"
-            + "Транспорт — Streamable HTTP, авторизации нет, слушает только localhost.\n"
-            + "\n"
-            + $"Добавь его в свою конфигурацию под именем {ServerName}. Например:\n"
-            + $"  Claude Code:      claude mcp add --transport http {ServerName} {Url(port)}\n"
-            + $"  Cursor / VS Code: запись с \"url\": \"{Url(port)}\"\n"
-            + $"  Codex:            [mcp_servers.{ServerName}]  url = \"{Url(port)}\"\n"
-            + "\n"
-            + "Когда подключишься, вызови инструмент ping и скажи, что он ответил, затем "
-            + "прочитай get_project_instructions. Если сервер недоступен — программа "
-            + "Kitchen Designer закрыта, попроси меня открыть её.";
+            Loc.F("settings.mcp.agentPrompt", Url(port), ServerName, ServerName, Url(port), Url(port), ServerName, Url(port));
 
         public static string ConfigSnippet() => ConfigSnippet(ActivePort());
 
@@ -80,35 +67,30 @@ namespace KitchenDesigner.Core.UI
         {
             float y = topY;
 
-            _rows.AddHeader(page, ref y, "Что это даёт");
+            _rows.AddHeader(page, ref y, Loc.T("settings.mcp.section.about"));
             AddParagraph(page, ref y, "McpAbout",
-                "Программа отдаёт открытый проект ИИ-агенту по протоколу MCP. Агент "
-                + "расставляет короба, выравнивает фасады, ищет пересечения и собирает "
-                + "спецификацию прямо в вашей сцене — правки видно сразу, отмена работает "
-                + "как обычно.", 76f);
+                Loc.T("settings.mcp.aboutText"), 76f);
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Состояние");
+            _rows.AddHeader(page, ref y, Loc.T("settings.mcp.section.status"));
             _status = AddParagraph(page, ref y, "McpStatus", StatusText(), 26f);
             AddParagraph(page, ref y, "McpStatusHint",
-                "Мост включается вместе с программой. Пока она открыта, агенту есть куда "
-                + "подключаться.", 44f);
+                Loc.T("settings.mcp.statusHint"), 44f);
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Подключение");
+            _rows.AddHeader(page, ref y, Loc.T("settings.mcp.section.connection"));
             AddParagraph(page, ref y, "McpConnectHint",
-                "Кнопка кладёт в буфер короткий текст с адресом сервера. Вставьте его "
-                + "агенту — он подключится сам.", 44f);
-            AddWideButton(page, ref y, "McpCopyPrompt", "Скопировать инструкцию для агента",
+                Loc.T("settings.mcp.connectHint"), 44f);
+            AddWideButton(page, ref y, "McpCopyPrompt", Loc.T("settings.mcp.copyPrompt"),
                 () => Copy(AgentPrompt()));
-            AddWideButton(page, ref y, "McpCopyConfig", "Скопировать конфиг mcp.json",
+            AddWideButton(page, ref y, "McpCopyConfig", Loc.T("settings.mcp.copyConfig"),
                 () => Copy(ConfigSnippet()));
 
             y -= SettingsRowFactory.GapPx * 3f;
-            _rows.AddHeader(page, ref y, "Прочитать самому");
+            _rows.AddHeader(page, ref y, Loc.T("settings.mcp.section.readYourself"));
             AddParagraph(page, ref y, "McpGuidePath",
-                GuideFileName + " лежит рядом с программой, интернет не нужен", 26f);
-            AddWideButton(page, ref y, "McpOpenGuide", "Открыть инструкцию", OpenGuide);
+                GuideFileName + Loc.T("settings.mcp.guideLocal"), 26f);
+            AddWideButton(page, ref y, "McpOpenGuide", Loc.T("settings.mcp.openGuide"), OpenGuide);
         }
 
         public void Refresh()

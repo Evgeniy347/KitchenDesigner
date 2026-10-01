@@ -2,16 +2,14 @@ namespace KitchenDesigner.Core
 {
     public static class DemoModeStrings
     {
-        public const string Title = "Демонстрационный проект";
+        public static string Title => Loc.T("dialog.demoMode.title");
 
-        public const string Message =
-            "Это демонстрационный проект — менять его нельзя.\n\n" +
-            "Сохраните копию в свою папку, и тогда правки будут доступны.";
+        public static string Message => Loc.T("dialog.demoMode.message");
 
-        public const string SaveCopyButton = "Сохранить копию";
+        public static string SaveCopyButton => Loc.T("dialog.demoMode.saveCopy");
 
-        public const string CancelButton = "Отмена";
+        public static string CancelButton => Loc.T("common.cancel");
 
-        public const string SuggestedFileName = "Моя кухня.kdproj";
+        public static string SuggestedFileName => Loc.T("dialog.demoMode.suggestedFileName");
     }
 }

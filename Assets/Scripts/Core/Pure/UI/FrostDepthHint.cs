@@ -7,10 +7,9 @@ namespace KitchenDesigner.Core.UI
     {
         public const string Key = "settings.construction.frostDepth";
 
-        public const string ClimateSourceLine =
-            "Климат — по СП 131.13330.2020; справочники по СНиП 23-01-99* дают ≈1400 мм.";
+        public static string ClimateSourceLine => Loc.T("settings.construction.frostDepthClimateSource");
 
-        public const string StationPrefix = "Опорная станция — ";
+        public static string StationPrefix => Loc.T("settings.construction.referenceStation");
 
         public static string For(ConstructionRegion region, SoilKind soil)
         {

@@ -7,12 +7,12 @@ namespace KitchenDesigner.Core.UI
 {
     public sealed class SettingsConstructionTab
     {
-        public const string RegionId = "Регион";
-        public const string FrostDepthId = "Глубина промерзания";
-        public const string MasonryId = "Технология";
-        public const string SoilId = "Грунт";
-        public const string ConcreteId = "Класс бетона";
-        public const string NeighbourLevelsId = "Соседние этажи";
+        public static string RegionId => Loc.T("settings.construction.region");
+        public static string FrostDepthId => Loc.T("settings.construction.frostDepth");
+        public static string MasonryId => Loc.T("settings.construction.masonry");
+        public static string SoilId => Loc.T("settings.construction.soil");
+        public static string ConcreteId => Loc.T("settings.construction.concrete");
+        public static string NeighbourLevelsId => Loc.T("settings.construction.neighbourLevels");
         public const string FrostDepthUnknown = FrostDepth.UnknownValue;
 
         private readonly SettingsRowFactory _rows;
@@ -35,7 +35,7 @@ namespace KitchenDesigner.Core.UI
         {
             float y = topY;
 
-            _rows.AddHeader(page, ref y, "Участок");
+            _rows.AddHeader(page, ref y, Loc.T("settings.construction.section.site"));
 
             _rows.AddDropdown(page, ref y, RegionId,
                 new List<string>(ConstructionRegionTitles.All), (int)s.ConstructionRegion,
@@ -55,11 +55,11 @@ namespace KitchenDesigner.Core.UI
             Hint(SoilId, hint: "settings.construction.soil");
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Дом");
+            _rows.AddHeader(page, ref y, Loc.T("settings.construction.section.house"));
 
-            AddMillimetres(page, ref y, "Высота этажа",
+            AddMillimetres(page, ref y, Loc.T("settings.construction.floorHeight"),
                 () => s.ConstructionFloorHeightMm, v => s.ConstructionFloorHeightMm = v);
-            Hint("Высота этажа", hint: "settings.construction.floorHeight");
+            Hint(Loc.T("settings.construction.floorHeight"), hint: "settings.construction.floorHeight");
 
             _rows.AddDropdown(page, ref y, NeighbourLevelsId,
                 new List<string>(NeighbourLevelsModeTitles.All), (int)s.NeighbourLevels,
@@ -73,7 +73,7 @@ namespace KitchenDesigner.Core.UI
             Hint(NeighbourLevelsId, hint: "settings.construction.neighbourLevels");
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Кладка");
+            _rows.AddHeader(page, ref y, Loc.T("settings.construction.section.masonry"));
 
             _rows.AddDropdown(page, ref y, MasonryId, MasonryTitles(),
                 (int)s.ConstructionMasonry,
@@ -81,16 +81,16 @@ namespace KitchenDesigner.Core.UI
                 read: () => (int)s.ConstructionMasonry);
             Hint(MasonryId, hint: "settings.construction.masonry");
 
-            AddMillimetres(page, ref y, "Шов",
+            AddMillimetres(page, ref y, Loc.T("settings.construction.joint"),
                 () => s.ConstructionJointMm, v => s.ConstructionJointMm = v);
-            Hint("Шов", hint: "settings.construction.joint");
+            Hint(Loc.T("settings.construction.joint"), hint: "settings.construction.joint");
 
-            AddWhole(page, ref y, "Запас", "%",
+            AddWhole(page, ref y, Loc.T("settings.construction.waste"), "%",
                 () => s.ConstructionWastePct, v => s.ConstructionWastePct = v);
-            Hint("Запас", hint: "settings.construction.waste");
+            Hint(Loc.T("settings.construction.waste"), hint: "settings.construction.waste");
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Фундамент");
+            _rows.AddHeader(page, ref y, Loc.T("elementType.foundation"));
 
             _rows.AddDropdown(page, ref y, ConcreteId,
                 new List<string>(ConcreteGradeTitles.All), (int)s.ConstructionConcrete,
@@ -98,29 +98,29 @@ namespace KitchenDesigner.Core.UI
                 read: () => (int)s.ConstructionConcrete);
             Hint(ConcreteId, hint: "settings.construction.concrete");
 
-            AddMillimetres(page, ref y, "Подушка: песок",
+            AddMillimetres(page, ref y, Loc.T("settings.construction.sand"),
                 () => s.ConstructionSandMm, v => s.ConstructionSandMm = v);
-            Hint("Подушка: песок", hint: "settings.construction.sand");
+            Hint(Loc.T("settings.construction.sand"), hint: "settings.construction.sand");
 
-            AddMillimetres(page, ref y, "Подушка: щебень",
+            AddMillimetres(page, ref y, Loc.T("settings.construction.gravel"),
                 () => s.ConstructionGravelMm, v => s.ConstructionGravelMm = v);
-            Hint("Подушка: щебень", hint: "settings.construction.gravel");
+            Hint(Loc.T("settings.construction.gravel"), hint: "settings.construction.gravel");
 
-            _rows.AddToggle(page, ref y, "Трамбовка", s.ConstructionCompacted,
+            _rows.AddToggle(page, ref y, Loc.T("settings.construction.compacted"), s.ConstructionCompacted,
                 v => { s.ConstructionCompacted = v; }, read: () => s.ConstructionCompacted);
-            Hint("Трамбовка", hint: "settings.construction.compacted");
+            Hint(Loc.T("settings.construction.compacted"), hint: "settings.construction.compacted");
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Перекрытие");
+            _rows.AddHeader(page, ref y, Loc.T("elementType.floorSlab"));
 
-            AddMillimetres(page, ref y, "Толщина плиты",
+            AddMillimetres(page, ref y, Loc.T("settings.construction.slabThickness"),
                 () => s.ConstructionSlabThicknessMm, v => s.ConstructionSlabThicknessMm = v);
-            Hint("Толщина плиты", hint: "settings.construction.slabThickness");
+            Hint(Loc.T("settings.construction.slabThickness"), hint: "settings.construction.slabThickness");
         }
 
         private void AddMillimetres(Transform page, ref float y, string label,
             System.Func<int> read, System.Action<int> write) =>
-            AddWhole(page, ref y, label, "мм", read, write);
+            AddWhole(page, ref y, label, Loc.T("unit.mm"), read, write);
 
         private void AddWhole(Transform page, ref float y, string label, string unit,
             System.Func<int> read, System.Action<int> write)

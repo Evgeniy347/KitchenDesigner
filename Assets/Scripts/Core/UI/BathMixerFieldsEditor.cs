@@ -9,12 +9,12 @@ namespace KitchenDesigner.Core.UI
         public const string SpoutLengthNode = "ДлинаИзливаСмесителя";
         public const string OutletDiameterNode = "ДиаметрШтуцераСмесителя";
 
-        public const string CentresLabel = "Межосевое";
-        public const string BodyLengthLabel = "Длина корпуса";
-        public const string BodyDiameterLabel = "Ø корпуса";
-        public const string EscutcheonReachLabel = "Вылет отражателя";
-        public const string SpoutLengthLabel = "Длина излива";
-        public const string OutletDiameterLabel = "Ø штуцера";
+        public static string CentresLabel => Loc.T("element.bathMixer.centres");
+        public static string BodyLengthLabel => Loc.T("element.bathMixer.bodyLength");
+        public static string BodyDiameterLabel => Loc.T("element.bathMixer.bodyDiameter");
+        public static string EscutcheonReachLabel => Loc.T("element.bathMixer.escutcheonReach");
+        public static string SpoutLengthLabel => Loc.T("element.bathMixer.spout");
+        public static string OutletDiameterLabel => Loc.T("element.bathMixer.outletDiameter");
 
         public BathMixerFieldsEditor(IContextMenuHost host) : base(host) { }
 
@@ -26,17 +26,17 @@ namespace KitchenDesigner.Core.UI
         {
             var visibility = RowVisibility.When(() => Host.Target is BathMixerElement);
 
-            var centresRow = Rows.NumberField(CentresLabel, visibility, "мм", CentresNode,
+            var centresRow = Rows.NumberField(CentresLabel, visibility, Loc.T("unit.mm"), CentresNode,
                 hint: "element.bathMixer.centres");
-            var bodyLengthRow = Rows.NumberField(BodyLengthLabel, visibility, "мм",
+            var bodyLengthRow = Rows.NumberField(BodyLengthLabel, visibility, Loc.T("unit.mm"),
                 BodyLengthNode, hint: "element.bathMixer.bodyLength");
-            var bodyDiameterRow = Rows.NumberField(BodyDiameterLabel, visibility, "мм",
+            var bodyDiameterRow = Rows.NumberField(BodyDiameterLabel, visibility, Loc.T("unit.mm"),
                 BodyDiameterNode, hint: "element.bathMixer.bodyDiameter");
-            var reachRow = Rows.NumberField(EscutcheonReachLabel, visibility, "мм",
+            var reachRow = Rows.NumberField(EscutcheonReachLabel, visibility, Loc.T("unit.mm"),
                 EscutcheonReachNode, hint: "element.bathMixer.escutcheonReach");
-            var spoutRow = Rows.NumberField(SpoutLengthLabel, visibility, "мм", SpoutLengthNode,
+            var spoutRow = Rows.NumberField(SpoutLengthLabel, visibility, Loc.T("unit.mm"), SpoutLengthNode,
                 hint: "element.bathMixer.spout");
-            var outletRow = Rows.NumberField(OutletDiameterLabel, visibility, "мм",
+            var outletRow = Rows.NumberField(OutletDiameterLabel, visibility, Loc.T("unit.mm"),
                 OutletDiameterNode, hint: "element.bathMixer.outletDiameter");
 
             Bind<BathMixerElement>(bodyDiameterRow, mixer => mixer.BodyDiameterMM,

@@ -7,22 +7,19 @@ namespace KitchenDesigner.Core.UI
     {
         private const float ReferenceLineH = 20f;
         private const float SectionGap = 16f;
-        private const string InvertYLabel = "Инверсия мыши по вертикали";
-        private const string InvertXLabel = "Инверсия мыши по горизонтали";
+        private static string InvertYLabel => Loc.T("settings.control.mouseInvertY");
+        private static string InvertXLabel => Loc.T("settings.control.mouseInvertX");
 
-        private static readonly string[] ReferenceLines =
-        {
-            "Панорамирование начинается и с ЛКМ по пустому месту, а не только своим жестом",
-            "Ctrl + перетаскивание или ресайз — обратная привязка (вкл/выкл)",
-            "Escape закрывает по одному хозяину за нажатие: перетаскивание → пикер связи "
-                + "со светом → измерение → пипетка → подтверждение удаления → контекстное "
-                + "меню → меню группы → плитка каталога → каталог → панель дня/ночи → музыка",
-            "Каталог деталей: в поле поиска ↓ переходит в сетку плиток; в сетке ← → ↑ ↓ — "
-                + "соседняя плитка, Enter ставит выбранную, [ / ] меняет вариант, Escape "
-                + "снимает выделение плитки",
-            "Пока фокус в другом поле ввода, каталог не читает ни Enter, ни стрелки, "
-                + "ни [ / ], ни Escape — выделение плитки остаётся, но молчит",
-        };
+        private static readonly LocalizedCache<string[]> ReferenceLinesCache =
+            new LocalizedCache<string[]>(() => new string[] {
+            Loc.T("settings.control.ref.panLmb"),
+            Loc.T("settings.control.ref.ctrlSnap"),
+            Loc.T("settings.control.ref.escapeOrder"),
+            Loc.T("settings.control.ref.catalogKeys"),
+            Loc.T("settings.control.ref.catalogFocus"),
+        });
+
+        private static string[] ReferenceLines => ReferenceLinesCache.Value;
 
         private readonly SettingsRowFactory _rows;
         private readonly List<RectTransform> _referenceRects = new();
@@ -37,15 +34,15 @@ namespace KitchenDesigner.Core.UI
         {
             float y = topY;
 
-            _rows.AddSpeedSlider(page, ref y, "Чувствительность мыши", s.MouseSensitivity,
+            _rows.AddSpeedSlider(page, ref y, Loc.T("settings.control.mouseSensitivity"), s.MouseSensitivity,
                 v => s.MouseSensitivity = v, read: () => s.MouseSensitivity);
-            Hint("Чувствительность мыши", hint: "settings.control.mouseSensitivity");
-            _rows.AddSpeedSlider(page, ref y, "Скорость WASD", s.WasdSpeed,
+            Hint(Loc.T("settings.control.mouseSensitivity"), hint: "settings.control.mouseSensitivity");
+            _rows.AddSpeedSlider(page, ref y, Loc.T("settings.control.wasdSpeed"), s.WasdSpeed,
                 v => s.WasdSpeed = v, read: () => s.WasdSpeed);
-            Hint("Скорость WASD", hint: "settings.control.wasdSpeed");
-            _rows.AddSpeedSlider(page, ref y, "Скорость ←→↑↓", s.ArrowSpeed,
+            Hint(Loc.T("settings.control.wasdSpeed"), hint: "settings.control.wasdSpeed");
+            _rows.AddSpeedSlider(page, ref y, Loc.T("settings.control.arrowSpeed"), s.ArrowSpeed,
                 v => s.ArrowSpeed = v, read: () => s.ArrowSpeed);
-            Hint("Скорость ←→↑↓", hint: "settings.control.arrowSpeed");
+            Hint(Loc.T("settings.control.arrowSpeed"), hint: "settings.control.arrowSpeed");
 
             _rows.AddToggle(page, ref y, InvertYLabel, s.MouseInvertY,
                 v => SetSettingCommand.Push(InvertYLabel, x => s.MouseInvertY = x,
@@ -61,7 +58,7 @@ namespace KitchenDesigner.Core.UI
 
             y -= SectionGap;
             var header = UIFactory.CreateSectionHeader(
-                "KbSection", page, "Горячие клавиши", SettingsRowFactory.ContentW);
+                "KbSection", page, Loc.T("settings.control.section.hotkeys"), SettingsRowFactory.ContentW);
             header.anchoredPosition = new Vector2(0f, y - 9f);
             y -= 18f + SettingsRowFactory.GapPx;
 
@@ -90,7 +87,7 @@ namespace KitchenDesigner.Core.UI
         private void BuildReferenceBlock(Transform page, ref float y)
         {
             var header = UIFactory.CreateSectionHeader(
-                "KbRefSection", page, "Мышь и другое, не привязано к клавише",
+                "KbRefSection", page, Loc.T("settings.control.section.fixed"),
                 SettingsRowFactory.ContentW);
             header.anchoredPosition = new Vector2(0f, y - 9f);
             _referenceRects.Add(header);

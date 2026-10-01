@@ -32,7 +32,7 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(-30, 0), new Vector2(320, 32), TextAnchor.MiddleCenter);
             _label.color = Color.white;
 
-            UIFactory.CreateButton("MebDone", panel.transform, "Готово",
+            UIFactory.CreateButton("MebDone", panel.transform, Loc.T("group.editBanner.done"),
                 new Vector2(165, 0), new Vector2(80, 30), Done);
 
             _root.SetActive(false);
@@ -51,7 +51,7 @@ namespace KitchenDesigner.Core.UI
             var m = ModuleEditMode.Active;
             _root.SetActive(m != null);
             if (m != null)
-                _label!.text = $"Редактирование модуля: {m.name}  (Esc — выход)";
+                _label!.text = Loc.F("group.editBanner.label", m.name);
         }
 
         private void Done()

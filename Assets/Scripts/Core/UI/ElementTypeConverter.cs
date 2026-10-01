@@ -10,19 +10,23 @@ namespace KitchenDesigner.Core.UI
 
         internal enum Choice { Part, Facade, AssembledFacade, RadialShelf, DrawerGtv, DrawerMovento }
 
-        private static readonly (Choice choice, string label)[] StructuralChoices =
-        {
-            (Choice.Part, "Деталь"),
-            (Choice.Facade, "Фасад"),
-            (Choice.AssembledFacade, "Сборный фасад"),
-            (Choice.RadialShelf, "Радиусная полка"),
-        };
+        private static readonly LocalizedCache<(Choice choice, string label)[]> StructuralChoicesCache =
+            new LocalizedCache<(Choice choice, string label)[]>(() => new (Choice choice, string label)[] {
+            (Choice.Part, Loc.T("elementType.part")),
+            (Choice.Facade, Loc.T("elementType.facade")),
+            (Choice.AssembledFacade, Loc.T("elementType.assembledFacade")),
+            (Choice.RadialShelf, Loc.T("elementType.radialShelf")),
+        });
 
-        private static readonly (Choice choice, string label)[] DrawerChoices =
-        {
-            (Choice.DrawerGtv, "Ящик GTV"),
-            (Choice.DrawerMovento, "Ящик Movento"),
-        };
+        private static (Choice choice, string label)[] StructuralChoices => StructuralChoicesCache.Value;
+
+        private static readonly LocalizedCache<(Choice choice, string label)[]> DrawerChoicesCache =
+            new LocalizedCache<(Choice choice, string label)[]>(() => new (Choice choice, string label)[] {
+            (Choice.DrawerGtv, Loc.T("element.typeChoice.drawerGtv")),
+            (Choice.DrawerMovento, Loc.T("element.typeChoice.drawerMovento")),
+        });
+
+        private static (Choice choice, string label)[] DrawerChoices => DrawerChoicesCache.Value;
 
         private readonly IContextMenuHost _host;
         private readonly Action<KitchenElement> _reopen;
@@ -40,7 +44,7 @@ namespace KitchenDesigner.Core.UI
         {
             var labels = new List<string>();
             foreach (var (_, label) in StructuralChoices) labels.Add(label);
-            _dropdown = _host.Rows.Dropdown("Тип", labels, Select,
+            _dropdown = _host.Rows.Dropdown(Loc.T("element.common.type"), labels, Select,
                 RowVisibility.When(() => Convertible(_host.Target)), "CtxType");
         }
 

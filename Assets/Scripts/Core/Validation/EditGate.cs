@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public static class EditGate
     {
-        public const string RefusalPrefix = "Правка отклонена: ";
+        public static string RefusalPrefix => Loc.T("status.editGate.refusalPrefix");
 
         public static float RadiusUnits =>
             KitchenSettings.Instance.SnapThreshold * 2f * AppConstants.MM_TO_UNITS;

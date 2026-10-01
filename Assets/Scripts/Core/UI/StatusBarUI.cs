@@ -177,7 +177,7 @@ namespace KitchenDesigner.Core.UI
         private void ShowTheStandingAutoSaveOffWarning()
         {
             ShowChip(true);
-            const string label = "Автосохранение выкл";
+            string label = Loc.T("status.autoSaveOff");
             if (_label!.text != label) _label!.text = label;
             _label!.color = AutoSaveOff;
             FitChip(label);

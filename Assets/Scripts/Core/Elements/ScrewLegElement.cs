@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("винтовая опора — тело вращения");
 
-        public override string DisplayTypeName => "Винтовая опора";
+        public override string DisplayTypeName => Loc.T("elementType.screwLeg");
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

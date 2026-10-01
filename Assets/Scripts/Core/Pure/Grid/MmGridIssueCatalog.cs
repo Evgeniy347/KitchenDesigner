@@ -14,8 +14,7 @@ namespace KitchenDesigner.Core
         {
             if (!MmGridMath.TryMeasureOffGrid(minCornerMm, toleranceMm, out var shiftsMm))
                 return null;
-            return $"Край детали не на целом миллиметре: {Axes(minCornerMm, shiftsMm)}. "
-                + "Передвиньте деталь или измените размер — отпускание выровняет её по сетке";
+            return Loc.F("issue.grd01.message", Axes(minCornerMm, shiftsMm));
         }
 
         private static string Axes(Vector3 minCornerMm, Vector3 shiftsMm)
@@ -26,7 +25,7 @@ namespace KitchenDesigner.Core
                 if (shiftsMm[axis] == 0f) continue;
                 if (text.Length > 0) text.Append(", ");
                 text.Append(AxisNames[axis]).Append(' ').Append(Mm(minCornerMm[axis]))
-                    .Append(" мм — сдвиг ").Append(Mm(Mathf.Abs(shiftsMm[axis]))).Append(" мм");
+                    .Append(Loc.T("issue.grd01.offBy")).Append(Mm(Mathf.Abs(shiftsMm[axis]))).Append(Loc.T("issue.grd01.mmSuffix"));
             }
             return text.ToString();
         }

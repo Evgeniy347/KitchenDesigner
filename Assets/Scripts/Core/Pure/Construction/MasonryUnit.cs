@@ -40,19 +40,22 @@ namespace KitchenDesigner.Core.Construction
             * ((HeightMm + jointMm) * 0.001d)
             * ((WidthMm + jointMm) * 0.001d);
 
-        public static readonly IReadOnlyList<MasonryUnit> Table = new[]
+        private static readonly LocalizedCache<IReadOnlyList<MasonryUnit>> TableCache =
+            new LocalizedCache<IReadOnlyList<MasonryUnit>>(() => new[]
         {
-            new MasonryUnit(MasonryTechnology.BrickSingle, "Кирпич 250×120×65",
+            new MasonryUnit(MasonryTechnology.BrickSingle, Loc.T("construction.masonry.brick65"),
                 MasonryCounting.Pieces, 250f, 65f, 120f, BrickStandard),
-            new MasonryUnit(MasonryTechnology.BrickThickened, "Кирпич 250×120×88",
+            new MasonryUnit(MasonryTechnology.BrickThickened, Loc.T("construction.masonry.brick88"),
                 MasonryCounting.Pieces, 250f, 88f, 120f, BrickStandard),
-            new MasonryUnit(MasonryTechnology.AeratedBlock, "Газоблок 600×300×200",
+            new MasonryUnit(MasonryTechnology.AeratedBlock, Loc.T("construction.masonry.aeratedBlock"),
                 MasonryCounting.Pieces, 600f, 200f, 300f, AeratedBlockStandard),
-            new MasonryUnit(MasonryTechnology.Timber, "Брус",
+            new MasonryUnit(MasonryTechnology.Timber, Loc.T("construction.masonry.timber"),
                 MasonryCounting.Volume, 0f, 0f, 0f, TimberStandard),
-            new MasonryUnit(MasonryTechnology.Frame, "Каркас",
+            new MasonryUnit(MasonryTechnology.Frame, Loc.T("construction.masonry.frame"),
                 MasonryCounting.Studs, 0f, 0f, 0f, FrameStandard),
-        };
+        });
+
+        public static IReadOnlyList<MasonryUnit> Table => TableCache.Value;
 
         public static MasonryUnit Of(MasonryTechnology technology)
         {

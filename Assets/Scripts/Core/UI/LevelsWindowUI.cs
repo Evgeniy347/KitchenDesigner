@@ -41,7 +41,7 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("LvTitle", panel.transform, "Этажи", 20,
+            UIFactory.CreateLabel("LvTitle", panel.transform, Loc.T("window.levels.title"), 20,
                 new Vector2(0, MinPanelHeight * 0.5f - 20f), new Vector2(PanelWidth - 20f, 28),
                 TextAnchor.MiddleCenter);
 
@@ -70,15 +70,15 @@ namespace KitchenDesigner.Core.UI
             float x = RowStartX();
             float y = MinPanelHeight * 0.5f - HeaderY;
 
-            UIFactory.CreateLabel("LvHeaderName", parent, "Имя", 12,
+            UIFactory.CreateLabel("LvHeaderName", parent, Loc.T("window.levels.name"), 12,
                 new Vector2(x + NameW * 0.5f, y), new Vector2(NameW, 20), TextAnchor.MiddleCenter);
             x += NameW + FieldGap;
 
-            UIFactory.CreateLabel("LvHeaderElevation", parent, "Отметка", 12,
+            UIFactory.CreateLabel("LvHeaderElevation", parent, Loc.T("window.levels.elevation"), 12,
                 new Vector2(x + ElevationW * 0.5f, y), new Vector2(ElevationW, 20), TextAnchor.MiddleCenter);
             x += ElevationW + FieldGap;
 
-            UIFactory.CreateLabel("LvHeaderHeight", parent, "Высота", 12,
+            UIFactory.CreateLabel("LvHeaderHeight", parent, Loc.T("window.levels.height"), 12,
                 new Vector2(x + HeightW * 0.5f, y), new Vector2(HeightW, 20), TextAnchor.MiddleCenter);
         }
 
@@ -121,7 +121,7 @@ namespace KitchenDesigner.Core.UI
 
             var elevationField = UIFactory.CreateNumberField("LvElevation_" + level.id, _rowsParent,
                 level.floorElevationMm.ToString(), new Vector2(x + ElevationW * 0.5f, y),
-                new Vector2(ElevationW, RowHeight - 4f), "мм");
+                new Vector2(ElevationW, RowHeight - 4f), Loc.T("unit.mm"));
             elevationField.contentType = TMP_InputField.ContentType.IntegerNumber;
             elevationField.onEndEdit.AddListener(v => ApplyElevation(level, v, elevationField));
             _rowObjects.Add(elevationField.gameObject);
@@ -129,7 +129,7 @@ namespace KitchenDesigner.Core.UI
 
             var heightField = UIFactory.CreateNumberField("LvHeight_" + level.id, _rowsParent,
                 level.heightMm.ToString(), new Vector2(x + HeightW * 0.5f, y),
-                new Vector2(HeightW, RowHeight - 4f), "мм");
+                new Vector2(HeightW, RowHeight - 4f), Loc.T("unit.mm"));
             heightField.contentType = TMP_InputField.ContentType.IntegerNumber;
             heightField.onEndEdit.AddListener(v => ApplyHeight(level, v, heightField));
             _rowObjects.Add(heightField.gameObject);

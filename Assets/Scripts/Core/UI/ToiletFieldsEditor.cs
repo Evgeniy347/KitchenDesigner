@@ -5,8 +5,8 @@ namespace KitchenDesigner.Core.UI
         public const string SeatHeightNode = "ВысотаЧашиУнитаза";
         public const string FlushPlateHeightNode = "ВысотаПанелиСмыва";
 
-        public const string SeatHeightLabel = "Высота чаши";
-        public const string FlushPlateHeightLabel = "Высота панели";
+        public static string SeatHeightLabel => Loc.T("element.toilet.seatHeight");
+        public static string FlushPlateHeightLabel => Loc.T("element.toilet.flushPlate");
 
         public ToiletFieldsEditor(IContextMenuHost host) : base(host) { }
 
@@ -19,9 +19,9 @@ namespace KitchenDesigner.Core.UI
                 || Host.Target is WallHungToiletElement);
             var wallHungOnly = RowVisibility.When(() => Host.Target is WallHungToiletElement);
 
-            var seatRow = Rows.NumberField(SeatHeightLabel, anyToilet, "мм", SeatHeightNode,
+            var seatRow = Rows.NumberField(SeatHeightLabel, anyToilet, Loc.T("unit.mm"), SeatHeightNode,
                 hint: "element.toilet.seatHeight");
-            var plateRow = Rows.NumberField(FlushPlateHeightLabel, wallHungOnly, "мм",
+            var plateRow = Rows.NumberField(FlushPlateHeightLabel, wallHungOnly, Loc.T("unit.mm"),
                 FlushPlateHeightNode, hint: "element.toilet.flushPlate");
 
             Bind<ToiletElement>(seatRow, toilet => toilet.SeatHeightMM,

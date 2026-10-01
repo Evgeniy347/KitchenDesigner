@@ -7,7 +7,7 @@ namespace KitchenDesigner.Core
             var top = TopOf(levels);
             int elevation = top != null ? top.floorElevationMm + top.heightMm : 0;
             string id = NextId(levels);
-            string name = $"{CountAtOrAbove(levels, 0) + 1} этаж";
+            string name = Loc.F("level.defaultName", CountAtOrAbove(levels, 0) + 1);
             return new Level(id, name, elevation, defaultHeightMm);
         }
 

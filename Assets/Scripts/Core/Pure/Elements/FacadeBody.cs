@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
     {
         public const int DEFAULT_GAP_MM = 2;
 
-        public const string DISPLAY_TYPE_NAME = "Фасад";
+        public static string DISPLAY_TYPE_NAME => Loc.T("elementType.facade");
 
         public const bool SUPPORTS_GAPS = true;
 

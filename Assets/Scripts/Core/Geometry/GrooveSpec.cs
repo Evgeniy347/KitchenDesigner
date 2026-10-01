@@ -26,22 +26,7 @@ namespace KitchenDesigner.Core
             this.side = side;
         }
 
-        public static string KindLabel(GrooveKind kind)
-            => kind == GrooveKind.Blind ? "Глухой" : "Сквозной";
-
-        public static string SideLabel(GrooveSide side) => side switch
-        {
-            GrooveSide.Top => "Верх",
-            GrooveSide.Bottom => "Низ",
-            GrooveSide.Left => "Лево",
-            _ => "Право",
-        };
-
-        public static string Designation(GrooveKind kind)
-            => $"{KindLabel(kind)} {AppConstants.GROOVE_OFFSET_MM}*" +
-               $"{AppConstants.GROOVE_WIDTH_MM}*{AppConstants.GROOVE_DEPTH_MM}";
-
-        public override string ToString() => $"{Designation(kind)}:{SideLabel(side)}";
+        public override string ToString() => kind + ":" + side;
 
         public bool Equals(GrooveSpec other) => kind == other.kind && side == other.side;
 

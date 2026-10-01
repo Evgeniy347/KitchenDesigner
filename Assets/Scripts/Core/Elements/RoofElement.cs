@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
 {
     public class RoofElement : KitchenElement, IQuantifies
     {
-        public override string DisplayTypeName => "Крыша";
+        public override string DisplayTypeName => Loc.T("elementType.roof");
 
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart(

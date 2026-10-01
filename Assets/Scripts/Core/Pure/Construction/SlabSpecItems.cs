@@ -4,9 +4,9 @@ namespace KitchenDesigner.Core.Construction
 {
     public static class SlabSpecItems
     {
-        public const string Section = SpecSections.Structures;
-        public const string ConcreteName = "Бетон плиты перекрытия";
-        public const string RebarName = "Арматура плиты перекрытия";
+        public static string Section => SpecSections.Structures;
+        public static string ConcreteName => Loc.T("spec.slab.concrete");
+        public static string RebarName => Loc.T("spec.slab.rebar");
 
         public static IEnumerable<SpecItem> Of(SlabTechnology technology, float lengthMm,
             float widthMm, float thicknessMm, float rebarDiameterMm, float rebarStepMm,

@@ -20,9 +20,9 @@ namespace KitchenDesigner.Core.UI
         {
             float y = topY;
 
-            _photoActiveToggle = _rows.AddToggle(page, ref y, "Фоторежим", PhotoMode.Active,
+            _photoActiveToggle = _rows.AddToggle(page, ref y, Loc.T("settings.photo.active"), PhotoMode.Active,
                 v => PhotoMode.SetActive(v));
-            Hint("Фоторежим", hint: "settings.photo.active");
+            Hint(Loc.T("settings.photo.active"), hint: "settings.photo.active");
             PhotoMode.Changed -= SyncActiveToggle;
             PhotoMode.Changed += SyncActiveToggle;
 
@@ -30,96 +30,96 @@ namespace KitchenDesigner.Core.UI
             BuildPresetRow(page, ref y, s);
 
             y -= SettingsRowFactory.GapPx;
-            AddPresetLinkedToggle(page, ref y, "Тени", s.PhotoShadows,
+            AddPresetLinkedToggle(page, ref y, Loc.T("settings.photo.shadows"), s.PhotoShadows,
                 v => s.PhotoShadows = v, () => s.PhotoShadows);
-            Hint("Тени", hint: "settings.photo.shadows");
-            AddPresetLinkedToggle(page, ref y, "Мягкие тени", s.PhotoSoftShadows,
+            Hint(Loc.T("settings.photo.shadows"), hint: "settings.photo.shadows");
+            AddPresetLinkedToggle(page, ref y, Loc.T("settings.photo.softShadows"), s.PhotoSoftShadows,
                 v => s.PhotoSoftShadows = v, () => s.PhotoSoftShadows);
-            Hint("Мягкие тени", hint: "settings.photo.softShadows");
-            AddPresetLinkedToggle(page, ref y, "Сглаживание", s.PhotoAntiAliasing,
+            Hint(Loc.T("settings.photo.softShadows"), hint: "settings.photo.softShadows");
+            AddPresetLinkedToggle(page, ref y, Loc.T("settings.photo.antiAliasing"), s.PhotoAntiAliasing,
                 v => s.PhotoAntiAliasing = v, () => s.PhotoAntiAliasing);
-            Hint("Сглаживание", hint: "settings.photo.antiAliasing");
-            AddPresetLinkedToggle(page, ref y, "Суперсэмплинг", s.PhotoSupersampling,
+            Hint(Loc.T("settings.photo.antiAliasing"), hint: "settings.photo.antiAliasing");
+            AddPresetLinkedToggle(page, ref y, Loc.T("settings.photo.supersampling"), s.PhotoSupersampling,
                 v => s.PhotoSupersampling = v, () => s.PhotoSupersampling);
-            Hint("Суперсэмплинг", hint: "settings.photo.supersampling");
+            Hint(Loc.T("settings.photo.supersampling"), hint: "settings.photo.supersampling");
             AddPresetLinkedToggle(page, ref y, "Ambient occlusion", s.PhotoAmbientOcclusion,
                 v => s.PhotoAmbientOcclusion = v, () => s.PhotoAmbientOcclusion);
             Hint("Ambient occlusion", hint: "settings.photo.ambientOcclusion");
-            AddPresetLinkedToggle(page, ref y, "Свечение (bloom)", s.PhotoBloom,
+            AddPresetLinkedToggle(page, ref y, Loc.T("settings.photo.bloom"), s.PhotoBloom,
                 v => s.PhotoBloom = v, () => s.PhotoBloom);
-            Hint("Свечение (bloom)", hint: "settings.photo.bloom");
-            AddPresetLinkedToggle(page, ref y, "Виньетка", s.PhotoVignette,
+            Hint(Loc.T("settings.photo.bloom"), hint: "settings.photo.bloom");
+            AddPresetLinkedToggle(page, ref y, Loc.T("settings.photo.vignette"), s.PhotoVignette,
                 v => s.PhotoVignette = v, () => s.PhotoVignette);
-            Hint("Виньетка", hint: "settings.photo.vignette");
+            Hint(Loc.T("settings.photo.vignette"), hint: "settings.photo.vignette");
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddToggle(page, ref y, "Потолок по стенам", s.PhotoCeiling,
+            _rows.AddToggle(page, ref y, Loc.T("settings.photo.ceiling"), s.PhotoCeiling,
                 v => { s.PhotoCeiling = v; PhotoMode.RefreshIfActive(); }, read: () => s.PhotoCeiling);
-            Hint("Потолок по стенам", hint: "settings.photo.ceiling");
+            Hint(Loc.T("settings.photo.ceiling"), hint: "settings.photo.ceiling");
 
-            _ssgiToggle = _rows.AddToggle(page, ref y, "Отражённый свет (SSGI, опытный)", s.PhotoSSGI,
+            _ssgiToggle = _rows.AddToggle(page, ref y, Loc.T("settings.photo.ssgi"), s.PhotoSSGI,
                 v => { s.PhotoSSGI = v; PhotoMode.RefreshIfActive(); }, read: () => s.PhotoSSGI);
-            Hint("Отражённый свет (SSGI, опытный)", hint: "settings.photo.ssgi");
+            Hint(Loc.T("settings.photo.ssgi"), hint: "settings.photo.ssgi");
 
-            _rows.AddToggle(page, ref y, "Расширенный диапазон (HDR)", s.PhotoHdr,
+            _rows.AddToggle(page, ref y, Loc.T("settings.photo.hdr"), s.PhotoHdr,
                 v => { s.PhotoHdr = v; PhotoMode.RefreshIfActive(); }, read: () => s.PhotoHdr);
-            Hint("Расширенный диапазон (HDR)", hint: "settings.photo.hdr");
+            Hint(Loc.T("settings.photo.hdr"), hint: "settings.photo.hdr");
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Разрешение и тени");
-            AddSlider(page, ref y, "Масштаб рендера",
+            _rows.AddHeader(page, ref y, Loc.T("settings.photo.section.resolution"));
+            AddSlider(page, ref y, Loc.T("settings.photo.renderScale"),
                 KitchenSettings.PHOTO_RENDER_SCALE_MIN_PCT, KitchenSettings.PHOTO_RENDER_SCALE_MAX_PCT,
                 s.PhotoRenderScalePct, Percent, v => s.PhotoRenderScalePct = v, () => s.PhotoRenderScalePct);
-            Hint("Масштаб рендера", hint: "settings.photo.renderScale");
-            AddSlider(page, ref y, "Карта теней",
+            Hint(Loc.T("settings.photo.renderScale"), hint: "settings.photo.renderScale");
+            AddSlider(page, ref y, Loc.T("settings.photo.shadowMap"),
                 KitchenSettings.PHOTO_SHADOWMAP_MIN_PX, KitchenSettings.PHOTO_SHADOWMAP_MAX_PX,
                 s.PhotoShadowMapPx, Pixels, v => s.PhotoShadowMapPx = v, () => s.PhotoShadowMapPx);
-            Hint("Карта теней", hint: "settings.photo.shadowMap");
-            AddSlider(page, ref y, "Ламп на объект",
+            Hint(Loc.T("settings.photo.shadowMap"), hint: "settings.photo.shadowMap");
+            AddSlider(page, ref y, Loc.T("settings.photo.lightsPerObject"),
                 1, KitchenSettings.PHOTO_LIGHTS_PER_OBJECT_MAX,
                 s.PhotoLightsPerObject, Plain, v => s.PhotoLightsPerObject = v, () => s.PhotoLightsPerObject);
-            Hint("Ламп на объект", hint: "settings.photo.lightsPerObject");
+            Hint(Loc.T("settings.photo.lightsPerObject"), hint: "settings.photo.lightsPerObject");
 
             y -= SettingsRowFactory.GapPx;
             _rows.AddHeader(page, ref y, "Ambient occlusion");
-            AddPresetLinkedToggle(page, ref y, "AO в полном разрешении", s.PhotoAoFullRes,
+            AddPresetLinkedToggle(page, ref y, Loc.T("settings.photo.aoFullRes"), s.PhotoAoFullRes,
                 v => s.PhotoAoFullRes = v, () => s.PhotoAoFullRes);
-            Hint("AO в полном разрешении", hint: "settings.photo.aoFullRes");
-            AddSlider(page, ref y, "Сила AO", 0, KitchenSettings.PHOTO_AO_INTENSITY_MAX_PCT,
+            Hint(Loc.T("settings.photo.aoFullRes"), hint: "settings.photo.aoFullRes");
+            AddSlider(page, ref y, Loc.T("settings.photo.aoIntensity"), 0, KitchenSettings.PHOTO_AO_INTENSITY_MAX_PCT,
                 s.PhotoAoIntensityPct, Percent, v => s.PhotoAoIntensityPct = v, () => s.PhotoAoIntensityPct);
-            Hint("Сила AO", hint: "settings.photo.aoIntensity");
-            AddSlider(page, ref y, "Радиус AO",
+            Hint(Loc.T("settings.photo.aoIntensity"), hint: "settings.photo.aoIntensity");
+            AddSlider(page, ref y, Loc.T("settings.photo.aoRadius"),
                 KitchenSettings.PHOTO_AO_RADIUS_MIN_MM, KitchenSettings.PHOTO_AO_RADIUS_MAX_MM,
                 s.PhotoAoRadiusMM, Millimetres, v => s.PhotoAoRadiusMM = v, () => s.PhotoAoRadiusMM);
-            Hint("Радиус AO", hint: "settings.photo.aoRadius");
-            AddSlider(page, ref y, "AO по прямому свету", 0, 100,
+            Hint(Loc.T("settings.photo.aoRadius"), hint: "settings.photo.aoRadius");
+            AddSlider(page, ref y, Loc.T("settings.photo.aoDirect"), 0, 100,
                 s.PhotoAoDirectPct, Percent, v => s.PhotoAoDirectPct = v, () => s.PhotoAoDirectPct);
-            Hint("AO по прямому свету", hint: "settings.photo.aoDirect");
-            AddSlider(page, ref y, "Затухание AO",
+            Hint(Loc.T("settings.photo.aoDirect"), hint: "settings.photo.aoDirect");
+            AddSlider(page, ref y, Loc.T("settings.photo.aoFalloff"),
                 KitchenSettings.PHOTO_AO_FALLOFF_MIN_M, KitchenSettings.PHOTO_AO_FALLOFF_MAX_M,
                 s.PhotoAoFalloffM, Metres, v => s.PhotoAoFalloffM = v, () => s.PhotoAoFalloffM);
-            Hint("Затухание AO", hint: "settings.photo.aoFalloff");
+            Hint(Loc.T("settings.photo.aoFalloff"), hint: "settings.photo.aoFalloff");
 
             y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, "Отражённый свет (SSGI)");
-            AddSlider(page, ref y, "Сила SSGI", 0, KitchenSettings.PHOTO_SSGI_STRENGTH_MAX_PCT,
+            _rows.AddHeader(page, ref y, Loc.T("settings.photo.section.ssgi"));
+            AddSlider(page, ref y, Loc.T("settings.photo.ssgiStrength"), 0, KitchenSettings.PHOTO_SSGI_STRENGTH_MAX_PCT,
                 s.PhotoSsgiStrengthPct, Percent, v => s.PhotoSsgiStrengthPct = v, () => s.PhotoSsgiStrengthPct);
-            Hint("Сила SSGI", hint: "settings.photo.ssgiStrength");
-            AddSlider(page, ref y, "Радиус SSGI",
+            Hint(Loc.T("settings.photo.ssgiStrength"), hint: "settings.photo.ssgiStrength");
+            AddSlider(page, ref y, Loc.T("settings.photo.ssgiRadius"),
                 KitchenSettings.PHOTO_SSGI_RADIUS_MIN_MM, KitchenSettings.PHOTO_SSGI_RADIUS_MAX_MM,
                 s.PhotoSsgiRadiusMM, Millimetres, v => s.PhotoSsgiRadiusMM = v, () => s.PhotoSsgiRadiusMM);
-            Hint("Радиус SSGI", hint: "settings.photo.ssgiRadius");
-            AddSlider(page, ref y, "Выборок SSGI",
+            Hint(Loc.T("settings.photo.ssgiRadius"), hint: "settings.photo.ssgiRadius");
+            AddSlider(page, ref y, Loc.T("settings.photo.ssgiSamples"),
                 KitchenSettings.PHOTO_SSGI_SAMPLES_MIN, KitchenSettings.PHOTO_SSGI_SAMPLES_MAX,
                 s.PhotoSsgiSamples, Plain, v => s.PhotoSsgiSamples = v, () => s.PhotoSsgiSamples);
-            Hint("Выборок SSGI", hint: "settings.photo.ssgiSamples");
-            AddSlider(page, ref y, "Разрешение SSGI",
+            Hint(Loc.T("settings.photo.ssgiSamples"), hint: "settings.photo.ssgiSamples");
+            AddSlider(page, ref y, Loc.T("settings.photo.ssgiResolution"),
                 KitchenSettings.PHOTO_SSGI_RESOLUTION_MIN_PCT, KitchenSettings.PHOTO_SSGI_RESOLUTION_MAX_PCT,
                 s.PhotoSsgiResolutionPct, Percent, v => s.PhotoSsgiResolutionPct = v, () => s.PhotoSsgiResolutionPct);
-            Hint("Разрешение SSGI", hint: "settings.photo.ssgiResolution");
-            AddSlider(page, ref y, "Сглаживание SSGI", 0, KitchenSettings.PHOTO_SSGI_BLUR_MAX_PX,
+            Hint(Loc.T("settings.photo.ssgiResolution"), hint: "settings.photo.ssgiResolution");
+            AddSlider(page, ref y, Loc.T("settings.photo.ssgiBlur"), 0, KitchenSettings.PHOTO_SSGI_BLUR_MAX_PX,
                 s.PhotoSsgiBlurPx, Pixels, v => s.PhotoSsgiBlurPx = v, () => s.PhotoSsgiBlurPx);
-            Hint("Сглаживание SSGI", hint: "settings.photo.ssgiBlur");
+            Hint(Loc.T("settings.photo.ssgiBlur"), hint: "settings.photo.ssgiBlur");
         }
 
         private void AddSlider(Transform page, ref float y, string label, int min, int max,
@@ -133,9 +133,9 @@ namespace KitchenDesigner.Core.UI
 
         private static string Pixels(int v) => v + " px";
 
-        private static string Millimetres(int v) => v + " мм";
+        private static string Millimetres(int v) => v + Loc.T("unit.mmSuffix");
 
-        private static string Metres(int v) => v + " м";
+        private static string Metres(int v) => v + Loc.T("unit.mSuffix");
 
         private static string Plain(int v) => v.ToString();
 
@@ -182,20 +182,20 @@ namespace KitchenDesigner.Core.UI
             {
                 if (_presetLinkedToggles.TryGetValue(key, out var tg)) tg.SetIsOnWithoutNotify(v);
             }
-            Set("Тени", s.PhotoShadows);
-            Set("Мягкие тени", s.PhotoSoftShadows);
-            Set("Сглаживание", s.PhotoAntiAliasing);
-            Set("Суперсэмплинг", s.PhotoSupersampling);
+            Set(Loc.T("settings.photo.shadows"), s.PhotoShadows);
+            Set(Loc.T("settings.photo.softShadows"), s.PhotoSoftShadows);
+            Set(Loc.T("settings.photo.antiAliasing"), s.PhotoAntiAliasing);
+            Set(Loc.T("settings.photo.supersampling"), s.PhotoSupersampling);
             Set("Ambient occlusion", s.PhotoAmbientOcclusion);
-            Set("Свечение (bloom)", s.PhotoBloom);
-            Set("Виньетка", s.PhotoVignette);
+            Set(Loc.T("settings.photo.bloom"), s.PhotoBloom);
+            Set(Loc.T("settings.photo.vignette"), s.PhotoVignette);
         }
 
         private void BuildPresetRow(Transform parent, ref float y, KitchenSettings s)
         {
             var rowRect = SettingsRowFactory.CreateRow("RowPreset", parent, y);
 
-            SettingsRowFactory.CreateRowLabel("Lbl_Quality", rowRect, "Качество", 0f);
+            SettingsRowFactory.CreateRowLabel("Lbl_Quality", rowRect, Loc.T("settings.photo.quality"), 0f);
 
             _presetButton = UIFactory.CreateButton("Btn_Quality", rowRect,
                 PresetName(PhotoQualityPresetTable.Detect(s)),
@@ -217,10 +217,10 @@ namespace KitchenDesigner.Core.UI
 
         private static string PresetName(PhotoQualityPreset preset) => preset switch
         {
-            PhotoQualityPreset.Low => "Низкое",
-            PhotoQualityPreset.Medium => "Среднее",
-            PhotoQualityPreset.High => "Высокое",
-            _ => "Свои настройки"
+            PhotoQualityPreset.Low => Loc.T("settings.photo.presetLow"),
+            PhotoQualityPreset.Medium => Loc.T("settings.photo.presetMedium"),
+            PhotoQualityPreset.High => Loc.T("settings.photo.presetHigh"),
+            _ => Loc.T("settings.photo.presetCustom")
         };
     }
 }

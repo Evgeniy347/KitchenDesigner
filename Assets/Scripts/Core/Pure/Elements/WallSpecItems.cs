@@ -6,10 +6,10 @@ namespace KitchenDesigner.Core
 {
     public static class WallSpecItems
     {
-        public const string Section = SpecSections.Walls;
-        public const string MortarName = "Раствор";
-        public const string StudsName = "Каркас: стойки";
-        public const string FrameRunName = "Каркас: обвязка и стойки";
+        public static string Section => SpecSections.Walls;
+        public static string MortarName => Loc.T("spec.item.mortar");
+        public static string StudsName => Loc.T("spec.item.studs");
+        public static string FrameRunName => Loc.T("spec.item.frameRun");
 
         public static IEnumerable<SpecItem> Of(MasonryTechnology technology,
             float lengthMm, float heightMm, float thicknessMm,

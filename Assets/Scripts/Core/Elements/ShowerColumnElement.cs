@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("гусак и лейка — части корпуса стойки, отдельной лицевой деталью не выделены");
 
-        public override string DisplayTypeName => "Душевая стойка";
+        public override string DisplayTypeName => Loc.T("elementType.showerColumn");
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

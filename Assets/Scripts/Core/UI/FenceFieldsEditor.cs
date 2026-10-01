@@ -24,22 +24,22 @@ namespace KitchenDesigner.Core.UI
         {
             var isFence = RowVisibility.When(() => Host.Target is FenceElement);
 
-            var sectionRow = Rows.NumberField("Сечение столба", isFence, "мм", PostSectionNode,
+            var sectionRow = Rows.NumberField(Loc.T("element.fence.postSection"), isFence, Loc.T("unit.mm"), PostSectionNode,
                 hint: "element.fence.postSection");
             Bind<FenceElement>(sectionRow, f => f.PostSectionMm, (f, v) => f.PostSectionMm = v,
                 FenceDefaults.PostSectionMm.ToString());
 
-            var stepRow = Rows.NumberField("Шаг столбов", isFence, "мм", PostStepNode,
+            var stepRow = Rows.NumberField(Loc.T("element.fence.postStep"), isFence, Loc.T("unit.mm"), PostStepNode,
                 hint: "element.fence.postStep");
             Bind<FenceElement>(stepRow, f => f.PostStepMm, (f, v) => f.PostStepMm = v,
                 FenceDefaults.PostStepMm.ToString());
 
-            var pitRow = Rows.NumberField("Глубина ямы", isFence, "мм", PitDepthNode,
+            var pitRow = Rows.NumberField(Loc.T("element.fence.pitDepth"), isFence, Loc.T("unit.mm"), PitDepthNode,
                 hint: "element.fence.pitDepth");
             Bind<FenceElement>(pitRow, f => f.PitDepthMm, (f, v) => f.PitDepthMm = v,
                 FenceDefaults.PitDepthMm.ToString());
 
-            _sheetMark = Rows.Dropdown("Марка листа", new List<string>(FenceSheetMarkTitles.All),
+            _sheetMark = Rows.Dropdown(Loc.T("element.fence.sheetMark"), new List<string>(FenceSheetMarkTitles.All),
                 OnSheetMarkSelected, isFence, SheetMarkNode, hint: "element.fence.sheetMark");
         }
 

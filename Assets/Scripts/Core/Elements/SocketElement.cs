@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.Parts(SocketLayout.WellName);
 
-        public override string DisplayTypeName => "Розетка";
+        public override string DisplayTypeName => Loc.T("elementType.socket");
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

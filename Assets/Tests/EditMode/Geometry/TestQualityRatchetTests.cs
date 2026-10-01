@@ -44,11 +44,11 @@ namespace KitchenDesigner.Tests.Geometry
         private static readonly (string file, int ceiling)[] SilentAssertBudgets =
         {
             ("CommentRatchetTests.cs", 2),
-            ("DrawerConstantsTests.cs", 48),
+            ("DrawerConstantsTests.cs", 41),
             ("ElementGeometryTests.cs", 21),
             ("FloorDecorUvTests.cs", 2),
             ("GappedBoxTests.cs", 20),
-            ("GrooveSpecTests.cs", 8),
+            ("GrooveSpecTests.cs", 6),
             ("ResizeMathTests.cs", 17),
             ("ResizeSnapGrooveTests.cs", 10),
             ("ResizeSnapTests.cs", 8),

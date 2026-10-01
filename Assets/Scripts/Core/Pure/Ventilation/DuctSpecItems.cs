@@ -4,9 +4,9 @@ namespace KitchenDesigner.Core.Ventilation
 {
     public static class DuctSpecItems
     {
-        public const string Section = SpecSections.Structures;
-        public const string DuctSheetName = "Воздуховод, лист металла";
-        public const string GrilleName = "Решётка вентиляционная";
+        public static string Section => SpecSections.Structures;
+        public static string DuctSheetName => Loc.T("spec.vent.ductSheet");
+        public static string GrilleName => Loc.T("spec.vent.grille");
 
         public static float SheetMetalAreaM2(in DuctProfile profile, float lengthMm)
         {

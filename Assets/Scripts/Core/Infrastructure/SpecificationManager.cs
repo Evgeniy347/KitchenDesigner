@@ -82,12 +82,14 @@ namespace KitchenDesigner.Core
     {
         public static readonly CultureInfo NumberCulture = CultureInfo.GetCultureInfo("ru-RU");
 
-        private static readonly string[] HeaderCells =
-        {
+        private static readonly LocalizedCache<string[]> HeaderCellsCache =
+            new LocalizedCache<string[]>(() => new string[] {
             "Name", "Width_mm", "Height_mm", "Depth_mm", "Count", "AreaPerBoard_m2", "TotalArea_m2",
-            "Material", "Grooves", "Кромка L1", "Кромка L2", "Кромка W1", "Кромка W2",
+            "Material", "Grooves", Loc.T("spec.csv.edgeL1"), Loc.T("spec.csv.edgeL2"), Loc.T("spec.csv.edgeW1"), Loc.T("spec.csv.edgeW2"),
             "Section", "Unit", "QtyPerItem", "QtyTotal",
-        };
+        });
+
+        private static string[] HeaderCells => HeaderCellsCache.Value;
         private const int ColCount = 4, ColArea = 6, ColSection = 13, ColUnit = 14, ColQtyTotal = 16;
 
         private static string Row(params string[] cells)
@@ -128,7 +130,7 @@ namespace KitchenDesigner.Core
                     .ThenBy(k => k.section, System.StringComparer.Ordinal))
                 {
                     var sectionCells = new string[HeaderCells.Length];
-                    sectionCells[0] = "Итого";
+                    sectionCells[0] = Loc.T("spec.csv.subtotal");
                     sectionCells[ColSection] = key.section;
                     sectionCells[ColUnit] = key.unit.Label();
                     sectionCells[ColQtyTotal] = result.totalsBySection[key].ToString("F4", NumberCulture);
@@ -264,7 +266,7 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < grooves.Count; i++)
             {
                 if (i > 0) sb.Append(", ");
-                sb.Append(grooves[i].ToString());
+                sb.Append(GrooveTexts.Of(grooves[i]));
             }
             return sb.ToString();
         }

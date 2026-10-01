@@ -29,25 +29,25 @@ namespace KitchenDesigner.Core.UI
             var isRect = RowVisibility.When(() =>
                 Host.Target is DuctElement d && d.ProfileKind == DuctProfileKind.Rect);
 
-            _profile = Rows.Dropdown("Профиль", new List<string> { "Круглый", "Прямоугольный" },
+            _profile = Rows.Dropdown(Loc.T("element.duct.profile"), new List<string> { Loc.T("element.duct.profileRound"), Loc.T("element.duct.profileRect") },
                 OnProfileSelected, isDuct, ProfileNode, hint: "element.duct.profile");
 
-            var diameterRow = Rows.NumberField("Диаметр", isRound, "мм", DiameterNode,
+            var diameterRow = Rows.NumberField(Loc.T("element.duct.diameter"), isRound, Loc.T("unit.mm"), DiameterNode,
                 hint: "element.duct.diameter");
             Bind<DuctElement>(diameterRow, d => d.DiameterMm, (d, v) => d.DiameterMm = v,
                 DuctDefaults.DefaultRoundDiameterMm.ToString());
 
-            var widthRow = Rows.NumberField("Ширина", isRect, "мм", WidthNode,
+            var widthRow = Rows.NumberField(Loc.T("element.duct.width"), isRect, Loc.T("unit.mm"), WidthNode,
                 hint: "element.duct.width");
             Bind<DuctElement>(widthRow, d => d.RectWidthMm, (d, v) => d.RectWidthMm = v,
                 DuctDefaults.DefaultRectWidthMm.ToString());
 
-            var heightRow = Rows.NumberField("Высота сечения", isRect, "мм", HeightNode,
+            var heightRow = Rows.NumberField(Loc.T("element.duct.height"), isRect, Loc.T("unit.mm"), HeightNode,
                 hint: "element.duct.height");
             Bind<DuctElement>(heightRow, d => d.RectHeightMm, (d, v) => d.RectHeightMm = v,
                 DuctDefaults.DefaultRectHeightMm.ToString());
 
-            var airflowRow = Rows.NumberField("Расход воздуха", isDuct, "м³/ч", AirflowNode,
+            var airflowRow = Rows.NumberField(Loc.T("element.duct.airflow"), isDuct, Loc.T("unit.m3PerHour"), AirflowNode,
                 hint: "element.duct.airflow");
             Bind<DuctElement>(airflowRow, d => d.AirflowM3PerHour, (d, v) => d.AirflowM3PerHour = v,
                 DuctDefaults.DefaultAirflowM3PerHour.ToString());

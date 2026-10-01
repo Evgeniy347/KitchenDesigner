@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
 {
     public class DuctElement : KitchenElement, IQuantifies
     {
-        public override string DisplayTypeName => "Воздуховод";
+        public override string DisplayTypeName => Loc.T("elementType.duct");
 
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("воздуховод — тело без выделенной грани");

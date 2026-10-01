@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core.UI
             if (_selected.Count == 0 || _selected.Count == _options.Count)
                 _caption.text = _placeholder;
             else
-                _caption.text = $"Выбрано: {_selected.Count}";
+                _caption.text = Loc.F("common.selectedCount", _selected.Count);
         }
 
         private void TogglePopup()

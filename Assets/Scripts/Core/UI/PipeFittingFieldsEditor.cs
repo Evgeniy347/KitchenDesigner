@@ -24,11 +24,11 @@ namespace KitchenDesigner.Core.UI
 
         public override void Build()
         {
-            _bores[0] = ReadOnlyField("Диаметр 1", ElementFacet.PipeFitting,
+            _bores[0] = ReadOnlyField(Loc.T("element.pipeFitting.bore1"), ElementFacet.PipeFitting,
                 hint: "element.pipeFitting.bore");
-            _bores[1] = ReadOnlyField("Диаметр 2", ElementFacet.PipeFittingSecondPort,
+            _bores[1] = ReadOnlyField(Loc.T("element.pipeFitting.bore2"), ElementFacet.PipeFittingSecondPort,
                 hint: "element.pipeFitting.bore");
-            _bores[2] = ReadOnlyField("Диаметр 3", ElementFacet.PipeFittingThirdPort,
+            _bores[2] = ReadOnlyField(Loc.T("element.pipeFitting.bore3"), ElementFacet.PipeFittingThirdPort,
                 hint: "element.pipeFitting.bore");
             _ports.Build(Rows.Parent);
         }
@@ -53,7 +53,7 @@ namespace KitchenDesigner.Core.UI
 
         private TMP_InputField ReadOnlyField(string label, ElementFacet facet, string? hint = null)
         {
-            var field = Rows.NumberField(label, RowVisibility.For(facet), "мм", null, hint);
+            var field = Rows.NumberField(label, RowVisibility.For(facet), Loc.T("unit.mm"), null, hint);
             UIRowEnabled.SetControlEnabled(field, false);
             return field;
         }

@@ -43,12 +43,12 @@ public class SpecSectionsTests
     /// новая константа может не попасть в массив — и опечатка в её значении перестанет
     /// краснеть. Массив сверяется с рефлексией по самому типу.</summary>
     [Test]
-    public void SpecSectionsAll_ListsEveryPublicConstOfTheType()
+    public void SpecSectionsAll_ListsEveryPublicSectionOfTheType()
     {
         var consts = typeof(SpecSections)
-            .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-            .Where(f => f.IsLiteral && !f.IsInitOnly && f.FieldType == typeof(string))
-            .Select(f => (string)f.GetRawConstantValue()!)
+            .GetProperties(BindingFlags.Public | BindingFlags.Static)
+            .Where(p => p.PropertyType == typeof(string))
+            .Select(p => (string)p.GetValue(null)!)
             .ToList();
 
         CollectionAssert.AreEquivalent(consts, SpecSections.All,

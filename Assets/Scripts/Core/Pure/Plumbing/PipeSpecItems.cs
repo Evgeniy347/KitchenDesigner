@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core.Plumbing
     {
         public static float LengthMeters(int lengthMM) => lengthMM * 0.001f;
 
-        public static string PipeLineName(PipeSize size) => $"Труба ДН{size.NominalBoreMm}";
+        public static string PipeLineName(PipeSize size) => Loc.F("spec.plumbing.pipeLine", size.NominalBoreMm);
 
         public static SpecItem PipeLine(PipeSize size, int lengthMM) =>
             new SpecItem(SpecSections.Plumbing, PipeLineName(size), "",
@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core.Plumbing
             var parts = new string[boreSizeIds.Count];
             for (int i = 0; i < boreSizeIds.Count; i++)
                 parts[i] = PipeSpec.NominalOrDash(boreSizeIds[i]);
-            return $"{title} ДН{string.Join("×", parts)}";
+            return Loc.F("spec.plumbing.fittingLine", title, string.Join("×", parts));
         }
 
         public static SpecItem FittingLine(string title, IReadOnlyList<string?> boreSizeIds) =>

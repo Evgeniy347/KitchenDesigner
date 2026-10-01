@@ -21,7 +21,7 @@ namespace KitchenDesigner.Core.UI
         public const float TileCaptionH = SidebarLayout.TileH - SidebarLayout.TileImageH;
         public const int TileFont = UIStyle.FontSmall;
 
-        private const string RoomModeHint = "Доступно в режиме «Помещение»";
+        private static string RoomModeHint => Loc.T("sidebar.roomModeHint");
         private static readonly Color ActiveToggleColor = new Color(0.30f, 0.55f, 0.34f, 1f);
 
         private RectTransform? _panel;
@@ -178,9 +178,7 @@ namespace KitchenDesigner.Core.UI
             var dockModeIconRect = dockModeBtn.transform.Find("SbDockMode_Icon");
             _dockModeIcon = dockModeIconRect != null ? dockModeIconRect.GetComponent<Image>() : null;
             TooltipUI.Attach(dockModeBtn.gameObject,
-                "Раскрытый док остаётся открытым после установки детали.\n"
-                + "Рейка иконок сворачивается после установки.\n"
-                + "Клик переключает и запоминается для следующего запуска.");
+                Loc.T("sidebar.dockMode.tooltip"));
 
             BuildSearchField(_panel);
 
@@ -245,7 +243,7 @@ namespace KitchenDesigner.Core.UI
             rt.anchoredPosition = new Vector2(SidebarLayout.Pad, -TopStripH - 2f);
             _searchField.onValueChanged.AddListener(_ => RelayoutFull());
 
-            var hint = UIFactory.CreateLabel("SbSearchHint", _searchField.transform, "Поиск…",
+            var hint = UIFactory.CreateLabel("SbSearchHint", _searchField.transform, Loc.T("sidebar.searchHint"),
                 UIStyle.FontSmall, Vector2.zero, Vector2.zero, TextAnchor.MiddleLeft);
             hint.color = UIStyle.TextSecondary;
             hint.raycastTarget = false;

@@ -29,7 +29,7 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
 
-            UIFactory.CreateLabel("MeasureTitle", panel.transform, "Замер", UIStyle.FontTitle,
+            UIFactory.CreateLabel("MeasureTitle", panel.transform, Loc.T("measure.title"), UIStyle.FontTitle,
                 new Vector2(0, PanelHeight * 0.5f - 26f), new Vector2(RowWidth, 28f),
                 TextAnchor.MiddleCenter);
 
@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core.UI
             y -= UIStyle.GapSection;
             _distance = Row(panel.transform, "MeasureDistance", ref y);
 
-            UIFactory.CreateDangerButton("MeasureDelete", panel.transform, "Удалить",
+            UIFactory.CreateDangerButton("MeasureDelete", panel.transform, Loc.T("common.delete"),
                 new Vector2(RowWidth * 0.5f - DeleteButtonWidth * 0.5f, y - UIStyle.GapSection),
                 new Vector2(DeleteButtonWidth, UIStyle.HitTarget), DeleteSelected);
 
@@ -71,10 +71,10 @@ namespace KitchenDesigner.Core.UI
                 return;
             }
 
-            if (_pointA != null) _pointA.text = "Точка A: " + CoordsInWholeMm(seg.A);
-            if (_pointB != null) _pointB.text = "Точка B: " + CoordsInWholeMm(seg.B);
+            if (_pointA != null) _pointA.text = Loc.T("measure.pointA") + CoordsInWholeMm(seg.A);
+            if (_pointB != null) _pointB.text = Loc.T("measure.pointB") + CoordsInWholeMm(seg.B);
             if (_distance != null)
-                _distance.text = "Расстояние: " +
+                _distance.text = Loc.T("measure.distance") +
                     MeasureGeometry.FormatMm((seg.B - seg.A).magnitude, seg.Axis >= 0);
 
             _root.SetActive(true);
@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core.UI
         }
 
         private static string CoordsInWholeMm(Vector3 world) =>
-            $"X {RoundToWholeMm(world.x)}, Y {RoundToWholeMm(world.y)}, Z {RoundToWholeMm(world.z)} мм";
+            Loc.F("measure.coords", RoundToWholeMm(world.x), RoundToWholeMm(world.y), RoundToWholeMm(world.z));
 
         private static int RoundToWholeMm(float units) => Mathf.RoundToInt(MeasureGeometry.ToMm(units));
 

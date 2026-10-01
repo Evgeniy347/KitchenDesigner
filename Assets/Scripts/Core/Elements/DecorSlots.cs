@@ -10,19 +10,19 @@ namespace KitchenDesigner.Core
         public const string SecondarySlotReason =
             "декор ставится через SetMaterialCommand (MaterialSlot.Legs)";
 
-        public const string TabletopLabel = "Столешница";
+        public static string TabletopLabel => Loc.T("decor.slot.tabletop");
 
-        public const string SeatLabel = "Сиденье";
+        public static string SeatLabel => Loc.T("decor.slot.seat");
 
-        public const string LegsLabel = "Ножки";
+        public static string LegsLabel => Loc.T("decor.slot.legs");
 
-        public const string UpholsteryLabel = "Обивка";
+        public static string UpholsteryLabel => Loc.T("decor.slot.upholstery");
 
-        public const string CushionsLabel = "Подушки";
+        public static string CushionsLabel => Loc.T("decor.slot.cushions");
 
-        public const string FrameLabel = "Каркас";
+        public static string FrameLabel => Loc.T("decor.slot.frame");
 
-        public const string MattressLabel = "Матрас";
+        public static string MattressLabel => Loc.T("decor.slot.mattress");
 
         public const string MaterialIdAliasReason =
             "псевдоним PrimaryMaterialId — см. его причину";

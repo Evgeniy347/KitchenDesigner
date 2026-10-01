@@ -31,23 +31,23 @@ namespace KitchenDesigner.Core
 
             var parts = new List<Part>
             {
-                new Part { suffix = "Стойка",      dimsMM = new Vector3Int(A, H, T) },
-                new Part { suffix = "Стойка",      dimsMM = new Vector3Int(A, H, T) },
-                new Part { suffix = "Перекладина", dimsMM = new Vector3Int(B, A, T) },
-                new Part { suffix = "Перекладина", dimsMM = new Vector3Int(B, A, T) },
+                new Part { suffix = Loc.T("element.assembledFacade.part.stile"),      dimsMM = new Vector3Int(A, H, T) },
+                new Part { suffix = Loc.T("element.assembledFacade.part.stile"),      dimsMM = new Vector3Int(A, H, T) },
+                new Part { suffix = Loc.T("element.assembledFacade.part.rail"), dimsMM = new Vector3Int(B, A, T) },
+                new Part { suffix = Loc.T("element.assembledFacade.part.rail"), dimsMM = new Vector3Int(B, A, T) },
             };
 
             if (fill == AssembledFill.Blind)
-                parts.Add(new Part { suffix = "Панель", dimsMM = new Vector3Int(B, C, T) });
+                parts.Add(new Part { suffix = Loc.T("element.assembledFacade.part.panel"), dimsMM = new Vector3Int(B, C, T) });
             else if (fill == AssembledFill.Glass)
                 parts.Add(new Part
                 {
-                    suffix = "Стекло",
+                    suffix = Loc.T("element.assembledFacade.part.glass"),
                     dimsMM = new Vector3Int(
                         Mathf.Max(1, L - glassDeductMM),
                         Mathf.Max(1, H - glassDeductMM),
                         AppConstants.GLASS_THICKNESS_MM),
-                    materialKind = "Стекло"
+                    materialKind = Loc.T("element.assembledFacade.material.glass")
                 });
             return parts;
         }

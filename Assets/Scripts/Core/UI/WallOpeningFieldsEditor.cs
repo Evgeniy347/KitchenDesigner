@@ -21,15 +21,15 @@ namespace KitchenDesigner.Core.UI
 
         public override void Build()
         {
-            _tint = Rows.Dropdown("Стекло", new List<string> { "Прозрачное", "Тонированное" },
+            _tint = Rows.Dropdown(Loc.T("element.window.tint"), new List<string> { Loc.T("element.window.tintClear"), Loc.T("element.window.tintTinted") },
                 OnTintSelected, RowVisibility.ForExcept(ElementFacet.Window, ElementFacet.Door),
                 "CtxTint", hint: "element.window.tint");
 
-            _sillProtrusion = Rows.NumberField("Подоконник",
+            _sillProtrusion = Rows.NumberField(Loc.T("element.window.sill"),
                 RowVisibility.ForExcept(ElementFacet.Window, ElementFacet.Door),
                 hint: "element.window.sill");
 
-            _sashType = Rows.Dropdown("Створка", new List<string> { "Стекло", "Глухая" },
+            _sashType = Rows.Dropdown(Loc.T("element.door.sash"), new List<string> { Loc.T("element.door.sashGlazed"), Loc.T("element.door.sashSolid") },
                 OnSashTypeSelected, RowVisibility.For(ElementFacet.Door), "CtxSashType",
                 hint: "element.door.sash");
 
@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core.UI
                 FacadeDoor.Label(DoorMode.HingeFrontTop),
                 FacadeDoor.Label(DoorMode.HingeFrontBottom),
             };
-            _openingMode = Rows.Dropdown("Открывание", modeOptions, OnOpeningModeSelected,
+            _openingMode = Rows.Dropdown(Loc.T("element.window.openingMode"), modeOptions, OnOpeningModeSelected,
                 RowVisibility.For(ElementFacet.Window), "CtxWinMode",
                 hint: "element.window.openingMode");
         }

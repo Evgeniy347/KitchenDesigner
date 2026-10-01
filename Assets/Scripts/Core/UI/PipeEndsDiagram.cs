@@ -13,7 +13,7 @@ namespace KitchenDesigner.Core.UI
     {
         public const int EndCount = 2;
         public const int RecomputeEveryNFrames = 15;
-        public const string NoFittingOption = "нет";
+        public static string NoFittingOption => Loc.T("element.pipe.noFitting");
 
         private const float DiagramH = 116f;
         private const float RunHalfW = 150f, BarH = 16f, BarY = 26f;
@@ -23,7 +23,10 @@ namespace KitchenDesigner.Core.UI
         private const float ChoiceY = -14f, ChoiceW = 152f, ChoiceH = 28f, ChoiceX = 84f;
         private const float HintH = 20f;
 
-        private static readonly string[] EndCaptions = { "Начало", "Конец" };
+        private static readonly LocalizedCache<string[]> EndCaptionsCache =
+            new LocalizedCache<string[]>(() => new string[] { Loc.T("element.pipe.endStart"), Loc.T("element.pipe.endEnd") });
+
+        private static string[] EndCaptions => EndCaptionsCache.Value;
 
         private readonly IContextMenuHost _host;
         private readonly Func<PipeElement?> _target;
@@ -91,7 +94,7 @@ namespace KitchenDesigner.Core.UI
 
             _host.Layout.AddFor(ElementFacet.Pipe, DiagramH, RowGap, root);
             _host.Rows.Hint("CtxPipeEndsHint",
-                "Выбор детали ставит её на конец трубы устье в устье", HintH, ActionGap,
+                Loc.T("element.pipe.endsHint"), HintH, ActionGap,
                 RowVisibility.For(ElementFacet.Pipe), TextAnchor.MiddleCenter);
         }
 

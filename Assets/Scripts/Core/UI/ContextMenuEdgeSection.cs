@@ -39,14 +39,14 @@ namespace KitchenDesigner.Core.UI
         {
             var shown = RowVisibility.For(ElementFacet.Part, Shown);
 
-            _enabledToggle = _host.Rows.Toggle("CtxEdges", "Кромки", true, OnEnabledToggled,
+            _enabledToggle = _host.Rows.Toggle("CtxEdges", Loc.T("element.edge.enabled"), true, OnEnabledToggled,
                 RowVisibility.For(ElementFacet.Part, Eligible), RowGap);
 
             _diagram = BuildDiagram(parent);
             _host.Layout.AddFor(ElementFacet.Part, Shown, DiagramH, RowGap, _diagram);
 
-            _thickness = _host.Rows.NumberField("Толщина кромки", shown, "мм", "EdgeThickness");
-            _host.Rows.Hint("CtxEdgeHint", "Клик по стороне: авто → есть → убрать", HintH, ActionGap,
+            _thickness = _host.Rows.NumberField(Loc.T("element.edge.thickness"), shown, Loc.T("unit.mm"), "EdgeThickness");
+            _host.Rows.Hint("CtxEdgeHint", Loc.T("element.edge.clickHint"), HintH, ActionGap,
                 shown, TextAnchor.MiddleCenter);
         }
 
@@ -87,8 +87,8 @@ namespace KitchenDesigner.Core.UI
             if (!Target.EdgeBandingEnabled) return;
 
             var layout = EdgeBanding.LayoutOf(Target.DimensionsMM);
-            if (_lengthLabel != null) _lengthLabel.text = $"{layout.LengthMM} мм";
-            if (_widthLabel != null) _widthLabel.text = $"{layout.WidthMM} мм";
+            if (_lengthLabel != null) _lengthLabel.text = Loc.F("unit.mmValue", layout.LengthMM);
+            if (_widthLabel != null) _widthLabel.text = Loc.F("unit.mmValue", layout.WidthMM);
 
             var coverage = EdgeBanding.Coverage(Target, PartRegistry.GetAll());
             PaintStrip(_stripL1, _holeL1, coverage, EdgeSide.L1);

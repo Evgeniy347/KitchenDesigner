@@ -52,7 +52,7 @@ namespace KitchenDesigner.Core.Measure
         public static string FormatMm(float lengthUnits, bool axisAligned)
         {
             int mm = Mathf.RoundToInt(ToMm(lengthUnits));
-            return axisAligned ? $"{mm} мм" : $"{UI.UIStyle.GlyphAngle} {mm} мм";
+            return axisAligned ? Loc.F("measure.lengthMm", mm) : Loc.F("measure.lengthMmAngled", UI.UIStyle.GlyphAngle, mm);
         }
 
         public static float WorldSizeForPixels(Camera camera, Vector3 worldPoint, float pixels)

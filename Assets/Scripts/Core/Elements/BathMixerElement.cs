@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("излив и рычаг — части корпуса смесителя, отдельной лицевой деталью не выделены");
 
-        public override string DisplayTypeName => "Смеситель для ванны";
+        public override string DisplayTypeName => Loc.T("elementType.bathMixer");
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

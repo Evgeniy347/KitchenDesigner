@@ -12,10 +12,12 @@ namespace KitchenDesigner.Core
 
     public static class SoilKindTitles
     {
-        public static readonly string[] All =
-        {
-            "Песок", "Супесь", "Суглинок", "Глина", "Торф", "Неизвестно",
-        };
+        private static readonly LocalizedCache<string[]> AllCache =
+            new LocalizedCache<string[]>(() => new string[] {
+            Loc.T("soil.sand"), Loc.T("soil.sandyLoam"), Loc.T("soil.loam"), Loc.T("soil.clay"), Loc.T("soil.peat"), Loc.T("soil.unknown"),
+        });
+
+        public static string[] All => AllCache.Value;
 
         public static string Of(SoilKind soil)
         {

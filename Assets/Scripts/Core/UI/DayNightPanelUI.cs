@@ -37,7 +37,7 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("DnTitle", panel.transform, "День / Ночь", 20,
+            UIFactory.CreateLabel("DnTitle", panel.transform, Loc.T("window.dayNight.title"), 20,
                 new Vector2(0, 104), new Vector2(280, 28), TextAnchor.MiddleCenter);
 
             float y = 66f;
@@ -61,7 +61,7 @@ namespace KitchenDesigner.Core.UI
                 SunController.Intensity, new Vector2(0, y - 24), new Vector2(264, 22),
                 v => { SunController.SetIntensity(v); RefreshLabels(); });
 
-            UIFactory.CreateButton("DnReset", panel.transform, "Сброс (полдень)",
+            UIFactory.CreateButton("DnReset", panel.transform, Loc.T("window.dayNight.reset"),
                 new Vector2(0, y - 62), new Vector2(264, 30), ResetSun);
 
             UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
@@ -85,13 +85,13 @@ namespace KitchenDesigner.Core.UI
             {
                 int h = Mathf.FloorToInt(SunController.TimeOfDay);
                 int m = Mathf.FloorToInt((SunController.TimeOfDay - h) * 60f);
-                string phase = SunController.IsNight ? "ночь" : "день";
-                _timeLabel.text = $"Время: {h:00}:{m:00} ({phase})";
+                string phase = SunController.IsNight ? Loc.T("window.dayNight.night") : Loc.T("window.dayNight.day");
+                _timeLabel.text = Loc.F("window.dayNight.time", h, m, phase);
             }
             if (_azimuthLabel != null)
-                _azimuthLabel.text = $"Азимут солнца: {SunController.Azimuth:0}°";
+                _azimuthLabel.text = Loc.F("window.dayNight.azimuth", SunController.Azimuth);
             if (_intensityLabel != null)
-                _intensityLabel.text = $"Яркость: {SunController.Intensity:0.00}";
+                _intensityLabel.text = Loc.F("window.dayNight.intensity", SunController.Intensity);
         }
 
         public bool IsVisible => _root != null && _root.activeSelf;

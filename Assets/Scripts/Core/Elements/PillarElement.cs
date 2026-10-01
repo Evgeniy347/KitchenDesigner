@@ -7,7 +7,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("опора — тело вращения: она одинакова со всех сторон");
 
-        public override string DisplayTypeName => "Опора";
+        public override string DisplayTypeName => Loc.T("elementType.pillar");
 
 		public void SeatAfterMove(System.Collections.Generic.IReadOnlyList<KitchenElement> scene,
 			SnapCursor cursor = default) =>

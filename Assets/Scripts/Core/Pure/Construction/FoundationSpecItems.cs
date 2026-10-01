@@ -4,13 +4,13 @@ namespace KitchenDesigner.Core.Construction
 {
     public static class FoundationSpecItems
     {
-        public const string Section = SpecSections.Foundation;
-        public const string ExcavationName = "Выемка грунта";
-        public const string SandName = "Подушка: песок";
-        public const string GravelName = "Подушка: щебень";
-        public const string ConcreteName = "Бетон ленты";
-        public const string FormworkName = "Опалубка";
-        public const string RebarName = "Арматура";
+        public static string Section => SpecSections.Foundation;
+        public static string ExcavationName => Loc.T("spec.foundation.excavation");
+        public static string SandName => Loc.T("spec.foundation.sand");
+        public static string GravelName => Loc.T("spec.foundation.gravel");
+        public static string ConcreteName => Loc.T("spec.foundation.concrete");
+        public static string FormworkName => Loc.T("spec.foundation.formwork");
+        public static string RebarName => Loc.T("spec.foundation.rebar");
 
         public static IEnumerable<SpecItem> Of(FoundationQuantitiesResult quantities,
             string concreteGradeTitle)

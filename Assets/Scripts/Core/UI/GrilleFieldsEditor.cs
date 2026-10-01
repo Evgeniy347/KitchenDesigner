@@ -17,7 +17,7 @@ namespace KitchenDesigner.Core.UI
         {
             var isGrille = RowVisibility.When(() => Host.Target is GrilleElement);
 
-            var airflowRow = Rows.NumberField("Расход воздуха", isGrille, "м³/ч", AirflowNode,
+            var airflowRow = Rows.NumberField(Loc.T("element.grille.airflow"), isGrille, Loc.T("unit.m3PerHour"), AirflowNode,
                 hint: "element.grille.airflow");
             Bind<GrilleElement>(airflowRow, g => g.AirflowM3PerHour, (g, v) => g.AirflowM3PerHour = v,
                 GrilleDefaults.DefaultAirflowM3PerHour.ToString());

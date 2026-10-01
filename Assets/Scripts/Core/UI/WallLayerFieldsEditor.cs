@@ -17,12 +17,12 @@ namespace KitchenDesigner.Core.UI
             var isWallLayer = RowVisibility.When(() => Host.Target is WallLayerElement);
             var isVentGap = RowVisibility.When(() => Host.Target is VentGapElement);
 
-            var thicknessRow = Rows.NumberField("Толщина", isWallLayer, "мм", ThicknessNode,
+            var thicknessRow = Rows.NumberField(Loc.T("element.wallLayer.thickness"), isWallLayer, Loc.T("unit.mm"), ThicknessNode,
                 hint: "element.wallLayer.thickness");
             Bind<WallLayerElement>(thicknessRow, w => w.ThicknessMm, (w, v) => w.ThicknessMm = v,
                 WallLayerDefaults.InsulationThicknessMm.ToString());
 
-            var stepRow = Rows.NumberField("Шаг обрешётки", isVentGap, "мм", BattenStepNode,
+            var stepRow = Rows.NumberField(Loc.T("element.wallLayer.battenStep"), isVentGap, Loc.T("unit.mm"), BattenStepNode,
                 hint: "element.wallLayer.battenStep");
             Bind<VentGapElement>(stepRow, v => v.BattenStepMm, (v, val) => v.BattenStepMm = val,
                 WallLayerDefaults.VentGapBattenStepMm.ToString());

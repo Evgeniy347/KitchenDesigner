@@ -7,25 +7,20 @@ namespace KitchenDesigner.Core.Update
     {
         public const float TransientSeconds = 3f;
 
-        public const string CheckError = "Не удалось проверить обновления";
-        public const string UpToDate = "Обновлений нет — установлена актуальная версия";
-        public const string DownloadError = "Не удалось скачать обновление";
-        public const string DownloadCancelled = "Обновление отменено";
+        public static string CheckError => Loc.T("update.checkError");
+        public static string UpToDate => Loc.T("update.upToDate");
+        public static string DownloadError => Loc.T("update.downloadError");
+        public static string DownloadCancelled => Loc.T("update.cancelled");
 
-        public const string UpdateTitle = "Доступно обновление";
-        public const string UpdateMessage =
-            "Доступна новая версия Kitchen Designer {0}.\n\n" +
-            "Обновить сейчас? Приложение сохранит работу, установит обновление и " +
-            "перезапустится автоматически.";
-        public const string UpdateAcceptButton = "Обновить и перезапустить";
-        public const string UpdateCancelButton = "Отмена";
+        public static string UpdateTitle => Loc.T("update.available.title");
+        public static string UpdateMessage => Loc.T("update.available.message");
+        public static string UpdateAcceptButton => Loc.T("update.available.accept");
+        public static string UpdateCancelButton => Loc.T("common.cancel");
 
-        public const string DownloadTitle = "Установка обновления";
-        public const string DownloadMessage =
-            "Загружаем Kitchen Designer {0}…\n\n" +
-            "После завершения загрузки приложение будет автоматически перезапущено.";
-        public const string DownloadCancelButton = "Отмена";
-        public const string RetryAttempt = "Повторная попытка {0} из {1}…";
+        public static string DownloadTitle => Loc.T("update.download.title");
+        public static string DownloadMessage => Loc.T("update.download.message");
+        public static string DownloadCancelButton => Loc.T("common.cancel");
+        public static string RetryAttempt => Loc.T("update.download.retry");
     }
 
     public enum StatusLevel { Info, Success, Warning, Error }

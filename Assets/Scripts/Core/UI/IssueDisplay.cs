@@ -9,9 +9,9 @@ namespace KitchenDesigner.Core.UI
     {
         public static string LevelName(IssueLevel level) => level switch
         {
-            IssueLevel.Error => "Ошибка",
-            IssueLevel.Warning => "Предупреждение",
-            IssueLevel.Info => "Инфо",
+            IssueLevel.Error => Loc.T("errors.level.error"),
+            IssueLevel.Warning => Loc.T("errors.level.warning"),
+            IssueLevel.Info => Loc.T("errors.level.info"),
             _ => level.ToString(),
         };
 

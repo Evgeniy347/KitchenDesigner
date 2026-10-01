@@ -10,7 +10,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("окно — створка в проёме: обе её стороны одинаковы");
 
-        public override string DisplayTypeName => "Окно";
+        public override string DisplayTypeName => Loc.T("elementType.window");
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

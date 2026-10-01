@@ -35,24 +35,24 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, DragStripDownToTheTitleBottom);
 
             _linkRoot = NewRoot(panel.transform);
-            UIFactory.CreateLabel("GmLinkTitle", _linkRoot.transform, "Связать выделенные?", 18,
+            UIFactory.CreateLabel("GmLinkTitle", _linkRoot.transform, Loc.T("group.linkPrompt"), 18,
                 new Vector2(0, 26), new Vector2(210, 28), TextAnchor.MiddleCenter);
-            UIFactory.CreateButton("GmLink", _linkRoot.transform, "Связать (замок)",
+            UIFactory.CreateButton("GmLink", _linkRoot.transform, Loc.T("group.link"),
                 new Vector2(0, -22), new Vector2(180, 40), DoLink);
 
             _groupRoot = NewRoot(panel.transform);
-            UIFactory.CreateLabel("GmTitle", _groupRoot.transform, "Группа", 20,
+            UIFactory.CreateLabel("GmTitle", _groupRoot.transform, Loc.T("group.title"), 20,
                 new Vector2(0, 70), new Vector2(260, 28), TextAnchor.MiddleCenter);
-            UIFactory.CreateLabel("GmNameLbl", _groupRoot.transform, "Имя", 15,
+            UIFactory.CreateLabel("GmNameLbl", _groupRoot.transform, Loc.T("group.name"), 15,
                 new Vector2(-100, 32), new Vector2(60, 24));
             _nameField = UIFactory.CreateInputField("GmName", _groupRoot.transform, "",
                 new Vector2(35, 32), new Vector2(160, 24));
             _nameField.onEndEdit.AddListener(t => { if (_group != null) GroupManager.Rename(_group, t); });
-            _lockMove = UIFactory.CreateToggle("GmLockMove", _groupRoot.transform, "Закрепить", false,
+            _lockMove = UIFactory.CreateToggle("GmLockMove", _groupRoot.transform, Loc.T("group.lock"), false,
                 new Vector2(0, -4), new Vector2(248, 26), v => { if (_group != null) GroupManager.SetMovable(_group, !v); });
-            UIFactory.CreateButton("GmEdit", _groupRoot.transform, "Редактировать модуль",
+            UIFactory.CreateButton("GmEdit", _groupRoot.transform, Loc.T("group.editModule"),
                 new Vector2(0, -42), new Vector2(200, 36), DoEditModule);
-            UIFactory.CreateButton("GmUnlink", _groupRoot.transform, "Разорвать связь",
+            UIFactory.CreateButton("GmUnlink", _groupRoot.transform, Loc.T("group.unlink"),
                 new Vector2(0, -82), new Vector2(200, 36), DoUnlink);
 
             CreateCloseButtonOverTheDragStrip(panel.transform);

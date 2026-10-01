@@ -4,11 +4,11 @@ namespace KitchenDesigner.Core.Construction
 {
     public static class FenceSpecItems
     {
-        public const string Section = SpecSections.Structures;
-        public const string PostsName = "Столбы забора";
-        public const string ConcreteName = "Бетон под столбы";
-        public const string SheetName = "Профлист";
-        public const string RailName = "Прожилины (лаги)";
+        public static string Section => SpecSections.Structures;
+        public static string PostsName => Loc.T("spec.fence.posts");
+        public static string ConcreteName => Loc.T("spec.fence.postConcrete");
+        public static string SheetName => Loc.T("spec.fence.sheet");
+        public static string RailName => Loc.T("spec.fence.rails");
 
         public const float HoleDiameterToPostSectionRatio = 2.5f;
 

@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public class InsulationElement : WallLayerElement, IQuantifies
     {
-        public override string DisplayTypeName => "Утеплитель";
+        public override string DisplayTypeName => Loc.T("elementType.insulation");
 
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("утеплитель идёт по всей грани стены под облицовкой — лицевой детали нет");
@@ -18,8 +18,8 @@ namespace KitchenDesigner.Core
             double volumeM3 = WallLayerQuantities.InsulationVolumeM3(
                 DimensionsMM.x, DimensionsMM.y, DimensionsMM.z, openings);
 
-            yield return new SpecItem(SpecSections.Walls, "Утепление стены", "", SpecUnit.AreaM2, (float)areaM2);
-            yield return new SpecItem(SpecSections.Walls, "Утепление стены, объём", "", SpecUnit.VolumeM3,
+            yield return new SpecItem(SpecSections.Walls, Loc.T("spec.item.wallInsulation"), "", SpecUnit.AreaM2, (float)areaM2);
+            yield return new SpecItem(SpecSections.Walls, Loc.T("spec.item.wallInsulationVolume"), "", SpecUnit.VolumeM3,
                 (float)volumeM3);
         }
     }

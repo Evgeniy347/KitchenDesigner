@@ -25,12 +25,12 @@ namespace KitchenDesigner.Core.UI
 
         public void Build()
         {
-            _countLabel = _host.Rows.WideButton("CtxGaps", "Зазоры (0)", Toggle,
+            _countLabel = _host.Rows.WideButton("CtxGaps", Loc.T("element.gaps.headerEmpty"), Toggle,
                 RowVisibility.When(Eligible), RowGap);
 
-            BuildRow("Слева / справа, мм", GapSide.Left, GapSide.Right);
-            BuildRow("Сверху / снизу, мм", GapSide.Top, GapSide.Bottom);
-            BuildRow("Спереди / сзади, мм", GapSide.Front, GapSide.Back);
+            BuildRow(Loc.T("element.common.leftRightMm"), GapSide.Left, GapSide.Right);
+            BuildRow(Loc.T("element.common.topBottomMm"), GapSide.Top, GapSide.Bottom);
+            BuildRow(Loc.T("element.common.frontBackMm"), GapSide.Front, GapSide.Back);
         }
 
         public void Toggle()
@@ -47,7 +47,7 @@ namespace KitchenDesigner.Core.UI
             foreach (var f in _fieldsBySide)
                 if (f != null && _host.Fields.ParseInt(f, 0) != 0) filled++;
             _countLabel.text =
-                $"Зазоры ({filled})  {(_expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
+                Loc.F("element.gaps.header", filled, (_expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed));
         }
 
         public void WriteFrom(KitchenElement? element)

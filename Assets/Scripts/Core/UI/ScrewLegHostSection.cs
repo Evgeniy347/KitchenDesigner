@@ -23,14 +23,14 @@ namespace KitchenDesigner.Core.UI
         {
             var visibility = RowVisibility.For(ElementFacet.ScrewLeg);
 
-            _host.Rows.Hint("CtxSecScrewHost", "Корпус", CaptionHeight, RowGap, visibility);
+            _host.Rows.Hint("CtxSecScrewHost", Loc.T("element.screwLeg.host"), CaptionHeight, RowGap, visibility);
 
-            _insertion = _host.Rows.NumberField("Заход в корпус", visibility);
+            _insertion = _host.Rows.NumberField(Loc.T("element.screwLeg.insertion"), visibility);
             UIRowEnabled.SetControlEnabled(_insertion, false);
 
-            (_left, _right) = _host.Rows.PairField("Слева / справа, мм",
+            (_left, _right) = _host.Rows.PairField(Loc.T("element.common.leftRightMm"),
                 "screwLeft", "screwRight", NoHostText, visibility);
-            (_top, _bottom) = _host.Rows.PairField("Сверху / снизу, мм",
+            (_top, _bottom) = _host.Rows.PairField(Loc.T("element.common.topBottomMm"),
                 "screwTop", "screwBottom", NoHostText, visibility);
         }
 

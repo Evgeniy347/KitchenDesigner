@@ -2,14 +2,14 @@ namespace KitchenDesigner.Core
 {
     public static class SpecSections
     {
-        public const string Furniture = "Мебель";
-        public const string Plumbing = "Сантехника";
-        public const string Walls = "Стены";
-        public const string Foundation = "Фундамент";
-        public const string Structures = "Конструкции";
-        public const string PurchasedGoods = "Покупные изделия";
+        public static string Furniture => Loc.T("spec.section.furniture");
+        public static string Plumbing => Loc.T("spec.section.plumbing");
+        public static string Walls => Loc.T("spec.section.walls");
+        public static string Foundation => Loc.T("spec.section.foundation");
+        public static string Structures => Loc.T("spec.section.structures");
+        public static string PurchasedGoods => Loc.T("spec.section.purchasedGoods");
 
-        public static readonly string[] All =
+        public static string[] All => new[]
         {
             Furniture, Plumbing, Walls, Foundation, Structures, PurchasedGoods,
         };

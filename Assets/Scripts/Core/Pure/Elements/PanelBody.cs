@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core
     {
         public const int DEFAULT_GAP_MM = 1;
 
-        public const string DISPLAY_TYPE_NAME = "ДВП/ХДФ";
+        public static string DISPLAY_TYPE_NAME => Loc.T("elementType.panel");
 
         public const bool SUPPORTS_GAPS = true;
 

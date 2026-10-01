@@ -15,11 +15,11 @@ namespace KitchenDesigner.Core
         {
             switch (unit)
             {
-                case SpecUnit.Pieces: return "шт";
-                case SpecUnit.LinearMeters: return "м";
-                case SpecUnit.AreaM2: return "м²";
-                case SpecUnit.VolumeM3: return "м³";
-                case SpecUnit.Kilograms: return "кг";
+                case SpecUnit.Pieces: return Loc.T("spec.unit.pieces");
+                case SpecUnit.LinearMeters: return Loc.T("spec.unit.linearMeters");
+                case SpecUnit.AreaM2: return Loc.T("spec.unit.squareMeters");
+                case SpecUnit.VolumeM3: return Loc.T("spec.unit.cubicMeters");
+                case SpecUnit.Kilograms: return Loc.T("spec.unit.kilograms");
                 default: return "?";
             }
         }

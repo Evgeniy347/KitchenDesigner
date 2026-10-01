@@ -11,8 +11,7 @@ namespace KitchenDesigner.Core.Construction
             MasonryUnit unit, float thicknessMm, IReadOnlyList<float> series) =>
             new ConstructionFinding(ConstructionFindingLevel.Warning, CodeWallThicknessOffFormat,
                 elementId,
-                $"Толщина стены {Mm(thicknessMm)} мм не кратна формату «{unit.Title}» со швом: "
-                + $"стандартные толщины {Series(series)} мм — кирпич придётся резать");
+                Loc.F("issue.wal01.message", Mm(thicknessMm), unit.Title, Series(series)));
 
         private static string Mm(float value) =>
             value.ToString("0.#", CultureInfo.InvariantCulture);

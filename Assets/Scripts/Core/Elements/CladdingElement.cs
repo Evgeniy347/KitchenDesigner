@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core
 {
     public class CladdingElement : WallLayerElement, IQuantifies
     {
-        public override string DisplayTypeName => "Облицовка";
+        public override string DisplayTypeName => Loc.T("elementType.cladding");
 
         public override int StackOrder => 2;
 
@@ -18,7 +18,7 @@ namespace KitchenDesigner.Core
             var openings = wall != null ? WallQuantitySurvey.Openings(wall) : new List<WallOpening>();
             double areaM2 = WallLayerQuantities.CladdingAreaM2(DimensionsMM.x, DimensionsMM.y, openings);
 
-            yield return new SpecItem(SpecSections.Walls, "Облицовка стены", "", SpecUnit.AreaM2, (float)areaM2);
+            yield return new SpecItem(SpecSections.Walls, Loc.T("spec.item.wallCladding"), "", SpecUnit.AreaM2, (float)areaM2);
         }
     }
 }

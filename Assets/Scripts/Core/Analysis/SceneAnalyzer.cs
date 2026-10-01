@@ -216,10 +216,10 @@ namespace KitchenDesigner.Core.Analysis
             {
                 if (!(e is FacadeElement f)) continue;
                 var tooSmallGaps = new List<string>();
-                if (f.GapLeft < FacadeMinGapMm) tooSmallGaps.Add($"слева {f.GapLeft}");
-                if (f.GapRight < FacadeMinGapMm) tooSmallGaps.Add($"справа {f.GapRight}");
-                if (f.GapTop < FacadeMinGapMm) tooSmallGaps.Add($"сверху {f.GapTop}");
-                if (f.GapBottom < FacadeMinGapMm) tooSmallGaps.Add($"снизу {f.GapBottom}");
+                if (f.GapLeft < FacadeMinGapMm) tooSmallGaps.Add(Loc.F("issue.fac01.sideLeft", f.GapLeft));
+                if (f.GapRight < FacadeMinGapMm) tooSmallGaps.Add(Loc.F("issue.fac01.sideRight", f.GapRight));
+                if (f.GapTop < FacadeMinGapMm) tooSmallGaps.Add(Loc.F("issue.fac01.sideTop", f.GapTop));
+                if (f.GapBottom < FacadeMinGapMm) tooSmallGaps.Add(Loc.F("issue.fac01.sideBottom", f.GapBottom));
                 if (tooSmallGaps.Count > 0)
                     issues.Add(IssueCatalog.FacadeGap(f, string.Join(", ", tooSmallGaps)));
             }
@@ -436,8 +436,7 @@ namespace KitchenDesigner.Core.Analysis
         public static AnalysisIssue UnknownType(KitchenElement element, string typeId) =>
             new AnalysisIssue(IssueLevel.Warning, CodeUnknownElementType,
                 Name(element),
-                $"Неизвестный тип объекта «{typeId}» — показан обычной деталью; "
-                + "его поля сохранятся и вернутся в более новой версии программы",
+                Loc.F("issue.typ01.message", typeId),
                 element);
 
         public static AnalysisIssue FromViolation(ContactViolation v)
@@ -446,22 +445,22 @@ namespace KitchenDesigner.Core.Analysis
             {
                 case ViolationKind.Overlap:
                     return new AnalysisIssue(IssueLevel.Error, CodeOverlap,
-                        PairDetail(v.element, v.other), "Детали пересекаются в объёме",
+                        PairDetail(v.element, v.other), Loc.T("issue.col01.message"),
                         v.element, v.other);
 
                 case ViolationKind.Unsupported:
                     return new AnalysisIssue(IssueLevel.Error, CodeUnsupported,
-                        Name(v.element), "Деталь не имеет опоры — висит в воздухе",
+                        Name(v.element), Loc.T("issue.col02.message"),
                         v.element);
 
                 case ViolationKind.OutOfWallBounds:
                     return new AnalysisIssue(IssueLevel.Error, CodeOutOfWallBounds,
-                        Name(v.element), "Элемент выходит за габарит стены",
+                        Name(v.element), Loc.T("issue.col03.message"),
                         v.element);
 
                 default:
                     return new AnalysisIssue(IssueLevel.Error, CodeUnknownViolation,
-                        Name(v.element), "Нарушение геометрии", v.element);
+                        Name(v.element), Loc.T("issue.col00.message"), v.element);
             }
         }
 
@@ -470,132 +469,122 @@ namespace KitchenDesigner.Core.Analysis
             dominantCoverer != null
                 ? new AnalysisIssue(IssueLevel.Error, CodeEdgePartialCover,
                     PairDetail(element, dominantCoverer),
-                    $"Торец под кромку перекрыт частично: {sides}", element, dominantCoverer)
+                    Loc.F("issue.edg01.message", sides), element, dominantCoverer)
                 : new AnalysisIssue(IssueLevel.Error, CodeEdgePartialCover,
-                    Name(element), $"Торец под кромку перекрыт частично: {sides}", element);
+                    Name(element), Loc.F("issue.edg01.message", sides), element);
 
         public static AnalysisIssue NearContact(KitchenElement a, KitchenElement b, float gapMm) =>
             new AnalysisIssue(IssueLevel.Warning, CodeNearContact,
                 PairDetail(a, b),
-                $"Зазор по оси {gapMm:F1} мм — требуется ≥{SceneAnalyzer.NearContactMinGapMm:F0} мм (нет прямого контакта)",
+                Loc.F("issue.gap01.message", gapMm, SceneAnalyzer.NearContactMinGapMm),
                 a, b);
 
         public static AnalysisIssue NearContactFar(KitchenElement a, KitchenElement b, float gapMm) =>
             new AnalysisIssue(IssueLevel.Warning, CodeNearContactFar,
                 PairDetail(a, b),
-                $"Зазор по оси {gapMm:F1} мм — слишком большой (допустимо ≤{SceneAnalyzer.NearContactMaxGapMm:F0} мм)",
+                Loc.F("issue.gap02.message", gapMm, SceneAnalyzer.NearContactMaxGapMm),
                 a, b);
 
         public static AnalysisIssue DishwasherFacadeBackGap(KitchenElement dishwasher, KitchenElement facade,
             float gapMm) =>
             new AnalysisIssue(IssueLevel.Warning, CodeDishwasherBackGap,
                 PairDetail(dishwasher, facade),
-                $"Задний зазор фасада {gapMm:F1} мм — требуется ≥{SceneAnalyzer.DishwasherBackGapMinMm:F0} мм",
+                Loc.F("issue.dwh04.message", gapMm, SceneAnalyzer.DishwasherBackGapMinMm),
                 dishwasher, facade);
 
         public static AnalysisIssue PanelNotSeated(KitchenElement panel, KitchenElement board,
             float insertionMm, float depthMm) =>
             new AnalysisIssue(IssueLevel.Warning, CodePanelNotSeated,
                 $"{Name(panel)} ↔ {Name(board)}",
-                $"Панель вошла в паз не до дна: {insertionMm:F1} из {depthMm:F1} мм",
+                Loc.F("issue.seat01.message", insertionMm, depthMm),
                 panel, board);
 
         public static AnalysisIssue FacadeGap(KitchenElement facade, string sides) =>
             new AnalysisIssue(IssueLevel.Warning, CodeFacadeGap,
-                Name(facade), $"Зазор фасада меньше {SceneAnalyzer.FacadeMinGapMm} мм: {sides}",
+                Name(facade), Loc.F("issue.fac01.message", SceneAnalyzer.FacadeMinGapMm, sides),
                 facade);
 
         public static AnalysisIssue DrawerNoFacade(KitchenElement drawer) =>
             new AnalysisIssue(IssueLevel.Warning, CodeDrawerNoFacade,
-                Name(drawer), "Ящик без ссылки на фасад", drawer);
+                Name(drawer), Loc.T("issue.drw01.message"), drawer);
 
         public static AnalysisIssue DrawerFacadeOrphaned(KitchenElement drawer, KitchenElement? facade) =>
             new AnalysisIssue(IssueLevel.Warning, CodeDrawerFacadeOrphaned,
                 PairDetail(drawer, facade),
-                $"Фасад ящика не на месте — {Name(drawer)} и {Name(facade)} не в контакте",
+                Loc.F("issue.drw02.message", Name(drawer), Name(facade)),
                 drawer, facade);
 
         public static AnalysisIssue DishwasherNoFacade(KitchenElement dishwasher) =>
             new AnalysisIssue(IssueLevel.Warning, CodeDishwasherNoFacade,
-                Name(dishwasher), "Посудомойка без фасада — прибор полновстраиваемый, лица у него нет",
+                Name(dishwasher), Loc.T("issue.dwh01.message"),
                 dishwasher);
 
         public static AnalysisIssue DishwasherFacadeMissing(KitchenElement dishwasher, string facadeName) =>
             new AnalysisIssue(IssueLevel.Warning, CodeDishwasherFacadeOrphaned,
-                Name(dishwasher), $"Фасад «{facadeName}» удалён — посудомойка осталась без лица",
+                Name(dishwasher), Loc.F("issue.dwh02.facadeDeleted", facadeName),
                 dishwasher);
 
         public static AnalysisIssue DishwasherFacadeOrphaned(KitchenElement dishwasher, KitchenElement? facade) =>
             new AnalysisIssue(IssueLevel.Warning, CodeDishwasherFacadeOrphaned,
                 PairDetail(dishwasher, facade),
-                $"Фасад посудомойки не на месте — {Name(dishwasher)} и {Name(facade)} не в контакте",
+                Loc.F("issue.dwh02.message", Name(dishwasher), Name(facade)),
                 dishwasher, facade);
 
         public static AnalysisIssue DishwasherNoSupport(KitchenElement dishwasher) =>
             new AnalysisIssue(IssueLevel.Error, CodeDishwasherNoSupport,
                 Name(dishwasher),
-                "Посудомойке не на чем стоять — под низом нужен пол, цоколь или опорная деталь",
+                Loc.T("issue.dwh05.noSupport"),
                 dishwasher);
 
         public static AnalysisIssue DishwasherSunk(KitchenElement dishwasher, KitchenElement? blocker,
             float sinkMm) =>
             new AnalysisIssue(IssueLevel.Error, CodeDishwasherNoSupport,
                 PairDetail(dishwasher, blocker),
-                $"Посудомойка утоплена в {Name(blocker)} на {sinkMm:F0} мм — низ прибора должен стоять на опоре",
+                Loc.F("issue.dwh05.sunk", Name(blocker), sinkMm),
                 dishwasher, blocker);
 
         public static AnalysisIssue DishwasherFacadeHeight(KitchenElement dishwasher,
             KitchenElement? facade, int facadeHeightMM) =>
             new AnalysisIssue(IssueLevel.Warning, CodeDishwasherFacadeHeight,
                 PairDetail(dishwasher, facade),
-                $"Высота фасада {facadeHeightMM} мм вне диапазона "
-                + $"{DishwasherElement.FACADE_MIN_HEIGHT_MM}–{DishwasherElement.FACADE_MAX_HEIGHT_MM} мм: "
-                + $"цоколь получится {DishwasherElement.PlinthForFacade(facadeHeightMM)} мм "
-                + $"(допустимо {DishwasherElement.PLINTH_MIN_MM}–{DishwasherElement.PLINTH_MAX_MM})",
+                Loc.F("issue.dwh03.message", facadeHeightMM, DishwasherElement.FACADE_MIN_HEIGHT_MM, DishwasherElement.FACADE_MAX_HEIGHT_MM, DishwasherElement.PlinthForFacade(facadeHeightMM), DishwasherElement.PLINTH_MIN_MM, DishwasherElement.PLINTH_MAX_MM),
                 dishwasher, facade);
 
         public static AnalysisIssue AttachDetached(KitchenElement child, KitchenElement parent) =>
             new AnalysisIssue(IssueLevel.Error, CodeAttachDetached,
                 PairDetail(child, parent),
-                $"Прикреплённая деталь отошла от родителя — {Name(child)} и {Name(parent)} не в контакте",
+                Loc.F("issue.att01.message", Name(child), Name(parent)),
                 child, parent);
 
         public static AnalysisIssue WallLayerHostMissing(KitchenElement layer, string hostWallName) =>
             new AnalysisIssue(IssueLevel.Error, CodeAttachDetached,
                 $"{Name(layer)} ↔ {hostWallName}",
-                $"Слой стены отошёл от родителя — {Name(layer)} привязан к стене «{hostWallName}», "
-                + "а такой стены в сцене больше нет",
+                Loc.F("issue.att01.wallLayerHostMissing", Name(layer), hostWallName),
                 layer);
 
         public static AnalysisIssue ScrewLegOffCentre(KitchenElement leg, KitchenElement host,
             ScrewLegOffCentre offCentre) =>
             new AnalysisIssue(IssueLevel.Warning, CodeScrewLegOffCentre,
                 PairDetail(leg, host),
-                $"Футорке не за что держаться: сторона {offCentre.Axis} у {Name(host)} — "
-                + $"{offCentre.SpanMM:F1} мм (тоньше {ScrewLegSpec.CENTRING_REQUIRED_SPAN_MM} мм), "
-                + $"смещение {offCentre.OffsetMM:F1} мм оставило стенку {offCentre.WallMM:F1} мм "
-                + $"вместо {ScrewLegSpec.MIN_INSERT_WALL_MM:F0} мм",
+                Loc.F("issue.leg01.message", offCentre.Axis, Name(host), offCentre.SpanMM, ScrewLegSpec.CENTRING_REQUIRED_SPAN_MM, offCentre.OffsetMM, offCentre.WallMM, ScrewLegSpec.MIN_INSERT_WALL_MM),
                 leg, host);
 
         public static AnalysisIssue ScrewLegShallow(KitchenElement leg, KitchenElement host,
             int insertionMM) =>
             new AnalysisIssue(IssueLevel.Error, CodeScrewLegShallow,
                 PairDetail(leg, host),
-                $"Резьба вошла в {Name(host)} на {insertionMM} мм — "
-                + $"требуется {ScrewLegSpec.MIN_INSERTION_INTO_HOST_MM} мм",
+                Loc.F("issue.leg02.message", Name(host), insertionMM, ScrewLegSpec.MIN_INSERTION_INTO_HOST_MM),
                 leg, host);
 
         public static AnalysisIssue ScrewLegNoFooting(KitchenElement leg, ScrewLegSupport below) =>
             below.Nearest != null
                 ? new AnalysisIssue(IssueLevel.Warning, CodeScrewLegNoFooting,
                     PairDetail(leg, below.Nearest),
-                    $"Опоре не на чем стоять: от низа пятака до {Name(below.Nearest)} "
-                    + $"{below.GapMM:F1} мм — низ опоры обязан касаться пола или детали "
-                    + $"(допуск {Tolerance.ContactMm:F1} мм)",
+                    Loc.F("issue.leg03.gap", Name(below.Nearest), below.GapMM, Tolerance.ContactMm),
                     leg, below.Nearest)
                 : new AnalysisIssue(IssueLevel.Warning, CodeScrewLegNoFooting,
                     Name(leg),
-                    "Опоре не на чем стоять: под пятаком нет ни пола, ни детали",
+                    Loc.T("issue.leg03.nothingBelow"),
                     leg);
 
         public static AnalysisIssue FromPipeFinding(Plumbing.PipeFinding finding,

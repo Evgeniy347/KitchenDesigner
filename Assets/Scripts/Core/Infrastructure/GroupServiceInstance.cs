@@ -30,7 +30,7 @@ namespace KitchenDesigner.Core
 
         public LinkGroup Create(string name)
         {
-            var g = new LinkGroup { id = _nextId++, name = string.IsNullOrEmpty(name) ? "Группа" : name };
+            var g = new LinkGroup { id = _nextId++, name = string.IsNullOrEmpty(name) ? Loc.T("group.genericName") : name };
             _groups[g.id] = g;
             RaiseChanged();
             return g;

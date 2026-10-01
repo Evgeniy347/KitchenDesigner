@@ -9,21 +9,21 @@ namespace KitchenDesigner.Core.Plumbing
 
         public static PipeFinding OpenEnd(in PipePort port) =>
             new PipeFinding(PipeFindingLevel.Error, CodeOpenEnd, port.ElementId, null,
-                $"{PipeFittingNames.Title(port.OwnerKind)}: порт {port.PortIndex} не соединён — нужна заглушка, фитинг, подача или обратка");
+                Loc.F("issue.pip01.message", PipeFittingNames.Title(port.OwnerKind), port.PortIndex));
 
         public static PipeFinding FittingSizeMismatch(string elementId, string? sizeA, string? sizeB) =>
             new PipeFinding(PipeFindingLevel.Error, CodeSizeMismatch, elementId, null,
-                $"Фитинг сводит разные диаметры: {PipeSpec.DesignationOrDash(sizeA)} и {PipeSpec.DesignationOrDash(sizeB)} — нужен переходник");
+                Loc.F("issue.pip02.message", PipeSpec.DesignationOrDash(sizeA), PipeSpec.DesignationOrDash(sizeB)));
 
         public static PipeFinding SameRoleJoin(in PipePort a, in PipePort b, PipeNodeKind role) =>
             new PipeFinding(PipeFindingLevel.Error, CodeSameRoleJoin, a.ElementId, b.ElementId,
                 role == PipeNodeKind.Supply
-                    ? "Подача соединена с подачей напрямую — нужна обратка"
-                    : "Обратка соединена с обраткой напрямую — нужна подача");
+                    ? Loc.T("issue.pip04.supplyToSupply")
+                    : Loc.T("issue.pip04.returnToReturn"));
 
         public static PipeFinding ObstacleCrossed(in PipeRunSegment segment, in PipeObstacle obstacle) =>
             new PipeFinding(PipeFindingLevel.Error, CodeObstacleCrossed, segment.ElementId,
                 obstacle.ElementId,
-                "Трасса пересекает деталь — прокладка допустима только внутри стены или пола");
+                Loc.T("issue.pip03.message"));
     }
 }

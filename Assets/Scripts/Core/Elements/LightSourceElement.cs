@@ -10,7 +10,7 @@ namespace KitchenDesigner.Core
 
         public override bool CanFollowAnAttachParent => false;
 
-        public override string DisplayTypeName => "Источник света";
+        public override string DisplayTypeName => Loc.T("elementType.lightSource");
 
         public override bool ParticipatesInGapChecks => false;
 

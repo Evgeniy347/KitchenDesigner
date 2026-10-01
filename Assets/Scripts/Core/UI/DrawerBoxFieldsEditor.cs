@@ -36,35 +36,35 @@ namespace KitchenDesigner.Core.UI
             var drawerOnly = RowVisibility.For(ElementFacet.Drawer);
 
             var typeNames = new List<string>
-                { "A — борт 86 мм", "B — борт 120 мм", "C — борт 168 мм", "D — борт 200 мм" };
-            _type = Rows.Dropdown("Тип ящика", typeNames, OnTypeChanged, drawerOnly, "CtxDrawerType",
+                { Loc.T("element.drawer.typeA"), Loc.T("element.drawer.typeB"), Loc.T("element.drawer.typeC"), Loc.T("element.drawer.typeD") };
+            _type = Rows.Dropdown(Loc.T("element.drawer.type"), typeNames, OnTypeChanged, drawerOnly, "CtxDrawerType",
                 hint: "element.drawer.type");
 
             var lengthNames = new List<string>();
-            foreach (var l in DrawerConstants.ValidLengths) lengthNames.Add($"{l} мм");
-            _length = Rows.Dropdown("Длина", lengthNames, OnLengthChanged, drawerOnly, "CtxDrawerLen",
+            foreach (var l in DrawerConstants.ValidLengths) lengthNames.Add(Loc.F("unit.mmValue", l));
+            _length = Rows.Dropdown(Loc.T("element.drawer.length"), lengthNames, OnLengthChanged, drawerOnly, "CtxDrawerLen",
                 hint: "element.drawer.length");
 
-            var colorNames = new List<string> { "Антрацит", "Белый", "Чёрный" };
-            _color = Rows.Dropdown("Цвет", colorNames, OnColorChanged, drawerOnly, "CtxDrawerColor",
+            var colorNames = new List<string> { Loc.T("element.drawer.colorAnthracite"), Loc.T("element.drawer.colorWhite"), Loc.T("element.drawer.colorBlack") };
+            _color = Rows.Dropdown(Loc.T("element.drawer.color"), colorNames, OnColorChanged, drawerOnly, "CtxDrawerColor",
                 hint: "element.drawer.color");
 
-            _boxWidth = Rows.NumberField("Ширина короба", drawerOnly,
+            _boxWidth = Rows.NumberField(Loc.T("element.drawer.boxWidth"), drawerOnly,
                 hint: "element.drawer.boxWidth");
 
-            Rows.WideButton("CtxDrawerDouble", "Двойной ящик", CreatePaired,
+            Rows.WideButton("CtxDrawerDouble", Loc.T("element.drawer.double"), CreatePaired,
                 RowVisibility.For(ElementFacet.Drawer, CanCreateDouble), ActionGap);
 
             var upperLenNames = new List<string>();
-            foreach (var l in DrawerConstants.ValidLengths) upperLenNames.Add($"{l} мм");
-            var upperLenRow = Rows.NamedDropdown("CtxDrawerUpperLen", "Верхний ящик",
+            foreach (var l in DrawerConstants.ValidLengths) upperLenNames.Add(Loc.F("unit.mmValue", l));
+            var upperLenRow = Rows.NamedDropdown("CtxDrawerUpperLen", Loc.T("element.drawer.upperLength"),
                 upperLenNames, OnUpperLengthChanged,
                 RowVisibility.For(ElementFacet.Drawer, HasUpper));
             _upperLength = upperLenRow.dropdown;
             HintBadge.AttachAfterLabel(upperLenRow.label as TextMeshProUGUI,
                 hint: "element.drawer.upperLength");
 
-            Rows.WideButton("CtxDrawerRemoveUpper", "Убрать верхний ящик", RemoveUpper,
+            Rows.WideButton("CtxDrawerRemoveUpper", Loc.T("element.drawer.removeUpper"), RemoveUpper,
                 RowVisibility.For(ElementFacet.Drawer, HasUpper), ActionGap);
         }
 

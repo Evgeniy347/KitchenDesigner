@@ -186,7 +186,7 @@ public class ElementDisplayTypeNameTests
     {
         var drawer = Spawn<DrawerElement>(ElementFactory.CreateDrawer(
             DrawerType.A, 450, DrawerColor.Anthracite, 500, "Ящ-1", Vector3.zero));
-        Assert.AreEqual(DrawerConstants.GetDefaultName(drawer.System), drawer.DisplayTypeName,
+        Assert.AreEqual(DrawerTexts.DefaultName(drawer.System), drawer.DisplayTypeName,
             "у ящика подпись зависит от системы (GTV/Movento), поэтому это не "
             + "константа, а функция состояния самого ящика");
     }

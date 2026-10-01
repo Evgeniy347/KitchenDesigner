@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core
         public override ElementFront Front =>
             ElementFront.Parts(LightSwitchLayout.KeyName);
 
-        public override string DisplayTypeName => "Выключатель";
+        public override string DisplayTypeName => Loc.T("elementType.lightSwitch");
 
         public IEnumerable<SpecItem> GetSpecItems(IReadOnlyList<KitchenElement> allElements)
         {

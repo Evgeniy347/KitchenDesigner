@@ -2,11 +2,11 @@ namespace KitchenDesigner.Core
 {
     public static class OpenLabels
     {
-        public const string Open = "Открыть";
-        public const string Close = "Закрыть";
-        public const string OpenDoor = "Открыть дверцу";
-        public const string CloseDoor = "Закрыть дверцу";
-        public const string OpenDrawer = "Открыть ящик";
-        public const string CloseDrawer = "Закрыть ящик";
+        public static string Open => Loc.T("element.open.open");
+        public static string Close => Loc.T("element.open.close");
+        public static string OpenDoor => Loc.T("element.open.openDoor");
+        public static string CloseDoor => Loc.T("element.open.closeDoor");
+        public static string OpenDrawer => Loc.T("element.open.openDrawer");
+        public static string CloseDrawer => Loc.T("element.open.closeDrawer");
     }
 }
