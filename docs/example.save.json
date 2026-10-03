@@ -71688,11 +71688,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": -0.310481458902359,
-        "targetY": 1.301731824874878,
-        "targetZ": 0.41259393095970156,
-        "angleX": 33.183921813964847,
-        "angleY": -2351.7919921875,
+        "targetX": 9.477521896362305,
+        "targetY": 1.5408177375793458,
+        "targetZ": -2.6183979511260988,
+        "angleX": 15.939919471740723,
+        "angleY": -2415.32177734375,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": 0.30268532037734988,
@@ -111655,7 +111655,7 @@
         "neighbourLevelsMode": 0
     },
     "lightsOn": false,
-    "musicTrack": 0,
+    "musicTrack": 3,
     "musicVolumePct": 70,
     "windows": [
         {
@@ -111667,9 +111667,9 @@
         },
         {
             "id": "errors",
-            "visible": false,
-            "x": 0.0,
-            "y": 0.0,
+            "visible": true,
+            "x": -192.134521484375,
+            "y": -52.450714111328128,
             "height": 0.0
         },
         {
@@ -111681,9 +111681,9 @@
         },
         {
             "id": "levels",
-            "visible": false,
-            "x": -8.9654541015625,
-            "y": -57.930816650390628,
+            "visible": true,
+            "x": -984.2691040039063,
+            "y": -424.9014587402344,
             "height": 0.0
         },
         {
@@ -111695,14 +111695,14 @@
         },
         {
             "id": "projectInstructions",
-            "visible": false,
-            "x": 0.0,
-            "y": 0.0,
+            "visible": true,
+            "x": 275.19970703125,
+            "y": -92.45071411132813,
             "height": 0.0
         },
         {
             "id": "settings",
-            "visible": false,
+            "visible": true,
             "x": 0.0,
             "y": 0.0,
             "height": 0.0

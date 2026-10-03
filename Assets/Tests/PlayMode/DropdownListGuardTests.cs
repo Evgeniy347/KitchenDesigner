@@ -101,6 +101,7 @@ public class DropdownListGuardTests
             if (dd != null && dd.transform.Find("Dropdown List") != null) dd.Hide();
         var overlay = UIManager.Instance?.Canvas != null ? CanvasRect.Find("MultiSelectOverlay") : null;
         if (overlay != null) Object.Destroy(overlay.gameObject);
+        if (UIManager.Instance?.SettingsPanel != null) UIManager.Instance.SettingsPanel.SetVisible(false);
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
             if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
         yield break;
@@ -239,16 +240,21 @@ public class DropdownListGuardTests
             "три пункта обязаны помещаться без прокрутки");
     }
 
+    private const int ProjectTab = 0;
+
     private static void EnsureSettingsOpen()
     {
-        var ui = UIManager.Instance!;
-        if (ui.SettingsPanel != null && !ui.SettingsPanel.IsVisible) ui.ToggleSettings();
+        var panel = UIManager.Instance!.SettingsPanel!;
+        panel.OpenTab(ProjectTab);
+        var scroll = panel.WindowRect!.GetComponentInChildren<ScrollRect>(true);
+        if (scroll != null) scroll.content.anchoredPosition = new Vector2(scroll.content.anchoredPosition.x, 0f);
     }
 
-    private static TMP_Dropdown LanguageDropdown() =>
-        Object.FindObjectsByType<TMP_Dropdown>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-            .First(d => d.name == "Dd_" + SettingsProjectTab.LanguageRowId);
+    private static TMP_Dropdown[] DropdownsOfTheApp() =>
+        UIManager.Instance!.Canvas!.GetComponentsInChildren<TMP_Dropdown>(true);
 
+    private static TMP_Dropdown LanguageDropdown() =>
+        DropdownsOfTheApp().First(d => d.name == "Dd_" + SettingsProjectTab.LanguageRowId);
     [UnityTest]
     public IEnumerator EveryDropdownOfTheApp_IsBuiltByTheFactory_AndEveryLongOneScrolls()
     {
@@ -259,7 +265,7 @@ public class DropdownListGuardTests
         ui.OpenContextMenu(board);
         yield return null;
 
-        var all = Object.FindObjectsByType<TMP_Dropdown>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+        var all = DropdownsOfTheApp()
             .Where(d => d.template != null).ToList();
         Assert.That(all.Count, Is.GreaterThan(3), "в приложении нашлось слишком мало списков — обход сломан");
 
