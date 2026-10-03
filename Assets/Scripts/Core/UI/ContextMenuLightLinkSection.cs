@@ -27,6 +27,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _countLabel;
         private TMP_Dropdown? _addDropdown;
         private Button? _pickButton;
+        private Button? _addButton;
         private readonly TMP_Dropdown?[] _rowLight =
             new TMP_Dropdown?[SwitchLightLinks.MaxLightsPerSwitch];
         private readonly List<string> _options = new List<string>();
@@ -71,7 +72,7 @@ namespace KitchenDesigner.Core.UI
 
             _addDropdown = UIFactory.CreateDropdown(AddDropdownNode, parent, new List<string>(),
                 new Vector2(AddDropdownX, 0), new Vector2(AddDropdownW, LinkRowH), _ => { });
-            var addBtn = UIFactory.CreateButton(AddButtonNode, parent, AddCaption,
+            _addButton = UIFactory.CreateButton(AddButtonNode, parent, AddCaption,
                 new Vector2(AddButtonX, 0), new Vector2(AddButtonW, LinkRowH), AddFromUI);
             _pickButton = UIFactory.CreateIconButton(PickButtonNode, parent, IconFactory.Crosshair,
                 new Vector2(TrailingButtonX, 0), new Vector2(TrailingButtonW, LinkRowH),
@@ -79,7 +80,7 @@ namespace KitchenDesigner.Core.UI
 
             Host.Layout.AddWhen(() => Eligible() && Expanded, LinkRowH, ActionGap,
                 _addDropdown.GetComponent<RectTransform>(),
-                addBtn.GetComponent<RectTransform>(),
+                _addButton.GetComponent<RectTransform>(),
                 _pickButton.GetComponent<RectTransform>());
         }
 
@@ -157,6 +158,7 @@ namespace KitchenDesigner.Core.UI
                 _rowLight[i]?.RefreshShownValue();
             }
 
+            if (_addButton != null) _addButton.interactable = Target != null && _options.Count > 0;
             if (_pickButton != null)
                 _pickButton.interactable = Target != null && _options.Count > 0;
         }

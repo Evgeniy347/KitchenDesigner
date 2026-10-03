@@ -29,6 +29,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _content;
         private RectTransform? _contentRect;
         private ScrollRect? _scrollRect;
+        private Button? _exportButton;
 
         public void Build(Transform canvas)
         {
@@ -136,6 +137,7 @@ namespace KitchenDesigner.Core.UI
             var export = UIFactory.CreateButton("SpecExport", parent, Loc.T("spec.exportCsv"),
                 new Vector2(exportX, btnY), new Vector2(exportW, 40), ExportCsv);
             export.GetComponent<Image>().color = UIStyle.Accent;
+            _exportButton = export;
             UIFactory.CreateButton("SpecClose", parent, Loc.T("common.close"),
                 new Vector2(closeX, btnY), new Vector2(closeW, 40), () => SetVisible(false));
             UIFactory.CreateCloseButton(parent, () => SetVisible(false));
@@ -162,6 +164,7 @@ namespace KitchenDesigner.Core.UI
         {
             var result = SpecificationManager.Build(PartRegistry.All);
             _content!.text = BuildDisplayText(result);
+            if (_exportButton != null) _exportButton.interactable = result.lines.Count > 0;
 
             _content!.ForceMeshUpdate();
             var preferred = _content!.GetPreferredValues(ContentWidth, 0f);
