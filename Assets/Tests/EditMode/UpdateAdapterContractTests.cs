@@ -90,8 +90,10 @@ public class UpdateAdapterContractTests
         Assert.AreEqual("#if UNITY_STANDALONE_WIN && !UNITY_EDITOR", FirstMeaningfulLine(marker),
             "мьютекс держит только собранный плеер: редактор с ним выглядел бы для установщика "
             + "«запущенной копией», и setup ждал бы закрытия Unity");
-        StringAssert.Contains("new Mutex(false, RunningInstanceMutex.Name)", marker,
-            "имя — общее с KitchenDesigner.iss (AppMutexName), сверяет InstallerScriptGuardTests");
+        StringAssert.Contains("new Mutex(false, RunningInstanceMutex.Resolve(Environment.GetCommandLineArgs()))", marker,
+            "имя по умолчанию — общее с KitchenDesigner.iss (AppMutexName), сверяет InstallerScriptGuardTests; "
+            + "аргумент -mutex подменяет его только у дымового прогона установщика, чтобы тот не видел "
+            + "приложение пользователя (RunningInstanceMutexTests)");
         StringAssert.Contains("RuntimeInitializeLoadType.SubsystemRegistration", marker,
             "мьютекс создаётся раньше всего остального: установщик, запущенный в первые "
             + "секунды, иначе не увидит копию, которая уже держит файлы");

@@ -130,8 +130,9 @@ REM ---- installer update smoke: the player can be fine while the SETUP cannot u
 REM v0.1906..v0.2037 shipped installers whose silent update rolled back: setup started
 REM while the old app was still exiting, Restart Manager could not close it and
 REM /SUPPRESSMSGBOXES answered Abort. tools\installer-smoke.ps1 installs !SETUP! silently
-REM over the installed copy twice (plain, then racing a running app with the updater's own
-REM switches) and fails on "Rolling back changes". Close Kitchen Designer before publishing.
+REM into a sandbox directory (plain, then racing a running sandbox app with the updater's own
+REM switches, then Cancel) and fails on "Rolling back changes". The user's own installation
+REM and a running Kitchen Designer are not touched, so there is no need to close it.
 echo === [2/5] Installer update smoke ===
 powershell -NoProfile -ExecutionPolicy Bypass -File "%root%\tools\installer-smoke.ps1" -SetupPath "!SETUP!"
 if errorlevel 1 ( echo [FAIL] Installer update smoke failed - release NOT published & exit /b 1 )
@@ -193,7 +194,7 @@ exit /b 0
 
 :dry_plan
 echo [dry] would build/installer if missing: "!SETUP!"
-echo [dry] would smoke-test Build\KitchenDesigner.exe, then install "!SETUP!" over the installed copy (tools\installer-smoke.ps1)
+echo [dry] would smoke-test Build\KitchenDesigner.exe, then install "!SETUP!" into a sandbox (tools\installer-smoke.ps1)
 if defined NOTESFILE (echo [dry] changelog from: !NOTESFILE!) else (echo [dry] NO -NotesFile: the changelog will be a placeholder)
 echo [dry] tag !TAG! + push origin
 if defined PRERELEASE (

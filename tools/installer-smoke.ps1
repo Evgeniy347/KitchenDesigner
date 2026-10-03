@@ -1,34 +1,46 @@
 <#
 .SYNOPSIS
-    Installer update smoke: installs the BUILT setup silently over the installed copy, the
-    way the in-app updater does, and fails on "Rolling back changes".
+    Installer update smoke: installs the BUILT setup silently into a SANDBOX directory,
+    the way the in-app updater does, and fails on "Rolling back changes". Never touches
+    the user's own installation, so it runs while the user's Kitchen Designer is open.
 
 .DESCRIPTION
     Three passes, each with its own Inno /LOG under test-results\installer-smoke\:
 
-      1) plain_install  - a silent install over whatever is installed (or a first install).
-      2) update_race    - the installed app is RUNNING; setup is started with the updater's
+      1) plain_install  - a silent first install into the sandbox.
+      2) update_race    - the sandbox app is RUNNING; setup is started with the updater's
                           own switches (read from InstallerCommandLine.cs, so the script and
                           the app cannot drift apart) and the app is asked to close only
                           -AppExitDelaySec later - the updater's exact order: start setup,
                           then quit. Setup must wait for the old copy, install, and relaunch
                           the app (/RELAUNCH); the relaunched app is closed afterwards.
-      3) update_cancel  - the app is RUNNING and nobody closes it. After RelaunchAskAfterSec
-                          setup must ask "close the app and click OK"; OK while the app still
-                          runs must ask AGAIN; Cancel must end setup with nothing installed,
-                          no rollback, the old version and the running app untouched.
+      3) update_cancel  - the sandbox app is RUNNING and nobody closes it. After
+                          RelaunchAskAfterSec setup must ask "close the app and click OK";
+                          OK while the app still runs must ask AGAIN; Cancel must end setup
+                          with nothing installed, no rollback, the sandbox files and the
+                          running app untouched.
 
     The bug this guards (v0.1906..v0.2037): the updater started setup while the Unity
     player was still exiting; Restart Manager could not close it ("Some applications
     could not be shut down"), /SUPPRESSMSGBOXES answered Abort, and setup logged
     "Rolling back changes" - the user saw a rollback, then both windows closed.
 
-    It works on the user's REAL per-user install (same AppId, same HKCU uninstall key):
-    only that install carries the previous version's files and uninstall log, which is
-    what an update meets. It never uninstalls. It refuses to run while Kitchen Designer
-    is open (pass 1 would roll back on the open files) and refuses to downgrade (the
-    downgrade question in the .iss is a plain MsgBox that /SUPPRESSMSGBOXES does not
-    answer - a silent run would hang on it).
+    THE SANDBOX. The setup is started with /SMOKE=1 /DIR=<temp>\kd-smoke-<guid>\app
+    /MUTEX=<name unique to this run> /APPARGS=<app switches>; KitchenDesigner.iss then
+    - installs only into that directory and refuses to start without /DIR and /MUTEX;
+    - does not write the "Programs and Features" entry (same AppId as the user's install),
+      the Start menu / desktop shortcuts, or the .kdproj association;
+    - keeps its InstallLanguage copy in HKCU\Software\KitchenDesigner-Smoke, so the
+      language contract (written on a first install, kept by a silent update) is still
+      checked;
+    - waits for the mutex <name>, not the one the user's running app holds. The sandbox app
+      is started with -mutex <name> and holds the same one, so the sandbox setup and the
+      sandbox app see only each other.
+    The sandbox is uninstalled by its own uninstaller at the end and the temp directory is
+    removed. Before and after, the script fingerprints everything of the USER'S that a
+    careless run could touch - the installed files (SHA-256), the uninstall registry entry,
+    the .kdproj association, HKCU\Software\KitchenDesigner (InstallLanguage), the Start menu
+    folder and the desktop shortcut - and fails if one byte differs.
 
     Part of the release path: installer\publish-github.cmd runs it after
     tools\smoke-test.ps1 and before tagging. Exit 0 = all three passes behaved.
@@ -55,11 +67,15 @@ $ErrorActionPreference = 'Stop'
 try { [Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal' } catch { }
 $root = Split-Path -Parent $PSScriptRoot
 
-$script:cleanupDir = $null
+$script:sandbox = $null
+$script:sandboxApp = $null
+$script:mutex = $null
+$script:userBefore = $null
 
 function Fail([string]$Message) {
     Write-Host "[FAIL] $Message" -ForegroundColor Red
-    if ($script:cleanupDir) { Stop-Leftovers $script:cleanupDir }
+    if ($script:sandbox) { Remove-Sandbox }
+    if ($script:userBefore) { Write-UserDiff $script:userBefore (Get-UserFingerprint) }
     exit 1
 }
 
@@ -78,12 +94,21 @@ if (-not $setupVersion) { Fail "cannot read the version from the setup file name
 $iss = Get-Content -LiteralPath (Join-Path $root 'installer\KitchenDesigner.iss') -Raw
 $appGuid = [regex]::Match($iss, '#define\s+AppGuid\s+"(?<g>[^"]+)"').Groups['g'].Value
 if (-not $appGuid) { Fail 'AppGuid not found in installer\KitchenDesigner.iss' }
-$uninstKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\${appGuid}_is1"
+$projectExt = [regex]::Match($iss, '#define\s+ProjectExt\s+"(?<e>[^"]+)"').Groups['e'].Value
+$projectProgId = [regex]::Match($iss, '#define\s+ProjectProgId\s+"(?<p>[^"]+)"').Groups['p'].Value
+$appName = [regex]::Match($iss, '#define\s+AppName\s+"(?<n>[^"]+)"').Groups['n'].Value
+$smokeLanguageKey = [regex]::Match($iss, '#define\s+SmokeLanguageKey\s+"(?<k>[^"]+)"').Groups['k'].Value
+if (-not ($projectExt -and $projectProgId -and $appName -and $smokeLanguageKey)) { Fail 'ProjectExt / ProjectProgId / AppName / SmokeLanguageKey not found in installer\KitchenDesigner.iss' }
+$uninstSubKey = "Software\Microsoft\Windows\CurrentVersion\Uninstall\${appGuid}_is1"
 
 $switchSource = Join-Path $root 'Assets\Scripts\Core\Pure\Update\InstallerCommandLine.cs'
 $updaterSwitches = [regex]::Match((Get-Content -LiteralPath $switchSource -Raw), 'SilentRelaunchSwitches\s*=\s*"(?<s>[^"]+)"').Groups['s'].Value
 if (-not $updaterSwitches) { Fail "SilentRelaunchSwitches not found in $switchSource" }
 $plainSwitches = ($updaterSwitches -split '\s+' | Where-Object { $_ -ne '/RELAUNCH' }) -join ' '
+
+$mutexSource = Join-Path $root 'Assets\Scripts\Core\Pure\Update\RunningInstanceMutex.cs'
+$mutexArgument = [regex]::Match((Get-Content -LiteralPath $mutexSource -Raw), 'ArgumentName\s*=\s*"(?<a>[^"]+)"').Groups['a'].Value
+if (-not $mutexArgument) { Fail "RunningInstanceMutex.ArgumentName not found in $mutexSource" }
 
 $logDir = Join-Path $root 'test-results\installer-smoke'
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
@@ -98,11 +123,83 @@ if (-not ([System.Management.Automation.PSTypeName]'InstallerSmoke.NativeMethods
 '@
 }
 
-function Get-InstallDir {
-    $key = Get-ItemProperty -LiteralPath $uninstKey -ErrorAction SilentlyContinue
+# ---- what belongs to the USER and must come out of this run byte for byte ----
+
+function Get-FileDigest([string]$Path) {
+    $sha = [Security.Cryptography.SHA256]::Create()
+    try {
+        $share = [IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete
+        $stream = [IO.File]::Open($Path, [IO.FileMode]::Open, [IO.FileAccess]::Read, $share)
+        try { return [BitConverter]::ToString($sha.ComputeHash($stream)).Replace('-', '') }
+        finally { $stream.Dispose() }
+    }
+    catch { return 'unreadable:' + $_.Exception.GetType().Name }
+    finally { $sha.Dispose() }
+}
+
+function Get-TreeFingerprint([string]$Dir) {
+    if (-not $Dir -or -not (Test-Path -LiteralPath $Dir)) { return 'absent' }
+    $base = (Resolve-Path -LiteralPath $Dir).Path.TrimEnd('\')
+    $lines = Get-ChildItem -LiteralPath $base -Recurse -File -ErrorAction SilentlyContinue |
+        Sort-Object FullName |
+        ForEach-Object { '{0}|{1}|{2}' -f $_.FullName.Substring($base.Length), $_.Length, (Get-FileDigest $_.FullName) }
+    return ($lines -join "`n")
+}
+
+function Add-RegistryLines([string]$SubKey, [Collections.Generic.List[string]]$Lines) {
+    $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($SubKey)
+    if (-not $key) { return }
+    try {
+        foreach ($name in ($key.GetValueNames() | Sort-Object)) {
+            $value = $key.GetValue($name, $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+            if ($value -is [byte[]]) { $value = [BitConverter]::ToString($value) }
+            elseif ($value -is [string[]]) { $value = $value -join ';' }
+            $Lines.Add("$SubKey|$name|$($key.GetValueKind($name))|$value")
+        }
+        foreach ($child in ($key.GetSubKeyNames() | Sort-Object)) { Add-RegistryLines "$SubKey\$child" $Lines }
+    }
+    finally { $key.Dispose() }
+}
+
+function Get-RegistryFingerprint([string]$SubKey) {
+    $lines = New-Object 'Collections.Generic.List[string]'
+    Add-RegistryLines $SubKey $lines
+    if ($lines.Count -eq 0) { return 'absent' }
+    return ($lines -join "`n")
+}
+
+function Get-UserInstallDir {
+    $key = Get-ItemProperty -LiteralPath "HKCU:\$uninstSubKey" -ErrorAction SilentlyContinue
     if ($key) { return $key.'Inno Setup: App Path' }
     return $null
 }
+
+function Get-UserFingerprint {
+    $startMenu = Join-Path ([Environment]::GetFolderPath('Programs')) $appName
+    $desktopLink = Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) "$appName.lnk"
+    $desktopDigest = if (Test-Path -LiteralPath $desktopLink) { Get-FileDigest $desktopLink } else { 'absent' }
+    $association = (Get-RegistryFingerprint "Software\Classes\$projectExt") + "`n" + (Get-RegistryFingerprint "Software\Classes\$projectProgId")
+    [ordered]@{
+        'install files'                 = Get-TreeFingerprint (Get-UserInstallDir)
+        'uninstall entry'               = Get-RegistryFingerprint $uninstSubKey
+        'file association'              = $association
+        'HKCU\Software\KitchenDesigner' = Get-RegistryFingerprint 'Software\KitchenDesigner'
+        'Start menu folder'             = Get-TreeFingerprint $startMenu
+        'desktop shortcut'              = $desktopDigest
+    }
+}
+
+function Write-UserDiff($Before, $After) {
+    foreach ($name in $Before.Keys) {
+        if ($Before[$name] -ne $After[$name]) {
+            Write-Host "[FAIL] the user's '$name' CHANGED during the run" -ForegroundColor Red
+            $left = @($Before[$name] -split "`n"); $right = @($After[$name] -split "`n")
+            Compare-Object $left $right | Select-Object -First 10 | ForEach-Object { Write-Host "       $($_.SideIndicator) $($_.InputObject)" }
+        }
+    }
+}
+
+# ---- the sandbox ----
 
 function Get-AppProcesses([string]$Dir) {
     if (-not $Dir) { return @() }
@@ -132,6 +229,46 @@ function Stop-Leftovers([string]$Dir) {
         Close-Gracefully $p
         if (-not $p.WaitForExit($AppCloseTimeoutSec * 1000)) { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
     }
+}
+
+function Get-SandboxAppArguments {
+    $arguments = @($mutexArgument, $script:mutex, '-mcpPort', "$Port", '-muteAudio', '-hideWindow', '-ephemeralSession', '-logFile', $script:playerLog)
+    $arguments -join ' '
+}
+
+function Get-SandboxSwitches {
+    "/SMOKE=1 /MUTEX=$($script:mutex) /DIR=`"$($script:sandboxApp)`" /NOICONS /TASKS=`"!desktopicon`" /APPARGS=`"$(Get-SandboxAppArguments)`""
+}
+
+function Start-SandboxApp {
+    Start-Process -FilePath (Join-Path $script:sandboxApp 'KitchenDesigner.exe') -ArgumentList (Get-SandboxAppArguments) -PassThru
+}
+
+function Uninstall-Sandbox {
+    $uninstaller = Join-Path $script:sandboxApp 'unins000.exe'
+    if (-not (Test-Path -LiteralPath $uninstaller)) { return $true }
+    $log = Join-Path $logDir "uninstall-$setupVersion.log"
+    if (Test-Path -LiteralPath $log) { Remove-Item -LiteralPath $log }
+    Start-Process -FilePath $uninstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SMOKE=1 /MUTEX=$($script:mutex) /LOG=`"$log`"" | Out-Null
+    $deadline = (Get-Date).AddSeconds(120)
+    while ((Get-Date) -lt $deadline) {
+        if (-not (Test-Path -LiteralPath $uninstaller) -and -not (Test-Path -LiteralPath (Join-Path $script:sandboxApp 'KitchenDesigner.exe'))) { return $true }
+        Start-Sleep -Milliseconds 500
+    }
+    return $false
+}
+
+function Remove-Sandbox {
+    if (-not $script:sandbox) { return }
+    Stop-Leftovers $script:sandboxApp
+    Uninstall-Sandbox | Out-Null
+    $temp = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+    $full = [IO.Path]::GetFullPath($script:sandbox)
+    if ($full.StartsWith($temp, [StringComparison]::OrdinalIgnoreCase) -and (Split-Path -Leaf $full).StartsWith('kd-smoke-') -and (Test-Path -LiteralPath $full)) {
+        Remove-Item -LiteralPath $full -Recurse -ErrorAction SilentlyContinue
+    }
+    if (Test-Path -LiteralPath "HKCU:\$smokeLanguageKey") { Remove-Item -LiteralPath "HKCU:\$smokeLanguageKey" -Recurse -ErrorAction SilentlyContinue }
+    $script:sandbox = $null
 }
 
 function Assert-SetupLog([string]$Pass, [string]$Log, [int]$ExitCode) {
@@ -184,7 +321,7 @@ function Press-DialogButton($Dialog, [int]$ButtonId) {
 
 function Start-Setup([string]$Switches, [string]$Log) {
     if (Test-Path -LiteralPath $Log) { Remove-Item -LiteralPath $Log }
-    Start-Process -FilePath $SetupPath -ArgumentList "$Switches /LOG=`"$Log`"" -PassThru
+    Start-Process -FilePath $SetupPath -ArgumentList "$Switches $(Get-SandboxSwitches) /LOG=`"$Log`"" -PassThru
 }
 
 function Wait-Setup($Process, [string]$Pass) {
@@ -198,41 +335,42 @@ function Wait-Setup($Process, [string]$Pass) {
 Write-Host "=== Installer update smoke: $SetupPath ==="
 Write-Host "updater switches: $updaterSwitches"
 
-$installDir = Get-InstallDir
-if ($installDir) {
-    $running = Get-AppProcesses $installDir
-    if ($running.Count -gt 0) {
-        Fail "Kitchen Designer is running from $installDir (pid $($running.Id -join ', ')). Close it and re-run: installing over open files is exactly the rollback this smoke guards."
-    }
-    $installed = (Get-ItemProperty -LiteralPath $uninstKey).DisplayVersion
-    if ($installed -and ([version]$installed -gt [version]$setupVersion)) {
-        Fail "installed $installed is newer than the setup $setupVersion. The smoke never downgrades: the .iss asks with a plain MsgBox that a silent run cannot answer."
-    }
-}
+# ---- the user's installation: read-only from here to the end ----
+$userDir = Get-UserInstallDir
+$userRunning = @(Get-AppProcesses $userDir)
+Write-Host "the user's installation: $(if ($userDir) { $userDir } else { 'none' }); running copies: $(if ($userRunning.Count) { 'pid ' + ($userRunning.Id -join ', ') + ' (left alone)' } else { 'none' })"
+$script:userBefore = Get-UserFingerprint
 
-# ---- pass 1: plain silent install over the installed copy ----
+$id = [guid]::NewGuid().ToString('N')
+$script:sandbox = Join-Path ([IO.Path]::GetTempPath()) "kd-smoke-$id"
+$script:sandboxApp = Join-Path $script:sandbox 'app'
+New-Item -ItemType Directory -Force -Path $script:sandbox | Out-Null
+$script:mutex = "KitchenDesigner.RunningInstance.smoke-$id"
+$shortSandbox = (New-Object -ComObject Scripting.FileSystemObject).GetFolder($script:sandbox).ShortPath
+$script:playerLog = Join-Path $shortSandbox 'player.log'
+if (Test-Path -LiteralPath "HKCU:\$smokeLanguageKey") { Remove-Item -LiteralPath "HKCU:\$smokeLanguageKey" -Recurse }
+Write-Host "sandbox: $($script:sandboxApp)  mutex: $($script:mutex)"
+
+# ---- pass 1: plain silent install into the sandbox ----
 $log1 = Join-Path $logDir "plain-install-$setupVersion.log"
 $s1 = Start-Setup $plainSwitches $log1
 Assert-SetupLog 'plain_install' $log1 (Wait-Setup $s1 'plain_install')
 
-$installDir = Get-InstallDir
-if (-not $installDir) { Fail "after plain_install there is no uninstall key $uninstKey" }
-$appExe = Join-Path $installDir 'KitchenDesigner.exe'
+$appExe = Join-Path $script:sandboxApp 'KitchenDesigner.exe'
 if (-not (Test-Path -LiteralPath $appExe)) { Fail "after plain_install there is no $appExe" }
 
 # ---- the language contract: setup leaves a plain REG_SZ for the app, silent updates keep it ----
-$langKey = 'HKCU:\Software\KitchenDesigner'
+$langKey = "HKCU:\$smokeLanguageKey"
 $langBefore = (Get-ItemProperty -LiteralPath $langKey -Name InstallLanguage -ErrorAction SilentlyContinue).InstallLanguage
-if (-not $langBefore) { Fail "after plain_install there is no $langKey\InstallLanguage (the installer's language for the app)" }
+if (-not $langBefore) { Fail "after plain_install there is no $langKey\InstallLanguage (the installer's language for the app, sandbox copy)" }
 if ((Get-Item -LiteralPath $langKey).GetValueKind('InstallLanguage') -ne 'String') { Fail 'InstallLanguage must be a plain REG_SZ' }
 Write-Host "[OK ] InstallLanguage = $langBefore (REG_SZ)"
 Set-ItemProperty -LiteralPath $langKey -Name InstallLanguage -Value 'sentinel-keep-me'
 
 # ---- pass 2: the auto-update race ----
-$script:cleanupDir = $installDir
-$app = Start-Process -FilePath $appExe -ArgumentList @('-mcpPort', "$Port", '-muteAudio', '-hideWindow', '-ephemeralSession') -PassThru
+$app = Start-SandboxApp
 Start-Sleep -Seconds $AppStartSec
-if ($app.HasExited) { Fail "update_race: the installed app exited by itself before the race (exit $($app.ExitCode))" }
+if ($app.HasExited) { Fail "update_race: the sandbox app exited by itself before the race (exit $($app.ExitCode))" }
 
 $log2 = Join-Path $logDir "update-race-$setupVersion.log"
 $raceStart = Get-Date
@@ -254,21 +392,23 @@ while (-not $relaunched -and (Get-Date) -lt $deadline) {
 }
 if (-not $relaunched) { Fail 'update_race: setup installed but did not relaunch the app (/RELAUNCH)' }
 Write-Host "[OK ] update_race - app relaunched (pid $($relaunched.Id)), closing it"
+$relaunchLine = (Get-CimInstance Win32_Process -Filter "ProcessId=$($relaunched.Id)").CommandLine
+if ($relaunchLine -notmatch [regex]::Escape("$mutexArgument $($script:mutex)")) { Fail "update_race: the relaunched app did not get the sandbox mutex ($mutexArgument): $relaunchLine" }
 $langAfter = (Get-ItemProperty -LiteralPath $langKey -Name InstallLanguage).InstallLanguage
 Set-ItemProperty -LiteralPath $langKey -Name InstallLanguage -Value $langBefore
 if ($langAfter -ne 'sentinel-keep-me') { Fail "update_race: the silent update overwrote InstallLanguage (sentinel -> '$langAfter')" }
 Write-Host '[OK ] a silent update leaves InstallLanguage alone'
 Start-Sleep -Seconds $AppStartSec
-Stop-Leftovers $installDir
+Stop-Leftovers $script:sandboxApp
 
 # ---- pass 3: the app keeps running; the user is asked, clicks OK, is asked again, cancels ----
 $askAfterSec = [int][regex]::Match($iss, '#define\s+RelaunchAskAfterSec\s+(?<s>\d+)').Groups['s'].Value
 $recheckSec = [int][regex]::Match($iss, '#define\s+RelaunchRecheckSec\s+(?<s>\d+)').Groups['s'].Value
 if ($askAfterSec -le 0 -or $recheckSec -le 0) { Fail 'RelaunchAskAfterSec / RelaunchRecheckSec not found in installer\KitchenDesigner.iss' }
-$versionBefore = (Get-ItemProperty -LiteralPath $uninstKey).DisplayVersion
-$app3 = Start-Process -FilePath $appExe -ArgumentList @('-mcpPort', "$Port", '-muteAudio', '-hideWindow', '-ephemeralSession') -PassThru
+$filesBefore = Get-TreeFingerprint $script:sandboxApp
+$app3 = Start-SandboxApp
 Start-Sleep -Seconds $AppStartSec
-if ($app3.HasExited) { Fail "update_cancel: the installed app exited by itself (exit $($app3.ExitCode))" }
+if ($app3.HasExited) { Fail "update_cancel: the sandbox app exited by itself (exit $($app3.ExitCode))" }
 
 $log3 = Join-Path $logDir "update-cancel-$setupVersion.log"
 $s3 = Start-Setup $updaterSwitches $log3
@@ -289,11 +429,27 @@ $asked = @($lines3 | Select-String -SimpleMatch 'asking the user').Count
 if ($asked -lt 2) { Fail "update_cancel: asked $asked time(s), expected 2 (OK, then again)" }
 if ($code3 -eq 0) { Fail 'update_cancel: setup reported success (exit 0) after Cancel' }
 if ($app3.HasExited) { Fail 'update_cancel: Cancel must leave the running app alone, but it is gone' }
-$versionAfter = (Get-ItemProperty -LiteralPath $uninstKey).DisplayVersion
-if ($versionAfter -ne $versionBefore) { Fail "update_cancel: installed version changed $versionBefore -> $versionAfter" }
-Write-Host "[OK ] update_cancel - asked $asked times, Cancel stopped setup (exit $code3), $versionBefore untouched"
+if ((Get-TreeFingerprint $script:sandboxApp) -ne $filesBefore) { Fail 'update_cancel: the installed files changed although the user cancelled' }
+Write-Host "[OK ] update_cancel - asked $asked times, Cancel stopped setup (exit $code3), installed files untouched"
 Close-Gracefully $app3
 if (-not $app3.WaitForExit($AppCloseTimeoutSec * 1000)) { Fail "update_cancel: the app did not exit on WM_CLOSE in $AppCloseTimeoutSec s" }
+Stop-Leftovers $script:sandboxApp
+
+# ---- the sandbox goes away by its own uninstaller ----
+if (-not (Uninstall-Sandbox)) { Fail 'the sandbox uninstaller did not remove the sandbox application in 120 s' }
+if (Test-Path -LiteralPath "HKCU:\$smokeLanguageKey") { Fail "the sandbox uninstaller left $langKey behind" }
+Write-Host '[OK ] the sandbox was removed by its own uninstaller'
+Remove-Sandbox
+
+# ---- and the user's installation is exactly as it was ----
+$userAfter = Get-UserFingerprint
+$changed = @($script:userBefore.Keys | Where-Object { $script:userBefore[$_] -ne $userAfter[$_] })
+if ($changed.Count -gt 0) {
+    Write-UserDiff $script:userBefore $userAfter
+    $script:userBefore = $null
+    Fail "the user's installation was modified: $($changed -join ', ')"
+}
+Write-Host "[OK ] the user's installation is byte-identical: $($script:userBefore.Keys -join ', ')"
 
 Write-Host "INSTALLER SMOKE OK (logs: $logDir)"
 exit 0

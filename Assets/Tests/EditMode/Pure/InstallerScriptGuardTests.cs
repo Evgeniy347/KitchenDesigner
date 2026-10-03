@@ -68,6 +68,23 @@ public class InstallerScriptGuardTests
         }
     }
 
+    private static string MutexNameFunction(string code) => CodeFunction(code, "MutexNameInUse");
+
+    private static string CodeFunction(string code, string name)
+    {
+        var m = Regex.Match(code, @"function\s+" + name + @"\b.*?^end;",
+            RegexOptions.Singleline | RegexOptions.Multiline);
+        Assert.IsTrue(m.Success, "в [Code] нет " + name);
+        return m.Value;
+    }
+
+    private static string[] Entries(string section) =>
+        Regex.Replace(section, @"\\[ \t]*\r?\n[ \t]*", " ")
+            .Split('\n')
+            .Select(l => l.Trim())
+            .Where(l => l.Length > 0 && !l.StartsWith(";"))
+            .ToArray();
+
     private static string WaitFunction(string code)
     {
         var m = Regex.Match(code, @"function\s+WaitForTheUpdatingAppToExit\b.*?^end;",
@@ -107,8 +124,10 @@ public class InstallerScriptGuardTests
             + "пока плеер ещё выходит, и обновление снова откатывается");
 
         var code = Section(iss, "Code");
-        StringAssert.Contains("CheckForMutexes('{#AppMutexName}')", code,
+        StringAssert.Contains("CheckForMutexes(MutexNameInUse)", code,
             "мьютекс снимает Windows, когда процесс ЗАВЕРШИЛСЯ — это точный сигнал «старая копия ушла»");
+        StringAssert.Contains("Result := '{#AppMutexName}';", MutexNameFunction(code),
+            "без /SMOKE имя мьютекса одно и то же у всех: то, что держит приложение пользователя");
         StringAssert.Contains(@"FileHeldByRunningProcess(Dir + '\{#AppExe}')", code,
             "выпущенные версии до 0.2040 мьютекса не создают, а обновляться будут именно они; "
             + "UnityCrashHandler64 ещё и переживает плеер на миг — файлы остаются вторым сигналом");
@@ -173,11 +192,86 @@ public class InstallerScriptGuardTests
         StringAssert.Contains("AppMutex={code:AppMutexUnlessUpdating}", Section(iss, "Setup"),
             "ручная установка и деинсталляция при открытом приложении получают штатный "
             + "диалог Inno «закройте приложение — ОК / Отмена»");
-        StringAssert.Contains("if RelaunchRequested then Result := '' else Result := '{#AppMutexName}';",
+        StringAssert.Contains("if RelaunchRequested then Result := '' else Result := MutexNameInUse;",
             Section(iss, "Code"),
             "при /RELAUNCH проверка Inno на старте ловила бы ещё закрывающееся приложение, а "
             + "под /SUPPRESSMSGBOXES ответила бы Отмена — обновление снова не вставало бы. "
             + "Его ждёт WaitForTheUpdatingAppToExit");
+    }
+
+    [Test]
+    public void SmokeSandbox_RegistersNothingInTheUsersEnvironment()
+    {
+        var iss = Iss();
+        StringAssert.Contains("CreateUninstallRegKey=NotSmoke", Section(iss, "Setup"),
+            "песочница дымового прогона несёт тот же AppId, что и установка пользователя: запись «Программы и "
+            + "компоненты» у них одна и та же, и прогон, которому её не запретили, перепишет настоящую");
+
+        foreach (var icon in Entries(Section(iss, "Icons")))
+            StringAssert.Contains("Check: NotSmoke", icon,
+                "ярлык в меню «Пуск» или на рабочем столе, созданный песочницей, остаётся у пользователя: " + icon);
+
+        foreach (var entry in Entries(Section(iss, "Registry")))
+        {
+            if (entry.Contains("Software\\KitchenDesigner\"") || entry.Contains("{#SmokeLanguageKey}")) continue;
+            StringAssert.Contains("Check: NotSmoke", entry,
+                "ассоциация .kdproj в HKCU - настоящая, пользовательская: песочница её не пишет: " + entry);
+        }
+    }
+
+    [Test]
+    public void SmokeSandbox_KeepsItsInstallLanguageInItsOwnKey_AndTheRealKeyOutOfReach()
+    {
+        var iss = Iss();
+        var code = Section(iss, "Code");
+        StringAssert.Contains("not SmokeMode and (not WizardSilent", CodeFunction(code, "ShouldWriteInstallLanguage"),
+            "настоящий HKCU\\Software\\KitchenDesigner песочница не трогает ни при каких условиях");
+        var smoke = CodeFunction(code, "ShouldWriteSmokeInstallLanguage");
+        StringAssert.Contains("SmokeMode and (not WizardSilent", smoke);
+        StringAssert.Contains("RegValueExists(HKCU, '{#SmokeLanguageKey}'", smoke,
+            "контракт «тихое обновление не перезаписывает язык» проверяется песочницей на копии ключа");
+        StringAssert.DoesNotContain(@"""Software\KitchenDesigner""", Regex.Match(iss, @"#define\s+SmokeLanguageKey.*").Value);
+        Assert.AreNotEqual(KitchenDesigner.Core.InstallLanguage.RegistryKey,
+            Regex.Match(iss, @"#define\s+SmokeLanguageKey\s+""(?<k>[^""]+)""").Groups["k"].Value);
+    }
+
+    [Test]
+    public void SmokeSandbox_OverridesMutexAndRelaunchArguments_OnlyInSmokeMode()
+    {
+        var code = Section(Iss(), "Code");
+        StringAssert.Contains("if SmokeMode and (SwitchValue('MUTEX') <> '') then Result := SwitchValue('MUTEX');",
+            MutexNameFunction(code),
+            "подмена имени мьютекса принимается только от песочницы: запущенное приложение пользователя держит "
+            + "общее имя, и setup прогона, ждущий его, видел бы чужое приложение");
+        StringAssert.Contains("if SmokeMode then Result := SwitchValue('APPARGS');", CodeFunction(code, "RelaunchParameters"),
+            "у пользователя /RELAUNCH поднимает приложение без ключей, как раньше");
+        StringAssert.Contains("Parameters: \"{code:RelaunchParameters}\"", Section(Iss(), "Run"));
+        StringAssert.Contains("if NotSmoke and RegQueryStringValue(HKCU, '{#UninstKey}'", CodeFunction(code, "PrepareToInstall"),
+            "версия в записи пользователя не касается песочницы: вопрос о даунгрейде - обычный MsgBox, тихий прогон на нём повис бы");
+    }
+
+    [Test]
+    public void SmokeSandbox_RefusesToStart_WithoutItsOwnDirectoryAndItsOwnMutex()
+    {
+        var init = CodeFunction(Section(Iss(), "Code"), "InitializeSetup");
+        StringAssert.Contains("SwitchValue('DIR') = ''", init,
+            "песочница без /DIR= встала бы поверх настоящей установки пользователя");
+        StringAssert.Contains("SwitchValue('MUTEX') = ''", init,
+            "песочница без /MUTEX= ждала бы выхода открытого у пользователя приложения");
+        StringAssert.Contains("SwitchValue('MUTEX') = '{#AppMutexName}'", init);
+        StringAssert.Contains("Result := False;", init);
+    }
+
+    [Test]
+    public void InstallerSmokeScript_SpeaksTheSwitchesTheScriptAndTheAppUnderstand()
+    {
+        var script = File.ReadAllText(Path.Combine(RepoPaths.Subdir("tools"), "installer-smoke.ps1"));
+        foreach (var token in new[] { "/SMOKE=", "/MUTEX=", "/APPARGS=", "/DIR=", KitchenDesigner.Core.Update.RunningInstanceMutex.ArgumentName })
+            StringAssert.Contains(token, script, "ключ песочницы, который понимает KitchenDesigner.iss или приложение");
+        StringAssert.DoesNotContain("Kitchen Designer is running from", script,
+            "прогон больше не требует закрыть приложение пользователя: он в песочнице и мьютекс у него свой");
+        StringAssert.Contains("SHA256", script,
+            "независимость от установки пользователя доказывается хешами до и после, а не обещанием");
     }
 
     private static string[] ShippedAppLanguages() =>

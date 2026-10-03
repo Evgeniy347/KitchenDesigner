@@ -34,6 +34,13 @@
 #define RelaunchPollMs 100
 ; Имя мьютекса = RunningInstanceMutex.Name в приложении (сверяет InstallerScriptGuardTests).
 #define AppMutexName "KitchenDesigner.RunningInstance"
+; Песочница дымового прогона (tools\installer-smoke.ps1): setup, запущенный с /SMOKE=1,
+; ставит в каталог /DIR= и ничего не пишет в окружение пользователя - ни запись в
+; «Программы и компоненты», ни ярлыки, ни ассоциацию .kdproj, ни InstallLanguage (его
+; копия уходит в HKCU\Software\KitchenDesigner-Smoke). /MUTEX= подменяет имя мьютекса,
+; /APPARGS= - ключи, с которыми /RELAUNCH поднимает приложение; без /SMOKE=1 оба
+; игнорируются, поведение для пользователей прежнее.
+#define SmokeLanguageKey "Software\KitchenDesigner-Smoke"
 
 [Setup]
 AppId={#AppGuid}
@@ -79,6 +86,9 @@ CloseApplicationsFilter=*.exe,*.dll
 ; ответил бы Отмена. Его ждёт [Code] (WaitForTheUpdatingAppToExit).
 AppMutex={code:AppMutexUnlessUpdating}
 RestartApplications=no
+; Песочница дымового прогона не регистрируется в «Программы и компоненты» - там
+; живёт запись настоящей установки пользователя с тем же AppId.
+CreateUninstallRegKey=NotSmoke
 ; Регистрирует .kdproj в HKCU\Software\Classes (без UAC - тот же уровень прав,
 ; что и сама установка) и просит Inno уведомить проводник после [Registry].
 ChangesAssociations=yes
@@ -200,23 +210,23 @@ Source: "..\docs\example.save.json"; DestDir: "{app}\Demo"; DestName: "demo.json
   Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
-Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
+Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"; Check: NotSmoke
+Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"; Check: NotSmoke
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; \
-  Tasks: desktopicon
+  Tasks: desktopicon; Check: NotSmoke
 
 [Registry]
 ; HKCU, не HKLM - установка сама per-user (PrivilegesRequired=lowest), поэтому и
 ; ассоциация регистрируется без прав администратора и снимается тем же деинсталлятором,
 ; ничего не трогая у других пользователей той же машины.
 Root: HKCU; Subkey: "Software\Classes\{#ProjectExt}"; ValueType: string; ValueName: ""; \
-  ValueData: "{#ProjectProgId}"; Flags: uninsdeletevalue uninsdeletekeyifempty
+  ValueData: "{#ProjectProgId}"; Flags: uninsdeletevalue uninsdeletekeyifempty; Check: NotSmoke
 Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}"; ValueType: string; ValueName: ""; \
-  ValueData: "{cm:ProjectFileType}"; Flags: uninsdeletekey
+  ValueData: "{cm:ProjectFileType}"; Flags: uninsdeletekey; Check: NotSmoke
 Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}\DefaultIcon"; ValueType: string; ValueName: ""; \
-  ValueData: "{app}\{#AppExe},0"
+  ValueData: "{app}\{#AppExe},0"; Check: NotSmoke
 Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}\shell\open\command"; ValueType: string; ValueName: ""; \
-  ValueData: """{app}\{#AppExe}"" ""%1"""
+  ValueData: """{app}\{#AppExe}"" ""%1"""; Check: NotSmoke
 
 ; Язык, выбранный в установщике, — НАЧАЛЬНЫЙ язык приложения. Контракт простой: setup
 ; пишет обычную строку REG_SZ, приложение читает её при старте ТОЛЬКО если у человека
@@ -226,14 +236,16 @@ Root: HKCU; Subkey: "Software\Classes\{#ProjectProgId}\shell\open\command"; Valu
 ; по ОС) существующее значение не трогает (ShouldWriteInstallLanguage), а выбор, уже
 ; сохранённый приложением, перебить не может в любом случае — приоритет у приложения.
 Root: HKCU; Subkey: "Software\KitchenDesigner"; ValueType: string; ValueName: "InstallLanguage";   ValueData: "{cm:AppLanguageCode}"; Flags: uninsdeletevalue uninsdeletekeyifempty;   Check: ShouldWriteInstallLanguage
+; Песочница дымового прогона проверяет тот же контракт на своей копии ключа.
+Root: HKCU; Subkey: "{#SmokeLanguageKey}"; ValueType: string; ValueName: "InstallLanguage"; ValueData: "{cm:AppLanguageCode}"; Flags: uninsdeletevalue uninsdeletekeyifempty; Check: ShouldWriteSmokeInstallLanguage
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; \
   Flags: nowait postinstall skipifsilent
 ; Автообновление: приложение запускает этот же setup с /RELAUNCH и тихо ставит
 ; новую версию; по завершении Inno поднимает новую версию сам (без диалогов).
-Filename: "{app}\{#AppExe}"; WorkingDir: "{app}"; Flags: nowait; \
-  Check: RelaunchRequested
+Filename: "{app}\{#AppExe}"; Parameters: "{code:RelaunchParameters}"; WorkingDir: "{app}"; \
+  Flags: nowait; Check: RelaunchRequested
 
 [Code]
 // Разбирает "MAJOR.MINOR.BUILD" (лишние части = 0) в три числа.
@@ -292,17 +304,83 @@ begin
   Result := Pos('/RELAUNCH', GetCmdTail) > 0;
 end;
 
+// Значение ключа командной строки вида /NAME=значение (в setup и в деинсталляторе).
+function SwitchValue(const Name: String): String;
+var
+  i: Integer;
+  Prefix, Arg: String;
+begin
+  Result := '';
+  Prefix := '/' + Name + '=';
+  for i := 1 to ParamCount do
+  begin
+    Arg := ParamStr(i);
+    if CompareText(Copy(Arg, 1, Length(Prefix)), Prefix) = 0 then
+    begin
+      Result := Copy(Arg, Length(Prefix) + 1, Length(Arg));
+      Exit;
+    end;
+  end;
+end;
+
+// Песочница дымового прогона: см. шапку (SmokeLanguageKey).
+function SmokeMode: Boolean;
+begin
+  Result := SwitchValue('SMOKE') <> '';
+end;
+
+function NotSmoke: Boolean;
+begin
+  Result := not SmokeMode;
+end;
+
+// Мьютекс, которого ждёт setup. Подмену /MUTEX= принимает только песочница: у
+// пользователя имя всегда одно (AppMutexName).
+function MutexNameInUse: String;
+begin
+  Result := '{#AppMutexName}';
+  if SmokeMode and (SwitchValue('MUTEX') <> '') then Result := SwitchValue('MUTEX');
+end;
+
+// Ключи, с которыми /RELAUNCH поднимает приложение. Пользователю - пусто; песочница
+// передаёт приложению тот же -mutex и режим прогона (-ephemeralSession и т. д.).
+function RelaunchParameters(Param: String): String;
+begin
+  Result := '';
+  if SmokeMode then Result := SwitchValue('APPARGS');
+end;
+
+// Песочница обязана ставить только в свой каталог и ждать только свой мьютекс: без
+// /DIR= она встала бы поверх настоящей установки, без /MUTEX= ждала бы открытое у
+// пользователя приложение.
+function InitializeSetup: Boolean;
+begin
+  Result := True;
+  if SmokeMode and ((SwitchValue('DIR') = '') or (SwitchValue('MUTEX') = '')
+    or (SwitchValue('MUTEX') = '{#AppMutexName}')) then
+  begin
+    Log('Smoke: /SMOKE needs /DIR= and /MUTEX= (not the real mutex); refusing to touch the real installation');
+    Result := False;
+  end;
+end;
+
 // Тихая установка (автообновление, язык по ОС) ничего не решает за человека, у которого
 // значение уже есть; обычная установка перезаписывает — он только что выбрал язык.
 function ShouldWriteInstallLanguage: Boolean;
 begin
-  Result := not WizardSilent
-    or not RegValueExists(HKCU, 'Software\KitchenDesigner', 'InstallLanguage');
+  Result := not SmokeMode and (not WizardSilent
+    or not RegValueExists(HKCU, 'Software\KitchenDesigner', 'InstallLanguage'));
+end;
+
+function ShouldWriteSmokeInstallLanguage: Boolean;
+begin
+  Result := SmokeMode and (not WizardSilent
+    or not RegValueExists(HKCU, '{#SmokeLanguageKey}', 'InstallLanguage'));
 end;
 
 function AppMutexUnlessUpdating(Param: String): String;
 begin
-  if RelaunchRequested then Result := '' else Result := '{#AppMutexName}';
+  if RelaunchRequested then Result := '' else Result := MutexNameInUse;
 end;
 
 // Файл держит живой процесс: запущенный exe и загруженную dll Windows не даёт
@@ -338,7 +416,7 @@ end;
 // до 0.2040 мьютекса не создают, а UnityCrashHandler64 переживает плеер на миг.
 function WhatTheOldCopyStillHolds: String;
 begin
-  if CheckForMutexes('{#AppMutexName}') then Result := 'mutex {#AppMutexName}'
+  if CheckForMutexes(MutexNameInUse) then Result := 'mutex ' + MutexNameInUse
   else Result := FirstHeldAppFile;
 end;
 
@@ -423,7 +501,7 @@ begin
     Result := CustomMessage('AppCloseCancelled');
     Exit;
   end;
-  if RegQueryStringValue(HKCU, '{#UninstKey}', 'DisplayVersion', Installed) then
+  if NotSmoke and RegQueryStringValue(HKCU, '{#UninstKey}', 'DisplayVersion', Installed) then
   begin
     if CompareVer(Installed, '{#Version}') > 0 then
       if MsgBox('Обнаружена более новая версия (' + Installed + '). ' +
