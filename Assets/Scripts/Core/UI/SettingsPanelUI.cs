@@ -38,7 +38,6 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            _photoTab?.Dispose();
             _viewTab?.Dispose();
 
             var panel = UIFactory.CreatePanel("SettingsPanel", canvas, Vector2.zero, new Vector2(PanelW, PanelH));
@@ -112,7 +111,6 @@ namespace KitchenDesigner.Core.UI
             ProjectWindows.Unregister(this);
             _captureGate?.CancelIfCapturing();
             _gestureGate?.CancelIfCapturing();
-            _photoTab?.Dispose();
             _viewTab?.Dispose();
         }
 
@@ -163,7 +161,6 @@ namespace KitchenDesigner.Core.UI
                 return;
             }
             SyncFromSettings();
-            _photoTab?.SyncActiveToggle();
             RefreshDependentStates();
         }
     }

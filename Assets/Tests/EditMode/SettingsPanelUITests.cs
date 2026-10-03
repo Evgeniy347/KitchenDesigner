@@ -889,6 +889,24 @@ public class SettingsPanelUITests
             "блок строк стоит по горизонтали в середине окна");
     }
 
+    // ── Photo tab ───────────────────────────────────────────
+
+    [Test]
+    public void PhotoTab_HasNoPhotoModeSwitch_BecauseTheToolbarOwnsIt()
+    {
+        var photo = _canvas!.transform.Find(PagePath + "Tab_Photo");
+        Assert.IsNotNull(photo);
+
+        Assert.IsNull(photo.Find("RowTgl_Фоторежим"),
+            "включатель фоторежима живёт на панели инструментов; вторая копия во вкладке настроек "
+            + "дублировала его и была вторым писателем одного состояния");
+        Assert.IsNotNull(photo.Find("RowPreset"),
+            "пара к проверке: вкладка не пуста, первой строкой стоит качество фоторежима");
+        float topRowY = photo.Cast<Transform>().Where(t => t.name.StartsWith("Row")).Max(t => ((RectTransform)t).anchoredPosition.y);
+        Assert.AreEqual(topRowY, ((RectTransform)photo.Find("RowPreset")).anchoredPosition.y, 0.01f,
+            "строка качества стоит выше всех остальных строк вкладки: на месте убранного включателя пустоты нет");
+    }
+
     // ── MCP tab ─────────────────────────────────────────────
 
     /// <summary>Вкладка существует ради одного действия: скопировать текст и

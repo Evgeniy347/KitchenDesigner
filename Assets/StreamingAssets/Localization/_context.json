@@ -3009,11 +3009,6 @@
     "meaning": "Set the vignette strength",
     "maxLength": 220
   },
-  "hint.settings.photo.active": {
-    "where": "Settings > Photo tab, hint bubble of the 'Photo mode' toggle",
-    "meaning": "Turn photo mode on or off",
-    "maxLength": 220
-  },
   "hint.settings.photo.ambientOcclusion": {
     "where": "Settings > Photo tab, hint bubble of the 'Ambient occlusion' toggle",
     "meaning": "Enable ambient occlusion",
@@ -4521,11 +4516,6 @@
     "where": "Settings > MCP tab, paragraph of small wrapped text",
     "meaning": "The MCP bridge runs whenever the app is open",
     "maxLength": 150
-  },
-  "settings.photo.active": {
-    "where": "Settings > Photo mode tab, row label (toggle)",
-    "meaning": "Turn photo mode (high-quality rendering) on or off",
-    "maxLength": 36
   },
   "settings.photo.antiAliasing": {
     "where": "Settings > Photo mode tab, row label (toggle)",

@@ -11,7 +11,6 @@ namespace KitchenDesigner.Core.UI
         private readonly Dictionary<string, Toggle> _presetLinkedToggles = new();
 
         private Button? _presetButton;
-        private Toggle? _photoActiveToggle;
         private Toggle? _ssgiToggle;
 
         public SettingsPhotoTab(SettingsRowFactory rows) => _rows = rows;
@@ -20,13 +19,6 @@ namespace KitchenDesigner.Core.UI
         {
             float y = topY;
 
-            _photoActiveToggle = _rows.AddToggle(page, ref y, Loc.T("settings.photo.active"), PhotoMode.Active,
-                v => PhotoMode.SetActive(v));
-            Hint(Loc.T("settings.photo.active"), hint: "settings.photo.active");
-            PhotoMode.Changed -= SyncActiveToggle;
-            PhotoMode.Changed += SyncActiveToggle;
-
-            y -= SettingsRowFactory.GapPx;
             BuildPresetRow(page, ref y, s);
 
             y -= SettingsRowFactory.GapPx;
@@ -139,16 +131,8 @@ namespace KitchenDesigner.Core.UI
 
         private static string Plain(int v) => v.ToString();
 
-        public void Dispose() => PhotoMode.Changed -= SyncActiveToggle;
-
         private void Hint(string rowKey, string hint) =>
             HintBadge.AttachAfterLabel(_rows.RowLabel(rowKey), hint);
-
-        public void SyncActiveToggle()
-        {
-            if (_photoActiveToggle != null)
-                _photoActiveToggle.SetIsOnWithoutNotify(PhotoMode.Active);
-        }
 
         public void RefreshPresetLabel()
         {

@@ -144,7 +144,6 @@ namespace KitchenDesigner.Core.UI
             "settings.photo.aoFullRes",
             "settings.photo.aoDirect",
             "settings.photo.aoFalloff",
-            "settings.photo.active",
             "settings.photo.shadows",
             "settings.photo.softShadows",
             "settings.photo.antiAliasing",
