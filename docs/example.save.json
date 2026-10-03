@@ -9577,7 +9577,7 @@
                 500
             ],
             "position": [
-                1.282999873161316,
+                1.2829989194869996,
                 0.5225000381469727,
                 -2.1619999408721926
             ],
@@ -12345,7 +12345,7 @@
                 18
             ],
             "position": [
-                1.023999810218811,
+                1.0239988565444947,
                 0.64000004529953,
                 -2.1620001792907717
             ],
@@ -15296,7 +15296,7 @@
                 500
             ],
             "position": [
-                1.2829995155334473,
+                1.2829985618591309,
                 0.6375000476837158,
                 -2.1619999408721926
             ],
@@ -42092,7 +42092,7 @@
             "tabletopMaterialId": "default",
             "transparent": false,
             "doorMode": 12,
-            "doorOpen": true,
+            "doorOpen": false,
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
@@ -42957,7 +42957,7 @@
             "tabletopMaterialId": "default",
             "transparent": false,
             "doorMode": 0,
-            "doorOpen": true,
+            "doorOpen": false,
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
@@ -71688,11 +71688,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": -1.157129168510437,
-        "targetY": 2.39064621925354,
-        "targetZ": 3.757286548614502,
-        "angleX": 4.443943500518799,
-        "angleY": -2267.839111328125,
+        "targetX": -0.310481458902359,
+        "targetY": 1.301731824874878,
+        "targetZ": 0.41259393095970156,
+        "angleX": 33.183921813964847,
+        "angleY": -2351.7919921875,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": 0.30268532037734988,
@@ -111544,40 +111544,7 @@
             "convertState": []
         }
     ],
-    "redoHistory": [
-        {
-            "type": "move",
-            "description": "Move Cab_BackPanel_2",
-            "elementIndex": 256,
-            "posBefore": [
-                6.532000541687012,
-                1.784999966621399,
-                2.193000078201294
-            ],
-            "posAfter": [
-                6.409000396728516,
-                1.784999966621399,
-                2.193000078201294
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        }
-    ],
+    "redoHistory": [],
     "settings": {
         "gridStep": 1,
         "gridEnabled": true,
@@ -111688,7 +111655,7 @@
         "neighbourLevelsMode": 0
     },
     "lightsOn": false,
-    "musicTrack": 3,
+    "musicTrack": 0,
     "musicVolumePct": 70,
     "windows": [
         {
@@ -111714,7 +111681,7 @@
         },
         {
             "id": "levels",
-            "visible": true,
+            "visible": false,
             "x": -8.9654541015625,
             "y": -57.930816650390628,
             "height": 0.0
@@ -111735,7 +111702,7 @@
         },
         {
             "id": "settings",
-            "visible": true,
+            "visible": false,
             "x": 0.0,
             "y": 0.0,
             "height": 0.0
