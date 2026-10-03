@@ -7,7 +7,9 @@
 .DESCRIPTION
     Three passes, each with its own Inno /LOG under test-results\installer-smoke\:
 
-      1) plain_install  - a silent first install into the sandbox.
+      1) plain_install  - a silent install into the sandbox, over a copy of the PREVIOUS
+                          version's files (see THE SANDBOX); a first install if none is
+                          installed. A file the user "added" to StreamingAssets must survive.
       2) update_race    - the sandbox app is RUNNING; setup is started with the updater's
                           own switches (read from InstallerCommandLine.cs, so the script and
                           the app cannot drift apart) and the app is asked to close only
@@ -36,8 +38,12 @@
     - waits for the mutex <name>, not the one the user's running app holds. The sandbox app
       is started with -mutex <name> and holds the same one, so the sandbox setup and the
       sandbox app see only each other.
+    The sandbox is seeded with the files of the version the user has installed (= the latest
+    published release; copied read-only, WITHOUT unins* - that log lists the user's paths), so
+    every pass is an update over the previous version. The previous setup itself cannot be
+    run: it knows no /SMOKE and would write the user's uninstall entry and association.
     The sandbox is uninstalled by its own uninstaller at the end and the temp directory is
-    removed. Before and after, the script fingerprints everything of the USER'S that a
+    removed (also after a crash: try/finally). Before and after, the script fingerprints everything of the USER'S that a
     careless run could touch - the installed files (SHA-256), the uninstall registry entry,
     the .kdproj association, HKCU\Software\KitchenDesigner (InstallLanguage), the Start menu
     folder and the desktop shortcut - and fails if one byte differs.
@@ -246,16 +252,31 @@ function Start-SandboxApp {
 
 function Uninstall-Sandbox {
     $uninstaller = Join-Path $script:sandboxApp 'unins000.exe'
-    if (-not (Test-Path -LiteralPath $uninstaller)) { return $true }
+    if (-not [IO.File]::Exists($uninstaller)) { return $true }
     $log = Join-Path $logDir "uninstall-$setupVersion.log"
     if (Test-Path -LiteralPath $log) { Remove-Item -LiteralPath $log }
     Start-Process -FilePath $uninstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SMOKE=1 /MUTEX=$($script:mutex) /LOG=`"$log`"" | Out-Null
     $deadline = (Get-Date).AddSeconds(120)
     while ((Get-Date) -lt $deadline) {
-        if (-not (Test-Path -LiteralPath $uninstaller) -and -not (Test-Path -LiteralPath (Join-Path $script:sandboxApp 'KitchenDesigner.exe'))) { return $true }
+        # [IO.File]::Exists, not Test-Path: a file the uninstaller is deleting right now answers
+        # Test-Path with UnauthorizedAccess instead of "gone".
+        if (-not [IO.File]::Exists($uninstaller) -and -not [IO.File]::Exists((Join-Path $script:sandboxApp 'KitchenDesigner.exe'))) { return $true }
         Start-Sleep -Milliseconds 500
     }
     return $false
+}
+
+function Copy-PreviousVersionInto([string]$Target) {
+    # The previous published release is what the user has installed (the updater keeps it
+    # current), so its files are copied READ-ONLY from there. Running the previous setup itself
+    # is not an option: it knows no /SMOKE and would write the user's uninstall entry, shortcuts
+    # and association. unins* stays behind: the user's uninstall log lists the USER'S paths, and
+    # a sandbox uninstaller that read it would delete the user's files.
+    if (-not $userDir -or -not (Test-Path -LiteralPath (Join-Path $userDir 'KitchenDesigner.exe'))) { return $null }
+    New-Item -ItemType Directory -Force -Path $Target | Out-Null
+    robocopy $userDir $Target /E /XF 'unins*' /NFL /NDL /NJH /NJS /NP /R:1 /W:1 | Out-Null
+    if ($LASTEXITCODE -ge 8) { Fail "could not copy the previous version's files from $userDir (robocopy $LASTEXITCODE)" }
+    return (Get-ItemProperty -LiteralPath "HKCU:\$uninstSubKey" -ErrorAction SilentlyContinue).DisplayVersion
 }
 
 function Remove-Sandbox {
@@ -265,7 +286,15 @@ function Remove-Sandbox {
     $temp = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
     $full = [IO.Path]::GetFullPath($script:sandbox)
     if ($full.StartsWith($temp, [StringComparison]::OrdinalIgnoreCase) -and (Split-Path -Leaf $full).StartsWith('kd-smoke-') -and (Test-Path -LiteralPath $full)) {
-        Remove-Item -LiteralPath $full -Recurse -ErrorAction SilentlyContinue
+        # A setup killed mid-install leaves its child process copying files into the sandbox.
+        foreach ($p in Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine.Contains($full) -and $_.ProcessId -ne $PID }) {
+            Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
+        }
+        for ($attempt = 0; $attempt -lt 10 -and (Test-Path -LiteralPath $full); $attempt++) {
+            Remove-Item -LiteralPath $full -Recurse -ErrorAction SilentlyContinue
+            if (Test-Path -LiteralPath $full) { Start-Sleep -Seconds 1 }
+        }
+        if (Test-Path -LiteralPath $full) { Write-Host "[WARN] could not remove the sandbox $full" -ForegroundColor Yellow }
     }
     if (Test-Path -LiteralPath "HKCU:\$smokeLanguageKey") { Remove-Item -LiteralPath "HKCU:\$smokeLanguageKey" -Recurse -ErrorAction SilentlyContinue }
     $script:sandbox = $null
@@ -326,7 +355,7 @@ function Start-Setup([string]$Switches, [string]$Log) {
 
 function Wait-Setup($Process, [string]$Pass) {
     if (-not $Process.WaitForExit($SetupTimeoutSec * 1000)) {
-        Stop-Process -Id $Process.Id -Force -ErrorAction SilentlyContinue
+        & taskkill /T /F /PID $Process.Id 2>&1 | Out-Null
         Fail "${Pass}: setup did not finish in $SetupTimeoutSec s"
     }
     return $Process.ExitCode
@@ -351,10 +380,25 @@ $script:playerLog = Join-Path $shortSandbox 'player.log'
 if (Test-Path -LiteralPath "HKCU:\$smokeLanguageKey") { Remove-Item -LiteralPath "HKCU:\$smokeLanguageKey" -Recurse }
 Write-Host "sandbox: $($script:sandboxApp)  mutex: $($script:mutex)"
 
-# ---- pass 1: plain silent install into the sandbox ----
+try {
+# ---- the previous version's files are already there: every pass below is an UPDATE ----
+$previousVersion = Copy-PreviousVersionInto $script:sandboxApp
+$sentinel = $null
+if ($previousVersion) {
+    $assets = Join-Path $script:sandboxApp 'KitchenDesigner_Data\StreamingAssets'
+    if (Test-Path -LiteralPath $assets) {
+        $sentinel = Join-Path $assets 'smoke-user-file.txt'
+        Set-Content -LiteralPath $sentinel -Value 'a file the user added next to the shipped ones'
+    }
+    Write-Host "previous version $previousVersion copied into the sandbox (no uninstall log); the passes update it"
+}
+else { Write-Host 'no installed previous version to copy: the sandbox starts empty (a first install)' }
+
+# ---- pass 1: plain silent install (over the previous version's files) ----
 $log1 = Join-Path $logDir "plain-install-$setupVersion.log"
 $s1 = Start-Setup $plainSwitches $log1
 Assert-SetupLog 'plain_install' $log1 (Wait-Setup $s1 'plain_install')
+if ($sentinel -and -not (Test-Path -LiteralPath $sentinel)) { Fail 'plain_install: the update deleted a file the user added to StreamingAssets' }
 
 $appExe = Join-Path $script:sandboxApp 'KitchenDesigner.exe'
 if (-not (Test-Path -LiteralPath $appExe)) { Fail "after plain_install there is no $appExe" }
@@ -398,6 +442,7 @@ $langAfter = (Get-ItemProperty -LiteralPath $langKey -Name InstallLanguage).Inst
 Set-ItemProperty -LiteralPath $langKey -Name InstallLanguage -Value $langBefore
 if ($langAfter -ne 'sentinel-keep-me') { Fail "update_race: the silent update overwrote InstallLanguage (sentinel -> '$langAfter')" }
 Write-Host '[OK ] a silent update leaves InstallLanguage alone'
+if ($sentinel -and -not (Test-Path -LiteralPath $sentinel)) { Fail 'update_race: the update deleted a file the user added to StreamingAssets' }
 Start-Sleep -Seconds $AppStartSec
 Stop-Leftovers $script:sandboxApp
 
@@ -439,7 +484,11 @@ Stop-Leftovers $script:sandboxApp
 if (-not (Uninstall-Sandbox)) { Fail 'the sandbox uninstaller did not remove the sandbox application in 120 s' }
 if (Test-Path -LiteralPath "HKCU:\$smokeLanguageKey") { Fail "the sandbox uninstaller left $langKey behind" }
 Write-Host '[OK ] the sandbox was removed by its own uninstaller'
-Remove-Sandbox
+}
+finally {
+    # A crash, Ctrl+C or an unexpected exception still takes the sandbox away.
+    if ($script:sandbox) { Remove-Sandbox }
+}
 
 # ---- and the user's installation is exactly as it was ----
 $userAfter = Get-UserFingerprint

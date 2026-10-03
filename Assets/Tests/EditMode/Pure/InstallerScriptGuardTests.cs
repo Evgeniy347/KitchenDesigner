@@ -270,6 +270,11 @@ public class InstallerScriptGuardTests
             StringAssert.Contains(token, script, "ключ песочницы, который понимает KitchenDesigner.iss или приложение");
         StringAssert.DoesNotContain("Kitchen Designer is running from", script,
             "прогон больше не требует закрыть приложение пользователя: он в песочнице и мьютекс у него свой");
+        StringAssert.Contains("/XF 'unins*'", script,
+            "песочница копирует файлы прошлой версии БЕЗ журнала деинсталляции: в нём пути установки "
+            + "пользователя, и деинсталлятор песочницы удалил бы настоящие файлы");
+        StringAssert.Contains("} finally {", Regex.Replace(script, @"\}\s*\r?\n\s*finally\s*\{", "} finally {"),
+            "песочница убирается и после сбоя прогона, а не только в конце удачного");
         StringAssert.Contains("SHA256", script,
             "независимость от установки пользователя доказывается хешами до и после, а не обещанием");
     }
