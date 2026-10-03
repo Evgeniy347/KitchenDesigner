@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>Cabinet + dimension</title>
+  <rect x="16" y="16" width="224" height="224" rx="40" fill="#4D80BF"/>
+  <g stroke="#EBEBEB" stroke-width="10" fill="none">
+    <path d="M64 62 H192 M48 40 V96 M208 40 V96"/>
+  </g>
+  <polygon points="53,62 76,48 76,76" fill="#EBEBEB"/>
+  <polygon points="203,62 180,48 180,76" fill="#EBEBEB"/>
+  <rect x="36" y="104" width="184" height="24" rx="3" fill="#F2CC40"/>
+  <rect x="36" y="120" width="184" height="8" fill="#C9A332"/>
+  <rect x="44" y="128" width="168" height="96" fill="#EBEBEB"/>
+  <rect x="124" y="128" width="8" height="96" fill="#4D80BF"/>
+  <rect x="104" y="144" width="10" height="32" rx="3" fill="#383D4D"/>
+  <rect x="142" y="144" width="10" height="32" rx="3" fill="#383D4D"/>
+</svg>

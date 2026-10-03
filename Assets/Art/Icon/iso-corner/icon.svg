@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>Iso kitchen corner</title>
+  <rect x="16" y="16" width="224" height="224" rx="40" fill="#383D4D"/>
+  <polygon points="128,96 184,124 184,196 128,168" fill="#EBEBEB"/>
+  <polygon points="128,96 184,124 184,134 128,106" fill="#C9A332"/>
+  <polygon points="220,106 184,124 184,196 220,178" fill="#999EA8"/>
+  <polygon points="220,106 184,124 184,134 220,116" fill="#8F7428"/>
+  <polygon points="128,60 220,106 184,124 92,78" fill="#F2CC40"/>
+  <polygon points="128,96 72,124 72,196 128,168" fill="#999EA8"/>
+  <polygon points="128,96 72,124 72,134 128,106" fill="#8F7428"/>
+  <polygon points="36,106 72,124 72,196 36,178" fill="#EBEBEB"/>
+  <polygon points="36,106 72,124 72,134 36,116" fill="#C9A332"/>
+  <polygon points="92,78 128,96 72,124 36,106" fill="#F2CC40"/>
+  <polygon points="153,118.5 159,121.5 159,183.5 153,180.5" fill="#383D4D"/>
+  <polygon points="103,118.5 97,121.5 97,183.5 103,180.5" fill="#383D4D"/>
+</svg>

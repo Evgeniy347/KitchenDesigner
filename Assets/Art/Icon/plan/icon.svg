@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>Floor plan</title>
   <rect x="16" y="16" width="224" height="224" rx="40" fill="#4D80BF"/>
   <path d="M48 48 H208 V96 H96 V208 H48 Z" fill="#EBEBEB"/>
   <circle cx="146" cy="72" r="14" fill="#383D4D"/>

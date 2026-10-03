@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>Monogram, perspective top</title>
+  <rect x="16" y="16" width="224" height="224" rx="40" fill="#383D4D"/>
+  <polygon points="60,36 196,36 232,76 24,76" fill="#F2CC40"/>
+  <rect x="24" y="76" width="208" height="14" fill="#C9A332"/>
+  <rect x="32" y="98" width="88" height="126" rx="4" fill="#EBEBEB"/>
+  <rect x="136" y="98" width="88" height="126" rx="4" fill="#EBEBEB"/>
+  <clipPath id="band"><rect x="0" y="120" width="256" height="84"/></clipPath>
+  <g clip-path="url(#band)" stroke="#383D4D" stroke-width="18" fill="none">
+    <path d="M57 106 V216 M66 164 L96 114 M74 154 L102 216"/>
+    <path d="M161 106 V216 M161 129 H168 A31 33 0 0 1 168 195 H161"/>
+  </g>
+</svg>
