@@ -1,15 +1,21 @@
 // Rasterises the app-icon variants in Assets/Art/Icon/<variant>/ with headless Chrome.
 // For every size the most specific source wins: icon-<size>.svg, else icon.svg.
 // Writes <variant>/icon-256.png and <variant>/icon.ico (all sizes, PNG entries),
-// and the comparison sheet test-results/icon-variants.png (current icon included).
-// Usage: node tools/render-icons.mjs
+// and the comparison sheet test-results/icon-variants.png (shipped icon included).
+// --ship <variant> also copies that variant into Assets/Art/Icon/shipped/: icon-<size>.png for
+// the Standalone sizes ProjectSettings references, and app.ico for the installer (SetupIconFile).
+// Usage: node tools/render-icons.mjs [--ship <variant>]
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 const repo = path.resolve(import.meta.dirname, '..');
 const iconRoot = path.join(repo, 'Assets', 'Art', 'Icon');
-const currentIcon = path.join(repo, 'Assets', 'Resources', 'app_icon.png');
+const shippedDir = path.join(iconRoot, 'shipped');
+const currentIcon = path.join(shippedDir, 'icon-256.png');
+const shipSizes = [16, 32, 48, 64, 128, 256];
+const shipArg = process.argv.indexOf('--ship');
+const ship = shipArg > 0 ? process.argv[shipArg + 1] : null;
 const workDir = path.join(repo, 'test-results', 'icon-build');
 const sheetPath = path.join(repo, 'test-results', 'icon-variants.png');
 const sizes = [16, 24, 32, 48, 64, 128, 256];
@@ -36,7 +42,7 @@ const variants = fs.readdirSync(iconRoot, { withFileTypes: true })
 const page = `<!doctype html><meta charset="utf-8"><body><pre id="out"></pre><script>
 const sizes = ${JSON.stringify(sizes)};
 const variants = ${JSON.stringify(variants.map(v => ({ name: v.name, sources: v.sources })))};
-const current = ${JSON.stringify(dataUrl(currentIcon, 'image/png'))};
+const current = ${fs.existsSync(currentIcon) ? JSON.stringify(dataUrl(currentIcon, 'image/png')) : 'null'};
 const load = async src => { const i = new Image(); i.src = src; await i.decode(); return i; };
 function raster(img, size) {
   const c = document.createElement('canvas'); c.width = c.height = size;
@@ -68,8 +74,10 @@ function sheet(rows) {
 (async () => { try {
   const out = { variants: {}, sheet: null };
   const rows = [];
-  const cur = await load(current);
-  rows.push({ name: 'current (Assets/Resources/app_icon.png)', rasters: Object.fromEntries(sizes.map(s => [s, raster(cur, s)])) });
+  if (current) {
+    const cur = await load(current);
+    rows.push({ name: 'shipped (Assets/Art/Icon/shipped)', rasters: Object.fromEntries(sizes.map(s => [s, raster(cur, s)])) });
+  }
   for (const v of variants) {
     const rasters = {};
     for (const s of sizes) rasters[s] = raster(await load(v.sources[s]), s);
@@ -118,7 +126,12 @@ for (const v of variants) {
   const pngs = sizes.map(size => ({ size, data: decode(result.variants[v.name][size]) }));
   fs.writeFileSync(path.join(v.dir, 'icon-256.png'), pngs.at(-1).data);
   fs.writeFileSync(path.join(v.dir, 'icon.ico'), packIco(pngs));
+  if (v.name !== ship) continue;
+  fs.mkdirSync(shippedDir, { recursive: true });
+  for (const p of pngs.filter(p => shipSizes.includes(p.size))) fs.writeFileSync(path.join(shippedDir, `icon-${p.size}.png`), p.data);
+  fs.writeFileSync(path.join(shippedDir, 'app.ico'), packIco(pngs));
 }
+if (ship && !variants.some(v => v.name === ship)) throw new Error(`--ship: no variant ${ship}`);
 fs.writeFileSync(sheetPath, decode(result.sheet));
 fs.rmSync(workDir, { recursive: true, force: true });
 console.log(`variants: ${variants.map(v => v.name).join(', ')}; sheet: ${sheetPath}`);

@@ -269,6 +269,40 @@ public class InstallerScriptGuardTests
         StringAssert.DoesNotContain("DefaultCompany", iss);
     }
 
+    // setup.exe и KitchenDesigner.exe обязаны показывать одну иконку. Источник один —
+    // Assets/Art/Icon/shipped (пишет tools/render-icons.mjs --ship): ISCC берёт оттуда app.ico,
+    // Unity — icon-<size>.png через ProjectSettings. Сторож ловит смену одной половины без
+    // другой: SetupIconFile на несуществующий файл (ISCC падает только на релизе) или
+    // ProjectSettings, ссылающийся на текстуру вне папки shipped.
+    [Test]
+    public void SetupIcon_AndTheExeIcon_ComeFromTheSameShippedFolder()
+    {
+        var installerDir = RepoPaths.Subdir("installer");
+        var setupIcon = Regex.Match(Section(Iss(), "Setup"), @"^\s*SetupIconFile\s*=\s*(?<p>.+?)\s*$",
+            RegexOptions.Multiline | RegexOptions.IgnoreCase);
+        Assert.IsTrue(setupIcon.Success, "в [Setup] нет SetupIconFile — setup.exe ушёл бы со стандартной иконкой Inno");
+
+        var icoPath = Path.GetFullPath(Path.Combine(installerDir, setupIcon.Groups["p"].Value.Replace('\\', Path.DirectorySeparatorChar)));
+        Assert.IsTrue(File.Exists(icoPath), "SetupIconFile указывает на несуществующий файл: " + icoPath);
+
+        var shippedDir = Path.GetDirectoryName(icoPath);
+        var shippedGuids = Directory.GetFiles(shippedDir, "*.png.meta")
+            .Select(meta => Regex.Match(File.ReadAllText(meta), @"^guid:\s*(?<g>\w+)", RegexOptions.Multiline).Groups["g"].Value)
+            .ToArray();
+        Assert.IsNotEmpty(shippedGuids, "рядом с app.ico нет растров для ProjectSettings: " + shippedDir);
+
+        var settings = File.ReadAllText(Path.Combine(RepoPaths.Subdir("ProjectSettings"), "ProjectSettings.asset"));
+        var iconBlocks = Regex.Match(settings, @"^  m_BuildTargetIcons:(?<b>.*?)^  m_BuildTargetBatching:",
+            RegexOptions.Singleline | RegexOptions.Multiline);
+        Assert.IsTrue(iconBlocks.Success, "в ProjectSettings.asset не найдены m_BuildTargetIcons/m_BuildTargetPlatformIcons");
+        var referenced = Regex.Matches(iconBlocks.Groups["b"].Value, @"guid:\s*(?<g>\w+)")
+            .Cast<Match>().Select(m => m.Groups["g"].Value).ToArray();
+        Assert.IsNotEmpty(referenced, "в ProjectSettings не задано ни одной иконки Standalone");
+        foreach (var guid in referenced)
+            CollectionAssert.Contains(shippedGuids, guid,
+                "иконка exe в ProjectSettings ссылается на текстуру вне " + shippedDir + " — exe и setup.exe разойдутся");
+    }
+
     [Test]
     public void InstallLanguage_RegistryLocationIsInTheAppsOwnHiveAndKey()
     {

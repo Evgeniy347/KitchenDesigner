@@ -1,6 +1,6 @@
 // Writes test-results/icon-variants.html: every app-icon variant from Assets/Art/Icon/<variant>/
 // as inline SVG — 256 px, 16/24/32/48 px (icon-<size>.svg when present), light and dark
-// backgrounds, a 40 px taskbar mock-up — next to the shipped Assets/Resources/app_icon.png.
+// backgrounds, a 40 px taskbar mock-up — next to the shipped Assets/Art/Icon/shipped/icon-256.png.
 // Signature of a variant = <title> of its icon.svg. No external dependencies in the page.
 // Usage: node tools/icon-gallery.mjs
 import fs from 'node:fs';
@@ -9,7 +9,8 @@ import path from 'node:path';
 const repo = path.resolve(import.meta.dirname, '..');
 const iconRoot = path.join(repo, 'Assets', 'Art', 'Icon');
 const outPath = path.join(repo, 'test-results', 'icon-variants.html');
-const currentPng = fs.readFileSync(path.join(repo, 'Assets', 'Resources', 'app_icon.png')).toString('base64');
+const shippedPng = path.join(iconRoot, 'shipped', 'icon-256.png');
+const currentPng = fs.existsSync(shippedPng) ? fs.readFileSync(shippedPng).toString('base64') : null;
 const preferredOrder = ['monogram', 'monogram-perspective', 'cabinet-ruler', 'iso-corner', 'iso-cabinet', 'plan'];
 const rowSizes = [16, 24, 32, 48];
 
@@ -61,7 +62,7 @@ const cards = names.map(name => {
   return card(`${title} <small>${name}</small>`, () => inline(path.join(dir, 'icon.svg'), 256), s => inline(sourceFor(dir, s), s), () => inline(sourceFor(dir, 24), 24));
 });
 const img = s => `<img width="${s}" height="${s}" src="data:image/png;base64,${currentPng}" alt="">`;
-cards.push(card('Current icon <small>Assets/Resources/app_icon.png</small>', () => img(256), img, () => img(24)));
+if (currentPng) cards.push(card('Shipped icon <small>Assets/Art/Icon/shipped</small>', () => img(256), img, () => img(24)));
 
 const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">

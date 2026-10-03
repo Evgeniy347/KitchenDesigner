@@ -66,6 +66,10 @@ LanguageDetectionMethod=uilanguage
 ShowLanguageDialog=auto
 
 LicenseFile=..\LICENSE
+; Иконка самого setup.exe - та же, что у приложения: Assets\Art\Icon\shipped собирает
+; tools\render-icons.mjs --ship <вариант>, оттуда же ProjectSettings берёт иконку exe.
+; Деинсталлятор и .kdproj (DefaultIcon) показывают иконку из exe.
+SetupIconFile=..\Assets\Art\Icon\shipped\app.ico
 UninstallDisplayIcon={app}\{#AppExe}
 CloseApplications=yes
 CloseApplicationsFilter=*.exe,*.dll
