@@ -13,14 +13,11 @@ namespace KitchenDesigner.Core.UI
             var high = canvas.InverseTransformPoint(corners[2]);
             var screen = canvas.rect;
 
-            var shift = Vector2.zero;
-            if (high.x > screen.xMax) shift.x = screen.xMax - high.x;
-            if (low.x + shift.x < screen.xMin) shift.x = screen.xMin - low.x;
-            if (high.y > screen.yMax) shift.y = screen.yMax - high.y;
-            if (low.y + shift.y < screen.yMin) shift.y = screen.yMin - low.y;
-            if (shift == Vector2.zero) return;
+            var (x, y) = DropdownListMath.ShiftInto(low.x, low.y, high.x, high.y,
+                screen.xMin, screen.yMin, screen.xMax, screen.yMax);
+            if (x == 0f && y == 0f) return;
 
-            list.position += canvas.TransformVector(shift);
+            list.position += canvas.TransformVector(new Vector2(x, y));
         }
 
         public static void PlaceBelowOrAbove(RectTransform popup, RectTransform field, RectTransform canvas)
@@ -34,7 +31,7 @@ namespace KitchenDesigner.Core.UI
             popup.GetWorldCorners(popupCorners);
             float bottom = canvas.InverseTransformPoint(popupCorners[0]).y;
             float roomAbove = canvas.rect.yMax - canvas.InverseTransformPoint(fieldCorners[1]).y;
-            if (bottom < canvas.rect.yMin && roomAbove >= popup.rect.height)
+            if (DropdownListMath.OpensAbove(bottom, canvas.rect.yMin, roomAbove, popup.rect.height))
             {
                 popup.pivot = new Vector2(0f, 0f);
                 popup.position = fieldCorners[1];
@@ -45,14 +42,9 @@ namespace KitchenDesigner.Core.UI
         public static void ScrollToItem(ScrollRect scroll, RectTransform item)
         {
             var content = scroll.content;
-            float contentH = content.rect.height;
-            float viewH = scroll.viewport.rect.height;
-            float room = contentH - viewH;
-            if (room <= 0f) return;
-
             float centreFromTop = -content.InverseTransformPoint(item.TransformPoint(item.rect.center)).y
                 + content.rect.height * (1f - content.pivot.y);
-            float offset = Mathf.Clamp(centreFromTop - viewH * 0.5f, 0f, room);
+            float offset = DropdownListMath.ScrollOffset(centreFromTop, scroll.viewport.rect.height, content.rect.height);
             content.anchoredPosition = new Vector2(content.anchoredPosition.x, offset);
         }
     }
