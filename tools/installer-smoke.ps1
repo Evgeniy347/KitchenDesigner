@@ -47,6 +47,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+# BelowNormal priority: while agents run tests the user's foreground work must win. Set on
+# this script BEFORE it starts anything - Windows gives a child the parent's class when the
+# parent is Idle/BelowNormal, so the installer and the app under test inherit it. Keep it
+# (agents/UNITY-GATEWAY.md).
+try { [Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal' } catch { }
 $root = Split-Path -Parent $PSScriptRoot
 
 $script:cleanupDir = $null

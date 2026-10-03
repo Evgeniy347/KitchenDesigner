@@ -37,10 +37,11 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
+            WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("SpecTitle", panel.transform, Loc.T("spec.title"), UIStyle.FontWindowTitle,
-                new Vector2(0, 290), new Vector2(ContentWidth, 36), TextAnchor.MiddleCenter);
+            WindowTitle.Create(panel.transform, "SpecTitle", Loc.T("spec.title"), UIStyle.FontWindowTitle,
+                ContentWidth, 36f);
 
             BuildStaticHeaders(panel.transform);
             BuildSeparator(panel.transform, 225f);

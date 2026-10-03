@@ -41,9 +41,8 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("LvTitle", panel.transform, Loc.T("window.levels.title"), 20,
-                new Vector2(0, MinPanelHeight * 0.5f - 20f), new Vector2(PanelWidth - 20f, 28),
-                TextAnchor.MiddleCenter);
+            WindowTitle.Create(panel.transform, "LvTitle", Loc.T("window.levels.title"), 20,
+                PanelWidth - 20f, 28f);
 
             UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
 
@@ -68,18 +67,24 @@ namespace KitchenDesigner.Core.UI
         private void BuildColumnHeaders(Transform parent)
         {
             float x = RowStartX();
-            float y = MinPanelHeight * 0.5f - HeaderY;
 
-            UIFactory.CreateLabel("LvHeaderName", parent, Loc.T("window.levels.name"), 12,
-                new Vector2(x + NameW * 0.5f, y), new Vector2(NameW, 20), TextAnchor.MiddleCenter);
+            ColumnHeader(parent, "LvHeaderName", Loc.T("window.levels.name"), x + NameW * 0.5f, NameW);
             x += NameW + FieldGap;
 
-            UIFactory.CreateLabel("LvHeaderElevation", parent, Loc.T("window.levels.elevation"), 12,
-                new Vector2(x + ElevationW * 0.5f, y), new Vector2(ElevationW, 20), TextAnchor.MiddleCenter);
+            ColumnHeader(parent, "LvHeaderElevation", Loc.T("window.levels.elevation"),
+                x + ElevationW * 0.5f, ElevationW);
             x += ElevationW + FieldGap;
 
-            UIFactory.CreateLabel("LvHeaderHeight", parent, Loc.T("window.levels.height"), 12,
-                new Vector2(x + HeightW * 0.5f, y), new Vector2(HeightW, 20), TextAnchor.MiddleCenter);
+            ColumnHeader(parent, "LvHeaderHeight", Loc.T("window.levels.height"), x + HeightW * 0.5f, HeightW);
+        }
+
+        private static void ColumnHeader(Transform parent, string name, string text, float centreX, float width)
+        {
+            var label = UIFactory.CreateLabel(name, parent, text, 12, Vector2.zero, new Vector2(width, 20),
+                TextAnchor.MiddleCenter);
+            var rect = label.rectTransform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(centreX, -HeaderY);
         }
 
         public void Refresh()

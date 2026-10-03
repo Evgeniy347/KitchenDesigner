@@ -28,7 +28,7 @@ public class SettingsLightResetTests
         KitchenSettings.Instance.ResetToDefaults();
         CommandStack.Clear();
 
-        _canvasGo = UIFactory.CreateCanvas("LightResetCanvas").gameObject;
+        _canvasGo = UiTestCanvas.Create("LightResetCanvas");
         _ui = _canvasGo.AddComponent<SettingsPanelUI>();
         _ui.Build(_canvasGo.transform);
         _ui.SetVisible(true);
@@ -39,7 +39,7 @@ public class SettingsLightResetTests
     {
         CommandStack.Clear();
         EditModeManager.Reset();
-        if (_canvasGo != null) Object.DestroyImmediate(_canvasGo);
+        UiTestCanvas.Release(_canvasGo);
         _globals?.Restore();
     }
 

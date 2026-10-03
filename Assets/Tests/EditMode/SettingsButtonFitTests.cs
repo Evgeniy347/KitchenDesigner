@@ -33,13 +33,13 @@ public class SettingsButtonFitTests
     {
         Loc.SetLanguage("ru");
         EditModeManager.Reset();
-        if (_canvasGo != null) Object.DestroyImmediate(_canvasGo);
+        UiTestCanvas.Release(_canvasGo);
         _globals?.Restore();
     }
 
     private SettingsPanelUI BuildPanel()
     {
-        _canvasGo = UIFactory.CreateCanvas("ButtonFitCanvas").gameObject;
+        _canvasGo = UiTestCanvas.Create("ButtonFitCanvas");
         var ui = _canvasGo.AddComponent<SettingsPanelUI>();
         ui.Build(_canvasGo.transform);
         ui.SetVisible(true);

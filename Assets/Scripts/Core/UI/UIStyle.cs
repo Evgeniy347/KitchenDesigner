@@ -57,6 +57,7 @@ namespace KitchenDesigner.Core.UI
         public const float DropdownListMaxH = 320f;
         public const float DropdownScrollBarW = 8f;
         public const float DragStripHeight = 40f;
+        public const float WindowTitleCenterFromTop = CloseBtnInset + CloseBtnSize * 0.5f;
         public const float HintBadgeSize = 24f;
         public const float HintBubbleMaxWidth = 320f;
         public const float HintBubblePadX = 12f;
@@ -68,6 +69,7 @@ namespace KitchenDesigner.Core.UI
         public const int FontSection = 15;
         public const int FontBody = 16;
         public const int FontSmall = 14;
+        public const int FontTab = 14;
 
         public const string GlyphClose = "×";
         public const string GlyphConfirm = "?!";

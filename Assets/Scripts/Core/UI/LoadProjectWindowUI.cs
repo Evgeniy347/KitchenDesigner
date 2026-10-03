@@ -42,12 +42,8 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             WindowDrag.Attach(_panel, UIStyle.DragStripHeight);
 
-            var title = UIFactory.CreateLabel("LoadTitle", panel.transform, Loc.T("window.load.title"),
-                UIStyle.FontWindowTitle, new Vector2(0, -TitleTopPad),
-                new Vector2(PanelW - 2 * UIStyle.WindowPad, TitleH), TextAnchor.MiddleCenter);
-            var titleRt = title.rectTransform;
-            titleRt.anchorMin = titleRt.anchorMax = new Vector2(0.5f, 1f);
-            titleRt.pivot = new Vector2(0.5f, 1f);
+            WindowTitle.Create(panel.transform, "LoadTitle", Loc.T("window.load.title"),
+                UIStyle.FontWindowTitle, PanelW - 2 * UIStyle.WindowPad, TitleH);
 
             UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
 

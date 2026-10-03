@@ -35,14 +35,12 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, DragStripDownToTheTitleBottom);
 
             _linkRoot = NewRoot(panel.transform);
-            UIFactory.CreateLabel("GmLinkTitle", _linkRoot.transform, Loc.T("group.linkPrompt"), 18,
-                new Vector2(0, 26), new Vector2(210, 28), TextAnchor.MiddleCenter);
+            WindowTitle.Create(_linkRoot.transform, "GmLinkTitle", Loc.T("group.linkPrompt"), 18, 210f, 28f);
             UIFactory.CreateButton("GmLink", _linkRoot.transform, Loc.T("group.link"),
                 new Vector2(0, -22), new Vector2(180, 40), DoLink);
 
             _groupRoot = NewRoot(panel.transform);
-            UIFactory.CreateLabel("GmTitle", _groupRoot.transform, Loc.T("group.title"), 20,
-                new Vector2(0, 70), new Vector2(260, 28), TextAnchor.MiddleCenter);
+            WindowTitle.Create(_groupRoot.transform, "GmTitle", Loc.T("group.title"), 20, 260f, 28f);
             UIFactory.CreateLabel("GmNameLbl", _groupRoot.transform, Loc.T("group.name"), 15,
                 new Vector2(-100, 32), new Vector2(60, 24));
             _nameField = UIFactory.CreateInputField("GmName", _groupRoot.transform, "",
@@ -69,9 +67,9 @@ namespace KitchenDesigner.Core.UI
         private GameObject NewRoot(Transform parent)
         {
             var rt = UIFactory.CreateRect("Root", parent);
-            UIFactory.AnchorCenter(rt);
-            rt.anchoredPosition = Vector2.zero;
-            rt.sizeDelta = GroupSettingsSize;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
             return rt.gameObject;
         }
 

@@ -3,11 +3,6 @@
   "children": [
     {
       "type": "Label",
-      "text": "День / Ночь",
-      "position": [0, 104]
-    },
-    {
-      "type": "Label",
       "text": "Время: 12:00 (день)",
       "position": [0, 66]
     },
@@ -20,6 +15,11 @@
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "День / Ночь",
+      "position": [0, -24]
     },
     {
       "type": "Label",

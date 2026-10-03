@@ -7,11 +7,9 @@ namespace KitchenDesigner.Core.UI
 {
     public sealed class SettingsTabStrip
     {
-        public const float TabFontSize = 14f;
         public const float TabH = 32f;
         public const float TabGap = 4f;
         public const float TabPaddingPx = 14f;
-        public const float MinTabFontSize = 11f;
 
         private readonly List<Button> _buttons = new();
         private readonly List<GameObject> _pages = new();
@@ -39,7 +37,7 @@ namespace KitchenDesigner.Core.UI
                     () => Switch(idx));
                 btn.GetComponent<Image>().color = UIStyle.SurfaceInactive;
                 var caption = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-                if (caption != null) caption.fontSize = TabFontSize;
+                if (caption != null) caption.fontSize = UIStyle.FontTab;
                 _buttons.Add(btn);
             }
 
@@ -68,19 +66,13 @@ namespace KitchenDesigner.Core.UI
                 rect.sizeDelta = new Vector2(w, TabH);
                 rect.anchoredPosition = new Vector2(x + w * 0.5f, y);
                 x += w + TabGap;
-
-                var caption = _buttons[i].GetComponentInChildren<TMPro.TextMeshProUGUI>();
-                if (caption != null) caption.fontSize = CaptionFontSize(scale);
             }
         }
-
-        public static float CaptionFontSize(float stripScale) =>
-            stripScale >= 1f ? TabFontSize : Mathf.Max(MinTabFontSize, TabFontSize * stripScale);
 
         private static float CaptionWidth(Button button, string label)
         {
             var caption = button.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            if (caption == null || caption.font == null) return label.Length * TabFontSize * 0.5f;
+            if (caption == null || caption.font == null) return label.Length * UIStyle.FontTab * 0.5f;
             return caption.GetPreferredValues(label).x;
         }
 

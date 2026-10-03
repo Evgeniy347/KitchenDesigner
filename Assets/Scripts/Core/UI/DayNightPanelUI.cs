@@ -37,8 +37,7 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("DnTitle", panel.transform, Loc.T("window.dayNight.title"), 20,
-                new Vector2(0, 104), new Vector2(280, 28), TextAnchor.MiddleCenter);
+            WindowTitle.Create(panel.transform, "DnTitle", Loc.T("window.dayNight.title"), 20, 280f, 28f);
 
             float y = 66f;
             _timeLabel = UIFactory.CreateLabel("DnTimeL", panel.transform, "", 15,

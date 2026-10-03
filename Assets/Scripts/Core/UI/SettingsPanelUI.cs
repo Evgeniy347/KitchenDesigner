@@ -4,14 +4,14 @@ namespace KitchenDesigner.Core.UI
 {
     public class SettingsPanelUI : MonoBehaviour, IProjectWindow
     {
-        private const float PanelW = 600;
+        private const float PanelW = 900;
         private const float PanelH = 900;
-        private const float TitleY = PanelH * 0.5f - 55;
-        private const float TabY = PanelH * 0.5f - 94;
-        private const float ContentTopY = PanelH * 0.5f - 138;
+        private const float TabY = PanelH * 0.5f - 64;
+        private const float ContentTopY = PanelH * 0.5f - 108;
         private const float CloseH = 40f;
         private const float CloseY = -PanelH * 0.5f + 54;
         private const float PanelSidePad = 40f;
+        private const float TitleH = 36f;
 
         private const float BodyTopInset = PanelH * 0.5f - ContentTopY - SettingsRowFactory.RowH * 0.5f;
         private const float BodyBottomInset = PanelH * 0.5f + CloseY + CloseH * 0.5f + UIStyle.GapInner;
@@ -44,10 +44,11 @@ namespace KitchenDesigner.Core.UI
             UIFactory.AnchorCenter(panel.rectTransform);
             panel.rectTransform.anchoredPosition = Vector2.zero;
             _root = panel.gameObject;
+            WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("SetTitle", panel.transform, Loc.T("settings.title"), UIStyle.FontWindowTitle,
-                new Vector2(0, TitleY), new Vector2(PanelW - PanelSidePad, 36), TextAnchor.MiddleCenter);
+            WindowTitle.Create(panel.transform, "SetTitle", Loc.T("settings.title"), UIStyle.FontWindowTitle,
+                PanelW - PanelSidePad, TitleH);
 
             var s = KitchenSettings.Instance;
             if (s == null)

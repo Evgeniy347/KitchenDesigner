@@ -7,14 +7,14 @@
       "position": [0, 0]
     },
     {
-      "type": "Label",
-      "text": "Загрузить проект",
-      "position": [0, -6]
-    },
-    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Загрузить проект",
+      "position": [0, -24]
     },
     {
       "type": "Button",
@@ -24,12 +24,12 @@
     {
       "type": "Button",
       "text": "Новый проект",
-      "position": [12, -62]
+      "position": [528, -62]
     },
     {
       "type": "Button",
       "text": "Загрузить",
-      "position": [12, -112]
+      "position": [528, -112]
     }
   ]
 }

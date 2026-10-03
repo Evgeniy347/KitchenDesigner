@@ -70,6 +70,8 @@ namespace KitchenDesigner.Core.UI
 
         public void Init(float handleHeight) => _handleHeight = handleHeight;
 
+        internal float HandleHeight => _handleHeight;
+
         internal static bool TopHitBelongsTo(List<RaycastResult> hits, Transform window) =>
             hits.Count > 0 && hits[0].gameObject != null &&
             hits[0].gameObject.transform.IsChildOf(window);

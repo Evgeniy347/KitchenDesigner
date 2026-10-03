@@ -29,9 +29,8 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
 
-            UIFactory.CreateLabel("MeasureTitle", panel.transform, Loc.T("measure.title"), UIStyle.FontTitle,
-                new Vector2(0, PanelHeight * 0.5f - 26f), new Vector2(RowWidth, 28f),
-                TextAnchor.MiddleCenter);
+            WindowTitle.Create(panel.transform, "MeasureTitle", Loc.T("measure.title"), UIStyle.FontTitle,
+                RowWidth, 28f);
 
             float y = PanelHeight * 0.5f - 62f;
             _pointA = Row(panel.transform, "MeasureA", ref y);

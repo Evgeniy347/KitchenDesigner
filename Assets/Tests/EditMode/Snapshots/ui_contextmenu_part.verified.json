@@ -48,6 +48,11 @@
     },
     {
       "type": "Label",
+      "text": "Деталь — Detal_800x400",
+      "position": [0, -10]
+    },
+    {
+      "type": "Label",
       "text": "W1",
       "position": [26, -10]
     },
@@ -60,11 +65,6 @@
       "type": "Label",
       "text": "400 мм",
       "position": [93, -10]
-    },
-    {
-      "type": "Label",
-      "text": "Деталь — Detal_800x400",
-      "position": [0, -12]
     },
     {
       "type": "Label",

@@ -229,6 +229,7 @@ namespace KitchenDesigner.Core.UI
         {
             _titleLabel = UIFactory.CreateLabel("CtxTitle", parent, Loc.T("elementType.part"), 20,
                 Vector2.zero, new Vector2(300, TitleH), TextAnchor.MiddleCenter);
+            WindowTitle.Mark(_titleLabel);
             _titleLabel.overflowMode = TextOverflowModes.Ellipsis;
             _titleLabel.enableWordWrapping = false;
             _layout.Add(TitleH, TitleGap, _titleLabel.rectTransform);

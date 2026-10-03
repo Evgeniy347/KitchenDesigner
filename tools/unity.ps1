@@ -79,6 +79,12 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# Приоритет BelowNormal: пока агенты гоняют тесты, передний план пользователя должен
+# побеждать. Ставим его на САМ скрипт до запуска детей - Windows отдаёт ребёнку класс
+# родителя, если тот Idle/BelowNormal, так что Unity.exe, bee_backend, компиляторы и
+# шейдерный компилятор получают его без перебора процессов. Держать (agents/UNITY-GATEWAY.md).
+try { [Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal' } catch { }
+
 $repo = Split-Path -Parent $PSScriptRoot
 $unity = 'C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Unity.exe'
 if (-not $ResultPath) { $ResultPath = Join-Path $repo 'test-results\tmp\TestResults.xml' }
@@ -376,6 +382,9 @@ function Invoke-Unity {
         # plain EditMode run with no PlayMode graphics involved. Hidden suppresses
         # that; it does not affect -batchMode's own headless behaviour otherwise.
         $proc = Start-Process -FilePath $unity -ArgumentList $UnityArgs -WindowStyle Hidden -PassThru
+        # Ремень к подтяжкам: наследование уже дало BelowNormal, но явная установка
+        # не зависит от того, кто и как запустил сам шлюз.
+        try { $proc.PriorityClass = 'BelowNormal' } catch { }
 
         $deadline = (Get-Date).AddMinutes($TimeoutMinutes)
         $lastProgress = Get-Date

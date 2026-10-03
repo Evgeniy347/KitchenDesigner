@@ -78,6 +78,12 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# Приоритет BelowNormal: пока агенты гоняют тесты, передний план пользователя должен
+# побеждать. Ставим его на САМ скрипт до запуска детей - Windows отдаёт ребёнку класс
+# родителя, если тот Idle/BelowNormal, так что Unity.exe, bee_backend, компиляторы и
+# шейдерный компилятор получают его без перебора процессов. Держать (agents/UNITY-GATEWAY.md).
+try { [Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal' } catch { }
+
 $root = Split-Path -Parent $PSScriptRoot
 if (-not $ExePath) { $ExePath = Join-Path $root 'Build\KitchenDesigner.exe' }
 
@@ -244,6 +250,7 @@ try {
     $proc = Start-Process -FilePath $ExePath `
         -ArgumentList @('-mcpPort', "$Port", '-mcpSaveDir', "$tempSaveDir", '-muteAudio', '-hideWindow', '-ephemeralSession') `
         -WindowStyle Hidden -PassThru
+    try { $proc.PriorityClass = 'BelowNormal' } catch { }
 } catch {
     Write-Host "[FAIL] Could not start player: $_" -ForegroundColor Red
     Remove-Item -LiteralPath $tempSaveDir -Recurse -Force -ErrorAction SilentlyContinue

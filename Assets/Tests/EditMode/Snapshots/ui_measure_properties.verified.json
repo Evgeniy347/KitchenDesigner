@@ -3,11 +3,6 @@
   "children": [
     {
       "type": "Label",
-      "text": "Замер",
-      "position": [0, 92]
-    },
-    {
-      "type": "Label",
       "text": "Точка A: X 100, Y 720, Z -300 мм",
       "position": [0, 56]
     },
@@ -25,6 +20,11 @@
       "type": "Label",
       "text": "Расстояние: 1200 мм",
       "position": [0, -20]
+    },
+    {
+      "type": "Label",
+      "text": "Замер",
+      "position": [0, -24]
     },
     {
       "type": "Button",

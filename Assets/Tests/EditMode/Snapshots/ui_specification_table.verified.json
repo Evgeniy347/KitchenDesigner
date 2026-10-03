@@ -3,11 +3,6 @@
   "children": [
     {
       "type": "Label",
-      "text": "Спецификация",
-      "position": [0, 290]
-    },
-    {
-      "type": "Label",
       "text": "№<pos=40>Название<pos=250>Ш<pos=305>В<pos=360>Г, мм<pos=420>Материал<pos=580>Дет.<pos=630>Кол-во<pos=730>Ед.",
       "position": [0, 250]
     },
@@ -15,6 +10,11 @@
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Спецификация",
+      "position": [0, -24]
     },
     {
       "type": "Button",

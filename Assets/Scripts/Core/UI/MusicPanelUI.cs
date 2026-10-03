@@ -37,8 +37,8 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("MuTitle", panel.transform, Loc.T("window.music.title"), UIStyle.FontTitle,
-                new Vector2(0, 64), new Vector2(240, 28), TextAnchor.MiddleCenter);
+            WindowTitle.Create(panel.transform, "MuTitle", Loc.T("window.music.title"), UIStyle.FontTitle,
+                240f, 28f);
             _trackLabel = UIFactory.CreateLabel("MuTrack", panel.transform, "", UIStyle.FontSection,
                 new Vector2(0, 32), new Vector2(248, 24), TextAnchor.MiddleCenter);
 

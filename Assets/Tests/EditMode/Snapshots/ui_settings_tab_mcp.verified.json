@@ -2,69 +2,64 @@
   "root": "TestCanvas",
   "children": [
     {
-      "type": "Label",
-      "text": "Настройки",
-      "position": [0, 395]
-    },
-    {
       "type": "Button",
       "text": "Проект",
-      "position": [-252, 356]
+      "position": [-386, 386]
     },
     {
       "type": "Button",
       "text": "Вид",
-      "position": [-199, 356]
+      "position": [-306, 386]
     },
     {
       "type": "Button",
       "text": "Строительство",
-      "position": [-127, 356]
+      "position": [-195, 386]
     },
     {
       "type": "Button",
       "text": "Управление",
-      "position": [-35, 356]
+      "position": [-53, 386]
     },
     {
       "type": "Button",
       "text": "Фото режим",
-      "position": [50, 356]
+      "position": [78, 386]
     },
     {
       "type": "Button",
       "text": "Свет",
-      "position": [118, 356]
+      "position": [180, 386]
     },
     {
       "type": "Button",
       "text": "MCP",
-      "position": [167, 356]
+      "position": [255, 386]
     },
     {
       "type": "Button",
       "text": "О программе",
-      "position": [237, 356]
+      "position": [362, 386]
     },
     {
       "type": "Label",
       "text": "Программа отдаёт открытый проект ИИ-агенту по протоколу MCP. Агент расставляет короба, выравнивает фасады, ищет пересечения и собирает спецификацию прямо в вашей сцене — правки видно сразу, отмена работает как обычно.",
-      "position": [0, 252]
+      "position": [0, 282]
     },
     {
       "type": "Label",
       "text": "Мост остановлен · порт 9337",
-      "position": [0, 151]
+      "position": [0, 181]
     },
     {
       "type": "Label",
       "text": "Мост включается вместе с программой. Пока она открыта, агенту есть куда подключаться.",
-      "position": [0, 110]
+      "position": [0, 140]
     },
     {
       "type": "Label",
       "text": "Кнопка кладёт в буфер короткий текст с адресом сервера. Вставьте его агенту — он подключится сам.",
-      "position": [0, 16]
+      "position": [0, 46]
     },
     {
       "type": "Label",
@@ -94,22 +89,27 @@
     {
       "type": "Button",
       "text": "Скопировать инструкцию для агента",
-      "position": [0, -44]
+      "position": [0, -14]
+    },
+    {
+      "type": "Label",
+      "text": "Настройки",
+      "position": [0, -24]
     },
     {
       "type": "Button",
       "text": "Скопировать конфиг mcp.json",
-      "position": [0, -82]
+      "position": [0, -52]
     },
     {
       "type": "Label",
       "text": "MCP-CONNECT.md лежит рядом с программой, интернет не нужен",
-      "position": [0, -157]
+      "position": [0, -127]
     },
     {
       "type": "Button",
       "text": "Открыть инструкцию",
-      "position": [0, -208]
+      "position": [0, -178]
     },
     {
       "type": "Button",

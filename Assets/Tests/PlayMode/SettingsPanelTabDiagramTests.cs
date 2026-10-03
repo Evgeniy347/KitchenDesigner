@@ -16,7 +16,7 @@ using KitchenDesigner.Tests;
 
 public class SettingsPanelTabDiagramTests
 {
-    private const int PanelW = 600;
+    private const int PanelW = 900;
     private const int PanelH = 900;
     private const string PagePath = "SettingsPanel/SettingsPanelBody/SettingsPanelBodyContent";
 

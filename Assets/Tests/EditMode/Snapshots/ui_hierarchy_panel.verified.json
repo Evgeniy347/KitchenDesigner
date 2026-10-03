@@ -57,14 +57,14 @@
       "position": [-64, -6]
     },
     {
-      "type": "Label",
-      "text": "Сцена",
-      "position": [14, -6]
-    },
-    {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Сцена",
+      "position": [14, -24]
     },
     {
       "type": "Dropdown",

@@ -22,12 +22,12 @@ namespace KitchenDesigner.Core.UI
         public const float RowH = 24f;
         public const float RowGap = 7f;
         public const float TitleH = 28f;
-        public const float TitleGap = 8f;
+        public const float TitleGap = 10f;
         public const float RotLblH = 22f;
         public const float RotLblGap = 4f;
         public const float BtnH = 28f;
         public const float ActionGap = 8f;
-        public const float TopPad = 12f;
+        public const float TopPad = UIStyle.WindowTitleCenterFromTop - TitleH * 0.5f;
         public const float BottomPad = 12f;
 
         public const float TriCol1 = -110f;

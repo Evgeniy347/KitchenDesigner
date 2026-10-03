@@ -24,8 +24,8 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("PiTitle", panel.transform, Loc.T("window.instructions.title"), UIStyle.FontWindowTitle,
-                new Vector2(0, 245), new Vector2(590, 34), TextAnchor.MiddleCenter);
+            WindowTitle.Create(panel.transform, "PiTitle", Loc.T("window.instructions.title"),
+                UIStyle.FontWindowTitle, 590f, 34f);
             UIFactory.CreateLabel("PiHint", panel.transform,
                 Loc.T("window.instructions.intro"), 14,
                 new Vector2(0, 202), new Vector2(590, 52), TextAnchor.UpperLeft);

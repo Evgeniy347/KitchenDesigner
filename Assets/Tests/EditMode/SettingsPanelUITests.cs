@@ -131,7 +131,7 @@ public class SettingsPanelUITests
         var panel = _canvas!.transform.Find("SettingsPanel");
         Assert.IsNotNull(panel);
         var rt = panel.GetComponent<RectTransform>();
-        Assert.AreEqual(600, rt.sizeDelta.x, 0.01f);
+        Assert.AreEqual(900, rt.sizeDelta.x, 0.01f);
         Assert.AreEqual(900, rt.sizeDelta.y, 0.01f);
     }
 

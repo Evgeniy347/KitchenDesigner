@@ -2,49 +2,44 @@
   "root": "TestCanvas",
   "children": [
     {
-      "type": "Label",
-      "text": "Настройки",
-      "position": [0, 395]
-    },
-    {
       "type": "Button",
       "text": "Проект",
-      "position": [-252, 356]
+      "position": [-386, 386]
     },
     {
       "type": "Button",
       "text": "Вид",
-      "position": [-199, 356]
+      "position": [-306, 386]
     },
     {
       "type": "Button",
       "text": "Строительство",
-      "position": [-127, 356]
+      "position": [-195, 386]
     },
     {
       "type": "Button",
       "text": "Управление",
-      "position": [-35, 356]
+      "position": [-53, 386]
     },
     {
       "type": "Button",
       "text": "Фото режим",
-      "position": [50, 356]
+      "position": [78, 386]
     },
     {
       "type": "Button",
       "text": "Свет",
-      "position": [118, 356]
+      "position": [180, 386]
     },
     {
       "type": "Button",
       "text": "MCP",
-      "position": [167, 356]
+      "position": [255, 386]
     },
     {
       "type": "Button",
       "text": "О программе",
-      "position": [237, 356]
+      "position": [362, 386]
     },
     {
       "type": "Label",
@@ -431,6 +426,11 @@
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Настройки",
+      "position": [0, -24]
     },
     {
       "type": "Button",

@@ -75,9 +75,8 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            UIFactory.CreateLabel("HierTitle", panel.transform, Loc.T("hierarchy.title"), UIStyle.FontWindowTitle,
-                new Vector2(14, -6), new Vector2(120, 28), TextAnchor.MiddleLeft)
-                .rectTransform.SetAnchor(new Vector2(0, 1), new Vector2(14, -6));
+            WindowTitle.Create(panel.transform, "HierTitle", Loc.T("hierarchy.title"), UIStyle.FontWindowTitle,
+                120f, 28f, TextAnchor.MiddleLeft, 14f);
 
             var addBtn = UIFactory.CreateButton("HierAddGroup", panel.transform, Loc.T("hierarchy.addGroup"),
                 Vector2.zero, new Vector2(92, 26), CreateEmptyGroup);

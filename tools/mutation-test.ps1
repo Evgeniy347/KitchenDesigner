@@ -56,6 +56,12 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# Приоритет BelowNormal: пока агенты гоняют тесты, передний план пользователя должен
+# побеждать. Ставим его на САМ скрипт до запуска детей - Windows отдаёт ребёнку класс
+# родителя, если тот Idle/BelowNormal, так что Unity.exe, bee_backend, компиляторы и
+# шейдерный компилятор получают его без перебора процессов. Держать (agents/UNITY-GATEWAY.md).
+try { [Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal' } catch { }
+
 $repo = Split-Path -Parent $PSScriptRoot
 $geometry = Join-Path $repo 'geometry'
 $testsDir = Join-Path $geometry 'tests'
