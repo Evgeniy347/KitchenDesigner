@@ -830,6 +830,7 @@
   "settings.light.exposure": "التعريض",
   "settings.light.floorBounce": "ارتداد الأرض",
   "settings.light.lampShadows": "ظلال المصابيح",
+  "settings.light.resetDefaults": "افتراضي",
   "settings.light.saturation": "التشبع",
   "settings.light.section.effects": "المؤثرات",
   "settings.light.section.exposure": "التعريض واللون",

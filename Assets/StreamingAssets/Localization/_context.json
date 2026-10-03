@@ -4365,6 +4365,11 @@
     "meaning": "Lamps cast shadows",
     "maxLength": 36
   },
+  "settings.light.resetDefaults": {
+    "where": "Settings > Light tab, button at the top",
+    "meaning": "Resets every setting of the Light tab to its factory value; also the undo step name",
+    "maxLength": 16
+  },
   "settings.light.saturation": {
     "where": "Settings > Light tab, slider row label",
     "meaning": "Colour saturation",

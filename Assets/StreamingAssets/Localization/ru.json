@@ -830,6 +830,7 @@
   "settings.light.exposure": "Экспозиция",
   "settings.light.floorBounce": "Отскок от пола",
   "settings.light.lampShadows": "Тени от ламп",
+  "settings.light.resetDefaults": "По умолчанию",
   "settings.light.saturation": "Насыщенность",
   "settings.light.section.effects": "Эффекты",
   "settings.light.section.exposure": "Экспозиция и тон",

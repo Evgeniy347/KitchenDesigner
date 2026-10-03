@@ -227,6 +227,11 @@
       "position": [0, 0]
     },
     {
+      "type": "Button",
+      "text": "По умолчанию",
+      "position": [165, 0]
+    },
+    {
       "type": "Label",
       "text": "10 м",
       "position": [208, 0]

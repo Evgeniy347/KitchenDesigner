@@ -830,6 +830,7 @@
   "settings.light.exposure": "曝光",
   "settings.light.floorBounce": "地面反光",
   "settings.light.lampShadows": "灯具阴影",
+  "settings.light.resetDefaults": "默认值",
   "settings.light.saturation": "饱和度",
   "settings.light.section.effects": "效果",
   "settings.light.section.exposure": "曝光与色调",

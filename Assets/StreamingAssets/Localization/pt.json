@@ -830,6 +830,7 @@
   "settings.light.exposure": "Exposição",
   "settings.light.floorBounce": "Reflexo do piso",
   "settings.light.lampShadows": "Sombras das lâmpadas",
+  "settings.light.resetDefaults": "Padrão",
   "settings.light.saturation": "Saturação",
   "settings.light.section.effects": "Efeitos",
   "settings.light.section.exposure": "Exposição e tom",

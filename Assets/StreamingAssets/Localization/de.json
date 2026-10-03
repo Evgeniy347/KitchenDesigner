@@ -830,6 +830,7 @@
   "settings.light.exposure": "Belichtung",
   "settings.light.floorBounce": "Bodenreflexion",
   "settings.light.lampShadows": "Lampenschatten",
+  "settings.light.resetDefaults": "Standard",
   "settings.light.saturation": "Sättigung",
   "settings.light.section.effects": "Effekte",
   "settings.light.section.exposure": "Belichtung und Ton",

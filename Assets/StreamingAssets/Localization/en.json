@@ -830,6 +830,7 @@
   "settings.light.exposure": "Exposure",
   "settings.light.floorBounce": "Floor bounce",
   "settings.light.lampShadows": "Lamp shadows",
+  "settings.light.resetDefaults": "Defaults",
   "settings.light.saturation": "Saturation",
   "settings.light.section.effects": "Effects",
   "settings.light.section.exposure": "Exposure and tone",

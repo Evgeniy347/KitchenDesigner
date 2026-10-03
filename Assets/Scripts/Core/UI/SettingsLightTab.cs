@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -6,11 +7,15 @@ namespace KitchenDesigner.Core.UI
     {
         private readonly SettingsRowFactory _rows;
 
+        internal const string DefaultsButtonName = "Btn_LightDefaults";
+
         public SettingsLightTab(SettingsRowFactory rows) => _rows = rows;
 
         public void Build(Transform page, KitchenSettings s, float topY)
         {
             float y = topY;
+
+            BuildDefaultsRow(page, ref y);
 
             _rows.AddHeader(page, ref y, Loc.T("settings.light.section.fill"));
             AddPhotoSlider(page, ref y, Loc.T("settings.light.ambient"), 0, KitchenSettings.PHOTO_AMBIENT_MAX_PCT,
@@ -86,6 +91,30 @@ namespace KitchenDesigner.Core.UI
                     PhotoMode.RefreshIfActive();
                 }, read: () => s.PhotoLampShadows);
             Hint(Loc.T("settings.light.lampShadows"), hint: "settings.light.lampShadows");
+        }
+
+        private void BuildDefaultsRow(Transform page, ref float y)
+        {
+            var row = SettingsRowFactory.CreateRow("RowLightDefaults", page, y);
+            var button = UIFactory.CreateButton(DefaultsButtonName, row, Loc.T("settings.light.resetDefaults"),
+                new Vector2(SettingsRowFactory.ContentW * 0.5f - SettingsRowFactory.ControlW * 0.5f, 0),
+                new Vector2(SettingsRowFactory.ControlW, SettingsRowFactory.RowH), ResetToDefaults);
+            SettingsDefaultsButton.Attach(button, () => KitchenSettings.Instance.CaptureLightLook().IsDefault);
+            y -= SettingsRowFactory.RowStep;
+        }
+
+        private void ResetToDefaults()
+        {
+            var s = KitchenSettings.Instance;
+            SetSettingCommand.Push(Loc.T("settings.light.resetDefaults"), s.ApplyLightLook,
+                s.CaptureLightLook(), PhotoLightLook.Defaults, AfterReset);
+        }
+
+        private void AfterReset()
+        {
+            _rows.ReadBackFromSettings();
+            LightSourceElement.RefreshAll();
+            PhotoMode.RefreshIfActive();
         }
 
         private const int FullPercent = 100;

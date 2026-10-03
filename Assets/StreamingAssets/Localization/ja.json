@@ -830,6 +830,7 @@
   "settings.light.exposure": "露出",
   "settings.light.floorBounce": "床の反射",
   "settings.light.lampShadows": "ランプの影",
+  "settings.light.resetDefaults": "初期値",
   "settings.light.saturation": "彩度",
   "settings.light.section.effects": "エフェクト",
   "settings.light.section.exposure": "露出とトーン",
