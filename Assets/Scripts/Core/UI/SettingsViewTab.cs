@@ -97,7 +97,8 @@ namespace KitchenDesigner.Core.UI
                 if (img != null) img.color = i == _presetTab ? UIStyle.SurfaceActive : UIStyle.SurfaceInactive;
                 var caption = btn.GetComponentInChildren<TMPro.TextMeshProUGUI>();
                 if (caption == null) continue;
-                caption.text = PresetCaptions[i] + (i == currentIdx ? Loc.T("settings.view.presetCurrent") : "");
+                caption.text = PresetCaptions[i];
+                PresetCurrentMark.Set(btn, i == currentIdx);
             }
 
             foreach (var kv in _toggles)
@@ -131,6 +132,7 @@ namespace KitchenDesigner.Core.UI
                     new Vector2(firstX + idx * (btnW + gap), 0),
                     new Vector2(btnW, PresetRowH),
                     () => SwitchPreset(idx));
+                PresetCurrentMark.Attach(btn);
                 _presetButtons.Add(btn);
             }
 

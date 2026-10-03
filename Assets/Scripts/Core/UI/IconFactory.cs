@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core.UI
         private static Sprite? _brickwork;
         private static Sprite? _search, _tileStub;
         private static Sprite? _dockExpanded, _dockRail;
-        private static Sprite? _layers;
+        private static Sprite? _layers, _star;
 
         public static Sprite Gear => _gear ??= BuildGear();
         public static Sprite Floppy => _floppy ??= BuildFloppy(false);
@@ -62,6 +62,7 @@ namespace KitchenDesigner.Core.UI
         public static Sprite DockExpanded => _dockExpanded ??= BuildDockExpanded();
         public static Sprite DockRail => _dockRail ??= BuildDockRail();
         public static Sprite Layers => _layers ??= BuildLayers();
+        public static Sprite Star => _star ??= BuildStar();
 
         private static Sprite BuildGear()
         {
@@ -481,6 +482,48 @@ namespace KitchenDesigner.Core.UI
             Disc(px, 17, 32, 6, Ink);
             Disc(px, 17, 18, 6, Ink);
             return Finish(px);
+        }
+
+        private const int StarPoints = 5;
+        private const float StarOuterRadius = 28f;
+        private const float StarInnerRadius = 11.5f;
+
+        private static Sprite BuildStar()
+        {
+            var px = NewCanvas();
+            var outline = new Vector2[StarPoints * 2];
+            for (int i = 0; i < outline.Length; i++)
+            {
+                float radius = i % 2 == 0 ? StarOuterRadius : StarInnerRadius;
+                float angle = Mathf.PI * 0.5f + i * Mathf.PI / StarPoints;
+                outline[i] = new Vector2(S * 0.5f + radius * Mathf.Cos(angle), S * 0.5f + radius * Mathf.Sin(angle));
+            }
+            FillPolygon(px, outline, TintedByCaller);
+            return Finish(px);
+        }
+
+        private static void FillPolygon(Color32[] px, Vector2[] outline, Color col)
+        {
+            for (int y = 0; y < S; y++)
+            {
+                for (int x = 0; x < S; x++)
+                {
+                    if (Contains(outline, new Vector2(x + 0.5f, y + 0.5f))) px[y * S + x] = col;
+                }
+            }
+        }
+
+        private static bool Contains(Vector2[] outline, Vector2 p)
+        {
+            bool inside = false;
+            for (int i = 0, j = outline.Length - 1; i < outline.Length; j = i++)
+            {
+                var a = outline[i];
+                var b = outline[j];
+                if ((a.y > p.y) != (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x)
+                    inside = !inside;
+            }
+            return inside;
         }
 
         private static Sprite BuildLayers()

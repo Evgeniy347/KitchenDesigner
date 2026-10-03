@@ -4792,11 +4792,6 @@
     "meaning": "Draw a thin outline along the edges",
     "maxLength": 36
   },
-  "settings.view.presetCurrent": {
-    "where": "Settings > View tab, appended to the preset button of the current mode",
-    "meaning": "Marks the mode that is active now",
-    "maxLength": 12
-  },
   "settings.view.presetNormal": {
     "where": "Settings > View tab, preset switch button (one of three)",
     "meaning": "Display settings for the normal editing mode",

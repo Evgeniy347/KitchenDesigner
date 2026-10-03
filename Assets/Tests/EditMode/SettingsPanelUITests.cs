@@ -399,19 +399,20 @@ public class SettingsPanelUITests
         Assert.IsNotNull(roomBtn, "сегмент «Помещение» должен быть");
         Assert.IsNotNull(photoBtn, "сегмент «Фоторежим» должен быть");
 
-        Assert.IsTrue(CaptionOf(normalBtn!).Contains("текущий"),
+        EditModeManager.SetMode(EditMode.Normal);
+        AssertOnlyThisPresetIsMarked(normalBtn!, roomBtn!, photoBtn!,
             "в обычном режиме текущий пресет — «Обычный»");
 
         EditModeManager.SetMode(EditMode.Room);
-        Assert.IsTrue(CaptionOf(roomBtn!).Contains("текущий"),
+        AssertOnlyThisPresetIsMarked(roomBtn!, normalBtn!, photoBtn!,
             "в режиме «помещение» вкладка показывает его пресет");
 
         EditModeManager.SetMode(EditMode.Photo);
-        Assert.IsTrue(CaptionOf(photoBtn!).Contains("текущий"),
+        AssertOnlyThisPresetIsMarked(photoBtn!, normalBtn!, roomBtn!,
             "в фоторежиме вкладка показывает пресет фоторежима");
 
         EditModeManager.SetMode(EditMode.Normal);
-        Assert.IsTrue(CaptionOf(normalBtn!).Contains("текущий"));
+        AssertOnlyThisPresetIsMarked(normalBtn!, roomBtn!, photoBtn!, "возврат в обычный режим");
     }
 
     /// <summary>Пресеты независимы: погашенные в обычном режиме стены не
@@ -458,6 +459,23 @@ public class SettingsPanelUITests
 
         EditModeManager.SetMode(EditMode.Normal);
         s.PhotoView.wallsEnabled = prevPhoto;
+    }
+
+    private static void AssertOnlyThisPresetIsMarked(Transform current, Transform otherA, Transform otherB,
+        string because)
+    {
+        Assert.IsTrue(MarkOf(current).gameObject.activeSelf, because);
+        Assert.IsFalse(MarkOf(otherA).gameObject.activeSelf, because);
+        Assert.IsFalse(MarkOf(otherB).gameObject.activeSelf, because);
+        StringAssert.DoesNotContain("(", CaptionOf(current),
+            "текущий режим отмечен звездой, а не словом в скобках: слово делает подпись вдвое длиннее кнопки");
+    }
+
+    private static Transform MarkOf(Transform button)
+    {
+        var mark = button.Find(PresetCurrentMark.MarkName);
+        Assert.IsNotNull(mark, "у кнопки пресета нет места под звезду текущего режима");
+        return mark!;
     }
 
     private static string CaptionOf(Transform button)
