@@ -80,7 +80,9 @@ namespace KitchenDesigner.Core.UI
 
             var addBtn = UIFactory.CreateButton("HierAddGroup", panel.transform, Loc.T("hierarchy.addGroup"),
                 Vector2.zero, new Vector2(92, 26), CreateEmptyGroup);
-            SetTopRight(addBtn.GetComponent<RectTransform>(), new Vector2(-64, -6));
+            var addRt = addBtn.GetComponent<RectTransform>();
+            SetTopRight(addRt, new Vector2(-64, -UIStyle.WindowTitleCenterFromTop));
+            addRt.pivot = new Vector2(1, 0.5f);
 
             UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
 

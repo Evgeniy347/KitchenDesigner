@@ -53,13 +53,13 @@
     },
     {
       "type": "Button",
-      "text": "+ Группа",
-      "position": [-64, -6]
+      "text": "×",
+      "position": [-8, -8]
     },
     {
       "type": "Button",
-      "text": "×",
-      "position": [-8, -8]
+      "text": "+ Группа",
+      "position": [-64, -24]
     },
     {
       "type": "Label",

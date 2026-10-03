@@ -66,7 +66,7 @@ namespace KitchenDesigner.Core.UI
             var colors = UIFactory.InteractiveColors();
             if (!row.FileExists)
             {
-                colors.disabledColor = Color.white;
+                colors.disabledColor = UIStyle.NoTint;
                 button.KeepsOwnContentColors = true;
             }
             button.colors = colors;

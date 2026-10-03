@@ -116,6 +116,7 @@ namespace KitchenDesigner.Core.UI
             var valueLabel = UIFactory.CreateLabel("Val_" + label, rowRect, FormatMultiplier(value),
                 UIStyle.FontBody, new Vector2(ContentW * 0.5f - 20, 0), new Vector2(40, RowH),
                 TextAnchor.MiddleRight);
+            valueLabel.enableWordWrapping = false;
 
             var slider = UIFactory.CreateSlider("Sld_" + label, rowRect,
                 KitchenSettings.MIN_INPUT_SPEED, KitchenSettings.MAX_INPUT_SPEED, value,
@@ -150,11 +151,12 @@ namespace KitchenDesigner.Core.UI
             _rowLabels[label] = CreateRowLabel("Lbl_" + label, rowRect, label, 0f);
 
             var valueLabel = UIFactory.CreateLabel("Val_" + label, rowRect, format(value),
-                UIStyle.FontBody, new Vector2(ContentW * 0.5f - 32, 0), new Vector2(64, RowH),
+                UIStyle.FontBody, new Vector2(ContentW * 0.5f - SliderValueW * 0.5f, 0), new Vector2(SliderValueW, RowH),
                 TextAnchor.MiddleRight);
+            valueLabel.enableWordWrapping = false;
 
             var slider = UIFactory.CreateSlider("Sld_" + label, rowRect, min, max, value,
-                new Vector2(ContentW * 0.5f - ControlW * 0.5f - ValueColumnW, 0), new Vector2(110, RowH),
+                new Vector2(ContentW * 0.5f - SliderValueW - SliderValueGap - SliderTrackW * 0.5f, 0), new Vector2(SliderTrackW, RowH),
                 v =>
                 {
                     int iv = Mathf.RoundToInt(v);
@@ -252,7 +254,9 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(-(ContentW - LabelW) * 0.5f + indentPx, 0), new Vector2(LabelW, RowH),
                 TextAnchor.MiddleLeft);
 
-        private const float ValueColumnW = 46f;
+        private const float SliderValueW = 100f;
+        private const float SliderValueGap = 2f;
+        private const float SliderTrackW = 80f;
 
         private static Toggle CreateRightToggle(string name, Transform parent, bool value, Action<bool> onChanged)
         {

@@ -139,6 +139,34 @@ public class WindowChromeGuardTests
     }
 
     [Test]
+    public void EveryWindow_ButtonsInTheTitleBar_SitOnTheCloseButtonRow()
+    {
+        var offenders = new List<string>();
+        int seen = 0;
+        foreach (var (panel, close) in Windows())
+        {
+            float closeY = CentreY(panel, close);
+            foreach (Transform child in panel)
+            {
+                var button = child.GetComponent<Button>();
+                if (button == null || button.name == "CloseBtn" || !child.gameObject.activeSelf) continue;
+                var rt = (RectTransform)child;
+                float depth = panel.rect.yMax - CentreY(panel, rt);
+                if (depth > UIStyle.DragStripHeight) continue;
+                seen++;
+                float delta = CentreY(panel, rt) - closeY;
+                if (Mathf.Abs(delta) > SameRowTolerancePx)
+                    offenders.Add($"{panel.name}/{button.name}: кнопка шапки на {delta:F1} px от линии крестика");
+            }
+        }
+
+        Assert.Greater(seen, 0, "в шапках окон не нашлось ни одной кнопки кроме крестика — сторож смотрит не туда");
+        Assert.IsEmpty(offenders,
+            "кнопка в строке шапки (в полосе перетаскивания) стоит центром на линии крестика, а не со своим числом от верха:\n"
+            + string.Join("\n", offenders));
+    }
+
+    [Test]
     public void EveryWindow_CanBeDraggedByItsTitleBar()
     {
         var offenders = new List<string>();
