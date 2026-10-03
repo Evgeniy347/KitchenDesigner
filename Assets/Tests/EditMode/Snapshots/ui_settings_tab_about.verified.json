@@ -47,34 +47,58 @@
       "position": [237, 356]
     },
     {
-      "type": "Label",
-      "text": "Kitchen Designer",
-      "position": [0, 312]
+      "type": "InputField",
+      "label": "AboutProduct",
+      "value": "Kitchen Designer <masked>",
+      "interactable": true,
+      "position": [0, 100]
     },
     {
-      "type": "Label",
-      "text": "Версия: <masked>",
-      "position": [0, 274]
+      "type": "InputField",
+      "label": "AboutBuild",
+      "value": "Сборка: <masked>",
+      "interactable": true,
+      "position": [0, 62]
     },
     {
-      "type": "Label",
-      "text": "Сборка: <masked>",
-      "position": [0, 238]
+      "type": "InputField",
+      "label": "AboutPlatform",
+      "value": "Платформа: <masked>",
+      "interactable": true,
+      "position": [0, 30]
     },
     {
-      "type": "Button",
-      "text": "Скопировать сведения о сборке",
-      "position": [0, 184]
-    },
-    {
-      "type": "Label",
-      "text": "Copyright (c) 2025 Evgeniy347",
-      "position": [0, 156]
+      "type": "InputField",
+      "label": "AboutUnity",
+      "value": "Unity: <masked>",
+      "interactable": true,
+      "position": [0, -2]
     },
     {
       "type": "Button",
       "text": "×",
       "position": [-8, -8]
+    },
+    {
+      "type": "InputField",
+      "label": "AboutGraphicsApi",
+      "value": "Графика (API): <masked>",
+      "interactable": true,
+      "position": [0, -34]
+    },
+    {
+      "type": "InputField",
+      "label": "AboutGpu",
+      "value": "Видеокарта: <masked>",
+      "interactable": true,
+      "position": [0, -66]
+    },
+    {
+      "type": "InputField",
+      "label": "AboutCopyright",
+      "value": "Copyright (c) 2025 Evgeniy347",
+      "interactable": true,
+      "position": [0, -108]
     },
     {
       "type": "Button",

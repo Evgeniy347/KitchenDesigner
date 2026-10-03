@@ -804,53 +804,89 @@ public class SettingsPanelUITests
 
     // ── About tab ───────────────────────────────────────────
 
+    private static readonly string[] AboutLineNames =
+    {
+        "AboutProduct", "AboutBuild", "AboutPlatform", "AboutUnity", "AboutGraphicsApi",
+        "AboutGpu", "AboutCopyright",
+    };
+
+    private static string TextOf(Transform line) =>
+        line.GetComponent<TMP_InputField>().text;
+
     [Test]
-    public void AboutTab_HasVersionAndBuildDate()
+    public void AboutTab_ShowsEveryBuildInfoLine_WithoutPressingAnything()
     {
         var about = _canvas!.transform.Find(PagePath + "Tab_About");
         Assert.IsNotNull(about);
 
-        var verLabel = about.Find("AboutVersion");
-        Assert.IsNotNull(verLabel);
-        var verText = verLabel.GetComponent<TextMeshProUGUI>().text;
-        Assert.IsTrue(verText.StartsWith("Версия:"));
+        var expected = AboutLines.For(SettingsAboutTab.CurrentEnvironment());
+        Assert.AreEqual(AboutLineNames.Length, expected.Count,
+            "таблица имён строк разошлась с набором строк вкладки");
 
-        var dateLabel = about.Find("AboutDate");
-        Assert.IsNotNull(dateLabel);
-        var dateText = dateLabel.GetComponent<TextMeshProUGUI>().text;
-        Assert.IsTrue(dateText.StartsWith("Сборка:"));
+        for (int i = 0; i < AboutLineNames.Length; i++)
+        {
+            var line = about.Find(AboutLineNames[i]);
+            Assert.IsNotNull(line, $"строки «{AboutLineNames[i]}» нет на вкладке «О программе»");
+            Assert.AreEqual(expected[i], TextOf(line),
+                $"строка «{AboutLineNames[i]}» показывает не то, что собрал AboutLines");
+        }
     }
 
-    /// <summary>Копирайт — обязательная строка «о программе», а не украшение:
-    /// без неё сборку нельзя раздавать. Год и имя проверяются буквально,
-    /// потому что опечатка в них тихо переживёт любой рефакторинг.</summary>
     [Test]
-    public void AboutTab_ShowsTheCopyrightLine()
+    public void AboutTab_GpuLine_NamesTheVideoCardTheEngineRendersOn()
     {
         var about = _canvas!.transform.Find(PagePath + "Tab_About");
-        var label = about.Find("AboutCopyright");
-        Assert.IsNotNull(label, "строки копирайта нет на вкладке «О программе»");
 
-        Assert.AreEqual("Copyright (c) 2025 Evgeniy347",
-            label!.GetComponent<TextMeshProUGUI>().text,
-            "текст копирайта задан дословно");
+        StringAssert.Contains(SystemInfo.graphicsDeviceName, TextOf(about.Find("AboutGpu")),
+            "строка видеокарты берёт SystemInfo.graphicsDeviceName — устройство, на котором "
+            + "движок действительно рисует, а не первую карту из списка системы");
+        StringAssert.Contains(SystemInfo.graphicsDeviceType.ToString(), TextOf(about.Find("AboutGraphicsApi")),
+            "строка графического API берёт SystemInfo.graphicsDeviceType");
     }
 
-    /// <summary>Сведения о сборке нужны в чужих руках: пользователь копирует их
-    /// одной кнопкой и вкладывает в письмо об ошибке. Поэтому в отчёте обязаны
-    /// быть версия, дата и окружение, а не только название.</summary>
     [Test]
-    public void AboutTab_BuildReport_CarriesVersionDateAndEnvironment()
+    public void AboutTab_HasNoCopyButton_ButItsTextCanBeSelected()
     {
-        var report = SettingsAboutTab.BuildReport();
-
-        StringAssert.Contains(BuildInfo.Version, report, "версия");
-        StringAssert.Contains(BuildInfo.BuildDate, report, "дата сборки");
-        StringAssert.Contains(Application.unityVersion, report, "версия движка");
-        StringAssert.Contains(SettingsAboutTab.Copyright, report, "копирайт");
-
         var about = _canvas!.transform.Find(PagePath + "Tab_About");
-        Assert.IsNotNull(about.Find("AboutCopy"), "кнопка копирования сведений о сборке");
+
+        Assert.IsEmpty(about.GetComponentsInChildren<Button>(true),
+            "сведения видны сразу — кнопка «скопировать» не нужна и не должна возвращаться");
+        foreach (var name in AboutLineNames)
+        {
+            var input = about.Find(name).GetComponent<TMP_InputField>();
+            Assert.IsNotNull(input,
+                $"«{name}» обязана быть выделяемым текстом: так сведения о сборке копируют вручную");
+            Assert.IsTrue(input!.readOnly,
+                $"«{name}» — только для чтения: править версию сборки в окне нельзя");
+        }
+    }
+
+    [Test]
+    public void AboutTab_Content_SitsInTheMiddleOfTheWindow()
+    {
+        var panel = _canvas!.transform.Find("SettingsPanel");
+        var about = panel.Find("SettingsPanelBody/SettingsPanelBodyContent/Tab_About");
+
+        float top = float.MinValue, bottom = float.MaxValue, left = float.MaxValue, right = float.MinValue;
+        var corners = new Vector3[4];
+        foreach (var name in AboutLineNames)
+        {
+            var rect = (RectTransform)about.Find(name);
+            rect.GetWorldCorners(corners);
+            foreach (var corner in corners)
+            {
+                var p = panel.InverseTransformPoint(corner);
+                top = Mathf.Max(top, p.y);
+                bottom = Mathf.Min(bottom, p.y);
+                left = Mathf.Min(left, p.x);
+                right = Mathf.Max(right, p.x);
+            }
+        }
+
+        Assert.AreEqual(0f, (top + bottom) * 0.5f, 1f,
+            "блок строк стоит по вертикали в середине окна, а не прижат к вкладкам");
+        Assert.AreEqual(0f, (left + right) * 0.5f, 1f,
+            "блок строк стоит по горизонтали в середине окна");
     }
 
     // ── MCP tab ─────────────────────────────────────────────

@@ -88,7 +88,7 @@ namespace KitchenDesigner.Core.UI
             new SettingsLightTab(_rows).Build(AddPage("Tab_Light"), s, ContentTopY);
             _mcpTab = new SettingsMcpTab(_rows);
             _mcpTab.Build(AddPage("Tab_Mcp"), ContentTopY);
-            new SettingsAboutTab().Build(AddPage("Tab_About"), ContentTopY);
+            new SettingsAboutTab().Build(AddPage("Tab_About"));
 
             _tabs.Switch(0);
 

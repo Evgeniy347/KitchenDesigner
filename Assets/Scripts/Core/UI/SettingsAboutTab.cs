@@ -1,53 +1,53 @@
-using System.Text;
+using TMPro;
 using UnityEngine;
 
 namespace KitchenDesigner.Core.UI
 {
     public sealed class SettingsAboutTab
     {
-        public const string ProductName = "Kitchen Designer";
-        public const string Copyright = "Copyright (c) 2025 Evgeniy347";
+        private const float TitleH = 40f;
+        private const float LineH = 28f;
+        private const float CopyrightH = 24f;
+        private const float LineGap = 4f;
+        private const float CopyrightGap = 16f;
 
-        public static string BuildReport()
+        public static AboutEnvironment CurrentEnvironment() => new AboutEnvironment(
+            BuildInfo.Version, BuildInfo.BuildDate, Application.platform.ToString(),
+            Application.unityVersion, SystemInfo.graphicsDeviceType.ToString(),
+            SystemInfo.graphicsDeviceName);
+
+        public void Build(Transform page)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine($"{ProductName} {BuildInfo.Version}");
-            sb.AppendLine(Loc.F("settings.about.build", BuildInfo.BuildDate));
-            sb.AppendLine(Loc.F("settings.about.platform", Application.platform));
-            sb.AppendLine($"Unity: {Application.unityVersion}");
-            sb.AppendLine(Loc.F("settings.about.graphics", SystemInfo.graphicsDeviceType));
-            sb.Append(Copyright);
-            return sb.ToString();
+            var lines = AboutLines.For(CurrentEnvironment());
+            int last = lines.Count - 1;
+
+            float total = TitleH + (last - 1) * (LineH + LineGap) + CopyrightGap + CopyrightH;
+            float y = total * 0.5f;
+
+            for (int i = 0; i <= last; i++)
+            {
+                bool title = i == 0;
+                bool copyright = i == last;
+                float h = title ? TitleH : copyright ? CopyrightH : LineH;
+                if (copyright) y -= CopyrightGap - LineGap;
+
+                SelectableLabel.Create(NameOf(i), page, lines[i],
+                    title ? UIStyle.FontWindowTitle : copyright ? UIStyle.FontSmall : UIStyle.FontBody,
+                    new Vector2(0, y - h * 0.5f), new Vector2(SettingsRowFactory.ContentW, h),
+                    copyright ? UIStyle.TextSecondary : UIStyle.Text);
+                y -= h + LineGap;
+            }
         }
 
-        public void Build(Transform page, float topY)
+        private static string NameOf(int index) => index switch
         {
-            float y = topY;
-
-            AddLine(page, "AboutProduct", ProductName, UIStyle.FontWindowTitle, ref y, 34f);
-            AddLine(page, "AboutVersion", Loc.F("settings.about.version", BuildInfo.Version), 18, ref y, 32f);
-            AddLine(page, "AboutDate", Loc.F("settings.about.build", BuildInfo.BuildDate), UIStyle.FontBody, ref y, 28f);
-
-            y -= SettingsRowFactory.GapPx;
-            UIFactory.CreateButton("AboutCopy", page, Loc.T("settings.about.copyBuildInfo"),
-                new Vector2(0, y - SettingsRowFactory.RowH * 0.5f),
-                new Vector2(SettingsRowFactory.ContentW * 0.6f, SettingsRowFactory.RowH),
-                () => GUIUtility.systemCopyBuffer = BuildReport());
-            y -= SettingsRowFactory.RowStep;
-
-            y -= SettingsRowFactory.GapPx;
-            var copyright = AddLine(page, "AboutCopyright", Copyright, UIStyle.FontSmall, ref y, 24f);
-            copyright.color = UIStyle.TextSecondary;
-        }
-
-        private static TMPro.TextMeshProUGUI AddLine(Transform page, string name, string text,
-            int fontSize, ref float y, float height)
-        {
-            var label = UIFactory.CreateLabel(name, page, text, fontSize,
-                new Vector2(0, y), new Vector2(SettingsRowFactory.ContentW, height),
-                TextAnchor.MiddleCenter);
-            y -= height + 4f;
-            return label;
-        }
+            0 => "AboutProduct",
+            1 => "AboutBuild",
+            2 => "AboutPlatform",
+            3 => "AboutUnity",
+            4 => "AboutGraphicsApi",
+            5 => "AboutGpu",
+            _ => "AboutCopyright",
+        };
     }
 }

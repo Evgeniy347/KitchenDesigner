@@ -444,6 +444,14 @@ namespace KitchenDesigner.Tests
             (new Regex(@"^(Сборка:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
             (new Regex(@"^(Version:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
             (new Regex(@"^(Build:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
+            (new Regex(@"^(Kitchen Designer\s+).+$", RegexOptions.Singleline), "$1<masked>"),
+            (new Regex(@"^(Платформа:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
+            (new Regex(@"^(Platform:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
+            (new Regex(@"^(Unity:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
+            (new Regex(@"^(Графика \(API\):\s*).+$", RegexOptions.Singleline), "$1<masked>"),
+            (new Regex(@"^(Graphics \(API\):\s*).+$", RegexOptions.Singleline), "$1<masked>"),
+            (new Regex(@"^(Видеокарта:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
+            (new Regex(@"^(GPU:\s*).+$", RegexOptions.Singleline), "$1<masked>"),
         };
 
         private static string Mask(string s)
