@@ -6,8 +6,10 @@
 - **NEVER revert a user's working-tree file** — `git checkout -- <path>`, `git restore`,
   `git stash` and friends destroy uncommitted work with no undo. This applies especially to
   `docs/example.save.json` (the whole rule is in `agents/TESTS.md` → «`docs/example.save.json` —
-  NEVER TOUCH IT»), and to anything else the user is editing. If a test
+  NEVER TOUCH IT, ALWAYS COMMIT IT»), and to anything else the user is editing. If a test
   needs a different input, give the TEST a frozen copy; never rewind the user's file.
+- **Every commit carries `docs/example.save.json` when it is dirty** — check
+  `git status --short docs/example.save.json` and add it to `-Files` (user's decision, 2026-10-03).
 
 ## Commit message
 

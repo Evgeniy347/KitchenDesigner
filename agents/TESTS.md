@@ -177,12 +177,19 @@ the user's own running copy for the port.
 слое заканчивается грепом за именем по обеим папкам тестов ДО коммита — не «будь внимательнее», а
 последний шаг правки.
 
-## `docs/example.save.json` — NEVER TOUCH IT
+## `docs/example.save.json` — NEVER TOUCH IT, ALWAYS COMMIT IT
 
 **This file belongs to the user. Do NOT modify it, do NOT revert it, do NOT
 `git checkout --` it, do NOT let a test write to it. Ever.** Its working-tree state is
 the user's current work, and a revert destroys it silently — there is no undo for
 `git checkout --` on an uncommitted file.
+
+**But COMMIT it — with every commit you make, whenever it is dirty** (user's decision,
+2026-10-03; it supersedes "never commit" below). Before each commit run
+`git status --short docs/example.save.json`; if it shows `M`, add `docs/example.save.json` to
+your `-Files` list. `git-commit.ps1 -All` still refuses while it is dirty — that is the sealed
+script's guard, so always use `-Files`. Committing it is how the user's work gets a history;
+it never means editing it.
 
 **And do NOT raise an alarm about it — just ignore it.** Its dirty state in
 `git status`, and commits that carry it (`chore: снимок рабочего проекта пользователя`
@@ -193,8 +200,9 @@ that provenance is not establishable here at all: the repo has ONE git identity,
 by the user and by the commit helper, so the `Author` field cannot tell an agent's
 commit from the owner's. "I checked the author" is not a check.
 
-The hands-off rule above stays in force for us regardless: never modify, revert or
-commit this file. Ignoring it means staying silent about it, not touching it.
+The hands-off rule above stays in force for us regardless: never modify or revert this file.
+Ignoring it means staying silent about it, not touching it — and carrying it along in your
+commit when it is dirty (see the top of this section).
 
 It is a live project the user edits in the desktop app, and the app writes back into it:
 `AutoSaveManager.cs:56` autosaves to `SaveLoadManager.LastPath` — the path of the OPEN
