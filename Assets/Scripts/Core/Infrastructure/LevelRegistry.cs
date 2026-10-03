@@ -8,7 +8,11 @@ namespace KitchenDesigner.Core
         private static readonly List<Level> _items = new();
         private static string _currentId = "";
 
+        private static int _version;
+
         public static event Action? Changed;
+
+        public static int Version => _version;
 
         public static IReadOnlyList<Level> Items => _items;
 
@@ -17,7 +21,11 @@ namespace KitchenDesigner.Core
         public static string CurrentId
         {
             get => Current.id;
-            set => _currentId = value ?? "";
+            set
+            {
+                _currentId = value ?? "";
+                _version++;
+            }
         }
 
         public static int CurrentFloorElevationMm => Current.floorElevationMm;
@@ -83,6 +91,7 @@ namespace KitchenDesigner.Core
 
         private static void NotifyChanged()
         {
+            _version++;
             ProjectDirty.Mark();
             Changed?.Invoke();
         }

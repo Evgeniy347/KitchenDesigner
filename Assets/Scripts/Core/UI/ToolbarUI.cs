@@ -43,6 +43,15 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _issueCountLabel;
         private int _issueBadgeRevision = -1;
         private TMP_Text? _levelLabel;
+        private Button? _levelUpButton;
+        private Button? _levelDownButton;
+        private Button? _levelsWindowButton;
+        private readonly List<(RectTransform rect, float arrowsX)> _afterLevelSwitcher = new();
+        private float _levelsWindowArrowsX;
+        private float _levelSwitcherGroupWidth;
+        private LevelSwitcherState _levelSwitcher;
+        private int _levelSwitcherVersion = -1;
+        private int _levelSwitcherLocRevision = -1;
         private const float LevelLabelWidth = 40f;
         private const float LevelLabelMinFontSize = 8f;
 
@@ -84,6 +93,7 @@ namespace KitchenDesigner.Core.UI
             AddSeparator(bar.transform, ref x);
 
             AddLevelSwitcher(bar.transform, ref x);
+            int firstAfterLevelSwitcher = bar.transform.childCount;
             AddSeparator(bar.transform, ref x);
 
             _handleModeButton = AddIconButton(bar.transform, "HandleMode", HandleModeIcon(), ref x,
@@ -114,6 +124,15 @@ namespace KitchenDesigner.Core.UI
             _toggles.Add((photoModeButton, () => PhotoMode.Active));
 
             AddRightPanelToggle(bar.transform, "Music", IconFactory.Note, ToolbarPanel.Music, Loc.T("toolbar.music"));
+
+            for (int i = firstAfterLevelSwitcher; i < bar.transform.childCount; i++)
+            {
+                var rect = (RectTransform)bar.transform.GetChild(i);
+                if (rect.anchorMin.x == 0f) _afterLevelSwitcher.Add((rect, rect.anchoredPosition.x));
+            }
+
+            if (_gotoIssueButton != null) _gotoIssueButton.interactable = false;
+            RefreshLevelSwitcher();
         }
 
         public void Dispose() { }
@@ -133,13 +152,47 @@ namespace KitchenDesigner.Core.UI
             if (_issueBadgeThrottle.DueAfterSceneSettled(SceneRevision.Version, Time.unscaledTime))
                 RefreshIssueBadge();
 
-            if (_levelLabel != null) _levelLabel.text = LevelRegistry.Current.name;
+            if (_levelSwitcherVersion != LevelRegistry.Version || _levelSwitcherLocRevision != Loc.Revision)
+                RefreshLevelSwitcher();
 
-            if (!CameraController.IsTypingInInputField() && LevelSwitchOwnsPageKeys())
+            if (_levelSwitcher.ShowArrows && !CameraController.IsTypingInInputField() && LevelSwitchOwnsPageKeys())
             {
-                if (InputMap.Down(InputAction.LevelUp)) LevelSwitch.Up();
-                else if (InputMap.Down(InputAction.LevelDown)) LevelSwitch.Down();
+                if (_levelSwitcher.CanGoUp && InputMap.Down(InputAction.LevelUp)) LevelSwitch.Up();
+                else if (_levelSwitcher.CanGoDown && InputMap.Down(InputAction.LevelDown)) LevelSwitch.Down();
             }
+        }
+
+        private void RefreshLevelSwitcher()
+        {
+            _levelSwitcherVersion = LevelRegistry.Version;
+            _levelSwitcherLocRevision = Loc.Revision;
+
+            var levels = LevelRegistry.Snapshot();
+            string currentId = LevelRegistry.CurrentId;
+            var state = LevelSwitcherState.Of(levels, currentId);
+
+            if (_levelLabel != null) _levelLabel.text = LevelResolution.ResolveElementLevel(currentId, levels).name;
+            if (_levelUpButton != null) _levelUpButton.interactable = state.CanGoUp;
+            if (_levelDownButton != null) _levelDownButton.interactable = state.CanGoDown;
+            ApplyLevelSwitcherLayout(state.ShowArrows);
+            _levelSwitcher = state;
+        }
+
+        private void ApplyLevelSwitcherLayout(bool showArrows)
+        {
+            if (_levelUpButton != null) _levelUpButton.gameObject.SetActive(showArrows);
+            if (_levelLabel != null) _levelLabel.gameObject.SetActive(showArrows);
+            if (_levelDownButton != null) _levelDownButton.gameObject.SetActive(showArrows);
+
+            float shift = showArrows ? 0f : _levelSwitcherGroupWidth;
+            if (_levelsWindowButton != null)
+            {
+                var rect = (RectTransform)_levelsWindowButton.transform;
+                rect.anchoredPosition = new Vector2(_levelsWindowArrowsX - shift, rect.anchoredPosition.y);
+            }
+
+            foreach (var (rect, arrowsX) in _afterLevelSwitcher)
+                rect.anchoredPosition = new Vector2(arrowsX - shift, rect.anchoredPosition.y);
         }
 
         internal static bool LevelSwitchOwnsPageKeys() =>
@@ -150,7 +203,8 @@ namespace KitchenDesigner.Core.UI
 
         private void AddLevelSwitcher(Transform parent, ref float x)
         {
-            AddIconButton(parent, "LevelUp", IconFactory.CaretUp, ref x, LevelSwitch.Up, Loc.T("toolbar.levelUp"));
+            float groupStartX = x;
+            _levelUpButton = AddIconButton(parent, "LevelUp", IconFactory.CaretUp, ref x, LevelSwitch.Up, Loc.T("toolbar.levelUp"));
 
             _levelLabel = UIFactory.CreateLabel("LevelLabel", parent, "", 15,
                 new Vector2(x, ButtonY), new Vector2(LevelLabelWidth, ButtonH), TextAnchor.MiddleCenter);
@@ -162,9 +216,11 @@ namespace KitchenDesigner.Core.UI
             _levelLabel.fontSizeMax = 15;
             x += LevelLabelWidth + ButtonGap;
 
-            AddIconButton(parent, "LevelDown", IconFactory.CaretDown, ref x, LevelSwitch.Down, Loc.T("toolbar.levelDown"));
+            _levelDownButton = AddIconButton(parent, "LevelDown", IconFactory.CaretDown, ref x, LevelSwitch.Down, Loc.T("toolbar.levelDown"));
 
-            AddPanelToggle(parent, "LevelsWindow", IconFactory.Layers, ToolbarPanel.Levels, ref x, Loc.T("toolbar.levels"));
+            _levelSwitcherGroupWidth = x - groupStartX;
+            _levelsWindowArrowsX = x;
+            _levelsWindowButton = AddPanelToggle(parent, "LevelsWindow", IconFactory.Layers, ToolbarPanel.Levels, ref x, Loc.T("toolbar.levels"));
         }
 
         private Button AddPanelToggle(Transform parent, string name, Sprite icon,

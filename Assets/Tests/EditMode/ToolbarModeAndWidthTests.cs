@@ -187,6 +187,7 @@ public class ToolbarModeAndWidthTests
     public void LevelLabel_ShowsTheDefaultLevelName_OnOneLine_NotWrapped()
     {
         var label = _bar.Find("LevelLabel")!.GetComponent<TMP_Text>();
+        label.gameObject.SetActive(true);
         label.text = "1 этаж";
         label.ForceMeshUpdate();
 

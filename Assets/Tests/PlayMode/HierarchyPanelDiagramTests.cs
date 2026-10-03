@@ -319,6 +319,24 @@ public class HierarchyPanelDiagramTests
     }
 
     [UnityTest]
+    public IEnumerator Toolbar_TwoLevels_TopLevelCurrent_ShowsArrowsWithUpDisabled_SavesPngAndJson()
+    {
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 2800),
+        });
+        LevelRegistry.CurrentId = "2";
+
+        yield return Capture("Toolbar", "toolbar_two_levels.png", 1920, 52, recenter: false, setup: null);
+
+        var bar = UiTestTree.FindDeep(_uiCanvas!.transform, "Toolbar")!;
+        Assert.IsTrue(bar.Find("LevelDown")!.GetComponent<Button>().interactable);
+        Assert.IsFalse(bar.Find("LevelUp")!.GetComponent<Button>().interactable,
+            "верхний этаж: ▲ выключена");
+    }
+
+    [UnityTest]
     public IEnumerator FullInterface_SavesPng()
     {
         SpawnShowcase();
