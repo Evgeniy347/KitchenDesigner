@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "appVersion": "0.2068",
+    "appVersion": "0.2091",
     "createdAtUtc": "2026-09-10T12:11:01.4542126Z",
     "elements": [
         {
@@ -71688,11 +71688,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": 9.477521896362305,
-        "targetY": 1.5408177375793458,
-        "targetZ": -2.6183979511260988,
-        "angleX": 15.939919471740723,
-        "angleY": -2415.32177734375,
+        "targetX": -0.3610805869102478,
+        "targetY": 1.5879273414611817,
+        "targetZ": -1.0767649412155152,
+        "angleX": 15.183609962463379,
+        "angleY": -2721.173828125,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": 0.30268532037734988,
@@ -111655,7 +111655,7 @@
         "neighbourLevelsMode": 0
     },
     "lightsOn": false,
-    "musicTrack": 4,
+    "musicTrack": 0,
     "musicVolumePct": 70,
     "windows": [
         {
@@ -111667,7 +111667,7 @@
         },
         {
             "id": "errors",
-            "visible": true,
+            "visible": false,
             "x": -192.134521484375,
             "y": -52.450714111328128,
             "height": 0.0
@@ -111681,7 +111681,7 @@
         },
         {
             "id": "levels",
-            "visible": true,
+            "visible": false,
             "x": -984.2691040039063,
             "y": -424.9014587402344,
             "height": 0.0
@@ -111695,16 +111695,16 @@
         },
         {
             "id": "projectInstructions",
-            "visible": true,
+            "visible": false,
             "x": 275.19970703125,
             "y": -92.45071411132813,
             "height": 0.0
         },
         {
             "id": "settings",
-            "visible": true,
-            "x": 0.0,
-            "y": 0.0,
+            "visible": false,
+            "x": 7.242103576660156,
+            "y": -17.58795166015625,
             "height": 0.0
         },
         {
