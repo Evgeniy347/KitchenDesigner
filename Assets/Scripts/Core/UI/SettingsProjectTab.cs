@@ -121,7 +121,8 @@ namespace KitchenDesigner.Core.UI
                     if (index >= 0 && index < languages.Count) LanguageStartup.Choose(languages[index].Code);
                 },
                 id: LanguageRowId,
-                read: () => IndexOfCurrent(Loc.Languages));
+                read: () => IndexOfCurrent(Loc.Languages),
+                optionLanguages: languages.Select(l => (string?)l.Code).ToList());
         }
 
         internal const string LanguageRowId = "Language";

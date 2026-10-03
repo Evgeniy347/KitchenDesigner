@@ -49,7 +49,7 @@ namespace KitchenDesigner.Core.UI
 
         public TMP_Dropdown AddDropdown(Transform parent, ref float y, string label,
             List<string> options, int value, Action<int> onChanged, string? id = null,
-            Func<int>? read = null)
+            Func<int>? read = null, IReadOnlyList<string?>? optionLanguages = null)
         {
             string key = id ?? label;
             var rowRect = CreateRow("RowDd_" + key, parent, y);
@@ -62,6 +62,7 @@ namespace KitchenDesigner.Core.UI
             dropdown.SetValueWithoutNotify(Mathf.Clamp(value, 0, Mathf.Max(0, options.Count - 1)));
             dropdown.RefreshShownValue();
             UIFactory.FitDropdownItems(dropdown);
+            if (optionLanguages != null) UIFactory.SetDropdownOptionLanguages(dropdown, optionLanguages);
 
             if (read != null)
                 _readBackFromSettings.Add(() =>

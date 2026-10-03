@@ -46,6 +46,19 @@ namespace KitchenDesigner.Core.UI
                     + " in the Windows font folders. Text in this script will render as empty boxes.");
         }
 
+        public static TMP_FontAsset? FontFor(string? language)
+        {
+            if (ScriptFallbackFonts.For(language) == ScriptFallbackFonts.Script.None) return null;
+            var paths = ScriptFallbackFonts.Resolve(language,
+                ScriptFallbackFonts.WindowsFontDirectories(Environment.GetEnvironmentVariable), File.Exists);
+            foreach (var path in paths)
+            {
+                var font = Load(path);
+                if (font != null) return font;
+            }
+            return null;
+        }
+
         private static void Detach()
         {
             if (_host != null && _host.fallbackFontAssetTable != null)

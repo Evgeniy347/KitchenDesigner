@@ -115,6 +115,7 @@ namespace KitchenDesigner.Core.UI
             pRt.position = BottomLeftCornerOfField();
 
             BuildRows(pRt, popupH);
+            DropdownListPlacement.PlaceBelowOrAbove(pRt, _fieldRect, (RectTransform)canvas.transform);
         }
 
         private void AddClickOutsideCatcher(RectTransform overlay)
@@ -164,7 +165,9 @@ namespace KitchenDesigner.Core.UI
             scroll.movementType = ScrollRect.MovementType.Clamped;
             scroll.scrollSensitivity = 18f;
 
-            float rowW = _fieldRect.rect.width - RowSideInset;
+            if (scroll.vertical) ScrollArea.AttachBar("MultiSelect", viewport, scroll, UIStyle.DropdownScrollBarW);
+            float scrollbarRoom = scroll.vertical ? UIStyle.DropdownScrollBarW + ScrollArea.BarInset : 0f;
+            float rowW = _fieldRect.rect.width - RowSideInset - scrollbarRoom;
             float y = -PopupPad;
             foreach (var opt in _options)
             {

@@ -1,0 +1,394 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using NUnit.Framework;
+using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.TestTools;
+using UnityEngine.UI;
+using KitchenDesigner.Core;
+using KitchenDesigner.Core.UI;
+
+/// <summary>
+/// Сторож раскрытых списков. Пользователь открыл «Язык»: десять пунктов, видно семь, а полосы прокрутки
+/// нет — нижние пункты не отличить от «списка больше нет». Правило одно на ВСЕ списки приложения
+/// (docs/UI-GUIDELINES.md §5, «Раскрытый список»): окно списка ограничено UIStyle.DropdownVisibleItems
+/// пунктами, пунктов больше — есть полоса прокрутки, выбранный пункт при открытии виден, список целиком
+/// внутри экрана (не помещается вниз — открывается вверх).
+/// Тест обходит не один список со скриншота, а три вида: свежесобранные фабрикой у верхнего/нижнего краёв
+/// экрана, ВСЕ списки живого приложения (окно настроек, меню свойств детали) и фильтр-список
+/// MultiSelectDropdown. Новый список, собранный в обход фабрики, краснеет на проверке типа.
+/// Второй сторож — язык: названия языков в списке рисуются родным шрифтом при любом языке интерфейса.
+/// </summary>
+public class DropdownListGuardTests
+{
+    private const float Tolerance = 0.75f;
+
+    private GameObject? _bootstrap;
+    private GameObject? _camera;
+
+    [UnitySetUp]
+    public IEnumerator SetUp()
+    {
+        PlayModeTestConfig.ConfigureForTests();
+        LanguageStartup.PinSourceLanguageForTestRun();
+
+        _camera = new GameObject("Main Camera");
+        _camera.tag = "MainCamera";
+        _camera.AddComponent<Camera>();
+
+        SaveLoadManager.LastPath = "";
+        var autoPath = SaveLoadManager.PathForName(AutoSaveManager.AutoSaveName);
+        if (File.Exists(autoPath)) File.Delete(autoPath);
+
+        _bootstrap = new GameObject("Bootstrap");
+        _bootstrap.AddComponent<Bootstrap>();
+        yield return null;
+        yield return null;
+    }
+
+    [UnityTearDown]
+    public IEnumerator TearDown()
+    {
+        Loc.Reload();
+        Loc.SetLanguage(Localizer.SourceLanguage);
+        for (int i = 0; i < 3; i++) yield return null;
+
+        foreach (var e in Object.FindObjectsByType<KitchenElement>())
+            if (e != null) Object.Destroy(e.gameObject);
+        foreach (var c in Object.FindObjectsByType<Canvas>())
+            if (c != null) Object.Destroy(c.gameObject);
+        foreach (var es in Object.FindObjectsByType<EventSystem>())
+            if (es != null) Object.Destroy(es.gameObject);
+        if (_bootstrap != null) Object.Destroy(_bootstrap);
+        if (_camera != null) Object.Destroy(_camera);
+        yield return null;
+    }
+
+    private static RectTransform CanvasRect => (RectTransform)UIManager.Instance!.Canvas!.transform;
+
+    private static List<string> Options(int count) =>
+        Enumerable.Range(1, count).Select(i => "Вариант " + i).ToList();
+
+    private static TMP_Dropdown MakeDropdown(string name, int count, float yFromCenter, float xFromCenter, int value)
+    {
+        var dd = UIFactory.CreateDropdown(name, CanvasRect, Options(count), Vector2.zero,
+            new Vector2(180f, 32f), null!);
+        var rt = (RectTransform)dd.transform;
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = new Vector2(xFromCenter, yFromCenter);
+        dd.SetValueWithoutNotify(value);
+        dd.RefreshShownValue();
+        return dd;
+    }
+
+    private static IEnumerator OpenAndSettle(TMP_Dropdown dd)
+    {
+        yield return null;
+        dd.Show();
+        yield return null;
+        yield return null;
+        yield return null;
+    }
+
+    private static RectTransform OpenList(TMP_Dropdown dd)
+    {
+        var list = dd.transform.Find("Dropdown List");
+        Assert.IsNotNull(list, dd.name + ": список не раскрылся");
+        return (RectTransform)list!;
+    }
+
+    private static Rect InCanvasSpace(RectTransform rt)
+    {
+        var corners = new Vector3[4];
+        rt.GetWorldCorners(corners);
+        var canvas = CanvasRect;
+        var a = canvas.InverseTransformPoint(corners[0]);
+        var b = canvas.InverseTransformPoint(corners[2]);
+        return Rect.MinMaxRect(a.x, a.y, b.x, b.y);
+    }
+
+    private static void AssertInsideScreen(string who, RectTransform list)
+    {
+        var r = InCanvasSpace(list);
+        var screen = CanvasRect.rect;
+        Assert.That(r.xMin, Is.GreaterThanOrEqualTo(screen.xMin - Tolerance), who + ": список вылез за левый край экрана");
+        Assert.That(r.xMax, Is.LessThanOrEqualTo(screen.xMax + Tolerance), who + ": список вылез за правый край экрана");
+        Assert.That(r.yMin, Is.GreaterThanOrEqualTo(screen.yMin - Tolerance), who + ": список вылез за нижний край экрана");
+        Assert.That(r.yMax, Is.LessThanOrEqualTo(screen.yMax + Tolerance), who + ": список вылез за верхний край экрана");
+    }
+
+    private static void AssertScrollsWhenItDoesNotFit(string who, TMP_Dropdown dd, RectTransform list)
+    {
+        var scroll = list.GetComponent<ScrollRect>();
+        Assert.IsNotNull(scroll, who + ": у списка нет ScrollRect");
+        float viewportH = scroll!.viewport.rect.height;
+        float contentH = scroll.content.rect.height;
+        Assert.That(viewportH, Is.LessThanOrEqualTo(UIFactory.DropdownListMaxHeight + Tolerance),
+            who + ": окно списка выше предела UIStyle");
+        if (contentH <= viewportH + Tolerance) return;
+
+        var bar = scroll.verticalScrollbar;
+        Assert.IsNotNull(bar, who + ": пунктов " + dd.options.Count + " не помещаются в окно, а полосы прокрутки нет");
+        Assert.IsTrue(bar!.gameObject.activeInHierarchy,
+            who + ": полоса прокрутки есть, но скрыта при том, что пункты не помещаются");
+        Assert.That(bar.size, Is.LessThan(0.99f), who + ": ползунок во всю дорожку — полоса не знает о длине списка");
+        Assert.IsTrue(scroll.vertical, who + ": вертикальная прокрутка выключена");
+        var track = InCanvasSpace((RectTransform)bar.transform);
+        var handle = InCanvasSpace(bar.handleRect);
+        Assert.That(handle.yMin, Is.GreaterThanOrEqualTo(track.yMin - Tolerance), who + ": ползунок вылез под дорожку");
+        Assert.That(handle.yMax, Is.LessThanOrEqualTo(track.yMax + Tolerance), who + ": ползунок вылез над дорожкой");
+        Assert.That(handle.xMin, Is.GreaterThanOrEqualTo(track.xMin - Tolerance), who + ": ползунок шире дорожки слева");
+        Assert.That(handle.xMax, Is.LessThanOrEqualTo(track.xMax + Tolerance), who + ": ползунок шире дорожки справа");
+    }
+
+    private static void AssertSelectedItemVisible(string who, TMP_Dropdown dd, RectTransform list)
+    {
+        var scroll = list.GetComponent<ScrollRect>()!;
+        var selected = list.GetComponentsInChildren<Toggle>(false).FirstOrDefault(t => t.isOn);
+        Assert.IsNotNull(selected, who + ": в раскрытом списке ни один пункт не отмечен");
+        var view = InCanvasSpace(scroll.viewport);
+        var item = InCanvasSpace((RectTransform)selected!.transform);
+        Assert.That(item.center.y, Is.InRange(view.yMin - Tolerance, view.yMax + Tolerance),
+            who + ": выбранный пункт №" + dd.value + " при открытии остался за краем окна списка");
+    }
+
+    private static void AssertFullListContract(string who, TMP_Dropdown dd)
+    {
+        var list = OpenList(dd);
+        AssertInsideScreen(who, list);
+        AssertScrollsWhenItDoesNotFit(who, dd, list);
+        AssertSelectedItemVisible(who, dd, list);
+    }
+
+    [UnityTest]
+    public IEnumerator LongList_AtTheTop_HasScrollbar_ShowsSelected_StaysOnScreen()
+    {
+        var dd = MakeDropdown("GuardTop", 40, CanvasRect.rect.height * 0.5f - 24f, 0f, 35);
+        yield return OpenAndSettle(dd);
+        AssertFullListContract("список у верхнего края", dd);
+    }
+
+    [UnityTest]
+    public IEnumerator LongList_AtTheBottom_OpensUpward_HasScrollbar_StaysOnScreen()
+    {
+        var dd = MakeDropdown("GuardBottom", 40, -CanvasRect.rect.height * 0.5f + 24f, 0f, 3);
+        yield return OpenAndSettle(dd);
+        AssertFullListContract("список у нижнего края", dd);
+        var r = InCanvasSpace(OpenList(dd));
+        var control = InCanvasSpace((RectTransform)dd.transform);
+        Assert.That(r.yMin, Is.GreaterThanOrEqualTo(control.yMax - 4f),
+            "у нижнего края места под полем нет — список обязан открыться ВВЕРХ от него");
+    }
+
+    [UnityTest]
+    public IEnumerator LongList_InTheBottomRightCorner_StaysOnScreen()
+    {
+        var screen = CanvasRect.rect;
+        var dd = MakeDropdown("GuardCorner", 40, -screen.height * 0.5f + 24f, screen.width * 0.5f - 100f, 39);
+        yield return OpenAndSettle(dd);
+        AssertFullListContract("список в правом нижнем углу", dd);
+    }
+
+    [UnityTest]
+    public IEnumerator ShortList_NeedsNoScroll_AndStaysOnScreen()
+    {
+        var dd = MakeDropdown("GuardShort", 3, 0f, 0f, 1);
+        yield return OpenAndSettle(dd);
+        var list = OpenList(dd);
+        AssertInsideScreen("короткий список", list);
+        var scroll = list.GetComponent<ScrollRect>()!;
+        Assert.That(scroll.content.rect.height, Is.LessThanOrEqualTo(scroll.viewport.rect.height + Tolerance),
+            "три пункта обязаны помещаться без прокрутки");
+    }
+
+    [UnityTest]
+    public IEnumerator EveryDropdownOfTheApp_IsBuiltByTheFactory_AndEveryLongOneScrolls()
+    {
+        var ui = UIManager.Instance!;
+        ui.ToggleSettings();
+        var board = ElementFactory.CreatePart(new Vector3Int(600, 400, 16), "Shelf", Vector3.zero)
+            .GetComponent<KitchenElement>();
+        ui.OpenContextMenu(board);
+        yield return null;
+        yield return null;
+
+        var all = Object.FindObjectsByType<TMP_Dropdown>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .Where(d => d.template != null).ToList();
+        Assert.That(all.Count, Is.GreaterThan(3), "в приложении нашлось слишком мало списков — обход сломан");
+
+        var notFromFactory = all.Where(d => d.GetType() != typeof(ScrollableDropdown)).Select(d => d.name).ToList();
+        Assert.IsEmpty(notFromFactory,
+            "списки собраны в обход UIFactory.CreateDropdown, у них нет полосы прокрутки и ограничения по экрану: "
+            + string.Join(", ", notFromFactory));
+
+        var withoutBar = all.Where(d => d.template.GetComponent<ScrollRect>()?.verticalScrollbar == null)
+            .Select(d => d.name).ToList();
+        Assert.IsEmpty(withoutBar, "у шаблона списка нет полосы прокрутки: " + string.Join(", ", withoutBar));
+
+        var longOnes = all.Where(d => d.gameObject.activeInHierarchy && d.IsInteractable()
+            && d.options.Count > UIStyle.DropdownVisibleItems).ToList();
+        Assert.IsNotEmpty(longOnes, "ни одного длинного списка среди видимых — проверять нечего");
+        foreach (var dd in longOnes)
+        {
+            yield return OpenAndSettle(dd);
+            AssertFullListContract(dd.name, dd);
+            dd.Hide();
+            yield return null;
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator MultiSelectFilter_WithManyOptions_HasScrollbar_AndStaysOnScreen()
+    {
+        var screen = CanvasRect.rect;
+        var filter = MultiSelectDropdown.Create("GuardFilter", CanvasRect, "Все",
+            new Vector2(0f, 0f), new Vector2(200f, 28f), () => { });
+        var rt = (RectTransform)filter.transform;
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = new Vector2(0f, -screen.height * 0.5f + 24f);
+        filter.SetOptions(Enumerable.Range(1, 40).Select(i => "COL-" + i.ToString("D2")).ToArray());
+        yield return null;
+
+        filter.GetComponent<Button>().onClick.Invoke();
+        yield return null;
+        yield return null;
+
+        var overlay = CanvasRect.Find("MultiSelectOverlay");
+        Assert.IsNotNull(overlay, "список фильтра не раскрылся");
+        var popup = (RectTransform)overlay!.Find("Popup");
+        AssertInsideScreen("фильтр", popup);
+        var scroll = popup.GetComponentInChildren<ScrollRect>();
+        Assert.IsNotNull(scroll);
+        Assert.IsNotNull(scroll!.verticalScrollbar, "40 пунктов не помещаются, а полосы прокрутки у фильтра нет");
+        Assert.IsTrue(scroll.verticalScrollbar.gameObject.activeInHierarchy, "полоса прокрутки фильтра скрыта");
+    }
+
+    private static readonly string[] UiLanguages = { "ru", "en" };
+
+    [UnityTest]
+    public IEnumerator LanguageList_RendersEveryNativeName_WithoutMissingGlyphs([ValueSource(nameof(UiLanguages))] string uiLanguage)
+    {
+        Loc.SetLanguage(uiLanguage);
+        for (int i = 0; i < 5; i++) yield return null;
+        Assert.AreEqual(uiLanguage, Loc.Language);
+        Assert.IsEmpty(OsFontFallback.AttachedFonts,
+            "при языке интерфейса " + uiLanguage + " запасные шрифты не подключены — вот это и проверяет тест");
+
+        var ui = UIManager.Instance!;
+        ui.ToggleSettings();
+        yield return null;
+        var dd = Object.FindObjectsByType<TMP_Dropdown>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .First(d => d.name == "Dd_" + SettingsProjectTab.LanguageRowId);
+        Assert.IsTrue(dd.gameObject.activeInHierarchy, "строка «Язык» не видна");
+
+        yield return OpenAndSettle(dd);
+        var list = OpenList(dd);
+        var toggles = list.GetComponentsInChildren<Toggle>(false);
+        Assert.AreEqual(Loc.Languages.Count, toggles.Length, "пунктов списка не столько, сколько языков");
+
+        var missing = new List<string>();
+        for (int i = 0; i < toggles.Length; i++)
+        {
+            var label = toggles[i].GetComponentInChildren<TMP_Text>();
+            string name = Loc.Languages[i].NativeName;
+            Assert.AreEqual(name, label.text, "порядок пунктов не совпал с порядком языков");
+            string shown = RightToLeftLabel.Rendered(label);
+            foreach (char c in shown)
+            {
+                if (char.IsWhiteSpace(c) || char.IsControl(c)) continue;
+                if (!label.font.HasCharacter(c, searchFallbacks: true, tryAddCharacter: true))
+                    missing.Add(Loc.Languages[i].Code + " «" + name + "»: U+" + ((int)c).ToString("X4"));
+            }
+        }
+        Assert.IsEmpty(missing, "в списке языков (интерфейс " + uiLanguage + ") нет глифов, на экране квадраты: "
+            + string.Join(" | ", missing.Distinct().Take(30)));
+    }
+
+    [UnityTest]
+    public IEnumerator LanguageList_ArabicName_IsShapedAndRightToLeft_UnderALeftToRightInterface()
+    {
+        Loc.SetLanguage("ru");
+        for (int i = 0; i < 5; i++) yield return null;
+        UIManager.Instance!.ToggleSettings();
+        yield return null;
+        var dd = Object.FindObjectsByType<TMP_Dropdown>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .First(d => d.name == "Dd_" + SettingsProjectTab.LanguageRowId);
+        yield return OpenAndSettle(dd);
+
+        var toggles = OpenList(dd).GetComponentsInChildren<Toggle>(false);
+        int arabic = Loc.Languages.ToList().FindIndex(l => l.Code.StartsWith("ar"));
+        Assert.GreaterOrEqual(arabic, 0, "арабского языка нет в списке — проверять нечего");
+        var label = toggles[arabic].GetComponentInChildren<TMP_Text>();
+        Assert.IsTrue(label.isRightToLeftText, "арабское название в списке не раскладывается справа налево");
+        string shown = RightToLeftLabel.Rendered(label);
+        Assert.AreNotEqual(label.text, shown, "арабское название не прошло через ArabicShaper — буквы будут оторваны");
+        Assert.IsFalse(shown.Any(c => c >= 'ء' && c <= 'ي'),
+            "в арабском названии остались базовые буквы 0621–064A — формы представления не подставлены");
+        Assert.IsNull(toggles[Loc.Languages.ToList().FindIndex(l => l.Code == "ru")]
+            .GetComponentInChildren<RightToLeftLabel>(), "русское название не должно раскладываться справа налево");
+    }
+
+    [UnityTest]
+    public IEnumerator Screenshot_LanguageList_OpenInSettings([ValueSource(nameof(UiLanguages))] string uiLanguage)
+    {
+        Loc.SetLanguage(uiLanguage);
+        for (int i = 0; i < 5; i++) yield return null;
+        UIManager.Instance!.ToggleSettings();
+        yield return null;
+        var dd = Object.FindObjectsByType<TMP_Dropdown>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .First(d => d.name == "Dd_" + SettingsProjectTab.LanguageRowId);
+        dd.SetValueWithoutNotify(Loc.Languages.ToList().FindIndex(l => l.Code == "pt"));
+        yield return OpenAndSettle(dd);
+        yield return new WaitForSecondsRealtime(0.5f);
+        yield return CaptureCanvas("dropdown_language_" + uiLanguage + ".png");
+    }
+
+    private static IEnumerator CaptureCanvas(string fileName)
+    {
+        var canvas = UIManager.Instance!.Canvas!;
+        var scaler = canvas.GetComponent<CanvasScaler>();
+        var origScaleMode = scaler.uiScaleMode;
+        var origRenderMode = canvas.renderMode;
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+        scaler.scaleFactor = 1f;
+        canvas.renderMode = RenderMode.ScreenSpaceCamera;
+        canvas.planeDistance = 1f;
+
+        const int w = 1920, h = 1080;
+        var camGo = new GameObject("DropdownCaptureCam");
+        var cam = camGo.AddComponent<Camera>();
+        cam.clearFlags = CameraClearFlags.SolidColor;
+        cam.backgroundColor = new Color(0.08f, 0.08f, 0.10f, 1f);
+        cam.orthographic = true;
+        cam.orthographicSize = h * 0.5f;
+        cam.aspect = (float)w / h;
+        cam.cullingMask = 1 << canvas.gameObject.layer;
+        canvas.worldCamera = cam;
+        var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32);
+        cam.targetTexture = rt;
+        yield return null;
+        yield return null;
+
+        var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        RenderTexture.active = rt;
+        tex.ReadPixels(new Rect(0, 0, w, h), 0, 0);
+        tex.Apply();
+        var dir = Path.Combine(Application.dataPath, "..", "test-results");
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, fileName);
+        File.WriteAllBytes(path, tex.EncodeToPNG());
+
+        RenderTexture.active = null;
+        cam.targetTexture = null;
+        canvas.worldCamera = null;
+        canvas.renderMode = origRenderMode;
+        scaler.uiScaleMode = origScaleMode;
+        Object.DestroyImmediate(rt);
+        Object.DestroyImmediate(tex);
+        Object.DestroyImmediate(camGo);
+        Assert.IsTrue(File.Exists(path), "PNG не записан: " + path);
+    }
+}

@@ -7,7 +7,6 @@ namespace KitchenDesigner.Core.UI
     {
         public const float Sensitivity = 20f;
         public const float BarInset = 2f;
-        public const float HandleW = 8f;
 
         private ScrollArea(RectTransform viewport, RectTransform content, ScrollRect scroll)
         {
@@ -61,10 +60,10 @@ namespace KitchenDesigner.Core.UI
             return new ScrollArea(viewport, content, scroll);
         }
 
-        private static void AttachBar(string name, RectTransform viewport, ScrollRect scroll,
-            float barWidth)
+        public static Scrollbar AttachBar(string name, RectTransform parent, ScrollRect scroll,
+            float barWidth, ScrollRect.ScrollbarVisibility visibility = ScrollRect.ScrollbarVisibility.AutoHide)
         {
-            var bar = UIFactory.CreateRect(name + "Bar", viewport);
+            var bar = UIFactory.CreateRect(name + "Bar", parent);
             bar.anchorMin = new Vector2(1f, 0f);
             bar.anchorMax = new Vector2(1f, 1f);
             bar.pivot = new Vector2(1f, 0.5f);
@@ -78,14 +77,16 @@ namespace KitchenDesigner.Core.UI
             scrollbar.direction = Scrollbar.Direction.BottomToTop;
 
             var handle = UIFactory.CreateRect("Handle", bar);
-            handle.sizeDelta = new Vector2(HandleW, 100f);
+            handle.sizeDelta = Vector2.zero;
             var handleImage = handle.gameObject.AddComponent<Image>();
             handleImage.color = UIStyle.ScrollHandle;
             scrollbar.targetGraphic = handleImage;
             scrollbar.handleRect = handle;
 
             scroll.verticalScrollbar = scrollbar;
-            scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+            scroll.verticalScrollbarVisibility = visibility;
+            scroll.verticalScrollbarSpacing = BarInset;
+            return scrollbar;
         }
     }
 }

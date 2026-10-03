@@ -442,8 +442,7 @@ namespace KitchenDesigner.Core.UI
         public const float DropdownItemLabelRight = 8f;
         public const int DropdownItemFontSize = 14;
 
-        private const int DropdownVisibleItems = 7;
-        private const float DropdownListMaxH = 320f;
+        public const float DropdownListMaxHeight = UIStyle.DropdownListMaxH;
         private const float DropdownListMaxW = 420f;
 
         public static TMP_Dropdown CreateDropdown(string name, Transform parent,
@@ -457,7 +456,7 @@ namespace KitchenDesigner.Core.UI
             var bg = rect.gameObject.AddComponent<Image>();
             bg.color = ButtonColor;
 
-            var dropdown = rect.gameObject.AddComponent<TMP_Dropdown>();
+            var dropdown = rect.gameObject.AddComponent<ScrollableDropdown>();
             dropdown.colors = InteractiveColors();
 
             var caption = CreateLabel(name + "_Label", rect, "", 15, Vector2.zero, size, TextAnchor.MiddleLeft);
@@ -528,7 +527,9 @@ namespace KitchenDesigner.Core.UI
             scroll.horizontal = false;
             scroll.vertical = true;
             scroll.movementType = ScrollRect.MovementType.Clamped;
-            scroll.scrollSensitivity = 20f;
+            scroll.scrollSensitivity = ScrollArea.Sensitivity;
+            ScrollArea.AttachBar(name + "List", template, scroll, UIStyle.DropdownScrollBarW,
+                ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport);
 
             dropdown.template = template;
             dropdown.captionText = caption;
@@ -564,18 +565,32 @@ namespace KitchenDesigner.Core.UI
             var ddRt = dropdown.GetComponent<RectTransform>();
             float ddWidth = ddRt.rect.width > 1f ? ddRt.rect.width : ddRt.sizeDelta.x;
             const float pad = DropdownItemLabelLeft + DropdownItemLabelRight;
+            const float barReserve = UIStyle.DropdownScrollBarW + ScrollArea.BarInset * 2f;
 
-            float listWidth = Mathf.Clamp(
-                DropdownItemFit.WidthFor(texts, DropdownItemFontSize) + pad,
-                ddWidth, DropdownListMaxW);
+            float barW = 0f;
+            float listWidth = 0f;
+            float itemH = 0f;
+            float listH = 0f;
+            for (int pass = 0; pass < 2; pass++)
+            {
+                listWidth = Mathf.Clamp(
+                    DropdownItemFit.WidthFor(texts, DropdownItemFontSize) + pad + barW,
+                    ddWidth, DropdownListMaxW);
+                itemH = DropdownItemFit.HeightFor(texts, listWidth - pad - barW, DropdownItemFontSize);
+                listH = Mathf.Min(itemH * UIStyle.DropdownVisibleItems, DropdownListMaxHeight);
+                barW = texts.Count * itemH > listH + 0.5f ? barReserve : 0f;
+            }
+
             float listWidthOverTheClosedControl = listWidth - ddWidth;
-            template.sizeDelta = new Vector2(listWidthOverTheClosedControl, template.sizeDelta.y);
-
-            float itemH = DropdownItemFit.HeightFor(texts, listWidth - pad, DropdownItemFontSize);
             item.sizeDelta = new Vector2(item.sizeDelta.x, itemH);
             content.sizeDelta = new Vector2(content.sizeDelta.x, itemH + 2f);
-            template.sizeDelta = new Vector2(template.sizeDelta.x,
-                Mathf.Min(itemH * DropdownVisibleItems, DropdownListMaxH));
+            template.sizeDelta = new Vector2(listWidthOverTheClosedControl, listH);
+        }
+
+        public static void SetDropdownOptionLanguages(TMP_Dropdown dropdown,
+            System.Collections.Generic.IReadOnlyList<string?> languages)
+        {
+            if (dropdown is ScrollableDropdown scrollable) scrollable.OptionLanguages = languages;
         }
 
         private static void ClipTheClosedCaptionToOneLine(TMP_Text caption)
