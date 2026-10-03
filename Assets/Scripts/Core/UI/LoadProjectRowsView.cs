@@ -63,7 +63,13 @@ namespace KitchenDesigner.Core.UI
 
             var button = rowRect.gameObject.AddComponent<UIButton>();
             button.targetGraphic = bg;
-            button.colors = UIFactory.InteractiveColors();
+            var colors = UIFactory.InteractiveColors();
+            if (!row.FileExists)
+            {
+                colors.disabledColor = Color.white;
+                button.KeepsOwnContentColors = true;
+            }
+            button.colors = colors;
             button.interactable = row.FileExists;
             button.onClick.AddListener(() =>
             {

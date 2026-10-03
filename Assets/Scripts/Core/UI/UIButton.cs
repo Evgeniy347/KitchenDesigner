@@ -10,6 +10,8 @@ namespace KitchenDesigner.Core.UI
         private readonly List<Color> _bright = new List<Color>();
         private bool _dimmed;
 
+        internal bool KeepsOwnContentColors { get; set; }
+
         protected override void DoStateTransition(SelectionState state, bool instant)
         {
             base.DoStateTransition(state, instant);
@@ -18,7 +20,7 @@ namespace KitchenDesigner.Core.UI
 
         private void SyncContent()
         {
-            bool dim = !UIRowEnabled.IsEnabled(this);
+            bool dim = !UIRowEnabled.IsEnabled(this) && !KeepsOwnContentColors;
             if (dim == _dimmed) return;
             _dimmed = dim;
             if (dim) Dim();

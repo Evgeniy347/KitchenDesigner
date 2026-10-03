@@ -149,6 +149,9 @@ public class WindowNoOpButtonsGuardTests
         Assert.IsEmpty(violations, ConfirmedMessage(violations));
         Assert.AreEqual(1, rows.FindAll(r => !r.interactable).Count,
             "ровно строка пропавшего файла выключена: её нажатие раньше молча ничего не делало");
+        var missingRow = rows.Find(r => !r.interactable)!;
+        Assert.AreEqual(UIStyle.HighlightError, missingRow.transform.Find("Title")!.GetComponent<TMP_Text>().color,
+            "строка пропавшего файла выключена, но остаётся КРАСНОЙ: выключена не значит серая");
     }
 
     // ── «Сцена» ─────────────────────────────────────────────
