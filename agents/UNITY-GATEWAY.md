@@ -126,6 +126,11 @@ Rules that matter:
   without it the cold batch became the foreground window ~0.4 s in and stole keyboard focus
   from the user mid-sentence. Any new launch line keeps that flag; verify with
   `tools/window-sensor.ps1` (zero new windows, zero foreground changes).
+- **Agent runs are BelowNormal priority — keep it.** `unity.ps1`, `mutation-test.ps1`, `smoke-test.ps1`
+  and `installer-smoke.ps1` lower THEIR OWN process first, so Unity.exe, bee, the compilers and `dotnet`
+  inherit it (Windows hands a child the parent's class when that is BelowNormal); a new launch line
+  needs no extra code, but a launcher that bypasses these scripts must lower itself the same way.
+  Otherwise the PC lags for the user while tests run.
 
 ## Only ONE Unity per machine, whatever the project
 
