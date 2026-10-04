@@ -25,13 +25,16 @@ public class UIFactoryContractTests
         if (_canvasGo != null) Object.DestroyImmediate(_canvasGo);
     }
 
+    /// <summary>`HasCharacter(c)` читает только таблицу символов динамического атласа, а она пуста,
+    /// пока никто не отрендерил текст: в одиночном прогоне тест краснел, в полном — зеленел от
+    /// соседей. `tryAddCharacter: true` делает то же, что TMP при рендере (UiAsciiSymbolsTests).</summary>
     [Test]
     public void UIFactory_FontAsset_CoversCyrillic()
     {
         var font = UIFactory.FontAsset;
 
         Assert.IsNotNull(font, "без шрифта весь UI пустой");
-        Assert.IsTrue(font!.HasCharacter('ж'),
+        Assert.IsTrue(font!.HasCharacter('ж', false, true),
             "Дефолтный статический атлас LiberationSans SDF из TMP кириллицы НЕ содержит — "
             + "поэтому шрифт сначала берётся из Resources, затем генерируется в рантайме, "
             + "и только потом падает на TMP_Settings.defaultFontAsset");
