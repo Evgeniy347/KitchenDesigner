@@ -398,12 +398,50 @@ public class ElementFieldsEditorTests
 
         Type(SofaFieldsEditor.SeatHeightNode, "5000");
 
-        int expected = SofaElement.MaxSeatHeightMM(SofaElement.DefaultHeightMM);
+        int expected = SofaElement.MaxSeatHeightMM;
         Assert.AreEqual(expected, sofa.SeatHeightMM,
             "высота основания зажата так, чтобы спинке осталось место");
         Assert.AreEqual(expected.ToString(), Text(Field(SofaFieldsEditor.SeatHeightNode)),
             "и в поле обязана вернуться ПРИНЯТАЯ высота, а не напечатанная "
             + "(CONVENTIONS.md → «Read a value back only AFTER EndCapture»)");
+    }
+
+    [Test]
+    public void Sofa_HeightRow_IsLocked_WhileWidthAndDepthStayEditable()
+    {
+        _menu!.Open(Sofa());
+
+        Assert.IsFalse(Field("Высота").interactable,
+            "высота дивана фиксирована (низ спинки плюс сама спинка): строка читается, но "
+            + "не правится — скрытая строка не читалась бы вовсе");
+        Assert.IsTrue(Field("Ширина").interactable, "длина дивана растягивается");
+        Assert.IsTrue(Field("Глубина").interactable,
+            "и глубина: она меняет только сиденье, спинка остаётся 180 мм");
+    }
+
+    [Test]
+    public void Sofa_UnfoldButton_IsBuilt_NamesTheNextStage_AndStepsTheSofa()
+    {
+        var sofa = Sofa();
+        _menu!.Open(sofa);
+
+        var button = Panel().FindNode("CtxSofaUnfold");
+        Assert.IsNotNull(button,
+            "кнопка раскладывания обязана быть ПОСТРОЕНА: у дивана нет другого способа "
+            + "выдвинуть сиденье из панели");
+        Assert.IsTrue(button!.gameObject.activeInHierarchy, "и видна у дивана");
+        var label = button.GetComponentInChildren<TMP_Text>(true);
+        Assert.AreEqual(OpenLabels.SofaExtend, label.text,
+            "у сложенного дивана кнопка обещает «выдвинуть»");
+
+        button.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+        Assert.AreEqual(SofaStage.Extended, sofa.UnfoldStage, "клик выдвигает сиденье");
+        Assert.AreEqual(OpenLabels.SofaUnfold, label.text,
+            "и подпись переключается на следующий этап — «разложить»");
+
+        button.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+        Assert.AreEqual(SofaStage.Bed, sofa.UnfoldStage, "второй клик раскладывает кровать");
+        Assert.AreEqual(OpenLabels.SofaFold, label.text, "и кнопка предлагает сложить");
     }
 
     private BedElement Bed() =>

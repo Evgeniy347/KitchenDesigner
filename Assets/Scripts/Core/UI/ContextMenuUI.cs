@@ -316,6 +316,7 @@ namespace KitchenDesigner.Core.UI
 
             _drawerFields.Build();
             OpenButton("CtxDrawerAnim", OpenLabels.Open, RowVisibility.For(ElementFacet.Drawer));
+            OpenButton("CtxSofaUnfold", OpenLabels.SofaExtend, RowVisibility.For(ElementFacet.Sofa));
             _attachments.BuildFacade();
 
             _openingFields.Build();

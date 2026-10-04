@@ -45,7 +45,7 @@ public class ElementFacingTests
 
         var sofaDims = new Vector3Int(SofaLayout.DefaultWidthMM, SofaLayout.DefaultHeightMM,
             SofaLayout.DefaultDepthMM);
-        Assert.Less(SofaLayout.BackRail(sofaDims, SofaLayout.DefaultSeatHeightMM).CentreMM.z, 0f,
+        Assert.Less(SofaLayout.Backrest(sofaDims).CentreMM.z, 0f,
             "спинка дивана — там же, в -Z, то есть и его лицо смотрит в +Z: "
             + "стул с унитазом не выделяются, у них та же ориентация");
 

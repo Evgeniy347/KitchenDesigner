@@ -355,6 +355,11 @@ namespace KitchenDesigner.Core.MCP
 		public int cornerRadiusMM;
 		public int seatHeightMM;
 		public int backDepthMM;
+		public int seatDepthMM;
+		public int backrestBottomMM;
+		public int backrestHeightMM;
+		public bool isOpen;
+		public string unfoldStage = "";
 		public int cushionCount;
 		public string tabletopMaterialId = MaterialCatalog.DefaultId;
 		public string legsMaterialId = MaterialCatalog.DefaultId;

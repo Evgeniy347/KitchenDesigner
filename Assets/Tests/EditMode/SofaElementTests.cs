@@ -5,9 +5,11 @@ using UnityEngine.TestTools;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Bulk;
 
-/// <summary>Диван собран по фотографии пользователя: у него НЕТ подлокотников,
-/// вместо них подушки, и подушек ровно четыре — две стоят на спинке, две лежат
-/// по бокам сиденья.
+/// <summary>Диван-книжка собран по фотографиям пользователя. Три части: СИДЕНЬЕ
+/// спереди, СПИНКА сзади (в сложенном виде идёт вниз до пола минус зазор) и
+/// внутренний КОРОБ, который виден только когда сиденье выдвинуто. Подлокотников
+/// нет: вместо них четыре подушки — две стоят на сиденье у спинки, две лежат
+/// по бокам.
 ///
 /// Тип самостоятельный, а не наследник табуретки или стула: каждый реестр
 /// проекта ветвится через <c>is XxxElement</c>, и подкласс молча проваливается
@@ -18,7 +20,9 @@ using KitchenDesigner.Core.Bulk;
 /// <c>localScale</c> корня единичный, габариты отдаёт <c>EffectiveScale</c>,
 /// дети расставлены в мировых единицах. Скругление задано в миллиметрах, и
 /// растяжение корнем превратило бы окружности в эллипсы — на следе 2000x900 это
-/// видно сразу.</summary>
+/// видно сразу.
+///
+/// Раскладывание (этапы, анимация, сохранение) — в <c>SofaUnfoldElementTests</c>.</summary>
 public class SofaElementTests
 {
     private readonly List<GameObject> _spawned = new List<GameObject>();
@@ -51,11 +55,16 @@ public class SofaElementTests
         SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM,
         SofaElement.DefaultCornerRadiusMM, SofaElement.DefaultSeatHeightMM);
 
-    private static Transform Child(SofaElement sofa, string name)
+    private static Transform Part(SofaElement sofa, string name)
     {
-        var child = sofa.transform.Find(name);
-        Assert.IsNotNull(child, "у дивана обязан быть ребёнок " + name);
-        return child!;
+        foreach (var group in new[] { SofaLayout.FrontGroupName, SofaLayout.HingeGroupName })
+        {
+            var part = sofa.transform.Find(group + "/" + name);
+            if (part != null) return part;
+        }
+
+        Assert.Fail("у дивана нет детали " + name + " ни в передней группе, ни в группе спинки");
+        return sofa.transform;
     }
 
     [Test]
@@ -64,10 +73,10 @@ public class SofaElementTests
         var sofa = DefaultSofa();
 
         Assert.AreEqual(new Vector3Int(2000, 800, 900), sofa.DimensionsMM,
-            "ширина 2000 и глубина 900 заданы пользователем и не обсуждаются; высота 800 "
-            + "снята с фотографии: 360 мм глухого основания плюс 440 мм спинки");
+            "ширина 2000 и глубина 900 (180 спинка + 720 сиденье) заданы пользователем и не "
+            + "обсуждаются; высота 800 — это низ спинки 100 плюс сама спинка 700");
         Assert.AreEqual(360, SofaElement.DefaultSeatHeightMM,
-            "верх основания на 360 мм: промер правого края фотографии (он почти в профиль, "
+            "верх сиденья на 360 мм: промер правого края фотографии (он почти в профиль, "
             + "и перспектива там врёт меньше всего) дал отношение цоколя к боковой подушке "
             + "1,6 к 1 — на 400 подушка выходила вдвое тоньше цоколя и читалась бугорком");
     }
@@ -84,87 +93,154 @@ public class SofaElementTests
         Assert.AreEqual(SofaLayout.DefaultDepthMM, SofaElement.DefaultDepthMM,
             "то же по глубине");
         Assert.AreEqual(SofaLayout.DefaultSeatHeightMM, SofaElement.DefaultSeatHeightMM,
-            "то же по высоте основания");
+            "то же по высоте сиденья");
         Assert.AreEqual(SofaLayout.DefaultCornerRadiusMM, SofaElement.DefaultCornerRadiusMM,
             "то же по скруглению");
+        Assert.AreEqual(SofaLayout.MinSeatHeightMM, SofaElement.MinSeatHeightMM,
+            "и нижняя граница высоты сиденья");
+        Assert.AreEqual(SofaLayout.MaxSeatHeightMM, SofaElement.MaxSeatHeightMM,
+            "и верхняя");
     }
 
     [Test]
-    public void Sofa_HasFourCushions_AndNoArmrests()
+    public void Sofa_IsASeatABackrestAndABox_WithFourCushionsRidingOnTheSeat()
     {
         var sofa = DefaultSofa();
 
-        Child(sofa, SofaLayout.ArmCushionLeftName);
-        Child(sofa, SofaLayout.ArmCushionRightName);
-        Child(sofa, SofaLayout.BackCushionLeftName);
-        Child(sofa, SofaLayout.BackCushionRightName);
-        Child(sofa, SofaLayout.BackRailName);
+        Part(sofa, SofaLayout.SeatName);
+        Part(sofa, SofaLayout.BackrestName);
+        Part(sofa, SofaLayout.ArmCushionLeftName);
+        Part(sofa, SofaLayout.ArmCushionRightName);
+        Part(sofa, SofaLayout.BackCushionLeftName);
+        Part(sofa, SofaLayout.BackCushionRightName);
 
-        Assert.AreEqual(SofaLayout.CushionCount + 1, sofa.transform.childCount,
-            "четыре подушки и одна спинка-полка — и больше ничего: подлокотников у этого "
-            + "дивана нет, их роль играют боковые подушки");
+        Assert.AreEqual(2, sofa.transform.childCount,
+            "у корня ровно два ребёнка — передняя группа (сиденье и подушки, они ездят "
+            + "вместе) и петля спинки; короб — это сам меш корня, он никуда не едет");
+        Assert.AreEqual(1 + SofaLayout.CushionCount,
+            sofa.transform.Find(SofaLayout.FrontGroupName)!.childCount,
+            "в передней группе сиденье и четыре подушки, и больше ничего: подлокотников у "
+            + "этого дивана нет, их роль играют боковые подушки");
+        Assert.AreEqual(1, sofa.transform.Find(SofaLayout.HingeGroupName)!.childCount,
+            "на петле одна спинка");
     }
 
     [Test]
-    public void CornerRadiusMM_AboveHalfTheSmallerSide_IsClampedToIt()
+    public void Sofa_RootCarriesTheBox_SoItIsTheOnlyPartThatNeverMoves()
+    {
+        var sofa = DefaultSofa();
+
+        var mesh = sofa.GetComponent<MeshFilter>()!.sharedMesh;
+        Assert.IsNotNull(mesh, "у корня обязан быть меш короба");
+        Assert.Greater(mesh!.vertexCount, 0, "и он не пустой");
+        Assert.IsNotNull(sofa.GetComponent<MeshRenderer>(), "короб рисуется");
+
+        float seatTop = (-SofaElement.DefaultHeightMM * 0.5f + SofaElement.DefaultSeatHeightMM)
+            * AppConstants.MM_TO_UNITS;
+        Assert.Less(mesh.bounds.max.y, seatTop,
+            "короб целиком ниже верха сиденья: пока сиденье на месте, он скрыт, и сложенный "
+            + "диван выглядит сплошным");
+    }
+
+    [Test]
+    public void Sofa_Backrest_GoesDownToTheFloorMinusTheClearance_WhenFolded()
+    {
+        var sofa = DefaultSofa();
+
+        var bounds = Part(sofa, SofaLayout.BackrestName).GetComponent<MeshRenderer>()!.bounds;
+
+        Assert.AreEqual((-SofaElement.DefaultHeightMM * 0.5f + SofaLayout.BackrestBottomMM)
+            * AppConstants.MM_TO_UNITS, bounds.min.y, 1e-4f,
+            "сложенная спинка идёт вниз до пола минус зазор в 100 мм, а не обрывается у сиденья");
+        Assert.AreEqual(SofaElement.DefaultHeightMM * 0.5f * AppConstants.MM_TO_UNITS,
+            bounds.max.y, 1e-4f, "а верх спинки — общая высота дивана");
+        Assert.AreEqual(SofaLayout.BackrestThicknessMM * AppConstants.MM_TO_UNITS,
+            bounds.size.z, 1e-4f, "и она толщиной 180 мм");
+    }
+
+    [Test]
+    public void CornerRadiusMM_AboveHalfTheSeatDepth_IsClampedToIt()
     {
         var sofa = DefaultSofa();
 
         sofa.CornerRadiusMM = 5000;
 
-        Assert.AreEqual(450, sofa.CornerRadiusMM,
-            "радиус основания ограничен половиной меньшей стороны: 900/2 = 450 мм. Больше "
-            + "половины — это уже не скругление, а вылет контура наружу");
+        Assert.AreEqual(360, sofa.CornerRadiusMM,
+            "радиус основания ограничен половиной меньшей стороны СИДЕНЬЯ: 720/2 = 360 мм. "
+            + "Больше половины — это уже не скругление, а вылет контура наружу");
     }
 
     [Test]
-    public void SeatHeightMM_AboveTheHeightLeftForTheBack_IsClampedToIt()
+    public void SeatHeightMM_AboveTheMaximum_IsClampedToIt()
     {
         var sofa = DefaultSofa();
 
         sofa.SeatHeightMM = 5000;
 
-        Assert.AreEqual(SofaElement.DefaultHeightMM - SofaElement.MinBackrestHeightMM,
-            sofa.SeatHeightMM,
-            "спинке всегда остаётся не меньше 200 мм: основание во всю высоту — это уже "
-            + "не диван, а тумба");
+        Assert.AreEqual(SofaElement.MaxSeatHeightMM, sofa.SeatHeightMM,
+            "выше предела спинка при складывании ушла бы за заднюю стенку");
     }
 
     [Test]
-    public void SeatHeightMM_BelowTheMinimumBase_IsClampedToIt()
+    public void SeatHeightMM_BelowTheMinimum_IsClampedToIt()
     {
         var sofa = DefaultSofa();
 
         sofa.SeatHeightMM = 10;
 
-        Assert.AreEqual(SofaElement.MinBaseHeightMM, sofa.SeatHeightMM,
-            "основание тоньше 150 мм перестаёт читаться цоколем, а боковые подушки "
-            + "оказываются на полу");
+        Assert.AreEqual(SofaElement.MinSeatHeightMM, sofa.SeatHeightMM,
+            "ниже минимума под сиденьем не помещается короб с бельём");
     }
 
     [Test]
-    public void Sofa_ResizedToANonSquareFootprint_KeepsTheCornerArcCircular_NotElliptical()
+    public void DimensionsMM_WithAnyHeight_IsPulledBackToTheFixedHeight()
+    {
+        var sofa = DefaultSofa();
+
+        sofa.DimensionsMM = new Vector3Int(1800, 1500, 1000);
+
+        Assert.AreEqual(new Vector3Int(1800, SofaLayout.OverallHeightMM, 1000), sofa.DimensionsMM,
+            "высота дивана не растягивается: заказанные 1500 сводятся к 800, длина и "
+            + "глубина остаются");
+    }
+
+    [Test]
+    public void DimensionsMM_WithADeeperSofa_StretchesOnlyTheSeat_NotTheBackrest()
+    {
+        var sofa = DefaultSofa();
+
+        sofa.DimensionsMM = new Vector3Int(2000, 800, 1200);
+
+        var seat = Part(sofa, SofaLayout.SeatName).GetComponent<MeshRenderer>()!.bounds;
+        var backrest = Part(sofa, SofaLayout.BackrestName).GetComponent<MeshRenderer>()!.bounds;
+        Assert.AreEqual(1020f * AppConstants.MM_TO_UNITS, seat.size.z, 1e-4f,
+            "вся добавленная глубина досталась сиденью: 1200 − 180");
+        Assert.AreEqual(180f * AppConstants.MM_TO_UNITS, backrest.size.z, 1e-4f,
+            "а спинка осталась 180 мм");
+    }
+
+    [Test]
+    public void Sofa_ResizedToANonSquareFootprint_KeepsTheFrontCornerArcCircular_NotElliptical()
     {
         var sofa = Sofa(1200, 800, 1200, 200, 400);
         sofa.DimensionsMM = new Vector3Int(2000, 800, 900);
 
-        var mesh = sofa.GetComponent<MeshFilter>()!.sharedMesh;
-        Assert.IsNotNull(mesh, "у дивана обязан быть меш основания");
+        var mesh = Part(sofa, SofaLayout.SeatName).GetComponent<MeshFilter>()!.sharedMesh;
+        Assert.IsNotNull(mesh, "у сиденья обязан быть меш");
 
         float radius = 200 * AppConstants.MM_TO_UNITS;
-        var centre = new Vector2(-2.0f * 0.5f + radius, -0.9f * 0.5f + radius);
-        var scale = sofa.transform.lossyScale;
+        float seatDepth = 720 * AppConstants.MM_TO_UNITS;
+        var centre = new Vector2(2.0f * 0.5f - radius, seatDepth * 0.5f - radius);
 
         int checkedPoints = 0;
         foreach (var local in mesh!.vertices)
         {
-            var p = new Vector2(local.x * scale.x, local.z * scale.z);
-            if (p.x > centre.x + 1e-4f || p.y > centre.y + 1e-4f) continue;
+            if (local.x < centre.x - 1e-4f || local.z < centre.y - 1e-4f) continue;
             checkedPoints++;
-            Assert.AreEqual(radius, (p - centre).magnitude, 1e-4f,
-                "угол основания обязан остаться ДУГОЙ ОКРУЖНОСТИ физического радиуса 200 мм. "
-                + "Если строить контур в единичном пространстве и растягивать корнем — как "
-                + "делает радиусный стол, — на следе 2000x900 угол станет эллиптическим");
+            Assert.AreEqual(radius, (new Vector2(local.x, local.z) - centre).magnitude, 1e-4f,
+                "передний угол сиденья обязан остаться ДУГОЙ ОКРУЖНОСТИ физического радиуса "
+                + "200 мм. Если строить контур в единичном пространстве и растягивать корнем — "
+                + "как делает радиусный стол, — на следе 2000x720 угол станет эллиптическим");
         }
 
         Assert.GreaterOrEqual(checkedPoints, RoundedRectProfile.DefaultSegments,
@@ -172,11 +248,32 @@ public class SofaElementTests
     }
 
     [Test]
+    public void Seat_RearCorners_AreSquare_SoItMeetsTheBackrestWithoutAGap()
+    {
+        var sofa = DefaultSofa();
+
+        var bounds = Part(sofa, SofaLayout.SeatName).GetComponent<MeshRenderer>()!.bounds;
+        var mesh = Part(sofa, SofaLayout.SeatName).GetComponent<MeshFilter>()!.sharedMesh;
+
+        bool hasRearCorner = false;
+        foreach (var local in mesh.vertices)
+            if (Mathf.Abs(local.x - mesh.bounds.min.x) < 1e-4f
+                && Mathf.Abs(local.z - mesh.bounds.min.z) < 1e-4f)
+                hasRearCorner = true;
+
+        Assert.IsTrue(hasRearCorner,
+            "в заднем углу сиденья есть вершина ровно в углу габарита — угол прямой: "
+            + "скруглённый оставил бы щель у боковой кромки спинки");
+        Assert.AreEqual(2000f * AppConstants.MM_TO_UNITS, bounds.size.x, 1e-4f,
+            "и сиденье на всю ширину");
+    }
+
+    [Test]
     public void SofaCushion_OnANonSquareSofa_KeepsItsCornerFilletAtItsPhysicalRadius()
     {
         var sofa = Sofa(2000, 800, 900, 120, 400);
 
-        var cushion = Child(sofa, SofaLayout.BackCushionRightName);
+        var cushion = Part(sofa, SofaLayout.BackCushionRightName);
         var mesh = cushion.GetComponent<MeshFilter>()!.sharedMesh;
         Assert.IsNotNull(mesh, "у спинной подушки обязан быть свой меш");
 
@@ -194,12 +291,11 @@ public class SofaElementTests
             var world = cushion.TransformPoint(local);
             var innerWorld = cushion.TransformPoint(innerLocal);
             Assert.AreEqual(surface.Radius, (world - innerWorld).magnitude, 1e-4f,
-                "подушка теперь скруглена по ВСЕМ трём осям, и её скругление задано в "
-                + "физических миллиметрах: на шве каждая точка стоит ровно на радиусе от "
-                + "внутренней коробки. Мерим в МИРОВЫХ координатах, а не в локальных "
-                + "вершинах меша: локально расстояние останется прежним и тогда, когда "
-                + "корень растянет всю мебель, и тест был бы слеп ровно к тому дефекту, "
-                + "ради которого написан");
+                "подушка скруглена по ВСЕМ трём осям, и её скругление задано в физических "
+                + "миллиметрах: на шве каждая точка стоит ровно на радиусе от внутренней "
+                + "коробки. Мерим в МИРОВЫХ координатах, а не в локальных вершинах меша: "
+                + "локально расстояние останется прежним и тогда, когда корень растянет всю "
+                + "мебель, и тест был бы слеп ровно к тому дефекту, ради которого написан");
         }
 
         Assert.GreaterOrEqual(checkedPoints, CushionSurface.DefaultArcSegments * 4,
@@ -237,34 +333,37 @@ public class SofaElementTests
     }
 
     [Test]
-    public void Sofa_Cushions_AreBuiltInWorldMillimetres_NotScaledByTheRoot()
+    public void Sofa_ArmCushions_AreBuiltInWorldMillimetres_NotScaledByTheRoot()
     {
         var sofa = Sofa(2000, 800, 900, 120, 400);
 
-        var arm = Child(sofa, SofaLayout.ArmCushionRightName);
+        var arm = Part(sofa, SofaLayout.ArmCushionRightName);
         Assert.AreEqual(Vector3.one, arm.localScale,
             "подушка не масштабируется: её размер уже заложен в собственный меш, и "
             + "масштаб поверх него — это второе умножение");
 
-        var bounds = arm.GetComponent<MeshFilter>()!.sharedMesh.bounds;
+        var size = arm.GetComponent<MeshFilter>()!.sharedMesh.bounds.size;
         Assert.AreEqual(SofaLayout.ArmCushionWidthFor(2000) * AppConstants.MM_TO_UNITS,
-            bounds.size.y, 1e-4f,
-            "боковой валик выдавлен вдоль своей толщины (280 мм), и в СОБСТВЕННЫХ осях "
-            + "меша это ось Y: поворот -90 по X и 90 по Y укладывает её вдоль X дивана");
+            size.x, 1e-4f, "боковой валик по ширине — 320 мм");
+        Assert.AreEqual(SofaLayout.ArmCushionHeightMM * AppConstants.MM_TO_UNITS,
+            size.y, 1e-4f, "по высоте — 240 мм: теперь это плоский валик, лежащий плашмя");
+        Assert.AreEqual(SofaLayout.ArmCushionLengthFor(900) * AppConstants.MM_TO_UNITS,
+            size.z, 1e-4f, "и по длине — от спинки до переднего края сиденья");
     }
 
     [Test]
-    public void Sofa_DecorSurface_IsWidthByDepth_InPhysicalMillimetres()
+    public void Sofa_DecorSurface_IsTheSeatTop_InPhysicalMillimetres()
     {
         var sofa = Sofa(2000, 800, 900, 120, 400);
 
-        Assert.AreEqual(new Vector2Int(2000, 900), sofa.DecorSurfaceMM,
-            "декор носит основание, а его меш строит ProfileExtrusionMesh в системе "
-            + "(ширина, ГЛУБИНА) — значит поверхность декора это (x, z), а не базовые "
-            + "(x, y) стоячей панели, иначе декор растянется");
-        Assert.AreSame(sofa.GetComponent<MeshRenderer>(), sofa.DecorRenderer,
-            "рендерер декора назван явно, а не выбран из списка детей по индексу: "
-            + "GetComponentInChildren попал бы в подушку, и мощение уехало бы на неё");
+        Assert.AreEqual(new Vector2Int(2000, 720), sofa.DecorSurfaceMM,
+            "декор носит сиденье, а его меш строит ProfileExtrusionMesh в системе (ширина, "
+            + "ГЛУБИНА) — значит поверхность декора это (x, глубина сиденья), а не весь "
+            + "габарит и не базовые (x, y) стоячей панели, иначе декор растянется");
+        Assert.AreSame(Part(sofa, SofaLayout.SeatName).GetComponent<MeshRenderer>(),
+            sofa.DecorRenderer,
+            "рендерер декора назван явно: корень теперь рисует короб, а GetComponentInChildren "
+            + "попал бы в подушку, и мощение уехало бы на неё");
     }
 
     [Test]
@@ -283,9 +382,9 @@ public class SofaElementTests
         Assert.AreEqual(371, restored.seatHeightMM,
             "поле seatHeightMM общее со стулом и стартует с 450: не записать его значит "
             + "поднять основание дивана на чужое значение");
-        Assert.AreEqual(new[] { 1800, 820, 950 }, restored.dimensionsMM,
+        Assert.AreEqual(new[] { 1800, 800, 950 }, restored.dimensionsMM,
             "габариты обязаны пережить круг вместе с формой: по ним зажимаются оба "
-            + "параметра");
+            + "параметра; заказанные 820 по высоте сведены к фиксированным 800");
     }
 
     [Test]
@@ -331,8 +430,11 @@ public class SofaElementTests
             + "падает, а молча выдаёт обычную доску");
         Assert.AreEqual(143, copy!.CornerRadiusMM, "скругление обязано пережить копирование");
         Assert.AreEqual(371, copy.SeatHeightMM, "и высота основания тоже");
-        Assert.AreEqual(SofaLayout.CushionCount + 1, copy.transform.childCount,
-            "и подушки: копия без них была бы другим предметом");
+        Part(copy, SofaLayout.BackCushionLeftName);
+        Part(copy, SofaLayout.ArmCushionRightName);
+        Part(copy, SofaLayout.BackrestName);
+        Assert.AreEqual(2, copy.transform.childCount,
+            "и обе группы: копия без подушек или спинки была бы другим предметом");
     }
 
     [Test]

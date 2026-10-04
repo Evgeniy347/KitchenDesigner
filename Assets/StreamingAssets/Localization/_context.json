@@ -1497,6 +1497,21 @@
     "meaning": "Slide the drawer out",
     "maxLength": 20
   },
+  "element.open.sofaExtend": {
+    "where": "Context menu, sofa button caption (each press moves the sofa one stage further: pull out, unfold, fold)",
+    "meaning": "First stage of the sofa-bed: slide the seat part out to expose the storage box",
+    "maxLength": 20
+  },
+  "element.open.sofaFold": {
+    "where": "Context menu, sofa button caption (each press moves the sofa one stage further: pull out, unfold, fold)",
+    "meaning": "Return the sofa-bed to the folded sofa",
+    "maxLength": 20
+  },
+  "element.open.sofaUnfold": {
+    "where": "Context menu, sofa button caption (each press moves the sofa one stage further: pull out, unfold, fold)",
+    "meaning": "Second stage of the sofa-bed: lower the backrest and make the bed",
+    "maxLength": 20
+  },
   "element.oven.defaultName": {
     "where": "Default name given to a newly created element of this type (shown in the hierarchy and panels, saved in the project)",
     "meaning": "Built-in oven appliance",

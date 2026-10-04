@@ -8,5 +8,8 @@ namespace KitchenDesigner.Core
         public static string CloseDoor => Loc.T("element.open.closeDoor");
         public static string OpenDrawer => Loc.T("element.open.openDrawer");
         public static string CloseDrawer => Loc.T("element.open.closeDrawer");
+        public static string SofaExtend => Loc.T("element.open.sofaExtend");
+        public static string SofaUnfold => Loc.T("element.open.sofaUnfold");
+        public static string SofaFold => Loc.T("element.open.sofaFold");
     }
 }

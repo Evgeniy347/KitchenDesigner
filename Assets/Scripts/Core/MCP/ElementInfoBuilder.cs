@@ -159,7 +159,12 @@ namespace KitchenDesigner.Core.MCP
                 {
                     cornerRadiusMM = sofa.CornerRadiusMM,
                     seatHeightMM = sofa.SeatHeightMM,
-                    backDepthMM = SofaLayout.BackDepthMM,
+                    backDepthMM = SofaLayout.BackrestThicknessMM,
+                    seatDepthMM = SofaLayout.SeatDepthFor(sofa.DimensionsMM.z),
+                    backrestBottomMM = SofaLayout.BackrestBottomMM,
+                    backrestHeightMM = SofaLayout.BackrestHeightMM,
+                    isOpen = sofa.IsOpen,
+                    unfoldStage = sofa.UnfoldStage.ToString(),
                     cushionCount = SofaLayout.CushionCount,
                     tabletopMaterialId = sofa.PrimaryMaterialId,
                     legsMaterialId = sofa.SecondaryMaterialId

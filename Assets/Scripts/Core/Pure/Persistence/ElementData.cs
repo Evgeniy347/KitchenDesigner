@@ -70,6 +70,7 @@ namespace KitchenDesigner.Core
         public bool isStool = false;
         public bool isChair = false;
         public bool isSofa = false;
+        public int sofaUnfoldStage = 0;
         public bool isPouffe = false;
         public int pouffeSeatThicknessMM = PouffeLayout.DefaultSeatThicknessMM;
         public bool isToilet = false;

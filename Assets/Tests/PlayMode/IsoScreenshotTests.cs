@@ -576,7 +576,7 @@ public class IsoScreenshotTests : ElementFrameTests
 
         var dims = new Vector3Int(SofaElement.DefaultWidthMM,
             SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM);
-        Assert.Less(SofaLayout.BackRail(dims, SofaElement.DefaultSeatHeightMM).CentreMM.z, 0f,
+        Assert.Less(SofaLayout.Backrest(dims).CentreMM.z, 0f,
             "спинка дивана стоит в -Z — как щит спинки стула; разворачивать соглашение "
             + "ради одного типа значило бы поставить диван и стул в одной комнате "
             + "спинками навстречу");
@@ -603,8 +603,33 @@ public class IsoScreenshotTests : ElementFrameTests
             "IsoSofaSquare", "iso_sofa_1400x800x900_square.png");
     }
 
+    /// <summary>Этап 1 раскладывания (фото 45 → 43): сиденье выехало, короб с
+    /// отделениями открыт, спинка стоит. Кадр обязан показывать ПУСТОЙ короб
+    /// перед спинкой — если его не видно, виноват либо ход выдвижения, либо
+    /// камера, и «короб плохо смоделирован» тут ни при чём.</summary>
+    [UnityTest]
+    public IEnumerator IsoSofa_2000x800x900_Extended_BoxVisible()
+    {
+        yield return RenderSofa(new Vector3Int(SofaElement.DefaultWidthMM,
+            SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM),
+            SofaElement.DefaultCornerRadiusMM, SofaElement.DefaultSeatHeightMM,
+            "IsoSofaExtended", "iso_sofa_2000x800x900_extended.png",
+            SofaStage.Extended, false);
+    }
+
+    /// <summary>Этап 2 (фото 43 → 40): спинка легла на короб плашмя вровень с
+    /// сиденьем — кровать из двух половин с узким зазором между ними.</summary>
+    [UnityTest]
+    public IEnumerator IsoSofa_2000x800x900_Bed_BackrestFlat()
+    {
+        yield return RenderSofa(new Vector3Int(SofaElement.DefaultWidthMM,
+            SofaElement.DefaultHeightMM, SofaElement.DefaultDepthMM),
+            SofaElement.DefaultCornerRadiusMM, SofaElement.DefaultSeatHeightMM,
+            "IsoSofaBed", "iso_sofa_2000x800x900_bed.png", SofaStage.Bed, false);
+    }
+
     private IEnumerator RenderSofa(Vector3Int dims, int cornerRadiusMM, int seatHeightMM,
-        string name, string png)
+        string name, string png, SofaStage stage = SofaStage.Folded, bool capturePanel = true)
     {
         Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
         var go = ElementFactory.CreateSofa(dims, cornerRadiusMM, seatHeightMM, name, pos);
@@ -619,19 +644,60 @@ public class IsoScreenshotTests : ElementFrameTests
             "и ту высоту основания, которую заказали");
         foreach (var child in new[]
                  {
-                     SofaLayout.BackRailName, SofaLayout.ArmCushionLeftName,
-                     SofaLayout.ArmCushionRightName, SofaLayout.BackCushionLeftName,
-                     SofaLayout.BackCushionRightName,
+                     SofaLayout.FrontGroupName + "/" + SofaLayout.SeatName,
+                     SofaLayout.HingeGroupName + "/" + SofaLayout.BackrestName,
+                     SofaLayout.FrontGroupName + "/" + SofaLayout.ArmCushionLeftName,
+                     SofaLayout.FrontGroupName + "/" + SofaLayout.ArmCushionRightName,
+                     SofaLayout.FrontGroupName + "/" + SofaLayout.BackCushionLeftName,
+                     SofaLayout.FrontGroupName + "/" + SofaLayout.BackCushionRightName,
                  })
             Assert.IsNotNull(go.transform.Find(child),
-                "у дивана нет подлокотников — вместо них подушки; снимок без ребёнка «"
+                "диван — сиденье, спинка и четыре подушки; снимок без ребёнка «"
                 + child + "» показывал бы не тот предмет");
 
-        Vector3 size = MmToUnits(dims);
-        var (camGo, cam) = CreateIsoCamera(pos, size, 2.5f);
+        sofa.SnapToStage(stage);
+        float travelMM = stage == SofaStage.Folded
+            ? 0f : SofaUnfold.SeatSlideTravelMM(dims.z, seatHeightMM);
+        Assert.AreEqual(stage, sofa.UnfoldStage,
+            "кадр обязан снимать тот этап, который заказали: иначе три кадра дивана были бы "
+            + "тремя копиями одного");
+
+        var span = new Vector3Int(dims.x, dims.y, dims.z + Mathf.RoundToInt(travelMM));
+        Vector3 centre = pos + new Vector3(0f, 0f, travelMM * 0.5f * AppConstants.MM_TO_UNITS);
+        var (camGo, cam) = CreateIsoCamera(centre, MmToUnits(span), 2.5f);
         _spawned.Add(camGo);
 
-        yield return RenderToPng(cam, png);
+        yield return capturePanel
+            ? RenderToPng(cam, png)
+            : RenderToPng(cam, png, null);
+
+        Object.DestroyImmediate(camGo);
+    }
+
+    /// <summary>Боковая подушка крупно — для сверки с фото 47: плоский валик с
+    /// круглым носом и мягкой кромкой. Камера ставится на саму подушку, а не на
+    /// диван, и кадр без неё в центре означал бы, что целились мимо.</summary>
+    [UnityTest]
+    public IEnumerator IsoSofa_ArmCushion_CloseUp()
+    {
+        var dims = new Vector3Int(SofaElement.DefaultWidthMM, SofaElement.DefaultHeightMM,
+            SofaElement.DefaultDepthMM);
+        Vector3 pos = new Vector3(0f, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateSofa(dims, SofaElement.DefaultCornerRadiusMM,
+            SofaElement.DefaultSeatHeightMM, "IsoSofaArm", pos);
+        _spawned.Add(go);
+
+        var arm = go.transform.Find(
+            SofaLayout.FrontGroupName + "/" + SofaLayout.ArmCushionRightName);
+        Assert.IsNotNull(arm, "кадр про боковую подушку обязан её содержать");
+
+        Vector3 size = MmToUnits(new Vector3Int(SofaLayout.ArmCushionWidthMM,
+            SofaLayout.ArmCushionHeightMM, Mathf.RoundToInt(
+                SofaLayout.ArmCushionLengthFor(dims.z))));
+        var (camGo, cam) = CreateIsoCamera(arm!.position, size, 2.5f);
+        _spawned.Add(camGo);
+
+        yield return RenderToPng(cam, "iso_sofa_arm_cushion.png", null);
 
         Object.DestroyImmediate(camGo);
     }

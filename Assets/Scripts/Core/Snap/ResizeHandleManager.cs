@@ -399,6 +399,7 @@ namespace KitchenDesigner.Core
             bool heightOnly = Mode == HandleMode.Resize
                 && (_target is PillarElement || _target is PipeElement);
             bool skipDepth = _target is WindowElement || _target is DoorElement;
+            bool skipHeight = Mode == HandleMode.Resize && _target is SofaElement;
             if (Mode == HandleMode.Resize && !SupportsHandleResize(_target)) return;
             var faces = _target!.GetFaces();
             for (int i = 0; i < faces.Length; i++)
@@ -406,6 +407,7 @@ namespace KitchenDesigner.Core
                 if (widthOnly && i / 2 != 0) continue;
                 if (heightOnly && i / 2 != 1) continue;
                 if (skipDepth && i / 2 == 2) continue;
+                if (skipHeight && i / 2 == 1) continue;
                 var go = new GameObject($"ResizeHandle_{i}");
                 var marker = go.AddComponent<ResizeHandle>();
                 marker.faceIndex = i;

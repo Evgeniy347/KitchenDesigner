@@ -7,7 +7,7 @@
             "elementType": "sofa",
             "dimensionsMM": [
                 1800,
-                820,
+                800,
                 950
             ],
             "position": [
@@ -36,6 +36,7 @@
             "isStool": false,
             "isChair": false,
             "isSofa": true,
+            "sofaUnfoldStage": 0,
             "isPouffe": false,
             "pouffeSeatThicknessMM": 50,
             "isToilet": false,
@@ -231,6 +232,7 @@
         "isStool": false,
         "isChair": false,
         "isSofa": false,
+        "sofaUnfoldStage": 0,
         "isPouffe": false,
         "pouffeSeatThicknessMM": 50,
         "isToilet": false,

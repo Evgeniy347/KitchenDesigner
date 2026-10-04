@@ -4,52 +4,80 @@ namespace KitchenDesigner.Core
 {
     public static class SofaLayout
     {
+        public const int BackrestBottomMM = 100;
+        public const int BackrestHeightMM = 700;
+        public const int BackrestThicknessMM = 180;
+        public const int BackrestRadiusMM = 60;
+        public const int OverallHeightMM = BackrestBottomMM + BackrestHeightMM;
+
         public const int DefaultWidthMM = 2000;
-        public const int DefaultHeightMM = 800;
-        public const int DefaultDepthMM = 900;
+        public const int DefaultHeightMM = OverallHeightMM;
+        public const int DefaultSeatDepthMM = 720;
+        public const int DefaultDepthMM = BackrestThicknessMM + DefaultSeatDepthMM;
         public const int DefaultSeatHeightMM = 360;
         public const int DefaultCornerRadiusMM = 120;
 
-        public const int MinBaseHeightMM = 150;
-        public const int MinBackrestHeightMM = 200;
+        public const int MinSeatDepthMM = 400;
+        public const int MinDepthMM = BackrestThicknessMM + MinSeatDepthMM;
+        public const int MinSeatHeightMM = 300;
+        public const int MaxSeatHeightMM = BackrestBottomMM + 2 * BackrestThicknessMM;
 
-        public const int BackDepthMM = 140;
-        public const int BackRailDropMM = 40;
-        public const int BackRailRadiusMM = 60;
         public const int BackCushionThicknessMM = 200;
         public const int ArmCushionWidthMM = 320;
         public const int ArmCushionHeightMM = 240;
+        public const int ArmNoseRadiusMM = 150;
+        public const int ArmTailRadiusMM = 40;
         public const int CushionGapMM = 20;
         public const int CushionRadiusMM = 90;
         public const int MinPartMM = 100;
         public const int CushionCount = 4;
 
         public const int PartsAcrossWidth = 4;
-        public const float BackDepthMaxDepthFraction = 0.25f;
+        public const int MinWidthMM = PartsAcrossWidth * MinPartMM + (PartsAcrossWidth - 1) * CushionGapMM;
         public const float BackCushionMaxDepthFraction = 0.3f;
 
-        public const string BackRailName = "SofaBackRail";
+        public const string SeatName = "SofaSeat";
+        public const string BackrestName = "SofaBackrest";
+        public const string FrontGroupName = "SofaFront";
+        public const string HingeGroupName = "SofaBackrestHinge";
         public const string ArmCushionLeftName = "SofaArmCushionLeft";
         public const string ArmCushionRightName = "SofaArmCushionRight";
         public const string BackCushionLeftName = "SofaBackCushionLeft";
         public const string BackCushionRightName = "SofaBackCushionRight";
 
-        public static float BaseCentreYMM(int overallHeightMM, int seatHeightMM)
-            => (seatHeightMM - overallHeightMM) * 0.5f;
+        public static Vector3Int Normalise(Vector3Int dimensionsMM) => new Vector3Int(
+            Mathf.Max(MinWidthMM, dimensionsMM.x), OverallHeightMM,
+            Mathf.Max(MinDepthMM, dimensionsMM.z));
 
-        public static int BackrestHeightMM(int overallHeightMM, int seatHeightMM)
-            => Mathf.Max(1, overallHeightMM - seatHeightMM);
+        public static int SeatDepthFor(int depthMM)
+            => Mathf.Max(MinSeatDepthMM, depthMM - BackrestThicknessMM);
 
-        public static float BackDepthFor(int depthMM)
-            => Mathf.Max(MinPartMM,
-                Mathf.Min(BackDepthMM, depthMM * BackDepthMaxDepthFraction));
+        public static int MaxCornerRadiusMM(Vector3Int dimensionsMM)
+            => Mathf.Max(0, Mathf.Min(dimensionsMM.x, SeatDepthFor(dimensionsMM.z)) / 2);
+
+        public static int ClampCornerRadiusMM(Vector3Int dimensionsMM, int value)
+            => Mathf.Clamp(value, 0, MaxCornerRadiusMM(dimensionsMM));
+
+        public static int ClampSeatHeightMM(int value)
+            => Mathf.Clamp(value, MinSeatHeightMM, MaxSeatHeightMM);
+
+        public static Vector2Int SeatSurfaceMM(Vector3Int dimensionsMM)
+            => new Vector2Int(dimensionsMM.x, SeatDepthFor(dimensionsMM.z));
+
+        public static float FloorYMM(Vector3Int dimensionsMM) => -dimensionsMM.y * 0.5f;
+
+        public static float BackrestFrontZMM(Vector3Int dimensionsMM)
+            => -dimensionsMM.z * 0.5f + BackrestThicknessMM;
+
+        public static float BackCushionHeightFor(int seatHeightMM)
+            => Mathf.Max(1, OverallHeightMM - seatHeightMM);
 
         public static float BackCushionThicknessFor(int depthMM)
-            => Mathf.Max(MinPartMM,
-                Mathf.Min(BackCushionThicknessMM, depthMM * BackCushionMaxDepthFraction));
+            => Mathf.Max(MinPartMM, Mathf.Min(BackCushionThicknessMM,
+                SeatDepthFor(depthMM) * BackCushionMaxDepthFraction));
 
         public static float ArmCushionLengthFor(int depthMM)
-            => Mathf.Max(MinPartMM, depthMM - BackDepthFor(depthMM) - CushionGapMM);
+            => Mathf.Max(MinPartMM, SeatDepthFor(depthMM) - CushionGapMM);
 
         public static float ArmCushionWidthFor(int widthMM)
             => Mathf.Max(MinPartMM, Mathf.Min(ArmCushionWidthMM,
@@ -60,63 +88,73 @@ namespace KitchenDesigner.Core
                 (widthMM - 2f * ArmCushionWidthFor(widthMM)
                     - (PartsAcrossWidth - 1) * CushionGapMM) * 0.5f);
 
-        public static FurniturePartBox BackRail(Vector3Int dimensionsMM, int seatHeightMM)
+        public static FurniturePartBox Seat(Vector3Int dimensionsMM, int seatHeightMM,
+            int cornerRadiusMM)
         {
-            float backDepth = BackDepthFor(dimensionsMM.z);
-            float railHeight = Mathf.Max(1f,
-                BackrestHeightMM(dimensionsMM.y, seatHeightMM) - BackRailDropMM);
-            float centreY = -dimensionsMM.y * 0.5f + seatHeightMM + railHeight * 0.5f;
-            float centreZ = -dimensionsMM.z * 0.5f + backDepth * 0.5f;
+            int seatDepth = SeatDepthFor(dimensionsMM.z);
+            var centre = new Vector3(0f, FloorYMM(dimensionsMM) + seatHeightMM * 0.5f,
+                BackrestFrontZMM(dimensionsMM) + seatDepth * 0.5f);
 
-            return new FurniturePartBox(BackRailName, new Vector3(0f, centreY, centreZ),
-                dimensionsMM.x, backDepth, railHeight,
-                FittedRadius(BackRailRadiusMM, dimensionsMM.x, backDepth),
-                FurniturePartOrientation.Horizontal);
+            return new FurniturePartBox(SeatName, centre, dimensionsMM.x, seatDepth,
+                seatHeightMM, cornerRadiusMM, FurniturePartOrientation.Horizontal,
+                FurniturePartShape.Extruded, 0f);
+        }
+
+        public static FurniturePartBox Backrest(Vector3Int dimensionsMM)
+        {
+            var centre = new Vector3(0f,
+                FloorYMM(dimensionsMM) + BackrestBottomMM + BackrestHeightMM * 0.5f,
+                BackrestFrontZMM(dimensionsMM) - BackrestThicknessMM * 0.5f);
+
+            return new FurniturePartBox(BackrestName, centre, dimensionsMM.x,
+                BackrestThicknessMM, BackrestHeightMM,
+                FittedRadius(BackrestRadiusMM, dimensionsMM.x, BackrestThicknessMM),
+                FurniturePartOrientation.Horizontal, FurniturePartShape.SoftSlab);
         }
 
         public static FurniturePartBox[] Cushions(Vector3Int dimensionsMM, int seatHeightMM)
         {
-            float floorY = -dimensionsMM.y * 0.5f;
-            float backZ = -dimensionsMM.z * 0.5f;
-            float backDepth = BackDepthFor(dimensionsMM.z);
-            float backrestHeight = BackrestHeightMM(dimensionsMM.y, seatHeightMM);
+            float seatTopY = FloorYMM(dimensionsMM) + seatHeightMM;
+            float frontOfBackrest = BackrestFrontZMM(dimensionsMM);
+            float backHeight = BackCushionHeightFor(seatHeightMM);
 
             float armWidth = ArmCushionWidthFor(dimensionsMM.x);
-            float armHeight = Mathf.Clamp(ArmCushionHeightMM, 1f, backrestHeight);
+            float armHeight = Mathf.Clamp(ArmCushionHeightMM, 1f, backHeight);
             float armLength = ArmCushionLengthFor(dimensionsMM.z);
             float armCentreX = dimensionsMM.x * 0.5f - armWidth * 0.5f;
-            float armCentreY = floorY + seatHeightMM + armHeight * 0.5f;
-            float armCentreZ = backZ + backDepth + CushionGapMM + armLength * 0.5f;
-            float armRadius = FittedCushionRadius(CushionRadiusMM, armLength, armHeight, armWidth);
+            float armCentreY = seatTopY + armHeight * 0.5f;
+            float armCentreZ = frontOfBackrest + CushionGapMM + armLength * 0.5f;
 
             float cushionWidth = BackCushionWidthFor(dimensionsMM.x);
             float cushionThickness = BackCushionThicknessFor(dimensionsMM.z);
             float cushionCentreX = CushionGapMM * 0.5f + cushionWidth * 0.5f;
-            float cushionCentreY = floorY + seatHeightMM + backrestHeight * 0.5f;
-            float cushionCentreZ = backZ + backDepth + cushionThickness * 0.5f;
+            float cushionCentreY = seatTopY + backHeight * 0.5f;
+            float cushionCentreZ = frontOfBackrest + cushionThickness * 0.5f;
             float cushionRadius = FittedCushionRadius(CushionRadiusMM, cushionWidth,
-                backrestHeight, cushionThickness);
+                backHeight, cushionThickness);
 
             return new[]
             {
-                new FurniturePartBox(ArmCushionLeftName,
-                    new Vector3(-armCentreX, armCentreY, armCentreZ),
-                    armLength, armHeight, armWidth, armRadius,
-                    FurniturePartOrientation.Side, FurniturePartShape.Cushion),
-                new FurniturePartBox(ArmCushionRightName,
-                    new Vector3(armCentreX, armCentreY, armCentreZ),
-                    armLength, armHeight, armWidth, armRadius,
-                    FurniturePartOrientation.Side, FurniturePartShape.Cushion),
+                Arm(ArmCushionLeftName, -armCentreX, armCentreY, armCentreZ, armWidth,
+                    armLength, armHeight),
+                Arm(ArmCushionRightName, armCentreX, armCentreY, armCentreZ, armWidth,
+                    armLength, armHeight),
                 new FurniturePartBox(BackCushionLeftName,
                     new Vector3(-cushionCentreX, cushionCentreY, cushionCentreZ),
-                    cushionWidth, backrestHeight, cushionThickness, cushionRadius,
+                    cushionWidth, backHeight, cushionThickness, cushionRadius,
                     FurniturePartOrientation.Frontal, FurniturePartShape.Cushion),
                 new FurniturePartBox(BackCushionRightName,
                     new Vector3(cushionCentreX, cushionCentreY, cushionCentreZ),
-                    cushionWidth, backrestHeight, cushionThickness, cushionRadius,
+                    cushionWidth, backHeight, cushionThickness, cushionRadius,
                     FurniturePartOrientation.Frontal, FurniturePartShape.Cushion),
             };
         }
+
+        private static FurniturePartBox Arm(string name, float centreX, float centreY,
+            float centreZ, float width, float length, float height)
+            => new FurniturePartBox(name, new Vector3(centreX, centreY, centreZ), width, length,
+                height, ArmNoseRadiusMM, FurniturePartOrientation.Horizontal,
+                FurniturePartShape.SoftSlab, ArmTailRadiusMM);
 
         private static float FittedRadius(float asked, float profileWidth, float profileDepth)
             => Mathf.Max(0f, Mathf.Min(asked, Mathf.Min(profileWidth, profileDepth) * 0.5f));

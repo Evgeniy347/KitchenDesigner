@@ -303,7 +303,11 @@ namespace KitchenDesigner.Core
             (d => d.isSofa,
              (factory, d) => factory.CreateSofa(d.Dimensions, d.cornerRadius, d.seatHeightMM,
                  d.name, d.Position),
-             RestoreDecorSlots),
+             (d, el) =>
+             {
+                 RestoreDecorSlots(d, el);
+                 if (el is SofaElement sofa) sofa.SnapToStage(SofaUnfold.StageFrom(d.sofaUnfoldStage));
+             }),
 
             (d => d.isPouffe,
              (factory, d) => factory.CreatePouffe(d.Dimensions, d.cornerRadius,

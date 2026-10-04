@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class SofaElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
+    public class SofaElement : KitchenElement, IHasTwoDecorSlots, IQuantifies, IOpenable
     {
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("подушки дивана стоят между подлокотниками: ни одна из них не защищена от собственного подлокотника, поэтому проверяемой лицевой детали у типа нет");
@@ -16,18 +16,20 @@ namespace KitchenDesigner.Core
         }
 
         public const string DefaultUpholsteryId = "fabric_mustard";
+        private static readonly MaterialDef BoxMaterial = new MaterialDef("sofa_box_laminate",
+            "Sofa box", "Laminate", new Color(0.93f, 0.93f, 0.9f));
 
         public const int DefaultWidthMM = SofaLayout.DefaultWidthMM;
         public const int DefaultHeightMM = SofaLayout.DefaultHeightMM;
         public const int DefaultDepthMM = SofaLayout.DefaultDepthMM;
         public const int DefaultSeatHeightMM = SofaLayout.DefaultSeatHeightMM;
         public const int DefaultCornerRadiusMM = SofaLayout.DefaultCornerRadiusMM;
-        public const int MinBaseHeightMM = SofaLayout.MinBaseHeightMM;
-        public const int MinBackrestHeightMM = SofaLayout.MinBackrestHeightMM;
+        public const int MinSeatHeightMM = SofaLayout.MinSeatHeightMM;
+        public const int MaxSeatHeightMM = SofaLayout.MaxSeatHeightMM;
 
-        private FurniturePartSet? _body;
-        private FurniturePartSet? _cushions;
-        private TabletopSurface? _base;
+        private SofaRig? _rig;
+        private OwnedMeshBody? _box;
+        private readonly SofaUnfoldMotion _motion = new SofaUnfoldMotion();
         private readonly RebuildGuard _rebuild = new RebuildGuard();
 
         [SerializeField] private int _cornerRadiusMM = DefaultCornerRadiusMM;
@@ -35,17 +37,24 @@ namespace KitchenDesigner.Core
         [SerializeField] private string _bodyMaterialId = DefaultUpholsteryId;
         [SerializeField] private string _cushionMaterialId = DefaultUpholsteryId;
 
-        public static int MaxSeatHeightMM(int overallHeightMM)
-            => Mathf.Max(1, overallHeightMM - MinBackrestHeightMM);
-
-        public static int MinSeatHeightMM(int overallHeightMM)
-            => Mathf.Min(MinBaseHeightMM, MaxSeatHeightMM(overallHeightMM));
-
         protected override Vector3 EffectiveScale => FurnitureLayout.PhysicalScale(DimensionsMM);
 
-        public override Vector2Int DecorSurfaceMM => FurnitureLayout.TopSurfaceMM(DimensionsMM);
+        public override Vector2Int DecorSurfaceMM => SofaLayout.SeatSurfaceMM(DimensionsMM);
 
-        public override MeshRenderer? DecorRenderer => GetComponent<MeshRenderer>();
+        public override MeshRenderer? DecorRenderer => Rig.SeatRenderer;
+
+        public SofaStage UnfoldStage => _motion.Target;
+
+        public bool IsOpen => _motion.Target != SofaStage.Folded;
+
+        public bool IsClosedPose => true;
+
+        public string OpenActionLabel => _motion.Target switch
+        {
+            SofaStage.Folded => OpenLabels.SofaExtend,
+            SofaStage.Extended => OpenLabels.SofaUnfold,
+            _ => OpenLabels.SofaFold,
+        };
 
         [Undoable]
         public int CornerRadiusMM
@@ -53,7 +62,7 @@ namespace KitchenDesigner.Core
             get => _cornerRadiusMM;
             set
             {
-                value = FurnitureLayout.ClampCornerRadiusMM(DimensionsMM, value);
+                value = SofaLayout.ClampCornerRadiusMM(DimensionsMM, value);
                 if (_cornerRadiusMM == value) return;
                 _cornerRadiusMM = value;
                 ApplyDimensions();
@@ -66,7 +75,7 @@ namespace KitchenDesigner.Core
             get => _seatHeightMM;
             set
             {
-                value = ClampSeatHeight(value);
+                value = SofaLayout.ClampSeatHeightMM(value);
                 if (_seatHeightMM == value) return;
                 _seatHeightMM = value;
                 ApplyDimensions();
@@ -94,46 +103,77 @@ namespace KitchenDesigner.Core
             set => PrimaryMaterialId = value;
         }
 
-        private FurniturePartSet Body => _body ??= new FurniturePartSet(transform);
+        private SofaRig Rig => _rig ??= new SofaRig(transform);
 
-        private FurniturePartSet Cushions => _cushions ??= new FurniturePartSet(transform);
+        private OwnedMeshBody Box => _box ??= new OwnedMeshBody(gameObject, AdoptOwnedMesh);
 
-        private TabletopSurface Base => _base ??= new TabletopSurface(gameObject, AdoptOwnedMesh);
+        public void ToggleOpen() => GoToStage(IsOpen ? SofaStage.Folded : SofaStage.Bed);
 
-        private int ClampSeatHeight(int value)
-            => Mathf.Clamp(value, MinSeatHeightMM(DimensionsMM.y), MaxSeatHeightMM(DimensionsMM.y));
+        public void CycleOpenState() => GoToStage(SofaUnfold.Next(_motion.Target));
+
+        public void ForceClose() { }
+
+        public void GoToStage(SofaStage stage)
+        {
+            if (stage == _motion.Target) return;
+            _motion.GoTo(stage);
+            enabled = true;
+            FrameRateManager.KeepAwake(
+                _motion.RemainingSeconds + AppConstants.OPENING_KEEP_AWAKE_MARGIN_SECONDS);
+        }
+
+        public void SnapToStage(SofaStage stage)
+        {
+            _motion.Snap(stage);
+            ApplyPose();
+        }
+
+        public bool Advance(float seconds)
+        {
+            float before = _motion.Progress;
+            bool moving = _motion.Advance(seconds);
+            if (_motion.Progress != before) ApplyPose();
+            return moving;
+        }
+
+        private void Update()
+        {
+            if (!Advance(Time.deltaTime)) enabled = false;
+        }
 
         private void ApplyMaterial()
             => DecorSlots.ApplyBothSlots(this, _bodyMaterialId, _cushionMaterialId);
+
+        private void ApplyPose()
+            => Rig.ApplyPose(SofaUnfold.PoseAt(_motion.Progress, DimensionsMM.z, _seatHeightMM));
 
         public override void ApplyDimensions() => _rebuild.Run(Rebuild);
 
         private void Rebuild()
         {
-            _cornerRadiusMM = FurnitureLayout.ClampCornerRadiusMM(DimensionsMM, _cornerRadiusMM);
-            _seatHeightMM = ClampSeatHeight(_seatHeightMM);
+            var dims = SofaLayout.Normalise(DimensionsMM);
+            if (dims != DimensionsMM) Data.DimensionsMM = dims;
+            _cornerRadiusMM = SofaLayout.ClampCornerRadiusMM(dims, _cornerRadiusMM);
+            _seatHeightMM = SofaLayout.ClampSeatHeightMM(_seatHeightMM);
             transform.localScale = Vector3.one;
-            RebuildBase();
-            Body.Place(new[] { SofaLayout.BackRail(DimensionsMM, _seatHeightMM) });
-            Cushions.Place(SofaLayout.Cushions(DimensionsMM, _seatHeightMM));
+            RebuildBox(dims);
+            Rig.Build(dims, _seatHeightMM, _cornerRadiusMM);
+            ApplyPose();
             MaterialManager.RefreshTiling(this);
         }
 
-        private void RebuildBase()
+        private void RebuildBox(Vector3Int dims)
         {
-            float toU = AppConstants.MM_TO_UNITS;
-            var dims = DimensionsMM;
-            Base.Rebuild(dims.x * toU, dims.z * toU, _cornerRadiusMM * toU,
-                _seatHeightMM * toU, SofaLayout.BaseCentreYMM(dims.y, _seatHeightMM) * toU);
+            Box.Rebuild(SofaBoxMesh.Build(
+                SofaBoxLayout.Panels(dims, _seatHeightMM, _cornerRadiusMM)));
+
+            var material = MaterialManager.GetSharedMaterial(BoxMaterial);
+            if (material != null) Box.SetMaterial(material);
         }
 
-        public void SetPrimaryMaterial(Material material)
-        {
-            Base.SetMaterial(material);
-            Body.SetMaterial(material);
-        }
+        public void SetPrimaryMaterial(Material material) => Rig.SetUpholstery(material);
 
-        public void SetSecondaryMaterial(Material material) => Cushions.SetMaterial(material);
+        public void SetSecondaryMaterial(Material material) => Rig.SetCushions(material);
 
         public string PrimarySlotLabel => DecorSlots.UpholsteryLabel;
 
@@ -145,10 +185,6 @@ namespace KitchenDesigner.Core
 
         protected override void OnElementDestroyed() => DestroyChildren();
 
-        public void DestroyChildren()
-        {
-            _body?.Destroy();
-            _cushions?.Destroy();
-        }
+        public void DestroyChildren() => _rig?.Destroy();
     }
 }

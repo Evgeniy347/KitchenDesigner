@@ -4,18 +4,24 @@ using KitchenDesigner.Core;
 
 namespace KitchenDesigner.Tests.Geometry
 {
-    /// <summary>Раскладка дивана по фотографии: у него НЕТ подлокотников, вместо
-    /// них подушки. Всего подушек четыре — две стоят на спинке, две лежат по
-    /// бокам сиденья там, где у обычного дивана были бы подлокотники.
+    /// <summary>Раскладка дивана-книжки по фотографиям пользователя. Три части:
+    /// СИДЕНЬЕ спереди, СПИНКА сзади и внутренний КОРОБ под сиденьем; подлокотников
+    /// нет, вместо них четыре подушки — две стоят на сиденье у спинки, две лежат
+    /// по бокам.
     ///
     /// Класс живёт на быстром пути (Core/Geometry) намеренно: раскладка — это
     /// арифметика в миллиметрах, сцена ей не нужна, и потому она проверяется за
-    /// 0,3 с вместо холодного запуска Unity. Ориентацию каждой части класс
+    /// доли секунды вместо холодного запуска Unity. Ориентацию каждой части класс
     /// отдаёт данными (Vector3 углов Эйлера), а не Quaternion: Quaternion.Euler
-    /// — это ECall, и под dotnet он падает SecurityException.</summary>
+    /// — это ECall, и под dotnet он падает SecurityException.
+    ///
+    /// Числа 100, 700, 180 и 720 заданы пользователем и не обсуждаются: низ
+    /// спинки на 100 мм над полом, высота спинки 700, толщина 180, глубина
+    /// сиденья 720 (вместе 900 — прежняя глубина дивана).</summary>
     public class SofaLayoutTests
     {
         private const int Seat = SofaLayout.DefaultSeatHeightMM;
+        private const int Radius = SofaLayout.DefaultCornerRadiusMM;
 
         private static Vector3Int Default() => new Vector3Int(
             SofaLayout.DefaultWidthMM, SofaLayout.DefaultHeightMM, SofaLayout.DefaultDepthMM);
@@ -28,19 +34,138 @@ namespace KitchenDesigner.Tests.Geometry
             return default;
         }
 
-        private static void AssertInsideBox(FurniturePartBox part, Vector3Int dims, string what)
+        private static float Min(FurniturePartBox part, int axis)
+            => part.CentreMM[axis] - part.SizeMM[axis] * 0.5f;
+
+        private static float Max(FurniturePartBox part, int axis)
+            => part.CentreMM[axis] + part.SizeMM[axis] * 0.5f;
+
+        private static void AssertPartInside(FurniturePartBox part, Vector3Int dims, string what)
         {
             var half = new Vector3(dims.x * 0.5f, dims.y * 0.5f, dims.z * 0.5f);
-            var size = part.SizeMM;
             for (int axis = 0; axis < 3; axis++)
             {
-                Assert.LessOrEqual(part.CentreMM[axis] + size[axis] * 0.5f, half[axis] + 1e-3f,
+                Assert.LessOrEqual(Max(part, axis), half[axis] + 1e-3f,
                     "часть вылезает за габаритную коробку: рамка изометрического снимка и "
                     + "AABB для снапа строятся по DimensionsMM, и всё, что торчит наружу, "
                     + "будет обрезано или не поймано — " + what + ", ось " + axis);
-                Assert.GreaterOrEqual(part.CentreMM[axis] - size[axis] * 0.5f, -half[axis] - 1e-3f,
+                Assert.GreaterOrEqual(Min(part, axis), -half[axis] - 1e-3f,
                     "часть вылезает за габаритную коробку снизу: " + what + ", ось " + axis);
             }
+        }
+
+        [Test]
+        public void Defaults_AreTheNumbersTheUserFixed()
+        {
+            Assert.AreEqual(100, SofaLayout.BackrestBottomMM,
+                "низ спинки на 100 мм над полом — зазор, на который она «не доходит» до пола");
+            Assert.AreEqual(700, SofaLayout.BackrestHeightMM, "высота спинки 700 мм");
+            Assert.AreEqual(180, SofaLayout.BackrestThicknessMM, "толщина спинки 180 мм");
+            Assert.AreEqual(720, SofaLayout.DefaultSeatDepthMM, "глубина сиденья 720 мм");
+            Assert.AreEqual(2000, SofaLayout.DefaultWidthMM, "длина по умолчанию 2000 мм");
+            Assert.AreEqual(900, SofaLayout.DefaultDepthMM,
+                "180 + 720 = 900: общая глубина осталась прежней");
+            Assert.AreEqual(800, SofaLayout.DefaultHeightMM,
+                "100 + 700 = 800: общая высота — это низ спинки плюс её высота, а не "
+                + "отдельное число, которое можно растянуть");
+        }
+
+        [Test]
+        public void Normalise_ForcesTheFixedHeight_AndKeepsWidthAndDepth()
+        {
+            var normal = SofaLayout.Normalise(new Vector3Int(1800, 1234, 950));
+
+            Assert.AreEqual(new Vector3Int(1800, 800, 950), normal,
+                "высота дивана не растягивается: любое запрошенное число сводится к 800, "
+                + "а длина и глубина остаются как заказаны");
+        }
+
+        [Test]
+        public void Normalise_RaisesATooShallowDepth_ToTheBackrestPlusTheMinimumSeat()
+        {
+            var normal = SofaLayout.Normalise(new Vector3Int(2000, 800, 100));
+
+            Assert.AreEqual(SofaLayout.BackrestThicknessMM + SofaLayout.MinSeatDepthMM, normal.z,
+                "глубина меньше спинки с минимальным сиденьем не имеет смысла: сиденье "
+                + "ушло бы в ноль, а спинка вышла бы за габарит");
+        }
+
+        [Test]
+        public void SeatDepth_IsTheDepthMinusTheBackrest_SoOnlyTheSeatChangesWithDepth()
+        {
+            Assert.AreEqual(720, SofaLayout.SeatDepthFor(900), "900 − 180 = 720");
+            Assert.AreEqual(1020, SofaLayout.SeatDepthFor(1200),
+                "глубину растянули на 300 — и все 300 достались сиденью");
+
+            var shallow = SofaLayout.Backrest(new Vector3Int(2000, 800, 900));
+            var deep = SofaLayout.Backrest(new Vector3Int(2000, 800, 1200));
+            Assert.AreEqual(shallow.ProfileDepthMM, deep.ProfileDepthMM,
+                "спинка остаётся 180 мм при любой глубине дивана");
+            Assert.AreEqual(180f, deep.ProfileDepthMM, 1e-3f, "и это ровно 180");
+        }
+
+        [Test]
+        public void Backrest_Folded_GoesDownToTheFloorMinusTheClearance_AndUpToTheOverallHeight()
+        {
+            var dims = Default();
+            var backrest = SofaLayout.Backrest(dims);
+
+            Assert.AreEqual(-dims.y * 0.5f + 100f, Min(backrest, 1), 1e-3f,
+                "главное изменение: сложенная спинка идёт вниз до пола минус зазор 100 мм, "
+                + "а не обрывается у сиденья");
+            Assert.AreEqual(dims.y * 0.5f, Max(backrest, 1), 1e-3f,
+                "а верх спинки — это общая высота дивана");
+            Assert.AreEqual(700f, backrest.SizeMM.y, 1e-3f, "высота спинки 700 мм");
+        }
+
+        [Test]
+        public void Backrest_StandsAtTheBackWall_AcrossTheWholeWidth()
+        {
+            var dims = Default();
+            var backrest = SofaLayout.Backrest(dims);
+
+            Assert.AreEqual(-dims.z * 0.5f, Min(backrest, 2), 1e-3f,
+                "спинка прижата к задней стенке габарита (-Z)");
+            Assert.AreEqual(-dims.z * 0.5f + 180f, Max(backrest, 2), 1e-3f,
+                "и её толщина 180 мм");
+            Assert.AreEqual(dims.x, backrest.SizeMM.x, 1e-3f, "на всю ширину дивана");
+        }
+
+        [Test]
+        public void Seat_StartsWhereTheBackrestEnds_StandsOnTheFloor_AndReachesTheFrontEdge()
+        {
+            var dims = Default();
+            var seat = SofaLayout.Seat(dims, Seat, Radius);
+
+            Assert.AreEqual(-dims.z * 0.5f + 180f, Min(seat, 2), 1e-3f,
+                "сиденье начинается там, где кончается спинка: зазора между частями нет");
+            Assert.AreEqual(dims.z * 0.5f, Max(seat, 2), 1e-3f,
+                "и доходит до переднего края габарита");
+            Assert.AreEqual(-dims.y * 0.5f, Min(seat, 1), 1e-3f, "сиденье стоит на полу");
+            Assert.AreEqual(-dims.y * 0.5f + Seat, Max(seat, 1), 1e-3f,
+                "его верх на высоте сиденья");
+        }
+
+        [Test]
+        public void Seat_HasSquareRearCorners_SoItMeetsTheBackrestFlush()
+        {
+            var seat = SofaLayout.Seat(Default(), Seat, Radius);
+
+            Assert.AreEqual(Radius, seat.RadiusMM,
+                "передние углы скруглены заказанным радиусом");
+            Assert.AreEqual(0f, seat.RearRadiusMM,
+                "задние углы прямые: скруглённые оставили бы клиновидные щели между "
+                + "сиденьем и спинкой, которая стоит вплотную на всю ширину");
+        }
+
+        [Test]
+        public void EveryPart_StaysInsideTheBoundingBox_WhenFolded()
+        {
+            var dims = Default();
+            AssertPartInside(SofaLayout.Backrest(dims), dims, "спинка");
+            AssertPartInside(SofaLayout.Seat(dims, Seat, Radius), dims, "сиденье");
+            foreach (var cushion in SofaLayout.Cushions(dims, Seat))
+                AssertPartInside(cushion, dims, "подушка " + cushion.Name);
         }
 
         [Test]
@@ -52,11 +177,6 @@ namespace KitchenDesigner.Tests.Geometry
                 "четыре подушки — это и есть форма дивана с фотографии; константа "
                 + "CushionCount уезжает наружу через MCP (SofaInfo.cushionCount), и разойтись "
                 + "с реальной раскладкой ей нельзя");
-            Assert.AreEqual(FurniturePartOrientation.Side,
-                Named(cushions, SofaLayout.ArmCushionLeftName).Orientation,
-                "боковая подушка лежит вдоль глубины: её профиль развёрнут в плоскости "
-                + "(длина, высота), поэтому валик выходит скруглённым и спереди, и сверху. "
-                + "Вертикальная выдавка дала бы доску с острой верхней кромкой");
             Assert.AreEqual(FurniturePartOrientation.Frontal,
                 Named(cushions, SofaLayout.BackCushionLeftName).Orientation,
                 "спинная подушка стоит: её профиль развёрнут во фронтальной плоскости, и "
@@ -64,55 +184,55 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void EveryPart_StaysInsideTheBoundingBox()
+        public void ArmCushions_AreSlabsWithARoundedNose_LikeThePhotographOfTheSideCushion()
         {
-            var dims = Default();
-            AssertInsideBox(SofaLayout.BackRail(dims, Seat), dims, "спинка");
-            foreach (var cushion in SofaLayout.Cushions(dims, Seat))
-                AssertInsideBox(cushion, dims, "подушка " + cushion.Name);
+            var cushions = SofaLayout.Cushions(Default(), Seat);
+
+            foreach (var name in new[]
+                     { SofaLayout.ArmCushionLeftName, SofaLayout.ArmCushionRightName })
+            {
+                var arm = Named(cushions, name);
+                Assert.AreEqual(FurniturePartShape.SoftSlab, arm.Shape,
+                    "подушка " + name + ": боковая подушка на фото — плоский валик с мягкой кромкой, а не "
+                    + "раздутая со всех сторон подушка");
+                Assert.AreEqual(FurniturePartOrientation.Horizontal, arm.Orientation,
+                    "подушка " + name + ": валик лежит плашмя, его толщина — это высота");
+                Assert.AreEqual(SofaLayout.ArmNoseRadiusMM, arm.RadiusMM,
+                    "подушка " + name + ": передние углы скруглены крупно — нос валика, как на снимке");
+                Assert.AreEqual(SofaLayout.ArmTailRadiusMM, arm.RearRadiusMM,
+                    "подушка " + name + ": задние углы скруглены мало: они прячутся за спинной подушкой");
+                Assert.Greater(arm.RadiusMM, arm.RearRadiusMM,
+                    "подушка " + name + ": нос круглее хвоста — в этом и отличие от прежней подушки, у "
+                    + "которой все углы были одинаковые");
+            }
         }
 
         [Test]
-        public void ArmCushions_RunFromTheBackRailToTheVeryFrontEdge()
+        public void ArmCushions_RunFromTheBackrestToTheVeryFrontEdge()
         {
             var dims = Default();
             var arm = Named(SofaLayout.Cushions(dims, Seat), SofaLayout.ArmCushionRightName);
 
-            float front = arm.CentreMM.z + arm.SizeMM.z * 0.5f;
-            float back = arm.CentreMM.z - arm.SizeMM.z * 0.5f;
-
-            Assert.AreEqual(dims.z * 0.5f, front, 1e-3f,
+            Assert.AreEqual(dims.z * 0.5f, Max(arm, 2), 1e-3f,
                 "на фотографии боковые подушки доходят до самого переднего края сиденья; "
                 + "утопленный валик читался бы подлокотником, а его у этого дивана нет");
-            Assert.AreEqual(
-                -dims.z * 0.5f + SofaLayout.BackDepthFor(dims.z) + SofaLayout.CushionGapMM,
-                back, 1e-3f, "а сзади упирается в спинку через зазор");
+            Assert.AreEqual(-dims.z * 0.5f + SofaLayout.BackrestThicknessMM
+                    + SofaLayout.CushionGapMM,
+                Min(arm, 2), 1e-3f, "а сзади упирается в спинку через зазор");
         }
 
         [Test]
-        public void BackCushions_StandOnTheSeat_AndTopOutAtTheOverallHeight()
+        public void BackCushions_StandOnTheSeat_AndTopOutAtTheTopOfTheBackrest()
         {
             var dims = Default();
             var cushion = Named(SofaLayout.Cushions(dims, Seat), SofaLayout.BackCushionRightName);
 
-            Assert.AreEqual(-dims.y * 0.5f + Seat,
-                cushion.CentreMM.y - cushion.SizeMM.y * 0.5f, 1e-3f,
+            Assert.AreEqual(-dims.y * 0.5f + Seat, Min(cushion, 1), 1e-3f,
                 "подушка стоит НА сиденье, а не висит");
-            Assert.AreEqual(dims.y * 0.5f, cushion.CentreMM.y + cushion.SizeMM.y * 0.5f, 1e-3f,
-                "и её верх — это общая высота дивана: спинка-полка ниже подушек, как на "
-                + "фотографии, поэтому габарит задают именно они");
-        }
-
-        [Test]
-        public void BackRail_IsLowerThanTheCushions_ByTheDropAmount()
-        {
-            var dims = Default();
-            var rail = SofaLayout.BackRail(dims, Seat);
-
-            Assert.AreEqual(dims.y * 0.5f - SofaLayout.BackRailDropMM,
-                rail.CentreMM.y + rail.SizeMM.y * 0.5f, 1e-3f,
-                "на фотографии верх спинки чуть ниже верха подушек — именно поэтому подушки "
-                + "видно целиком, а не срезанными полкой");
+            Assert.AreEqual(dims.y * 0.5f, Max(cushion, 1), 1e-3f,
+                "и её верх вровень с верхом спинки");
+            Assert.AreEqual(-dims.z * 0.5f + SofaLayout.BackrestThicknessMM,
+                Min(cushion, 2), 1e-3f, "а сзади она опирается на переднюю грань спинки");
         }
 
         [Test]
@@ -134,13 +254,8 @@ namespace KitchenDesigner.Tests.Geometry
         /// Мерено по правому краю снимка — он почти в профиль, и перспектива
         /// там врёт меньше всего. Два отношения, которые перспектива искажает
         /// слабее прочего, потому что оба берутся внутри одной вертикали на
-        /// одной глубине.
-        ///
-        /// Первая версия промахнулась по обоим сразу и в одну сторону: подушки
-        /// вышли мельче натуры, боковые читались бугорками у передних углов, а
-        /// спинные сливались в низкую гряду вместо двух отдельных подушек.
-        /// Допуск 10 процентов — это точность промера по фотографии, а не
-        /// требование к мебели.</summary>
+        /// одной глубине. Допуск 10 процентов — это точность промера по
+        /// фотографии, а не требование к мебели.</summary>
         [Test]
         public void TheProportions_MatchTheReferencePhotograph_WithinMeasurementError()
         {
@@ -150,7 +265,7 @@ namespace KitchenDesigner.Tests.Geometry
 
             var dims = Default();
             float armHeight = Mathf.Min(SofaLayout.ArmCushionHeightMM,
-                SofaLayout.BackrestHeightMM(dims.y, Seat));
+                SofaLayout.BackCushionHeightFor(Seat));
 
             Assert.AreEqual(photoBaseToArm, Seat / armHeight, photoBaseToArm * tolerance,
                 "цоколь к боковой подушке: на снимке 160 к 100 пикселей у правого края. "
@@ -158,7 +273,7 @@ namespace KitchenDesigner.Tests.Geometry
                 + "а подлокотников у этого дивана нет, и заменяют их именно они");
 
             float cushionWidth = SofaLayout.BackCushionWidthFor(dims.x);
-            float cushionHeight = SofaLayout.BackrestHeightMM(dims.y, Seat);
+            float cushionHeight = SofaLayout.BackCushionHeightFor(Seat);
 
             Assert.AreEqual(photoBackCushionAspect, cushionWidth / cushionHeight,
                 photoBackCushionAspect * tolerance,
@@ -175,32 +290,62 @@ namespace KitchenDesigner.Tests.Geometry
             float back = SofaLayout.BackCushionWidthFor(narrow);
 
             Assert.Less(arm, SofaLayout.ArmCushionWidthMM,
-                "на узком диване боковая подушка обязана ужаться: сохранить её 280 мм значит "
+                "на узком диване боковая подушка обязана ужаться: сохранить её 320 мм значит "
                 + "наложить её на спинную");
             Assert.AreEqual(narrow, 2f * arm + 2f * back + 3f * SofaLayout.CushionGapMM, 1e-3f,
                 "и ширина по-прежнему расходится без остатка");
         }
 
         [Test]
-        public void BaseCentreYMM_PutsTheBlockOnTheFloor_NotOnTheCentreOfTheBox()
+        public void EveryBackCushionRadius_FitsItsOwnProfile_SoTheContourNeverSelfIntersects()
         {
-            Assert.AreEqual((Seat - SofaLayout.DefaultHeightMM) * 0.5f,
-                SofaLayout.BaseCentreYMM(SofaLayout.DefaultHeightMM, Seat), 1e-3f,
-                "основание стоит на полу: его центр смещён вниз ровно настолько, чтобы низ "
-                + "совпал с низом габаритной коробки");
-        }
+            var dims = SofaLayout.Normalise(new Vector3Int(700, 800, 400));
 
-        [Test]
-        public void EveryCushionRadius_FitsItsOwnProfile_SoTheContourNeverSelfIntersects()
-        {
-            var dims = new Vector3Int(700, 500, 400);
-
-            foreach (var cushion in SofaLayout.Cushions(dims, 250))
+            foreach (var cushion in SofaLayout.Cushions(dims, 300))
+            {
+                if (cushion.Shape != FurniturePartShape.Cushion) continue;
                 Assert.LessOrEqual(cushion.RadiusMM,
                     Mathf.Min(cushion.ProfileWidthMM, cushion.ProfileDepthMM) * 0.5f + 1e-3f,
                     "радиус больше половины меньшей стороны выворачивает контур наружу — "
                     + "RoundedRectProfile.Fit ужимает его по РЁБРАМ, а не по диагонали, и "
                     + "два противоположных угла всё равно пересекутся: " + cushion.Name);
+            }
+        }
+
+        [Test]
+        public void SeatHeight_IsClamped_ToTheRangeInWhichTheBackrestCanFoldDownOntoTheBox()
+        {
+            Assert.AreEqual(SofaLayout.MinSeatHeightMM, SofaLayout.ClampSeatHeightMM(10),
+                "ниже минимума под сиденьем не помещается короб");
+            Assert.AreEqual(SofaLayout.MaxSeatHeightMM, SofaLayout.ClampSeatHeightMM(5000),
+                "выше максимума складывающаяся спинка ушла бы за заднюю стенку");
+            Assert.AreEqual(SofaLayout.BackrestThicknessMM,
+                SofaLayout.MaxSeatHeightMM - SofaLayout.BackrestBottomMM
+                - SofaLayout.BackrestThicknessMM,
+                "предел не выбран на глаз: часть спинки НИЖЕ петли при складывании уходит "
+                + "назад, и она не должна быть длиннее толщины спинки, иначе лёжа она "
+                + "окажется за стеной");
+        }
+
+        [Test]
+        public void CornerRadius_IsClamped_BySeatDepth_NotByTheWholeDepth()
+        {
+            var dims = Default();
+
+            Assert.AreEqual(360, SofaLayout.MaxCornerRadiusMM(dims),
+                "радиус держится на половине меньшей стороны СИДЕНЬЯ: 720 / 2, а не 900 / 2 — "
+                + "скругляется только оно, спинка прямая");
+            Assert.AreEqual(360, SofaLayout.ClampCornerRadiusMM(dims, 5000),
+                "всё, что больше, сводится к максимуму");
+            Assert.AreEqual(0, SofaLayout.ClampCornerRadiusMM(dims, -5),
+                "а отрицательное — к нулю");
+        }
+
+        [Test]
+        public void SeatSurface_IsTheWidthBySeatDepth_NotTheWholeDepth()
+        {
+            Assert.AreEqual(new Vector2Int(2000, 720), SofaLayout.SeatSurfaceMM(Default()),
+                "декор носит сиденье, а не весь габарит: поверхность мощения — его верх");
         }
     }
 }

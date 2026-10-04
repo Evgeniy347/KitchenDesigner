@@ -10,9 +10,16 @@ namespace KitchenDesigner.Core
             new Dictionary<string, GameObject>();
         private readonly Dictionary<string, Mesh> _meshes = new Dictionary<string, Mesh>();
         private readonly List<string> _unwanted = new List<string>();
+        private readonly bool _solid;
         private Material? _material;
 
-        public FurniturePartSet(Transform owner) => _owner = owner;
+        public FurniturePartSet(Transform owner) : this(owner, false) { }
+
+        public FurniturePartSet(Transform owner, bool solid)
+        {
+            _owner = owner;
+            _solid = solid;
+        }
 
         public void Place(IReadOnlyList<FurniturePartBox> boxes)
         {
@@ -91,10 +98,10 @@ namespace KitchenDesigner.Core
         {
             FurniturePartShape.Cushion => CushionMeshOf(box.LocalSizeMM, box.RadiusMM),
             FurniturePartShape.SoftSlab => SoftSlabMeshOf(box.ProfileWidthMM, box.ProfileDepthMM,
-                box.RadiusMM, box.ThicknessMM,
+                box.RadiusMM, box.RearRadiusMM, box.ThicknessMM,
                 box.ThicknessMM * SoftSlabSurface.MaxFilletThicknessRatio),
             _ => ExtrusionMeshOf(box.ProfileWidthMM, box.ProfileDepthMM, box.ThicknessMM,
-                box.RadiusMM),
+                box.RadiusMM, box.RearRadiusMM),
         };
 
         private static Mesh CushionMeshOf(Vector3 sizeMM, float radiusMM)
@@ -105,19 +112,32 @@ namespace KitchenDesigner.Core
 
         private static Mesh SoftSlabMeshOf(float widthMM, float depthMM, float planRadiusMM,
             float thicknessMM, float filletMM)
+            => SoftSlabMeshOf(widthMM, depthMM, planRadiusMM, planRadiusMM, thicknessMM,
+                filletMM);
+
+        private static Mesh SoftSlabMeshOf(float widthMM, float depthMM, float frontRadiusMM,
+            float rearRadiusMM, float thicknessMM, float filletMM)
         {
             float toU = AppConstants.MM_TO_UNITS;
-            return SoftSlabMesh.Build(widthMM * toU, depthMM * toU, planRadiusMM * toU,
-                thicknessMM * toU, filletMM * toU);
+            var radii = new CornerRadii(rearRadiusMM * toU, rearRadiusMM * toU,
+                frontRadiusMM * toU, frontRadiusMM * toU);
+            return SoftSlabMesh.Build(new SoftSlabSurface(widthMM * toU, depthMM * toU, radii,
+                thicknessMM * toU, filletMM * toU));
         }
 
         private static Mesh ExtrusionMeshOf(float profileWidthMM, float profileDepthMM,
             float thicknessMM, float radiusMM)
+            => ExtrusionMeshOf(profileWidthMM, profileDepthMM, thicknessMM, radiusMM, radiusMM);
+
+        private static Mesh ExtrusionMeshOf(float profileWidthMM, float profileDepthMM,
+            float thicknessMM, float frontRadiusMM, float rearRadiusMM)
         {
             float toU = AppConstants.MM_TO_UNITS;
             float width = profileWidthMM * toU;
             float depth = profileDepthMM * toU;
-            var profile = RoundedRectProfile.Uniform(width, depth, radiusMM * toU,
+            var radii = new CornerRadii(rearRadiusMM * toU, rearRadiusMM * toU,
+                frontRadiusMM * toU, frontRadiusMM * toU);
+            var profile = RoundedRectProfile.Build(width, depth, radii,
                 RoundedRectProfile.DefaultSegments);
             return ProfileExtrusionMesh.Build(profile, width, depth, thicknessMM * toU);
         }
@@ -132,6 +152,15 @@ namespace KitchenDesigner.Core
             part.transform.localRotation = Quaternion.Euler(eulerAngles);
             part.transform.localScale = Vector3.one;
             part.GetComponent<MeshFilter>().sharedMesh = mesh;
+            if (_solid) FitCollider(part, mesh);
+        }
+
+        private static void FitCollider(GameObject part, Mesh mesh)
+        {
+            var collider = part.GetComponent<BoxCollider>();
+            if (collider == null) collider = part.AddComponent<BoxCollider>();
+            collider.center = mesh.bounds.center;
+            collider.size = mesh.bounds.size;
         }
 
         private GameObject Ensure(string name)
