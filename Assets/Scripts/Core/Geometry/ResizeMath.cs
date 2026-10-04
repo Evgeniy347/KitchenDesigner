@@ -11,7 +11,8 @@ namespace KitchenDesigner.Core
             Vector3 centerStart, float sizeStartUnits,
             float rawDelta, IReadOnlyList<ElementGeometry> others, in ElementGeometry self,
             bool snapEnabled, float threshold,
-            out Vector3Int newDims, out Vector3 newCenter, out bool snapped)
+            out Vector3Int newDims, out Vector3 newCenter, out bool snapped,
+            AxisGuideIndex? spacing = null)
         {
             snapped = false;
             float finalDelta = rawDelta;
@@ -23,6 +24,14 @@ namespace KitchenDesigner.Core
                         others, self, threshold, out float gap))
                 {
                     finalDelta = rawDelta + gap;
+                    snapped = true;
+                }
+
+                if (spacing != null && EqualGapSnap.TryForFace(spacing, centerStart, normal,
+                        faceCenterAfterRawDelta, threshold, out float equalise)
+                    && (!snapped || Mathf.Abs(equalise) < Mathf.Abs(finalDelta - rawDelta)))
+                {
+                    finalDelta = rawDelta + equalise;
                     snapped = true;
                 }
             }
