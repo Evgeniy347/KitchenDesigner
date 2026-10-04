@@ -41,6 +41,7 @@ public class SettingsConstructionTabTests
 
         _ui = _canvas!.gameObject.AddComponent<SettingsPanelUI>();
         _ui!.Build(_canvas!.transform);
+        _ui.SetVisible(true);
     }
 
     [TearDown]

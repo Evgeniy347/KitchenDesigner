@@ -45,18 +45,24 @@ namespace KitchenDesigner.Core.UI
         private KeybindingGestureGate? _gestureGate;
         private int _current;
         private bool _noMatches;
+        private bool _contentBuilt;
+        private Transform? _canvas;
+        private WindowChrome? _chrome;
 
         private static int ControlIndex => System.Array.IndexOf(PageOrder, ControlId);
 
         public void Build(Transform canvas)
         {
             _viewTab?.Dispose();
+            _viewTab = null;
             _pages.Clear();
             _form = new SettingsForm();
             _current = 0;
             _noMatches = false;
+            _contentBuilt = false;
+            _canvas = canvas;
 
-            var chrome = WindowChrome.Create(canvas, PanelName, Loc.T("settings.title"), UIStyle.SettingsSize,
+            _chrome = WindowChrome.Create(canvas, PanelName, Loc.T("settings.title"), UIStyle.SettingsSize,
                 new WindowChromeOptions
                 {
                     Kind = WindowKind.Dialog,
@@ -64,27 +70,31 @@ namespace KitchenDesigner.Core.UI
                     HasFooter = true,
                     RuledHeader = true,
                 });
-            var panel = chrome.Panel;
-            _root = panel.gameObject;
+            _root = _chrome.Panel.gameObject;
             ProjectWindows.Register(this);
 
-            var s = KitchenSettings.Instance;
-            _body = chrome.CreateBody();
-            InsetBodyForTheNav(_body, chrome);
+            _body = _chrome.CreateBody();
+            InsetBodyForTheNav(_body, _chrome);
+            _root.SetActive(false);
+        }
+
+        private void EnsureContent()
+        {
+            if (_contentBuilt || _chrome == null || _canvas == null) return;
+            _contentBuilt = true;
 
             _captureGate = gameObject.AddComponent<KeybindingCaptureGate>();
-            _captureGate.Build(canvas);
+            _captureGate.Build(_canvas);
             _gestureGate = gameObject.AddComponent<KeybindingGestureGate>();
-            _gestureGate.Build(canvas);
+            _gestureGate.Build(_canvas);
 
-            BuildPages(s);
-            BuildNav(panel);
-            BuildFooter(chrome);
+            BuildPages(KitchenSettings.Instance);
+            BuildNav(_chrome.Panel);
+            BuildFooter(_chrome);
             BuildEmptyState();
 
             _viewTab!.FollowEditMode();
             ShowPage(0);
-            _root.SetActive(false);
         }
 
         private void BuildPages(KitchenSettings s)
@@ -281,9 +291,23 @@ namespace KitchenDesigner.Core.UI
 
         internal int CurrentTab => _current;
 
-        internal int PageCount => _pages.Count;
+        internal int PageCount
+        {
+            get
+            {
+                EnsureContent();
+                return _pages.Count;
+            }
+        }
 
-        internal SettingsNav? Nav => _nav;
+        internal SettingsNav? Nav
+        {
+            get
+            {
+                EnsureContent();
+                return _nav;
+            }
+        }
 
         internal void OpenTab(int index)
         {
@@ -312,6 +336,7 @@ namespace KitchenDesigner.Core.UI
         public void SetVisible(bool visible)
         {
             if (_root != null) _root.SetActive(visible);
+            if (visible) EnsureContent();
             if (!visible)
             {
                 _captureGate?.CancelIfCapturing();

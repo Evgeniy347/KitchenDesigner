@@ -149,6 +149,7 @@ public class HintBadgeVisibilityTests
         {
             var settings = canvas.gameObject.AddComponent<SettingsPanelUI>();
             settings.Build(canvas.transform);
+            settings.SetVisible(true);
             var window = canvas.transform.Find("SettingsPanel");
             if (window != null) CollectKeys(window!, into);
         }

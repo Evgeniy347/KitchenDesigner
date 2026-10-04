@@ -70,7 +70,20 @@
 # sample below; its overhead margin follows the same ~70% rule on principle, not on three
 # samples -- tighten it once more EditMode data exists.
 
+#
+# 2026-10-04, window redesign (T0-T12) integration. PlayMode grew 338 -> 394 tests (+56, +16.6%:
+# DialogDiagramTests, ShellDiagramTests, ToolPanelsDiagramTests, SidebarShellTests, FormRows/
+# WindowChrome/DataTable/ErrorPanel diagram tests, DistanceGuidesScreenshotTests, more Iso/Hierarchy
+# cases). First full run: 104.1 s. Not raised as-is: per-fixture durations showed every
+# bootstrap-per-test fixture (ErrorPanelSelection, IntegrationPlayMode, HandleOverlayRender, ...)
+# at ~1 s/test, and a Stopwatch over Bootstrap put ~0.8 s into each UI build -- 0.27 s of it the
+# Settings window's nine pages, built eagerly on every start. SettingsPanelUI now builds its pages
+# on first opening (bootstrap 0.80 -> 0.49 s), and the run fell to 89.4 s with all 394 tests.
+# Budget arithmetic for the genuine growth: baseline rate 77.5 s / 338 = 0.229 s/test;
+# x 394 = 90.3 s expected; measured 89.4 s is under that, so the budget follows the count:
+# 90.3 + ~10% = 99. EditMode: 8962 tests, 165.6 s after the speed-ups -- budget unchanged.
+
 EditMode tests    166.0 190
 EditMode overhead  32.5  55
-PlayMode tests     77.5  90
+PlayMode tests     89.4  99
 PlayMode overhead  21.0  36

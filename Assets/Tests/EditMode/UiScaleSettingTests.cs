@@ -25,7 +25,9 @@ public class UiScaleSettingTests
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         _settingsCanvas.AddComponent<CanvasScaler>();
         _settingsCanvas.AddComponent<GraphicRaycaster>();
-        _settingsCanvas.AddComponent<SettingsPanelUI>().Build(canvas.transform);
+        var settings = _settingsCanvas.AddComponent<SettingsPanelUI>();
+        settings.Build(canvas.transform);
+        settings.SetVisible(true);
 
         _appCanvas = UIFactory.CreateCanvas("AppCanvas");
     }

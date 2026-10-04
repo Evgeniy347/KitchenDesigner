@@ -1,6 +1,7 @@
 using System.Linq;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UI;
@@ -38,7 +39,29 @@ public class SettingsPanelLifetimeTests
 
         var ui = _canvasGo.AddComponent<SettingsPanelUI>();
         ui.Build(_canvasGo.transform);
+        ui.SetVisible(true);
         return ui;
+    }
+
+    /// <summary>Страницы окна строятся при первом открытии, а не в Build: девять страниц стоили
+    /// ~0,27 с из ~0,8 с каждого запуска интерфейса (замер 2026-10-04, PlayMode-сборка Bootstrap), а
+    /// окно настроек открывают не в каждом сеансе. Шапка и регистрация окна остаются в Build — по ним
+    /// окно находят ProjectWindows и сторожа шапки.</summary>
+    [Test]
+    public void Build_LeavesThePagesForTheFirstOpening()
+    {
+        _canvasGo = new GameObject("LazyCanvas");
+        _canvasGo.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+        var ui = _canvasGo.AddComponent<SettingsPanelUI>();
+        ui.Build(_canvasGo.transform);
+        var body = _canvasGo.transform.Find(SettingsWindowPaths.Body.TrimEnd('/'));
+
+        Assert.IsNotNull(_canvasGo.transform.Find(SettingsWindowPaths.Panel), "окно с шапкой есть сразу");
+        Assert.IsFalse(body.Cast<Transform>().Any(t => t.name.StartsWith("Page_")), "страниц до открытия нет");
+
+        ui.SetVisible(true);
+        Assert.AreEqual(SettingsPanelUI.PageOrder.Length, body.Cast<Transform>().Count(t => t.name.StartsWith("Page_")),
+            "первое открытие строит все страницы");
     }
 
     private void DestroyPanel()
