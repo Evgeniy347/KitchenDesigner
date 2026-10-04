@@ -106,6 +106,16 @@ public class SelectionTintFrameTests
     /// одного цвета), и отношение — шум; остаётся только потолок яркости.</summary>
     private const float MinMeaningfulContrast = 0.15f;
 
+    /// <summary>Потолок яркости применим только к тёмным деталям: подмену можно отличить
+    /// от подкраски, лишь когда собственный цвет далёк от тона. У дивана с горчичной
+    /// обивкой собственный цвет почти равен жёлтому тону, и плоский жёлтый (0,40 на
+    /// старых кадрах) от подкраски с эмиссией (0,35–0,38) неотличим никакой мерой
+    /// яркости: по определению случая «цвет ≈ тон». Снятые значения самой тёмной
+    /// четверти кадра «до»: варочная 0,06, духовка 0,03, стиралка 0,18, диван 0,24.
+    /// Подмену цвета у такого дивана ловит EditMode (<c>SelectReplaced</c> по цвету
+    /// материала), а здесь остаются доля изменившегося силуэта и сам PNG.</summary>
+    private const float MaxDarkPartLuma = 0.2f;
+
     private const float DarkestShare = 0.25f;
 
     /// <summary>Сторона съёмки — та же, что у всей изометрии проекта, и берётся
@@ -315,6 +325,8 @@ public class SelectionTintFrameTests
         selectedAll /= inside.Count;
         plainDark /= darkest;
         selectedDark /= darkest;
+
+        if (plainDark > MaxDarkPartLuma) return;
 
         Assert.LessOrEqual(selectedDark, Mathf.Lerp(plainDark, 1f, FrameShareToTint),
             what + ". Самая тёмная четверть силуэта: яркость " + plainDark.ToString("0.00")
