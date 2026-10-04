@@ -18,6 +18,8 @@ namespace KitchenDesigner.Core.UI
 
         public bool Armed { get; private set; }
 
+        public event System.Action<bool>? ArmedChanged;
+
         public static bool AnyArmed => _theOnlyArmedOne != null;
 
         public static ConfirmDeleteButton Attach(Button button, System.Action onConfirm)
@@ -44,6 +46,7 @@ namespace KitchenDesigner.Core.UI
             Armed = true;
             _armedFrame = Time.frameCount;
             if (_label != null) _label.text = UIStyle.GlyphConfirm;
+            ArmedChanged?.Invoke(true);
         }
 
         public static void DisarmAll() => _theOnlyArmedOne?.Disarm();
@@ -55,6 +58,7 @@ namespace KitchenDesigner.Core.UI
             Armed = false;
             _armedFrame = -1;
             if (_label != null) _label.text = _idleText;
+            ArmedChanged?.Invoke(false);
         }
 
         public void OnPointerDown(PointerEventData eventData) => _pointerDownFrame = Time.frameCount;
