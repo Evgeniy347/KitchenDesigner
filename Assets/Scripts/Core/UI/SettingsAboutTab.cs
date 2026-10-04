@@ -9,8 +9,10 @@ namespace KitchenDesigner.Core.UI
 
         public SettingsAboutTab(SettingsPage page) => _page = page;
 
+        internal static (string version, string buildDate)? PinnedBuild { get; set; }
+
         public static AboutEnvironment CurrentEnvironment() => new AboutEnvironment(
-            BuildInfo.Version, BuildInfo.BuildDate, Application.platform.ToString(),
+            PinnedBuild?.version ?? BuildInfo.Version, PinnedBuild?.buildDate ?? BuildInfo.BuildDate, Application.platform.ToString(),
             Application.unityVersion, SystemInfo.graphicsDeviceType.ToString(),
             SystemInfo.graphicsDeviceName);
 

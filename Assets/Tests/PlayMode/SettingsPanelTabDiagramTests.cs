@@ -83,6 +83,7 @@ public class SettingsPanelTabDiagramTests
         _settingsBackup = null;
 
         McpBridgeStatus.TestPort = _mcpPortBackup;
+        SettingsAboutTab.PinnedBuild = null;
         McpBridgeStatus.Forget();
         yield return null;
     }
@@ -94,6 +95,7 @@ public class SettingsPanelTabDiagramTests
         // показала бы чужое число.
         _mcpPortBackup = McpBridgeStatus.TestPort;
         McpBridgeStatus.TestPort = McpBridgeStatus.DefaultPort;
+        SettingsAboutTab.PinnedBuild = ("0.5000", "2026-01-01 00:00");
         McpBridgeStatus.Forget();
 
         var settings = KitchenSettings.Instance;

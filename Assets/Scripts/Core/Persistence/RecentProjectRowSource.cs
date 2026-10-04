@@ -4,11 +4,13 @@ namespace KitchenDesigner.Core
 {
     public static class RecentProjectRowSource
     {
+        internal static string CurrentVersion { get; set; } = BuildInfo.Version;
+
         public static RecentProjectRow For(string path)
         {
             bool exists = !string.IsNullOrEmpty(path) && File.Exists(path);
             if (!exists)
-                return RecentProjectRow.Describe(path, false, null, BuildInfo.Version, null, null, null);
+                return RecentProjectRow.Describe(path, false, null, CurrentVersion, null, null, null);
 
             string json = ReadOrEmpty(path);
             string storedVersion = ProjectFileVersion.In(json);
@@ -16,7 +18,7 @@ namespace KitchenDesigner.Core
             string fallbackCreated = ProjectFileCreatedAt.FallbackFromFileSystemUtc(path);
             string modified = SafeModifiedUtc(path);
 
-            return RecentProjectRow.Describe(path, true, storedVersion, BuildInfo.Version,
+            return RecentProjectRow.Describe(path, true, storedVersion, CurrentVersion,
                 createdAtUtc, fallbackCreated, modified);
         }
 

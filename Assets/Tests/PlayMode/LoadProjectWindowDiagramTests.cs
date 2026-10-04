@@ -21,6 +21,8 @@ public class LoadProjectWindowDiagramTests
     private const int PanelW = 900;
     private const int PanelH = 700;
 
+    private const string PinnedAppVersion = "0.5000";
+
     private GameObject? _canvasGo;
     private GameObject? _camGo;
     private GameObject? _eventSystem;
@@ -33,12 +35,14 @@ public class LoadProjectWindowDiagramTests
     {
         _recentBackup = RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values;
         _prevLastPath = SaveLoadManager.LastPath;
+        RecentProjectRowSource.CurrentVersion = PinnedAppVersion;
         yield return null;
     }
 
     [UnityTearDown]
     public IEnumerator TearDown()
     {
+        RecentProjectRowSource.CurrentVersion = BuildInfo.Version;
         if (_canvasGo != null) Object.Destroy(_canvasGo);
         if (_camGo != null) Object.Destroy(_camGo);
         if (_eventSystem != null) Object.Destroy(_eventSystem);
@@ -153,9 +157,9 @@ public class LoadProjectWindowDiagramTests
     [UnityTest]
     public IEnumerator Normal_ThreeExistingProjects_SavesPng()
     {
-        var a = MakeProjectFile("lpw_normal_a.kdproj", BuildInfo.Version, "2026-01-05T10:00:00Z");
-        var b = MakeProjectFile("lpw_normal_b.kdproj", BuildInfo.Version, "2026-02-10T09:30:00Z");
-        var c = MakeProjectFile("lpw_normal_c.kdproj", BuildInfo.Version, "2026-03-01T18:15:00Z");
+        var a = MakeProjectFile("lpw_normal_a.kdproj", PinnedAppVersion, "2026-01-05T10:00:00Z");
+        var b = MakeProjectFile("lpw_normal_b.kdproj", PinnedAppVersion, "2026-02-10T09:30:00Z");
+        var c = MakeProjectFile("lpw_normal_c.kdproj", PinnedAppVersion, "2026-03-01T18:15:00Z");
         RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = new[] { a, b, c };
 
         var ui = BuildWindow(PanelW, PanelH);
@@ -172,7 +176,7 @@ public class LoadProjectWindowDiagramTests
     [UnityTest]
     public IEnumerator EmptyRecentList_ButACurrentProjectIsOpen_ShowsSeededRow_SavesPng()
     {
-        var current = MakeProjectFile("lpw_seeded_current.kdproj", BuildInfo.Version, "2026-03-20T12:00:00Z");
+        var current = MakeProjectFile("lpw_seeded_current.kdproj", PinnedAppVersion, "2026-03-20T12:00:00Z");
         RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = new string[0];
         SaveLoadManager.LastPath = current;
 
@@ -190,7 +194,7 @@ public class LoadProjectWindowDiagramTests
     [UnityTest]
     public IEnumerator MissingFile_IsLabelledRed_AndCannotBeOpened()
     {
-        var real = MakeProjectFile("lpw_missing_real.kdproj", BuildInfo.Version, "2026-01-05T10:00:00Z");
+        var real = MakeProjectFile("lpw_missing_real.kdproj", PinnedAppVersion, "2026-01-05T10:00:00Z");
         string missing = Path.Combine(Application.temporaryCachePath, "lpw_missing_gone.kdproj");
         if (File.Exists(missing)) File.Delete(missing);
         RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = new[] { missing, real };
@@ -217,7 +221,7 @@ public class LoadProjectWindowDiagramTests
     public IEnumerator VersionMismatch_IsPaintedRed()
     {
         var mismatched = MakeProjectFile("lpw_version_old.kdproj", "0.1", "2026-01-05T10:00:00Z");
-        var current = MakeProjectFile("lpw_version_current.kdproj", BuildInfo.Version, "2026-01-06T10:00:00Z");
+        var current = MakeProjectFile("lpw_version_current.kdproj", PinnedAppVersion, "2026-01-06T10:00:00Z");
         RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = new[] { mismatched, current };
 
         var ui = BuildWindow(PanelW, PanelH);
@@ -238,7 +242,7 @@ public class LoadProjectWindowDiagramTests
     {
         var paths = new List<string>();
         for (int i = 0; i < RecentProjectsList.Capacity; i++)
-            paths.Add(MakeProjectFile($"lpw_many_{i}.kdproj", BuildInfo.Version, "2026-01-01T00:00:00Z"));
+            paths.Add(MakeProjectFile($"lpw_many_{i}.kdproj", PinnedAppVersion, "2026-01-01T00:00:00Z"));
         RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = paths.ToArray();
 
         var ui = BuildWindow(PanelW, PanelH);
@@ -258,7 +262,7 @@ public class LoadProjectWindowDiagramTests
     public IEnumerator SmallScreen_HeightStaysAtMostHalfTheScreen()
     {
         const int smallW = 1024, smallH = 576;
-        var a = MakeProjectFile("lpw_small_a.kdproj", BuildInfo.Version, "2026-01-05T10:00:00Z");
+        var a = MakeProjectFile("lpw_small_a.kdproj", PinnedAppVersion, "2026-01-05T10:00:00Z");
         RecentProjectsMemory.For(System.Environment.GetCommandLineArgs()).Values = new[] { a };
 
         var ui = BuildWindow(smallW, smallH);
