@@ -40,6 +40,9 @@ namespace KitchenDesigner.Core.UI
             _text.lineType = TMP_InputField.LineType.MultiLineNewline;
             _text.textComponent!.alignment = TextAlignmentOptions.TopLeft;
             _text.textComponent.fontSize = UIStyle.FontMono;
+            _text.textViewport.offsetMin = new Vector2(UIStyle.Space2, UIStyle.Space2);
+            _text.textViewport.offsetMax = new Vector2(-UIStyle.Space2, -UIStyle.Space2);
+            InputFieldPlaceholder.Attach(_text, Loc.T("window.instructions.placeholder"));
             stack.Place((RectTransform)_text.transform);
             _text.onValueChanged.AddListener(_ => SyncUnsaved());
             body.Fit();

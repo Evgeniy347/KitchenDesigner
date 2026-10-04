@@ -7,7 +7,7 @@ using UnityEngine.TestTools;
 
 // Кадры, на которых видно, что общие компоненты T3 собираются как на макете
 // docs/ui-redesign/mockups/dialogs.png: шапка D5 и футер у «Инструкций проекта», модальный
-// диалог демо-проекта. Голдены этих окон заводит T9 (dialogs.md); здесь — PNG, который
+// диалог демо-проекта. Голдены этих окон лежат в DialogDiagramTests (T9); здесь — PNG, который
 // смотрят глазами при каждой правке WindowChrome / ModalDialog.
 public class WindowChromeDiagramTests
 {

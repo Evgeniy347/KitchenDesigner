@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using KitchenDesigner.Core.Update;
 using UnityEngine.UI;
 using KitchenDesigner.Core.Lighting;
 
@@ -107,7 +108,7 @@ namespace KitchenDesigner.Core.UI
             if (Count() >= SwitchLightLinks.MaxLightsPerSwitch)
             {
                 ToastNotification.ShowIfAvailable(
-                    Loc.F("toast.lightLinkLimit", SwitchLightLinks.MaxLightsPerSwitch));
+                    Loc.F("toast.lightLinkLimit", SwitchLightLinks.MaxLightsPerSwitch), level: StatusLevel.Warning);
                 return;
             }
 

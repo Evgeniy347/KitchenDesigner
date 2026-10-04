@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using KitchenDesigner.Core.Update;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -77,12 +78,12 @@ namespace KitchenDesigner.Core.UI
             if (after.Count >= AppConstants.GROOVE_MAX_PER_PART)
             {
                 ToastNotification.ShowIfAvailable(
-                    Loc.F("toast.grooveLimit", AppConstants.GROOVE_MAX_PER_PART));
+                    Loc.F("toast.grooveLimit", AppConstants.GROOVE_MAX_PER_PART), level: StatusLevel.Warning);
                 return;
             }
             if (!TryFirstFree(after, out var spec))
             {
-                ToastNotification.ShowIfAvailable(Loc.T("toast.grooveExists"));
+                ToastNotification.ShowIfAvailable(Loc.T("toast.grooveExists"), level: StatusLevel.Warning);
                 return;
             }
             after.Add(spec);
@@ -127,7 +128,7 @@ namespace KitchenDesigner.Core.UI
             for (int i = 0; i < after.Count; i++)
                 if (i != index && after[i].Equals(spec))
                 {
-                    ToastNotification.ShowIfAvailable(Loc.T("toast.grooveExists"));
+                    ToastNotification.ShowIfAvailable(Loc.T("toast.grooveExists"), level: StatusLevel.Warning);
                     Refresh();
                     return;
                 }

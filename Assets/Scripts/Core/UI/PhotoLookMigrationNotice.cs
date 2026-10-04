@@ -1,3 +1,5 @@
+using KitchenDesigner.Core.Update;
+
 namespace KitchenDesigner.Core.UI
 {
     internal static class PhotoLookMigrationNotice
@@ -10,7 +12,7 @@ namespace KitchenDesigner.Core.UI
         {
             var s = KitchenSettings.Instance;
             if (s == null || !s.ConsumePhotoLookMigratedNotice()) return;
-            ToastNotification.ShowIfAvailable(Text, Seconds);
+            ToastNotification.ShowIfAvailable(Text, Seconds, level: StatusLevel.Warning);
         }
     }
 }

@@ -81,7 +81,8 @@ namespace KitchenDesigner.Core.UI
         private static string SuggestedNameForANewFile() =>
             DemoMode.Current.IsActive ? DemoModeStrings.SuggestedFileName : "kitchen.kdproj";
 
-        private static void Toast(string msg) => ToastNotification.ShowIfAvailable(msg);
+        private static void Toast(string msg) =>
+            ToastNotification.ShowIfAvailable(msg, level: StatusLevel.Success);
 
         private static void ShowSaved(string name) =>
             StatusBarUI.Instance?.ShowTransient(Loc.T("status.saved") + name,

@@ -1,0 +1,42 @@
+{
+  "root": "CaptureCanvas",
+  "children": [
+    {
+      "type": "Button",
+      "text": "Отмена",
+      "position": [-136, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Сохранить",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Соглашения для пользователя и агента. Числа для геометрии задавайте строками key: value, например bearing_wall_thickness_mm: 200.",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Есть несохранённые изменения",
+      "position": [16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Инструкции проекта",
+      "position": [16, -24]
+    },
+    {
+      "type": "InputField",
+      "label": "PiText",
+      "value": "bearing_wall_thickness_mm: 200\ncountertop_height_mm: 900\n\nФасады — без ручек, Blum TIP-ON.",
+      "interactable": true,
+      "position": [0, -40]
+    }
+  ]
+}

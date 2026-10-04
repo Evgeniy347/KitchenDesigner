@@ -284,6 +284,7 @@ namespace KitchenDesigner.Tests
             var tmp = go.GetComponent<TextMeshProUGUI>();
             if (tmp != null)
             {
+                if (IsHiddenPlaceholder(go, tmp)) return null;
                 var parent = go.transform.parent;
                 if (parent != null)
                 {
@@ -304,6 +305,12 @@ namespace KitchenDesigner.Tests
             }
 
             return null;
+        }
+
+        private static bool IsHiddenPlaceholder(GameObject go, TMP_Text text)
+        {
+            var owner = go.GetComponentInParent<TMP_InputField>();
+            return owner != null && ReferenceEquals(owner.placeholder, text) && !text.enabled;
         }
 
         private static string? FindInputLabel(GameObject inputGo)

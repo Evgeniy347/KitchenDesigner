@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using KitchenDesigner.Core.Update;
 using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
@@ -138,7 +139,7 @@ namespace KitchenDesigner.Core.UI
             if (after.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT)
             {
                 ToastNotification.ShowIfAvailable(
-                    Loc.F("toast.textureLimit", TextureOverlayGeometry.MAX_PER_ELEMENT));
+                    Loc.F("toast.textureLimit", TextureOverlayGeometry.MAX_PER_ELEMENT), level: StatusLevel.Warning);
                 return;
             }
             after.Add(spec);

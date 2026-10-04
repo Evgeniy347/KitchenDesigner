@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using KitchenDesigner.Core.Update;
 using KitchenDesigner.Core.Handles;
 
 namespace KitchenDesigner.Core
@@ -49,7 +50,7 @@ namespace KitchenDesigner.Core
 
             if (element.TextureOverlays[index].side == OverlaySide.All)
             {
-                UI.ToastNotification.ShowIfAvailable(Loc.T("toast.textureOverlay.oneSideOnly"));
+                UI.ToastNotification.ShowIfAvailable(Loc.T("toast.textureOverlay.oneSideOnly"), level: StatusLevel.Warning);
                 return;
             }
 

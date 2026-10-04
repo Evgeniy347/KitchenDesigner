@@ -1,0 +1,20 @@
+{
+  "root": "CaptureCanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Удалено: Полка",
+      "position": [47, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Отменить",
+      "position": [173, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [271, 0]
+    }
+  ]
+}

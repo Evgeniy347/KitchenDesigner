@@ -81,6 +81,7 @@ namespace KitchenDesigner.Core.UI
             float x = UIStyle.Space4;
             foreach (var rt in _left)
             {
+                if (!rt.gameObject.activeSelf) continue;
                 Place(rt, x, fromRight: rtl);
                 x += rt.sizeDelta.x + UIStyle.Space2;
             }
@@ -88,6 +89,7 @@ namespace KitchenDesigner.Core.UI
             x = UIStyle.Space4;
             for (int i = _right.Count - 1; i >= 0; i--)
             {
+                if (!_right[i].gameObject.activeSelf) continue;
                 Place(_right[i], x, fromRight: !rtl);
                 x += _right[i].sizeDelta.x + UIStyle.Space2;
             }

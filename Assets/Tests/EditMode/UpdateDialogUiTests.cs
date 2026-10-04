@@ -113,10 +113,11 @@ public class UpdateDialogUiTests
         // оно заезжало на заголовок (текст «Загружаем…» перекрывал «Установка
         // обновления»). rect у каждого элемента локальный (свой пивот), поэтому
         // углы переводим в мировые координаты и сравниваем уже их.
-        Assert.IsNotNull(dlg.TitleRect);
-        Assert.IsNotNull(dlg.MessageRect);
-        float titleBottom = dlg.TitleRect.TransformPoint(new Vector3(0f, dlg.TitleRect.rect.yMin, 0f)).y;
-        float messageTop = dlg.MessageRect.TransformPoint(new Vector3(0f, dlg.MessageRect.rect.yMax, 0f)).y;
+        dlg.ShowDownloading("1.2.3", () => { });
+        var title = dlg.Dialog.Title.rectTransform;
+        var message = dlg.Dialog.Body.rectTransform;
+        float titleBottom = title.TransformPoint(new Vector3(0f, title.rect.yMin, 0f)).y;
+        float messageTop = message.TransformPoint(new Vector3(0f, message.rect.yMax, 0f)).y;
         Assert.LessOrEqual(messageTop, titleBottom);
         Object.DestroyImmediate(go);
     }
@@ -176,10 +177,10 @@ public class UpdateDialogUiTests
         dlg.ShowDownloading("0.700", () => { });
         dlg.ShowRetry(3, 3);
 
-        Assert.IsNotNull(dlg.RetryRect, "строки повтора нет вовсе");
-        Assert.IsNotNull(dlg.CancelRect, "кнопки отмены нет вовсе");
-        float retryBottom = dlg.RetryRect.TransformPoint(new Vector3(0f, dlg.RetryRect.rect.yMin, 0f)).y;
-        float cancelTop = dlg.CancelRect.TransformPoint(new Vector3(0f, dlg.CancelRect.rect.yMax, 0f)).y;
+        var retry = dlg.Dialog.Note.rectTransform;
+        var cancel = (RectTransform)dlg.CancelButton.transform;
+        float retryBottom = retry.TransformPoint(new Vector3(0f, retry.rect.yMin, 0f)).y;
+        float cancelTop = cancel.TransformPoint(new Vector3(0f, cancel.rect.yMax, 0f)).y;
 
         Assert.GreaterOrEqual(retryBottom, cancelTop,
             "строка добавлена в окно фиксированной высоты: наехав на кнопку, она "

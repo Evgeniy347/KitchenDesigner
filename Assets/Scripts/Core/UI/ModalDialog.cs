@@ -16,12 +16,14 @@ namespace KitchenDesigner.Core.UI
         private ModalDialogContent _content = new ModalDialogContent();
 
         private ModalDialog(RectTransform root, RectTransform panel, TextMeshProUGUI title,
-            TextMeshProUGUI body, TextMeshProUGUI note, WindowFooter buttons, Button primary, Button secondary)
+            TextMeshProUGUI body, RectTransform extra, TextMeshProUGUI note, WindowFooter buttons,
+            Button primary, Button secondary)
         {
             _root = root;
             _panel = panel;
             Title = title;
             Body = body;
+            Extra = extra;
             Note = note;
             _buttons = buttons;
             PrimaryButton = primary;
@@ -49,6 +51,8 @@ namespace KitchenDesigner.Core.UI
 
         public TextMeshProUGUI Body { get; }
 
+        public RectTransform Extra { get; }
+
         public TextMeshProUGUI Note { get; }
 
         public Button PrimaryButton { get; }
@@ -71,6 +75,7 @@ namespace KitchenDesigner.Core.UI
             var title = TextRow(panel, name + "Title", UIStyle.FontWindowTitle, UIStyle.Text, textW);
             WindowTitle.Mark(title);
             var body = TextRow(panel, name + "Body", UIStyle.FontBody, UIStyle.Text, textW);
+            var extra = ExtraRow(panel, name + "Extra", textW);
             var note = TextRow(panel, name + "Note", UIStyle.FontSmall, UIStyle.TextSecondary, textW);
 
             var buttons = WindowFooter.Create(panel, name + "Buttons", UIStyle.ControlH, ruled: false);
@@ -78,7 +83,7 @@ namespace KitchenDesigner.Core.UI
             var secondary = buttons.AddSecondary(name + "Secondary", Loc.T("common.cancel"),
                 () => dialog?.Cancel());
             var primary = buttons.AddPrimary(name + "Primary", "", () => dialog?.Confirm());
-            dialog = new ModalDialog(root, panel, title, body, note, buttons, primary, secondary);
+            dialog = new ModalDialog(root, panel, title, body, extra, note, buttons, primary, secondary);
             Live.Add(dialog);
 
             root.gameObject.AddComponent<ModalDialogKeys>().Init(dialog);
@@ -93,6 +98,9 @@ namespace KitchenDesigner.Core.UI
             Body.text = content.Body;
             Note.text = content.Note ?? "";
             Note.gameObject.SetActive(!string.IsNullOrEmpty(content.Note));
+            Extra.sizeDelta = new Vector2(Extra.sizeDelta.x, content.ExtraHeight);
+            Extra.gameObject.SetActive(content.ExtraHeight > 0f);
+            PrimaryButton.gameObject.SetActive(HasPrimary);
             SetCaption(PrimaryButton, content.PrimaryCaption);
             SetCaption(SecondaryButton, content.SecondaryCaption ?? Loc.T("common.cancel"));
             ButtonRoles.Paint(PrimaryButton, content.Danger ? ButtonRole.Danger : ButtonRole.Primary);
@@ -103,6 +111,15 @@ namespace KitchenDesigner.Core.UI
             _root.SetAsLastSibling();
         }
 
+        public void SetNote(string? text)
+        {
+            Note.text = text ?? "";
+            Note.gameObject.SetActive(!string.IsNullOrEmpty(text));
+            Layout();
+        }
+
+        private bool HasPrimary => !string.IsNullOrEmpty(_content.PrimaryCaption);
+
         public void Hide()
         {
             if (!_root.gameObject.activeSelf) return;
@@ -111,6 +128,7 @@ namespace KitchenDesigner.Core.UI
 
         public void Confirm()
         {
+            if (!HasPrimary) return;
             var action = _content.OnPrimary;
             Hide();
             action?.Invoke();
@@ -127,12 +145,14 @@ namespace KitchenDesigner.Core.UI
         {
             float width = Body.rectTransform.sizeDelta.x;
             float noteH = Note.gameObject.activeSelf ? Height(Note, width) : 0f;
-            var layout = ModalDialogLayout.For(Height(Title, width), Height(Body, width), noteH,
+            float extraH = Extra.gameObject.activeSelf ? Extra.sizeDelta.y : 0f;
+            var layout = ModalDialogLayout.For(Height(Title, width), Height(Body, width), extraH, noteH,
                 UIStyle.ControlH, UIStyle.ModalPad, UIStyle.Space2, ButtonsGap);
 
             _panel.sizeDelta = new Vector2(UIStyle.DialogW, layout.Height);
             Place(Title, layout.TitleTop, Height(Title, width));
             Place(Body, layout.BodyTop, Height(Body, width));
+            Extra.anchoredPosition = new Vector2(UIStyle.ModalPad, -layout.ExtraTop);
             Place(Note, layout.NoteTop, noteH);
             var buttons = _buttons.Root;
             buttons.anchoredPosition = new Vector2(0f, UIStyle.ModalPad);
@@ -162,6 +182,14 @@ namespace KitchenDesigner.Core.UI
             var rt = label.rectTransform;
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 1f);
             return label;
+        }
+
+        private static RectTransform ExtraRow(RectTransform panel, string name, float width)
+        {
+            var rt = UIFactory.CreateRect(name, panel);
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 1f);
+            rt.sizeDelta = new Vector2(width, 0f);
+            return rt;
         }
 
         private static void SetCaption(Button button, string caption)
