@@ -142,7 +142,7 @@ public class SettingsPanelUITests
         Assert.IsNotNull(title);
         var label = title.GetComponent<TextMeshProUGUI>();
         Assert.AreEqual("Настройки", label.text.Replace("\u200b", ""));
-        Assert.AreEqual(24, label.fontSize);
+        Assert.AreEqual(UIStyle.FontWindowTitle, label.fontSize);
     }
 
     // ── Tabs ────────────────────────────────────────────────
@@ -251,8 +251,8 @@ public class SettingsPanelUITests
         var tab0Img = _canvas!.transform.Find("SettingsPanel/Tab_0").GetComponent<Image>();
         var tab1Img = _canvas!.transform.Find("SettingsPanel/Tab_1").GetComponent<Image>();
 
-        Color active = new(0.28f, 0.33f, 0.42f, 1f);
-        Color inactive = new(0.15f, 0.16f, 0.20f, 1f);
+        Color active = UIStyle.SurfaceActive;
+        Color inactive = UIStyle.SurfaceInactive;
 
         AssertColorEqual(active, tab0Img.color);
         AssertColorEqual(inactive, tab1Img.color);

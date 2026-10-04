@@ -268,6 +268,8 @@ namespace KitchenDesigner.Core.UI
 
             var box = UIFactory.CreatePanel(name + "_Box", rect,
                 Vector2.zero, new Vector2(22, 22), UIFactory.FieldColor);
+            RoundedRectSprites.Apply(box, RoundedRectSprites.ControlFill);
+            UIFactory.AddFieldStroke(box.rectTransform);
             toggle.graphic = UIFactory.CreateCheckmark(name + "_Check", box.transform);
             toggle.targetGraphic = box;
 

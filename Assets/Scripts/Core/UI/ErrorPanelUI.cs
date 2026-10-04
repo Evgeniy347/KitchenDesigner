@@ -48,7 +48,7 @@ namespace KitchenDesigner.Core.UI
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
             ProjectWindows.Register(this);
 
-            WindowTitle.Create(panel.transform, "ErrTitle", Loc.T("errors.title"), UIStyle.FontTitle,
+            WindowTitle.Create(panel.transform, "ErrTitle", Loc.T("errors.title"), UIStyle.FontWindowTitle,
                 200f, 28f, TextAnchor.MiddleLeft, Pad);
 
             UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));

@@ -165,13 +165,14 @@ namespace KitchenDesigner.Core.UI
 
             var img = rect.gameObject.AddComponent<Image>();
             img.color = ButtonColor;
+            RoundedRectSprites.Apply(img, RoundedRectSprites.ControlFill);
 
             var button = rect.gameObject.AddComponent<UIButton>();
             button.colors = InteractiveColors();
             if (onClick != null)
                 button.onClick.AddListener(() => onClick());
 
-            var label = CreateLabel(name + "_Label", rect, text, 18, Vector2.zero, size, TextAnchor.MiddleCenter);
+            var label = CreateLabel(name + "_Label", rect, text, UIStyle.FontBody, Vector2.zero, size, TextAnchor.MiddleCenter);
             label.rectTransform.anchorMin = Vector2.zero;
             label.rectTransform.anchorMax = Vector2.one;
             label.rectTransform.offsetMin = Vector2.zero;
@@ -216,6 +217,7 @@ namespace KitchenDesigner.Core.UI
             var label = CreateLabel(name + "_Label", rect, title, UIStyle.FontSection,
                 Vector2.zero, new Vector2(width, 18f), TextAnchor.MiddleLeft);
             label.color = UIStyle.TextSecondary;
+            label.fontStyle = FontStyles.Bold;
             var lRt = label.rectTransform;
             lRt.anchorMin = Vector2.zero; lRt.anchorMax = Vector2.one;
             lRt.offsetMin = Vector2.zero; lRt.offsetMax = Vector2.zero;
@@ -231,7 +233,7 @@ namespace KitchenDesigner.Core.UI
             line.offsetMin = new Vector2(mirrored ? 0f : textSide, -0.5f);
             line.offsetMax = new Vector2(mirrored ? -textSide : 0f, 0.5f);
             var lineImg = line.gameObject.AddComponent<Image>();
-            lineImg.color = UIStyle.Separator;
+            lineImg.color = UIStyle.Divider;
             lineImg.raycastTarget = false;
 
             return rect;
@@ -247,6 +249,7 @@ namespace KitchenDesigner.Core.UI
 
             var bg = rect.gameObject.AddComponent<Image>();
             bg.color = ButtonColor;
+            RoundedRectSprites.Apply(bg, RoundedRectSprites.ControlFill);
 
             var button = rect.gameObject.AddComponent<UIButton>();
             button.colors = InteractiveColors();
@@ -274,6 +277,7 @@ namespace KitchenDesigner.Core.UI
 
             var img = rect.gameObject.AddComponent<Image>();
             img.color = FieldColor;
+            RoundedRectSprites.Apply(img, RoundedRectSprites.ControlFill);
 
             var outline = rect.gameObject.AddComponent<Outline>();
             outline.effectColor = HighlightColor;
@@ -299,6 +303,7 @@ namespace KitchenDesigner.Core.UI
             input.textViewport = textArea;
             input.textComponent = text;
             input.text = initial;
+            AddFieldStroke(rect);
             return input;
         }
 
@@ -329,6 +334,22 @@ namespace KitchenDesigner.Core.UI
 
             float suffixWidth = unitLbl.GetPreferredValues(unit).x;
             viewport.offsetMax = new Vector2(-(gapBeforeTheSuffix + suffixWidth), viewport.offsetMax.y);
+        }
+
+        public const string FieldStrokeNode = "Stroke";
+
+        public static Image AddFieldStroke(RectTransform control)
+        {
+            var stroke = CreateRect(FieldStrokeNode, control);
+            stroke.anchorMin = Vector2.zero;
+            stroke.anchorMax = Vector2.one;
+            stroke.offsetMin = Vector2.zero;
+            stroke.offsetMax = Vector2.zero;
+            var img = stroke.gameObject.AddComponent<Image>();
+            RoundedRectSprites.Apply(img, RoundedRectSprites.ControlStroke);
+            img.color = UIStyle.FieldStroke;
+            img.raycastTarget = false;
+            return img;
         }
 
         public static void SetHighlight(TMP_InputField field, bool highlight)
@@ -412,6 +433,8 @@ namespace KitchenDesigner.Core.UI
             toggle.colors = InteractiveColors();
 
             var box = CreatePanel(name + "_Box", rect, new Vector2(-size.x * 0.5f + 14, 0), new Vector2(22, 22), FieldColor);
+            RoundedRectSprites.Apply(box, RoundedRectSprites.ControlFill);
+            AddFieldStroke(box.rectTransform);
             toggle.graphic = CreateCheckmark(name + "_Check", box.transform);
             toggle.targetGraphic = box;
 
@@ -454,12 +477,14 @@ namespace KitchenDesigner.Core.UI
             rect.anchoredPosition = anchoredPos;
 
             var bg = rect.gameObject.AddComponent<Image>();
-            bg.color = ButtonColor;
+            bg.color = FieldColor;
+            RoundedRectSprites.Apply(bg, RoundedRectSprites.ControlFill);
+            AddFieldStroke(rect);
 
             var dropdown = rect.gameObject.AddComponent<ScrollableDropdown>();
             dropdown.colors = InteractiveColors();
 
-            var caption = CreateLabel(name + "_Label", rect, "", 15, Vector2.zero, size, TextAnchor.MiddleLeft);
+            var caption = CreateLabel(name + "_Label", rect, "", UIStyle.FontBody, Vector2.zero, size, TextAnchor.MiddleLeft);
             var capRt = caption.rectTransform;
             capRt.anchorMin = Vector2.zero; capRt.anchorMax = Vector2.one;
             capRt.offsetMin = new Vector2(8, 2); capRt.offsetMax = new Vector2(-18, -2);

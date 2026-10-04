@@ -29,7 +29,7 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
 
-            WindowTitle.Create(panel.transform, "MeasureTitle", Loc.T("measure.title"), UIStyle.FontTitle,
+            WindowTitle.Create(panel.transform, "MeasureTitle", Loc.T("measure.title"), UIStyle.FontWindowTitle,
                 RowWidth, 28f);
 
             float y = PanelHeight * 0.5f - 62f;

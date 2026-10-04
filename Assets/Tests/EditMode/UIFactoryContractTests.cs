@@ -85,7 +85,9 @@ public class UIFactoryContractTests
 
         Assert.AreEqual(UIStyle.TextSecondary, label.color,
             "подпись секции вторичным цветом — она тише содержимого (правило 6)");
-        Assert.AreEqual(UIStyle.Separator, line.color, "линия до правого края — цвет разделителя");
+        Assert.AreEqual(UIStyle.Divider, line.color,
+            "линия до правого края — Divider (D8): заголовок секции отделяет, а не рисует рамку");
+        Assert.AreEqual(FontStyles.Bold, label.fontStyle, "заголовок секции — Bold 14 (D3), иначе он читается как подпись строки");
         Assert.Greater(line.rectTransform.offsetMin.x, 0f,
             "линия начинается ПОСЛЕ текста, а не под ним");
     }
