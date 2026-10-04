@@ -89,6 +89,9 @@ namespace KitchenDesigner.Core
                 if (el.MaterialId == def.id
                     || MaterialIdOf(el, MaterialSlot.Tabletop) == def.id)
                     RefreshTiling(el, def);
+                else if (el is IMultiSurfaceDecor multi
+                    && MaterialIdOf(el, MaterialSlot.Legs) == def.id)
+                    multi.RefreshPartTiling();
 
                 if (UsesInOverlay(el, def.id)) TextureOverlayRenderer.Refresh(el);
             }

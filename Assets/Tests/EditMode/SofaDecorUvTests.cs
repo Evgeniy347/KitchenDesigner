@@ -170,6 +170,33 @@ public class SofaDecorUvTests
     }
 
     [Test]
+    public void ALateTexture_OfTheSecondaryDecor_RetilesTheCushionsAtOnce()
+    {
+        var late = new MaterialDef("uv-test-late", "Проба 3", "Ткань", Color.gray, null, 1200);
+        MaterialCatalog.Register(late);
+        var sofa = DressedSofa(2000, 900, 360);
+        sofa.SecondaryMaterialId = late.id;
+        var picture = new Texture2D(1200, 300);
+
+        try
+        {
+            late.texture = picture;
+            MaterialManager.OnTextureArrived(late);
+
+            var tile = MaterialManager.TileMM(late);
+            Assert.AreEqual(300, tile.y,
+                "предпосылка: высота плитки выведена из пропорций картинки 1200 на 300");
+            AssertHonest(Part(sofa, SofaLayout.ArmCushionRightName), tile,
+                UvStretch.AxisAlignedDot, 0.02f);
+            AssertHonest(Part(sofa, SofaLayout.BackCushionLeftName), tile, 0.9f, 0.15f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(picture);
+        }
+    }
+
+    [Test]
     public void ChangingTheSecondaryDecor_RetilesTheCushions_WithoutTouchingTheUpholstery()
     {
         var sofa = DressedSofa(2000, 900, 360);
