@@ -68,9 +68,6 @@ public class ContextMenuLayoutTests
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         PartRegistry.Clear();
-        foreach (var leaked in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
-            if (leaked != null && leaked.parent == null && leaked.name == "__TextureOverlays")
-                Object.DestroyImmediate(leaked.gameObject);
     }
 
     private FacadeElement MakeFacade(string name)

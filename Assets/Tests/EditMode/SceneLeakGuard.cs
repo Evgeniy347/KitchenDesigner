@@ -53,6 +53,8 @@ public static class SceneLeakGuard
         // не создаёт и не именует его сам, значит не может и добавить в _spawned.
         ("ContextMenuEdgeSectionTests.Close_DropsHoverHighlight", "__EdgeSideHighlight",
             "авто-объект подсветки ребра, ставит его ElementHighlighter"),
+        ("ContextMenuLayoutTests.Wall_AddSameTextureTwice_IsAllowed", "__TextureOverlays",
+            "авто-объект наложений текстуры от TextureOverlayRenderer: рождается добавлением из панели"),
         ("ElementHighlighterTests.Transparency_ReturnsTheMaterialTheRendererWore_NotWhatTheElementDecorWouldRepaint", "__Outline",
             "авто-объект контура от ElementHighlighter/ElementOutline"),
         ("ElementHighlighterTests.TransparencyDropped_WhileStillViolating_BecomesOpaqueAndStaysRed", "__Outline",

@@ -9,14 +9,16 @@ namespace KitchenDesigner.Core.UI
         private readonly ContextMenuSizeSection _sizes;
         private readonly Action _apply;
         private readonly Action _forgetSectionStates;
+        private readonly Action<bool> _setHeightUncapped;
 
         public ContextMenuTestHooks(Func<TMP_InputField?> nameField, ContextMenuSizeSection sizes,
-            Action apply, Action forgetSectionStates)
+            Action apply, Action forgetSectionStates, Action<bool> setHeightUncapped)
         {
             _nameField = nameField;
             _sizes = sizes;
             _apply = apply;
             _forgetSectionStates = forgetSectionStates;
+            _setHeightUncapped = setHeightUncapped;
         }
 
         public void SetNameFieldText(string text) => _nameField()!.text = text;
@@ -28,5 +30,7 @@ namespace KitchenDesigner.Core.UI
         public void SimulateApply() => _apply();
 
         public void ForgetSectionStates() => _forgetSectionStates();
+
+        public void SetHeightUncapped(bool uncapped) => _setHeightUncapped(uncapped);
     }
 }

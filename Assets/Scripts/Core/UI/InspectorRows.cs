@@ -8,6 +8,8 @@ namespace KitchenDesigner.Core.UI
 {
     internal sealed class InspectorRows
     {
+        public const string PairRowPrefix = "Row_Pair_";
+
         private readonly FormRows _forms;
         private readonly RectTransform _host;
         private readonly Func<ElementFacet> _facets;
@@ -165,21 +167,25 @@ namespace KitchenDesigner.Core.UI
         public (TMP_InputField first, TMP_InputField second) PairField(string label, string firstNode,
             string secondNode, string initial, RowVisibility visibility)
         {
-            var rect = UIFactory.CreateRect("Row_" + firstNode + "_" + secondNode, _host);
-            rect.sizeDelta = new Vector2(Metrics.Width, Metrics.ControlH);
+            float captionH = FormRows.CaptionH;
+            float height = captionH + UIStyle.Space1 + Metrics.ControlH;
+            var rect = UIFactory.CreateRect(PairRowPrefix + firstNode + "_" + secondNode, _host);
+            rect.sizeDelta = new Vector2(Metrics.Width, height);
 
-            var caption = UIFactory.CreateLabel("L_" + firstNode + "_" + secondNode, rect, label, Metrics.LabelFont,
-                Vector2.zero, new Vector2(Metrics.LabelW, Metrics.ControlH), TextAnchor.MiddleLeft);
+            var caption = UIFactory.CreateLabel("L_" + firstNode + "_" + secondNode, rect, label, UIStyle.FontSmall,
+                Vector2.zero, new Vector2(Metrics.Width, captionH), TextAnchor.MiddleLeft);
+            caption.color = UIStyle.TextSecondary;
             caption.enableWordWrapping = false;
             caption.overflowMode = TextOverflowModes.Ellipsis;
-            PlaceCell(caption.rectTransform, 0f, Metrics.LabelW);
+            PlaceFromTop(caption.rectTransform, 0f, Metrics.Width, 0f);
 
-            float fieldW = (Metrics.ValueW - UIStyle.Space1) * 0.5f;
-            var first = PairInput(rect, firstNode, initial, Metrics.ValueX, fieldW);
-            var second = PairInput(rect, secondNode, initial, Metrics.ValueX + fieldW + UIStyle.Space1, fieldW);
+            float fieldW = (Metrics.Width - UIStyle.Space1) * 0.5f;
+            float fieldsTop = captionH + UIStyle.Space1;
+            var first = PairInput(rect, firstNode, initial, 0f, fieldW, fieldsTop);
+            var second = PairInput(rect, secondNode, initial, fieldW + UIStyle.Space1, fieldW, fieldsTop);
             _own.Add(caption, first);
             _own.Add(caption, second);
-            Show(_forms.Custom(rect, Metrics.ControlH), visibility);
+            Show(_forms.Custom(rect, height), visibility);
             return (first, second);
         }
 
@@ -223,15 +229,24 @@ namespace KitchenDesigner.Core.UI
             row.VisibleWhen = () => visibility.IsVisibleFor(facets());
         }
 
-        private TMP_InputField PairInput(RectTransform row, string node, string initial, float x, float width)
+        private TMP_InputField PairInput(RectTransform row, string node, string initial, float x, float width,
+            float top)
         {
             var field = UIFactory.CreateInputField("F_" + node, row, initial, Vector2.zero,
                 new Vector2(width, Metrics.ControlH));
             field.textComponent!.alignment = TextAlignmentOptions.Right;
             field.contentType = TMP_InputField.ContentType.Custom;
             field.onValidateInput = DimensionFieldValidation.Char();
-            PlaceCell((RectTransform)field.transform, x, width);
+            PlaceFromTop((RectTransform)field.transform, x, width, top);
             return field;
+        }
+
+        private void PlaceFromTop(RectTransform rt, float x, float width, float top)
+        {
+            float left = LayoutDirection.IsRtl ? Metrics.Width - x - width : x;
+            rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.anchoredPosition = new Vector2(left, -top);
         }
 
         public void PlaceCell(RectTransform rt, float x, float width)

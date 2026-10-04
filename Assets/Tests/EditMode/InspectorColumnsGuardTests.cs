@@ -95,7 +95,8 @@ public class InspectorColumnsGuardTests
             {
                 if (label == null || control == null) continue;
                 if (!label.gameObject.activeInHierarchy || !control.gameObject.activeInHierarchy) continue;
-                if (control is Button || control.transform.parent.name.StartsWith("Vec_")) continue;
+                if (control is Button || control.transform.parent.name.StartsWith("Vec_")
+                    || control.transform.parent.name.StartsWith(InspectorRows.PairRowPrefix)) continue;
 
                 float labelX = LeftEdge(panel, label.rectTransform);
                 if (!labelColumns.Any(c => Mathf.Abs(c - labelX) < Epsilon))

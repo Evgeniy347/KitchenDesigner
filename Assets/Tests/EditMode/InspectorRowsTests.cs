@@ -145,14 +145,14 @@ public class InspectorRowsTests
     }
 
     [Test]
-    public void PairField_PutsTheFirstFieldAtTheValueColumn_AndBothInsideIt()
+    public void PairField_PutsTwoFieldsSideBySide_UnderACaption_InsideTheRow()
     {
         var (first, second) = _rows.PairField("Слева / справа, мм", "gapLeft", "gapRight", "0", RowVisibility.Always);
         _rows.Relayout();
 
         var a = (RectTransform)first.transform;
         var b = (RectTransform)second.transform;
-        Assert.AreEqual(_rows.Metrics.ValueX, a.anchoredPosition.x, 0.01f);
+        Assert.AreEqual(0f, a.anchoredPosition.x, 0.01f, "поля пары идут на всю ширину строки под подписью, как вектор");
         Assert.Greater(b.anchoredPosition.x, a.anchoredPosition.x + a.sizeDelta.x - 0.01f, "поля не налезают друг на друга");
         Assert.LessOrEqual(b.anchoredPosition.x + b.sizeDelta.x, _rows.Metrics.Width + 0.01f, "и не выходят за колонку");
     }

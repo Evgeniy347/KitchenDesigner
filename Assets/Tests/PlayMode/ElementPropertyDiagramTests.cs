@@ -123,6 +123,7 @@ public class ElementPropertyDiagramTests
         panelRt.anchorMin = panelRt.anchorMax = panelRt.pivot = new Vector2(0.5f, 0.5f);
         panelRt.anchoredPosition = Vector2.zero;
 
+        if (panelName == "ContextMenu") ContextMenuUI.Instance?.TestHooks.SetHeightUncapped(true);
         // Run setupPanel (opens the panel, triggers Layout which may resize it).
         setupPanel?.Invoke();
         yield return null; // let Layout settle
@@ -167,6 +168,7 @@ public class ElementPropertyDiagramTests
         UiSnapshotEngine.CaptureVerified(panelT!.gameObject, jsonPath);
 
         teardownPanel?.Invoke();
+        if (panelName == "ContextMenu") ContextMenuUI.Instance?.TestHooks.SetHeightUncapped(false);
 
         _uiCanvas!.renderMode = origRenderMode;
         _uiCanvas!.worldCamera = null;
@@ -345,7 +347,6 @@ public class ElementPropertyDiagramTests
             () =>
             {
                 ContextMenuUI.Instance!.Open(el);
-                ContextMenuUI.Instance!.Textures.Toggle();
             },
             () => { ContextMenuUI.Instance?.Close(); });
     }

@@ -30,6 +30,7 @@ namespace KitchenDesigner.Core.UI
         private VectorField? _rotation;
         private InspectorSection? _specific;
         private (float x, float width)? _yawCell;
+        private bool _heightUncapped;
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
@@ -98,7 +99,7 @@ namespace KitchenDesigner.Core.UI
         public ContextMenuUI()
         {
             _sizes = new ContextMenuSizeSection(this);
-            _testHooks = new ContextMenuTestHooks(() => _name, _sizes, Apply, () => _sectionMemory = new InspectorSectionMemory());
+            _testHooks = new ContextMenuTestHooks(() => _name, _sizes, Apply, () => _sectionMemory = new InspectorSectionMemory(), uncapped => _heightUncapped = uncapped);
             _textures = new ContextMenuTextureSection(this);
             _lightLinks = new ContextMenuLightLinkSection(this);
             _fields = new ContextMenuFieldTracker(Apply);
@@ -913,6 +914,7 @@ namespace KitchenDesigner.Core.UI
 
         private float MaxPanelHeight()
         {
+            if (_heightUncapped) return float.MaxValue;
             if (_panelRt == null || !(_panelRt.root is RectTransform canvas) || canvas.rect.height <= 0f)
                 return float.MaxValue;
             float fits = canvas.rect.height - UIStyle.ToolbarH - UIStyle.StatusBarH - 2f * UIStyle.Space4;

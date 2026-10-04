@@ -81,7 +81,7 @@ public class EscapeOwnershipWiringTests
         menu.Open(board);
         Assert.IsTrue(menu.IsOpen, "меню обязано открыться перед проверкой — иначе тест ничего не доказывает");
 
-        var deleteButton = _canvasGo.transform.Find("ContextMenu/CtxDel")!.GetComponent<Button>();
+        var deleteButton = _canvasGo.transform.Find("ContextMenu/ContextMenuFooter/CtxDel")!.GetComponent<Button>();
         deleteButton.onClick.Invoke();
         Assert.IsTrue(ConfirmDeleteButton.AnyArmed,
             "первый клик по «Удалить» обязан взвести кнопку подтверждения — иначе сценарий не воспроизведён");

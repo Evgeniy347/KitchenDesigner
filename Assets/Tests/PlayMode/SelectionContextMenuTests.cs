@@ -121,7 +121,7 @@ public class SelectionContextMenuTests
 
     private static bool IsContextMenuTitleVisible()
     {
-        var titleGo = GameObject.Find("CtxTitle");
+        var titleGo = GameObject.Find("ContextMenuTitle");
         return titleGo != null && titleGo.activeInHierarchy;
     }
 
