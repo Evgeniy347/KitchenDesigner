@@ -858,15 +858,12 @@ public class SettingsPanelUITests
     }
 
     [Test]
-    public void AboutTab_HasACopyButton_AndItsTextCanBeSelected()
+    public void AboutTab_HasNoCopyButton_ButItsTextCanBeSelected()
     {
         var about = _canvas!.transform.Find(SettingsWindowPaths.Page("about"));
 
-        var buttons = about.GetComponentsInChildren<Button>(true);
-        Assert.AreEqual(1, buttons.Length, "на странице одна кнопка — «Скопировать сведения»");
-        Assert.AreEqual(SettingsAboutTab.CopyButtonName, buttons[0].name);
-        Assert.AreEqual(Loc.T("settings.about.copy"), buttons[0].GetComponentInChildren<TMP_Text>().text.Replace("\u200b", ""));
-
+        Assert.IsEmpty(about.GetComponentsInChildren<Button>(true),
+            "сведения видны сразу — кнопка «скопировать» не нужна и не должна возвращаться (решение пользователя)");
         var names = new List<string> { "AboutProduct", "AboutCopyright" };
         names.AddRange(AboutValueNames);
         foreach (var name in names)
@@ -875,25 +872,6 @@ public class SettingsPanelUITests
             Assert.IsNotNull(input,
                 $"«{name}» обязана быть выделяемым текстом: так сведения о сборке копируют вручную");
             Assert.IsTrue(input!.readOnly, $"«{name}» — только для чтения: править версию сборки в окне нельзя");
-        }
-    }
-
-    [Test]
-    public void AboutTab_CopyButton_PutsEveryLineOnTheClipboard()
-    {
-        var about = _canvas!.transform.Find(SettingsWindowPaths.Page("about"));
-        string before = GUIUtility.systemCopyBuffer;
-        try
-        {
-            about.GetComponentInChildren<Button>(true).onClick.Invoke();
-
-            var lines = AboutLines.For(SettingsAboutTab.CurrentEnvironment());
-            Assert.AreEqual(string.Join("\n", lines), GUIUtility.systemCopyBuffer,
-                "в буфер ложатся те же строки, что человек видит, — для отчёта об ошибке");
-        }
-        finally
-        {
-            GUIUtility.systemCopyBuffer = before;
         }
     }
 

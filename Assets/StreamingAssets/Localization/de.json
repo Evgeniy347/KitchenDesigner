@@ -791,7 +791,6 @@
   "region.urals": "Ural",
   "region.volga": "Wolgagebiet",
   "settings.about.build": "Build: {0}",
-  "settings.about.copy": "Angaben kopieren",
   "settings.about.gpu": "Grafikkarte: {0}",
   "settings.about.graphics": "Grafik (API): {0}",
   "settings.about.platform": "Plattform: {0}",

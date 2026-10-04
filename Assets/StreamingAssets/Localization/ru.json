@@ -791,7 +791,6 @@
   "region.urals": "Урал",
   "region.volga": "Поволжье",
   "settings.about.build": "Сборка: {0}",
-  "settings.about.copy": "Скопировать сведения",
   "settings.about.gpu": "Видеокарта: {0}",
   "settings.about.graphics": "Графика (API): {0}",
   "settings.about.platform": "Платформа: {0}",

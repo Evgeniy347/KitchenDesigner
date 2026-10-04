@@ -5,8 +5,6 @@ namespace KitchenDesigner.Core.UI
 {
     public sealed class SettingsAboutTab
     {
-        internal const string CopyButtonName = "AboutCopy";
-
         private readonly SettingsPage _page;
 
         public SettingsAboutTab(SettingsPage page) => _page = page;
@@ -27,7 +25,6 @@ namespace KitchenDesigner.Core.UI
             AddRows(rows);
             AddLine("AboutCopyright", lines[lines.Count - 1], UIStyle.FontSmall, UIStyle.TextSecondary,
                 UIStyle.ControlHCompact);
-            AddCopyButton(lines);
         }
 
         private void AddRows(System.Collections.Generic.IReadOnlyList<AboutRow> rows)
@@ -73,23 +70,6 @@ namespace KitchenDesigner.Core.UI
             Plain(line);
             Pin((RectTransform)line.transform, -InsetOf(line), width + InsetOf(line), width);
             _page.Block(host, height, text);
-        }
-
-        private void AddCopyButton(System.Collections.Generic.IReadOnlyList<string> lines)
-        {
-            string caption = Loc.T("settings.about.copy");
-            var host = UIFactory.CreateRect("Row_" + CopyButtonName, _page.Root);
-            var button = UIFactory.CreateButton(CopyButtonName, host, caption, Vector2.zero,
-                new Vector2(WindowFooter.MinButtonW, UIStyle.ControlH),
-                () => GUIUtility.systemCopyBuffer = string.Join("\n", lines));
-            var label = button.GetComponentInChildren<TMP_Text>();
-            var rect = (RectTransform)button.transform;
-            float width = WindowFooter.WidthFor(label, caption);
-            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(LayoutDirection.IsRtl ? 1f : 0f, 0.5f);
-            rect.sizeDelta = new Vector2(width, UIStyle.ControlH);
-            rect.anchoredPosition = Vector2.zero;
-            _page.Block(host, UIStyle.ControlH, caption);
-            _page.Rows.Gap(UIStyle.Space2);
         }
 
         private static float InsetOf(TMP_InputField field) => field.textViewport.offsetMin.x;

@@ -4137,11 +4137,6 @@
       "0": "build date"
     }
   },
-  "settings.about.copy": {
-    "where": "Settings window, About page: button under the details table",
-    "meaning": "Copies the product name, version and build details to the clipboard for a bug report",
-    "maxLength": 24
-  },
   "settings.about.gpu": {
     "where": "Settings > About tab, info line",
     "meaning": "Name of the video card the program is actually rendering on",

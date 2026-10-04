@@ -21,11 +21,6 @@
       "position": [-6, 0]
     },
     {
-      "type": "Button",
-      "text": "Скопировать сведения",
-      "position": [0, 0]
-    },
-    {
       "type": "Label",
       "text": "Сборка",
       "position": [0, 0]

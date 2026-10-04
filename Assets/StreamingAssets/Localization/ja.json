@@ -791,7 +791,6 @@
   "region.urals": "ウラル",
   "region.volga": "ヴォルガ沿岸",
   "settings.about.build": "ビルド: {0}",
-  "settings.about.copy": "情報をコピー",
   "settings.about.gpu": "ビデオカード: {0}",
   "settings.about.graphics": "グラフィックス (API): {0}",
   "settings.about.platform": "プラットフォーム: {0}",

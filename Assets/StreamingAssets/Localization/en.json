@@ -791,7 +791,6 @@
   "region.urals": "Urals",
   "region.volga": "Volga",
   "settings.about.build": "Build: {0}",
-  "settings.about.copy": "Copy details",
   "settings.about.gpu": "GPU: {0}",
   "settings.about.graphics": "Graphics (API): {0}",
   "settings.about.platform": "Platform: {0}",
