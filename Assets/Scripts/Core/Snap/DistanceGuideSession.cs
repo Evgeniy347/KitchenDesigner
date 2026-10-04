@@ -88,6 +88,11 @@ namespace KitchenDesigner.Core
         private void Show(in AxisBox moving)
         {
             if (_index == null) return;
+            if (!KitchenSettings.Instance.DistanceGuides)
+            {
+                DistanceGuideStore.Clear();
+                return;
+            }
             DistanceGuides.Collect(_index, moving, _lines);
             DistanceGuideStore.Set(_lines);
         }

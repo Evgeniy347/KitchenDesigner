@@ -3,6 +3,7 @@
     "gridEnabled": true,
     "snapEnabled": true,
     "snapThreshold": 50.0,
+    "distanceGuides": true,
     "blockOnViolation": true,
     "autoSave": true,
     "autoSaveInterval": 60,

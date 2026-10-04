@@ -878,7 +878,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     {
         [McpParam("Setting key.", Required = true, Enum = new[]
         {
-            "snap_enabled", "snap_threshold", "grid_enabled", "grid_step",
+            "snap_enabled", "snap_threshold", "distance_guides", "grid_enabled", "grid_step",
             "block_on_violation", "auto_save", "auto_save_interval", "snap_verbose_log",
             "camera_pan_free", "edge_partial_threshold", "mouse_sensitivity",
             "wasd_speed", "arrow_speed", "mouse_invert_x", "mouse_invert_y",

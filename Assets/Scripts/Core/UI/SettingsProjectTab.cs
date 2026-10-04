@@ -50,6 +50,10 @@ namespace KitchenDesigner.Core.UI
                 }, Loc.T("unit.mm"), () => NumberFormat.Input(s.SnapThreshold, 0), indent: 1);
             Hint(Loc.T("settings.project.snapThreshold"), hint: "settings.project.snapThreshold");
 
+            _page.AddSwitch(Loc.T("settings.project.distanceGuides"), s.DistanceGuides,
+                v => { s.DistanceGuides = v; }, read: () => s.DistanceGuides);
+            Hint(Loc.T("settings.project.distanceGuides"), hint: "settings.project.distanceGuides");
+
             _page.AddSwitch(Loc.T("settings.project.spatialGrid"), s.SpatialGrid,
                 v => { s.SpatialGrid = v; }, read: () => s.SpatialGrid);
             Hint(Loc.T("settings.project.spatialGrid"), hint: "settings.project.spatialGrid");

@@ -48,6 +48,8 @@ namespace KitchenDesigner.Core.MCP
                 () => S.SnapEnabled, v => S.SnapEnabled = v),
             SettingKey.Number("snap_threshold", "snapThresholdMM",
                 () => S.SnapThreshold, v => S.SnapThreshold = v),
+            SettingKey.Flag("distance_guides", "distanceGuides",
+                () => S.DistanceGuides, v => S.DistanceGuides = v),
             SettingKey.Flag("grid_enabled", "gridEnabled",
                 () => S.GridEnabled, v => S.GridEnabled = v),
             SettingKey.Number("grid_step", "gridStepMM",

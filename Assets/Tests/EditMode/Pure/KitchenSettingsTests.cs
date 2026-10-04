@@ -167,6 +167,26 @@ public class KitchenSettingsTests
     }
 
     [Test]
+    public void DistanceGuides_SavesAndLoads_AndIsOnByDefault()
+    {
+        var gs = KitchenSettings.Instance;
+        bool prev = gs.DistanceGuides;
+
+        gs.DistanceGuides = false;
+        var data = gs.ToData();
+        gs.DistanceGuides = true;
+        gs.ApplyFrom(data);
+        Assert.IsFalse(gs.DistanceGuides, "выключенные направляющие расстояний обязаны пережить сохранение проекта");
+
+        gs.ResetToDefaults();
+        Assert.IsTrue(gs.DistanceGuides, "по умолчанию направляющие включены");
+        Assert.IsTrue(new KitchenSettingsData().distanceGuides,
+            "старый файл без ключа читается с включёнными направляющими — инициализатор поля");
+
+        gs.DistanceGuides = prev;
+    }
+
+    [Test]
     public void SpatialGridAndWindowedMode_SaveAndLoad()
     {
         var gs = KitchenSettings.Instance;

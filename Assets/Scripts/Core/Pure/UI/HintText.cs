@@ -186,6 +186,7 @@ namespace KitchenDesigner.Core.UI
             "settings.project.gridStep",
             "settings.project.snap",
             "settings.project.snapThreshold",
+            "settings.project.distanceGuides",
             "settings.project.blockOnViolation",
             "settings.project.autoSave",
             "settings.project.autoSaveInterval",

@@ -136,6 +136,26 @@ public class DistanceGuidesSceneTests
     }
 
     [Test]
+    public void Drag_GuidesSettingOff_DrawsNothingButTheEqualGapStillSnaps()
+    {
+        KitchenSettings.Instance.DistanceGuides = false;
+        try
+        {
+            _mover!.BeginDragOn(_polka30);
+            _mover.DragFrameOn(_polka30Start + new Vector3(0f, 0f, 0.020f));
+
+            Assert.IsFalse(DistanceGuideStore.Showing,
+                "«Направляющие расстояний» выключены — линий и подписей нет");
+            Assert.AreEqual(PolkaEqualGapZ, _polka30.transform.position.z, 0.0001f,
+                "равный зазор — часть привязки, его включает snapEnabled, а не этот переключатель");
+        }
+        finally
+        {
+            KitchenSettings.Instance.DistanceGuides = true;
+        }
+    }
+
+    [Test]
     public void Drag_Polka30_MeasuresEveryDirectionFaceToFace()
     {
         _mover!.BeginDragOn(_polka30);

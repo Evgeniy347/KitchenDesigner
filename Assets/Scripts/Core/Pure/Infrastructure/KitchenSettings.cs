@@ -11,6 +11,7 @@ namespace KitchenDesigner.Core
         [SerializeField] private bool _gridEnabled = true;
         [SerializeField] private bool _snapEnabled = true;
         [SerializeField] private float _snapThreshold = SNAP_THRESHOLD_DEFAULT_MM;
+        [SerializeField] private bool _distanceGuides = true;
         [SerializeField] private bool _blockOnViolation = true;
         [SerializeField] private bool _autoSave = true;
         [SerializeField] private int _autoSaveInterval = 60;
@@ -99,6 +100,12 @@ namespace KitchenDesigner.Core
         {
             get => _snapThreshold;
             set => _snapThreshold = Mathf.Max(1f, value);
+        }
+
+        public bool DistanceGuides
+        {
+            get => _distanceGuides;
+            set => _distanceGuides = value;
         }
 
         public bool BlockOnViolation
@@ -318,6 +325,7 @@ namespace KitchenDesigner.Core
             _gridEnabled = true;
             _snapEnabled = true;
             _snapThreshold = SNAP_THRESHOLD_DEFAULT_MM;
+            _distanceGuides = true;
             _blockOnViolation = true;
             _autoSave = true;
             _autoSaveInterval = 60;
@@ -347,6 +355,7 @@ namespace KitchenDesigner.Core
                 gridEnabled = _gridEnabled,
                 snapEnabled = _snapEnabled,
                 snapThreshold = _snapThreshold,
+                distanceGuides = _distanceGuides,
                 blockOnViolation = _blockOnViolation,
                 autoSave = _autoSave,
                 autoSaveInterval = _autoSaveInterval,
@@ -406,6 +415,7 @@ namespace KitchenDesigner.Core
             _gridEnabled = data.gridEnabled;
             _snapEnabled = data.snapEnabled;
             _snapThreshold = Mathf.Max(1f, data.snapThreshold);
+            _distanceGuides = data.distanceGuides;
             _blockOnViolation = data.blockOnViolation;
             _autoSave = data.autoSave;
             _autoSaveInterval = Mathf.Max(10, data.autoSaveInterval);

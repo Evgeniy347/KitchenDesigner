@@ -3208,6 +3208,11 @@
     "meaning": "Set the snap distance",
     "maxLength": 220
   },
+  "hint.settings.project.distanceGuides": {
+    "where": "Settings > Project tab, hint bubble of the 'Distance guides' toggle",
+    "meaning": "Explain the dashed distance lines shown while dragging or resizing, and that equal-gap snapping does not depend on them",
+    "maxLength": 220
+  },
   "hint.settings.project.spatialGrid": {
     "where": "Settings > Project tab, hint bubble of the 'Spatial grid' toggle",
     "meaning": "Speed up overlap checks",
@@ -4865,6 +4870,11 @@
     "where": "Settings > Project tab, number field label (indented under Snap to parts)",
     "meaning": "How close, in millimetres, a part must come before it snaps",
     "maxLength": 34
+  },
+  "settings.project.distanceGuides": {
+    "where": "Settings > Project tab, toggle row label (below Snap threshold)",
+    "meaning": "Show dashed distance lines with mm labels from a dragged or resized part to the nearest walls and parts",
+    "maxLength": 36
   },
   "settings.project.spatialGrid": {
     "where": "Settings > Project tab, toggle row label",
