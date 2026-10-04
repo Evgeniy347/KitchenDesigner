@@ -77,7 +77,7 @@ public class MillimetreGridFindingTests
             "находка обязана указывать на деталь: по ней человек её выделяет в списке");
         Assert.AreEqual(IssueLevel.Warning, found[0].Level,
             "0,4 мм не мешают сборке стоять — они искажают спецификацию и раскрой");
-        StringAssert.Contains("X 124.4", found[0].Message,
+        StringAssert.Contains("X 124,4", found[0].Message,
             "ось и координата грани обязаны быть в строке: без них двигать нечего");
         StringAssert.DoesNotContain("Y ", found[0].Message,
             "оси без отклонения в находке не перечисляются — иначе строка тонет в шуме");
