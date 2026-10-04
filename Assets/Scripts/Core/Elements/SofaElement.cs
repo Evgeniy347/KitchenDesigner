@@ -18,6 +18,8 @@ namespace KitchenDesigner.Core
         public const string DefaultUpholsteryId = "fabric_mustard";
         private static readonly MaterialDef BoxMaterial = new MaterialDef("sofa_box_laminate",
             "Sofa box", "Laminate", new Color(0.93f, 0.93f, 0.9f));
+        private static readonly MaterialDef DrawerFrontMaterial = new MaterialDef("sofa_drawer_front",
+            "Sofa drawer front", "Laminate", new Color(0.55f, 0.42f, 0.30f));
 
         public const int DefaultWidthMM = SofaLayout.DefaultWidthMM;
         public const int DefaultHeightMM = SofaLayout.DefaultHeightMM;
@@ -169,6 +171,8 @@ namespace KitchenDesigner.Core
 
             var material = MaterialManager.GetSharedMaterial(BoxMaterial);
             if (material != null) Box.SetMaterial(material);
+            var front = MaterialManager.GetSharedMaterial(DrawerFrontMaterial);
+            if (front != null) Rig.SetDrawerFronts(front);
         }
 
         public void SetPrimaryMaterial(Material material) => Rig.SetUpholstery(material);

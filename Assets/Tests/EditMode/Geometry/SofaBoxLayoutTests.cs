@@ -34,10 +34,10 @@ namespace KitchenDesigner.Tests.Geometry
             var panels = SofaBoxLayout.Panels(Default(), Seat, Radius);
 
             Assert.AreEqual(SofaBoxLayout.PanelCount, panels.Length,
-                "дно, четыре стенки и перегородки: на одну меньше, чем отделений");
+                "дно, три стенки (передней нет: её заменяют фасады ящиков) и перегородки: на одну меньше, чем отделений");
             Assert.AreEqual(3, SofaBoxLayout.CompartmentCount,
                 "три отделения, как на фото 43");
-            Assert.AreEqual(5 + SofaBoxLayout.CompartmentCount - 1, panels.Length,
+            Assert.AreEqual(4 + SofaBoxLayout.CompartmentCount - 1, panels.Length,
                 "число панелей выводится из числа отделений, а не записано отдельно");
         }
 
@@ -130,8 +130,8 @@ namespace KitchenDesigner.Tests.Geometry
             var panels = SofaBoxLayout.Panels(Default(), Seat, Radius);
             var left = panels[1];
             var right = panels[2];
-            var first = panels[5];
-            var second = panels[6];
+            var first = panels[4];
+            var second = panels[5];
 
             float innerLeft = left.CentreMM.x + left.SizeMM.x * 0.5f;
             float innerRight = right.CentreMM.x - right.SizeMM.x * 0.5f;
@@ -153,6 +153,56 @@ namespace KitchenDesigner.Tests.Geometry
 
             Assert.AreEqual(0f, min.x + max.x, Eps,
                 "короб стоит по центру: левая и правая границы зеркальны");
+        }
+
+        [Test]
+        public void DrawerFronts_AreThree_OneForEveryCompartment_WithEqualWidthsAndGaps()
+        {
+            var fronts = SofaBoxLayout.DrawerFronts(Default(), Seat, Radius);
+
+            Assert.AreEqual(SofaBoxLayout.CompartmentCount, fronts.Length,
+                "по фасаду на каждое отделение: так короб читается ящиками, как на фото 43");
+            Assert.AreEqual(fronts[0].ProfileWidthMM, fronts[1].ProfileWidthMM, Eps,
+                "первый и средний фасады одной ширины");
+            Assert.AreEqual(fronts[1].ProfileWidthMM, fronts[2].ProfileWidthMM, Eps,
+                "средний и последний тоже");
+            float gap = (fronts[1].CentreMM.x - fronts[1].ProfileWidthMM * 0.5f)
+                - (fronts[0].CentreMM.x + fronts[0].ProfileWidthMM * 0.5f);
+            Assert.AreEqual(SofaBoxLayout.DrawerFrontGapMM, gap, Eps,
+                "между фасадами щель в 4 мм: она и показывает, что ящиков три");
+        }
+
+        [Test]
+        public void DrawerFronts_SitInTheFrontOfTheBox_RecessedBehindItsSidesAndLowerThanItsRim()
+        {
+            var dims = Default();
+            Bounds(SofaBoxLayout.Panels(dims, Seat, Radius), out var min, out var max);
+            float boxFront = dims.z * 0.5f - SofaBoxLayout.FrontLipMM;
+
+            foreach (var front in SofaBoxLayout.DrawerFronts(dims, Seat, Radius))
+            {
+                float frontFace = front.CentreMM.z + front.SizeMM.z * 0.5f;
+                float top = front.CentreMM.y + front.SizeMM.y * 0.5f;
+                Assert.AreEqual(boxFront - SofaBoxLayout.DrawerFrontRecessMM, frontFace, Eps,
+                    "фасад " + front.Name + ": фасад утоплен на 2 мм за переднюю кромку боковин — иначе "
+                    + "его плоскость совпала бы с плоскостью боковин и мерцала");
+                Assert.AreEqual(max.y - SofaBoxLayout.DrawerFrontTopGapMM, top, Eps,
+                    "фасад " + front.Name + ": верх фасада на 2 мм ниже кромки короба — по той же причине");
+                Assert.GreaterOrEqual(front.CentreMM.x - front.SizeMM.x * 0.5f,
+                    min.x + SofaBoxLayout.WallMM - Eps, "фасад " + front.Name + ": фасад не выходит за левую боковину");
+                Assert.LessOrEqual(front.CentreMM.x + front.SizeMM.x * 0.5f,
+                    max.x - SofaBoxLayout.WallMM + Eps, "фасад " + front.Name + ": и за правую");
+            }
+        }
+
+        [Test]
+        public void DrawerFronts_AreNamedByIndex_SoTheRigCanFindAndRepaintThem()
+        {
+            var fronts = SofaBoxLayout.DrawerFronts(Default(), Seat, Radius);
+
+            for (int i = 0; i < fronts.Length; i++)
+                Assert.AreEqual(SofaBoxLayout.DrawerFrontName(i), fronts[i].Name,
+                    "имя фасада — префикс и номер: части набора в FurniturePartSet ищутся по имени");
         }
     }
 }

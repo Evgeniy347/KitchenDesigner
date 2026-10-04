@@ -10,12 +10,17 @@ namespace KitchenDesigner.Core
         private static Localizer? _current;
         private static int _revision;
 
+        [ThreadStatic]
+        private static Localizer? _scoped;
+
         public static event Action? LanguageChanged;
 
         public static Localizer Current
         {
             get
             {
+                var scoped = _scoped;
+                if (scoped != null) return scoped;
                 var current = Volatile.Read(ref _current);
                 if (current != null) return current;
                 lock (Gate)
@@ -60,10 +65,26 @@ namespace KitchenDesigner.Core
             if (previous != localizer.Language) LanguageChanged?.Invoke();
         }
 
+        public static IDisposable Scope(Localizer localizer)
+        {
+            var outer = _scoped;
+            _scoped = localizer;
+            return new ScopeEnd(outer);
+        }
+
         public static void Reload()
         {
             string language = Current.Language;
             Use(LocalizationFiles.Load(language));
+        }
+
+        private sealed class ScopeEnd : IDisposable
+        {
+            private readonly Localizer? _outer;
+
+            public ScopeEnd(Localizer? outer) => _outer = outer;
+
+            public void Dispose() => _scoped = _outer;
         }
     }
 }

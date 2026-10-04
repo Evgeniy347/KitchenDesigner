@@ -36,7 +36,7 @@ public class SofaMcpTests : McpTestFixture
     [Test]
     public void CreateSofa_WithAnyHeight_GetsTheFixedHeight()
     {
-        var sofa = CreateSofa("Диван-высота", 1800, 1500, 1000);
+        var sofa = CreateSofa("SofaHeight", 1800, 1500, 1000);
 
         Assert.AreEqual(new UnityEngine.Vector3Int(1800, SofaLayout.OverallHeightMM, 1000),
             sofa.DimensionsMM,
@@ -47,11 +47,11 @@ public class SofaMcpTests : McpTestFixture
     [Test]
     public void EditSofa_Height_IsRefused_AndNothingChanges()
     {
-        var sofa = CreateSofa("Диван-отказ");
+        var sofa = CreateSofa("SofaRefuse");
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new object[] { new { name = "Диван-отказ", height = 900 } },
+            ops = new object[] { new { name = "SofaRefuse", height = 900 } },
         }));
 
         Assert.AreEqual("error", resp.type,
@@ -66,11 +66,11 @@ public class SofaMcpTests : McpTestFixture
     [Test]
     public void EditSofa_Depth_IsAccepted_AndOnlyTheSeatGrows()
     {
-        var sofa = CreateSofa("Диван-глубина");
+        var sofa = CreateSofa("SofaDepth");
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new object[] { new { name = "Диван-глубина", depth = 1200 } },
+            ops = new object[] { new { name = "SofaDepth", depth = 1200 } },
         }));
 
         Assert.AreEqual("result", resp.type, "глубину править можно");
@@ -82,12 +82,12 @@ public class SofaMcpTests : McpTestFixture
     [Test]
     public void CycleDrawerAnimation_OnASofa_StepsTheStages_AndReportsThem()
     {
-        var sofa = CreateSofa("Диван-цикл");
+        var sofa = CreateSofa("SofaCycle");
         var stages = new[] { "Extended", "Bed", "Folded" };
 
         foreach (var expected in stages)
         {
-            var resp = Cycle("Диван-цикл");
+            var resp = Cycle("SofaCycle");
 
             Assert.AreEqual("result", resp.type, "инструмент принимает диван");
             var entry = JObject.FromObject(resp.data!)["results"]![0]!;
@@ -101,10 +101,10 @@ public class SofaMcpTests : McpTestFixture
     [Test]
     public void CycleDrawerAnimation_WithASofaAndABoard_RefusesBoth_AndCyclesNothing()
     {
-        var sofa = CreateSofa("Диван-атомарность");
-        MakeElement("Доска-не-диван", new UnityEngine.Vector3Int(600, 400, 18));
+        var sofa = CreateSofa("SofaAtomic");
+        MakeElement("BoardNotSofa", new UnityEngine.Vector3Int(600, 400, 18));
 
-        var resp = Cycle("Диван-атомарность", "Доска-не-диван");
+        var resp = Cycle("SofaAtomic", "BoardNotSofa");
 
         Assert.AreEqual("error", resp.type, "доска не ящик и не диван — вызов отклонён целиком");
         Assert.AreEqual(SofaStage.Folded, sofa.UnfoldStage,
@@ -115,10 +115,10 @@ public class SofaMcpTests : McpTestFixture
     [Test]
     public void GetElements_ForASofa_ReportsTheStageTheSeatDepthAndTheBackrest()
     {
-        CreateSofa("Диван-инфо");
-        Cycle("Диван-инфо");
+        CreateSofa("SofaInfo");
+        Cycle("SofaInfo");
 
-        var resp = _handler!.Handle(MakeReq("get_elements", new { names = new[] { "Диван-инфо" } }));
+        var resp = _handler!.Handle(MakeReq("get_elements", new { names = new[] { "SofaInfo" } }));
 
         var info = JObject.FromObject(resp.data!)["elements"]![0]!["sofa"]!;
         Assert.AreEqual("Extended", info["unfoldStage"]!.ToString(), "этап виден агенту");

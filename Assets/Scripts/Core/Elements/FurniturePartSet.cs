@@ -11,6 +11,7 @@ namespace KitchenDesigner.Core
         private readonly Dictionary<string, Mesh> _meshes = new Dictionary<string, Mesh>();
         private readonly List<string> _unwanted = new List<string>();
         private readonly bool _solid;
+        private bool _visible = true;
         private Material? _material;
 
         public FurniturePartSet(Transform owner) : this(owner, false) { }
@@ -56,6 +57,17 @@ namespace KitchenDesigner.Core
             _parts.Remove(name);
             if (part != null) part.transform.SetParent(null, false);
             DestroyObject(part);
+        }
+
+        public void SetVisible(bool visible)
+        {
+            _visible = visible;
+            foreach (var part in _parts.Values)
+            {
+                if (part == null) continue;
+                var renderer = part.GetComponent<MeshRenderer>();
+                if (renderer != null) renderer.enabled = visible;
+            }
         }
 
         public MeshRenderer? RendererOf(string name)
@@ -172,6 +184,7 @@ namespace KitchenDesigner.Core
             part.AddComponent<MeshFilter>();
             var renderer = part.AddComponent<MeshRenderer>();
             if (_material != null) renderer.sharedMaterial = _material;
+            renderer.enabled = _visible;
 
             _parts[name] = part;
             return part;

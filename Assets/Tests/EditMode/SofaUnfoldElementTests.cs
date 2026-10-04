@@ -76,15 +76,11 @@ public class SofaUnfoldElementTests
     public void SnapToStage_Extended_SlidesTheWholeFrontGroupOutAndKeepsTheBackrestUp()
     {
         var sofa = Sofa();
-        float pillowBefore = Front(sofa).Find(SofaLayout.BackCushionLeftName)!.position.z;
-
         sofa.SnapToStage(SofaStage.Extended);
 
-        Assert.AreEqual(Travel(sofa) * Mm, Front(sofa).localPosition.z, Eps,
-            "сиденье выехало на ход выдвижения");
-        Assert.AreEqual(pillowBefore + Travel(sofa) * Mm,
-            Front(sofa).Find(SofaLayout.BackCushionLeftName)!.position.z, Eps,
-            "подушки на сиденье едут вместе с ним: они лежат НА нём, а не висят в воздухе");
+        Assert.AreEqual((Travel(sofa) + SofaUnfold.ExtraPullMM) * Mm,
+            Front(sofa).localPosition.z, Eps,
+            "сиденье выехало на ход выдвижения плюс запас на доступ к коробу");
         Assert.AreEqual(0f, HingeAngle(sofa), Eps,
             "на этапе 1 спинка ещё стоит: фото 43 — спинка вертикальна, сиденье выдвинуто");
     }
@@ -151,22 +147,25 @@ public class SofaUnfoldElementTests
     }
 
     [Test]
-    public void Advance_FromFoldedToBed_MovesTheSeatFirstAndTheBackrestAfter_NeverBoth()
+    public void Advance_FromFoldedToBed_PullsTheSeatOutFirstAndTurnsTheBackrestAfter()
     {
         var sofa = Sofa();
         sofa.GoToStage(SofaStage.Bed);
+        float fullPull = (Travel(sofa) + SofaUnfold.ExtraPullMM) * Mm;
 
         int steps = 0;
         bool moving = true;
+        bool pulledOut = false;
         while (moving && steps < 100)
         {
             moving = sofa.Advance(0.1f);
             steps++;
+            if (Front(sofa).localPosition.z > fullPull - Eps) pulledOut = true;
 
             if (HingeAngle(sofa) > 1e-2f)
-                Assert.AreEqual(Travel(sofa) * Mm, Front(sofa).localPosition.z, Eps,
-                    "спинка начала заваливаться, а сиденье ещё не доехало: этапы "
-                    + "перекрылись, шаг " + steps);
+                Assert.IsTrue(pulledOut,
+                    "спинка начала заваливаться, а сиденье ещё не дошло до полного выдвижения: "
+                    + "этапы перекрылись, шаг " + steps);
         }
 
         Assert.GreaterOrEqual(steps, 20,
@@ -175,7 +174,7 @@ public class SofaUnfoldElementTests
         Assert.IsFalse(moving, "анимация закончилась");
         Assert.AreEqual(90f, HingeAngle(sofa), 1e-2f, "спинка легла");
         Assert.AreEqual(Travel(sofa) * Mm, Front(sofa).localPosition.z, Eps,
-            "а сиденье осталось выдвинутым");
+            "а сиденье подъехало обратно к спинке и стоит в зазоре кровати");
     }
 
     [Test]
@@ -191,8 +190,8 @@ public class SofaUnfoldElementTests
             steps++;
             if (Front(sofa).localPosition.z < Travel(sofa) * Mm - Eps)
                 Assert.AreEqual(0f, HingeAngle(sofa), 1e-2f,
-                    "сиденье поехало назад, а спинка ещё не встала: складывание идёт тем же "
-                    + "порядком наоборот, шаг " + steps);
+                    "сиденье уехало глубже положения кровати, а спинка ещё не встала: "
+                    + "складывание идёт тем же порядком наоборот, шаг " + steps);
         }
 
         Assert.AreEqual(0f, Front(sofa).localPosition.z, Eps, "сиденье вернулось");
@@ -273,7 +272,8 @@ public class SofaUnfoldElementTests
 
         sofa.DimensionsMM = new Vector3Int(2000, 800, 1200);
 
-        Assert.AreEqual(Travel(sofa) * Mm, Front(sofa).localPosition.z, Eps,
+        Assert.AreEqual((Travel(sofa) + SofaUnfold.ExtraPullMM) * Mm,
+            Front(sofa).localPosition.z, Eps,
             "после растяжения вглубь сиденье остаётся выдвинутым, а ход пересчитан: короб "
             + "стал длиннее, и прежний ход открыл бы его не целиком");
         Assert.AreEqual(SofaStage.Extended, sofa.UnfoldStage, "этап не сбросился");
@@ -343,6 +343,90 @@ public class SofaUnfoldElementTests
 
         Assert.AreEqual(SofaStage.Bed, go.GetComponent<SofaElement>()!.UnfoldStage,
             "число за пределами не должно увезти диван в несуществующую позу");
+    }
+
+    private static bool CushionsShown(SofaElement sofa)
+    {
+        var renderer = Front(sofa).Find(SofaLayout.BackCushionLeftName)!
+            .GetComponent<MeshRenderer>()!;
+        return renderer.enabled;
+    }
+
+    [Test]
+    public void Cushions_AreTakenOffAtTheStartOfTheUnfold_AndPutBackWhenFoldedAgain()
+    {
+        var sofa = Sofa();
+        Assert.IsTrue(CushionsShown(sofa), "сложенный диван с подушками");
+
+        sofa.GoToStage(SofaStage.Extended);
+        sofa.Advance(0.1f);
+        Assert.IsFalse(CushionsShown(sofa),
+            "сиденье только тронулось, а подушек уже нет: на фото 43 их на сиденье нет, и они "
+            + "закрыли бы короб и пересекли бы спинку");
+        sofa.Advance(10f);
+        Assert.IsFalse(CushionsShown(sofa), "на этапе 1 их по-прежнему нет");
+
+        sofa.GoToStage(SofaStage.Folded);
+        sofa.Advance(0.5f);
+        Assert.IsFalse(CushionsShown(sofa), "по дороге обратно подушек нет");
+        sofa.Advance(10f);
+        Assert.IsTrue(CushionsShown(sofa),
+            "а когда сиденье встало на место, подушки вернулись: иначе сложенный диван "
+            + "навсегда остался бы голым");
+    }
+
+    [Test]
+    public void Cushions_StayOffAfterARebuild_WhileTheSofaIsUnfolded()
+    {
+        var sofa = Sofa();
+        sofa.SnapToStage(SofaStage.Bed);
+
+        sofa.SeatHeightMM = 400;
+
+        Assert.IsFalse(CushionsShown(sofa),
+            "пересборка (правка высоты сиденья) создаёт подушки заново, и они обязаны "
+            + "родиться скрытыми: иначе правка в панели «возвращала» подушки на кровать");
+    }
+
+    [Test]
+    public void Backrest_MidTurn_IsWhereTheFormulaOfTheLayoutSays_IncludingTheShiftFromTheWall()
+    {
+        var sofa = Sofa();
+        sofa.GoToStage(SofaStage.Bed);
+        sofa.Advance(1.3f);
+
+        var pose = SofaUnfold.PoseAt(1.3f, sofa.DimensionsMM.z, sofa.SeatHeightMM);
+        var expected = SofaUnfold.BackrestCentreMM(sofa.DimensionsMM, sofa.SeatHeightMM,
+            pose.BackrestAngleDeg) * Mm;
+        var actual = sofa.transform.InverseTransformPoint(Backrest(sofa).position);
+
+        Assert.Greater(pose.BackrestShiftMM, 1f,
+            "на этом угле поправка от стены ненулевая — иначе тест не проверял бы её");
+        Assert.AreEqual(expected.y, actual.y, Eps, "по высоте");
+        Assert.AreEqual(expected.z, actual.z, Eps,
+            "по глубине, с поправкой: формула слоя геометрии и то, что рисует Unity, сходятся "
+            + "и в середине поворота, а не только на концах");
+    }
+
+    [Test]
+    public void Backrest_WhileTurning_NeverLeavesTheBackWallPlane_OnTheRealElement()
+    {
+        var sofa = Sofa();
+        float wall = -sofa.DimensionsMM.z * 0.5f * Mm;
+        sofa.SnapToStage(SofaStage.Extended);
+        sofa.GoToStage(SofaStage.Bed);
+
+        int steps = 0;
+        while (sofa.Advance(0.02f) && steps < 200)
+        {
+            steps++;
+            var bounds = Backrest(sofa).GetComponent<MeshRenderer>()!.bounds;
+            Assert.GreaterOrEqual(bounds.min.z, wall - 1e-3f,
+                "габарит спинки по Z не заходит за заднюю плоскость дивана на шаге " + steps
+                + " (AABB повёрнутой детали консервативна, поэтому допуск 1 мм)");
+        }
+
+        Assert.Greater(steps, 40, "поворот прошёл за сорок шагов — тест ничего не проверил бы");
     }
 
     [Test]

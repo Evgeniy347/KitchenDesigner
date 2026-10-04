@@ -185,6 +185,11 @@
       "position": [113, 0]
     },
     {
+      "type": "Button",
+      "text": "Выдвинуть",
+      "position": [148, 0]
+    },
+    {
       "type": "Dropdown",
       "options": ["(не прикреплено)"],
       "selected": 0,
@@ -212,7 +217,7 @@
       "type": "InputField",
       "label": "Высота",
       "value": "800",
-      "interactable": true,
+      "interactable": false,
       "position": [148, 0]
     },
     {

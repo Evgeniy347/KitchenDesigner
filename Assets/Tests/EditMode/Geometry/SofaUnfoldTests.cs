@@ -79,29 +79,44 @@ namespace KitchenDesigner.Tests.Geometry
             Assert.AreEqual(0f, pose.SeatSlideMM, Eps, "сиденье на месте");
             Assert.AreEqual(0f, pose.BackrestAngleDeg, Eps, "спинка стоит");
         }
-
         [Test]
-        public void PoseAt_Extended_HasTheSeatOut_AndTheBackrestStillStanding()
+        public void PoseAt_Extended_HasTheSeatPulledOutFurtherThanTheBed_AndTheBackrestStillStanding()
         {
             var pose = SofaUnfold.PoseAt(1f, SofaLayout.DefaultDepthMM, Seat);
 
-            Assert.AreEqual(Travel(), pose.SeatSlideMM, Eps, "сиденье выдвинуто целиком");
+            Assert.AreEqual(Travel() + SofaUnfold.ExtraPullMM, pose.SeatSlideMM, Eps,
+                "на этапе 1 сиденье выдвинуто с запасом на доступ к коробу: фото 43 — между "
+                + "сиденьем и коробом зазор шире, чем у готовой кровати");
             Assert.AreEqual(0f, pose.BackrestAngleDeg, Eps,
                 "спинка к этому моменту ещё не тронулась: фото 43 — спинка стоит");
+            Assert.IsFalse(pose.CushionsOnSeat,
+                "подушки сняты: на фото 43 на сиденье их нет, и они закрыли бы короб");
         }
 
         [Test]
-        public void PoseAt_Bed_HasTheSeatOut_AndTheBackrestFlat()
+        public void PoseAt_Bed_HasTheSeatBackAtTheBedGap_AndTheBackrestFlat()
         {
             var pose = SofaUnfold.PoseAt(2f, SofaLayout.DefaultDepthMM, Seat);
 
-            Assert.AreEqual(Travel(), pose.SeatSlideMM, Eps, "сиденье осталось выдвинутым");
+            Assert.AreEqual(Travel(), pose.SeatSlideMM, Eps,
+                "сиденье подъехало обратно и стоит впритык к лежащей спинке (зазор 20 мм)");
             Assert.AreEqual(90f, pose.BackrestAngleDeg, Eps,
                 "спинка повёрнута на 90 градусов — лежит плашмя");
+            Assert.IsFalse(pose.CushionsOnSeat, "подушек на кровати нет, как на фото 40");
         }
 
         [Test]
-        public void TheTwoStages_AreStrictlySequential_TheBackrestWaitsForTheSeat()
+        public void PoseAt_Folded_HasTheCushionsOnTheSeat_AndAnyMovementTakesThemOff()
+        {
+            Assert.IsTrue(SofaUnfold.PoseAt(0f, SofaLayout.DefaultDepthMM, Seat).CushionsOnSeat,
+                "сложенный диван с подушками");
+            Assert.IsFalse(SofaUnfold.PoseAt(0.01f, SofaLayout.DefaultDepthMM, Seat).CushionsOnSeat,
+                "стоит сиденью тронуться — подушки уже сняты: иначе они ехали бы по ходу "
+                + "и закрывали короб");
+        }
+
+        [Test]
+        public void TheTwoStages_AreStrictlySequential_TheBackrestWaitsForTheFullPull()
         {
             int checkedSteps = 0;
             for (float progress = 0f; progress <= 2f + Eps; progress += 0.01f)
@@ -111,11 +126,11 @@ namespace KitchenDesigner.Tests.Geometry
 
                 if (progress <= 1f)
                     Assert.AreEqual(0f, pose.BackrestAngleDeg, Eps,
-                        "пока сиденье едет (этап 1), спинка не шевелится: этапы не "
+                        "пока сиденье выезжает (этап 1), спинка не шевелится: этапы не "
                         + "перекрываются, progress=" + progress);
                 if (progress >= 1f)
-                    Assert.AreEqual(Travel(), pose.SeatSlideMM, Eps,
-                        "пока спинка ложится (этап 2), сиденье уже стоит на месте: "
+                    Assert.LessOrEqual(pose.SeatSlideMM, Travel() + SofaUnfold.ExtraPullMM + Eps,
+                        "на этапе 2 сиденье только возвращается из выдвинутого положения, "
                         + "progress=" + progress);
             }
 
@@ -125,21 +140,123 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void BothMotions_NeverGoBackwards_WhileUnfolding()
+        public void TheSeat_GoesOutDuringStageOne_AndComesBackDuringStageTwo_WhileTheBackrestOnlyTurnsForward()
         {
             float lastSlide = 0f;
             float lastAngle = 0f;
             for (float progress = 0f; progress <= 2f + Eps; progress += 0.01f)
             {
                 var pose = SofaUnfold.PoseAt(progress, SofaLayout.DefaultDepthMM, Seat);
-                Assert.GreaterOrEqual(pose.SeatSlideMM, lastSlide - Eps,
-                    "сиденье не должно откатываться назад при раскладывании");
+                if (progress <= 1f)
+                    Assert.GreaterOrEqual(pose.SeatSlideMM, lastSlide - Eps,
+                        "на этапе 1 сиденье не откатывается назад");
+                else
+                    Assert.LessOrEqual(pose.SeatSlideMM, lastSlide + Eps,
+                        "на этапе 2 сиденье только возвращается");
                 Assert.GreaterOrEqual(pose.BackrestAngleDeg, lastAngle - Eps,
-                    "и спинка не должна подниматься обратно");
+                    "спинка не поднимается обратно");
                 lastSlide = pose.SeatSlideMM;
                 lastAngle = pose.BackrestAngleDeg;
             }
         }
+
+        private static (float minZ, float maxZ) PanelZRangeMM(Vector3Int dims, int seat,
+            float angleDeg, float shiftMM)
+        {
+            float lower = SofaUnfold.BelowHingeMM(seat);
+            float t = SofaLayout.BackrestThicknessMM;
+            float radians = angleDeg * Mathf.Deg2Rad;
+            float sin = Mathf.Sin(radians);
+            float cos = Mathf.Cos(radians);
+            float hingeZ = SofaUnfold.HingeMM(dims, seat).z;
+            float min = float.MaxValue;
+            float max = float.MinValue;
+            foreach (float dy in new[] { -lower, SofaLayout.BackrestHeightMM - lower })
+            foreach (float dz in new[] { 0f, -t })
+            {
+                float z = hingeZ + dy * sin + dz * cos + shiftMM;
+                min = Mathf.Min(min, z);
+                max = Mathf.Max(max, z);
+            }
+
+            return (min, max);
+        }
+
+        [Test]
+        public void Backrest_WhileFolding_NeverCrossesTheBackWallPlane_AtAnyAngleAndAnySeatHeight()
+        {
+            int checkedPoses = 0;
+            for (int seat = SofaLayout.MinSeatHeightMM; seat <= SofaLayout.MaxSeatHeightMM; seat += 10)
+            {
+                var dims = Default();
+                float wall = -dims.z * 0.5f;
+                for (float angle = 0f; angle <= 90f + Eps; angle += 0.5f)
+                {
+                    var (minZ, _) = PanelZRangeMM(dims, seat, angle,
+                        SofaUnfold.BackrestShiftMM(seat, angle));
+                    checkedPoses++;
+
+                    Assert.GreaterOrEqual(minZ, wall - Eps,
+                        "спинка не должна заходить за плоскость задней стенки ни на миллиметр: "
+                        + "диван стоит вплотную к стене. Высота сиденья " + seat
+                        + ", угол " + angle);
+                }
+            }
+
+            Assert.GreaterOrEqual(checkedPoses, 2500,
+                "перебор не дошёл до двух с половиной тысяч поз — тест ничего не доказал бы");
+        }
+
+        [Test]
+        public void TheWallSensor_ActuallyFiresWithoutTheShift_SoTheTestAboveProvesSomething()
+        {
+            var dims = Default();
+            float deepest = 0f;
+            for (float angle = 0f; angle <= 90f; angle += 1f)
+            {
+                var (minZ, _) = PanelZRangeMM(dims, Seat, angle, 0f);
+                deepest = Mathf.Max(deepest, -dims.z * 0.5f - minZ);
+            }
+
+            Assert.Greater(deepest, 5f,
+                "без поправки спинка при повороте заходит за стену на 17 мм: если сенсор этого "
+                + "не видит, зелёный тест выше — пустышка");
+        }
+
+        [Test]
+        public void TheShift_IsZeroAtBothEndsOfTheTurn_SoTheLyingBackrestIsWhereItWas()
+        {
+            Assert.AreEqual(0f, SofaUnfold.BackrestShiftMM(Seat, 0f), Eps,
+                "стоящая спинка не смещается");
+            Assert.AreEqual(0f, SofaUnfold.BackrestShiftMM(Seat, 90f), Eps,
+                "и лежащая тоже: поправка нужна только по дороге");
+            Assert.Greater(SofaUnfold.BackrestShiftMM(Seat, 24f), 10f,
+                "а на середине поворота это ощутимые миллиметры");
+        }
+
+        [Test]
+        public void SlidSeat_NeverTouchesTheTurningBackrest_AtAnyProgress()
+        {
+            var dims = Default();
+            int checkedSteps = 0;
+            for (int seat = SofaLayout.MinSeatHeightMM; seat <= SofaLayout.MaxSeatHeightMM; seat += 20)
+            for (float progress = 0.02f; progress <= 2f + Eps; progress += 0.02f)
+            {
+                var pose = SofaUnfold.PoseAt(progress, dims.z, seat);
+                var (_, maxZ) = PanelZRangeMM(dims, seat, pose.BackrestAngleDeg,
+                    pose.BackrestShiftMM);
+                float seatRear = SofaLayout.BackrestFrontZMM(dims) + pose.SeatSlideMM;
+                checkedSteps++;
+
+                float needed = progress <= 1f ? 0f : SofaUnfold.SlideClearanceMM;
+                Assert.GreaterOrEqual(seatRear - maxZ, needed - Eps,
+                    "сиденье не должно упираться в поворачивающуюся спинку: высота сиденья "
+                    + seat + ", прогресс " + progress);
+            }
+
+            Assert.GreaterOrEqual(checkedSteps, 500, "перебор слишком короткий");
+        }
+
 
         [Test]
         public void Travel_LeavesTheClearanceBetweenTheSlidSeatAndTheBoxFront()
@@ -249,29 +366,5 @@ namespace KitchenDesigner.Tests.Geometry
                 "перебор высот сиденья не прошёл и пятнадцати значений");
         }
 
-        [Test]
-        public void Backrest_WhileFolding_DipsBehindTheBackWallByUnderTwentyMillimetres_AtTheDefaultSeatHeight()
-        {
-            var dims = Default();
-            var hinge = SofaUnfold.HingeMM(dims, Seat);
-            float lower = hinge.y - (SofaLayout.FloorYMM(dims) + SofaLayout.BackrestBottomMM);
-            float thickness = SofaLayout.BackrestThicknessMM;
-
-            float deepest = 0f;
-            for (float angle = 0f; angle <= 90f; angle += 1f)
-            {
-                float radians = angle * Mathf.Deg2Rad;
-                float behind = -(-lower * Mathf.Sin(radians) - thickness * Mathf.Cos(radians)) - thickness;
-                deepest = Mathf.Max(deepest, behind);
-            }
-
-            Assert.Greater(deepest, 0f,
-                "заднее нижнее ребро спинки при повороте ненадолго заходит за плоскость "
-                + "задней стенки: часть спинки ниже петли идёт назад. Это известная цена "
-                + "петли над полом; тест держит её в цифрах, чтобы она не выросла молча");
-            Assert.Less(deepest, 20f,
-                "на высоте сиденья по умолчанию захват не должен превышать двадцати "
-                + "миллиметров: дальше диван при раскладывании заметно утыкался бы в стену");
-        }
     }
 }
