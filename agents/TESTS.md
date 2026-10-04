@@ -19,8 +19,8 @@ target here, and nothing on this branch is deployed anywhere — see `DEPLOY.md`
 | Suite | Command | Tests | Time |
 |-------|---------|-------|------|
 | `dotnet` (core + pure) | `.\tools\mutation-test.ps1 -TestsOnly` | весь быстрый набор, ~1 900 и растёт (core + pure) | **~2 s** тестов, ~9 s стены |
-| EditMode | `build.cmd -RunTests` | 6944 | **~118 s тестов + ~33 s накладных** |
-| PlayMode | `build.cmd -RunPlayMode` | 337 | **~68 s тестов + ~14 s накладных** |
+| EditMode | `build.cmd -RunTests` | 8963 | **~170 s тестов + ~20 s накладных** (2026-10-04) |
+| PlayMode | `build.cmd -RunPlayMode` | 394 | **~88 s тестов + ~22 s накладных** (2026-10-04) |
 
 Numbers measured 2026-09-26 (previously 5498/149s+33s EditMode, 254/113s PlayMode on
 2026-09-11 — both suites grew in test count since; wall time grew far less, since most of the
@@ -303,7 +303,7 @@ nothing and assert nothing.
 
 ## Iterating on ONE test class
 
-Use the gateway with a filter — **~11 s against ~118 s** for the whole suite. Filtering now
+Use the gateway with a filter — **~11 s against ~170 s** for the whole suite. Filtering now
 pays for itself: the fixed start is ~10 s, and a filtered run additionally turns Burst
 compilation off (worth 2,3 s, and only there — on a full run it buys exactly nothing).
 Still run the FULL suite before committing.
