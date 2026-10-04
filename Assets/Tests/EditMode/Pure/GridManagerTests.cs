@@ -2,6 +2,7 @@ using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
 
+[NonParallelizable]
 public class GridManagerTests
 {
     private const int StepMm = 16;

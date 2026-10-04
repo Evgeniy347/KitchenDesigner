@@ -8,6 +8,7 @@ using KitchenDesigner.Core;
 /// подсказки «i» (HintText.cs, HintCoverageGuardTests), а этот каталог принадлежит
 /// другому агенту в этой кампании; довести до конца сможет он или отдельный проход.
 /// </summary>
+[NonParallelizable]
 public class KitchenSettingsLevelsTests
 {
     private KitchenSettingsData _savedData = null!;

@@ -2,6 +2,7 @@ using System.Reflection;
 using NUnit.Framework;
 using KitchenDesigner.Core;
 
+[NonParallelizable]
 public class KitchenSettingsTests
 {
     [SetUp]
