@@ -13,7 +13,8 @@ using KitchenDesigner.Core.UI;
 /// (в инспекторе «50» и «360» стояли левее «2000» в нетронутом поле). Тест набирает по символу
 /// с кадром между ними, снимает фокус и сверяет геометрию с эталоном.
 ///
-/// PlayMode: каретка TMP создаётся только в Play, а двигается она на кадрах.</summary>
+/// PlayMode: каретка TMP создаётся только в Play, а двигается она на кадрах. Поля создаются
+/// в активном дереве и не пересобираются: тест меряет живое поле, как у пользователя.</summary>
 public class InputFieldRestTests
 {
     private const float Tolerance = 0.01f;
@@ -36,9 +37,6 @@ public class InputFieldRestTests
         if (_canvasGo != null) Object.DestroyImmediate(_canvasGo);
     }
 
-    /// <summary>OnEnable TMP создаёт каретку только если текст уже подключён. Панели строятся
-    /// скрытыми и включаются потом — там поле «просыпается» уже собранным; выключение и включение
-    /// компонента воспроизводит ровно это для поля, созданного в активном дереве.</summary>
     private TMP_InputField NewNumberField(string name, string initial, float y)
     {
         var field = UIFactory.CreateNumberField(name, _canvasGo.transform, initial, Vector2.zero,
@@ -49,9 +47,19 @@ public class InputFieldRestTests
         var rt = (RectTransform)field.transform;
         rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 0.5f);
         rt.anchoredPosition = new Vector2(100f, y);
-        field.enabled = false;
-        field.enabled = true;
         return field;
+    }
+
+    [Test]
+    public void FieldCreatedInTheActiveTree_HasACaretAtOnce()
+    {
+        var field = UIFactory.CreateNumberField("N", _canvasGo.transform, "50", Vector2.zero,
+            new Vector2(150f, 28f), "мм");
+
+        Assert.IsNotNull(field.textViewport!.Find("Caret"),
+            "OnEnable TMP создаёт каретку, только если текст и вьюпорт уже подключены; поле, "
+            + "собранное в активном дереве, просыпалось пустым и оставалось без каретки");
+        Assert.IsTrue(field.isActiveAndEnabled);
     }
 
     private static IEnumerator TypeInto(TMP_InputField field, string value)

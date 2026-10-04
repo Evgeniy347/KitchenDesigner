@@ -282,8 +282,6 @@ namespace KitchenDesigner.Core.UI
             outline.effectDistance = new Vector2(2, 2);
             outline.enabled = false;
 
-            var input = rect.gameObject.AddComponent<TMP_InputField>();
-
             var textArea = CreateRect("Text Area", rect);
             textArea.anchorMin = Vector2.zero;
             textArea.anchorMax = Vector2.one;
@@ -303,8 +301,11 @@ namespace KitchenDesigner.Core.UI
             text.alignment = TextAlignmentOptions.Left;
             text.richText = false;
 
+            rect.gameObject.SetActive(false);
+            var input = rect.gameObject.AddComponent<TMP_InputField>();
             input.textViewport = textArea;
             input.textComponent = text;
+            rect.gameObject.SetActive(true);
             input.text = initial;
             InputFieldScroll.RestOnEndEdit(input);
             AddFieldStroke(rect);
