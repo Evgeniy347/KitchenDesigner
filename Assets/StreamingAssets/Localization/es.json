@@ -1076,5 +1076,5 @@
   "window.music.prev": "Pista anterior",
   "window.music.title": "Música",
   "window.music.trackPrefix": "Pista ",
-  "window.music.volume": "Volumen: {0} %"
+  "window.music.volumeLabel": "Volumen"
 }

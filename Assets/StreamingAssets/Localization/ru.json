@@ -1076,5 +1076,5 @@
   "window.music.prev": "Предыдущий трек",
   "window.music.title": "Музыка",
   "window.music.trackPrefix": "Трек ",
-  "window.music.volume": "Громкость: {0} %"
+  "window.music.volumeLabel": "Громкость"
 }

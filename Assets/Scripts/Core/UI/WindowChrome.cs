@@ -51,7 +51,8 @@ namespace KitchenDesigner.Core.UI
 
         public float BodyTop => UIStyle.TitleBarH + BodyPad;
 
-        public float BodyBottom => Footer != null ? UIStyle.FooterH + BodyPad : UIStyle.Space5;
+        public float BodyBottom =>
+            (Footer != null ? UIStyle.FooterH + BodyPad : UIStyle.Space5) - WindowBody.BottomPadPx;
 
         public float BodyWidth => Panel.sizeDelta.x - 2f * BodyPad;
 
@@ -81,6 +82,10 @@ namespace KitchenDesigner.Core.UI
 
         public void SetTitle(string text) => Title.text = text;
 
+        public void FitHeightTo(float contentHeight) =>
+            Panel.sizeDelta = new Vector2(Panel.sizeDelta.x,
+                BodyTop + contentHeight + WindowBody.BottomPadPx + BodyBottom);
+
         public Button AddHeaderAction(string name, Sprite icon, string tooltip, Action onClick)
         {
             if (_headerActions >= MaxHeaderActions)
@@ -105,8 +110,13 @@ namespace KitchenDesigner.Core.UI
             return button;
         }
 
-        public WindowBody CreateBody() =>
-            WindowBody.Create(Panel, BodyTop, BodyBottom, BodyPad);
+        public WindowBody CreateBody()
+        {
+            var body = WindowBody.Create(Panel, BodyTop, BodyBottom, BodyPad);
+            var viewport = body.Viewport;
+            viewport.offsetMax = new Vector2(-Mathf.Max(0f, BodyPad - WindowBody.BarW), viewport.offsetMax.y);
+            return body;
+        }
 
         private static Button CreateQuietClose(RectTransform panel, Action onClose)
         {

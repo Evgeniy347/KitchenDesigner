@@ -1076,5 +1076,5 @@
   "window.music.prev": "Vorheriger Titel",
   "window.music.title": "Musik",
   "window.music.trackPrefix": "Titel ",
-  "window.music.volume": "Lautstärke: {0} %"
+  "window.music.volumeLabel": "Lautstärke"
 }

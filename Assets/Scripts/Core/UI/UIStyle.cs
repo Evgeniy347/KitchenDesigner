@@ -115,6 +115,9 @@ namespace KitchenDesigner.Core.UI
         public const float NavItemH = 32f;
         public const float HierarchyW = 300f;
         public const float LevelsW = 440f;
+        public const float ToolPanelW = 340f;
+        public const float ToolLabelW = 96f;
+        public const float ToolFieldW = 72f;
         public static readonly Vector2 SettingsSize = new Vector2(920f, 640f);
         public static readonly Vector2 ErrorsSize = new Vector2(940f, 560f);
         public static readonly Vector2 SpecificationSize = new Vector2(960f, 640f);
@@ -157,6 +160,7 @@ namespace KitchenDesigner.Core.UI
         public const float HintBubblePadY = Space2;
         public const float HintCloudBorderPx = 1f;
 
+        public const int FontDisplay = 28;
         public const int FontWindowTitle = 20;
         public const int FontBody = 16;
         public const int FontSection = 14;
@@ -174,6 +178,8 @@ namespace KitchenDesigner.Core.UI
         public const string GlyphAngle = "∟";
         public const string GlyphHint = "i";
         public const string GlyphDash = "—";
+        public const string GlyphSortAscending = "▲";
+        public const string GlyphSortDescending = "▼";
 
         private static Color Hex(int rgb) => new Color(
             ((rgb >> 16) & 0xFF) / 255f, ((rgb >> 8) & 0xFF) / 255f, (rgb & 0xFF) / 255f, 1f);

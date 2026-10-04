@@ -1076,5 +1076,5 @@
   "window.music.prev": "前のトラック",
   "window.music.title": "音楽",
   "window.music.trackPrefix": "トラック ",
-  "window.music.volume": "音量: {0} %"
+  "window.music.volumeLabel": "音量"
 }

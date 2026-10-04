@@ -5673,12 +5673,9 @@
     "meaning": "Generic name of a music track, e.g. \"Track 3\"",
     "maxLength": 12
   },
-  "window.music.volume": {
-    "where": "Music panel, label above the volume slider",
-    "meaning": "Music volume in percent",
-    "maxLength": 24,
-    "placeholders": {
-      "0": "volume percent 0..100"
-    }
+  "window.music.volumeLabel": {
+    "where": "Music panel: label of the volume slider row; the value (e.g. 60 %) is shown separately to the right of the slider",
+    "meaning": "Playback volume of the background music",
+    "maxLength": 12
   }
 }

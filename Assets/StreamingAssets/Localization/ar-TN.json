@@ -1076,5 +1076,5 @@
   "window.music.prev": "المقطع السابق",
   "window.music.title": "الموسيقى",
   "window.music.trackPrefix": "مقطع ",
-  "window.music.volume": "مستوى الصوت: {0} %"
+  "window.music.volumeLabel": "مستوى الصوت"
 }

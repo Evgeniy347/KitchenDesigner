@@ -152,13 +152,14 @@ public class WindowChromeTests
     {
         var dialog = Build();
         Assert.AreEqual(UIStyle.TitleBarH + UIStyle.DialogPad, dialog.BodyTop, "тело отступает от линии шапки на паддинг окна");
-        Assert.AreEqual(UIStyle.FooterH + UIStyle.DialogPad, dialog.BodyBottom);
+        Assert.AreEqual(UIStyle.FooterH + UIStyle.DialogPad, dialog.BodyBottom + WindowBody.BottomPadPx,
+            "видимый зазор над футером — паддинг окна: нижний запас Fit() входит в него, а не прибавляется");
         Assert.AreEqual(UIStyle.DialogPad, dialog.BodyPad);
         Assert.AreEqual(640f - 2f * UIStyle.DialogPad, dialog.BodyWidth);
 
         var tool = WindowChrome.Create(_canvas!.transform, "Tool", "Т", new Vector2(360f, 400f),
             new WindowChromeOptions { Kind = WindowKind.Tool, OnClose = () => { } });
         Assert.AreEqual(UIStyle.ToolPanelPad, tool.BodyPad, "панель-инструмент — паддинг 12 (D5)");
-        Assert.AreEqual(UIStyle.Space5, tool.BodyBottom, "окно без футера — 24 снизу (Fluent, D5)");
+        Assert.AreEqual(UIStyle.Space5, tool.BodyBottom + WindowBody.BottomPadPx, "окно без футера — 24 снизу (Fluent, D5)");
     }
 }

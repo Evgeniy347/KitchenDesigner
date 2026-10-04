@@ -1076,5 +1076,5 @@
   "window.music.prev": "Faixa anterior",
   "window.music.title": "Música",
   "window.music.trackPrefix": "Faixa ",
-  "window.music.volume": "Volume: {0} %"
+  "window.music.volumeLabel": "Volume"
 }

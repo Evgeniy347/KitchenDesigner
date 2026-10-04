@@ -84,7 +84,7 @@ specification 1000×700, load-project 1300×560, dialogs 1560×760, tool-panels 
 Unity-слой: всё, кроме T0, правит `Core/UI` — быстрый dotnet-набор его не собирает; исполнитель
 пишет «компиляция Unity-слоя не проверена», прогоны и регенерацию голденов делает координатор.
 
-## API общих компонентов (T0–T3 сделаны)
+## API общих компонентов (T0–T4a сделаны)
 
 Окна переезжают по одному; старые `UIFactory.Create*` продолжают работать рядом. Новое окно и окно,
 которое переводит своя задача, собираются ТОЛЬКО из этого — чисел по месту нет.
@@ -132,4 +132,22 @@ Title, Body, Note?, PrimaryCaption, OnPrimary, SecondaryCaption? (= «Отмен
 Escape обязан передать `ModalOpen = ModalPresence.IsOpen` в свои `EscapeClaims`). Снимок окна для
 глаз — `UiCaptureStage` (PlayMode), образец `WindowChromeDiagramTests`.
 Переведены: «Инструкции проекта» (шапка+футер), `DemoModeDialogUI` (модальный). Остальные шапки — задачи
-T5–T11; `NewerVersionDialogUI` — T9.
+T5–T11; `NewerVersionDialogUI` — T9. Высота окна по содержимому — `chrome.FitHeightTo(rows.Relayout())`
+до `body.Fit()`.
+
+**T4a — строки и контролы.** `FormRows(host, RowDensity.X)` — одна фабрика на все окна; колонки из
+`RowMetrics.For(density)`: `Regular` (настройки: 300 | 16 | 240, контрол 32, шаг 36, число 120),
+`Compact` (инспектор: 136 | 12 | 188, контрол 28, шаг 32), `Tool` (панели-инструменты 340: 96 | 12 |
+208, поле 72). Строки: `Number(node, label, unit, indent, hint, allowDecimal)`, `Text`, `Dropdown`,
+`Switch`, `Segmented`, `Slider(…, format, …)` (значение 64 справа), `ReadOnly` (подпись погашена,
+значение без рамки), `Vector(node, caption, rotateTooltips?, onRotate90?)` (три поля с префиксом оси, ↻90
+в конце поля), `Section(node, title, memoryKey?, actionCaption?, onAction?)` + `EndSection()`
+(`CollapsibleSection`: ▼/►, Bold 14, счётчик `SetCount`, ссылка справа, свёрнутость по `memoryKey` на
+сессию), `Note` (пояснение на всю ширину), `Custom(rect, height)`, `Gap(px)`. Каждая строка — `FormRow`
+(`Root`, `Label`, `Control`, `VisibleWhen`); после построения — `rows.Relayout()` (возвращает высоту и
+вызывается сам при сворачивании секции; подпишитесь на `rows.Relayouted`, чтобы позвать `body.Fit()`).
+`rows.SyncEnabledState()` гасит подпись у выключенного контрола (§9), «i» — ребёнок подписи (§13).
+Отдельно от фабрики: `SwitchControl.Create`, `SegmentedControl.Create`, `SliderControl.Create`,
+`VectorField.Create`. Старые `ContextMenuRowFactory`/`SettingsRowFactory` удаляют T5/T6 при переезде.
+Доказательство — «Музыка» (`MusicPanelUI`, `RowDensity.Tool`); витрина обеих плотностей —
+`FormRowsDiagramTests` (PNG `form_rows_gallery`).
