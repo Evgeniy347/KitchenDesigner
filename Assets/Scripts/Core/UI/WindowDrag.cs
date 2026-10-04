@@ -7,8 +7,7 @@ namespace KitchenDesigner.Core.UI
 {
     public static class WindowDrag
     {
-        private const float ResizeHandleHeight = 10f;
-        private static readonly Vector2 GripSize = new Vector2(36f, 4f);
+        private static readonly Vector2 GripSize = new Vector2(UIStyle.ResizeGripW, UIStyle.ResizeGripH);
 
         public static void Attach(RectTransform window, float handleHeight)
         {
@@ -23,14 +22,14 @@ namespace KitchenDesigner.Core.UI
             handle.anchorMin = new Vector2(0, 0);
             handle.anchorMax = new Vector2(1, 0);
             handle.pivot = new Vector2(0.5f, 0);
-            handle.sizeDelta = new Vector2(0, ResizeHandleHeight);
+            handle.sizeDelta = new Vector2(0, UIStyle.ResizeZoneH);
             handle.anchoredPosition = Vector2.zero;
 
             var img = handle.gameObject.AddComponent<Image>();
             img.color = new Color(0, 0, 0, 0);
 
-            var grip = UIFactory.CreatePanel("Grip", handle, new Vector2(0, 3f),
-                GripSize, UIFactory.ButtonColor);
+            var grip = UIFactory.CreatePanel("Grip", handle, new Vector2(0, UIStyle.Space1),
+                GripSize, UIStyle.FieldStroke);
             grip.raycastTarget = false;
             var gripRt = grip.rectTransform;
             gripRt.anchorMin = gripRt.anchorMax = new Vector2(0.5f, 0);

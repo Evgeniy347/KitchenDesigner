@@ -14,6 +14,8 @@ namespace KitchenDesigner.Core.UI
             public bool hasChildren;
             public bool collapsed;
             public string? rootLabel;
+            public string rootKey = "";
+            public int count;
         }
 
         public static List<Node> Build(
@@ -25,7 +27,13 @@ namespace KitchenDesigner.Core.UI
             var collapsed = collapsedGroupIds ?? new HashSet<int>();
             var facadeToHost = MapAttachedFacadesToHosts(allElements);
 
-            nodes.Add(new Node { isRoot = true, depth = 0, hasChildren = allElements.Count > 0 });
+            nodes.Add(new Node
+            {
+                isRoot = true,
+                depth = 0,
+                hasChildren = allElements.Count > 0,
+                count = allElements.Count
+            });
 
             var groupsByCreationId = new List<LinkGroup>(groups);
             groupsByCreationId.Sort((a, b) => a.id.CompareTo(b.id));

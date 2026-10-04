@@ -67,7 +67,7 @@ public class HierarchyPanelEditModeRebuildTests
 
     private Transform Panel => _canvasGo.transform.Find("HierarchyPanel");
 
-    private Transform Content => Panel.Find("HierViewport/HierContent");
+    private Transform Content => Panel.Find("HierarchyPanelBody/HierarchyPanelBodyContent");
 
     private static string LabelOf(Transform row)
     {

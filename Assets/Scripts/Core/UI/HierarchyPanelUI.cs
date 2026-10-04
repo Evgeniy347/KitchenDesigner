@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -10,40 +9,26 @@ namespace KitchenDesigner.Core.UI
         public static HierarchyPanelUI? Instance { get; private set; }
 
         public string WindowId => "hierarchy";
-        public RectTransform? WindowRect => _root != null ? (RectTransform)_root.transform : null;
+        public RectTransform? WindowRect => _chrome != null ? _chrome.Panel : null;
         public bool HeightAdjustable => true;
 
-        private const float PanelW = 300f;
-        private const float PanelH = 660f;
-        private const float MinPanelH = 160f;
-        private const float TopOffsetUnderToolbar = 60f;
-        private const float RowH = 24f;
-        private const float RowStep = 26f;
-        private const float ScrollbarAndPaddingW = 28f;
-        private const float ContentW = PanelW - ScrollbarAndPaddingW;
-        private const float IndentPx = 16f;
-        private const float HeaderStripH = 100f;
-        private const int MovePlaceholderIndex = 0;
-        private const int MoveUngroupedIndex = 1;
-        private const int MoveFirstGroupIndex = 2;
         private const float PollInterval = 0.5f;
+        private static readonly HashSet<int> NoCollapsedGroups = new HashSet<int>();
+        private static readonly HashSet<string> NoCollapsedLevels = new HashSet<string>();
 
-        private static readonly Color RowElementColor = new Color(0.16f, 0.17f, 0.21f, 1f);
-        private static readonly Color RowGroupColor = new Color(0.22f, 0.24f, 0.30f, 1f);
-        private static readonly Color RowRootColor = new Color(0.13f, 0.14f, 0.17f, 1f);
-
-        private GameObject? _root;
+        private WindowChrome? _chrome;
         private RectTransform? _content;
-        private TMP_Dropdown? _moveDropdown;
         private TMP_InputField? _searchField;
         private TMP_Text? _searchHint;
-        private static readonly HashSet<int> NoCollapsedGroups = new HashSet<int>();
+        private TMP_Text? _selectedLabel;
+        private SceneMoveToDropdown? _moveTo;
+        private EmptyState? _emptyScene;
+        private EmptyState? _noMatches;
 
         private readonly HashSet<int> _collapsed = new HashSet<int>();
-        private readonly List<LinkGroup> _dropdownGroups = new List<LinkGroup>();
+        private readonly HashSet<string> _collapsedLevels = new HashSet<string>();
         private float _nextPoll;
         private int _fingerprint;
-        private bool _ignoreDropdownCallback;
 
         private readonly HierarchyRowHighlights _highlights = new HierarchyRowHighlights();
 
@@ -68,51 +53,28 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("HierarchyPanel", canvas, Vector2.zero, new Vector2(PanelW, PanelH));
-            UIFactory.AnchorTopRight(panel.rectTransform);
-            panel.rectTransform.anchoredPosition = new Vector2(0, -TopOffsetUnderToolbar);
-            _root = panel.gameObject;
-            WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
+            _chrome = WindowChrome.Create(canvas, "HierarchyPanel", Loc.T("hierarchy.title"),
+                new Vector2(UIStyle.HierarchyW, SceneTreeMetrics.PanelH), new WindowChromeOptions
+                {
+                    Kind = WindowKind.Tool,
+                    OnClose = () => SetVisible(false),
+                    HasFooter = true,
+                    RuledHeader = true,
+                });
+            var panel = _chrome.Panel;
+            UIFactory.AnchorTopRight(panel);
+            panel.anchoredPosition = new Vector2(-UIStyle.Space3, -(UIStyle.ToolbarH + UIStyle.Space3));
             ProjectWindows.Register(this);
 
-            WindowTitle.Create(panel.transform, "HierTitle", Loc.T("hierarchy.title"), UIStyle.FontWindowTitle,
-                120f, 28f, TextAnchor.MiddleLeft, 14f);
+            _chrome.AddHeaderAction("HierAddGroup", SceneTreeIcons.Plus, Loc.T("hierarchy.addGroup"),
+                CreateEmptyGroup);
 
-            var addBtn = UIFactory.CreateButton("HierAddGroup", panel.transform, Loc.T("hierarchy.addGroup"),
-                Vector2.zero, new Vector2(92, 26), CreateEmptyGroup);
-            var addRt = addBtn.GetComponent<RectTransform>();
-            SetTopRight(addRt, new Vector2(-64, -UIStyle.WindowTitleCenterFromTop));
-            addRt.pivot = new Vector2(1, 0.5f);
+            BuildTreeArea();
+            BuildSearch(panel);
+            BuildEmptyStates(panel);
+            BuildFooter(_chrome.Footer!);
 
-            UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
-
-            _moveDropdown = UIFactory.CreateDropdown("HierMoveTo", panel.transform,
-                new List<string> { Loc.T("hierarchy.moveTo") },
-                Vector2.zero, new Vector2(PanelW - 20, 26), OnMoveDropdown);
-            var ddRt = _moveDropdown.GetComponent<RectTransform>();
-            ddRt.anchorMin = ddRt.anchorMax = new Vector2(0.5f, 1);
-            ddRt.pivot = new Vector2(0.5f, 1);
-            ddRt.anchoredPosition = new Vector2(0, -38);
-
-            _searchField = UIFactory.CreateInputField("HierSearch", panel.transform, "",
-                Vector2.zero, new Vector2(PanelW - 20, 26));
-            var sfRt = _searchField.GetComponent<RectTransform>();
-            sfRt.anchorMin = sfRt.anchorMax = new Vector2(0.5f, 1);
-            sfRt.pivot = new Vector2(0.5f, 1);
-            sfRt.anchoredPosition = new Vector2(0, -68);
-            _searchField.onValueChanged.AddListener(_ => Refresh());
-            var searchHint = UIFactory.CreateLabel("HierSearchHint", _searchField.transform, Loc.T("hierarchy.search"), 14,
-                Vector2.zero, new Vector2(PanelW - 36, 26), TextAnchor.MiddleLeft);
-            searchHint.color = UIStyle.TextSecondary;
-            searchHint.raycastTarget = false;
-            var shRt = searchHint.rectTransform;
-            shRt.anchorMin = Vector2.zero; shRt.anchorMax = Vector2.one;
-            shRt.offsetMin = new Vector2(8, 0); shRt.offsetMax = Vector2.zero;
-            _searchHint = searchHint;
-
-            BuildScrollArea(panel.transform);
-
-            WindowDrag.AttachResizeBottom(panel.rectTransform, MinPanelH);
+            WindowDrag.AttachResizeBottom(panel, SceneTreeMetrics.MinPanelH);
 
             GroupManager.Changed += OnGroupsChanged;
             if (SelectionManager.Instance != null)
@@ -121,57 +83,69 @@ namespace KitchenDesigner.Core.UI
             Refresh();
         }
 
-        private static void SetTopRight(RectTransform rt, Vector2 pos)
+        private void BuildTreeArea()
         {
-            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1, 1);
-            rt.anchoredPosition = pos;
+            var body = _chrome!.CreateBody();
+            var viewport = body.Viewport;
+            viewport.offsetMax = new Vector2(viewport.offsetMax.x, -SceneTreeMetrics.TreeTop);
+            _content = body.Content;
         }
 
-        private void BuildScrollArea(Transform parent)
+        private void BuildSearch(RectTransform panel)
         {
-            var viewport = UIFactory.CreateRect("HierViewport", parent);
-            viewport.anchorMin = new Vector2(0, 0);
-            viewport.anchorMax = new Vector2(1, 1);
-            viewport.pivot = new Vector2(0.5f, 1f);
-            viewport.offsetMin = new Vector2(6, 8);
-            viewport.offsetMax = new Vector2(-16, -HeaderStripH);
-            var vpImg = viewport.gameObject.AddComponent<Image>();
-            vpImg.color = new Color(0, 0, 0, 0.01f);
-            var mask = viewport.gameObject.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
+            _searchField = UIFactory.CreateInputField("HierSearch", panel, "", Vector2.zero,
+                new Vector2(0f, SceneTreeMetrics.SearchH));
+            var rect = (RectTransform)_searchField.transform;
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(1f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.offsetMin = new Vector2(_chrome!.BodyPad, -(SceneTreeMetrics.SearchTop + SceneTreeMetrics.SearchH));
+            rect.offsetMax = new Vector2(-_chrome.BodyPad, -SceneTreeMetrics.SearchTop);
+            _searchField.onValueChanged.AddListener(_ => Refresh());
 
-            _content = UIFactory.CreateRect("HierContent", viewport);
-            _content.anchorMin = new Vector2(0, 1);
-            _content.anchorMax = new Vector2(1, 1);
-            _content.pivot = new Vector2(0.5f, 1f);
-            _content.sizeDelta = new Vector2(0, 0);
+            var hint = UIFactory.CreateLabel("HierSearchHint", _searchField.transform, Loc.T("hierarchy.search"),
+                UIStyle.FontBody, Vector2.zero, new Vector2(0f, SceneTreeMetrics.SearchH), TextAnchor.MiddleLeft);
+            hint.color = UIStyle.TextSecondary;
+            hint.raycastTarget = false;
+            var hintRect = hint.rectTransform;
+            hintRect.anchorMin = Vector2.zero;
+            hintRect.anchorMax = Vector2.one;
+            hintRect.offsetMin = new Vector2(UIStyle.Space2, 0f);
+            hintRect.offsetMax = new Vector2(-UIStyle.Space2, 0f);
+            _searchHint = hint;
+        }
 
-            var scroll = viewport.gameObject.AddComponent<ScrollRect>();
-            scroll.content = _content;
-            scroll.viewport = viewport;
-            scroll.horizontal = false;
-            scroll.vertical = true;
-            scroll.movementType = ScrollRect.MovementType.Clamped;
-            scroll.scrollSensitivity = 20f;
+        private void BuildEmptyStates(RectTransform panel)
+        {
+            _emptyScene = Empty(panel, "HierEmpty", Loc.T("hierarchy.empty.title"), Loc.T("hierarchy.empty.hint"));
+            _noMatches = Empty(panel, "HierNoMatches", Loc.T("hierarchy.noMatches.title"),
+                Loc.T("hierarchy.noMatches.hint"));
+        }
 
-            var sbRect = UIFactory.CreateRect("HierScrollbar", parent);
-            sbRect.anchorMin = new Vector2(1, 0);
-            sbRect.anchorMax = new Vector2(1, 1);
-            sbRect.pivot = new Vector2(1, 0.5f);
-            sbRect.offsetMin = new Vector2(-12, 8);
-            sbRect.offsetMax = new Vector2(-4, -HeaderStripH);
-            var sbImg = sbRect.gameObject.AddComponent<Image>();
-            sbImg.color = new Color(0.10f, 0.10f, 0.13f, 0.6f);
-            var scrollbar = sbRect.gameObject.AddComponent<Scrollbar>();
-            scrollbar.direction = Scrollbar.Direction.BottomToTop;
-            var handle = UIFactory.CreateRect("Handle", sbRect);
-            handle.sizeDelta = new Vector2(8, 100);
-            var handleImg = handle.gameObject.AddComponent<Image>();
-            handleImg.color = UIStyle.ScrollHandle;
-            scrollbar.targetGraphic = handleImg;
-            scrollbar.handleRect = handle;
-            scroll.verticalScrollbar = scrollbar;
-            scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+        private EmptyState Empty(RectTransform panel, string name, string title, string hint)
+        {
+            var state = EmptyState.Create(panel, name, title, hint, width: UIStyle.HierarchyW - 2f * _chrome!.BodyPad);
+            var rect = state.Root;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(_chrome.BodyPad, _chrome.BodyBottom);
+            rect.offsetMax = new Vector2(-_chrome.BodyPad, -SceneTreeMetrics.TreeTop);
+            rect.gameObject.SetActive(false);
+            return state;
+        }
+
+        private void BuildFooter(WindowFooter footer)
+        {
+            float labelW = UIStyle.HierarchyW - 2f * UIStyle.Space4 - SceneTreeMetrics.MoveToW - UIStyle.Space2;
+            _selectedLabel = footer.AddLeftText("HierSelected", Loc.F("common.selectedCount", 0));
+            _selectedLabel.rectTransform.sizeDelta = new Vector2(labelW, UIStyle.ControlH);
+
+            _moveTo = SceneMoveToDropdown.Create(footer.Root, new Vector2(SceneTreeMetrics.MoveToW, UIStyle.ControlH),
+                Refresh);
+            var rect = (RectTransform)_moveTo.Dropdown.transform;
+            bool rtl = LayoutDirection.IsRtl;
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(rtl ? 0f : 1f, 0.5f);
+            rect.anchoredPosition = new Vector2(rtl ? UIStyle.Space4 : -UIStyle.Space4, 0f);
         }
 
         private void OnDestroy()
@@ -182,7 +156,6 @@ namespace KitchenDesigner.Core.UI
                 SelectionManager.Instance.OnSelectionChanged -= OnSceneSelectionChanged;
         }
 
-
         private void Update()
         {
             using var _ = PerfMarkers.HierarchyPanelUpdate.Auto();
@@ -191,7 +164,7 @@ namespace KitchenDesigner.Core.UI
 
         private void RefreshWhenSceneChangedWithoutAnEvent()
         {
-            if (_root == null || !_root.activeSelf) return;
+            if (!IsVisible) return;
             if (Time.unscaledTime < _nextPoll) return;
             _nextPoll = Time.unscaledTime + PollInterval;
             PollSceneForChanges();
@@ -237,12 +210,16 @@ namespace KitchenDesigner.Core.UI
         private void OnSceneSelectionChanged(KitchenElement? selected)
         {
             bool expanded = ExpandGroupsOfSelectedElements();
-            if (_root == null || !_root.activeSelf) return;
+            if (!IsVisible) return;
             if (expanded) { Refresh(); return; }
 
             int fingerprint = ComputeFingerprint();
             if (fingerprint != _fingerprint) RebuildRows(fingerprint);
-            else _highlights.Repaint(SelectionManager.Instance);
+            else
+            {
+                _highlights.Repaint(SelectionManager.Instance);
+                RefreshSelectionFooter();
+            }
         }
 
         private bool ExpandGroupsOfSelectedElements()
@@ -256,17 +233,16 @@ namespace KitchenDesigner.Core.UI
             return expanded;
         }
 
-        public bool IsVisible => _root != null && _root.activeSelf;
+        public bool IsVisible => _chrome != null && _chrome.Panel.gameObject.activeSelf;
 
-        public void Toggle() => SetVisible(_root != null && !_root.activeSelf);
+        public void Toggle() => SetVisible(!IsVisible);
 
         public void SetVisible(bool visible)
         {
-            if (_root == null) return;
+            if (_chrome == null) return;
             if (visible) Refresh();
-            _root.SetActive(visible);
+            _chrome.Panel.gameObject.SetActive(visible);
         }
-
 
         private void Refresh() => RebuildRows(ComputeFingerprint());
 
@@ -283,61 +259,51 @@ namespace KitchenDesigner.Core.UI
             string filter = _searchField != null ? _searchField.text.Trim() : "";
             if (_searchHint != null) _searchHint.gameObject.SetActive(filter.Length == 0);
 
-            var collapsed = filter.Length == 0 ? _collapsed : NoCollapsedGroups;
-            var nodes = BuildNodesGroupedByLevel(collapsed);
+            bool filtering = filter.Length > 0;
+            bool sceneEmpty = !filtering && PartRegistry.All.Count == 0 && !AnyGroups();
+            var nodes = sceneEmpty ? new List<SceneTree.Node>()
+                : SceneTreeByLevel.Build(filtering ? NoCollapsedGroups : _collapsed,
+                    filtering ? NoCollapsedLevels : _collapsedLevels);
+            var actions = new SceneTreeRowActions(OnRowClick, OnFold, OpenGroupMenu);
             var sel = SelectionManager.Instance;
 
             float y = 0f;
+            int shown = 0;
             foreach (var node in nodes)
             {
-                if (filter.Length > 0 && !MatchesFilter(node, filter)) continue;
-                BuildRow(node, y, sel);
-                y -= RowStep;
+                if (filtering && !MatchesFilter(node, filter)) continue;
+                var view = SceneTreeRowFactory.Build(_content, node, y, HierarchyRowHighlights.Highlighted(node, sel),
+                    actions);
+                _highlights.Remember(view);
+                _rowsBuilt++;
+                y -= UIStyle.TreeRowH;
+                if (!node.isRoot) shown++;
             }
-            _content.sizeDelta = new Vector2(0, -y + 4);
+            _content.sizeDelta = new Vector2(0f, -y);
 
-            RefreshMoveDropdown();
+            ShowEmptyStates(sceneEmpty, filtering, shown);
+            _moveTo?.Rebuild();
+            RefreshSelectionFooter();
         }
 
-        private static List<SceneTree.Node> BuildNodesGroupedByLevel(ISet<int>? collapsed)
+        private void ShowEmptyStates(bool sceneEmpty, bool filtering, int shownRows)
         {
-            var levels = new List<Level>(LevelRegistry.Items);
-            if (levels.Count <= 1)
-                return SceneTree.Build(PartRegistry.All, GroupManager.AllGroups(), collapsed);
-
-            levels.Sort((a, b) => b.floorElevationMm.CompareTo(a.floorElevationMm));
-
-            var nodes = new List<SceneTree.Node>();
-            foreach (var level in levels)
-            {
-                var elementsOnLevel = ElementsOnLevel(level);
-                var groupsOnLevel = GroupsOnLevel(level, elementsOnLevel);
-                var levelNodes = SceneTree.Build(elementsOnLevel, groupsOnLevel, collapsed);
-                levelNodes[0].rootLabel = level.name;
-                nodes.AddRange(levelNodes);
-            }
-            return nodes;
+            if (_emptyScene != null) _emptyScene.Root.gameObject.SetActive(sceneEmpty);
+            if (_noMatches != null) _noMatches.Root.gameObject.SetActive(filtering && shownRows == 0);
         }
 
-        private static List<KitchenElement> ElementsOnLevel(Level level)
+        private static bool AnyGroups()
         {
-            var result = new List<KitchenElement>();
-            foreach (var e in PartRegistry.GetAll())
-                if (e != null && LevelRegistry.LevelOf(e).id == level.id) result.Add(e);
-            return result;
+            foreach (var _ in GroupManager.AllGroups()) return true;
+            return false;
         }
 
-        private static List<LinkGroup> GroupsOnLevel(Level level, List<KitchenElement> elementsOnLevel)
+        private void RefreshSelectionFooter()
         {
-            var result = new List<LinkGroup>();
-            foreach (var g in GroupManager.AllGroups())
-            {
-                bool hasMemberHere = false;
-                foreach (var e in elementsOnLevel)
-                    if (e.GroupId == g.id) { hasMemberHere = true; break; }
-                if (hasMemberHere) result.Add(g);
-            }
-            return result;
+            var sel = SelectionManager.Instance;
+            int count = sel != null ? sel.SelectedElements.Count : 0;
+            if (_selectedLabel != null) _selectedLabel.text = Loc.F("common.selectedCount", NumberFormat.Integer(count));
+            _moveTo?.SetEnabled(count > 0);
         }
 
         private static bool MatchesFilter(SceneTree.Node node, string filter)
@@ -355,83 +321,6 @@ namespace KitchenDesigner.Core.UI
                 if (m != null && m.PartName.IndexOf(filter, System.StringComparison.OrdinalIgnoreCase) >= 0)
                     return true;
             return false;
-        }
-
-        private void BuildRow(SceneTree.Node node, float y, SelectionManager? sel)
-        {
-            float indent = node.depth * IndentPx;
-
-            var row = UIFactory.CreateRect("Row", _content!);
-            row.anchorMin = new Vector2(0, 1);
-            row.anchorMax = new Vector2(1, 1);
-            row.pivot = new Vector2(0.5f, 1f);
-            row.anchoredPosition = new Vector2(0, y);
-            row.sizeDelta = new Vector2(0, RowH);
-
-            if (node.group != null && node.hasChildren)
-            {
-                int gid = node.group.id;
-                var arrow = UIFactory.CreateButton("Fold", row,
-                    node.collapsed ? UIStyle.GlyphCollapsed : UIStyle.GlyphExpanded,
-                    Vector2.zero, new Vector2(20, RowH), () => ToggleCollapse(gid));
-                var aRt = arrow.GetComponent<RectTransform>();
-                aRt.anchorMin = aRt.anchorMax = aRt.pivot = new Vector2(0, 0.5f);
-                aRt.anchoredPosition = new Vector2(indent, 0);
-                arrow.GetComponent<Image>().color = new Color(0, 0, 0, 0f);
-                var aLbl = arrow.GetComponentInChildren<TMP_Text>();
-                if (aLbl != null) { aLbl.fontSize = 10; aLbl.color = UIStyle.TextSecondary; }
-            }
-
-            float mainX = indent + (node.group != null ? 22f : 4f);
-            float mainW = ContentW - mainX - (node.group != null ? 24f : 0f);
-
-            string label;
-            Color rowColor;
-
-            if (node.isRoot)
-            {
-                label = node.rootLabel ?? Loc.T("hierarchy.rootKitchen");
-                rowColor = RowRootColor;
-            }
-            else if (node.group != null)
-            {
-                label = $"{node.group.name} ({GroupManager.MembersOf(node.group).Count})";
-                rowColor = RowGroupColor;
-            }
-            else
-            {
-                label = node.element!.PartName;
-                rowColor = RowElementColor;
-            }
-
-            var mainBtn = UIFactory.CreateButton("Main", row, "", Vector2.zero, new Vector2(mainW, RowH),
-                () => OnRowClick(node));
-            var mRt = mainBtn.GetComponent<RectTransform>();
-            mRt.anchorMin = mRt.anchorMax = mRt.pivot = new Vector2(0, 0.5f);
-            mRt.anchoredPosition = new Vector2(mainX, 0);
-            var tint = mainBtn.GetComponent<Image>();
-            tint.color = HierarchyRowHighlights.Highlighted(node, sel) ? UIStyle.RowSelected : rowColor;
-            _highlights.Remember(tint, node, rowColor);
-            _rowsBuilt++;
-
-            var text = mainBtn.GetComponentInChildren<TMP_Text>();
-            if (text != null)
-            {
-                text.text = label;
-                text.fontSize = node.group != null || node.isRoot ? 15 : 14;
-                text.alignment = TextAlignmentOptions.Left;
-                text.margin = new Vector4(6, 0, 0, 0);
-            }
-
-            if (node.group != null)
-            {
-                var g = node.group;
-                var menuBtn = UIFactory.CreateButton("GroupMenu", row, "…",
-                    Vector2.zero, new Vector2(24, RowH - 4), () => OpenGroupMenu(g));
-                var dRt = menuBtn.GetComponent<RectTransform>();
-                dRt.anchorMin = dRt.anchorMax = dRt.pivot = new Vector2(1, 0.5f);
-                dRt.anchoredPosition = new Vector2(-2, 0);
-            }
         }
 
         private void OpenGroupMenu(LinkGroup g)
@@ -454,12 +343,29 @@ namespace KitchenDesigner.Core.UI
             Refresh();
         }
 
+        internal void ToggleLevelCollapse(string levelKey)
+        {
+            if (!_collapsedLevels.Remove(levelKey))
+                _collapsedLevels.Add(levelKey);
+            Refresh();
+        }
+
+        private void OnFold(SceneTree.Node node)
+        {
+            if (node.isRoot) ToggleLevelCollapse(node.rootKey);
+            else if (node.group != null) ToggleCollapse(node.group.id);
+        }
+
         private void OnRowClick(SceneTree.Node node)
         {
             var sel = SelectionManager.Instance;
-            if (sel == null) return;
 
-            if (node.isRoot) return;
+            if (node.isRoot)
+            {
+                if (node.hasChildren) ToggleLevelCollapse(node.rootKey);
+                return;
+            }
+            if (sel == null) return;
 
             if (node.group != null)
             {
@@ -474,71 +380,11 @@ namespace KitchenDesigner.Core.UI
             else sel.Select(el);
         }
 
-
         private void CreateEmptyGroup()
         {
             int n = 1;
             foreach (var g in GroupManager.AllGroups()) n++;
             GroupManager.Create(Loc.F("group.defaultName", n));
-        }
-
-        private void RefreshMoveDropdown()
-        {
-            if (_moveDropdown == null) return;
-            _dropdownGroups.Clear();
-            var options = new List<string> { Loc.T("hierarchy.moveTo"), Loc.T("hierarchy.ungrouped") };
-            foreach (var g in GroupManager.AllGroups())
-            {
-                _dropdownGroups.Add(g);
-                options.Add(g.name);
-            }
-            options.Add(Loc.T("hierarchy.newGroup"));
-
-            _ignoreDropdownCallback = true;
-            _moveDropdown.ClearOptions();
-            _moveDropdown.AddOptions(options);
-            _moveDropdown.SetValueWithoutNotify(MovePlaceholderIndex);
-            _ignoreDropdownCallback = false;
-        }
-
-        private void ResetMoveDropdownToPlaceholder()
-        {
-            if (_moveDropdown == null) return;
-            _ignoreDropdownCallback = true;
-            _moveDropdown.SetValueWithoutNotify(MovePlaceholderIndex);
-            _ignoreDropdownCallback = false;
-        }
-
-        private void OnMoveDropdown(int index)
-        {
-            if (_ignoreDropdownCallback || _moveDropdown == null || index == MovePlaceholderIndex) return;
-
-            var sel = SelectionManager.Instance;
-            var selected = sel != null ? new List<KitchenElement>(sel.SelectedElements) : new List<KitchenElement>();
-
-            LinkGroup? target = null;
-            int newGroupIndex = _dropdownGroups.Count + MoveFirstGroupIndex;
-            if (index == newGroupIndex)
-                target = GroupManager.Create(Loc.F("group.defaultName", _dropdownGroups.Count + 1));
-            else if (index >= MoveFirstGroupIndex)
-                target = _dropdownGroups[index - MoveFirstGroupIndex];
-            else if (index == MoveUngroupedIndex)
-                target = null;
-
-            foreach (var e in selected)
-                if (e != null) GroupManager.MoveTo(e, target);
-
-            ResetMoveDropdownToPlaceholder();
-            if (selected.Count == 0) Refresh();
-        }
-    }
-
-    internal static class HierarchyRectExtensions
-    {
-        public static void SetAnchor(this RectTransform rt, Vector2 anchor, Vector2 pos)
-        {
-            rt.anchorMin = rt.anchorMax = rt.pivot = anchor;
-            rt.anchoredPosition = pos;
         }
     }
 }

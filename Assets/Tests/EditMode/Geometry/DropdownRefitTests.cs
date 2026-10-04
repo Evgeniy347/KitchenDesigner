@@ -18,9 +18,6 @@ namespace KitchenDesigner.Tests.Geometry
         {
             ("ElementTypeConverter.cs",
                 "список типов элемента фиксирован и коротк: длиннее «Столешница» там ничего нет"),
-            ("HierarchyPanelUI.cs",
-                "список модулей для переноса: имена модулей задаёт пользователь, длинное имя "
-                + "обрежется — долг, а не решение"),
             ("NameDropdownBinder.cs",
                 "привязка по имени элемента: та же природа, что у HierarchyPanelUI — долг"),
         };

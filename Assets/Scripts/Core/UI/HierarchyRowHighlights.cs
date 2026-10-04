@@ -1,33 +1,16 @@
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
     internal sealed class HierarchyRowHighlights
     {
-        private readonly List<Row> _rows = new List<Row>();
-
-        private readonly struct Row
-        {
-            public Row(Image tinted, SceneTree.Node node, Color resting)
-            {
-                Tinted = tinted;
-                Node = node;
-                Resting = resting;
-            }
-
-            public readonly Image Tinted;
-            public readonly SceneTree.Node Node;
-            public readonly Color Resting;
-        }
+        private readonly List<SceneTreeRowView> _rows = new List<SceneTreeRowView>();
 
         public int Count => _rows.Count;
 
         public void Forget() => _rows.Clear();
 
-        public void Remember(Image tinted, SceneTree.Node node, Color resting) =>
-            _rows.Add(new Row(tinted, node, resting));
+        public void Remember(SceneTreeRowView row) => _rows.Add(row);
 
         public static bool Highlighted(SceneTree.Node node, SelectionManager? sel)
         {
@@ -46,8 +29,8 @@ namespace KitchenDesigner.Core.UI
         {
             foreach (var row in _rows)
             {
-                if (row.Tinted == null) continue;
-                row.Tinted.color = Highlighted(row.Node, sel) ? UIStyle.RowSelected : row.Resting;
+                if (row == null || row.Node == null) continue;
+                row.Paint(Highlighted(row.Node, sel));
             }
         }
     }

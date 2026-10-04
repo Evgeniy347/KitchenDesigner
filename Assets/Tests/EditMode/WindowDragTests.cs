@@ -210,7 +210,7 @@ public class WindowDragTests
     {
         var handle = BuildHierarchyWithResize(out var panel);
         float w = panel.sizeDelta.x;
-        var viewport = (RectTransform)panel.Find("HierViewport");
+        var viewport = (RectTransform)panel.Find("HierarchyPanelBody");
         float insets = panel.sizeDelta.y - viewport.rect.height; // шапка + отступы
 
         handle.ResizeTo(400f);
@@ -228,7 +228,7 @@ public class WindowDragTests
 
         handle.ResizeTo(10f);
 
-        Assert.AreEqual(160f, panel.sizeDelta.y, 0.01f,
+        Assert.AreEqual(SceneTreeMetrics.MinPanelH, panel.sizeDelta.y, 0.01f,
             "высота не должна опускаться ниже минимума");
     }
 

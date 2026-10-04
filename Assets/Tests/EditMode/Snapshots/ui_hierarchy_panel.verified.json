@@ -2,54 +2,80 @@
   "root": "HierarchyPanel",
   "children": [
     {
-      "type": "Button",
-      "text": "…",
-      "position": [-2, 0]
+      "type": "Label",
+      "text": "3",
+      "position": [-38, 0]
     },
     {
-      "type": "Button",
-      "text": "Кухня",
-      "position": [4, 0]
+      "type": "Dropdown",
+      "options": ["Переместить в…", "— вне групп —", "Модуль А3", "+ Новая группа"],
+      "selected": 0,
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "6",
+      "position": [-10, 0]
     },
     {
       "type": "Button",
       "text": "▼",
-      "position": [16, 0]
+      "position": [0, 0]
     },
     {
       "type": "Button",
-      "text": "BasePlate",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Fasad_yaschika",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "Svobodnaya_polka",
-      "position": [20, 0]
+      "text": "▼",
+      "position": [0, 0]
     },
     {
       "type": "Button",
       "text": "A3_bokovina_L",
-      "position": [36, 0]
+      "position": [0, 0]
     },
     {
       "type": "Button",
       "text": "A3_bokovina_R",
-      "position": [36, 0]
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "BasePlate",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Fasad_yaschika",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Svobodnaya_polka",
+      "position": [0, 0]
     },
     {
       "type": "Button",
       "text": "Verhniy_yaschik",
-      "position": [36, 0]
+      "position": [0, 0]
     },
     {
       "type": "Button",
-      "text": "Модуль А3 (3)",
-      "position": [38, 0]
+      "text": "Кухня",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Модуль А3",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Выбрано: 0",
+      "position": [16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "HierAddGroup",
+      "position": [-48, -8]
     },
     {
       "type": "Button",
@@ -57,27 +83,16 @@
       "position": [-8, -8]
     },
     {
-      "type": "Button",
-      "text": "+ Группа",
-      "position": [-64, -24]
-    },
-    {
       "type": "Label",
       "text": "Сцена",
-      "position": [14, -24]
-    },
-    {
-      "type": "Dropdown",
-      "options": ["Переместить в…", "— вне групп —", "Модуль А3", "+ Новая группа"],
-      "selected": 0,
-      "position": [0, -38]
+      "position": [16, -24]
     },
     {
       "type": "InputField",
       "label": "HierSearch",
       "value": "",
       "interactable": true,
-      "position": [0, -68]
+      "position": [0, -56]
     }
   ]
 }

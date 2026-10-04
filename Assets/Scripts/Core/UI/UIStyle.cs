@@ -31,9 +31,12 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color RowSelected = Hex(0x4A4322);
         public static readonly Color SelectionBar = Hex(0xE0B83A);
         public static readonly Color RowError = Hex(0x52292A);
+        public static readonly Color BadgeErrorFill = Hex(0x3A1E22);
+        public static readonly Color BadgeWarningFill = Hex(0x3A2E1C);
         public static readonly Color Divider = Hex(0x2C2E35);
         public static readonly Color Separator = Hex(0x3A3D47);
         public static readonly Color ModalBackdrop = new Color(0f, 0f, 0f, 0.55f);
+        public static readonly Color HudPanel = new Color(Panel.r, Panel.g, Panel.b, 0.88f);
         public static readonly Color WindowShadow = new Color(0f, 0f, 0f, 0.45f);
         public static readonly Color ScrollTrack = new Color(0.10f, 0.10f, 0.13f, 0.6f);
         public static readonly Color ScrollHandle = Hex(0x4A4E5A);
@@ -128,6 +131,12 @@ namespace KitchenDesigner.Core.UI
         public const float TableRowInteractiveH = 32f;
         public const float TableGroupRowH = 36f;
         public const float TableCellPadX = Space2;
+        public const float TreeRowH = TableRowH;
+        public const float TreeIndent = Space3;
+        public const float TreeIconSize = 14f;
+        public const float ResizeZoneH = 8f;
+        public const float ResizeGripW = 24f;
+        public const float ResizeGripH = 3f;
         public const float SectionHeaderH = 20f;
         public const float SectionGapBefore = Space4;
         public const float SectionGapAfter = Space2;
@@ -145,6 +154,12 @@ namespace KitchenDesigner.Core.UI
         public const float ToolbarH = 48f;
         public const float StatusBarH = 28f;
         public const float EmptyStateIcon = 28f;
+        public const float ChipH = ControlHCompact;
+        public const float ChipRadius = ChipH / 2f;
+        public const float ChipPadX = 10f;
+        public const float BadgeH = 18f;
+        public const float BadgeRadius = 9f;
+        public const float BadgePadX = 6f;
 
         public const float UIScaleFloor = UiScale.Floor;
         public const int UIScaleUserMinPercent = UiScale.MinPercent;
@@ -178,6 +193,7 @@ namespace KitchenDesigner.Core.UI
         public const string GlyphAngle = "∟";
         public const string GlyphHint = "i";
         public const string GlyphDash = "—";
+        public const string GlyphWarning = "!";
         public const string GlyphSortAscending = "▲";
         public const string GlyphSortDescending = "▼";
 

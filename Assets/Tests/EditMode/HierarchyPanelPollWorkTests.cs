@@ -124,7 +124,7 @@ public class HierarchyPanelPollWorkTests
 
     private Transform Panel => _canvasGo.transform.Find("HierarchyPanel");
 
-    private Transform Content => Panel.Find("HierViewport/HierContent");
+    private Transform Content => Panel.Find("HierarchyPanelBody/HierarchyPanelBodyContent");
 
     private static string LabelOf(Transform row)
     {
@@ -163,7 +163,7 @@ public class HierarchyPanelPollWorkTests
         foreach (Transform row in Content)
         {
             if (LabelOf(row) != label) continue;
-            var image = row.Find("Main").GetComponent<Image>();
+            var image = row.GetComponent<Image>();
             if (image != null) return image.color;
         }
         return Color.clear;

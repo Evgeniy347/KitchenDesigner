@@ -67,7 +67,7 @@ public class HierarchyPanelTests
 
     private Transform Panel => _canvasGo.transform.Find("HierarchyPanel");
 
-    private Transform Content => Panel.Find("HierViewport/HierContent");
+    private Transform Content => Panel.Find("HierarchyPanelBody/HierarchyPanelBodyContent");
 
     private static string LabelOf(Transform row)
     {
@@ -103,7 +103,7 @@ public class HierarchyPanelTests
 
     private TMP_InputField Search => Panel.Find("HierSearch").GetComponent<TMP_InputField>();
 
-    private TMP_Dropdown MoveTo => Panel.Find("HierMoveTo").GetComponent<TMP_Dropdown>();
+    private TMP_Dropdown MoveTo => Panel.Find("HierarchyPanelFooter/HierMoveTo").GetComponent<TMP_Dropdown>();
 
     [UnityTest]
     public IEnumerator RowClick_SelectsTheElementInTheScene()
@@ -129,7 +129,7 @@ public class HierarchyPanelTests
         GroupManager.Rename(group, "Модуль");
         yield return null;
 
-        ClickRow("Модуль (2)");
+        ClickRow("Модуль");
 
         Assert.IsTrue(_selection.IsSelected(a));
         Assert.IsTrue(_selection.IsSelected(b),
@@ -146,7 +146,7 @@ public class HierarchyPanelTests
         GroupManager.Rename(group, "Модуль");
         yield return null;
 
-        Row("Модуль (2)").Find("Fold").GetComponent<Button>().onClick.Invoke();
+        Row("Модуль").Find("Fold").GetComponent<Button>().onClick.Invoke();
         yield return null;
         Assume.That(RowLabels(), Has.No.Member("A"), "группа свёрнута");
 
@@ -169,7 +169,7 @@ public class HierarchyPanelTests
 
         var groups = new List<LinkGroup>(GroupManager.AllGroups());
         Assert.AreEqual(1, groups.Count);
-        Assert.Contains(groups[0].name + " (0)", RowLabels(),
+        Assert.Contains(groups[0].name, RowLabels(),
             "новая группа появляется в дереве сама — панель обновляется по событию "
             + "GroupManager.Changed, а не по следующему клику");
     }
@@ -180,7 +180,7 @@ public class HierarchyPanelTests
         GroupManager.Create("Пустая");
         yield return null;
 
-        Row("Пустая (0)").Find("GroupMenu").GetComponent<Button>().onClick.Invoke();
+        Row("Пустая").Find("GroupMenu").GetComponent<Button>().onClick.Invoke();
         yield return null;
 
         Assert.IsEmpty(new List<LinkGroup>(GroupManager.AllGroups()),
@@ -199,7 +199,7 @@ public class HierarchyPanelTests
         GroupManager.Rename(group, "Модуль");
         yield return null;
 
-        Row("Модуль (2)").Find("Fold").GetComponent<Button>().onClick.Invoke();
+        Row("Модуль").Find("Fold").GetComponent<Button>().onClick.Invoke();
         yield return null;
         Assume.That(RowLabels(), Has.No.Member(shelf.PartName), "группа свёрнута");
 
@@ -210,7 +210,7 @@ public class HierarchyPanelTests
         Assert.Contains(shelf.PartName, labels,
             "совпадение внутри свёрнутой группы обязано быть видно: иначе поиск "
             + "молча ничего не находит");
-        Assert.Contains("Модуль (2)", labels,
+        Assert.Contains("Модуль", labels,
             "группа остаётся в списке, если совпал кто-то из её членов — без неё "
             + "непонятно, где найденная деталь лежит");
         Assert.That(labels, Has.No.Member(side.PartName));
