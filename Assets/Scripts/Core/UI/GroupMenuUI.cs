@@ -7,75 +7,108 @@ namespace KitchenDesigner.Core.UI
 {
     public class GroupMenuUI : MonoBehaviour
     {
+        public const string SettingsPanelName = "GroupMenu";
+        public const string LinkPanelName = "GroupLinkPrompt";
+        public const string UnlinkNode = "GmUnlink";
+        public const string DeleteAllNode = "GmDeleteAll";
+        public const string LinkNode = "GmLink";
+
+        internal const float SettingsW = 400f;
+
         public static GroupMenuUI? Instance { get; private set; }
 
-        public bool IsOpen => _root != null && _root.activeSelf;
+        public bool IsOpen => IsShown(_settings) || IsShown(_link);
 
-        internal static readonly Vector2 GroupSettingsSize = new Vector2(280, 240);
-        internal static readonly Vector2 CompactLinkPromptSize = new Vector2(240, 132);
-        internal const float DragStripDownToTheTitleBottom = 96f;
-
-        private GameObject? _root;
-        private RectTransform? _panelRect;
-        private GameObject? _linkRoot;
-        private GameObject? _groupRoot;
+        private WindowChrome? _settings;
+        private WindowChrome? _link;
         private TMP_InputField? _nameField;
         private Toggle? _lockMove;
         private LinkGroup? _group;
 
+        internal RectTransform? SettingsPanel => _settings?.Panel;
+
+        internal RectTransform? LinkPanel => _link?.Panel;
+
         private void Awake() => Instance = this;
+
+        private static bool IsShown(WindowChrome? chrome) => chrome != null && chrome.Panel.gameObject.activeSelf;
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("GroupMenu", canvas, Vector2.zero, GroupSettingsSize);
-            UIFactory.AnchorCenter(panel.rectTransform);
-            panel.rectTransform.anchoredPosition = new Vector2(0, 40);
-            _root = panel.gameObject;
-            _panelRect = panel.rectTransform;
-            WindowDrag.Attach(panel.rectTransform, DragStripDownToTheTitleBottom);
-
-            _linkRoot = NewRoot(panel.transform);
-            WindowTitle.Create(_linkRoot.transform, "GmLinkTitle", Loc.T("group.linkPrompt"), 18, 210f, 28f);
-            UIFactory.CreateButton("GmLink", _linkRoot.transform, Loc.T("group.link"),
-                new Vector2(0, -22), new Vector2(180, 40), DoLink);
-
-            _groupRoot = NewRoot(panel.transform);
-            WindowTitle.Create(_groupRoot.transform, "GmTitle", Loc.T("group.title"), 20, 260f, 28f);
-            UIFactory.CreateLabel("GmNameLbl", _groupRoot.transform, Loc.T("group.name"), 15,
-                new Vector2(-100, 32), new Vector2(60, 24));
-            _nameField = UIFactory.CreateInputField("GmName", _groupRoot.transform, "",
-                new Vector2(35, 32), new Vector2(160, 24));
-            _nameField.onEndEdit.AddListener(t => { if (_group != null) GroupManager.Rename(_group, t); });
-            _lockMove = UIFactory.CreateToggle("GmLockMove", _groupRoot.transform, Loc.T("group.lock"), false,
-                new Vector2(0, -4), new Vector2(248, 26), v => { if (_group != null) GroupManager.SetMovable(_group, !v); });
-            UIFactory.CreateButton("GmEdit", _groupRoot.transform, Loc.T("group.editModule"),
-                new Vector2(0, -42), new Vector2(200, 36), DoEditModule);
-            UIFactory.CreateButton("GmUnlink", _groupRoot.transform, Loc.T("group.unlink"),
-                new Vector2(0, -82), new Vector2(200, 36), DoUnlink);
-
-            CreateCloseButtonOverTheDragStrip(panel.transform);
-
-            _root!.SetActive(false);
+            BuildSettings(canvas);
+            BuildLinkPrompt(canvas);
 
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.OnSelectionChanged += CloseWhenSelectionLeavesTheGroup;
         }
 
-        private void CreateCloseButtonOverTheDragStrip(Transform panel) =>
-            UIFactory.CreateCloseButton(panel, Close);
-
-        private GameObject NewRoot(Transform parent)
+        private void BuildSettings(Transform canvas)
         {
-            var rt = UIFactory.CreateRect("Root", parent);
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.offsetMin = rt.offsetMax = Vector2.zero;
-            return rt.gameObject;
+            _settings = WindowChrome.Create(canvas, SettingsPanelName, Loc.T("group.title"),
+                new Vector2(SettingsW, UIStyle.InspectorW), new WindowChromeOptions
+                {
+                    Kind = WindowKind.Tool,
+                    OnClose = Close,
+                    HasFooter = true,
+                    RuledHeader = true,
+                });
+            Center(_settings.Panel);
+
+            var body = _settings.CreateBody();
+            var rows = new FormRows(body.Content, RowDensity.Compact);
+            (_, _nameField) = rows.Text("GmName", Loc.T("group.name"));
+            _nameField.onEndEdit.AddListener(t => { if (_group != null) GroupManager.Rename(_group, t); });
+            (_, _lockMove) = rows.Switch("GmLockMove", Loc.T("group.lock"), false,
+                v => { if (_group != null) GroupManager.SetMovable(_group, !v); });
+            rows.Gap(UIStyle.Space2);
+            rows.Custom(EditModuleButton(body.Content, rows.Metrics.Width), UIStyle.ControlH);
+            _settings.FitHeightTo(rows.Relayout());
+            body.Fit();
+
+            var footer = _settings.Footer!;
+            footer.AddLeft(UnlinkNode, Loc.T("group.unlink"), DoUnlink);
+            var delete = footer.AddRight(DeleteAllNode, Loc.T("group.deleteAll"), null!, ButtonRole.DangerOutline);
+            ConfirmDeleteButton.Attach(delete, DoDeleteWithContents);
+            WidenToFitFooter(_settings);
+            _settings.Panel.gameObject.SetActive(false);
         }
 
-        private void SetPanelSize(Vector2 size)
+        private static void WidenToFitFooter(WindowChrome chrome)
         {
-            if (_panelRect != null) _panelRect.sizeDelta = size;
+            float needed = 2f * WindowFooter.ButtonPadX + UIStyle.Space2;
+            foreach (var button in chrome.Footer!.LeftGroup) needed += button.sizeDelta.x;
+            foreach (var button in chrome.Footer.RightGroup) needed += button.sizeDelta.x;
+            var size = chrome.Panel.sizeDelta;
+            chrome.Panel.sizeDelta = new Vector2(Mathf.Max(size.x, needed), size.y);
+        }
+
+        private RectTransform EditModuleButton(RectTransform parent, float width)
+        {
+            var button = UIFactory.CreateButton("GmEdit", parent, Loc.T("group.editModule"), Vector2.zero,
+                new Vector2(width, UIStyle.ControlH), DoEditModule);
+            return (RectTransform)button.transform;
+        }
+
+        private void BuildLinkPrompt(Transform canvas)
+        {
+            _link = WindowChrome.Create(canvas, LinkPanelName, Loc.T("group.linkPrompt"),
+                new Vector2(UIStyle.InspectorW, UIStyle.InspectorW), new WindowChromeOptions
+                {
+                    Kind = WindowKind.Tool,
+                    OnClose = Close,
+                    HasFooter = true,
+                    RuledHeader = true,
+                });
+            Center(_link.Panel);
+            _link.Footer!.AddPrimary(LinkNode, Loc.T("group.link"), DoLink);
+            _link.FitHeightTo(0f);
+            _link.Panel.gameObject.SetActive(false);
+        }
+
+        private static void Center(RectTransform panel)
+        {
+            UIFactory.AnchorCenter(panel);
+            panel.anchoredPosition = new Vector2(0f, UIStyle.Space6 + UIStyle.Space2);
         }
 
         public void Open(KitchenElement element)
@@ -96,26 +129,24 @@ namespace KitchenDesigner.Core.UI
 
         private void ShowGroupSettings(LinkGroup group)
         {
-            SetPanelSize(GroupSettingsSize);
-            _linkRoot!.SetActive(false);
-            _groupRoot!.SetActive(true);
+            _link!.Panel.gameObject.SetActive(false);
             _nameField!.SetTextWithoutNotify(group.name);
             _lockMove!.SetIsOnWithoutNotify(!group.movable);
-            _root!.SetActive(true);
+            _settings!.Panel.gameObject.SetActive(true);
         }
 
         private void ShowCompactLinkPrompt()
         {
-            SetPanelSize(CompactLinkPromptSize);
-            _linkRoot!.SetActive(true);
-            _groupRoot!.SetActive(false);
-            _root!.SetActive(true);
+            _settings!.Panel.gameObject.SetActive(false);
+            _link!.Panel.gameObject.SetActive(true);
         }
 
         public void Close()
         {
             _group = null;
-            if (_root != null) _root.SetActive(false);
+            ConfirmDeleteButton.DisarmAll();
+            if (_settings != null) _settings.Panel.gameObject.SetActive(false);
+            if (_link != null) _link.Panel.gameObject.SetActive(false);
         }
 
         private void DoLink()
@@ -127,17 +158,30 @@ namespace KitchenDesigner.Core.UI
             if (g != null)
             {
                 sel.SelectOnly(GroupManager.MembersOf(g));
-                ReopenAsGroupSettings(members[0]);
+                Open(members[0]);
             }
         }
-
-        private void ReopenAsGroupSettings(KitchenElement member) => Open(member);
 
         private void DoUnlink()
         {
             if (_group == null) return;
-            GroupManager.Unlink(_group);
+            var group = _group;
             Close();
+            GroupDeletion.Dissolve(group);
+        }
+
+        private void DoDeleteWithContents()
+        {
+            if (_group == null) return;
+            var group = _group;
+            string expected = GroupDeletion.DeleteDescription(group);
+            string name = group.name;
+            Close();
+            GroupDeletion.DeleteWithContents(group);
+            ToastNotification.ShowIfAvailable(Loc.F("toast.deleted", name), 5f, Loc.T("common.undo"), () =>
+            {
+                if (CommandStack.CanUndo && CommandStack.PeekUndoDescription() == expected) CommandStack.Undo();
+            });
         }
 
         private void DoEditModule()
@@ -177,7 +221,7 @@ namespace KitchenDesigner.Core.UI
 
         private void CloseWhenSelectionLeavesTheGroup(KitchenElement? element)
         {
-            if (_root == null || !_root.activeSelf || _group == null) return;
+            if (!IsShown(_settings) || _group == null) return;
             if (element == null || GroupManager.GroupOf(element) != _group)
                 Close();
         }
