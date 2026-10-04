@@ -91,6 +91,48 @@ public class SelectionTintMathTests
 
     [TestCase(false)]
     [TestCase(true)]
+    public void ASaturatedWarmOwnColour_StillShiftsVisibly_NotOnlyTheDarkAndTheGreyOnes(bool multi)
+    {
+        var warm = new[]
+        {
+            new Color(1f, 0.46f, 0.15f, 1f),
+            new Color(0.72f, 0.26f, 0.18f, 1f),
+            new Color(1f, 0.3f, 0f, 1f),
+            new Color(1f, 0.8f, 0.2f, 1f),
+            SelectionTintMath.TintOf(multi),
+            new Color(0.9f, 0.1f, 0.1f, 1f),
+        };
+
+        foreach (var own in warm)
+        {
+            var tinted = SelectionTintMath.Base(own, multi);
+
+            Assert.Greater(SelectionTintMath.MaxShift(own, tinted),
+                VisibleStep,
+                "цвет " + own + " почти не изменился (" + tinted + "): умножение на жёлтый "
+                + "оставляет тёплое тёплым, и выделения не видно");
+        }
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public void TheMinimumShift_DoesNotMoveColoursThatAlreadyShiftEnough(bool multi)
+    {
+        var tint = SelectionTintMath.TintOf(multi);
+
+        foreach (var own in new[] { Color.white, LaundryBody, OvenBody })
+        {
+            var tinted = SelectionTintMath.Base(own, multi);
+            var product = new Color(own.r * tint.r, own.g * tint.g, own.b * tint.b, own.a);
+
+            Assert.Less(SelectionTintMath.MaxShift(tinted, product),
+                SelectionTintMath.DarkLift + EqualWithin,
+                "цвет " + own + ": добавка видимости не должна трогать тех, кто и так заметен");
+        }
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
     public void ADarkPartKeepsItsContrastWithALightOne_SoBlackGlassDoesNotMergeWithTheBody(bool multi)
     {
         var darks = new[] { new Color(0.05f, 0.05f, 0.05f, 1f), CooktopGlass, new Color(0.1f, 0.1f, 0.1f, 1f) };
