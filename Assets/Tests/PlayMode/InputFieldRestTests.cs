@@ -66,7 +66,7 @@ public class InputFieldRestTests
     /// обновляет вызывающий — OnUpdateSelected, получив событие от EventSystem. Без
     /// ForceLabelUpdate после каждого символа метка осталась бы «2000» (так тест уже промахнулся:
     /// ink-границы набранного совпадали с исходным значением при любом наборе).</summary>
-    private static IEnumerator TypeInto(TMP_InputField field, string value)
+    public static IEnumerator TypeInto(TMP_InputField field, string value, bool verifyText = true)
     {
         field.ActivateInputField();
         yield return null;
@@ -85,7 +85,8 @@ public class InputFieldRestTests
         EventSystem.current.SetSelectedGameObject(null);
         yield return null;
         yield return null;
-        Assert.AreEqual(value, field.text, "набор обязан дать именно это значение");
+        if (verifyText)
+            Assert.AreEqual(value, field.text, "набор обязан дать именно это значение");
     }
 
     private static List<float> Measure(TMP_InputField field)
