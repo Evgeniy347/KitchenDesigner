@@ -159,18 +159,20 @@ public class UIFactoryContractTests
     }
 
     [Test]
-    public void UIFactory_InputField_EndEdit_PutsTheScrolledTextBack()
+    public void UIFactory_InputField_LeavingTheField_PutsTheScrolledTextBack_EvenWhenEndEditListenersAreWiped()
     {
         var field = UIFactory.CreateNumberField("N", Canvas, "50", Vector2.zero,
             new Vector2(120, 28), "мм");
+        field.onEndEdit.RemoveAllListeners();
         var textRect = field.textComponent!.rectTransform;
         textRect.anchoredPosition = new Vector2(-37f, 0f);
 
-        field.onEndEdit.Invoke(field.text);
+        field.OnDeselect(null!);
 
         Assert.AreEqual(Vector2.zero, textRect.anchoredPosition,
             "после ввода TMP оставляет текст сдвинутым вслед за кареткой, и он не равен тому же "
-            + "значению, выставленному программно (а так выглядят все поля, которых не касались)");
+            + "значению, выставленному программно; ContextMenuFieldTracker.Track вызывает "
+            + "onEndEdit.RemoveAllListeners, поэтому возврат не может жить в onEndEdit");
     }
 
     [Test]

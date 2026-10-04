@@ -302,12 +302,11 @@ namespace KitchenDesigner.Core.UI
             text.richText = false;
 
             rect.gameObject.SetActive(false);
-            var input = rect.gameObject.AddComponent<TMP_InputField>();
+            var input = rect.gameObject.AddComponent<RestingInputField>();
             input.textViewport = textArea;
             input.textComponent = text;
             rect.gameObject.SetActive(true);
             input.text = initial;
-            InputFieldScroll.RestOnEndEdit(input);
             AddFieldStroke(rect);
             return input;
         }
