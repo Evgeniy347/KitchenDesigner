@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
@@ -18,13 +19,12 @@ public class AboutRowsTests
         new AboutEnvironment("0.1234", "2026-10-03 09:00", "WindowsPlayer", "6000.4.3f1", "Direct3D11",
             "NVIDIA GeForce RTX 3060");
 
-    [TearDown]
-    public void Restore() => Loc.SetLanguage("ru");
+    private static IDisposable In(string language) => Loc.Scope(Loc.Current.WithLanguage(language));
 
     [Test]
     public void Rows_AreBuildPlatformUnityApiGpu_WithTheirValuesAndRussianCaptions()
     {
-        Loc.SetLanguage("ru");
+        using var _ = In("ru");
         var rows = AboutRows.For(Environment());
 
         CollectionAssert.AreEqual(new[] { "Сборка", "Платформа", "Unity", "Графика (API)", "Видеокарта" },
@@ -37,7 +37,7 @@ public class AboutRowsTests
     [TestCaseSource(nameof(Languages))]
     public void EveryCaption_IsNonEmpty_AndFreeOfThePlaceholderAndTheColon(string language)
     {
-        Loc.SetLanguage(language);
+        using var _ = In(language);
 
         foreach (var row in AboutRows.For(Environment()))
         {
@@ -49,9 +49,31 @@ public class AboutRowsTests
     }
 
     [Test]
+    public void ALanguageScope_IsPrivateToItsThread_AndLeavesTheGlobalLanguageAlone()
+    {
+        string globalLanguage = Loc.Language;
+        int revision = Loc.Revision;
+        string? seenByNeighbour = null;
+
+        using (In("ja"))
+        {
+            var neighbour = new System.Threading.Thread(() => seenByNeighbour = Loc.Language);
+            neighbour.Start();
+            neighbour.Join();
+            Assert.AreEqual("ja", Loc.Language, "внутри области язык свой");
+        }
+
+        Assert.AreEqual(globalLanguage, seenByNeighbour,
+            "фикстуры идут параллельно, а Loc глобален: язык, выставленный одной, видел бы чужой тест посреди " +
+            "прогона — так «ja» попадал в проверку русских подписей");
+        Assert.AreEqual(revision, Loc.Revision, "область не трогает глобальный язык");
+        Assert.AreEqual(globalLanguage, Loc.Language, "после области язык вернулся");
+    }
+
+    [Test]
     public void TheRowsAndTheCopiedLines_CarryTheSameValues_InTheSameOrder()
     {
-        Loc.SetLanguage("en");
+        using var _ = In("en");
         var env = Environment();
         var lines = AboutLines.For(env);
         var rows = AboutRows.For(env);

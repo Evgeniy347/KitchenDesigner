@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
@@ -20,8 +21,13 @@ public class AboutLinesTests
     private static AboutEnvironment Environment(string gpu = Gpu) =>
         new AboutEnvironment(Version, BuildDate, Platform, UnityVersion, Api, gpu);
 
-    [OneTimeSetUp]
-    public void SourceLanguage() => Loc.SetLanguage("ru");
+    private IDisposable _scope = null!;
+
+    [SetUp]
+    public void SpeakRussian() => _scope = Loc.Scope(Loc.Current.WithLanguage("ru"));
+
+    [TearDown]
+    public void LeaveTheScope() => _scope.Dispose();
 
     [Test]
     public void Lines_AreProductBuildPlatformUnityApiGpuCopyright_InThatOrder()
