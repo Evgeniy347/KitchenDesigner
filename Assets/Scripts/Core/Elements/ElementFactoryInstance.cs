@@ -324,7 +324,8 @@ namespace KitchenDesigner.Core
             sofa.SeatHeightMM = seatHeightMM;
             sofa.CornerRadiusMM = cornerRadiusMM;
 
-            if (DefaultMaterial != null) sofa.SetMaterial(DefaultMaterial);
+            sofa.PrimaryMaterialId = SofaElement.DefaultUpholsteryId;
+            sofa.SecondaryMaterialId = SofaElement.DefaultUpholsteryId;
             return ElementRoot.Publish(go, sofa);
         }
 

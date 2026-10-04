@@ -15,6 +15,8 @@ namespace KitchenDesigner.Core
             yield return PurchasedGoodsSpecItems.Piece(DisplayTypeName, DimensionsMM);
         }
 
+        public const string DefaultUpholsteryId = "fabric_mustard";
+
         public const int DefaultWidthMM = SofaLayout.DefaultWidthMM;
         public const int DefaultHeightMM = SofaLayout.DefaultHeightMM;
         public const int DefaultDepthMM = SofaLayout.DefaultDepthMM;
@@ -30,8 +32,8 @@ namespace KitchenDesigner.Core
 
         [SerializeField] private int _cornerRadiusMM = DefaultCornerRadiusMM;
         [SerializeField] private int _seatHeightMM = DefaultSeatHeightMM;
-        [SerializeField] private string _bodyMaterialId = MaterialCatalog.DefaultId;
-        [SerializeField] private string _cushionMaterialId = MaterialCatalog.DefaultId;
+        [SerializeField] private string _bodyMaterialId = DefaultUpholsteryId;
+        [SerializeField] private string _cushionMaterialId = DefaultUpholsteryId;
 
         public static int MaxSeatHeightMM(int overallHeightMM)
             => Mathf.Max(1, overallHeightMM - MinBackrestHeightMM);

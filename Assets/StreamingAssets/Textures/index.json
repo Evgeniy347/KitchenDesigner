@@ -401,6 +401,14 @@
       "tileWidthMM": 400,
       "tileHeightMM": 400,
       "color": "#C3B1A7"
+    },
+    {
+      "id": "fabric_mustard",
+      "name": "Ткань Горчичная",
+      "kind": "Ткань",
+      "tileWidthMM": 800,
+      "color": "#B18542",
+      "smoothness": 0.05
     }
   ]
 }

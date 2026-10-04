@@ -164,6 +164,17 @@ public class TextureIndexTests
     }
 
     [Test]
+    public void ProjectIndex_HasTheSofaDefaultUpholstery()
+    {
+        var defs = TextureIndex.Parse(File.ReadAllText(IndexPath), out _);
+
+        var upholstery = defs.Find(d => d.id == SofaElement.DefaultUpholsteryId);
+
+        Assert.IsNotNull(upholstery,
+            "обивка дивана по умолчанию обязана быть в index.json, иначе диван молча станет серым");
+    }
+
+    [Test]
     public void ProjectIndex_EveryEntryHasItsFile()
     {
         var dir = Path.Combine(Application.streamingAssetsPath, TextureLibrary.FolderName);
