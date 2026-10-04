@@ -240,12 +240,12 @@ public class DropdownListGuardTests
             "три пункта обязаны помещаться без прокрутки");
     }
 
-    private const int ProjectTab = 0;
+    private const int GeneralTab = 0;
 
     private static void EnsureSettingsOpen()
     {
         var panel = UIManager.Instance!.SettingsPanel!;
-        panel.OpenTab(ProjectTab);
+        panel.OpenTab(GeneralTab);
         var scroll = panel.WindowRect!.GetComponentInChildren<ScrollRect>(true);
         if (scroll != null) scroll.content.anchoredPosition = new Vector2(scroll.content.anchoredPosition.x, 0f);
     }
@@ -254,7 +254,7 @@ public class DropdownListGuardTests
         UIManager.Instance!.Canvas!.GetComponentsInChildren<TMP_Dropdown>(true);
 
     private static TMP_Dropdown LanguageDropdown() =>
-        DropdownsOfTheApp().First(d => d.name == "Dd_" + SettingsProjectTab.LanguageRowId);
+        DropdownsOfTheApp().First(d => d.name == "Dd_" + SettingsGeneralTab.LanguageRowId);
     [UnityTest]
     public IEnumerator EveryDropdownOfTheApp_IsBuiltByTheFactory_AndEveryLongOneScrolls()
     {

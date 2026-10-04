@@ -14,13 +14,13 @@ namespace KitchenDesigner.Core.UI
 
         public const string ServerName = "unity-kitchen";
 
-        private readonly SettingsRowFactory _rows;
+        private readonly SettingsPage _page;
 
         private TMPro.TextMeshProUGUI? _status;
 
-        public SettingsMcpTab(SettingsRowFactory rows)
+        public SettingsMcpTab(SettingsPage page)
         {
-            _rows = rows;
+            _page = page;
         }
 
         public static string GuidePath =>
@@ -63,34 +63,23 @@ namespace KitchenDesigner.Core.UI
             + "  }\n"
             + "}";
 
-        public void Build(Transform page, float topY)
+        public void Build()
         {
-            float y = topY;
+            _page.Section(Loc.T("settings.mcp.section.about"));
+            _page.Note("McpAbout", Loc.T("settings.mcp.aboutText"));
 
-            _rows.AddHeader(page, ref y, Loc.T("settings.mcp.section.about"));
-            AddParagraph(page, ref y, "McpAbout",
-                Loc.T("settings.mcp.aboutText"), 76f);
+            _page.Section(Loc.T("settings.mcp.section.status"));
+            _status = _page.Note("McpStatus", StatusText());
+            _page.Note("McpStatusHint", Loc.T("settings.mcp.statusHint"));
 
-            y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, Loc.T("settings.mcp.section.status"));
-            _status = AddParagraph(page, ref y, "McpStatus", StatusText(), 26f);
-            AddParagraph(page, ref y, "McpStatusHint",
-                Loc.T("settings.mcp.statusHint"), 44f);
+            _page.Section(Loc.T("settings.mcp.section.connection"));
+            _page.Note("McpConnectHint", Loc.T("settings.mcp.connectHint"));
+            AddButton("McpCopyPrompt", Loc.T("settings.mcp.copyPrompt"), () => Copy(AgentPrompt()));
+            AddButton("McpCopyConfig", Loc.T("settings.mcp.copyConfig"), () => Copy(ConfigSnippet()));
 
-            y -= SettingsRowFactory.GapPx;
-            _rows.AddHeader(page, ref y, Loc.T("settings.mcp.section.connection"));
-            AddParagraph(page, ref y, "McpConnectHint",
-                Loc.T("settings.mcp.connectHint"), 44f);
-            AddWideButton(page, ref y, "McpCopyPrompt", Loc.T("settings.mcp.copyPrompt"),
-                () => Copy(AgentPrompt()));
-            AddWideButton(page, ref y, "McpCopyConfig", Loc.T("settings.mcp.copyConfig"),
-                () => Copy(ConfigSnippet()));
-
-            y -= SettingsRowFactory.GapPx * 3f;
-            _rows.AddHeader(page, ref y, Loc.T("settings.mcp.section.readYourself"));
-            AddParagraph(page, ref y, "McpGuidePath",
-                GuideFileName + Loc.T("settings.mcp.guideLocal"), 26f);
-            AddWideButton(page, ref y, "McpOpenGuide", Loc.T("settings.mcp.openGuide"), OpenGuide);
+            _page.Section(Loc.T("settings.mcp.section.readYourself"));
+            _page.Note("McpGuidePath", GuideFileName + Loc.T("settings.mcp.guideLocal"));
+            AddButton("McpOpenGuide", Loc.T("settings.mcp.openGuide"), OpenGuide);
         }
 
         public void Refresh()
@@ -103,24 +92,18 @@ namespace KitchenDesigner.Core.UI
 
         private static void Copy(string text) => GUIUtility.systemCopyBuffer = text;
 
-        private static TMPro.TextMeshProUGUI AddParagraph(Transform page, ref float y,
-            string name, string text, float height)
+        private void AddButton(string name, string caption, System.Action onClick)
         {
-            var label = UIFactory.CreateLabel(name, page, text, UIStyle.FontSmall,
-                new Vector2(0, y - height * 0.5f + SettingsRowFactory.RowH * 0.5f),
-                new Vector2(SettingsRowFactory.ContentW, height), TextAnchor.UpperLeft);
-            y -= height + SettingsRowFactory.GapPx;
-            return label;
-        }
-
-        private static void AddWideButton(Transform page, ref float y, string name, string caption,
-            System.Action onClick)
-        {
-            UIFactory.CreateButton(name, page, caption,
-                new Vector2(0, y - SettingsRowFactory.RowH * 0.5f),
-                new Vector2(SettingsRowFactory.ContentW * 0.75f, SettingsRowFactory.RowH),
-                onClick);
-            y -= SettingsRowFactory.RowStep;
+            var host = UIFactory.CreateRect("Row_" + name, _page.Root);
+            var button = UIFactory.CreateButton(name, host, caption, Vector2.zero,
+                new Vector2(WindowFooter.MinButtonW, UIStyle.ControlH), onClick);
+            var label = button.GetComponentInChildren<TMPro.TMP_Text>();
+            float width = WindowFooter.WidthFor(label, caption);
+            var rect = (RectTransform)button.transform;
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(LayoutDirection.IsRtl ? 1f : 0f, 0.5f);
+            rect.sizeDelta = new Vector2(width, UIStyle.ControlH);
+            rect.anchoredPosition = Vector2.zero;
+            _page.Block(host, UIStyle.ControlH, caption);
         }
     }
 }

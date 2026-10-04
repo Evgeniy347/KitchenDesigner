@@ -1,0 +1,335 @@
+{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Изменения применяются сразу",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Высота этажа",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Глубина промерзания",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Грунт",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Запас",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Класс бетона",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Подушка: песок",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Подушка: щебень",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Регион",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Соседние этажи",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Технология",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Толщина плиты",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Трамбовка",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Шов",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Строительство",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Дом",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Кладка",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Перекрытие",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Участок",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Фундамент",
+      "position": [0, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Песок", "Супесь", "Суглинок", "Глина", "Торф", "Неизвестно"],
+      "selected": 5,
+      "position": [316, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["B15", "B20", "B25"],
+      "selected": 1,
+      "position": [316, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Центр", "Северо-Запад", "Юг", "Поволжье", "Урал", "Сибирь", "Дальний Восток", "Крайний Север"],
+      "selected": 4,
+      "position": [316, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Показывать", "Приглушать", "Скрывать"],
+      "selected": 0,
+      "position": [316, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Кирпич 250×120×65", "Кирпич 250×120×88", "Газоблок 600×300×200", "Брус", "Каркас"],
+      "selected": 0,
+      "position": [316, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Высота этажа",
+      "value": "3000",
+      "interactable": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Запас",
+      "value": "5",
+      "interactable": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Подушка: песок",
+      "value": "100",
+      "interactable": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Подушка: щебень",
+      "value": "100",
+      "interactable": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Толщина плиты",
+      "value": "200",
+      "interactable": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Шов",
+      "value": "10",
+      "interactable": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2041 мм",
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Трамбовка",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "InputField",
+      "label": "NavSearch",
+      "value": "",
+      "interactable": true,
+      "position": [8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Настройки",
+      "position": [16, -24]
+    },
+    {
+      "type": "Label",
+      "text": "Нормы и материалы для строительных расчётов.",
+      "position": [0, -31]
+    },
+    {
+      "type": "Button",
+      "text": "Общие",
+      "position": [0, -48]
+    },
+    {
+      "type": "Button",
+      "text": "Проект",
+      "position": [0, -80]
+    },
+    {
+      "type": "Button",
+      "text": "Вид",
+      "position": [0, -112]
+    },
+    {
+      "type": "Button",
+      "text": "Управление",
+      "position": [0, -144]
+    },
+    {
+      "type": "Label",
+      "text": "Картинка",
+      "position": [12, -176]
+    },
+    {
+      "type": "Button",
+      "text": "Свет",
+      "position": [0, -208]
+    },
+    {
+      "type": "Button",
+      "text": "Фоторежим",
+      "position": [0, -240]
+    },
+    {
+      "type": "Label",
+      "text": "Дом",
+      "position": [12, -272]
+    },
+    {
+      "type": "Button",
+      "text": "Строительство",
+      "position": [0, -304]
+    },
+    {
+      "type": "Label",
+      "text": "Прочее",
+      "position": [12, -336]
+    },
+    {
+      "type": "Button",
+      "text": "MCP",
+      "position": [0, -368]
+    },
+    {
+      "type": "Button",
+      "text": "О программе",
+      "position": [0, -400]
+    }
+  ]
+}

@@ -106,7 +106,7 @@ public class SettingsToggleUndoTests
     private Toggle ToggleNamed(string label)
     {
         var toggle = _canvas!.GetComponentsInChildren<Toggle>(true)
-            .FirstOrDefault(t => t.name == "Tgl_" + label);
+            .FirstOrDefault(t => t.name == "Sw_" + label);
 
         Assert.IsNotNull(toggle, $"во вкладке «Управление» нет переключателя «{label}»");
         return toggle!;

@@ -2,7 +2,7 @@ namespace KitchenDesigner.Core.UI
 {
     public static class KeybindingCellLayout
     {
-        public const float DefaultRowWidth = 480f;
+        public const float DefaultRowWidth = 678f;
         public const float ClearWidth = 18f;
         public const float GapAfterLabel = 6f;
         public const float GapBeforeClear = 3f;

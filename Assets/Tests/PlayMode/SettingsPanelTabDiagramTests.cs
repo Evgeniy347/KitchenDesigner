@@ -16,22 +16,19 @@ using KitchenDesigner.Tests;
 
 public class SettingsPanelTabDiagramTests
 {
-    private const int PanelW = 900;
-    private const int PanelH = 900;
+    private const int PanelW = 920;
+    private const int PanelH = 640;
     private const string PagePath = "SettingsPanel/SettingsPanelBody/SettingsPanelBodyContent";
 
+
     /// <summary>
-    /// Вкладка — это ПОДПИСЬ на кнопке и ИМЯ её страницы, а не номер на полосе. Восьмая
-    /// вкладка «Строительство» (3ffa6d09) встала третьей, и снимки, выбиравшие вкладку по
-    /// индексу `Tab_N`, разъехались на одну позицию: `ui_settings_tab_control` снял страницу
-    /// строительства, `..._light` — фотографию, `..._mcp` — свет, `..._photo` — управление,
-    /// `..._about` — MCP, а страница «О программе» не снималась вовсе. Прими такие кандидаты —
-    /// и пять эталонов замрут под чужими именами.
+    /// Страница — это ПОДПИСЬ пункта навигации и ИМЯ её страницы, а не номер в списке. Девятая страница
+    /// встала бы в середину, и снимки, выбиравшие страницу по индексу, разъехались бы на одну позицию и
+    /// замерли под чужими именами (так уже было, когда вкладкой стало «Строительство»).
     ///
-    /// Отсюда одна таблица: подпись → имя страницы, а из имени страницы выводятся и имя файла
-    /// снимка, и имя теста, который его снимает. Порядок в таблице — порядок кнопок на полосе,
-    /// и он сверяется с живой панелью в
-    /// <see cref="EveryTabOnTheStrip_HasASnapshotNamedAfterItsCaption"/>.
+    /// Отсюда одна таблица: подпись → id страницы, а из id выводятся и имя файла снимка, и имя теста,
+    /// который его снимает. Порядок в таблице — порядок пунктов навигации, и он сверяется с живой панелью в
+    /// <see cref="EveryNavItem_HasASnapshotNamedAfterItsCaption"/>.
     /// </summary>
     private sealed class TabCase
     {
@@ -43,27 +40,28 @@ public class SettingsPanelTabDiagramTests
 
         public string Caption { get; }
         public string Page { get; }
-        private string Key => Page.Substring("Tab_".Length);
-        public string Snapshot => "settings_tab_" + Key.ToLowerInvariant() + ".png";
-        public string CaptureMethod => "Tab" + Key + "_SavesPng";
+        public string PageNode => "Page_" + Page;
+        public string Snapshot => "settings_page_" + Page + ".png";
+        public string CaptureMethod => "Page" + char.ToUpperInvariant(Page[0]) + Page.Substring(1) + "_SavesPng";
     }
 
     private static readonly TabCase[] Tabs =
     {
-        new TabCase("Проект", "Tab_Project"),
-        new TabCase("Вид", "Tab_View"),
-        new TabCase("Строительство", "Tab_Construction"),
-        new TabCase("Управление", "Tab_Control"),
-        new TabCase("Фото режим", "Tab_Photo"),
-        new TabCase("Свет", "Tab_Light"),
-        new TabCase("MCP", "Tab_Mcp"),
-        new TabCase("О программе", "Tab_About"),
+        new TabCase("Общие", "general"),
+        new TabCase("Проект", "project"),
+        new TabCase("Вид", "view"),
+        new TabCase("Управление", "control"),
+        new TabCase("Свет", "light"),
+        new TabCase("Фоторежим", "photo"),
+        new TabCase("Строительство", "construction"),
+        new TabCase("MCP", "mcp"),
+        new TabCase("О программе", "about"),
     };
 
     private static TabCase Tab(string page)
     {
         var tab = Tabs.FirstOrDefault(t => t.Page == page);
-        Assert.IsNotNull(tab, $"страницы {page} нет в таблице вкладок");
+        Assert.IsNotNull(tab, $"страницы {page} нет в таблице");
         return tab!;
     }
 
@@ -128,6 +126,7 @@ public class SettingsPanelTabDiagramTests
         var ui = _canvasGo!.AddComponent<SettingsPanelUI>();
         ui.Build(canvas.transform);
         ui.SetVisible(true);
+        ui.OpenTab(0);
 
         return (canvas, cam, ui);
     }
@@ -140,17 +139,17 @@ public class SettingsPanelTabDiagramTests
 
     private IEnumerable<Transform> TabButtons()
     {
-        var panel = _canvasGo!.transform.Find("SettingsPanel");
-        Assert.IsNotNull(panel, "окно настроек не построилось — снимать нечего");
-        foreach (Transform child in panel!)
-            if (child.name.StartsWith("Tab_", System.StringComparison.Ordinal))
+        var nav = _canvasGo!.transform.Find(SettingsWindowPaths.Nav);
+        Assert.IsNotNull(nav, "окно настроек не построилось — снимать нечего");
+        foreach (Transform child in nav!)
+            if (child.name.StartsWith(SettingsNav.ItemPrefix, System.StringComparison.Ordinal))
                 yield return child;
     }
 
     /// <summary>
-    /// Выбор вкладки по ПОДПИСИ, а не по индексу: так же, как это делает человек, и так же,
-    /// как `SettingsPanelUITests.SwitchTab_OnlyActivePageVisible` (66bb02b5). Вставка вкладки
-    /// в середину полосы номера сдвигает, а подписи — нет.
+    /// Выбор страницы по ПОДПИСИ, а не по индексу: так же, как это делает человек, и так же, как
+    /// <c>SettingsPanelUITests.SwitchPage_OnlyActivePageVisible</c>. Вставка страницы в середину навигации
+    /// номера сдвигает, а подписи — нет.
     /// </summary>
     private void ClickTab(string caption)
     {
@@ -158,11 +157,11 @@ public class SettingsPanelTabDiagramTests
         {
             if (Caption(button) != caption) continue;
             var btn = button.GetComponent<Button>();
-            Assert.IsNotNull(btn, $"вкладка «{caption}» без кнопки — нажать её нечем");
+            Assert.IsNotNull(btn, $"пункт «{caption}» без кнопки — нажать его нечем");
             btn!.onClick.Invoke();
             return;
         }
-        Assert.Fail($"кнопки вкладки «{caption}» на полосе нет");
+        Assert.Fail($"пункта навигации «{caption}» нет");
     }
 
     private string TheOnlyVisiblePage()
@@ -172,12 +171,12 @@ public class SettingsPanelTabDiagramTests
 
         var visible = new List<string>();
         foreach (Transform child in content!)
-            if (child.name.StartsWith("Tab_", System.StringComparison.Ordinal) && child.gameObject.activeSelf)
+            if (child.name.StartsWith("Page_", System.StringComparison.Ordinal) && child.gameObject.activeSelf)
                 visible.Add(child.name);
 
         Assert.AreEqual(1, visible.Count,
             "видна обязана быть ровно одна страница — иначе в снимок попадут параметры двух "
-            + "вкладок сразу. Активны: " + string.Join(", ", visible));
+            + "страниц сразу. Активны: " + string.Join(", ", visible));
         return visible[0];
     }
 
@@ -187,9 +186,9 @@ public class SettingsPanelTabDiagramTests
         ClickTab(tab.Caption);
         yield return null;
 
-        Assert.AreEqual(tab.Page, TheOnlyVisiblePage(),
-            $"снимок «{tab.Snapshot}» обязан показывать страницу вкладки «{tab.Caption}» "
-            + $"({tab.Page}). Эталон, замерший под чужим именем, хуже красного теста: "
+        Assert.AreEqual(tab.PageNode, TheOnlyVisiblePage(),
+            $"снимок «{tab.Snapshot}» обязан показывать страницу «{tab.Caption}» "
+            + $"({tab.PageNode}). Эталон, замерший под чужим именем, хуже красного теста: "
             + "следующий человек будет отлаживать, почему в снимке «Свет» настройки фотографии.");
 
         yield return CaptureAndSave(tab.Snapshot);
@@ -229,37 +228,35 @@ public class SettingsPanelTabDiagramTests
     // ── Сенсор: имя снимка обязано сойтись с подписью вкладки ───────────
 
     /// <summary>
-    /// Девятая вкладка обязана уронить ИМЕННО этот тест — на своей подписи, — а не молча
-    /// перемешать чужие эталоны. Сторожатся три вещи разом: полоса кнопок совпадает с
-    /// таблицей <see cref="Tabs"/> подпись-в-подпись и по порядку; клик по подписи открывает
-    /// ровно ту страницу, из имени которой выведено имя файла снимка; у каждой строки таблицы
-    /// есть свой снимающий тест. Раньше не сторожилось ничто — сдвиг пяти эталонов поймал
-    /// человек, читавший дифф глазами.
+    /// Десятая страница обязана уронить ИМЕННО этот тест — на своей подписи, — а не молча перемешать чужие
+    /// эталоны. Сторожатся три вещи разом: список пунктов навигации совпадает с таблицей <see cref="Tabs"/>
+    /// подпись-в-подпись и по порядку; клик по подписи открывает ровно ту страницу, из id которой выведено
+    /// имя файла снимка; у каждой строки таблицы есть свой снимающий тест.
     /// </summary>
     [UnityTest]
-    public IEnumerator EveryTabOnTheStrip_HasASnapshotNamedAfterItsCaption()
+    public IEnumerator EveryNavItem_HasASnapshotNamedAfterItsCaption()
     {
         BuildPanel();
         yield return null;
 
         var onScreen = TabButtons().Select(Caption).ToList();
         CollectionAssert.AreEqual(Tabs.Select(t => t.Caption).ToList(), onScreen,
-            "полоса вкладок и таблица снимков разошлись. Новая вкладка заводится в `Tabs` "
-            + "вместе со своим тестом `Tab{Имя}_SavesPng`, иначе снимки сдвинутся на позицию "
-            + "и замрут под чужими именами. На полосе: " + string.Join(", ", onScreen));
+            "навигация и таблица снимков разошлись. Новая страница заводится в `Tabs` "
+            + "вместе со своим тестом `Page{Имя}_SavesPng`, иначе снимки сдвинутся на позицию "
+            + "и замрут под чужими именами. В навигации: " + string.Join(", ", onScreen));
 
         foreach (var tab in Tabs)
         {
             ClickTab(tab.Caption);
-            Assert.AreEqual(tab.Page, TheOnlyVisiblePage(),
-                $"клик по «{tab.Caption}» обязан открыть {tab.Page} — страницу, чьё имя стоит "
+            Assert.AreEqual(tab.PageNode, TheOnlyVisiblePage(),
+                $"клик по «{tab.Caption}» обязан открыть {tab.PageNode} — страницу, чей id стоит "
                 + $"в имени снимка «{tab.Snapshot}»");
 
             var capture = GetType().GetMethod(tab.CaptureMethod,
                 BindingFlags.Public | BindingFlags.Instance);
             Assert.IsNotNull(capture,
-                $"у вкладки «{tab.Caption}» нет снимающего теста {tab.CaptureMethod}(): "
-                + $"эталон {tab.Snapshot} никто не обновит, и вкладка останется неснятой");
+                $"у страницы «{tab.Caption}» нет снимающего теста {tab.CaptureMethod}(): "
+                + $"эталон {tab.Snapshot} никто не обновит, и страница останется неснятой");
             Assert.IsNotEmpty(capture!.GetCustomAttributes(typeof(UnityTestAttribute), false),
                 $"{tab.CaptureMethod}() существует, но не помечен [UnityTest] — прогон его "
                 + $"не запустит, и эталон {tab.Snapshot} останется старым");
@@ -269,16 +266,19 @@ public class SettingsPanelTabDiagramTests
     // ── Снимки: одна вкладка — один тест, вкладка выбирается по подписи ─
 
     [UnityTest]
-    public IEnumerator TabProject_SavesPng() => CaptureTab(Tab("Tab_Project"));
+    public IEnumerator PageProject_SavesPng() => CaptureTab(Tab("project"));
 
     [UnityTest]
-    public IEnumerator TabView_SavesPng() => CaptureTab(Tab("Tab_View"));
+    public IEnumerator PageView_SavesPng() => CaptureTab(Tab("view"));
 
     [UnityTest]
-    public IEnumerator TabConstruction_SavesPng() => CaptureTab(Tab("Tab_Construction"));
+    public IEnumerator PageConstruction_SavesPng() => CaptureTab(Tab("construction"));
 
     [UnityTest]
-    public IEnumerator TabControl_SavesPng() => CaptureTab(Tab("Tab_Control"));
+    public IEnumerator PageControl_SavesPng() => CaptureTab(Tab("control"));
+
+    [UnityTest]
+    public IEnumerator PageGeneral_SavesPng() => CaptureTab(Tab("general"));
 
     /// <summary>
     /// Конфликт привязок — единственное, о чём вкладка «Управление» сообщает ЦВЕТОМ, и
@@ -294,7 +294,7 @@ public class SettingsPanelTabDiagramTests
     /// тест зеленел бы и в том случае, если бы красным красилось ВСЁ подряд.
     /// </summary>
     [UnityTest]
-    public IEnumerator TabControlConflict_SavesPng()
+    public IEnumerator PageControlConflict_SavesPng()
     {
         var built = BuildPanel();
 
@@ -326,8 +326,8 @@ public class SettingsPanelTabDiagramTests
             + "конфликта в кадре нет и снимать нечего");
         Assert.AreEqual(other.text, clash.text,
             "обе стороны конфликта показывают ОДИН аккорд — на то он и конфликт");
-        AssertColor(UIStyle.HighlightError, clash.color, "«Сохранить проект»");
-        AssertColor(UIStyle.HighlightError, other.color, "«Дублировать»");
+        AssertColor(UIStyle.TextError, clash.color, "«Сохранить проект»");
+        AssertColor(UIStyle.TextError, other.color, "«Дублировать»");
         AssertMarkerVisible("KbMark_SaveProject_P",
             "цвет не единственный носитель смысла: у конфликта есть ещё и маркер");
         AssertMarkerVisible("KbMark_DuplicateSelected_P", "маркер стоит у ОБЕИХ сторон конфликта");
@@ -338,7 +338,7 @@ public class SettingsPanelTabDiagramTests
         AssertMarkerHidden("KbMark_DeleteSelected_P");
         AssertNoCaptionIsClipped();
 
-        yield return CaptureAndSave("settings_tab_control_conflict.png");
+        yield return CaptureAndSave("settings_page_control_conflict.png");
     }
 
     /// <summary>Тот же сторож для жестов мыши. Отдельным кадром, а не параметром к
@@ -347,7 +347,7 @@ public class SettingsPanelTabDiagramTests
     /// молча — конфликтов между клавишей и жестом модель не признаёт по построению,
     /// поэтому кадр обязан доказать, что внутри ОДНОГО рода входа краснеет как надо.</summary>
     [UnityTest]
-    public IEnumerator TabControlGestureConflict_SavesPng()
+    public IEnumerator PageControlGestureConflict_SavesPng()
     {
         var built = BuildPanel();
 
@@ -375,8 +375,8 @@ public class SettingsPanelTabDiagramTests
         Assert.AreEqual(InputBindingDisplay.Of(taken), other.text,
             "жест показывается по-русски, а маркер конфликта стоит своей дорожкой рядом");
         Assert.AreEqual(other.text, clash.text, "обе стороны конфликта показывают ОДИН жест");
-        AssertColor(UIStyle.HighlightError, clash.color, "«Камера: поворот на месте»");
-        AssertColor(UIStyle.HighlightError, other.color, "«Камера: панорамирование»");
+        AssertColor(UIStyle.TextError, clash.color, "«Камера: поворот на месте»");
+        AssertColor(UIStyle.TextError, other.color, "«Камера: панорамирование»");
         AssertMarkerVisible("KbMark_CameraOrbit_P",
             "у жеста маркер терялся: он был префиксом внутри подписи, а подпись занимала "
             + "ячейку целиком — именно этот случай кадр и обязан стеречь");
@@ -387,7 +387,7 @@ public class SettingsPanelTabDiagramTests
         AssertMarkerHidden("KbMark_CameraZoomWheel_P");
         AssertNoCaptionIsClipped();
 
-        yield return CaptureAndSave("settings_tab_control_gesture_conflict.png");
+        yield return CaptureAndSave("settings_page_control_gesture_conflict.png");
     }
 
     private ScrollRect BodyScroll()
@@ -401,10 +401,10 @@ public class SettingsPanelTabDiagramTests
 
     private RectTransform FindRow(string rowName)
     {
-        var page = _canvasGo!.transform.Find(PagePath + "/Tab_Control");
-        Assert.IsNotNull(page, "страницы вкладки «Управление» нет");
-        var row = page!.Find(rowName) as RectTransform;
-        Assert.IsNotNull(row, $"строки привязки «{rowName}» на вкладке нет");
+        var page = _canvasGo!.transform.Find(PagePath + "/Page_control");
+        Assert.IsNotNull(page, "страницы «Управление» нет");
+        var row = page!.GetComponentsInChildren<RectTransform>(true).FirstOrDefault(r => r.name == rowName);
+        Assert.IsNotNull(row, $"строки привязки «{rowName}» на странице нет");
         return row!;
     }
 
@@ -496,7 +496,7 @@ public class SettingsPanelTabDiagramTests
                 "маркер не помещается в свою дорожку по НАСТОЯЩИМ метрикам шрифта — правило "
                 + "живёт в чистом слое, а число обязан давать тот, кто рисует");
 
-        AssertColor(UIStyle.HighlightError, marker.color, "маркер конфликта");
+        AssertColor(UIStyle.TextError, marker.color, "маркер конфликта");
     }
 
     private void AssertMarkerHidden(string markerName) =>
@@ -541,14 +541,14 @@ public class SettingsPanelTabDiagramTests
     }
 
     [UnityTest]
-    public IEnumerator TabPhoto_SavesPng() => CaptureTab(Tab("Tab_Photo"));
+    public IEnumerator PagePhoto_SavesPng() => CaptureTab(Tab("photo"));
 
     [UnityTest]
-    public IEnumerator TabLight_SavesPng() => CaptureTab(Tab("Tab_Light"));
+    public IEnumerator PageLight_SavesPng() => CaptureTab(Tab("light"));
 
     [UnityTest]
-    public IEnumerator TabMcp_SavesPng() => CaptureTab(Tab("Tab_Mcp"));
+    public IEnumerator PageMcp_SavesPng() => CaptureTab(Tab("mcp"));
 
     [UnityTest]
-    public IEnumerator TabAbout_SavesPng() => CaptureTab(Tab("Tab_About"));
+    public IEnumerator PageAbout_SavesPng() => CaptureTab(Tab("about"));
 }

@@ -1,0 +1,503 @@
+{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Изменения применяются сразу",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "AO в полном разрешении",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "AO по прямому свету",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Ambient occlusion",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Качество",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Виньетка",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Выборок SSGI",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Затухание AO",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Карта теней",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Ламп на объект",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Масштаб рендера",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Мягкие тени",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Отражённый свет (SSGI, опытный)",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Потолок по стенам",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Радиус AO",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Радиус SSGI",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Разрешение SSGI",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Расширенный диапазон (HDR)",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Свечение (bloom)",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сглаживание",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сглаживание SSGI",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила AO",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила SSGI",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Суперсэмплинг",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Тени",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Фоторежим",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Ambient occlusion",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Качество и эффекты",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Отражённый свет (SSGI)",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Разрешение и тени",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сцена и обработка",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Низкое",
+      "position": [2, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Сбросить раздел",
+      "position": [16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Среднее",
+      "position": [81, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Высокое",
+      "position": [161, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_AO в полном разрешении",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Ambient occlusion",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Виньетка",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Мягкие тени",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Отражённый свет (SSGI, опытный)",
+      "isOn": false,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Потолок по стенам",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Расширенный диапазон (HDR)",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Свечение (bloom)",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Сглаживание",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Суперсэмплинг",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Тени",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Label",
+      "text": "10 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "32",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "4 м",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "4096 px",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "8",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "150 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "50 мм",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "800 мм",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "50 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "3 px",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "250 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "70 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "InputField",
+      "label": "NavSearch",
+      "value": "",
+      "interactable": true,
+      "position": [8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Настройки",
+      "position": [16, -24]
+    },
+    {
+      "type": "Label",
+      "text": "Качество и эффекты фоторежима.",
+      "position": [0, -31]
+    },
+    {
+      "type": "Button",
+      "text": "Общие",
+      "position": [0, -48]
+    },
+    {
+      "type": "Button",
+      "text": "Проект",
+      "position": [0, -80]
+    },
+    {
+      "type": "Button",
+      "text": "Вид",
+      "position": [0, -112]
+    },
+    {
+      "type": "Button",
+      "text": "Управление",
+      "position": [0, -144]
+    },
+    {
+      "type": "Label",
+      "text": "Картинка",
+      "position": [12, -176]
+    },
+    {
+      "type": "Button",
+      "text": "Свет",
+      "position": [0, -208]
+    },
+    {
+      "type": "Button",
+      "text": "Фоторежим",
+      "position": [0, -240]
+    },
+    {
+      "type": "Label",
+      "text": "Дом",
+      "position": [12, -272]
+    },
+    {
+      "type": "Button",
+      "text": "Строительство",
+      "position": [0, -304]
+    },
+    {
+      "type": "Label",
+      "text": "Прочее",
+      "position": [12, -336]
+    },
+    {
+      "type": "Button",
+      "text": "MCP",
+      "position": [0, -368]
+    },
+    {
+      "type": "Button",
+      "text": "О программе",
+      "position": [0, -400]
+    }
+  ]
+}

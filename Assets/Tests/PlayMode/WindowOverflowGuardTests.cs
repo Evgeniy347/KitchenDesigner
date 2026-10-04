@@ -37,6 +37,9 @@ public class WindowOverflowGuardTests
     private const float ProbeSidePad = 20f;
     private const float ProbeFirstRowY = ProbePanelH * 0.5f - 138f;
     private const int RowsThatOverflowTheSettingsWindow = 27;
+    private const float ProbeRowW = 480f;
+    private const float ProbeRowH = 32f;
+    private const float ProbeRowStep = 38f;
 
     private GameObject? _canvasGo;
 
@@ -88,6 +91,13 @@ public class WindowOverflowGuardTests
         if (fit.Overflows) offenders.Add($"{where}: {fit}");
     }
 
+    private static void ProbeRow(string name, Transform parent, float y)
+    {
+        var rect = UIFactory.CreateRect(name, parent);
+        rect.sizeDelta = new Vector2(ProbeRowW, ProbeRowH);
+        rect.anchoredPosition = new Vector2(0f, y);
+    }
+
     private static RectTransform ProbePanel(Transform canvas, int rows, bool scrolling)
     {
         var panel = UIFactory.CreatePanel("GuardProbe", canvas, Vector2.zero,
@@ -110,8 +120,8 @@ public class WindowOverflowGuardTests
         float y = ProbeFirstRowY;
         for (int i = 0; i < rows; i++)
         {
-            SettingsRowFactory.CreateRow("ProbeRow_" + i, host, y);
-            y -= SettingsRowFactory.RowStep;
+            ProbeRow("ProbeRow_" + i, host, y);
+            y -= ProbeRowStep;
         }
 
         body?.Fit();
@@ -163,7 +173,7 @@ public class WindowOverflowGuardTests
         UIFactory.AnchorCenter(panel.rectTransform);
         var body = WindowBody.Create(panel.rectTransform, ProbeTopInset, ProbeBottomInset,
             ProbeSidePad);
-        SettingsRowFactory.CreateRow("Unreachable", body.Content, -200f);
+        ProbeRow("Unreachable", body.Content, -200f);
         yield return null;
 
         var offenders = new List<string>();
@@ -220,7 +230,6 @@ public class WindowOverflowGuardTests
 
     private static readonly Dictionary<string, string> WindowsOverTheD1Budget = new()
     {
-        ["SettingsPanelUI"] = "900 px до T6 (920×640, docs/ui-redesign/settings.md)",
     };
 
     [UnityTest]

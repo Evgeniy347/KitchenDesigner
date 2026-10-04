@@ -1,12 +1,12 @@
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 namespace KitchenDesigner.Core.UI
 {
     public sealed class SettingsControlTab
     {
-        private const float ReferenceLineH = 20f;
-        private const float SectionGap = 16f;
+        internal const string TableNode = "KbTable";
+
         private static string InvertYLabel => Loc.T("settings.control.mouseInvertY");
         private static string InvertXLabel => Loc.T("settings.control.mouseInvertX");
 
@@ -21,101 +21,108 @@ namespace KitchenDesigner.Core.UI
 
         private static string[] ReferenceLines => ReferenceLinesCache.Value;
 
-        private readonly SettingsRowFactory _rows;
-        private readonly List<RectTransform> _referenceRects = new();
+        private readonly SettingsPage _page;
         private KeybindingRowUI? _bindings;
-        private float _referenceTop;
+        private RectTransform? _table;
+        private Action _afterChange = () => { };
 
-        public SettingsControlTab(SettingsRowFactory rows) => _rows = rows;
+        public SettingsControlTab(SettingsPage page) => _page = page;
 
-        public void Build(Transform page, KitchenSettings s, float topY,
-            KeybindingCaptureGate captureGate, KeybindingGestureGate gestureGate,
-            System.Action afterBindingChange)
+        public void Build(KitchenSettings s, KeybindingCaptureGate captureGate,
+            KeybindingGestureGate gestureGate, Action afterBindingChange)
         {
-            float y = topY;
+            _afterChange = afterBindingChange;
+            _page.OnReset = ResetSection;
 
-            _rows.AddSpeedSlider(page, ref y, Loc.T("settings.control.mouseSensitivity"), s.MouseSensitivity,
-                v => s.MouseSensitivity = v, read: () => s.MouseSensitivity);
+            _page.Section(Loc.T("settings.control.section.mouse"));
+
+            _page.AddSlider(Loc.T("settings.control.mouseSensitivity"), KitchenSettings.MIN_INPUT_SPEED,
+                KitchenSettings.MAX_INPUT_SPEED, s.MouseSensitivity, Multiplier, v => s.MouseSensitivity = v,
+                false, () => s.MouseSensitivity);
             Hint(Loc.T("settings.control.mouseSensitivity"), hint: "settings.control.mouseSensitivity");
-            _rows.AddSpeedSlider(page, ref y, Loc.T("settings.control.wasdSpeed"), s.WasdSpeed,
-                v => s.WasdSpeed = v, read: () => s.WasdSpeed);
+            _page.AddSlider(Loc.T("settings.control.wasdSpeed"), KitchenSettings.MIN_INPUT_SPEED,
+                KitchenSettings.MAX_INPUT_SPEED, s.WasdSpeed, Multiplier, v => s.WasdSpeed = v,
+                false, () => s.WasdSpeed);
             Hint(Loc.T("settings.control.wasdSpeed"), hint: "settings.control.wasdSpeed");
-            _rows.AddSpeedSlider(page, ref y, Loc.T("settings.control.arrowSpeed"), s.ArrowSpeed,
-                v => s.ArrowSpeed = v, read: () => s.ArrowSpeed);
+            _page.AddSlider(Loc.T("settings.control.arrowSpeed"), KitchenSettings.MIN_INPUT_SPEED,
+                KitchenSettings.MAX_INPUT_SPEED, s.ArrowSpeed, Multiplier, v => s.ArrowSpeed = v,
+                false, () => s.ArrowSpeed);
             Hint(Loc.T("settings.control.arrowSpeed"), hint: "settings.control.arrowSpeed");
 
-            _rows.AddToggle(page, ref y, InvertYLabel, s.MouseInvertY,
+            _page.AddSwitch(InvertYLabel, s.MouseInvertY,
                 v => SetSettingCommand.Push(InvertYLabel, x => s.MouseInvertY = x,
-                    s.MouseInvertY, v, _rows.ReadBackFromSettings),
+                    s.MouseInvertY, v, _page.Form.ReadBackFromSettings),
                 read: () => s.MouseInvertY);
             Hint(InvertYLabel, hint: "settings.control.mouseInvertY");
 
-            _rows.AddToggle(page, ref y, InvertXLabel, s.MouseInvertX,
+            _page.AddSwitch(InvertXLabel, s.MouseInvertX,
                 v => SetSettingCommand.Push(InvertXLabel, x => s.MouseInvertX = x,
-                    s.MouseInvertX, v, _rows.ReadBackFromSettings),
+                    s.MouseInvertX, v, _page.Form.ReadBackFromSettings),
                 read: () => s.MouseInvertX);
             Hint(InvertXLabel, hint: "settings.control.mouseInvertX");
 
-            y -= SectionGap;
-            var header = UIFactory.CreateSectionHeader(
-                "KbSection", page, Loc.T("settings.control.section.hotkeys"), SettingsRowFactory.ContentW);
-            header.anchoredPosition = new Vector2(0f, y - 9f);
-            y -= 18f + SettingsRowFactory.GapPx;
+            _page.Section(Loc.T("settings.control.section.fixed"));
+            foreach (var line in ReferenceLines) _page.Note("KbRef_" + line.GetHashCode(), line);
 
-            _bindings = new KeybindingRowUI(s, captureGate, gestureGate, afterBindingChange);
-            _bindings.Build(page, ref y);
-            _bindings.AfterRelayout = ShiftReferenceBlock;
+            var header = _page.Section(Loc.T("settings.control.section.hotkeys"));
+            _page.SectionAction(header, Loc.T("settings.control.resetHotkeys"), ResetHotkeys);
 
-            y -= SectionGap;
-            _referenceTop = y;
-            BuildReferenceBlock(page, ref y);
-        }
-
-        private void ShiftReferenceBlock(float listBottom)
-        {
-            float delta = listBottom - SectionGap - _referenceTop;
-            if (Mathf.Approximately(delta, 0f)) return;
-
-            foreach (var rect in _referenceRects)
-                rect.anchoredPosition += new Vector2(0f, delta);
-
-            _referenceTop += delta;
+            BuildTable(s, captureGate, gestureGate);
         }
 
         public void RefreshConflicts() => _bindings?.RefreshAll();
 
-        private void BuildReferenceBlock(Transform page, ref float y)
+        private void BuildTable(KitchenSettings s, KeybindingCaptureGate captureGate,
+            KeybindingGestureGate gestureGate)
         {
-            var header = UIFactory.CreateSectionHeader(
-                "KbRefSection", page, Loc.T("settings.control.section.fixed"),
-                SettingsRowFactory.ContentW);
-            header.anchoredPosition = new Vector2(0f, y - 9f);
-            _referenceRects.Add(header);
-            y -= 18f + SettingsRowFactory.GapPx;
+            _table = UIFactory.CreateRect(TableNode, _page.Root);
+            var origin = UIFactory.CreateRect("KbOrigin", _table);
+            origin.anchorMin = origin.anchorMax = origin.pivot = new Vector2(0.5f, 1f);
+            origin.sizeDelta = Vector2.zero;
+            origin.anchoredPosition = Vector2.zero;
 
-            foreach (var line in ReferenceLines)
-            {
-                var rect = UIFactory.CreateRect("KbRef_" + line.GetHashCode(), page);
-                rect.sizeDelta = new Vector2(SettingsRowFactory.ContentW, ReferenceLineH);
+            _bindings = new KeybindingRowUI(s, captureGate, gestureGate, _afterChange);
+            float y = 0f;
+            _bindings.Build(origin, ref y);
+            _bindings.AfterRelayout = Resize;
 
-                var label = UIFactory.CreateLabel("KbRefLbl_" + line.GetHashCode(), rect, line,
-                    UIStyle.FontSmall, Vector2.zero, new Vector2(SettingsRowFactory.ContentW, ReferenceLineH),
-                    TextAnchor.UpperLeft);
-                label.color = UIStyle.TextSecondary;
-                label.enableWordWrapping = true;
-
-                float height = Mathf.Max(ReferenceLineH,
-                    label.GetPreferredValues(line, SettingsRowFactory.ContentW, 0f).y);
-                rect.sizeDelta = new Vector2(SettingsRowFactory.ContentW, height);
-                rect.anchoredPosition = new Vector2(0f, y - height * 0.5f);
-                label.rectTransform.sizeDelta = new Vector2(SettingsRowFactory.ContentW, height);
-                _referenceRects.Add(rect);
-
-                y -= height + 4f;
-            }
+            _page.SetTail(_table, _bindings.SearchText);
+            Resize(y);
         }
 
-        private void Hint(string rowKey, string hint) =>
-            HintBadge.AttachAfterLabel(_rows.RowLabel(rowKey), hint);
+        private void Resize(float bottomY)
+        {
+            if (_table == null) return;
+            _table.sizeDelta = new Vector2(SettingsPage.ContentW, -bottomY);
+            _page.Relayout();
+            _afterChange();
+        }
+
+        private void ResetHotkeys() =>
+            SettingsSectionReset.Run(Loc.T("settings.control.resetHotkeys"),
+                (x, defaults) => x.ResetKeyBindings(), AfterReset);
+
+        private void ResetSection() =>
+            SettingsSectionReset.Run(Loc.T("settings.reset.section"),
+                (x, defaults) =>
+                {
+                    x.MouseSensitivity = defaults.MouseSensitivity;
+                    x.WasdSpeed = defaults.WasdSpeed;
+                    x.ArrowSpeed = defaults.ArrowSpeed;
+                    x.MouseInvertX = defaults.MouseInvertX;
+                    x.MouseInvertY = defaults.MouseInvertY;
+                    x.ResetKeyBindings();
+                }, AfterReset);
+
+        private void AfterReset()
+        {
+            _page.Form.ReadBackFromSettings();
+            _bindings?.RefreshAll();
+            _afterChange();
+        }
+
+        private static string Multiplier(float v) => NumberFormat.Fixed(v, 1) + "×";
+
+        private void Hint(string rowKey, string hint) => _page.Hint(rowKey, hint);
     }
 }

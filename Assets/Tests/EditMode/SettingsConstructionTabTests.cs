@@ -14,8 +14,7 @@ using KitchenDesigner.Core.UI;
 /// варианты, которые знает модель.</summary>
 public class SettingsConstructionTabTests
 {
-    private const string PagePath =
-        "SettingsPanel/SettingsPanelBody/SettingsPanelBodyContent/Tab_Construction/";
+    private static readonly string PagePath = KitchenDesigner.Tests.SettingsWindowPaths.Page("construction") + "/";
 
     private Canvas? _canvas;
     private SettingsPanelUI? _ui;
@@ -75,18 +74,18 @@ public class SettingsConstructionTabTests
     [Test]
     public void TheTab_CarriesEveryProjectDefaultOfTheHouse()
     {
-        Assert.IsNotNull(Row("RowDd_" + SettingsConstructionTab.RegionId));
-        Assert.IsNotNull(Row("RowRo_" + SettingsConstructionTab.FrostDepthId));
-        Assert.IsNotNull(Row("RowDd_" + SettingsConstructionTab.SoilId));
-        Assert.IsNotNull(Row("RowFld_Высота этажа"));
-        Assert.IsNotNull(Row("RowDd_" + SettingsConstructionTab.NeighbourLevelsId));
-        Assert.IsNotNull(Row("RowDd_" + SettingsConstructionTab.MasonryId));
-        Assert.IsNotNull(Row("RowFld_Шов"));
-        Assert.IsNotNull(Row("RowFld_Запас"));
-        Assert.IsNotNull(Row("RowDd_" + SettingsConstructionTab.ConcreteId));
-        Assert.IsNotNull(Row("RowFld_Подушка: песок"));
-        Assert.IsNotNull(Row("RowFld_Подушка: щебень"));
-        Assert.IsNotNull(Row("RowTgl_Трамбовка"));
+        Assert.IsNotNull(Row("Row_" + SettingsConstructionTab.RegionId));
+        Assert.IsNotNull(Row("Row_" + SettingsConstructionTab.FrostDepthId));
+        Assert.IsNotNull(Row("Row_" + SettingsConstructionTab.SoilId));
+        Assert.IsNotNull(Row("Row_Высота этажа"));
+        Assert.IsNotNull(Row("Row_" + SettingsConstructionTab.NeighbourLevelsId));
+        Assert.IsNotNull(Row("Row_" + SettingsConstructionTab.MasonryId));
+        Assert.IsNotNull(Row("Row_Шов"));
+        Assert.IsNotNull(Row("Row_Запас"));
+        Assert.IsNotNull(Row("Row_" + SettingsConstructionTab.ConcreteId));
+        Assert.IsNotNull(Row("Row_Подушка: песок"));
+        Assert.IsNotNull(Row("Row_Подушка: щебень"));
+        Assert.IsNotNull(Row("Row_Трамбовка"));
     }
 
     [Test]
@@ -106,7 +105,7 @@ public class SettingsConstructionTabTests
     [Test]
     public void TheFrostDepth_IsReadOnly_BecauseItIsDerivedNotEntered()
     {
-        var row = Row("RowRo_" + SettingsConstructionTab.FrostDepthId);
+        var row = Row("Row_" + SettingsConstructionTab.FrostDepthId);
 
         Assert.IsEmpty(row.GetComponentsInChildren<TMP_InputField>(true),
             "глубина промерзания не вводится руками — она выводится из региона и грунта");
@@ -138,7 +137,7 @@ public class SettingsConstructionTabTests
         _ui!.SetVisible(true);
         string onLoam = FrostDepthText();
 
-        Row("RowDd_" + SettingsConstructionTab.SoilId)
+        Row("Row_" + SettingsConstructionTab.SoilId)
             .GetComponentInChildren<TMP_Dropdown>(true).value = (int)SoilKind.Sand;
 
         Assert.AreEqual("1407 мм", FrostDepthText(),
@@ -153,7 +152,7 @@ public class SettingsConstructionTabTests
         KitchenSettings.Instance.ConstructionSoil = SoilKind.Loam;
         _ui!.SetVisible(true);
 
-        Row("RowDd_" + SettingsConstructionTab.RegionId)
+        Row("Row_" + SettingsConstructionTab.RegionId)
             .GetComponentInChildren<TMP_Dropdown>(true).value = (int)ConstructionRegion.Siberia;
 
         Assert.AreEqual("1827 мм", FrostDepthText(),
@@ -176,7 +175,7 @@ public class SettingsConstructionTabTests
 
     private string FrostDepthText()
     {
-        var value = Row("RowRo_" + SettingsConstructionTab.FrostDepthId)
+        var value = Row("Row_" + SettingsConstructionTab.FrostDepthId)
             .Find("Val_" + SettingsConstructionTab.FrostDepthId);
         Assert.IsNotNull(value, "значение обязано быть чем-то показано");
         return value!.GetComponent<TextMeshProUGUI>().text.Replace("​", "");
@@ -185,13 +184,13 @@ public class SettingsConstructionTabTests
     [Test]
     public void TheDropdowns_OfferExactlyWhatTheModelKnows()
     {
-        var region = Row("RowDd_" + SettingsConstructionTab.RegionId)
+        var region = Row("Row_" + SettingsConstructionTab.RegionId)
             .GetComponentInChildren<TMP_Dropdown>(true);
-        var masonry = Row("RowDd_" + SettingsConstructionTab.MasonryId)
+        var masonry = Row("Row_" + SettingsConstructionTab.MasonryId)
             .GetComponentInChildren<TMP_Dropdown>(true);
-        var soil = Row("RowDd_" + SettingsConstructionTab.SoilId)
+        var soil = Row("Row_" + SettingsConstructionTab.SoilId)
             .GetComponentInChildren<TMP_Dropdown>(true);
-        var concrete = Row("RowDd_" + SettingsConstructionTab.ConcreteId)
+        var concrete = Row("Row_" + SettingsConstructionTab.ConcreteId)
             .GetComponentInChildren<TMP_Dropdown>(true);
 
         CollectionAssert.AreEqual(ConstructionRegionTitles.All,
@@ -210,13 +209,13 @@ public class SettingsConstructionTabTests
         KitchenSettings.Instance.ResetConstruction();
         _ui!.SetVisible(true);
 
-        var region = Row("RowDd_" + SettingsConstructionTab.RegionId)
+        var region = Row("Row_" + SettingsConstructionTab.RegionId)
             .GetComponentInChildren<TMP_Dropdown>(true);
-        var masonry = Row("RowDd_" + SettingsConstructionTab.MasonryId)
+        var masonry = Row("Row_" + SettingsConstructionTab.MasonryId)
             .GetComponentInChildren<TMP_Dropdown>(true);
-        var soil = Row("RowDd_" + SettingsConstructionTab.SoilId)
+        var soil = Row("Row_" + SettingsConstructionTab.SoilId)
             .GetComponentInChildren<TMP_Dropdown>(true);
-        var concrete = Row("RowDd_" + SettingsConstructionTab.ConcreteId)
+        var concrete = Row("Row_" + SettingsConstructionTab.ConcreteId)
             .GetComponentInChildren<TMP_Dropdown>(true);
 
         Assert.AreEqual("Урал", region.options[region.value].text, "регион по умолчанию — Урал");
@@ -225,12 +224,12 @@ public class SettingsConstructionTabTests
             "неизвестный грунт — худший случай, и он выбран намеренно");
         Assert.AreEqual("B20", concrete.options[concrete.value].text);
 
-        Assert.AreEqual("3000", FieldText("RowFld_Высота этажа"));
-        Assert.AreEqual("10", FieldText("RowFld_Шов"));
-        Assert.AreEqual("5", FieldText("RowFld_Запас"));
-        Assert.AreEqual("100", FieldText("RowFld_Подушка: песок"));
-        Assert.AreEqual("100", FieldText("RowFld_Подушка: щебень"));
-        Assert.IsTrue(Row("RowTgl_Трамбовка").GetComponentInChildren<Toggle>(true).isOn,
+        Assert.AreEqual("3000", FieldText("Row_Высота этажа"));
+        Assert.AreEqual("10", FieldText("Row_Шов"));
+        Assert.AreEqual("5", FieldText("Row_Запас"));
+        Assert.AreEqual("100", FieldText("Row_Подушка: песок"));
+        Assert.AreEqual("100", FieldText("Row_Подушка: щебень"));
+        Assert.IsTrue(Row("Row_Трамбовка").GetComponentInChildren<Toggle>(true).isOn,
             "трамбовка включена по умолчанию");
     }
 
@@ -264,7 +263,7 @@ public class SettingsConstructionTabTests
             Assert.AreEqual(own, go.GetComponent<MeshRenderer>().sharedMaterial,
                 "предпосылка: в режиме «Показывать» этаж ниже рисуется своим материалом");
 
-            Row("RowDd_" + SettingsConstructionTab.NeighbourLevelsId)
+            Row("Row_" + SettingsConstructionTab.NeighbourLevelsId)
                 .GetComponentInChildren<TMP_Dropdown>(true).value = (int)NeighbourLevelsMode.Dim;
 
             Assert.AreNotEqual(own, go.GetComponent<MeshRenderer>().sharedMaterial,

@@ -6,8 +6,8 @@ using KitchenDesigner.Core.Keybinding;
 using KitchenDesigner.Core.UI;
 
 /// <summary>
-/// Ширина строки настроек живёт в `SettingsRowFactory.ContentW` — там её владелец, и
-/// панель кладёт строки по ней. Чистый слой посчитать её сам не может: `SettingsRowFactory`
+/// Ширина строки настроек живёт в `SettingsPage.ContentW` — там её владелец, и
+/// панель кладёт строки по ней. Чистый слой посчитать её сам не может: `SettingsPage`
 /// — Unity-класс, и быстрый набор его не видит, поэтому у проверки бюджета ячеек
 /// (`KeybindingCaptionFitTests`) есть своя константа `DefaultRowWidth`.
 ///
@@ -20,7 +20,7 @@ public class KeybindingRowWidthGuardTests
     [Test]
     public void ThePureCellBudget_MeasuresTheSameRowWidth_ThePanelActuallyLaysOut()
     {
-        Assert.AreEqual(SettingsRowFactory.ContentW, KeybindingCellLayout.DefaultRowWidth, 0.01f,
+        Assert.AreEqual(SettingsPage.ContentW, KeybindingCellLayout.DefaultRowWidth, 0.01f,
             "ширина строки в панели и ширина, по которой быстрый набор считает бюджет ячеек, "
             + "разошлись. Поправьте KeybindingCellLayout.DefaultRowWidth — иначе "
             + "KeybindingCaptionFitTests стережёт бюджет, которого в панели больше нет.");
@@ -29,12 +29,12 @@ public class KeybindingRowWidthGuardTests
     [Test]
     public void TheDerivedColumns_FillTheRow_WithoutOverflowingIt()
     {
-        var ruler = KeybindingRowRuler.For(SettingsRowFactory.ContentW,
+        var ruler = KeybindingRowRuler.For(SettingsPage.ContentW,
             KeybindingCellLayout.FallbackWidthFor(
                 KeybindingCaption.LongestBoundLength(new KeyBindings()),
                 KeybindingCellLayout.MaxCaptionFontSize));
 
-        Assert.AreEqual(SettingsRowFactory.ContentW * 0.5f, ruler.RightEdge, 0.01f,
+        Assert.AreEqual(SettingsPage.ContentW * 0.5f, ruler.RightEdge, 0.01f,
             "дорожки строки обязаны кончаться ровно на правом краю той ширины, которую "
             + "панель реально раскладывает: остаток или перелёт означают, что линейка и "
             + "панель считают разметку по-разному");
@@ -43,12 +43,12 @@ public class KeybindingRowWidthGuardTests
     }
 
     /// <summary>Ширина колонок считается от того, что РЕАЛЬНО назначено, поэтому список
-    /// привязок меняет высоту прямо во время работы — а блок справки стоит под ним. Если
-    /// он останется на месте, он наложится на последние строки списка, и человек увидит
-    /// текст поверх текста. Проверяется на настоящей панели: в чистом слое прямоугольников
-    /// нет.</summary>
+    /// привязок меняет высоту прямо во время работы. Таблица стоит ПОСЛЕДНЕЙ на странице,
+    /// и её рамка (`KbTable`) обязана расти вместе со строками: иначе нижние строки
+    /// окажутся вне рамки, а область прокрутки страницы — короче содержимого, и до них
+    /// не доскроллить. Проверяется на настоящей панели: в чистом слое прямоугольников нет.</summary>
     [Test]
-    public void ReboundToALongGesture_TheReferenceBlockStaysBelowTheList()
+    public void ReboundToALongGesture_TheTableFrameStillHoldsEveryRow()
     {
         var canvas = UIFactory.CreateCanvas("ControlTabReflowCanvas");
         var settings = KitchenSettings.Instance;
@@ -66,13 +66,11 @@ public class KeybindingRowWidthGuardTests
             panel.SyncFromSettings();
 
             float lastRowBottom = BottomOfTheLastBindingRow(canvas.transform);
-            float referenceTop = TopOf(canvas.transform, "KbRefSection");
+            float frameBottom = BottomOf(canvas.transform, "KbTable");
 
-            Assert.That(referenceTop, Is.LessThanOrEqualTo(lastRowBottom + 0.01f),
-                $"блок справки начинается на y={referenceTop:F0}, а список привязок кончается "
-                + $"на y={lastRowBottom:F0} — справка наехала на последние строки. Список "
-                + "меняет высоту вместе с шириной колонок, и всё, что стоит ниже, обязано "
-                + "уезжать вместе с ним.");
+            Assert.That(frameBottom, Is.LessThanOrEqualTo(lastRowBottom + 0.01f),
+                $"рамка таблицы кончается на y={frameBottom:F0}, а последняя строка привязки — на "
+                + $"y={lastRowBottom:F0}: список вырос вместе с шириной колонок, а рамка осталась прежней.");
         }
         finally
         {
@@ -88,15 +86,22 @@ public class KeybindingRowWidthGuardTests
             .Where(r => r.name.StartsWith("KbRow_", System.StringComparison.Ordinal))
             .ToList();
 
-        Assert.IsNotEmpty(rows, "во вкладке нет ни одной строки привязки — проверять нечего");
-        return rows.Min(r => r.anchoredPosition.y - r.rect.height * 0.5f);
+        Assert.IsNotEmpty(rows, "на странице нет ни одной строки привязки — проверять нечего");
+        return rows.Min(WorldBottom);
     }
 
-    private static float TopOf(Transform root, string name)
+    private static float BottomOf(Transform root, string name)
     {
         var rect = root.GetComponentsInChildren<RectTransform>(true)
             .FirstOrDefault(r => r.name == name);
         Assert.IsNotNull(rect, $"в панели нет узла «{name}»");
-        return rect!.anchoredPosition.y + rect.rect.height * 0.5f;
+        return WorldBottom(rect!);
+    }
+
+    private static float WorldBottom(RectTransform rect)
+    {
+        var corners = new Vector3[4];
+        rect.GetWorldCorners(corners);
+        return corners[0].y;
     }
 }

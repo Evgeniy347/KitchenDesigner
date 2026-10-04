@@ -2,21 +2,21 @@ using System.Collections.Generic;
 using System.Linq;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 using NUnit.Framework;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Кнопка «По умолчанию» на вкладке «Свет»: сбрасывает ВСЕ настройки вкладки одним шагом
-/// отмены и гаснет, когда сбрасывать нечего. Гаснуть и загораться она обязана от ЛЮБОЙ
-/// правки вкладки — поэтому набор проверяется не списком полей, а обходом настоящих
-/// ползунков и тумблеров страницы: добавленный на вкладку виджет, которого нет в
-/// <see cref="PhotoLightLook"/>, не включит кнопку, и этот обход его называет.
+/// «Сбросить раздел» в футере на странице «Свет» (бывшая кнопка «По умолчанию» с верха страницы):
+/// сбрасывает ВСЕ настройки страницы одним шагом отмены и гаснет, когда сбрасывать нечего. Гаснуть
+/// и загораться она обязана от ЛЮБОЙ правки страницы — поэтому набор проверяется не списком полей,
+/// а обходом настоящих ползунков, тумблеров и списков страницы: добавленный на страницу виджет,
+/// которого нет в <see cref="PhotoLightLook"/>, не включит кнопку, и этот обход его называет.
 /// </summary>
 public class SettingsLightResetTests
 {
-    private const string PagePath = "SettingsPanel/SettingsPanelBody/SettingsPanelBodyContent/Tab_Light";
-
     private ProjectLoadStateGuard? _globals;
     private GameObject? _canvasGo;
     private SettingsPanelUI? _ui;
@@ -32,6 +32,7 @@ public class SettingsLightResetTests
         _ui = _canvasGo.AddComponent<SettingsPanelUI>();
         _ui.Build(_canvasGo.transform);
         _ui.SetVisible(true);
+        _ui.OpenTab(SettingsPanelUI.PageOrder.ToList().IndexOf(SettingsPanelUI.LightId));
     }
 
     [TearDown]
@@ -43,12 +44,13 @@ public class SettingsLightResetTests
         _globals?.Restore();
     }
 
-    private Transform Page => _canvasGo!.transform.Find(PagePath);
+    private Transform Page => _canvasGo!.transform.Find(SettingsWindowPaths.Page(SettingsPanelUI.LightId));
 
-    private Button DefaultsButton =>
-        Page.Find("RowLightDefaults/" + SettingsLightTab.DefaultsButtonName).GetComponent<Button>();
+    private Button ResetButton =>
+        _canvasGo!.transform.Find(SettingsWindowPaths.Footer + "/" + SettingsPanelUI.ResetButtonName)
+            .GetComponent<Button>();
 
-    private void Refresh() => DefaultsButton.GetComponent<SettingsDefaultsButton>().Refresh();
+    private void Refresh() => _ui!.SyncFooter();
 
     private static PhotoLightLook Moved()
     {
@@ -60,24 +62,27 @@ public class SettingsLightResetTests
     }
 
     [Test]
-    public void Button_ExistsOnTheLightTab_WithTheDefaultsCaption()
+    public void Button_LivesInTheFooter_WithTheResetSectionCaption_AndNotOnThePage()
     {
-        var caption = DefaultsButton.GetComponentInChildren<TMPro.TMP_Text>().text;
+        var caption = ResetButton.GetComponentInChildren<TMP_Text>().text;
 
-        Assert.AreEqual(Loc.T("settings.light.resetDefaults"), caption.Replace("​", ""));
+        Assert.AreEqual(Loc.T("settings.reset.section"), caption.Replace("​", ""));
+        Assert.IsTrue(ResetButton.gameObject.activeInHierarchy, "у страницы «Свет» сброс есть");
+        Assert.IsEmpty(Page.GetComponentsInChildren<Button>(true),
+            "кнопка «По умолчанию» уехала с верха страницы в футер: на самой странице кнопок больше нет");
     }
 
     [Test]
-    public void Button_IsDisabled_WhenTheTabIsAtDefaults()
+    public void Button_IsDisabled_WhenThePageIsAtDefaults()
     {
         Refresh();
 
-        Assert.IsFalse(DefaultsButton.interactable,
+        Assert.IsFalse(ResetButton.interactable,
             "на свежем проекте сбрасывать нечего: живая кнопка обещала бы действие, которого нет");
     }
 
     [Test]
-    public void Button_IsEnabled_AfterAnySliderOrToggleOfTheTabChanges()
+    public void Button_IsEnabled_AfterAnySliderToggleOrDropdownOfThePageChanges()
     {
         var widgets = new List<(string name, System.Action change)>();
         foreach (var slider in Page.GetComponentsInChildren<Slider>(true))
@@ -87,11 +92,17 @@ public class SettingsLightResetTests
         }
         foreach (var toggle in Page.GetComponentsInChildren<Toggle>(true))
         {
+            if (toggle.GetComponentInParent<TMP_Dropdown>(true) != null) continue;
             var t = toggle;
             widgets.Add((t.name, () => t.isOn = !t.isOn));
         }
+        foreach (var dropdown in Page.GetComponentsInChildren<TMP_Dropdown>(true))
+        {
+            var d = dropdown;
+            widgets.Add((d.name, () => d.value = d.value < d.options.Count - 1 ? d.options.Count - 1 : 0));
+        }
         Assert.GreaterOrEqual(widgets.Count, 15,
-            "обход не нашёл виджетов вкладки «Свет» — он бы зеленел впустую");
+            "обход не нашёл виджетов страницы «Свет» — он бы зеленел впустую");
 
         var silent = new List<string>();
         foreach (var (name, change) in widgets)
@@ -99,15 +110,15 @@ public class SettingsLightResetTests
             KitchenSettings.Instance.ApplyLightLook(PhotoLightLook.Defaults);
             _ui!.SyncFromSettings();
             Refresh();
-            Assume.That(DefaultsButton.interactable, Is.False, "перед правкой вкладка обязана быть заводской");
+            Assume.That(ResetButton.interactable, Is.False, "перед правкой страница обязана быть заводской");
 
             change();
             Refresh();
-            if (!DefaultsButton.interactable) silent.Add(name);
+            if (!ResetButton.interactable) silent.Add(name);
         }
 
         Assert.IsEmpty(silent,
-            "правка этих виджетов не включила «По умолчанию»: их настройки не входят в "
+            "правка этих виджетов не включила сброс: их настройки не входят в "
             + "PhotoLightLook, и кнопка не сбросит их: " + string.Join(", ", silent));
     }
 
@@ -116,17 +127,17 @@ public class SettingsLightResetTests
     {
         KitchenSettings.Instance.ApplyLightLook(Moved());
         Refresh();
-        Assume.That(DefaultsButton.interactable, Is.True);
+        Assume.That(ResetButton.interactable, Is.True);
 
         KitchenSettings.Instance.ApplyLightLook(PhotoLightLook.Defaults);
         Refresh();
 
-        Assert.IsFalse(DefaultsButton.interactable,
+        Assert.IsFalse(ResetButton.interactable,
             "пара к проверке включения: вернули заводские значения — кнопка снова серая");
     }
 
     [Test]
-    public void Click_ResetsTheWholeTab_InOneUndoStep_AndUndoBringsItBack()
+    public void Click_ResetsTheWholePage_InOneUndoStep_AndUndoBringsItBack()
     {
         var settings = KitchenSettings.Instance;
         var moved = Moved();
@@ -135,20 +146,20 @@ public class SettingsLightResetTests
         Refresh();
         int before = CommandStack.UndoCount;
 
-        DefaultsButton.onClick.Invoke();
+        ResetButton.onClick.Invoke();
 
         Assert.AreEqual(PhotoLightLook.Defaults, settings.CaptureLightLook(), "настройки сброшены");
         Assert.AreEqual(before + 1, CommandStack.UndoCount,
-            "сброс всей вкладки — ОДИН шаг отмены, а не по шагу на каждый ползунок");
+            "сброс всей страницы — ОДИН шаг отмены, а не по шагу на каждый ползунок");
         Refresh();
-        Assert.IsFalse(DefaultsButton.interactable, "после сброса кнопка гаснет");
+        Assert.IsFalse(ResetButton.interactable, "после сброса кнопка гаснет");
 
         CommandStack.Undo();
 
         Assert.AreEqual(moved, settings.CaptureLightLook(),
-            "один Ctrl+Z возвращает все настройки вкладки такими, какими они были");
+            "один Ctrl+Z возвращает все настройки страницы такими, какими они были");
         Refresh();
-        Assert.IsTrue(DefaultsButton.interactable, "после отмены сбрасывать снова есть что");
+        Assert.IsTrue(ResetButton.interactable, "после отмены сбрасывать снова есть что");
     }
 
     [Test]
@@ -157,14 +168,23 @@ public class SettingsLightResetTests
         var settings = KitchenSettings.Instance;
         settings.PhotoAmbientPct = 250;
         _ui!.SyncFromSettings();
-        var ambient = Page.GetComponentsInChildren<Slider>(true)
-            .First(s => s.name == "Sld_" + Loc.T("settings.light.ambient"));
+        string key = Loc.T("settings.light.ambient");
+        var ambient = Page.Find(SettingsWindowPaths.Slider(key)).GetComponent<Slider>();
         Assume.That(ambient.value, Is.EqualTo(250f));
 
         Refresh();
-        DefaultsButton.onClick.Invoke();
+        ResetButton.onClick.Invoke();
 
         Assert.AreEqual(KitchenSettings.PHOTO_AMBIENT_DEFAULT_PCT, ambient.value,
             "ползунок на экране обязан показать заводское значение, иначе окно врёт о настройках");
+    }
+
+    [Test]
+    public void Button_IsHiddenOnPagesWithoutADefaultsAction()
+    {
+        _ui!.OpenTab(SettingsPanelUI.PageOrder.ToList().IndexOf(SettingsPanelUI.AboutId));
+
+        Assert.IsFalse(ResetButton.gameObject.activeSelf,
+            "у «О программе» сбрасывать нечего: кнопка, которая ничего не сбрасывает, — шум в футере");
     }
 }

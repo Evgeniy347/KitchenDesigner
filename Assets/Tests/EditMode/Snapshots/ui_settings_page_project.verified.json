@@ -1,0 +1,281 @@
+{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Изменения применяются сразу",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Автосохранение",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Блокировать недопустимые изменения",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Нижний порог кромки",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Привязка к деталям",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Пространственная сетка",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Свободное панорамирование",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сетка",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Проект",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Камера",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Проверки",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сетка и привязка",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сохранение",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Интервал автосохранения",
+      "position": [16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Порог привязки",
+      "position": [16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Шаг сетки",
+      "position": [16, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Интервал автосохранения",
+      "value": "60",
+      "interactable": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Нижний порог кромки",
+      "value": "5",
+      "interactable": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Порог привязки",
+      "value": "50",
+      "interactable": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Шаг сетки",
+      "value": "18",
+      "interactable": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Автосохранение",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Блокировать недопустимые изменения",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Привязка к деталям",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Пространственная сетка",
+      "isOn": false,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Свободное панорамирование",
+      "isOn": false,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Сетка",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "InputField",
+      "label": "NavSearch",
+      "value": "",
+      "interactable": true,
+      "position": [8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Настройки",
+      "position": [16, -24]
+    },
+    {
+      "type": "Label",
+      "text": "Сохраняется в файле проекта и действует только в нём.",
+      "position": [0, -31]
+    },
+    {
+      "type": "Button",
+      "text": "Общие",
+      "position": [0, -48]
+    },
+    {
+      "type": "Button",
+      "text": "Проект",
+      "position": [0, -80]
+    },
+    {
+      "type": "Button",
+      "text": "Вид",
+      "position": [0, -112]
+    },
+    {
+      "type": "Button",
+      "text": "Управление",
+      "position": [0, -144]
+    },
+    {
+      "type": "Label",
+      "text": "Картинка",
+      "position": [12, -176]
+    },
+    {
+      "type": "Button",
+      "text": "Свет",
+      "position": [0, -208]
+    },
+    {
+      "type": "Button",
+      "text": "Фоторежим",
+      "position": [0, -240]
+    },
+    {
+      "type": "Label",
+      "text": "Дом",
+      "position": [12, -272]
+    },
+    {
+      "type": "Button",
+      "text": "Строительство",
+      "position": [0, -304]
+    },
+    {
+      "type": "Label",
+      "text": "Прочее",
+      "position": [12, -336]
+    },
+    {
+      "type": "Button",
+      "text": "MCP",
+      "position": [0, -368]
+    },
+    {
+      "type": "Button",
+      "text": "О программе",
+      "position": [0, -400]
+    }
+  ]
+}

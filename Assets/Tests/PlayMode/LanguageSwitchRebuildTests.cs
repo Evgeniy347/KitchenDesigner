@@ -64,7 +64,7 @@ public class LanguageSwitchRebuildTests
 
     private static TextMeshProUGUI LanguageRowLabel() =>
         UIManager.Instance!.Canvas!.GetComponentsInChildren<TextMeshProUGUI>(true)
-            .Single(t => t.name == "Lbl_" + SettingsProjectTab.LanguageRowId);
+            .Single(t => t.name == "L_" + SettingsGeneralTab.LanguageRowId);
 
     private static readonly string[] Roots = { "SettingsPanel", "Sidebar", "ContextMenu", "DayNightPanel", "ErrorPanel" };
 

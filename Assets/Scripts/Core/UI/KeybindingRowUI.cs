@@ -9,11 +9,14 @@ namespace KitchenDesigner.Core.UI
 {
     public sealed class KeybindingRowUI
     {
-        private const float ContentW = SettingsRowFactory.ContentW;
-        private const float RowH = 32f;
-        private const float RowGap = 6f;
+        private const float RowH = UIStyle.TableRowInteractiveH;
+        private const float HeaderRowH = UIStyle.TableHeaderH;
+        private const float GroupRowH = UIStyle.TableGroupRowH;
+        private const float RowGap = 0f;
+        private const float CellH = RowH - UIStyle.Space1;
         private const float ClearBtnW = KeybindingCellLayout.ClearWidth;
-        private const float HeaderH = 22f;
+        private const string RingNode = "Ring";
+        private const string RuleNode = "Rule";
         private const int ChordFontMax = KeybindingCellLayout.MaxCaptionFontSize;
 
         private readonly KitchenSettings _settings;
@@ -25,6 +28,7 @@ namespace KitchenDesigner.Core.UI
 
         private float _topY;
         private KeybindingRowRuler _ruler;
+        private string _searchText = string.Empty;
 
         private sealed class Cell
         {
@@ -34,6 +38,8 @@ namespace KitchenDesigner.Core.UI
             public TextMeshProUGUI Label = null!;
             public GameObject Clear = null!;
             public GameObject Marker = null!;
+            public Image Fill = null!;
+            public Image Ring = null!;
         }
 
         private sealed class Node
@@ -53,6 +59,10 @@ namespace KitchenDesigner.Core.UI
 
         public float BottomY { get; private set; }
 
+        public string SearchText => _searchText;
+
+        private static float ContentW => SettingsPage.ContentW;
+
         public KeybindingRowUI(KitchenSettings settings, KeybindingCaptureGate captureGate,
             KeybindingGestureGate gestureGate, Action afterChange)
         {
@@ -69,14 +79,24 @@ namespace KitchenDesigner.Core.UI
             _cells.Clear();
             _nodes.Clear();
             _topY = y;
+            var names = new List<string>();
 
             BuildColumnHeader(parent);
 
             foreach (var row in KeybindingRowList.Build())
             {
-                if (row.IsGroupHeader) BuildGroupHeader(parent, row.Group);
-                else BuildActionRow(parent, row.Action);
+                if (row.IsGroupHeader)
+                {
+                    BuildGroupHeader(parent, row.Group);
+                    names.Add(InputActionGroupTitles.Of(row.Group));
+                }
+                else
+                {
+                    BuildActionRow(parent, row.Action);
+                    names.Add(InputActionCatalog.DisplayNameOf(row.Action));
+                }
             }
+            _searchText = string.Join(" ", names);
 
             AdoptWidthsForTheCurrentBindings();
             y = LayOut();
@@ -117,7 +137,8 @@ namespace KitchenDesigner.Core.UI
         private void BuildColumnHeader(Transform parent)
         {
             var rowRect = UIFactory.CreateRect("KbColHdr", parent);
-            rowRect.sizeDelta = new Vector2(ContentW, RowH);
+            rowRect.sizeDelta = new Vector2(ContentW, HeaderRowH);
+            Rule(rowRect, UIStyle.Separator);
 
             var action = ColumnLabel("KbColHdrAction", rowRect, Loc.T("input.header.action"), TextAnchor.MiddleLeft);
             var primary = ColumnLabel("KbColHdrPrimary", rowRect, Loc.T("input.header.primary"), TextAnchor.MiddleCenter);
@@ -126,7 +147,7 @@ namespace KitchenDesigner.Core.UI
             _nodes.Add(new Node
             {
                 Rect = rowRect,
-                FixedHeight = RowH,
+                FixedHeight = HeaderRowH,
                 ColumnLabels = new[] { action, primary, alt },
             });
         }
@@ -135,7 +156,7 @@ namespace KitchenDesigner.Core.UI
             TextAnchor align)
         {
             var label = UIFactory.CreateLabel(name, parent, text, UIStyle.FontSmall,
-                Vector2.zero, new Vector2(10f, RowH), align);
+                Vector2.zero, new Vector2(10f, HeaderRowH), align);
             label.color = UIStyle.TextSecondary;
             return label;
         }
@@ -144,7 +165,7 @@ namespace KitchenDesigner.Core.UI
         {
             var header = UIFactory.CreateSectionHeader(
                 "KbGroup_" + group, parent, InputActionGroupTitles.Of(group), ContentW);
-            _nodes.Add(new Node { Rect = header, FixedHeight = HeaderH });
+            _nodes.Add(new Node { Rect = header, FixedHeight = GroupRowH });
         }
 
         private void BuildActionRow(Transform parent, InputAction action)
@@ -154,9 +175,10 @@ namespace KitchenDesigner.Core.UI
 
             var rowRect = UIFactory.CreateRect("KbRow_" + action, parent);
             rowRect.sizeDelta = new Vector2(ContentW, RowH);
+            Rule(rowRect, UIStyle.Divider);
 
             var label = UIFactory.CreateLabel("KbLbl_" + action, rowRect, name, UIStyle.FontSmall,
-                Vector2.zero, new Vector2(10f, RowH), TextAnchor.UpperLeft);
+                Vector2.zero, new Vector2(10f, RowH), TextAnchor.MiddleLeft);
             label.enableWordWrapping = true;
 
             var node = new Node
@@ -182,7 +204,7 @@ namespace KitchenDesigner.Core.UI
             string suffix = primary ? "_P" : "_A";
 
             var button = UIFactory.CreateButton("KbBtn_" + action + suffix, rowRect,
-                string.Empty, Vector2.zero, new Vector2(10f, RowH - 4f), null);
+                string.Empty, Vector2.zero, new Vector2(10f, CellH), null);
             var caption = button.GetComponentInChildren<TextMeshProUGUI>();
             if (caption != null)
             {
@@ -196,14 +218,17 @@ namespace KitchenDesigner.Core.UI
                 Primary = primary,
                 Button = button,
                 Label = caption!,
+                Fill = button.GetComponent<Image>(),
+                Ring = UIFactory.AddFieldStroke((RectTransform)button.transform),
             };
+            cell.Ring.name = RingNode;
             _cells.Add(cell);
             cell.Marker = BuildMarker(rowRect, "KbMark_" + action + suffix);
             button.onClick.AddListener(() => BeginCapture(cell));
             TooltipUI.Attach(button.gameObject, () => CellTooltip(cell));
 
             var clear = UIFactory.CreateButton("KbClr_" + action + suffix, rowRect,
-                UIStyle.GlyphClose, Vector2.zero, new Vector2(ClearBtnW, RowH - 4f),
+                UIStyle.GlyphClose, Vector2.zero, new Vector2(ClearBtnW, CellH),
                 () => ClearCell(cell));
             var clearCaption = clear.GetComponentInChildren<TextMeshProUGUI>();
             if (clearCaption != null)
@@ -221,9 +246,9 @@ namespace KitchenDesigner.Core.UI
         {
             var marker = UIFactory.CreateLabel(name, rowRect,
                 KeybindingCaption.MarkerText, ChordFontMax, Vector2.zero,
-                new Vector2(KeybindingCellLayout.MarkerLaneWidth, RowH - 4f),
+                new Vector2(KeybindingCellLayout.MarkerLaneWidth, CellH),
                 TextAnchor.MiddleCenter);
-            marker.color = UIStyle.HighlightError;
+            marker.color = UIStyle.TextError;
             marker.raycastTarget = false;
             marker.gameObject.SetActive(false);
             return marker.gameObject;
@@ -251,11 +276,11 @@ namespace KitchenDesigner.Core.UI
 
         private void LayOutColumnHeader(Node node)
         {
-            Place(node.ColumnLabels[0], _ruler.LabelLeft, _ruler.LabelWidth, RowH);
+            Place(node.ColumnLabels[0], _ruler.LabelLeft, _ruler.LabelWidth, HeaderRowH);
             Place(node.ColumnLabels[1], _ruler.ColumnHeaderLeft(primary: true),
-                _ruler.ColumnHeaderWidth, RowH);
+                _ruler.ColumnHeaderWidth, HeaderRowH);
             Place(node.ColumnLabels[2], _ruler.ColumnHeaderLeft(primary: false),
-                _ruler.ColumnHeaderWidth, RowH);
+                _ruler.ColumnHeaderWidth, HeaderRowH);
         }
 
         private void LayOutActionRow(Node node, float height)
@@ -274,11 +299,11 @@ namespace KitchenDesigner.Core.UI
         private void PlaceCell(Cell cell)
         {
             Place((RectTransform)cell.Marker.transform,
-                _ruler.MarkerLeft(cell.Primary), _ruler.MarkerWidth, RowH - 4f);
+                _ruler.MarkerLeft(cell.Primary), _ruler.MarkerWidth, CellH);
             Place((RectTransform)cell.Button.transform,
-                _ruler.CellLeft(cell.Primary), _ruler.CellWidth, RowH - 4f);
+                _ruler.CellLeft(cell.Primary), _ruler.CellWidth, CellH);
             Place((RectTransform)cell.Clear.transform,
-                _ruler.ClearLeft(cell.Primary), _ruler.ClearWidth, RowH - 4f);
+                _ruler.ClearLeft(cell.Primary), _ruler.ClearWidth, CellH);
         }
 
         private static void Place(TMP_Text label, float left, float width, float height) =>
@@ -334,7 +359,9 @@ namespace KitchenDesigner.Core.UI
         private static void ShowWaiting(Cell cell)
         {
             cell.Label.text = "...";
-            cell.Button.GetComponent<Image>().color = UIStyle.Accent;
+            cell.Label.color = UIStyle.Text;
+            cell.Fill.color = UIStyle.Surface;
+            cell.Ring.color = UIStyle.FocusRing;
         }
 
         private void ClearCell(Cell cell)
@@ -369,7 +396,8 @@ namespace KitchenDesigner.Core.UI
 
                 cell.Label.text = text;
                 cell.Label.color = BindingColor(binding, inConflict);
-                cell.Button.GetComponent<Image>().color = UIFactory.ButtonColor;
+                cell.Fill.color = binding.IsEmpty ? UIStyle.Field : UIFactory.ButtonColor;
+                cell.Ring.color = RingColor(binding, inConflict);
                 cell.Clear.SetActive(!binding.IsEmpty);
                 ShowTheMarker(cell, inConflict, text);
             }
@@ -389,8 +417,27 @@ namespace KitchenDesigner.Core.UI
 
         private static Color BindingColor(InputBinding binding, bool inConflict)
         {
-            if (inConflict) return UIStyle.HighlightError;
+            if (inConflict) return UIStyle.TextError;
             return binding.IsEmpty ? UIStyle.TextSecondary : UIStyle.Text;
+        }
+
+        private static Color RingColor(InputBinding binding, bool inConflict)
+        {
+            if (inConflict) return UIStyle.TextError;
+            return binding.IsEmpty ? UIStyle.Separator : UIStyle.Transparent;
+        }
+
+        private static void Rule(RectTransform row, Color color)
+        {
+            var rule = UIFactory.CreateRect(RuleNode, row);
+            rule.anchorMin = new Vector2(0f, 0f);
+            rule.anchorMax = new Vector2(1f, 0f);
+            rule.pivot = new Vector2(0.5f, 0f);
+            rule.sizeDelta = new Vector2(0f, UIStyle.DividerPx);
+            rule.anchoredPosition = Vector2.zero;
+            var image = rule.gameObject.AddComponent<Image>();
+            image.color = color;
+            image.raycastTarget = false;
         }
 
         private string CellTooltip(Cell cell)

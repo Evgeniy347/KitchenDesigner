@@ -79,7 +79,7 @@ namespace KitchenDesigner.Tests.Geometry
             var hits = HitsByFile();
             CollectionAssert.Contains(hits.Keys, "ContextMenuUI.cs",
                 "скан не видит Core/UI — греп по несуществующему пути зеленеет, ничего не проверив");
-            CollectionAssert.Contains(hits.Keys, "SettingsRowFactory.cs");
+            CollectionAssert.Contains(hits.Keys, "SettingsPage.cs");
             foreach (var (file, why) in Allowed)
             {
                 CollectionAssert.Contains(hits.Keys, file, "исключение пережило свой файл: " + file);

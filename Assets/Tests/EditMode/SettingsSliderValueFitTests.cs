@@ -5,18 +5,17 @@ using KitchenDesigner.Core.UI;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
-/// Значение справа от ползунка в «Настройках» — ОДНА строка без переноса. «нейтральный» в колонке
-/// шириной 64 px рвался на «нейтраль-ный», потому что подпись значения переносила слова. Обход идёт
-/// по ВСЕМ подписям значений ползунков (узлы <c>Val_*</c>) на каждом языке и меряет не только то, что
-/// показано сейчас, но и каждое имя тонмаппинга — значение, которое ползунок примет позже.
+/// Значение справа от ползунка в «Настройках» — ОДНА строка без переноса в колонке
+/// <see cref="UIStyle.SliderValueW"/>. «нейтральный» в такой колонке рвался на «нейтраль-ный», поэтому
+/// имя тонмаппинга стало пунктом списка, а у ползунков остались только числа с единицами. Обход идёт
+/// по ВСЕМ подписям значений ползунков (узлы <c>Val_*</c> в строках с ползунком) на каждом языке.
 /// </summary>
 public class SettingsSliderValueFitTests
 {
     private static readonly string[] Languages = { "ru", "en", "de", "es", "fr", "it", "pt" };
-    private static readonly string[] TonemapKeys =
-        { "settings.light.tonemapNone", "settings.light.tonemapNeutral" };
 
     private ProjectLoadStateGuard? _globals;
     private GameObject? _canvasGo;
@@ -38,7 +37,9 @@ public class SettingsSliderValueFitTests
         var ui = _canvasGo.AddComponent<SettingsPanelUI>();
         ui.Build(_canvasGo.transform);
         ui.SetVisible(true);
-        return _canvasGo.GetComponentsInChildren<TMP_Text>(true).Where(t => t.name.StartsWith("Val_") && t.transform.parent.name.StartsWith("RowSld_")).ToList();
+        return _canvasGo.GetComponentsInChildren<TMP_Text>(true)
+            .Where(t => t.name.StartsWith("Val_") && t.transform.parent.GetComponentInChildren<Slider>(true) != null)
+            .ToList();
     }
 
     [TestCaseSource(nameof(Languages))]
@@ -54,14 +55,9 @@ public class SettingsSliderValueFitTests
             if (label.enableWordWrapping)
                 offenders.Add($"{label.name}: перенос слов включён");
             float width = label.rectTransform.rect.width;
-            bool isTonemap = label.name == "Val_" + Loc.T("settings.light.tonemap");
-            var candidates = isTonemap ? TonemapKeys.Select(Loc.T).Append(label.text) : new[] { label.text };
-            foreach (var text in candidates)
-            {
-                float needed = label.GetPreferredValues(text).x;
-                if (needed > width + 0.01f)
-                    offenders.Add($"{label.name}: «{text}» нужно {needed:F0} px, колонка {width:F0} px");
-            }
+            float needed = label.GetPreferredValues(label.text).x;
+            if (needed > width + 0.01f)
+                offenders.Add($"{label.name}: «{label.text}» нужно {needed:F0} px, колонка {width:F0} px");
         }
 
         Assert.IsEmpty(offenders.Distinct(),

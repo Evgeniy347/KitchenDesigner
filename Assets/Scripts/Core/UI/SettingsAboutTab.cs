@@ -5,49 +5,108 @@ namespace KitchenDesigner.Core.UI
 {
     public sealed class SettingsAboutTab
     {
-        private const float TitleH = 40f;
-        private const float LineH = 28f;
-        private const float CopyrightH = 24f;
-        private const float LineGap = 4f;
-        private const float CopyrightGap = 16f;
+        internal const string CopyButtonName = "AboutCopy";
+
+        private readonly SettingsPage _page;
+
+        public SettingsAboutTab(SettingsPage page) => _page = page;
 
         public static AboutEnvironment CurrentEnvironment() => new AboutEnvironment(
             BuildInfo.Version, BuildInfo.BuildDate, Application.platform.ToString(),
             Application.unityVersion, SystemInfo.graphicsDeviceType.ToString(),
             SystemInfo.graphicsDeviceName);
 
-        public void Build(Transform page)
+        public void Build()
         {
-            var lines = AboutLines.For(CurrentEnvironment());
-            int last = lines.Count - 1;
+            var env = CurrentEnvironment();
+            var lines = AboutLines.For(env);
+            var rows = AboutRows.For(env);
 
-            float total = TitleH + (last - 1) * (LineH + LineGap) + CopyrightGap + CopyrightH;
-            float y = total * 0.5f;
-
-            for (int i = 0; i <= last; i++)
-            {
-                bool title = i == 0;
-                bool copyright = i == last;
-                float h = title ? TitleH : copyright ? CopyrightH : LineH;
-                if (copyright) y -= CopyrightGap - LineGap;
-
-                SelectableLabel.Create(NameOf(i), page, lines[i],
-                    title ? UIStyle.FontWindowTitle : copyright ? UIStyle.FontSmall : UIStyle.FontBody,
-                    new Vector2(0, y - h * 0.5f), new Vector2(SettingsRowFactory.ContentW, h),
-                    copyright ? UIStyle.TextSecondary : UIStyle.Text);
-                y -= h + LineGap;
-            }
+            _page.Rows.Gap(UIStyle.Space3);
+            AddLine("AboutProduct", lines[0], UIStyle.FontWindowTitle, UIStyle.Text, UIStyle.ControlH);
+            AddRows(rows);
+            AddLine("AboutCopyright", lines[lines.Count - 1], UIStyle.FontSmall, UIStyle.TextSecondary,
+                UIStyle.ControlHCompact);
+            AddCopyButton(lines);
         }
 
-        private static string NameOf(int index) => index switch
+        private void AddRows(System.Collections.Generic.IReadOnlyList<AboutRow> rows)
         {
-            0 => "AboutProduct",
-            1 => "AboutBuild",
-            2 => "AboutPlatform",
-            3 => "AboutUnity",
-            4 => "AboutGraphicsApi",
-            5 => "AboutGpu",
-            _ => "AboutCopyright",
-        };
+            float captionW = 0f;
+            var probe = UIFactory.CreateLabel("AboutProbe", _page.Root, "", UIStyle.FontSmall, Vector2.zero,
+                Vector2.zero);
+            foreach (var row in rows) captionW = Mathf.Max(captionW, probe.GetPreferredValues(row.Caption).x);
+            Object.DestroyImmediate(probe.gameObject);
+            captionW = Mathf.Ceil(captionW) + UIStyle.Space4;
+
+            string[] names = { "AboutBuild", "AboutPlatform", "AboutUnity", "AboutGraphicsApi", "AboutGpu" };
+            for (int i = 0; i < rows.Count; i++) AddRow(names[i], rows[i], captionW);
+        }
+
+        private void AddRow(string name, AboutRow row, float captionW)
+        {
+            float height = UIStyle.ControlHCompact;
+            float width = _page.Rows.Metrics.Width;
+            var host = UIFactory.CreateRect("Row_" + name, _page.Root);
+
+            var caption = UIFactory.CreateLabel(name + "_Caption", host, row.Caption, UIStyle.FontSmall,
+                Vector2.zero, new Vector2(captionW, height), TextAnchor.MiddleLeft);
+            caption.color = UIStyle.TextSecondary;
+            caption.raycastTarget = false;
+            caption.enableWordWrapping = false;
+            Pin(caption.rectTransform, 0f, captionW, width);
+
+            var value = SelectableLabel.Create(name, host, row.Value, UIStyle.FontSmall, Vector2.zero,
+                new Vector2(width - captionW, height), UIStyle.Text);
+            Plain(value);
+            Pin((RectTransform)value.transform, captionW, width - captionW, width);
+
+            _page.Block(host, height, row.Caption + " " + row.Value);
+        }
+
+        private void AddLine(string name, string text, int fontSize, Color color, float height)
+        {
+            float width = _page.Rows.Metrics.Width;
+            var host = UIFactory.CreateRect("Row_" + name, _page.Root);
+            var line = SelectableLabel.Create(name, host, text, fontSize, Vector2.zero,
+                new Vector2(width, height), color);
+            Plain(line);
+            Pin((RectTransform)line.transform, -InsetOf(line), width + InsetOf(line), width);
+            _page.Block(host, height, text);
+        }
+
+        private void AddCopyButton(System.Collections.Generic.IReadOnlyList<string> lines)
+        {
+            string caption = Loc.T("settings.about.copy");
+            var host = UIFactory.CreateRect("Row_" + CopyButtonName, _page.Root);
+            var button = UIFactory.CreateButton(CopyButtonName, host, caption, Vector2.zero,
+                new Vector2(WindowFooter.MinButtonW, UIStyle.ControlH),
+                () => GUIUtility.systemCopyBuffer = string.Join("\n", lines));
+            var label = button.GetComponentInChildren<TMP_Text>();
+            var rect = (RectTransform)button.transform;
+            float width = WindowFooter.WidthFor(label, caption);
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(LayoutDirection.IsRtl ? 1f : 0f, 0.5f);
+            rect.sizeDelta = new Vector2(width, UIStyle.ControlH);
+            rect.anchoredPosition = Vector2.zero;
+            _page.Block(host, UIStyle.ControlH, caption);
+            _page.Rows.Gap(UIStyle.Space2);
+        }
+
+        private static float InsetOf(TMP_InputField field) => field.textViewport.offsetMin.x;
+
+        private static void Plain(TMP_InputField field)
+        {
+            field.textComponent.alignment = TextAlignmentOptions.MidlineLeft;
+            var stroke = field.transform.Find(UIFactory.FieldStrokeNode);
+            if (stroke != null) stroke.gameObject.SetActive(false);
+        }
+
+        private static void Pin(RectTransform rect, float x, float width, float rowWidth)
+        {
+            bool rtl = LayoutDirection.IsRtl;
+            rect.anchorMin = rect.anchorMax = new Vector2(0f, 0.5f);
+            rect.pivot = new Vector2(0f, 0.5f);
+            rect.anchoredPosition = new Vector2(rtl ? rowWidth - x - width : x, 0f);
+        }
     }
 }

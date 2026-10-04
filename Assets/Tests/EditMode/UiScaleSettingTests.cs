@@ -41,7 +41,7 @@ public class UiScaleSettingTests
 
     private TMP_Dropdown ScaleDropdown() =>
         _settingsCanvas!.GetComponentsInChildren<TMP_Dropdown>(true)
-            .Single(d => d.name == "Dd_" + SettingsProjectTab.UiScaleRowId);
+            .Single(d => d.name == "Dd_" + SettingsGeneralTab.UiScaleRowId);
 
     [Test]
     public void UiScaleRow_StartsAtAuto_AndListsTheRange()
@@ -50,7 +50,7 @@ public class UiScaleSettingTests
         Assert.AreEqual(0, dd.value, "по умолчанию — «Авто»");
         Assert.AreEqual(Loc.T("settings.project.uiScaleAuto"), dd.options[0].text);
         Assert.AreEqual(UiScale.ChoicePercents.Count, dd.options.Count);
-        Assert.AreEqual(SettingsProjectTab.UiScaleChoiceLabel(UiScale.MaxPercent), dd.options.Last().text,
+        Assert.AreEqual(SettingsGeneralTab.UiScaleChoiceLabel(UiScale.MaxPercent), dd.options.Last().text,
             "проценты — через NumberFormat, с неразрывным пробелом перед «%»");
     }
 

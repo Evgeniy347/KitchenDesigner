@@ -1,0 +1,364 @@
+{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Изменения применяются сразу",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Дальность теней",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Контраст",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Насыщенность",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Окружающий свет",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Отскок от пола",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Порог свечения",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Потолок сверху",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Предел отскока",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Предел свечения",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила виньетки",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила свечения",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сила теней солнца",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Стены сбоку",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Тени от ламп",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Тонемаппинг",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Экспозиция",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Свет",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Заполняющий свет",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Тени сцены",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Экспозиция и тон",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Эффекты",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Сбросить раздел",
+      "position": [16, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["нет", "нейтральный", "ACES"],
+      "selected": 1,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Тени от ламп",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Label",
+      "text": "10 м",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "8 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "6 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "250 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "150 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "200 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "22 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "30 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "280 %",
+      "position": [492, 0]
+    },
+    {
+      "type": "Label",
+      "text": "+0,5 EV",
+      "position": [492, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "InputField",
+      "label": "NavSearch",
+      "value": "",
+      "interactable": true,
+      "position": [8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Настройки",
+      "position": [16, -24]
+    },
+    {
+      "type": "Label",
+      "text": "Освещение и тон картинки в фоторежиме.",
+      "position": [0, -31]
+    },
+    {
+      "type": "Button",
+      "text": "Общие",
+      "position": [0, -48]
+    },
+    {
+      "type": "Button",
+      "text": "Проект",
+      "position": [0, -80]
+    },
+    {
+      "type": "Button",
+      "text": "Вид",
+      "position": [0, -112]
+    },
+    {
+      "type": "Button",
+      "text": "Управление",
+      "position": [0, -144]
+    },
+    {
+      "type": "Label",
+      "text": "Картинка",
+      "position": [12, -176]
+    },
+    {
+      "type": "Button",
+      "text": "Свет",
+      "position": [0, -208]
+    },
+    {
+      "type": "Button",
+      "text": "Фоторежим",
+      "position": [0, -240]
+    },
+    {
+      "type": "Label",
+      "text": "Дом",
+      "position": [12, -272]
+    },
+    {
+      "type": "Button",
+      "text": "Строительство",
+      "position": [0, -304]
+    },
+    {
+      "type": "Label",
+      "text": "Прочее",
+      "position": [12, -336]
+    },
+    {
+      "type": "Button",
+      "text": "MCP",
+      "position": [0, -368]
+    },
+    {
+      "type": "Button",
+      "text": "О программе",
+      "position": [0, -400]
+    }
+  ]
+}

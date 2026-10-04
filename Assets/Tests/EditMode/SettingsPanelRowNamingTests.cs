@@ -7,19 +7,13 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Два правила раскладки «Настроек», которые до сих пор жили комментариями и
-/// потому ничем не проверялись.
+/// Правило раскладки «Настроек», которое жило комментарием и потому ничем не проверялось.
 ///
-/// Первое: строка окна называется по своей подписи, а подписи повторяются —
+/// Строка окна называется по своей подписи, а подписи повторяются —
 /// «Контур» есть у стен и у объектов, «Тени» у фоторежима и «Тени сцены» у
 /// света. Имена объектов сцены обязаны оставаться уникальными: тесты и
 /// снапшоты ищут строку через transform.Find, и вторая строка с тем же именем
 /// просто не находится. Поэтому у таких строк есть отдельный ключ (id).
-///
-/// Второе: вкладки делят одну полосу в 560 px, и подпись обязана поместиться
-/// в свою вкладку. Поровну это не делится: при семи равных вкладках по 76 px
-/// «Управление» и «О программе» ломаются на две строки, поэтому ширина каждой
-/// считается от ширины её текста.
 /// </summary>
 public class SettingsPanelRowNamingTests
 {
@@ -60,34 +54,6 @@ public class SettingsPanelRowNamingTests
             "две строки с одинаковым именем — вторую уже не найти через transform.Find, "
             + "и тест на неё молча проверяет первую. Повторяющейся подписи нужен свой id: "
             + string.Join(", ", duplicates));
-    }
-
-    [Test]
-    public void TabCaptions_FitOnOneLine()
-    {
-        var panel = _canvas!.transform.Find("SettingsPanel");
-        Assume.That(panel, Is.Not.Null);
-
-        var tooWide = new List<string>();
-        for (int i = 0; ; i++)
-        {
-            var tab = panel!.Find($"Tab_{i}");
-            if (tab == null) break;
-
-            var caption = tab.GetComponentInChildren<TextMeshProUGUI>();
-            var tabRect = tab.GetComponent<RectTransform>();
-            if (caption == null || tabRect == null) continue;
-            Assume.That(caption.font, Is.Not.Null, "без шрифта ширину текста не измерить");
-
-            float needed = caption.GetPreferredValues(caption.text).x;
-            if (needed > tabRect.sizeDelta.x)
-                tooWide.Add($"{caption.text}: нужно {needed:F0} px, есть {tabRect.sizeDelta.x:F0} px");
-        }
-
-        Assert.IsEmpty(tooWide,
-            "подпись вкладки шире самой вкладки переносится на вторую строку и обрезается "
-            + "по высоте кнопки. Ширину вкладки задаёт SettingsTabStrip.LayOut — от ширины "
-            + "текста, а не поровну: " + string.Join("; ", tooWide));
     }
 
     private static void CollectDuplicateChildNames(Transform parent, List<string> duplicates)

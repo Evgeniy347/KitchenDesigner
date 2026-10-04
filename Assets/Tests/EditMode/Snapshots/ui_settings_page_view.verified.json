@@ -1,0 +1,260 @@
+{
+  "root": "TestCanvas",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Изменения применяются сразу",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Объекты",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Скрыть источники света",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Стены",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Вид",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Набор для режима",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Освещение",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Сцена",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Обычный",
+      "position": [2, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Контур",
+      "position": [16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Контур",
+      "position": [16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Опускать ближние стены",
+      "position": [16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Опускать все стены",
+      "position": [32, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Скрывать окна и двери",
+      "position": [32, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Помещение",
+      "position": [176, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Контур объектов",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Контур стен",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Объекты",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Опускать ближние стены",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Опускать все стены",
+      "isOn": false,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Скрывать окна и двери",
+      "isOn": false,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Скрыть источники света",
+      "isOn": false,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Стены",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Фоторежим",
+      "position": [350, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "InputField",
+      "label": "NavSearch",
+      "value": "",
+      "interactable": true,
+      "position": [8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Настройки",
+      "position": [16, -24]
+    },
+    {
+      "type": "Label",
+      "text": "Что показывать в сцене в каждом режиме.",
+      "position": [0, -31]
+    },
+    {
+      "type": "Button",
+      "text": "Общие",
+      "position": [0, -48]
+    },
+    {
+      "type": "Button",
+      "text": "Проект",
+      "position": [0, -80]
+    },
+    {
+      "type": "Button",
+      "text": "Вид",
+      "position": [0, -112]
+    },
+    {
+      "type": "Button",
+      "text": "Управление",
+      "position": [0, -144]
+    },
+    {
+      "type": "Label",
+      "text": "Картинка",
+      "position": [12, -176]
+    },
+    {
+      "type": "Button",
+      "text": "Свет",
+      "position": [0, -208]
+    },
+    {
+      "type": "Button",
+      "text": "Фоторежим",
+      "position": [0, -240]
+    },
+    {
+      "type": "Label",
+      "text": "Дом",
+      "position": [12, -272]
+    },
+    {
+      "type": "Button",
+      "text": "Строительство",
+      "position": [0, -304]
+    },
+    {
+      "type": "Label",
+      "text": "Прочее",
+      "position": [12, -336]
+    },
+    {
+      "type": "Button",
+      "text": "MCP",
+      "position": [0, -368]
+    },
+    {
+      "type": "Button",
+      "text": "О программе",
+      "position": [0, -400]
+    }
+  ]
+}
