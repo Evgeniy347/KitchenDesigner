@@ -111655,7 +111655,7 @@
         "neighbourLevelsMode": 0
     },
     "lightsOn": false,
-    "musicTrack": 0,
+    "musicTrack": 2,
     "musicVolumePct": 70,
     "windows": [
         {
@@ -111688,7 +111688,7 @@
         },
         {
             "id": "music",
-            "visible": true,
+            "visible": false,
             "x": -10.0,
             "y": -60.0,
             "height": 0.0
@@ -111702,9 +111702,9 @@
         },
         {
             "id": "settings",
-            "visible": false,
+            "visible": true,
             "x": 7.242103576660156,
-            "y": -17.58795166015625,
+            "y": -77.54934692382813,
             "height": 0.0
         },
         {
