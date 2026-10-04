@@ -114,40 +114,15 @@ public class SofaElementTests
         Part(sofa, SofaLayout.BackCushionLeftName);
         Part(sofa, SofaLayout.BackCushionRightName);
 
-        Assert.AreEqual(2 + SofaBoxLayout.CompartmentCount, sofa.transform.childCount,
-            "у корня передняя группа (сиденье и подушки), петля спинки и три фасада ящиков; "
-            + "короб — это сам меш корня, он и фасады никуда не едут");
+        Assert.AreEqual(2, sofa.transform.childCount,
+            "у корня ровно два ребёнка — передняя группа (сиденье и подушки) и петля спинки; "
+            + "короб — это сам меш корня, он никуда не едет");
         Assert.AreEqual(1 + SofaLayout.CushionCount,
             sofa.transform.Find(SofaLayout.FrontGroupName)!.childCount,
             "в передней группе сиденье и четыре подушки, и больше ничего: подлокотников у "
             + "этого дивана нет, их роль играют боковые подушки");
         Assert.AreEqual(1, sofa.transform.Find(SofaLayout.HingeGroupName)!.childCount,
             "на петле одна спинка");
-    }
-
-    [Test]
-    public void Sofa_BoxHasThreeDrawerFronts_AlwaysShown_InTheirOwnMaterial()
-    {
-        var sofa = DefaultSofa();
-
-        MeshRenderer? first = null;
-        for (int i = 0; i < SofaBoxLayout.CompartmentCount; i++)
-        {
-            var front = sofa.transform.Find(SofaBoxLayout.DrawerFrontName(i));
-            Assert.IsNotNull(front, "у короба фасад ящика №" + i + ": «ящики» на фото 43");
-            var renderer = front!.GetComponent<MeshRenderer>()!;
-            Assert.IsTrue(renderer.enabled, "фасады не прячутся при раскладывании");
-            first ??= renderer;
-            Assert.AreSame(first.sharedMaterial, renderer.sharedMaterial,
-                "у всех трёх фасадов один материал");
-        }
-
-        Assert.IsNotNull(first!.sharedMaterial, "у фасадов есть материал");
-        Assert.AreNotSame(first.sharedMaterial, sofa.GetComponent<MeshRenderer>()!.sharedMaterial,
-            "и он отличается от материала корпуса короба: иначе щели между фасадами не "
-            + "читаются, и короб снова выглядит сплошным ящиком без ящиков");
-        Assert.AreNotSame(first.sharedMaterial, sofa.DecorRenderer!.sharedMaterial,
-            "и от обивки: фасады ящиков не носят декор дивана и не должны меняться с ним");
     }
 
     [Test]
@@ -458,8 +433,8 @@ public class SofaElementTests
         Part(copy, SofaLayout.BackCushionLeftName);
         Part(copy, SofaLayout.ArmCushionRightName);
         Part(copy, SofaLayout.BackrestName);
-        Assert.AreEqual(2 + SofaBoxLayout.CompartmentCount, copy.transform.childCount,
-            "и обе группы с фасадами ящиков: копия без подушек или спинки была бы другим предметом");
+        Assert.AreEqual(2, copy.transform.childCount,
+            "и обе группы: копия без подушек или спинки была бы другим предметом");
     }
 
     [Test]

@@ -347,9 +347,7 @@ public class SofaUnfoldElementTests
 
     private static bool CushionsShown(SofaElement sofa)
     {
-        var renderer = Front(sofa).Find(SofaLayout.BackCushionLeftName)!
-            .GetComponent<MeshRenderer>()!;
-        return renderer.enabled;
+        return Front(sofa).Find(SofaLayout.BackCushionLeftName)!.gameObject.activeInHierarchy;
     }
 
     [Test]
@@ -373,6 +371,21 @@ public class SofaUnfoldElementTests
         Assert.IsTrue(CushionsShown(sofa),
             "а когда сиденье встало на место, подушки вернулись: иначе сложенный диван "
             + "навсегда остался бы голым");
+    }
+
+    [Test]
+    public void Cushions_StayOff_WhenTheSceneVisibilityManagerSwitchesEveryRendererOnAgain()
+    {
+        var sofa = Sofa();
+        sofa.SnapToStage(SofaStage.Extended);
+
+        SceneVisibility.SetRenderersEnabled(sofa, true);
+
+        Assert.IsFalse(CushionsShown(sofa),
+            "SceneVisibilityManager.LateUpdate включает ВСЕ рендереры элемента при любой "
+            + "смене уровня или реестра — раньше подушки прятались флагом рендерера, и кадр "
+            + "«выдвинуто» показывал их на сиденье. Прячет теперь сам объект (SetActive), и "
+            + "включить его обратно рендерером нельзя");
     }
 
     [Test]

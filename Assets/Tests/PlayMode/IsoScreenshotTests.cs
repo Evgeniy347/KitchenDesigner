@@ -656,22 +656,68 @@ public class IsoScreenshotTests : ElementFrameTests
                 + child + "» показывал бы не тот предмет");
 
         sofa.SnapToStage(stage);
-        float travelMM = stage == SofaStage.Folded
-            ? 0f : SofaUnfold.SeatSlideTravelMM(dims.z, seatHeightMM);
+        yield return null;
+
+        var expected = SofaUnfold.PoseAt(SofaUnfold.ProgressOf(stage), dims.z, seatHeightMM);
+        var front = go.transform.Find(SofaLayout.FrontGroupName)!;
+        var hinge = go.transform.Find(SofaLayout.HingeGroupName)!;
         Assert.AreEqual(stage, sofa.UnfoldStage,
             "кадр обязан снимать тот этап, который заказали: иначе три кадра дивана были бы "
             + "тремя копиями одного");
+        Assert.AreEqual(expected.SeatSlideMM * AppConstants.MM_TO_UNITS, front.localPosition.z,
+            1e-4f, "сиденье в кадре стоит не там, где его ставит этап " + stage
+            + ": кадр снят до конца анимации или поза не применилась");
+        Assert.AreEqual(expected.BackrestAngleDeg,
+            Quaternion.Angle(Quaternion.identity, hinge.localRotation), 1e-2f,
+            "угол петли в кадре не тот, что у этапа " + stage);
+        Assert.AreEqual(expected.CushionsOnSeat,
+            front.Find(SofaLayout.BackCushionLeftName)!.gameObject.activeInHierarchy,
+            "подушки в кадре " + stage + ": сняты ровно тогда, когда диван не сложен. Их "
+            + "прячет SetActive, а не флаг рендерера: SceneVisibilityManager.LateUpdate "
+            + "включает все рендереры элемента обратно, и кадр показывал подушки на сиденье");
+        Assert.AreEqual(expected.CushionsOnSeat,
+            front.Find(SofaLayout.ArmCushionRightName)!.gameObject.activeInHierarchy,
+            "и боковые валики тоже");
+        if (stage == SofaStage.Bed)
+        {
+            var back = hinge.Find(SofaLayout.BackrestName)!.GetComponent<MeshRenderer>()!.bounds;
+            var seat = front.Find(SofaLayout.SeatName)!.GetComponent<MeshRenderer>()!.bounds;
+            Assert.AreEqual(seat.max.y, back.max.y, 1e-3f,
+                "лежащая спинка в кадре вровень с сиденьем: иначе кадр «кровать» снят с "
+                + "неповёрнутой спинкой");
+        }
 
+        float travelMM = expected.SeatSlideMM;
         var span = new Vector3Int(dims.x, dims.y, dims.z + Mathf.RoundToInt(travelMM));
         Vector3 centre = pos + new Vector3(0f, 0f, travelMM * 0.5f * AppConstants.MM_TO_UNITS);
         var (camGo, cam) = CreateIsoCamera(centre, MmToUnits(span), 2.5f);
+        if (stage != SofaStage.Folded) PlaceCameraAbove(camGo, centre, MmToUnits(span));
         _spawned.Add(camGo);
+
 
         yield return capturePanel
             ? RenderToPng(cam, png)
             : RenderToPng(cam, png, null);
 
         Object.DestroyImmediate(camGo);
+    }
+
+    private const float SofaCameraElevationDeg = 58f;
+    private const float SofaCameraAzimuthDeg = 25f;
+
+    /// <summary>Камера для раскрытого дивана: сверху-спереди, как на фото 43 и 40.
+    /// Общий изометрический ракурс стоит слишком полого, и сиденье, выехавшее к
+    /// объективу, закрывает короб и лежащую спинку целиком.</summary>
+    private static void PlaceCameraAbove(GameObject camGo, Vector3 centre, Vector3 size)
+    {
+        float elevation = SofaCameraElevationDeg * Mathf.Deg2Rad;
+        float azimuth = SofaCameraAzimuthDeg * Mathf.Deg2Rad;
+        var direction = new Vector3(Mathf.Sin(azimuth) * Mathf.Cos(elevation),
+            Mathf.Sin(elevation), Mathf.Cos(azimuth) * Mathf.Cos(elevation));
+        float distance = size.magnitude * 0.6f
+            / Mathf.Tan(IsoFov * 0.5f * Mathf.Deg2Rad);
+        camGo.transform.position = centre + direction * distance;
+        camGo.transform.LookAt(centre);
     }
 
     /// <summary>Боковая подушка крупно — для сверки с фото 47: плоский валик с

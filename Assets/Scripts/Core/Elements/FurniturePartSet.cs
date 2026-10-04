@@ -63,11 +63,7 @@ namespace KitchenDesigner.Core
         {
             _visible = visible;
             foreach (var part in _parts.Values)
-            {
-                if (part == null) continue;
-                var renderer = part.GetComponent<MeshRenderer>();
-                if (renderer != null) renderer.enabled = visible;
-            }
+                if (part != null) part.SetActive(visible);
         }
 
         public MeshRenderer? RendererOf(string name)
@@ -184,7 +180,7 @@ namespace KitchenDesigner.Core
             part.AddComponent<MeshFilter>();
             var renderer = part.AddComponent<MeshRenderer>();
             if (_material != null) renderer.sharedMaterial = _material;
-            renderer.enabled = _visible;
+            part.SetActive(_visible);
 
             _parts[name] = part;
             return part;

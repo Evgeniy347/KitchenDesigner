@@ -27,7 +27,6 @@ public class SofaCoplanarSurfaceTests
         Add(SofaLayout.Seat(dims, seat, radius));
         Add(SofaLayout.Backrest(dims));
         foreach (var cushion in SofaLayout.Cushions(dims, seat)) Add(cushion);
-        foreach (var front in SofaBoxLayout.DrawerFronts(dims, seat, radius)) Add(front);
 
         var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
         var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);

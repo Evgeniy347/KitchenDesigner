@@ -11,14 +11,7 @@ namespace KitchenDesigner.Core
         public const int MinSideInsetMM = 30;
         public const int CornerMarginMM = 5;
         public const int CompartmentCount = 3;
-        public const int PanelCount = 4 + (CompartmentCount - 1);
-        public const int DrawerFrontGapMM = 4;
-        public const int DrawerFrontRecessMM = 2;
-        public const int DrawerFrontTopGapMM = 2;
-        public const string DrawerFrontNamePrefix = "SofaBoxDrawer";
-
-        public static string DrawerFrontName(int index) => DrawerFrontNamePrefix + index;
-
+        public const int PanelCount = 5 + (CompartmentCount - 1);
         public static float DepthMM(int sofaDepthMM)
             => Mathf.Max(SofaLayout.MinPartMM,
                 SofaLayout.SeatDepthFor(sofaDepthMM) - FrontLipMM - RearSetbackMM);
@@ -63,42 +56,19 @@ namespace KitchenDesigner.Core
                 new Vector3(max.x, max.y, max.z));
             panels[3] = Cuboid.Between(new Vector3(innerX0, innerY0, min.z),
                 new Vector3(innerX1, max.y, innerZ0));
+            panels[4] = Cuboid.Between(new Vector3(innerX0, innerY0, innerZ1),
+                new Vector3(innerX1, max.y, max.z));
 
             float clearWidth = (innerX1 - innerX0 - (CompartmentCount - 1) * WallMM)
                 / CompartmentCount;
             for (int k = 1; k < CompartmentCount; k++)
             {
                 float left = innerX0 + k * clearWidth + (k - 1) * WallMM;
-                panels[3 + k] = Cuboid.Between(new Vector3(left, innerY0, innerZ0),
+                panels[4 + k] = Cuboid.Between(new Vector3(left, innerY0, innerZ0),
                     new Vector3(left + WallMM, max.y, innerZ1));
             }
 
             return panels;
-        }
-
-        public static FurniturePartBox[] DrawerFronts(Vector3Int dimensionsMM, int seatHeightMM,
-            int cornerRadiusMM)
-        {
-            Extents(dimensionsMM, seatHeightMM, cornerRadiusMM, out var min, out var max);
-            float innerX0 = min.x + WallMM;
-            float innerX1 = max.x - WallMM;
-            float width = (innerX1 - innerX0 - (CompartmentCount - 1) * DrawerFrontGapMM)
-                / CompartmentCount;
-            float bottom = min.y + WallMM;
-            float height = max.y - DrawerFrontTopGapMM - bottom;
-            float frontFace = max.z - DrawerFrontRecessMM;
-
-            var fronts = new FurniturePartBox[CompartmentCount];
-            for (int k = 0; k < CompartmentCount; k++)
-            {
-                float left = innerX0 + k * (width + DrawerFrontGapMM);
-                fronts[k] = new FurniturePartBox(DrawerFrontName(k),
-                    new Vector3(left + width * 0.5f, bottom + height * 0.5f,
-                        frontFace - WallMM * 0.5f),
-                    width, WallMM, height, 0f, FurniturePartOrientation.Horizontal);
-            }
-
-            return fronts;
         }
     }
 }

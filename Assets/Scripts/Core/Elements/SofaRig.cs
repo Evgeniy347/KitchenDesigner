@@ -9,7 +9,6 @@ namespace KitchenDesigner.Core
         private readonly FurniturePartSet _seat;
         private readonly FurniturePartSet _cushions;
         private readonly FurniturePartSet _backrest;
-        private readonly FurniturePartSet _drawers;
         private Vector3 _hingeMM;
 
         public SofaRig(Transform owner)
@@ -19,7 +18,6 @@ namespace KitchenDesigner.Core
             _seat = new FurniturePartSet(_front, true);
             _cushions = new FurniturePartSet(_front);
             _backrest = new FurniturePartSet(_hinge, true);
-            _drawers = new FurniturePartSet(owner);
         }
 
         public MeshRenderer? SeatRenderer => _seat.RendererOf(SofaLayout.SeatName);
@@ -33,7 +31,6 @@ namespace KitchenDesigner.Core
             _cushions.Place(SofaLayout.Cushions(dimensionsMM, seatHeightMM));
             var backrest = SofaLayout.Backrest(dimensionsMM);
             _backrest.Place(new[] { backrest.WithCentre(backrest.CentreMM - _hingeMM) });
-            _drawers.Place(SofaBoxLayout.DrawerFronts(dimensionsMM, seatHeightMM, cornerRadiusMM));
         }
 
         public void ApplyPose(SofaPose pose)
@@ -53,14 +50,11 @@ namespace KitchenDesigner.Core
 
         public void SetCushions(Material material) => _cushions.SetMaterial(material);
 
-        public void SetDrawerFronts(Material material) => _drawers.SetMaterial(material);
-
         public void Destroy()
         {
             _seat.Destroy();
             _cushions.Destroy();
             _backrest.Destroy();
-            _drawers.Destroy();
             DestroyPivot(_front);
             DestroyPivot(_hinge);
         }
