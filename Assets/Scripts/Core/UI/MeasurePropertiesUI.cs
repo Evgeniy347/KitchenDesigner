@@ -12,6 +12,7 @@ namespace KitchenDesigner.Core.UI
 
         private WindowChrome? _chrome;
         private TMP_Text? _distance;
+        private TMP_Text? _distanceUnit;
         private DataTable? _points;
 
         internal float BodyWidth => _chrome?.BodyWidth ?? 0f;
@@ -40,6 +41,17 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(_chrome.BodyWidth, UIStyle.FontDisplay + UIStyle.Space2), TextAnchor.MiddleLeft);
             _distance.enableWordWrapping = false;
             stack.Place(_distance.rectTransform);
+            _distanceUnit = UIFactory.CreateLabel("MeasureUnit", body.Content, Loc.T("unit.mm"), UIStyle.FontBody,
+                Vector2.zero, new Vector2(0f, _distance.rectTransform.sizeDelta.y), TextAnchor.LowerLeft);
+            _distanceUnit.color = UIStyle.TextSecondary;
+            _distanceUnit.enableWordWrapping = false;
+            _distanceUnit.raycastTarget = false;
+            _distanceUnit.margin = new Vector4(0f, 0f, 0f, UIStyle.Space1);
+            var unitRect = _distanceUnit.rectTransform;
+            unitRect.anchorMin = unitRect.anchorMax = unitRect.pivot = new Vector2(0f, 1f);
+            unitRect.anchoredPosition = _distance.rectTransform.anchoredPosition;
+            unitRect.sizeDelta = new Vector2(_distanceUnit.GetPreferredValues(_distanceUnit.text).x + 1f,
+                _distance.rectTransform.sizeDelta.y);
             stack.Gap(UIStyle.Space2);
 
             _points = DataTable.Create(body.Content, "MeasurePoints",
@@ -77,8 +89,7 @@ namespace KitchenDesigner.Core.UI
                 return;
             }
 
-            if (_distance != null)
-                _distance.text = MeasureGeometry.FormatMm((seg.B - seg.A).magnitude, seg.Axis >= 0);
+            ShowDistance(seg);
             _points?.SetRows(new List<DataRow>
             {
                 PointRow(Loc.T("measure.pointShortA"), seg.A),
@@ -87,6 +98,16 @@ namespace KitchenDesigner.Core.UI
 
             root.SetActive(true);
             root.transform.SetAsLastSibling();
+        }
+
+        private void ShowDistance(MeasureSegment seg)
+        {
+            if (_distance == null || _distanceUnit == null) return;
+            string number = NumberFormat.Integer(Mathf.RoundToInt(MeasureGeometry.ToMm((seg.B - seg.A).magnitude)));
+            _distance.text = seg.Axis >= 0 ? number : UIStyle.GlyphAngle + " " + number;
+            var unit = _distanceUnit.rectTransform;
+            unit.anchoredPosition = new Vector2(_distance.GetPreferredValues(_distance.text).x + UIStyle.Space2,
+                unit.anchoredPosition.y);
         }
 
         private static DataRow PointRow(string name, Vector3 world) => DataRow.Item(name,

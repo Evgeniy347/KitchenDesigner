@@ -92,4 +92,23 @@ public class MeasurePropertiesUITests
         Assert.AreEqual(TextAlignmentOptions.Right, table.CellLabel(0, 1)!.alignment, "числа вправо (D8)");
         Assert.AreEqual("X", table.HeaderLabel(1).text);
     }
+
+    [Test]
+    public void MeasureProperties_Distance_IsTheBigNumber_WithTheUnitSmallAndQuietBesideIt()
+    {
+        var segment = new MeasureSegment(new Vector3(0.1f, 0.72f, -0.3f), new Vector3(1.3f, 0.72f, -0.3f));
+        MeasureStore.Add(segment);
+        MeasureStore.Select(segment);
+
+        var number = (TMP_Text)Node(Panel(), "MeasureDistance").GetComponent<TMP_Text>();
+        var unit = (TMP_Text)Node(Panel(), "MeasureUnit").GetComponent<TMP_Text>();
+
+        Assert.AreEqual("1200", number.text, "расстояние — одно число, без единицы внутри строки");
+        Assert.AreEqual(UIStyle.FontDisplay, number.fontSize, "главное число окна — FontDisplay 28");
+        Assert.AreEqual(Loc.T("unit.mm"), unit.text);
+        Assert.AreEqual(UIStyle.FontBody, unit.fontSize, "единица мельче числа");
+        Assert.AreEqual(UIStyle.TextSecondary, unit.color, "и тише");
+        Assert.Greater(((RectTransform)unit.transform).anchoredPosition.x,
+            number.GetPreferredValues(number.text).x, "единица стоит правее числа");
+    }
 }

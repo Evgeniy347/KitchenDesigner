@@ -32,6 +32,7 @@ namespace KitchenDesigner.Core.UI
                 {
                     Kind = WindowKind.Tool,
                     OnClose = () => SetVisible(false),
+                    RuledHeader = true,
                 });
             var panel = chrome.Panel;
             UIFactory.AnchorTopRight(panel);
