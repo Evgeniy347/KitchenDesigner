@@ -17,6 +17,7 @@ using KitchenDesigner.Core;
 public class SelectionTintMathTests
 {
     private const float EqualWithin = 0.0001f;
+    private const float ContrastKept = 0.7f;
     private const float VisibleStep = 0.05f;
 
     private static readonly Color Black = new Color(0f, 0f, 0f, 1f);
@@ -86,6 +87,31 @@ public class SelectionTintMathTests
                 "порядок яркостей собственных цветов обязан пережить подкраску, иначе "
                 + "рядом стоящие тёмная и светлая детали выровняются в один жёлтый");
         }
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public void ADarkPartKeepsItsContrastWithALightOne_SoBlackGlassDoesNotMergeWithTheBody(bool multi)
+    {
+        var darks = new[] { new Color(0.05f, 0.05f, 0.05f, 1f), CooktopGlass, new Color(0.1f, 0.1f, 0.1f, 1f) };
+        var lights = new[] { OvenBody, LaundryBody };
+
+        foreach (var dark in darks)
+            foreach (var light in lights)
+            {
+                float own = 1f - SelectionTintMath.Luma(dark) / SelectionTintMath.Luma(light);
+                float base_ = 1f - SelectionTintMath.Luma(SelectionTintMath.Base(dark, multi))
+                    / SelectionTintMath.Luma(SelectionTintMath.Base(light, multi));
+                float glow = 1f - SelectionTintMath.Luma(SelectionTintMath.Emission(dark, multi))
+                    / SelectionTintMath.Luma(SelectionTintMath.Emission(light, multi));
+
+                Assert.GreaterOrEqual(base_, ContrastKept * own,
+                    "тёмный " + dark + " и светлый " + light + ": контраст цвета " + own.ToString("0.00")
+                    + " → " + base_.ToString("0.00") + " — жёлтый выровнял чёрное с корпусом");
+                Assert.GreaterOrEqual(glow, ContrastKept * own,
+                    "тёмный " + dark + " и светлый " + light + ": контраст свечения "
+                    + own.ToString("0.00") + " → " + glow.ToString("0.00"));
+            }
     }
 
     [Test]

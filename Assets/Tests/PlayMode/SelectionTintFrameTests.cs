@@ -87,10 +87,21 @@ public class SelectionTintFrameTests
 
     private const int ColorDelta = 12;
 
-    /// <summary>Доля пути от кадровой яркости тёмной части к белому, которой
-    /// позволено набраться от жёлтого тона. Подкраска (множитель и подмес) не
-    /// доходит и до середины; плоский жёлтый на тёмном приборе уходит заметно выше.</summary>
-    private const float FrameShareToTint = 0.6f;
+    /// <summary>Доля пути от кадровой яркости самой тёмной четверти к белому, которой
+    /// позволено набраться от жёлтого тона. Снято с кадров старой формулы: чёрное стекло
+    /// варочной 0,06 → 0,28 и чёрная дверь духовки 0,03 → 0,28 (то есть 23–25% пути) —
+    /// подмена; подкраска с сохранением контраста даёт заметно меньше.</summary>
+    private const float FrameShareToTint = 0.15f;
+
+    /// <summary>Какая часть собственного контраста детали обязана пережить выделение.
+    /// Контраст — это 1 − (яркость самой тёмной четверти силуэта) / (средняя яркость):
+    /// чем чернее детали относительно корпуса, тем он больше. Старая формула у варочной
+    /// оставляла 41% (0,42 → 0,17), у духовки 27% (0,74 → 0,20), у стиралки 67%.</summary>
+    private const float MinContrastKept = 0.7f;
+
+    /// <summary>Ниже этого собственного контраста деталям нечего сохранять (диван
+    /// одного цвета), и отношение — шум; остаётся только потолок яркости.</summary>
+    private const float MinMeaningfulContrast = 0.15f;
 
     private const float DarkestShare = 0.25f;
 
@@ -204,14 +215,12 @@ public class SelectionTintFrameTests
     /// <summary>Кадры про подкраску ТЁМНЫХ приборов: выделение накладывает жёлтый
     /// на собственный цвет, а не кладёт его на место цвета. Доля изменившихся
     /// пикселей (<see cref="AssertSilhouetteChanged"/>) зеленеет и от подмены —
-    /// плоский жёлтый тоже «изменил» силуэт, — поэтому здесь второй вопрос: тёмное
-    /// осталось тёмным в той мере, в какой оно им было. По кадру «до» берётся
-    /// средняя яркость силуэта и средняя яркость его самой тёмной четверти (стекло,
-    /// панель, барабан); в кадре «после» обе обязаны остаться ниже отметки
-    /// <see cref="FrameShareToTint"/> пути от прежней яркости к белому. Подмена цвета
-    /// тёмной детали на жёлтый уходит выше этой отметки целиком, подкраска — нет.
-    /// Порог выставлен по расчёту, а не по снятым кадрам: первый прогон его
-    /// проверяет, PNG рядом показывают, как выглядит результат.</summary>
+    /// плоский жёлтый тоже «изменил» силуэт, — поэтому здесь два вопроса про тёмное.
+    /// Первый: самая тёмная четверть силуэта не ушла выше отметки <see cref="FrameShareToTint"/>
+    /// пути от прежней яркости к белому. Второй: контраст деталей с корпусом
+    /// (<see cref="MinContrastKept"/>) пережил выделение — чёрное стекло и чёрная дверь
+    /// обязаны оставаться явно темнее серого корпуса, а не сливаться с ним в ровный олив.
+    /// Пороги сняты с кадров старой формулы (test-results/sofa-r5/tint_*), а не выдуманы.</summary>
     [UnityTest]
     public IEnumerator SelectedCooktop_KeepsItsDarkGlass_TintedNotReplacedByYellow()
     {
@@ -309,10 +318,16 @@ public class SelectionTintFrameTests
             + " → " + selectedDark.ToString("0.00") + ", потолок "
             + Mathf.Lerp(plainDark, 1f, FrameShareToTint).ToString("0.00")
             + " — тёмное стало жёлтым, то есть подменено, а не подкрашено");
-        Assert.LessOrEqual(selectedAll, Mathf.Lerp(plainAll, 1f, FrameShareToTint),
-            what + ". Средняя яркость силуэта: " + plainAll.ToString("0.00")
-            + " → " + selectedAll.ToString("0.00") + ", потолок "
-            + Mathf.Lerp(plainAll, 1f, FrameShareToTint).ToString("0.00"));
+
+        float contrastBefore = 1f - plainDark / plainAll;
+        float contrastAfter = 1f - selectedDark / selectedAll;
+        if (contrastBefore < MinMeaningfulContrast) return;
+
+        Assert.GreaterOrEqual(contrastAfter, MinContrastKept * contrastBefore,
+            what + ". Контраст тёмных деталей с корпусом: " + contrastBefore.ToString("0.00")
+            + " → " + contrastAfter.ToString("0.00") + ", нужно не меньше "
+            + (MinContrastKept * contrastBefore).ToString("0.00")
+            + " — жёлтый выровнял чёрное с корпусом, детали слились");
     }
 
     private static float Luma(Color32 c) =>

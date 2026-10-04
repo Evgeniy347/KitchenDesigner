@@ -10,8 +10,8 @@ namespace KitchenDesigner.Core
 
         public const float SingleGlow = 0.5f;
         public const float MultiGlow = 0.3f;
-        public const float DarkLift = 0.4f;
-        public const float DarkGlowShare = 0.35f;
+        public const float DarkLift = 0.1f;
+        public const float DarkGlowShare = 0.07f;
 
         public static Color TintOf(bool multi) => multi ? MultiTint : SingleTint;
 
