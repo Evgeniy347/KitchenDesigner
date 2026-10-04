@@ -391,6 +391,31 @@ public class ElementFieldsEditorTests
     }
 
     [Test]
+    public void Sofa_EdgeRadiusRow_IsBuilt_Applies_IsUndoable_AndShowsTheClampedValueBack()
+    {
+        var sofa = Sofa();
+        _menu!.Open(sofa);
+
+        Assert.IsNotNull(Panel().FindNode("F_" + SofaFieldsEditor.EdgeRadiusNode),
+            "строка «Скругление кромок» обязана быть ПОСТРОЕНА: свойство без строки в панели "
+            + "правится только через MCP");
+        Assert.AreEqual(SofaElement.DefaultEdgeRadiusMM.ToString(),
+            Text(Field(SofaFieldsEditor.EdgeRadiusNode)), "поле открывается значением элемента");
+
+        Type(SofaFieldsEditor.EdgeRadiusNode, "25");
+        Assert.AreEqual(25, sofa.EdgeRadiusMM, "радиус применяется");
+        CommandStack.Undo();
+        Assert.AreEqual(SofaElement.DefaultEdgeRadiusMM, sofa.EdgeRadiusMM,
+            "одна правка — один шаг отмены");
+
+        Type(SofaFieldsEditor.EdgeRadiusNode, "5000");
+        int expected = SofaLayout.MaxEdgeRadiusMM(sofa.DimensionsMM, sofa.SeatHeightMM);
+        Assert.AreEqual(expected, sofa.EdgeRadiusMM, "значение зажато геометрией");
+        Assert.AreEqual(expected.ToString(), Text(Field(SofaFieldsEditor.EdgeRadiusNode)),
+            "и в поле возвращается ПРИНЯТОЕ, а не напечатанное");
+    }
+
+    [Test]
     public void Sofa_SeatHeightRow_ShowsTheClampedValueBack_NotWhatWasTyped()
     {
         var sofa = Sofa();

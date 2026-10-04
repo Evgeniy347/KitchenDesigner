@@ -354,6 +354,7 @@ namespace KitchenDesigner.Core.MCP
 	{
 		public int cornerRadiusMM;
 		public int seatHeightMM;
+		public int edgeRadiusMM;
 		public int backDepthMM;
 		public int seatDepthMM;
 		public int backrestBottomMM;

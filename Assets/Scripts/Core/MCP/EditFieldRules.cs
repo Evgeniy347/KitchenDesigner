@@ -22,6 +22,8 @@ namespace KitchenDesigner.Core.MCP
             el is RadialShelfElement || el is StoolElement || el is ChairElement
             || el is SofaElement || el is PouffeElement;
 
+        internal static bool AcceptsEdgeRadius(KitchenElement el) => el is SofaElement;
+
         internal static bool AcceptsSeatHeight(KitchenElement el) =>
             el is ChairElement || el is SofaElement || el is ToiletElement
             || el is WallHungToiletElement;
@@ -58,6 +60,7 @@ namespace KitchenDesigner.Core.MCP
             Unsupported("is_open", o => o.is_open.HasValue, AcceptsOpenFlag),
             Unsupported("corner_radius", o => o.corner_radius.HasValue, AcceptsCornerRadius),
             Unsupported("seat_height", o => o.seat_height.HasValue, AcceptsSeatHeight),
+            Unsupported("edge_radius", o => o.edge_radius.HasValue, AcceptsEdgeRadius),
             Unsupported("load_bearing", o => o.load_bearing.HasValue, AcceptsWallFields),
             Unsupported("masonry", o => o.masonry != null, AcceptsWallFields),
             Unsupported("masonry_joint_mm", o => o.masonry_joint_mm.HasValue, AcceptsWallFields),

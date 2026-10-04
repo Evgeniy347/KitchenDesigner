@@ -316,7 +316,12 @@ namespace KitchenDesigner.Core
              (factory, source, pos) => factory.CreateSofa(source.DimensionsMM,
                  ((SofaElement)source).CornerRadiusMM, ((SofaElement)source).SeatHeightMM,
                  source.PartName, pos),
-             CopyDecorSlots),
+             (source, copy) =>
+             {
+                 CopyDecorSlots(source, copy);
+                 if (copy.GetComponent<SofaElement>() is SofaElement made)
+                     made.EdgeRadiusMM = ((SofaElement)source).EdgeRadiusMM;
+             }),
 
             (el => el is PouffeElement,
              (factory, source, pos) => factory.CreatePouffe(source.DimensionsMM,

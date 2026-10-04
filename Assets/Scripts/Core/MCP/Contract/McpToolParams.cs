@@ -285,6 +285,13 @@ namespace KitchenDesigner.Core.MCP.Contract
             Min = 0)]
         public int? seat_height;
 
+        [McpParam("Sofa only: rounding radius in MM of the TOP edges of the two ends (left and right) of the " +
+                  "seat and of the backrest, in the vertical section - the edge between a mat's top face " +
+                  "and its end face, along the whole depth. The front and rear top edges stay sharp. " +
+                  "Clamped to 0..min(seat_height, 180)/2 and to width/4; 40 mm by default. Omit to keep.",
+            Min = 0)]
+        public int? edge_radius;
+
         [McpParam("Wall-hung toilet only: height of the BOTTOM of the flush plate above the " +
                   "floor in MM (the plate itself is 240x165 mm). Clamped to " +
                   "seat_height+88..835 — at least 50 mm of tiling above the closed lid, and " +

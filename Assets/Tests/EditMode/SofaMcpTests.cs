@@ -128,4 +128,44 @@ public class SofaMcpTests : McpTestFixture
         Assert.AreEqual(100, info["backrestBottomMM"]!.Value<int>(), "низ спинки над полом");
         Assert.AreEqual(700, info["backrestHeightMM"]!.Value<int>(), "высота спинки");
     }
+
+    [Test]
+    public void EditSofa_EdgeRadius_IsApplied_ClampedAndReported()
+    {
+        var sofa = CreateSofa("SofaEdge");
+
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "SofaEdge", edge_radius = 25 } },
+        }));
+        Assert.AreEqual("result", resp.type, "edge_radius принимается");
+        Assert.AreEqual(25, sofa.EdgeRadiusMM, "радиус применён");
+
+        _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "SofaEdge", edge_radius = 9999 } },
+        }));
+        Assert.AreEqual(SofaLayout.MaxEdgeRadiusMM(sofa.DimensionsMM, sofa.SeatHeightMM),
+            sofa.EdgeRadiusMM, "и зажат геометрией");
+
+        var info = JObject.FromObject(_handler!.Handle(
+            MakeReq("get_elements", new { names = new[] { "SofaEdge" } })).data!)
+            ["elements"]![0]!["sofa"]!;
+        Assert.AreEqual(sofa.EdgeRadiusMM, info["edgeRadiusMM"]!.Value<int>(),
+            "get_elements сообщает принятое значение, а не заказанное");
+    }
+
+    [Test]
+    public void EditBoard_EdgeRadius_IsRefused_BecauseOnlyASofaHasIt()
+    {
+        MakeElement("BoardEdge", new UnityEngine.Vector3Int(600, 400, 18));
+
+        var resp = _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "BoardEdge", edge_radius = 10 } },
+        }));
+
+        Assert.AreEqual("error", resp.type,
+            "edge_radius у доски — молчаливый успех был бы ложью: параметр есть только у дивана");
+    }
 }

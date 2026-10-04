@@ -70,6 +70,7 @@ namespace KitchenDesigner.Core
             d.isChair = chair != null;
             d.isSofa = sofa != null;
             d.sofaUnfoldStage = sofa != null ? (int)sofa.UnfoldStage : 0;
+            d.sofaEdgeRadiusMM = sofa != null ? sofa.EdgeRadiusMM : SofaLayout.DefaultEdgeRadiusMM;
             d.isPouffe = pouffe != null;
             d.pouffeSeatThicknessMM = pouffe != null ? pouffe.SeatThicknessMM
                 : PouffeLayout.DefaultSeatThicknessMM;

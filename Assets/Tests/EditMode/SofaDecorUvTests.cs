@@ -155,6 +155,20 @@ public class SofaDecorUvTests
     }
 
     [Test]
+    public void RoundedEdges_KeepTheSeatAndTheBackrestUnstretched_OnTheFlatFaces()
+    {
+        var sofa = DressedSofa(2000, 900, 360);
+        var tile = new Vector2Int(PrimaryTileWidth, PrimaryTileHeight);
+
+        sofa.EdgeRadiusMM = 80;
+
+        AssertHonest(Part(sofa, SofaLayout.SeatName), tile, UvStretch.AxisAlignedDot, 0.02f);
+        AssertHonest(Part(sofa, SofaLayout.BackrestName), tile, UvStretch.AxisAlignedDot, 0.02f);
+        sofa.SnapToStage(SofaStage.Bed);
+        AssertHonest(Part(sofa, SofaLayout.BackrestName), tile, UvStretch.AxisAlignedDot, 0.02f);
+    }
+
+    [Test]
     public void Resize_KeepsEveryPartUnstretched()
     {
         var sofa = DressedSofa(2000, 900, 360);

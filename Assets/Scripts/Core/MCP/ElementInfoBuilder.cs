@@ -159,6 +159,7 @@ namespace KitchenDesigner.Core.MCP
                 {
                     cornerRadiusMM = sofa.CornerRadiusMM,
                     seatHeightMM = sofa.SeatHeightMM,
+                    edgeRadiusMM = sofa.EdgeRadiusMM,
                     backDepthMM = SofaLayout.BackrestThicknessMM,
                     seatDepthMM = SofaLayout.SeatDepthFor(sofa.DimensionsMM.z),
                     backrestBottomMM = SofaLayout.BackrestBottomMM,

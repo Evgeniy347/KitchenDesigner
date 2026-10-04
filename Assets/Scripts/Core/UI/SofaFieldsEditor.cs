@@ -4,6 +4,7 @@ namespace KitchenDesigner.Core.UI
     {
         public const string CornerRadiusNode = "СкруглениеДивана";
         public const string SeatHeightNode = "ВысотаОснованияДивана";
+        public const string EdgeRadiusNode = "SofaEdgeRadius";
 
         public SofaFieldsEditor(IContextMenuHost host) : base(host) { }
 
@@ -20,6 +21,10 @@ namespace KitchenDesigner.Core.UI
                 Rows.NumberField(Loc.T("element.sofa.baseHeight"), visibility, Loc.T("unit.mm"), SeatHeightNode,
                     hint: "element.seat.seatHeight"),
                 sofa => sofa.SeatHeightMM, (sofa, value) => sofa.SeatHeightMM = value, "0");
+            Bind<SofaElement>(
+                Rows.NumberField(Loc.T("element.sofa.edgeRadius"), visibility, Loc.T("unit.mm"),
+                    EdgeRadiusNode, hint: "element.sofa.edgeRadius"),
+                sofa => sofa.EdgeRadiusMM, (sofa, value) => sofa.EdgeRadiusMM = value, "0");
         }
     }
 }

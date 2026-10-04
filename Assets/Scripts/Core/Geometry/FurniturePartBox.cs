@@ -11,13 +11,14 @@ namespace KitchenDesigner.Core
         public readonly float ThicknessMM;
         public readonly float RadiusMM;
         public readonly float RearRadiusMM;
+        public readonly float EdgeRadiusMM;
         public readonly FurniturePartOrientation Orientation;
         public readonly FurniturePartShape Shape;
 
         public FurniturePartBox(string name, Vector3 centreMM, float profileWidthMM,
             float profileDepthMM, float thicknessMM, float radiusMM,
             FurniturePartOrientation orientation, FurniturePartShape shape = FurniturePartShape.Extruded,
-            float? rearRadiusMM = null)
+            float? rearRadiusMM = null, float edgeRadiusMM = 0f)
         {
             Name = name;
             CentreMM = centreMM;
@@ -26,6 +27,7 @@ namespace KitchenDesigner.Core
             ThicknessMM = thicknessMM;
             RadiusMM = radiusMM;
             RearRadiusMM = rearRadiusMM ?? radiusMM;
+            EdgeRadiusMM = edgeRadiusMM;
             Orientation = orientation;
             Shape = shape;
         }
@@ -43,6 +45,6 @@ namespace KitchenDesigner.Core
 
         public FurniturePartBox WithCentre(Vector3 centreMM) => new FurniturePartBox(Name,
             centreMM, ProfileWidthMM, ProfileDepthMM, ThicknessMM, RadiusMM, Orientation, Shape,
-            RearRadiusMM);
+            RearRadiusMM, EdgeRadiusMM);
     }
 }

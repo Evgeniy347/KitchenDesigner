@@ -24,14 +24,15 @@ namespace KitchenDesigner.Core
 
         public MeshRenderer? SeatRenderer => _seat.RendererOf(SofaLayout.SeatName);
 
-        public void Build(Vector3Int dimensionsMM, int seatHeightMM, int cornerRadiusMM)
+        public void Build(Vector3Int dimensionsMM, int seatHeightMM, int cornerRadiusMM,
+            int edgeRadiusMM)
         {
             _hingeMM = SofaUnfold.HingeMM(dimensionsMM, seatHeightMM);
             _hinge.localPosition = _hingeMM * AppConstants.MM_TO_UNITS;
 
-            _seat.Place(new[] { SofaLayout.Seat(dimensionsMM, seatHeightMM, cornerRadiusMM) });
+            _seat.Place(new[] { SofaLayout.Seat(dimensionsMM, seatHeightMM, cornerRadiusMM, edgeRadiusMM) });
             _cushions.Place(SofaLayout.Cushions(dimensionsMM, seatHeightMM));
-            var backrest = SofaLayout.Backrest(dimensionsMM, cornerRadiusMM);
+            var backrest = SofaLayout.Backrest(dimensionsMM, cornerRadiusMM, edgeRadiusMM);
             _backrest.Place(new[] { backrest.WithCentre(backrest.CentreMM - _hingeMM) });
         }
 

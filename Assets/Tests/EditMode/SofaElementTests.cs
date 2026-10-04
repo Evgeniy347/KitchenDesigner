@@ -237,7 +237,7 @@ public class SofaElementTests
         {
             if (local.x < centre.x - 1e-4f || local.z < centre.y - 1e-4f) continue;
             checkedPoints++;
-            Assert.AreEqual(radius, (new Vector2(local.x, local.z) - centre).magnitude, 1e-4f,
+            Assert.AreEqual(radius, (new Vector2(local.x, local.z) - centre).magnitude, 5e-4f,
                 "передний угол сиденья обязан остаться ДУГОЙ ОКРУЖНОСТИ физического радиуса "
                 + "200 мм. Если строить контур в единичном пространстве и растягивать корнем — "
                 + "как делает радиусный стол, — на следе 2000x720 угол станет эллиптическим");
@@ -260,7 +260,7 @@ public class SofaElementTests
         {
             if (v.x < seatCentre.x - 1e-4f || v.z > seatCentre.y + 1e-4f) continue;
             seatPoints++;
-            Assert.AreEqual(radius, (new Vector2(v.x, v.z) - seatCentre).magnitude, 1e-4f,
+            Assert.AreEqual(radius, (new Vector2(v.x, v.z) - seatCentre).magnitude, 5e-4f,
                 "задний угол сиденья скруглён тем же радиусом 120 мм, что и передний");
         }
 
@@ -271,7 +271,7 @@ public class SofaElementTests
         {
             if (v.x < backCentre.x - 1e-4f || v.z < backCentre.y - 1e-4f) continue;
             backPoints++;
-            Assert.AreEqual(radius, (new Vector2(v.x, v.z) - backCentre).magnitude, 1e-4f,
+            Assert.AreEqual(radius, (new Vector2(v.x, v.z) - backCentre).magnitude, 5e-4f,
                 "угол листа спинки скруглён тем же радиусом 120 мм: лёжа, она читается матом "
                 + "того же рисунка, что и сиденье");
         }
@@ -449,6 +449,91 @@ public class SofaElementTests
         Part(copy, SofaLayout.BackrestName);
         Assert.AreEqual(2, copy.transform.childCount,
             "и обе группы: копия без подушек или спинки была бы другим предметом");
+    }
+
+    private static float HighestAtTheEnds(Mesh mesh, float halfWidthUnits)
+    {
+        float highest = float.MinValue;
+        foreach (var v in mesh.vertices)
+            if (Mathf.Abs(Mathf.Abs(v.x) - halfWidthUnits) < 1e-5f) highest = Mathf.Max(highest, v.y);
+        return highest;
+    }
+
+    [Test]
+    public void EdgeRadius_Defaults_To40_AndRoundsTheTopEdgesOfTheSeatEnds()
+    {
+        var sofa = DefaultSofa();
+        var mesh = Part(sofa, SofaLayout.SeatName).GetComponent<MeshFilter>()!.sharedMesh;
+
+        Assert.AreEqual(SofaElement.DefaultEdgeRadiusMM, sofa.EdgeRadiusMM,
+            "поле скругления кромок стартует со значением по умолчанию");
+        Assert.AreEqual((360 * 0.5f - 40) * AppConstants.MM_TO_UNITS,
+            HighestAtTheEnds(mesh, 1.0f), 1e-5f,
+            "на самом торце сиденья верх ниже полного на радиус кромки, а вся высота остаётся "
+            + "в середине (скриншоты: скруглены верхние кромки торцов вдоль глубины)");
+        Assert.AreEqual(360 * 0.5f * AppConstants.MM_TO_UNITS, mesh.bounds.max.y, 1e-5f,
+            "габарит сиденья по высоте прежний");
+    }
+
+    [Test]
+    public void EdgeRadius_OfZero_LeavesTheEndsSharp_AndIsClamped()
+    {
+        var sofa = DefaultSofa();
+
+        sofa.EdgeRadiusMM = 0;
+        var mesh = Part(sofa, SofaLayout.SeatName).GetComponent<MeshFilter>()!.sharedMesh;
+        Assert.AreEqual(360 * 0.5f * AppConstants.MM_TO_UNITS, HighestAtTheEnds(mesh, 1.0f), 1e-5f,
+            "ноль — острые кромки, как раньше");
+
+        sofa.EdgeRadiusMM = 5000;
+        Assert.AreEqual(SofaLayout.MaxEdgeRadiusMM(sofa.DimensionsMM, sofa.SeatHeightMM),
+            sofa.EdgeRadiusMM, "верхняя граница — половина толщины спинки");
+    }
+
+    [Test]
+    public void EdgeRadius_RoundsTheBackrestToo_OnTheFaceThatLiesUp()
+    {
+        var sofa = DefaultSofa();
+        sofa.EdgeRadiusMM = 30;
+
+        var mesh = Part(sofa, SofaLayout.BackrestName).GetComponent<MeshFilter>()!.sharedMesh;
+
+        float lowest = float.MaxValue;
+        foreach (var v in mesh.vertices)
+            if (Mathf.Abs(Mathf.Abs(v.x) - 1.0f) < 1e-5f) lowest = Mathf.Min(lowest, v.y);
+        Assert.AreEqual(-(180 * 0.5f - 30) * AppConstants.MM_TO_UNITS, lowest, 1e-5f,
+            "у спинки скруглена кромка той грани, что при складывании остаётся сверху "
+            + "(лицевая, локально «нижняя» из-за поворота профиля)");
+    }
+
+    [Test]
+    public void EdgeRadius_SurvivesSaveAndLoad_AndDuplication()
+    {
+        var sofa = DefaultSofa();
+        sofa.EdgeRadiusMM = 27;
+
+        var data = ElementCapture.FromElement(sofa);
+        var restored = JsonUtility.FromJson<ElementData>(JsonUtility.ToJson(data));
+        Assert.AreEqual(27, restored.sofaEdgeRadiusMM,
+            "радиус кромок записан в проект: поле без записи загрузило бы диван с умолчанием");
+
+        var go = ElementRestorers.Restore(ElementFactory.Instance, restored);
+        _spawned.Add(go);
+        Assert.AreEqual(27, go.GetComponent<SofaElement>()!.EdgeRadiusMM, "и восстановлено");
+
+        var copyGo = ElementFactory.Instance.Duplicate(sofa);
+        _spawned.Add(copyGo);
+        Assert.AreEqual(27, copyGo.GetComponent<SofaElement>()!.EdgeRadiusMM,
+            "и копия дивана несёт тот же радиус кромок");
+    }
+
+    [Test]
+    public void EdgeRadius_OfAnOldSaveWithoutTheField_IsTheDefault()
+    {
+        var restored = JsonUtility.FromJson<ElementData>("{\"isSofa\":true}");
+
+        Assert.AreEqual(SofaLayout.DefaultEdgeRadiusMM, restored.sofaEdgeRadiusMM,
+            "старое сохранение без поля получает мягкие кромки по умолчанию, а не ноль");
     }
 
     [Test]

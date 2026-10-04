@@ -35,6 +35,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (op.corner_radius.HasValue) sofa.CornerRadiusMM = op.corner_radius.Value;
                 if (op.seat_height.HasValue) sofa.SeatHeightMM = op.seat_height.Value;
+                if (op.edge_radius.HasValue) sofa.EdgeRadiusMM = op.edge_radius.Value;
             }),
             For<PouffeElement>((op, pouffe) =>
             {

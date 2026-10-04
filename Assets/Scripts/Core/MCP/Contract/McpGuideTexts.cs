@@ -298,7 +298,9 @@ SofaElement           Sofa-bed (type:""sofa"", 2000x800x900 mm by default). NO a
                       (height is rejected on edit); depth changes only the seat
                       (depth - 180 mm), width is free. corner_radius rounds the seat
                       block (120 mm by default); seat_height is its top above the
-                      floor (360 mm by default, clamped to 300..460). The sofa
+                      floor (360 mm by default, clamped to 300..460); edge_radius
+                      rounds the top edges of the left and right ends of the seat
+                      and backrest (40 mm by default). The sofa
                       unfolds in two strictly sequential stages: cycle_drawer_animation
                       moves it Folded -> Extended (seat slides out, the box shows) ->
                       Bed (the backrest lowers flat onto the box) -> Folded. The

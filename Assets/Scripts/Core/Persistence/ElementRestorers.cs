@@ -306,7 +306,9 @@ namespace KitchenDesigner.Core
              (d, el) =>
              {
                  RestoreDecorSlots(d, el);
-                 if (el is SofaElement sofa) sofa.SnapToStage(SofaUnfold.StageFrom(d.sofaUnfoldStage));
+                 if (el is not SofaElement sofa) return;
+                 sofa.EdgeRadiusMM = d.sofaEdgeRadiusMM;
+                 sofa.SnapToStage(SofaUnfold.StageFrom(d.sofaUnfoldStage));
              }),
 
             (d => d.isPouffe,

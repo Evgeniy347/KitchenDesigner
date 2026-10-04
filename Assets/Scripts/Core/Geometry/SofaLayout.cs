@@ -15,6 +15,7 @@ namespace KitchenDesigner.Core
         public const int DefaultDepthMM = BackrestThicknessMM + DefaultSeatDepthMM;
         public const int DefaultSeatHeightMM = 360;
         public const int DefaultCornerRadiusMM = 120;
+        public const int DefaultEdgeRadiusMM = 40;
 
         public const int MinSeatDepthMM = 400;
         public const int MinDepthMM = BackrestThicknessMM + MinSeatDepthMM;
@@ -57,6 +58,13 @@ namespace KitchenDesigner.Core
         public static int ClampCornerRadiusMM(Vector3Int dimensionsMM, int value)
             => Mathf.Clamp(value, 0, MaxCornerRadiusMM(dimensionsMM));
 
+        public static int MaxEdgeRadiusMM(Vector3Int dimensionsMM, int seatHeightMM)
+            => Mathf.Max(0, Mathf.Min(Mathf.Min(seatHeightMM, BackrestThicknessMM) / 2,
+                dimensionsMM.x / 4));
+
+        public static int ClampEdgeRadiusMM(Vector3Int dimensionsMM, int seatHeightMM, int value)
+            => Mathf.Clamp(value, 0, MaxEdgeRadiusMM(dimensionsMM, seatHeightMM));
+
         public static int ClampSeatHeightMM(int value)
             => Mathf.Clamp(value, MinSeatHeightMM, MaxSeatHeightMM);
 
@@ -89,19 +97,29 @@ namespace KitchenDesigner.Core
 
         public static FurniturePartBox Seat(Vector3Int dimensionsMM, int seatHeightMM,
             int cornerRadiusMM)
+            => Seat(dimensionsMM, seatHeightMM, cornerRadiusMM, DefaultEdgeRadiusMM);
+
+        public static FurniturePartBox Seat(Vector3Int dimensionsMM, int seatHeightMM,
+            int cornerRadiusMM, int edgeRadiusMM)
         {
             int seatDepth = SeatDepthFor(dimensionsMM.z);
             var centre = new Vector3(0f, FloorYMM(dimensionsMM) + seatHeightMM * 0.5f,
                 BackrestFrontZMM(dimensionsMM) + seatDepth * 0.5f);
 
             return new FurniturePartBox(SeatName, centre, dimensionsMM.x, seatDepth,
-                seatHeightMM, cornerRadiusMM, FurniturePartOrientation.Horizontal);
+                seatHeightMM, cornerRadiusMM, FurniturePartOrientation.Horizontal,
+                FurniturePartShape.Mat, null,
+                ClampEdgeRadiusMM(dimensionsMM, seatHeightMM, edgeRadiusMM));
         }
 
         public static FurniturePartBox Backrest(Vector3Int dimensionsMM)
-            => Backrest(dimensionsMM, DefaultCornerRadiusMM);
+            => Backrest(dimensionsMM, DefaultCornerRadiusMM, DefaultEdgeRadiusMM);
 
         public static FurniturePartBox Backrest(Vector3Int dimensionsMM, int cornerRadiusMM)
+            => Backrest(dimensionsMM, cornerRadiusMM, DefaultEdgeRadiusMM);
+
+        public static FurniturePartBox Backrest(Vector3Int dimensionsMM, int cornerRadiusMM,
+            int edgeRadiusMM)
         {
             var centre = new Vector3(0f,
                 FloorYMM(dimensionsMM) + BackrestBottomMM + BackrestHeightMM * 0.5f,
@@ -110,7 +128,8 @@ namespace KitchenDesigner.Core
             return new FurniturePartBox(BackrestName, centre, dimensionsMM.x,
                 BackrestHeightMM, BackrestThicknessMM,
                 FittedRadius(cornerRadiusMM, dimensionsMM.x, BackrestHeightMM),
-                FurniturePartOrientation.Frontal);
+                FurniturePartOrientation.Frontal, FurniturePartShape.Mat, null,
+                Mathf.Clamp(edgeRadiusMM, 0, BackrestThicknessMM / 2));
         }
 
         public static FurniturePartBox[] Cushions(Vector3Int dimensionsMM, int seatHeightMM)

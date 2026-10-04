@@ -119,12 +119,23 @@ namespace KitchenDesigner.Core
         private Mesh MeshFor(FurniturePartBox box) => box.Shape switch
         {
             FurniturePartShape.Cushion => CushionMeshOf(box.LocalSizeMM, box.RadiusMM, _physicalUv),
+            FurniturePartShape.Mat => MatMeshOf(box),
             FurniturePartShape.SoftSlab => SoftSlabMeshOf(box.ProfileWidthMM, box.ProfileDepthMM,
                 box.RadiusMM, box.RearRadiusMM, box.ThicknessMM,
                 box.ThicknessMM * SoftSlabSurface.MaxFilletThicknessRatio, _physicalUv),
             _ => ExtrusionMeshOf(box.ProfileWidthMM, box.ProfileDepthMM, box.ThicknessMM,
                 box.RadiusMM, box.RearRadiusMM),
         };
+
+        private static Mesh MatMeshOf(FurniturePartBox box)
+        {
+            float toU = AppConstants.MM_TO_UNITS;
+            var radii = new CornerRadii(box.RearRadiusMM * toU, box.RearRadiusMM * toU,
+                box.RadiusMM * toU, box.RadiusMM * toU);
+            return MatMesh.Build(new MatSurface(box.ProfileWidthMM * toU, box.ProfileDepthMM * toU,
+                box.ThicknessMM * toU, radii, box.EdgeRadiusMM * toU,
+                box.Orientation == FurniturePartOrientation.Frontal));
+        }
 
         private static Mesh CushionMeshOf(Vector3 sizeMM, float radiusMM)
             => CushionMeshOf(sizeMM, radiusMM, false);

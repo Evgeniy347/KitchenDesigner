@@ -1747,6 +1747,11 @@
     "meaning": "Height of the sofa base (seat) above the floor",
     "maxLength": 22
   },
+  "element.sofa.edgeRadius": {
+    "where": "Element properties panel > sofa, number row label",
+    "meaning": "Rounding radius of the top edges of the left and right ends of the sofa seat and backrest",
+    "maxLength": 22
+  },
   "element.table.defaultName": {
     "where": "Default name given to a newly created element of this type (shown in the hierarchy and panels, saved in the project)",
     "meaning": "Rectangular (non-radius) table",
@@ -2801,6 +2806,11 @@
   "hint.element.showerColumn.wallOffset": {
     "where": "Properties panel of a shower column, hint bubble of the 'Wall offset' field",
     "meaning": "Set the riser distance from the wall",
+    "maxLength": 220
+  },
+  "hint.element.sofa.edgeRadius": {
+    "where": "Properties panel of a sofa, hint bubble of the 'Edge rounding' field",
+    "meaning": "Explain which sofa edges the rounding applies to",
     "maxLength": 220
   },
   "hint.element.table.legInset": {

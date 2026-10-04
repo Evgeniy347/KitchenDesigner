@@ -24,6 +24,7 @@ namespace KitchenDesigner.Core
         public const int DefaultDepthMM = SofaLayout.DefaultDepthMM;
         public const int DefaultSeatHeightMM = SofaLayout.DefaultSeatHeightMM;
         public const int DefaultCornerRadiusMM = SofaLayout.DefaultCornerRadiusMM;
+        public const int DefaultEdgeRadiusMM = SofaLayout.DefaultEdgeRadiusMM;
         public const int MinSeatHeightMM = SofaLayout.MinSeatHeightMM;
         public const int MaxSeatHeightMM = SofaLayout.MaxSeatHeightMM;
 
@@ -34,6 +35,7 @@ namespace KitchenDesigner.Core
 
         [SerializeField] private int _cornerRadiusMM = DefaultCornerRadiusMM;
         [SerializeField] private int _seatHeightMM = DefaultSeatHeightMM;
+        [SerializeField] private int _edgeRadiusMM = DefaultEdgeRadiusMM;
         [SerializeField] private string _bodyMaterialId = DefaultUpholsteryId;
         [SerializeField] private string _cushionMaterialId = DefaultUpholsteryId;
 
@@ -78,6 +80,19 @@ namespace KitchenDesigner.Core
                 value = SofaLayout.ClampSeatHeightMM(value);
                 if (_seatHeightMM == value) return;
                 _seatHeightMM = value;
+                ApplyDimensions();
+            }
+        }
+
+        [Undoable]
+        public int EdgeRadiusMM
+        {
+            get => _edgeRadiusMM;
+            set
+            {
+                value = SofaLayout.ClampEdgeRadiusMM(DimensionsMM, _seatHeightMM, value);
+                if (_edgeRadiusMM == value) return;
+                _edgeRadiusMM = value;
                 ApplyDimensions();
             }
         }
@@ -155,9 +170,10 @@ namespace KitchenDesigner.Core
             if (dims != DimensionsMM) Data.DimensionsMM = dims;
             _cornerRadiusMM = SofaLayout.ClampCornerRadiusMM(dims, _cornerRadiusMM);
             _seatHeightMM = SofaLayout.ClampSeatHeightMM(_seatHeightMM);
+            _edgeRadiusMM = SofaLayout.ClampEdgeRadiusMM(dims, _seatHeightMM, _edgeRadiusMM);
             transform.localScale = Vector3.one;
             RebuildBox(dims);
-            Rig.Build(dims, _seatHeightMM, _cornerRadiusMM);
+            Rig.Build(dims, _seatHeightMM, _cornerRadiusMM, _edgeRadiusMM);
             ApplyPose();
             MaterialManager.RefreshTiling(this);
         }

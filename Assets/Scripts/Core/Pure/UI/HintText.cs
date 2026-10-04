@@ -81,6 +81,7 @@ namespace KitchenDesigner.Core.UI
             "element.pipeFitting.bore",
             "element.table.legInset",
             "element.seat.seatHeight",
+            "element.sofa.edgeRadius",
             "element.pouffe.seatThickness",
             "element.light.temperature",
             "element.light.power",

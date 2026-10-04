@@ -164,8 +164,8 @@ namespace KitchenDesigner.Tests.Geometry
             Assert.AreEqual(FurniturePartOrientation.Frontal, backrest.Orientation,
                 "профиль скруглённого прямоугольника лежит в большой грани спинки (ширина на "
                 + "высоту), а не в плане: иначе вертикальные рёбра скруглены, а углы листа нет");
-            Assert.AreEqual(FurniturePartShape.Extruded, seat.Shape,
-                "обе части — один вид выдавливания: одинаковые кромки");
+            Assert.AreEqual(FurniturePartShape.Mat, seat.Shape,
+                "обе части — мат со скруглёнными кромками торцов: одинаковые кромки");
             Assert.AreEqual(seat.Shape, backrest.Shape, "и у спинки тот же вид");
         }
 
@@ -357,6 +357,50 @@ namespace KitchenDesigner.Tests.Geometry
         {
             Assert.AreEqual(new Vector2Int(2000, 720), SofaLayout.SeatSurfaceMM(Default()),
                 "декор носит сиденье, а не весь габарит: поверхность мощения — его верх");
+        }
+
+        [Test]
+        public void EdgeRadius_DefaultsTo40_TheSoftEdgeOfThePhotographedMats()
+        {
+            Assert.AreEqual(40, SofaLayout.DefaultEdgeRadiusMM,
+                "на фото 40 кромки торцов обоих матов мягкие, радиус порядка четырёх сантиметров: "
+                + "заметно глазом, но торец остаётся торцом, а не валиком");
+            Assert.AreEqual(SofaLayout.DefaultEdgeRadiusMM, SofaLayout.Seat(Default(), Seat, Radius).EdgeRadiusMM,
+                "сиденье несёт радиус по умолчанию");
+        }
+
+        [Test]
+        public void SeatAndBackrest_CarryTheSameEdgeRadius_SoTheBedIsTwoIdenticalMats()
+        {
+            var seat = SofaLayout.Seat(Default(), Seat, Radius, 25);
+            var backrest = SofaLayout.Backrest(Default(), Radius, 25);
+
+            Assert.AreEqual(25f, seat.EdgeRadiusMM, "сиденье берёт заказанный радиус кромок");
+            Assert.AreEqual(25f, backrest.EdgeRadiusMM,
+                "и спинка тот же: лёжа, они читаются одной парой матов");
+            Assert.AreEqual(FurniturePartShape.Mat, backrest.Shape, "спинка — тоже мат");
+        }
+
+        [Test]
+        public void EdgeRadius_IsClamped_ByHalfTheThinnerMatAndAQuarterOfTheWidth()
+        {
+            var dims = Default();
+
+            Assert.AreEqual(90, SofaLayout.MaxEdgeRadiusMM(dims, Seat),
+                "тоньше всех спинка (180 мм): кромка не больше половины её толщины — 90");
+            Assert.AreEqual(90, SofaLayout.ClampEdgeRadiusMM(dims, Seat, 5000),
+                "больше — сводится к максимуму");
+            Assert.AreEqual(0, SofaLayout.ClampEdgeRadiusMM(dims, Seat, -4),
+                "отрицательное — к нулю");
+            Assert.AreEqual(75, SofaLayout.MaxEdgeRadiusMM(dims, 150),
+                "а при низком сиденье (150 мм) держит оно: половина 150 — 75");
+        }
+
+        [Test]
+        public void EdgeRadius_OnANarrowSofa_IsHeldByAQuarterOfTheWidth()
+        {
+            Assert.AreEqual(50, SofaLayout.MaxEdgeRadiusMM(new Vector3Int(200, 800, 900), Seat),
+                "ширина 200 — четверть 50: два скругления торцов не сходятся");
         }
     }
 }
