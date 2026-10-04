@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using Newtonsoft.Json.Linq;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.MCP;
 
 /// <summary>Диван-книжка на проводе MCP: фиксированная высота и раскладывание
 /// тем же инструментом, что анимирует ящики. Агент должен получить отказ там, где

@@ -351,7 +351,8 @@ public class SofaUnfoldElementTests
         var sofa = Sofa();
 
         Assert.AreEqual(ActivationKind.Openable, ElementActivator.KindOf(sofa),
-            "клавиша E и двойной щелчок раскладывают диван тем же правилом, что открывают ящик");
+            "клавиша E раскладывает диван тем же правилом, что открывает ящик (двойной щелчок "
+            + "для открываемых элементов не включён нигде, и диван не исключение)");
         Assert.IsTrue(ElementActivator.Activate(sofa), "активация проходит");
         Assert.AreEqual(SofaStage.Extended, sofa.UnfoldStage, "и делает следующий этап");
     }
