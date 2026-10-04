@@ -983,7 +983,7 @@ namespace KitchenDesigner.Core.UI
                     CommandStack.Undo();
                     RefreshHighlights();
                 }
-            });
+            }, StatusLevel.Success);
         }
 
         private static void RefreshHighlights()

@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using KitchenDesigner.Core.Update;
 using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
@@ -108,7 +109,7 @@ namespace KitchenDesigner.Core.UI
 
             if (SpecificationExport.SaveToFile(result, path!))
             {
-                ToastNotification.ShowIfAvailable(Loc.T("spec.csvSaved"), 2f);
+                ToastNotification.ShowIfAvailable(Loc.T("spec.csvSaved"), 2f, level: StatusLevel.Success);
             }
             else
             {
