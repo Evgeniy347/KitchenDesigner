@@ -10,6 +10,8 @@ namespace KitchenDesigner.Core.UI
 
         internal const float TuckedUnderTheTopToolbarY = -46f;
         internal const float BannerHeight = 40f;
+        internal const float BannerWidth = 420f;
+        internal const float DoneButtonW = 80f;
 
         private GameObject? _root;
         private TMP_Text? _label;
@@ -19,21 +21,31 @@ namespace KitchenDesigner.Core.UI
         public void Build(Transform canvas)
         {
             var panel = UIFactory.CreatePanel("ModuleEditBanner", canvas, Vector2.zero,
-                new Vector2(420, BannerHeight));
+                new Vector2(BannerWidth, BannerHeight), UIStyle.NavBg);
+            RoundedRectSprites.Apply(panel, RoundedRectSprites.ControlFill);
+            UIFactory.AddFieldStroke(panel.rectTransform).color = UIStyle.Divider;
             var rt = panel.rectTransform;
             rt.anchorMin = new Vector2(0.5f, 1f);
             rt.anchorMax = new Vector2(0.5f, 1f);
             rt.pivot = new Vector2(0.5f, 1f);
             rt.anchoredPosition = new Vector2(0, TuckedUnderTheTopToolbarY);
-            panel.color = new Color(0.15f, 0.35f, 0.6f, 0.92f);
             _root = panel.gameObject;
 
-            _label = UIFactory.CreateLabel("MebLabel", panel.transform, "", 16,
-                new Vector2(-30, 0), new Vector2(320, 32), TextAnchor.MiddleCenter);
-            _label.color = Color.white;
+            float buttonSlot = DoneButtonW + UIStyle.Space2 + UIStyle.Space3;
+            _label = UIFactory.CreateLabel("MebLabel", panel.transform, "", UIStyle.FontSmall,
+                Vector2.zero, new Vector2(BannerWidth - buttonSlot - UIStyle.Space3, BannerHeight),
+                TextAnchor.MiddleLeft);
+            _label.enableWordWrapping = false;
+            _label.overflowMode = TextOverflowModes.Ellipsis;
+            var lrt = _label.rectTransform;
+            lrt.anchorMin = lrt.anchorMax = lrt.pivot = new Vector2(0f, 0.5f);
+            lrt.anchoredPosition = new Vector2(UIStyle.Space3, 0f);
 
-            UIFactory.CreateButton("MebDone", panel.transform, Loc.T("group.editBanner.done"),
-                new Vector2(165, 0), new Vector2(80, 30), Done);
+            var done = UIFactory.CreateButton("MebDone", panel.transform, Loc.T("group.editBanner.done"),
+                Vector2.zero, new Vector2(DoneButtonW, UIStyle.ControlHCompact), Done);
+            var drt = (RectTransform)done.transform;
+            drt.anchorMin = drt.anchorMax = drt.pivot = new Vector2(1f, 0.5f);
+            drt.anchoredPosition = new Vector2(-UIStyle.Space3, 0f);
 
             _root.SetActive(false);
             ModuleEditMode.Changed += Refresh;

@@ -5,13 +5,14 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.Audio;
 using KitchenDesigner.Core.UI;
 using KitchenDesigner.Tests;
 
 // Кадры малых панелей рядом с mockups/tool-panels.png: «Этажи», «День / Ночь», «Музыка». У «Этажей»
 // и «Музыки» здесь же голдены (ui_levels_window, ui_music_panel), у «Дня / Ночи» голден живёт в
 // ElementPropertyDiagramTests на живом UIManager. «Замер» снимает MeasureProperties_SavesPng,
-// HUD F9 рисуется IMGUI и в RenderTexture не попадает — его геометрию держат PerfHudTests.
+// HUD F9 рисуется IMGUI, OnGUI в batch-режиме не зовётся — кадр HUD не снять, геометрию держит PerfHudTests.
 public class ToolPanelsDiagramTests
 {
     private UiCaptureStage? _stage;
@@ -111,5 +112,26 @@ public class ToolPanelsDiagramTests
 
         yield return _stage.Capture("music_panel_golden.png");
         Golden(ui.WindowRect!.gameObject, "music_panel");
+    }
+
+    [UnityTest]
+    public IEnumerator PerfHud_BuildsKindedLines_TheLastOneTheQuietHint()
+    {
+        bool enabledBefore = PerfMonitor.Enabled;
+        var host = new GameObject("PerfHudUnderTest");
+        PerfMonitor.Enabled = true;
+        host.AddComponent<PerfMonitor>();
+        for (int i = 0; i < 80 && string.IsNullOrEmpty(PerfMonitor.Instance!.HudText); i++) yield return null;
+
+        var lines = PerfMonitor.Instance!.HudLines;
+        string text = PerfMonitor.Instance.HudText;
+        Object.DestroyImmediate(host);
+        PerfMonitor.Enabled = enabledBefore;
+
+        Assert.IsNotEmpty(lines, "монитор построил строки HUD, а не пустой оверлей");
+        Assert.AreEqual(PerfHudLineKind.Secondary, lines[lines.Count - 1].Kind,
+            "последняя строка — подсказка про Shift+F9, вторичным цветом (OnGUI в batch-режиме не зовётся, "
+            + "поэтому кадр HUD не снять; геометрию держит PerfHudTests)");
+        Assert.AreEqual(PerfHudLines.Join(lines), text, "HudText остался той же склейкой строк");
     }
 }

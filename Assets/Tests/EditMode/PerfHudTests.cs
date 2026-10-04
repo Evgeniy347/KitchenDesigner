@@ -111,4 +111,66 @@ public class PerfHudTests
             + "UNITY_EDITOR/DEVELOPMENT_BUILD оверлей выпал бы из обычной сборки "
             + "даже если сам PerfMonitor остался — окно снова не появилось бы");
     }
+
+    [TestCase(1920f, 1500f, 1492f)]
+    [TestCase(1920f, 1920f, 1912f)]
+    public void ComputeRect_StopsLeftOfAnOpenRightDock(float screenWidth, float dockLeft, float expectedRight)
+    {
+        var rect = PerfHud.ComputeRect(screenWidth, ToolbarUI.BarHeight, SomeHudHeight, dockLeft);
+
+        Assert.AreEqual(expectedRight, rect.xMax, 0.01f,
+            "правый край HUD отступает от левой кромки открытого дока «Сцены» на поле, а не лежит поверх него");
+    }
+
+    [Test]
+    public void ComputeRect_ShrinksButStaysReadable_WhenTheDockLeavesLittleRoom()
+    {
+        var rect = PerfHud.ComputeRect(1920f, ToolbarUI.BarHeight, SomeHudHeight, 300f);
+
+        Assert.GreaterOrEqual(rect.x, 0f);
+        Assert.LessOrEqual(rect.xMax, 300f, "HUD целиком левее дока");
+    }
+
+    [Test]
+    public void Install_PutsThePaletteTokensInTheHud_AndTheHudKeepsTheMonoFontSize()
+    {
+        var previous = PerfHud.Style;
+        try
+        {
+            PerfHudBinding.Install();
+
+            var style = PerfHud.Style!;
+            Assert.AreEqual(UIStyle.HudPanel, style.Panel, "фон HUD — токен HudPanel (Panel, альфа 0,88)");
+            Assert.AreEqual(0.88f, UIStyle.HudPanel.a, 1e-4f);
+            Assert.AreEqual(UIStyle.Panel.r, UIStyle.HudPanel.r, 1e-4f, "тот же цвет, что у окон: контраст Text/Panel уже под сторожем");
+            Assert.AreEqual(UIStyle.Text, style.ColorOf(PerfHudLineKind.Normal));
+            Assert.AreEqual(UIStyle.TextSecondary, style.ColorOf(PerfHudLineKind.Secondary), "подпись/подсказка — вторичный текст");
+            Assert.AreEqual(UIStyle.TextWarning, style.ColorOf(PerfHudLineKind.Warning), "строка выше порога — TextWarning");
+            Assert.AreEqual(UIStyle.FontMono, style.FontSize);
+            Assert.AreEqual(UIStyle.Space3, style.PadX, "паддинг 12 по горизонтали (D2)");
+            Assert.AreEqual(UIStyle.Space2, style.PadY, "и 8 по вертикали");
+        }
+        finally
+        {
+            PerfHud.Style = previous;
+            PerfHud.RightLimit = null;
+        }
+    }
+
+    [TestCase(1500f, 1900f, 1920f, 1500f)]
+    [TestCase(40f, 340f, 1920f, float.MaxValue)]
+    public void DockLimit_AppliesOnlyToADockOnTheRightHalf(float left, float right, float screenWidth, float expected)
+    {
+        Assert.AreEqual(expected, PerfHudBinding.DockLimit(left, right, screenWidth),
+            "окно «Сцены», утащенное на левую половину, F9 не закрывает — отступать не от чего");
+    }
+
+    [Test]
+    public void ClosedDock_LeavesTheHudAtTheScreenEdge()
+    {
+        Assume.That(HierarchyPanelUI.Instance == null || !HierarchyPanelUI.Instance.IsVisible,
+            "предусловие: ни одна «Сцена» из соседних тестов не открыта");
+        Assert.AreEqual(float.MaxValue, PerfHudBinding.RightDockLeftEdge(),
+            "без открытой «Сцены» ограничения нет: HUD прижат к правому краю, как раньше");
+    }
 }

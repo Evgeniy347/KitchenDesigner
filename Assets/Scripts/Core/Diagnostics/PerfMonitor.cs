@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using KitchenDesigner.Core.Keybinding;
 using Unity.Profiling;
@@ -41,6 +42,8 @@ namespace KitchenDesigner.Core
         }
 
         public string HudText { get; private set; } = "";
+
+        public IReadOnlyList<PerfHudLine> HudLines { get; private set; } = Array.Empty<PerfHudLine>();
 
         internal struct MarkerSlot
         {
@@ -435,12 +438,20 @@ namespace KitchenDesigner.Core
 
         private string BuildHudText(float dtMs, float gcBytes)
         {
-            if (_slots == null) return "";
+            if (_slots == null)
+            {
+                HudLines = Array.Empty<PerfHudLine>();
+                return "";
+            }
 
-            var sb = new StringBuilder(256);
-            sb.AppendLine($"dt {dtMs,5:F1}ms ({(dtMs > 0.01f ? 1000f / dtMs : 0f):F0} fps)   худший {_dtMaxMs:F1}ms");
-            sb.AppendLine($"GC {gcBytes / 1024f,7:F1}КБ/кадр   draw {(_drawCalls.Valid ? _drawCalls.LastValue : 0)}" +
-                          $"   GetAll {(_windowFrames > 0 ? (float)_getAllSum / _windowFrames : 0f):F1}/кадр");
+            var lines = new List<PerfHudLine>(6)
+            {
+                new PerfHudLine($"dt {dtMs,5:F1}ms ({(dtMs > 0.01f ? 1000f / dtMs : 0f):F0} fps)   худший {_dtMaxMs:F1}ms",
+                    PerfHudLines.ForFrame(dtMs)),
+                new PerfHudLine($"GC {gcBytes / 1024f,7:F1}КБ/кадр   draw {(_drawCalls.Valid ? _drawCalls.LastValue : 0)}" +
+                    $"   GetAll {(_windowFrames > 0 ? (float)_getAllSum / _windowFrames : 0f):F1}/кадр",
+                    PerfHudLineKind.Normal),
+            };
 
             var previousFrameMs = new float[_slots.Length];
             for (int i = 0; i < _slots.Length; i++) previousFrameMs[i] = _slots[i].PreviousFrameMs;
@@ -449,11 +460,13 @@ namespace KitchenDesigner.Core
             {
                 int i = order[k];
                 if (!WorthShowing(previousFrameMs[i])) break;
-                sb.AppendLine(MarkerLine(_slots[i].Name, previousFrameMs[i], HudNameColumnWidth));
+                lines.Add(new PerfHudLine(MarkerLine(_slots[i].Name, previousFrameMs[i], HudNameColumnWidth),
+                    PerfHudLines.ForMarker(previousFrameMs[i])));
             }
 
-            sb.AppendLine(RecordingStatusLine());
-            return sb.ToString();
+            lines.Add(new PerfHudLine(RecordingStatusLine(), PerfHudLineKind.Secondary));
+            HudLines = lines;
+            return PerfHudLines.Join(lines);
         }
 
         private string RecordingStatusLine()
