@@ -293,6 +293,9 @@ namespace KitchenDesigner.Tests
                         parent.GetComponent<TMP_Dropdown>() != null ||
                         parent.GetComponent<TMP_InputField>() != null)
                         return null;
+                    var owner = go.GetComponentInParent<TMP_InputField>();
+                    if (owner != null && ReferenceEquals(owner.textComponent, tmp))
+                        return null;
                 }
 
                 return new UiNode

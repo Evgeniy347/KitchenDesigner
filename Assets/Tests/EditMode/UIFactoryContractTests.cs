@@ -129,6 +129,50 @@ public class UIFactoryContractTests
             "набранное число не должно заезжать под суффикс");
     }
 
+    /// <summary>TMP_InputField при вводе сдвигает RectTransform ТЕКСТА (anchoredPosition), чтобы
+    /// каретка не уходила за вьюпорт, и считает позицию каретки в предположении, что текст —
+    /// ребёнок вьюпорта. Если текст и вьюпорт — один и тот же узел, сдвигается сам вьюпорт, а
+    /// формула каретки учитывает его смещение дважды: набранное число оседало левее
+    /// нетронутых полей. Сторож — структура: текст обязан быть ОТДЕЛЬНЫМ ребёнком вьюпорта.</summary>
+    [Test]
+    public void UIFactory_InputField_TextIsAChildOfTheViewport_NotTheViewportItself()
+    {
+        foreach (var field in new[]
+        {
+            UIFactory.CreateInputField("T", Canvas, "x", Vector2.zero, new Vector2(120, 28)),
+            UIFactory.CreateNumberField("N", Canvas, "800", Vector2.zero, new Vector2(120, 28), "мм"),
+        })
+        {
+            var viewport = field.textViewport!;
+            var textRect = field.textComponent!.rectTransform;
+
+            Assert.AreNotSame(viewport, textRect,
+                "текст и вьюпорт — один узел: TMP при вводе двигает именно его, и поле «уезжает»");
+            Assert.AreSame(viewport, textRect.parent,
+                "текст — ребёнок вьюпорта, иначе формула каретки TMP считает смещение дважды");
+            Assert.AreEqual(Vector2.zero, textRect.anchorMin);
+            Assert.AreEqual(Vector2.one, textRect.anchorMax);
+            Assert.AreEqual(Vector2.zero, textRect.offsetMin, "текст заполняет вьюпорт без полей");
+            Assert.AreEqual(Vector2.zero, textRect.offsetMax, "текст заполняет вьюпорт без полей");
+            Assert.AreEqual(Vector2.zero, textRect.anchoredPosition);
+        }
+    }
+
+    [Test]
+    public void UIFactory_InputField_EndEdit_PutsTheScrolledTextBack()
+    {
+        var field = UIFactory.CreateNumberField("N", Canvas, "50", Vector2.zero,
+            new Vector2(120, 28), "мм");
+        var textRect = field.textComponent!.rectTransform;
+        textRect.anchoredPosition = new Vector2(-37f, 0f);
+
+        field.onEndEdit.Invoke(field.text);
+
+        Assert.AreEqual(Vector2.zero, textRect.anchoredPosition,
+            "после ввода TMP оставляет текст сдвинутым вслед за кареткой, и он не равен тому же "
+            + "значению, выставленному программно (а так выглядят все поля, которых не касались)");
+    }
+
     [Test]
     public void UIFactory_ErrorHighlight_IsClearedByTheNextSetHighlight()
     {

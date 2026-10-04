@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "appVersion": "0.2151",
+    "appVersion": "0.2160",
     "createdAtUtc": "2026-09-10T12:11:01.4542126Z",
     "elements": [
         {
@@ -71226,7 +71226,7 @@
             "assembled": false,
             "assembledFill": 0,
             "grooveCount": 0,
-            "cornerRadius": 120,
+            "cornerRadius": 50,
             "isDrawer": false,
             "drawerSystem": 0,
             "drawerType": 0,
@@ -71405,11 +71405,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": -1.1275594234466553,
-        "targetY": 0.5204653739929199,
-        "targetZ": 1.3561980724334717,
-        "angleX": 42.10848617553711,
-        "angleY": -3961.064697265625,
+        "targetX": -0.5953750610351563,
+        "targetY": 0.40877851843833926,
+        "targetZ": 1.2381207942962647,
+        "angleX": 7.015464782714844,
+        "angleY": -3958.945556640625,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": 0.30268532037734988,
@@ -110765,6 +110765,281 @@
             "children": [],
             "convertTo": -1,
             "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Divan",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Divan",
+                    "elementIndex": 407,
+                    "posBefore": [
+                        -1.1350001096725464,
+                        0.4000000059604645,
+                        2.115000009536743
+                    ],
+                    "posAfter": [
+                        -1.1350001096725464,
+                        0.4000000059604645,
+                        2.115000009536743
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [
+                        2000,
+                        800,
+                        900
+                    ],
+                    "dimsAfter": [
+                        2000,
+                        800,
+                        900
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Divan",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Divan",
+                    "elementIndex": 407,
+                    "posBefore": [
+                        -1.1350001096725464,
+                        0.4000000059604645,
+                        2.115000009536743
+                    ],
+                    "posAfter": [
+                        -1.1350001096725464,
+                        0.4000000059604645,
+                        2.115000009536743
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [
+                        2000,
+                        800,
+                        900
+                    ],
+                    "dimsAfter": [
+                        2000,
+                        800,
+                        900
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Divan",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Divan",
+                    "elementIndex": 407,
+                    "posBefore": [
+                        -1.1350001096725464,
+                        0.4000000059604645,
+                        2.115000009536743
+                    ],
+                    "posAfter": [
+                        -1.1350001096725464,
+                        0.4000000059604645,
+                        2.115000009536743
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [
+                        2000,
+                        800,
+                        900
+                    ],
+                    "dimsAfter": [
+                        2000,
+                        800,
+                        900
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Divan",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Divan",
+                    "elementIndex": 407,
+                    "posBefore": [
+                        -1.1350001096725464,
+                        0.4000000059604645,
+                        2.115000009536743
+                    ],
+                    "posAfter": [
+                        -1.1350001096725464,
+                        0.4000000059604645,
+                        2.115000009536743
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [
+                        2000,
+                        800,
+                        900
+                    ],
+                    "dimsAfter": [
+                        2000,
+                        800,
+                        900
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Divan",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Divan",
+                    "elementIndex": 407,
+                    "posBefore": [
+                        -1.1350001096725464,
+                        0.4000000059604645,
+                        2.115000009536743
+                    ],
+                    "posAfter": [
+                        -1.1350001096725464,
+                        0.4000000059604645,
+                        2.115000009536743
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.7071068286895752,
+                        0.0,
+                        0.7071068286895752
+                    ],
+                    "dimsBefore": [
+                        2000,
+                        800,
+                        900
+                    ],
+                    "dimsAfter": [
+                        2000,
+                        800,
+                        900
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
         }
     ],
     "redoHistory": [],
@@ -110879,7 +111154,7 @@
         "neighbourLevelsMode": 0
     },
     "lightsOn": false,
-    "musicTrack": 2,
+    "musicTrack": 4,
     "musicVolumePct": 70,
     "windows": [
         {

@@ -290,7 +290,12 @@ namespace KitchenDesigner.Core.UI
             textArea.offsetMin = new Vector2(6, 2);
             textArea.offsetMax = new Vector2(-6, -2);
 
-            var text = textArea.gameObject.AddComponent<TextMeshProUGUI>();
+            var textRect = CreateRect("Text", textArea);
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = textRect.offsetMax = Vector2.zero;
+
+            var text = textRect.gameObject.AddComponent<TextMeshProUGUI>();
             text.font = FontAsset;
             text.text = initial;
             text.fontSize = 16;
@@ -301,6 +306,7 @@ namespace KitchenDesigner.Core.UI
             input.textViewport = textArea;
             input.textComponent = text;
             input.text = initial;
+            InputFieldScroll.RestOnEndEdit(input);
             AddFieldStroke(rect);
             return input;
         }
