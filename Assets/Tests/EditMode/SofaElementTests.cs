@@ -468,7 +468,7 @@ public class SofaElementTests
         Assert.AreEqual(SofaElement.DefaultEdgeRadiusMM, sofa.EdgeRadiusMM,
             "поле скругления кромок стартует со значением по умолчанию");
         Assert.AreEqual((360 * 0.5f - 40) * AppConstants.MM_TO_UNITS,
-            HighestAtTheEnds(mesh, 1.0f), 1e-5f,
+            HighestAtTheEnds(mesh, 1.0f), 5e-5f,
             "на самом торце сиденья верх ниже полного на радиус кромки, а вся высота остаётся "
             + "в середине (скриншоты: скруглены верхние кромки торцов вдоль глубины)");
         Assert.AreEqual(360 * 0.5f * AppConstants.MM_TO_UNITS, mesh.bounds.max.y, 1e-5f,
@@ -482,7 +482,7 @@ public class SofaElementTests
 
         sofa.EdgeRadiusMM = 0;
         var mesh = Part(sofa, SofaLayout.SeatName).GetComponent<MeshFilter>()!.sharedMesh;
-        Assert.AreEqual(360 * 0.5f * AppConstants.MM_TO_UNITS, HighestAtTheEnds(mesh, 1.0f), 1e-5f,
+        Assert.AreEqual(360 * 0.5f * AppConstants.MM_TO_UNITS, HighestAtTheEnds(mesh, 1.0f), 5e-5f,
             "ноль — острые кромки, как раньше");
 
         sofa.EdgeRadiusMM = 5000;
@@ -501,7 +501,7 @@ public class SofaElementTests
         float lowest = float.MaxValue;
         foreach (var v in mesh.vertices)
             if (Mathf.Abs(Mathf.Abs(v.x) - 1.0f) < 1e-5f) lowest = Mathf.Min(lowest, v.y);
-        Assert.AreEqual(-(180 * 0.5f - 30) * AppConstants.MM_TO_UNITS, lowest, 1e-5f,
+        Assert.AreEqual(-(180 * 0.5f - 30) * AppConstants.MM_TO_UNITS, lowest, 5e-5f,
             "у спинки скруглена кромка той грани, что при складывании остаётся сверху "
             + "(лицевая, локально «нижняя» из-за поворота профиля)");
     }

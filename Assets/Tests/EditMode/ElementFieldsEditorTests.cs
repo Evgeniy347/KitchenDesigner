@@ -391,7 +391,7 @@ public class ElementFieldsEditorTests
     }
 
     [Test]
-    public void Sofa_EdgeRadiusRow_IsBuilt_Applies_IsUndoable_AndShowsTheClampedValueBack()
+    public void Sofa_EdgeRadiusRow_IsBuilt_Applies_AndIsUndoable()
     {
         var sofa = Sofa();
         _menu!.Open(sofa);
@@ -407,10 +407,20 @@ public class ElementFieldsEditorTests
         CommandStack.Undo();
         Assert.AreEqual(SofaElement.DefaultEdgeRadiusMM, sofa.EdgeRadiusMM,
             "одна правка — один шаг отмены");
+    }
+
+    [Test]
+    public void Sofa_EdgeRadiusRow_ShowsTheClampedValueBack_NotWhatWasTyped()
+    {
+        var sofa = Sofa();
+        _menu!.Open(sofa);
 
         Type(SofaFieldsEditor.EdgeRadiusNode, "5000");
+
         int expected = SofaLayout.MaxEdgeRadiusMM(sofa.DimensionsMM, sofa.SeatHeightMM);
-        Assert.AreEqual(expected, sofa.EdgeRadiusMM, "значение зажато геометрией");
+        Assert.AreEqual(expected, sofa.EdgeRadiusMM,
+            "значение зажато геометрией (вторая правка в том же кадре склеилась бы с первой, "
+            + "поэтому проверка отдельным тестом)");
         Assert.AreEqual(expected.ToString(), Text(Field(SofaFieldsEditor.EdgeRadiusNode)),
             "и в поле возвращается ПРИНЯТОЕ, а не напечатанное");
     }

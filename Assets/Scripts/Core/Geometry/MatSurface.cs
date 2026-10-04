@@ -9,6 +9,7 @@ namespace KitchenDesigner.Core
         public const float HardEdgeAngleDeg = 45f;
 
         private const float SliceMergeUnits = 1e-7f;
+        private const float EndSnapUnits = 1e-5f;
 
         private readonly float _width;
         private readonly float _depth;
@@ -67,6 +68,7 @@ namespace KitchenDesigner.Core
             float top = _thickness * 0.5f;
             if (_edge <= 0f || reach <= 0f) return top;
             reach = Mathf.Min(reach, _edge);
+            if (_edge - reach <= EndSnapUnits) return top - _edge;
             return top - _edge + Mathf.Sqrt(Mathf.Max(0f, _edge * _edge - reach * reach));
         }
 
