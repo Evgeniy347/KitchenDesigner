@@ -2,7 +2,9 @@ using System.Reflection;
 using NUnit.Framework;
 using KitchenDesigner.Core;
 
+#if KD_DOTNET_FAST_TESTS
 [NonParallelizable]
+#endif
 public class KitchenSettingsTests
 {
     [SetUp]

@@ -6,6 +6,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
     <AnalysisMode>None</AnalysisMode>
+    <DefineConstants>$(DefineConstants);KD_DOTNET_FAST_TESTS</DefineConstants>
     <UnityManagedDir Condition="'$(UnityManagedDir)' == ''">C:\Program Files\Unity\Hub\Editor\6000.4.3f1\Editor\Data\Managed\UnityEngine\</UnityManagedDir>
   </PropertyGroup>
 
