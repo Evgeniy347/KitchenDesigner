@@ -2,24 +2,45 @@
   "root": "UICanvas",
   "children": [
     {
+      "type": "Dropdown",
+      "options": ["Переместить в…", "— вне групп —", "+ Новая группа"],
+      "selected": 0,
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [-10, 0]
+    },
+    {
+      "type": "Button",
+      "text": "▼",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "BasePlate",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "IsoPillar",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Кухня",
+      "position": [0, 0]
+    },
+    {
       "type": "Button",
       "text": "Обычный",
       "position": [2, 0]
     },
     {
-      "type": "Button",
-      "text": "Кухня",
-      "position": [4, 0]
-    },
-    {
-      "type": "Button",
-      "text": "BasePlate",
-      "position": [20, 0]
-    },
-    {
-      "type": "Button",
-      "text": "IsoPillar",
-      "position": [20, 0]
+      "type": "Label",
+      "text": "Выбрано: 0",
+      "position": [16, 0]
     },
     {
       "type": "Button",
@@ -128,6 +149,11 @@
     },
     {
       "type": "Button",
+      "text": "HierAddGroup",
+      "position": [-48, -8]
+    },
+    {
+      "type": "Button",
       "text": "×",
       "position": [-8, -8]
     },
@@ -142,20 +168,9 @@
       "position": [14, -8]
     },
     {
-      "type": "Button",
-      "text": "+ Группа",
-      "position": [-64, -24]
-    },
-    {
       "type": "Label",
       "text": "Сцена",
-      "position": [14, -24]
-    },
-    {
-      "type": "Dropdown",
-      "options": ["Переместить в…", "— вне групп —", "+ Новая группа"],
-      "selected": 0,
-      "position": [0, -38]
+      "position": [16, -24]
     },
     {
       "type": "Button",
@@ -167,7 +182,7 @@
       "label": "HierSearch",
       "value": "",
       "interactable": true,
-      "position": [0, -68]
+      "position": [0, -56]
     },
     {
       "type": "Button",
