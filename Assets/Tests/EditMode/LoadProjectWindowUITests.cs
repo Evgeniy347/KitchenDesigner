@@ -401,7 +401,8 @@ public class LoadProjectWindowUITests
         int index = ui.Table.ShownRows.ToList().IndexOf(missing);
         var badge = ui.Table.RowRect(index).Find(RowBadge.NodePrefix + "missing")!.GetComponentInChildren<TMP_Text>();
         Assert.AreEqual(UIStyle.TextError, badge.color, "пропавший файл помечен словом и красным цветом");
-        Assert.AreEqual(UIStyle.TextDisabled, ui.Table.CellLabel(index, LoadProjectRows.NameColumn)!.color);
+        Assert.AreEqual(UIStyle.TextError, ui.Table.CellLabel(index, LoadProjectRows.NameColumn)!.color,
+            "имя пропавшего файла красное (пользователь: строка пропавшего файла красная), строка при этом выключена");
 
         ui.Table.Select(missing);
         ui.Table.Activate(missing);

@@ -69,8 +69,8 @@ namespace KitchenDesigner.Core.UI
         public void SetVisible(bool visible)
         {
             if (_chrome == null) return;
-            _chrome.Panel.gameObject.SetActive(visible);
             if (visible) Analyze();
+            _chrome.Panel.gameObject.SetActive(visible);
         }
 
         public void HandleRowClick(AnalysisIssue iss, int index, bool ctrl, bool shift)

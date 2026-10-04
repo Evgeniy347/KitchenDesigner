@@ -27,6 +27,7 @@ namespace KitchenDesigner.Core.UI
         private IReadOnlyList<DataRow> _source = Array.Empty<DataRow>();
         private DataRow[] _shown = Array.Empty<DataRow>();
         private EmptyState? _empty;
+        private bool _measuredHidden;
 
         private DataTable(RectTransform root, RectTransform header, ScrollArea body,
             IReadOnlyList<DataColumn> columns, bool selectable, float[] widths)
@@ -97,6 +98,7 @@ namespace KitchenDesigner.Core.UI
 
             var table = new DataTable(root, header, body, columns, selectable, widths);
             table.BuildHeader();
+            root.gameObject.AddComponent<DataTableShownHook>().Init(table.RemeasureIfBuiltHidden);
             return table;
         }
 
@@ -210,8 +212,14 @@ namespace KitchenDesigner.Core.UI
             }
         }
 
+        private void RemeasureIfBuiltHidden()
+        {
+            if (_measuredHidden) Render();
+        }
+
         private void Render()
         {
+            _measuredHidden = !Root.gameObject.activeInHierarchy;
             foreach (var view in _rowViews) Discard(view.gameObject);
             _rowViews.Clear();
             _rowTops.Clear();

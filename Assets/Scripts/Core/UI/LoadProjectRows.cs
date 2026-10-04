@@ -41,7 +41,9 @@ namespace KitchenDesigner.Core.UI
                     project.FileExists ? project.VersionLabel : "", "",
                 },
             };
-            if (project.FileExists)
+            if (!project.FileExists)
+                row.CellColors = new Color?[] { UIStyle.TextError };
+            else
                 row.CellColors = new Color?[]
                 {
                     null, UIStyle.TextSecondary, UIStyle.TextSecondary,

@@ -65,8 +65,8 @@ namespace KitchenDesigner.Core.UI
         public void SetVisible(bool visible)
         {
             if (_chrome == null) return;
-            _chrome.Panel.gameObject.SetActive(visible);
             if (visible) Refresh();
+            _chrome.Panel.gameObject.SetActive(visible);
         }
 
         private static SpecResult CurrentResult() => SpecificationManager.Build(PartRegistry.All);
