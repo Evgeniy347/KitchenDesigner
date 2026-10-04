@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Dialogs redesign</title>
+<link rel="stylesheet" href="kd.css">
+<style>
+  body { width:1560px; height:760px; }
+  h3 { font-size:14px; color:#6F7480; font-weight:normal; margin:0; position:absolute; height:20px; overflow:hidden; }
+  .scrimbox { position:absolute; background:var(--scrim); border-radius:6px; }
+  .dlg { width:440px; }
+  .dlg .body { padding:0 24px 8px; display:flex; flex-direction:column; gap:12px; }
+  .dlg .titlebar { padding-left:24px; }
+  .dlg .footer { border-top:none; padding:0 24px 8px; justify-content:flex-end; }
+  .ta { flex:1; border-radius:var(--r-ctl); background:var(--field); border:1px solid var(--field-stroke); padding:8px; font-size:15px; color:var(--text3); font-family:Consolas, monospace; }
+  .toast { position:absolute; background:#2A2C33; border:1px solid var(--rule); border-radius:var(--r-win); box-shadow:0 8px 24px rgba(0,0,0,.5); display:flex; align-items:center; gap:12px; padding:0 8px 0 16px; height:48px; }
+  .bar { width:3px; align-self:stretch; margin:8px 0; border-radius:2px; }
+</style></head>
+<body class="canvas">
+<h3 style="left:16px;top:12px">Подтверждение (модальное): заголовок — вопрос, тело — следствие, кнопки справа: основная, затем «Отмена»; Enter = основная, Esc = отмена</h3>
+<div class="scrimbox" style="left:16px;top:40px;width:500px;height:300px"></div>
+<div class="win dlg" style="left:46px;top:70px;height:184px">
+  <div class="titlebar"><span class="t">Демонстрационный проект</span></div>
+  <div class="body"><div>Этот проект только для просмотра. Сохраните копию в свою папку — и правки станут доступны.</div></div>
+  <div class="footer"><span class="btn primary">Сохранить копию</span><span class="btn">Отмена</span></div>
+</div>
+
+<div class="scrimbox" style="left:532px;top:40px;width:500px;height:300px"></div>
+<div class="win dlg" style="left:562px;top:70px;height:184px">
+  <div class="titlebar"><span class="t">Проект новее программы</span></div>
+  <div class="body"><div>Файл сохранён версией 0.2100, у вас 0.2092. Часть свойств может не загрузиться.</div><div class="help">Обновите программу, чтобы открыть без потерь.</div></div>
+  <div class="footer"><span class="btn primary">Открыть всё равно</span><span class="btn">Отмена</span></div>
+</div>
+
+<div class="scrimbox" style="left:1048px;top:40px;width:500px;height:300px"></div>
+<div class="win dlg" style="left:1078px;top:70px;height:184px">
+  <div class="titlebar"><span class="t">Удалить проект?</span></div>
+  <div class="body"><div>«dacha_2.kdproj» будет удалён с диска. Отменить это нельзя.</div></div>
+  <div class="footer"><span class="btn danger">Удалить</span><span class="btn">Отмена</span></div>
+</div>
+
+<h3 style="left:16px;top:360px;width:640px">«Инструкции проекта»: немодальное окно с полем-документом; моноширинный текст, подсказка формата над полем, «Сохранить» основная</h3>
+<div class="win" style="left:16px;top:388px;width:640px;height:360px">
+  <div class="titlebar ruled"><span class="t">Инструкции проекта</span><span class="close">×</span></div>
+  <div class="body" style="display:flex;flex-direction:column;gap:8px">
+    <div class="help">Соглашения для вас и для агента. Числа для геометрии — строками <span style="font-family:Consolas,monospace;color:var(--text)">ключ: значение</span>, например <span style="font-family:Consolas,monospace;color:var(--text)">bearing_wall_thickness_mm: 200</span></div>
+    <div class="ta">bearing_wall_thickness_mm: 200<br>countertop_height_mm: 900<br><br>Фасады — без ручек, Blum TIP-ON.</div>
+  </div>
+  <div class="footer"><span class="help">Есть несохранённые изменения</span><span class="spacer"></span><span class="btn primary">Сохранить</span><span class="btn">Отмена</span></div>
+</div>
+
+<h3 style="left:690px;top:362px">Тосты: иконка + полоса уровня, действие ссылкой, × закрыть; 4 уровня из StatusLevel</h3>
+<div class="toast" style="left:690px;top:392px"><span class="bar" style="background:var(--success)"></span><span style="color:var(--success)">✓</span><span>Удалено: Полка</span><span class="btn c ghost" style="color:var(--accent-text)">Отменить</span><span class="icon-btn c">×</span></div>
+<div class="toast" style="left:690px;top:452px"><span class="bar" style="background:var(--accent-text)"></span><span style="color:var(--accent-text)">i</span><span>Проект сохранён: kuhnya.kdproj</span><span class="icon-btn c">×</span></div>
+<div class="toast" style="left:690px;top:512px"><span class="bar" style="background:var(--warning)"></span><span style="color:var(--warning)">!</span><span>Фоторежим: тени упрощены для слабой видеокарты</span><span class="icon-btn c">×</span></div>
+<div class="toast" style="left:690px;top:572px"><span class="bar" style="background:var(--error)"></span><span style="color:var(--error)">⨯</span><span>Не удалось сохранить: диск только для чтения</span><span class="btn c ghost" style="color:var(--accent-text)">Подробнее</span><span class="icon-btn c">×</span></div>
+
+<h3 style="left:690px;top:640px">Строка состояния: уровень словом/иконкой, не только цветом; справа — постоянные индикаторы</h3>
+<div style="position:absolute;left:690px;top:668px;width:850px;height:28px;background:var(--nav);border:1px solid var(--divider);display:flex;align-items:center;gap:16px;padding:0 12px;font-size:14px;color:var(--text2)">
+  <span style="color:var(--error)">⨯ Нельзя: деталь пересекает стену</span><span style="margin-left:auto">Автосохранение: 2 мин назад</span><span>1 этаж</span><span>Выбрано: 1</span>
+</div>
+</body></html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Errors redesign</title>
+<link rel="stylesheet" href="kd.css">
+<style>
+  body { width:1500px; height:620px; }
+  .w { width:940px; height:560px; top:40px; }
+  .filters { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+  .chip { height:28px; padding:0 10px; border-radius:14px; border:1px solid var(--rule); display:inline-flex; align-items:center; gap:6px; font-size:14px; color:var(--text2); }
+  .chip.on { background:var(--accent-subtle); border-color:var(--accent); color:var(--text); }
+  .lvl-ic { font-size:13px; width:14px; text-align:center; }
+  h3 { font-size:14px; color:#6F7480; font-weight:normal; margin:0; position:absolute; top:12px; }
+</style></head>
+<body class="canvas">
+<h3 style="left:16px">«Ошибки»: фильтры-чипы со счётчиками, авто-обновление (кнопки «Обновить» нет), строка = переход к детали</h3>
+<div class="win w" style="left:16px">
+  <div class="titlebar ruled"><span class="t">Ошибки <small>2</small></span><span class="close">×</span></div>
+  <div class="body" style="padding-top:12px">
+    <div class="filters">
+      <span class="chip on">Все <b>2</b></span><span class="chip"><span style="color:var(--error)">⨯</span>Ошибки 1</span><span class="chip"><span style="color:var(--warning)">!</span>Предупреждения 1</span>
+      <span class="field c dd" style="width:150px;margin-left:8px"><span class="v">Все коды</span></span>
+      <span class="field c dd" style="width:130px"><span class="v">Все этажи</span></span>
+      <span class="field c" style="flex:1"><span class="v" style="color:var(--text3)">Поиск: код, деталь, текст</span></span>
+    </div>
+    <table class="table">
+      <tr><th style="width:36px"></th><th style="width:90px">Код</th><th style="width:220px">Деталь</th><th>Описание</th></tr>
+      <tr class="sel"><td><span class="lvl-ic" style="color:var(--error)">⨯</span></td><td>COL-02</td><td>Svobodnaya_polka</td><td>Деталь не имеет опоры — висит в воздухе</td></tr>
+      <tr class="hover"><td><span class="lvl-ic" style="color:var(--warning)">!</span></td><td>GRD-01</td><td>Verhniy_yaschik</td><td>Край детали не на целом миллиметре: Y 476,5 мм — сдвиг 0,5 мм</td></tr>
+    </table>
+  </div>
+  <div class="footer"><span class="help">Двойной клик — выделить деталь и показать её</span><span class="spacer"></span><span class="btn">К первой ошибке</span></div>
+</div>
+
+<h3 style="left:980px">Пустое состояние</h3>
+<div class="win" style="left:980px;top:40px;width:500px;height:320px">
+  <div class="titlebar ruled"><span class="t">Ошибки <small>0</small></span><span class="close">×</span></div>
+  <div class="body empty"><div class="big">✓</div><div style="color:var(--text)">Ошибок нет</div><div class="help">Проверка идёт сама после каждой правки.</div></div>
+</div>
+</body></html>

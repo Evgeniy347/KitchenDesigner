@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Inspector redesign</title>
+<link rel="stylesheet" href="kd.css">
+<style>
+  body { width:1180px; height:1000px; }
+  .insp { width:360px; }
+  .form.i { grid-template-columns:136px 1fr; row-gap:4px; }
+  .form.i .field, .form.i .btn { height:28px; }
+  .vec { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+  .vec .field { height:28px; }
+  .rot { margin-left:2px; color:var(--text2); font-size:13px; border-left:1px solid var(--rule); padding-left:6px; }
+  .edges { display:flex; align-items:center; justify-content:center; gap:12px; padding:4px 0 2px; }
+  .board { width:150px; height:84px; position:relative; background:#24262D; }
+  .e { position:absolute; background:var(--success); }
+  .e.t { left:0; right:0; top:0; height:6px; } .e.b { left:0; right:0; bottom:0; height:6px; }
+  .e.l { top:0; bottom:0; left:0; width:6px; } .e.r { top:0; bottom:0; right:0; width:6px; background:transparent; border:1px solid #B8BCC6; }
+  .el { position:absolute; font-size:12px; color:var(--text2); }
+  .dim { font-size:12px; color:var(--text2); }
+  .swatch { width:16px; height:16px; border-radius:2px; background:#8A8D93; flex:none; }
+  .swatch.oak { background:#B08A5B; } .swatch.white { background:#E8E8E4; } .swatch.anth { background:#3B3E44; }
+  .tex-row { display:grid; grid-template-columns:58px 1fr 28px 28px 28px; gap:4px; align-items:center; margin-bottom:4px; }
+  h3 { width:360px; height:36px; font-size:14px; color:#6F7480; font-weight:normal; margin:0 0 6px; }
+  .col { position:absolute; top:16px; }
+</style></head>
+<body class="canvas">
+
+<div class="col" style="left:16px">
+<h3>Деталь — панель свойств (прокрутка на уровне тела, футер прибит)</h3>
+<div class="win insp" style="position:relative; height:940px">
+  <div class="titlebar ruled"><span class="t">Деталь</span><span class="close">×</span></div>
+  <div class="body tool" style="position:relative">
+    <div class="form i">
+      <span class="lbl">Тип</span><span class="field c dd"><span class="v">Деталь</span></span>
+      <span class="lbl">Название</span><span class="field c focus"><span class="v">Detal_800x400</span></span>
+    </div>
+    <div class="section"><span class="chev">▼</span>Размеры</div>
+    <div class="form i">
+      <span class="lbl">Ширина</span><span class="field c"><span class="num">800</span><span class="unit">мм</span></span>
+      <span class="lbl">Высота</span><span class="field c"><span class="num">400</span><span class="unit">мм</span></span>
+      <span class="lbl">Глубина</span><span class="field c error"><span class="num">-18</span><span class="unit">мм</span></span>
+    </div>
+    <div class="section"><span class="chev">►</span>Пазы <span class="count">0</span><span class="act">+ Добавить</span></div>
+    <div class="section"><span class="chev">▼</span>Кромки <span class="count">3 из 4</span></div>
+    <div class="edges">
+      <div class="dim" style="writing-mode:vertical-rl;transform:rotate(180deg)">400 мм</div>
+      <div>
+        <div class="dim" style="text-align:center">800 мм</div>
+        <div class="board"><div class="e t"></div><div class="e b"></div><div class="e l"></div><div class="e r"></div>
+          <span class="el" style="left:68px;top:10px">L1</span><span class="el" style="left:68px;bottom:10px">L2</span>
+          <span class="el" style="left:12px;top:34px">W2</span><span class="el" style="right:12px;top:34px">W1</span></div>
+      </div>
+    </div>
+    <div class="help" style="text-align:center;margin-bottom:6px">Клик по стороне: авто → есть → убрать</div>
+    <div class="form i">
+      <span class="lbl">Толщина кромки</span><span class="field c"><span class="num">1,0</span><span class="unit">мм</span></span>
+    </div>
+    <div class="section"><span class="chev">►</span>Зазоры <span class="count">0</span></div>
+    <div class="section"><span class="chev">▼</span>Положение</div>
+    <div class="form i">
+      <span class="lbl">Прикрепить к</span><span class="field c dd"><span class="v" style="color:var(--text2)">не прикреплено</span></span>
+      <span class="lbl">Этаж</span><span class="field c dd"><span class="v">1 этаж</span></span>
+    </div>
+    <div class="help" style="margin:8px 0 4px">Позиция, мм</div>
+    <div class="vec">
+      <span class="field c"><span class="ax">X</span><span class="num">1000</span></span>
+      <span class="field c"><span class="ax">Y</span><span class="num">200</span></span>
+      <span class="field c"><span class="ax">Z</span><span class="num">0</span></span>
+    </div>
+    <div class="help" style="margin:8px 0 4px">Поворот, °</div>
+    <div class="vec">
+      <span class="field c"><span class="ax">X</span><span class="num">0,0</span><span class="rot">↻90</span></span>
+      <span class="field c"><span class="ax">Y</span><span class="num">90,0</span><span class="rot">↻90</span></span>
+      <span class="field c"><span class="ax">Z</span><span class="num">0,0</span><span class="rot">↻90</span></span>
+    </div>
+    <div class="section"><span class="chev">▼</span>Материал</div>
+    <div class="form i">
+      <span class="lbl">Декор</span><span class="field c dd"><span class="swatch"></span><span class="v">Серый</span></span>
+    </div>
+    <div class="section"><span class="chev">▼</span>Свойства</div>
+    <div class="form i">
+      <span class="lbl">Прозрачный</span><span><span class="switch"></span></span>
+      <span class="lbl">Закрепить</span><span><span class="switch on"></span></span>
+    </div>
+    <div class="scrollbar" style="top:8px;height:520px"></div>
+  </div>
+  <div class="footer" style="padding:0 12px"><span class="btn c">Дублировать</span><span class="spacer"></span><span class="btn c danger-outline">Удалить</span></div>
+</div>
+</div>
+
+<div class="col" style="left:408px">
+<h3>Ящик GTV — вычисляемые строки, «i», вариант «взведено»</h3>
+<div class="win insp" style="position:relative; height:520px">
+  <div class="titlebar ruled"><span class="t">Ящик GTV</span><span class="close">×</span></div>
+  <div class="body tool">
+    <div class="form i">
+      <span class="lbl">Название</span><span class="field c"><span class="v">Yaschik_A_350</span></span>
+    </div>
+    <div class="section"><span class="chev">▼</span>Размеры</div>
+    <div class="form i">
+      <span class="lbl dis">Ширина <i class="hint">i</i></span><span class="field c ro"><span class="num" style="text-align:left">400 мм</span></span>
+      <span class="lbl dis">Высота</span><span class="field c ro"><span class="num" style="text-align:left">115 мм</span></span>
+      <span class="lbl dis">Глубина</span><span class="field c ro"><span class="num" style="text-align:left">350 мм</span></span>
+    </div>
+    <div class="section"><span class="chev">▼</span>Ящик</div>
+    <div class="form i">
+      <span class="lbl">Тип ящика <i class="hint">i</i></span><span class="field c dd"><span class="v">A — борт 86 мм</span></span>
+      <span class="lbl">Длина <i class="hint">i</i></span><span class="field c dd"><span class="v">350 мм</span></span>
+      <span class="lbl">Цвет <i class="hint">i</i></span><span class="field c dd"><span class="swatch anth"></span><span class="v">Антрацит</span></span>
+      <span class="lbl">Ширина короба <i class="hint">i</i></span><span class="field c"><span class="num">400</span><span class="unit">мм</span></span>
+      <span class="lbl">Фасад</span><span class="field c dd"><span class="v" style="color:var(--text2)">нет фасада</span></span>
+      <span></span><span style="display:flex;gap:6px"><span class="btn c" style="flex:1">Двойной</span><span class="btn c" style="flex:1">Открыть</span></span>
+    </div>
+    <div class="section"><span class="chev">►</span>Положение</div>
+    <div class="section"><span class="chev">►</span>Материал</div>
+    <div class="section"><span class="chev">►</span>Свойства</div>
+  </div>
+  <div class="footer" style="padding:0 12px"><span class="btn c">Дублировать</span><span class="spacer"></span><span class="btn c danger">?! Удалить</span></div>
+</div>
+
+<h3 style="margin-top:20px">Стена — список текстур (секция-список)</h3>
+<div class="win insp" style="position:relative; height:300px">
+  <div class="titlebar ruled"><span class="t">Стена</span><span class="close">×</span></div>
+  <div class="body tool">
+    <div class="section"><span class="chev">▼</span>Текстуры <span class="count">2</span><span class="act">+ Добавить</span></div>
+    <div class="tex-row"><span class="field c dd"><span class="v">A</span></span><span class="field c dd"><span class="swatch oak"></span><span class="v">Дуб сонома</span></span><span class="icon-btn c">⇅</span><span class="icon-btn c">✎</span><span class="icon-btn c danger">×</span></div>
+    <div class="tex-row"><span class="field c dd"><span class="v">B</span></span><span class="field c dd"><span class="swatch white"></span><span class="v">Белый</span></span><span class="icon-btn c">⇅</span><span class="icon-btn c">✎</span><span class="icon-btn c danger">×</span></div>
+    <div class="help" style="margin-top:8px">Пусто? — «+ Добавить» кладёт текстуру на сторону A.</div>
+    <div class="section"><span class="chev">►</span>Кладка</div>
+  </div>
+</div>
+</div>
+
+<div class="col" style="left:800px; width:360px">
+<h3>Анатомия и токены</h3>
+<div class="win" style="position:relative; padding:16px; font-size:14px; color:var(--text2); line-height:1.5">
+  <div><b style="color:var(--text)">Ширина</b> 360 · паддинг тела 12 · шапка 48 · футер 56</div>
+  <div><b style="color:var(--text)">Колонки</b> подпись 136 | зазор 12 | значение 188</div>
+  <div><b style="color:var(--text)">Строка</b> контрол 28 (ControlHCompact) · шаг 32 · хит-таргет строки 32</div>
+  <div><b style="color:var(--text)">Секция</b> 14 bold, TextSecondary, линия Divider · ▼/► · счётчик · действие справа</div>
+  <div><b style="color:var(--text)">Векторы</b> X/Y/Z — три поля на всю ширину, префикс оси в поле; ↻90 — кнопка в поле поворота</div>
+  <div><b style="color:var(--text)">Числа</b> вправо, единица серым внутри поля, десятичный знак по языку («1,0»)</div>
+  <div><b style="color:var(--text)">Вычисляемое</b> — текст без рамки, погашенная подпись, «i» объясняет откуда</div>
+  <div><b style="color:var(--text)">Действия</b> в прибитом футере: «Дублировать» слева, «Удалить» справа — контур красный, заливка красная только во взводе (?!)</div>
+  <div style="margin-top:12px"><b style="color:var(--text)">Состояния полей</b></div>
+  <div style="display:grid;grid-template-columns:90px 1fr;gap:6px;align-items:center;margin-top:6px">
+    <span>обычное</span><span class="field c"><span class="num">800</span><span class="unit">мм</span></span>
+    <span>фокус</span><span class="field c focus"><span class="num">800</span><span class="unit">мм</span></span>
+    <span>ошибка</span><span class="field c error"><span class="num">-18</span><span class="unit">мм</span></span>
+    <span>выключено</span><span class="field c dis"><span class="num">800</span><span class="unit">мм</span></span>
+    <span>только чтение</span><span class="field c ro"><span class="num" style="text-align:left">800 мм</span></span>
+  </div>
+  <div style="margin-top:12px"><b style="color:var(--text)">Кнопки</b></div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+    <span class="btn c primary">Основная</span><span class="btn c">Обычная</span><span class="btn c hover">Наведение</span><span class="btn c disabled">Выключена</span><span class="btn c danger-outline">Удалить</span><span class="btn c danger">?! Удалить</span>
+  </div>
+</div>
+</div>
+
+</body></html>

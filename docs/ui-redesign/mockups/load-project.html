@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Load project redesign</title>
+<link rel="stylesheet" href="kd.css">
+<style>
+  body { width:1300px; height:560px; }
+  .w { width:760px; height:500px; top:40px; left:16px; }
+  h3 { font-size:14px; color:#6F7480; font-weight:normal; margin:0; position:absolute; top:12px; }
+  .row { display:grid; grid-template-columns:1fr 150px 150px 70px 32px; align-items:center; height:40px; padding:0 8px; border-bottom:1px solid var(--divider); gap:8px; }
+  .row .nm { display:flex; flex-direction:column; min-width:0; }
+  .row .nm b { font-weight:normal; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .row .nm span { font-size:13px; color:var(--text3); }
+  .row .d { font-size:14px; color:var(--text2); font-variant-numeric:tabular-nums; }
+  .row.sel { background:var(--row-sel); box-shadow:inset 3px 0 0 var(--sel-bar); }
+  .row.hover { background:var(--row-hover); }
+  .row.head { height:32px; font-size:14px; color:var(--text2); border-bottom:1px solid var(--rule); }
+  .tag { font-size:12px; padding:1px 6px; border-radius:8px; }
+  .tag.cur { background:var(--accent-subtle); color:var(--accent-text); }
+  .tag.warn { background:#3A2E1C; color:var(--warning); }
+  .tag.miss { background:#3A1E22; color:var(--error); }
+</style></head>
+<body class="canvas">
+<h3 style="left:16px">«Открыть проект»: таблица с сортировкой, текущий/новее/нет файла — метками, действия в футере справа</h3>
+<div class="win w">
+  <div class="titlebar ruled"><span class="t">Открыть проект</span><span class="close">×</span></div>
+  <div class="body" style="padding:8px 16px 0">
+    <div class="field c" style="margin-bottom:8px"><span class="v" style="color:var(--text3)">Поиск по имени…</span></div>
+    <div class="row head"><span>Имя ▲</span><span>Изменён</span><span>Создан</span><span>Версия</span><span></span></div>
+    <div class="row sel"><span class="nm"><b>kuhnya_ivanovyh.kdproj <span class="tag cur">открыт</span></b></span><span class="d">01.04.2026 14:15</span><span class="d">05.01.2026 15:00</span><span class="d">0.2092</span><span class="icon-btn c danger">×</span></div>
+    <div class="row hover"><span class="nm"><b>dacha_2.kdproj <span class="tag warn">новее программы</span></b></span><span class="d">01.04.2026 14:15</span><span class="d">10.02.2026 14:30</span><span class="d">0.2100</span><span class="icon-btn c danger">×</span></div>
+    <div class="row"><span class="nm"><b style="color:var(--text3)">old.kdproj <span class="tag miss">файл не найден</span></b></span><span class="d">—</span><span class="d">01.03.2026 23:15</span><span class="d">0.1980</span><span class="icon-btn c danger">×</span></div>
+  </div>
+  <div class="footer"><span class="btn">Новый проект</span><span class="btn ghost" style="color:var(--accent-text)">Обзор…</span><span class="spacer"></span><span class="btn primary">Открыть</span></div>
+</div>
+
+<h3 style="left:800px">Пустое состояние</h3>
+<div class="win" style="left:800px;top:40px;width:480px;height:300px">
+  <div class="titlebar ruled"><span class="t">Открыть проект</span><span class="close">×</span></div>
+  <div class="body empty"><div class="big">▢</div><div style="color:var(--text)">Сохранённых проектов пока нет</div><div class="help">Начните новый — он появится здесь после сохранения.</div><span class="btn primary" style="margin-top:8px">Новый проект</span></div>
+</div>
+</body></html>

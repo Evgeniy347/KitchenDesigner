@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Settings redesign</title>
+<link rel="stylesheet" href="kd.css">
+<style>
+  body { width:1900px; height:700px; }
+  .set { width:920px; height:640px; top:40px; }
+  .split { flex:1; display:flex; min-height:0; }
+  .nav { width:200px; background:var(--nav); border-right:1px solid var(--divider); padding:8px; display:flex; flex-direction:column; gap:2px; }
+  .nav .search { margin:4px 0 8px; }
+  .nav .it { height:32px; display:flex; align-items:center; padding:0 12px; border-radius:var(--r-ctl); color:var(--text); }
+  .nav .it.on { background:var(--accent-subtle); color:var(--text); box-shadow:inset 3px 0 0 var(--accent); }
+  .nav .it.hover { background:var(--row-hover); }
+  .nav .grp { font-size:13px; color:var(--text3); padding:12px 12px 4px; }
+  .page { flex:1; padding:16px 24px; position:relative; overflow:hidden; }
+  .page h2 { font-size:20px; font-weight:normal; margin:0 0 4px; }
+  .page .lead { color:var(--text2); font-size:14px; margin-bottom:16px; }
+  .form.s { grid-template-columns:300px 240px; row-gap:8px; column-gap:16px; }
+  .form.s .field { width:240px; }
+  .ctl-left { display:flex; align-items:center; gap:8px; }
+  .val { width:64px; text-align:right; color:var(--text2); font-variant-numeric:tabular-nums; font-size:14px; }
+  .kb { width:100%; border-collapse:collapse; }
+  .kb th { font-size:14px; color:var(--text2); font-weight:normal; text-align:left; height:28px; border-bottom:1px solid var(--rule); }
+  .kb td { height:34px; border-bottom:1px solid var(--divider); }
+  .key { display:inline-flex; align-items:center; justify-content:center; min-width:96px; height:26px; padding:0 8px; border-radius:var(--r-ctl); background:var(--raised); font-size:14px; }
+  .key.empty { background:transparent; border:1px dashed var(--rule); color:var(--text3); }
+  .key.conflict { color:var(--error); box-shadow:0 0 0 1px var(--error); }
+  .x { color:var(--text3); margin-left:4px; font-size:14px; }
+  h3 { font-size:14px; color:#6F7480; font-weight:normal; margin:0; position:absolute; top:12px; }
+</style></head>
+<body class="canvas">
+<h3 style="left:16px">Настройки — страница «Проект»: левая навигация, одна колонка, применение сразу, без кнопки «Закрыть»</h3>
+<div class="win set" style="left:16px">
+  <div class="titlebar ruled"><span class="t">Настройки</span><span class="close">×</span></div>
+  <div class="split">
+    <div class="nav">
+      <div class="field c search"><span class="v" style="color:var(--text3)">Поиск настройки…</span></div>
+      <div class="it">Общие</div>
+      <div class="it on">Проект</div>
+      <div class="it hover">Вид</div>
+      <div class="it">Управление</div>
+      <div class="grp">Картинка</div>
+      <div class="it">Свет</div>
+      <div class="it">Фоторежим</div>
+      <div class="grp">Дом</div>
+      <div class="it">Строительство</div>
+      <div class="grp">Прочее</div>
+      <div class="it">MCP</div>
+      <div class="it">О программе</div>
+    </div>
+    <div class="page">
+      <h2>Проект</h2>
+      <div class="lead">Сохраняется в файле проекта и действует только в нём.</div>
+      <div class="section">Сетка и привязка</div>
+      <div class="form s">
+        <span class="lbl">Сетка <i class="hint">i</i></span><span class="switch on"></span>
+        <span class="lbl sub">Шаг сетки <i class="hint">i</i></span><span class="field" style="width:120px"><span class="num">18</span><span class="unit">мм</span></span>
+        <span class="lbl">Привязка к деталям <i class="hint">i</i></span><span class="switch on"></span>
+        <span class="lbl sub">Порог привязки <i class="hint">i</i></span><span class="field" style="width:120px"><span class="num">50</span><span class="unit">мм</span></span>
+        <span class="lbl">Пространственная сетка <i class="hint">i</i></span><span class="switch"></span>
+      </div>
+      <div class="section">Проверки</div>
+      <div class="form s">
+        <span class="lbl">Блокировать недопустимые изменения</span><span class="switch on"></span>
+        <span class="lbl">Нижний порог кромки <i class="hint">i</i></span><span class="field" style="width:120px"><span class="num">5</span><span class="unit">%</span></span>
+      </div>
+      <div class="section">Сохранение</div>
+      <div class="form s">
+        <span class="lbl">Автосохранение <i class="hint">i</i></span><span class="switch on"></span>
+        <span class="lbl sub">Интервал автосохранения <i class="hint">i</i></span><span class="field" style="width:120px"><span class="num">60</span><span class="unit">с</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span class="btn ghost" style="padding:0 8px;color:var(--accent-text)">Сбросить раздел</span><span class="spacer"></span><span class="help">Изменения применяются сразу</span></div>
+</div>
+
+<h3 style="left:968px">Страница «Управление»: ползунок + значение, таблица клавиш с конфликтом</h3>
+<div class="win set" style="left:968px">
+  <div class="titlebar ruled"><span class="t">Настройки</span><span class="close">×</span></div>
+  <div class="split">
+    <div class="nav">
+      <div class="field c search"><span class="v" style="color:var(--text3)">Поиск настройки…</span></div>
+      <div class="it">Общие</div><div class="it">Проект</div><div class="it">Вид</div>
+      <div class="it on">Управление</div>
+      <div class="grp">Картинка</div><div class="it">Свет</div><div class="it">Фоторежим</div>
+      <div class="grp">Дом</div><div class="it">Строительство</div>
+      <div class="grp">Прочее</div><div class="it">MCP</div><div class="it">О программе</div>
+    </div>
+    <div class="page">
+      <h2>Управление</h2>
+      <div class="section">Мышь и камера</div>
+      <div class="form s">
+        <span class="lbl">Чувствительность мыши <i class="hint">i</i></span><span class="ctl-left"><span class="slider"><span class="track"></span><span class="fill" style="width:40%"></span><span class="thumb" style="left:40%"></span></span><span class="val">1,0×</span></span>
+        <span class="lbl">Скорость WASD <i class="hint">i</i></span><span class="ctl-left"><span class="slider"><span class="track"></span><span class="fill" style="width:40%"></span><span class="thumb" style="left:40%"></span></span><span class="val">1,0×</span></span>
+        <span class="lbl">Инверсия по вертикали</span><span class="switch"></span>
+      </div>
+      <div class="section">Горячие клавиши<span class="act">Сбросить все</span></div>
+      <table class="kb">
+        <tr><th style="width:300px">Действие</th><th>Основная</th><th>Дополнительная</th></tr>
+        <tr class="sub"><td colspan="3" style="color:var(--text2);font-size:14px;height:28px">Камера</td></tr>
+        <tr><td>Вперёд</td><td><span class="key">W</span><span class="x">×</span></td><td><span class="key empty">—</span></td></tr>
+        <tr><td>Приблизить</td><td><span class="key">=</span><span class="x">×</span></td><td><span class="key">Num +</span><span class="x">×</span></td></tr>
+        <tr><td>Фокус на выделенном</td><td><span class="key conflict">! F</span><span class="x">×</span></td><td><span class="key empty">—</span></td></tr>
+        <tr><td style="color:var(--text2)">Нажмите клавишу…</td><td><span class="key" style="box-shadow:0 0 0 1px var(--focus)">…</span></td><td></td></tr>
+      </table>
+      <div class="scrollbar" style="top:8px;height:300px"></div>
+    </div>
+  </div>
+  <div class="footer"><span class="btn ghost" style="padding:0 8px;color:var(--accent-text)">Сбросить раздел</span><span class="spacer"></span></div>
+</div>
+</body></html>

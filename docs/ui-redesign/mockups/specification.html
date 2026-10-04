@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Specification redesign</title>
+<link rel="stylesheet" href="kd.css">
+<style>
+  body { width:1000px; height:700px; }
+  .w { width:960px; height:640px; top:40px; left:20px; }
+  h3 { font-size:14px; color:#6F7480; font-weight:normal; margin:0; position:absolute; top:12px; left:20px; }
+  .table td.name { max-width:260px; }
+  .table tr.total td { font-weight:bold; border-top:1px solid var(--rule); border-bottom:none; height:32px; }
+  thead th { position:sticky; top:0; background:var(--window); }
+</style></head>
+<body class="canvas">
+<h3>«Спецификация»: числа вправо, единица в шапке колонки, разделы-группы, подытог строкой раздела, шапка таблицы прибита</h3>
+<div class="win w">
+  <div class="titlebar ruled"><span class="t">Спецификация</span><span class="close">×</span></div>
+  <div class="body" style="padding:0 16px; position:relative">
+    <table class="table">
+      <thead><tr><th class="n" style="width:36px">№</th><th>Наименование</th><th style="width:150px">Материал</th><th class="n" style="width:60px">Ш, мм</th><th class="n" style="width:60px">В, мм</th><th class="n" style="width:60px">Г, мм</th><th class="n" style="width:56px">Дет.</th><th class="n" style="width:80px">Кол-во</th><th style="width:40px">Ед.</th></tr></thead>
+      <tr class="group"><td colspan="9">Мебель</td></tr>
+      <tr><td class="n">1</td><td class="name">Комплект GTV AXIS PRO</td><td style="color:var(--text3)">—</td><td class="n">400</td><td class="n">115</td><td class="n">350</td><td class="n">1</td><td class="n">1</td><td>шт</td></tr>
+      <tr class="hover"><td class="n">2</td><td class="name">Комплект GTV AXIS PRO</td><td style="color:var(--text3)">—</td><td class="n">500</td><td class="n">147</td><td class="n">450</td><td class="n">1</td><td class="n">1</td><td>шт</td></tr>
+      <tr><td class="n">3</td><td class="name">Дно</td><td>Антрацит (GTV)</td><td class="n">325</td><td class="n">16</td><td class="n">326</td><td class="n">1</td><td class="n">0,11</td><td>м²</td></tr>
+      <tr><td class="n">4</td><td class="name">Задник</td><td>Антрацит (GTV)</td><td class="n">313</td><td class="n">84</td><td class="n">16</td><td class="n">1</td><td class="n">0,03</td><td>м²</td></tr>
+      <tr class="sub"><td></td><td colspan="6">Итого, Антрацит (GTV)</td><td class="n">0,14</td><td>м²</td></tr>
+      <tr><td class="n">5</td><td class="name">Боковина</td><td>Серый</td><td class="n">600</td><td class="n">720</td><td class="n">18</td><td class="n">2</td><td class="n">0,86</td><td>м²</td></tr>
+      <tr><td class="n">6</td><td class="name">Кромка 1,0 мм</td><td>Серый</td><td class="n"></td><td class="n"></td><td class="n"></td><td class="n"></td><td class="n">53,84</td><td>м</td></tr>
+      <tr><td class="n">7</td><td class="name">Полка</td><td>Серый</td><td class="n">564</td><td class="n">400</td><td class="n">18</td><td class="n">3</td><td class="n">0,68</td><td>м²</td></tr>
+      <tr class="sub"><td></td><td colspan="6">Итого, Серый</td><td class="n">1,54</td><td>м²</td></tr>
+      <tr class="group"><td colspan="9">Сантехника</td></tr>
+      <tr><td class="n">8</td><td class="name">Смеситель для кухни</td><td style="color:var(--text3)">—</td><td class="n">50</td><td class="n">320</td><td class="n">210</td><td class="n">1</td><td class="n">1</td><td>шт</td></tr>
+      <tr class="total"><td></td><td colspan="8">Всего позиций: 8</td></tr>
+    </table>
+    <div class="scrollbar" style="top:40px;height:360px"></div>
+  </div>
+  <div class="footer"><span class="help">8 позиций · 2 раздела</span><span class="spacer"></span><span class="btn">Копировать</span><span class="btn primary">Экспорт CSV…</span></div>
+</div>
+</body></html>
