@@ -110,6 +110,55 @@ public class ElementTintCoverageTests
             offenders);
     }
 
+    /// <summary>Вопрос про СМЫСЛ тонировки: подкраска, а не подмена.
+    ///
+    /// Сторож выше зеленеет, когда цвет изменился — а изменился он и тогда, когда
+    /// выделение стёрло собственный цвет и положило на его место жёлтую константу.
+    /// Так выглядели варочная (тёмное стекло), духовка, стиральная машина, сушилка
+    /// и диван: цвет у них задан в самом материале, константа его вытеснила, и
+    /// элемент превращался в ровно жёлтый — «текстура подменена». У доски с белым
+    /// цветом и картинкой тот же код давал жёлтый множитель к картинке, поэтому
+    /// доски выглядели правильно, и ни один сторож различия не видел.
+    ///
+    /// Вопрос задаётся про любой тип и без имён: цвет после выделения не ушёл
+    /// дальше середины пути к жёлтому по яркости (<see cref="SelectionTintContract"/>).</summary>
+    [Test]
+    public void SelectingAnElement_TintsItsOwnColour_ItDoesNotReplaceItWithTheTint()
+    {
+        var offenders = new List<string>();
+        foreach (var row in ElementSurfaceSweep.Rows)
+            if (row.SelectReplaced.Count > 0)
+                offenders.Add(row.Name + ": цвет подменён на "
+                    + row.SelectReplaced.Count + " из " + row.ColourWatched + " — "
+                    + string.Join(", ", row.SelectReplaced));
+
+        Fail("Выделение обязано подмешивать жёлтый к собственному цвету детали, а не "
+            + "класть жёлтый на его место.\n", offenders);
+    }
+
+    /// <summary>Выделенный рендерер не теряет картинку: текстура, привязанная к его
+    /// материалу, привязана и к тонировке. Проверка идёт на пробной текстуре,
+    /// подложенной каждому рендереру, — у части типов своей картинки по умолчанию
+    /// нет, и без подложки вопрос был бы пуст.</summary>
+    [Test]
+    public void SelectingAnElement_KeepsTheTextureBoundToEveryRenderer()
+    {
+        var offenders = new List<string>();
+        var covered = ElementSurfaceSweep.Rows.Count(r => r.TextureWatched > 0);
+
+        foreach (var row in ElementSurfaceSweep.Rows)
+            if (row.SelectTextureLost.Count > 0)
+                offenders.Add(row.Name + ": текстура потеряна на "
+                    + row.SelectTextureLost.Count + " из " + row.TextureWatched + " — "
+                    + string.Join(", ", row.SelectTextureLost));
+
+        Assert.Greater(covered, 0,
+            "ни одному типу не удалось подложить пробную текстуру — сторож проверил "
+            + "пустоту и позеленел бы на любом коде");
+
+        Fail("Выделение обязано сохранять текстуру элемента.\n", offenders);
+    }
+
     /// <summary>Тот же вопрос про декор: назначенная текстура доходит до
     /// каждого рендерера, а не до первого попавшегося.
     ///

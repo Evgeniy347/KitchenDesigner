@@ -98,6 +98,9 @@ public static class ElementSurfaceSweep
         public List<string> SelectMissed = new List<string>();
         public List<string> SelectPale = new List<string>();
         public List<string> SelectStuck = new List<string>();
+        public List<string> SelectReplaced = new List<string>();
+        public int TextureWatched;
+        public List<string> SelectTextureLost = new List<string>();
 
         public int TintWatched;
         public List<string> TintUntinted = new List<string>();
@@ -259,12 +262,60 @@ public static class ElementSurfaceSweep
                 row.SelectPale.Add(path[i] + " (цвет пропал)");
                 continue;
             }
+            if (SelectionTintContract.Replaces(colourBefore[i], now, multi: false))
+                row.SelectReplaced.Add(path[i] + " " + Describe(colourBefore[i]) + " → "
+                    + Describe(now));
             if (Visibly(colourBefore[i], now)) continue;
             row.SelectPale.Add(path[i] + " " + Describe(colourBefore[i]) + " → " + Describe(now));
         }
         selection.DeselectAll();
         for (int i = 0; i < body.Count; i++)
             if (!ReferenceEquals(body[i].sharedMaterial, original[i])) row.SelectStuck.Add(path[i]);
+
+        // 5б. Текстура. Тот же выбор, но на рендерерах с БЕЗУСЛОВНО видимой
+        // текстурой: каждому подкладывается клон его материала с пробной картинкой
+        // в _BaseMap и _MainTex, выделение, чтение, снятие — и ровно прежние
+        // sharedMaterials обратно, как и после шага 5. Подкладка нужна потому, что
+        // у типов, чей декор по умолчанию без картинки, текстуру иначе нечем
+        // спросить: вопрос «осталась ли она привязана» без неё пуст.
+        var probeTexture = new Texture2D(2, 2);
+        var slotsBefore = body.Select(r => r.sharedMaterials).ToArray();
+        var probes = new Material?[body.Count];
+        for (int i = 0; i < body.Count; i++)
+        {
+            var source = original[i];
+            if (source == null) continue;
+            bool hasBase = source.HasProperty("_BaseMap");
+            bool hasMain = source.HasProperty("_MainTex");
+            if (!hasBase && !hasMain) continue;
+
+            var probe = new Material(source);
+            if (hasBase) probe.SetTexture("_BaseMap", probeTexture);
+            if (hasMain) probe.SetTexture("_MainTex", probeTexture);
+            var slots = (Material[])slotsBefore[i].Clone();
+            slots[0] = probe;
+            body[i].sharedMaterials = slots;
+            probes[i] = probe;
+            row.TextureWatched++;
+        }
+        selection.Select(element);
+        for (int i = 0; i < body.Count; i++)
+        {
+            var probe = probes[i];
+            if (probe == null) continue;
+            var now = body[i].sharedMaterial;
+            bool lost = now == null
+                || (probe.HasProperty("_BaseMap") && now.GetTexture("_BaseMap") != probeTexture)
+                || (probe.HasProperty("_MainTex") && now.GetTexture("_MainTex") != probeTexture);
+            if (lost) row.SelectTextureLost.Add(path[i]);
+        }
+        selection.DeselectAll();
+        for (int i = 0; i < body.Count; i++)
+        {
+            body[i].sharedMaterials = slotsBefore[i];
+            if (probes[i] != null) UnityEngine.Object.DestroyImmediate(probes[i]);
+        }
+        UnityEngine.Object.DestroyImmediate(probeTexture);
 
         // 6. Декор. Единственный шаг, который меняет материал НАВСЕГДА и обратно не
         // отдаёт, — поэтому он предпоследний, а последним идёт тон нарушения,

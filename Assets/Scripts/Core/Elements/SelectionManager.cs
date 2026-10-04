@@ -461,18 +461,11 @@ namespace KitchenDesigner.Core
                 return;
             }
 
-            float intensity = isMulti ? 0.3f : 0.5f;
             foreach (var entry in saved)
             {
                 if (entry.renderer == null || entry.material == null) continue;
-                var mat = new Material(entry.material);
+                var mat = SelectionTint.Of(entry.material, isMulti);
                 SelectionWorkLog.Note(SelectionWork.TintCreated);
-                mat.name = TintMaterialName;
-                mat.EnableKeyword("_EMISSION");
-                mat.SetColor("_EmissionColor", new Color(0.8f, 0.7f, 0.1f) * intensity);
-                mat.SetColor("_BaseColor", isMulti
-                    ? new Color(1f, 0.97f, 0.7f, 1f)
-                    : new Color(1f, 0.95f, 0.6f, 1f));
                 entry.renderer.material = mat;
                 SelectionWorkLog.Note(SelectionWork.RendererPainted);
                 entry.painted = mat;
