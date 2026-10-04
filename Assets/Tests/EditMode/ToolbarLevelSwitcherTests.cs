@@ -17,6 +17,7 @@ public class ToolbarLevelSwitcherTests
         public void TogglePanel(ToolbarPanel panel) { }
         public bool IsPanelVisible(ToolbarPanel panel) => false;
         public void SaveCurrent() { }
+        public void NewProject() { }
         public void SaveAs() { }
         public void LoadDialog() { }
     }

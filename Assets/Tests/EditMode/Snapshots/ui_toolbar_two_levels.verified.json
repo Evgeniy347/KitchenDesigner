@@ -3,123 +3,128 @@
   "children": [
     {
       "type": "Button",
-      "text": "Music",
-      "position": [-8, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Spec",
-      "position": [8, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Hierarchy",
-      "position": [54, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Errors",
-      "position": [100, -6]
-    },
-    {
-      "type": "Button",
-      "text": "GotoIssue",
-      "position": [146, -6]
-    },
-    {
-      "type": "Button",
-      "text": "ProjectInstructions",
-      "position": [192, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Settings",
-      "position": [254, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Save",
-      "position": [300, -6]
-    },
-    {
-      "type": "Button",
-      "text": "SaveAs",
-      "position": [346, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Load",
-      "position": [392, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Undo",
-      "position": [454, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Redo",
-      "position": [500, -6]
-    },
-    {
-      "type": "Button",
-      "text": "LevelUp",
-      "position": [562, -6]
-    },
-    {
-      "type": "Label",
-      "text": "2 этаж",
-      "position": [608, -6]
-    },
-    {
-      "type": "Button",
-      "text": "LevelDown",
-      "position": [654, -6]
-    },
-    {
-      "type": "Button",
-      "text": "LevelsWindow",
-      "position": [700, -6]
-    },
-    {
-      "type": "Button",
-      "text": "HandleMode",
-      "position": [762, -6]
-    },
-    {
-      "type": "Button",
-      "text": "MeasureToggle",
-      "position": [808, -6]
-    },
-    {
-      "type": "Button",
-      "text": "Eyedropper",
-      "position": [854, -6]
-    },
-    {
-      "type": "Button",
-      "text": "LightsToggle",
-      "position": [916, -6]
-    },
-    {
-      "type": "Button",
-      "text": "DayNight",
-      "position": [962, -6]
-    },
-    {
-      "type": "Button",
       "text": "Обычный",
-      "position": [1024, -6]
+      "position": [2, 0]
     },
     {
       "type": "Button",
       "text": "Помещение",
-      "position": [1130, -6]
+      "position": [99, 0]
     },
     {
       "type": "Button",
       "text": "Фото",
-      "position": [1256, -6]
+      "position": [214, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Hierarchy",
+      "position": [-328, -4]
+    },
+    {
+      "type": "Button",
+      "text": "Errors",
+      "position": [-284, -4]
+    },
+    {
+      "type": "Button",
+      "text": "GotoIssue",
+      "position": [-240, -4]
+    },
+    {
+      "type": "Button",
+      "text": "Spec",
+      "position": [-196, -4]
+    },
+    {
+      "type": "Button",
+      "text": "ProjectInstructions",
+      "position": [-152, -4]
+    },
+    {
+      "type": "Button",
+      "text": "DayNight",
+      "position": [-96, -4]
+    },
+    {
+      "type": "Button",
+      "text": "Music",
+      "position": [-52, -4]
+    },
+    {
+      "type": "Button",
+      "text": "Settings",
+      "position": [-8, -4]
+    },
+    {
+      "type": "Button",
+      "text": "New",
+      "position": [8, -4]
+    },
+    {
+      "type": "Button",
+      "text": "Load",
+      "position": [52, -4]
+    },
+    {
+      "type": "Button",
+      "text": "Save",
+      "position": [96, -4]
+    },
+    {
+      "type": "Button",
+      "text": "SaveAs",
+      "position": [140, -4]
+    },
+    {
+      "type": "Button",
+      "text": "Undo",
+      "position": [196, -4]
+    },
+    {
+      "type": "Button",
+      "text": "Redo",
+      "position": [240, -4]
+    },
+    {
+      "type": "Button",
+      "text": "LevelUp",
+      "position": [296, -4]
+    },
+    {
+      "type": "Label",
+      "text": "2 этаж",
+      "position": [340, -4]
+    },
+    {
+      "type": "Button",
+      "text": "LevelDown",
+      "position": [400, -4]
+    },
+    {
+      "type": "Button",
+      "text": "LevelsWindow",
+      "position": [444, -4]
+    },
+    {
+      "type": "Button",
+      "text": "HandleMode",
+      "position": [500, -4]
+    },
+    {
+      "type": "Button",
+      "text": "MeasureToggle",
+      "position": [544, -4]
+    },
+    {
+      "type": "Button",
+      "text": "Eyedropper",
+      "position": [588, -4]
+    },
+    {
+      "type": "Button",
+      "text": "LightsToggle",
+      "position": [632, -4]
     }
   ]
 }

@@ -19,6 +19,7 @@ public class ToolbarModeAndWidthTests
         public void TogglePanel(ToolbarPanel panel) { }
         public bool IsPanelVisible(ToolbarPanel panel) => false;
         public void SaveCurrent() { }
+        public void NewProject() { }
         public void SaveAs() { }
         public void LoadDialog() { }
     }
@@ -51,12 +52,24 @@ public class ToolbarModeAndWidthTests
 
     // ── D9: режим и вид разведены ───────────────────────────
 
-    [Test]
-    public void Build_CreatesSeparateNormalRoomAndPhotoButtons_NotASingleCycleButton()
+    private Transform Deep(string name)
     {
-        Assert.IsNotNull(_bar.Find("ModeNormal"), "«Обычный» — отдельная кнопка сегментированного переключателя");
-        Assert.IsNotNull(_bar.Find("ModeRoom"), "«Помещение» — тоже отдельная кнопка");
-        Assert.IsNotNull(_bar.Find("ModePhoto"), "«Фото» — отдельный тоггл, а не третий шаг общего цикла");
+        foreach (var t in _bar.GetComponentsInChildren<Transform>(true))
+            if (t.name == name) return t;
+        Assert.Fail("на тулбаре нет узла " + name);
+        return null!;
+    }
+
+    [Test]
+    public void Build_CreatesOneSegmentedViewModeControl_WithNormalRoomAndPhotoSegments()
+    {
+        var segmented = _bar.Find("ViewMode")!.GetComponent<SegmentedControl>();
+
+        Assert.IsNotNull(segmented, "режим вида — ОДИН сегментный контрол (D11), а не три отдельные кнопки");
+        Assert.AreEqual(3, segmented.Segments.Count);
+        Assert.AreSame(Deep("ModeNormal").GetComponent<Button>(), segmented.Segments[0], "«Обычный» — первый сегмент");
+        Assert.AreSame(Deep("ModeRoom").GetComponent<Button>(), segmented.Segments[1], "«Помещение» — второй");
+        Assert.AreSame(Deep("ModePhoto").GetComponent<Button>(), segmented.Segments[2], "«Фото» — третий, а не шаг общего цикла");
     }
 
     [Test]
@@ -66,7 +79,7 @@ public class ToolbarModeAndWidthTests
         EditModeManager.SetMode(EditMode.Photo);
         Assume.That(PhotoMode.Active, Is.True, "фоторежим обязан быть включён перед проверкой");
 
-        _bar.Find("ModeNormal")!.GetComponent<Button>().onClick.Invoke();
+        Deep("ModeNormal").GetComponent<Button>().onClick.Invoke();
 
         Assert.AreEqual(EditMode.Normal, EditModeManager.Mode,
             "раньше выход из фото требовал сначала попасть в «Помещение» — один клик обязан "
@@ -77,7 +90,7 @@ public class ToolbarModeAndWidthTests
     [Test]
     public void RoomModeButton_Click_NeverTogglesPhoto()
     {
-        _bar.Find("ModeRoom")!.GetComponent<Button>().onClick.Invoke();
+        Deep("ModeRoom").GetComponent<Button>().onClick.Invoke();
 
         Assert.AreEqual(EditMode.Room, EditModeManager.Mode);
         Assert.IsFalse(PhotoMode.Active, "переключение обычный/помещение не имеет права включать фото");
@@ -86,7 +99,7 @@ public class ToolbarModeAndWidthTests
     [Test]
     public void PhotoModeButton_Click_DrivesThePhotoModeEntryPoint()
     {
-        _bar.Find("ModePhoto")!.GetComponent<Button>().onClick.Invoke();
+        Deep("ModePhoto").GetComponent<Button>().onClick.Invoke();
 
         Assert.IsTrue(PhotoMode.Active,
             "кнопка «Фото» обязана звать существующую точку входа PhotoMode.Toggle");
@@ -142,17 +155,17 @@ public class ToolbarModeAndWidthTests
     [Test]
     public void ModeButtons_StayText_AsTheOneNamedExceptionToTheIconRule()
     {
-        Assert.IsNotNull(_bar.Find("ModeNormal")!.GetComponentInChildren<TMP_Text>(),
+        Assert.IsNotNull(Deep("ModeNormal").GetComponentInChildren<TMP_Text>(),
             "режимы — единственное, что остаётся текстом по правилу D10");
-        Assert.IsNotNull(_bar.Find("ModeRoom")!.GetComponentInChildren<TMP_Text>());
-        Assert.IsNotNull(_bar.Find("ModePhoto")!.GetComponentInChildren<TMP_Text>());
+        Assert.IsNotNull(Deep("ModeRoom").GetComponentInChildren<TMP_Text>());
+        Assert.IsNotNull(Deep("ModePhoto").GetComponentInChildren<TMP_Text>());
     }
 
     [Test]
     public void TextButtons_WidthTracksItsOwnLabel_NotASharedMagicNumber()
     {
-        var normal = (RectTransform)_bar.Find("ModeNormal")!;
-        var room = (RectTransform)_bar.Find("ModeRoom")!;
+        var normal = (RectTransform)Deep("ModeNormal");
+        var room = (RectTransform)Deep("ModeRoom");
 
         Assert.Greater(room.sizeDelta.x, normal.sizeDelta.x,
             "«Помещение» длиннее «Обычный» — авторазмер обязан это отразить, а не тащить "
@@ -201,31 +214,44 @@ public class ToolbarModeAndWidthTests
 
     // ── D10: помещается на 1366px ноутбука, и не разъезжается на 1920 ──
 
-    private static float RightEdgeOfFlow(Transform bar)
+    private static float RightEdgeOfLeftFlow(Transform bar)
     {
         float maxRight = 0f;
         foreach (Transform child in bar)
         {
-            if (child.name == "Music") continue;
             var rt = (RectTransform)child;
+            if (rt.anchorMin.x != 0f || rt.anchorMax.x != 0f) continue;
             float right = rt.anchoredPosition.x + rt.sizeDelta.x;
             if (right > maxRight) maxRight = right;
         }
         return maxRight;
     }
 
+    private static float WidthReservedByRightGroup(Transform bar)
+    {
+        float reserved = 0f;
+        foreach (Transform child in bar)
+        {
+            var rt = (RectTransform)child;
+            if (rt.anchorMin.x != 1f || rt.anchorMax.x != 1f) continue;
+            float leftEdgeFromRight = -rt.anchoredPosition.x + rt.sizeDelta.x;
+            if (leftEdgeFromRight > reserved) reserved = leftEdgeFromRight;
+        }
+        return reserved;
+    }
+
     [TestCase(1920f)]
     [TestCase(1366f)]
-    public void Toolbar_FitsWithoutOverlappingTheRightAnchoredMusicButton(float screenWidth)
+    public void Toolbar_LeftFlowFitsBesideTheRightAnchoredGroup(float screenWidth)
     {
-        var music = (RectTransform)_bar.Find("Music")!;
-        float reservedFromRightEdge = -music.anchoredPosition.x + music.sizeDelta.x;
+        float reservedFromRightEdge = WidthReservedByRightGroup(_bar);
         float budget = screenWidth - reservedFromRightEdge;
 
-        float flowRight = RightEdgeOfFlow(_bar);
+        float flowRight = RightEdgeOfLeftFlow(_bar);
 
+        Assert.Greater(reservedFromRightEdge, 0f, "правая группа (панели и сервис) обязана существовать — иначе бюджет считает пустоту");
         Assert.Less(flowRight, budget,
             $"при ширине экрана {screenWidth}px поток кнопок доходит до {flowRight:0}px, "
-            + $"а свободно только {budget:0}px до кнопки «Музыка»");
+            + $"а свободно только {budget:0}px до правой группы «Панели | Сервис»");
     }
 }

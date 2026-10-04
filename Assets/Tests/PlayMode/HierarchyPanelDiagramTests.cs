@@ -314,8 +314,8 @@ public class HierarchyPanelDiagramTests
     [UnityTest]
     public IEnumerator Toolbar_SceneButton_SavesPngAndJson()
     {
-        // Тулбар целиком (1920x52): кнопка «Сцена» — вторая слева, после «Спецификация».
-        yield return Capture("Toolbar", "toolbar_scene_button.png", 1920, 52, recenter: false, setup: null);
+        // Тулбар целиком (1920x48): «Сцена» — первая кнопка правой группы «Панели | Сервис».
+        yield return Capture("Toolbar", "toolbar_scene_button.png", 1920, (int)UIStyle.ToolbarH, recenter: false, setup: null);
     }
 
     [UnityTest]
@@ -328,7 +328,7 @@ public class HierarchyPanelDiagramTests
         });
         LevelRegistry.CurrentId = "2";
 
-        yield return Capture("Toolbar", "toolbar_two_levels.png", 1920, 52, recenter: false, setup: null);
+        yield return Capture("Toolbar", "toolbar_two_levels.png", 1920, (int)UIStyle.ToolbarH, recenter: false, setup: null);
 
         var bar = UiTestTree.FindDeep(_uiCanvas!.transform, "Toolbar")!;
         Assert.IsTrue(bar.Find("LevelDown")!.GetComponent<Button>().interactable);

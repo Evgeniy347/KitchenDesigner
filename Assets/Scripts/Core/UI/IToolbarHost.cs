@@ -18,6 +18,7 @@ namespace KitchenDesigner.Core.UI
         void TogglePanel(ToolbarPanel panel);
         bool IsPanelVisible(ToolbarPanel panel);
         void SaveCurrent();
+        void NewProject();
         void SaveAs();
         void LoadDialog();
     }

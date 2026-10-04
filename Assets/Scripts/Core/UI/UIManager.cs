@@ -235,6 +235,8 @@ namespace KitchenDesigner.Core.UI
 
         public void SaveCurrent() => FileActions.SaveCurrent();
 
+        public void NewProject() => FileActions.NewProjectDialog();
+
         public void SaveAs() => FileActions.SaveAs();
 
         public void LoadDialog() => FileActions.LoadDialog();

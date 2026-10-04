@@ -18,6 +18,25 @@ namespace KitchenDesigner.Core.UI
         public static SegmentedControl Create(string name, Transform parent, IReadOnlyList<string> options,
             int value, float width, float height, Action<int>? onChanged)
         {
+            float pad = UIStyle.SegmentPad;
+            float segW = (width - pad * 2f - pad * (options.Count - 1)) / Mathf.Max(1, options.Count);
+            var widths = new float[options.Count];
+            for (int i = 0; i < widths.Length; i++) widths[i] = segW;
+            return Create(name, parent, options, value, widths, height, onChanged);
+        }
+
+        public static float WidthFor(IReadOnlyList<float> segmentWidths)
+        {
+            float pad = UIStyle.SegmentPad;
+            float total = pad * 2f + pad * Mathf.Max(0, segmentWidths.Count - 1);
+            foreach (var w in segmentWidths) total += w;
+            return total;
+        }
+
+        public static SegmentedControl Create(string name, Transform parent, IReadOnlyList<string> options,
+            int value, IReadOnlyList<float> segmentWidths, float height, Action<int>? onChanged)
+        {
+            float width = WidthFor(segmentWidths);
             var rect = UIFactory.CreateRect(name, parent);
             rect.sizeDelta = new Vector2(width, height);
             var bg = rect.gameObject.AddComponent<Image>();
@@ -29,15 +48,17 @@ namespace KitchenDesigner.Core.UI
             var self = rect.gameObject.AddComponent<SegmentedControl>();
             self._onChanged = onChanged;
             float pad = UIStyle.SegmentPad;
-            float segW = (width - pad * 2f - pad * (options.Count - 1)) / Mathf.Max(1, options.Count);
+            float segX = pad;
             for (int i = 0; i < options.Count; i++)
             {
                 int index = i;
+                float segW = segmentWidths[i];
                 var button = UIFactory.CreateButton(name + "_" + i, rect, options[i], Vector2.zero,
                     new Vector2(segW, height - pad * 2f), () => self.Choose(index));
                 var rt = (RectTransform)button.transform;
                 rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 0.5f);
-                rt.anchoredPosition = new Vector2(pad + i * (segW + pad), 0f);
+                rt.anchoredPosition = new Vector2(segX, 0f);
+                segX += segW + pad;
                 var label = button.GetComponentInChildren<TMP_Text>();
                 label.fontSize = height <= UIStyle.ControlHCompact ? UIStyle.FontSmall : UIStyle.FontBody;
                 label.enableWordWrapping = false;

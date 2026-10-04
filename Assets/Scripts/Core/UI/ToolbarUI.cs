@@ -5,19 +5,14 @@ using KitchenDesigner.Core.Keybinding;
 using KitchenDesigner.Core.Update;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
     public sealed class ToolbarUI
     {
-        internal const float BarHeight = 52f;
-        private const float ButtonY = -6f;
-        private const float ButtonH = 40f;
-        private const float ButtonGap = 6f;
-        private const float SwatchSize = 14f;
-        private const float TextButtonPad = 20f;
+        internal const float BarHeight = ToolbarMetrics.BarHeight;
+        private const float LevelLabelMinFontSize = UIStyle.FontCaption;
 
         private static readonly LocalizedCache<string[]> HandleModeTooltipsCache =
             new LocalizedCache<string[]>(() => new string[] {
@@ -27,10 +22,19 @@ namespace KitchenDesigner.Core.UI
 
         private static string[] HandleModeTooltips => HandleModeTooltipsCache.Value;
 
-        private readonly List<(Button button, Func<bool> pressed)> _toggles = new();
+        private sealed class PressedToggle
+        {
+            public Button Button = null!;
+            public Func<bool> Pressed = null!;
+            public bool Shown;
+        }
+
+        private readonly List<PressedToggle> _toggles = new();
         private readonly SceneSettleThrottle _issueBadgeThrottle = new();
+        private readonly List<(RectTransform rect, float width, float gapAfter)> _rightGroup = new();
 
         private IToolbarHost? _host;
+        private Canvas? _canvas;
         private Button? _undoButton;
         private Button? _redoButton;
         private Button? _gotoIssueButton;
@@ -40,7 +44,9 @@ namespace KitchenDesigner.Core.UI
         private Button? _handleModeButton;
         private Image? _handleModeIcon;
         private Image? _errorsIcon;
-        private TMP_Text? _issueCountLabel;
+        private ToolbarIssueBadge? _issueBadge;
+        private SegmentedControl? _viewMode;
+        private int _viewModeShown = -1;
         private int _issueBadgeRevision = -1;
         private TMP_Text? _levelLabel;
         private Button? _levelUpButton;
@@ -52,78 +58,29 @@ namespace KitchenDesigner.Core.UI
         private LevelSwitcherState _levelSwitcher;
         private int _levelSwitcherVersion = -1;
         private int _levelSwitcherLocRevision = -1;
-        private const float LevelLabelWidth = 40f;
-        private const float LevelLabelMinFontSize = 8f;
 
         public int IssueBadgeRevision => _issueBadgeRevision;
 
         public void Build(Transform canvas, IToolbarHost host)
         {
             _host = host;
+            _canvas = canvas.GetComponentInParent<Canvas>();
 
             var bar = UIFactory.CreatePanel("Toolbar", canvas, Vector2.zero, Vector2.zero);
             UIFactory.StretchTopBar(bar.rectTransform, BarHeight);
+            AddBottomRule(bar.transform);
 
-            float x = 8f;
-
-            AddPanelToggle(bar.transform, "Spec", IconFactory.Document, ToolbarPanel.Specification, ref x,
-                Loc.T("toolbar.specification"));
-            AddPanelToggle(bar.transform, "Hierarchy", IconFactory.SceneTree, ToolbarPanel.Hierarchy, ref x,
-                Loc.T("toolbar.scene"));
-            var errorsButton = AddIconButton(bar.transform, "Errors", IconFactory.Warning,
-                ref x, () => _host!.TogglePanel(ToolbarPanel.Errors), Loc.T("toolbar.errors"));
-            _toggles.Add((errorsButton, () => _host!.IsPanelVisible(ToolbarPanel.Errors)));
-            _errorsIcon = errorsButton.transform.Find("Errors_Icon")?.GetComponent<Image>();
-            _issueCountLabel = AddBadge(errorsButton.transform);
-            _gotoIssueButton = AddIconButton(bar.transform, "GotoIssue", IconFactory.FindIssue,
-                ref x, GotoFirstIssue, Loc.T("toolbar.gotoFirstIssue"));
-            _gotoIssueIcon = _gotoIssueButton.transform.Find("GotoIssue_Icon")?.GetComponent<Image>();
-            AddPanelToggle(bar.transform, "ProjectInstructions", IconFactory.Book,
-                ToolbarPanel.ProjectInstructions, ref x, Loc.T("toolbar.instructions"));
-            AddSeparator(bar.transform, ref x);
-
-            AddPanelToggle(bar.transform, "Settings", IconFactory.Gear, ToolbarPanel.Settings, ref x, Loc.T("toolbar.settings"));
-            AddIconButton(bar.transform, "Save", IconFactory.Floppy, ref x, host.SaveCurrent, Loc.T("toolbar.save"));
-            AddIconButton(bar.transform, "SaveAs", IconFactory.FloppyPlus, ref x, host.SaveAs, Loc.T("toolbar.saveAs"));
-            AddPanelToggle(bar.transform, "Load", IconFactory.Folder, ToolbarPanel.LoadProject, ref x, Loc.T("toolbar.load"));
-            AddSeparator(bar.transform, ref x);
-
-            _undoButton = AddIconButton(bar.transform, "Undo", IconFactory.Undo, ref x, Undo, Loc.T("toolbar.undo"));
-            _redoButton = AddIconButton(bar.transform, "Redo", IconFactory.Redo, ref x, Redo, Loc.T("toolbar.redo"));
-            AddSeparator(bar.transform, ref x);
-
+            float x = ToolbarMetrics.EdgeInset;
+            BuildFileGroup(bar.transform, host, ref x);
+            BuildEditGroup(bar.transform, ref x);
             AddLevelSwitcher(bar.transform, ref x);
             int firstAfterLevelSwitcher = bar.transform.childCount;
             AddSeparator(bar.transform, ref x);
-
-            _handleModeButton = AddIconButton(bar.transform, "HandleMode", HandleModeIcon(), ref x,
-                ToggleHandleMode, HandleModeTooltip());
-            _handleModeIcon = _handleModeButton.transform.Find("HandleMode_Icon")?.GetComponent<Image>();
-            var measureButton = AddIconButton(bar.transform, "MeasureToggle", IconFactory.Ruler,
-                ref x, Measure.MeasureMode.Toggle, Loc.T("toolbar.measure"));
-            _toggles.Add((measureButton, () => Measure.MeasureMode.Active));
-            var eyedropperButton = AddIconButton(bar.transform, "Eyedropper", IconFactory.Eyedropper,
-                ref x, Tools.EyedropperMode.Toggle, Loc.T("toolbar.eyedropper"));
-            _toggles.Add((eyedropperButton, () => Tools.EyedropperMode.Active));
-            _eyedropperSwatch = AddSwatch(eyedropperButton.transform);
+            BuildToolsGroup(bar.transform, ref x);
             AddSeparator(bar.transform, ref x);
+            AddViewModeSegment(bar.transform, ref x);
 
-            var lightsButton = AddIconButton(bar.transform, "LightsToggle", IconFactory.Bulb,
-                ref x, ToggleLights, Loc.T("toolbar.lights"));
-            _toggles.Add((lightsButton, () => LightSourceElement.GlobalOn));
-            AddPanelToggle(bar.transform, "DayNight", IconFactory.Sun, ToolbarPanel.DayNight, ref x, Loc.T("toolbar.sun"));
-            AddSeparator(bar.transform, ref x);
-
-            var normalModeButton = AddBarButton(bar.transform, "ModeNormal", Loc.T("toolbar.mode.normal"), ref x,
-                () => EditModeManager.SetMode(EditMode.Normal));
-            _toggles.Add((normalModeButton, () => EditModeManager.LastNonPhotoMode == EditMode.Normal));
-            var roomModeButton = AddBarButton(bar.transform, "ModeRoom", Loc.T("toolbar.mode.room"), ref x,
-                () => EditModeManager.SetMode(EditMode.Room));
-            _toggles.Add((roomModeButton, () => EditModeManager.LastNonPhotoMode == EditMode.Room));
-            var photoModeButton = AddBarButton(bar.transform, "ModePhoto", Loc.T("toolbar.mode.photo"), ref x, PhotoMode.Toggle);
-            _toggles.Add((photoModeButton, () => PhotoMode.Active));
-
-            AddRightPanelToggle(bar.transform, "Music", IconFactory.Note, ToolbarPanel.Music, Loc.T("toolbar.music"));
+            BuildRightGroup(bar.transform);
 
             for (int i = firstAfterLevelSwitcher; i < bar.transform.childCount; i++)
             {
@@ -135,6 +92,61 @@ namespace KitchenDesigner.Core.UI
             RefreshLevelSwitcher();
         }
 
+        private void BuildFileGroup(Transform bar, IToolbarHost host, ref float x)
+        {
+            AddIconButton(bar, "New", OutlineIconPaths.New, ref x, host.NewProject, Loc.T("toolbar.new"));
+            AddPanelToggle(bar, "Load", OutlineIconPaths.Open, ToolbarPanel.LoadProject, ref x, Loc.T("toolbar.load"));
+            AddIconButton(bar, "Save", OutlineIconPaths.Save, ref x, host.SaveCurrent, Loc.T("toolbar.save"));
+            AddIconButton(bar, "SaveAs", OutlineIconPaths.SaveAs, ref x, host.SaveAs, Loc.T("toolbar.saveAs"));
+            AddSeparator(bar, ref x);
+        }
+
+        private void BuildEditGroup(Transform bar, ref float x)
+        {
+            _undoButton = AddIconButton(bar, "Undo", OutlineIconPaths.Undo, ref x, Undo, Loc.T("toolbar.undo"));
+            _redoButton = AddIconButton(bar, "Redo", OutlineIconPaths.Redo, ref x, Redo, Loc.T("toolbar.redo"));
+            AddSeparator(bar, ref x);
+        }
+
+        private void BuildToolsGroup(Transform bar, ref float x)
+        {
+            _handleModeButton = AddIconButton(bar, "HandleMode", HandleModeIconName(), ref x,
+                ToggleHandleMode, HandleModeTooltip());
+            _handleModeIcon = ToolbarButtons.IconOf(_handleModeButton);
+            var measureButton = AddIconButton(bar, "MeasureToggle", OutlineIconPaths.Measure,
+                ref x, Measure.MeasureMode.Toggle, Loc.T("toolbar.measure"));
+            AddToggle(measureButton, () => Measure.MeasureMode.Active);
+            var eyedropperButton = AddIconButton(bar, "Eyedropper", OutlineIconPaths.Eyedropper,
+                ref x, Tools.EyedropperMode.Toggle, Loc.T("toolbar.eyedropper"));
+            AddToggle(eyedropperButton, () => Tools.EyedropperMode.Active);
+            _eyedropperSwatch = AddSwatch(eyedropperButton.transform);
+            var lightsButton = AddIconButton(bar, "LightsToggle", OutlineIconPaths.Bulb,
+                ref x, ToggleLights, Loc.T("toolbar.lights"));
+            AddToggle(lightsButton, () => LightSourceElement.GlobalOn);
+        }
+
+        private void BuildRightGroup(Transform bar)
+        {
+            AddRightPanelToggle(bar, "Hierarchy", OutlineIconPaths.Scene, ToolbarPanel.Hierarchy, Loc.T("toolbar.scene"));
+            var errorsButton = AddRightPanelToggle(bar, "Errors", OutlineIconPaths.Warning,
+                ToolbarPanel.Errors, Loc.T("toolbar.errors"));
+            _errorsIcon = ToolbarButtons.IconOf(errorsButton);
+            _issueBadge = ToolbarIssueBadge.Create(errorsButton.transform);
+            _gotoIssueButton = AddRightIconButton(bar, "GotoIssue", OutlineIconPaths.FindIssue,
+                GotoFirstIssue, Loc.T("toolbar.gotoFirstIssue"));
+            _gotoIssueIcon = ToolbarButtons.IconOf(_gotoIssueButton);
+            AddRightPanelToggle(bar, "Spec", OutlineIconPaths.Specification, ToolbarPanel.Specification,
+                Loc.T("toolbar.specification"));
+            AddRightPanelToggle(bar, "ProjectInstructions", OutlineIconPaths.Instructions,
+                ToolbarPanel.ProjectInstructions, Loc.T("toolbar.instructions"));
+            AddRightSeparator(bar);
+            AddRightPanelToggle(bar, "DayNight", OutlineIconPaths.Sun, ToolbarPanel.DayNight, Loc.T("toolbar.sun"));
+            AddRightPanelToggle(bar, "Music", OutlineIconPaths.Music, ToolbarPanel.Music, Loc.T("toolbar.music"));
+            AddRightPanelToggle(bar, "Settings", OutlineIconPaths.Settings, ToolbarPanel.Settings,
+                Loc.T("toolbar.settings"), lastInGroup: true);
+            PlaceRightGroup();
+        }
+
         public void Dispose() { }
 
         public void Refresh()
@@ -144,8 +156,9 @@ namespace KitchenDesigner.Core.UI
             if (_undoButton != null) _undoButton.interactable = CommandStack.CanUndo;
             if (_redoButton != null) _redoButton.interactable = CommandStack.CanRedo;
 
-            foreach (var (button, pressed) in _toggles)
-                SetPressed(button, pressed());
+            foreach (var toggle in _toggles) SyncPressed(toggle);
+            SyncViewMode();
+            KeepHudBelowTheBar();
 
             RefreshEyedropperSwatch();
 
@@ -160,6 +173,29 @@ namespace KitchenDesigner.Core.UI
                 if (_levelSwitcher.CanGoUp && InputMap.Down(InputAction.LevelUp)) LevelSwitch.Up();
                 else if (_levelSwitcher.CanGoDown && InputMap.Down(InputAction.LevelDown)) LevelSwitch.Down();
             }
+        }
+
+        private void KeepHudBelowTheBar()
+        {
+            if (_canvas == null) return;
+            PerfHud.ToolbarBottomY = BarHeight * _canvas.scaleFactor;
+        }
+
+        private static void SyncPressed(PressedToggle toggle)
+        {
+            bool on = toggle.Pressed();
+            if (on == toggle.Shown) return;
+            toggle.Shown = on;
+            ToolbarButtons.SetPressed(toggle.Button, on);
+        }
+
+        private void SyncViewMode()
+        {
+            if (_viewMode == null) return;
+            int shown = PhotoMode.Active ? 2 : EditModeManager.LastNonPhotoMode == EditMode.Room ? 1 : 0;
+            if (shown == _viewModeShown) return;
+            _viewModeShown = shown;
+            _viewMode.SetValueWithoutNotify(shown);
         }
 
         private void RefreshLevelSwitcher()
@@ -204,121 +240,154 @@ namespace KitchenDesigner.Core.UI
         private void AddLevelSwitcher(Transform parent, ref float x)
         {
             float groupStartX = x;
-            _levelUpButton = AddIconButton(parent, "LevelUp", IconFactory.CaretUp, ref x, LevelSwitch.Up, Loc.T("toolbar.levelUp"));
+            _levelUpButton = AddIconButton(parent, "LevelUp", OutlineIconPaths.ChevronUp, ref x, LevelSwitch.Up,
+                Loc.T("toolbar.levelUp"));
 
-            _levelLabel = UIFactory.CreateLabel("LevelLabel", parent, "", 15,
-                new Vector2(x, ButtonY), new Vector2(LevelLabelWidth, ButtonH), TextAnchor.MiddleCenter);
-            UIFactory.AnchorTopLeft(_levelLabel.rectTransform);
-            _levelLabel.rectTransform.anchoredPosition = new Vector2(x, ButtonY);
+            _levelLabel = UIFactory.CreateLabel("LevelLabel", parent, "", UIStyle.FontSmall,
+                Vector2.zero, new Vector2(ToolbarMetrics.LevelLabelW, ToolbarMetrics.Button), TextAnchor.MiddleCenter);
+            ToolbarButtons.PlaceFromLeft(_levelLabel.rectTransform, x, ToolbarMetrics.ButtonY);
             _levelLabel.enableWordWrapping = false;
+            _levelLabel.overflowMode = TextOverflowModes.Ellipsis;
             _levelLabel.enableAutoSizing = true;
             _levelLabel.fontSizeMin = LevelLabelMinFontSize;
-            _levelLabel.fontSizeMax = 15;
-            x += LevelLabelWidth + ButtonGap;
+            _levelLabel.fontSizeMax = UIStyle.FontSmall;
+            x += ToolbarMetrics.LevelLabelW + ToolbarMetrics.ButtonGap;
 
-            _levelDownButton = AddIconButton(parent, "LevelDown", IconFactory.CaretDown, ref x, LevelSwitch.Down, Loc.T("toolbar.levelDown"));
+            _levelDownButton = AddIconButton(parent, "LevelDown", OutlineIconPaths.ChevronDown, ref x, LevelSwitch.Down,
+                Loc.T("toolbar.levelDown"));
 
             _levelSwitcherGroupWidth = x - groupStartX;
             _levelsWindowArrowsX = x;
-            _levelsWindowButton = AddPanelToggle(parent, "LevelsWindow", IconFactory.Layers, ToolbarPanel.Levels, ref x, Loc.T("toolbar.levels"));
+            _levelsWindowButton = AddPanelToggle(parent, "LevelsWindow", OutlineIconPaths.Levels, ToolbarPanel.Levels,
+                ref x, Loc.T("toolbar.levels"));
         }
 
-        private Button AddPanelToggle(Transform parent, string name, Sprite icon,
+        private void AddViewModeSegment(Transform parent, ref float x)
+        {
+            string[] captions =
+            {
+                Loc.T("toolbar.mode.normal"), Loc.T("toolbar.mode.room"), Loc.T("toolbar.mode.photo"),
+            };
+            var widths = new float[captions.Length];
+            for (int i = 0; i < captions.Length; i++)
+                widths[i] = ToolbarButtons.MeasureCaption(parent, captions[i]) + ToolbarMetrics.SegmentPadX * 2f;
+
+            _viewMode = SegmentedControl.Create("ViewMode", parent, captions, 0, widths, ToolbarMetrics.SegmentH, null);
+            ToolbarButtons.PlaceFromLeft((RectTransform)_viewMode.transform, x, ToolbarMetrics.SegmentY);
+            x += SegmentedControl.WidthFor(widths) + ToolbarMetrics.ButtonGap;
+
+            string[] names = { "ModeNormal", "ModeRoom", "ModePhoto" };
+            Action[] actions =
+            {
+                () => EditModeManager.SetMode(EditMode.Normal),
+                () => EditModeManager.SetMode(EditMode.Room),
+                PhotoMode.Toggle,
+            };
+            for (int i = 0; i < names.Length; i++)
+            {
+                var segment = _viewMode.Segments[i];
+                segment.gameObject.name = names[i];
+                var action = actions[i];
+                segment.onClick.AddListener(() => action());
+            }
+        }
+
+        private Button AddPanelToggle(Transform parent, string name, string icon,
             ToolbarPanel panel, ref float x, string tooltip)
         {
             var btn = AddIconButton(parent, name, icon, ref x, () => _host!.TogglePanel(panel), tooltip);
-            _toggles.Add((btn, () => _host!.IsPanelVisible(panel)));
+            AddToggle(btn, () => _host!.IsPanelVisible(panel));
             return btn;
         }
 
-        private Button AddRightPanelToggle(Transform parent, string name, Sprite icon,
-            ToolbarPanel panel, string tooltip)
+        private Button AddRightPanelToggle(Transform parent, string name, string icon,
+            ToolbarPanel panel, string tooltip, bool lastInGroup = false)
         {
-            const float insetFromTheRightEdge = -8f;
-            var btn = UIFactory.CreateIconButton(name, parent, icon, Vector2.zero,
-                new Vector2(ButtonH, ButtonH), () => _host!.TogglePanel(panel));
-            var rt = btn.GetComponent<RectTransform>();
-            UIFactory.AnchorTopRight(rt);
-            rt.anchoredPosition = new Vector2(insetFromTheRightEdge, ButtonY);
-            TooltipUI.Attach(btn.gameObject, tooltip);
-            _toggles.Add((btn, () => _host!.IsPanelVisible(panel)));
+            var btn = AddRightIconButton(parent, name, icon, () => _host!.TogglePanel(panel), tooltip, lastInGroup);
+            AddToggle(btn, () => _host!.IsPanelVisible(panel));
             return btn;
         }
 
-        private static Button AddBarButton(Transform parent, string name, string label,
-            ref float x, Action onClick, params string[] extraWidthCandidates)
+        private Button AddRightIconButton(Transform parent, string name, string icon, Action onClick,
+            string tooltip, bool lastInGroup = false)
         {
-            var btn = UIFactory.CreateButton(name, parent, label, new Vector2(x, ButtonY),
-                new Vector2(ButtonH, ButtonH), onClick);
-            var caption = btn.GetComponentInChildren<TMP_Text>();
-
-            float w = TextButtonPad + PreferredCaptionWidth(caption, label);
-            foreach (var candidate in extraWidthCandidates)
-                w = Mathf.Max(w, TextButtonPad + PreferredCaptionWidth(caption, candidate));
-
-            var rect = btn.GetComponent<RectTransform>();
-            UIFactory.AnchorTopLeft(rect);
-            rect.sizeDelta = new Vector2(w, ButtonH);
-            rect.anchoredPosition = new Vector2(x, ButtonY);
-            x += w + ButtonGap;
+            var btn = ToolbarButtons.CreateIcon(parent, name, icon, tooltip, onClick);
+            _rightGroup.Add(((RectTransform)btn.transform, ToolbarMetrics.Button,
+                lastInGroup ? 0f : ToolbarMetrics.ButtonGap));
             return btn;
         }
 
-        private static float PreferredCaptionWidth(TMP_Text? caption, string text) =>
-            caption != null && caption.font != null
-                ? caption.GetPreferredValues(text).x
-                : text.Length * 9f;
+        private void AddRightSeparator(Transform parent)
+        {
+            float margin = (ToolbarMetrics.GroupSlot - ToolbarMetrics.SeparatorW) * 0.5f;
+            var line = ToolbarButtons.CreateSeparator(parent);
+            int last = _rightGroup.Count - 1;
+            var (rect, width, _) = _rightGroup[last];
+            _rightGroup[last] = (rect, width, margin);
+            _rightGroup.Add((line, ToolbarMetrics.SeparatorW, margin));
+        }
 
-        private static Button AddIconButton(Transform parent, string name, Sprite icon,
+        private void PlaceRightGroup()
+        {
+            float x = -ToolbarMetrics.EdgeInset;
+            for (int i = _rightGroup.Count - 1; i >= 0; i--)
+            {
+                var (rect, width, _) = _rightGroup[i];
+                UIFactory.AnchorTopRight(rect);
+                rect.anchoredPosition = new Vector2(x, -(BarHeight - rect.sizeDelta.y) * 0.5f);
+                x -= width;
+                if (i > 0) x -= _rightGroup[i - 1].gapAfter;
+            }
+        }
+
+        private void AddToggle(Button button, Func<bool> pressed)
+        {
+            var toggle = new PressedToggle { Button = button, Pressed = pressed };
+            _toggles.Add(toggle);
+            SyncPressed(toggle);
+        }
+
+        private static Button AddIconButton(Transform parent, string name, string icon,
             ref float x, Action onClick, string tooltip)
         {
-            var btn = UIFactory.CreateIconButton(name, parent, icon, new Vector2(x, ButtonY),
-                new Vector2(ButtonH, ButtonH), onClick);
-            UIFactory.AnchorTopLeft(btn.GetComponent<RectTransform>());
-            btn.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, ButtonY);
-            TooltipUI.Attach(btn.gameObject, tooltip);
-            x += ButtonH + ButtonGap;
+            var btn = ToolbarButtons.CreateIcon(parent, name, icon, tooltip, onClick);
+            ToolbarButtons.PlaceFromLeft((RectTransform)btn.transform, x, ToolbarMetrics.ButtonY);
+            x += ToolbarMetrics.Button + ToolbarMetrics.ButtonGap;
             return btn;
         }
 
         private static void AddSeparator(Transform parent, ref float x)
         {
-            x += 4;
-            var sep = UIFactory.CreatePanel("Separator", parent, Vector2.zero,
-                new Vector2(2, ButtonH - 8), UIStyle.Separator);
-            UIFactory.AnchorTopLeft(sep.rectTransform);
-            sep.rectTransform.anchoredPosition = new Vector2(x, ButtonY - 4);
-            sep.raycastTarget = false;
-            x += 12;
+            x -= ToolbarMetrics.ButtonGap;
+            var line = ToolbarButtons.CreateSeparator(parent);
+            ToolbarButtons.PlaceFromLeft(line,
+                x + (ToolbarMetrics.GroupSlot - ToolbarMetrics.SeparatorW) * 0.5f,
+                -(BarHeight - ToolbarMetrics.SeparatorH) * 0.5f);
+            x += ToolbarMetrics.GroupSlot;
         }
 
-        private static void SetPressed(Button? btn, bool on)
+        private static void AddBottomRule(Transform bar)
         {
-            if (btn == null) return;
-            var img = btn.GetComponent<Image>();
-            if (img != null) img.color = on ? UIStyle.SurfaceActive : UIStyle.Surface;
+            var rule = UIFactory.CreatePanel("BottomRule", bar, Vector2.zero, Vector2.zero, UIStyle.Divider);
+            rule.raycastTarget = false;
+            var rect = rule.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.sizeDelta = new Vector2(0f, UIStyle.DividerPx);
+            rect.anchoredPosition = Vector2.zero;
         }
 
         private static RawImage AddSwatch(Transform button)
         {
             var rect = UIFactory.CreateRect("Swatch", button);
             rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(1, 0);
-            rect.sizeDelta = new Vector2(SwatchSize, SwatchSize);
-            rect.anchoredPosition = new Vector2(-3f, 3f);
+            rect.sizeDelta = new Vector2(ToolbarMetrics.SwatchSize, ToolbarMetrics.SwatchSize);
+            rect.anchoredPosition = new Vector2(-ToolbarMetrics.SwatchInset, ToolbarMetrics.SwatchInset);
             var img = rect.gameObject.AddComponent<RawImage>();
             img.raycastTarget = false;
             rect.gameObject.SetActive(false);
             return img;
-        }
-
-        private static TMP_Text AddBadge(Transform button)
-        {
-            var label = UIFactory.CreateLabel("Badge", button, string.Empty, 11,
-                new Vector2(-1f, -1f), new Vector2(18f, 14f), TextAnchor.MiddleCenter);
-            label.rectTransform.anchorMin = label.rectTransform.anchorMax = label.rectTransform.pivot
-                = new Vector2(1, 1);
-            label.raycastTarget = false;
-            return label;
         }
 
         private void RefreshEyedropperSwatch()
@@ -353,19 +422,12 @@ namespace KitchenDesigner.Core.UI
             }
 
             int total = errors + warnings;
-            Color color = errors > 0 ? UIStyle.HighlightError : UIStyle.HighlightWarning;
+            Color tint = errors > 0 ? UIStyle.TextError : warnings > 0 ? UIStyle.TextWarning : UIStyle.Text;
 
-            if (_issueCountLabel != null)
-            {
-                _issueCountLabel.text = total == 0 ? string.Empty : total.ToString();
-                _issueCountLabel.color = color;
-                _issueCountLabel.gameObject.SetActive(total > 0);
-            }
-
-            if (_errorsIcon != null) _errorsIcon.color = total == 0 ? UIStyle.TextDisabled : color;
+            _issueBadge?.Show(total, errors > 0);
+            if (_errorsIcon != null) _errorsIcon.color = tint;
             if (_gotoIssueButton != null) _gotoIssueButton.interactable = total > 0;
-            if (_gotoIssueIcon != null)
-                _gotoIssueIcon.color = total == 0 ? UIStyle.TextDisabled : color;
+            if (_gotoIssueIcon != null && total > 0) _gotoIssueIcon.color = tint;
         }
 
         private static void GotoFirstIssue()
@@ -384,8 +446,8 @@ namespace KitchenDesigner.Core.UI
 
         private static bool IsResizeMode() => ResizeHandleManager.Mode == ResizeHandleManager.HandleMode.Resize;
 
-        private static Sprite HandleModeIcon() =>
-            IsResizeMode() ? IconFactory.ResizeHandles : IconFactory.MoveHandles;
+        private static string HandleModeIconName() =>
+            IsResizeMode() ? OutlineIconPaths.ResizeHandles : OutlineIconPaths.MoveHandles;
 
         private static string HandleModeTooltip() =>
             IsResizeMode() ? HandleModeTooltips[0] : HandleModeTooltips[1];
@@ -393,13 +455,13 @@ namespace KitchenDesigner.Core.UI
         private void ToggleHandleMode()
         {
             ResizeHandleManager.ToggleMode();
-            if (_handleModeIcon != null) _handleModeIcon.sprite = HandleModeIcon();
+            if (_handleModeIcon != null) _handleModeIcon.sprite = OutlineIcons.Get(HandleModeIconName());
             if (_handleModeButton != null) ReattachTooltip(_handleModeButton.gameObject, HandleModeTooltip());
         }
 
         private static void ReattachTooltip(GameObject target, string tooltip)
         {
-            var trigger = target.GetComponent<EventTrigger>();
+            var trigger = target.GetComponent<UnityEngine.EventSystems.EventTrigger>();
             if (trigger != null) trigger.triggers.Clear();
             TooltipUI.Attach(target, tooltip);
         }

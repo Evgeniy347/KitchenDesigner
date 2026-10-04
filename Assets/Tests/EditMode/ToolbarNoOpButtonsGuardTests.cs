@@ -20,6 +20,7 @@ public class ToolbarNoOpButtonsGuardTests
         public void TogglePanel(ToolbarPanel panel) { }
         public bool IsPanelVisible(ToolbarPanel panel) => false;
         public void SaveCurrent() { }
+        public void NewProject() { }
         public void SaveAs() { }
         public void LoadDialog() { }
     }
@@ -40,6 +41,7 @@ public class ToolbarNoOpButtonsGuardTests
         ["Errors"] = "переключатель панели: пустой список тоже показывают («ошибок нет»)",
         ["ProjectInstructions"] = "переключатель панели",
         ["Settings"] = "переключатель панели",
+        ["New"] = "всегда открывает диалог создания проекта",
         ["Save"] = "сохранение исполнимо и в чистом проекте: перезаписывает файл",
         ["SaveAs"] = "всегда открывает диалог",
         ["Load"] = "переключатель окна",
