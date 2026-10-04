@@ -278,6 +278,8 @@ namespace KitchenDesigner.Core.MCP
             var el = target.el;
             if (el is DrawerElement && (op.width.HasValue || op.height.HasValue || op.depth.HasValue))
                 errors.Add("width/height/depth not settable on drawers (size is parametric)");
+            if (el is SofaElement && op.height.HasValue)
+                errors.Add("height not settable on a sofa (it is fixed: backrest bottom + backrest height; width and depth stay editable, depth changes only the seat)");
         }
 
         private static void RejectFixedApplianceEdits(EditTarget target, List<string> errors)

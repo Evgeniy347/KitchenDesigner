@@ -218,24 +218,37 @@ namespace KitchenDesigner.Core.MCP
 
             var results = new List<object>();
             var errors = new List<string>();
+            var targets = new List<(string name, KitchenElement element)>();
             foreach (var name in p.names)
             {
                 var el = FindElementByName(name);
                 if (el == null) { errors.Add($"Element not found: {name}"); continue; }
-                var drawer = el as DrawerElement;
-                if (drawer == null) { errors.Add($"Element '{name}' is not a drawer"); continue; }
+                if (!(el is DrawerElement) && !(el is SofaElement))
+                { errors.Add($"Element '{name}' is not a drawer or a sofa"); continue; }
+                targets.Add((name, el));
+            }
+            if (errors.Count > 0)
+                return McpResponse.Error(req.id, -1,
+                    "cycle_drawer_animation rejected, NOTHING was cycled: " + string.Join(" | ", errors));
 
+            foreach (var (name, el) in targets)
+            {
+                if (el is SofaElement sofa)
+                {
+                    sofa.CycleOpenState();
+                    results.Add(new { name, isOpen = sofa.IsOpen, unfoldStage = sofa.UnfoldStage.ToString() });
+                    continue;
+                }
+
+                var drawer = (DrawerElement)el;
                 if (drawer.IsDouble)
                     drawer.CycleDoubleState();
                 else
                     drawer.ToggleOpen();
                 results.Add(new { name, isDouble = drawer.IsDouble, isOpen = drawer.IsOpen, doubleState = drawer.DoubleState.ToString() });
             }
-            if (errors.Count > 0)
-                return McpResponse.Error(req.id, -1,
-                    "cycle_drawer_animation rejected, NOTHING was cycled: " + string.Join(" | ", errors));
 
-            Debug.Log($"[MCP] Cycled {results.Count} drawers");
+            Debug.Log($"[MCP] Cycled {results.Count} drawers or sofas");
             return McpResponse.Result(req.id, new { ok = true, results, errors = errors.Count > 0 ? errors : null });
         }
 

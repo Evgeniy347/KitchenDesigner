@@ -289,13 +289,21 @@ ChairElement          Chair: a stool with a backrest (type:""chair"",
                       floor (450 mm by default). The backrest is a 20 mm panel at
                       the BACK (-Z), from the seat top to the overall height.
                       Seat and legs decors via tabletop_material/legs_material.
-SofaElement           Sofa (type:""sofa"", 2000x800x900 mm by default). NO armrests:
+SofaElement           Sofa-bed (type:""sofa"", 2000x800x900 mm by default). NO armrests:
                       four cushions instead — two upright on the back, two lying
-                      flat along the sides where armrests would be. corner_radius
-                      rounds the solid base BLOCK (120 mm by default); seat_height
-                      is that block's top above the floor (360 mm by default), and
-                      what is left up to height becomes the back. Body and cushion
-                      decors via tabletop_material/legs_material.
+                      flat along the sides where armrests would be. Three parts: the
+                      FRONT seat block, the BACKREST (180 mm thick, 700 mm tall, its
+                      bottom 100 mm above the floor) and an inner BOX with three
+                      compartments hidden under the seat. HEIGHT IS FIXED at 800 mm
+                      (height is rejected on edit); depth changes only the seat
+                      (depth - 180 mm), width is free. corner_radius rounds the seat
+                      block (120 mm by default); seat_height is its top above the
+                      floor (360 mm by default, clamped to 300..460). The sofa
+                      unfolds in two strictly sequential stages: cycle_drawer_animation
+                      moves it Folded -> Extended (seat slides out, the box shows) ->
+                      Bed (the backrest lowers flat onto the box) -> Folded. The
+                      stage is saved with the project (element.sofa.unfoldStage).
+                      Upholstery and cushion decors via tabletop_material/legs_material.
 PouffeElement         Pouffe (type:""pouffe"", 450x400x450 mm by default). An
                       upholstered box standing on the floor with NO legs, plus a
                       soft seat cushion on top. corner_radius rounds the whole box
@@ -731,8 +739,9 @@ DOUBLE DRAWERS: two stacked boxes moving as one system:
   (link BOTH drawers to each other; mark the upper one with is_upper:true).
 
 ANIMATION: cycle_drawer_animation toggles a single drawer open/closed; a double
-drawer cycles Closed -> BothOpen -> LowerOnly -> Closed. State is in
-element.drawer: isOpen, doubleState.
+drawer cycles Closed -> BothOpen -> LowerOnly -> Closed (a sofa steps through
+Folded -> Extended -> Bed -> Folded). State is in element.drawer: isOpen,
+doubleState.
 
 VALIDATION: drawer problems (bad length, missing pair, ...) appear as
 kind:""drawer_invalid"" entries in the violations list of mutation responses

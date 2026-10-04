@@ -128,7 +128,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public string? level_id;
         [McpParam("New width (X) in MM. Omit to keep. Rejected for drawers (their size is parametric).", Min = 1)] public int? width;
         [McpIgnore] public int? dimX;
-        [McpParam("New height (Y) in MM. Omit to keep. Rejected for drawers.", Min = 1)] public int? height;
+        [McpParam("New height (Y) in MM. Omit to keep. Rejected for drawers and for sofas (a sofa has a fixed height).", Min = 1)] public int? height;
         [McpIgnore] public int? dimY;
         [McpParam("New depth/thickness (Z) in MM. Omit to keep. Rejected for drawers.", Min = 1)] public int? depth;
         [McpIgnore] public int? dimZ;
@@ -277,8 +277,8 @@ namespace KitchenDesigner.Core.MCP.Contract
 
         [McpParam("Chair, sofa and both toilets: height of the seat TOP above the floor in MM. " +
                   "Chair: clamped to 80..height-50 — the legs and the backrest each keep at " +
-                  "least 50 mm. Sofa: it is the height of the solid base block, clamped to " +
-                  "150..height-200. Compact toilet: clamped to 350..502, and what is left up " +
+                  "least 50 mm. Sofa: it is the height of the solid seat block, clamped to " +
+                  "300..460. Compact toilet: clamped to 350..502, and what is left up " +
                   "to the fixed 790 mm becomes the cistern. Wall-hung toilet: clamped to " +
                   "350..600, and raising it PUSHES flush_plate_height up when the plate would " +
                   "land on the lid. Omit to keep.",

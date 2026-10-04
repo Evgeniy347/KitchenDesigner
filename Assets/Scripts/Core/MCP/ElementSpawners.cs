@@ -259,7 +259,7 @@ namespace KitchenDesigner.Core.MCP
 
         private static Vector3Int SofaDims(CreateItem item) => new Vector3Int(
             item.width ?? SofaElement.DefaultWidthMM,
-            item.height ?? SofaElement.DefaultHeightMM,
+            SofaElement.DefaultHeightMM,
             item.depth ?? SofaElement.DefaultDepthMM);
 
         private static Vector3Int PouffeDims(CreateItem item) => new Vector3Int(
