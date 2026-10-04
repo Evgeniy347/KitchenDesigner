@@ -9,7 +9,7 @@ namespace KitchenDesigner.Core.UI
             var levels = new List<Level>(LevelRegistry.Items);
             if (levels.Count <= 1)
             {
-                var single = SceneTree.Build(PartRegistry.All, GroupManager.AllGroups(), collapsedGroups);
+                var single = SceneTree.Build(PartRegistry.GetAll(), GroupManager.AllGroups(), collapsedGroups);
                 FoldLevelWhenCollapsed(single, collapsedLevels);
                 return single;
             }
