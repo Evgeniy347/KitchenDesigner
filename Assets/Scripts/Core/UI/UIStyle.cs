@@ -39,6 +39,8 @@ namespace KitchenDesigner.Core.UI
         public static readonly Color ScrollHandle = Hex(0x4A4E5A);
         public static readonly Color RaycastOnly = new Color(0f, 0f, 0f, 0.01f);
         public static readonly Color Transparent = new Color(0f, 0f, 0f, 0f);
+        public static readonly Color TintHidden = new Color(1f, 1f, 1f, 0f);
+        public static readonly Color TintPressed = new Color(0.85f, 0.85f, 0.85f, 1f);
 
         public static readonly Color DisabledTint = new Color(0.55f, 0.55f, 0.55f, 0.7f);
         public static readonly Color NoTint = Color.white;

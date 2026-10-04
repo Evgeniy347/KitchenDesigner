@@ -1058,6 +1058,7 @@
   "window.instructions.intro": "Convenções para o usuário e para o agente. Informe os números de geometria em linhas chave: valor, por exemplo bearing_wall_thickness_mm: 200.",
   "window.instructions.save": "Salvar",
   "window.instructions.title": "Instruções do projeto",
+  "window.instructions.unsaved": "Há alterações não salvas",
   "window.levels.elevation": "Cota",
   "window.levels.height": "Altura",
   "window.levels.name": "Nome",

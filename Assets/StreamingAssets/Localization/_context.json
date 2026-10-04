@@ -5583,6 +5583,11 @@
     "meaning": "Free-text conventions stored with the project for the user and the AI agent",
     "maxLength": 40
   },
+  "window.instructions.unsaved": {
+    "where": "Project instructions window: grey note at the left of the footer, next to the Save and Cancel buttons; shown only while the text differs from the saved one",
+    "meaning": "The text in the field has been edited and not saved yet",
+    "maxLength": 34
+  },
   "window.levels.elevation": {
     "where": "Levels window, column header (value in mm)",
     "meaning": "Height of the storey floor above the ground datum",

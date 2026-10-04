@@ -4,6 +4,7 @@ namespace KitchenDesigner.Core
     {
         None,
         ElementDrag,
+        ModalDialog,
         LightPick,
         Measure,
         Eyedropper,
@@ -21,6 +22,7 @@ namespace KitchenDesigner.Core
     public struct EscapeClaims
     {
         public bool Dragging;
+        public bool ModalOpen;
         public bool LightPicking;
         public bool Measuring;
         public bool Eyedropping;
@@ -40,6 +42,7 @@ namespace KitchenDesigner.Core
         public static EscapeOwner Resolve(EscapeClaims claims)
         {
             if (claims.Dragging) return EscapeOwner.ElementDrag;
+            if (claims.ModalOpen) return EscapeOwner.ModalDialog;
             if (claims.LightPicking) return EscapeOwner.LightPick;
             if (claims.Measuring) return EscapeOwner.Measure;
             if (claims.Eyedropping) return EscapeOwner.Eyedropper;

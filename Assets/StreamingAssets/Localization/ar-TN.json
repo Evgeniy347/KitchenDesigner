@@ -1058,6 +1058,7 @@
   "window.instructions.intro": "اصطلاحات للمستخدم والوكيل. اكتب أرقام الهندسة على شكل أسطر key: value، مثلًا bearing_wall_thickness_mm: 200.",
   "window.instructions.save": "حفظ",
   "window.instructions.title": "تعليمات المشروع",
+  "window.instructions.unsaved": "توجد تغييرات غير محفوظة",
   "window.levels.elevation": "المنسوب",
   "window.levels.height": "الارتفاع",
   "window.levels.name": "الاسم",

@@ -1058,6 +1058,7 @@
   "window.instructions.intro": "Vereinbarungen für Nutzer und Agent. Zahlen für die Geometrie als Zeilen key: value angeben, z. B. bearing_wall_thickness_mm: 200.",
   "window.instructions.save": "Speichern",
   "window.instructions.title": "Projektanweisungen",
+  "window.instructions.unsaved": "Ungespeicherte Änderungen",
   "window.levels.elevation": "Höhenkote",
   "window.levels.height": "Höhe",
   "window.levels.name": "Name",

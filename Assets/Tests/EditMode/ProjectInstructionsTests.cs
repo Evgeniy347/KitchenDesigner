@@ -1,3 +1,4 @@
+using System.Linq;
 using NUnit.Framework;
 using TMPro;
 using UnityEngine;
@@ -38,12 +39,19 @@ public class ProjectInstructionsTests
         ui.Build(canvas.transform);
 
         var panel = canvas.transform.Find("ProjectInstructionsPanel");
-        var input = panel.Find("PiText").GetComponent<TMP_InputField>();
+        ui.SetVisible(true);
+        var input = Node(panel, "PiText").GetComponent<TMP_InputField>();
+        var unsaved = Node(panel, "PiUnsaved").gameObject;
+        Assert.IsFalse(unsaved.activeSelf, "пока текст не тронут, футер не пугает «несохранёнными изменениями»");
         input.text = "partition_wall_thickness_mm: 100";
-        panel.Find("PiSave").GetComponent<Button>().onClick.Invoke();
+        Assert.IsTrue(unsaved.activeSelf, "правка видна в футере слева, пока её не сохранили (dialogs.md)");
+        Node(panel, "PiSave").GetComponent<Button>().onClick.Invoke();
 
         Assert.AreEqual("partition_wall_thickness_mm: 100", ProjectInstructions.Text);
         Assert.IsFalse(panel.gameObject.activeSelf);
         Object.DestroyImmediate(go);
     }
+
+    private static Transform Node(Transform root, string name) =>
+        root.GetComponentsInChildren<Transform>(true).First(t => t.name == name);
 }

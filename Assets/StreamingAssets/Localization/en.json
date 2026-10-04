@@ -1058,6 +1058,7 @@
   "window.instructions.intro": "Conventions for the user and the agent. Give geometry numbers as key: value lines, e.g. bearing_wall_thickness_mm: 200.",
   "window.instructions.save": "Save",
   "window.instructions.title": "Project instructions",
+  "window.instructions.unsaved": "Unsaved changes",
   "window.levels.elevation": "Elevation",
   "window.levels.height": "Height",
   "window.levels.name": "Name",

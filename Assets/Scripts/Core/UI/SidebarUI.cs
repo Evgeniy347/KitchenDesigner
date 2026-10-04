@@ -706,6 +706,7 @@ namespace KitchenDesigner.Core.UI
         private static bool OwnsEscape(bool catalogTileSelected = false, bool catalogCollapsible = false) =>
             EscapeOwnership.Resolve(new EscapeClaims
             {
+                ModalOpen = ModalPresence.IsOpen,
                 CatalogTileSelected = catalogTileSelected,
                 CatalogCollapsible = catalogCollapsible,
                 Dragging = ElementMover.IsDragging,

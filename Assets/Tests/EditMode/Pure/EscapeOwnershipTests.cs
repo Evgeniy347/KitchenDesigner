@@ -43,6 +43,33 @@ public class EscapeOwnershipTests
     }
 
     [Test]
+    public void ModalDialog_WinsOverEveryToolAndPanel_ButNotOverDragging()
+    {
+        var claims = new EscapeClaims
+        {
+            ModalOpen = true,
+            LightPicking = true,
+            Measuring = true,
+            Eyedropping = true,
+            HintOpen = true,
+            ConfirmArmed = true,
+            ContextMenuOpen = true,
+            GroupMenuOpen = true,
+            CatalogTileSelected = true,
+            CatalogCollapsible = true,
+            DayNightOpen = true,
+            MusicOpen = true,
+            LevelsWindowOpen = true,
+        };
+        Assert.AreEqual(EscapeOwner.ModalDialog, EscapeOwnership.Resolve(claims),
+            "модальный диалог перекрывает всё под подложкой: Escape закрывает его («Отмена»), а не "
+            + "панель или инструмент, которых пользователь сейчас не видит (dialogs.md, D5)");
+        claims.Dragging = true;
+        Assert.AreEqual(EscapeOwner.ElementDrag, EscapeOwnership.Resolve(claims),
+            "перетаскивание — единственное, что старше диалога: диалог может всплыть, пока деталь в руке");
+    }
+
+    [Test]
     public void LightPick_WinsOverEverythingBelowIt_ButNotOverDragging()
     {
         var claims = new EscapeClaims

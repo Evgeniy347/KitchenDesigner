@@ -21,6 +21,7 @@ namespace KitchenDesigner.Core.UI
             List<ContentSpan> into)
         {
             if (!node.gameObject.activeSelf) return;
+            if (node.GetComponent<WindowDecoration>() != null) return;
 
             if (node is RectTransform rect)
             {

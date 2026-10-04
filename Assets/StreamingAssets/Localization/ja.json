@@ -1058,6 +1058,7 @@
   "window.instructions.intro": "ユーザーとエージェント向けの取り決めです。ジオメトリの数値は key: value 形式の行で指定してください。例: bearing_wall_thickness_mm: 200。",
   "window.instructions.save": "保存",
   "window.instructions.title": "プロジェクトの指示",
+  "window.instructions.unsaved": "未保存の変更があります",
   "window.levels.elevation": "レベル",
   "window.levels.height": "高さ",
   "window.levels.name": "名前",

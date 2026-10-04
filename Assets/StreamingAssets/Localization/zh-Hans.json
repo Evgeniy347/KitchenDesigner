@@ -1058,6 +1058,7 @@
   "window.instructions.intro": "供用户和智能体共用的约定。几何数值请写成 key: value 的行，例如 bearing_wall_thickness_mm: 200。",
   "window.instructions.save": "保存",
   "window.instructions.title": "项目说明",
+  "window.instructions.unsaved": "有未保存的更改",
   "window.levels.elevation": "标高",
   "window.levels.height": "高度",
   "window.levels.name": "名称",

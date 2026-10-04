@@ -560,6 +560,7 @@ namespace KitchenDesigner.Core.UI
         private static bool OwnsEscape() =>
             EscapeOwnership.Resolve(new EscapeClaims
             {
+                ModalOpen = ModalPresence.IsOpen,
                 ContextMenuOpen = true,
                 Dragging = ElementMover.IsDragging,
                 LightPicking = Lighting.LightPickMode.Active,

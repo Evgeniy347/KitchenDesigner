@@ -120,6 +120,7 @@ namespace KitchenDesigner.Core.Lighting
         private static bool OwnsEscape() =>
             EscapeOwnership.Resolve(new EscapeClaims
             {
+                ModalOpen = ModalPresence.IsOpen,
                 LightPicking = true,
                 Dragging = ElementMover.IsDragging,
             }) == EscapeOwner.LightPick;

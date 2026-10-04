@@ -1058,6 +1058,7 @@
   "window.instructions.intro": "Conventions pour l’utilisateur et l’agent. Écrivez les nombres de géométrie en lignes key: value, par exemple bearing_wall_thickness_mm: 200.",
   "window.instructions.save": "Enregistrer",
   "window.instructions.title": "Instructions du projet",
+  "window.instructions.unsaved": "Modifications non enregistrées",
   "window.levels.elevation": "Altitude",
   "window.levels.height": "Hauteur",
   "window.levels.name": "Nom",

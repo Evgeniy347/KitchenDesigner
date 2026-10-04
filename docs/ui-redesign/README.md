@@ -49,12 +49,13 @@ chrome --headless=new --hide-scrollbars --force-device-scale-factor=1 --window-s
 Размеры окон: inspector 1180×1020, settings 1900×700, shell 1920×1080, errors 1500×620,
 specification 1000×700, load-project 1300×560, dialogs 1560×760, tool-panels 1560×560.
 
-## Вопросы пользователю (работу не блокируют)
+## Решения пользователя (2026-10-04)
 
-1. Заголовок инспектора: тип («Стена»), а имя — только в поле «Название» под ним? §7 сейчас требует
-   «Тип — Имя». До ответа T5 держит «Тип — Имя» с многоточием.
-2. Порядок кнопок диалога — Windows («Сохранить копию, Отмена» справа) вместо нынешнего «Отмена …
-   Сохранить». Принято по платформе; если привычнее старый — меняется одной константой `ModalDialog`.
+0. Макеты одобрены.
+1. Заголовок инспектора остаётся «Тип — Имя» (§7) с многоточием; поле «Название» — как было.
+2. Порядок кнопок — «Отмена | Основная», основная крайняя справа (`WindowFooter`, `ModalDialog`).
+   Макеты `dialogs.png`, `settings.png`, `specification.png` нарисованы в обратном порядке — в этом
+   месте следовать решению, а не макету.
 
 ## Порядок работ
 
@@ -82,3 +83,53 @@ specification 1000×700, load-project 1300×560, dialogs 1560×760, tool-panels 
 
 Unity-слой: всё, кроме T0, правит `Core/UI` — быстрый dotnet-набор его не собирает; исполнитель
 пишет «компиляция Unity-слоя не проверена», прогоны и регенерацию голденов делает координатор.
+
+## API общих компонентов (T0–T3 сделаны)
+
+Окна переезжают по одному; старые `UIFactory.Create*` продолжают работать рядом. Новое окно и окно,
+которое переводит своя задача, собираются ТОЛЬКО из этого — чисел по месту нет.
+
+**T0 — числа.** `NumberFormat` (`Core/Pure/Localization`, пространство `KitchenDesigner.Core`):
+`Fixed(v, n)` — текст (минус U+2212), `Input(v, n)` — значение поля ввода (ASCII «-», его считает
+калькулятор поля), `Compact(v, n)` — без хвостовых нулей («48», «26,8»), `Integer(v)`,
+`WithUnit(число, "мм")` — через неразрывный пробел, `TryParse`/`TryParseInt`/`Normalize` — читают обе
+запятую и точку и оба минуса. Знак берётся из `@decimal` файла языка. Сторож
+`UiNumberFormatGuardTests` (dotnet): в `Core/UI` нет `ToString("F1")`, `"0.0"`, `{x:0.0}`.
+
+**T1 — токены.** Всё из D2–D5/D11 — в `UIStyle` (`Space1..6`, `ControlH/ControlHCompact`, `TitleBarH`,
+`FooterH`, `DialogPad/ToolPanelPad/ModalPad`, колонки `InspectorLabelW/…`, `SettingsLabelW/…`, размеры
+окон, кегли `FontWindowTitle/Body/Section/Small/Caption/Mono`, цвета D4). `WindowPad` (12) оставлен
+старым окнам; переезжающее окно берёт `DialogPad`/`ToolPanelPad`. Скругление — `RoundedRectSprites`
+(`ControlFill`, `ControlStroke`, `WindowFill/Stroke/Shadow`, `Fill(r)`, `Ring(r, px)`) +
+`RoundedRectSprites.Apply(image, sprite)`. `UIFactory` уже скругляет кнопки, поля и списки и даёт
+полям рамку `FieldStroke` (`UIFactory.AddFieldStroke`). Новый цвет — пара в `UiContrastTests`.
+
+**T2 — масштаб.** Канва из `UIFactory.CreateCanvas` держит масштаб сама (`UiScaleFit`: пол 0,8125,
+множитель «Масштаб интерфейса»). Окно проверяется на 1366×768 — `WindowOverflowGuardTests.
+EveryProjectWindow_FitsTheBaseLaptopScreen_AtTheScaleFloor`; окно, которое не помещается в
+бюджет §7, вписано в `WindowsOverTheD1Budget` своей задачей и уходит оттуда ею же.
+
+**T3 — окно.**
+```csharp
+var chrome = WindowChrome.Create(canvas, "LevelsWindow", Loc.T("…title"), new Vector2(440, 360),
+    new WindowChromeOptions { Kind = WindowKind.Tool, OnClose = () => SetVisible(false),
+                              HasFooter = true, RuledHeader = true });
+chrome.AddHeaderAction("NewGroup", IconFactory.…, Loc.T("…tooltip"), onClick); // ≤ 2, перед ×
+var body = chrome.CreateBody();                      // WindowBody между шапкой и футером, паддинг по Kind
+var rows = new FormRows(body.Content, RowDensity.Compact);   // T4a, или VerticalStack для свободной вёрстки
+… body.Fit();
+chrome.Footer!.AddLeft("Reset", Loc.T("…"), onReset, ButtonRole.Link);   // вторичное — слева
+chrome.Footer.AddSecondary("Cancel", Loc.T("common.cancel"), onCancel); // «Отмена» — слева от основной
+chrome.Footer.AddPrimary("Save", Loc.T("…save"), onSave);              // основная — крайняя справа
+```
+`WindowRect` окна — `chrome.Panel`; × называется `CloseBtn` (его ищут `WindowChromeGuardTests` и
+`NoDuplicateCloseGuardTests`); заголовок — `chrome.Title`/`SetTitle`. Панель — `WindowSurface`
+(заливка, рамка, тень — узлы с `WindowDecoration`, сторож переполнения их не меряет). Кнопки по роли —
+`ButtonRoles.Paint(button, ButtonRole.Primary|Danger|Secondary|Link)`; тихая иконная — `QuietButton.Apply`.
+Модальный диалог: `var d = ModalDialog.Build(parent, "Name")` один раз, `d.Show(new ModalDialogContent {
+Title, Body, Note?, PrimaryCaption, OnPrimary, SecondaryCaption? (= «Отмена»), OnSecondary?, Danger })`;
+высота по содержимому, Enter/Esc, Escape забирает первым (`EscapeOwner.ModalDialog`; новый держатель
+Escape обязан передать `ModalOpen = ModalPresence.IsOpen` в свои `EscapeClaims`). Снимок окна для
+глаз — `UiCaptureStage` (PlayMode), образец `WindowChromeDiagramTests`.
+Переведены: «Инструкции проекта» (шапка+футер), `DemoModeDialogUI` (модальный). Остальные шапки — задачи
+T5–T11; `NewerVersionDialogUI` — T9.

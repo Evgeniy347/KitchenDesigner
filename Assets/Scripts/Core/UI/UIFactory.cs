@@ -202,7 +202,8 @@ namespace KitchenDesigner.Core.UI
             AnchorTopRight(rt);
             rt.anchoredPosition = new Vector2(-UIStyle.CloseBtnInset, -UIStyle.CloseBtnInset);
             var lbl = btn.GetComponentInChildren<TMP_Text>();
-            if (lbl != null) lbl.fontSize = 20;
+            if (lbl != null) lbl.fontSize = UIStyle.FontWindowTitle;
+            QuietButton.Apply(btn);
             btn.transform.SetAsLastSibling();
             return btn;
         }

@@ -5,42 +5,52 @@ namespace KitchenDesigner.Core.UI
 {
     public class ProjectInstructionsPanelUI : MonoBehaviour, IProjectWindow
     {
-        private GameObject? _root;
+        private static readonly Vector2 Size = new Vector2(640f, 560f);
+
+        private WindowChrome? _chrome;
         private TMP_InputField? _text;
+        private TMP_Text? _unsaved;
 
         public string WindowId => "projectInstructions";
-        public RectTransform? WindowRect => _root != null ? (RectTransform)_root.transform : null;
+        public RectTransform? WindowRect => _chrome?.Panel;
         public bool HeightAdjustable => false;
 
-        public bool IsVisible => _root != null && _root.activeSelf;
+        public bool IsVisible => _chrome != null && _chrome.Panel.gameObject.activeSelf;
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("ProjectInstructionsPanel", canvas,
-                Vector2.zero, new Vector2(640, 560));
-            UIFactory.AnchorCenter(panel.rectTransform);
-            panel.rectTransform.anchoredPosition = Vector2.zero;
-            WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
-            _root = panel.gameObject;
+            _chrome = WindowChrome.Create(canvas, "ProjectInstructionsPanel",
+                Loc.T("window.instructions.title"), Size, new WindowChromeOptions
+                {
+                    OnClose = () => SetVisible(false),
+                    HasFooter = true,
+                    RuledHeader = true,
+                });
             ProjectWindows.Register(this);
 
-            WindowTitle.Create(panel.transform, "PiTitle", Loc.T("window.instructions.title"),
-                UIStyle.FontWindowTitle, 590f, 34f);
-            UIFactory.CreateLabel("PiHint", panel.transform,
-                Loc.T("window.instructions.intro"), 14,
-                new Vector2(0, 202), new Vector2(590, 52), TextAnchor.UpperLeft);
+            var body = _chrome.CreateBody();
+            float width = _chrome.BodyWidth;
+            var stack = new VerticalStack(body.Content, width);
+            var intro = stack.Text("PiHint", Loc.T("window.instructions.intro"), UIStyle.FontSmall,
+                UIStyle.TextSecondary);
+            stack.Gap(UIStyle.Space2);
 
-            _text = UIFactory.CreateInputField("PiText", panel.transform, ProjectInstructions.Text,
-                new Vector2(0, 0), new Vector2(590, 350));
+            _text = UIFactory.CreateInputField("PiText", body.Content, ProjectInstructions.Text,
+                Vector2.zero, new Vector2(width, body.VisibleHeight - stack.Height - WindowBody.BottomPadPx));
             _text.lineType = TMP_InputField.LineType.MultiLineNewline;
             _text.textComponent!.alignment = TextAlignmentOptions.TopLeft;
+            _text.textComponent.fontSize = UIStyle.FontMono;
+            stack.Place((RectTransform)_text.transform);
+            _text.onValueChanged.AddListener(_ => SyncUnsaved());
+            body.Fit();
+            intro.raycastTarget = false;
 
-            UIFactory.CreateButton("PiSave", panel.transform, Loc.T("window.instructions.save"),
-                new Vector2(-90, -242), new Vector2(160, 38), Save);
-            UIFactory.CreateButton("PiCancel", panel.transform, Loc.T("common.cancel"),
-                new Vector2(90, -242), new Vector2(160, 38), () => SetVisible(false));
-            UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
-            _root.SetActive(false);
+            var footer = _chrome.Footer!;
+            _unsaved = footer.AddLeftText("PiUnsaved", Loc.T("window.instructions.unsaved"));
+            footer.AddSecondary("PiCancel", Loc.T("common.cancel"), () => SetVisible(false));
+            footer.AddPrimary("PiSave", Loc.T("window.instructions.save"), Save);
+            SyncUnsaved();
+            _chrome.Panel.gameObject.SetActive(false);
         }
 
         private void OnDestroy() => ProjectWindows.Unregister(this);
@@ -49,9 +59,17 @@ namespace KitchenDesigner.Core.UI
 
         public void SetVisible(bool visible)
         {
-            if (_root == null) return;
+            if (_chrome == null) return;
             if (visible && _text != null) _text.text = ProjectInstructions.Text;
-            _root.SetActive(visible);
+            SyncUnsaved();
+            _chrome.Panel.gameObject.SetActive(visible);
+        }
+
+        internal bool HasUnsavedChanges => _text != null && _text.text != ProjectInstructions.Text;
+
+        private void SyncUnsaved()
+        {
+            if (_unsaved != null) _unsaved.gameObject.SetActive(HasUnsavedChanges);
         }
 
         private void Save()
