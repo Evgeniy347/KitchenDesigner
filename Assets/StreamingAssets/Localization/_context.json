@@ -190,7 +190,7 @@
     "maxLength": 24
   },
   "common.selectedCount": {
-    "where": "Multi-select filter dropdown caption (Errors window filters)",
+    "where": "Multi-select filter dropdown caption (Errors window filters); Scene panel footer, how many parts are selected",
     "meaning": "Number of checked options in the filter",
     "maxLength": 18,
     "placeholders": {
@@ -562,9 +562,9 @@
     }
   },
   "dialog.newerVersion.open": {
-    "where": "Newer-version dialog, confirm button",
-    "meaning": "Open the project anyway",
-    "maxLength": 16
+    "where": "Newer-version dialog, confirm (right-most) button next to Cancel; the button grows to fit its caption",
+    "meaning": "Open the project anyway, accepting that this version does not know some of its objects",
+    "maxLength": 24
   },
   "dialog.newerVersion.title": {
     "where": "Dialog shown before opening a project saved by a newer app version, title",
@@ -859,10 +859,29 @@
     "meaning": "Position and rotation section",
     "maxLength": 22
   },
-  "element.common.rotate90": {
-    "where": "Element properties panel > Position, caption above the X/Y/Z 90° buttons",
-    "meaning": "Rotate the element by 90 degrees around an axis",
-    "maxLength": 30
+  "element.common.positionMm": {
+    "where": "Element properties panel > Position, caption above the X/Y/Z coordinate fields",
+    "meaning": "Coordinates of the element in millimetres; the unit is part of the caption",
+    "maxLength": 22
+  },
+  "element.common.properties": {
+    "where": "Element properties panel, section header above the Transparent and Lock switches",
+    "meaning": "Section with the on/off properties of the element",
+    "maxLength": 22
+  },
+  "element.common.rotateAxis": {
+    "where": "Element properties panel > Position, tooltip of the small turn button inside a rotation field",
+    "meaning": "Turn the element by a quarter turn (or a half turn for windows and doors) around the axis of that field",
+    "maxLength": 40,
+    "placeholders": {
+      "0": "angle in degrees (90 or 180)",
+      "1": "axis letter X, Y or Z; keep the Latin letter"
+    }
+  },
+  "element.common.rotationDeg": {
+    "where": "Element properties panel > Position, caption above the X/Y/Z angle fields",
+    "meaning": "Rotation of the element in degrees around each axis; the unit is part of the caption",
+    "maxLength": 22
   },
   "element.common.texture": {
     "where": "Element properties panel > Material section, dropdown row label",
@@ -888,21 +907,6 @@
     "where": "Element properties panel > Dimensions, number row label",
     "meaning": "Width of the element",
     "maxLength": 22
-  },
-  "element.common.xMm": {
-    "where": "Element properties panel > Position, small caption above a coordinate field",
-    "meaning": "X coordinate in millimetres",
-    "maxLength": 8
-  },
-  "element.common.yMm": {
-    "where": "Element properties panel > Position, small caption above a coordinate field",
-    "meaning": "Y coordinate in millimetres",
-    "maxLength": 8
-  },
-  "element.common.zMm": {
-    "where": "Element properties panel > Position, small caption above a coordinate field",
-    "meaning": "Z coordinate in millimetres",
-    "maxLength": 8
   },
   "element.cooktop.cutoutDepth": {
     "where": "Element properties panel > cooktop, number row label",
@@ -1044,8 +1048,17 @@
     "meaning": "Clicking a side of the diagram cycles its edge banding: automatic, forced on, removed",
     "maxLength": 44
   },
+  "element.edge.countOf": {
+    "where": "Element properties panel > part > edge banding, grey counter next to the section title",
+    "meaning": "How many of the four sides of the part carry edge banding",
+    "maxLength": 12,
+    "placeholders": {
+      "0": "sides with an edge",
+      "1": "total sides (4)"
+    }
+  },
   "element.edge.enabled": {
-    "where": "Element properties panel > part, toggle row label",
+    "where": "Element properties panel > part > edge banding, switch row label",
     "meaning": "Turn edge banding of this part on or off",
     "maxLength": 22
   },
@@ -1053,6 +1066,11 @@
     "where": "Element properties panel > part > edge banding, number row label",
     "meaning": "Thickness of the edge banding tape",
     "maxLength": 22
+  },
+  "element.edge.title": {
+    "where": "Element properties panel > part, collapsible section title (\"3 of 4\" follows it)",
+    "meaning": "Edge banding section",
+    "maxLength": 18
   },
   "element.facade.doorMode": {
     "where": "Element properties panel > front, dropdown row label",
@@ -1259,19 +1277,10 @@
     "meaning": "Soil type under the foundation",
     "maxLength": 22
   },
-  "element.gaps.header": {
-    "where": "Element properties panel, collapsible section button",
-    "meaning": "Clearances section; count of sides with a non-zero gap and an expand/collapse glyph",
-    "maxLength": 24,
-    "placeholders": {
-      "0": "number of sides with a gap",
-      "1": "expand/collapse glyph ▼ or ►"
-    }
-  },
-  "element.gaps.headerEmpty": {
-    "where": "Element properties panel, collapsible section button (initial caption)",
-    "meaning": "Clearances around the element; none set yet",
-    "maxLength": 24
+  "element.gaps.title": {
+    "where": "Element properties panel, collapsible section title (a count follows it)",
+    "meaning": "Clearances section; the count is the number of sides with a non-zero gap",
+    "maxLength": 18
   },
   "element.grille.airflow": {
     "where": "Properties panel, ventilation grille, number row label",
@@ -1282,20 +1291,6 @@
     "where": "Default name given to a newly created element of this type (shown in the hierarchy and panels, saved in the project)",
     "meaning": "Ventilation grille",
     "maxLength": 30
-  },
-  "element.groove.header": {
-    "where": "Element properties panel > part, collapsible section button",
-    "meaning": "Grooves section; count of grooves and an expand/collapse glyph",
-    "maxLength": 24,
-    "placeholders": {
-      "0": "number of grooves",
-      "1": "expand/collapse glyph ▼ or ►"
-    }
-  },
-  "element.groove.headerEmpty": {
-    "where": "Element properties panel > part, collapsible section button (initial caption)",
-    "meaning": "Grooves section; no grooves yet",
-    "maxLength": 24
   },
   "element.groove.hint": {
     "where": "Element properties panel > part > grooves, grey hint line",
@@ -1336,6 +1331,11 @@
     "where": "Element properties panel > part > grooves, side dropdown option",
     "meaning": "Groove along the top side of the part",
     "maxLength": 10
+  },
+  "element.groove.title": {
+    "where": "Element properties panel > part, collapsible section title (a count follows it)",
+    "meaning": "Grooves section",
+    "maxLength": 18
   },
   "element.laundry.kind": {
     "where": "Element properties panel > laundry machine, dropdown row label",
@@ -1747,19 +1747,20 @@
     "meaning": "Table top board",
     "maxLength": 20
   },
-  "element.texture.header": {
-    "where": "Element properties panel, collapsible section button",
-    "meaning": "Texture overlays section; count and an expand/collapse glyph",
-    "maxLength": 24,
-    "placeholders": {
-      "0": "number of texture overlays",
-      "1": "expand/collapse glyph ▼ or ►"
-    }
+  "element.texture.editArea": {
+    "where": "Element properties panel > Textures section, tooltip of the pencil button in a row",
+    "meaning": "Edit the rectangle of the face that the texture covers, with handles in the scene",
+    "maxLength": 30
   },
-  "element.texture.headerEmpty": {
-    "where": "Element properties panel, collapsible section button (initial caption)",
-    "meaning": "Texture overlays section; none yet",
-    "maxLength": 24
+  "element.texture.emptyHint": {
+    "where": "Element properties panel > Textures section, grey hint under the title while the list is empty",
+    "meaning": "Explains what the add link in the section header does; the link caption is the common Add word with a plus sign",
+    "maxLength": 80
+  },
+  "element.texture.title": {
+    "where": "Element properties panel, collapsible section title (a count follows it)",
+    "meaning": "Texture overlays section",
+    "maxLength": 18
   },
   "element.toilet.defaultName": {
     "where": "Default name given to a newly created element of this type (shown in the hierarchy and panels, saved in the project)",
@@ -2051,6 +2052,11 @@
     "meaning": "Вентзазор — Vent gap",
     "maxLength": 24
   },
+  "elementType.wall": {
+    "where": "Element type name: properties panel title \"Type — Name\", hierarchy, specification",
+    "meaning": "A wall of the house (a plain element carrying the wall behaviour)",
+    "maxLength": 24
+  },
   "elementType.wallHungToilet": {
     "where": "Element type name: properties panel title \"Type — Name\", hierarchy, specification, catalog; Default name given to a newly created element of this type (shown in the hierarchy and panels, saved in the project); Element type name: properties-panel / context-menu title, specification line, default element name",
     "meaning": "Унитаз подвесной — Wall-hung toilet",
@@ -2066,6 +2072,16 @@
     "meaning": "Окно — Window",
     "maxLength": 24
   },
+  "errors.chip.errors": {
+    "where": "Errors window, filter chip next to \"All\": only errors; a count follows the label",
+    "meaning": "Severity filter: issues that must be fixed",
+    "maxLength": 24
+  },
+  "errors.chip.warnings": {
+    "where": "Errors window, filter chip: only warnings; a count follows the label",
+    "meaning": "Severity filter: issues worth a look but not blocking",
+    "maxLength": 26
+  },
   "errors.column.code": {
     "where": "Errors window, table column header",
     "meaning": "Issue code such as COL-01",
@@ -2073,60 +2089,53 @@
   },
   "errors.column.message": {
     "where": "Errors window, table column header",
-    "meaning": "Text describing the issue",
-    "maxLength": 30
+    "meaning": "Human-readable description of the problem",
+    "maxLength": 20
   },
   "errors.column.part": {
     "where": "Errors window, table column header",
     "meaning": "Name of the element the issue is about",
     "maxLength": 16
   },
-  "errors.column.severity": {
-    "where": "Errors window, caption above the severity filter and table column header",
-    "meaning": "Issue level: error / warning / info",
-    "maxLength": 14
+  "errors.empty.hint": {
+    "where": "Errors window, empty state hint under the title",
+    "meaning": "Explains that nobody needs to press a button: the check reruns after each edit",
+    "maxLength": 60
   },
-  "errors.countShown": {
-    "where": "Errors window, count label when filters hide some issues",
-    "meaning": "Number of issues visible after filtering out of the total",
-    "maxLength": 40,
-    "placeholders": {
-      "0": "issues shown",
-      "1": "total issues"
-    }
-  },
-  "errors.countTotal": {
-    "where": "Errors window, count label when no filter is active",
-    "meaning": "Number of issues found",
-    "maxLength": 40,
-    "placeholders": {
-      "0": "number of issues"
-    }
+  "errors.empty.title": {
+    "where": "Errors window, empty state title when the project has no issues",
+    "meaning": "The check found nothing wrong",
+    "maxLength": 24
   },
   "errors.filter.all": {
-    "where": "Errors window, placeholder of a multi-select filter dropdown when nothing is filtered",
-    "meaning": "No filter: all values are shown",
+    "where": "Errors window, caption of the first filter chip (all severities); a count follows the label",
+    "meaning": "No filter: every issue is shown",
     "maxLength": 10
   },
-  "errors.filter.code": {
-    "where": "Errors window, caption above the error-code filter dropdown",
-    "meaning": "Filter by issue code such as COL-01",
-    "maxLength": 20
+  "errors.filter.allCodes": {
+    "where": "Errors window, caption of the issue-code dropdown when nothing is filtered",
+    "meaning": "No filter: issues with every code are shown",
+    "maxLength": 18
   },
-  "errors.filter.floor": {
-    "where": "Errors window, caption above the storey filter dropdown",
-    "meaning": "Filter by building storey",
-    "maxLength": 12
-  },
-  "errors.filter.search": {
-    "where": "Errors window, caption above the search field",
-    "meaning": "Free-text search over the issue list",
-    "maxLength": 30
+  "errors.filter.allFloors": {
+    "where": "Errors window, caption of the floor dropdown when nothing is filtered",
+    "meaning": "No filter: issues on every storey are shown",
+    "maxLength": 18
   },
   "errors.filter.searchHint": {
-    "where": "Errors window, grey placeholder inside the search field",
-    "meaning": "What can be typed: an issue code, a part name or message text",
-    "maxLength": 34
+    "where": "Errors window, placeholder inside the search field",
+    "meaning": "Search runs over the code, the part name and the message text",
+    "maxLength": 32
+  },
+  "errors.goFirst": {
+    "where": "Errors window, footer button",
+    "meaning": "Select the first error in the list and show it in the scene",
+    "maxLength": 26
+  },
+  "errors.hint": {
+    "where": "Errors window, footer, left; a hint about double click",
+    "meaning": "Double click on a row selects the part in the scene and moves the camera to it",
+    "maxLength": 60
   },
   "errors.level.error": {
     "where": "Errors window, severity column value and severity filter option",
@@ -2143,15 +2152,15 @@
     "meaning": "Severity: warning",
     "maxLength": 14
   },
-  "errors.noIssues": {
-    "where": "Errors window, count label when the project has no issues",
-    "meaning": "The check found nothing",
-    "maxLength": 40
+  "errors.nothingFound.hint": {
+    "where": "Errors window, empty state hint when filters hide every issue",
+    "meaning": "Tells to relax the filters or the search text",
+    "maxLength": 50
   },
-  "errors.refresh": {
-    "where": "Errors window, button",
-    "meaning": "Re-run the project check",
-    "maxLength": 14
+  "errors.nothingFound.title": {
+    "where": "Errors window, empty state title when filters or search hide every issue",
+    "meaning": "Nothing matches the current filters",
+    "maxLength": 24
   },
   "errors.title": {
     "where": "Errors window, title",
@@ -2221,6 +2230,11 @@
       "0": "group number"
     }
   },
+  "group.deleteAll": {
+    "where": "Group menu, footer button (outline, two-click confirm)",
+    "meaning": "Delete the group together with every part in it (undoable)",
+    "maxLength": 28
+  },
   "group.editBanner.done": {
     "where": "Module edit banner (top of screen), button",
     "meaning": "Finish editing the module",
@@ -2270,14 +2284,29 @@
     "maxLength": 26
   },
   "group.unlink": {
-    "where": "Group menu, button",
-    "meaning": "Dissolve the group link",
+    "where": "Group menu, footer button",
+    "meaning": "Dissolve the group: the parts stay in the scene, only the grouping goes away (undoable)",
     "maxLength": 22
   },
   "hierarchy.addGroup": {
-    "where": "Scene (hierarchy) panel, small button",
+    "where": "Scene (hierarchy) panel, tooltip of the plus icon in the title row",
     "meaning": "Create a new empty group",
-    "maxLength": 10
+    "maxLength": 24
+  },
+  "hierarchy.empty.hint": {
+    "where": "Scene (hierarchy) panel, empty state, second line",
+    "meaning": "Tell the user how to put the first part into an empty scene",
+    "maxLength": 40
+  },
+  "hierarchy.empty.title": {
+    "where": "Scene (hierarchy) panel, empty state, first line",
+    "meaning": "The project contains no parts yet",
+    "maxLength": 24
+  },
+  "hierarchy.groupMenu": {
+    "where": "Scene (hierarchy) panel, tooltip of the three-dot button on a group row",
+    "meaning": "Open the menu of this group",
+    "maxLength": 24
   },
   "hierarchy.moveTo": {
     "where": "Scene (hierarchy) panel, dropdown placeholder",
@@ -2288,6 +2317,16 @@
     "where": "Scene (hierarchy) panel, \"Move to…\" dropdown option",
     "meaning": "Create a new group and move the selection into it",
     "maxLength": 30
+  },
+  "hierarchy.noMatches.hint": {
+    "where": "Scene (hierarchy) panel, empty state of the search, second line",
+    "meaning": "Suggest changing the search text",
+    "maxLength": 36
+  },
+  "hierarchy.noMatches.title": {
+    "where": "Scene (hierarchy) panel, empty state of the search, first line",
+    "meaning": "The search text matched no row",
+    "maxLength": 24
   },
   "hierarchy.rootKitchen": {
     "where": "Scene (hierarchy) panel, root node label (fallback)",
@@ -4098,6 +4137,11 @@
       "0": "build date"
     }
   },
+  "settings.about.copy": {
+    "where": "Settings window, About page: button under the details table",
+    "meaning": "Copies the product name, version and build details to the clipboard for a bug report",
+    "maxLength": 24
+  },
   "settings.about.gpu": {
     "where": "Settings > About tab, info line",
     "meaning": "Name of the video card the program is actually rendering on",
@@ -4285,6 +4329,11 @@
     "meaning": "LMB = left mouse button; dragging on empty space pans the camera",
     "maxLength": 120
   },
+  "settings.control.resetHotkeys": {
+    "where": "Settings window, Controls page: link at the right end of the keyboard shortcuts section header; also the name of its undo step",
+    "meaning": "Puts every keyboard shortcut back to its default",
+    "maxLength": 20
+  },
   "settings.control.section.fixed": {
     "where": "Settings > Controls tab, section header",
     "meaning": "Controls that cannot be rebound to a key",
@@ -4295,10 +4344,35 @@
     "meaning": "List of rebindable shortcuts",
     "maxLength": 40
   },
+  "settings.control.section.mouse": {
+    "where": "Settings window, Controls page: section title",
+    "meaning": "Mouse sensitivity, camera speed and axis inversion",
+    "maxLength": 24
+  },
   "settings.control.wasdSpeed": {
     "where": "Settings > Controls tab, row label (slider)",
     "meaning": "Camera movement speed with the W/A/S/D keys",
     "maxLength": 36
+  },
+  "settings.empty.hint": {
+    "where": "Settings window: second line under the \"nothing found\" statement",
+    "meaning": "Suggests changing the search text or clearing it",
+    "maxLength": 60
+  },
+  "settings.empty.title": {
+    "where": "Settings window: shown instead of a page when the search finds nothing",
+    "meaning": "Short statement that no setting matches the typed text",
+    "maxLength": 28
+  },
+  "settings.footer.applied": {
+    "where": "Settings window footer: quiet note at the right",
+    "meaning": "Explains why there is no Save/Cancel: every change is applied at once",
+    "maxLength": 40
+  },
+  "settings.general.section.interface": {
+    "where": "Settings window, General page: section title",
+    "meaning": "Language and interface scale of the program",
+    "maxLength": 24
   },
   "settings.light.ambient": {
     "where": "Settings > Light tab, slider row label",
@@ -4507,6 +4581,71 @@
     "meaning": "The MCP bridge runs whenever the app is open",
     "maxLength": 150
   },
+  "settings.nav.group.house": {
+    "where": "Settings window: caption of a group in the left navigation (Construction)",
+    "meaning": "Group of pages about the building being designed",
+    "maxLength": 14
+  },
+  "settings.nav.group.other": {
+    "where": "Settings window: caption of a group in the left navigation (MCP, About)",
+    "meaning": "Group of the remaining pages",
+    "maxLength": 14
+  },
+  "settings.nav.group.picture": {
+    "where": "Settings window: caption of a group in the left navigation (Light, Photo mode)",
+    "meaning": "Group of pages about the rendered picture",
+    "maxLength": 14
+  },
+  "settings.nav.search": {
+    "where": "Settings window: placeholder of the search field above the left navigation",
+    "meaning": "Hint inside the empty search box; typing filters the settings by name and hint text",
+    "maxLength": 20
+  },
+  "settings.page.about": {
+    "where": "Settings window: one-line explanation under the page title \"About\"",
+    "meaning": "Version and build details that help to write a bug report",
+    "maxLength": 70
+  },
+  "settings.page.construction": {
+    "where": "Settings window: one-line explanation under the page title \"Construction\"",
+    "meaning": "Norms and materials used by the construction calculations",
+    "maxLength": 70
+  },
+  "settings.page.control": {
+    "where": "Settings window: one-line explanation under the page title \"Controls\"",
+    "meaning": "Mouse, keyboard shortcuts and camera movement speed",
+    "maxLength": 70
+  },
+  "settings.page.general": {
+    "where": "Settings window: one-line explanation under the page title \"General\"",
+    "meaning": "These settings belong to the program, not to the open project",
+    "maxLength": 70
+  },
+  "settings.page.light": {
+    "where": "Settings window: one-line explanation under the page title \"Light\"",
+    "meaning": "Lighting and tone of the rendered picture in photo mode",
+    "maxLength": 70
+  },
+  "settings.page.mcp": {
+    "where": "Settings window: one-line explanation under the page title \"MCP\"",
+    "meaning": "How to connect an AI agent (MCP client) to the program",
+    "maxLength": 70
+  },
+  "settings.page.photo": {
+    "where": "Settings window: one-line explanation under the page title \"Photo mode\"",
+    "meaning": "Render quality and effects of photo mode",
+    "maxLength": 70
+  },
+  "settings.page.project": {
+    "where": "Settings window: one-line explanation under the page title \"Project\"",
+    "meaning": "These settings are stored in the project file and apply only to that project",
+    "maxLength": 70
+  },
+  "settings.page.view": {
+    "where": "Settings window: one-line explanation under the page title \"View\"",
+    "meaning": "What is shown in the 3D scene, set separately for each editing mode",
+    "maxLength": 70
+  },
   "settings.photo.antiAliasing": {
     "where": "Settings > Photo mode tab, row label (toggle)",
     "meaning": "Smooth jagged edges",
@@ -4587,10 +4726,20 @@
     "meaning": "Rendering resolution in percent of the screen",
     "maxLength": 36
   },
+  "settings.photo.section.quality": {
+    "where": "Settings window, Photo mode page: section title",
+    "meaning": "Quality preset and the switches it controls",
+    "maxLength": 24
+  },
   "settings.photo.section.resolution": {
     "where": "Settings > Photo mode tab, section header",
     "meaning": "Render resolution and shadow quality",
     "maxLength": 40
+  },
+  "settings.photo.section.scene": {
+    "where": "Settings window, Photo mode page: section title",
+    "meaning": "Ceiling, global illumination and HDR switches",
+    "maxLength": 24
   },
   "settings.photo.section.ssgi": {
     "where": "Settings > Photo mode tab, section header",
@@ -4692,6 +4841,26 @@
     "meaning": "Interface language of the application",
     "maxLength": 30
   },
+  "settings.project.section.camera": {
+    "where": "Settings window, Project page: section title",
+    "meaning": "Camera behaviour stored with the project",
+    "maxLength": 24
+  },
+  "settings.project.section.checks": {
+    "where": "Settings window, Project page: section title",
+    "meaning": "Validation of the design (blocking invalid changes, edge band threshold)",
+    "maxLength": 24
+  },
+  "settings.project.section.grid": {
+    "where": "Settings window, Project page: section title",
+    "meaning": "Grid and snapping of parts to each other",
+    "maxLength": 24
+  },
+  "settings.project.section.save": {
+    "where": "Settings window, Project page: section title",
+    "meaning": "Automatic saving of the project",
+    "maxLength": 24
+  },
   "settings.project.snap": {
     "where": "Settings > Project tab, toggle row label",
     "meaning": "Dragged parts stick to faces and edges of nearby parts",
@@ -4717,38 +4886,48 @@
     "meaning": "The size is picked from the screen resolution automatically (100 %); feminine in languages where it agrees with 'scale'",
     "maxLength": 16
   },
+  "settings.reset.section": {
+    "where": "Settings window footer: link at the left, shown on pages that have factory defaults (Controls, Light, Photo mode); also the name of its undo step",
+    "meaning": "Puts every setting of the open page back to its factory value in one step; \"section\" means the page of the settings window",
+    "maxLength": 26
+  },
   "settings.tab.about": {
-    "where": "Settings window, tab button",
+    "where": "Settings window, navigation item",
     "meaning": "About the program tab",
     "maxLength": 14
   },
   "settings.tab.construction": {
-    "where": "Settings window, tab button",
+    "where": "Settings window, navigation item",
     "meaning": "Building/construction defaults tab",
     "maxLength": 14
   },
   "settings.tab.control": {
-    "where": "Settings window, tab button",
+    "where": "Settings window, navigation item",
     "meaning": "Mouse and keyboard controls tab",
     "maxLength": 14
   },
+  "settings.tab.general": {
+    "where": "Settings window, navigation item",
+    "meaning": "Settings of the program itself (language, interface scale), not of the project",
+    "maxLength": 14
+  },
   "settings.tab.light": {
-    "where": "Settings window, tab button",
+    "where": "Settings window, navigation item",
     "meaning": "Lighting and post-processing tab",
     "maxLength": 14
   },
   "settings.tab.photo": {
-    "where": "Settings window, tab button",
+    "where": "Settings window, navigation item",
     "meaning": "Photo mode render quality tab",
     "maxLength": 14
   },
   "settings.tab.project": {
-    "where": "Settings window, tab button",
+    "where": "Settings window, navigation item",
     "meaning": "Project settings tab",
     "maxLength": 14
   },
   "settings.tab.view": {
-    "where": "Settings window, tab button",
+    "where": "Settings window, navigation item",
     "meaning": "Display settings tab",
     "maxLength": 14
   },
@@ -4812,6 +4991,16 @@
     "meaning": "Light-related display settings",
     "maxLength": 40
   },
+  "settings.view.section.preset": {
+    "where": "Settings window, View page: section title above the mode switch",
+    "meaning": "Choose which editing mode's visibility preset is being edited",
+    "maxLength": 24
+  },
+  "settings.view.section.scene": {
+    "where": "Settings window, View page: section title",
+    "meaning": "Visibility of walls and objects in the scene",
+    "maxLength": 24
+  },
   "settings.view.wallOutline": {
     "where": "Settings > View tab, internal row id of the wall Outline toggle (not displayed)",
     "meaning": "Outline of walls",
@@ -4822,10 +5011,25 @@
     "meaning": "Show walls",
     "maxLength": 36
   },
+  "sidebar.collapse": {
+    "where": "Sidebar catalog, tooltip of the button that folds the catalog into an icon rail",
+    "meaning": "Collapse the catalog panel",
+    "maxLength": 28
+  },
   "sidebar.dockMode.tooltip": {
     "where": "Sidebar, tooltip of the dock-mode toggle icon button",
     "meaning": "Explains the two sidebar modes (expanded dock vs collapsing icon rail)",
     "maxLength": 220
+  },
+  "sidebar.expand": {
+    "where": "Sidebar catalog, tooltip of the button that unfolds the icon rail back into the full catalog",
+    "meaning": "Expand the catalog panel",
+    "maxLength": 28
+  },
+  "sidebar.pin": {
+    "where": "Sidebar catalog, tooltip of the pin toggle",
+    "meaning": "Pinned catalog stays open; unpinned it folds when the user clicks in the 3D scene",
+    "maxLength": 70
   },
   "sidebar.roomModeHint": {
     "where": "Sidebar catalog tile tooltip, last line for room items",
@@ -4834,8 +5038,8 @@
   },
   "sidebar.searchHint": {
     "where": "Sidebar, placeholder inside the catalog search field",
-    "meaning": "Type to filter the catalog",
-    "maxLength": 20
+    "meaning": "Placeholder of the catalog search field; the shortcut key is drawn next to it",
+    "maxLength": 24
   },
   "soil.clay": {
     "where": "Soil dropdown option (Settings > Construction tab and Foundation properties panel); also quoted in foundation issue messages",
@@ -4867,6 +5071,61 @@
     "meaning": "Soil type not known",
     "maxLength": 18
   },
+  "spec.column.depth": {
+    "where": "Specification table, column header: depth/thickness in millimetres, unit included",
+    "meaning": "Depth of the part; letter, comma, unit",
+    "maxLength": 10
+  },
+  "spec.column.height": {
+    "where": "Specification table, column header: height in millimetres, unit included",
+    "meaning": "Height of the part; letter, comma, unit",
+    "maxLength": 10
+  },
+  "spec.column.material": {
+    "where": "Specification table, column header",
+    "meaning": "Material the part is made of",
+    "maxLength": 16
+  },
+  "spec.column.name": {
+    "where": "Specification table, column header, part name (the wide column)",
+    "meaning": "Name of the part or item",
+    "maxLength": 20
+  },
+  "spec.column.number": {
+    "where": "Specification table, column header, row number",
+    "meaning": "Position number; keep it as short as the original",
+    "maxLength": 5
+  },
+  "spec.column.pieces": {
+    "where": "Specification table, column header: number of physical pieces",
+    "meaning": "How many identical physical parts the line stands for",
+    "maxLength": 8
+  },
+  "spec.column.qty": {
+    "where": "Specification table, column header: total quantity in the unit of the next column",
+    "meaning": "Total quantity of the line",
+    "maxLength": 9
+  },
+  "spec.column.unit": {
+    "where": "Specification table, column header: unit of measure",
+    "meaning": "Unit of the quantity: pieces, square metres, metres",
+    "maxLength": 7
+  },
+  "spec.column.width": {
+    "where": "Specification table, column header: width in millimetres, unit included",
+    "meaning": "Width of the part; letter, comma, unit",
+    "maxLength": 10
+  },
+  "spec.copied": {
+    "where": "Toast after the specification was copied to the clipboard",
+    "meaning": "Confirmation that the copy worked",
+    "maxLength": 36
+  },
+  "spec.copy": {
+    "where": "Specification window, footer button",
+    "meaning": "Copy the whole table as CSV text to the clipboard",
+    "maxLength": 16
+  },
   "spec.csv.edgeL1": {
     "where": "Exported specification CSV, column header",
     "meaning": "Edge banding on the first long (L) edge of a board",
@@ -4897,10 +5156,20 @@
     "meaning": "The CSV file has been saved",
     "maxLength": 40
   },
+  "spec.empty.hint": {
+    "where": "Specification window, empty state hint under the title",
+    "meaning": "The list is built automatically from the scene",
+    "maxLength": 60
+  },
+  "spec.empty.title": {
+    "where": "Specification window, empty state title when the project has no parts",
+    "meaning": "There is nothing to list yet",
+    "maxLength": 30
+  },
   "spec.exportCsv": {
-    "where": "Specification window, button",
-    "meaning": "Save the specification as a CSV file",
-    "maxLength": 18
+    "where": "Specification window, footer, the main button; opens a file dialog, hence the ellipsis",
+    "meaning": "Save the table as a CSV file",
+    "maxLength": 22
   },
   "spec.exportDialogTitle": {
     "where": "Native save-file dialog title when exporting the specification to CSV",
@@ -4926,6 +5195,15 @@
     "where": "Specification window, line item name (Structures section)",
     "meaning": "Corrugated/profiled steel sheets cladding the fence, pieces",
     "maxLength": 40
+  },
+  "spec.footerCount": {
+    "where": "Specification window, footer, left",
+    "meaning": "How many numbered items and how many sections the table has",
+    "maxLength": 40,
+    "placeholders": {
+      "0": "number of items",
+      "1": "number of sections"
+    }
   },
   "spec.foundation.concrete": {
     "where": "Specification window, line item name (Foundation section)",
@@ -4956,21 +5234,6 @@
     "where": "Specification window, line item name (Foundation section)",
     "meaning": "Sand layer of the bedding under the footing, m³",
     "maxLength": 40
-  },
-  "spec.header": {
-    "where": "Specification window, table header row (TMP <pos> tags set column positions)",
-    "meaning": "Columns: row number, item name, width/height/depth in mm, material, number of pieces, quantity, unit",
-    "maxLength": 80,
-    "placeholders": {
-      "0": "name column x",
-      "1": "width column x",
-      "2": "height column x",
-      "3": "depth column x",
-      "4": "material column x",
-      "5": "pieces column x",
-      "6": "quantity column x",
-      "7": "unit column x"
-    }
   },
   "spec.item.edgeBanding": {
     "where": "Specification window / CSV, item name of edge banding tape (used inside \"{name} {thickness} mm\")",
@@ -5020,20 +5283,6 @@
     "where": "Specification window/export, Walls section, line name (volume in m³)",
     "meaning": "Insulation on a wall face, by volume",
     "maxLength": 50
-  },
-  "spec.materialTotal": {
-    "where": "Specification window, subtotal line under each material group",
-    "meaning": "Total quantities for one material",
-    "maxLength": 60,
-    "placeholders": {
-      "0": "material name",
-      "1": "comma-separated quantities with units"
-    }
-  },
-  "spec.noMaterial": {
-    "where": "Specification window, material name in a material subtotal when the item has no material",
-    "meaning": "Items with no material assigned",
-    "maxLength": 20
   },
   "spec.noSection": {
     "where": "Specification window, section name for items without a section",
@@ -5122,29 +5371,30 @@
     "meaning": "Reinforcing steel of the floor slab, kg",
     "maxLength": 40
   },
+  "spec.subtotal": {
+    "where": "Specification table, subtotal row under a material group; the quantity and unit sit in their own columns",
+    "meaning": "Total for one material",
+    "maxLength": 40,
+    "placeholders": {
+      "0": "material name"
+    }
+  },
   "spec.title": {
     "where": "Specification window, title",
     "meaning": "Bill of materials of the project",
     "maxLength": 40
   },
   "spec.totalBoards": {
-    "where": "Specification window, totals line at the bottom",
-    "meaning": "Total number of boards (panels) in the project",
-    "maxLength": 30,
-    "placeholders": {
-      "0": "name column x",
-      "1": "quantity column x",
-      "2": "board count"
-    }
+    "where": "Specification table, bold total row; the count sits in the quantity column",
+    "meaning": "Total number of boards (panel parts) in the project",
+    "maxLength": 30
   },
-  "spec.totalBySection": {
-    "where": "Specification window, totals line per section and unit",
-    "meaning": "Total quantity of one specification section in one unit",
-    "maxLength": 50,
+  "spec.totalSection": {
+    "where": "Specification table, bold total row per section and unit; the quantity and unit sit in their own columns",
+    "meaning": "Total quantity for one section",
+    "maxLength": 40,
     "placeholders": {
-      "0": "name column x",
-      "1": "section name, e.g. Furniture",
-      "2": "unit, e.g. m²"
+      "0": "section name"
     }
   },
   "spec.unit.cubicMeters": {
@@ -5349,6 +5599,11 @@
     "meaning": "Open/close the Music panel",
     "maxLength": 40
   },
+  "toolbar.new": {
+    "where": "Toolbar, tooltip of the first icon button of the file group",
+    "meaning": "Create a new empty kitchen project (asks where to save it)",
+    "maxLength": 24
+  },
   "toolbar.redo": {
     "where": "Toolbar, tooltip of the redo arrow button",
     "meaning": "Redo the undone change",
@@ -5512,46 +5767,25 @@
     "meaning": "Duct class: the segment right before a ventilation grille",
     "maxLength": 20
   },
-  "window.dayNight.azimuth": {
-    "where": "Day/Night panel, label",
-    "meaning": "Compass direction of the sun in degrees",
-    "maxLength": 30,
-    "placeholders": {
-      "0": "azimuth in degrees"
-    }
+  "window.dayNight.azimuthLabel": {
+    "where": "Day/Night panel, row label left of the azimuth slider and its degrees field",
+    "meaning": "Compass direction of the sun, in degrees",
+    "maxLength": 12
   },
-  "window.dayNight.day": {
-    "where": "Day/Night panel, inserted in \"Time: hh:mm (…)\"",
-    "meaning": "It is currently day",
-    "maxLength": 8
-  },
-  "window.dayNight.intensity": {
-    "where": "Day/Night panel, label above the brightness slider",
-    "meaning": "Sun light intensity",
-    "maxLength": 30,
-    "placeholders": {
-      "0": "intensity value 0..2"
-    }
-  },
-  "window.dayNight.night": {
-    "where": "Day/Night panel, inserted in \"Time: hh:mm (…)\"",
-    "meaning": "It is currently night (sun below horizon)",
-    "maxLength": 8
+  "window.dayNight.intensityLabel": {
+    "where": "Day/Night panel, row label left of the brightness slider and its field",
+    "meaning": "Sun light intensity multiplier 0..2",
+    "maxLength": 12
   },
   "window.dayNight.reset": {
-    "where": "Day/Night panel, button",
-    "meaning": "Reset the sun to its midday position",
+    "where": "Day/Night panel, quiet link under the three rows",
+    "meaning": "Put the sun back at its midday position",
     "maxLength": 30
   },
-  "window.dayNight.time": {
-    "where": "Day/Night panel, label above the slider",
-    "meaning": "Current time of day of the sun simulation",
-    "maxLength": 30,
-    "placeholders": {
-      "0": "hours",
-      "1": "minutes",
-      "2": "phase word: day / night"
-    }
+  "window.dayNight.timeLabel": {
+    "where": "Day/Night panel, row label left of the time slider and its hh:mm field",
+    "meaning": "Time of day of the sun simulation",
+    "maxLength": 12
   },
   "window.dayNight.title": {
     "where": "Day/Night panel, window title",
@@ -5562,6 +5796,11 @@
     "where": "Project instructions window, hint under the title (2 lines, 590 px wide)",
     "meaning": "Explains how to write the instructions text",
     "maxLength": 160
+  },
+  "window.instructions.placeholder": {
+    "where": "Project instructions window: grey sample text shown inside the empty text field (3 lines: two key: value lines, an empty line, one free-text sentence)",
+    "meaning": "Example of what to write: keep the first two lines (keys and numbers) exactly as they are, translate only the last sentence: facades without handles, Blum TIP-ON push-to-open",
+    "maxLength": 120
   },
   "window.instructions.save": {
     "where": "Project instructions window, button",
@@ -5598,45 +5837,90 @@
     "meaning": "List of building storeys",
     "maxLength": 24
   },
-  "window.load.created": {
-    "where": "Load project window, recent-project row meta column; followed by a date",
-    "meaning": "Date the project was created",
+  "window.load.badge.current": {
+    "where": "Open project window, small label after a file name",
+    "meaning": "This project is open right now; lower case",
     "maxLength": 12
   },
-  "window.load.modified": {
-    "where": "Load project window, recent-project row meta column; followed by a date",
-    "meaning": "Date the project was last changed",
+  "window.load.badge.missing": {
+    "where": "Open project window, small label after a file name",
+    "meaning": "The file is in the list but no longer on disk; lower case",
+    "maxLength": 22
+  },
+  "window.load.badge.newer": {
+    "where": "Open project window, small label after a file name",
+    "meaning": "The file was saved by a newer version of the app than the one running; lower case",
+    "maxLength": 26
+  },
+  "window.load.browse": {
+    "where": "Open project window, footer, link-style button; opens the system file dialog, hence the ellipsis",
+    "meaning": "Pick a project file from disk instead of the list",
+    "maxLength": 16
+  },
+  "window.load.column.created": {
+    "where": "Open project window, table column header",
+    "meaning": "Date and time the project was created",
+    "maxLength": 16
+  },
+  "window.load.column.modified": {
+    "where": "Open project window, table column header",
+    "meaning": "Date and time the file was last saved",
+    "maxLength": 16
+  },
+  "window.load.column.name": {
+    "where": "Open project window, table column header",
+    "meaning": "File name of the project",
     "maxLength": 12
+  },
+  "window.load.column.version": {
+    "where": "Open project window, table column header",
+    "meaning": "Version of the app that saved the file",
+    "maxLength": 12
+  },
+  "window.load.empty.hint": {
+    "where": "Open project window, empty state hint under the title",
+    "meaning": "Points to the New project button",
+    "maxLength": 60
+  },
+  "window.load.empty.title": {
+    "where": "Open project window, empty state title when there are no recent projects",
+    "meaning": "No project has been saved yet",
+    "maxLength": 36
+  },
+  "window.load.forget": {
+    "where": "Open project window, tooltip of the small cross at the end of a row",
+    "meaning": "Remove the entry from the recent list; the file on disk stays",
+    "maxLength": 28
   },
   "window.load.newProject": {
     "where": "Load project window, button",
     "meaning": "Create a new empty project file",
     "maxLength": 20
   },
-  "window.load.noRecent": {
-    "where": "Load project window, placeholder of the empty recent-projects list",
-    "meaning": "No projects have been opened before",
-    "maxLength": 50
-  },
-  "window.load.notFound": {
-    "where": "Load project window, recent-project row title (red) when the file is missing; followed by the file name",
-    "meaning": "The file no longer exists at its path",
-    "maxLength": 20
-  },
-  "window.load.open": {
-    "where": "Load project window, button that opens the system file dialog",
-    "meaning": "Pick a project file from disk",
-    "maxLength": 20
-  },
-  "window.load.title": {
-    "where": "Load project window, title",
-    "meaning": "Open a recent or another project file",
+  "window.load.noMatch.hint": {
+    "where": "Open project window, empty state hint when the search matches nothing",
+    "meaning": "Tells to change the search text",
     "maxLength": 40
   },
-  "window.load.version": {
-    "where": "Load project window, recent-project row meta column; followed by the app version that saved it",
-    "meaning": "App version of the project file",
-    "maxLength": 12
+  "window.load.noMatch.title": {
+    "where": "Open project window, empty state title when the search matches nothing",
+    "meaning": "No project name matches the search text",
+    "maxLength": 24
+  },
+  "window.load.open": {
+    "where": "Open project window, footer, the main button",
+    "meaning": "Open the highlighted project",
+    "maxLength": 14
+  },
+  "window.load.search": {
+    "where": "Open project window, placeholder inside the search field",
+    "meaning": "Filter the list of projects by file name",
+    "maxLength": 28
+  },
+  "window.load.title": {
+    "where": "Open project window, title",
+    "meaning": "Pick a recent project or browse for a file",
+    "maxLength": 30
   },
   "window.music.next": {
     "where": "Music panel, tooltip of the next-track button",

@@ -2,14 +2,45 @@
   "root": "DayNightPanel",
   "children": [
     {
-      "type": "Label",
-      "text": "Время: 12:00 (день)",
-      "position": [0, 66]
+      "type": "Button",
+      "text": "Сбросить на полдень",
+      "position": [0, 0]
     },
     {
       "type": "Label",
-      "text": "Азимут солнца: 135°",
-      "position": [0, 8]
+      "text": "Азимут",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Яркость",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Время",
+      "position": [0, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Азимут",
+      "value": "135",
+      "interactable": true,
+      "position": [244, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Яркость",
+      "value": "1,00",
+      "interactable": true,
+      "position": [244, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Время",
+      "value": "12:00",
+      "interactable": true,
+      "position": [244, 0]
     },
     {
       "type": "Button",
@@ -19,17 +50,7 @@
     {
       "type": "Label",
       "text": "День / Ночь",
-      "position": [0, -24]
-    },
-    {
-      "type": "Label",
-      "text": "Яркость: 1,00",
-      "position": [0, -50]
-    },
-    {
-      "type": "Button",
-      "text": "Сброс (полдень)",
-      "position": [0, -112]
+      "position": [16, -24]
     }
   ]
 }
