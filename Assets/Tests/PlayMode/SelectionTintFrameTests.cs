@@ -87,6 +87,13 @@ public class SelectionTintFrameTests
 
     private const int ColorDelta = 12;
 
+    /// <summary>Доля пути от кадровой яркости тёмной части к белому, которой
+    /// позволено набраться от жёлтого тона. Подкраска (множитель и подмес) не
+    /// доходит и до середины; плоский жёлтый на тёмном приборе уходит заметно выше.</summary>
+    private const float FrameShareToTint = 0.6f;
+
+    private const float DarkestShare = 0.25f;
+
     /// <summary>Сторона съёмки — та же, что у всей изометрии проекта, и берётся
     /// из общего <c>IsoCameraRig</c>: своя копия вектора разъехалась бы молча, а
     /// съёмка элемента с затылка вырождает и этот кадр — тинт выделения на голой
@@ -193,6 +200,123 @@ public class SelectionTintFrameTests
             "дверь: меша на корне у неё нет вовсе, поэтому она не желтела НИКАК — "
             + "полотно, коробка и оба наличника обязаны попасть под подсветку");
     }
+
+    /// <summary>Кадры про подкраску ТЁМНЫХ приборов: выделение накладывает жёлтый
+    /// на собственный цвет, а не кладёт его на место цвета. Доля изменившихся
+    /// пикселей (<see cref="AssertSilhouetteChanged"/>) зеленеет и от подмены —
+    /// плоский жёлтый тоже «изменил» силуэт, — поэтому здесь второй вопрос: тёмное
+    /// осталось тёмным в той мере, в какой оно им было. По кадру «до» берётся
+    /// средняя яркость силуэта и средняя яркость его самой тёмной четверти (стекло,
+    /// панель, барабан); в кадре «после» обе обязаны остаться ниже отметки
+    /// <see cref="FrameShareToTint"/> пути от прежней яркости к белому. Подмена цвета
+    /// тёмной детали на жёлтый уходит выше этой отметки целиком, подкраска — нет.
+    /// Порог выставлен по расчёту, а не по снятым кадрам: первый прогон его
+    /// проверяет, PNG рядом показывают, как выглядит результат.</summary>
+    [UnityTest]
+    public IEnumerator SelectedCooktop_KeepsItsDarkGlass_TintedNotReplacedByYellow()
+    {
+        var go = ElementFactory.CreateCooktop("Кадр-варочная", Vector3.zero);
+        _spawned.Add(go);
+        var subject = go.GetComponent<KitchenElement>();
+        yield return null;
+
+        yield return TintedNotReplaced(subject, "tint_cooktop",
+            "варочная: тёмное стекло и плита обязаны остаться тёмными под жёлтым тоном");
+    }
+
+    [UnityTest]
+    public IEnumerator SelectedOven_KeepsItsDarkParts_TintedNotReplacedByYellow()
+    {
+        var go = ElementFactory.CreateOven("Кадр-духовка", Vector3.zero);
+        _spawned.Add(go);
+        var subject = go.GetComponent<KitchenElement>();
+        yield return null;
+
+        yield return TintedNotReplaced(subject, "tint_oven",
+            "духовка: фасад, стекло и панель обязаны остаться тёмными под жёлтым тоном");
+    }
+
+    [UnityTest]
+    public IEnumerator SelectedWashingMachine_KeepsItsDarkParts_TintedNotReplacedByYellow()
+    {
+        var go = ElementFactory.CreateLaundryMachine(LaundryMachineKind.Washer,
+            new Vector3Int(600, 850, 550), "Кадр-стиралка", Vector3.zero);
+        _spawned.Add(go);
+        var subject = go.GetComponent<KitchenElement>();
+        yield return null;
+
+        yield return TintedNotReplaced(subject, "tint_washer",
+            "стиральная машина: люк, панель и барабан обязаны остаться тёмными под жёлтым тоном");
+    }
+
+    [UnityTest]
+    public IEnumerator SelectedSofa_KeepsItsOwnColour_TintedNotReplacedByYellow()
+    {
+        var go = ElementFactory.CreateSofa(new Vector3Int(1800, 800, 900), 30, 420,
+            "Кадр-диван", Vector3.zero);
+        _spawned.Add(go);
+        var subject = go.GetComponent<KitchenElement>();
+        yield return null;
+
+        yield return TintedNotReplaced(subject, "tint_sofa",
+            "диван: собственный цвет обивки обязан читаться под жёлтым тоном");
+    }
+
+    private IEnumerator TintedNotReplaced(KitchenElement subject, string prefix, string what)
+    {
+        var cam = AimAt(subject);
+        yield return Shoot(cam, subject, prefix + "_plain.png");
+        var plain = _lastPixels!;
+
+        Selection().Select(subject);
+        yield return Shoot(cam, subject, prefix + "_selected.png");
+        var selected = _lastPixels!;
+
+        AssertSilhouetteChanged(plain, selected, cam, subject, what);
+        AssertOwnColourSurvives(plain, selected, cam, what);
+    }
+
+    private static void AssertOwnColourSurvives(Color32[] before, Color32[] after,
+        Camera cam, string what)
+    {
+        Color32 background = cam.backgroundColor;
+        var inside = new List<int>();
+        for (int i = 0; i < before.Length; i++)
+            if (Differs(before[i], background)) inside.Add(i);
+
+        Assert.Greater(inside.Count, 0, "в кадре нет элемента: " + what);
+
+        inside.Sort((a, b) => Luma(before[a]).CompareTo(Luma(before[b])));
+        int darkest = Mathf.Max(1, Mathf.RoundToInt(inside.Count * DarkestShare));
+
+        float plainAll = 0f, selectedAll = 0f, plainDark = 0f, selectedDark = 0f;
+        for (int n = 0; n < inside.Count; n++)
+        {
+            int i = inside[n];
+            plainAll += Luma(before[i]);
+            selectedAll += Luma(after[i]);
+            if (n >= darkest) continue;
+            plainDark += Luma(before[i]);
+            selectedDark += Luma(after[i]);
+        }
+        plainAll /= inside.Count;
+        selectedAll /= inside.Count;
+        plainDark /= darkest;
+        selectedDark /= darkest;
+
+        Assert.LessOrEqual(selectedDark, Mathf.Lerp(plainDark, 1f, FrameShareToTint),
+            what + ". Самая тёмная четверть силуэта: яркость " + plainDark.ToString("0.00")
+            + " → " + selectedDark.ToString("0.00") + ", потолок "
+            + Mathf.Lerp(plainDark, 1f, FrameShareToTint).ToString("0.00")
+            + " — тёмное стало жёлтым, то есть подменено, а не подкрашено");
+        Assert.LessOrEqual(selectedAll, Mathf.Lerp(plainAll, 1f, FrameShareToTint),
+            what + ". Средняя яркость силуэта: " + plainAll.ToString("0.00")
+            + " → " + selectedAll.ToString("0.00") + ", потолок "
+            + Mathf.Lerp(plainAll, 1f, FrameShareToTint).ToString("0.00"));
+    }
+
+    private static float Luma(Color32 c) =>
+        (0.2126f * c.r + 0.7152f * c.g + 0.0722f * c.b) / 255f;
 
     /// <summary>Сторож измерения, а не подсветки. Доля «изменившихся пикселей
     /// силуэта» осмысленна ровно настолько, насколько силуэт — это элемент.
