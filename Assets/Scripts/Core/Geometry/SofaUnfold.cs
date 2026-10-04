@@ -6,8 +6,6 @@ namespace KitchenDesigner.Core
     {
         public const float SecondsPerStage = 1f;
         public const float BackrestFlatAngleDeg = 90f;
-        public const float SlideClearanceMM = 20f;
-        public const float ExtraPullMM = 150f;
 
         public static SofaStage Next(SofaStage stage)
             => stage == SofaStage.Bed ? SofaStage.Folded : stage + 1;
@@ -26,27 +24,31 @@ namespace KitchenDesigner.Core
         public static float BelowHingeMM(int seatHeightMM)
             => seatHeightMM - SofaLayout.BackrestThicknessMM - SofaLayout.BackrestBottomMM;
 
-        public static float SeatSlideTravelMM(int sofaDepthMM, int seatHeightMM)
-            => Mathf.Max(SofaBoxLayout.RearSetbackMM + SofaBoxLayout.DepthMM(sofaDepthMM),
-                   PanelReachMM(seatHeightMM))
-               + SlideClearanceMM;
+        public static float BoxReachMM(int sofaDepthMM)
+            => SofaBoxLayout.RearSetbackMM + SofaBoxLayout.DepthMM(sofaDepthMM);
 
-        public static float BackrestShiftMM(int seatHeightMM, float angleDeg)
+        public static float SeatSlideTravelMM(int sofaDepthMM, int seatHeightMM)
+            => Mathf.Max(BoxReachMM(sofaDepthMM), PanelReachMM(seatHeightMM));
+
+        public static float FlatFillMM(int sofaDepthMM, int seatHeightMM)
+            => Mathf.Max(0f, SeatSlideTravelMM(sofaDepthMM, seatHeightMM)
+                - PanelReachMM(seatHeightMM));
+
+        public static float BackrestShiftMM(int sofaDepthMM, int seatHeightMM, float angleDeg)
         {
             float radians = angleDeg * Mathf.Deg2Rad;
             float behind = BelowHingeMM(seatHeightMM) * Mathf.Sin(radians)
                 + SofaLayout.BackrestThicknessMM * Mathf.Cos(radians)
                 - SofaLayout.BackrestThicknessMM;
-            return Mathf.Max(0f, behind);
+            float fill = FlatFillMM(sofaDepthMM, seatHeightMM) * angleDeg / BackrestFlatAngleDeg;
+            return Mathf.Max(0f, behind) + fill;
         }
 
         public static SofaPose PoseAt(float progress, int sofaDepthMM, int seatHeightMM)
         {
             float angle = BackrestFlatAngleDeg * Ease(progress - 1f);
-            float slide = (SeatSlideTravelMM(sofaDepthMM, seatHeightMM) + ExtraPullMM)
-                * Ease(progress) - ExtraPullMM * Ease(progress - 1f);
-            return new SofaPose(slide, angle, BackrestShiftMM(seatHeightMM, angle),
-                progress <= 0f);
+            return new SofaPose(SeatSlideTravelMM(sofaDepthMM, seatHeightMM) * Ease(progress),
+                angle, BackrestShiftMM(sofaDepthMM, seatHeightMM, angle), progress <= 0f);
         }
 
         public static Vector3 HingeMM(Vector3Int dimensionsMM, int seatHeightMM)
@@ -63,7 +65,8 @@ namespace KitchenDesigner.Core
             float sin = Mathf.Sin(radians);
             return hinge + new Vector3(offset.x,
                 offset.y * cos - offset.z * sin,
-                offset.y * sin + offset.z * cos + BackrestShiftMM(seatHeightMM, angleDeg));
+                offset.y * sin + offset.z * cos
+                + BackrestShiftMM(dimensionsMM.z, seatHeightMM, angleDeg));
         }
     }
 }

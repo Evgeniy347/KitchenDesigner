@@ -248,24 +248,38 @@ public class SofaElementTests
     }
 
     [Test]
-    public void Seat_RearCorners_AreSquare_SoItMeetsTheBackrestWithoutAGap()
+    public void Seat_AndBackrest_HaveTheSameRoundedCorners_SoTheBedIsTwoIdenticalMats()
     {
-        var sofa = DefaultSofa();
+        var sofa = Sofa(2000, 800, 900, 120, 360);
+        float radius = 120 * AppConstants.MM_TO_UNITS;
 
-        var bounds = Part(sofa, SofaLayout.SeatName).GetComponent<MeshRenderer>()!.bounds;
-        var mesh = Part(sofa, SofaLayout.SeatName).GetComponent<MeshFilter>()!.sharedMesh;
+        var seat = Part(sofa, SofaLayout.SeatName).GetComponent<MeshFilter>()!.sharedMesh;
+        var seatCentre = new Vector2(1.0f - radius, -0.36f + radius);
+        int seatPoints = 0;
+        foreach (var v in seat.vertices)
+        {
+            if (v.x < seatCentre.x - 1e-4f || v.z > seatCentre.y + 1e-4f) continue;
+            seatPoints++;
+            Assert.AreEqual(radius, (new Vector2(v.x, v.z) - seatCentre).magnitude, 1e-4f,
+                "задний угол сиденья скруглён тем же радиусом 120 мм, что и передний");
+        }
 
-        bool hasRearCorner = false;
-        foreach (var local in mesh.vertices)
-            if (Mathf.Abs(local.x - mesh.bounds.min.x) < 1e-4f
-                && Mathf.Abs(local.z - mesh.bounds.min.z) < 1e-4f)
-                hasRearCorner = true;
+        var back = Part(sofa, SofaLayout.BackrestName).GetComponent<MeshFilter>()!.sharedMesh;
+        var backCentre = new Vector2(1.0f - radius, 0.35f - radius);
+        int backPoints = 0;
+        foreach (var v in back.vertices)
+        {
+            if (v.x < backCentre.x - 1e-4f || v.z < backCentre.y - 1e-4f) continue;
+            backPoints++;
+            Assert.AreEqual(radius, (new Vector2(v.x, v.z) - backCentre).magnitude, 1e-4f,
+                "угол листа спинки скруглён тем же радиусом 120 мм: лёжа, она читается матом "
+                + "того же рисунка, что и сиденье");
+        }
 
-        Assert.IsTrue(hasRearCorner,
-            "в заднем углу сиденья есть вершина ровно в углу габарита — угол прямой: "
-            + "скруглённый оставил бы щель у боковой кромки спинки");
-        Assert.AreEqual(2000f * AppConstants.MM_TO_UNITS, bounds.size.x, 1e-4f,
-            "и сиденье на всю ширину");
+        Assert.GreaterOrEqual(seatPoints, RoundedRectProfile.DefaultSegments,
+            "вершин скругления сиденья не нашлось — тест позеленел бы, ничего не проверив");
+        Assert.GreaterOrEqual(backPoints, RoundedRectProfile.DefaultSegments,
+            "вершин скругления спинки не нашлось — то же");
     }
 
     [Test]

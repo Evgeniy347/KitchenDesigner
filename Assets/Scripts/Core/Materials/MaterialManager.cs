@@ -227,12 +227,22 @@ namespace KitchenDesigner.Core
                 return;
             }
 
+            if (element is IMultiSurfaceDecor multiSurface) multiSurface.RefreshPartTiling();
+
             var r = element.DecorRenderer;
             if (r == null) return;
 
             r.GetPropertyBlock(_reusedPropertyBlock);
             _reusedPropertyBlock.SetVector(BaseMapST, st);
             r.SetPropertyBlock(_reusedPropertyBlock);
+        }
+
+        public static void SetTiling(Renderer renderer, Vector4 st)
+        {
+            if (renderer == null) return;
+            renderer.GetPropertyBlock(_reusedPropertyBlock);
+            _reusedPropertyBlock.SetVector(BaseMapST, st);
+            renderer.SetPropertyBlock(_reusedPropertyBlock);
         }
 
         public static Material? GetSharedMaterial(MaterialDef def)

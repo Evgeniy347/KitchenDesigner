@@ -62,13 +62,13 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void SeatTravel_IsTheBoxDepthPlusTheClearance_AtTheDefaultSeatHeight()
+        public void SeatTravel_IsTheBoxDepth_AtTheDefaultSeatHeight()
         {
             Assert.AreEqual(618f, SofaBoxLayout.DepthMM(SofaLayout.DefaultDepthMM), Eps,
                 "короб короче сиденья на переднюю губу 100 мм и на 2 мм зазора от петли: 720 − 100 − 2");
-            Assert.AreEqual(640f, Travel(), Eps,
-                "сиденье выезжает на глубину короба плюс зазор 20 мм — ровно настолько, "
-                + "чтобы открыть короб целиком");
+            Assert.AreEqual(620f, Travel(), Eps,
+                "сиденье выезжает ровно на глубину короба с зазором от петли: короб открыт "
+                + "целиком, а между сиденьем и лежащей спинкой щели нет (решение пользователя)");
         }
 
         [Test]
@@ -80,13 +80,13 @@ namespace KitchenDesigner.Tests.Geometry
             Assert.AreEqual(0f, pose.BackrestAngleDeg, Eps, "спинка стоит");
         }
         [Test]
-        public void PoseAt_Extended_HasTheSeatPulledOutFurtherThanTheBed_AndTheBackrestStillStanding()
+        public void PoseAt_Extended_HasTheSeatAtTheBedPosition_AndTheBackrestStillStanding()
         {
             var pose = SofaUnfold.PoseAt(1f, SofaLayout.DefaultDepthMM, Seat);
 
-            Assert.AreEqual(Travel() + SofaUnfold.ExtraPullMM, pose.SeatSlideMM, Eps,
-                "на этапе 1 сиденье выдвинуто с запасом на доступ к коробу: фото 43 — между "
-                + "сиденьем и коробом зазор шире, чем у готовой кровати");
+            Assert.AreEqual(Travel(), pose.SeatSlideMM, Eps,
+                "на этапе 1 сиденье сразу встаёт в положение кровати (решение пользователя): "
+                + "дополнительного хода нет");
             Assert.AreEqual(0f, pose.BackrestAngleDeg, Eps,
                 "спинка к этому моменту ещё не тронулась: фото 43 — спинка стоит");
             Assert.IsFalse(pose.CushionsOnSeat,
@@ -94,7 +94,7 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void PoseAt_Bed_HasTheSeatBackAtTheBedGap_AndTheBackrestFlat()
+        public void PoseAt_Bed_KeepsTheSeatWhereItWas_AndTheBackrestFlat()
         {
             var pose = SofaUnfold.PoseAt(2f, SofaLayout.DefaultDepthMM, Seat);
 
@@ -116,7 +116,7 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void TheTwoStages_AreStrictlySequential_TheBackrestWaitsForTheFullPull()
+        public void TheTwoStages_AreStrictlySequential_TheBackrestWaitsForTheSeat()
         {
             int checkedSteps = 0;
             for (float progress = 0f; progress <= 2f + Eps; progress += 0.01f)
@@ -129,8 +129,8 @@ namespace KitchenDesigner.Tests.Geometry
                         "пока сиденье выезжает (этап 1), спинка не шевелится: этапы не "
                         + "перекрываются, progress=" + progress);
                 if (progress >= 1f)
-                    Assert.LessOrEqual(pose.SeatSlideMM, Travel() + SofaUnfold.ExtraPullMM + Eps,
-                        "на этапе 2 сиденье только возвращается из выдвинутого положения, "
+                    Assert.AreEqual(Travel(), pose.SeatSlideMM, Eps,
+                        "на этапе 2 сиденье стоит на месте, "
                         + "progress=" + progress);
             }
 
@@ -140,7 +140,7 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void TheSeat_GoesOutDuringStageOne_AndComesBackDuringStageTwo_WhileTheBackrestOnlyTurnsForward()
+        public void TheSeat_OnlyGoesOut_AndTheBackrestOnlyTurnsForward_WhileUnfolding()
         {
             float lastSlide = 0f;
             float lastAngle = 0f;
@@ -193,7 +193,7 @@ namespace KitchenDesigner.Tests.Geometry
                 for (float angle = 0f; angle <= 90f + Eps; angle += 0.5f)
                 {
                     var (minZ, _) = PanelZRangeMM(dims, seat, angle,
-                        SofaUnfold.BackrestShiftMM(seat, angle));
+                        SofaUnfold.BackrestShiftMM(dims.z, seat, angle));
                     checkedPoses++;
 
                     Assert.GreaterOrEqual(minZ, wall - Eps,
@@ -226,40 +226,17 @@ namespace KitchenDesigner.Tests.Geometry
         [Test]
         public void TheShift_IsZeroAtBothEndsOfTheTurn_SoTheLyingBackrestIsWhereItWas()
         {
-            Assert.AreEqual(0f, SofaUnfold.BackrestShiftMM(Seat, 0f), Eps,
+            Assert.AreEqual(0f, SofaUnfold.BackrestShiftMM(SofaLayout.DefaultDepthMM, Seat, 0f), Eps,
                 "стоящая спинка не смещается");
-            Assert.AreEqual(0f, SofaUnfold.BackrestShiftMM(Seat, 90f), Eps,
+            Assert.AreEqual(0f, SofaUnfold.BackrestShiftMM(SofaLayout.DefaultDepthMM, Seat, 90f), Eps,
                 "и лежащая тоже: поправка нужна только по дороге");
-            Assert.Greater(SofaUnfold.BackrestShiftMM(Seat, 24f), 10f,
+            Assert.Greater(SofaUnfold.BackrestShiftMM(SofaLayout.DefaultDepthMM, Seat, 24f), 10f,
                 "а на середине поворота это ощутимые миллиметры");
         }
 
-        [Test]
-        public void SlidSeat_NeverTouchesTheTurningBackrest_AtAnyProgress()
-        {
-            var dims = Default();
-            int checkedSteps = 0;
-            for (int seat = SofaLayout.MinSeatHeightMM; seat <= SofaLayout.MaxSeatHeightMM; seat += 20)
-            for (float progress = 0.02f; progress <= 2f + Eps; progress += 0.02f)
-            {
-                var pose = SofaUnfold.PoseAt(progress, dims.z, seat);
-                var (_, maxZ) = PanelZRangeMM(dims, seat, pose.BackrestAngleDeg,
-                    pose.BackrestShiftMM);
-                float seatRear = SofaLayout.BackrestFrontZMM(dims) + pose.SeatSlideMM;
-                checkedSteps++;
-
-                float needed = progress <= 1f ? 0f : SofaUnfold.SlideClearanceMM;
-                Assert.GreaterOrEqual(seatRear - maxZ, needed - Eps,
-                    "сиденье не должно упираться в поворачивающуюся спинку: высота сиденья "
-                    + seat + ", прогресс " + progress);
-            }
-
-            Assert.GreaterOrEqual(checkedSteps, 500, "перебор слишком короткий");
-        }
-
 
         [Test]
-        public void Travel_LeavesTheClearanceBetweenTheSlidSeatAndTheBoxFront()
+        public void Travel_PutsTheSlidSeatRightAtTheBoxFront_WithNoGap()
         {
             var dims = Default();
             var panels = SofaBoxLayout.Panels(dims, Seat, SofaLayout.DefaultCornerRadiusMM);
@@ -269,9 +246,9 @@ namespace KitchenDesigner.Tests.Geometry
 
             float seatRearAfterSlide = SofaLayout.BackrestFrontZMM(dims) + Travel();
 
-            Assert.AreEqual(SofaUnfold.SlideClearanceMM, seatRearAfterSlide - boxFront, Eps,
-                "задняя кромка выдвинутого сиденья отстоит от передней стенки короба на "
-                + "зазор: ближе — сиденье цеплялось бы за короб, дальше — торчала бы щель");
+            Assert.AreEqual(0f, seatRearAfterSlide - boxFront, Eps,
+                "задняя кромка выдвинутого сиденья стоит вплотную к передней стенке короба: "
+                + "щели нет ни здесь, ни у лежащей спинки");
         }
 
         [Test]
@@ -343,7 +320,7 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void Travel_AlsoClearsTheFlatBackrest_AtEverySeatHeight()
+        public void FlatBackrest_MeetsTheSeatWithNoGap_AtEverySeatHeight()
         {
             var dims = Default();
             int checkedHeights = 0;
@@ -356,10 +333,10 @@ namespace KitchenDesigner.Tests.Geometry
                     + SofaUnfold.SeatSlideTravelMM(dims.z, seat);
                 checkedHeights++;
 
-                Assert.GreaterOrEqual(seatRear - panelFar, SofaUnfold.SlideClearanceMM - Eps,
-                    "лежащая спинка не должна упираться в выдвинутое сиденье: чем ниже "
-                    + "сиденье, тем дальше вперёд заходит спинка — выезд обязан это учесть. "
-                    + "Высота сиденья " + seat);
+                Assert.AreEqual(0f, seatRear - panelFar, Eps,
+                    "между лежащей спинкой и сиденьем щели нет на любой высоте сиденья (решение "
+                    + "пользователя, фото 40): у высокого сиденья спинку подвигают вперёд, у "
+                    + "низкого сиденье выезжает дальше. Высота сиденья " + seat);
             }
 
             Assert.GreaterOrEqual(checkedHeights, 15,

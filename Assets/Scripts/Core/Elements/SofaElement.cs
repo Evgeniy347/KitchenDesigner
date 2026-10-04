@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class SofaElement : KitchenElement, IHasTwoDecorSlots, IQuantifies, IOpenable
+    public class SofaElement : KitchenElement, IHasTwoDecorSlots, IQuantifies, IOpenable, IMultiSurfaceDecor
     {
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("подушки дивана стоят между подлокотниками: ни одна из них не защищена от собственного подлокотника, поэтому проверяемой лицевой детали у типа нет");
@@ -173,7 +173,16 @@ namespace KitchenDesigner.Core
 
         public void SetPrimaryMaterial(Material material) => Rig.SetUpholstery(material);
 
-        public void SetSecondaryMaterial(Material material) => Rig.SetCushions(material);
+        public void SetSecondaryMaterial(Material material)
+        {
+            Rig.SetCushions(material);
+            RefreshPartTiling();
+        }
+
+        public void RefreshPartTiling()
+            => Rig.ApplyTiling(DimensionsMM,
+                MaterialManager.TileMM(MaterialCatalog.Get(_bodyMaterialId)),
+                MaterialManager.TileMM(MaterialCatalog.Get(_cushionMaterialId)));
 
         public string PrimarySlotLabel => DecorSlots.UpholsteryLabel;
 

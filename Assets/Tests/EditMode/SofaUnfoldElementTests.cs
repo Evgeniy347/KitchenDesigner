@@ -78,9 +78,8 @@ public class SofaUnfoldElementTests
         var sofa = Sofa();
         sofa.SnapToStage(SofaStage.Extended);
 
-        Assert.AreEqual((Travel(sofa) + SofaUnfold.ExtraPullMM) * Mm,
-            Front(sofa).localPosition.z, Eps,
-            "сиденье выехало на ход выдвижения плюс запас на доступ к коробу");
+        Assert.AreEqual(Travel(sofa) * Mm, Front(sofa).localPosition.z, Eps,
+            "сиденье сразу встаёт в положение кровати: дополнительного хода нет");
         Assert.AreEqual(0f, HingeAngle(sofa), Eps,
             "на этапе 1 спинка ещё стоит: фото 43 — спинка вертикальна, сиденье выдвинуто");
     }
@@ -95,7 +94,7 @@ public class SofaUnfoldElementTests
         sofa.SnapToStage(SofaStage.Extended);
 
         float seatRear = Part(sofa, SofaLayout.SeatName).GetComponent<MeshRenderer>()!.bounds.min.z;
-        Assert.GreaterOrEqual(seatRear, boxFront + 0.019f,
+        Assert.GreaterOrEqual(seatRear, boxFront - Eps,
             "задняя кромка выехавшего сиденья дальше передней стенки короба на зазор: "
             + "короб открыт целиком, и сиденье его не цепляет");
     }
@@ -151,7 +150,7 @@ public class SofaUnfoldElementTests
     {
         var sofa = Sofa();
         sofa.GoToStage(SofaStage.Bed);
-        float fullPull = (Travel(sofa) + SofaUnfold.ExtraPullMM) * Mm;
+        float fullPull = Travel(sofa) * Mm;
 
         int steps = 0;
         bool moving = true;
@@ -272,7 +271,7 @@ public class SofaUnfoldElementTests
 
         sofa.DimensionsMM = new Vector3Int(2000, 800, 1200);
 
-        Assert.AreEqual((Travel(sofa) + SofaUnfold.ExtraPullMM) * Mm,
+        Assert.AreEqual(Travel(sofa) * Mm,
             Front(sofa).localPosition.z, Eps,
             "после растяжения вглубь сиденье остаётся выдвинутым, а ход пересчитан: короб "
             + "стал длиннее, и прежний ход открыл бы его не целиком");

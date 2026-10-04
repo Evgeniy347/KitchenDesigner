@@ -93,17 +93,18 @@ namespace KitchenDesigner.Tests.Geometry
             for (int radius = 0; radius <= SofaLayout.MaxCornerRadiusMM(dims); radius += 20)
             {
                 Bounds(SofaBoxLayout.Panels(dims, Seat, radius), out var min, out var max);
-                var radii = new CornerRadii(0f, 0f, radius, radius);
+                var radii = CornerRadii.Uniform(radius);
                 checkedRadii++;
 
                 foreach (var x in new[] { min.x, max.x })
+                foreach (var z in new[] { min.z, max.z })
                 {
-                    var corner = new Vector2(x, max.z - seatCentreZ);
+                    var corner = new Vector2(x, z - seatCentreZ);
                     Assert.LessOrEqual(
                         RoundedRectProfile.SignedDistance(corner, dims.x, seatDepth, radii),
                         0f,
-                        "передний угол короба вылез бы из скруглённого угла сиденья и был бы "
-                        + "виден снаружи сложенного дивана. Радиус " + radius + ", x=" + x);
+                        "угол короба вылез бы из скруглённого угла сиденья (передний или задний) и "
+                        + "был бы виден снаружи сложенного дивана. Радиус " + radius + ", x=" + x + ", z=" + z);
                 }
             }
 
@@ -116,8 +117,8 @@ namespace KitchenDesigner.Tests.Geometry
         {
             Assert.AreEqual(SofaBoxLayout.MinSideInsetMM, SofaBoxLayout.SideInsetMM(0f), Eps,
                 "у прямого угла отступ минимальный");
-            Assert.AreEqual(SofaBoxLayout.MinSideInsetMM, SofaBoxLayout.SideInsetMM(120f), Eps,
-                "радиус по умолчанию уже влезает в минимальный отступ");
+            Assert.Greater(SofaBoxLayout.SideInsetMM(120f), SofaBoxLayout.MinSideInsetMM,
+                "задние углы сиденья тоже скруглены, а короб стоит в 2 мм от них: даже радиус по умолчанию требует отступа больше минимального");
             Assert.Greater(SofaBoxLayout.SideInsetMM(360f), SofaBoxLayout.SideInsetMM(120f),
                 "круглое сиденье требует большего отступа, иначе угол короба вылезет");
             Assert.AreEqual(SofaBoxLayout.MinSideInsetMM, SofaBoxLayout.SideInsetMM(-50f), Eps,

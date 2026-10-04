@@ -330,6 +330,14 @@ pwsh -File tools/tile-preview.ps1 -Path Assets/StreamingAssets/Textures/my_decor
 `base.ApplyDimensions()` — декор на нём будет растягиваться. Либо зови базовый
 метод, либо `RefreshTiling` явно.
 
+Если у элемента НЕСКОЛЬКО частей с декором (диван: сиденье, спинка, валики, подушки),
+`_BaseMap_ST` нужен КАЖДОЙ, а `RefreshTiling` ставит его одному `DecorRenderer`. Такой элемент
+реализует `IMultiSurfaceDecor.RefreshPartTiling()`: менеджер зовёт его сам, а элемент задаёт
+каждой части свой вырез через `MaterialManager.SetTiling`. Мягкие детали (`SoftSlab`, `Cushion`)
+строятся с физической развёрткой (`PartUv.BoxProjectionUnits`: метры по доминирующей оси нормали)
+и берут `ST = 1000 / размер плитки`; выдавленные профили (`ProfileExtrusionMesh`) берут вырез по
+своему профилю. Стерегут это `PartUvTests` и `SofaDecorUvTests` (сенсор `UvStretch`).
+
 ## 6а. Подложка торца и декор с ОСОБЫМ именем
 
 ТОРЦЫ БЕЗ КРОМКИ рисуются подложкой — кромка и есть то, что переносит декор на

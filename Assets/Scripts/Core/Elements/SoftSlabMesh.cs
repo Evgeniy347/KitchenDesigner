@@ -9,14 +9,18 @@ namespace KitchenDesigner.Core
             => Build(new SoftSlabSurface(width, depth, CornerRadii.Uniform(radius),
                 thickness, fillet));
 
-        public static Mesh Build(SoftSlabSurface surface)
+        public static Mesh Build(SoftSlabSurface surface) => Build(surface, false);
+
+        public static Mesh Build(SoftSlabSurface surface, bool physicalUv)
         {
             var mesh = new Mesh();
             if (surface == null) return mesh;
 
             mesh.vertices = surface.Positions;
             mesh.normals = surface.Normals;
-            mesh.uv = surface.Uvs;
+            mesh.uv = physicalUv
+                ? PartUv.BoxProjectionUnits(surface.Positions, surface.Normals)
+                : surface.Uvs;
             mesh.triangles = surface.Triangles;
             mesh.RecalculateBounds();
             return mesh;

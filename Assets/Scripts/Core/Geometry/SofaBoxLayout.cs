@@ -20,12 +20,16 @@ namespace KitchenDesigner.Core
             => SofaLayout.FloorYMM(dimensionsMM) + seatHeightMM - SofaLayout.BackrestThicknessMM;
 
         public static float SideInsetMM(float cornerRadiusMM)
+            => Mathf.Max(MinSideInsetMM,
+                Mathf.Ceil(Mathf.Max(CornerReachMM(cornerRadiusMM, FrontLipMM),
+                    CornerReachMM(cornerRadiusMM, RearSetbackMM))) + CornerMarginMM);
+
+        private static float CornerReachMM(float cornerRadiusMM, float distanceFromEdgeMM)
         {
             float radius = Mathf.Max(0f, cornerRadiusMM);
-            float reach = radius > FrontLipMM
-                ? radius - Mathf.Sqrt(radius * radius - (radius - FrontLipMM) * (radius - FrontLipMM))
-                : 0f;
-            return Mathf.Max(MinSideInsetMM, Mathf.Ceil(reach) + CornerMarginMM);
+            if (radius <= distanceFromEdgeMM) return 0f;
+            float across = radius - distanceFromEdgeMM;
+            return radius - Mathf.Sqrt(radius * radius - across * across);
         }
 
         private static void Extents(Vector3Int dimensionsMM, int seatHeightMM, int cornerRadiusMM,

@@ -11,15 +11,19 @@ namespace KitchenDesigner.Core
         private readonly Dictionary<string, Mesh> _meshes = new Dictionary<string, Mesh>();
         private readonly List<string> _unwanted = new List<string>();
         private readonly bool _solid;
+        private readonly bool _physicalUv;
         private bool _visible = true;
         private Material? _material;
 
         public FurniturePartSet(Transform owner) : this(owner, false) { }
 
-        public FurniturePartSet(Transform owner, bool solid)
+        public FurniturePartSet(Transform owner, bool solid) : this(owner, solid, false) { }
+
+        public FurniturePartSet(Transform owner, bool solid, bool physicalUv)
         {
             _owner = owner;
             _solid = solid;
+            _physicalUv = physicalUv;
         }
 
         public void Place(IReadOnlyList<FurniturePartBox> boxes)
@@ -57,6 +61,16 @@ namespace KitchenDesigner.Core
             _parts.Remove(name);
             if (part != null) part.transform.SetParent(null, false);
             DestroyObject(part);
+        }
+
+        public void ForEachRenderer(System.Action<MeshRenderer> action)
+        {
+            foreach (var part in _parts.Values)
+            {
+                if (part == null) continue;
+                var renderer = part.GetComponent<MeshRenderer>();
+                if (renderer != null) action(renderer);
+            }
         }
 
         public void SetVisible(bool visible)
@@ -102,20 +116,23 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < _unwanted.Count; i++) Remove(_unwanted[i]);
         }
 
-        private static Mesh MeshFor(FurniturePartBox box) => box.Shape switch
+        private Mesh MeshFor(FurniturePartBox box) => box.Shape switch
         {
-            FurniturePartShape.Cushion => CushionMeshOf(box.LocalSizeMM, box.RadiusMM),
+            FurniturePartShape.Cushion => CushionMeshOf(box.LocalSizeMM, box.RadiusMM, _physicalUv),
             FurniturePartShape.SoftSlab => SoftSlabMeshOf(box.ProfileWidthMM, box.ProfileDepthMM,
                 box.RadiusMM, box.RearRadiusMM, box.ThicknessMM,
-                box.ThicknessMM * SoftSlabSurface.MaxFilletThicknessRatio),
+                box.ThicknessMM * SoftSlabSurface.MaxFilletThicknessRatio, _physicalUv),
             _ => ExtrusionMeshOf(box.ProfileWidthMM, box.ProfileDepthMM, box.ThicknessMM,
                 box.RadiusMM, box.RearRadiusMM),
         };
 
         private static Mesh CushionMeshOf(Vector3 sizeMM, float radiusMM)
+            => CushionMeshOf(sizeMM, radiusMM, false);
+
+        private static Mesh CushionMeshOf(Vector3 sizeMM, float radiusMM, bool physicalUv)
         {
             float toU = AppConstants.MM_TO_UNITS;
-            return CushionMesh.Build(sizeMM * toU, radiusMM * toU);
+            return CushionMesh.Build(sizeMM * toU, radiusMM * toU, physicalUv);
         }
 
         private static Mesh SoftSlabMeshOf(float widthMM, float depthMM, float planRadiusMM,
@@ -125,12 +142,17 @@ namespace KitchenDesigner.Core
 
         private static Mesh SoftSlabMeshOf(float widthMM, float depthMM, float frontRadiusMM,
             float rearRadiusMM, float thicknessMM, float filletMM)
+            => SoftSlabMeshOf(widthMM, depthMM, frontRadiusMM, rearRadiusMM, thicknessMM,
+                filletMM, false);
+
+        private static Mesh SoftSlabMeshOf(float widthMM, float depthMM, float frontRadiusMM,
+            float rearRadiusMM, float thicknessMM, float filletMM, bool physicalUv)
         {
             float toU = AppConstants.MM_TO_UNITS;
             var radii = new CornerRadii(rearRadiusMM * toU, rearRadiusMM * toU,
                 frontRadiusMM * toU, frontRadiusMM * toU);
             return SoftSlabMesh.Build(new SoftSlabSurface(widthMM * toU, depthMM * toU, radii,
-                thicknessMM * toU, filletMM * toU));
+                thicknessMM * toU, filletMM * toU), physicalUv);
         }
 
         private static Mesh ExtrusionMeshOf(float profileWidthMM, float profileDepthMM,

@@ -4,6 +4,8 @@ namespace KitchenDesigner.Core
 {
     internal sealed class SofaRig
     {
+        private const int UnitsPerMetreMM = 1000;
+
         private readonly Transform _front;
         private readonly Transform _hinge;
         private readonly FurniturePartSet _seat;
@@ -16,7 +18,7 @@ namespace KitchenDesigner.Core
             _front = NewPivot(owner, SofaLayout.FrontGroupName);
             _hinge = NewPivot(owner, SofaLayout.HingeGroupName);
             _seat = new FurniturePartSet(_front, true);
-            _cushions = new FurniturePartSet(_front);
+            _cushions = new FurniturePartSet(_front, false, true);
             _backrest = new FurniturePartSet(_hinge, true);
         }
 
@@ -29,7 +31,7 @@ namespace KitchenDesigner.Core
 
             _seat.Place(new[] { SofaLayout.Seat(dimensionsMM, seatHeightMM, cornerRadiusMM) });
             _cushions.Place(SofaLayout.Cushions(dimensionsMM, seatHeightMM));
-            var backrest = SofaLayout.Backrest(dimensionsMM);
+            var backrest = SofaLayout.Backrest(dimensionsMM, cornerRadiusMM);
             _backrest.Place(new[] { backrest.WithCentre(backrest.CentreMM - _hingeMM) });
         }
 
@@ -40,6 +42,26 @@ namespace KitchenDesigner.Core
                 * AppConstants.MM_TO_UNITS;
             _hinge.localRotation = Quaternion.Euler(pose.BackrestAngleDeg, 0f, 0f);
             _cushions.SetVisible(pose.CushionsOnSeat);
+        }
+
+        public void ApplyTiling(Vector3Int dimensionsMM, Vector2Int primaryTileMM,
+            Vector2Int secondaryTileMM)
+        {
+            var seatSurface = SofaLayout.SeatSurfaceMM(dimensionsMM);
+            var seat = SeatRenderer;
+            if (seat != null)
+                MaterialManager.SetTiling(seat, MaterialManager.ComputeTileST(seatSurface,
+                    primaryTileMM.x, primaryTileMM.y));
+
+            var backrestSurface = new Vector2Int(dimensionsMM.x, SofaLayout.BackrestHeightMM);
+            var backrestTiling = MaterialManager.ComputeTileST(backrestSurface,
+                primaryTileMM.x, primaryTileMM.y);
+            _backrest.ForEachRenderer(r => MaterialManager.SetTiling(r, backrestTiling));
+
+            var metre = new Vector2Int(UnitsPerMetreMM, UnitsPerMetreMM);
+            var cushionTiling = MaterialManager.ComputeTileST(metre,
+                secondaryTileMM.x, secondaryTileMM.y);
+            _cushions.ForEachRenderer(r => MaterialManager.SetTiling(r, cushionTiling));
         }
 
         public void SetUpholstery(Material material)

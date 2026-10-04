@@ -99,9 +99,9 @@ namespace KitchenDesigner.Tests.Geometry
 
             var shallow = SofaLayout.Backrest(new Vector3Int(2000, 800, 900));
             var deep = SofaLayout.Backrest(new Vector3Int(2000, 800, 1200));
-            Assert.AreEqual(shallow.ProfileDepthMM, deep.ProfileDepthMM,
+            Assert.AreEqual(shallow.SizeMM.z, deep.SizeMM.z, 1e-3f,
                 "спинка остаётся 180 мм при любой глубине дивана");
-            Assert.AreEqual(180f, deep.ProfileDepthMM, 1e-3f, "и это ровно 180");
+            Assert.AreEqual(180f, deep.SizeMM.z, 1e-3f, "и это ровно 180");
         }
 
         [Test]
@@ -147,15 +147,26 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void Seat_HasSquareRearCorners_SoItMeetsTheBackrestFlush()
+        public void SeatAndBackrest_ShareOneCornerRadius_SoTheBedReadsAsTwoIdenticalMats()
         {
             var seat = SofaLayout.Seat(Default(), Seat, Radius);
+            var backrest = SofaLayout.Backrest(Default(), Radius);
 
             Assert.AreEqual(Radius, seat.RadiusMM,
-                "передние углы скруглены заказанным радиусом");
-            Assert.AreEqual(0f, seat.RearRadiusMM,
-                "задние углы прямые: скруглённые оставили бы клиновидные щели между "
-                + "сиденьем и спинкой, которая стоит вплотную на всю ширину");
+                "все четыре угла сиденья скруглены заказанным радиусом");
+            Assert.AreEqual(Radius, seat.RearRadiusMM,
+                "и задние тоже: в кровати сиденье и спинка читаются парой одинаковых матов "
+                + "(фото 40), у обоих скругление одно");
+            Assert.AreEqual(Radius, backrest.RadiusMM,
+                "у спинки тот же радиус: она лежит большой гранью вверх, и углы этой грани "
+                + "должны совпасть с углами сиденья");
+            Assert.AreEqual(Radius, backrest.RearRadiusMM, "и у задних углов спинки он же");
+            Assert.AreEqual(FurniturePartOrientation.Frontal, backrest.Orientation,
+                "профиль скруглённого прямоугольника лежит в большой грани спинки (ширина на "
+                + "высоту), а не в плане: иначе вертикальные рёбра скруглены, а углы листа нет");
+            Assert.AreEqual(FurniturePartShape.Extruded, seat.Shape,
+                "обе части — один вид выдавливания: одинаковые кромки");
+            Assert.AreEqual(seat.Shape, backrest.Shape, "и у спинки тот же вид");
         }
 
         [Test]

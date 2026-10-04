@@ -7,7 +7,6 @@ namespace KitchenDesigner.Core
         public const int BackrestBottomMM = 100;
         public const int BackrestHeightMM = 700;
         public const int BackrestThicknessMM = 180;
-        public const int BackrestRadiusMM = 60;
         public const int OverallHeightMM = BackrestBottomMM + BackrestHeightMM;
 
         public const int DefaultWidthMM = 2000;
@@ -96,20 +95,22 @@ namespace KitchenDesigner.Core
                 BackrestFrontZMM(dimensionsMM) + seatDepth * 0.5f);
 
             return new FurniturePartBox(SeatName, centre, dimensionsMM.x, seatDepth,
-                seatHeightMM, cornerRadiusMM, FurniturePartOrientation.Horizontal,
-                FurniturePartShape.Extruded, 0f);
+                seatHeightMM, cornerRadiusMM, FurniturePartOrientation.Horizontal);
         }
 
         public static FurniturePartBox Backrest(Vector3Int dimensionsMM)
+            => Backrest(dimensionsMM, DefaultCornerRadiusMM);
+
+        public static FurniturePartBox Backrest(Vector3Int dimensionsMM, int cornerRadiusMM)
         {
             var centre = new Vector3(0f,
                 FloorYMM(dimensionsMM) + BackrestBottomMM + BackrestHeightMM * 0.5f,
                 BackrestFrontZMM(dimensionsMM) - BackrestThicknessMM * 0.5f);
 
             return new FurniturePartBox(BackrestName, centre, dimensionsMM.x,
-                BackrestThicknessMM, BackrestHeightMM,
-                FittedRadius(BackrestRadiusMM, dimensionsMM.x, BackrestThicknessMM),
-                FurniturePartOrientation.Horizontal, FurniturePartShape.SoftSlab);
+                BackrestHeightMM, BackrestThicknessMM,
+                FittedRadius(cornerRadiusMM, dimensionsMM.x, BackrestHeightMM),
+                FurniturePartOrientation.Frontal);
         }
 
         public static FurniturePartBox[] Cushions(Vector3Int dimensionsMM, int seatHeightMM)
