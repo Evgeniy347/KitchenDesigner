@@ -210,7 +210,7 @@
   "element.duct.width": "Ancho",
   "element.edge.clickHint": "Clic en un lado: auto → sí → quitar",
   "element.edge.countOf": "{0} de {1}",
-  "element.edge.enabled": "Aplicar canteado",
+  "element.edge.enabled": "Activado",
   "element.edge.thickness": "Grosor del tapacanto",
   "element.edge.title": "Canteado",
   "element.facade.doorMode": "Puerta",

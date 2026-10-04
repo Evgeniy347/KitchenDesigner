@@ -2,9 +2,2449 @@
   "root": "SpecPanel",
   "children": [
     {
+      "type": "Button",
+      "text": "Копировать",
+      "position": [-170, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Экспорт CSV…",
+      "position": [-16, 0]
+    },
+    {
       "type": "Label",
-      "text": "№<pos=40>Название<pos=250>Ш<pos=305>В<pos=360>Г, мм<pos=420>Материал<pos=580>Дет.<pos=630>Кол-во<pos=730>Ед.",
-      "position": [0, 250]
+      "text": "1",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "10",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "11",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "12",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "13",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "14",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "15",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "17",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "19",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "20",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "21",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "22",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "23",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "24",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "25",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "26",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "27",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "28",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "29",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "3",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "30",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "31",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "32",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "33",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "34",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "35",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "36",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "37",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "38",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "39",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "4",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "40",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "41",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "42",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "43",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "44",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "45",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "46",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "47",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "48",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "49",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "5",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "50",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "6",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "7",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "8",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "9",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Мебель",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "№",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Позиций: 50 · Разделов: 1",
+      "position": [16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Bokovina",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Dno",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Dvertsa",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Dvertsa_malenkaya",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Fasad_450",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Fasad_800",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Fasad_navesnoy",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Fasad_nizhniy",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Kryshka",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Kryshka_malenkaya",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Peregorodka",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Planka",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Planka_dlinnaya",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Polka",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Polka_malenkaya",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Polka_uglovaya",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Sbornyy_450_500·Стекло",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Sbornyy_450_700·Панель",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Sbornyy_450_700·Перекладина",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Sbornyy_450_700·Стойка",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Sbornyy_600_500·Перекладина",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Sbornyy_600_500·Стекло",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Sbornyy_600_500·Стойка",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Sbornyy_800_600·Перекладина",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Sbornyy_800_600·Стойка",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Stoleshnitsa",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Stoyka_uzkaya",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Tsokol",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Tsokol_korotkiy",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Zadnyaya_stenka",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Zadnyaya_stenka_mal",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Всего, Мебель",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Всего, Мебель",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Всего, Мебель",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Всего, досок",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Дно",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Дно",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Дно",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Дно",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Дно",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Дно",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Задник",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Задник",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Задник",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Задник",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Задник",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Задник",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Итого, Антрацит (GTV)",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Итого, Белый (GTV)",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Итого, Серый",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Итого, Серый",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Итого, Стекло",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Итого, Чёрный (GTV)",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Комплект GTV AXIS PRO",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Комплект GTV AXIS PRO",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Комплект GTV AXIS PRO",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Комплект GTV AXIS PRO",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Комплект GTV AXIS PRO",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Комплект GTV AXIS PRO",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Кромка 1.0 мм",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Наименование",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Антрацит (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Антрацит (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Антрацит (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Антрацит (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Белый (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Белый (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Белый (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Белый (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Материал",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Серый",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Стекло",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Стекло",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Чёрный (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Чёрный (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Чёрный (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Чёрный (GTV)",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "—",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "—",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "—",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "—",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "—",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "—",
+      "position": [408, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1200",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "150",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "200",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "250",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "250",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "270",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "300",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "300",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "313",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "325",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "363",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "363",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "375",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "375",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "413",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "420",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "425",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "450",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "450",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "450",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "463",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "475",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "500",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "513",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "525",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "550",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "564",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "564",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "564",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "564",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "800",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "800",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "800",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Ш, мм",
+      "position": [558, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "100",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "115",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "115",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "116",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "116",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "147",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "147",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "167",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "198",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "199",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "230",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "300",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "320",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "320",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "500",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "500",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "500",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "500",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "500",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "700",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "716",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "720",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "720",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "720",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "80",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "80",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "84",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "84",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "В, мм",
+      "position": [622, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "18",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "226",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "250",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "326",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "350",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "376",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "4",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "4",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "426",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "450",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "476",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "476",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "500",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "500",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Г, мм",
+      "position": [686, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "3",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "3",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "4",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "4",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Дет.",
+      "position": [750, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,03",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,03",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,05",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,05",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,06",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,07",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,08",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,08",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,08",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,09",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,09",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,09",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,10",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,11",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,12",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,12",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,13",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,13",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,14",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,14",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,16",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,18",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,18",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,18",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,18",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,20",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,20",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,20",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,22",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,22",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,23",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,25",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,29",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,32",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,32",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,34",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,36",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,40",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,43",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,43",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,45",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,48",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,60",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,62",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,68",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,72",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,86",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "53,84",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "53,84",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "53,84",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "6",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "67",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "8,43",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "9,95",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Кол-во",
+      "position": [806, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Ед.",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "м²",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "шт",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "шт",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "шт",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "шт",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "шт",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "шт",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "шт",
+      "position": [878, 0]
+    },
+    {
+      "type": "Label",
+      "text": "шт",
+      "position": [878, 0]
     },
     {
       "type": "Button",
@@ -14,22 +2454,7 @@
     {
       "type": "Label",
       "text": "Спецификация",
-      "position": [0, -24]
-    },
-    {
-      "type": "Button",
-      "text": "Экспорт CSV",
-      "position": [-90, -296]
-    },
-    {
-      "type": "Button",
-      "text": "Закрыть",
-      "position": [75, -296]
-    },
-    {
-      "type": "Label",
-      "text": "<b>Мебель</b>\r\n1<pos=40>Комплект GTV AXIS PRO<pos=250>400<pos=305>115<pos=360>350<pos=420><pos=580>1<pos=630>1<pos=730>шт\r\n2<pos=40>Комплект GTV AXIS PRO<pos=250>500<pos=305>147<pos=360>450<pos=420><pos=580>1<pos=630>1<pos=730>шт\r\n3<pos=40>Комплект GTV AXIS PRO<pos=250>600<pos=305>198<pos=360>500<pos=420><pos=580>1<pos=630>1<pos=730>шт\r\n4<pos=40>Комплект GTV AXIS PRO<pos=250>450<pos=305>230<pos=360>250<pos=420><pos=580>1<pos=630>1<pos=730>шт\r\n5<pos=40>Комплект GTV AXIS PRO<pos=250>450<pos=305>115<pos=360>400<pos=420><pos=580>1<pos=630>1<pos=730>шт\r\n6<pos=40>Комплект GTV AXIS PRO<pos=250>550<pos=305>147<pos=360>500<pos=420><pos=580>1<pos=630>1<pos=730>шт\r\n<pos=420>Итого, без материала: 6 шт\r\n7<pos=40>Дно<pos=250>325<pos=305>16<pos=360>326<pos=420>Антрацит (GTV)<pos=580>1<pos=630>0,11<pos=730>м²\r\n8<pos=40>Задник<pos=250>313<pos=305>84<pos=360>16<pos=420>Антрацит (GTV)<pos=580>1<pos=630>0,03<pos=730>м²\r\n9<pos=40>Дно<pos=250>375<pos=305>16<pos=360>226<pos=420>Антрацит (GTV)<pos=580>1<pos=630>0,08<pos=730>м²\r\n10<pos=40>Задник<pos=250>363<pos=305>199<pos=360>16<pos=420>Антрацит (GTV)<pos=580>1<pos=630>0,07<pos=730>м²\r\n<pos=420>Итого, Антрацит (GTV): 0,29 м²\r\n11<pos=40>Дно<pos=250>425<pos=305>16<pos=360>426<pos=420>Белый (GTV)<pos=580>1<pos=630>0,18<pos=730>м²\r\n12<pos=40>Задник<pos=250>413<pos=305>116<pos=360>16<pos=420>Белый (GTV)<pos=580>1<pos=630>0,05<pos=730>м²\r\n13<pos=40>Дно<pos=250>375<pos=305>16<pos=360>376<pos=420>Белый (GTV)<pos=580>1<pos=630>0,14<pos=730>м²\r\n14<pos=40>Задник<pos=250>363<pos=305>84<pos=360>16<pos=420>Белый (GTV)<pos=580>1<pos=630>0,03<pos=730>м²\r\n<pos=420>Итого, Белый (GTV): 0,40 м²\r\n15<pos=40>Bokovina<pos=250>600<pos=305>720<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,86<pos=730>м²\r\n16<pos=40>Кромка 1.0 мм<pos=250><pos=305><pos=360><pos=420>Серый<pos=580><pos=630>53,84<pos=730>м\r\n17<pos=40>Polka<pos=250>564<pos=305>400<pos=360>18<pos=420>Серый<pos=580>3<pos=630>0,68<pos=730>м²\r\n18<pos=40>Dno<pos=250>600<pos=305>500<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,60<pos=730>м²\r\n19<pos=40>Kryshka<pos=250>600<pos=305>600<pos=360>18<pos=420>Серый<pos=580>1<pos=630>0,36<pos=730>м²\r\n20<pos=40>Zadnyaya_stenka<pos=250>564<pos=305>600<pos=360>18<pos=420>Серый<pos=580>1<pos=630>0,34<pos=730>м²\r\n21<pos=40>Tsokol<pos=250>600<pos=305>100<pos=360>18<pos=420>Серый<pos=580>3<pos=630>0,18<pos=730>м²\r\n22<pos=40>Planka<pos=250>564<pos=305>80<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,09<pos=730>м²\r\n23<pos=40>Dvertsa<pos=250>300<pos=305>716<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,43<pos=730>м²\r\n24<pos=40>Polka_uglovaya<pos=250>800<pos=305>400<pos=360>18<pos=420>Серый<pos=580>1<pos=630>0,32<pos=730>м²\r\n25<pos=40>Stoleshnitsa<pos=250>1200<pos=305>600<pos=360>18<pos=420>Серый<pos=580>1<pos=630>0,72<pos=730>м²\r\n26<pos=40>Fasad_navesnoy<pos=250>600<pos=305>400<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,48<pos=730>м²\r\n27<pos=40>Fasad_nizhniy<pos=250>600<pos=305>720<pos=360>18<pos=420>Серый<pos=580>1<pos=630>0,43<pos=730>м²\r\n28<pos=40>Sbornyy_450_700·Стойка<pos=250>100<pos=305>700<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,14<pos=730>м²\r\n29<pos=40>Sbornyy_450_700·Перек…<pos=250>250<pos=305>100<pos=360>18<pos=420>Серый<pos=580>4<pos=630>0,10<pos=730>м²\r\n30<pos=40>Sbornyy_450_700·Панель<pos=250>250<pos=305>500<pos=360>18<pos=420>Серый<pos=580>1<pos=630>0,13<pos=730>м²\r\n31<pos=40>Sbornyy_600_500·Стойка<pos=250>100<pos=305>500<pos=360>18<pos=420>Серый<pos=580>4<pos=630>0,20<pos=730>м²\r\n32<pos=40>Sbornyy_600_500·Перек…<pos=250>400<pos=305>100<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,08<pos=730>м²\r\n33<pos=40>Peregorodka<pos=250>564<pos=305>400<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,45<pos=730>м²\r\n34<pos=40>Stoyka_uzkaya<pos=250>150<pos=305>720<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,22<pos=730>м²\r\n35<pos=40>Polka_malenkaya<pos=250>300<pos=305>300<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,18<pos=730>м²\r\n36<pos=40>Dvertsa_malenkaya<pos=250>200<pos=305>500<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,20<pos=730>м²\r\n37<pos=40>Tsokol_korotkiy<pos=250>400<pos=305>100<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,08<pos=730>м²\r\n38<pos=40>Planka_dlinnaya<pos=250>800<pos=305>80<pos=360>18<pos=420>Серый<pos=580>1<pos=630>0,06<pos=730>м²\r\n39<pos=40>Kryshka_malenkaya<pos=250>400<pos=305>400<pos=360>18<pos=420>Серый<pos=580>1<pos=630>0,16<pos=730>м²\r\n40<pos=40>Zadnyaya_stenka_mal<pos=250>400<pos=305>500<pos=360>18<pos=420>Серый<pos=580>1<pos=630>0,20<pos=730>м²\r\n41<pos=40>Fasad_450<pos=250>450<pos=305>400<pos=360>18<pos=420>Серый<pos=580>1<pos=630>0,18<pos=730>м²\r\n42<pos=40>Fasad_800<pos=250>800<pos=305>400<pos=360>18<pos=420>Серый<pos=580>1<pos=630>0,32<pos=730>м²\r\n43<pos=40>Sbornyy_800_600·Стойка<pos=250>100<pos=305>600<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,12<pos=730>м²\r\n44<pos=40>Sbornyy_800_600·Перек…<pos=250>600<pos=305>100<pos=360>18<pos=420>Серый<pos=580>2<pos=630>0,12<pos=730>м²\r\n<pos=420>Итого, Серый: 53,84 м, 8,43 м²\r\n45<pos=40>Sbornyy_600_500·Стекло<pos=250>420<pos=305>320<pos=360>4<pos=420>Стекло<pos=580>1<pos=630>0,13<pos=730>м²\r\n46<pos=40>Sbornyy_450_500·Стекло<pos=250>270<pos=305>320<pos=360>4<pos=420>Стекло<pos=580>1<pos=630>0,09<pos=730>м²\r\n<pos=420>Итого, Стекло: 0,22 м²\r\n47<pos=40>Дно<pos=250>525<pos=305>16<pos=360>476<pos=420>Чёрный (GTV)<pos=580>1<pos=630>0,25<pos=730>м²\r\n48<pos=40>Задник<pos=250>513<pos=305>167<pos=360>16<pos=420>Чёрный (GTV)<pos=580>1<pos=630>0,09<pos=730>м²\r\n49<pos=40>Дно<pos=250>475<pos=305>16<pos=360>476<pos=420>Чёрный (GTV)<pos=580>1<pos=630>0,23<pos=730>м²\r\n50<pos=40>Задник<pos=250>463<pos=305>116<pos=360>16<pos=420>Чёрный (GTV)<pos=580>1<pos=630>0,05<pos=730>м²\r\n<pos=420>Итого, Чёрный (GTV): 0,62 м²\r\n\r\n<pos=40>Всего, досок:<pos=630>67\r\n<pos=40>Всего, Мебель, шт:<pos=630>6<pos=730>шт\r\n<pos=40>Всего, Мебель, м:<pos=630>53,84<pos=730>м\r\n<pos=40>Всего, Мебель, м²:<pos=630>9,95<pos=730>м²",
-      "position": [0, -401]
+      "position": [16, -24]
     }
   ]
 }

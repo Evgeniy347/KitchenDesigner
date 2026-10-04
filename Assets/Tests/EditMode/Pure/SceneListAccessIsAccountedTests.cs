@@ -44,7 +44,7 @@ public class SceneListAccessIsAccountedTests
         ("Elements/WallOpeningElement.cs", 3),
         ("Elements/FacadeElement.cs", 3),
         ("Elements/DrawerLinks.cs", 3),
-        ("UI/SpecificationPanelUI.cs", 2),
+        ("UI/SpecificationPanelUI.cs", 1),
         ("UI/HierarchyPanelUI.cs", 2),
         ("Infrastructure/ElementNaming.cs", 2),
         ("Elements/PartCutoutElement.cs", 2),

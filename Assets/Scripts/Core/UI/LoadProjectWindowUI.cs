@@ -1,91 +1,111 @@
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
     public class LoadProjectWindowUI : MonoBehaviour, IProjectWindow
     {
-        private const float PanelW = 720f;
-        private const float PreferredPanelH = 480f;
-        private const float TitleH = 40f;
-        private const float TitleTopPad = 6f;
-        private const float BelowTitleGap = UIStyle.GapSection;
-        private const float ButtonColumnW = 180f;
-        private const float ColumnGap = 16f;
-        private const float ButtonH = 40f;
-        private const float ButtonGap = 10f;
-        private const float BottomPad = UIStyle.WindowPad;
-        private const float RowHeightFloor = LoadProjectRowsView.RowHeight;
-        private const float ScrollbarReserve = WindowBody.BarW + ScrollArea.BarInset;
+        public const string SearchNode = "LoadSearch";
+        public const string SearchHintNode = "LoadSearchHint";
+        public const string TableNode = "LoadTable";
+        public const string NewProjectNode = "LoadNewProject";
+        public const string BrowseNode = "LoadOpenFile";
+        public const string OpenSelectedNode = "LoadOpenSelected";
 
         private readonly ProjectFileActions _actions = new();
-        private readonly LoadProjectRowsView _rows = new();
 
-        private GameObject? _root;
-        private RectTransform? _panel;
-        private RectTransform? _body;
+        private WindowChrome? _chrome;
+        private DataTable? _table;
+        private TMP_InputField? _search;
+        private TMP_Text? _searchHint;
+        private Button? _openSelected;
         private Canvas? _canvas;
 
         public string WindowId => "loadProject";
-        public RectTransform? WindowRect => _root != null ? (RectTransform)_root.transform : null;
+        public RectTransform? WindowRect => _chrome?.Panel;
         public bool HeightAdjustable => false;
-        public bool IsVisible => _root != null && _root.activeSelf;
+        public bool IsVisible => _chrome != null && _chrome.Panel.gameObject.activeSelf;
+        internal DataTable Table => _table!;
+        internal TMP_InputField Search => _search!;
 
         public void Build(Transform canvas)
         {
             _canvas = canvas.GetComponentInParent<Canvas>();
+            _chrome = WindowChrome.Create(canvas, "LoadProjectWindow", Loc.T("window.load.title"),
+                UIStyle.LoadProjectSize, new WindowChromeOptions
+                {
+                    OnClose = () => SetVisible(false),
+                    HasFooter = true,
+                    RuledHeader = true,
+                });
 
-            var panel = UIFactory.CreatePanel("LoadProjectWindow", canvas, Vector2.zero,
-                new Vector2(PanelW, PreferredPanelH));
-            _panel = panel.rectTransform;
-            UIFactory.AnchorCenter(_panel);
-            _panel.anchoredPosition = Vector2.zero;
-            _root = panel.gameObject;
-            WindowDrag.Attach(_panel, UIStyle.DragStripHeight);
+            BuildSearch();
+            BuildTable();
+            BuildFooter();
 
-            WindowTitle.Create(panel.transform, "LoadTitle", Loc.T("window.load.title"),
-                UIStyle.FontWindowTitle, PanelW - 2 * UIStyle.WindowPad, TitleH);
-
-            UIFactory.CreateCloseButton(panel.transform, () => SetVisible(false));
-
-            BuildButtonColumn(panel.transform);
-
-            _body = UIFactory.CreateRect("LoadBody", panel.transform);
-
-            _root.SetActive(false);
+            _chrome.Panel.gameObject.SetActive(false);
         }
 
-        private void BuildButtonColumn(Transform parent)
+        private void BuildSearch()
         {
-            float top = -(TitleTopPad + TitleH + BelowTitleGap);
-            float buttonColumnX = PanelW - UIStyle.WindowPad - ButtonColumnW;
+            float top = UIStyle.TitleBarH + UIStyle.Space3;
+            _search = UIFactory.CreateInputField(SearchNode, _chrome!.Panel, "", Vector2.zero,
+                new Vector2(_chrome.BodyWidth, UIStyle.ControlH));
+            var rt = (RectTransform)_search.transform;
+            UIFactory.AnchorTopLeft(rt);
+            rt.anchoredPosition = new Vector2(_chrome.BodyPad, -top);
+            _search.onValueChanged.AddListener(_ => RebuildRows());
 
-            var newProjectBtn = UIFactory.CreateButton("LoadNewProject", parent, Loc.T("window.load.newProject"),
-                Vector2.zero, new Vector2(ButtonColumnW, ButtonH), OnNewProject);
-            PlaceInButtonColumn(newProjectBtn.GetComponent<RectTransform>(), buttonColumnX, top);
-
-            var loadBtn = UIFactory.CreateButton("LoadOpenFile", parent, Loc.T("window.load.open"),
-                Vector2.zero, new Vector2(ButtonColumnW, ButtonH), OnLoadFile);
-            PlaceInButtonColumn(loadBtn.GetComponent<RectTransform>(), buttonColumnX,
-                top - ButtonH - ButtonGap);
-
-            float separatorX = buttonColumnX - ColumnGap * 0.5f;
-            var separator = UIFactory.CreatePanel("LoadColumnSeparator", parent, Vector2.zero,
-                new Vector2(1, 0), UIStyle.Separator);
-            var sepRt = separator.rectTransform;
-            sepRt.anchorMin = new Vector2(0, 0);
-            sepRt.anchorMax = new Vector2(0, 1);
-            sepRt.pivot = new Vector2(0, 0.5f);
-            sepRt.offsetMin = new Vector2(separatorX, BottomPad);
-            sepRt.offsetMax = new Vector2(separatorX, top);
-            separator.raycastTarget = false;
+            _searchHint = UIFactory.CreateLabel(SearchHintNode, _search.transform, Loc.T("window.load.search"),
+                UIStyle.FontBody, Vector2.zero, new Vector2(UIStyle.ControlH, UIStyle.ControlH), TextAnchor.MiddleLeft);
+            _searchHint.color = UIStyle.TextSecondary;
+            _searchHint.raycastTarget = false;
+            _searchHint.enableWordWrapping = false;
+            var hint = _searchHint.rectTransform;
+            hint.anchorMin = Vector2.zero;
+            hint.anchorMax = Vector2.one;
+            hint.offsetMin = new Vector2(UIStyle.Space2, 0f);
+            hint.offsetMax = new Vector2(-UIStyle.Space2, 0f);
         }
 
-        private static void PlaceInButtonColumn(RectTransform rt, float x, float topOffset)
+        private void BuildTable()
         {
-            rt.anchorMin = new Vector2(0, 1);
-            rt.anchorMax = new Vector2(0, 1);
-            rt.pivot = new Vector2(0, 1);
-            rt.anchoredPosition = new Vector2(x, topOffset);
+            float top = UIStyle.TitleBarH + UIStyle.Space3 + UIStyle.ControlH + UIStyle.Space2;
+            _table = DataTable.Create(_chrome!.Panel, TableNode,
+                new Vector2(_chrome.BodyWidth, UIStyle.LoadProjectSize.y - top - UIStyle.FooterH),
+                LoadProjectRows.Columns(), selectable: true);
+            var rt = _table.Root;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = new Vector2(_chrome.BodyPad, UIStyle.FooterH);
+            rt.offsetMax = new Vector2(-_chrome.BodyPad, -top);
+
+            _table.RowDecorator = new LoadProjectRowDecor(_table, IsCurrent, Forget).Decorate;
+            _table.SortBy(LoadProjectRows.ModifiedColumn, descending: true);
+            _table.SelectionChanged += _ => SyncOpenButton();
+            _table.RowActivated += row => { if (row.Tag is RecentProjectRow project) OpenRecent(project.Path); };
+            _table.SetEmptyState(Loc.T("window.load.empty.title"), Loc.T("window.load.empty.hint"),
+                Loc.T("window.load.newProject"), OnNewProject);
+        }
+
+        private void BuildFooter()
+        {
+            var footer = _chrome!.Footer!;
+            footer.AddLeft(NewProjectNode, Loc.T("window.load.newProject"), OnNewProject);
+            footer.AddLeft(BrowseNode, Loc.T("window.load.browse"), OnLoadFile, ButtonRole.Link);
+            _openSelected = footer.AddPrimary(OpenSelectedNode, Loc.T("window.load.open"), OpenSelected);
+        }
+
+        private static bool IsCurrent(string path) =>
+            SaveLoadManager.HasLastPath
+            && string.Equals(SaveLoadManager.LastPath, path, System.StringComparison.OrdinalIgnoreCase);
+
+        private void Forget(string path)
+        {
+            RecentProjects.Forget(path);
+            RebuildRows();
         }
 
         private void OnNewProject() => _actions.NewProjectDialog(ok => { if (ok) SetVisible(false); });
@@ -95,41 +115,73 @@ namespace KitchenDesigner.Core.UI
         private void OpenRecent(string path) =>
             _actions.OpenExisting(path, ok => { if (ok) SetVisible(false); });
 
-        public void Toggle() => SetVisible(_root != null && !_root.activeSelf);
+        private void OpenSelected()
+        {
+            if (_table!.Selected?.Tag is RecentProjectRow project) OpenRecent(project.Path);
+        }
+
+        private void SyncOpenButton()
+        {
+            if (_openSelected != null) _openSelected.interactable = _table!.Selected != null;
+        }
+
+        public void Toggle() => SetVisible(_chrome != null && !_chrome.Panel.gameObject.activeSelf);
 
         public void SetVisible(bool visible)
         {
-            if (_root == null || _panel == null || _body == null) return;
+            if (_chrome == null) return;
+            _chrome.Panel.gameObject.SetActive(visible);
             if (visible) Refresh();
-            _root.SetActive(visible);
         }
 
         private void Refresh()
         {
-            float availableScreenHeight = _canvas != null
+            float screenHeight = _canvas != null
                 ? ((RectTransform)_canvas.transform).rect.height
-                : PreferredPanelH * 2f;
-            float height = LoadWindowLayout.HeightFor(PreferredPanelH, availableScreenHeight);
-            _panel!.sizeDelta = new Vector2(PanelW, height);
+                : UIStyle.LoadProjectSize.y * 2f;
+            float height = LoadWindowLayout.HeightFor(UIStyle.LoadProjectSize.y, screenHeight);
+            _chrome!.Panel.sizeDelta = new Vector2(UIStyle.LoadProjectSize.x, height);
+            RebuildRows();
+        }
 
-            float buttonColumnX = PanelW - UIStyle.WindowPad - ButtonColumnW;
-            float listRightEdge = buttonColumnX - ColumnGap;
-            float rowWidth = listRightEdge - UIStyle.WindowPad - ScrollbarReserve;
-            float topOfBody = TitleTopPad + TitleH + BelowTitleGap;
-            float columnHeight = Mathf.Max(RowHeightFloor, height - topOfBody - BottomPad);
+        private void RebuildRows()
+        {
+            string search = _search!.text.Trim();
+            _searchHint!.gameObject.SetActive(search.Length == 0);
 
-            _body!.anchorMin = new Vector2(0, 1);
-            _body.anchorMax = new Vector2(0, 1);
-            _body.pivot = new Vector2(0, 1);
-            _body.sizeDelta = new Vector2(rowWidth + ScrollbarReserve, columnHeight);
-            _body.anchoredPosition = new Vector2(UIStyle.WindowPad, -topOfBody);
+            var paths = RecentProjects.Paths();
+            var rows = new List<DataRow>();
+            foreach (var path in paths)
+            {
+                var project = RecentProjectRowSource.For(path);
+                if (LoadProjectRows.MatchesSearch(project, search)) rows.Add(LoadProjectRows.For(project));
+            }
 
-            for (int i = _body.childCount - 1; i >= 0; i--)
-                DestroyNow.The(_body.GetChild(i).gameObject);
+            _table!.SetRows(rows);
+            SyncEmptyState(paths.Length > 0);
+            _table.Select(DefaultSelection(rows));
+            SyncOpenButton();
+        }
 
-            var body = WindowBody.Create(_body, 0f, 0f, 0f);
-            _rows.Rebuild(body.Content, rowWidth, RecentProjects.Paths(), OpenRecent);
-            body.Fit();
+        private static DataRow? DefaultSelection(List<DataRow> rows)
+        {
+            DataRow? first = null;
+            foreach (var row in rows)
+            {
+                if (row.Tag is not RecentProjectRow project || !project.FileExists) continue;
+                if (IsCurrent(project.Path)) return row;
+                first ??= row;
+            }
+            return first;
+        }
+
+        private void SyncEmptyState(bool anyProjects)
+        {
+            var empty = _table!.Empty;
+            if (empty == null) return;
+            empty.Title.text = anyProjects ? Loc.T("window.load.noMatch.title") : Loc.T("window.load.empty.title");
+            empty.Hint.text = anyProjects ? Loc.T("window.load.noMatch.hint") : Loc.T("window.load.empty.hint");
+            if (empty.ActionButton != null) empty.ActionButton.gameObject.SetActive(!anyProjects);
         }
     }
 }

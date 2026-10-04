@@ -40,31 +40,34 @@ public class PanelPlacementTests
     {
         var go = new GameObject("Spec");
         go.transform.SetParent(_canvasGo!.transform);
-        go.AddComponent<SpecificationPanelUI>().Build(_canvasGo!.transform);
+        var ui = go.AddComponent<SpecificationPanelUI>();
+        ui.Build(_canvasGo!.transform);
 
-        var headers = _canvasGo!.transform.Find("SpecPanel/SpecHeaders")!.GetComponent<TMP_Text>();
+        var header = ui.Table.HeaderLabel(SpecificationRows.NameColumn);
 
-        Assert.AreEqual(UIStyle.TextSecondary, headers.color,
+        Assert.AreEqual(UIStyle.TextSecondary, header.color,
             "Шапка таблицы — вторичный цвет текста, а НЕ жёлтый: жёлтым в проекте помечено "
             + "«значение изменено», и один цвет обязан значить одно (правило 10)");
-        Assert.AreNotEqual(UIStyle.HighlightChanged, headers.color);
+        Assert.AreNotEqual(UIStyle.HighlightChanged, header.color);
     }
 
     [Test]
-    public void SpecificationPanel_Export_IsTheAccentedMainAction()
+    public void SpecificationPanel_Export_IsTheAccentedMainAction_AndThereIsNoCloseButtonNextToTheCross()
     {
         var go = new GameObject("Spec");
         go.transform.SetParent(_canvasGo!.transform);
         go.AddComponent<SpecificationPanelUI>().Build(_canvasGo!.transform);
 
         var panel = _canvasGo!.transform.Find("SpecPanel")!;
-        var export = panel.Find("SpecExport")!.GetComponent<Image>();
-        var close = panel.Find("SpecClose")!.GetComponent<Image>();
+        var export = panel.Find("SpecPanelFooter/SpecExport")!.GetComponent<Image>();
+        var copy = panel.Find("SpecPanelFooter/SpecCopy")!.GetComponent<Image>();
 
         Assert.AreEqual(UIStyle.Accent, export.color,
             "Экспорт CSV — главное действие окна спецификации, поэтому он один выделен "
             + "акцентным цветом");
-        Assert.AreEqual(UIFactory.ButtonColor, close.color,
-            "а «Закрыть» остаётся обычной кнопкой — иначе выделение перестаёт что-либо значить");
+        Assert.AreEqual(UIStyle.Surface, copy.color,
+            "«Копировать» остаётся обычной кнопкой — иначе выделение перестаёт что-либо значить");
+        Assert.IsNull(panel.Find("SpecClose"),
+            "«Закрыть» рядом с × — две двери с одним смыслом (D5, NN/g): её нет");
     }
 }

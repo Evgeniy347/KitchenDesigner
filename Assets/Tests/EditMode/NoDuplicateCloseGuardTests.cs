@@ -16,8 +16,6 @@ public class NoDuplicateCloseGuardTests
 {
     private static readonly Dictionary<string, string> KnownGaps = new()
     {
-        ["SettingsPanel"] = "T6 — docs/ui-redesign/settings.md, п. 7",
-        ["SpecPanel"] = "T7 — docs/ui-redesign/tables.md, «Спецификация»",
     };
 
     private GameObject? _canvas;

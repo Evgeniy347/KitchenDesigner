@@ -1058,8 +1058,8 @@
     }
   },
   "element.edge.enabled": {
-    "where": "Element properties panel > part > edge banding, switch row label",
-    "meaning": "Turn edge banding of this part on or off",
+    "where": "Element properties panel > part > edge banding section, switch row label (the section title already says edge banding)",
+    "meaning": "Edge banding of this part is turned on; short on purpose, the label column is narrow",
     "maxLength": 22
   },
   "element.edge.thickness": {

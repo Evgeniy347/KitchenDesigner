@@ -3,7 +3,7 @@
 Приоритет **5–7**. Макеты: `mockups/errors.png`, `mockups/specification.png`,
 `mockups/load-project.png`. Правила: D5, D8, D9. Общий компонент — `DataTable` (задача T4b).
 
-## «Ошибки» — `ErrorPanelUI`, `IssueTableView`
+## «Ошибки» — `ErrorPanelUI`, `IssueFilterBar`, `IssueRows`
 
 Сейчас: фильтры-списки «Уровень/Код/Этаж» с подписями над ними и кнопка «Обновить» (пересчёт и так
 живой — `todo_evolution` 1.2 называет её атавизмом); «Предупрежде…» обрезано в колонке 110 px;
@@ -19,7 +19,7 @@ tooltip; счётчик — в заголовке («Ошибки 2»); «Обн
 Приёмка: строка `.Always("ErrRefresh", …)` уходит из `WindowNoOpButtonsGuardTests` вместе с кнопкой; голден `ui_error_panel` заводится (сегодня
 только PNG, `goldenJson: false`).
 
-## «Спецификация» — `SpecificationPanelUI`
+## «Спецификация» — `SpecificationPanelUI`, `SpecificationRows`
 
 Сейчас: таблица — один TMP-текст с `<pos=…>` и `fontSize = 18` по месту; числа влево; имя «Комплект
 GTV AXIS PRO» налезает на «400»; подытоги стоят в колонке «Материал»; нижние строки уходят под
@@ -33,7 +33,7 @@ GTV AXIS PRO» налезает на «400»; подытоги стоят в к�
 Приёмка: голден `ui_specification_table` меняется; `SpecificationScreenshotTests` PNG просмотрен;
 `SpecificationCoverageGuardTests` зелёный; ни одного `fontSize =` литералом в окне.
 
-## «Открыть проект» — `LoadProjectWindowUI`, `LoadProjectRowsView`
+## «Открыть проект» — `LoadProjectWindowUI`, `LoadProjectRows`, `LoadProjectRowDecor`
 
 Сейчас: строки-карточки 48 с тремя подписями «Создан / Версия / Изменён» в каждой строке — заголовки
 повторены N раз; выбранная строка не отличается от прочих; «Загрузить» не выделена как основная;

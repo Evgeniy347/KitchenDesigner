@@ -3,8 +3,93 @@
   "children": [
     {
       "type": "Button",
+      "text": "Открыть",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "lpw_version_current.kdproj",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
       "text": "lpw_version_old.kdproj",
-      "position": [0, 0]
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Имя",
+      "position": [8, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Новый проект",
+      "position": [16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Обзор…",
+      "position": [160, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Изменён ▼",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-05 15:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-06 15:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Создан",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "! 0.1",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Версия",
+      "position": [596, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Label",
+      "text": "",
+      "position": [686, 0]
     },
     {
       "type": "Button",
@@ -13,23 +98,15 @@
     },
     {
       "type": "Label",
-      "text": "Загрузить проект",
-      "position": [0, -24]
+      "text": "Открыть проект",
+      "position": [16, -24]
     },
     {
-      "type": "Button",
-      "text": "lpw_version_current.kdproj",
-      "position": [0, -54]
-    },
-    {
-      "type": "Button",
-      "text": "Новый проект",
-      "position": [528, -62]
-    },
-    {
-      "type": "Button",
-      "text": "Загрузить",
-      "position": [528, -112]
+      "type": "InputField",
+      "label": "LoadSearch",
+      "value": "",
+      "interactable": true,
+      "position": [16, -60]
     }
   ]
 }

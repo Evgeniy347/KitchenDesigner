@@ -48,200 +48,234 @@ public class SpecificationPanelUITests
         return result;
     }
 
-    private static string CellAt(string row, float fromPos, float toPos)
-    {
-        string startTag = $"<pos={fromPos}>";
-        int start = row.IndexOf(startTag, System.StringComparison.Ordinal);
-        Assert.Greater(start, -1, $"тег {startTag} не найден в строке: {row}");
-        start += startTag.Length;
-        string endTag = $"<pos={toPos}>";
-        int end = row.IndexOf(endTag, start, System.StringComparison.Ordinal);
-        Assert.Greater(end, -1, $"тег {endTag} не найден в строке: {row}");
-        return row.Substring(start, end - start);
-    }
+    private static SpecTableModel Model(SpecResult result) => SpecificationRows.Build(result);
 
-    private static string[] Lines(string text) =>
-        text.Replace("\r\n", "\n").Split('\n');
+    private static DataRow Item(SpecTableModel model, string name) =>
+        model.Rows.Single(r => r.Kind == DataRowKind.Item && r.Cell(SpecificationRows.NameColumn) == name);
 
-    private static string TailAt(string row, float fromPos)
-    {
-        string startTag = $"<pos={fromPos}>";
-        int start = row.IndexOf(startTag, System.StringComparison.Ordinal);
-        Assert.Greater(start, -1, $"тег {startTag} не найден в строке: {row}");
-        return row.Substring(start + startTag.Length);
-    }
+    private static string Cell(DataRow row, int column) => row.Cell(column);
 
     // ── Требование 2: hasDims решает, печатать габариты или нет ──
 
     [Test]
-    public void BuildDisplayText_LineWithDims_PrintsWidthHeightDepth()
+    public void Rows_LineWithDims_PrintsWidthHeightDepth()
     {
-        var result = Result(BoardLine("Полка", new Vector3Int(800, 400, 18), "ЛДСП", SpecSections.Furniture,
-            1, 0.68f));
+        var model = Model(Result(BoardLine("Полка", new Vector3Int(800, 400, 18), "ЛДСП", SpecSections.Furniture,
+            1, 0.68f)));
 
-        var row = Lines(SpecificationPanelUI.BuildDisplayText(result))
-            .Single(l => l.Contains("Полка"));
+        var row = Item(model, "Полка");
 
-        Assert.AreEqual("800", CellAt(row, SpecificationPanelUI.ColW, SpecificationPanelUI.ColH));
-        Assert.AreEqual("400", CellAt(row, SpecificationPanelUI.ColH, SpecificationPanelUI.ColD));
-        Assert.AreEqual("18", CellAt(row, SpecificationPanelUI.ColD, SpecificationPanelUI.ColMaterial));
+        Assert.AreEqual("800", Cell(row, SpecificationRows.WidthColumn));
+        Assert.AreEqual("400", Cell(row, SpecificationRows.HeightColumn));
+        Assert.AreEqual("18", Cell(row, SpecificationRows.DepthColumn));
     }
 
     [Test]
-    public void BuildDisplayText_LineWithoutDims_LeavesDimensionColumnsBlank_NotZero()
+    public void Rows_LineWithoutDims_LeavesDimensionColumnsBlank_NotZero()
     {
-        var result = Result(ItemLine("Кирпич", "Керамика", "Стены", SpecUnit.Pieces, 3, 3720f));
+        var model = Model(Result(ItemLine("Кирпич", "Керамика", "Стены", SpecUnit.Pieces, 3, 3720f)));
 
-        var row = Lines(SpecificationPanelUI.BuildDisplayText(result))
-            .Single(l => l.Contains("Кирпич"));
+        var row = Item(model, "Кирпич");
 
-        Assert.AreEqual("", CellAt(row, SpecificationPanelUI.ColW, SpecificationPanelUI.ColH),
+        Assert.AreEqual("", Cell(row, SpecificationRows.WidthColumn),
             "hasDims=false — колонка Ш обязана быть пустой, а не напечатанным нулём");
-        Assert.AreEqual("", CellAt(row, SpecificationPanelUI.ColH, SpecificationPanelUI.ColD));
-        Assert.AreEqual("", CellAt(row, SpecificationPanelUI.ColD, SpecificationPanelUI.ColMaterial));
+        Assert.AreEqual("", Cell(row, SpecificationRows.HeightColumn));
+        Assert.AreEqual("", Cell(row, SpecificationRows.DepthColumn));
     }
 
     // ── Требование 4: «Дет.» — число деталей у строки с габаритами, ничего — у строки без ──
 
     [Test]
-    public void BuildDisplayText_BoardLine_ShowsPieceCountInPiecesColumn()
+    public void Rows_BoardLine_ShowsPieceCountInPiecesColumn()
     {
-        var result = Result(BoardLine("Дно", new Vector3Int(600, 500, 18), "Белый (GTV)", SpecSections.Furniture,
-            2, 1.24f));
+        var model = Model(Result(BoardLine("Дно", new Vector3Int(600, 500, 18), "Белый (GTV)",
+            SpecSections.Furniture, 2, 1.24f)));
 
-        var row = Lines(SpecificationPanelUI.BuildDisplayText(result)).Single(l => l.Contains("Дно"));
-
-        Assert.AreEqual("2", CellAt(row, SpecificationPanelUI.ColPieces, SpecificationPanelUI.ColQty),
+        Assert.AreEqual("2", Cell(Item(model, "Дно"), SpecificationRows.PiecesColumn),
             "колонка «Дет.» обязана показать число физических деталей (2 доски), а не м²");
     }
 
     [Test]
-    public void BuildDisplayText_LineWithoutDims_LeavesPiecesColumnBlank_NotSourceRowCount()
+    public void Rows_LineWithoutDims_LeavesPiecesColumnBlank_NotSourceRowCount()
     {
-        // Строка без габаритов не считается «деталями» — противоположный вход к тесту выше:
-        // здесь source-row-count (3) не имеет права всплыть в колонке «Дет.».
-        var result = Result(ItemLine("Кирпич", "Керамика", "Стены", SpecUnit.Pieces, 3, 3720f));
+        var model = Model(Result(ItemLine("Кирпич", "Керамика", "Стены", SpecUnit.Pieces, 3, 3720f)));
 
-        var row = Lines(SpecificationPanelUI.BuildDisplayText(result)).Single(l => l.Contains("Кирпич"));
-
-        Assert.AreEqual("", CellAt(row, SpecificationPanelUI.ColPieces, SpecificationPanelUI.ColQty),
+        Assert.AreEqual("", Cell(Item(model, "Кирпич"), SpecificationRows.PiecesColumn),
             "hasDims=false — колонка «Дет.» обязана быть пустой, а не числом строк-источников");
     }
 
     // ── Требование 3: «Кол-во» — всегда общее количество в собственной единице строки ──
 
     [Test]
-    public void BuildDisplayText_PiecesLine_ShowsTotalPieces_NotTheSourceRowCount()
+    public void Rows_PiecesLine_ShowsTotalPieces_NotTheSourceRowCount()
     {
-        // Ровно баг из отчёта приёмки: 3 строки-источника сложились в 3720 кирпичей.
-        var result = Result(ItemLine("Кирпич", "Керамика", "Стены", SpecUnit.Pieces, 3, 3720f));
+        var model = Model(Result(ItemLine("Кирпич", "Керамика", "Стены", SpecUnit.Pieces, 3, 3720f)));
 
-        var row = Lines(SpecificationPanelUI.BuildDisplayText(result))
-            .Single(l => l.Contains("Кирпич"));
+        var row = Item(model, "Кирпич");
 
-        Assert.AreEqual("3720", CellAt(row, SpecificationPanelUI.ColQty, SpecificationPanelUI.ColUnit),
+        Assert.AreEqual("3720", Cell(row, SpecificationRows.QtyColumn),
             "в колонке «Кол-во» обязано быть 3720 шт, а не 3 строки-источника");
-        StringAssert.Contains("шт", row);
+        Assert.AreEqual("шт", Cell(row, SpecificationRows.UnitColumn), "единица — в своей колонке");
     }
 
-    /// <summary>Заодно из приёмки: окно раньше форматировало числа неявной культурой потока
-    /// («3.10» — точка), а выгрузка — зафиксированной SpecificationExport.NumberCulture
-    /// («3,1000» — запятая). Ожидаемое значение здесь намеренно строится ТОЙ ЖЕ константой,
-    /// не голым "F2" — иначе тест был бы зелёным на любой культуре машины прогона.</summary>
     [Test]
-    public void BuildDisplayText_BoardLine_QtyColumn_MatchesTotalAreaFromCsv()
+    public void Rows_BoardLine_QtyColumn_MatchesTheNumberFormatOfTheUiLanguage()
     {
-        var result = Result(BoardLine("Дно", new Vector3Int(600, 500, 18), "Белый (GTV)", SpecSections.Furniture,
-            2, 1.24f));
+        var model = Model(Result(BoardLine("Дно", new Vector3Int(600, 500, 18), "Белый (GTV)",
+            SpecSections.Furniture, 2, 1.24f)));
 
-        var row = Lines(SpecificationPanelUI.BuildDisplayText(result)).Single(l => l.Contains("Дно"));
-
-        Assert.AreEqual(1.24f.ToString("F2", SpecificationExport.NumberCulture),
-            CellAt(row, SpecificationPanelUI.ColQty, SpecificationPanelUI.ColUnit),
-            "то же totalAreaM2/qtyTotal, той же культурой, что уходит в CSV — окно и CSV не расходятся");
+        Assert.AreEqual(NumberFormat.Fixed(1.24, 2), Cell(Item(model, "Дно"), SpecificationRows.QtyColumn),
+            "дробное количество — через NumberFormat, как все числа окон (десятичный знак языка интерфейса)");
+        Assert.AreEqual("м²", Cell(Item(model, "Дно"), SpecificationRows.UnitColumn));
     }
 
-    // ── Требование 1: группировка по разделу — данные строки, а не сортировка по материалу ──
+    // ── Требование 1: группировка по разделу — строка-группа, а не сортировка по материалу ──
 
     [Test]
-    public void BuildDisplayText_GroupsBySection_NotOnlyByMaterial()
+    public void Rows_GroupBySection_EachSectionStartsWithItsGroupRow()
     {
-        // "Бетон" (Конструкции) обязан не перемешаться со строками "Мебель", даже если
-        // материалы соседних разделов совпали бы по алфавиту.
-        var result = Result(
+        var model = Model(Result(
             BoardLine("Полка", new Vector3Int(500, 300, 18), "Дуб", SpecSections.Furniture, 1, 0.3f),
-            ItemLine("Кирпич", "Дуб-Керамика", "Конструкции", SpecUnit.Pieces, 1, 500f));
+            ItemLine("Кирпич", "Дуб-Керамика", "Конструкции", SpecUnit.Pieces, 1, 500f)));
 
-        var lines = Lines(SpecificationPanelUI.BuildDisplayText(result));
-        int furnitureHeader = System.Array.FindIndex(lines, l => l.Contains(SpecSections.Furniture));
-        int constructionHeader = System.Array.FindIndex(lines, l => l.Contains("Конструкции"));
-        int shelfRow = System.Array.FindIndex(lines, l => l.Contains("Полка"));
-        int brickRow = System.Array.FindIndex(lines, l => l.Contains("Кирпич"));
+        var rows = model.Rows.ToList();
+        int shelf = rows.IndexOf(Item(model, "Полка"));
+        int brick = rows.IndexOf(Item(model, "Кирпич"));
+        int furnitureGroup = rows.FindIndex(r => r.Kind == DataRowKind.Group && r.Cell(0) == SpecSections.Furniture);
+        int constructionGroup = rows.FindIndex(r => r.Kind == DataRowKind.Group && r.Cell(0) == "Конструкции");
 
-        Assert.Greater(furnitureHeader, -1, "заголовок раздела «Мебель» обязан присутствовать");
-        Assert.Greater(constructionHeader, -1, "заголовок раздела «Конструкции» обязан присутствовать");
-        Assert.AreEqual(furnitureHeader + 1, shelfRow,
-            "строка полки идёт СРАЗУ за заголовком своего раздела, а не после чужого");
-        Assert.AreEqual(constructionHeader + 1, brickRow,
-            "строка кирпича идёт СРАЗУ за заголовком своего раздела, а не после чужого");
+        Assert.AreEqual(2, model.Sections);
+        Assert.Greater(furnitureGroup, -1, "строка-группа раздела «Мебель» обязана присутствовать");
+        Assert.Greater(constructionGroup, -1, "строка-группа раздела «Конструкции» обязана присутствовать");
+        Assert.AreEqual(furnitureGroup + 1, shelf,
+            "строка полки идёт СРАЗУ за строкой-группой своего раздела, а не после чужого");
+        Assert.AreEqual(constructionGroup + 1, brick,
+            "строка кирпича идёт СРАЗУ за строкой-группой своего раздела, а не после чужого");
     }
 
     [Test]
-    public void BuildDisplayText_SectionHeader_IsNotTruncatedAt10Chars()
+    public void Rows_SectionHeader_IsNotTruncatedAt10Chars()
     {
-        var result = Result(ItemLine("Утеплитель", "Минвата", "Вентиляционная система", SpecUnit.AreaM2, 1, 4f));
+        var model = Model(Result(ItemLine("Утеплитель", "Минвата", "Вентиляционная система", SpecUnit.AreaM2, 1, 4f)));
 
-        var text = SpecificationPanelUI.BuildDisplayText(result);
-
-        StringAssert.Contains("Вентиляционная система", text,
-            "раздел длиннее 10 символов не имеет права обрезаться многоточием");
+        Assert.IsTrue(model.Rows.Any(r => r.Kind == DataRowKind.Group && r.Cell(0) == "Вентиляционная система"),
+            "раздел длиннее 10 символов не имеет права обрезаться: многоточие делает таблица");
     }
 
-    // ── Требование 5: итог по материалу ──
+    [Test]
+    public void Rows_NumberingContinuesAcrossSections_AndCountsOnlyItems()
+    {
+        var model = Model(Result(
+            BoardLine("Полка", new Vector3Int(500, 300, 18), "Дуб", SpecSections.Furniture, 1, 0.3f),
+            BoardLine("Дно", new Vector3Int(500, 300, 18), "Дуб", SpecSections.Furniture, 1, 0.3f),
+            ItemLine("Кирпич", "Керамика", "Стены", SpecUnit.Pieces, 1, 500f)));
+
+        var numbers = model.Rows.Where(r => r.Kind == DataRowKind.Item)
+            .Select(r => Cell(r, SpecificationRows.NumberColumn)).ToList();
+
+        CollectionAssert.AreEqual(new[] { "1", "2", "3" }, numbers, "сквозная нумерация позиций, как в макете");
+        Assert.AreEqual(3, model.Positions, "подытоги и итоги не позиции");
+    }
+
+    // ── Требование 5: подытог по материалу — строка под группой материала, число в колонке «Кол-во» ──
 
     [Test]
-    public void BuildDisplayText_MaterialSubtotal_SumsAcrossItsOwnLines()
+    public void Rows_MaterialSubtotal_SumsItsOwnLines_AndSitsInTheQtyColumn()
     {
-        var result = Result(
-            ItemLine("Фитинг угловой", "", SpecSections.Plumbing, SpecUnit.Pieces, 1, 6f),
-            ItemLine("Фитинг тройник", "", SpecSections.Plumbing, SpecUnit.Pieces, 1, 4f));
+        var model = Model(Result(
+            ItemLine("Фитинг угловой", "Латунь", SpecSections.Plumbing, SpecUnit.Pieces, 1, 6f),
+            ItemLine("Фитинг тройник", "Латунь", SpecSections.Plumbing, SpecUnit.Pieces, 1, 4f)));
 
-        var text = SpecificationPanelUI.BuildDisplayText(result);
+        var subtotal = model.Rows.Single(r => r.Kind == DataRowKind.Subtotal);
 
-        StringAssert.Contains("10 шт", text.Replace("\r\n", "\n"),
+        Assert.AreEqual("10", Cell(subtotal, SpecificationRows.QtyColumn),
             "итог по материалу обязан сложить количество всех его строк (6 + 4 = 10)");
+        Assert.AreEqual("шт", Cell(subtotal, SpecificationRows.UnitColumn));
+        StringAssert.Contains("Латунь", Cell(subtotal, SpecificationRows.NameColumn));
+        Assert.AreEqual("", Cell(subtotal, SpecificationRows.MaterialColumn),
+            "подытог стоит в колонке «Наименование», а не «Материал» (аудит: «подытоги в колонке Материал»)");
+    }
+
+    [Test]
+    public void Rows_LineWithoutAMaterial_ShowsADash_AndHasNoSubtotal()
+    {
+        var model = Model(Result(ItemLine("Фитинг", "", SpecSections.Plumbing, SpecUnit.Pieces, 1, 6f)));
+
+        Assert.AreEqual(UIStyle.GlyphDash, Cell(Item(model, "Фитинг"), SpecificationRows.MaterialColumn));
+        Assert.IsFalse(model.Rows.Any(r => r.Kind == DataRowKind.Subtotal),
+            "итог «без материала» ничего не сообщает — подытога у безматериальных строк нет");
+    }
+
+    [Test]
+    public void Rows_MaterialWithSeveralUnits_GetsOneSubtotalPerUnit()
+    {
+        var model = Model(Result(
+            BoardLine("Полка", new Vector3Int(500, 300, 18), "Дуб", SpecSections.Furniture, 1, 0.3f),
+            ItemLine("Кромка", "Дуб", SpecSections.Furniture, SpecUnit.LinearMeters, 1, 4.5f)));
+
+        var units = model.Rows.Where(r => r.Kind == DataRowKind.Subtotal)
+            .Select(r => Cell(r, SpecificationRows.UnitColumn)).ToList();
+
+        CollectionAssert.AreEquivalent(new[] { "м²", "м" }, units,
+            "у одного материала две единицы — две строки подытога, а не «0,3 м², 4,5 м» в одной ячейке");
     }
 
     // ── Общий итог по единицам: одна единица и несколько — противоположные входы ──
 
     [Test]
-    public void BuildDisplayText_TotalsByUnit_OneUnitOnly_PrintsOneTotalLine()
+    public void Rows_TotalsByUnit_OneUnitOnly_PrintsOneSectionTotalRow()
     {
-        var result = Result(BoardLine("Полка", new Vector3Int(500, 300, 18), "Дуб", SpecSections.Furniture, 1, 0.3f));
+        var model = Model(Result(BoardLine("Полка", new Vector3Int(500, 300, 18), "Дуб", SpecSections.Furniture, 1, 0.3f)));
 
-        var text = SpecificationPanelUI.BuildDisplayText(result);
+        var totals = model.Rows.Where(r => r.Kind == DataRowKind.Total
+            && Cell(r, SpecificationRows.UnitColumn) == "м²").ToList();
 
-        int totalLines = Lines(text).Count(l => l.Contains("Всего, ") && l.Contains("м²"));
-        Assert.AreEqual(1, totalLines, "единственная единица — единственная итоговая строка по ней");
+        Assert.AreEqual(1, totals.Count, "единственная единица — единственная итоговая строка по ней");
+        Assert.AreEqual(NumberFormat.Fixed(0.3, 2), Cell(totals[0], SpecificationRows.QtyColumn));
     }
 
     [Test]
-    public void BuildDisplayText_TotalsByUnit_SeveralUnits_PrintsOneLinePerUnit()
+    public void Rows_TotalsByUnit_SeveralUnits_PrintsOneRowPerUnit()
     {
-        var result = Result(
+        var model = Model(Result(
             BoardLine("Полка", new Vector3Int(500, 300, 18), "Дуб", SpecSections.Furniture, 1, 0.3f),
             ItemLine("Кирпич", "Керамика", "Стены", SpecUnit.Pieces, 1, 500f),
-            ItemLine("Труба ДН20", "", SpecSections.Plumbing, SpecUnit.LinearMeters, 1, 12.5f));
+            ItemLine("Труба ДН20", "", SpecSections.Plumbing, SpecUnit.LinearMeters, 1, 12.5f)));
 
-        var text = SpecificationPanelUI.BuildDisplayText(result);
-        string unitTag = $"<pos={SpecificationPanelUI.ColUnit}>";
-        var totalRows = Lines(text).Where(l => l.Contains("Всего, ") && l.Contains(unitTag)).ToList();
+        var units = model.Rows.Where(r => r.Kind == DataRowKind.Total)
+            .Select(r => Cell(r, SpecificationRows.UnitColumn)).ToList();
 
-        Assert.AreEqual(1, totalRows.Count(r => TailAt(r, SpecificationPanelUI.ColUnit) == "м²"),
-            "ровно одна итоговая строка по м² (доски)");
-        Assert.AreEqual(1, totalRows.Count(r => TailAt(r, SpecificationPanelUI.ColUnit) == "шт"),
-            "ровно одна итоговая строка по шт (кирпич)");
-        Assert.AreEqual(1, totalRows.Count(r => TailAt(r, SpecificationPanelUI.ColUnit) == "м"),
-            "ровно одна итоговая строка по м (труба), не перепутанная с м²");
+        Assert.AreEqual(1, units.Count(u => u == "м²"), "ровно одна итоговая строка по м² (доски)");
+        Assert.AreEqual(2, units.Count(u => u == "шт"),
+            "по шт: «досок» и кирпич — две итоговые строки, одна общая и одна по разделу");
+        Assert.AreEqual(1, units.Count(u => u == "м"), "ровно одна итоговая строка по м (труба), не перепутанная с м²");
+    }
+
+    [Test]
+    public void Rows_EmptyResult_HasNoRowsAtAll()
+    {
+        var model = Model(Result());
+
+        Assert.AreEqual(0, model.Rows.Count, "нет деталей — нет и строк «Всего»: окно покажет пустое состояние");
+        Assert.AreEqual(0, model.Positions);
+        Assert.AreEqual(0, model.Sections);
+    }
+
+    // ── Сама таблица: колонки и числа вправо ──
+
+    [Test]
+    public void Columns_NineOfThem_NumbersRight_NameTakesTheRest()
+    {
+        var columns = SpecificationRows.Columns();
+
+        Assert.AreEqual(SpecificationRows.ColumnCount, columns.Count);
+        Assert.IsTrue(columns[SpecificationRows.NameColumn].IsFlexible,
+            "наименование тянется на остаток — числа держат ширину");
+        foreach (int numeric in new[] { SpecificationRows.NumberColumn, SpecificationRows.WidthColumn,
+                     SpecificationRows.HeightColumn, SpecificationRows.DepthColumn,
+                     SpecificationRows.PiecesColumn, SpecificationRows.QtyColumn })
+            Assert.AreEqual(CellAlign.Right, columns[numeric].Align, columns[numeric].Key + ": числа вправо (D8)");
+        Assert.AreEqual("Ш, мм", columns[SpecificationRows.WidthColumn].Header,
+            "единица — в шапке, а не в каждой ячейке");
     }
 }

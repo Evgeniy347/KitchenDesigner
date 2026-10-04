@@ -3,8 +3,68 @@
   "children": [
     {
       "type": "Button",
-      "text": "lpw_seeded_current.kdproj",
+      "text": "Открыть",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "открыт",
       "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "lpw_seeded_current.kdproj",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Имя",
+      "position": [8, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Новый проект",
+      "position": [16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Обзор…",
+      "position": [160, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Изменён ▼",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-03-20 17:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Создан",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Версия",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "",
+      "position": [686, 0]
     },
     {
       "type": "Button",
@@ -13,18 +73,15 @@
     },
     {
       "type": "Label",
-      "text": "Загрузить проект",
-      "position": [0, -24]
+      "text": "Открыть проект",
+      "position": [16, -24]
     },
     {
-      "type": "Button",
-      "text": "Новый проект",
-      "position": [528, -62]
-    },
-    {
-      "type": "Button",
-      "text": "Загрузить",
-      "position": [528, -112]
+      "type": "InputField",
+      "label": "LoadSearch",
+      "value": "",
+      "interactable": true,
+      "position": [16, -60]
     }
   ]
 }

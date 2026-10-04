@@ -3,8 +3,293 @@
   "children": [
     {
       "type": "Button",
+      "text": "Открыть",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
       "text": "lpw_many_0.kdproj",
-      "position": [0, 0]
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "lpw_many_1.kdproj",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "lpw_many_2.kdproj",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "lpw_many_3.kdproj",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "lpw_many_4.kdproj",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "lpw_many_5.kdproj",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "lpw_many_6.kdproj",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "lpw_many_7.kdproj",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "lpw_many_8.kdproj",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "lpw_many_9.kdproj",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Имя",
+      "position": [8, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Новый проект",
+      "position": [16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Обзор…",
+      "position": [160, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-04-01 14:15",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Изменён ▼",
+      "position": [296, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-01 05:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-01 05:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-01 05:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-01 05:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-01 05:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-01 05:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-01 05:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-01 05:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-01 05:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2026-01-01 05:00",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Создан",
+      "position": [446, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0.2092",
+      "position": [596, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Версия",
+      "position": [596, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [684, 0]
+    },
+    {
+      "type": "Label",
+      "text": "",
+      "position": [686, 0]
     },
     {
       "type": "Button",
@@ -13,63 +298,15 @@
     },
     {
       "type": "Label",
-      "text": "Загрузить проект",
-      "position": [0, -24]
+      "text": "Открыть проект",
+      "position": [16, -24]
     },
     {
-      "type": "Button",
-      "text": "lpw_many_1.kdproj",
-      "position": [0, -54]
-    },
-    {
-      "type": "Button",
-      "text": "Новый проект",
-      "position": [528, -62]
-    },
-    {
-      "type": "Button",
-      "text": "lpw_many_2.kdproj",
-      "position": [0, -108]
-    },
-    {
-      "type": "Button",
-      "text": "Загрузить",
-      "position": [528, -112]
-    },
-    {
-      "type": "Button",
-      "text": "lpw_many_3.kdproj",
-      "position": [0, -162]
-    },
-    {
-      "type": "Button",
-      "text": "lpw_many_4.kdproj",
-      "position": [0, -216]
-    },
-    {
-      "type": "Button",
-      "text": "lpw_many_5.kdproj",
-      "position": [0, -270]
-    },
-    {
-      "type": "Button",
-      "text": "lpw_many_6.kdproj",
-      "position": [0, -324]
-    },
-    {
-      "type": "Button",
-      "text": "lpw_many_7.kdproj",
-      "position": [0, -378]
-    },
-    {
-      "type": "Button",
-      "text": "lpw_many_8.kdproj",
-      "position": [0, -432]
-    },
-    {
-      "type": "Button",
-      "text": "lpw_many_9.kdproj",
-      "position": [0, -486]
+      "type": "InputField",
+      "label": "LoadSearch",
+      "value": "",
+      "interactable": true,
+      "position": [16, -60]
     }
   ]
 }

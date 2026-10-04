@@ -210,7 +210,7 @@
   "element.duct.width": "幅",
   "element.edge.clickHint": "辺をクリック: 自動 → あり → なし",
   "element.edge.countOf": "{0} / {1}",
-  "element.edge.enabled": "小口テープを貼る",
+  "element.edge.enabled": "有効",
   "element.edge.thickness": "テープの厚さ",
   "element.edge.title": "小口テープ",
   "element.facade.doorMode": "扉",

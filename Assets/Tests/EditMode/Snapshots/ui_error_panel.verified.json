@@ -1,0 +1,202 @@
+{
+  "root": "CaptureCanvas",
+  "children": [
+    {
+      "type": "Button",
+      "text": "К первой ошибке",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "!",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "!",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "!",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "!",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "×",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "×",
+      "position": [8, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Двойной клик — выделить деталь и показать её",
+      "position": [16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "COL-02",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "COL-02",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "DRW-01",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "FAC-01",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "GAP-02",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "GRD-01",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Код",
+      "position": [48, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Fasad_bez_zazora",
+      "position": [138, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Polka_A",
+      "position": [138, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Polka_A ↔ Polka_B",
+      "position": [138, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Polka_B",
+      "position": [138, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Yaschik_bez_fasada",
+      "position": [138, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Yaschik_bez_fasada",
+      "position": [138, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Деталь",
+      "position": [138, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Деталь не имеет опоры — висит в воздухе",
+      "position": [358, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Деталь не имеет опоры — висит в воздухе",
+      "position": [358, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Зазор по оси 5,0 мм — слишком большой (допустимо ≤4 мм)",
+      "position": [358, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Зазор фасада меньше 1 мм: слева 0",
+      "position": [358, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Край детали не на целом миллиметре: Y 476,5 мм — сдвиг 0,5 мм. Передвиньте деталь или измените размер — отпускание выровняет её по сетке",
+      "position": [358, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Описание",
+      "position": [358, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Ящик без ссылки на фасад",
+      "position": [358, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Ошибки",
+      "position": [16, -24]
+    },
+    {
+      "type": "Label",
+      "text": "6",
+      "position": [99, -24]
+    },
+    {
+      "type": "Button",
+      "text": "Все <b>6</b>",
+      "position": [16, -60]
+    },
+    {
+      "type": "Button",
+      "text": "Ошибки 2",
+      "position": [80, -60]
+    },
+    {
+      "type": "Button",
+      "text": "Предупреждения 4",
+      "position": [190, -60]
+    },
+    {
+      "type": "Button",
+      "text": "Все коды",
+      "position": [368, -60]
+    },
+    {
+      "type": "Button",
+      "text": "Все этажи",
+      "position": [526, -60]
+    },
+    {
+      "type": "InputField",
+      "label": "FltSearch",
+      "value": "",
+      "interactable": true,
+      "position": [664, -60]
+    }
+  ]
+}

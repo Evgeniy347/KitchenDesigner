@@ -210,7 +210,7 @@
   "element.duct.width": "Breite",
   "element.edge.clickHint": "Klick auf Seite: auto → ein → aus",
   "element.edge.countOf": "{0} von {1}",
-  "element.edge.enabled": "Kanten anleimen",
+  "element.edge.enabled": "Aktiv",
   "element.edge.thickness": "Kantendicke",
   "element.edge.title": "Kanten",
   "element.facade.doorMode": "Tür",

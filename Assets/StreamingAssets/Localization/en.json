@@ -210,7 +210,7 @@
   "element.duct.width": "Width",
   "element.edge.clickHint": "Click a side: auto → on → off",
   "element.edge.countOf": "{0} of {1}",
-  "element.edge.enabled": "Apply edge banding",
+  "element.edge.enabled": "Enabled",
   "element.edge.thickness": "Edge thickness",
   "element.edge.title": "Edge banding",
   "element.facade.doorMode": "Door",

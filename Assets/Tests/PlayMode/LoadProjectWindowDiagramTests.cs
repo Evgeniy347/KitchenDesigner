@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -179,15 +180,15 @@ public class LoadProjectWindowDiagramTests
         ui.SetVisible(true);
         yield return null;
 
-        var row = _canvasGo!.transform.Find(
-            "LoadProjectWindow/LoadBody/LoadBodyBody/LoadBodyBodyContent/Row");
-        Assert.IsNotNull(row, "текущий проект обязан появиться строкой вместо пустой подсказки");
+        var table = _canvasGo!.GetComponentInChildren<LoadProjectWindowUI>().Table;
+        Assert.AreEqual(1, table.ShownRows.Count, "текущий проект обязан появиться строкой вместо пустого состояния");
+        Assert.IsNotNull(table.RowRect(0).Find(RowBadge.NodePrefix + "current"), "и пометиться меткой «открыт»");
 
         yield return CaptureAndVerify(PanelW, PanelH, "load_project_window_seeded_current_project.png");
     }
 
     [UnityTest]
-    public IEnumerator MissingFile_IsPaintedAndDoesNothingOnClick()
+    public IEnumerator MissingFile_IsLabelledRed_AndCannotBeOpened()
     {
         var real = MakeProjectFile("lpw_missing_real.kdproj", BuildInfo.Version, "2026-01-05T10:00:00Z");
         string missing = Path.Combine(Application.temporaryCachePath, "lpw_missing_gone.kdproj");
@@ -198,18 +199,16 @@ public class LoadProjectWindowDiagramTests
         ui.SetVisible(true);
         yield return null;
 
-        var missingRowTitle = _canvasGo!.transform
-            .Find("LoadProjectWindow/LoadBody/LoadBodyBody/LoadBodyBodyContent/Row/Title");
-        Assert.IsNotNull(missingRowTitle, "первая строка списка — отсутствующий файл");
-        var label = missingRowTitle!.GetComponent<TMPro.TMP_Text>();
-        Assert.IsTrue(label.text.Contains("Не найден"), "строка обязана явно называть проблему текстом, не только цветом");
-        Assert.AreEqual(UIStyle.HighlightError, label.color);
+        var table = ui.Table;
+        var gone = table.ShownRows.Single(r => !r.Enabled);
+        int index = table.ShownRows.ToList().IndexOf(gone);
+        var badge = table.RowRect(index).Find(RowBadge.NodePrefix + "missing")!.GetComponentInChildren<TMPro.TMP_Text>();
+        Assert.AreEqual("файл не найден", badge.text, "строка обязана явно называть проблему текстом, не только цветом");
+        Assert.AreEqual(UIStyle.TextError, badge.color);
 
-        var button = missingRowTitle.GetComponentInParent<Button>();
-        Assert.IsNotNull(button);
-        Assert.DoesNotThrow(() => button!.onClick.Invoke());
+        table.Activate(gone);
         Assert.IsFalse(SaveLoadManager.HasLastPath && SaveLoadManager.LastPath == missing,
-            "клик по отсутствующему файлу не имеет права ничего открывать");
+            "двойной клик по отсутствующему файлу не имеет права ничего открывать");
 
         yield return CaptureAndVerify(PanelW, PanelH, "load_project_window_missing_file.png");
     }
@@ -225,11 +224,10 @@ public class LoadProjectWindowDiagramTests
         ui.SetVisible(true);
         yield return null;
 
-        var versionLabel = _canvasGo!.transform
-            .Find("LoadProjectWindow/LoadBody/LoadBodyBody/LoadBodyBodyContent/Row/Version");
-        Assert.IsNotNull(versionLabel);
-        var tmp = versionLabel!.GetComponent<TMPro.TMP_Text>();
-        Assert.AreEqual(UIStyle.HighlightError, tmp.color);
+        var mismatch = ui.Table.ShownRows.ToList().FindIndex(r => ((RecentProjectRow)r.Tag!).VersionMismatch);
+        Assert.GreaterOrEqual(mismatch, 0, "предпосылка: файл прежней версии в списке");
+        var tmp = ui.Table.CellLabel(mismatch, LoadProjectRows.VersionColumn)!;
+        Assert.AreEqual(UIStyle.TextError, tmp.color);
         Assert.IsTrue(tmp.text.Contains("!"), "несовпадение версии помечено не только цветом, но и '!'");
 
         yield return CaptureAndVerify(PanelW, PanelH, "load_project_window_version_mismatch.png");
@@ -247,9 +245,10 @@ public class LoadProjectWindowDiagramTests
         ui.SetVisible(true);
         yield return null;
 
-        var scroll = _canvasGo!.GetComponentInChildren<ScrollRect>();
-        Assert.IsNotNull(scroll, "список из " + RecentProjectsList.Capacity + " строк обязан прокручиваться");
-        scroll!.verticalNormalizedPosition = 0f;
+        var scroll = ui.Table.Body.Scroll;
+        Assert.Greater(ui.Table.ContentHeight, ui.Table.Body.Viewport.rect.height,
+            "список из " + RecentProjectsList.Capacity + " строк обязан прокручиваться");
+        scroll.verticalNormalizedPosition = 0f;
         yield return null;
 
         yield return CaptureAndVerify(PanelW, PanelH, "load_project_window_many_rows_scrolled.png");

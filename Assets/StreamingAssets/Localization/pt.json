@@ -210,7 +210,7 @@
   "element.duct.width": "Largura",
   "element.edge.clickHint": "Clique no lado: auto → com → sem",
   "element.edge.countOf": "{0} de {1}",
-  "element.edge.enabled": "Aplicar fita de borda",
+  "element.edge.enabled": "Ativado",
   "element.edge.thickness": "Espessura da fita",
   "element.edge.title": "Fitas de borda",
   "element.facade.doorMode": "Porta",

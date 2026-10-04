@@ -210,7 +210,7 @@
   "element.duct.width": "截面宽度",
   "element.edge.clickHint": "点击边线：自动 → 封边 → 无",
   "element.edge.countOf": "{0} / {1}",
-  "element.edge.enabled": "贴封边条",
+  "element.edge.enabled": "启用",
   "element.edge.thickness": "封边厚度",
   "element.edge.title": "封边",
   "element.facade.doorMode": "开启方式",
