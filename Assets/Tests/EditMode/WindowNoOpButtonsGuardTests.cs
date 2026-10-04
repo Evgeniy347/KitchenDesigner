@@ -270,7 +270,7 @@ public class WindowNoOpButtonsGuardTests
         .Always("CtxRot[XYZ]", "кнопка поворота лежит внутри поля своей оси; для детали только с рысканием поля X и Z скрыты, а не выключены")
         .Always("CtxDup", "копия создаётся для любого элемента")
         .Always("CtxDel", "удалить можно любой элемент")
-        .Always("Ctx(Door|OvenDoor|DishwasherDoor|WinDoor|DrawerAnim)", "переключатель открыто/закрыто, работает в обе стороны")
+        .Always("Ctx(Door|OvenDoor|DishwasherDoor|WinDoor|DrawerAnim|SofaUnfold)", "переключатель открыто/закрыто, работает в обе стороны; у дивана — шаг по трём этапам, и кнопка всегда что-то делает")
         .Always("CtxDrawerDouble|CtxDrawerRemoveUpper", "строка видна только когда действие применимо: пару можно создать или убрать")
         .Always("CtxEdge[LW][12]", "щелчок по кромке листает её состояние по кругу: результат всегда другой")
         .Always("CtxTexEdit[0-9]+|CtxTexDel[0-9]+|CtxGrooveDel[0-9]+|CtxLightLinkDel[0-9]+", "кнопка строки, а строка есть только пока есть что править или удалять")
