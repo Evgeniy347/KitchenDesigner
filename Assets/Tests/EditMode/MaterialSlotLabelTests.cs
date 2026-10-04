@@ -44,6 +44,7 @@ public class MaterialSlotLabelTests
         var go = new GameObject("CtxMenu");
         _menu = go.AddComponent<ContextMenuUI>();
         _menu!.Build(_canvas!.transform);
+        _menu!.BuildContent();
     }
 
     [OneTimeTearDown]

@@ -12,6 +12,7 @@ namespace KitchenDesigner.Core.UI
         public static ContextMenuUI? Instance { get; private set; }
 
         private const float InspectorMinHeight = 300f;
+        private const int FurnitureEditorsPerStep = 8;
         public const string RotateButtonPrefix = "CtxRot";
         private const float QuarterTurnDegrees = 90f;
         private const float WindowRotationStepDegrees = 180f;
@@ -38,15 +39,9 @@ namespace KitchenDesigner.Core.UI
 
         private SceneViolations _violationsBeforeApply = SceneViolations.Empty;
 
-        private static string DrawerFacadeLabelText => Loc.T("element.common.drawerFront");
-        private static string HostFacadeLabelText => Loc.T("element.common.front");
-        private static string AttachToLabelText => Loc.T("element.common.attachTo");
-        private static string AttachToNoneText => Loc.T("element.common.notAttached");
-        private static string FacadeNoneText => Loc.T("element.common.noFront");
-        private TMP_Text? _drawerFacadeLabel;
-        private NameDropdownBinder _attachedFacade = null!;
-        private NameDropdownBinder _attachedTo = null!;
         private bool _openInProgress;
+        private DeferredBuild _content = new(System.Array.Empty<System.Action>());
+        private int _builtAtFrame;
         private ElementFacet _facets;
         private readonly RotationDisplayState _rotationDisplay = new RotationDisplayState();
 
@@ -91,6 +86,8 @@ namespace KitchenDesigner.Core.UI
         private readonly FacadeFieldsEditor _facadeFields;
         private readonly AssembledFacadeFieldsEditor _assembledFields;
         private readonly ElementFieldsEditor[] _editors;
+        private readonly ElementFieldsEditor[] _furnitureEditors;
+        private readonly ContextMenuAttachmentSection _attachments;
         private readonly ContextMenuSizeSection _sizes;
         private readonly ContextMenuTestHooks _testHooks;
         private InspectorRows _rows = null!;
@@ -140,6 +137,15 @@ namespace KitchenDesigner.Core.UI
             _wallLayerFields = new WallLayerFieldsEditor(this);
             _facadeFields = new FacadeFieldsEditor(this);
             _assembledFields = new AssembledFacadeFieldsEditor(this);
+            _attachments = new ContextMenuAttachmentSection(this);
+            _furnitureEditors = new ElementFieldsEditor[]
+            {
+                _tableFields, _stoolFields, _chairFields, _sofaFields, _bedFields, _pouffeFields,
+                _laundryFields, _toiletFields, _bathtubFields, _bathMixerFields, _showerColumnFields,
+                _wallDeviceFields, _wallFields, _foundationFields, _floorSlabFields, _fenceFields,
+                _ductFields, _grilleFields, _roofFields, _wallLayerFields, _pillarFields,
+                _screwLegFields, _pipeFields, _pipeFittingFields,
+            };
             _editors = new ElementFieldsEditor[]
             {
                 _radialFields, _cooktopFields, _drawerFields, _pillarFields, _screwLegFields,
@@ -165,31 +171,39 @@ namespace KitchenDesigner.Core.UI
 
         DimensionFields IContextMenuHost.SizeFields => _sizes.Dimensions;
 
-        internal ContextMenuTextureSection Textures => _textures;
+        internal ContextMenuTextureSection Textures => Built()._textures;
 
-        internal InspectorRows Rows => _rows;
+        internal InspectorRows Rows => Built()._rows;
 
         internal WindowChrome? Chrome => _chrome;
 
-        internal ContextMenuGrooveSection Grooves => _grooves;
+        internal ContextMenuGrooveSection Grooves => Built()._grooves;
 
-        internal ContextMenuGapSection Gaps => _gaps;
+        internal ContextMenuGapSection Gaps => Built()._gaps;
 
-        internal ContextMenuSizeSection Sizes => _sizes;
+        internal ContextMenuSizeSection Sizes => Built()._sizes;
 
-        internal ContextMenuMaterialSection Materials => _materials;
+        internal ContextMenuMaterialSection Materials => Built()._materials;
 
-        internal ContextMenuLevelSection Levels => _levels;
+        internal ContextMenuLevelSection Levels => Built()._levels;
 
-        internal NameDropdownBinder AttachedFacade => _attachedFacade;
+        internal NameDropdownBinder AttachedFacade => Built()._attachments.Facade;
 
-        internal NameDropdownBinder AttachedTo => _attachedTo;
+        internal ElementTypeConverter Types => Built()._types;
 
-        internal ElementTypeConverter Types => _types;
+        internal ElementFieldsEditor[] Editors => Built()._editors;
 
-        internal ElementFieldsEditor[] Editors => _editors;
+        internal ContextMenuTestHooks TestHooks => Built()._testHooks;
 
-        internal ContextMenuTestHooks TestHooks => _testHooks;
+        internal bool ContentBuilt => _content.Done;
+
+        internal void BuildContent() => _content.RunAll();
+
+        private ContextMenuUI Built()
+        {
+            _content.RunAll();
+            return this;
+        }
 
         private void Awake()
         {
@@ -212,30 +226,75 @@ namespace KitchenDesigner.Core.UI
             _root = panel.gameObject;
             _panelRt = panel;
             _body = _chrome.CreateBody();
-            _rows = new InspectorRows(_body.Content, () => _facets);
+            _builtAtFrame = Time.frameCount;
+            _content = new DeferredBuild(ContentSteps(), BuildWhileShown);
+            _root!.SetActive(false);
 
+            if (SelectionManager.Instance != null)
+                SelectionManager.Instance.OnSelectionChanged += OnSelectionChanged;
+        }
+
+        private void BuildWhileShown(System.Action build)
+        {
+            bool wasShown = _root!.activeSelf;
+            _root.SetActive(true);
+            try
+            {
+                build();
+            }
+            finally
+            {
+                _root.SetActive(wasShown);
+            }
+        }
+
+        private IEnumerable<System.Action> ContentSteps()
+        {
+            yield return BuildHead;
+            yield return BuildSpecificSection;
+            for (int from = 0; from < _furnitureEditors.Length; from += FurnitureEditorsPerStep)
+            {
+                int start = from;
+                yield return () => BuildFurnitureEditors(start);
+            }
+            yield return _lights.Build;
+            yield return BuildGrooveEdgeAndGapSections;
+            yield return BuildPositionSection;
+            yield return BuildSurfaceSections;
+            yield return BuildTail;
+        }
+
+        private void BuildHead()
+        {
+            _rows = new InspectorRows(_body!.Content, () => _facets);
             _types.Build();
             _name = _rows.NameField();
             BuildDimensions();
-            BuildSpecificSection();
+        }
+
+        private void BuildGrooveEdgeAndGapSections()
+        {
             _grooves.Build();
-            _edges.Build(_body.Content);
+            _edges.Build(_body!.Content);
             _gaps.Build();
-            BuildPositionSection();
+        }
+
+        private void BuildSurfaceSections()
+        {
             _textures.Build(_materials.Build());
             _lightLinks.Build();
+        }
+
+        private void BuildTail()
+        {
             BuildPropertySection();
             _rows.EndSection();
-            BuildFooter(_chrome.Footer!);
+            BuildFooter(_chrome!.Footer!);
             ConfigureFieldInput();
             WireSectionMemory();
 
             _rows.Forms.Relayouted += FitPanel;
             ApplyLayout();
-            _root!.SetActive(false);
-
-            if (SelectionManager.Instance != null)
-                SelectionManager.Instance.OnSelectionChanged += OnSelectionChanged;
         }
 
         private void BuildDimensions()
@@ -257,130 +316,22 @@ namespace KitchenDesigner.Core.UI
 
             _drawerFields.Build();
             OpenButton("CtxDrawerAnim", OpenLabels.Open, RowVisibility.For(ElementFacet.Drawer));
-            BuildFacadeAttachment();
+            _attachments.BuildFacade();
 
             _openingFields.Build();
             OpenButton("CtxWinDoor", OpenLabels.Open, RowVisibility.For(ElementFacet.Window));
-
-            BuildFurnitureSection();
-            _lights.Build();
         }
 
-        private void BuildFacadeAttachment()
+        private void BuildFurnitureEditors(int start)
         {
-            (_drawerFacadeLabel, var facadeDropdown) = _rows.NamedDropdown("CtxDrawerFacade",
-                DrawerFacadeLabelText, new List<string> { FacadeNoneText }, _ => { },
-                RowVisibility.When(() => _target is IFacadeHost));
-            _attachedFacade = new NameDropdownBinder(facadeDropdown, FacadeNoneText,
-                () => (_target as IFacadeHost)?.AttachedFacadeName ?? "",
-                AttachableFacadeNames, AttachedFacadeIsDetached, CommitAttachedFacade);
-        }
-
-        private void BuildAttachment()
-        {
-            (_, var attachToDropdown) = _rows.NamedDropdown("CtxAttachTo", AttachToLabelText,
-                new List<string> { AttachToNoneText }, _ => { },
-                RowVisibility.When(() => AttachLinks.CanChooseParent(_target)));
-            _attachedTo = new NameDropdownBinder(attachToDropdown, AttachToNoneText,
-                () => _target != null ? _target.AttachedToName : "",
-                AttachToCandidateNames, () => AttachLinks.IsDetached(_target), CommitAttachedTo);
-            AttachTargetHover.Watch(attachToDropdown, AttachToNoneText);
-        }
-
-        private IEnumerable<string> AttachableFacadeNames()
-        {
-            var host = _target as IFacadeHost;
-            if (host == null) yield break;
-            var attachedName = host.AttachedFacadeName;
-            foreach (var facade in FacadeLinks.All())
-            {
-                if (string.IsNullOrEmpty(facade.PartName)) continue;
-                bool isAttached = !string.IsNullOrEmpty(attachedName) && facade.PartName == attachedName;
-                if (!isAttached && !DrawerLinks.IsFacadeInContact(host, facade)) continue;
-                yield return facade.PartName;
-            }
-        }
-
-        private bool AttachedFacadeIsDetached()
-        {
-            var host = _target as IFacadeHost;
-            if (host == null) return false;
-            var attachedName = host.AttachedFacadeName;
-            if (string.IsNullOrEmpty(attachedName)) return false;
-            var attached = FacadeLinks.FindByName(attachedName);
-            if (attached != null) return !DrawerLinks.IsFacadeInContact(host, attached);
-            return true;
-        }
-
-        private void CommitAttachedFacade(string name)
-        {
-            if (!(_target is IFacadeHost host)) return;
-            var previous = host.FindAttachedFacade();
-            host.AttachedFacadeName = name;
-            host.OnAttachedFacadeChanged(previous,
-                string.IsNullOrEmpty(name) ? null : host.FindAttachedFacade());
-        }
-
-        private IEnumerable<string> AttachToCandidateNames()
-        {
-            var target = _target;
-            if (target == null || !AttachLinks.CanChooseParent(target)) yield break;
-            var attachedName = target.AttachedToName;
-            foreach (var el in PartRegistry.GetAll())
-            {
-                if (el == null || el == target || string.IsNullOrEmpty(el.PartName)) continue;
-                if (!AttachLinks.CanAttach(target, el)) continue;
-                bool isAttached = !string.IsNullOrEmpty(attachedName) && el.PartName == attachedName;
-                if (!isAttached && !AttachLinks.InContact(target, el)) continue;
-                yield return el.PartName;
-            }
-        }
-
-        private void CommitAttachedTo(string name)
-        {
-            var target = _target;
-            if (target == null || !AttachLinks.CanChooseParent(target)) return;
-            if (name == target.AttachedToName) return;
-
-            var before = UndoableProperties.Capture(target);
-            target.AttachedToName = name;
-            var after = UndoableProperties.Capture(target);
-            var command = SetPropertiesCommand.TryCreate(target, before, after);
-            if (command != null) CommandStack.Execute(command);
-        }
-
-        private void BuildFurnitureSection()
-        {
-            _tableFields.Build();
-            _stoolFields.Build();
-            _chairFields.Build();
-            _sofaFields.Build();
-            _bedFields.Build();
-            _pouffeFields.Build();
-            _laundryFields.Build();
-            _toiletFields.Build();
-            _bathtubFields.Build();
-            _bathMixerFields.Build();
-            _showerColumnFields.Build();
-            _wallDeviceFields.Build();
-            _wallFields.Build();
-            _foundationFields.Build();
-            _floorSlabFields.Build();
-            _fenceFields.Build();
-            _ductFields.Build();
-            _grilleFields.Build();
-            _roofFields.Build();
-            _wallLayerFields.Build();
-            _pillarFields.Build();
-            _screwLegFields.Build();
-            _pipeFields.Build();
-            _pipeFittingFields.Build();
+            int end = System.Math.Min(start + FurnitureEditorsPerStep, _furnitureEditors.Length);
+            for (int i = start; i < end; i++) _furnitureEditors[i].Build();
         }
 
         private void BuildPositionSection()
         {
             _rows.BeginSection("Position", Loc.T("element.common.position"), true);
-            BuildAttachment();
+            _attachments.BuildParent();
             _levels.Build();
 
             _position = _rows.Vector("Position", Loc.T("element.common.positionMm"), null, null,
@@ -559,7 +510,11 @@ namespace KitchenDesigner.Core.UI
 
             SideHighlighter.Sync();
             HoverPreviewGate.Sync();
+            PrewarmStep(Time.frameCount - _builtAtFrame, Input.anyKey);
         }
+
+        internal bool PrewarmStep(int framesSinceBuild, bool inputActive) =>
+            _content.TryPrewarmStep(framesSinceBuild, inputActive);
 
         internal void TryCloseFromEscape()
         {
@@ -599,7 +554,7 @@ namespace KitchenDesigner.Core.UI
             _fields.RefreshUnfocused(_y, ToMM(pos.y));
             _fields.RefreshUnfocused(_z, ToMM(pos.z));
 
-            if (AttachLinks.CanBeChild(_target)) _attachedTo.UpdateCaptionColor();
+            _attachments.RefreshCaptionColor();
 
             var eu = _rotationDisplay.For(_target.transform.rotation);
             _fields.RefreshUnfocused(_rx, NumberFormat.Input(eu.x, 1));
@@ -627,6 +582,7 @@ namespace KitchenDesigner.Core.UI
         {
             if (element == null) return;
 
+            _content.RunAll();
             SideHighlighter.Hide();
 
             element = element.InspectedElement;
@@ -657,15 +613,7 @@ namespace KitchenDesigner.Core.UI
                 _gaps.WriteFrom(element);
                 RefreshOpenButtons();
 
-                _attachedTo.Rebuild();
-                _attachedTo.SetValue(element.AttachedToName);
-
-                var facadeHost = element as IFacadeHost;
-                if (facadeHost != null && _drawerFacadeLabel != null)
-                    _drawerFacadeLabel.text = _facets.Has(ElementFacet.Drawer)
-                        ? DrawerFacadeLabelText : HostFacadeLabelText;
-                _attachedFacade.Rebuild();
-                _attachedFacade.SetValue(facadeHost != null ? facadeHost.AttachedFacadeName : "");
+                _attachments.ShowFor(element);
 
                 _sizes.ShowLocks(element, EditorFor(element));
 
