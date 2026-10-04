@@ -67,8 +67,10 @@ public class SettingsNavGuardTests
         return offenders;
     }
 
+    /// <summary>Пункты и подписи групп — один тест на язык: сборка окна на язык здесь самое дорогое,
+    /// и две проверки одной и той же навигации платили её дважды.</summary>
     [TestCaseSource(nameof(Languages))]
-    public void EveryNavCaption_IsTheBodyFontSize_AndFitsItsItem(string language)
+    public void EveryNavCaption_AndGroupCaption_IsItsStandardSize_AndFitsTheNav(string language)
     {
         BuildPanel(language);
         var items = Items();
@@ -79,12 +81,7 @@ public class SettingsNavGuardTests
         Assert.IsEmpty(offenders,
             $"язык {language}: подпись пункта не мельчится и не вылезает за пункт — расширяйте навигацию, а не "
             + "уменьшайте шрифт:\n" + string.Join("\n", offenders));
-    }
 
-    [TestCaseSource(nameof(Languages))]
-    public void EveryGroupCaption_FitsTheNavWidth(string language)
-    {
-        BuildPanel(language);
         var groups = _canvasGo!.transform.Find(SettingsWindowPaths.Nav).Cast<Transform>()
             .Where(t => t.name.StartsWith(SettingsNav.GroupPrefix, System.StringComparison.Ordinal))
             .Select(t => t.GetComponent<TMP_Text>()).ToList();

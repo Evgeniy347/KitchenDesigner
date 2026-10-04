@@ -395,11 +395,14 @@ public class McpUiPropertyParityTests : McpTestFixture
 
     /// <summary>Свёрнутые секции (зазоры, пазы, тонкая настройка лампы) прячут строки: неактивный
     /// виджет опыт не видит, и они выглядели бы «панель этого не правит». Разворачиваются все
-    /// видимые секции перед тем, как перечислять виджеты.</summary>
+    /// видимые секции перед тем, как перечислять виджеты. Только СВЁРНУТЫЕ: разворот с notify
+    /// перекладывает строки панели и перечитывает секции-списки, и щёлкать им уже развёрнутые
+    /// стоило 14 с из 30 у этого класса (замер 2026-10-04, 973 виджета) — а память секций и так
+    /// держит их развёрнутыми после первого раза.</summary>
     private void Expand()
     {
         foreach (var section in Panel().GetComponentsInChildren<CollapsibleSection>(true))
-            if (section.gameObject.activeInHierarchy) section.SetExpanded(true, notify: true);
+            if (section.gameObject.activeInHierarchy && !section.Expanded) section.SetExpanded(true, notify: true);
     }
 
     private List<string> VisibleWidgets()
