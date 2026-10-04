@@ -18,14 +18,14 @@ namespace KitchenDesigner.Core
         public static int SectionMM(string? sizeId) =>
             (int)Math.Round(PipeSpec.Get(sizeId).OuterDiameterMm, MidpointRounding.AwayFromZero);
 
-        public static string OuterDiameterText(string? sizeId) =>
-            Text(PipeSpec.Get(sizeId).OuterDiameterMm);
+        public static string OuterDiameterText(string? sizeId, string decimalSeparator) =>
+            NumberFormat.Compact(PipeSpec.Get(sizeId).OuterDiameterMm, 1, decimalSeparator);
 
-        public static string InnerDiameterText(string? sizeId) =>
-            Text(PipeSpec.Get(sizeId).InnerDiameterMm);
+        public static string InnerDiameterText(string? sizeId, string decimalSeparator) =>
+            NumberFormat.Compact(PipeSpec.Get(sizeId).InnerDiameterMm, 1, decimalSeparator);
 
-        public static string WallThicknessText(string? sizeId) =>
-            Text(PipeSpec.Get(sizeId).WallThicknessMm);
+        public static string WallThicknessText(string? sizeId, string decimalSeparator) =>
+            NumberFormat.Compact(PipeSpec.Get(sizeId).WallThicknessMm, 1, decimalSeparator);
 
         public static string[] Designations()
         {
@@ -51,8 +51,5 @@ namespace KitchenDesigner.Core
             var table = PipeSpec.Table;
             return index >= 0 && index < table.Length ? table[index].Id : PipeSpec.DEFAULT_SIZE;
         }
-
-        private static string Text(float valueMm) =>
-            valueMm.ToString("0.#", CultureInfo.InvariantCulture);
     }
 }

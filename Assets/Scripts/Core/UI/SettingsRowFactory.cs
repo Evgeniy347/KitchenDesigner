@@ -285,6 +285,6 @@ namespace KitchenDesigner.Core.UI
         }
 
         private static string FormatMultiplier(float v) =>
-            v.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "×";
+            NumberFormat.Fixed(v, 1) + "×";
     }
 }

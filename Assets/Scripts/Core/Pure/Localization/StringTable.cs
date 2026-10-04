@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core
     {
         public const string NativeNameKey = "@name";
         public const string RightToLeftKey = "@rtl";
+        public const string DecimalSeparatorKey = "@decimal";
+        public const string DefaultDecimalSeparator = ".";
         public const char PluralSeparator = '#';
 
         private readonly Dictionary<string, string> _strings;
@@ -14,6 +16,7 @@ namespace KitchenDesigner.Core
         public string Language { get; }
         public string NativeName { get; }
         public bool IsRightToLeft { get; }
+        public string DecimalSeparator { get; }
 
         public StringTable(string language, IReadOnlyDictionary<string, string> entries)
         {
@@ -24,6 +27,9 @@ namespace KitchenDesigner.Core
             NativeName = entries.TryGetValue(NativeNameKey, out var name) && name.Length > 0 ? name : language;
             IsRightToLeft = entries.TryGetValue(RightToLeftKey, out var rtl)
                 && string.Equals(rtl, "true", StringComparison.OrdinalIgnoreCase);
+            DecimalSeparator = entries.TryGetValue(DecimalSeparatorKey, out var separator) && separator.Length > 0
+                ? separator
+                : DefaultDecimalSeparator;
         }
 
         public IEnumerable<string> Keys => _strings.Keys;

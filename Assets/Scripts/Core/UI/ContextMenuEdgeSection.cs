@@ -59,7 +59,7 @@ namespace KitchenDesigner.Core.UI
         public void Track()
         {
             if (Target == null) return;
-            _host.Fields.Track(_thickness, EdgeBanding.FormatThickness(Target.EdgeThicknessMM));
+            _host.Fields.Track(_thickness, NumberFormat.Input(Target.EdgeThicknessMM, 1));
         }
 
         public void ApplyThickness(KitchenElement target)
@@ -72,7 +72,7 @@ namespace KitchenDesigner.Core.UI
                 before.forcedMask, before.suppressedMask);
             if (!after.Equals(before))
                 CommandStack.Execute(new SetEdgeBandingCommand(target, before, after));
-            _thickness.text = EdgeBanding.FormatThickness(target.EdgeThicknessMM);
+            _thickness.text = NumberFormat.Input(target.EdgeThicknessMM, 1);
         }
 
         public void Refresh()
@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core.UI
 
             _enabledToggle?.SetIsOnWithoutNotify(Target.EdgeBandingEnabled);
             _host.Fields.RefreshUnfocused(_thickness,
-                EdgeBanding.FormatThickness(Target.EdgeThicknessMM));
+                NumberFormat.Input(Target.EdgeThicknessMM, 1));
 
             if (!Target.EdgeBandingEnabled) return;
 

@@ -1,6 +1,7 @@
 {
   "@name": "简体中文",
   "@rtl": "false",
+  "@decimal": ".",
   "catalog.appliance.cooktop": "嵌入式灶具",
   "catalog.appliance.cooktopModelPrefix": "灶具 ",
   "catalog.appliance.dishwasher": "洗碗机",

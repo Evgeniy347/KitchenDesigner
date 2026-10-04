@@ -1,6 +1,7 @@
 {
   "@name": "Português (Brasil)",
   "@rtl": "false",
+  "@decimal": ",",
   "catalog.appliance.cooktop": "Cooktop",
   "catalog.appliance.cooktopModelPrefix": "Cooktop ",
   "catalog.appliance.dishwasher": "Lava-louças",

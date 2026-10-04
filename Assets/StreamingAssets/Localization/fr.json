@@ -1,6 +1,7 @@
 {
   "@name": "Français",
   "@rtl": "false",
+  "@decimal": ",",
   "catalog.appliance.cooktop": "Table de cuisson",
   "catalog.appliance.cooktopModelPrefix": "Table de cuisson ",
   "catalog.appliance.dishwasher": "Lave-vaisselle",

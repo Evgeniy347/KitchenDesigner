@@ -40,6 +40,9 @@ namespace KitchenDesigner.Core
 
         public bool IsRightToLeft => _tables.TryGetValue(Language, out var t) && t.IsRightToLeft;
 
+        public string DecimalSeparator =>
+            _tables.TryGetValue(Language, out var t) ? t.DecimalSeparator : StringTable.DefaultDecimalSeparator;
+
         public StringTable? Table(string language) =>
             _tables.TryGetValue(language, out var table) ? table : null;
 

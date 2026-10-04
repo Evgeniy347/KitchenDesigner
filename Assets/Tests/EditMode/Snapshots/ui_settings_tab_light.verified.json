@@ -229,77 +229,77 @@
     {
       "type": "Label",
       "text": "10 м",
-      "position": [208, 0]
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "8 %",
-      "position": [208, 0]
+      "text": "8 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "6 %",
-      "position": [208, 0]
+      "text": "6 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "100 %",
-      "position": [208, 0]
+      "text": "100 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "250 %",
-      "position": [208, 0]
+      "text": "250 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "150 %",
-      "position": [208, 0]
+      "text": "150 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "200 %",
-      "position": [208, 0]
+      "text": "200 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "400 %",
-      "position": [208, 0]
+      "text": "400 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "400 %",
-      "position": [208, 0]
+      "text": "400 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "22 %",
-      "position": [208, 0]
+      "text": "22 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "30 %",
-      "position": [208, 0]
+      "text": "30 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "100 %",
-      "position": [208, 0]
+      "text": "100 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "280 %",
-      "position": [208, 0]
+      "text": "280 %",
+      "position": [190, 0]
     },
     {
       "type": "Label",
       "text": "нейтральный",
-      "position": [208, 0]
+      "position": [190, 0]
     },
     {
       "type": "Label",
-      "text": "+0.5 EV",
-      "position": [208, 0]
+      "text": "+0,5 EV",
+      "position": [190, 0]
     },
     {
       "type": "Toggle",

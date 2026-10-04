@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using TMPro;
 using UnityEngine;
 
@@ -32,7 +31,7 @@ namespace KitchenDesigner.Core.UI
         public int ParseInt(TMP_InputField? field, int fallback)
         {
             if (field == null) return fallback;
-            var expr = field.text;
+            var expr = NumberFormat.Normalize(field.text);
             if (HasArithmetic(expr))
             {
                 var result = ExpressionParser.EvaluateInt(expr);
@@ -42,7 +41,7 @@ namespace KitchenDesigner.Core.UI
                     return result.Value;
                 }
             }
-            if (int.TryParse(expr, out int v)) return v;
+            if (NumberFormat.TryParseInt(expr, out int v)) return v;
             Reject(field);
             return fallback;
         }
@@ -50,17 +49,17 @@ namespace KitchenDesigner.Core.UI
         public float ParseAngle(TMP_InputField? field, float fallback)
         {
             if (field == null) return fallback;
-            var expr = field.text;
+            var expr = NumberFormat.Normalize(field.text);
             if (HasArithmetic(expr))
             {
                 var result = ExpressionParser.EvaluateFloat(expr);
                 if (result.HasValue)
                 {
-                    field.text = result.Value.ToString("F1");
+                    field.text = NumberFormat.Input(result.Value, 1);
                     return result.Value;
                 }
             }
-            if (float.TryParse(expr, out float v)) return v;
+            if (NumberFormat.TryParse(expr, out double v)) return (float)v;
             Reject(field);
             return fallback;
         }
@@ -68,7 +67,7 @@ namespace KitchenDesigner.Core.UI
         public float ParseMillimetresAsMetres(TMP_InputField? field, float fallbackMetres)
         {
             if (field == null) return fallbackMetres;
-            var expr = field.text;
+            var expr = NumberFormat.Normalize(field.text);
             if (HasArithmetic(expr))
             {
                 var result = ExpressionParser.EvaluateInt(expr);
@@ -78,7 +77,7 @@ namespace KitchenDesigner.Core.UI
                     return result.Value * AppConstants.MM_TO_UNITS;
                 }
             }
-            if (int.TryParse(expr, out int mm)) return mm * AppConstants.MM_TO_UNITS;
+            if (NumberFormat.TryParseInt(expr, out int mm)) return mm * AppConstants.MM_TO_UNITS;
             Reject(field);
             return fallbackMetres;
         }
@@ -86,10 +85,8 @@ namespace KitchenDesigner.Core.UI
         public float ParseDecimalInRange(TMP_InputField? field, float fallback, float min, float max)
         {
             if (field == null) return fallback;
-            var dotted = field.text.Replace(',', '.');
-            if (float.TryParse(dotted, NumberStyles.Float, CultureInfo.InvariantCulture, out float v)
-                && v >= min && v <= max)
-                return v;
+            if (NumberFormat.TryParse(field.text, out double v) && v >= min && v <= max)
+                return (float)v;
 
             Reject(field);
             return fallback;

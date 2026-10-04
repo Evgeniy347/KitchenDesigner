@@ -40,7 +40,7 @@ namespace KitchenDesigner.Core.UI
             var pitchRow = Rows.NumberField(Loc.T("element.roof.pitchDeg"), isRoof, "°", PitchNode,
                 hint: "element.roof.pitchDeg");
             BindDecimal<RoofElement>(pitchRow, r => r.PitchDeg,
-                (r, v) => r.PitchDeg = v, RoofDefaults.PitchDeg.ToString("F1"));
+                (r, v) => r.PitchDeg = v, NumberFormat.Input(RoofDefaults.PitchDeg, 1));
 
             var overhangRow = Rows.NumberField(Loc.T("element.roof.overhangMm"), isRoof, Loc.T("unit.mm"), OverhangNode,
                 hint: "element.roof.overhangMm");

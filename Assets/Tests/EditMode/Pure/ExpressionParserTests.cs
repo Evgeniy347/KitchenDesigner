@@ -423,6 +423,15 @@ public class ExpressionParserTests
     }
 
     [Test]
+    public void IsValidDimensionChar_AllowsCommaWhenDecimal_RejectsItByDefault()
+    {
+        Assert.IsTrue(ExpressionParser.IsValidDimensionChar(',', allowDecimal: true),
+            "десятичный знак русского интерфейса — запятая (NumberFormat): поле, которое её "
+            + "показывает, обязано дать её напечатать");
+        Assert.IsFalse(ExpressionParser.IsValidDimensionChar(','));
+    }
+
+    [Test]
     public void IsValidDimensionChar_RejectsLetter()
     {
         Assert.IsFalse(ExpressionParser.IsValidDimensionChar('a'));

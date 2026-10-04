@@ -891,9 +891,9 @@ public class ElementFieldsEditorTests
             Assert.IsTrue(Field(row).gameObject.activeInHierarchy,
                 $"строка «{row}» обязана остаться на экране: её читают, а не печатают в неё");
 
-        Assert.AreEqual("26.8", Text(Field("Наружный Ø")), "ДУ 20 по ГОСТ 3262-75");
-        Assert.AreEqual("21.2", Text(Field("Внутренний Ø")));
-        Assert.AreEqual("2.8", Text(Field("Толщина стенки")));
+        Assert.AreEqual("26,8", Text(Field("Наружный Ø")), "ДУ 20 по ГОСТ 3262-75");
+        Assert.AreEqual("21,2", Text(Field("Внутренний Ø")));
+        Assert.AreEqual("2,8", Text(Field("Толщина стенки")));
     }
 
     [Test]
@@ -961,7 +961,7 @@ public class ElementFieldsEditorTests
         Assert.AreEqual(48, pipe.DimensionsMM.z);
         Assert.AreEqual("48", Text(Field("Наружный Ø")));
         Assert.AreEqual("41", Text(Field("Внутренний Ø")), "48,0 − 2 × 3,5");
-        Assert.AreEqual("3.5", Text(Field("Толщина стенки")));
+        Assert.AreEqual("3,5", Text(Field("Толщина стенки")));
         Assert.AreEqual(PipeElementSpec.DEFAULT_LENGTH_MM, pipe.LengthMM,
             "смена диаметра не имеет права трогать длину: это разные величины");
     }

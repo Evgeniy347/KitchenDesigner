@@ -143,7 +143,7 @@ namespace KitchenDesigner.Core.UI
             {
                 foreach (var branch in _cases)
                     if (branch.TryRead(element, out float value))
-                        return value.ToString("F1");
+                        return NumberFormat.Input(value, 1);
                 return IdleText;
             }
 

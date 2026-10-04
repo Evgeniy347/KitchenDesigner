@@ -58,10 +58,12 @@ public class PipeElementSpecTests
     [Test]
     public void ReadOnlyRowTexts_CarryTheTenth_AndDropTheTrailingZero()
     {
-        Assert.AreEqual("26.8", PipeElementSpec.OuterDiameterText(PipeSpec.Dn20));
-        Assert.AreEqual("21.2", PipeElementSpec.InnerDiameterText(PipeSpec.Dn20));
-        Assert.AreEqual("2.8", PipeElementSpec.WallThicknessText(PipeSpec.Dn20));
-        Assert.AreEqual("48", PipeElementSpec.OuterDiameterText(PipeSpec.Dn40),
+        Assert.AreEqual("26.8", PipeElementSpec.OuterDiameterText(PipeSpec.Dn20, "."));
+        Assert.AreEqual("21,2", PipeElementSpec.InnerDiameterText(PipeSpec.Dn20, ","),
+            "десятичный знак — языка интерфейса (NumberFormat), а не зашитая точка: «26.8» стоял "
+            + "рядом с «0,0» угла в одной панели");
+        Assert.AreEqual("2,8", PipeElementSpec.WallThicknessText(PipeSpec.Dn20, ","));
+        Assert.AreEqual("48", PipeElementSpec.OuterDiameterText(PipeSpec.Dn40, ","),
             "48,0 показывают как «48»: лишний ноль читается как точность, которой нет");
     }
 

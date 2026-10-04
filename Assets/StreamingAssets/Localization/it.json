@@ -1,6 +1,7 @@
 {
   "@name": "Italiano",
   "@rtl": "false",
+  "@decimal": ",",
   "catalog.appliance.cooktop": "Piano cottura",
   "catalog.appliance.cooktopModelPrefix": "Piano cottura ",
   "catalog.appliance.dishwasher": "Lavastoviglie",

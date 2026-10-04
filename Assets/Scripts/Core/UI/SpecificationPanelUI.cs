@@ -244,7 +244,7 @@ namespace KitchenDesigner.Core.UI
         private static string FormatQty(float qtyTotal, SpecUnit unit) =>
             unit == SpecUnit.Pieces
                 ? Mathf.RoundToInt(qtyTotal).ToString()
-                : qtyTotal.ToString("F2", SpecificationExport.NumberCulture);
+                : NumberFormat.Fixed(qtyTotal, 2);
 
         private static string MaterialSubtotalText(string material, IReadOnlyList<SpecLine> lines)
         {

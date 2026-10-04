@@ -154,7 +154,7 @@
     {
       "type": "InputField",
       "label": "Толщина кромки",
-      "value": "1.0",
+      "value": "1,0",
       "interactable": true,
       "position": [100, -447]
     },

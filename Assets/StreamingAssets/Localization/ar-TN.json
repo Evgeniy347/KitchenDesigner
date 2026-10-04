@@ -1,6 +1,7 @@
 {
   "@name": "العربية (تونس)",
   "@rtl": "true",
+  "@decimal": ",",
   "catalog.appliance.cooktop": "لوح الطهي",
   "catalog.appliance.cooktopModelPrefix": "لوح طهي ",
   "catalog.appliance.dishwasher": "غسالة صحون",

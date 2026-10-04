@@ -133,10 +133,10 @@ namespace KitchenDesigner.Core.UI
             _ => "ACES",
         };
 
-        private static string Percent(int v) => v + " %";
+        private static string Percent(int v) => NumberFormat.WithUnit(NumberFormat.Integer(v), "%");
         private static string Meters(int v) => v + Loc.T("unit.mSuffix");
         private static string ExposureValue(int v) =>
-            (v / 100f).ToString("+0.0;-0.0;0.0", System.Globalization.CultureInfo.InvariantCulture) + " EV";
+            NumberFormat.WithUnit((v > 0 ? "+" : "") + NumberFormat.Fixed(v / 100f, 1), "EV");
 
         private void Hint(string rowKey, string hint) =>
             HintBadge.AttachAfterLabel(_rows.RowLabel(rowKey), hint);

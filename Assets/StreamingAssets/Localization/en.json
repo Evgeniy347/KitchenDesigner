@@ -1,6 +1,7 @@
 {
   "@name": "English",
   "@rtl": "false",
+  "@decimal": ".",
   "catalog.appliance.cooktop": "Cooktop",
   "catalog.appliance.cooktopModelPrefix": "Cooktop ",
   "catalog.appliance.dishwasher": "Dishwasher",

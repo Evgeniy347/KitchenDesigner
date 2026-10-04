@@ -1,6 +1,7 @@
 {
   "@name": "Русский",
   "@rtl": "false",
+  "@decimal": ",",
   "catalog.appliance.cooktop": "Варочная поверхность",
   "catalog.appliance.cooktopModelPrefix": "Варочная ",
   "catalog.appliance.dishwasher": "Посудомойка",

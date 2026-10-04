@@ -66,9 +66,9 @@ namespace KitchenDesigner.Core.UI
 
         private void WriteDerived(PipeElement pipe)
         {
-            if (_outer != null) _outer.text = PipeElementSpec.OuterDiameterText(pipe.SizeId);
-            if (_inner != null) _inner.text = PipeElementSpec.InnerDiameterText(pipe.SizeId);
-            if (_wall != null) _wall.text = PipeElementSpec.WallThicknessText(pipe.SizeId);
+            if (_outer != null) _outer.text = PipeElementSpec.OuterDiameterText(pipe.SizeId, NumberFormat.DecimalSeparator);
+            if (_inner != null) _inner.text = PipeElementSpec.InnerDiameterText(pipe.SizeId, NumberFormat.DecimalSeparator);
+            if (_wall != null) _wall.text = PipeElementSpec.WallThicknessText(pipe.SizeId, NumberFormat.DecimalSeparator);
         }
 
         private void OnSizeSelected(int index)

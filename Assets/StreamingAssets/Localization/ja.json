@@ -1,6 +1,7 @@
 {
   "@name": "日本語",
   "@rtl": "false",
+  "@decimal": ".",
   "catalog.appliance.cooktop": "クッキングヒーター",
   "catalog.appliance.cooktopModelPrefix": "クッキングヒーター ",
   "catalog.appliance.dishwasher": "食器洗い乾燥機",

@@ -54,7 +54,7 @@
     {
       "type": "Label",
       "text": "Труба — Truba",
-      "position": [0, -12]
+      "position": [0, -10]
     },
     {
       "type": "Dropdown",
@@ -135,7 +135,7 @@
     {
       "type": "InputField",
       "label": "Наружный Ø",
-      "value": "26.8",
+      "value": "26,8",
       "interactable": false,
       "position": [100, -232]
     },
@@ -147,7 +147,7 @@
     {
       "type": "InputField",
       "label": "Внутренний Ø",
-      "value": "21.2",
+      "value": "21,2",
       "interactable": false,
       "position": [100, -263]
     },
@@ -159,7 +159,7 @@
     {
       "type": "InputField",
       "label": "Толщина стенки",
-      "value": "2.8",
+      "value": "2,8",
       "interactable": false,
       "position": [100, -294]
     },

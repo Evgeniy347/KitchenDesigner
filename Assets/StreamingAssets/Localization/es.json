@@ -1,6 +1,7 @@
 {
   "@name": "Español",
   "@rtl": "false",
+  "@decimal": ",",
   "catalog.appliance.cooktop": "Placa de cocción",
   "catalog.appliance.cooktopModelPrefix": "Placa ",
   "catalog.appliance.dishwasher": "Lavavajillas",

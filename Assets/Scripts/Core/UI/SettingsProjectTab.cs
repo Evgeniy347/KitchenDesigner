@@ -49,19 +49,16 @@ namespace KitchenDesigner.Core.UI
             Hint(Loc.T("settings.project.snap"), hint: "settings.project.snap");
 
             _snapThresholdField = _rows.AddInput(page, ref y, Loc.T("settings.project.snapThreshold"),
-                s.SnapThreshold.ToString("F0"),
+                NumberFormat.Input(s.SnapThreshold, 0),
                 TMP_InputField.ContentType.DecimalNumber,
                 f =>
                 {
-                    var val = ExpressionParser.EvaluateFloat(f.text)
-                        ?? (float.TryParse(f.text, System.Globalization.NumberStyles.Float,
-                            System.Globalization.CultureInfo.InvariantCulture, out float parsed)
-                            ? parsed
-                            : s.SnapThreshold);
+                    var val = ExpressionParser.EvaluateFloat(NumberFormat.Normalize(f.text))
+                        ?? (NumberFormat.TryParse(f.text, out double parsed) ? (float)parsed : s.SnapThreshold);
                     s.SnapThreshold = val;
-                    f.text = s.SnapThreshold.ToString("F0");
-                }, s.SnapThreshold.ToString("F0"), unit: Loc.T("unit.mm"), indent: true,
-                read: () => s.SnapThreshold.ToString("F0"));
+                    f.text = NumberFormat.Input(s.SnapThreshold, 0);
+                }, NumberFormat.Input(s.SnapThreshold, 0), unit: Loc.T("unit.mm"), indent: true,
+                read: () => NumberFormat.Input(s.SnapThreshold, 0));
             Hint(Loc.T("settings.project.snapThreshold"), hint: "settings.project.snapThreshold");
 
             y -= SettingsRowFactory.GapPx;

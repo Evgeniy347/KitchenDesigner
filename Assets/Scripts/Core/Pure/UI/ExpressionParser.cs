@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core.UI
         public static bool IsValidDimensionChar(char ch, bool allowDecimal = false)
         {
             return char.IsDigit(ch) || ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == ' '
-                || (allowDecimal && ch == '.');
+                || (allowDecimal && (ch == '.' || ch == ','));
         }
 
         public static int? EvaluateInt(string text)

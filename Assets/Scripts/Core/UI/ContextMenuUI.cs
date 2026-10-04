@@ -592,9 +592,9 @@ namespace KitchenDesigner.Core.UI
             if (AttachLinks.CanBeChild(_target)) _attachedTo.UpdateCaptionColor();
 
             var eu = _rotationDisplay.For(_target.transform.rotation);
-            _fields.RefreshUnfocused(_rx, eu.x.ToString("F1"));
-            _fields.RefreshUnfocused(_ry, eu.y.ToString("F1"));
-            _fields.RefreshUnfocused(_rz, eu.z.ToString("F1"));
+            _fields.RefreshUnfocused(_rx, NumberFormat.Input(eu.x, 1));
+            _fields.RefreshUnfocused(_ry, NumberFormat.Input(eu.y, 1));
+            _fields.RefreshUnfocused(_rz, NumberFormat.Input(eu.z, 1));
             _sizes.RefreshFrom(_target.DimensionsMM);
             _fields.RefreshUnfocused(_name, _target.PartName);
             RefreshTitle();
@@ -962,9 +962,9 @@ namespace KitchenDesigner.Core.UI
             _fields.Track(_y, ToMM(pos.y));
             _fields.Track(_z, ToMM(pos.z));
             var e = _rotationDisplay.For(_target.transform.rotation);
-            _fields.Track(_rx, e.x.ToString("F1"));
-            _fields.Track(_ry, e.y.ToString("F1"));
-            _fields.Track(_rz, e.z.ToString("F1"));
+            _fields.Track(_rx, NumberFormat.Input(e.x, 1));
+            _fields.Track(_ry, NumberFormat.Input(e.y, 1));
+            _fields.Track(_rz, NumberFormat.Input(e.z, 1));
         }
     }
 }
