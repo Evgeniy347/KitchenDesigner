@@ -36,6 +36,20 @@ namespace KitchenDesigner.Core
             return result;
         }
 
+        public static int SpacingAxes(Vector3 dragPlaneNormal, bool vertical, DragAxisLock axisLock)
+        {
+            if (vertical) return EqualGapSnap.AxisY;
+
+            int mask = 0;
+            for (int axis = 0; axis < 3; axis++)
+                if (Mathf.Abs(dragPlaneNormal[axis]) <= 1f - Tolerance.ParallelDot)
+                    mask |= EqualGapSnap.MaskOf(axis);
+
+            if (axisLock == DragAxisLock.X) mask &= ~EqualGapSnap.AxisZ;
+            else if (axisLock == DragAxisLock.Z) mask &= ~EqualGapSnap.AxisX;
+            return mask;
+        }
+
         public static bool GhostIsWorthShowing(bool snapped, Vector3 snappedPosition, Vector3 freePosition)
             => snapped && (snappedPosition - freePosition).sqrMagnitude > Tolerance.EpsilonSqr;
 

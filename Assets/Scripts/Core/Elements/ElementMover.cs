@@ -49,6 +49,8 @@ namespace KitchenDesigner.Core
         }
 
         private readonly DragGhostRenderer _ghost = new DragGhostRenderer();
+        private readonly DistanceGuideSession _guides = new DistanceGuideSession();
+        internal AxisGuideIndex? GuideIndex => _guides.Index;
 
         private readonly List<KitchenElement> _moveSet = new List<KitchenElement>();
         private readonly List<Vector3> _moveStart = new List<Vector3>();
@@ -70,6 +72,7 @@ namespace KitchenDesigner.Core
         private void OnDestroy()
         {
             _ghost.DestroyMaterial();
+            _guides.End();
         }
 
         private void OnSelectionChanged(KitchenElement? element)
@@ -143,6 +146,7 @@ namespace KitchenDesigner.Core
             _startRotation = target.transform.rotation;
             _heldDragY = _startPosition.y;
             HoldAttachedPipes();
+            _guides.Begin(target, PartRegistry.GetAll(), _moveSet);
         }
 
         internal void FinishDragNow() => FinishDrag();
@@ -347,6 +351,7 @@ namespace KitchenDesigner.Core
         {
             _settledFrame.Forget();
             _ghost.Hide();
+            _guides.End();
             _axisLock = DragAxisLock.None;
             _dragWall = null;
             _targetIsWallOpening = false;
@@ -454,15 +459,19 @@ namespace KitchenDesigner.Core
             var snap = effectiveSnap
                 ? SnapSystem.TrySnap(_target!, others, newPos)
                 : default;
-            var settled = WorldBounds.Clamp(snap.snapped ? snap.position : newPos);
+            float threshold = settings != null ? settings.SnapThreshold * AppConstants.MM_TO_UNITS : 0f;
+            int spacingAxes = DragGesture.SpacingAxes(GetDragPlane(_target!).normal, _wasShift, _axisLock);
+            var settled = WorldBounds.Clamp(
+                _guides.Settle(newPos, snap, effectiveSnap, spacingAxes, threshold));
             if (_target!.transform.position != settled) _target!.transform.position = settled;
 
             if (_moveSet.Count > 1)
                 ApplyDelta(_moveSet, _moveStart, _target!.transform.position - _startPosition);
 
             FollowHeldPipes();
+            _guides.ShowAt(_target!.transform.position);
 
-            if (DragGesture.GhostIsWorthShowing(snap.snapped, snap.position, newPos))
+            if (DragGesture.GhostIsWorthShowing(snap.snapped || _guides.PulledLastFrame, settled, newPos))
                 _ghost.ShowFor(_target!, newPos);
             else
                 _ghost.Hide();
@@ -477,6 +486,7 @@ namespace KitchenDesigner.Core
 			using var _ = PerfMarkers.MoverFinishDrag.Auto();
 			_settledFrame.Forget();
 			_ghost.Hide();
+			_guides.End();
 
 			if (_wasMoved)
 			{

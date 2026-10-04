@@ -127,4 +127,46 @@ public class DragGestureTests
             + "блокировке деталь откатится на старт");
         Assert.AreNotEqual(DragGesture.AllowedTint, DragGesture.BlockedTint);
     }
+
+    [Test]
+    public void SpacingAxes_FloorDrag_AreXAndZButNotY()
+    {
+        Assert.AreEqual(EqualGapSnap.AxisX | EqualGapSnap.AxisZ,
+            DragGesture.SpacingAxes(Vector3.up, false, DragAxisLock.None),
+            "обычное перетаскивание идёт по полу: равный зазор вправе двигать деталь по X и Z, "
+            + "но не по высоте, которую держит жест");
+    }
+
+    [Test]
+    public void SpacingAxes_ShiftDrag_IsOnlyY()
+    {
+        Assert.AreEqual(EqualGapSnap.AxisY, DragGesture.SpacingAxes(Vector3.up, true, DragAxisLock.None),
+            "с Shift деталь едет только по высоте — полки в стопке выравниваются по Y");
+    }
+
+    [Test]
+    public void SpacingAxes_AxisLock_LeavesOnlyTheLockedAxis()
+    {
+        Assert.AreEqual(EqualGapSnap.AxisX, DragGesture.SpacingAxes(Vector3.up, false, DragAxisLock.X),
+            "блокировка X: по Z деталь не ходит, и равный зазор не вправе её туда сдвинуть");
+        Assert.AreEqual(EqualGapSnap.AxisZ, DragGesture.SpacingAxes(Vector3.up, false, DragAxisLock.Z),
+            "блокировка Z — зеркально");
+    }
+
+    [Test]
+    public void SpacingAxes_OpeningInAWallAlongX_AreXAndY()
+    {
+        Assert.AreEqual(EqualGapSnap.AxisX | EqualGapSnap.AxisY,
+            DragGesture.SpacingAxes(Vector3.forward, false, DragAxisLock.None),
+            "окно в стене вдоль X ездит в её плоскости: X и высота, но не сквозь стену");
+    }
+
+    [Test]
+    public void SpacingAxes_OpeningInADiagonalWall_IsOnlyY()
+    {
+        var normal = new Vector3(1f, 0f, 1f).normalized;
+
+        Assert.AreEqual(EqualGapSnap.AxisY, DragGesture.SpacingAxes(normal, false, DragAxisLock.None),
+            "у косой стены ни X, ни Z не лежат в её плоскости — сдвиг по ним вывел бы окно из стены");
+    }
 }

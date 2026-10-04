@@ -39,6 +39,9 @@ namespace KitchenDesigner.Core.UI
                 if (ctrl != null && ctrl.HasPreview)
                     Place(cam, ctrl.Anchor!.Value, ctrl.PreviewEnd!.Value);
             }
+            if (_root != null && cam != null)
+                foreach (var line in DistanceGuideStore.Lines)
+                    Place(cam, line.A, line.B);
 
             for (int i = _used; i < _pool.Count; i++)
                 _pool[i].gameObject.SetActive(false);
@@ -66,8 +69,16 @@ namespace KitchenDesigner.Core.UI
             }
 
             var mid = (sa + sb) * 0.5f;
-            label.rectTransform.position =
-                new Vector3(mid.x, mid.y + LiftAboveTheDottedLinePx, 0f);
+            label.rectTransform.position = OnTheCanvas(
+                new Vector2(mid.x, mid.y + LiftAboveTheDottedLinePx));
+        }
+
+        private Vector3 OnTheCanvas(Vector2 screenPoint)
+        {
+            bool overlay = _canvas == null || _canvas.renderMode == RenderMode.ScreenSpaceOverlay;
+            if (overlay || !(_root is RectTransform rect)) return screenPoint;
+            return RectTransformUtility.ScreenPointToWorldPointInRectangle(rect, screenPoint,
+                _canvas!.worldCamera, out var world) ? world : (Vector3)screenPoint;
         }
 
         private TextMeshProUGUI Take()

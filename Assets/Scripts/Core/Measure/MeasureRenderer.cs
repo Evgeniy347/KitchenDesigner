@@ -32,7 +32,9 @@ namespace KitchenDesigner.Core.Measure
 
         private void OnRenderObject()
         {
-            if (!MeasureMode.Active || _lineMaterial == null) return;
+            bool measuring = MeasureMode.Active;
+            bool guiding = DistanceGuideStore.Showing;
+            if ((!measuring && !guiding) || _lineMaterial == null) return;
             var cam = ResolveCamera(Camera.current, Camera.main);
             if (cam == null) return;
 
@@ -40,7 +42,9 @@ namespace KitchenDesigner.Core.Measure
             GL.PushMatrix();
             GL.MultMatrix(Matrix4x4.identity);
 
-            foreach (var pass in DrawOrder) Draw(pass, cam);
+            if (measuring)
+                foreach (var pass in DrawOrder) Draw(pass, cam);
+            if (guiding) DrawDistanceGuides(cam);
 
             GL.PopMatrix();
         }
@@ -122,6 +126,19 @@ namespace KitchenDesigner.Core.Measure
                 }
                 if (ctrl.Hint.HasValue) DrawInterchangeableHintPoint(cam, ctrl.Hint.Value);
                 if (ctrl.PlaneHint.HasValue) DrawInterchangeableHintPoint(cam, ctrl.PlaneHint.Value);
+            }
+            GL.End();
+        }
+
+        private static void DrawDistanceGuides(Camera cam)
+        {
+            GL.Begin(GL.QUADS);
+            foreach (var line in DistanceGuideStore.Lines)
+            {
+                GL.Color(line.EqualGap ? UIStyle.MeasureHover : UIStyle.MeasureLine);
+                DashedLineDrawer.Dashed(cam, line.A, line.B, LineThicknessPx);
+                DashedLineDrawer.Point(cam, line.A, PointRadiusPx);
+                DashedLineDrawer.Point(cam, line.B, PointRadiusPx);
             }
             GL.End();
         }

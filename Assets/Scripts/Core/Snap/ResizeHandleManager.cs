@@ -56,6 +56,7 @@ namespace KitchenDesigner.Core
         private bool _ctrlHeldLastFrame;
         private Camera? _layoutCamera;
         private ResizeFrameRepeat _settledFrame;
+        private readonly DistanceGuideSession _guides = new DistanceGuideSession();
 
         private void Awake() => Instance = this;
 
@@ -73,6 +74,7 @@ namespace KitchenDesigner.Core
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.OnSelectionChanged -= OnSelectionChanged;
             IsResizing = false;
+            _guides.End();
             ClearHandles();
         }
 
@@ -211,6 +213,7 @@ namespace KitchenDesigner.Core
             _resizingElement = _target;
             _modeAtDragStart = Mode;
             _settledFrame.Forget();
+            _guides.BeginAlone(_target, PartRegistry.GetAll());
             IsResizing = true;
         }
 
@@ -249,12 +252,13 @@ namespace KitchenDesigner.Core
             ResizeMath.Compute(_dimsBefore, _axisIndex, _normal, _faceCenter0, _uAxis, _vAxis, _faceSize,
                 _centerStart, _sizeStartUnits, rawDelta,
                 SnapSceneGeometry.For(PartRegistry.GetAll(), _target), _target.ToGeometry(),
-                snapEnabled, threshold, out Vector3Int newDims, out Vector3 _, out _);
+                snapEnabled, threshold, out Vector3Int newDims, out Vector3 _, out _, _guides.Index);
 
             if (_target.DimensionsMM != newDims) _target.DimensionsMM = newDims;
             var newCenter = ResizeMath.CenterForAppliedDims(
                 _centerStart, _normal, _sizeStartUnits, _target.DimensionsMM, _axisIndex);
             if (_target.transform.position != newCenter) _target.transform.position = newCenter;
+            _guides.ShowFor(_target);
 
             PositionHandles(_layoutCamera);
             if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
@@ -296,17 +300,14 @@ namespace KitchenDesigner.Core
             if (_settledFrame.Repeats(rawDelta, effectiveSnap, SceneRevision.Version,
                     _target.DimensionsMM, _target.transform.position)) return;
 
-            if (effectiveSnap)
-            {
-                var snap = SnapSystem.TrySnap(_target!, PartRegistry.GetAll(), newPos);
-                if (snap.snapped)
-                {
-                    float alongAxis = Vector3.Dot(snap.position - _centerStart, _normal);
-                    newPos = _centerStart + _normal * alongAxis;
-                }
-            }
+            var snap = effectiveSnap ? SnapSystem.TrySnap(_target!, PartRegistry.GetAll(), newPos) : default;
+            if (snap.snapped)
+                snap.position = _centerStart + _normal * Vector3.Dot(snap.position - _centerStart, _normal);
+            float threshold = settings != null ? settings.SnapThreshold * AppConstants.MM_TO_UNITS : 0f;
+            newPos = _guides.Settle(newPos, snap, effectiveSnap, AxisMaskAlong(_normal), threshold);
 
             if (_target.transform.position != newPos) _target.transform.position = newPos;
+            _guides.ShowAt(newPos);
             PositionHandles(_layoutCamera);
             if (ElementHighlighter.Instance != null) ElementHighlighter.Instance.RefreshHighlights();
 
@@ -314,9 +315,16 @@ namespace KitchenDesigner.Core
                 _target.DimensionsMM, _target.transform.position);
         }
 
+        private static int AxisMaskAlong(Vector3 normal)
+        {
+            int axis = EqualGapSnap.DominantAxis(normal);
+            return Mathf.Abs(normal[axis]) >= Tolerance.ParallelDot ? EqualGapSnap.MaskOf(axis) : 0;
+        }
+
         private void FinishDrag()
         {
             IsResizing = false;
+            _guides.End();
             _settledFrame.Forget();
             _resizingElement = null;
             _ctrlHeldLastFrame = false;
