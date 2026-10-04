@@ -62,6 +62,10 @@ public class InputFieldRestTests
         Assert.IsTrue(field.isActiveAndEnabled);
     }
 
+    /// <summary>ProcessEvent зовёт только KeyPressed: он правит строку поля, но не метку. Метку
+    /// обновляет вызывающий — OnUpdateSelected, получив событие от EventSystem. Без
+    /// ForceLabelUpdate после каждого символа метка осталась бы «2000» (так тест уже промахнулся:
+    /// ink-границы набранного совпадали с исходным значением при любом наборе).</summary>
     private static IEnumerator TypeInto(TMP_InputField field, string value)
     {
         field.ActivateInputField();
@@ -72,6 +76,7 @@ public class InputFieldRestTests
         foreach (char c in value)
         {
             field.ProcessEvent(new Event { type = EventType.KeyDown, character = c });
+            field.ForceLabelUpdate();
             yield return null;
         }
 
