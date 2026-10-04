@@ -1113,6 +1113,8 @@
   "window.instructions.save": "Salva",
   "window.instructions.title": "Istruzioni del progetto",
   "window.instructions.unsaved": "Modifiche non salvate",
+  "window.levels.add": "+ Piano",
+  "window.levels.current": "Piano corrente",
   "window.levels.elevation": "Quota",
   "window.levels.height": "Altezza",
   "window.levels.name": "Nome",

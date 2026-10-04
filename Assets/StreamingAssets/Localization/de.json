@@ -1113,6 +1113,8 @@
   "window.instructions.save": "Speichern",
   "window.instructions.title": "Projektanweisungen",
   "window.instructions.unsaved": "Ungespeicherte Änderungen",
+  "window.levels.add": "+ Geschoss",
+  "window.levels.current": "Aktuelles Geschoss",
   "window.levels.elevation": "Höhenkote",
   "window.levels.height": "Höhe",
   "window.levels.name": "Name",

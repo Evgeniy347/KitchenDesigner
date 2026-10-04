@@ -205,16 +205,17 @@ public class WindowChromeGuardTests
         _host!.GetComponent<LevelsWindowUI>().SetVisible(true);
         var panel = (RectTransform)_canvasGo!.transform.Find("LevelsWindow");
         var close = (RectTransform)panel.Find("CloseBtn");
+        float oneLevelHeight = UIStyle.TitleBarH + LevelsColumns.HeaderH + LevelsColumns.RowH;
 
-        Assert.Greater(panel.sizeDelta.y, LevelsWindowUI.MinPanelHeight + 0.1f,
+        Assert.Greater(panel.sizeDelta.y, oneLevelHeight + LevelsThatStretchTheWindow * 0.5f * LevelsColumns.RowH,
             "список из девяти этажей обязан раздвинуть окно, иначе проверка ничего не проверяет");
         Assert.IsEmpty(TitleOffenders(panel, close), "окно выросло — заголовок остался на линии крестика");
 
-        float headerY = CentreY(panel, (RectTransform)panel.Find("LvHeaderName"));
-        float firstRowY = CentreY(panel, (RectTransform)panel.Find("LvRows").GetChild(0));
+        float headerY = CentreY(panel, panel.GetComponentsInChildren<RectTransform>(true).First(r => r.name == "LvHeaderName"));
+        float firstRowY = CentreY(panel, panel.GetComponentsInChildren<RectTransform>(true).First(r => r.name.StartsWith("LvName_")));
         Assert.Greater(headerY, firstRowY,
             "подписи колонок стоят над первой строкой списка; у выросшего окна они уезжали на середину");
-        Assert.Less(panel.rect.yMax - headerY, LevelsWindowUI.RowsTopY,
-            "подписи колонок стоят в верхней части окна, выше начала списка");
+        Assert.Less(panel.rect.yMax - headerY, UIStyle.TitleBarH + UIStyle.ToolPanelPad + LevelsColumns.HeaderH,
+            "подписи колонок стоят в верхней части окна, сразу под шапкой");
     }
 }

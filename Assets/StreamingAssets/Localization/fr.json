@@ -1113,6 +1113,8 @@
   "window.instructions.save": "Enregistrer",
   "window.instructions.title": "Instructions du projet",
   "window.instructions.unsaved": "Modifications non enregistrées",
+  "window.levels.add": "+ Niveau",
+  "window.levels.current": "Niveau actuel",
   "window.levels.elevation": "Altitude",
   "window.levels.height": "Hauteur",
   "window.levels.name": "Nom",

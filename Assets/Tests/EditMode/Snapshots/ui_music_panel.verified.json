@@ -1,0 +1,45 @@
+{
+  "root": "MusicPanel",
+  "children": [
+    {
+      "type": "Button",
+      "text": "MuPrev",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Громкость",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "MuPlay",
+      "position": [32, 0]
+    },
+    {
+      "type": "Button",
+      "text": "MuNext",
+      "position": [64, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Трек 1",
+      "position": [104, 0]
+    },
+    {
+      "type": "Label",
+      "text": "60 %",
+      "position": [252, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Музыка",
+      "position": [16, -24]
+    }
+  ]
+}

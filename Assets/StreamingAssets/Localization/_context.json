@@ -5817,6 +5817,16 @@
     "meaning": "The text in the field has been edited and not saved yet",
     "maxLength": 34
   },
+  "window.levels.add": {
+    "where": "Levels window, button under the table",
+    "meaning": "Add a new storey above the topmost one; keep the leading plus sign",
+    "maxLength": 14
+  },
+  "window.levels.current": {
+    "where": "Levels window, tooltip of the dot marking the storey that is currently being edited",
+    "meaning": "This storey is the current one",
+    "maxLength": 24
+  },
   "window.levels.elevation": {
     "where": "Levels window, column header (value in mm)",
     "meaning": "Height of the storey floor above the ground datum",
@@ -5828,9 +5838,9 @@
     "maxLength": 12
   },
   "window.levels.name": {
-    "where": "Levels window, column header",
+    "where": "Levels window, column header over the storey name fields",
     "meaning": "Storey name",
-    "maxLength": 12
+    "maxLength": 14
   },
   "window.levels.title": {
     "where": "Levels window, title",

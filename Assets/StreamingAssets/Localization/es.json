@@ -1113,6 +1113,8 @@
   "window.instructions.save": "Guardar",
   "window.instructions.title": "Instrucciones del proyecto",
   "window.instructions.unsaved": "Hay cambios sin guardar",
+  "window.levels.add": "+ Planta",
+  "window.levels.current": "Planta actual",
   "window.levels.elevation": "Cota",
   "window.levels.height": "Altura",
   "window.levels.name": "Nombre",

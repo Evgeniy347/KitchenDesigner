@@ -1113,6 +1113,8 @@
   "window.instructions.save": "保存",
   "window.instructions.title": "项目说明",
   "window.instructions.unsaved": "有未保存的更改",
+  "window.levels.add": "+ 楼层",
+  "window.levels.current": "当前楼层",
   "window.levels.elevation": "标高",
   "window.levels.height": "高度",
   "window.levels.name": "名称",

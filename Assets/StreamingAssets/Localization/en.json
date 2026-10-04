@@ -1113,6 +1113,8 @@
   "window.instructions.save": "Save",
   "window.instructions.title": "Project instructions",
   "window.instructions.unsaved": "Unsaved changes",
+  "window.levels.add": "+ Floor",
+  "window.levels.current": "Current floor",
   "window.levels.elevation": "Elevation",
   "window.levels.height": "Height",
   "window.levels.name": "Name",

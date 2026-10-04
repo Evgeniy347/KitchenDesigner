@@ -1,0 +1,113 @@
+{
+  "root": "LevelsWindow",
+  "children": [
+    {
+      "type": "Label",
+      "text": "Название",
+      "position": [20, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Отметка",
+      "position": [180, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Высота",
+      "position": [284, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "LvName_3",
+      "value": "Мансарда",
+      "interactable": true,
+      "position": [20, -2]
+    },
+    {
+      "type": "InputField",
+      "label": "LvElevation_3",
+      "value": "6000",
+      "interactable": true,
+      "position": [180, -2]
+    },
+    {
+      "type": "InputField",
+      "label": "LvHeight_3",
+      "value": "2500",
+      "interactable": true,
+      "position": [284, -2]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [388, -2]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [-8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "Этажи",
+      "position": [16, -24]
+    },
+    {
+      "type": "InputField",
+      "label": "LvName_2",
+      "value": "2 этаж",
+      "interactable": true,
+      "position": [20, -34]
+    },
+    {
+      "type": "InputField",
+      "label": "LvElevation_2",
+      "value": "3000",
+      "interactable": true,
+      "position": [180, -34]
+    },
+    {
+      "type": "InputField",
+      "label": "LvHeight_2",
+      "value": "3000",
+      "interactable": true,
+      "position": [284, -34]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [388, -34]
+    },
+    {
+      "type": "InputField",
+      "label": "LvName_1",
+      "value": "1 этаж",
+      "interactable": true,
+      "position": [20, -66]
+    },
+    {
+      "type": "InputField",
+      "label": "LvElevation_1",
+      "value": "0",
+      "interactable": true,
+      "position": [180, -66]
+    },
+    {
+      "type": "InputField",
+      "label": "LvHeight_1",
+      "value": "3000",
+      "interactable": true,
+      "position": [284, -66]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [388, -66]
+    },
+    {
+      "type": "Button",
+      "text": "+ Этаж",
+      "position": [0, -128]
+    }
+  ]
+}

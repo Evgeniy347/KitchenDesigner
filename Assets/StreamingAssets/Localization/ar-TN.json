@@ -1113,6 +1113,8 @@
   "window.instructions.save": "حفظ",
   "window.instructions.title": "تعليمات المشروع",
   "window.instructions.unsaved": "توجد تغييرات غير محفوظة",
+  "window.levels.add": "+ طابق",
+  "window.levels.current": "الطابق الحالي",
   "window.levels.elevation": "المنسوب",
   "window.levels.height": "الارتفاع",
   "window.levels.name": "الاسم",

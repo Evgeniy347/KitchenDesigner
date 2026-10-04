@@ -1113,6 +1113,8 @@
   "window.instructions.save": "保存",
   "window.instructions.title": "プロジェクトの指示",
   "window.instructions.unsaved": "未保存の変更があります",
+  "window.levels.add": "+ 階",
+  "window.levels.current": "現在の階",
   "window.levels.elevation": "レベル",
   "window.levels.height": "高さ",
   "window.levels.name": "名前",

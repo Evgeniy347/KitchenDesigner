@@ -1113,6 +1113,8 @@
   "window.instructions.save": "Salvar",
   "window.instructions.title": "Instruções do projeto",
   "window.instructions.unsaved": "Há alterações não salvas",
+  "window.levels.add": "+ Pavimento",
+  "window.levels.current": "Pavimento atual",
   "window.levels.elevation": "Cota",
   "window.levels.height": "Altura",
   "window.levels.name": "Nome",

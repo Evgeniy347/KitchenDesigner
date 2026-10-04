@@ -290,7 +290,7 @@ public class LevelsWindowUITests
         var headerTexts = ui.GetComponentsInChildren<TMP_Text>(true)
             .Where(t => t.gameObject.name.StartsWith("LvHeader"))
             .Select(t => t.text).ToList();
-        CollectionAssert.Contains(headerTexts, "Имя");
+        CollectionAssert.Contains(headerTexts, "Название");
         CollectionAssert.Contains(headerTexts, "Отметка");
         CollectionAssert.Contains(headerTexts, "Высота");
 
@@ -301,8 +301,10 @@ public class LevelsWindowUITests
         Assert.NotNull(suffix, "числовое поле отметки обязано показывать суффикс «мм» внутри поля (§1)");
     }
 
-    /// <summary>L2 (review-ui-mcp): с седьмого уровня последняя строка (y=-126) залезала на
-    /// кнопку «+» (-150..-120) — окно не росло вместе с содержимым.</summary>
+    /// <summary>L2 (review-ui-mcp): с седьмого уровня последняя строка залезала на кнопку «+» —
+    /// окно не росло вместе с содержимым. Сравнение в мировых координатах, а не по
+    /// anchoredPosition: у строк теперь якорь сверху слева, у кнопки он тоже, но одна ошибка
+    /// в якоре не должна прятать наложение.</summary>
     [Test]
     public void SevenLevels_DoNotOverlapTheAddButton()
     {
@@ -312,18 +314,146 @@ public class LevelsWindowUITests
         var ui = Build();
         ui.SetVisible(true);
 
-        var addButton = ui.GetComponentsInChildren<Button>(true).First(b => b.gameObject.name == "LvAdd");
-        var addRect = addButton.GetComponent<RectTransform>();
-        float addTop = addRect.anchoredPosition.y + addRect.rect.height * 0.5f;
-
-        var lastRow = ui.GetComponentsInChildren<TMP_InputField>(true)
+        float addTop = WorldBounds(ui.GetComponentsInChildren<Button>(true).First(b => b.gameObject.name == "LvAdd")
+            .GetComponent<RectTransform>()).yMax;
+        float lastRowBottom = ui.GetComponentsInChildren<TMP_InputField>(true)
             .Where(f => f.gameObject.name.StartsWith("LvName_"))
-            .OrderBy(f => f.GetComponent<RectTransform>().anchoredPosition.y)
-            .First();
-        float lastRowBottom = lastRow.GetComponent<RectTransform>().anchoredPosition.y
-            - lastRow.GetComponent<RectTransform>().rect.height * 0.5f;
+            .Min(f => WorldBounds(f.GetComponent<RectTransform>()).yMin);
 
         Assert.LessOrEqual(addTop, lastRowBottom,
-            "кнопка «+» обязана остаться НИЖЕ последней строки — окно должно вырасти под 7 этажей");
+            "кнопка «+ Этаж» обязана остаться НИЖЕ последней строки — окно должно вырасти под 7 этажей");
+    }
+
+    private static Rect WorldBounds(RectTransform rt)
+    {
+        var c = new Vector3[4];
+        rt.GetWorldCorners(c);
+        return Rect.MinMaxRect(c[0].x, c[0].y, c[2].x, c[2].y);
+    }
+
+    private static TMP_Text Glyph(Component button) => button.GetComponentInChildren<TMP_Text>(true);
+
+    [Test]
+    public void TheWindow_IsAToolPanelOfTheLevelsWidth_WithAQuietCloseAndNoFooter()
+    {
+        SetTwoLevels();
+        var ui = Build();
+        ui.SetVisible(true);
+
+        var panel = ui.WindowRect!;
+        Assert.AreEqual(UIStyle.LevelsW, panel.sizeDelta.x, "ширина окна «Этажи» — токен D5 LevelsW");
+        Assert.IsNotNull(panel.Find(WindowChrome.CloseButtonName), "закрытие — тихий × шапки");
+        Assert.IsNull(panel.Find("LevelsWindowFooter"),
+            "у окна нет футера: «+ Этаж» стоит под таблицей, а не в футере, потому что строит список");
+    }
+
+    [Test]
+    public void OnlyTheCurrentLevel_CarriesTheSelectionMarker_AndItFollowsTheCurrentId()
+    {
+        SetTwoLevels();
+        LevelRegistry.CurrentId = "1";
+        var ui = Build();
+        ui.SetVisible(true);
+
+        var markers = ui.GetComponentsInChildren<Transform>(true)
+            .Where(t => t.name.StartsWith(LevelsListView.CurrentMarkerNode)).Select(t => t.name).ToList();
+        CollectionAssert.AreEqual(new[] { LevelsListView.CurrentMarkerNode + "1" }, markers,
+            "точка стоит ровно у текущего этажа (§ tool-panels: текущий этаж — точка SelectionBar)");
+
+        var dot = ui.GetComponentsInChildren<Transform>(true).First(t => t.name == "Dot").GetComponent<Image>();
+        Assert.AreEqual(UIStyle.SelectionBar, dot.color, "цвет точки — токен SelectionBar");
+
+        LevelRegistry.CurrentId = "2";
+        ui.Refresh();
+        markers = ui.GetComponentsInChildren<Transform>(true)
+            .Where(t => t.name.StartsWith(LevelsListView.CurrentMarkerNode)).Select(t => t.name).ToList();
+        CollectionAssert.AreEqual(new[] { LevelsListView.CurrentMarkerNode + "2" }, markers,
+            "смена текущего этажа переставляет точку");
+    }
+
+    [Test]
+    public void DeleteButton_IsQuietAtRest_AndDangerWhenArmed()
+    {
+        SetTwoLevels();
+        var ui = Build();
+        ui.SetVisible(true);
+        var button = ui.GetComponentsInChildren<Button>(true).First(b => b.gameObject.name == "LvDelete_2");
+        var image = button.GetComponent<Image>();
+
+        Assert.AreEqual(UIStyle.GlyphClose, Glyph(button).text, "в покое — «×»");
+        Assert.AreEqual(UIStyle.TextSecondary, Glyph(button).color, "в покое × тихий: вторичный цвет текста");
+        Assert.AreEqual(0f, button.colors.normalColor.a, 1e-4f, "в покое у кнопки нет заливки (D5/D8: тихий ×)");
+
+        button.onClick.Invoke();
+        Assert.AreEqual(UIStyle.GlyphConfirm, Glyph(button).text, "взвод показывает «?!»");
+        Assert.AreEqual(UIStyle.Danger, image.color, "взведённая кнопка заливается Danger");
+        Assert.AreEqual(UIStyle.TextOnAccent, Glyph(button).color);
+
+        ConfirmDeleteButton.DisarmAll();
+        Assert.AreEqual(UIStyle.GlyphClose, Glyph(button).text);
+        Assert.AreEqual(UIStyle.TextSecondary, Glyph(button).color, "снятие взвода возвращает тихий вид");
+        Assert.AreEqual(0f, button.colors.normalColor.a, 1e-4f);
+    }
+
+    [Test]
+    public void TheOnlyLevelsDeleteButton_IsDimmedAsWellAsDisabled()
+    {
+        LevelRegistry.Set(new[] { new Level("1", "1 этаж", 0, 3000) });
+        var ui = Build();
+        ui.SetVisible(true);
+        var button = ui.GetComponentsInChildren<Button>(true).First(b => b.gameObject.name == "LvDelete_1");
+
+        Assert.IsFalse(button.interactable);
+        Assert.AreEqual(UIStyle.TextDisabled, Glyph(button).color,
+            "выключенный × гаснет — иначе он выглядит рабочим (§9)");
+    }
+
+    [Test]
+    public void TheColumns_FitTheBody_InOrder_WithoutOverlap_AndNumbersAlignRight()
+    {
+        SetTwoLevels();
+        var ui = Build();
+        ui.SetVisible(true);
+        var body = ui.WindowRect!.Find("LevelsWindowBody");
+        Assert.IsNotNull(body, "тело окна собрано WindowChrome.CreateBody");
+
+        string[] order = { "LvName_2", "LvElevation_2", "LvHeight_2", "LvDelete_2" };
+        var rects = order.Select(n => WorldBounds(ui.GetComponentsInChildren<RectTransform>(true)
+            .First(r => r.name == n))).ToList();
+        for (int i = 1; i < rects.Count; i++)
+            Assert.Greater(rects[i].xMin - rects[i - 1].xMax, UIStyle.Space1,
+                $"{order[i - 1]} и {order[i]} не касаются и идут слева направо");
+
+        var viewport = WorldBounds((RectTransform)body);
+        Assert.LessOrEqual(rects[3].xMax, viewport.xMax + 0.5f, "× не выходит за тело окна");
+
+        foreach (var n in new[] { "LvElevation_2", "LvHeight_2" })
+        {
+            var field = ui.GetComponentsInChildren<TMP_InputField>(true).First(f => f.name == n);
+            Assert.AreEqual(TextAlignmentOptions.Right, field.textComponent!.alignment,
+                "числа отметки и высоты — вправо (D8)");
+        }
+        foreach (var n in new[] { "LvHeaderElevation", "LvHeaderHeight" })
+        {
+            var header = ui.GetComponentsInChildren<TMP_Text>(true).First(t => t.name == n);
+            Assert.AreEqual(TextAlignmentOptions.Right, header.alignment, "шапка числового столбца — вправо");
+            Assert.AreEqual(UIStyle.FontCaption, header.fontSize, "шапка колонки — FontCaption (D3)");
+        }
+    }
+
+    [Test]
+    public void ElevationField_ShowsTheTypographyOfAnIntegerInput_AndTakesBothMinusSigns()
+    {
+        LevelRegistry.Set(new[] { new Level("1", "Подвал", -2700, 2500), new Level("2", "1 этаж", 0, 3000) });
+        var ui = Build();
+        ui.SetVisible(true);
+        var field = ui.GetComponentsInChildren<TMP_InputField>(true).First(f => f.name == "LvElevation_2");
+
+        field.text = "−300";
+        field.onEndEdit.Invoke("−300");
+
+        Assert.AreEqual(-300, LevelRegistry.Items.First(l => l.id == "2").floorElevationMm,
+            "типографский минус «−» читается так же, как «-» (NumberFormat.TryParseInt)");
+        Assert.AreEqual("-300", field.text, "в поле вводимое значение — ASCII-минус, его читает и калькулятор");
     }
 }
