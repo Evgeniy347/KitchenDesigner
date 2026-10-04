@@ -58,12 +58,22 @@
     },
     {
       "type": "Label",
+      "text": "i",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
       "text": "Автосохранение",
       "position": [0, 0]
     },
     {
       "type": "Label",
       "text": "Блокировать недопустимые изменения",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Направляющие расстояний",
       "position": [0, 0]
     },
     {
@@ -168,6 +178,12 @@
     {
       "type": "Toggle",
       "label": "Sw_Блокировать недопустимые изменения",
+      "isOn": true,
+      "position": [316, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "Sw_Направляющие расстояний",
       "isOn": true,
       "position": [316, 0]
     },
