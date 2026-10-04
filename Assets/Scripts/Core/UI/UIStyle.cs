@@ -188,6 +188,7 @@ namespace KitchenDesigner.Core.UI
         public const string GlyphClose = "×";
         public const string GlyphConfirm = "?!";
         public const string GlyphCollapsed = "►";
+        public const string GlyphCollapsedRtl = "◄";
         public const string GlyphExpanded = "▼";
         public const string GlyphDropdown = "▼";
         public const string GlyphAngle = "∟";

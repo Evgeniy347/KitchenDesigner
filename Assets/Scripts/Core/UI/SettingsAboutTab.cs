@@ -83,10 +83,9 @@ namespace KitchenDesigner.Core.UI
 
         private static void Pin(RectTransform rect, float x, float width, float rowWidth)
         {
-            bool rtl = LayoutDirection.IsRtl;
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 0.5f);
             rect.pivot = new Vector2(0f, 0.5f);
-            rect.anchoredPosition = new Vector2(rtl ? rowWidth - x - width : x, 0f);
+            rect.anchoredPosition = new Vector2(LayoutDirection.StartX(rowWidth, x, width), 0f);
         }
     }
 }

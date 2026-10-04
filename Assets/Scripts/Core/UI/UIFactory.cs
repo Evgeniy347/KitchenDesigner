@@ -199,8 +199,7 @@ namespace KitchenDesigner.Core.UI
             var btn = CreateButton("CloseBtn", windowPanel, UIStyle.GlyphClose,
                 Vector2.zero, new Vector2(UIStyle.CloseBtnSize, UIStyle.CloseBtnSize), onClose);
             var rt = btn.GetComponent<RectTransform>();
-            AnchorTopRight(rt);
-            rt.anchoredPosition = new Vector2(-UIStyle.CloseBtnInset, -UIStyle.CloseBtnInset);
+            LayoutDirection.PinTopEnd(rt, UIStyle.CloseBtnInset, UIStyle.CloseBtnInset);
             var lbl = btn.GetComponentInChildren<TMP_Text>();
             if (lbl != null) lbl.fontSize = UIStyle.FontWindowTitle;
             QuietButton.Apply(btn);
@@ -486,15 +485,16 @@ namespace KitchenDesigner.Core.UI
             var caption = CreateLabel(name + "_Label", rect, "", UIStyle.FontBody, Vector2.zero, size, TextAnchor.MiddleLeft);
             var capRt = caption.rectTransform;
             capRt.anchorMin = Vector2.zero; capRt.anchorMax = Vector2.one;
-            capRt.offsetMin = new Vector2(8, 2); capRt.offsetMax = new Vector2(-18, -2);
+            bool rtl = LayoutDirection.IsRtl;
+            capRt.offsetMin = new Vector2(rtl ? 18 : 8, 2); capRt.offsetMax = new Vector2(rtl ? -8 : -18, -2);
             ClipTheClosedCaptionToOneLine(caption);
 
             var arrow = CreateLabel(name + "_Arrow", rect, UIStyle.GlyphDropdown, UIStyle.FontCaption, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
             arrow.color = UIStyle.TextSecondary;
             arrow.raycastTarget = false;
             var arRt = arrow.rectTransform;
-            arRt.anchorMin = arRt.anchorMax = arRt.pivot = new Vector2(1, 0.5f);
-            arRt.sizeDelta = new Vector2(16, 16); arRt.anchoredPosition = new Vector2(-4, 0);
+            arRt.anchorMin = arRt.anchorMax = arRt.pivot = new Vector2(rtl ? 0 : 1, 0.5f);
+            arRt.sizeDelta = new Vector2(16, 16); arRt.anchoredPosition = new Vector2(rtl ? 4 : -4, 0);
 
             var template = CreateRect(name + "_Template", rect);
             template.anchorMin = new Vector2(0, 0);
@@ -529,8 +529,8 @@ namespace KitchenDesigner.Core.UI
             itemBgImg.color = ButtonColor;
 
             var itemCheck = CreateRect("Item Checkmark", item);
-            itemCheck.anchorMin = itemCheck.anchorMax = itemCheck.pivot = new Vector2(0, 0.5f);
-            itemCheck.sizeDelta = new Vector2(14, 14); itemCheck.anchoredPosition = new Vector2(12, 0);
+            itemCheck.anchorMin = itemCheck.anchorMax = itemCheck.pivot = new Vector2(rtl ? 1 : 0, 0.5f);
+            itemCheck.sizeDelta = new Vector2(14, 14); itemCheck.anchoredPosition = new Vector2(rtl ? -12 : 12, 0);
             var itemCheckImg = itemCheck.gameObject.AddComponent<Image>();
             itemCheckImg.color = new Color(0.4f, 0.7f, 1f, 1f);
 
@@ -538,8 +538,8 @@ namespace KitchenDesigner.Core.UI
                 Vector2.zero, Vector2.zero, TextAnchor.MiddleLeft);
             var ilRt = itemLabel.rectTransform;
             ilRt.anchorMin = Vector2.zero; ilRt.anchorMax = Vector2.one;
-            ilRt.offsetMin = new Vector2(DropdownItemLabelLeft, 1);
-            ilRt.offsetMax = new Vector2(-DropdownItemLabelRight, -1);
+            ilRt.offsetMin = new Vector2(rtl ? DropdownItemLabelRight : DropdownItemLabelLeft, 1);
+            ilRt.offsetMax = new Vector2(-(rtl ? DropdownItemLabelLeft : DropdownItemLabelRight), -1);
             WrapTheOpenListItemOverSeveralLines(itemLabel);
 
             itemToggle.targetGraphic = itemBgImg;

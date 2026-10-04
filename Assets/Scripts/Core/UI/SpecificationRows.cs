@@ -22,7 +22,7 @@ namespace KitchenDesigner.Core.UI
         private const float DimensionColumnW = 64f;
         private const float PiecesColumnW = 56f;
         private const float QtyColumnW = 72f;
-        private const float UnitColumnW = 48f;
+        private const float UnitColumnW = 60f;
 
         public static IReadOnlyList<DataColumn> Columns() => new[]
         {

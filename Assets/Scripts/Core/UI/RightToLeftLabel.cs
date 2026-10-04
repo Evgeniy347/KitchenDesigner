@@ -9,6 +9,8 @@ namespace KitchenDesigner.Core.UI
         private TMP_Text? _text;
         private bool _keepAlignment;
 
+        public bool KeepsAlignment => _keepAlignment;
+
         public static void AttachIfNeeded(TMP_Text text)
         {
             if (!Loc.IsRightToLeft) return;

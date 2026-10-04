@@ -1,0 +1,225 @@
+{
+  "root": "SpecPanel",
+  "children": [
+    {
+      "type": "Label",
+      "text": "البنود: 2 · الأقسام: 1",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "تصدير CSV…",
+      "position": [16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الأثاث",
+      "position": [18, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الوحدة",
+      "position": [18, 0]
+    },
+    {
+      "type": "Label",
+      "text": "قطعة",
+      "position": [18, 0]
+    },
+    {
+      "type": "Label",
+      "text": "م",
+      "position": [18, 0]
+    },
+    {
+      "type": "Label",
+      "text": "م",
+      "position": [18, 0]
+    },
+    {
+      "type": "Label",
+      "text": "م",
+      "position": [18, 0]
+    },
+    {
+      "type": "Label",
+      "text": "م²",
+      "position": [18, 0]
+    },
+    {
+      "type": "Label",
+      "text": "م²",
+      "position": [18, 0]
+    },
+    {
+      "type": "Label",
+      "text": "م²",
+      "position": [18, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,24",
+      "position": [78, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,24",
+      "position": [78, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0,24",
+      "position": [78, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [78, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2,00",
+      "position": [78, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2,00",
+      "position": [78, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2,00",
+      "position": [78, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الكمية",
+      "position": [78, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [150, 0]
+    },
+    {
+      "type": "Label",
+      "text": "قطع",
+      "position": [150, 0]
+    },
+    {
+      "type": "Button",
+      "text": "نسخ",
+      "position": [173, 0]
+    },
+    {
+      "type": "Label",
+      "text": "16",
+      "position": [206, 0]
+    },
+    {
+      "type": "Label",
+      "text": "ق، مم",
+      "position": [206, 0]
+    },
+    {
+      "type": "Label",
+      "text": "400",
+      "position": [270, 0]
+    },
+    {
+      "type": "Label",
+      "text": "ا، مم",
+      "position": [270, 0]
+    },
+    {
+      "type": "Label",
+      "text": "600",
+      "position": [334, 0]
+    },
+    {
+      "type": "Label",
+      "text": "ع، مم",
+      "position": [334, 0]
+    },
+    {
+      "type": "Label",
+      "text": "المادة",
+      "position": [398, 0]
+    },
+    {
+      "type": "Label",
+      "text": "رمادي",
+      "position": [398, 0]
+    },
+    {
+      "type": "Label",
+      "text": "رمادي",
+      "position": [398, 0]
+    },
+    {
+      "type": "Label",
+      "text": "Shelf",
+      "position": [548, 0]
+    },
+    {
+      "type": "Label",
+      "text": "إجمالي الألواح",
+      "position": [548, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الإجمالي، الأثاث",
+      "position": [548, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الإجمالي، الأثاث",
+      "position": [548, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الاسم",
+      "position": [548, 0]
+    },
+    {
+      "type": "Label",
+      "text": "المجموع، رمادي",
+      "position": [548, 0]
+    },
+    {
+      "type": "Label",
+      "text": "المجموع، رمادي",
+      "position": [548, 0]
+    },
+    {
+      "type": "Label",
+      "text": "شريط الحواف 1.0 مم",
+      "position": [548, 0]
+    },
+    {
+      "type": "Label",
+      "text": "#",
+      "position": [896, 0]
+    },
+    {
+      "type": "Label",
+      "text": "1",
+      "position": [896, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [896, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "المواصفات",
+      "position": [-16, -24]
+    }
+  ]
+}

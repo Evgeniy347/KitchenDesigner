@@ -1,0 +1,374 @@
+{
+  "root": "ContextMenu",
+  "children": [
+    {
+      "type": "Label",
+      "text": "600 مم",
+      "position": [-50, 56]
+    },
+    {
+      "type": "Button",
+      "text": "CtxEdgeL1",
+      "position": [-50, 40]
+    },
+    {
+      "type": "Label",
+      "text": "L1",
+      "position": [-50, 26]
+    },
+    {
+      "type": "Button",
+      "text": "تكرار",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "CtxRotX",
+      "position": [-2, 0]
+    },
+    {
+      "type": "Button",
+      "text": "CtxRotY",
+      "position": [-2, 0]
+    },
+    {
+      "type": "Button",
+      "text": "CtxRotZ",
+      "position": [-2, 0]
+    },
+    {
+      "type": "Button",
+      "text": "+ إضافة",
+      "position": [0, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["(غير مرفق)"],
+      "selected": 0,
+      "position": [0, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["الطابق 1"],
+      "selected": 0,
+      "position": [0, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["رمادي", "أبيض", "بلوط سونوما", "ونجي", "خرسانة", "بلوط عسلي دافئ", "بلوط أوروبي", "بلوط أوروبي مصبوغ", "صنوبر", "بلوط أوروبي مصبوغ 3", "MDF مغلّف أبيض أملس (SwissKrono)", "MDF مغلّف أبيض أملس (Kastamonu F)", "MDF مغلّف أبيض فاخر فيلوود (W1000 ST38)", "MDF مغلّف أسود فيلوود (U998 ST38)", "MDF مغلّف بلوط هاليفاكس أبيض (H1176 ST37)", "MDF مغلّف بلوط هاليفاكس طبيعي (H1180 ST37)", "MDF مغلّف بلوط هاليفاكس قصديري (H3176 ST37)", "MDF مغلّف بلوط هاليفاكس تبغي (H1181 ST37)", "MDF مغلّف بلوط غلادستون رملي (H3309 ST28)", "MDF مغلّف بلوط غلادستون تبغي (H3325 ST28)", "MDF مغلّف بلوط دافنبورت طبيعي فاتح (H3359 ST32)", "MDF مغلّف بلوط كونيو بني (H3317 ST28)", "MDF مغلّف بلوط كاسيلا كستنائي (H1369 ST40)", "MDF مغلّف بلوط كاسيلا بني (H1386 ST40)", "MDF مغلّف بلوط كاسيلا طبيعي فاتح (H1367 ST40)", "MDF مغلّف بلوط كاسيلا طبيعي (H1385 ST40)", "MDF مغلّف بلوط ساكرامنتو بني (H1142 ST36)", "MDF مغلّف بلوط تشارلستون بني داكن (H3154 ST36)", "MDF مغلّف بلوط شيرمان أنثراسيت (H1346 ST32)", "MDF مغلّف بلوط شيرمان بني كونياك (H1344 ST32)", "MDF مغلّف دردار نافارا (H1250 ST36)", "HDF مغلّف بلوط سونوما بملمس شاغرين (3025 PE، Kronospan)", "HDF مغلّف أنثراسيت بملمس شاغرين (164 PE، Kronospan)", "HDF غير مصقول (Kronospan)", "HDF مغلّف أبيض (0101 PE، Kronospan)", "HDF مغلّف أبيض (101 PE، Knyazhpogost)", "HDF مغلّف أبيض بملمس شاغرين (101 PE، Kronospan SM)", "HDF مغلّف بيج (0522 PE، Kronospan)", "HDF مغلّف رمادي حجري (0112 PE، Kronospan)", "HDF مغلّف أسود (0190 PE، Kronospan)", "أنثراسيت (GTV)", "أبيض (GTV)", "أسود (GTV)", "abrikos ba 03 cd", "bambuk horizontal caramel", "buk belyy 99q", "MDF مصقول"],
+      "selected": 0,
+      "position": [0, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["قطعة", "واجهة", "واجهة مركّبة", "رف منحني"],
+      "selected": 0,
+      "position": [0, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "سمك الشريط",
+      "value": "1,0",
+      "interactable": true,
+      "position": [0, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "الاسم",
+      "value": "Shelf",
+      "interactable": true,
+      "position": [0, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "الارتفاع",
+      "value": "400",
+      "interactable": true,
+      "position": [0, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "العرض",
+      "value": "600",
+      "interactable": true,
+      "position": [0, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "العمق",
+      "value": "16",
+      "interactable": true,
+      "position": [0, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Vec_Position_X",
+      "value": "0",
+      "interactable": true,
+      "position": [0, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Vec_Rotation_X",
+      "value": "0,0",
+      "interactable": true,
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الموضع، مم",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الدوران، °",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "حذف",
+      "position": [16, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Vec_Position_Y",
+      "value": "0",
+      "interactable": true,
+      "position": [113, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Vec_Rotation_Y",
+      "value": "0,0",
+      "interactable": true,
+      "position": [113, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "CtxEdges",
+      "isOn": true,
+      "position": [148, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "CtxLock",
+      "isOn": false,
+      "position": [148, 0]
+    },
+    {
+      "type": "Toggle",
+      "label": "CtxTransparent",
+      "isOn": false,
+      "position": [148, 0]
+    },
+    {
+      "type": "Label",
+      "text": "4 من 4",
+      "position": [167, 0]
+    },
+    {
+      "type": "Label",
+      "text": "مفعّل",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "تثبيت",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "شفاف",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "سمك الشريط",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الاسم",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "إرفاق بـ",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الارتفاع",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الديكور",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الطابق",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "العرض",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "العمق",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "النوع",
+      "position": [200, 0]
+    },
+    {
+      "type": "Label",
+      "text": "شريط الحواف",
+      "position": [216, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Vec_Position_Z",
+      "value": "0",
+      "interactable": true,
+      "position": [227, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "Vec_Rotation_Z",
+      "value": "0,0",
+      "interactable": true,
+      "position": [227, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0",
+      "position": [232, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الخصائص",
+      "position": [241, 0]
+    },
+    {
+      "type": "Label",
+      "text": "0",
+      "position": [244, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الفواصل",
+      "position": [248, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الأخاديد",
+      "position": [260, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الموضع",
+      "position": [261, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الأبعاد",
+      "position": [267, 0]
+    },
+    {
+      "type": "Label",
+      "text": "المادة",
+      "position": [276, 0]
+    },
+    {
+      "type": "Label",
+      "text": "▼",
+      "position": [324, 0]
+    },
+    {
+      "type": "Label",
+      "text": "▼",
+      "position": [324, 0]
+    },
+    {
+      "type": "Label",
+      "text": "▼",
+      "position": [324, 0]
+    },
+    {
+      "type": "Label",
+      "text": "▼",
+      "position": [324, 0]
+    },
+    {
+      "type": "Label",
+      "text": "▼",
+      "position": [324, 0]
+    },
+    {
+      "type": "Label",
+      "text": "◄",
+      "position": [324, 0]
+    },
+    {
+      "type": "Label",
+      "text": "◄",
+      "position": [324, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [8, -8]
+    },
+    {
+      "type": "Button",
+      "text": "CtxEdgeW2",
+      "position": [-145, -10]
+    },
+    {
+      "type": "Label",
+      "text": "W2",
+      "position": [-126, -10]
+    },
+    {
+      "type": "Label",
+      "text": "W1",
+      "position": [26, -10]
+    },
+    {
+      "type": "Button",
+      "text": "CtxEdgeW1",
+      "position": [45, -10]
+    },
+    {
+      "type": "Label",
+      "text": "400 مم",
+      "position": [93, -10]
+    },
+    {
+      "type": "Label",
+      "text": "قطعة — Shelf",
+      "position": [-16, -24]
+    },
+    {
+      "type": "Label",
+      "text": "L2",
+      "position": [-50, -46]
+    },
+    {
+      "type": "Button",
+      "text": "CtxEdgeL2",
+      "position": [-50, -60]
+    },
+    {
+      "type": "Label",
+      "text": "انقر على الجانب: تلقائي ← موجود ← إزالة",
+      "position": [0, -484]
+    }
+  ]
+}

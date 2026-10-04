@@ -71,10 +71,7 @@ namespace KitchenDesigner.Core.UI
         private static GameObject SelectionBar(RectTransform row)
         {
             var bar = UIFactory.CreateRect(SceneTreeRowView.BarNode, row);
-            bar.anchorMin = new Vector2(0f, 0f);
-            bar.anchorMax = new Vector2(0f, 1f);
-            bar.pivot = new Vector2(0f, 0.5f);
-            bar.sizeDelta = new Vector2(UIStyle.SelectionBarW, 0f);
+            LayoutDirection.PinToStartEdge(bar, UIStyle.SelectionBarW);
             var image = bar.gameObject.AddComponent<Image>();
             image.color = UIStyle.SelectionBar;
             image.raycastTarget = false;
@@ -135,7 +132,7 @@ namespace KitchenDesigner.Core.UI
             Action<SceneTree.Node> onFold)
         {
             var fold = UIFactory.CreateButton(FoldNode, row,
-                node.collapsed ? UIStyle.GlyphCollapsed : UIStyle.GlyphExpanded, Vector2.zero,
+                node.collapsed ? LayoutDirection.CollapsedGlyph : UIStyle.GlyphExpanded, Vector2.zero,
                 new Vector2(SceneTreeMetrics.FoldHitW, UIStyle.TreeRowH), () => onFold(node));
             var rect = (RectTransform)fold.transform;
             AnchorToStart(rect, rtl);

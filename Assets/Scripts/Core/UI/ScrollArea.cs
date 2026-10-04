@@ -64,11 +64,13 @@ namespace KitchenDesigner.Core.UI
             float barWidth, ScrollRect.ScrollbarVisibility visibility = ScrollRect.ScrollbarVisibility.AutoHide)
         {
             var bar = UIFactory.CreateRect(name + "Bar", parent);
-            bar.anchorMin = new Vector2(1f, 0f);
-            bar.anchorMax = new Vector2(1f, 1f);
-            bar.pivot = new Vector2(1f, 0.5f);
-            bar.offsetMin = new Vector2(-(barWidth + BarInset), 0f);
-            bar.offsetMax = new Vector2(-BarInset, 0f);
+            bool rtl = LayoutDirection.IsRtl;
+            float side = rtl ? 0f : 1f;
+            bar.anchorMin = new Vector2(side, 0f);
+            bar.anchorMax = new Vector2(side, 1f);
+            bar.pivot = new Vector2(side, 0.5f);
+            bar.offsetMin = new Vector2(rtl ? BarInset : -(barWidth + BarInset), 0f);
+            bar.offsetMax = new Vector2(rtl ? barWidth + BarInset : -BarInset, 0f);
 
             var track = bar.gameObject.AddComponent<Image>();
             track.color = UIStyle.ScrollTrack;

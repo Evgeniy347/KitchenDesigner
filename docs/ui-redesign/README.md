@@ -207,3 +207,18 @@ CreateIcon` (40, иконка 20, тихий фон `SurfaceHover` в состо
 `QuietDeleteButton`. Высота панели — формула от канвы (`ContextMenuUI.MaxPanelHeight`), тело прокручивается.
 Сторожа: `InspectorColumnsGuardTests`, `InspectorChromeTests`, `InspectorRowsTests`; узлы в тестах
 ищутся `InspectorNodes.FindNode` (строки лежат в `Row_*`).
+
+**T12 — письменность справа налево (сделано).** Механизм один — `LayoutDirection` (`Core/UI`): `IsRtl`,
+`StartX(ширина, x, w)` (позиция ячейки от начала строки), `PinTopEnd` (× и иконные действия шапки — в
+левом верхнем углу), `PinToStartEdge` (полоса выделения у правого края пункта/строки), `Mirror(TextAnchor)`
+и `CollapsedGlyph` (◄ вместо ►). Через него зеркалятся шапка `WindowChrome` (заголовок у правого края на
+отступе 16, × и действия слева), полоса прокрутки `ScrollArea` и её желоб в `WindowChrome.CreateBody`
+(слева), `FormRows`/`InspectorRows`/`SliderFieldRow`/`LevelsListView` (подписи справа, значения слева),
+`CollapsibleSection` (шеврон и заголовок справа, «+ Добавить» слева), закрытый список `UIFactory.CreateDropdown`
+(▼ слева, галочка пункта справа), `SettingsNav` и `SceneTreeRowFactory` (полоса выделения справа),
+`DataTable` (первая колонка справа, желоб прокрутки слева, выравнивание ячейки зеркалится — текст вправо,
+числа влево, в конец колонки; сами числа и «мм» не переставляются, `RightToLeftLabel.AttachKeepingAlignment`).
+Футер уже был зеркальным (основная кнопка слева). Колонка «Ед.» спецификации 48 → 60: «الوحدة» и «قطعة»
+не влезали. Сторожа: `RightToLeftMirrorTests` (EditMode, геометрия в ar-TN) и
+`ScriptRenderingScreenshotTests` — в ar-TN снимает «Настройки», инспектор, «Спецификацию» и «Сцену»,
+проверяет × слева от заголовка и сверяет голдены `ui_script_ar-TN_*` (PNG `test-results/script_ar-TN_*.png`).

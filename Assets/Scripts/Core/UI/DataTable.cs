@@ -266,10 +266,7 @@ namespace KitchenDesigner.Core.UI
             bg.color = UIStyle.Transparent;
 
             var bar = UIFactory.CreateRect("SelectionBar", rect);
-            bar.anchorMin = new Vector2(0f, 0f);
-            bar.anchorMax = new Vector2(0f, 1f);
-            bar.pivot = new Vector2(0f, 0.5f);
-            bar.sizeDelta = new Vector2(UIStyle.SelectionBarW, 0f);
+            LayoutDirection.PinToStartEdge(bar, UIStyle.SelectionBarW);
             var barImage = bar.gameObject.AddComponent<Image>();
             barImage.color = UIStyle.SelectionBar;
             barImage.raycastTarget = false;
@@ -307,17 +304,18 @@ namespace KitchenDesigner.Core.UI
             float left = spanAll ? 0f : _lefts[column];
             float width = spanAll ? _widths.Sum() : _widths[column];
             float pad = UIStyle.TableCellPadX;
+            bool rtl = LayoutDirection.IsRtl;
+            var anchor = rtl ? LayoutDirection.Mirror(Anchor(align)) : Anchor(align);
             var label = UIFactory.CreateLabel(CellNodePrefix + column, parent, text, size, Vector2.zero,
-                new Vector2(Mathf.Max(0f, width - 2f * pad), height), Anchor(align));
+                new Vector2(Mathf.Max(0f, width - 2f * pad), height), anchor);
+            if (rtl) RightToLeftLabel.AttachKeepingAlignment(label);
             label.color = color;
             label.fontStyle = style;
             label.enableWordWrapping = false;
             label.overflowMode = TextOverflowModes.Ellipsis;
             label.raycastTarget = false;
             var rt = label.rectTransform;
-            bool rtl = LayoutDirection.IsRtl;
-            float tableW = _widths.Sum();
-            float x = rtl ? tableW - left - width : left;
+            float x = LayoutDirection.StartX(_widths.Sum(), left, width) + (rtl ? WindowBody.BarW : 0f);
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 0.5f);
             rt.anchoredPosition = new Vector2(x + pad, 0f);
 

@@ -86,7 +86,7 @@ namespace KitchenDesigner.Core.UI
         public void SetExpanded(bool expanded, bool notify)
         {
             Expanded = expanded;
-            if (_chevron != null) _chevron.text = expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed;
+            if (_chevron != null) _chevron.text = expanded ? UIStyle.GlyphExpanded : LayoutDirection.CollapsedGlyph;
             if (_memoryKey != null) CollapsedThisSession[_memoryKey] = !expanded;
             Arrange();
             if (notify) Toggled?.Invoke(expanded);
@@ -125,16 +125,17 @@ namespace KitchenDesigner.Core.UI
                 right -= UIStyle.Space2;
             }
             x += UIStyle.Space2;
+            float lineW = Mathf.Max(0f, right - x);
             _line.anchorMin = _line.anchorMax = _line.pivot = new Vector2(0f, 0.5f);
-            _line.sizeDelta = new Vector2(Mathf.Max(0f, right - x), UIStyle.DividerPx);
-            _line.anchoredPosition = new Vector2(x, 0f);
+            _line.sizeDelta = new Vector2(lineW, UIStyle.DividerPx);
+            _line.anchoredPosition = new Vector2(LayoutDirection.StartX(_width, x, lineW), 0f);
         }
 
-        private static void Put(RectTransform rt, float x, float w)
+        private void Put(RectTransform rt, float x, float w)
         {
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 0.5f);
             rt.sizeDelta = new Vector2(w, UIStyle.SectionHeaderH);
-            rt.anchoredPosition = new Vector2(x, 0f);
+            rt.anchoredPosition = new Vector2(LayoutDirection.StartX(_width, x, w), 0f);
         }
 
         private static TextMeshProUGUI Label(string name, RectTransform parent, string text, int size, Color color,

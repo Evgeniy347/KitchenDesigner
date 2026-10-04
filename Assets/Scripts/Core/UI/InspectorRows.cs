@@ -243,7 +243,7 @@ namespace KitchenDesigner.Core.UI
 
         private void PlaceFromTop(RectTransform rt, float x, float width, float top)
         {
-            float left = LayoutDirection.IsRtl ? Metrics.Width - x - width : x;
+            float left = LayoutDirection.StartX(Metrics.Width, x, width);
             rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
             rt.pivot = new Vector2(0f, 1f);
             rt.anchoredPosition = new Vector2(left, -top);
@@ -251,7 +251,7 @@ namespace KitchenDesigner.Core.UI
 
         public void PlaceCell(RectTransform rt, float x, float width)
         {
-            float left = LayoutDirection.IsRtl ? Metrics.Width - x - width : x;
+            float left = LayoutDirection.StartX(Metrics.Width, x, width);
             rt.anchorMin = rt.anchorMax = new Vector2(0f, 0.5f);
             rt.pivot = new Vector2(0f, 0.5f);
             rt.anchoredPosition = new Vector2(left, 0f);

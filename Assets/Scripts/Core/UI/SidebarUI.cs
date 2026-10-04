@@ -451,7 +451,7 @@ namespace KitchenDesigner.Core.UI
         private static void SetGroupHeaderGlyph(GroupUI gu)
         {
             if (gu.headerLabel == null) return;
-            gu.headerLabel.text = gu.open ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed;
+            gu.headerLabel.text = gu.open ? UIStyle.GlyphExpanded : LayoutDirection.CollapsedGlyph;
         }
 
         internal static string TileTooltipText(TileUI tile)

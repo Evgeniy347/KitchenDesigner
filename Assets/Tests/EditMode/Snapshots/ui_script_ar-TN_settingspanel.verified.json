@@ -1,0 +1,124 @@
+{
+  "root": "SettingsPanel",
+  "children": [
+    {
+      "type": "Dropdown",
+      "options": ["Русский", "English", "العربية (تونس)", "Deutsch", "Español", "Français", "Italiano", "日本語", "Português (Brasil)", "简体中文"],
+      "selected": 2,
+      "position": [0, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["تلقائي", "90 %", "110 %", "125 %", "150 %"],
+      "selected": 0,
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "عام",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "الواجهة",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "تُطبَّق التغييرات فورًا",
+      "position": [16, 0]
+    },
+    {
+      "type": "Label",
+      "text": "اللغة",
+      "position": [256, 0]
+    },
+    {
+      "type": "Label",
+      "text": "حجم الواجهة",
+      "position": [256, 0]
+    },
+    {
+      "type": "InputField",
+      "label": "NavSearch",
+      "value": "",
+      "interactable": true,
+      "position": [-8, -8]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [8, -8]
+    },
+    {
+      "type": "Label",
+      "text": "الإعدادات",
+      "position": [-16, -24]
+    },
+    {
+      "type": "Label",
+      "text": "تخص البرنامج ولا تتعلق بالمشروع.",
+      "position": [0, -35]
+    },
+    {
+      "type": "Button",
+      "text": "عام",
+      "position": [0, -48]
+    },
+    {
+      "type": "Button",
+      "text": "المشروع",
+      "position": [0, -80]
+    },
+    {
+      "type": "Button",
+      "text": "العرض",
+      "position": [0, -112]
+    },
+    {
+      "type": "Button",
+      "text": "التحكم",
+      "position": [0, -144]
+    },
+    {
+      "type": "Label",
+      "text": "الصورة",
+      "position": [-12, -176]
+    },
+    {
+      "type": "Button",
+      "text": "الإضاءة",
+      "position": [0, -208]
+    },
+    {
+      "type": "Button",
+      "text": "وضع التصوير",
+      "position": [0, -240]
+    },
+    {
+      "type": "Label",
+      "text": "المنزل",
+      "position": [-12, -272]
+    },
+    {
+      "type": "Button",
+      "text": "الإنشاء",
+      "position": [0, -304]
+    },
+    {
+      "type": "Label",
+      "text": "أخرى",
+      "position": [-12, -336]
+    },
+    {
+      "type": "Button",
+      "text": "MCP",
+      "position": [0, -368]
+    },
+    {
+      "type": "Button",
+      "text": "حول",
+      "position": [0, -400]
+    }
+  ]
+}

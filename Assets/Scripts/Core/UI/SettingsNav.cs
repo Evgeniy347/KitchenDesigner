@@ -183,11 +183,7 @@ namespace KitchenDesigner.Core.UI
             lrt.offsetMax = new Vector2(-UIStyle.Space3, 0f);
 
             var bar = UIFactory.CreateRect(BarNode, button.transform);
-            bar.anchorMin = new Vector2(0f, 0f);
-            bar.anchorMax = new Vector2(0f, 1f);
-            bar.pivot = new Vector2(0f, 0.5f);
-            bar.sizeDelta = new Vector2(UIStyle.SelectionBarW, 0f);
-            bar.anchoredPosition = Vector2.zero;
+            LayoutDirection.PinToStartEdge(bar, UIStyle.SelectionBarW);
             var barImage = bar.gameObject.AddComponent<Image>();
             barImage.color = UIStyle.Accent;
             barImage.raycastTarget = false;

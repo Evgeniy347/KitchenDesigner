@@ -16,10 +16,11 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(width, height), align);
             var rt = label.rectTransform;
             bool leftAligned = align == TextAnchor.MiddleLeft;
-            float anchorX = leftAligned ? 0f : 0.5f;
+            bool fromRight = leftAligned && LayoutDirection.IsRtl;
+            float anchorX = leftAligned ? (fromRight ? 1f : 0f) : 0.5f;
             rt.anchorMin = rt.anchorMax = new Vector2(anchorX, 1f);
             rt.pivot = new Vector2(anchorX, 0.5f);
-            rt.anchoredPosition = new Vector2(inset, -UIStyle.WindowTitleCenterFromTop);
+            rt.anchoredPosition = new Vector2(fromRight ? -inset : inset, -UIStyle.WindowTitleCenterFromTop);
             Mark(label);
             return label;
         }

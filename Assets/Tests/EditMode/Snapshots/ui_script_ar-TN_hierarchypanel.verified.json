@@ -1,0 +1,63 @@
+{
+  "root": "HierarchyPanel",
+  "children": [
+    {
+      "type": "Label",
+      "text": "المحدد: 1",
+      "position": [-16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "▼",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "BasePlate",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "Shelf",
+      "position": [0, 0]
+    },
+    {
+      "type": "Button",
+      "text": "المطبخ",
+      "position": [0, 0]
+    },
+    {
+      "type": "Label",
+      "text": "2",
+      "position": [10, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["نقل إلى…", "— بدون مجموعة —", "+ مجموعة جديدة"],
+      "selected": 0,
+      "position": [16, 0]
+    },
+    {
+      "type": "Button",
+      "text": "×",
+      "position": [8, -8]
+    },
+    {
+      "type": "Button",
+      "text": "HierAddGroup",
+      "position": [48, -8]
+    },
+    {
+      "type": "Label",
+      "text": "المشهد",
+      "position": [-16, -24]
+    },
+    {
+      "type": "InputField",
+      "label": "HierSearch",
+      "value": "",
+      "interactable": true,
+      "position": [0, -56]
+    }
+  ]
+}

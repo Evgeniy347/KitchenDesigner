@@ -139,7 +139,7 @@ namespace KitchenDesigner.Core.UI
 
         private void Anchor(RectTransform rt, float x, float y, float width, float height)
         {
-            float left = LayoutDirection.IsRtl ? _width - x - width : x;
+            float left = LayoutDirection.StartX(_width, x, width);
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0f, 1f);
             rt.sizeDelta = new Vector2(width, height);
             rt.anchoredPosition = new Vector2(left, -y);

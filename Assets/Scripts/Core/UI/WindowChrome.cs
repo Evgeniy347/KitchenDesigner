@@ -99,8 +99,7 @@ namespace KitchenDesigner.Core.UI
                 UIStyle.CloseBtnSize - UIStyle.IconSizeSmall);
             QuietButton.Apply(button);
             var rt = (RectTransform)button.transform;
-            UIFactory.AnchorTopRight(rt);
-            rt.anchoredPosition = new Vector2(-right, -UIStyle.CloseBtnInset);
+            LayoutDirection.PinTopEnd(rt, right, UIStyle.CloseBtnInset);
             TooltipUI.Attach(button.gameObject, tooltip);
 
             var title = Title.rectTransform;
@@ -114,7 +113,9 @@ namespace KitchenDesigner.Core.UI
         {
             var body = WindowBody.Create(Panel, BodyTop, BodyBottom, BodyPad);
             var viewport = body.Viewport;
-            viewport.offsetMax = new Vector2(-Mathf.Max(0f, BodyPad - WindowBody.BarW), viewport.offsetMax.y);
+            float barGutter = Mathf.Max(0f, BodyPad - WindowBody.BarW);
+            if (LayoutDirection.IsRtl) viewport.offsetMin = new Vector2(barGutter, viewport.offsetMin.y);
+            else viewport.offsetMax = new Vector2(-barGutter, viewport.offsetMax.y);
             return body;
         }
 

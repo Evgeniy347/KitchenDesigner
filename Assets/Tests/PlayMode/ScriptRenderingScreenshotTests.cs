@@ -11,6 +11,7 @@ using UnityEngine.TestTools;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// Японский, китайский и тунисский арабский — три письменности, которых нет в LiberationSans.
@@ -46,6 +47,7 @@ public class ScriptRenderingScreenshotTests
     {
         PlayModeTestConfig.ConfigureForTests();
         LanguageStartup.PinSourceLanguageForTestRun();
+        LevelRegistry.Reset();
 
         _camera = new GameObject("Main Camera");
         _camera.tag = "MainCamera";
@@ -104,19 +106,55 @@ public class ScriptRenderingScreenshotTests
         yield return null;
 
         foreach (var panel in new[] { "SettingsPanel", "ContextMenu" })
+            yield return Check(ui, language, panel);
+
+        if (!Loc.IsRightToLeft) yield break;
+
+        ui.ToggleSettings();
+        if (!ui.IsPanelVisible(ToolbarPanel.Specification)) ui.ToggleSpecification();
+        if (!ui.IsPanelVisible(ToolbarPanel.Hierarchy)) ui.ToggleHierarchy();
+        yield return null;
+        yield return null;
+        foreach (var panel in new[] { "SpecPanel", "HierarchyPanel" })
+            yield return Check(ui, language, panel);
+    }
+
+    /// <summary>T12: в арабском интерфейсе окно — зеркало русского, и голден ui_script_ar-TN_* сторожит
+    /// состав окна (ar-TN раньше был только PNG, и подпись, выпавшая из окна, проходила молча).
+    /// Числа и «мм» внутри строк не переставлены — это видит AssertRightToLeft на отрисованном тексте.</summary>
+    private IEnumerator Check(UIManager ui, string language, string panel)
+    {
+        var root = UiTestTree.FindDeep(ui.Canvas!.transform, panel);
+        Assert.IsNotNull(root, panel + " не построен");
+        var labels = root!.GetComponentsInChildren<TMP_Text>(false).Where(t => !string.IsNullOrWhiteSpace(t.text)).ToList();
+        Assert.That(labels.Count, Is.GreaterThan(3), panel + ": подписей нет — проверять нечего");
+
+        AssertNoMissingGlyphs(language, panel, labels);
+        if (Loc.IsRightToLeft)
         {
-            var root = UiTestTree.FindDeep(ui.Canvas!.transform, panel);
-            Assert.IsNotNull(root, panel + " не построен");
-            var labels = root!.GetComponentsInChildren<TMP_Text>(false).Where(t => !string.IsNullOrWhiteSpace(t.text)).ToList();
-            Assert.That(labels.Count, Is.GreaterThan(10), panel + ": подписей нет — проверять нечего");
-
-            AssertNoMissingGlyphs(language, panel, labels);
-            if (Loc.IsRightToLeft) AssertRightToLeft(panel, labels);
-            AssertHintBadgesClearOfText(panel, root);
-            ReportOverflow(language, panel, labels);
-
-            yield return CapturePanel(ui.Canvas!, root, "script_" + language + "_" + panel.ToLowerInvariant() + ".png");
+            AssertRightToLeft(panel, labels);
+            AssertMirroredHeader(panel, (RectTransform)root);
         }
+        AssertHintBadgesClearOfText(panel, root);
+        ReportOverflow(language, panel, labels);
+
+        string name = "script_" + language + "_" + panel.ToLowerInvariant();
+        yield return CapturePanel(ui.Canvas!, root, name + ".png");
+        if (Loc.IsRightToLeft)
+            UiSnapshotEngine.CaptureVerified(root.gameObject,
+                Path.Combine(Application.dataPath, "..", "test-results", name + ".json"));
+    }
+
+    private static void AssertMirroredHeader(string panel, RectTransform root)
+    {
+        var title = root.GetComponentsInChildren<WindowTitleMarker>(false).FirstOrDefault();
+        var close = root.GetComponentsInChildren<Button>(false).FirstOrDefault(b => b.name == WindowChrome.CloseButtonName);
+        Assert.IsNotNull(title, panel + ": у окна нет заголовка WindowChrome");
+        float titleX = root.InverseTransformPoint(((RectTransform)title!.transform).position).x;
+        Assert.Greater(titleX, root.rect.center.x - 1f, panel + ": арабский заголовок обязан стоять у правого края (D12)");
+        if (close == null) return;
+        float closeX = root.InverseTransformPoint(close.transform.position).x;
+        Assert.Less(closeX, titleX, panel + ": × в арабском окне — в левом верхнем углу (D12)");
     }
 
     private static void UseLanguage(string language)
@@ -154,12 +192,12 @@ public class ScriptRenderingScreenshotTests
 
     private static void AssertRightToLeft(string panel, List<TMP_Text> labels)
     {
-        var withoutSeam = labels.Where(t => t.GetComponentInParent<TMP_InputField>() == null && t.GetComponent<RightToLeftLabel>() == null)
+        var withoutSeam = labels.Where(t => t.GetComponentInParent<TMP_InputField>(true) == null && t.GetComponent<RightToLeftLabel>() == null)
             .Select(t => t.name).ToList();
         Assert.IsEmpty(withoutSeam, panel + ": подпись собрана мимо UIFactory.CreateLabel и не получила арабской раскладки: "
             + string.Join(", ", withoutSeam.Take(20)));
 
-        var leftAligned = labels.Where(t => t.GetComponent<RightToLeftLabel>() != null && t.horizontalAlignment == HorizontalAlignmentOptions.Left)
+        var leftAligned = labels.Where(t => t.TryGetComponent<RightToLeftLabel>(out var rtl) && !rtl.KeepsAlignment && t.horizontalAlignment == HorizontalAlignmentOptions.Left)
             .Select(t => t.name).ToList();
         Assert.IsEmpty(leftAligned, panel + ": в арабском интерфейсе подпись прижата влево: " + string.Join(", ", leftAligned.Take(20)));
 

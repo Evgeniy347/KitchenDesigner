@@ -91,7 +91,7 @@ namespace KitchenDesigner.Core.UI
 
         private static void Cell(RectTransform row, RectTransform rt, float rowWidth, float x, float width)
         {
-            float left = LayoutDirection.IsRtl ? rowWidth - x - width : x;
+            float left = LayoutDirection.StartX(rowWidth, x, width);
             rt.anchorMin = rt.anchorMax = new Vector2(0f, 0.5f);
             rt.pivot = new Vector2(0f, 0.5f);
             rt.anchoredPosition = new Vector2(left, 0f);
