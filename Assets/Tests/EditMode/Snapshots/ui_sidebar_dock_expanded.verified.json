@@ -18,130 +18,130 @@
     },
     {
       "type": "Button",
-      "text": "«",
-      "position": [4, -4]
-    },
-    {
-      "type": "Button",
-      "text": "SbPin",
-      "position": [46, -4]
-    },
-    {
-      "type": "Button",
-      "text": "SbDockMode",
-      "position": [78, -4]
-    },
-    {
-      "type": "Button",
-      "text": "▼  Детали",
-      "position": [8, -8]
-    },
-    {
-      "type": "Button",
       "text": "4",
-      "position": [0, -28]
+      "position": [84, 0]
     },
     {
       "type": "Button",
-      "text": "5",
-      "position": [28, -28]
-    },
-    {
-      "type": "Button",
-      "text": "6",
-      "position": [56, -28]
+      "text": "▼",
+      "position": [8, -8]
     },
     {
       "type": "InputField",
       "label": "SbSearch",
       "value": "",
       "interactable": true,
-      "position": [8, -38]
+      "position": [8, -8]
+    },
+    {
+      "type": "Button",
+      "text": "SbPin",
+      "position": [168, -8]
+    },
+    {
+      "type": "Button",
+      "text": "SbDockMode",
+      "position": [200, -8]
+    },
+    {
+      "type": "Button",
+      "text": "«",
+      "position": [232, -8]
+    },
+    {
+      "type": "Button",
+      "text": "5",
+      "position": [0, -28]
+    },
+    {
+      "type": "Button",
+      "text": "6",
+      "position": [28, -28]
     },
     {
       "type": "Button",
       "text": "Полка",
-      "position": [8, -46]
+      "position": [8, -44]
     },
     {
       "type": "Button",
       "text": "Радиусная полка",
-      "position": [120, -46]
+      "position": [138, -44]
     },
     {
       "type": "Button",
       "text": "ДВП/ХДФ",
-      "position": [8, -158]
+      "position": [8, -172]
     },
     {
       "type": "Button",
-      "text": "►  Фасады",
-      "position": [8, -270]
+      "text": "►",
+      "position": [8, -300]
     },
     {
       "type": "Button",
-      "text": "►  Ящики",
-      "position": [8, -308]
+      "text": "►",
+      "position": [8, -332]
     },
     {
       "type": "Button",
-      "text": "►  Мебель",
-      "position": [8, -346]
+      "text": "►",
+      "position": [8, -364]
     },
     {
       "type": "Button",
-      "text": "►  Техника",
-      "position": [8, -384]
+      "text": "►",
+      "position": [8, -396]
     },
     {
       "type": "Button",
-      "text": "▼  Сантехника",
-      "position": [8, -422]
+      "text": "▼",
+      "position": [8, -428]
     },
     {
       "type": "Button",
       "text": "Унитаз",
-      "position": [8, -460]
+      "position": [8, -464]
     },
     {
       "type": "Button",
       "text": "Инсталляция",
-      "position": [120, -460]
+      "position": [138, -464]
     },
     {
       "type": "Button",
       "text": "Ванна",
-      "position": [8, -572]
+      "position": [8, -592]
     },
     {
       "type": "Button",
       "text": "Смеситель",
-      "position": [120, -572]
+      "position": [138, -592]
     },
     {
       "type": "Button",
       "text": "Душевая стойка",
-      "position": [8, -684]
+      "position": [8, -720]
     },
     {
       "type": "Button",
       "text": "Труба",
-      "position": [120, -684]
+      "position": [138, -720]
     },
     {
       "type": "Button",
       "text": "Фитинг",
-      "position": [8, -796]
+      "position": [8, -848]
     },
     {
       "type": "Button",
-      "text": "►  Помещение",
-      "position": [8, -908]
+      "text": "►",
+      "position": [8, -976]
     },
     {
       "type": "Button",
-      "text": "►  Конструкции",
-      "position": [8, -946]
+      "text": "►",
+      "position": [8, -1008]
     }
   ]
 }

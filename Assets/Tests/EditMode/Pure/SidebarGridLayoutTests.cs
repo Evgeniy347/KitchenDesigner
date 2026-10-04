@@ -59,8 +59,8 @@ public class SidebarGridLayoutTests
         Assert.IsFalse(Rows[2].Visible);
         Assert.IsFalse(Rows[3].Visible);
         Assert.IsFalse(Rows[4].Visible);
-        Assert.AreEqual(-(SidebarLayout.Pad + SidebarLayout.HeaderH + SidebarLayout.HeaderGap),
-            Rows[5].Position.y, "свёрнутая группа не оставляет за собой пустоты");
+        Assert.AreEqual(-(SidebarLayout.Pad + SidebarLayout.HeaderH),
+            Rows[5].Position.y, "свёрнутая группа не оставляет за собой пустоты: строки 32 идут встык, как в макете");
     }
 
     [Test]

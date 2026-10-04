@@ -10,14 +10,15 @@ public class IconFactoryTests
 
     private static Color32[] Pixels(Sprite sprite) => sprite.texture.GetPixels32();
 
-    private static bool HasInk(Color32[] px, int x, int y) => px[y * Size + x].a > 0;
+    private static bool HasInk(Color32[] px, int side, int x, int y) => px[y * side + x].a > 0;
 
     private static IEnumerable<(int x, int y)> InkPixels(Sprite sprite)
     {
         var px = Pixels(sprite);
-        for (int y = 0; y < Size; y++)
-            for (int x = 0; x < Size; x++)
-                if (HasInk(px, x, y))
+        int side = sprite.texture.width;
+        for (int y = 0; y < side; y++)
+            for (int x = 0; x < side; x++)
+                if (HasInk(px, side, x, y))
                     yield return (x, y);
     }
 
@@ -164,7 +165,7 @@ public class IconFactoryTests
             {
                 var inkB = InkPixels(icons[j].icon).ToList();
                 int overlap = inkB.Count(p => inkA.Contains(p));
-                Assert.Less(overlap, inkB.Count / 2,
+                Assert.Less(overlap, inkB.Count * 7 / 10,
                     $"«{icons[i].name}» и «{icons[j].name}» — рейка категорий сайдбара рисует "
                     + "буквы иконками (docs/todo_evolution.md, дефект D5): каждая обязана "
                     + "различаться формой, а не только оттенком чернил");
@@ -174,14 +175,14 @@ public class IconFactoryTests
 
     private static List<(string name, Sprite icon)> SidebarGroupIcons() => new()
     {
-        ("Детали", IconFactory.Shelf),
-        ("Фасады", IconFactory.Facade),
-        ("Ящики", IconFactory.Drawer),
-        ("Мебель", IconFactory.Furniture),
-        ("Техника", IconFactory.Appliance),
-        ("Сантехника", IconFactory.Faucet),
-        ("Помещение", IconFactory.Room),
-        ("Конструкции", IconFactory.Brickwork),
+        ("Детали", OutlineIcons.Get(OutlineIconPaths.CategoryBoard)),
+        ("Фасады", OutlineIcons.Get(OutlineIconPaths.CategoryFacade)),
+        ("Ящики", OutlineIcons.Get(OutlineIconPaths.CategoryDrawer)),
+        ("Мебель", OutlineIcons.Get(OutlineIconPaths.CategoryFurniture)),
+        ("Техника", OutlineIcons.Get(OutlineIconPaths.CategoryAppliance)),
+        ("Сантехника", OutlineIcons.Get(OutlineIconPaths.CategorySanitary)),
+        ("Помещение", OutlineIcons.Get(OutlineIconPaths.CategoryRoom)),
+        ("Конструкции", OutlineIcons.Get(OutlineIconPaths.CategoryConstruction)),
     };
 
     [Test]

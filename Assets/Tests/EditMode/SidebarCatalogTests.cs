@@ -50,14 +50,14 @@ public class SidebarCatalogTests
                 $"свёрнутый сайдбар рисует группу «{g.title}» иконкой, а не буквой "
                 + "(docs/UI-GUIDELINES.md §4, дефект D5) — у каждой группы обязана быть своя");
 
-        Assert.AreEqual(IconFactory.Shelf, groups[0].icon);
-        Assert.AreEqual(IconFactory.Facade, groups[1].icon);
-        Assert.AreEqual(IconFactory.Drawer, groups[2].icon);
-        Assert.AreEqual(IconFactory.Furniture, groups[3].icon);
-        Assert.AreEqual(IconFactory.Appliance, groups[4].icon);
-        Assert.AreEqual(IconFactory.Faucet, groups[SanitaryIndex].icon);
-        Assert.AreEqual(IconFactory.Room, groups[RoomIndex].icon);
-        Assert.AreEqual(IconFactory.Brickwork, groups[ConstructionIndex].icon);
+        Assert.AreEqual(OutlineIcons.Get(OutlineIconPaths.CategoryBoard), groups[0].icon);
+        Assert.AreEqual(OutlineIcons.Get(OutlineIconPaths.CategoryFacade), groups[1].icon);
+        Assert.AreEqual(OutlineIcons.Get(OutlineIconPaths.CategoryDrawer), groups[2].icon);
+        Assert.AreEqual(OutlineIcons.Get(OutlineIconPaths.CategoryFurniture), groups[3].icon);
+        Assert.AreEqual(OutlineIcons.Get(OutlineIconPaths.CategoryAppliance), groups[4].icon);
+        Assert.AreEqual(OutlineIcons.Get(OutlineIconPaths.CategorySanitary), groups[SanitaryIndex].icon);
+        Assert.AreEqual(OutlineIcons.Get(OutlineIconPaths.CategoryRoom), groups[RoomIndex].icon);
+        Assert.AreEqual(OutlineIcons.Get(OutlineIconPaths.CategoryConstruction), groups[ConstructionIndex].icon);
     }
 
     [Test]

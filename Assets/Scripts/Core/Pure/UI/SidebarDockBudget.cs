@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core.UI
             => screenHeight - topOffset - bottomMargin;
 
         public static float ViewportHeight(float panelHeight)
-            => panelHeight - SidebarLayout.TopStripH - SidebarLayout.SearchBandH;
+            => panelHeight - SidebarLayout.TopStripH;
 
         public static float TilesAreaHeight(float viewportHeight)
             => viewportHeight - SidebarLayout.HeaderH - SidebarLayout.HeaderGap;

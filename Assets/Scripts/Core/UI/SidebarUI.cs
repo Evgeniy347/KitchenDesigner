@@ -10,10 +10,9 @@ namespace KitchenDesigner.Core.UI
 {
     public class SidebarUI : MonoBehaviour
     {
-        public const float ScrollGutterW = 16f;
         public const float ExpandedW = SidebarLayout.DockW;
-        public const float CollapsedW = 52f;
-        public const float TopOffsetUnderToolbar = 52f;
+        public const float CollapsedW = SidebarLayout.RailW;
+        public const float TopOffsetUnderToolbar = UIStyle.ToolbarH;
         public const float BottomMargin = 42f;
         public const float TopStripH = SidebarLayout.TopStripH;
         public const float ScrollBarW = 8f;
@@ -22,19 +21,20 @@ namespace KitchenDesigner.Core.UI
         public const int TileFont = UIStyle.FontSmall;
 
         private static string RoomModeHint => Loc.T("sidebar.roomModeHint");
-        private static readonly Color ActiveToggleColor = new Color(0.30f, 0.55f, 0.34f, 1f);
+        private static readonly Color TileRestColor = UIStyle.RowHover;
 
         private RectTransform? _panel;
         private ScrollArea? _full;
         private ScrollArea? _mini;
         private GameObject? _fullRoot;
         private GameObject? _miniRoot;
+        private Button? _collapseButton;
         private TMP_Text? _collapseLabel;
-        private Image? _pinBg;
-        private Image? _dockModeBg;
+        private Button? _pinButton;
+        private Button? _dockModeButton;
         private Image? _dockModeIcon;
         private TMP_InputField? _searchField;
-        private TMP_Text? _searchHint;
+        private SidebarSearchHint? _searchHint;
 
         private bool _expanded = true;
         private bool _pinned = true;
@@ -117,7 +117,7 @@ namespace KitchenDesigner.Core.UI
             foreach (var gu in _groups)
             {
                 gu.open = true;
-                SetGroupHeaderText(gu, gu.title);
+                SetGroupHeaderGlyph(gu);
             }
             RelayoutFull();
         }
@@ -157,29 +157,9 @@ namespace KitchenDesigner.Core.UI
                 new Vector2(ExpandedW, 0f));
             _panel = panel.rectTransform;
             StretchUnderToolbar(_panel);
+            SidebarChrome.AddRightRule(_panel);
 
-            var collapseBtn = UIFactory.CreateButton("SbCollapse", _panel, "«",
-                new Vector2(4, -4), new Vector2(36, 28), () => SetExpanded(!_expanded));
-            UIFactory.AnchorTopLeft(collapseBtn.GetComponent<RectTransform>());
-            collapseBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(4, -4);
-            _collapseLabel = collapseBtn.GetComponentInChildren<TMP_Text>();
-
-            var pinBtn = UIFactory.CreateIconButton("SbPin", _panel, IconFactory.Pin,
-                new Vector2(46, -4), new Vector2(28, 28), TogglePin);
-            UIFactory.AnchorTopLeft(pinBtn.GetComponent<RectTransform>());
-            pinBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(46, -4);
-            _pinBg = pinBtn.GetComponent<Image>();
-
-            var dockModeBtn = UIFactory.CreateIconButton("SbDockMode", _panel, IconFactory.DockExpanded,
-                new Vector2(78, -4), new Vector2(28, 28), ToggleDockMode);
-            UIFactory.AnchorTopLeft(dockModeBtn.GetComponent<RectTransform>());
-            dockModeBtn.GetComponent<RectTransform>().anchoredPosition = new Vector2(78, -4);
-            _dockModeBg = dockModeBtn.GetComponent<Image>();
-            var dockModeIconRect = dockModeBtn.transform.Find("SbDockMode_Icon");
-            _dockModeIcon = dockModeIconRect != null ? dockModeIconRect.GetComponent<Image>() : null;
-            TooltipUI.Attach(dockModeBtn.gameObject,
-                Loc.T("sidebar.dockMode.tooltip"));
-
+            BuildTopStrip(_panel);
             BuildSearchField(_panel);
 
             _full = ScrollArea.Create("SbFull", _panel, ScrollBarW);
@@ -223,34 +203,41 @@ namespace KitchenDesigner.Core.UI
             rt.offsetMax = new Vector2(0f, -TopStripH);
         }
 
-        private static void FillBelowSearch(RectTransform rt)
+        private static void FillBelowSearch(RectTransform rt) => FillBelowStrip(rt);
+
+        private void BuildTopStrip(RectTransform parent)
         {
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
-            rt.pivot = new Vector2(0.5f, 1f);
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = new Vector2(0f, -(TopStripH + SidebarLayout.SearchBandH));
+            float step = SidebarLayout.ControlH + SidebarLayout.ControlGap;
+            float y = -SidebarLayout.Pad;
+
+            _collapseButton = SidebarChrome.CreateQuietGlyph(parent, "SbCollapse", "«", () => SetExpanded(!_expanded));
+            _collapseLabel = _collapseButton.GetComponentInChildren<TMP_Text>();
+            TooltipUI.Attach(_collapseButton.gameObject, CollapseTooltip);
+            SidebarChrome.PlaceTopLeft((RectTransform)_collapseButton.transform, ExpandedW - SidebarLayout.Pad - SidebarLayout.ControlH, y);
+
+            _dockModeButton = SidebarChrome.CreateQuietIcon(parent, "SbDockMode", OutlineIconPaths.DockExpanded, ToggleDockMode);
+            SidebarChrome.PlaceTopLeft((RectTransform)_dockModeButton.transform,
+                ExpandedW - SidebarLayout.Pad - SidebarLayout.ControlH - step, y);
+            _dockModeIcon = ToolbarButtons.IconOf(_dockModeButton);
+            TooltipUI.Attach(_dockModeButton.gameObject, Loc.T("sidebar.dockMode.tooltip"));
+
+            _pinButton = SidebarChrome.CreateQuietIcon(parent, "SbPin", OutlineIconPaths.Pin, TogglePin);
+            SidebarChrome.PlaceTopLeft((RectTransform)_pinButton.transform,
+                ExpandedW - SidebarLayout.Pad - SidebarLayout.ControlH - 2f * step, y);
+            TooltipUI.Attach(_pinButton.gameObject, Loc.T("sidebar.pin"));
         }
 
         private void BuildSearchField(RectTransform parent)
         {
+            float width = ExpandedW - 2f * SidebarLayout.Pad - 3f * (SidebarLayout.ControlH + SidebarLayout.ControlGap);
             _searchField = UIFactory.CreateInputField("SbSearch", parent, "",
-                Vector2.zero, new Vector2(ExpandedW - 2f * SidebarLayout.Pad - ScrollBarW,
-                    SidebarLayout.SearchBandH - 6f));
+                Vector2.zero, new Vector2(width, SidebarLayout.ControlH));
             var rt = _searchField.GetComponent<RectTransform>();
             rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
             rt.pivot = new Vector2(0f, 1f);
-            rt.anchoredPosition = new Vector2(SidebarLayout.Pad, -TopStripH - 2f);
+            rt.anchoredPosition = new Vector2(SidebarLayout.Pad, -SidebarLayout.Pad);
             _searchField.onValueChanged.AddListener(_ => RelayoutFull());
-
-            var hint = UIFactory.CreateLabel("SbSearchHint", _searchField.transform, Loc.T("sidebar.searchHint"),
-                UIStyle.FontSmall, Vector2.zero, Vector2.zero, TextAnchor.MiddleLeft);
-            hint.color = UIStyle.TextSecondary;
-            hint.raycastTarget = false;
-            var hRt = hint.rectTransform;
-            hRt.anchorMin = Vector2.zero; hRt.anchorMax = Vector2.one;
-            hRt.offsetMin = new Vector2(8f, 0f); hRt.offsetMax = Vector2.zero;
-            _searchHint = hint;
+            _searchHint = SidebarSearchHint.Create(_searchField.transform);
         }
 
         private void BuildFull()
@@ -263,26 +250,23 @@ namespace KitchenDesigner.Core.UI
             foreach (var g in catalog)
             {
                 var gu = new GroupUI { title = g.title, open = g.title == openTitle };
-                var header = UIFactory.CreateButton("SbGrp_" + g.title, _full!.Content, g.title,
-                    Vector2.zero, new Vector2(SidebarLayout.DockW - 2f * SidebarLayout.Pad - ScrollBarW,
+                var header = UIFactory.CreateButton("SbGrp_" + g.title, _full!.Content, string.Empty,
+                    Vector2.zero, new Vector2(SidebarLayout.DockW - 2f * SidebarLayout.Pad,
                         SidebarLayout.HeaderH), () => ToggleGroup(gu));
                 UIFactory.AnchorTopLeft(header.GetComponent<RectTransform>());
                 gu.header = header.GetComponent<RectTransform>();
+                QuietButton.Apply(header, UIStyle.RowHover);
 
                 var headerLabel = header.GetComponentInChildren<TMP_Text>();
-                if (headerLabel != null)
-                {
-                    headerLabel.alignment = TextAlignmentOptions.Left;
-                    headerLabel.margin = new Vector4(SidebarLayout.Pad, 2f, SidebarLayout.Pad, 2f);
-                    headerLabel.enableWordWrapping = false;
-                    headerLabel.overflowMode = TextOverflowModes.Ellipsis;
-                    gu.headerLabel = headerLabel;
-                    SetGroupHeaderText(gu, g.title);
-                }
+                SidebarChrome.StyleHeaderGlyph(headerLabel);
+                gu.headerLabel = headerLabel;
+                SetGroupHeaderGlyph(gu);
+                SidebarChrome.AddHeaderTitle(gu.header, g.title).color = UIStyle.Text;
 
                 int groupIndex = _groups.Count;
                 foreach (var tile in SidebarTileBuilder.BuildTiles(g.items))
                     gu.tiles.Add(BuildTile(g.title, groupIndex, tile));
+                SidebarChrome.AddHeaderCount(gu.header).text = gu.tiles.Count.ToString();
 
                 _groups.Add(gu);
             }
@@ -308,10 +292,12 @@ namespace KitchenDesigner.Core.UI
                 selected = InitialPresetIndex(tile),
             };
             btn.onClick.AddListener(() => SpawnSelected(tileUi));
+            tileUi.background.color = TileRestColor;
+            var rim = SidebarChrome.AddTileRim(tileUi.rect);
 
             var outline = btn.gameObject.AddComponent<Outline>();
-            outline.effectColor = UIStyle.HighlightChanged;
-            outline.effectDistance = new Vector2(3f, 3f);
+            outline.effectColor = UIStyle.FocusRing;
+            outline.effectDistance = new Vector2(UIStyle.FocusRingPx * 2f, UIStyle.FocusRingPx * 2f);
             outline.enabled = false;
             tileUi.outline = outline;
 
@@ -325,6 +311,7 @@ namespace KitchenDesigner.Core.UI
             thumbRect.offsetMax = Vector2.zero;
             var raw = thumbGo.GetComponent<RawImage>();
             raw.raycastTarget = false;
+            raw.enabled = false;
             tileUi.thumb = raw;
 
             var stubGo = new GameObject("Stub", typeof(RectTransform), typeof(Image));
@@ -375,8 +362,16 @@ namespace KitchenDesigner.Core.UI
             _modeStyledTiles.Add(new ModeStyledTile { button = btn, cat = cat });
 
             AddHoverEntries(btn.gameObject,
-                () => tileUi.presetRow.gameObject.SetActive(tile.presets.Count > 1),
-                () => tileUi.presetRow.gameObject.SetActive(false));
+                () =>
+                {
+                    rim.gameObject.SetActive(true);
+                    tileUi.presetRow.gameObject.SetActive(tile.presets.Count > 1);
+                },
+                () =>
+                {
+                    rim.gameObject.SetActive(false);
+                    tileUi.presetRow.gameObject.SetActive(false);
+                });
 
             TooltipUI.Attach(btn.gameObject, () => TileTooltipText(tileUi));
             return tileUi;
@@ -453,11 +448,10 @@ namespace KitchenDesigner.Core.UI
             trigger.triggers.Add(entry);
         }
 
-        private static void SetGroupHeaderText(GroupUI gu, string title)
+        private static void SetGroupHeaderGlyph(GroupUI gu)
         {
             if (gu.headerLabel == null) return;
-            string glyph = gu.open ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed;
-            gu.headerLabel.text = $"{glyph}  {title}";
+            gu.headerLabel.text = gu.open ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed;
         }
 
         internal static string TileTooltipText(TileUI tile)
@@ -518,7 +512,7 @@ namespace KitchenDesigner.Core.UI
         private void RelayoutFull()
         {
             string filter = _searchField != null ? _searchField.text.Trim() : "";
-            if (_searchHint != null) _searchHint.gameObject.SetActive(filter.Length == 0);
+            _searchHint?.SetVisible(filter.Length == 0);
             bool searching = filter.Length > 0;
 
             _metrics.Clear();
@@ -612,6 +606,7 @@ namespace KitchenDesigner.Core.UI
                     ThumbnailPixels.x, ThumbnailPixels.y, out _);
                 _ownedTextures.Add(texture);
                 tile.thumb.texture = texture;
+                tile.thumb.enabled = true;
                 tile.stub.gameObject.SetActive(false);
                 tile.thumbnailReady = true;
             }
@@ -847,7 +842,7 @@ namespace KitchenDesigner.Core.UI
 
         private static void ApplyKeyboardHighlight(TileUI tile, bool selected)
         {
-            tile.background.color = selected ? UIStyle.SurfaceActive : UIFactory.ButtonColor;
+            tile.background.color = selected ? UIStyle.SurfaceActive : TileRestColor;
             tile.outline.enabled = selected;
         }
 
@@ -890,7 +885,9 @@ namespace KitchenDesigner.Core.UI
                 var btn = UIFactory.CreateIconButton("SbMini_" + groups[i].title, _mini!.Content,
                     groups[i].icon, Vector2.zero,
                     new Vector2(CollapsedW - 2f * SidebarLayout.MiniPad, SidebarLayout.MiniButtonH),
-                    () => OpenGroup(index));
+                    () => OpenGroup(index), SidebarLayout.MiniButtonH - UIStyle.IconSize);
+                QuietButton.Apply(btn);
+                ToolbarButtons.SetIconColor(btn, UIStyle.Text);
                 var rt = btn.GetComponent<RectTransform>();
                 UIFactory.AnchorTopLeft(rt);
                 rt.anchoredPosition = new Vector2(SidebarLayout.MiniPad, SidebarLayout.MiniItemY(i));
@@ -903,7 +900,7 @@ namespace KitchenDesigner.Core.UI
         {
             gu.open = !gu.open;
             if (gu.open) SidebarLastGroupPreference.Save(gu.title);
-            SetGroupHeaderText(gu, gu.title);
+            SetGroupHeaderGlyph(gu);
             RelayoutFull();
         }
 
@@ -915,7 +912,7 @@ namespace KitchenDesigner.Core.UI
             var gu = _groups[index];
             gu.open = true;
             SidebarLastGroupPreference.Save(gu.title);
-            SetGroupHeaderText(gu, gu.title);
+            SetGroupHeaderGlyph(gu);
             RelayoutFull();
         }
 
@@ -973,23 +970,34 @@ namespace KitchenDesigner.Core.UI
             _fullRoot!.SetActive(_expanded);
             _miniRoot!.SetActive(!_expanded);
             if (_searchField != null) _searchField.gameObject.SetActive(_expanded);
-            if (_collapseLabel != null) _collapseLabel.text = _expanded ? "«" : "»";
-            if (_pinBg != null)
+            ApplyCollapseButton();
+            if (_pinButton != null)
             {
-                _pinBg.gameObject.SetActive(_expanded);
-                _pinBg.color = _pinned ? ActiveToggleColor : UIFactory.ButtonColor;
+                _pinButton.gameObject.SetActive(_expanded);
+                ToolbarButtons.SetPressed(_pinButton, _pinned);
             }
-            if (_dockModeBg != null)
+            if (_dockModeButton != null)
             {
-                _dockModeBg.gameObject.SetActive(_expanded);
-                _dockModeBg.color = _dockChoice != SidebarDockChoice.Unset
-                    ? ActiveToggleColor : UIFactory.ButtonColor;
+                _dockModeButton.gameObject.SetActive(_expanded);
+                ToolbarButtons.SetPressed(_dockModeButton, _dockChoice != SidebarDockChoice.Unset);
             }
             if (_dockModeIcon != null)
             {
                 bool collapsesAfterSpawn = SidebarDockBudget.CollapsesAfterSpawn(_dockChoice, Screen.height);
-                _dockModeIcon.sprite = collapsesAfterSpawn ? IconFactory.DockRail : IconFactory.DockExpanded;
+                _dockModeIcon.sprite = OutlineIcons.Get(collapsesAfterSpawn
+                    ? OutlineIconPaths.DockRail : OutlineIconPaths.DockExpanded);
             }
+        }
+
+        private string CollapseTooltip() => _expanded ? Loc.T("sidebar.collapse") : Loc.T("sidebar.expand");
+
+        private void ApplyCollapseButton()
+        {
+            if (_collapseButton == null) return;
+            if (_collapseLabel != null) _collapseLabel.text = _expanded ? "«" : "»";
+            float x = _expanded ? ExpandedW - SidebarLayout.Pad - SidebarLayout.ControlH
+                : (CollapsedW - SidebarLayout.ControlH) * 0.5f;
+            SidebarChrome.PlaceTopLeft((RectTransform)_collapseButton.transform, x, -SidebarLayout.Pad);
         }
 
         private void CollapseIfClickedOutsideWhileUnpinned()

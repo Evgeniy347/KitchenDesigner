@@ -9,14 +9,14 @@ public class SidebarPresetLayoutTests
         Assert.GreaterOrEqual(SidebarLayout.PresetDotSize, 24f,
             "точка пресета обязана быть не меньше 24 px (docs/UI-GUIDELINES.md §8 держит "
             + "32 px как общий минимум хит-таргета; 24 — согласованное здесь исключение "
-            + "для плотного ряда пресетов на плитке 96×96, а не молчаливое нарушение)");
+            + "для плотного ряда пресетов на плитке 122×120, а не молчаливое нарушение)");
     }
 
     [Test]
-    public void FourFittingPresets_DoNotFitOnOneRowAtTheMinimumDotSize_SoWrappingIsRequired()
+    public void FiveFittingPresets_DoNotFitOnOneRowAtTheMinimumDotSize_SoWrappingIsRequired()
     {
-        Assert.Less(SidebarLayout.PresetDotsPerRow(), 4,
-            "четыре точки по 24 px с зазором не помещаются в ширину плитки 96 px — перенос "
+        Assert.Less(SidebarLayout.PresetDotsPerRow(), 5,
+            "пять точек по 24 px с зазором не помещаются в ширину плитки 122 px — перенос "
             + "на вторую строку (а не выпадающий список) выбран, потому что он остаётся тем "
             + "же компонентом PresetDot без нового элемента интерфейса и без нового паттерна "
             + "наведения, и одинаково хорошо работает и для шести фитингов трубы, и для "
@@ -40,7 +40,7 @@ public class SidebarPresetLayoutTests
         float height = SidebarLayout.PresetRowsHeight(6);
 
         Assert.LessOrEqual(height, SidebarLayout.TileImageH,
-            "ряды точек пресета обязаны помещаться в область картинки плитки (56 px) — "
+            "ряды точек пресета обязаны помещаться в область картинки плитки (80 px) — "
             + "иначе они наедут на подпись под ней");
     }
 

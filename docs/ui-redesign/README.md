@@ -131,8 +131,8 @@ Title, Body, Note?, PrimaryCaption, OnPrimary, SecondaryCaption? (= «Отмен
 высота по содержимому, Enter/Esc, Escape забирает первым (`EscapeOwner.ModalDialog`; новый держатель
 Escape обязан передать `ModalOpen = ModalPresence.IsOpen` в свои `EscapeClaims`). Снимок окна для
 глаз — `UiCaptureStage` (PlayMode), образец `WindowChromeDiagramTests`.
-Переведены: «Инструкции проекта» (шапка+футер), `DemoModeDialogUI` (модальный). Остальные шапки — задачи
-T5–T11; `NewerVersionDialogUI` — T9. Высота окна по содержимому — `chrome.FitHeightTo(rows.Relayout())`
+Переведены: «Инструкции проекта» (шапка+футер), все модальные окна (`DemoModeDialogUI`, `NewerVersionDialogUI`,
+`UpdateDialogUI`, `DownloadProgressUI`) и тост (T9). Остальные шапки — задачи T5–T8, T10, T11. Высота окна по содержимому — `chrome.FitHeightTo(rows.Relayout())`
 до `body.Fit()`.
 
 **T4a — строки и контролы.** `FormRows(host, RowDensity.X)` — одна фабрика на все окна; колонки из
@@ -148,7 +148,7 @@ T5–T11; `NewerVersionDialogUI` — T9. Высота окна по содерж
 вызывается сам при сворачивании секции; подпишитесь на `rows.Relayouted`, чтобы позвать `body.Fit()`).
 `rows.SyncEnabledState()` гасит подпись у выключенного контрола (§9), «i» — ребёнок подписи (§13).
 Отдельно от фабрики: `SwitchControl.Create`, `SegmentedControl.Create`, `SliderControl.Create`,
-`VectorField.Create`. Старые `ContextMenuRowFactory`/`SettingsRowFactory` удаляют T5/T6 при переезде.
+`VectorField.Create`. `ContextMenuRowFactory` удалён задачей T5 (инспектор, ниже); `SettingsRowFactory` удаляет T6.
 Доказательство — «Музыка» (`MusicPanelUI`, `RowDensity.Tool`); витрина обеих плотностей —
 `FormRowsDiagramTests` (PNG `form_rows_gallery`).
 
@@ -166,3 +166,44 @@ DataRowKind.Subtotal | Total, cells…)`; `row.Tag` — ваш объект, `ro
 Доказательство — «Замер» (`MeasurePropertiesUI`: шапка D5, расстояние `FontDisplay` 28, таблица A/B ×
 X/Y/Z, «−», футер с контурной кнопкой; голден `ui_measure_properties` обновлён). Витрина на данных
 макета спецификации — `DataTableDiagramTests` (PNG `data_table_specification`).
+
+**T6 — настройки (сделано).** `SettingsPanelUI` собран на `WindowChrome` (920×640, шапка D5, футер): слева
+`SettingsNav` (200, поле поиска, группы Картинка / Дом / Прочее), справа страница `SettingsPage` — это
+`FormRows(Regular)` плюс заголовок 20, строка-пояснение, секции `CreateSectionHeader`, поиск по подписи,
+тексту «i» и названию секции (`SetQuery`, `MatchCount`), `Hint(ключ, hint)`. Значения читаются обратно
+через `SettingsForm` (общий для окна). Девять страниц: Общие, Проект, Вид, Управление, Свет, Фоторежим,
+Строительство, MCP, О программе; `Settings*Tab` строят по странице. Футер: «Сбросить раздел» (страницам с
+заводскими значениями — Управление, Свет, Фоторежим; сброс = один шаг отмены через `SettingsSectionReset`) и
+тихое «Изменения применяются сразу». `SettingsRowFactory`, `SettingsTabStrip`, `SettingsDefaultsButton`
+удалены. Сторожа: `SettingsNavGuardTests`, `SettingsSearchTests`, `SettingsFooterTests`.
+
+**T10 — оболочка (тулбар и каталог).** Иконки тулбара и категорий каталога — один контурный набор:
+пути на сетке 20 в `OutlineIconPaths` (язык SVG-атрибута `d` плюс `O cx cy r` для окружности),
+разбор `StrokePath`, растеризация `StrokeRaster` (штрих 1,6, сглаженный край), спрайт —
+`OutlineIcons.Get(имя)` (белый, красится `Image.color`). Новая иконка тулбара — строка в таблице и
+имя-константа рядом (парность держит `OutlineIconPathsTests`). Кнопка тулбара — `ToolbarButtons.
+CreateIcon` (40, иконка 20, тихий фон `SurfaceHover` в состоянии «нажата» — `SurfaceActive`,
+`ToolbarButtons.SetPressed`); размеры — `ToolbarMetrics`. Группы слева: Файл | Правка | Этаж |
+Инструменты | режим вида (`SegmentedControl` с шириной сегментов по тексту, сегменты по-прежнему
+`ModeNormal/ModeRoom/ModePhoto`), справа якорем: Панели | Сервис. Счётчик ошибок — `ToolbarIssueBadge`
+(пилюля 16, `Danger` + белая цифра; только предупреждения — `TextWarning` + тёмная цифра). HUD F9
+сам держится под тулбаром на текущем масштабе канвы (`ToolbarUI.Refresh`). Каталог: док 268, строки
+категорий 32 со счётчиком (`SidebarChrome`), плитки 122×120 (2×N на всю ширину), поиск с подсказкой
+и клавишей (`SidebarSearchHint`), закрепление и режим дока — тихие кнопки, рейка 56 с иконками 20.
+`SidebarUI.BottomMargin` остаётся 42, пока задача T9 не заменила плашку статуса полосой 28: тогда
+поставить `UIStyle.StatusBarH` (и 34 → 28 в `SidebarPanelTests.Panel_TakesItsHeightFromTheScreen…`).
+Снимки для глаз — `ShellDiagramTests` (`shell_1920.png`, `shell_1366.png`).
+
+**T5 — инспектор (`ContextMenuUI`).** Окно — `WindowChrome` (Tool, шапка с линией, футер) + `WindowBody` +
+`InspectorRows` (надстройка над `FormRows`, `RowDensity.Compact`: видимость строки по фасетам элемента —
+`RowVisibility`, секции `BeginSection/EndSection`, шапка секции гаснет, когда в ней нет видимых строк;
+`NumberOrComputed` — число, которое у фиксированного габарита превращается в текст без рамки;
+`ValueButton`, `PairField`, `Note`, `ReadOnlyField`, `Vector`). Заголовок — «Тип — Имя»
+(`KitchenElement.DisplayTypeName`; у стены — «Стена»), секция параметров типа называется типом элемента.
+Свёрнутость секций помнится по типу элемента на сессию панели (`InspectorSectionMemory`, пазы и зазоры по
+умолчанию свёрнуты). Футер: «Дублировать» слева, «Удалить» справа контуром `DangerText`, во взводе `?!` —
+заливка `Danger` (`ConfirmDeleteButton.ArmedChanged`). Пазы, текстуры, зазоры, кромки, световые связи — секции
+(`ContextMenuListSection`), добавление — ссылка «+ Добавить» в шапке секции, удаление строки —
+`QuietDeleteButton`. Высота панели — формула от канвы (`ContextMenuUI.MaxPanelHeight`), тело прокручивается.
+Сторожа: `InspectorColumnsGuardTests`, `InspectorChromeTests`, `InspectorRowsTests`; узлы в тестах
+ищутся `InspectorNodes.FindNode` (строки лежат в `Row_*`).

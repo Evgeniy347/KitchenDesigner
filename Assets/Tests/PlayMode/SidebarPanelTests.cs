@@ -38,6 +38,7 @@ public class SidebarPanelTests
         PlayModeTestConfig.ConfigureForTests();
         EditModeManager.Reset();
         SidebarUI.ResetLastUsedGroupForTests();
+        UIFactory.EnsureEventSystem();
         _canvasGo = new GameObject("Canvas");
         _canvasGo.AddComponent<Canvas>();
 
@@ -274,9 +275,9 @@ public class SidebarPanelTests
     }
 
     [Test]
-    public void Panel_ExpandedWidth_Is260Pixels()
+    public void Panel_ExpandedWidth_Is268Pixels()
     {
-        Assert.AreEqual(260f, SidebarUI.ExpandedW);
+        Assert.AreEqual(268f, SidebarUI.ExpandedW);
     }
 
     [Test]
@@ -305,7 +306,7 @@ public class SidebarPanelTests
         Assert.IsNull(techBtn.GetComponentInChildren<TMP_Text>(),
             "буквы-псевдоиконки запрещены — в узкой полосе группа рисуется иконкой");
         var icon = Child(techBtn, "SbMini_Техника_Icon").GetComponent<Image>();
-        Assert.AreEqual(IconFactory.Appliance, icon.sprite);
+        Assert.AreEqual(OutlineIcons.Get(OutlineIconPaths.CategoryAppliance), icon.sprite);
         Assert.IsNotNull(techBtn.gameObject.GetComponent<EventTrigger>());
         Assert.IsFalse(pin.gameObject.activeSelf);
     }

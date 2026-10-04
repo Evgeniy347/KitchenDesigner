@@ -3,14 +3,20 @@ using NUnit.Framework;
 
 public class SidebarDockBudgetTests
 {
-    private const float TopOffsetUnderToolbar = 52f;
+    private const float TopOffsetUnderToolbar = 48f;
     private const float BottomMargin = 42f;
+    private const float ScreenWidth = 1366f;
+    private const float ScreenHeight = 768f;
+
+    private static float CanvasHeightOfTheBaseLaptop() =>
+        UiScale.CanvasHeight(ScreenHeight, UiScale.Automatic(ScreenWidth, ScreenHeight));
 
     [Test]
     public void At1366x768_AtLeastTenTilesFitInAnOpenGroupWithoutScrolling()
     {
-        float panelHeight = 768f - TopOffsetUnderToolbar - BottomMargin;
-        float viewportHeight = panelHeight - SidebarLayout.TopStripH - SidebarLayout.SearchBandH;
+        float canvasHeight = CanvasHeightOfTheBaseLaptop();
+        float panelHeight = canvasHeight - TopOffsetUnderToolbar - BottomMargin;
+        float viewportHeight = panelHeight - SidebarLayout.TopStripH;
         float tilesArea = viewportHeight - SidebarLayout.HeaderH - SidebarLayout.HeaderGap;
 
         int rows = 0;
@@ -27,18 +33,23 @@ public class SidebarDockBudgetTests
         int tilesWithoutScroll = rows * SidebarLayout.GridColumns;
 
         Assert.AreEqual(tilesWithoutScroll,
-            SidebarDockBudget.TilesVisibleWithoutScroll(768f, TopOffsetUnderToolbar, BottomMargin),
+            SidebarDockBudget.TilesVisibleWithoutScroll(canvasHeight, TopOffsetUnderToolbar, BottomMargin),
             "SidebarDockBudget обязан считать столько же строк, сколько ручной перебор рядов");
         Assert.GreaterOrEqual(tilesWithoutScroll, 10,
-            "на базовом экране 1366×768 раскрытая группа обязана показывать не меньше 10 "
-            + "плиток без прокрутки (docs/todo_evolution.md §2.4)");
+            "на базовом экране 1366×768 (канва 1681×945: пол масштаба D1) раскрытая группа "
+            + "обязана показывать не меньше 10 плиток без прокрутки (docs/todo_evolution.md §2.4); "
+            + "плитки макета 122×120 считаются в единицах канвы, а не в физических пикселях");
     }
 
     [Test]
-    public void DockWidth_DoesNotExceedTwoHundredSixtyPixels()
+    public void DockWidth_IsTheMockupWidth_AndTwoTilesFillItEdgeToEdge()
     {
-        Assert.AreEqual(260f, SidebarLayout.DockW,
-            "раскрытый док обязан оставаться шириной 260 px — не залезать на сцену больше");
+        Assert.AreEqual(268f, SidebarLayout.DockW,
+            "раскрытый док — 268 px по макету shell.png: шире — залезает на сцену");
+        Assert.AreEqual(SidebarLayout.DockW,
+            2f * SidebarLayout.Pad + SidebarLayout.GridColumns * SidebarLayout.TileW
+            + (SidebarLayout.GridColumns - 1) * SidebarLayout.TileGap, 0.01f,
+            "две плитки с зазором и полями обязаны занимать док целиком: «справа 30 px пустоты» — дефект №6 аудита");
     }
 
     [Test]

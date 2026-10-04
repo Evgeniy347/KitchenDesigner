@@ -47,21 +47,23 @@ namespace KitchenDesigner.Core.UI
         public const int HeaderRow = -1;
 
         public const float Pad = 8f;
-        public const float HeaderH = 34f;
+        public const float HeaderH = 32f;
         public const float HeaderGap = 4f;
-        public const float MiniPad = 6f;
-        public const float MiniButtonH = 38f;
+        public const float MiniPad = 8f;
+        public const float MiniButtonH = 40f;
         public const float MiniGap = 4f;
 
         public const int GridColumns = 2;
-        public const float TileW = 96f;
-        public const float TileH = 96f;
-        public const float TileGap = 16f;
-        public const float TileImageH = 56f;
+        public const float TileGap = 8f;
+        public const float TileW = (DockW - 2f * Pad - TileGap) / GridColumns;
+        public const float TileH = 120f;
+        public const float TileImageH = 80f;
 
-        public const float DockW = 260f;
-        public const float TopStripH = 36f;
-        public const float SearchBandH = 32f;
+        public const float DockW = 268f;
+        public const float RailW = MiniButtonH + 2f * MiniPad;
+        public const float ControlH = 28f;
+        public const float ControlGap = 4f;
+        public const float TopStripH = ControlH + 2f * Pad;
 
         public const float PresetDotSize = 24f;
         public const float PresetDotGap = 4f;
@@ -123,7 +125,8 @@ namespace KitchenDesigner.Core.UI
             {
                 var group = groups[g];
                 rows.Add(new SidebarTileRow(g, HeaderRow, new Vector2(Pad, y), HeaderH, true));
-                y -= HeaderH + HeaderGap;
+                y -= HeaderH;
+                if (group.Open && group.TileCount > 0) y -= HeaderGap;
 
                 for (int i = 0; i < group.TileCount; i++)
                 {

@@ -3,48 +3,48 @@
   "children": [
     {
       "type": "Button",
-      "text": "»",
-      "position": [4, -4]
+      "text": "SbMini_Детали",
+      "position": [8, -8]
     },
     {
       "type": "Button",
-      "text": "SbMini_Детали",
-      "position": [6, -6]
+      "text": "»",
+      "position": [14, -8]
     },
     {
       "type": "Button",
       "text": "SbMini_Фасады",
-      "position": [6, -48]
+      "position": [8, -52]
     },
     {
       "type": "Button",
       "text": "SbMini_Ящики",
-      "position": [6, -90]
+      "position": [8, -96]
     },
     {
       "type": "Button",
       "text": "SbMini_Мебель",
-      "position": [6, -132]
+      "position": [8, -140]
     },
     {
       "type": "Button",
       "text": "SbMini_Техника",
-      "position": [6, -174]
+      "position": [8, -184]
     },
     {
       "type": "Button",
       "text": "SbMini_Сантехника",
-      "position": [6, -216]
+      "position": [8, -228]
     },
     {
       "type": "Button",
       "text": "SbMini_Помещение",
-      "position": [6, -258]
+      "position": [8, -272]
     },
     {
       "type": "Button",
       "text": "SbMini_Конструкции",
-      "position": [6, -300]
+      "position": [8, -316]
     }
   ]
 }

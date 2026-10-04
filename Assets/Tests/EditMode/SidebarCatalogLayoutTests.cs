@@ -47,7 +47,7 @@ public class SidebarCatalogLayoutTests
 
         Assert.AreEqual(2, headerRows, "у пустой группы обязан остаться собственный заголовок");
         Assert.AreEqual(0, tileRowsOfTheEmptyGroup, "плиток у пустой группы нет");
-        Assert.AreEqual(SidebarLayout.HeaderH + SidebarLayout.HeaderGap, taller - shorter, 0.01f,
+        Assert.AreEqual(SidebarLayout.HeaderH, taller - shorter, 0.01f,
             "пустая группа удлинила содержимое не на один заголовок");
     }
 

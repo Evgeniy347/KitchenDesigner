@@ -103,14 +103,14 @@ namespace KitchenDesigner.Core.UI
 
         private static IEnumerable<GroupMeta> GroupTable() => new[]
         {
-            new GroupMeta(SidebarGroupKey.Board, Loc.T("catalog.group.board"), IconFactory.Shelf),
-            new GroupMeta(SidebarGroupKey.Facade, Loc.T("catalog.group.facade"), IconFactory.Facade),
-            new GroupMeta(SidebarGroupKey.Drawer, Loc.T("catalog.group.drawer"), IconFactory.Drawer),
-            new GroupMeta(SidebarGroupKey.Furniture, Loc.T("catalog.group.furniture"), IconFactory.Furniture),
-            new GroupMeta(SidebarGroupKey.Appliance, Loc.T("catalog.group.appliance"), IconFactory.Appliance),
-            new GroupMeta(SidebarGroupKey.Sanitary, Loc.T("catalog.group.sanitary"), IconFactory.Faucet),
-            new GroupMeta(SidebarGroupKey.Room, Loc.T("catalog.group.room"), IconFactory.Room),
-            new GroupMeta(SidebarGroupKey.Construction, Loc.T("catalog.group.construction"), IconFactory.Brickwork),
+            new GroupMeta(SidebarGroupKey.Board, Loc.T("catalog.group.board"), OutlineIcons.Get(OutlineIconPaths.CategoryBoard)),
+            new GroupMeta(SidebarGroupKey.Facade, Loc.T("catalog.group.facade"), OutlineIcons.Get(OutlineIconPaths.CategoryFacade)),
+            new GroupMeta(SidebarGroupKey.Drawer, Loc.T("catalog.group.drawer"), OutlineIcons.Get(OutlineIconPaths.CategoryDrawer)),
+            new GroupMeta(SidebarGroupKey.Furniture, Loc.T("catalog.group.furniture"), OutlineIcons.Get(OutlineIconPaths.CategoryFurniture)),
+            new GroupMeta(SidebarGroupKey.Appliance, Loc.T("catalog.group.appliance"), OutlineIcons.Get(OutlineIconPaths.CategoryAppliance)),
+            new GroupMeta(SidebarGroupKey.Sanitary, Loc.T("catalog.group.sanitary"), OutlineIcons.Get(OutlineIconPaths.CategorySanitary)),
+            new GroupMeta(SidebarGroupKey.Room, Loc.T("catalog.group.room"), OutlineIcons.Get(OutlineIconPaths.CategoryRoom)),
+            new GroupMeta(SidebarGroupKey.Construction, Loc.T("catalog.group.construction"), OutlineIcons.Get(OutlineIconPaths.CategoryConstruction)),
         };
 
         private static readonly LocalizedCache<List<Group>> Catalog = new LocalizedCache<List<Group>>(BuildGroups);
