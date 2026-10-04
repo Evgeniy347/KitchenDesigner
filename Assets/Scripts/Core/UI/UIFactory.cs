@@ -117,9 +117,7 @@ namespace KitchenDesigner.Core.UI
             canvas.sortingOrder = MainUiSortingOrder;
 
             var scaler = go.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight = 0.5f;
+            UiScaleFit.Attach(scaler);
 
             go.AddComponent<GraphicRaycaster>();
             return canvas;

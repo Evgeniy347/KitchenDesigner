@@ -899,6 +899,8 @@
   "settings.project.snap": "Привязка к деталям",
   "settings.project.snapThreshold": "Порог привязки",
   "settings.project.spatialGrid": "Пространственная сетка",
+  "settings.project.uiScale": "Масштаб интерфейса",
+  "settings.project.uiScaleAuto": "Авто",
   "settings.tab.about": "О программе",
   "settings.tab.construction": "Строительство",
   "settings.tab.control": "Управление",

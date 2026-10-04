@@ -4717,6 +4717,16 @@
     "meaning": "Performance option: a spatial index that speeds up overlap checks between objects (not a visible grid)",
     "maxLength": 36
   },
+  "settings.project.uiScale": {
+    "where": "Settings window, Project page (moves to the General page later): label of a dropdown row",
+    "meaning": "Program-wide preference: how large every window, text and button of the application is drawn. Not stored in the project file",
+    "maxLength": 30
+  },
+  "settings.project.uiScaleAuto": {
+    "where": "Settings window: first option of the 'Interface scale' dropdown; the other options are percentages (90 %, 110 %, 125 %, 150 %)",
+    "meaning": "The size is picked from the screen resolution automatically (100 %); feminine in languages where it agrees with 'scale'",
+    "maxLength": 16
+  },
   "settings.tab.about": {
     "where": "Settings window, tab button",
     "meaning": "About the program tab",

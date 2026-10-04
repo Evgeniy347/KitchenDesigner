@@ -899,6 +899,8 @@
   "settings.project.snap": "部材へのスナップ",
   "settings.project.snapThreshold": "スナップ距離",
   "settings.project.spatialGrid": "空間インデックス",
+  "settings.project.uiScale": "UIの拡大率",
+  "settings.project.uiScaleAuto": "自動",
   "settings.tab.about": "バージョン情報",
   "settings.tab.construction": "建築",
   "settings.tab.control": "操作",

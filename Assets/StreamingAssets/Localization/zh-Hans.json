@@ -899,6 +899,8 @@
   "settings.project.snap": "吸附到板件",
   "settings.project.snapThreshold": "吸附距离",
   "settings.project.spatialGrid": "空间索引",
+  "settings.project.uiScale": "界面缩放",
+  "settings.project.uiScaleAuto": "自动",
   "settings.tab.about": "关于",
   "settings.tab.construction": "建造",
   "settings.tab.control": "控制",

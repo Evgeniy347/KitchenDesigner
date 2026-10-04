@@ -899,6 +899,8 @@
   "settings.project.snap": "Snap to parts",
   "settings.project.snapThreshold": "Snap distance",
   "settings.project.spatialGrid": "Spatial index",
+  "settings.project.uiScale": "Interface scale",
+  "settings.project.uiScaleAuto": "Auto",
   "settings.tab.about": "About",
   "settings.tab.construction": "Construction",
   "settings.tab.control": "Controls",

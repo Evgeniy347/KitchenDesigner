@@ -32,6 +32,7 @@ namespace KitchenDesigner.Tests.Geometry
         {
             ("Persistence/LastProjectMemory.cs", "KitchenLastSavePath — последний открытый проект пользователя"),
             ("Persistence/FirstRunMarker.cs", "KitchenFirstRunDone — показывать ли демо-проект"),
+            ("UI/UiScalePreference.cs", "KitchenUiScalePercent — множитель «Масштаб интерфейса» (D1)"),
             ("UI/SidebarDockPreference.cs", "KitchenSidebarDockChoice — раскрытый док или рейка иконок"),
             ("UI/SidebarLastGroupPreference.cs", "KitchenSidebarLastGroup — какая группа каталога открыта"),
             ("UI/SidebarPresetPreference.cs", "KitchenSidebarPreset_* — выбранный пресет плитки"),

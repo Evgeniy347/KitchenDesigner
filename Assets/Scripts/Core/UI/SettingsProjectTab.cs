@@ -26,6 +26,7 @@ namespace KitchenDesigner.Core.UI
             float y = topY;
 
             BuildLanguageRow(page, ref y);
+            BuildUiScaleRow(page, ref y);
             y -= SettingsRowFactory.GapPx;
 
             _rows.AddToggle(page, ref y, Loc.T("settings.project.grid"), s.GridEnabled,
@@ -123,6 +124,27 @@ namespace KitchenDesigner.Core.UI
         }
 
         internal const string LanguageRowId = "Language";
+
+        internal const string UiScaleRowId = "UiScale";
+
+        private void BuildUiScaleRow(Transform page, ref float y)
+        {
+            _rows.AddDropdown(page, ref y, Loc.T("settings.project.uiScale"),
+                UiScale.ChoicePercents.Select(UiScaleChoiceLabel).ToList(),
+                UiScale.ChoiceIndex(UiScalePreference.Percent),
+                index =>
+                {
+                    if (index >= 0 && index < UiScale.ChoicePercents.Count)
+                        UiScalePreference.Choose(UiScale.ChoicePercents[index]);
+                },
+                id: UiScaleRowId,
+                read: () => UiScale.ChoiceIndex(UiScalePreference.Percent));
+        }
+
+        internal static string UiScaleChoiceLabel(int percent) =>
+            percent == UiScale.AutoPercent
+                ? Loc.T("settings.project.uiScaleAuto")
+                : NumberFormat.WithUnit(NumberFormat.Integer(percent), "%");
 
         private static int IndexOfCurrent(IReadOnlyList<LanguageInfo> languages)
         {

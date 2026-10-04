@@ -899,6 +899,8 @@
   "settings.project.snap": "Aggancio ai componenti",
   "settings.project.snapThreshold": "Soglia di aggancio",
   "settings.project.spatialGrid": "Indice spaziale",
+  "settings.project.uiScale": "Scala dell’interfaccia",
+  "settings.project.uiScaleAuto": "Automatica",
   "settings.tab.about": "Info",
   "settings.tab.construction": "Costruzione",
   "settings.tab.control": "Comandi",

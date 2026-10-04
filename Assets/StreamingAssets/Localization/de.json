@@ -899,6 +899,8 @@
   "settings.project.snap": "An Teilen einrasten",
   "settings.project.snapThreshold": "Fangabstand",
   "settings.project.spatialGrid": "Raumindex",
+  "settings.project.uiScale": "Skalierung der Oberfläche",
+  "settings.project.uiScaleAuto": "Automatisch",
   "settings.tab.about": "Info",
   "settings.tab.construction": "Bauwesen",
   "settings.tab.control": "Steuerung",

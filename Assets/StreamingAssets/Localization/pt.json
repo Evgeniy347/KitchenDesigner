@@ -899,6 +899,8 @@
   "settings.project.snap": "Encaixe nas peças",
   "settings.project.snapThreshold": "Distância de encaixe",
   "settings.project.spatialGrid": "Índice espacial",
+  "settings.project.uiScale": "Escala da interface",
+  "settings.project.uiScaleAuto": "Automática",
   "settings.tab.about": "Sobre",
   "settings.tab.construction": "Construção",
   "settings.tab.control": "Controles",

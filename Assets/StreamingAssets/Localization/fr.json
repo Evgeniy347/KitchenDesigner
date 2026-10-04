@@ -899,6 +899,8 @@
   "settings.project.snap": "Accrochage aux pièces",
   "settings.project.snapThreshold": "Distance d’accrochage",
   "settings.project.spatialGrid": "Index spatial",
+  "settings.project.uiScale": "Échelle de l’interface",
+  "settings.project.uiScaleAuto": "Automatique",
   "settings.tab.about": "À propos",
   "settings.tab.construction": "Construction",
   "settings.tab.control": "Commandes",

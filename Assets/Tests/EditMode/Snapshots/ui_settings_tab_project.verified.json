@@ -98,6 +98,11 @@
     },
     {
       "type": "Label",
+      "text": "Масштаб интерфейса",
+      "position": [-90, 0]
+    },
+    {
+      "type": "Label",
       "text": "i",
       "position": [0, 0]
     },
@@ -149,6 +154,12 @@
     {
       "type": "Dropdown",
       "options": ["Русский", "English", "العربية (تونس)", "Deutsch", "Español", "Français", "Italiano", "日本語", "Português (Brasil)", "简体中文"],
+      "selected": 0,
+      "position": [165, 0]
+    },
+    {
+      "type": "Dropdown",
+      "options": ["Авто", "90 %", "110 %", "125 %", "150 %"],
       "selected": 0,
       "position": [165, 0]
     },

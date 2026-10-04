@@ -899,6 +899,8 @@
   "settings.project.snap": "Ajuste a piezas",
   "settings.project.snapThreshold": "Umbral de ajuste",
   "settings.project.spatialGrid": "Cuadrícula espacial",
+  "settings.project.uiScale": "Escala de la interfaz",
+  "settings.project.uiScaleAuto": "Automática",
   "settings.tab.about": "Acerca de",
   "settings.tab.construction": "Construcción",
   "settings.tab.control": "Controles",

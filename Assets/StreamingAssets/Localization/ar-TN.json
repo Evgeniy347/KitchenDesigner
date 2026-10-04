@@ -899,6 +899,8 @@
   "settings.project.snap": "الالتقاط بالقطع",
   "settings.project.snapThreshold": "مسافة الالتقاط",
   "settings.project.spatialGrid": "الفهرس المكاني",
+  "settings.project.uiScale": "حجم الواجهة",
+  "settings.project.uiScaleAuto": "تلقائي",
   "settings.tab.about": "حول",
   "settings.tab.construction": "الإنشاء",
   "settings.tab.control": "التحكم",

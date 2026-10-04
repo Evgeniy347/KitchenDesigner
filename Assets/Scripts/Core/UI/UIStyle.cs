@@ -141,9 +141,9 @@ namespace KitchenDesigner.Core.UI
         public const float StatusBarH = 28f;
         public const float EmptyStateIcon = 28f;
 
-        public const float UIScaleFloor = 0.8125f;
-        public const float UIScaleUserMin = 0.9f;
-        public const float UIScaleUserMax = 1.5f;
+        public const float UIScaleFloor = UiScale.Floor;
+        public const int UIScaleUserMinPercent = UiScale.MinPercent;
+        public const int UIScaleUserMaxPercent = UiScale.MaxPercent;
 
         public const float DropdownItemMinH = 24f;
         public const int DropdownVisibleItems = 7;

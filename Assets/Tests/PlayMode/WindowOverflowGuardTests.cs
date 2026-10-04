@@ -208,6 +208,76 @@ public class WindowOverflowGuardTests
             + "следующие пять параметров всё равно вылезут:\n" + string.Join("\n", offenders));
     }
 
+    // D1: на базовом экране 1366×768 канва при полу масштаба 0,8125 — 945 реф. px в высоту,
+    // а не 1080. Окно выше канвы не помещается на экран ни при каком положении: его нижние
+    // кнопки уходят за край, и WindowScreenGuard прижимает к верху то, что не влезает.
+    // Строже — формула §7 (канва − тулбар − статус − 2×16): окна, которые её пока
+    // превышают, перечислены поимённо в WindowsOverTheD1Budget и уходят из списка своими
+    // задачами (docs/ui-redesign/README.md); список обязан убывать.
+    private const float BaseScreenW = 1366f;
+    private const float BaseScreenH = 768f;
+    private const float D1Margins = UIStyle.ToolbarH + UIStyle.StatusBarH + 2f * UIStyle.Space4;
+
+    private static readonly Dictionary<string, string> WindowsOverTheD1Budget = new()
+    {
+        ["SettingsPanelUI"] = "900 px до T6 (920×640, docs/ui-redesign/settings.md)",
+    };
+
+    [UnityTest]
+    public IEnumerator EveryProjectWindow_FitsTheBaseLaptopScreen_AtTheScaleFloor()
+    {
+        var canvas = NewCanvas();
+        var fit = _canvasGo!.GetComponent<UiScaleFit>();
+        Assert.IsNotNull(fit, "канва из UIFactory.CreateCanvas обязана держать масштаб через UiScaleFit");
+        fit!.EmulatedScreen = new Vector2(BaseScreenW, BaseScreenH);
+        fit.Apply();
+        Canvas.ForceUpdateCanvases();
+
+        float canvasH = ((RectTransform)canvas).rect.height;
+        Assert.AreEqual(UiScale.CanvasHeight(BaseScreenH, UiScale.Automatic(BaseScreenW, BaseScreenH)),
+            canvasH, 0.5f, "эмуляция 1366×768 обязана дать ту же высоту канвы, что у пользователя (945)");
+
+        var windows = new List<(string name, IProjectWindow window)>();
+        foreach (var type in AllWindowTypes())
+        {
+            var build = BuildMethod(type);
+            if (build == null) continue;
+            var window = (IProjectWindow)_canvasGo.AddComponent(type);
+            build.Invoke(window, new object[] { canvas });
+            window.SetVisible(true);
+            windows.Add((type.Name, window));
+        }
+
+        yield return null;
+        yield return null;
+
+        float budget = canvasH - D1Margins;
+        var taller = new List<string>();
+        var overBudget = new List<string>();
+        foreach (var (name, window) in windows)
+        {
+            var rect = window.WindowRect;
+            if (rect == null) continue;
+            float h = rect.rect.height;
+            if (h > canvasH + 0.5f) taller.Add($"{name}: {h:0} > канвы {canvasH:0}");
+            bool known = WindowsOverTheD1Budget.ContainsKey(name);
+            if (h > budget + 0.5f && !known)
+                overBudget.Add($"{name}: {h:0} > {budget:0} (канва − тулбар − статус − 2×16)");
+            if (h <= budget + 0.5f && known)
+                overBudget.Add($"{name}: уже помещается ({h:0} ≤ {budget:0}) — убери его из WindowsOverTheD1Budget");
+        }
+
+        Assert.IsEmpty(taller,
+            "окно выше канвы на 1366×768 при масштабе 0,8125 — его низ за краем экрана (D1):\n"
+            + string.Join("\n", taller));
+        Assert.IsEmpty(overBudget,
+            "окно не помещается между тулбаром и строкой состояния на базовом экране (§7, D1). "
+            + "Высота окна — формула от канвы, а не константа:\n" + string.Join("\n", overBudget));
+        foreach (var known in WindowsOverTheD1Budget.Keys)
+            CollectionAssert.Contains(windows.Select(w => w.name).ToList(), known,
+                "запись долга пережила своё окно: " + known);
+    }
+
     [Test]
     public void WindowScan_SeesEveryProjectWindow_AndCanBuildEachOfThem()
     {
