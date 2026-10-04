@@ -96,7 +96,7 @@ namespace KitchenDesigner.Core.UI
         public static float WidthFor(TMP_Text label, string caption) =>
             Mathf.Max(MinButtonW, Mathf.Ceil(label.GetPreferredValues(caption).x) + 2f * ButtonPadX);
 
-        private Button AddRight(string node, string caption, Action onClick, ButtonRole role)
+        public Button AddRight(string node, string caption, Action onClick, ButtonRole role)
         {
             var button = CreateButton(node, caption, onClick, role);
             var rt = (RectTransform)button.transform;

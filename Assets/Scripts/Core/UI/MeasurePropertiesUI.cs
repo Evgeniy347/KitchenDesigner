@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using KitchenDesigner.Core.Measure;
@@ -6,84 +7,93 @@ namespace KitchenDesigner.Core.UI
 {
     public class MeasurePropertiesUI : MonoBehaviour
     {
-        private const float PanelWidth = 300f;
-        private const float PanelHeight = 236f;
-        internal const float RowWidth = PanelWidth - UIStyle.WindowPad * 2f;
-        private const float RowHeight = 22f;
-        internal const float DeleteButtonWidth = 120f;
-        private static readonly Vector2 LeftOfTheDayNightPanel = new Vector2(-320, -60);
+        internal const float FirstColumnW = 40f;
+        private const float PointRows = 2f;
 
-        private GameObject? _root;
-        private TMP_Text? _pointA;
-        private TMP_Text? _pointB;
+        private WindowChrome? _chrome;
         private TMP_Text? _distance;
+        private DataTable? _points;
 
-        public bool IsVisible => _root != null && _root.activeSelf;
+        internal float BodyWidth => _chrome?.BodyWidth ?? 0f;
+        internal DataTable? Points => _points;
+
+        public bool IsVisible => _chrome != null && _chrome.Panel.gameObject.activeSelf;
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("MeasurePanel", canvas, Vector2.zero,
-                new Vector2(PanelWidth, PanelHeight));
-            UIFactory.AnchorTopRight(panel.rectTransform);
-            panel.rectTransform.anchoredPosition = LeftOfTheDayNightPanel;
-            _root = panel.gameObject;
-            WindowDrag.Attach(panel.rectTransform, UIStyle.DragStripHeight);
+            _chrome = WindowChrome.Create(canvas, "MeasurePanel", Loc.T("measure.title"),
+                new Vector2(UIStyle.ToolPanelW, UIStyle.ToolPanelW), new WindowChromeOptions
+                {
+                    Kind = WindowKind.Tool,
+                    OnClose = () => MeasureStore.Select(null),
+                    HasFooter = true,
+                    RuledHeader = true,
+                });
+            var panel = _chrome.Panel;
+            UIFactory.AnchorTopRight(panel);
+            panel.anchoredPosition = new Vector2(-(UIStyle.ToolPanelW + 2f * UIStyle.Space3),
+                -(UIStyle.ToolbarH + UIStyle.Space3));
 
-            WindowTitle.Create(panel.transform, "MeasureTitle", Loc.T("measure.title"), UIStyle.FontWindowTitle,
-                RowWidth, 28f);
+            var body = _chrome.CreateBody();
+            var stack = new VerticalStack(body.Content, _chrome.BodyWidth);
+            _distance = UIFactory.CreateLabel("MeasureDistance", body.Content, "", UIStyle.FontDisplay, Vector2.zero,
+                new Vector2(_chrome.BodyWidth, UIStyle.FontDisplay + UIStyle.Space2), TextAnchor.MiddleLeft);
+            _distance.enableWordWrapping = false;
+            stack.Place(_distance.rectTransform);
+            stack.Gap(UIStyle.Space2);
 
-            float y = PanelHeight * 0.5f - 62f;
-            _pointA = Row(panel.transform, "MeasureA", ref y);
-            _pointB = Row(panel.transform, "MeasureB", ref y);
+            _points = DataTable.Create(body.Content, "MeasurePoints",
+                new Vector2(_chrome.BodyWidth, UIStyle.TableHeaderH + PointRows * UIStyle.TableRowH), new[]
+                {
+                    new DataColumn("point", "", FirstColumnW),
+                    new DataColumn("x", "X", 0f, CellAlign.Right),
+                    new DataColumn("y", "Y", 0f, CellAlign.Right),
+                    new DataColumn("z", "Z", 0f, CellAlign.Right),
+                });
+            stack.Place(_points.Root);
 
-            y -= UIStyle.GapSection;
-            _distance = Row(panel.transform, "MeasureDistance", ref y);
-
-            UIFactory.CreateDangerButton("MeasureDelete", panel.transform, Loc.T("common.delete"),
-                new Vector2(RowWidth * 0.5f - DeleteButtonWidth * 0.5f, y - UIStyle.GapSection),
-                new Vector2(DeleteButtonWidth, UIStyle.HitTarget), DeleteSelected);
-
-            UIFactory.CreateCloseButton(panel.transform, () => MeasureStore.Select(null));
+            _chrome.Footer!.AddRight("MeasureDelete", Loc.T("measure.delete"), DeleteSelected,
+                ButtonRole.DangerOutline);
+            _chrome.FitHeightTo(stack.Height);
+            body.Fit();
 
             MeasureStore.Changed += Refresh;
-            _root.SetActive(false);
-        }
-
-        private static TMP_Text Row(Transform parent, string name, ref float y)
-        {
-            var label = UIFactory.CreateLabel(name, parent, "", UIStyle.FontBody,
-                new Vector2(0, y), new Vector2(RowWidth, RowHeight), TextAnchor.MiddleLeft);
-            y -= RowHeight + UIStyle.GapInner;
-            return label;
+            panel.gameObject.SetActive(false);
         }
 
         private void OnDestroy() => MeasureStore.Changed -= Refresh;
 
+        private static bool IsGone(RectTransform panel) => panel == null;
+
         private void Refresh()
         {
             var seg = MeasureStore.Selected;
-            if (_root == null) return;
+            if (_chrome == null || IsGone(_chrome.Panel)) return;
+            var root = _chrome.Panel.gameObject;
 
             if (seg == null)
             {
-                _root.SetActive(false);
+                root.SetActive(false);
                 return;
             }
 
-            if (_pointA != null) _pointA.text = Loc.T("measure.pointA") + CoordsInWholeMm(seg.A);
-            if (_pointB != null) _pointB.text = Loc.T("measure.pointB") + CoordsInWholeMm(seg.B);
             if (_distance != null)
-                _distance.text = Loc.T("measure.distance") +
-                    MeasureGeometry.FormatMm((seg.B - seg.A).magnitude, seg.Axis >= 0);
+                _distance.text = MeasureGeometry.FormatMm((seg.B - seg.A).magnitude, seg.Axis >= 0);
+            _points?.SetRows(new List<DataRow>
+            {
+                PointRow(Loc.T("measure.pointShortA"), seg.A),
+                PointRow(Loc.T("measure.pointShortB"), seg.B),
+            });
 
-            _root.SetActive(true);
-            _root.transform.SetAsLastSibling();
+            root.SetActive(true);
+            root.transform.SetAsLastSibling();
         }
 
-        private static string CoordsInWholeMm(Vector3 world) =>
-            Loc.F("measure.coords", RoundToWholeMm(world.x), RoundToWholeMm(world.y), RoundToWholeMm(world.z));
+        private static DataRow PointRow(string name, Vector3 world) => DataRow.Item(name,
+            WholeMm(world.x), WholeMm(world.y), WholeMm(world.z));
 
-        private static int RoundToWholeMm(float units) => Mathf.RoundToInt(MeasureGeometry.ToMm(units));
+        private static string WholeMm(float units) =>
+            NumberFormat.Integer(Mathf.RoundToInt(MeasureGeometry.ToMm(units)));
 
         private void DeleteSelected()
         {

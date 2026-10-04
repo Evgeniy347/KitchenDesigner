@@ -84,7 +84,7 @@ specification 1000×700, load-project 1300×560, dialogs 1560×760, tool-panels 
 Unity-слой: всё, кроме T0, правит `Core/UI` — быстрый dotnet-набор его не собирает; исполнитель
 пишет «компиляция Unity-слоя не проверена», прогоны и регенерацию голденов делает координатор.
 
-## API общих компонентов (T0–T4a сделаны)
+## API общих компонентов (T0–T4b сделаны)
 
 Окна переезжают по одному; старые `UIFactory.Create*` продолжают работать рядом. Новое окно и окно,
 которое переводит своя задача, собираются ТОЛЬКО из этого — чисел по месту нет.
@@ -151,3 +151,18 @@ T5–T11; `NewerVersionDialogUI` — T9. Высота окна по содерж
 `VectorField.Create`. Старые `ContextMenuRowFactory`/`SettingsRowFactory` удаляют T5/T6 при переезде.
 Доказательство — «Музыка» (`MusicPanelUI`, `RowDensity.Tool`); витрина обеих плотностей —
 `FormRowsDiagramTests` (PNG `form_rows_gallery`).
+
+**T4b — таблица.** `DataTable.Create(parent, name, size, columns, selectable)`; колонка —
+`new DataColumn(key, header, width /* 0 = тянется на остаток */, CellAlign.Right /* числа */, sortable)`.
+`table.SetRows(rows)`: `DataRow.Item(cells…)`, `DataRow.Group(title)` (Bold 14, 36), `new DataRow(
+DataRowKind.Subtotal | Total, cells…)`; `row.Tag` — ваш объект, `row.SortKeys` — если показ ≠ ключ.
+Шапка 32 прибита (`table.Header`), тело — `ScrollArea` (`table.Body`), строки 28 (только чтение) / 32
+(`selectable`), разделитель `Divider`, длинный текст — многоточие + tooltip сам. Сортировка — клик по
+шапке (`ToggleSort`, ▲/▼), внутри групп, подытоги остаются на месте; числа сравниваются как числа
+(`TableSort`, понимает `NumberFormat`). Выбор — `Select(row)` / `SelectionChanged`, двойной клик —
+`RowActivated`. Пустое состояние D9 — `table.SetEmptyState(title, hint, actionCaption?, onAction?)`
+(или отдельно `EmptyState.Create`). Числа в ячейки — через `NumberFormat`. Кнопка «контуром»
+(«Удалить замер», «Удалить» инспектора) — `ButtonRole.DangerOutline`; `WindowFooter.AddRight(…, role)`.
+Доказательство — «Замер» (`MeasurePropertiesUI`: шапка D5, расстояние `FontDisplay` 28, таблица A/B ×
+X/Y/Z, «−», футер с контурной кнопкой; голден `ui_measure_properties` обновлён). Витрина на данных
+макета спецификации — `DataTableDiagramTests` (PNG `data_table_specification`).

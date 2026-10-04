@@ -6,5 +6,6 @@ namespace KitchenDesigner.Core.UI
         Danger,
         Secondary,
         Link,
+        DangerOutline,
     }
 }

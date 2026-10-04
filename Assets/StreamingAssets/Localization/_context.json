@@ -3943,20 +3943,10 @@
     "meaning": "Draw neighbouring storeys normally",
     "maxLength": 18
   },
-  "measure.coords": {
-    "where": "Measurement properties panel, point coordinates",
-    "meaning": "Coordinates of a point in whole millimetres",
-    "maxLength": 34,
-    "placeholders": {
-      "0": "X in mm",
-      "1": "Y in mm",
-      "2": "Z in mm"
-    }
-  },
-  "measure.distance": {
-    "where": "Measurement properties panel, row prefix (followed by the length)",
-    "meaning": "Length of the measurement",
-    "maxLength": 14
+  "measure.delete": {
+    "where": "Measurement panel: the only button in the footer, red outline",
+    "meaning": "Remove the selected tape-measure line from the scene",
+    "maxLength": 22
   },
   "measure.lengthMm": {
     "where": "Tape measure tool, length label drawn on an axis-aligned measurement line",
@@ -3975,15 +3965,15 @@
       "1": "length in mm (integer)"
     }
   },
-  "measure.pointA": {
-    "where": "Measurement properties panel, row prefix (followed by coordinates)",
-    "meaning": "Start point of the measurement",
-    "maxLength": 12
+  "measure.pointShortA": {
+    "where": "Measurement panel: first column of the points table (rows A and B, columns X, Y, Z)",
+    "meaning": "Name of the first end of the measurement (formerly Point A); keep the Latin letter",
+    "maxLength": 3
   },
-  "measure.pointB": {
-    "where": "Measurement properties panel, row prefix (followed by coordinates)",
-    "meaning": "End point of the measurement",
-    "maxLength": 12
+  "measure.pointShortB": {
+    "where": "Measurement panel: first column of the points table",
+    "meaning": "Name of the second end of the measurement (formerly Point B); keep the Latin letter",
+    "maxLength": 3
   },
   "measure.title": {
     "where": "Measurement properties panel, title",

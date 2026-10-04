@@ -3,6 +3,7 @@ using NUnit.Framework;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using KitchenDesigner.Core;
 using KitchenDesigner.Core.Measure;
 using KitchenDesigner.Core.UI;
 
@@ -10,6 +11,7 @@ public class MeasurePropertiesUITests
 {
     private GameObject? _canvasGo;
     private GameObject? _host;
+    private MeasurePropertiesUI? _ui;
 
     [SetUp]
     public void Setup()
@@ -19,7 +21,8 @@ public class MeasurePropertiesUITests
 
         _host = new GameObject("MeasureProps");
         _host!.transform.SetParent(_canvasGo!.transform);
-        _host!.AddComponent<MeasurePropertiesUI>().Build(_canvasGo!.transform);
+        _ui = _host!.AddComponent<MeasurePropertiesUI>();
+        _ui.Build(_canvasGo!.transform);
     }
 
     [TearDown]
@@ -30,6 +33,9 @@ public class MeasurePropertiesUITests
     }
 
     private RectTransform Panel() => (RectTransform)_canvasGo!.transform.Find("MeasurePanel")!;
+
+    private static Transform Node(Transform root, string name) =>
+        root.GetComponentsInChildren<Transform>(true).First(t => t.name == name);
 
     [Test]
     public void MeasureProperties_IsNotAProjectWindow_BecauseMeasuresDieWithTheRulerMode()
@@ -52,36 +58,38 @@ public class MeasurePropertiesUITests
 
         var buttons = panel.GetComponentsInChildren<Button>(true).Select(b => b.name).ToList();
         CollectionAssert.AreEquivalent(new[] { "MeasureDelete", "CloseBtn" }, buttons,
-            "единственное действие окна — «Удалить», плюс стандартное закрытие");
+            "единственное действие окна — «Удалить замер», плюс стандартное закрытие");
     }
 
     [Test]
-    public void MeasureProperties_DeleteButton_IsNarrowerThanTheRow_AndSetApartFromIt()
+    public void MeasureProperties_DeleteButton_LivesInTheFooter_AsAnOutline_NotAFullWidthFill()
     {
-        var panel = Panel();
-        var delete = (RectTransform)panel.Find("MeasureDelete")!;
-        var distance = (RectTransform)panel.Find("MeasureDistance")!;
+        var delete = (RectTransform)Node(Panel(), "MeasureDelete");
+        var distance = (RectTransform)Node(Panel(), "MeasureDistance");
 
-        Assert.Less(delete.sizeDelta.x, MeasurePropertiesUI.RowWidth,
+        Assert.Less(delete.sizeDelta.x, _ui!.BodyWidth,
             "Деструктивное действие не растягивается на всю ширину (правило 3 UI-GUIDELINES)");
-        float gap = distance.anchoredPosition.y - distance.sizeDelta.y * 0.5f
-            - (delete.anchoredPosition.y + delete.sizeDelta.y * 0.5f);
-        Assert.GreaterOrEqual(gap, UIStyle.GapSection,
-            "и отделяется от прочих контролов отступом между смысловыми группами, чтобы по "
-            + "нему не попали случайно");
+        Assert.Less(delete.position.y, distance.position.y,
+            "и стоит в футере под линией — отдельно от чисел, по нему не попасть случайно (D5)");
+        Assert.AreEqual(UIStyle.DangerText, delete.GetComponentInChildren<TMP_Text>().color,
+            "контур DangerText, заливка Danger — только во взводе (D7, tool-panels.md)");
     }
 
     [Test]
-    public void MeasureProperties_ShowsCoordinatesInWholeMillimetres()
+    public void MeasureProperties_ShowsCoordinatesInWholeMillimetres_InATable_NumbersRight()
     {
-        var segment = new MeasureSegment(new Vector3(0.1234f, 0f, 0f), new Vector3(1.5f, 0f, 0f));
+        var segment = new MeasureSegment(new Vector3(0.1234f, 0f, -0.3f), new Vector3(1.5f, 0f, 0f));
         MeasureStore.Add(segment);
         MeasureStore.Select(segment);
 
-        var a = Panel().Find("MeasureA")!.GetComponent<TMP_Text>();
-
-        Assert.AreEqual("Точка A: X 123, Y 0, Z 0 мм", a.text,
+        var table = _ui!.Points!;
+        Assert.AreEqual(2, table.ShownRows.Count);
+        Assert.AreEqual("123", table.CellLabel(0, 1)!.text,
             "Координаты показываются целыми миллиметрами (правило 1 UI-GUIDELINES): дробные "
             + "юниты сцены человеку не о чём");
+        Assert.AreEqual(NumberFormat.Minus + "300", table.CellLabel(0, 3)!.text,
+            "отрицательная координата — с типографским минусом «−», а не дефисом (tool-panels.md)");
+        Assert.AreEqual(TextAlignmentOptions.Right, table.CellLabel(0, 1)!.alignment, "числа вправо (D8)");
+        Assert.AreEqual("X", table.HeaderLabel(1).text);
     }
 }
