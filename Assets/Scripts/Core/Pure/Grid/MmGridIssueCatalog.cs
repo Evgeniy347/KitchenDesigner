@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text;
 using UnityEngine;
 
@@ -30,7 +29,6 @@ namespace KitchenDesigner.Core
             return text.ToString();
         }
 
-        private static string Mm(float value) =>
-            value.ToString("0.###", CultureInfo.InvariantCulture);
+        private static string Mm(float value) => NumberFormat.Compact(value, 3);
     }
 }

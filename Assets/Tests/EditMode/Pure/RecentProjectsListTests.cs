@@ -54,4 +54,36 @@ public class RecentProjectsListTests
         var result = RecentProjectsList.WithPromoted(new[] { "a" }, "b", capacity: 0);
         Assert.AreEqual(0, result.Length);
     }
+
+    [Test]
+    public void Without_DropsOnlyTheNamedPath_AndKeepsTheOrder()
+    {
+        var result = RecentProjectsList.Without(new[] { "a.kdproj", "b.kdproj", "c.kdproj" }, "b.kdproj");
+        CollectionAssert.AreEqual(new[] { "a.kdproj", "c.kdproj" }, result);
+    }
+
+    [Test]
+    public void Without_MatchesCaseInsensitively_LikeWithPromoted()
+    {
+        var result = RecentProjectsList.Without(new[] { "C:\\Projects\\Kitchen.kdproj", "x" }, "c:\\projects\\kitchen.kdproj");
+        CollectionAssert.AreEqual(new[] { "x" }, result);
+    }
+
+    [Test]
+    public void Without_AnUnknownOrEmptyPath_ChangesNothing()
+    {
+        var existing = new[] { "a", "b" };
+        CollectionAssert.AreEqual(existing, RecentProjectsList.Without(existing, "zzz"));
+        CollectionAssert.AreEqual(existing, RecentProjectsList.Without(existing, ""));
+        Assert.AreEqual(0, RecentProjectsList.Without(null, "a").Length);
+    }
+
+    [Test]
+    public void Without_ReturnsACopy_NotTheCallersArray()
+    {
+        var existing = new[] { "a", "b" };
+        var result = RecentProjectsList.Without(existing, "");
+        result[0] = "changed";
+        Assert.AreEqual("a", existing[0]);
+    }
 }

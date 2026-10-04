@@ -175,4 +175,121 @@ public class DataTableTests
         Assert.AreEqual(400f - WindowBody.BarW - 40f - 70f, table.ColumnWidth(1), 0.01f);
         Assert.AreEqual(40f, table.ColumnLeft(1), 0.01f);
     }
+
+    [Test]
+    public void ADisabledRow_IsDimmed_CannotBeSelectedOrActivated_AndKeepsAnExplicitCellColour()
+    {
+        var table = Table(selectable: true);
+        var live = DataRow.Item("1", "Рабочий", "10");
+        var gone = new DataRow(DataRowKind.Item, "2", "Пропавший", "20")
+        {
+            Enabled = false,
+            CellColors = new Color?[] { null, null, UIStyle.TextError },
+        };
+        table.SetRows(new List<DataRow> { live, gone });
+        DataRow? activated = null;
+        table.RowActivated += r => activated = r;
+
+        table.Select(gone);
+        table.Activate(gone);
+
+        Assert.IsNull(table.Selected, "выключенную строку не выбирают: она ничего не открывает");
+        Assert.AreEqual(UIStyle.TextDisabled, table.CellLabel(1, 1)!.color, "выключенная строка — TextDisabled (D10)");
+        Assert.AreEqual(UIStyle.TextError, table.CellLabel(1, 2)!.color, "явный цвет ячейки сильнее выключенности");
+        Assert.AreEqual(UIStyle.Text, table.CellLabel(0, 1)!.color);
+        Assert.IsFalse(table.RowRect(1).GetComponent<Image>().raycastTarget, "и мышь её не ловит: наведения нет");
+        Assert.IsNull(activated);
+    }
+
+    [Test]
+    public void SelectionSource_DecidesWhichRowsArePainted_AndRepaintSelectionAppliesIt()
+    {
+        var table = Table(selectable: true);
+        var rows = Spec();
+        table.SetRows(rows);
+        var picked = new HashSet<DataRow> { rows[1], rows[2] };
+        table.SelectionSource = picked.Contains;
+
+        table.RepaintSelection();
+
+        Assert.AreEqual(UIStyle.RowSelected, table.RowRect(1).GetComponent<Image>().color);
+        Assert.AreEqual(UIStyle.RowSelected, table.RowRect(2).GetComponent<Image>().color,
+            "внешняя модель выбора (Ctrl/Shift в «Ошибках») красит несколько строк разом");
+        Assert.AreNotEqual(UIStyle.RowSelected, table.RowRect(0).GetComponent<Image>().color);
+
+        picked.Clear();
+        table.RepaintSelection();
+        Assert.AreNotEqual(UIStyle.RowSelected, table.RowRect(1).GetComponent<Image>().color);
+    }
+
+    [Test]
+    public void ARowSetAgain_IsPaintedFromTheSelectionSource_NotFromTheLastClick()
+    {
+        var table = Table(selectable: true);
+        DataRow? target = null;
+        table.SelectionSource = row => row == target;
+        var rows = Spec();
+        target = rows[2];
+
+        table.SetRows(rows);
+
+        Assert.AreEqual(UIStyle.RowSelected, table.RowRect(2).GetComponent<Image>().color,
+            "перестроенные строки сразу красятся по модели выбора: выделение переживает пересборку (фильтр, поиск)");
+    }
+
+    [Test]
+    public void RowDecorator_RunsOncePerRow_WithItsRect_SoAWindowCanAddABadgeOrAButton()
+    {
+        var table = Table();
+        var seen = new List<string>();
+        table.RowDecorator = (row, rect) => seen.Add(row.Kind + ":" + rect.name);
+
+        table.SetRows(Spec());
+
+        Assert.AreEqual(6, seen.Count, "по разу на каждую показанную строку, включая группы и подытоги");
+        Assert.AreEqual("Group:Row_0", seen[0]);
+        Assert.AreEqual("Item:Row_1", seen[1]);
+    }
+
+    [Test]
+    public void ScrollIntoView_MovesTheBodyJustEnoughToRevealTheRow()
+    {
+        var table = Table();
+        var rows = new List<DataRow>();
+        for (int i = 0; i < 40; i++) rows.Add(DataRow.Item(i.ToString(), "Строка " + i, "1"));
+        table.SetRows(rows);
+        var viewport = table.Body.Viewport;
+        viewport.anchorMin = viewport.anchorMax = new Vector2(0f, 1f);
+        viewport.pivot = new Vector2(0f, 1f);
+        viewport.sizeDelta = new Vector2(300f, 140f);
+        viewport.anchoredPosition = Vector2.zero;
+        float row = UIStyle.TableRowH;
+
+        table.ScrollIntoView(30);
+        Assert.AreEqual(31 * row - 140f, table.Body.Content.anchoredPosition.y, 0.5f,
+            "строка внизу — тело сдвинуто так, чтобы она встала у нижней кромки");
+
+        table.ScrollIntoView(2);
+        Assert.AreEqual(2 * row, table.Body.Content.anchoredPosition.y, 0.5f,
+            "строка выше окна — встаёт у верхней кромки, страница целиком не катится");
+
+        table.ScrollIntoView(3);
+        Assert.AreEqual(2 * row, table.Body.Content.anchoredPosition.y, 0.5f, "строка уже видна — тело не трогаем");
+
+        table.ScrollIntoView(-1);
+        table.ScrollIntoView(400);
+        Assert.AreEqual(2 * row, table.Body.Content.anchoredPosition.y, 0.5f, "неверный индекс — ничего не двигает");
+    }
+
+    [Test]
+    public void RowsPerPage_IsTheWholeRowsThatFitTheBody()
+    {
+        var table = Table();
+        var viewport = table.Body.Viewport;
+        viewport.anchorMin = viewport.anchorMax = new Vector2(0f, 1f);
+        viewport.pivot = new Vector2(0f, 1f);
+        viewport.sizeDelta = new Vector2(300f, 140f);
+
+        Assert.AreEqual(5, table.RowsPerPage(), "140 / 28 = 5 строк на страницу — шаг PageUp/PageDown");
+    }
 }

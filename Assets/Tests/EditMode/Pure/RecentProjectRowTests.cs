@@ -102,4 +102,28 @@ public class RecentProjectRowTests
 
         Assert.AreNotEqual(RecentProjectRow.MissingVersionLabel, row.ModifiedLabel);
     }
+
+    [Test]
+    public void Describe_NewerThanTheApp_IsFlaggedNewer_AndOlderIsNot()
+    {
+        var newer = RecentProjectRow.Describe("a.kdproj", fileExists: true,
+            storedAppVersion: "0.900", currentAppVersion: AppVersion,
+            createdAtUtc: "2026-01-01T00:00:00Z", fallbackCreatedAtUtc: null, modifiedAtUtc: "2026-01-02T00:00:00Z");
+        var older = RecentProjectRow.Describe("a.kdproj", fileExists: true,
+            storedAppVersion: "0.100", currentAppVersion: AppVersion,
+            createdAtUtc: "2026-01-01T00:00:00Z", fallbackCreatedAtUtc: null, modifiedAtUtc: "2026-01-02T00:00:00Z");
+
+        Assert.IsTrue(newer.FileNewerThanApp, "файл новее программы — метка «новее программы» в таблице");
+        Assert.IsFalse(older.FileNewerThanApp, "старая версия — несовпадение, но не «новее»");
+    }
+
+    [Test]
+    public void Describe_MissingFile_IsNeverNewer()
+    {
+        var row = RecentProjectRow.Describe("gone.kdproj", fileExists: false,
+            storedAppVersion: "0.900", currentAppVersion: AppVersion,
+            createdAtUtc: null, fallbackCreatedAtUtc: null, modifiedAtUtc: null);
+
+        Assert.IsFalse(row.FileNewerThanApp);
+    }
 }

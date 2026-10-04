@@ -29,7 +29,7 @@ public class MmGridFindingTests
 
         Assert.IsNotNull(message, "124,4 мм — это 0,4 мм мимо целого миллиметра, "
             + "ровно тот случай, ради которого находка заведена");
-        StringAssert.Contains("X 124.4 мм — сдвиг 0.4 мм", message!,
+        StringAssert.Contains("X 124,4 мм — сдвиг 0,4 мм", message!,
             "строка обязана назвать ось, координату грани и величину сдвига: без них "
             + "человек не знает, какую деталь и куда двигать");
         StringAssert.Contains("отпускание выровняет её по сетке", message!,
@@ -52,7 +52,7 @@ public class MmGridFindingTests
     {
         var message = Finding(124.4f, 500f, 299.7f);
 
-        StringAssert.Contains("X 124.4 мм — сдвиг 0.4 мм, Z 299.7 мм — сдвиг 0.3 мм", message!,
+        StringAssert.Contains("X 124,4 мм — сдвиг 0,4 мм, Z 299,7 мм — сдвиг 0,3 мм", message!,
             "две оси мимо сетки — обе названы, порядок X, Y, Z");
     }
 

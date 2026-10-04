@@ -35,10 +35,13 @@ namespace KitchenDesigner.Core.UI
             self._placeholder = placeholder;
             self._onChanged = onChanged;
 
+            btn.GetComponent<Image>().color = UIStyle.Field;
+            UIFactory.AddFieldStroke(btn.GetComponent<RectTransform>());
+
             var caption = btn.GetComponentInChildren<TMP_Text>();
             caption.alignment = TextAlignmentOptions.Left;
             caption.margin = new Vector4(8, 0, 20, 0);
-            caption.fontSize = 15;
+            caption.fontSize = UIStyle.FontBody;
             self._caption = caption;
 
             var arrow = UIFactory.CreateLabel(name + "_Arrow", btn.transform, UIStyle.GlyphDropdown, 10,

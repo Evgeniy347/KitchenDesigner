@@ -17,10 +17,17 @@ namespace KitchenDesigner.Core.UI
 
         public static Color LevelColor(IssueLevel level) => level switch
         {
-            IssueLevel.Error => UIStyle.HighlightError,
-            IssueLevel.Warning => UIStyle.HighlightWarning,
+            IssueLevel.Error => UIStyle.TextError,
+            IssueLevel.Warning => UIStyle.TextWarning,
             IssueLevel.Info => UIStyle.TextSecondary,
             _ => UIStyle.Text,
+        };
+
+        public static string LevelGlyph(IssueLevel level) => level switch
+        {
+            IssueLevel.Error => UIStyle.GlyphClose,
+            IssueLevel.Warning => UIStyle.GlyphWarning,
+            _ => UIStyle.GlyphHint,
         };
 
         public static StatusLevel StatusLevelOf(IssueLevel level) => level switch

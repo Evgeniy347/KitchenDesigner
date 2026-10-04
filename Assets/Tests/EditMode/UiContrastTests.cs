@@ -56,7 +56,8 @@ public class UiContrastTests
         yield return new Pair("TextError / NavBg", UIStyle.TextError, UIStyle.NavBg, Text);
         yield return new Pair("TextWarning / Panel", UIStyle.TextWarning, UIStyle.Panel, Text);
         yield return new Pair("TextSuccess / Panel", UIStyle.TextSuccess, UIStyle.Panel, Text);
-        yield return new Pair("Text / RowHover", UIStyle.Text, UIStyle.RowHover, Text);
+        yield return new Pair("TextError / BadgeErrorFill", UIStyle.TextError, UIStyle.BadgeErrorFill, Text);
+        yield return new Pair("TextWarning / BadgeWarningFill", UIStyle.TextWarning, UIStyle.BadgeWarningFill, Text);        yield return new Pair("Text / RowHover", UIStyle.Text, UIStyle.RowHover, Text);
         yield return new Pair("Text / RowSelected", UIStyle.Text, UIStyle.RowSelected, Text);
         yield return new Pair("FieldStroke / Field", UIStyle.FieldStroke, UIStyle.Field, Stroke);
         yield return new Pair("FieldStroke / Panel", UIStyle.FieldStroke, UIStyle.Panel, Stroke);

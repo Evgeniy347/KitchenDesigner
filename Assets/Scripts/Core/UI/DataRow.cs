@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -22,9 +23,16 @@ namespace KitchenDesigner.Core.UI
 
         public IReadOnlyList<string>? SortKeys { get; set; }
 
+        public bool Enabled { get; set; } = true;
+
+        public IReadOnlyList<Color?>? CellColors { get; set; }
+
         public string Cell(int column) => column >= 0 && column < Cells.Count ? Cells[column] : "";
 
         public string SortKey(int column) =>
             SortKeys != null && column < SortKeys.Count ? SortKeys[column] : Cell(column);
+
+        public Color? CellColor(int column) =>
+            CellColors != null && column >= 0 && column < CellColors.Count ? CellColors[column] : null;
     }
 }

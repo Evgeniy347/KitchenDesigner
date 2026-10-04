@@ -20,6 +20,13 @@ namespace KitchenDesigner.Core
             var store = For(commandLineArgs);
             store.Values = RecentProjectsList.WithPromoted(store.Values, path);
         }
+
+        internal static void Forget(string[]? commandLineArgs, string path)
+        {
+            if (string.IsNullOrEmpty(path)) return;
+            var store = For(commandLineArgs);
+            store.Values = RecentProjectsList.Without(store.Values, path);
+        }
     }
 
     internal sealed class RecentProjectsInPreferences : IRecentProjectsMemory

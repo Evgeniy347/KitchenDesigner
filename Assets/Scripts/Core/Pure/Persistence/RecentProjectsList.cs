@@ -24,6 +24,17 @@ namespace KitchenDesigner.Core
             return result.ToArray();
         }
 
+        public static string[] Without(string[]? existing, string? path)
+        {
+            if (existing == null) return Array.Empty<string>();
+            if (string.IsNullOrEmpty(path)) return Copy(existing);
+
+            var result = new List<string>(existing.Length);
+            foreach (var p in existing)
+                if (!string.Equals(p, path, StringComparison.OrdinalIgnoreCase)) result.Add(p);
+            return result.ToArray();
+        }
+
         private static string[] Copy(string[]? existing) =>
             existing == null ? Array.Empty<string>() : (string[])existing.Clone();
     }

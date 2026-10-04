@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.UI
         private readonly float[] _lefts;
         private readonly List<TMP_Text> _headerLabels = new();
         private readonly List<DataTableRow> _rowViews = new();
+        private readonly List<float> _rowTops = new();
         private IReadOnlyList<DataRow> _source = Array.Empty<DataRow>();
         private DataRow[] _shown = Array.Empty<DataRow>();
         private EmptyState? _empty;
@@ -60,6 +61,10 @@ namespace KitchenDesigner.Core.UI
         public float ContentHeight { get; private set; }
 
         public EmptyState? Empty => _empty;
+
+        public Action<DataRow, RectTransform>? RowDecorator { get; set; }
+
+        public Func<DataRow, bool>? SelectionSource { get; set; }
 
         public event Action<DataRow?>? SelectionChanged;
 
@@ -118,14 +123,34 @@ namespace KitchenDesigner.Core.UI
 
         public void Select(DataRow? row)
         {
-            if (row != null && (!_selectable || row.Kind != DataRowKind.Item)) return;
+            if (row != null && (!_selectable || row.Kind != DataRowKind.Item || !row.Enabled)) return;
             Selected = row;
-            foreach (var view in _rowViews) view.Paint(view.Row == Selected);
+            RepaintSelection();
             SelectionChanged?.Invoke(Selected);
         }
 
+        public void RepaintSelection()
+        {
+            foreach (var view in _rowViews) view.Paint(IsSelected(view.Row!));
+        }
+
+        public int RowsPerPage() => TableScroll.RowsPerPage(Body.Viewport.rect.height, RowHeight);
+
+        public void ScrollIntoView(int shownIndex)
+        {
+            if (shownIndex < 0 || shownIndex >= _rowTops.Count) return;
+            var content = Body.Content;
+            float height = ((RectTransform)_rowViews[shownIndex].transform).sizeDelta.y;
+            float offset = TableScroll.OffsetToReveal(content.anchoredPosition.y, _rowTops[shownIndex], height,
+                Body.Viewport.rect.height, ContentHeight);
+            content.anchoredPosition = new Vector2(content.anchoredPosition.x, offset);
+        }
+
+        private bool IsSelected(DataRow row) => SelectionSource != null ? SelectionSource(row) : row == Selected;
+
         public void Activate(DataRow row)
         {
+            if (!row.Enabled) return;
             Select(row);
             RowActivated?.Invoke(row);
         }
@@ -189,12 +214,14 @@ namespace KitchenDesigner.Core.UI
         {
             foreach (var view in _rowViews) Discard(view.gameObject);
             _rowViews.Clear();
+            _rowTops.Clear();
 
             _shown = Ordered().ToArray();
             float y = 0f;
             for (int i = 0; i < _shown.Length; i++)
             {
                 var view = BuildRow(_shown[i], i, y);
+                _rowTops.Add(y);
                 y += ((RectTransform)view.transform).sizeDelta.y;
                 _rowViews.Add(view);
             }
@@ -250,17 +277,19 @@ namespace KitchenDesigner.Core.UI
             else
             {
                 int size = row.Kind == DataRowKind.Subtotal ? UIStyle.FontSmall : UIStyle.FontBody;
-                var color = row.Kind == DataRowKind.Subtotal ? UIStyle.TextSecondary : UIStyle.Text;
+                var color = row.Kind == DataRowKind.Subtotal ? UIStyle.TextSecondary
+                    : row.Enabled ? UIStyle.Text : UIStyle.TextDisabled;
                 var style = row.Kind == DataRowKind.Total ? FontStyles.Bold : FontStyles.Normal;
                 for (int c = 0; c < _columns.Count; c++)
                     if (row.Cell(c).Length > 0)
-                        Cell(rect, c, row.Cell(c), size, color, style, h, _columns[c].Align);
+                        Cell(rect, c, row.Cell(c), size, row.CellColor(c) ?? color, style, h, _columns[c].Align);
                 if (row.Kind != DataRowKind.Total) Line("Divider", rect, UIStyle.Divider, 0f);
             }
 
             var view = rect.gameObject.AddComponent<DataTableRow>();
-            view.Init(this, row, bg, bar.gameObject, _selectable && row.Kind == DataRowKind.Item);
-            view.Paint(row == Selected);
+            view.Init(this, row, bg, bar.gameObject, _selectable && row.Kind == DataRowKind.Item && row.Enabled);
+            view.Paint(IsSelected(row));
+            RowDecorator?.Invoke(row, rect);
             return view;
         }
 
