@@ -120,7 +120,7 @@ public class PipePanelChoiceUndoGuardTests
     public void TearDown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         KitchenSettings.Instance.BlockOnViolation = _blockOnViolationBefore;
         _guard?.Restore();
         ClearScene();

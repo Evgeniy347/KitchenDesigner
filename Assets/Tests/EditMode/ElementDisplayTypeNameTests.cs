@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// Подпись типа в заголовке окна свойств — данные ЭЛЕМЕНТА, а не лестница в UI.
@@ -203,7 +204,7 @@ public class ElementDisplayTypeNameTests
         var oven = Spawn<OvenElement>(ElementFactory.CreateOven("Дх-2", Vector3.zero));
         _menu!.Open(oven);
 
-        var title = _canvas!.transform.Find("ContextMenu")!.Find("CtxTitle")!
+        var title = _canvas!.transform.FindNode("ContextMenu").FindNode("ContextMenuTitle")
             .GetComponent<TMP_Text>();
         Assert.AreEqual($"{oven.DisplayTypeName} — {oven.PartName}", title.text,
             "заголовок обязан спрашивать подпись у элемента: собственная копия "

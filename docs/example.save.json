@@ -45302,7 +45302,7 @@
                 18
             ],
             "position": [
-                1.0939991474151612,
+                1.0939981937408448,
                 0.05000000074505806,
                 -1.562000036239624
             ],
@@ -46686,7 +46686,7 @@
                 18
             ],
             "position": [
-                1.0940001010894776,
+                1.0939991474151612,
                 0.05000000074505806,
                 -2.1620001792907717
             ],
@@ -69517,352 +69517,6 @@
             "pipeFittingType": "pipe_elbow"
         },
         {
-            "name": "Yaschik_Movento_13",
-            "elementType": "drawer",
-            "dimensionsMM": [
-                582,
-                230,
-                500
-            ],
-            "position": [
-                3.12600040435791,
-                0.11499999463558197,
-                -0.9459997415542603
-            ],
-            "rotation": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "movable": true,
-            "isWall": false,
-            "wallKind": "",
-            "wallEndShape": [],
-            "wallLoadBearing": false,
-            "wallMasonry": 0,
-            "wallJointMm": 10,
-            "wallWastePct": 5,
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "isStool": false,
-            "isChair": false,
-            "isSofa": false,
-            "isPouffe": false,
-            "pouffeSeatThicknessMM": 50,
-            "isToilet": false,
-            "isWallHungToilet": false,
-            "toiletSeatHeightMM": 400,
-            "toiletFlushPlateHeightMM": 600,
-            "isBathtub": false,
-            "bathtubRimWidthMM": 40,
-            "bathtubBowlDepthMM": 450,
-            "bathtubBowlRadiusMM": 120,
-            "bathtubBowlFilletMM": 80,
-            "isBathMixer": false,
-            "bathMixerCentresMM": 150,
-            "bathMixerBodyLengthMM": 270,
-            "bathMixerBodyDiameterMM": 70,
-            "bathMixerEscutcheonReachMM": 34,
-            "bathMixerSpoutLengthMM": 110,
-            "bathMixerOutletDiameterMM": 13,
-            "isShowerColumn": false,
-            "showerColumnHeightMM": 1150,
-            "showerRiserDiameterMM": 32,
-            "showerHeadDiameterMM": 250,
-            "showerHeadThicknessMM": 30,
-            "showerArmReachMM": 380,
-            "showerWallOffsetMM": 60,
-            "showerHandDiameterMM": 110,
-            "showerHoseLengthMM": 1000,
-            "isSocket": false,
-            "isLightSwitch": false,
-            "wallDevicePlateWidthMM": 80,
-            "wallDevicePlateHeightMM": 80,
-            "wallDeviceProtrusionMM": 10,
-            "wallDevicePostCount": 1,
-            "lightSwitchOn": true,
-            "switchLightNames": [],
-            "isBed": false,
-            "bedDouble": true,
-            "bedHeadboard": true,
-            "seatHeightMM": 450,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "gapFront": 0,
-            "gapBack": 0,
-            "groupId": 0,
-            "materialId": "dub_davenport_naturalnyy_svetlyy_h3359",
-            "legsMaterialId": "default",
-            "tabletopMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": true,
-            "drawerSystem": 1,
-            "drawerType": 200,
-            "drawerNominalLength": 500,
-            "drawerColor": 1,
-            "drawerInternalWidth": 582,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "attachedToName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "floorPolygonXZ": [],
-            "isLightSource": false,
-            "lightTemperatureK": 3000,
-            "lightPowerW": 9,
-            "lightDiffusionPct": 50,
-            "lightUpPct": 8,
-            "lightBeamDeg": 150,
-            "lightSoftnessPct": 30,
-            "lightRangeMinMM": 2000,
-            "lightRangeMaxMM": 16000,
-            "lightDropMM": 120,
-            "lightUpConePct": 66,
-            "lightUpRangePct": 50,
-            "lightEfficacyLmPerW": 110,
-            "lightLumensPerUnit": 700,
-            "lightGlowPct": 100,
-            "lightShadowStrengthPct": 70,
-            "lightShape": 0,
-            "lightShadow": 0,
-            "isPanel": false,
-            "isSink": false,
-            "sinkAttachedPartName": "",
-            "sinkOffsetXMM": 0,
-            "sinkOffsetYMM": 0,
-            "isCooktop": false,
-            "cooktopModel": "",
-            "cooktopAttachedPartName": "",
-            "cooktopOffsetXMM": 0,
-            "cooktopOffsetYMM": 0,
-            "cooktopCutoutWidthMM": 0,
-            "cooktopCutoutDepthMM": 0,
-            "cooktopYawDeg": 0.0,
-            "isOven": false,
-            "isDishwasher": false,
-            "dishwasherAttachedFacadeName": "",
-            "isLaundryMachine": false,
-            "laundryMachineKind": 0,
-            "grooves": [],
-            "textureOverlays": [],
-            "edgeBanding": true,
-            "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false,
-            "edgeManualMask": 0,
-            "edgeSuppressedMask": 0,
-            "isScrewLeg": false,
-            "screwLegThread": "M6",
-            "screwLegThreadLengthMM": 50,
-            "screwLegInsertionMM": 25,
-            "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8,
-            "isPipe": false,
-            "pipeSizeId": "dn20",
-            "pipeLengthMM": 600,
-            "isPipeFitting": false,
-            "pipeFittingType": "pipe_elbow"
-        },
-        {
-            "name": "Yaschik_Movento_14",
-            "elementType": "drawer",
-            "dimensionsMM": [
-                582,
-                230,
-                500
-            ],
-            "position": [
-                3.126000165939331,
-                0.11500000208616257,
-                -1.5439997911453248
-            ],
-            "rotation": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "movable": true,
-            "isWall": false,
-            "wallKind": "",
-            "wallEndShape": [],
-            "wallLoadBearing": false,
-            "wallMasonry": 0,
-            "wallJointMm": 10,
-            "wallWastePct": 5,
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "isStool": false,
-            "isChair": false,
-            "isSofa": false,
-            "isPouffe": false,
-            "pouffeSeatThicknessMM": 50,
-            "isToilet": false,
-            "isWallHungToilet": false,
-            "toiletSeatHeightMM": 400,
-            "toiletFlushPlateHeightMM": 600,
-            "isBathtub": false,
-            "bathtubRimWidthMM": 40,
-            "bathtubBowlDepthMM": 450,
-            "bathtubBowlRadiusMM": 120,
-            "bathtubBowlFilletMM": 80,
-            "isBathMixer": false,
-            "bathMixerCentresMM": 150,
-            "bathMixerBodyLengthMM": 270,
-            "bathMixerBodyDiameterMM": 70,
-            "bathMixerEscutcheonReachMM": 34,
-            "bathMixerSpoutLengthMM": 110,
-            "bathMixerOutletDiameterMM": 13,
-            "isShowerColumn": false,
-            "showerColumnHeightMM": 1150,
-            "showerRiserDiameterMM": 32,
-            "showerHeadDiameterMM": 250,
-            "showerHeadThicknessMM": 30,
-            "showerArmReachMM": 380,
-            "showerWallOffsetMM": 60,
-            "showerHandDiameterMM": 110,
-            "showerHoseLengthMM": 1000,
-            "isSocket": false,
-            "isLightSwitch": false,
-            "wallDevicePlateWidthMM": 80,
-            "wallDevicePlateHeightMM": 80,
-            "wallDeviceProtrusionMM": 10,
-            "wallDevicePostCount": 1,
-            "lightSwitchOn": true,
-            "switchLightNames": [],
-            "isBed": false,
-            "bedDouble": true,
-            "bedHeadboard": true,
-            "seatHeightMM": 450,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "gapFront": 0,
-            "gapBack": 0,
-            "groupId": 0,
-            "materialId": "dub_davenport_naturalnyy_svetlyy_h3359",
-            "legsMaterialId": "default",
-            "tabletopMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": true,
-            "drawerSystem": 1,
-            "drawerType": 200,
-            "drawerNominalLength": 500,
-            "drawerColor": 1,
-            "drawerInternalWidth": 582,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "attachedToName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "floorPolygonXZ": [],
-            "isLightSource": false,
-            "lightTemperatureK": 3000,
-            "lightPowerW": 9,
-            "lightDiffusionPct": 50,
-            "lightUpPct": 8,
-            "lightBeamDeg": 150,
-            "lightSoftnessPct": 30,
-            "lightRangeMinMM": 2000,
-            "lightRangeMaxMM": 16000,
-            "lightDropMM": 120,
-            "lightUpConePct": 66,
-            "lightUpRangePct": 50,
-            "lightEfficacyLmPerW": 110,
-            "lightLumensPerUnit": 700,
-            "lightGlowPct": 100,
-            "lightShadowStrengthPct": 70,
-            "lightShape": 0,
-            "lightShadow": 0,
-            "isPanel": false,
-            "isSink": false,
-            "sinkAttachedPartName": "",
-            "sinkOffsetXMM": 0,
-            "sinkOffsetYMM": 0,
-            "isCooktop": false,
-            "cooktopModel": "",
-            "cooktopAttachedPartName": "",
-            "cooktopOffsetXMM": 0,
-            "cooktopOffsetYMM": 0,
-            "cooktopCutoutWidthMM": 0,
-            "cooktopCutoutDepthMM": 0,
-            "cooktopYawDeg": 0.0,
-            "isOven": false,
-            "isDishwasher": false,
-            "dishwasherAttachedFacadeName": "",
-            "isLaundryMachine": false,
-            "laundryMachineKind": 0,
-            "grooves": [],
-            "textureOverlays": [],
-            "edgeBanding": true,
-            "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false,
-            "edgeManualMask": 0,
-            "edgeSuppressedMask": 0,
-            "isScrewLeg": false,
-            "screwLegThread": "M6",
-            "screwLegThreadLengthMM": 50,
-            "screwLegInsertionMM": 25,
-            "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8,
-            "isPipe": false,
-            "pipeSizeId": "dn20",
-            "pipeLengthMM": 600,
-            "isPipeFitting": false,
-            "pipeFittingType": "pipe_elbow"
-        },
-        {
             "name": "Polka_29",
             "elementType": "board",
             "dimensionsMM": [
@@ -70036,179 +69690,6 @@
             "pipeFittingType": "pipe_elbow"
         },
         {
-            "name": "Yaschik_Movento_15",
-            "elementType": "drawer",
-            "dimensionsMM": [
-                582,
-                230,
-                500
-            ],
-            "position": [
-                3.126000165939331,
-                0.11500000208616257,
-                -2.197000026702881
-            ],
-            "rotation": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "movable": true,
-            "isWall": false,
-            "wallKind": "",
-            "wallEndShape": [],
-            "wallLoadBearing": false,
-            "wallMasonry": 0,
-            "wallJointMm": 10,
-            "wallWastePct": 5,
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "isStool": false,
-            "isChair": false,
-            "isSofa": false,
-            "isPouffe": false,
-            "pouffeSeatThicknessMM": 50,
-            "isToilet": false,
-            "isWallHungToilet": false,
-            "toiletSeatHeightMM": 400,
-            "toiletFlushPlateHeightMM": 600,
-            "isBathtub": false,
-            "bathtubRimWidthMM": 40,
-            "bathtubBowlDepthMM": 450,
-            "bathtubBowlRadiusMM": 120,
-            "bathtubBowlFilletMM": 80,
-            "isBathMixer": false,
-            "bathMixerCentresMM": 150,
-            "bathMixerBodyLengthMM": 270,
-            "bathMixerBodyDiameterMM": 70,
-            "bathMixerEscutcheonReachMM": 34,
-            "bathMixerSpoutLengthMM": 110,
-            "bathMixerOutletDiameterMM": 13,
-            "isShowerColumn": false,
-            "showerColumnHeightMM": 1150,
-            "showerRiserDiameterMM": 32,
-            "showerHeadDiameterMM": 250,
-            "showerHeadThicknessMM": 30,
-            "showerArmReachMM": 380,
-            "showerWallOffsetMM": 60,
-            "showerHandDiameterMM": 110,
-            "showerHoseLengthMM": 1000,
-            "isSocket": false,
-            "isLightSwitch": false,
-            "wallDevicePlateWidthMM": 80,
-            "wallDevicePlateHeightMM": 80,
-            "wallDeviceProtrusionMM": 10,
-            "wallDevicePostCount": 1,
-            "lightSwitchOn": true,
-            "switchLightNames": [],
-            "isBed": false,
-            "bedDouble": true,
-            "bedHeadboard": true,
-            "seatHeightMM": 450,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "gapFront": 0,
-            "gapBack": 0,
-            "groupId": 0,
-            "materialId": "dub_davenport_naturalnyy_svetlyy_h3359",
-            "legsMaterialId": "default",
-            "tabletopMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": true,
-            "drawerSystem": 1,
-            "drawerType": 200,
-            "drawerNominalLength": 500,
-            "drawerColor": 1,
-            "drawerInternalWidth": 582,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "attachedToName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "floorPolygonXZ": [],
-            "isLightSource": false,
-            "lightTemperatureK": 3000,
-            "lightPowerW": 9,
-            "lightDiffusionPct": 50,
-            "lightUpPct": 8,
-            "lightBeamDeg": 150,
-            "lightSoftnessPct": 30,
-            "lightRangeMinMM": 2000,
-            "lightRangeMaxMM": 16000,
-            "lightDropMM": 120,
-            "lightUpConePct": 66,
-            "lightUpRangePct": 50,
-            "lightEfficacyLmPerW": 110,
-            "lightLumensPerUnit": 700,
-            "lightGlowPct": 100,
-            "lightShadowStrengthPct": 70,
-            "lightShape": 0,
-            "lightShadow": 0,
-            "isPanel": false,
-            "isSink": false,
-            "sinkAttachedPartName": "",
-            "sinkOffsetXMM": 0,
-            "sinkOffsetYMM": 0,
-            "isCooktop": false,
-            "cooktopModel": "",
-            "cooktopAttachedPartName": "",
-            "cooktopOffsetXMM": 0,
-            "cooktopOffsetYMM": 0,
-            "cooktopCutoutWidthMM": 0,
-            "cooktopCutoutDepthMM": 0,
-            "cooktopYawDeg": 0.0,
-            "isOven": false,
-            "isDishwasher": false,
-            "dishwasherAttachedFacadeName": "",
-            "isLaundryMachine": false,
-            "laundryMachineKind": 0,
-            "grooves": [],
-            "textureOverlays": [],
-            "edgeBanding": true,
-            "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false,
-            "edgeManualMask": 0,
-            "edgeSuppressedMask": 0,
-            "isScrewLeg": false,
-            "screwLegThread": "M6",
-            "screwLegThreadLengthMM": 50,
-            "screwLegInsertionMM": 25,
-            "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8,
-            "isPipe": false,
-            "pipeSizeId": "dn20",
-            "pipeLengthMM": 600,
-            "isPipeFitting": false,
-            "pipeFittingType": "pipe_elbow"
-        },
-        {
             "name": "Polka_30",
             "elementType": "board",
             "dimensionsMM": [
@@ -70219,7 +69700,7 @@
             "position": [
                 3.1760003566741945,
                 1.350000023841858,
-                -1.842999815940857
+                -1.843000054359436
             ],
             "rotation": [
                 0.0,
@@ -70305,179 +69786,6 @@
             "drawerNominalLength": 350,
             "drawerColor": 0,
             "drawerInternalWidth": 400,
-            "drawerIsDouble": false,
-            "drawerIsUpper": false,
-            "drawerPairedName": "",
-            "drawerAttachedFacadeName": "",
-            "attachedToName": "",
-            "doubleDrawerState": 0,
-            "isWindow": false,
-            "windowTint": 0,
-            "windowSillProtrusionMM": 50,
-            "windowDoorMode": 0,
-            "windowIsOpen": false,
-            "windowAttachedWallName": "",
-            "isDoor": false,
-            "doorSashType": 0,
-            "doorDoorMode": 0,
-            "doorIsOpen": false,
-            "doorAttachedWallName": "",
-            "isPillar": false,
-            "midHeightMM": 75,
-            "isFloor": false,
-            "floorPolygonXZ": [],
-            "isLightSource": false,
-            "lightTemperatureK": 3000,
-            "lightPowerW": 9,
-            "lightDiffusionPct": 50,
-            "lightUpPct": 8,
-            "lightBeamDeg": 150,
-            "lightSoftnessPct": 30,
-            "lightRangeMinMM": 2000,
-            "lightRangeMaxMM": 16000,
-            "lightDropMM": 120,
-            "lightUpConePct": 66,
-            "lightUpRangePct": 50,
-            "lightEfficacyLmPerW": 110,
-            "lightLumensPerUnit": 700,
-            "lightGlowPct": 100,
-            "lightShadowStrengthPct": 70,
-            "lightShape": 0,
-            "lightShadow": 0,
-            "isPanel": false,
-            "isSink": false,
-            "sinkAttachedPartName": "",
-            "sinkOffsetXMM": 0,
-            "sinkOffsetYMM": 0,
-            "isCooktop": false,
-            "cooktopModel": "",
-            "cooktopAttachedPartName": "",
-            "cooktopOffsetXMM": 0,
-            "cooktopOffsetYMM": 0,
-            "cooktopCutoutWidthMM": 0,
-            "cooktopCutoutDepthMM": 0,
-            "cooktopYawDeg": 0.0,
-            "isOven": false,
-            "isDishwasher": false,
-            "dishwasherAttachedFacadeName": "",
-            "isLaundryMachine": false,
-            "laundryMachineKind": 0,
-            "grooves": [],
-            "textureOverlays": [],
-            "edgeBanding": true,
-            "edgeThicknessMM": 1.0,
-            "edgeSkipValidation": false,
-            "edgeManualMask": 0,
-            "edgeSuppressedMask": 0,
-            "isScrewLeg": false,
-            "screwLegThread": "M6",
-            "screwLegThreadLengthMM": 50,
-            "screwLegInsertionMM": 25,
-            "screwLegBaseDiameterMM": 25,
-            "screwLegBaseHeightMM": 8,
-            "isPipe": false,
-            "pipeSizeId": "dn20",
-            "pipeLengthMM": 600,
-            "isPipeFitting": false,
-            "pipeFittingType": "pipe_elbow"
-        },
-        {
-            "name": "Yaschik_Movento_16",
-            "elementType": "drawer",
-            "dimensionsMM": [
-                582,
-                230,
-                500
-            ],
-            "position": [
-                3.1259994506835939,
-                0.4740000367164612,
-                -1.5439997911453248
-            ],
-            "rotation": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "movable": true,
-            "isWall": false,
-            "wallKind": "",
-            "wallEndShape": [],
-            "wallLoadBearing": false,
-            "wallMasonry": 0,
-            "wallJointMm": 10,
-            "wallWastePct": 5,
-            "isFacade": false,
-            "isRadialShelf": false,
-            "isTable": false,
-            "isRadiusTable": false,
-            "isStool": false,
-            "isChair": false,
-            "isSofa": false,
-            "isPouffe": false,
-            "pouffeSeatThicknessMM": 50,
-            "isToilet": false,
-            "isWallHungToilet": false,
-            "toiletSeatHeightMM": 400,
-            "toiletFlushPlateHeightMM": 600,
-            "isBathtub": false,
-            "bathtubRimWidthMM": 40,
-            "bathtubBowlDepthMM": 450,
-            "bathtubBowlRadiusMM": 120,
-            "bathtubBowlFilletMM": 80,
-            "isBathMixer": false,
-            "bathMixerCentresMM": 150,
-            "bathMixerBodyLengthMM": 270,
-            "bathMixerBodyDiameterMM": 70,
-            "bathMixerEscutcheonReachMM": 34,
-            "bathMixerSpoutLengthMM": 110,
-            "bathMixerOutletDiameterMM": 13,
-            "isShowerColumn": false,
-            "showerColumnHeightMM": 1150,
-            "showerRiserDiameterMM": 32,
-            "showerHeadDiameterMM": 250,
-            "showerHeadThicknessMM": 30,
-            "showerArmReachMM": 380,
-            "showerWallOffsetMM": 60,
-            "showerHandDiameterMM": 110,
-            "showerHoseLengthMM": 1000,
-            "isSocket": false,
-            "isLightSwitch": false,
-            "wallDevicePlateWidthMM": 80,
-            "wallDevicePlateHeightMM": 80,
-            "wallDeviceProtrusionMM": 10,
-            "wallDevicePostCount": 1,
-            "lightSwitchOn": true,
-            "switchLightNames": [],
-            "isBed": false,
-            "bedDouble": true,
-            "bedHeadboard": true,
-            "seatHeightMM": 450,
-            "legInsetMM": 100,
-            "gapLeft": 0,
-            "gapRight": 0,
-            "gapTop": 0,
-            "gapBottom": 0,
-            "gapFront": 0,
-            "gapBack": 0,
-            "groupId": 0,
-            "materialId": "dub_davenport_naturalnyy_svetlyy_h3359",
-            "legsMaterialId": "default",
-            "tabletopMaterialId": "default",
-            "transparent": false,
-            "doorMode": 0,
-            "doorOpen": false,
-            "assembled": false,
-            "assembledFill": 0,
-            "grooveCount": 0,
-            "cornerRadius": 0,
-            "isDrawer": true,
-            "drawerSystem": 1,
-            "drawerType": 200,
-            "drawerNominalLength": 500,
-            "drawerColor": 1,
-            "drawerInternalWidth": 582,
             "drawerIsDouble": false,
             "drawerIsUpper": false,
             "drawerPairedName": "",
@@ -71688,11 +70996,11 @@
     ],
     "camera": {
         "valid": true,
-        "targetX": -0.3610805869102478,
-        "targetY": 1.5879273414611817,
-        "targetZ": -1.0767649412155152,
-        "angleX": 15.183609962463379,
-        "angleY": -2721.173828125,
+        "targetX": 2.3494455814361574,
+        "targetY": 2.3305907249450685,
+        "targetZ": -1.9711886644363404,
+        "angleX": 41.352169036865237,
+        "angleY": -3495.334228515625,
         "distance": 1.5000001192092896,
         "photoDistance": 0.5,
         "photoTargetX": 0.30268532037734988,
@@ -71878,598 +71186,6 @@
         "pipeFittingType": "pipe_elbow"
     },
     "undoHistory": [
-        {
-            "type": "move",
-            "description": "Move Cab_BackPanel_1",
-            "elementIndex": 255,
-            "posBefore": [
-                6.63200044631958,
-                0.3569999933242798,
-                2.193000078201294
-            ],
-            "posAfter": [
-                6.5320000648498539,
-                0.3569999933242798,
-                2.193000078201294
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_BackPanel_1",
-            "elementIndex": 255,
-            "posBefore": [
-                6.5320000648498539,
-                0.3569999933242798,
-                2.193000078201294
-            ],
-            "posAfter": [
-                6.5320000648498539,
-                1.0709999799728394,
-                2.193000078201294
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_BackPanel_2",
-            "elementIndex": 256,
-            "posBefore": [
-                6.631999969482422,
-                1.0709999799728394,
-                2.193000078201294
-            ],
-            "posAfter": [
-                6.532000541687012,
-                1.0709999799728394,
-                2.193000078201294
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_BackPanel_2",
-            "elementIndex": 256,
-            "posBefore": [
-                6.532000541687012,
-                1.0709999799728394,
-                2.193000078201294
-            ],
-            "posAfter": [
-                6.532000541687012,
-                1.784999966621399,
-                2.193000078201294
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_BackPanel_3",
-            "elementIndex": 257,
-            "posBefore": [
-                6.63200044631958,
-                1.784999966621399,
-                2.193000078201294
-            ],
-            "posAfter": [
-                6.5320000648498539,
-                1.784999966621399,
-                2.193000078201294
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Cab_BackPanel_3",
-            "elementIndex": 257,
-            "posBefore": [
-                6.5320000648498539,
-                1.784999966621399,
-                2.193000078201294
-            ],
-            "posAfter": [
-                6.5320000648498539,
-                2.499000072479248,
-                2.193000078201294
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Cab_BackPanel_3",
-            "elementIndex": 257,
-            "posBefore": [
-                6.5320000648498539,
-                2.499000072479248,
-                2.193000078201294
-            ],
-            "posAfter": [
-                6.5320000648498539,
-                2.4210000038146974,
-                2.193000078201294
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [
-                2000,
-                714,
-                16
-            ],
-            "dimsAfter": [
-                2000,
-                558,
-                16
-            ],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 51,
-            "posBefore": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 51,
-            "posBefore": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 51,
-            "posBefore": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 51,
-            "posBefore": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 51,
-            "posBefore": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 51,
-            "posBefore": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 51,
-            "posBefore": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 51,
-            "posBefore": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "resize",
-            "description": "Resize Istochnik_sveta",
-            "elementIndex": 51,
-            "posBefore": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "posAfter": [
-                -0.05100000277161598,
-                2.501000165939331,
-                -2.017000198364258
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [
-                150,
-                150,
-                150
-            ],
-            "dimsAfter": [
-                150,
-                150,
-                150
-            ],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
         {
             "type": "resize",
             "description": "Resize Istochnik_sveta",
@@ -74873,7 +73589,7 @@
         {
             "type": "move",
             "description": "Move Moyka",
-            "elementIndex": 408,
+            "elementIndex": 404,
             "posBefore": [
                 0.6830000281333923,
                 0.85999995470047,
@@ -97255,7 +95971,7 @@
         {
             "type": "move",
             "description": "Move Truba_pipe_elbow_1",
-            "elementIndex": 406,
+            "elementIndex": 402,
             "posBefore": [
                 0.5414999723434448,
                 0.07450000196695328,
@@ -97287,7 +96003,7 @@
         {
             "type": "move",
             "description": "Move Truba_pipe_elbow_1",
-            "elementIndex": 406,
+            "elementIndex": 402,
             "posBefore": [
                 0.4414999783039093,
                 0.07450000196695328,
@@ -97319,7 +96035,7 @@
         {
             "type": "move",
             "description": "Move Truba_pipe_elbow_1",
-            "elementIndex": 406,
+            "elementIndex": 402,
             "posBefore": [
                 0.4414999783039093,
                 0.07450000196695328,
@@ -98268,7 +96984,7 @@
         {
             "type": "move",
             "description": "Move Varochnaya_Bosch_PUE611BB5E_1",
-            "elementIndex": 407,
+            "elementIndex": 403,
             "posBefore": [
                 0.30300000309944155,
                 0.8200000524520874,
@@ -98300,7 +97016,7 @@
         {
             "type": "move",
             "description": "Move Varochnaya_Bosch_PUE611BB5E_1",
-            "elementIndex": 407,
+            "elementIndex": 403,
             "posBefore": [
                 1.0080000162124634,
                 0.7800000905990601,
@@ -98332,7 +97048,7 @@
         {
             "type": "move",
             "description": "Move Varochnaya_Bosch_PUE611BB5E_1",
-            "elementIndex": 407,
+            "elementIndex": 403,
             "posBefore": [
                 1.2850000858306885,
                 0.8600000143051148,
@@ -98364,7 +97080,7 @@
         {
             "type": "move",
             "description": "Move Varochnaya_Bosch_PUE611BB5E_1",
-            "elementIndex": 407,
+            "elementIndex": 403,
             "posBefore": [
                 1.2850000858306885,
                 0.8600000143051148,
@@ -98396,7 +97112,7 @@
         {
             "type": "move",
             "description": "Move Varochnaya_Bosch_PUE611BB5E_1",
-            "elementIndex": 407,
+            "elementIndex": 403,
             "posBefore": [
                 1.2850000858306885,
                 0.8600000143051148,
@@ -98428,7 +97144,7 @@
         {
             "type": "move",
             "description": "Move Varochnaya_Bosch_PUE611BB5E_1",
-            "elementIndex": 407,
+            "elementIndex": 403,
             "posBefore": [
                 1.2850000858306885,
                 0.8600000143051148,
@@ -98460,7 +97176,7 @@
         {
             "type": "move",
             "description": "Move Varochnaya_Bosch_PUE611BB5E_1",
-            "elementIndex": 407,
+            "elementIndex": 403,
             "posBefore": [
                 1.2780001163482667,
                 0.8600000143051148,
@@ -98492,7 +97208,7 @@
         {
             "type": "move",
             "description": "Move Varochnaya_Bosch_PUE611BB5E_1",
-            "elementIndex": 407,
+            "elementIndex": 403,
             "posBefore": [
                 1.2850000858306885,
                 0.8600000143051148,
@@ -98524,7 +97240,7 @@
         {
             "type": "move",
             "description": "Move Varochnaya_Bosch_PUE611BB5E_1",
-            "elementIndex": 407,
+            "elementIndex": 403,
             "posBefore": [
                 1.2780001163482667,
                 0.8600000143051148,
@@ -98556,7 +97272,7 @@
         {
             "type": "move",
             "description": "Move Varochnaya_Bosch_PUE611BB5E_1",
-            "elementIndex": 407,
+            "elementIndex": 403,
             "posBefore": [
                 1.2780001163482667,
                 0.8600000143051148,
@@ -98599,7 +97315,7 @@
                 {
                     "type": "resize",
                     "description": "Resize Varochnaya_Bosch_PUE611BB5E_1",
-                    "elementIndex": 407,
+                    "elementIndex": 403,
                     "posBefore": [
                         1.2780001163482667,
                         0.8600000143051148,
@@ -109426,366 +108142,8 @@
         },
         {
             "type": "move",
-            "description": "Move Yaschik_Movento_13",
-            "elementIndex": 400,
-            "posBefore": [
-                3.122000217437744,
-                0.07349999994039536,
-                -1.1110000610351563
-            ],
-            "posAfter": [
-                3.182000160217285,
-                0.07349999994039536,
-                -1.1030000448226929
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_13",
-            "elementIndex": 400,
-            "posBefore": [
-                3.182000160217285,
-                0.07349999994039536,
-                -1.1030000448226929
-            ],
-            "posAfter": [
-                3.182000160217285,
-                0.07349999994039536,
-                -1.1030000448226929
-            ],
-            "rotBefore": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_13",
-            "elementIndex": 400,
-            "posBefore": [
-                3.182000160217285,
-                0.07349999994039536,
-                -1.1030000448226929
-            ],
-            "posAfter": [
-                3.182000160217285,
-                0.07349999994039536,
-                -1.1030000448226929
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_13",
-            "elementIndex": 400,
-            "posBefore": [
-                3.182000160217285,
-                0.07349999994039536,
-                -1.1030000448226929
-            ],
-            "posAfter": [
-                3.182000160217285,
-                0.07349999994039536,
-                -1.1030000448226929
-            ],
-            "rotBefore": [
-                0.0,
-                1.0,
-                0.0,
-                -4.371138828673793e-8
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_13",
-            "elementIndex": 400,
-            "posBefore": [
-                3.182000160217285,
-                0.07349999994039536,
-                -1.1030000448226929
-            ],
-            "posAfter": [
-                3.182000160217285,
-                0.07349999994039536,
-                -0.8549997210502625
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_13",
-            "elementIndex": 400,
-            "posBefore": [
-                3.182000160217285,
-                0.07349999994039536,
-                -0.8549997210502625
-            ],
-            "posAfter": [
-                3.12600040435791,
-                0.07349999994039536,
-                -0.8549997210502625
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "composite",
-            "description": "Свойства Yaschik_Movento_13",
-            "elementIndex": -1,
-            "posBefore": [],
-            "posAfter": [],
-            "rotBefore": [],
-            "rotAfter": [],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [
-                {
-                    "type": "resize",
-                    "description": "Resize Yaschik_Movento_13",
-                    "elementIndex": 400,
-                    "posBefore": [
-                        3.12600040435791,
-                        0.07349999994039536,
-                        -0.8549997210502625
-                    ],
-                    "posAfter": [
-                        3.12600040435791,
-                        0.07349999994039536,
-                        -0.945999801158905
-                    ],
-                    "rotBefore": [
-                        0.0,
-                        0.7071068286895752,
-                        0.0,
-                        -0.7071068286895752
-                    ],
-                    "rotAfter": [
-                        0.0,
-                        0.7071068286895752,
-                        0.0,
-                        -0.7071068286895752
-                    ],
-                    "dimsBefore": [
-                        400,
-                        147,
-                        500
-                    ],
-                    "dimsAfter": [
-                        582,
-                        147,
-                        500
-                    ],
-                    "children": [],
-                    "convertTo": -1,
-                    "convertState": []
-                }
-            ],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "composite",
-            "description": "Move group",
-            "elementIndex": -1,
-            "posBefore": [],
-            "posAfter": [],
-            "rotBefore": [],
-            "rotAfter": [],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [
-                {
-                    "type": "move",
-                    "description": "Move Yaschik_Movento_13",
-                    "elementIndex": 400,
-                    "posBefore": [
-                        3.12600040435791,
-                        0.07349999994039536,
-                        -0.945999801158905
-                    ],
-                    "posAfter": [
-                        3.12600040435791,
-                        0.07349999994039536,
-                        -0.9459997415542603
-                    ],
-                    "rotBefore": [
-                        0.0,
-                        0.7071068286895752,
-                        0.0,
-                        -0.7071068286895752
-                    ],
-                    "rotAfter": [
-                        0.0,
-                        0.7071068286895752,
-                        0.0,
-                        -0.7071068286895752
-                    ],
-                    "dimsBefore": [],
-                    "dimsAfter": [],
-                    "children": [],
-                    "convertTo": -1,
-                    "convertState": []
-                }
-            ],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_13",
-            "elementIndex": 400,
-            "posBefore": [
-                3.12600040435791,
-                0.07349999994039536,
-                -0.9459997415542603
-            ],
-            "posAfter": [
-                3.12600040435791,
-                0.11500000208616257,
-                -0.9459997415542603
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_14",
-            "elementIndex": 401,
-            "posBefore": [
-                3.026000499725342,
-                0.11500000208616257,
-                -0.9459997415542603
-            ],
-            "posAfter": [
-                3.026000499725342,
-                0.11500000208616257,
-                -1.590000033378601
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
             "description": "Move Polka_29",
-            "elementIndex": 402,
+            "elementIndex": 400,
             "posBefore": [
                 3.076000452041626,
                 1.350000023841858,
@@ -109817,7 +108175,7 @@
         {
             "type": "move",
             "description": "Move Polka_29",
-            "elementIndex": 402,
+            "elementIndex": 400,
             "posBefore": [
                 3.076000452041626,
                 1.350000023841858,
@@ -109849,7 +108207,7 @@
         {
             "type": "move",
             "description": "Move Polka_29",
-            "elementIndex": 402,
+            "elementIndex": 400,
             "posBefore": [
                 3.12600040435791,
                 1.350000023841858,
@@ -109871,102 +108229,6 @@
                 0.0,
                 0.0,
                 1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_14",
-            "elementIndex": 401,
-            "posBefore": [
-                3.026000499725342,
-                0.11500000208616257,
-                -1.590000033378601
-            ],
-            "posAfter": [
-                3.126000165939331,
-                0.11500000208616257,
-                -1.590000033378601
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_14",
-            "elementIndex": 401,
-            "posBefore": [
-                3.126000165939331,
-                0.11500000208616257,
-                -1.590000033378601
-            ],
-            "posAfter": [
-                3.126000165939331,
-                0.11500000208616257,
-                -1.7859998941421509
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_14",
-            "elementIndex": 401,
-            "posBefore": [
-                3.126000165939331,
-                0.11500000208616257,
-                -1.7859998941421509
-            ],
-            "posAfter": [
-                3.126000165939331,
-                0.11500000208616257,
-                -1.5439997911453248
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
             ],
             "dimsBefore": [],
             "dimsAfter": [],
@@ -110516,104 +108778,8 @@
         },
         {
             "type": "move",
-            "description": "Move Yaschik_Movento_15",
-            "elementIndex": 403,
-            "posBefore": [
-                3.0260002613067629,
-                0.11500000208616257,
-                -1.5439997911453248
-            ],
-            "posAfter": [
-                3.126000165939331,
-                0.11500000208616257,
-                -1.5439997911453248
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_15",
-            "elementIndex": 403,
-            "posBefore": [
-                3.126000165939331,
-                0.11500000208616257,
-                -1.5439997911453248
-            ],
-            "posAfter": [
-                3.126000165939331,
-                0.11500000208616257,
-                -2.125999689102173
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_15",
-            "elementIndex": 403,
-            "posBefore": [
-                3.126000165939331,
-                0.11500000208616257,
-                -2.125999689102173
-            ],
-            "posAfter": [
-                3.126000165939331,
-                0.11500000208616257,
-                -2.197000026702881
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
             "description": "Move Polka_30",
-            "elementIndex": 404,
+            "elementIndex": 401,
             "posBefore": [
                 3.076000452041626,
                 1.350000023841858,
@@ -110645,7 +108811,7 @@
         {
             "type": "move",
             "description": "Move Polka_30",
-            "elementIndex": 404,
+            "elementIndex": 401,
             "posBefore": [
                 3.1760003566741945,
                 1.350000023841858,
@@ -110667,134 +108833,6 @@
                 0.0,
                 0.0,
                 1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_16",
-            "elementIndex": 405,
-            "posBefore": [
-                3.0260002613067629,
-                0.11500000208616257,
-                -1.5439997911453248
-            ],
-            "posAfter": [
-                3.12600040435791,
-                0.11500000208616257,
-                -1.5439997911453248
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_16",
-            "elementIndex": 405,
-            "posBefore": [
-                3.12600040435791,
-                0.11500000208616257,
-                -1.5439997911453248
-            ],
-            "posAfter": [
-                3.12600040435791,
-                0.3450000286102295,
-                -1.5439997911453248
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_13",
-            "elementIndex": 400,
-            "posBefore": [
-                3.12600040435791,
-                0.11500000208616257,
-                -0.9459997415542603
-            ],
-            "posAfter": [
-                3.12600040435791,
-                0.24500001966953278,
-                -0.9459997415542603
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_16",
-            "elementIndex": 405,
-            "posBefore": [
-                3.12600040435791,
-                0.3450000286102295,
-                -1.5439997911453248
-            ],
-            "posAfter": [
-                3.12600040435791,
-                0.4740000367164612,
-                -1.5439997911453248
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
             ],
             "dimsBefore": [],
             "dimsAfter": [],
@@ -110827,38 +108865,6 @@
                 0.0,
                 0.0,
                 1.0
-            ],
-            "dimsBefore": [],
-            "dimsAfter": [],
-            "children": [],
-            "convertTo": -1,
-            "convertState": []
-        },
-        {
-            "type": "move",
-            "description": "Move Yaschik_Movento_13",
-            "elementIndex": 400,
-            "posBefore": [
-                3.12600040435791,
-                0.24500001966953278,
-                -0.9459997415542603
-            ],
-            "posAfter": [
-                3.12600040435791,
-                0.11499999463558197,
-                -0.9459997415542603
-            ],
-            "rotBefore": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
-            ],
-            "rotAfter": [
-                0.0,
-                0.7071068286895752,
-                0.0,
-                -0.7071068286895752
             ],
             "dimsBefore": [],
             "dimsAfter": [],
@@ -111194,7 +109200,7 @@
         {
             "type": "move",
             "description": "Move Dver",
-            "elementIndex": 409,
+            "elementIndex": 405,
             "posBefore": [
                 3.011000156402588,
                 1.0,
@@ -111226,7 +109232,7 @@
         {
             "type": "move",
             "description": "Move Dver",
-            "elementIndex": 409,
+            "elementIndex": 405,
             "posBefore": [
                 3.011000156402588,
                 1.0,
@@ -111258,7 +109264,7 @@
         {
             "type": "move",
             "description": "Move Dver",
-            "elementIndex": 409,
+            "elementIndex": 405,
             "posBefore": [
                 3.5180001258850099,
                 1.0,
@@ -111290,7 +109296,7 @@
         {
             "type": "move",
             "description": "Move Dver",
-            "elementIndex": 409,
+            "elementIndex": 405,
             "posBefore": [
                 3.576000213623047,
                 1.0,
@@ -111322,7 +109328,7 @@
         {
             "type": "move",
             "description": "Move Stiralnaya_mashina_1",
-            "elementIndex": 410,
+            "elementIndex": 406,
             "posBefore": [
                 2.7880001068115236,
                 0.42500001192092898,
@@ -111354,7 +109360,7 @@
         {
             "type": "move",
             "description": "Move Sushilnaya_mashina",
-            "elementIndex": 411,
+            "elementIndex": 407,
             "posBefore": [
                 2.198000192642212,
                 0.42500001192092898,
@@ -111386,7 +109392,7 @@
         {
             "type": "move",
             "description": "Move Sushilnaya_mashina",
-            "elementIndex": 411,
+            "elementIndex": 407,
             "posBefore": [
                 2.6100001335144045,
                 0.42500001192092898,
@@ -111418,7 +109424,7 @@
         {
             "type": "move",
             "description": "Move Sushilnaya_mashina",
-            "elementIndex": 411,
+            "elementIndex": 407,
             "posBefore": [
                 2.6100001335144045,
                 0.9150000810623169,
@@ -111450,7 +109456,7 @@
         {
             "type": "move",
             "description": "Move Sushilnaya_mashina",
-            "elementIndex": 411,
+            "elementIndex": 407,
             "posBefore": [
                 2.6100001335144045,
                 1.2750000953674317,
@@ -111514,7 +109520,7 @@
         {
             "type": "move",
             "description": "Move Moyka",
-            "elementIndex": 408,
+            "elementIndex": 404,
             "posBefore": [
                 0.7120000123977661,
                 0.85999995470047,
@@ -111542,9 +109548,1137 @@
             "children": [],
             "convertTo": -1,
             "convertState": []
+        },
+        {
+            "type": "move",
+            "description": "Move Polka_30",
+            "elementIndex": 401,
+            "posBefore": [
+                3.1760003566741945,
+                1.350000023841858,
+                -1.842999815940857
+            ],
+            "posAfter": [
+                3.1760003566741945,
+                1.350000023841858,
+                -2.129000186920166
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "move",
+            "description": "Move Polka_30",
+            "elementIndex": 401,
+            "posBefore": [
+                3.1760003566741945,
+                1.350000023841858,
+                -2.129000186920166
+            ],
+            "posAfter": [
+                3.1760003566741945,
+                1.350000023841858,
+                -1.9660001993179322
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства A4_side_L",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize A4_side_L",
+                    "elementIndex": 22,
+                    "posBefore": [
+                        1.309000015258789,
+                        1.1800000667572022,
+                        -1.8530000448226929
+                    ],
+                    "posAfter": [
+                        1.309000015258789,
+                        1.1800000667572022,
+                        -1.8530000448226929
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        552,
+                        2160,
+                        18
+                    ],
+                    "dimsAfter": [
+                        552,
+                        2160,
+                        18
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства A4_side_R",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize A4_side_R",
+                    "elementIndex": 23,
+                    "posBefore": [
+                        1.309000015258789,
+                        1.1799999475479127,
+                        -1.2710000276565552
+                    ],
+                    "posAfter": [
+                        1.309000015258789,
+                        1.1799999475479127,
+                        -1.2710000276565552
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        552,
+                        2160,
+                        18
+                    ],
+                    "dimsAfter": [
+                        552,
+                        2160,
+                        18
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_5",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_5",
+                    "elementIndex": 390,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -0.6469996571540833
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -0.6469996571540833
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_5",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_5",
+                    "elementIndex": 390,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -0.6469996571540833
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -0.6469996571540833
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_29",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_29",
+                    "elementIndex": 400,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.2449997663497925
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.2449997663497925
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_30",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_30",
+                    "elementIndex": 401,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.9660001993179322
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.9660001993179322
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_22",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_22",
+                    "elementIndex": 391,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.3500001430511475,
+                        -3.6120002269744875
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.3500001430511475,
+                        -3.6120002269744875
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "move",
+            "description": "Move Polka_30",
+            "elementIndex": 401,
+            "posBefore": [
+                3.1760003566741945,
+                1.350000023841858,
+                -1.9660001993179322
+            ],
+            "posAfter": [
+                3.1760003566741945,
+                1.350000023841858,
+                -1.8440001010894776
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_30",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_30",
+                    "elementIndex": 401,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.8440001010894776
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.8440001010894776
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "move",
+            "description": "Move Polka_30",
+            "elementIndex": 401,
+            "posBefore": [
+                3.1760003566741945,
+                1.350000023841858,
+                -1.8440001010894776
+            ],
+            "posAfter": [
+                3.1760003566741945,
+                1.350000023841858,
+                -1.9270000457763672
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "move",
+            "description": "Move Polka_30",
+            "elementIndex": 401,
+            "posBefore": [
+                3.1760003566741945,
+                1.350000023841858,
+                -1.9270000457763672
+            ],
+            "posAfter": [
+                3.1760003566741945,
+                1.350000023841858,
+                -1.9180001020431519
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_29",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_29",
+                    "elementIndex": 400,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.2449997663497925
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.2449997663497925
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_5",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_5",
+                    "elementIndex": 390,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -0.6469996571540833
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -0.6469996571540833
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_5",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_5",
+                    "elementIndex": 390,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -0.6469996571540833
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -0.6469996571540833
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_29",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_29",
+                    "elementIndex": 400,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.2449997663497925
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.2449997663497925
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_5",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_5",
+                    "elementIndex": 390,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -0.6469996571540833
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -0.6469996571540833
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_29",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_29",
+                    "elementIndex": 400,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.2449997663497925
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.2449997663497925
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_30",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_30",
+                    "elementIndex": 401,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.9180001020431519
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.843000054359436
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_30",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_30",
+                    "elementIndex": 401,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.843000054359436
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.843000054359436
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
+        },
+        {
+            "type": "composite",
+            "description": "Свойства Polka_30",
+            "elementIndex": -1,
+            "posBefore": [],
+            "posAfter": [],
+            "rotBefore": [],
+            "rotAfter": [],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [
+                {
+                    "type": "resize",
+                    "description": "Resize Polka_30",
+                    "elementIndex": 401,
+                    "posBefore": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.843000054359436
+                    ],
+                    "posAfter": [
+                        3.1760003566741945,
+                        1.350000023841858,
+                        -1.843000054359436
+                    ],
+                    "rotBefore": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "rotAfter": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "dimsBefore": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "dimsAfter": [
+                        600,
+                        2700,
+                        16
+                    ],
+                    "children": [],
+                    "convertTo": -1,
+                    "convertState": []
+                }
+            ],
+            "convertTo": -1,
+            "convertState": []
         }
     ],
-    "redoHistory": [],
+    "redoHistory": [
+        {
+            "type": "move",
+            "description": "Move Polka_30",
+            "elementIndex": 401,
+            "posBefore": [
+                3.1760003566741945,
+                1.350000023841858,
+                -1.843000054359436
+            ],
+            "posAfter": [
+                3.1760003566741945,
+                1.350000023841858,
+                -2.248000144958496
+            ],
+            "rotBefore": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotAfter": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "dimsBefore": [],
+            "dimsAfter": [],
+            "children": [],
+            "convertTo": -1,
+            "convertState": []
+        }
+    ],
     "settings": {
         "gridStep": 1,
         "gridEnabled": true,
@@ -111702,9 +110836,9 @@
         },
         {
             "id": "settings",
-            "visible": true,
+            "visible": false,
             "x": 7.242103576660156,
-            "y": -77.54934692382813,
+            "y": -71.94830322265625,
             "height": 0.0
         },
         {

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>Подменю «Корпус» в окне свойств опоры: заход, «слева / справа» и
 /// «сверху / снизу».
@@ -77,7 +78,7 @@ public class ScrewLegHostSectionTests
     [TearDown]
     public void TearDown()
     {
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         PartRegistry.Clear();
@@ -182,7 +183,8 @@ public class ScrewLegHostSectionTests
             Assert.IsFalse(field.interactable,
                 node + ": править нечего, пока не от чего мерить");
         }
-        Assert.AreEqual(ScrewLegHostSection.NoHostText, Field("F_Заход в корпус").text,
+        Assert.AreEqual(ScrewLegHostSection.NoHostText,
+            Panel().FindNode("Val_Заход в корпус")!.GetComponent<TMP_Text>().text,
             "заход показывает прочерк по той же причине — правило одно на всю секцию");
     }
 

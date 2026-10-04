@@ -14,6 +14,7 @@ using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
 using KitchenDesigner.Core.MCP.Contract;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>Расхождение между тем, что человек правит в панели свойств, и тем,
 /// что агент правит через edit_elements. Это ДВЕ независимо написанные вручную
@@ -58,15 +59,6 @@ public class McpUiPropertyParityTests : McpTestFixture
         ("CtxDup",
          "«Дублировать» заводит копию с другим именем; дальше опыт правил бы то один "
          + "элемент, то другой"),
-    };
-
-    /// <summary>Секции панели, свёрнутые при открытии. Их содержимое неактивно,
-    /// а неактивный виджет опыт не видит — зазоры, пазы, накладки и тонкая
-    /// настройка лампы выглядели бы «панель этого не правит». Разворачиваются
-    /// перед тем, как перечислять виджеты.</summary>
-    private static readonly string[] Expanders =
-    {
-        "CtxGaps", "CtxGrooves", "CtxTextures", "CtxLightAdv",
     };
 
     /// <summary>Свойства, которые ПРАВИТ панель, но не правит агент. Каждая
@@ -401,14 +393,13 @@ public class McpUiPropertyParityTests : McpTestFixture
         || t.GetComponent<Toggle>() != null
         || t.GetComponent<Button>() != null;
 
+    /// <summary>Свёрнутые секции (зазоры, пазы, тонкая настройка лампы) прячут строки: неактивный
+    /// виджет опыт не видит, и они выглядели бы «панель этого не правит». Разворачиваются все
+    /// видимые секции перед тем, как перечислять виджеты.</summary>
     private void Expand()
     {
-        foreach (var node in Expanders)
-        {
-            var widget = WidgetNamed(node);
-            var button = widget == null ? null : widget.GetComponent<Button>();
-            if (button != null && widget!.gameObject.activeInHierarchy) button.onClick.Invoke();
-        }
+        foreach (var section in Panel().GetComponentsInChildren<CollapsibleSection>(true))
+            if (section.gameObject.activeInHierarchy) section.SetExpanded(true, notify: true);
     }
 
     private List<string> VisibleWidgets()

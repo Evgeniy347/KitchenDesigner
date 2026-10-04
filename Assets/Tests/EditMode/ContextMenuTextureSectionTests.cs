@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class ContextMenuTextureSectionTests
 {
@@ -65,7 +66,7 @@ public class ContextMenuTextureSectionTests
     {
         TextureOverlayHandles.End();
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -102,7 +103,7 @@ public class ContextMenuTextureSectionTests
             new TextureOverlaySpec(OverlaySide.B, "oak", 50, 50, 600, 600),
         });
         _menu!.Open(wall);
-        Panel().Find("CtxTextures").GetComponent<Button>().onClick.Invoke();
+        Panel().FindNode("Sec_Textures").GetComponent<CollapsibleSection>().SetExpanded(true, notify: true);
         return wall;
     }
 
@@ -120,7 +121,7 @@ public class ContextMenuTextureSectionTests
     {
         var wall = OpenWallWithThreeOverlays();
 
-        Panel().Find("CtxTexMat0").GetComponent<TMP_Dropdown>().value = MaterialIndexOf("white");
+        Panel().FindNode("CtxTexMat0").GetComponent<TMP_Dropdown>().value = MaterialIndexOf("white");
 
         Assert.AreEqual("white", wall.TextureOverlays[0].MaterialId,
             "строка 0 правит накладку 0: индекс в обработчике должен быть копией счётчика цикла");
@@ -134,7 +135,7 @@ public class ContextMenuTextureSectionTests
         var wall = OpenWallWithThreeOverlays();
         var before = wall.TextureOverlays[1];
 
-        Panel().Find("CtxTexMat1").GetComponent<TMP_Dropdown>().value = MaterialIndexOf("oak");
+        Panel().FindNode("CtxTexMat1").GetComponent<TMP_Dropdown>().value = MaterialIndexOf("oak");
         var after = wall.TextureOverlays[1];
 
         Assert.AreEqual("oak", after.MaterialId, "декор берётся из списка строки");
@@ -151,7 +152,7 @@ public class ContextMenuTextureSectionTests
         TextureOverlayHandles.Begin(wall, 2);
         Assert.IsTrue(TextureOverlayHandles.IsEditing(wall, 2), "ручки включены на последней накладке");
 
-        var del = Panel().Find("CtxTexDel0").GetComponent<Button>();
+        var del = Panel().FindNode("CtxTexDel0").GetComponent<Button>();
         del.onClick.Invoke();
         del.onClick.Invoke();
 
@@ -165,7 +166,7 @@ public class ContextMenuTextureSectionTests
         var wall = OpenWallWithThreeOverlays();
         TextureOverlayHandles.Begin(wall, 0);
 
-        Panel().Find("CtxTexOrder0/CtxTexDown0").GetComponent<Button>().onClick.Invoke();
+        Panel().FindNode("CtxTexOrder0/CtxTexDown0").GetComponent<Button>().onClick.Invoke();
 
         Assert.IsTrue(TextureOverlayHandles.IsEditing(wall, 1),
             "порядок меняют ровно тогда, когда подгоняют перекрытие: ручки едут за своей накладкой");
@@ -177,7 +178,7 @@ public class ContextMenuTextureSectionTests
         var wall = OpenWallWithThreeOverlays();
         TextureOverlayHandles.Begin(wall, 1);
 
-        Panel().Find("CtxTexOrder0/CtxTexDown0").GetComponent<Button>().onClick.Invoke();
+        Panel().FindNode("CtxTexOrder0/CtxTexDown0").GetComponent<Button>().onClick.Invoke();
 
         Assert.IsTrue(TextureOverlayHandles.IsEditing(wall, 0),
             "если правилась соседка, её индекс тоже сдвинулся — ручки должны уехать вместе с ней");
@@ -217,7 +218,7 @@ public class ContextMenuTextureSectionTests
         var wall = OpenWallWithThreeOverlays();
         var section = _menu!.Textures;
 
-        Panel().Find("CtxTexMat1").GetComponent<TMP_Dropdown>().value = MaterialIndexOf("oak");
+        Panel().FindNode("CtxTexMat1").GetComponent<TMP_Dropdown>().value = MaterialIndexOf("oak");
 
         Assert.IsFalse(section.ChangedOutsideTheMenu(),
             "правка из самого меню уже обновила строки — сторож не должен срабатывать второй раз");

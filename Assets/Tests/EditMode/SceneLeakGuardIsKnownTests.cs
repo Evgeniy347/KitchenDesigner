@@ -2,25 +2,25 @@ using NUnit.Framework;
 
 /// <summary>Юнит-покрытие review-perf-tests-tooling.md #2: SceneLeakGuard.IsKnown раньше
 /// проверял только имя теста, поэтому запись одной известной утечки (например,
-/// __TextureOverlays у ContextMenuLayoutTests) прощала ЛЮБУЮ другую утечку того же
+/// __EdgeSideHighlight у ContextMenuEdgeSectionTests) прощала ЛЮБУЮ другую утечку того же
 /// теста — ровно то, что спрятало бы, например, ScrewLeg с MeshCollider, инцидент, ради
 /// которого сторож построен.</summary>
 public class SceneLeakGuardIsKnownTests
 {
-    private const string ContextMenuLayoutTest =
-        "ContextMenuLayoutTests.Wall_AddRowHover_ShowsFutureOverlay_AndRemovesItOnExit";
+    private const string KnownLeakTest =
+        "ContextMenuEdgeSectionTests.Close_DropsHoverHighlight";
 
     [Test]
     public void IsKnown_KnownTestAndKnownObject_IsTrue()
     {
-        Assert.IsTrue(SceneLeakGuard.IsKnown(ContextMenuLayoutTest, "__TextureOverlays"));
+        Assert.IsTrue(SceneLeakGuard.IsKnown(KnownLeakTest, "__EdgeSideHighlight"));
     }
 
     [Test]
     public void IsKnown_KnownTestButDifferentObject_IsFalse()
     {
-        Assert.IsFalse(SceneLeakGuard.IsKnown(ContextMenuLayoutTest, "ScrewLeg"),
-            "запись для __TextureOverlays не должна прощать ЛЮБУЮ утечку того же теста — "
+        Assert.IsFalse(SceneLeakGuard.IsKnown(KnownLeakTest, "ScrewLeg"),
+            "запись для __EdgeSideHighlight не должна прощать ЛЮБУЮ утечку того же теста — "
             + "иначе спрятан именно тот инцидент (ScrewLeg с MeshCollider), ради которого "
             + "сторож построен");
     }

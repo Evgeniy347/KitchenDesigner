@@ -8,9 +8,9 @@ namespace KitchenDesigner.Core.UI
         private readonly PipeEndsDiagram _ends;
 
         private TMP_Dropdown? _size;
-        private TMP_InputField? _outer;
-        private TMP_InputField? _inner;
-        private TMP_InputField? _wall;
+        private TMP_Text? _outer;
+        private TMP_Text? _inner;
+        private TMP_Text? _wall;
 
         public PipeFieldsEditor(IContextMenuHost host) : base(host) =>
             _ends = new PipeEndsDiagram(host, () => Host.Target as PipeElement);
@@ -57,18 +57,16 @@ namespace KitchenDesigner.Core.UI
             _ends.Show(pipe);
         }
 
-        private TMP_InputField ReadOnlyField(string label, RowVisibility visibility, string? hint = null)
-        {
-            var field = Rows.NumberField(label, visibility, Loc.T("unit.mm"), null, hint);
-            UIRowEnabled.SetControlEnabled(field, false);
-            return field;
-        }
+        private TMP_Text ReadOnlyField(string label, RowVisibility visibility, string? hint = null) =>
+            Rows.ReadOnlyField(label, visibility, hint);
+
+        private static string Millimetres(string number) => NumberFormat.WithUnit(number, Loc.T("unit.mm"));
 
         private void WriteDerived(PipeElement pipe)
         {
-            if (_outer != null) _outer.text = PipeElementSpec.OuterDiameterText(pipe.SizeId, NumberFormat.DecimalSeparator);
-            if (_inner != null) _inner.text = PipeElementSpec.InnerDiameterText(pipe.SizeId, NumberFormat.DecimalSeparator);
-            if (_wall != null) _wall.text = PipeElementSpec.WallThicknessText(pipe.SizeId, NumberFormat.DecimalSeparator);
+            if (_outer != null) _outer.text = Millimetres(PipeElementSpec.OuterDiameterText(pipe.SizeId, NumberFormat.DecimalSeparator));
+            if (_inner != null) _inner.text = Millimetres(PipeElementSpec.InnerDiameterText(pipe.SizeId, NumberFormat.DecimalSeparator));
+            if (_wall != null) _wall.text = Millimetres(PipeElementSpec.WallThicknessText(pipe.SizeId, NumberFormat.DecimalSeparator));
         }
 
         private void OnSizeSelected(int index)

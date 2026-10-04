@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core.UI
 {
     internal sealed class PipeFittingFieldsEditor : ElementFieldsEditor
     {
-        private readonly TMP_InputField?[] _bores = new TMP_InputField?[3];
+        private readonly TMP_Text?[] _bores = new TMP_Text?[3];
         private readonly PipeFittingPortsDiagram _ports;
 
         public PipeFittingFieldsEditor(IContextMenuHost host) : base(host) =>
@@ -51,12 +51,8 @@ namespace KitchenDesigner.Core.UI
             if (element is PipeFittingElement fitting) _ports.Show(fitting);
         }
 
-        private TMP_InputField ReadOnlyField(string label, ElementFacet facet, string? hint = null)
-        {
-            var field = Rows.NumberField(label, RowVisibility.For(facet), Loc.T("unit.mm"), null, hint);
-            UIRowEnabled.SetControlEnabled(field, false);
-            return field;
-        }
+        private TMP_Text ReadOnlyField(string label, ElementFacet facet, string? hint = null) =>
+            Rows.ReadOnlyField(label, RowVisibility.For(facet), hint);
 
         private void WriteDerived(KitchenElement element)
         {

@@ -2,25 +2,18 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
     internal sealed class ContextMenuTextureSection : ContextMenuListSection<TextureOverlaySpec>
     {
-        private const float TexSideX = -128f, TexSideW = 76f;
-        private const float TexMatX = -13f, TexMatW = 138f;
-        private const float TexAddMatX = -13f, TexAddMatW = 138f;
-        private const float TexOrderX = 78f;
-        private const float TexEditX = 114f, TexDelX = 150f, TexBtnW = 28f;
-        private const float TexRowH = 28f;
-        private const float TexOrderBtnH = 13f;
-        private const float TexOrderGap = 2f;
+        public const string SectionId = "Textures";
+        public const string AddNode = "CtxTexAdd";
 
-        private const int PreviewNewRow = -1;
+        private const float SideCellW = 72f;
+        private const float OrderBtnH = 13f;
+        private const float OrderGap = 2f;
 
-        private TMP_Text? _countLabel;
-        private TMP_Dropdown? _addSideDropdown, _addMaterialDropdown;
         private readonly TMP_Dropdown?[] _rowSide =
             new TMP_Dropdown?[TextureOverlayGeometry.MAX_PER_ELEMENT];
         private readonly TMP_Dropdown?[] _rowMaterial =
@@ -44,79 +37,73 @@ namespace KitchenDesigner.Core.UI
 
         protected override IReadOnlyList<TextureOverlaySpec>? CurrentItems() => Target?.TextureOverlays;
 
-        public void Build(Transform parent, List<string> matOptions)
+        public void Build(List<string> matOptions)
         {
+            var rows = Host.Rows;
             var sideOptions = new List<string>();
             for (int i = 0; i <= (int)OverlaySide.All; i++)
                 sideOptions.Add(TextureOverlaySpec.SideLabel((OverlaySide)i));
 
-            var headerBtn = UIFactory.CreateButton("CtxTextures", parent, Loc.T("element.texture.headerEmpty"),
-                new Vector2(0, 0), new Vector2(RowWidth, BtnH), Toggle);
-            _countLabel = headerBtn.GetComponentInChildren<TMP_Text>();
-            Host.Layout.AddWhen(Eligible, BtnH, RowGap, headerBtn.GetComponent<RectTransform>());
+            BeginSection(SectionId, Loc.T("element.texture.title"), true, "+ " + Loc.T("common.add"), AddFromUI);
+            Section.View.ActionButton!.gameObject.name = AddNode;
+            rows.Note("CtxTexEmptyHint", Loc.T("element.texture.emptyHint"),
+                RowVisibility.When(() => Eligible() && Count() == 0));
 
+            float cell = UIStyle.ControlHCompact;
+            float gap = UIStyle.Space1;
+            float matW = rows.Metrics.Width - SideCellW - 3f * cell - 4f * gap;
             for (int i = 0; i < TextureOverlayGeometry.MAX_PER_ELEMENT; i++)
             {
                 int index = i;
-                var sideDd = UIFactory.CreateDropdown($"CtxTexSide{i}", parent,
-                    new List<string>(sideOptions), new Vector2(TexSideX, 0),
-                    new Vector2(TexSideW, TexRowH), _ => { SideHighlighter.Hide(); Edit(index); });
-                var matDd = UIFactory.CreateDropdown($"CtxTexMat{i}", parent,
-                    new List<string>(matOptions), new Vector2(TexMatX, 0),
-                    new Vector2(TexMatW, TexRowH), _ => Edit(index));
-                DropdownHover.Attach(matDd,
-                    option => PreviewMaterial(index, option), EndPreview);
-                var orderCol = BuildOrderColumn(parent, i, index);
-                var editBtn = UIFactory.CreateIconButton($"CtxTexEdit{i}", parent, IconFactory.Pencil,
-                    new Vector2(TexEditX, 0), new Vector2(TexBtnW, TexRowH),
-                    () => ToggleAreaHandles(index));
-                var delBtn = UIFactory.CreateConfirmDeleteButton($"CtxTexDel{i}", parent,
-                    UIStyle.GlyphClose, new Vector2(TexDelX, 0), new Vector2(TexBtnW, TexRowH),
-                    () => Remove(index));
+                var row = rows.NewRowRect("CtxTexRow" + i);
+                var sideDd = UIFactory.CreateDropdown($"CtxTexSide{i}", row,
+                    new List<string>(sideOptions), Vector2.zero,
+                    new Vector2(SideCellW, rows.Metrics.ControlH), _ => { SideHighlighter.Hide(); Edit(index); });
+                var matDd = UIFactory.CreateDropdown($"CtxTexMat{i}", row,
+                    new List<string>(matOptions), Vector2.zero,
+                    new Vector2(matW, rows.Metrics.ControlH), _ => Edit(index));
+                DropdownHover.Attach(matDd, option => PreviewMaterial(index, option), EndPreview);
+                var orderCol = BuildOrderColumn(row, i, index, cell);
+                var editBtn = UIFactory.CreateIconButton($"CtxTexEdit{i}", row, IconFactory.Pencil,
+                    Vector2.zero, new Vector2(cell, cell), () => ToggleAreaHandles(index));
+                QuietButton.Apply(editBtn);
+                TooltipUI.Attach(editBtn.gameObject, Loc.T("element.texture.editArea"));
+                var delBtn = QuietDeleteButton.Create($"CtxTexDel{i}", row, cell,
+                    Loc.T("common.delete"), () => Remove(index));
+                UIFactory.FitDropdownItems(sideDd);
+                UIFactory.FitDropdownItems(matDd);
+
+                float x = 0f;
+                rows.PlaceCell((RectTransform)sideDd.transform, x, SideCellW);
+                x += SideCellW + gap;
+                rows.PlaceCell((RectTransform)matDd.transform, x, matW);
+                x += matW + gap;
+                rows.PlaceCell(orderCol, x, cell);
+                x += cell + gap;
+                rows.PlaceCell((RectTransform)editBtn.transform, x, cell);
+                x += cell + gap;
+                rows.PlaceCell((RectTransform)delBtn.transform, x, cell);
 
                 AttachSideHover(sideDd);
                 _rowSide[i] = sideDd;
                 _rowMaterial[i] = matDd;
-
-                Host.Layout.AddWhen(
-                    () => Eligible() && Expanded && Count() > index, TexRowH, 4f,
-                    sideDd.GetComponent<RectTransform>(), matDd.GetComponent<RectTransform>(),
-                    orderCol, editBtn.GetComponent<RectTransform>(), delBtn.GetComponent<RectTransform>());
+                rows.Custom(row, rows.Metrics.ControlH,
+                    RowVisibility.When(() => Eligible() && Count() > index));
             }
-
-            _addSideDropdown = UIFactory.CreateDropdown("CtxTexSide", parent,
-                new List<string>(sideOptions), new Vector2(TexSideX, 0),
-                new Vector2(TexSideW, TexRowH), _ => SideHighlighter.Hide());
-            _addMaterialDropdown = UIFactory.CreateDropdown("CtxTexMat", parent,
-                new List<string>(matOptions), new Vector2(TexAddMatX, 0),
-                new Vector2(TexAddMatW, TexRowH), _ => { });
-            DropdownHover.Attach(_addMaterialDropdown,
-                option => PreviewMaterial(PreviewNewRow, option), EndPreview);
-            var addBtn = UIFactory.CreateButton("CtxTexAdd", parent, Loc.T("common.add"),
-                new Vector2(114f, 0), new Vector2(100, TexRowH), AddFromUI);
-            AttachSideHover(_addSideDropdown);
-
-            Host.Layout.AddWhen(() => Eligible() && Expanded, TexRowH, ActionGap,
-                _addSideDropdown.GetComponent<RectTransform>(),
-                _addMaterialDropdown.GetComponent<RectTransform>(),
-                addBtn.GetComponent<RectTransform>());
         }
 
         public void RebuildMaterialOptions()
         {
-            MaterialOptions.Fill(_addMaterialDropdown);
             foreach (var dd in _rowMaterial) MaterialOptions.Fill(dd);
         }
 
-
-        private RectTransform BuildOrderColumn(Transform parent, int slot, int index)
+        private RectTransform BuildOrderColumn(Transform parent, int slot, int index, float cell)
         {
             var column = UIFactory.CreateRect($"CtxTexOrder{slot}", parent);
-            column.sizeDelta = new Vector2(TexBtnW, TexRowH);
-            column.anchoredPosition = new Vector2(TexOrderX, 0);
+            column.sizeDelta = new Vector2(cell, cell);
 
-            float half = (TexOrderBtnH + TexOrderGap) * 0.5f;
-            var size = new Vector2(TexBtnW, TexOrderBtnH);
+            float half = (OrderBtnH + OrderGap) * 0.5f;
+            var size = new Vector2(cell, OrderBtnH);
             _rowUp[slot] = UIFactory.CreateIconButton($"CtxTexUp{slot}", column,
                 IconFactory.CaretUp, new Vector2(0, half), size,
                 () => Move(index, -1), iconPaddingBothEdges: 4f);
@@ -139,17 +126,14 @@ namespace KitchenDesigner.Core.UI
             SideHighlighter.ShowFace(Target, optionIndex);
         }
 
-        private void AddFromUI()
+        internal void AddFromUI()
         {
-            if (Target == null || _addSideDropdown == null || _addMaterialDropdown == null) return;
+            if (Target == null) return;
             EndPreview();
             var all = MaterialCatalog.All;
-            int matIndex = _addMaterialDropdown.value;
-            if (matIndex < 0 || matIndex >= all.Count) return;
+            if (all.Count == 0) return;
 
-            var spec = TextureOverlaySpec.FullFace(
-                (OverlaySide)_addSideDropdown.value, all[matIndex].id);
-
+            var spec = TextureOverlaySpec.FullFace(OverlaySide.A, all[0].id);
             var after = new List<TextureOverlaySpec>(Target.TextureOverlays);
             if (after.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT)
             {
@@ -159,7 +143,7 @@ namespace KitchenDesigner.Core.UI
             }
             after.Add(spec);
             Apply(after);
-            Expanded = true;
+            EnsureExpanded();
             AfterChange();
         }
 
@@ -204,18 +188,8 @@ namespace KitchenDesigner.Core.UI
             BeginPreview();
             var preview = new List<TextureOverlaySpec>(_previewBefore!);
 
-            if (row == PreviewNewRow)
-            {
-                if (_addSideDropdown == null
-                    || preview.Count >= TextureOverlayGeometry.MAX_PER_ELEMENT) return;
-                preview.Add(TextureOverlaySpec.FullFace(
-                    (OverlaySide)_addSideDropdown.value, all[optionIndex].id));
-            }
-            else
-            {
-                if (row < 0 || row >= preview.Count) return;
-                preview[row] = preview[row].WithMaterial(all[optionIndex].id);
-            }
+            if (row < 0 || row >= preview.Count) return;
+            preview[row] = preview[row].WithMaterial(all[optionIndex].id);
 
             Target.SetTextureOverlays(preview);
         }
@@ -271,9 +245,7 @@ namespace KitchenDesigner.Core.UI
 
         protected override void RefreshRows()
         {
-            if (_countLabel != null)
-                _countLabel.text =
-                    Loc.F("element.texture.header", Count(), (Expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed));
+            Section.SetCount(NumberFormat.Integer(Count()));
 
             IReadOnlyList<TextureOverlaySpec>? overlays = CurrentItems();
             for (int i = 0; i < _rowSide.Length; i++)

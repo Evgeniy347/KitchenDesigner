@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class ContextMenuLayoutTests
 {
@@ -58,11 +59,18 @@ public class ContextMenuLayoutTests
     [TearDown]
     public void Teardown()
     {
-        if (_menu != null) _menu!.Close();
+        if (_menu != null)
+        {
+            _menu!.Close();
+            _menu!.TestHooks.ForgetSectionStates();
+        }
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
         PartRegistry.Clear();
+        foreach (var leaked in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None))
+            if (leaked != null && leaked.parent == null && leaked.name == "__TextureOverlays")
+                Object.DestroyImmediate(leaked.gameObject);
     }
 
     private FacadeElement MakeFacade(string name)
@@ -89,16 +97,21 @@ public class ContextMenuLayoutTests
 
     private Transform Panel()
     {
-        var panel = _canvas!.transform.Find("ContextMenu");
+        var panel = _canvas!.transform.FindNode("ContextMenu");
         Assert.NotNull(panel, "панель контекстного меню должна существовать");
         return panel!;
     }
 
-    private void ClickGroovesHeader() =>
-        Panel().Find("CtxGrooves").GetComponent<Button>().onClick.Invoke();
+    private void ClickGroovesHeader() => SetSection("Grooves", expanded: true);
 
-    private static string GroovesButtonText(Transform panel) =>
-        panel.Find("CtxGrooves").GetComponentInChildren<TMP_Text>(true).text;
+    private void SetSection(string id, bool expanded) =>
+        Panel().FindNode("Sec_" + id).GetComponent<CollapsibleSection>().SetExpanded(expanded, notify: true);
+
+    private static string CountOf(Transform panel, string id) =>
+        panel.FindNode("Sec_" + id).FindNode(CollapsibleSection.CountNode).GetComponent<TMP_Text>().text;
+
+    private static bool ExpandedOf(Transform panel, string id) =>
+        panel.FindNode("Sec_" + id).GetComponent<CollapsibleSection>().Expanded;
 
     [Test]
     public void Board_GrooveSection_VisibleAndCollapsedByDefault()
@@ -106,13 +119,15 @@ public class ContextMenuLayoutTests
         _menu!.Open(MakeBoard("B1"));
         var panel = Panel();
 
-        Assert.IsTrue(panel.Find("CtxGrooves").gameObject.activeSelf,
-            "кнопка «Пазы» видна у детали");
-        Assert.AreEqual("Пазы (0)  ►", GroovesButtonText(panel),
-            "без пазов счётчик показывает 0 и стрелку «свёрнуто»");
-        Assert.IsFalse(panel.Find("CtxGrooveAdd").gameObject.activeSelf,
-            "строка добавления скрыта, пока секция свёрнута");
-        Assert.IsFalse(panel.Find("CtxGrooveSide0").gameObject.activeSelf);
+        Assert.IsTrue(panel.FindNode("Sec_Grooves").IsShown(),
+            "заголовок «Пазы» виден у детали");
+        Assert.AreEqual("0", CountOf(panel, "Grooves"), "без пазов счётчик показывает 0");
+        Assert.IsFalse(ExpandedOf(panel, "Grooves"), "секция пазов свёрнута по умолчанию");
+        Assert.IsTrue(panel.FindNode("CtxGrooveAdd").IsShown(),
+            "ссылка «+ Добавить» живёт в шапке и видна и в свёрнутом виде");
+        Assert.IsFalse(panel.FindNode("CtxGrooveHint").IsShown(),
+            "подсказка скрыта, пока секция свёрнута");
+        Assert.IsFalse(panel.FindNode("CtxGrooveSide0").IsShown());
     }
 
     [Test]
@@ -121,9 +136,9 @@ public class ContextMenuLayoutTests
         _menu!.Open(MakeFacade("F1"));
         var panel = Panel();
 
-        Assert.IsFalse(panel.Find("CtxGrooves").gameObject.activeSelf,
+        Assert.IsFalse(panel.FindNode("Sec_Grooves").IsShown(),
             "фасад пазов не поддерживает — секции нет");
-        Assert.IsFalse(panel.Find("CtxGrooveAdd").gameObject.activeSelf);
+        Assert.IsFalse(panel.FindNode("CtxGrooveAdd").IsShown());
     }
 
     // ── Секция накладок текстур ───────────────────────────────────────
@@ -150,12 +165,12 @@ public class ContextMenuLayoutTests
             new TextureOverlaySpec(OverlaySide.A, "white", 100, 200, 1200, 900),
         });
         _menu!.Open(wall);
-        Panel().Find("CtxTextures").GetComponent<Button>().onClick.Invoke();
+        SetSection("Textures", expanded: true);
         return wall;
     }
 
     private Button OrderButton(int row, bool up) =>
-        Panel().Find($"CtxTexOrder{row}/CtxTex{(up ? "Up" : "Down")}{row}").GetComponent<Button>();
+        Panel().FindNode($"CtxTexOrder{row}/CtxTex{(up ? "Up" : "Down")}{row}").GetComponent<Button>();
 
     [Test]
     public void Wall_TextureOrderArrows_SwapNeighbours_AndAreUndoable()
@@ -191,8 +206,8 @@ public class ContextMenuLayoutTests
     {
         OpenWallWithTwoOverlays();
 
-        var column = Panel().Find("CtxTexOrder0").GetComponent<RectTransform>();
-        var edit = Panel().Find("CtxTexEdit0").GetComponent<RectTransform>();
+        var column = Panel().FindNode("CtxTexOrder0").GetComponent<RectTransform>();
+        var edit = Panel().FindNode("CtxTexEdit0").GetComponent<RectTransform>();
         Assert.AreEqual(edit.sizeDelta, column.sizeDelta,
             "колонка стрелок занимает ровно одну кнопочную клетку");
 
@@ -234,19 +249,6 @@ public class ContextMenuLayoutTests
     }
 
     [Test]
-    public void Wall_AddRowHover_ShowsFutureOverlay_AndRemovesItOnExit()
-    {
-        var wall = OpenWallWithTwoOverlays();
-
-        Preview(-1, MaterialIndexOf("white"));
-        Assert.AreEqual(3, wall.TextureOverlays.Count,
-            "в строке добавления накладки ещё нет — предпросмотр дорисовывает будущую");
-
-        EndPreview();
-        Assert.AreEqual(2, wall.TextureOverlays.Count);
-    }
-
-    [Test]
     public void Wall_TexturePreview_ThenSelect_UndoRestoresOriginalDecor()
     {
         var wall = OpenWallWithTwoOverlays();
@@ -254,7 +256,7 @@ public class ContextMenuLayoutTests
 
         Preview(0, white);
         // Пользователь всё-таки выбрал этот пункт — дропдаун шлёт onValueChanged.
-        Panel().Find("CtxTexMat0").GetComponent<TMP_Dropdown>().value = white;
+        Panel().FindNode("CtxTexMat0").GetComponent<TMP_Dropdown>().value = white;
         Assert.AreEqual("white", wall.TextureOverlays[0].MaterialId);
 
         CommandStack.Undo();
@@ -279,9 +281,9 @@ public class ContextMenuLayoutTests
     {
         var wall = MakeWall("Стена");
         _menu!.Open(wall);
-        Panel().Find("CtxTextures").GetComponent<Button>().onClick.Invoke();
+        SetSection("Textures", expanded: true);
 
-        var add = Panel().Find("CtxTexAdd").GetComponent<Button>();
+        var add = Panel().FindNode("CtxTexAdd").GetComponent<Button>();
         add.onClick.Invoke();
         add.onClick.Invoke();
 
@@ -311,7 +313,7 @@ public class ContextMenuLayoutTests
     public void Wall_TextureDelete_NeedsTwoClicks()
     {
         var wall = OpenWallWithTwoOverlays();
-        var del = Panel().Find("CtxTexDel0").GetComponent<Button>();
+        var del = Panel().FindNode("CtxTexDel0").GetComponent<Button>();
 
         del.onClick.Invoke();
         Assert.AreEqual(2, wall.TextureOverlays.Count, "первый клик спрашивает");
@@ -339,12 +341,12 @@ public class ContextMenuLayoutTests
         _menu!.Open(board);
         var panel = Panel();
 
-        Assert.IsTrue(panel.Find("CtxEdges").gameObject.activeSelf,
+        Assert.IsTrue(panel.FindNode("CtxEdges").gameObject.activeInHierarchy,
             "галочка «Кромки» видна у листовой детали");
-        Assert.IsTrue(panel.Find("CtxEdgeDiagram").gameObject.activeSelf,
+        Assert.IsTrue(panel.FindNode("CtxEdgeDiagram").gameObject.activeInHierarchy,
             "галочка включена — схема нарисована");
-        Assert.IsTrue(panel.Find("F_EdgeThickness").gameObject.activeSelf);
-        Assert.IsTrue(panel.Find("CtxEdgeHint").gameObject.activeSelf);
+        Assert.IsTrue(panel.FindNode("F_EdgeThickness").gameObject.activeInHierarchy);
+        Assert.IsTrue(panel.FindNode("CtxEdgeHint").gameObject.activeInHierarchy);
     }
 
     [Test]
@@ -353,16 +355,16 @@ public class ContextMenuLayoutTests
         _menu!.Open(MakeBar("Bar1"));
         var panel = Panel();
 
-        Assert.IsFalse(panel.Find("CtxEdges").gameObject.activeSelf,
+        Assert.IsFalse(panel.FindNode("CtxEdges").gameObject.activeInHierarchy,
             "у бруска торец под кромку не определён — свойства нет");
-        Assert.IsFalse(panel.Find("CtxEdgeDiagram").gameObject.activeSelf);
+        Assert.IsFalse(panel.FindNode("CtxEdgeDiagram").gameObject.activeInHierarchy);
     }
 
     [Test]
     public void Facade_EdgeSection_Hidden()
     {
         _menu!.Open(MakeFacade("F1"));
-        Assert.IsFalse(Panel().Find("CtxEdges").gameObject.activeSelf);
+        Assert.IsFalse(Panel().FindNode("CtxEdges").gameObject.activeInHierarchy);
     }
 
     [Test]
@@ -372,13 +374,13 @@ public class ContextMenuLayoutTests
         _menu!.Open(board);
         var panel = Panel();
 
-        panel.Find("CtxEdges").GetComponent<Toggle>().isOn = false;
+        panel.FindNode("CtxEdges").GetComponent<Toggle>().isOn = false;
 
         Assert.IsFalse(board.EdgeBandingEnabled);
-        Assert.IsTrue(panel.Find("CtxEdges").gameObject.activeSelf, "сама галочка остаётся");
-        Assert.IsFalse(panel.Find("CtxEdgeDiagram").gameObject.activeSelf);
-        Assert.IsFalse(panel.Find("F_EdgeThickness").gameObject.activeSelf);
-        Assert.IsFalse(panel.Find("CtxEdgeHint").gameObject.activeSelf);
+        Assert.IsTrue(panel.FindNode("CtxEdges").gameObject.activeInHierarchy, "сама галочка остаётся");
+        Assert.IsFalse(panel.FindNode("CtxEdgeDiagram").gameObject.activeInHierarchy);
+        Assert.IsFalse(panel.FindNode("F_EdgeThickness").gameObject.activeInHierarchy);
+        Assert.IsFalse(panel.FindNode("CtxEdgeHint").gameObject.activeInHierarchy);
 
         CommandStack.Undo();
         Assert.IsTrue(board.EdgeBandingEnabled, "Ctrl+Z возвращает кромки");
@@ -391,38 +393,39 @@ public class ContextMenuLayoutTests
         _menu!.Open(board);
         var panel = Panel();
 
-        Assert.AreEqual("800 мм", panel.Find("CtxEdgeDiagram/CtxEdgeLen")
+        Assert.AreEqual("800 мм", panel.FindNode("CtxEdgeDiagram/CtxEdgeLen")
             .GetComponent<TMP_Text>().text);
-        Assert.AreEqual("400 мм", panel.Find("CtxEdgeDiagram/CtxEdgeWid")
+        Assert.AreEqual("400 мм", panel.FindNode("CtxEdgeDiagram/CtxEdgeWid")
             .GetComponent<TMP_Text>().text);
 
         // Одинокая деталь: все четыре торца открыты — все полосы зелёные.
         foreach (var side in new[] { "L1", "L2", "W1", "W2" })
             Assert.AreEqual(UIStyle.EdgePresent,
-                panel.Find($"CtxEdgeDiagram/CtxEdge{side}").GetComponent<Image>().color,
+                panel.FindNode($"CtxEdgeDiagram/CtxEdge{side}").GetComponent<Image>().color,
                 $"торец {side} открыт — кромка есть");
 
         // Цвет продублирован формой (UI-GUIDELINES правило 10): сторона С кромкой
         // залита сплошь, сторона БЕЗ кромки — пустой контур. Иначе жёлтый,
         // зелёный и красный неразличимы при дальтонизме и в оттенках серого.
         foreach (var side in new[] { "L1", "L2", "W1", "W2" })
-            Assert.IsFalse(panel.Find($"CtxEdgeDiagram/CtxEdge{side}/CtxEdge{side}Hole")
+            Assert.IsFalse(panel.FindNode($"CtxEdgeDiagram/CtxEdge{side}/CtxEdge{side}Hole")
                 .GetComponent<Image>().enabled,
                 $"торец {side} с кромкой залит сплошь, а не нарисован контуром");
     }
 
     [Test]
-    public void Board_ExpandGrooves_ShowsAddRowAndFlipsArrow()
+    public void Board_ExpandGrooves_ShowsHintAndFlipsChevron()
     {
         _menu!.Open(MakeBoard("B1"));
         ClickGroovesHeader();
         var panel = Panel();
 
-        Assert.IsTrue(panel.Find("CtxGrooveAdd").gameObject.activeSelf);
-        Assert.IsTrue(panel.Find("CtxGrooveSide").gameObject.activeSelf);
-        Assert.IsTrue(panel.Find("CtxGrooveHint").gameObject.activeSelf,
+        Assert.IsTrue(panel.FindNode("CtxGrooveAdd").IsShown());
+        Assert.IsTrue(panel.FindNode("CtxGrooveHint").IsShown(),
             "в раскрытом виде видна подсказка с размерами паза в мм");
-        Assert.AreEqual("Пазы (0)  ▼", GroovesButtonText(panel));
+        Assert.AreEqual(UIStyle.GlyphExpanded,
+            panel.FindNode("Sec_Grooves").FindNode(CollapsibleSection.ChevronNode).GetComponent<TMP_Text>().text);
+        Assert.AreEqual("0", CountOf(panel, "Grooves"));
     }
 
     [Test]
@@ -430,23 +433,37 @@ public class ContextMenuLayoutTests
     {
         var board = MakeBoard("B1");
         _menu!.Open(board);
-        ClickGroovesHeader();
 
         var panel = Panel();
-        panel.Find("CtxGrooveSide").GetComponent<TMP_Dropdown>().value = (int)GrooveSide.Left;
-        panel.Find("CtxGrooveKind").GetComponent<TMP_Dropdown>().value = (int)GrooveKind.Blind;
-        panel.Find("CtxGrooveAdd").GetComponent<Button>().onClick.Invoke();
+        panel.FindNode("CtxGrooveAdd").GetComponent<Button>().onClick.Invoke();
 
         Assert.AreEqual(1, board.Grooves.Count);
-        Assert.AreEqual("Пазы (1)  ▼", GroovesButtonText(panel));
-        // Строка паза — редактируемые на месте дропдауны со значениями паза.
-        Assert.IsTrue(panel.Find("CtxGrooveSide0").gameObject.activeSelf);
-        Assert.AreEqual((int)GrooveSide.Left,
-            panel.Find("CtxGrooveSide0").GetComponent<TMP_Dropdown>().value);
-        Assert.AreEqual((int)GrooveKind.Blind,
-            panel.Find("CtxGrooveKind0").GetComponent<TMP_Dropdown>().value);
-        Assert.IsFalse(panel.Find("CtxGrooveSide1").gameObject.activeSelf,
+        Assert.AreEqual(new GrooveSpec(GrooveKind.Through, GrooveSide.Top), board.Grooves[0],
+            "ссылка «+ Добавить» кладёт первый свободный паз: сквозной сверху");
+        Assert.AreEqual("1", CountOf(panel, "Grooves"));
+        Assert.IsTrue(ExpandedOf(panel, "Grooves"), "добавление раскрывает секцию — результат должен быть виден");
+        Assert.IsTrue(panel.FindNode("CtxGrooveSide0").IsShown());
+        Assert.AreEqual((int)GrooveSide.Top,
+            panel.FindNode("CtxGrooveSide0").GetComponent<TMP_Dropdown>().value);
+        Assert.AreEqual((int)GrooveKind.Through,
+            panel.FindNode("CtxGrooveKind0").GetComponent<TMP_Dropdown>().value);
+        Assert.IsFalse(panel.FindNode("CtxGrooveSide1").IsShown(),
             "слот под второй паз остаётся скрытым");
+    }
+
+    [Test]
+    public void Board_AddGroove_TwiceGivesTwoDifferentGrooves()
+    {
+        var board = MakeBoard("B1");
+        _menu!.Open(board);
+        var add = Panel().FindNode("CtxGrooveAdd").GetComponent<Button>();
+
+        add.onClick.Invoke();
+        add.onClick.Invoke();
+
+        Assert.AreEqual(2, board.Grooves.Count);
+        Assert.AreNotEqual(board.Grooves[0], board.Grooves[1],
+            "одинаковый паз дважды не нужен — вторая ссылка берёт следующий свободный");
     }
 
     [Test]
@@ -458,17 +475,17 @@ public class ContextMenuLayoutTests
         ClickGroovesHeader();
 
         var panel = Panel();
-        Assert.IsTrue(panel.Find("CtxGrooveSide0").gameObject.activeSelf);
+        Assert.IsTrue(panel.FindNode("CtxGrooveSide0").IsShown());
 
-        var del = panel.Find("CtxGrooveDel0").GetComponent<Button>();
+        var del = panel.FindNode("CtxGrooveDel0").GetComponent<Button>();
         del.onClick.Invoke();
         Assert.AreEqual(1, board.Grooves.Count,
             "первый клик только взводит кнопку (правило 3 UI-GUIDELINES)");
         del.onClick.Invoke();
 
         Assert.AreEqual(0, board.Grooves.Count);
-        Assert.IsFalse(panel.Find("CtxGrooveSide0").gameObject.activeSelf);
-        Assert.AreEqual("Пазы (0)  ▼", GroovesButtonText(panel));
+        Assert.IsFalse(panel.FindNode("CtxGrooveSide0").IsShown());
+        Assert.AreEqual("0", CountOf(panel, "Grooves"));
     }
 
     [Test]
@@ -480,7 +497,7 @@ public class ContextMenuLayoutTests
         ClickGroovesHeader();
 
         var panel = Panel();
-        var del = panel.Find("CtxGrooveDel0").GetComponent<Button>();
+        var del = panel.FindNode("CtxGrooveDel0").GetComponent<Button>();
         var label = del.GetComponentInChildren<TMP_Text>(true);
         var confirm = del.GetComponent<ConfirmDeleteButton>();
         Assert.NotNull(confirm, "у кнопки удаления обязано быть подтверждение");
@@ -492,7 +509,6 @@ public class ContextMenuLayoutTests
             "взведённая кнопка спрашивает, а не удаляет молча");
         Assert.AreEqual(1, board.Grooves.Count);
 
-        // Клик по любому другому контролу снимает взвод.
         confirm.Disarm();
         Assert.AreEqual(UIStyle.GlyphClose, label.text);
         del.onClick.Invoke();
@@ -509,7 +525,7 @@ public class ContextMenuLayoutTests
         ClickGroovesHeader();
 
         var panel = Panel();
-        panel.Find("CtxGrooveSide0").GetComponent<TMP_Dropdown>().value = (int)GrooveSide.Bottom;
+        panel.FindNode("CtxGrooveSide0").GetComponent<TMP_Dropdown>().value = (int)GrooveSide.Bottom;
 
         Assert.AreEqual(GrooveSide.Bottom, board.Grooves[0].side,
             "правка дропдауна строки меняет паз на месте");
@@ -524,10 +540,9 @@ public class ContextMenuLayoutTests
     {
         var board = MakeBoard("B1");
         _menu!.Open(board);
-        ClickGroovesHeader();
 
         var panel = Panel();
-        panel.Find("CtxGrooveAdd").GetComponent<Button>().onClick.Invoke();
+        panel.FindNode("CtxGrooveAdd").GetComponent<Button>().onClick.Invoke();
         Assert.AreEqual(1, board.Grooves.Count);
 
         CommandStack.Undo();
@@ -535,6 +550,23 @@ public class ContextMenuLayoutTests
 
         CommandStack.Redo();
         Assert.AreEqual(1, board.Grooves.Count, "и повторяемо");
+    }
+
+    private static float TopOf(Transform node) =>
+        RowOf(node).anchoredPosition.y;
+
+    private static float BottomOf(Transform node)
+    {
+        var row = RowOf(node);
+        return row.anchoredPosition.y - row.sizeDelta.y;
+    }
+
+    private static RectTransform RowOf(Transform node)
+    {
+        for (var t = node; t != null; t = t.parent)
+            if (t.name.StartsWith("Row_")) return (RectTransform)t;
+        Assert.Fail($"у узла {node.name} нет строки Row_* среди предков");
+        return null!;
     }
 
     [Test]
@@ -547,52 +579,69 @@ public class ContextMenuLayoutTests
         ClickGroovesHeader();
 
         var panel = Panel();
-        var addRow = panel.Find("CtxGrooveAdd").GetComponent<RectTransform>();
-        var xField = panel.Find("F_X, мм").GetComponent<RectTransform>();
+        var position = panel.FindNode("Vec_Position_X")!;
 
-        // Всё заякорено к верху панели: низ = anchoredPosition.y − высота.
-        float addBottom = addRow.anchoredPosition.y - addRow.sizeDelta.y;
-        Assert.GreaterOrEqual(addBottom, xField.anchoredPosition.y,
-            "строка добавления паза должна быть выше блока позиции");
-
-        // Строки пазов идут сверху вниз и не накладываются друг на друга.
-        var item0 = panel.Find("CtxGrooveSide0").GetComponent<RectTransform>();
-        var item1 = panel.Find("CtxGrooveSide1").GetComponent<RectTransform>();
-        Assert.IsTrue(item1.gameObject.activeSelf, "второй паз показывается своей строкой");
-        Assert.GreaterOrEqual(item0.anchoredPosition.y - item0.sizeDelta.y,
-            item1.anchoredPosition.y, "строки пазов не перекрываются");
+        var item0 = panel.FindNode("CtxGrooveSide0")!;
+        var item1 = panel.FindNode("CtxGrooveSide1")!;
+        Assert.IsTrue(item1.IsShown(), "второй паз показывается своей строкой");
+        Assert.GreaterOrEqual(BottomOf(item0), TopOf(item1), "строки пазов не перекрываются");
+        Assert.GreaterOrEqual(BottomOf(item1), TopOf(position),
+            "строки пазов должны быть выше блока позиции");
     }
 
     [Test]
-    public void Board_ReopenMenu_CollapsesGrooveSection()
+    public void Board_ReopenSameType_KeepsTheGrooveSectionAsTheUserLeftIt()
     {
-        var board = MakeBoard("B1");
-        _menu!.Open(board);
+        _menu!.Open(MakeBoard("B1"));
         ClickGroovesHeader();
-        Assert.IsTrue(Panel().Find("CtxGrooveAdd").gameObject.activeSelf);
+        Assert.IsTrue(ExpandedOf(Panel(), "Grooves"));
 
         _menu!.Open(MakeBoard("B2"));
 
-        Assert.IsFalse(Panel().Find("CtxGrooveAdd").gameObject.activeSelf,
-            "меню открывается со свёрнутым списком пазов");
+        Assert.IsTrue(ExpandedOf(Panel(), "Grooves"),
+            "свёрнутость помнится по типу элемента на сессию (UI-GUIDELINES D7)");
+    }
+
+    [Test]
+    public void Board_GrooveSection_StartsCollapsed_ForAFreshSession()
+    {
+        _menu!.Open(MakeBoard("B1"));
+
+        Assert.IsFalse(ExpandedOf(Panel(), "Grooves"),
+            "пазы — редкая секция: без памяти меню открывается со свёрнутыми пазами");
+    }
+
+    [Test]
+    public void SectionMemory_IsPerElementType()
+    {
+        _menu!.Open(MakeBoard("B1"));
+        ClickGroovesHeader();
+        _menu!.Open(MakeWall("Стена"));
+        Assert.IsFalse(ExpandedOf(Panel(), "Grooves"),
+            "у стены пазы ещё не открывали — память по типу, а не по секции вообще");
+        SetSection("Grooves", expanded: true);
+        SetSection("Grooves", expanded: false);
+
+        _menu!.Open(MakeBoard("B3"));
+
+        Assert.IsTrue(ExpandedOf(Panel(), "Grooves"),
+            "пока открывали стену, состояние секций детали не потерялось");
     }
     // ── Секция зазоров ────────────────────────────────────────────────
     // Устроена как пазы: свёрнутая раскрывашка со счётчиком, поля — под ней.
 
-    private void ExpandGaps() =>
-        Panel().Find("CtxGaps").GetComponent<Button>().onClick.Invoke();
+    private void ExpandGaps() => SetSection("Gaps", expanded: true);
 
-    private string GapHeaderText() =>
-        Panel().Find("CtxGaps").GetComponentInChildren<TMP_Text>(true).text;
+    private string GapCount() => CountOf(Panel(), "Gaps");
 
     [Test]
     public void Facade_GapsCollapsedOnOpen()
     {
         _menu!.Open(MakeFacade("F1"));
 
-        Assert.IsTrue(Panel().Find("CtxGaps").gameObject.activeSelf,
+        Assert.IsTrue(Panel().FindNode("Sec_Gaps").gameObject.activeInHierarchy,
             "заголовок секции зазоров виден у фасада");
-        Assert.IsFalse(Panel().Find("F_gapLeft").gameObject.activeSelf,
+        Assert.IsFalse(Panel().FindNode("F_gapLeft").gameObject.activeInHierarchy,
             "меню открывается со свёрнутой секцией зазоров");
     }
 
@@ -601,10 +650,9 @@ public class ContextMenuLayoutTests
     {
         _menu!.Open(MakeBoard("B1"));
 
-        Assert.IsTrue(Panel().Find("CtxGaps").gameObject.activeSelf,
+        Assert.IsTrue(Panel().FindNode("Sec_Gaps").IsShown(),
             "зазоры есть и у обычной детали (по умолчанию нулевые)");
-        Assert.IsTrue(GapHeaderText().StartsWith("Зазоры (0)"),
-            $"у детали зазоров нет, а в заголовке «{GapHeaderText()}»");
+        Assert.AreEqual("0", GapCount(), "у детали зазоров нет — счётчик показывает 0");
     }
 
     [Test]
@@ -617,8 +665,8 @@ public class ContextMenuLayoutTests
         facade.GapBottom = 0;
         _menu!.Open(facade);
 
-        Assert.IsTrue(GapHeaderText().StartsWith("Зазоры (3)"),
-            $"счётчик считает стороны с ненулевым зазором, а в заголовке «{GapHeaderText()}»");
+        Assert.AreEqual("3", GapCount(),
+            "счётчик считает стороны с ненулевым зазором");
     }
 
     [Test]
@@ -629,7 +677,7 @@ public class ContextMenuLayoutTests
 
         foreach (var name in new[] { "F_gapLeft", "F_gapRight", "F_gapTop",
                                      "F_gapBottom", "F_gapFront", "F_gapBack" })
-            Assert.IsTrue(Panel().Find(name).gameObject.activeSelf,
+            Assert.IsTrue(Panel().FindNode(name).gameObject.activeInHierarchy,
                 $"{name} должно быть видно в раскрытой секции");
     }
 
@@ -640,17 +688,11 @@ public class ContextMenuLayoutTests
         ExpandGaps();
         var panel = Panel();
 
-        var xRt = panel.Find("F_X, мм").GetComponent<RectTransform>();
-        float xTop = xRt.anchoredPosition.y;
+        float positionTop = TopOf(panel.FindNode("Vec_Position_X")!);
 
-        foreach (var name in new[] { "CtxGaps", "F_gapLeft", "F_gapFront", "F_gapBack" })
-        {
-            var rt = panel.Find(name).GetComponent<RectTransform>();
-            // Верхний pivot: низ строки = верх − высота.
-            float bottom = rt.anchoredPosition.y - rt.sizeDelta.y;
-            Assert.GreaterOrEqual(bottom, xTop,
+        foreach (var name in new[] { "Sec_Gaps", "F_gapLeft", "F_gapFront", "F_gapBack" })
+            Assert.GreaterOrEqual(BottomOf(panel.FindNode(name)!), positionTop,
                 $"{name} наезжает на строку положения");
-        }
     }
 
     [Test]
@@ -664,108 +706,73 @@ public class ContextMenuLayoutTests
 
         _menu!.Open(win);
 
-        Assert.IsFalse(Panel().Find("CtxGaps").gameObject.activeSelf,
+        Assert.IsFalse(Panel().FindNode("Sec_Gaps").IsShown(),
             "у окна зазоров нет");
     }
 
-    // Позиция и поворот теперь в компактной раскладке 3 колонки:
-    // подписи в одной строке, поля ввода в следующей.
     [Test]
-    public void Board_TripleRowLabelsAndFieldsAligned()
+    public void Board_PositionAndRotation_AreTwoVectorRows_ThreeFieldsEach()
     {
-        var board = MakeBoard("B1");
-        _menu!.Open(board);
-        var panel = _canvas!.transform.Find("ContextMenu");
+        _menu!.Open(MakeBoard("B1"));
+        var panel = Panel();
 
-        //.Position labels все на одной Y
-        float? posLabelY = null;
-        float? posFieldY = null;
-        foreach (var name in new[] { "X, мм", "Y, мм", "Z, мм" })
+        foreach (var vector in new[] { "Position", "Rotation" })
         {
-            var lbl = panel.Find("L_" + name).GetComponent<RectTransform>();
-            var fld = panel.Find("F_" + name).GetComponent<RectTransform>();
-            posLabelY ??= lbl.anchoredPosition.y;
-            posFieldY ??= fld.anchoredPosition.y;
-            Assert.AreEqual(posLabelY.Value, lbl.anchoredPosition.y, 0.5f,
-                $"position label «{name}» must be on the same row");
-            Assert.AreEqual(posFieldY.Value, fld.anchoredPosition.y, 0.5f,
-                $"position field «{name}» must be on the same row");
-            Assert.Less(fld.anchoredPosition.y, lbl.anchoredPosition.y,
-                $"field «{name}» must be below its label");
+            float? y = null;
+            foreach (var axis in VectorField.AxisNames)
+            {
+                var field = panel.FindNode($"Vec_{vector}_{axis}")!;
+                Assert.IsTrue(field.IsShown(), $"{vector}: поле оси {axis} видно у обычной детали");
+                y ??= TopOf(field);
+                Assert.AreEqual(y.Value, TopOf(field), 0.5f, $"{vector}: три поля стоят в одной строке");
+            }
         }
+        Assert.Greater(TopOf(panel.FindNode("Vec_Position_X")!), TopOf(panel.FindNode("Vec_Rotation_X")!),
+            "позиция выше поворота");
+    }
 
-        // Rotation labels все на одной Y
-        float? rotLabelY = null;
-        float? rotFieldY = null;
-        foreach (var name in new[] { "X, °", "Y, °", "Z, °" })
+    [Test]
+    public void Board_RotationRow_HasATurnButtonPerAxis()
+    {
+        _menu!.Open(MakeBoard("B1"));
+        var panel = Panel();
+
+        foreach (var axis in VectorField.AxisNames)
         {
-            var lbl = panel.Find("L_" + name).GetComponent<RectTransform>();
-            var fld = panel.Find("F_" + name).GetComponent<RectTransform>();
-            rotLabelY ??= lbl.anchoredPosition.y;
-            rotFieldY ??= fld.anchoredPosition.y;
-            Assert.AreEqual(rotLabelY.Value, lbl.anchoredPosition.y, 0.5f,
-                $"rotation label «{name}» must be on the same row");
-            Assert.AreEqual(rotFieldY.Value, fld.anchoredPosition.y, 0.5f,
-                $"rotation field «{name}» must be on the same row");
-            Assert.Less(fld.anchoredPosition.y, lbl.anchoredPosition.y,
-                $"field «{name}» must be below its label");
+            var field = panel.FindNode($"Vec_Rotation_{axis}")!;
+            Assert.IsNotNull(field.FindNode(ContextMenuUI.RotateButtonPrefix + axis),
+                $"поворот на 90° — иконка внутри поля оси {axis}, а не полоса из трёх кнопок");
         }
     }
 
-    // Блок «Повернуть на 90°» не должен перекрывать строку полей поворота.
     [Test]
-    public void Board_RotationLabelBelowRotationRows_NoOverlap()
+    public void TurnButton_RotatesTheElementAroundItsAxis_ByAQuarter()
     {
         var board = MakeBoard("B1");
         _menu!.Open(board);
-        var panel = _canvas!.transform.Find("ContextMenu");
+        var button = Panel().FindNode("CtxRotY")!.GetComponent<Button>();
 
-        var rotLbl = panel.Find("CtxRotLbl").GetComponent<RectTransform>();
-        var rzFld = panel.Find("F_Z, °").GetComponent<RectTransform>();
+        button.onClick.Invoke();
 
-        float rotLblTop = rotLbl.anchoredPosition.y;
-        float rzBottom = rzFld.anchoredPosition.y - rzFld.sizeDelta.y;
-
-        Assert.LessOrEqual(rotLblTop, rzBottom,
-            "«Повернуть на 90°» must sit below the rotation fields row without overlap");
+        Assert.AreEqual(90f, board.transform.rotation.eulerAngles.y, 0.5f,
+            "кнопка ↻ в поле Y поворачивает деталь на 90° вокруг Y");
     }
 
-    // Заголовок должен быть ВНУТРИ панели (верхняя кромка ниже верха панели),
-    // а не выезжать над окном в режиме «деталь» — прямой репорт пользователя.
     [Test]
-    public void Board_TitleStaysInsidePanel()
+    public void Window_RotationRow_ShowsOnlyYaw_AndTheTurnIsAHalfTurn()
     {
-        var board = MakeBoard("B1");
-        _menu!.Open(board);
-        var panel = _canvas!.transform.Find("ContextMenu");
+        var go = new GameObject("W1");
+        var win = go.AddComponent<WindowElement>();
+        win.PartName = "W1";
+        win.DimensionsMM = new Vector3Int(800, 1200, 100);
+        _spawned.Add(go);
 
-        var title = panel.Find("CtxTitle").GetComponent<RectTransform>();
-        // Заголовок заякорен к верху панели, pivot сверху → anchoredPosition.y
-        // это его верхняя кромка (должна быть ниже верха панели, т.е. ≤ 0).
-        float titleTopBelowPanelTop = title.anchoredPosition.y;
-        Assert.LessOrEqual(titleTopBelowPanelTop, 0f,
-            "title top must be below the panel top edge (inside the window)");
-    }
+        _menu!.Open(win);
+        var panel = Panel();
 
-
-    // Bug A: заголовок стоит вплотную над первой строкой, без большого провала.
-    [Test]
-    public void Title_SitsJustAboveFirstRow()
-    {
-        var board = MakeBoard("B1");
-        _menu!.Open(board);
-        var panel = _canvas!.transform.Find("ContextMenu");
-
-        var title = panel.Find("CtxTitle").GetComponent<RectTransform>();
-        // Первая строка под заголовком — выпадающий список типа детали (CtxType).
-        var firstRow = panel.Find("CtxType").GetComponent<RectTransform>();
-
-        float titleBottom = title.anchoredPosition.y - title.sizeDelta.y;
-        float firstTop = firstRow.anchoredPosition.y;
-        float gap = titleBottom - firstTop;
-
-        Assert.GreaterOrEqual(gap, 0f, "title must not overlap the first row");
-        Assert.LessOrEqual(gap, 20f, "gap between title and first row must be small");
+        Assert.IsFalse(panel.FindNode("Vec_Rotation_X").IsShown(), "ориентацию окна диктует стена — X скрыт");
+        Assert.IsFalse(panel.FindNode("Vec_Rotation_Z").IsShown(), "и Z скрыт");
+        Assert.IsTrue(panel.FindNode("Vec_Rotation_Y").IsShown(), "поворот вокруг Y остался");
     }
 
     // ── Открывание дверцы (только фасад) ─────────────────────────────
@@ -775,11 +782,11 @@ public class ContextMenuLayoutTests
     {
         var facade = MakeFacade("F1");
         _menu!.Open(facade);
-        var panel = _canvas!.transform.Find("ContextMenu");
+        var panel = _canvas!.transform.FindNode("ContextMenu");
 
-        var door = panel.Find("CtxDoor");
+        var door = panel.FindNode("CtxDoor");
         Assert.NotNull(door, "у фасада должна быть кнопка открытия");
-        Assert.IsTrue(door.gameObject.activeSelf, "кнопка активна для фасада");
+        Assert.IsTrue(door.gameObject.activeInHierarchy, "кнопка активна для фасада");
         Assert.AreEqual("Открыть", door.GetComponentInChildren<TMP_Text>(true).text);
     }
 
@@ -788,11 +795,11 @@ public class ContextMenuLayoutTests
     {
         var facade = MakeFacade("F1");
         _menu!.Open(facade);
-        var panel = _canvas!.transform.Find("ContextMenu");
+        var panel = _canvas!.transform.FindNode("ContextMenu");
 
-        var mode = panel.Find("CtxMode");
+        var mode = panel.FindNode("CtxMode");
         Assert.NotNull(mode, "у фасада должен быть список режимов");
-        Assert.IsTrue(mode.gameObject.activeSelf, "список активен для фасада");
+        Assert.IsTrue(mode.gameObject.activeInHierarchy, "список активен для фасада");
         var dd = mode.GetComponent<TMP_Dropdown>();
         Assert.NotNull(dd, "CtxMode — это TMP_Dropdown");
         Assert.AreEqual(18, dd.options.Count, "18 режимов (12 рёбер + 6 ящиков)");
@@ -803,13 +810,13 @@ public class ContextMenuLayoutTests
     {
         var board = MakeBoard("B1");
         _menu!.Open(board);
-        var panel = _canvas!.transform.Find("ContextMenu");
+        var panel = _canvas!.transform.FindNode("ContextMenu");
 
         foreach (var name in new[] { "CtxDoor", "CtxMode" })
         {
-            var t = panel.Find(name);
+            var t = panel.FindNode(name);
             Assert.NotNull(t, $"{name} существует");
-            Assert.IsFalse(t.gameObject.activeSelf, $"{name} должна быть скрыта для детали");
+            Assert.IsFalse(t.gameObject.activeInHierarchy, $"{name} должна быть скрыта для детали");
         }
     }
 
@@ -818,8 +825,8 @@ public class ContextMenuLayoutTests
     {
         var facade = MakeFacade("F1");
         _menu!.Open(facade);
-        var panel = _canvas!.transform.Find("ContextMenu");
-        var door = panel.Find("CtxDoor");
+        var panel = _canvas!.transform.FindNode("ContextMenu");
+        var door = panel.FindNode("CtxDoor");
         var label = door.GetComponentInChildren<TMP_Text>(true);
 
         Assert.IsFalse(facade.IsOpen);
@@ -837,8 +844,8 @@ public class ContextMenuLayoutTests
     {
         var facade = MakeFacade("F1");
         _menu!.Open(facade);
-        var panel = _canvas!.transform.Find("ContextMenu");
-        var dd = panel.Find("CtxMode").GetComponent<TMP_Dropdown>();
+        var panel = _canvas!.transform.FindNode("ContextMenu");
+        var dd = panel.FindNode("CtxMode").GetComponent<TMP_Dropdown>();
 
         Assert.AreEqual(DoorMode.HingeFrontLeft, facade.Mode);
         dd.value = (int)DoorMode.DrawerOut;

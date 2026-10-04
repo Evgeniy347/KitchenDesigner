@@ -4,9 +4,7 @@ namespace KitchenDesigner.Core.UI
     {
         KitchenElement? Target { get; }
 
-        ContextMenuLayout Layout { get; }
-
-        ContextMenuRowFactory Rows { get; }
+        InspectorRows Rows { get; }
 
         ContextMenuFieldTracker Fields { get; }
 

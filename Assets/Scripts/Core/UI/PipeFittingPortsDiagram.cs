@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.Update;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -23,7 +22,6 @@ namespace KitchenDesigner.Core.UI
         private const float SlotSize = 36f;
         private const float SlotBorder = 2f;
         private const float JointThickness = 8f;
-        private const float HintH = 20f;
 
         private readonly IContextMenuHost _host;
         private readonly Func<PipeFittingElement?> _target;
@@ -47,7 +45,7 @@ namespace KitchenDesigner.Core.UI
         public void Build(Transform parent)
         {
             var root = UIFactory.CreateRect("CtxFittingPortsDiagram", parent);
-            root.sizeDelta = new Vector2(RowWidth, SchematicH);
+            root.sizeDelta = new Vector2(_host.Rows.Metrics.Width, SchematicH);
             _hover.Guard(root.gameObject);
 
             var hub = UIFactory.CreatePanel("CtxFittingHub", root, Vector2.zero,
@@ -65,7 +63,7 @@ namespace KitchenDesigner.Core.UI
                 _hover.WatchSlot(_slots[i]!.gameObject, i);
             }
 
-            _host.Layout.AddFor(ElementFacet.PipeFitting, SchematicH, RowGap, root);
+            _host.Rows.Custom(root, SchematicH, RowVisibility.For(ElementFacet.PipeFitting));
 
             for (int i = 0; i < MaxPorts; i++)
             {
@@ -78,9 +76,8 @@ namespace KitchenDesigner.Core.UI
                 _hover.Watch(dropdown, i);
             }
 
-            _host.Rows.Hint("CtxFittingPortsHint",
-                Loc.T("element.pipeFitting.portsHint"), HintH, ActionGap,
-                RowVisibility.For(ElementFacet.PipeFitting), TextAnchor.MiddleCenter);
+            _host.Rows.Note("CtxFittingPortsHint", Loc.T("element.pipeFitting.portsHint"),
+                RowVisibility.For(ElementFacet.PipeFitting), centered: true);
         }
 
         private static RowVisibility PortVisibility(int portIndex) => portIndex switch

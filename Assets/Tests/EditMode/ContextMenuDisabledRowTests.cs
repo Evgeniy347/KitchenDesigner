@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// Стражи правила «нередактируемая строка гаснет целиком»
@@ -18,7 +19,7 @@ using KitchenDesigner.Core.UI;
 /// проверку само — его не нужно вписывать ни в какой список.
 ///
 /// Второй тест закрывает обход правила: неинтерактивный контрол, собранный
-/// МИМО ContextMenuRowFactory, не имеет пары «подпись—контрол», и первый тест
+/// МИМО InspectorRows, не имеет пары «подпись—контрол», и первый тест
 /// его просто не увидел бы (CONVENTIONS.md → «Not only the guard — every READER
 /// of a state must ask through one function»).
 /// </summary>
@@ -76,7 +77,7 @@ public class ContextMenuDisabledRowTests
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         EveryElementType.ClearScene();
     }
 
@@ -90,7 +91,7 @@ public class ContextMenuDisabledRowTests
             var element = EveryElementType.Spawn(type, "Проба_" + type.Name);
             _menu!.Open(element);
 
-            foreach (var (label, control) in _menu!.RowFactory.LabelledRows)
+            foreach (var (label, control) in _menu!.Rows.LabelledRows)
             {
                 if (label == null || control == null) continue;
                 if (!control.gameObject.activeInHierarchy) continue;
@@ -108,7 +109,7 @@ public class ContextMenuDisabledRowTests
             "Правило: строка панели свойств гаснет ЦЕЛИКОМ — контрол и подпись. Пока подпись "
             + "остаётся яркой, человек не видит, что поле не правится, и раз за разом пробует в "
             + "него печатать. Красить руками ничего не надо: пара «подпись—контрол» уже "
-            + "зарегистрирована в ContextMenuRowFactory, а ContextMenuUI зовёт "
+            + "зарегистрирована в InspectorRows, а ContextMenuUI зовёт "
             + "SyncEnabledState() при открытии панели и после каждого применения. Если строка "
             + "попала сюда — её контрол выключили ПОСЛЕ этого вызова: добавьте свой вызов "
             + "SyncEnabledState() или гасите строку через UIRowEnabled.SetRowEnabled(label, "
@@ -126,7 +127,7 @@ public class ContextMenuDisabledRowTests
             _menu!.Open(element);
 
             var known = new HashSet<Selectable>();
-            foreach (var (_, control) in _menu!.RowFactory.LabelledRows)
+            foreach (var (_, control) in _menu!.Rows.LabelledRows)
                 if (control != null) known.Add(control);
 
             foreach (var control in Panel().GetComponentsInChildren<Selectable>(false))
@@ -143,7 +144,7 @@ public class ContextMenuDisabledRowTests
 
         Assert.IsEmpty(orphans,
             "Правило: у каждого поля и каждого выпадающего списка панели есть подпись, и она "
-            + "гаснет вместе с ним. Контрол, собранный мимо ContextMenuRowFactory, такой пары не "
+            + "гаснет вместе с ним. Контрол, собранный мимо InspectorRows, такой пары не "
             + "имеет — его подпись не погаснет никогда, и первый страж этого даже не заметит. "
             + "Собирайте строку через Rows.NumberField/Dropdown/NamedDropdown, а если строка "
             + "действительно особенная — зарегистрируйте пару явно. Безнадзорные контролы: "
@@ -182,11 +183,11 @@ public class ContextMenuDisabledRowTests
         }
     }
 
-    private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
+    private Transform Panel() => _canvas!.transform.FindNode("ContextMenu");
 
     private TMP_InputField Field(string label) =>
-        Panel().Find($"F_{label}")!.GetComponent<TMP_InputField>();
+        Panel().FindNode($"F_{label}")!.GetComponent<TMP_InputField>();
 
     private TMP_Text Label(string label) =>
-        Panel().Find($"L_{label}")!.GetComponent<TMP_Text>();
+        Panel().FindNode($"L_{label}")!.GetComponent<TMP_Text>();
 }

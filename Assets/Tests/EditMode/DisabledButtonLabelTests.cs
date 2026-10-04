@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>Стражи правила «выключенная кнопка гаснет ЦЕЛИКОМ — и фон, и
 /// подпись» (docs/UI-GUIDELINES.md §9). Unity красит своим ColorBlock только
@@ -71,7 +72,7 @@ public class DisabledButtonLabelTests
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _probes)
             if (go != null) Object.DestroyImmediate(go);
         _probes.Clear();

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace KitchenDesigner.Core.UI
@@ -5,10 +6,14 @@ namespace KitchenDesigner.Core.UI
     internal abstract class ContextMenuListSection<T>
     {
         protected readonly IContextMenuHost Host;
-        protected bool Expanded;
+        private InspectorSection? _section;
         private int _fingerprint;
 
         protected ContextMenuListSection(IContextMenuHost host) => Host = host;
+
+        protected InspectorSection Section => _section!;
+
+        protected bool Expanded => _section != null && _section.View.Expanded;
 
         public abstract bool Eligible();
 
@@ -21,14 +26,23 @@ namespace KitchenDesigner.Core.UI
         public bool ChangedOutsideTheMenu() =>
             Eligible() && Fingerprint(CurrentItems()) != _fingerprint;
 
-        public virtual void Collapse() => Expanded = false;
+        public void Toggle() => Section.View.Toggle();
 
-        public void Toggle()
+        protected InspectorSection BeginSection(string id, string title, bool expandedByDefault,
+            string? actionCaption = null, Action? onAction = null)
         {
-            Expanded = !Expanded;
-            OnToggled();
-            Refresh();
-            Host.Relayout();
+            _section = Host.Rows.BeginSection(id, title, expandedByDefault, actionCaption, onAction);
+            _section.View.Toggled += _ =>
+            {
+                OnToggled();
+                Refresh();
+            };
+            return _section;
+        }
+
+        protected void EnsureExpanded()
+        {
+            if (!Expanded) Section.View.SetExpanded(true, notify: true);
         }
 
         protected virtual void OnToggled()

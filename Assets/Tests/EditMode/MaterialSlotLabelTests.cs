@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// Подписи двух строк декора в контекстном меню принадлежат САМОМУ элементу:
@@ -65,7 +66,7 @@ public class MaterialSlotLabelTests
     [TearDown]
     public void Teardown()
     {
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         CommandStack.Clear();
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
@@ -136,7 +137,7 @@ public class MaterialSlotLabelTests
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
     private TMP_Text SlotLabel(string node) =>
-        Panel().Find(node)!.GetComponent<TMP_Text>();
+        Panel().FindNode(node)!.GetComponent<TMP_Text>();
 
     private string LabelText(string node) => SlotLabel(node).text;
 

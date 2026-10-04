@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
     internal sealed class LightFieldsEditor : ElementFieldsEditor
     {
+        public const string AdvancedSectionId = "LightAdvanced";
+
         private static string AdvancedCaption => Loc.T("element.light.advanced");
 
         private readonly struct Binding
@@ -30,18 +31,10 @@ namespace KitchenDesigner.Core.UI
         private readonly List<Binding> _bindings = new();
 
         private TMP_Dropdown? _shape, _shadow;
-        private TMP_Text? _advancedLabel;
-        private bool _advancedExpanded;
 
         public LightFieldsEditor(IContextMenuHost host) : base(host) { }
 
         public override bool Handles(KitchenElement element) => element is LightSourceElement;
-
-        public void Collapse()
-        {
-            _advancedExpanded = false;
-            UpdateAdvancedCaption();
-        }
 
         public override IEnumerable<TMP_InputField?> ArithmeticFields()
         {
@@ -51,7 +44,6 @@ namespace KitchenDesigner.Core.UI
         public override void Build()
         {
             var plain = RowVisibility.For(ElementFacet.Light);
-            var advanced = RowVisibility.For(ElementFacet.Light, () => _advancedExpanded);
 
             Bind(Loc.T("element.light.temperature"), "K", plain, l => l.TemperatureK, (l, v) => l.TemperatureK = v,
                 LampSpec.DEFAULT_TEMPERATURE_K, hint: "element.light.temperature");
@@ -74,25 +66,24 @@ namespace KitchenDesigner.Core.UI
             Bind(Loc.T("element.light.shadowStrength"), "%", plain, l => l.ShadowStrengthPct, (l, v) => l.ShadowStrengthPct = v,
                 LampSpec.DEFAULT_SHADOW_STRENGTH_PCT, hint: "element.light.shadowStrength");
 
-            _advancedLabel = Rows.WideButton("CtxLightAdv",
-                $"{AdvancedCaption}  {UIStyle.GlyphCollapsed}", ToggleAdvanced, plain, RowGap);
+            Rows.BeginSection(AdvancedSectionId, AdvancedCaption, false);
 
-            Bind(Loc.T("element.light.glow"), "%", advanced, l => l.GlowPct, (l, v) => l.GlowPct = v,
+            Bind(Loc.T("element.light.glow"), "%", plain, l => l.GlowPct, (l, v) => l.GlowPct = v,
                 LampSpec.DEFAULT_GLOW_PCT, hint: "element.light.glow");
-            Bind(Loc.T("element.light.drop"), Loc.T("unit.mm"), advanced, l => l.DropMM, (l, v) => l.DropMM = v,
+            Bind(Loc.T("element.light.drop"), Loc.T("unit.mm"), plain, l => l.DropMM, (l, v) => l.DropMM = v,
                 LampSpec.DEFAULT_DROP_MM, hint: "element.light.drop");
-            Bind(Loc.T("element.light.upCone"), "%", advanced, l => l.UpConePct, (l, v) => l.UpConePct = v,
+            Bind(Loc.T("element.light.upCone"), "%", plain, l => l.UpConePct, (l, v) => l.UpConePct = v,
                 LampSpec.DEFAULT_UP_CONE_PCT, hint: "element.light.upCone");
-            Bind(Loc.T("element.light.upRange"), "%", advanced, l => l.UpRangePct, (l, v) => l.UpRangePct = v,
+            Bind(Loc.T("element.light.upRange"), "%", plain, l => l.UpRangePct, (l, v) => l.UpRangePct = v,
                 LampSpec.DEFAULT_UP_RANGE_PCT, hint: "element.light.upRange");
-            Bind(Loc.T("element.light.range"), Loc.T("unit.mm"), advanced, l => l.RangeMinMM, (l, v) => l.RangeMinMM = v,
+            Bind(Loc.T("element.light.range"), Loc.T("unit.mm"), plain, l => l.RangeMinMM, (l, v) => l.RangeMinMM = v,
                 LampSpec.DEFAULT_RANGE_MIN_MM, hint: "element.light.range");
-            Bind(Loc.T("element.light.rangeMax"), Loc.T("unit.mm"), advanced, l => l.RangeMaxMM, (l, v) => l.RangeMaxMM = v,
+            Bind(Loc.T("element.light.rangeMax"), Loc.T("unit.mm"), plain, l => l.RangeMaxMM, (l, v) => l.RangeMaxMM = v,
                 LampSpec.DEFAULT_RANGE_MAX_MM, hint: "element.light.rangeMax");
-            Bind(Loc.T("element.light.efficacy"), Loc.T("unit.lmPerW"), advanced, l => l.EfficacyLmPerW,
+            Bind(Loc.T("element.light.efficacy"), Loc.T("unit.lmPerW"), plain, l => l.EfficacyLmPerW,
                 (l, v) => l.EfficacyLmPerW = v, LampSpec.DEFAULT_EFFICACY_LM_PER_W,
                 hint: "element.light.efficacy");
-            Bind(Loc.T("element.light.lumensPerUnit"), Loc.T("unit.lmPerUnit"), advanced, l => l.LumensPerUnit,
+            Bind(Loc.T("element.light.lumensPerUnit"), Loc.T("unit.lmPerUnit"), plain, l => l.LumensPerUnit,
                 (l, v) => l.LumensPerUnit = v, LampSpec.DEFAULT_LUMENS_PER_UNIT,
                 hint: "element.light.lumensPerUnit");
         }
@@ -157,20 +148,6 @@ namespace KitchenDesigner.Core.UI
             if (Host.Target is LightSourceElement lamp)
                 ChoiceRowUndo.Commit(lamp,
                     () => lamp.Shadow = (LampShadow)Mathf.Clamp(index, 0, 2));
-        }
-
-        private void ToggleAdvanced()
-        {
-            _advancedExpanded = !_advancedExpanded;
-            UpdateAdvancedCaption();
-            Host.Relayout();
-        }
-
-        private void UpdateAdvancedCaption()
-        {
-            if (_advancedLabel == null) return;
-            _advancedLabel.text =
-                $"{AdvancedCaption}  {(_advancedExpanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed)}";
         }
     }
 }

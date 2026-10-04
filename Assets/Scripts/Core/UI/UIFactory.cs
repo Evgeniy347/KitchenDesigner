@@ -489,7 +489,7 @@ namespace KitchenDesigner.Core.UI
             capRt.offsetMin = new Vector2(8, 2); capRt.offsetMax = new Vector2(-18, -2);
             ClipTheClosedCaptionToOneLine(caption);
 
-            var arrow = CreateLabel(name + "_Arrow", rect, UIStyle.GlyphDropdown, 10, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
+            var arrow = CreateLabel(name + "_Arrow", rect, UIStyle.GlyphDropdown, UIStyle.FontCaption, Vector2.zero, new Vector2(16, 16), TextAnchor.MiddleCenter);
             arrow.color = UIStyle.TextSecondary;
             arrow.raycastTarget = false;
             var arRt = arrow.rectTransform;

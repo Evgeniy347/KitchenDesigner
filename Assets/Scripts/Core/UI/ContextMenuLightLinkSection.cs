@@ -3,19 +3,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core.Lighting;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
     internal sealed class ContextMenuLightLinkSection : ContextMenuListSection<string>
     {
-        private const float RowDropdownX = -18f, RowDropdownW = 296f;
-        private const float AddDropdownX = -66f, AddDropdownW = 200f;
-        private const float AddButtonX = 85f, AddButtonW = 90f;
-        private const float TrailingButtonX = 150f, TrailingButtonW = 28f;
-        private const float LinkRowH = 28f;
+        private const float AddButtonW = 88f;
 
-        public const string HeaderNode = "CtxLightLinks";
+        public const string SectionId = "LightLinks";
         public const string AddDropdownNode = "CtxLightLinkAdd";
         public const string AddButtonNode = "CtxLightLinkAddBtn";
         public const string PickButtonNode = "CtxLightLinkPick";
@@ -24,7 +19,6 @@ namespace KitchenDesigner.Core.UI
         public static string AddCaption => Loc.T("common.add");
         public static string NoLightsInScene => Loc.T("element.lightSwitch.noLights");
 
-        private TMP_Text? _countLabel;
         private TMP_Dropdown? _addDropdown;
         private Button? _pickButton;
         private Button? _addButton;
@@ -46,49 +40,49 @@ namespace KitchenDesigner.Core.UI
 
         public override int Count() => _links.Count;
 
-        public void Build(Transform parent)
+        public void Build()
         {
-            var headerBtn = UIFactory.CreateButton(HeaderNode, parent, HeaderCaption,
-                new Vector2(0, 0), new Vector2(RowWidth, BtnH), Toggle);
-            _countLabel = headerBtn.GetComponentInChildren<TMP_Text>();
-            Host.Layout.AddWhen(Eligible, BtnH, RowGap, headerBtn.GetComponent<RectTransform>());
+            var rows = Host.Rows;
+            BeginSection(SectionId, HeaderCaption, true);
+            Section.Header.VisibleWhen = Eligible;
 
+            float cell = UIStyle.ControlHCompact;
+            float gap = UIStyle.Space1;
+            float width = rows.Metrics.Width;
             for (int i = 0; i < SwitchLightLinks.MaxLightsPerSwitch; i++)
             {
                 int index = i;
-                var lightDd = UIFactory.CreateDropdown($"CtxLightLink{i}", parent,
-                    new List<string>(), new Vector2(RowDropdownX, 0),
-                    new Vector2(RowDropdownW, LinkRowH), _ => Replace(index));
-                var delBtn = UIFactory.CreateConfirmDeleteButton($"CtxLightLinkDel{i}", parent,
-                    UIStyle.GlyphClose, new Vector2(TrailingButtonX, 0),
-                    new Vector2(TrailingButtonW, LinkRowH), () => Remove(index));
+                var row = rows.NewRowRect("CtxLightLinkRow" + i);
+                float dropdownW = width - cell - gap;
+                var lightDd = UIFactory.CreateDropdown($"CtxLightLink{i}", row,
+                    new List<string>(), Vector2.zero,
+                    new Vector2(dropdownW, rows.Metrics.ControlH), _ => Replace(index));
+                var delBtn = QuietDeleteButton.Create($"CtxLightLinkDel{i}", row, cell,
+                    Loc.T("common.delete"), () => Remove(index));
+                rows.PlaceCell((RectTransform)lightDd.transform, 0f, dropdownW);
+                rows.PlaceCell((RectTransform)delBtn.transform, width - cell, cell);
 
                 _rowLight[i] = lightDd;
-                Host.Layout.AddWhen(
-                    () => Eligible() && Expanded && Count() > index, LinkRowH, 4f,
-                    lightDd.GetComponent<RectTransform>(),
-                    delBtn.GetComponent<RectTransform>());
+                rows.Custom(row, rows.Metrics.ControlH,
+                    RowVisibility.When(() => Eligible() && Count() > index));
             }
 
-            _addDropdown = UIFactory.CreateDropdown(AddDropdownNode, parent, new List<string>(),
-                new Vector2(AddDropdownX, 0), new Vector2(AddDropdownW, LinkRowH), _ => { });
-            _addButton = UIFactory.CreateButton(AddButtonNode, parent, AddCaption,
-                new Vector2(AddButtonX, 0), new Vector2(AddButtonW, LinkRowH), AddFromUI);
-            _pickButton = UIFactory.CreateIconButton(PickButtonNode, parent, IconFactory.Crosshair,
-                new Vector2(TrailingButtonX, 0), new Vector2(TrailingButtonW, LinkRowH),
-                TogglePicking);
-
-            Host.Layout.AddWhen(() => Eligible() && Expanded, LinkRowH, ActionGap,
-                _addDropdown.GetComponent<RectTransform>(),
-                _addButton.GetComponent<RectTransform>(),
-                _pickButton.GetComponent<RectTransform>());
+            var addRow = rows.NewRowRect("CtxLightLinkAddRow");
+            float addW = AddButtonW;
+            float addDropdownW = width - addW - cell - 2f * gap;
+            _addDropdown = UIFactory.CreateDropdown(AddDropdownNode, addRow, new List<string>(),
+                Vector2.zero, new Vector2(addDropdownW, rows.Metrics.ControlH), _ => { });
+            _addButton = UIFactory.CreateButton(AddButtonNode, addRow, AddCaption,
+                Vector2.zero, new Vector2(addW, rows.Metrics.ControlH), AddFromUI);
+            _pickButton = UIFactory.CreateIconButton(PickButtonNode, addRow, IconFactory.Crosshair,
+                Vector2.zero, new Vector2(cell, cell), TogglePicking);
+            rows.PlaceCell((RectTransform)_addDropdown.transform, 0f, addDropdownW);
+            rows.PlaceCell((RectTransform)_addButton.transform, addDropdownW + gap, addW);
+            rows.PlaceCell((RectTransform)_pickButton.transform, width - cell, cell);
+            rows.Custom(addRow, rows.Metrics.ControlH, RowVisibility.When(Eligible));
         }
 
-        public override void Collapse()
-        {
-            base.Collapse();
-            LightPickMode.SetSource(null);
-        }
+        public void ForgetPicking() => LightPickMode.SetSource(null);
 
         protected override void OnToggled()
         {
@@ -118,7 +112,7 @@ namespace KitchenDesigner.Core.UI
             }
 
             LinkLights.Add(Target, _options[index]);
-            Expanded = true;
+            EnsureExpanded();
             AfterChange();
         }
 
@@ -147,9 +141,7 @@ namespace KitchenDesigner.Core.UI
             _links.Clear();
             if (Target != null) _links.AddRange(LinkLights.Live(Target));
 
-            if (_countLabel != null)
-                _countLabel.text = $"{HeaderCaption} ({_links.Count})  "
-                    + (Expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed);
+            Section.SetCount(NumberFormat.Integer(_links.Count));
 
             for (int i = 0; i < _rowLight.Length; i++)
             {

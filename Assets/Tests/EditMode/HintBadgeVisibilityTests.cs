@@ -69,7 +69,7 @@ public class HintBadgeVisibilityTests
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         EveryElementType.ClearScene();
     }
 

@@ -8,13 +8,15 @@ namespace KitchenDesigner.Core.UI
         private readonly Func<TMP_InputField?> _nameField;
         private readonly ContextMenuSizeSection _sizes;
         private readonly Action _apply;
+        private readonly Action _forgetSectionStates;
 
         public ContextMenuTestHooks(Func<TMP_InputField?> nameField, ContextMenuSizeSection sizes,
-            Action apply)
+            Action apply, Action forgetSectionStates)
         {
             _nameField = nameField;
             _sizes = sizes;
             _apply = apply;
+            _forgetSectionStates = forgetSectionStates;
         }
 
         public void SetNameFieldText(string text) => _nameField()!.text = text;
@@ -24,5 +26,7 @@ namespace KitchenDesigner.Core.UI
         public void SetHeightFieldText(string text) => _sizes.Height!.text = text;
 
         public void SimulateApply() => _apply();
+
+        public void ForgetSectionStates() => _forgetSectionStates();
     }
 }

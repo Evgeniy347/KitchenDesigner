@@ -27,7 +27,7 @@ namespace KitchenDesigner.Core.UI
 
         public List<string> Build()
         {
-            _host.Rows.SectionHeader("CtxSecMat", Loc.T("element.common.material"));
+            _host.Rows.BeginSection("Material", Loc.T("element.common.material"), true);
 
             var options = MaterialOptions.DisplayNames();
             _base = _host.Rows.Dropdown(Loc.T("element.common.texture"), options, index => Choose(MaterialSlot.Base, index),

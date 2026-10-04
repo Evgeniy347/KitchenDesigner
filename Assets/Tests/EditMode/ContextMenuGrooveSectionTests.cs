@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class ContextMenuGrooveSectionTests
 {
@@ -69,7 +70,7 @@ public class ContextMenuGrooveSectionTests
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -86,28 +87,30 @@ public class ContextMenuGrooveSectionTests
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
     private TMP_Dropdown Dd(string node) =>
-        Panel().Find(node)!.GetComponent<TMP_Dropdown>();
+        Panel().FindNode(node)!.GetComponent<TMP_Dropdown>();
 
     private void AddGroove(GrooveSide side, GrooveKind kind)
     {
-        Dd("CtxGrooveSide").SetValueWithoutNotify((int)side);
-        Dd("CtxGrooveKind").SetValueWithoutNotify((int)kind);
-        Panel().Find("CtxGrooveAdd")!.GetComponent<Button>().onClick.Invoke();
+        int row = _menu!.OpenTarget!.Grooves.Count;
+        Panel().FindNode("CtxGrooveAdd")!.GetComponent<Button>().onClick.Invoke();
+        Dd($"CtxGrooveSide{row}").value = (int)side;
+        Dd($"CtxGrooveKind{row}").value = (int)kind;
     }
 
     [Test]
     public void GrooveWidgets_KeepTheirNames()
     {
-        foreach (var node in new[] { "CtxGrooves", "CtxGrooveHint", "CtxGrooveSide",
-                     "CtxGrooveKind", "CtxGrooveAdd", "CtxGrooveSide0", "CtxGrooveKind0",
-                     "CtxGrooveDel0" })
-            Assert.NotNull(Panel().Find(node), $"виджет {node} ищется тестами по имени");
+        foreach (var node in new[] { "Sec_Grooves", "CtxGrooveHint", "CtxGrooveAdd",
+                     "CtxGrooveSide0", "CtxGrooveKind0", "CtxGrooveDel0" })
+            Assert.NotNull(Panel().FindNode(node), $"виджет {node} ищется тестами по имени");
     }
 
     [Test]
     public void SideDropdownOptions_FollowTheGrooveSideEnumOrder()
     {
-        var options = Dd("CtxGrooveSide").options;
+        _menu!.Open(Board("Полка"));
+        AddGroove(GrooveSide.Top, GrooveKind.Through);
+        var options = Dd("CtxGrooveSide0").options;
         Assert.AreEqual(System.Enum.GetValues(typeof(GrooveSide)).Length, options.Count,
             "у каждого значения GrooveSide обязан быть пункт: индекс пункта кастуется в enum напрямую");
         Assert.AreEqual("Верх", options[(int)GrooveSide.Top].text,
@@ -118,7 +121,9 @@ public class ContextMenuGrooveSectionTests
     [Test]
     public void KindDropdownOptions_FollowTheGrooveKindEnumOrder()
     {
-        var options = Dd("CtxGrooveKind").options;
+        _menu!.Open(Board("Полка"));
+        AddGroove(GrooveSide.Top, GrooveKind.Through);
+        var options = Dd("CtxGrooveKind0").options;
         Assert.AreEqual(System.Enum.GetValues(typeof(GrooveKind)).Length, options.Count);
         Assert.AreEqual("Сквозной", options[(int)GrooveKind.Through].text,
             "порядок пунктов = порядок значений GrooveKind");
@@ -130,10 +135,10 @@ public class ContextMenuGrooveSectionTests
         var board = Board("Полка");
         _menu!.Open(board);
 
-        AddGroove(GrooveSide.Left, GrooveKind.Through);
+        Panel().FindNode("CtxGrooveAdd")!.GetComponent<Button>().onClick.Invoke();
 
-        Assert.AreEqual(1, board.Grooves.Count, "«Добавить» кладёт паз на деталь");
-        Assert.AreEqual(GrooveSide.Left, board.Grooves[0].side);
+        Assert.AreEqual(1, board.Grooves.Count, "«+ Добавить» кладёт паз на деталь");
+        Assert.AreEqual(GrooveSide.Top, board.Grooves[0].side, "первый свободный: сверху");
 
         CommandStack.Undo();
         Assert.AreEqual(0, board.Grooves.Count,
@@ -141,16 +146,18 @@ public class ContextMenuGrooveSectionTests
     }
 
     [Test]
-    public void Add_SameGrooveTwice_IsRefused()
+    public void Add_NeverPutsTwoEqualGrooves_AndStopsAtTheLimit()
     {
         var board = Board("Полка");
         _menu!.Open(board);
+        var add = Panel().FindNode("CtxGrooveAdd")!.GetComponent<Button>();
 
-        AddGroove(GrooveSide.Top, GrooveKind.Through);
-        AddGroove(GrooveSide.Top, GrooveKind.Through);
+        for (int i = 0; i < AppConstants.GROOVE_MAX_PER_PART + 2; i++) add.onClick.Invoke();
 
-        Assert.AreEqual(1, board.Grooves.Count,
-            "два одинаковых паза на одной стороне — это один паз, а не два");
+        Assert.AreEqual(AppConstants.GROOVE_MAX_PER_PART, board.Grooves.Count,
+            "лимит пазов на деталь держит и ссылка «+ Добавить»");
+        Assert.AreEqual(board.Grooves.Count, new System.Collections.Generic.HashSet<GrooveSpec>(board.Grooves).Count,
+            "два одинаковых паза на одной стороне — это один паз, а не два: ссылка берёт первый свободный");
     }
 
     [Test]
@@ -193,7 +200,7 @@ public class ContextMenuGrooveSectionTests
         AddGroove(GrooveSide.Left, GrooveKind.Through);
         AddGroove(GrooveSide.Right, GrooveKind.Through);
 
-        var del = Panel().Find("CtxGrooveDel0")!.GetComponent<Button>();
+        var del = Panel().FindNode("CtxGrooveDel0")!.GetComponent<Button>();
         del.onClick.Invoke();
         del.onClick.Invoke();
 
@@ -216,16 +223,18 @@ public class ContextMenuGrooveSectionTests
     }
 
     [Test]
-    public void OpeningAnElement_ShowsTheGrooveListCollapsed()
+    public void OpeningAnElement_KeepsTheGrooveListAsTheUserLeftIt()
     {
         var board = Board("Полка");
         _menu!.Open(board);
+        Assume.That(Panel().FindNode("CtxGrooveSide0")!.gameObject.activeInHierarchy, Is.False,
+            "свежая панель открывается со свёрнутым списком пазов");
         AddGroove(GrooveSide.Left, GrooveKind.Through);
-        Assume.That(Panel().Find("CtxGrooveSide0")!.gameObject.activeSelf, Is.True);
+        Assume.That(Panel().FindNode("CtxGrooveSide0")!.gameObject.activeInHierarchy, Is.True);
 
         _menu!.Open(board);
 
-        Assert.IsFalse(Panel().Find("CtxGrooveSide0")!.gameObject.activeSelf,
-            "панель открывается со свёрнутым списком пазов");
+        Assert.IsTrue(Panel().FindNode("CtxGrooveSide0")!.gameObject.activeInHierarchy,
+            "добавление раскрыло список, и он остаётся раскрытым: свёрнутость помнится по типу (D7)");
     }
 }

@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// Рассинхрон кнопок «Повернуть на 90°» и полей «X, °», «Y, °», «Z, °».
@@ -81,7 +82,7 @@ public class RotationFieldsReproTests
     [TearDown]
     public void TearDown()
     {
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned)
         {
             if (go == null) continue;
@@ -107,11 +108,11 @@ public class RotationFieldsReproTests
     }
 
     private void Click(string buttonName) =>
-        _panel.Find(buttonName)!.GetComponent<Button>().onClick.Invoke();
+        _panel.FindNode(buttonName).GetComponent<Button>().onClick.Invoke();
 
     private float Shown(string axisLabel)
     {
-        var field = _panel.Find("F_" + axisLabel + ", °")!.GetComponent<TMP_InputField>();
+        var field = _panel.FindNode("Vec_Rotation_" + axisLabel).GetComponent<TMP_InputField>();
         return float.Parse(field.text, NumberStyles.Float, CultureInfo.CurrentCulture);
     }
 

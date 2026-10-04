@@ -91,17 +91,13 @@ public class WindowNoOpButtonsGuardTests
 
     // ── «Загрузить» ─────────────────────────────────────────
 
-    private static readonly NoOpButtonContract LoadContract = new NoOpButtonContract()
+    private static NoOpButtonContract LoadContractFor(LoadProjectWindowUI ui) => new NoOpButtonContract()
         .Always("CloseBtn", "закрыть окно возможно всегда")
         .Always("LoadNewProject", "диалог нового проекта открывается всегда")
         .Always("LoadOpenFile", "диалог выбора файла открывается всегда")
-        .NoOpWhen("Row", RowOfAMissingProject);
-
-    private static bool RowOfAMissingProject(Button row)
-    {
-        var title = row.transform.Find("Title");
-        return title != null && title.GetComponent<TMP_Text>().text.StartsWith(Loc.T("window.load.notFound"));
-    }
+        .Always("EmptyAction", "пустое состояние ведёт к новому проекту — он создаётся всегда")
+        .Always("LoadForget", "убрать запись из списка можно всегда, и у пропавшего файла тоже")
+        .NoOpWhen("LoadOpenSelected", _ => ui.Table.Selected == null);
 
     private string MakeProjectFile(string name)
     {
@@ -124,9 +120,9 @@ public class WindowNoOpButtonsGuardTests
     public void LoadWindow_NoRecentProjects_ButtonsFollowTheContract()
     {
         SaveLoadManager.LastPath = "";
-        BuildLoadWindowWithRecent();
+        var ui = BuildLoadWindowWithRecent();
 
-        var violations = Check(LoadContract, _canvasGo!.transform, "нет недавних");
+        var violations = Check(LoadContractFor(ui), _canvasGo!.transform, "нет недавних");
 
         Assert.IsEmpty(violations, ConfirmedMessage(violations));
     }
@@ -137,21 +133,21 @@ public class WindowNoOpButtonsGuardTests
         string existing = MakeProjectFile("wnog_existing.kdproj");
         string missing = Path.Combine(Application.temporaryCachePath, "wnog_gone.kdproj");
         if (File.Exists(missing)) File.Delete(missing);
-        BuildLoadWindowWithRecent(existing, missing);
+        SaveLoadManager.LastPath = "";
+        var ui = BuildLoadWindowWithRecent(existing, missing);
 
-        var rows = new List<Button>();
-        foreach (var button in _canvasGo!.GetComponentsInChildren<Button>(true))
-            if (button.name == "Row") rows.Add(button);
-        Assume.That(rows.Count, Is.EqualTo(2), "предпосылка: по строке на каждый недавний проект");
+        Assume.That(ui.Table.ShownRows.Count, Is.EqualTo(2), "предпосылка: по строке на каждый недавний проект");
 
-        var violations = Check(LoadContract, _canvasGo.transform, "есть и пропавший проект");
+        var violations = Check(LoadContractFor(ui), _canvasGo!.transform, "есть и пропавший проект");
 
         Assert.IsEmpty(violations, ConfirmedMessage(violations));
-        Assert.AreEqual(1, rows.FindAll(r => !r.interactable).Count,
+        var disabled = new List<DataRow>();
+        foreach (var row in ui.Table.ShownRows)
+            if (!row.Enabled) disabled.Add(row);
+        Assert.AreEqual(1, disabled.Count,
             "ровно строка пропавшего файла выключена: её нажатие раньше молча ничего не делало");
-        var missingRow = rows.Find(r => !r.interactable)!;
-        Assert.AreEqual(UIStyle.HighlightError, missingRow.transform.Find("Title")!.GetComponent<TMP_Text>().color,
-            "строка пропавшего файла выключена, но остаётся КРАСНОЙ: выключена не значит серая");
+        Assert.IsNotNull(ui.Table.Selected, "существующий проект выбран сам — «Открыть» исполнима");
+        Assert.IsTrue(((RecentProjectRow)ui.Table.Selected!.Tag!).FileExists);
     }
 
     // ── «Сцена» ─────────────────────────────────────────────
@@ -210,11 +206,11 @@ public class WindowNoOpButtonsGuardTests
 
     // ── «Ошибки» ────────────────────────────────────────────
 
-    private static readonly NoOpButtonContract ErrorsContract = new NoOpButtonContract()
-        .Always("Flt(Level|Code|Floor)", "выпадающий список фильтра: компонент вне этого контракта")
+    private static NoOpButtonContract ErrorsContractFor(ErrorPanelUI panel) => new NoOpButtonContract()
+        .Always("Flt(Code|Floor)", "выпадающий список фильтра: компонент вне этого контракта")
+        .Always("FltChip(All|Errors|Warnings)", "чип уровня переключает фильтр всегда")
         .Always("CloseBtn", "закрыть окно возможно всегда")
-        .Always("Row", "строка находки выделяет её и показывает в сцене")
-        .Always("ErrRefresh", "повторный анализ сцены осмыслен всегда: сцена могла измениться");
+        .NoOpWhen("ErrFirst", _ => panel.VisibleIssueCount == 0);
 
     [Test]
     public void ErrorsWindow_ButtonsFollowTheContract_WithAndWithoutIssues()
@@ -223,24 +219,25 @@ public class WindowNoOpButtonsGuardTests
         panel.Build(_canvasGo!.transform);
         panel.SetVisible(true);
 
-        var empty = Check(ErrorsContract, _canvasGo.transform, "нет находок");
+        var empty = Check(ErrorsContractFor(panel), _canvasGo.transform, "нет находок");
 
         ElementFactory.CreatePart(new Vector3Int(600, 18, 500), "Доска А", Vector3.zero);
         ElementFactory.CreatePart(new Vector3Int(600, 18, 500), "Доска Б", Vector3.zero);
         panel.SetVisible(false);
         panel.SetVisible(true);
-        var withIssues = Check(ErrorsContract, _canvasGo.transform, "есть находки");
+        var withIssues = Check(ErrorsContractFor(panel), _canvasGo.transform, "есть находки");
 
         Assert.IsEmpty(empty, ConfirmedMessage(empty));
         Assert.IsEmpty(withIssues, ConfirmedMessage(withIssues));
+        Assert.Greater(panel.VisibleIssueCount, 0, "предпосылка: наложенные доски дают находку");
     }
 
     // ── «Спецификация» ──────────────────────────────────────
 
     private static readonly NoOpButtonContract SpecContract = new NoOpButtonContract()
         .Always("CloseBtn", "закрыть окно возможно всегда")
-        .Always("SpecClose", "закрыть окно возможно всегда")
-        .NoOpWhen("SpecExport", _ => SpecificationManager.Build(PartRegistry.All).lines.Count == 0);
+        .Always("EmptyAction", "кнопка пустого состояния: в спецификации её нет, но контракт общий")
+        .NoOpWhen("Spec(Export|Copy)", _ => SpecificationManager.Build(PartRegistry.All).lines.Count == 0);
 
     [Test]
     public void SpecificationWindow_EmptyAndFilledScene_ButtonsFollowTheContract()
@@ -270,26 +267,22 @@ public class WindowNoOpButtonsGuardTests
 
     private static readonly NoOpButtonContract ContextMenuContract = new NoOpButtonContract()
         .Always("CloseBtn", "закрыть панель возможно всегда")
-        .Always("CtxRot[XYZ]|CtxRotY180", "кнопки, бессмысленные для детали только с рысканием, скрыты, а не выключены")
+        .Always("CtxRot[XYZ]", "кнопка поворота лежит внутри поля своей оси; для детали только с рысканием поля X и Z скрыты, а не выключены")
         .Always("CtxDup", "копия создаётся для любого элемента")
         .Always("CtxDel", "удалить можно любой элемент")
         .Always("Ctx(Door|OvenDoor|DishwasherDoor|WinDoor|DrawerAnim)", "переключатель открыто/закрыто, работает в обе стороны")
         .Always("CtxDrawerDouble|CtxDrawerRemoveUpper", "строка видна только когда действие применимо: пару можно создать или убрать")
         .Always("CtxEdge[LW][12]", "щелчок по кромке листает её состояние по кругу: результат всегда другой")
-        .Always("CtxGaps|CtxGrooves|CtxTextures|CtxLightLinks|CtxLightAdv", "заголовок раздела: разворачивает и сворачивает")
         .Always("CtxTexEdit[0-9]+|CtxTexDel[0-9]+|CtxGrooveDel[0-9]+|CtxLightLinkDel[0-9]+", "кнопка строки, а строка есть только пока есть что править или удалять")
-        .Always("CtxTexAdd|CtxGrooveAdd", "на пределе числа или при повторе строки кнопка показывает причину тостом, а не молчит")
+        .Always("CtxTexAdd|CtxGrooveAdd", "на пределе числа кнопка показывает причину тостом, а не молчит")
         .NoOpWhen("CtxLightLinkAddBtn|CtxLightLinkPick", _ => NoLiveLights())
         .NoOpWhen("CtxTexUp[0-9]+", b => SlotOf(b) == 0)
         .NoOpWhen("CtxTexDown[0-9]+", b => SlotOf(b) >= _ctxTarget!.TextureOverlays.Count - 1);
 
-    private static readonly string[] SectionHeaders =
-        { "CtxTextures", "CtxGrooves", "CtxGaps", "CtxLightLinks", "CtxLightAdv" };
-
     private static void ExpandEverySection(Transform panel)
     {
-        foreach (var button in panel.GetComponentsInChildren<Button>(false))
-            if (System.Array.IndexOf(SectionHeaders, button.name) >= 0) button.onClick.Invoke();
+        foreach (var section in panel.GetComponentsInChildren<CollapsibleSection>(true))
+            section.SetExpanded(true, notify: true);
     }
 
     private static void CheckPanelInBothStates(ContextMenuUI menu, Transform canvas, string state,

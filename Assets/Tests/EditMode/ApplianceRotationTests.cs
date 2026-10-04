@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.MCP;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// Поворот встраиваемой техники. Два правила, оба ломались по-своему:
@@ -82,7 +83,7 @@ public class ApplianceRotationTests : McpTestFixture
     [TearDown]
     public void TearDown()
     {
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
 
         foreach (var go in _spawned)
         {
@@ -286,32 +287,29 @@ public class ApplianceRotationTests : McpTestFixture
 
     private Transform MenuPanel()
     {
-        var panel = _canvas!.transform.Find("ContextMenu");
+        var panel = _canvas!.transform.FindNode("ContextMenu");
         Assert.NotNull(panel);
         return panel!;
     }
 
-    /// <summary>Имена всех виджетов поворота: подпись, поле, кнопка «на 90°».</summary>
-    private static readonly string[] RotXZ =
-    {
-        "L_X, °", "F_X, °", "L_Z, °", "F_Z, °", "CtxRotX", "CtxRotZ",
-    };
+    /// <summary>Поля поворота по осям: кнопка «на 90°» живёт внутри поля своей оси.</summary>
+    private static readonly string[] RotXZ = { "Vec_Rotation_X", "Vec_Rotation_Z" };
 
-    private static readonly string[] RotY = { "L_Y, °", "F_Y, °", "CtxRotY" };
+    private static readonly string[] RotY = { "Vec_Rotation_Y" };
 
     private static void AssertRotationWidgets(Transform panel, bool xzVisible)
     {
         foreach (var name in RotXZ)
         {
-            var t = panel.Find(name);
+            var t = panel.FindNode(name);
             Assert.NotNull(t, "виджет " + name + " должен существовать");
-            Assert.AreEqual(xzVisible, t!.gameObject.activeSelf, name);
+            Assert.AreEqual(xzVisible, t!.IsShown(), name);
         }
         foreach (var name in RotY)
         {
-            var t = panel.Find(name);
+            var t = panel.FindNode(name);
             Assert.NotNull(t, "виджет " + name + " должен существовать");
-            Assert.IsTrue(t!.gameObject.activeSelf, name + " нужен всем");
+            Assert.IsTrue(t!.IsShown(), name + " нужен всем");
         }
     }
 

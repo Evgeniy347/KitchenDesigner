@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -10,7 +9,7 @@ namespace KitchenDesigner.Core.UI
         private readonly IContextMenuHost _host;
         private readonly DimensionFields _dimensions = new();
 
-        private TMP_Text? _heightLabel;
+        private ComputedNumberRow? _height;
 
         public ContextMenuSizeSection(IContextMenuHost host) => _host = host;
 
@@ -24,12 +23,11 @@ namespace KitchenDesigner.Core.UI
 
         public void Build()
         {
-            _host.Rows.SectionHeader("CtxSecDims", Loc.T("element.common.dimensions"));
-            _dimensions.Width = _host.Rows.NumberField(Loc.T("element.common.width"), RowVisibility.Always);
-            _dimensions.Height = _host.Rows.NumberField(
-                ElementFieldsEditor.DefaultHeightLabel, RowVisibility.Always);
-            _heightLabel = FindLabelFor(_dimensions.Height);
-            _dimensions.Depth = _host.Rows.NumberField(Loc.T("element.common.depth"), RowVisibility.Always);
+            _host.Rows.BeginSection("Dimensions", Loc.T("element.common.dimensions"), true);
+            _dimensions.Width = _host.Rows.NumberOrComputed(Loc.T("element.common.width"), RowVisibility.Always).Field;
+            _height = _host.Rows.NumberOrComputed(ElementFieldsEditor.DefaultHeightLabel, RowVisibility.Always);
+            _dimensions.Height = _height.Field;
+            _dimensions.Depth = _host.Rows.NumberOrComputed(Loc.T("element.common.depth"), RowVisibility.Always).Field;
         }
 
         public void CollectArithmeticFields(List<TMP_InputField?> fields)
@@ -87,15 +85,7 @@ namespace KitchenDesigner.Core.UI
             _dimensions.SetEditable(Width, unlocked && (editor?.WidthEditable ?? true));
             _dimensions.SetEditable(Height, unlocked && (editor?.HeightEditable ?? true));
             _dimensions.SetEditable(Depth, unlocked && (editor?.DepthEditable ?? true));
-            if (_heightLabel != null)
-                _heightLabel.text = editor?.HeightLabel ?? ElementFieldsEditor.DefaultHeightLabel;
-        }
-
-        private TMP_Text? FindLabelFor(Selectable? control)
-        {
-            foreach (var (label, ctrl) in _host.Rows.LabelledRows)
-                if (ReferenceEquals(ctrl, control)) return label;
-            return null;
+            _height?.SetCaption(editor?.HeightLabel ?? ElementFieldsEditor.DefaultHeightLabel);
         }
     }
 }

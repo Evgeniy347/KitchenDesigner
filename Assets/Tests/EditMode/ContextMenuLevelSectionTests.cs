@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>M9/addendum#3 (review-ui-mcp, review-persistence): <c>KitchenElement.LevelId</c>
 /// была помечена <c>[NotUndoable("... идёт своей командой MoveToLevelCommand")]</c>, а эта

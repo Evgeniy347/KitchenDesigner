@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>Панель свойств фитинга обязана предложить ровно столько выпадающих списков,
 /// сколько у выбранного фитинга портов — один у заглушки, два у отвода, три у тройника — и
@@ -72,7 +73,7 @@ public class PipeFittingPortsDiagramTests
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var element in PartRegistry.GetAll())
             if (element != null) _spawned.Add(element.gameObject);
         foreach (var go in _spawned)
@@ -106,10 +107,10 @@ public class PipeFittingPortsDiagramTests
 
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
-    private Transform Diagram() => Panel().Find("CtxFittingPortsDiagram")!;
+    private Transform Diagram() => Panel().FindNode("CtxFittingPortsDiagram")!;
 
     private TMP_Dropdown Choice(int port) =>
-        Panel().Find("CtxFittingPortFitting" + port)!.GetComponent<TMP_Dropdown>();
+        Panel().FindNode("CtxFittingPortFitting" + port)!.GetComponent<TMP_Dropdown>();
 
     private bool ChoiceRowVisible(int port) => Choice(port).gameObject.activeInHierarchy;
 

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -58,8 +57,8 @@ namespace KitchenDesigner.Core.UI
 
             _posts = Rows.Dropdown(PostCountLabel, PostOptions(), OnPostCountSelected,
                 anyDevice, PostCountNode, hint: "element.wallDevice.posts");
-            _powered = Rows.Toggle(PoweredNode, PoweredLabel, true, OnPoweredToggled,
-                switchOnly, RowGap, hint: "element.wallDevice.powered");
+            _powered = Rows.Switch(PoweredNode, PoweredLabel, true, OnPoweredToggled,
+                switchOnly, hint: "element.wallDevice.powered");
         }
 
         public override void Show(KitchenElement element)
@@ -89,7 +88,7 @@ namespace KitchenDesigner.Core.UI
                 _posts?.RefreshShownValue();
             }
             if (element is ILightSwitch source)
-                _powered?.SetIsOnWithoutNotify(source.IsOn);
+                if (_powered != null) SwitchControl.SetWithoutNotify(_powered, source.IsOn);
         }
 
         private static List<string> PostOptions()

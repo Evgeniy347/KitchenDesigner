@@ -1,5 +1,4 @@
 using KitchenDesigner.Core.Construction;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {

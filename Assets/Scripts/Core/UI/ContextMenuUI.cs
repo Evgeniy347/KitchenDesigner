@@ -4,7 +4,6 @@ using KitchenDesigner.Core.Update;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -12,18 +11,29 @@ namespace KitchenDesigner.Core.UI
     {
         public static ContextMenuUI? Instance { get; private set; }
 
+        private const float InspectorMinHeight = 300f;
+        public const string RotateButtonPrefix = "CtxRot";
+        private const float QuarterTurnDegrees = 90f;
+        private const float WindowRotationStepDegrees = 180f;
+
         public bool IsOpen => _root != null && _root.activeSelf;
 
         internal KitchenElement? OpenTarget => IsOpen ? _target : null;
 
         private GameObject? _root;
         private KitchenElement? _target;
-        private TMP_Text? _titleLabel;
+        private WindowChrome? _chrome;
+        private WindowBody? _body;
 
         private TMP_InputField? _name, _x, _y, _z, _rx, _ry, _rz;
+        private VectorField? _position;
+        private VectorField? _rotation;
+        private InspectorSection? _specific;
+        private (float x, float width)? _yawCell;
         private Toggle? _lockToggle;
         private Toggle? _transparentToggle;
         private RectTransform? _panelRt;
+        private InspectorSectionMemory _sectionMemory = new();
 
         private SceneViolations _violationsBeforeApply = SceneViolations.Empty;
 
@@ -39,7 +49,6 @@ namespace KitchenDesigner.Core.UI
         private ElementFacet _facets;
         private readonly RotationDisplayState _rotationDisplay = new RotationDisplayState();
 
-        private readonly ContextMenuLayout _layout = new();
         private readonly ContextMenuTextureSection _textures;
         private readonly ContextMenuLightLinkSection _lightLinks;
         private readonly ContextMenuFieldTracker _fields;
@@ -83,13 +92,13 @@ namespace KitchenDesigner.Core.UI
         private readonly ElementFieldsEditor[] _editors;
         private readonly ContextMenuSizeSection _sizes;
         private readonly ContextMenuTestHooks _testHooks;
-        private ContextMenuRowFactory _rows = null!;
+        private InspectorRows _rows = null!;
         private readonly List<OpenButtonBinder> _openButtons = new();
 
         public ContextMenuUI()
         {
             _sizes = new ContextMenuSizeSection(this);
-            _testHooks = new ContextMenuTestHooks(() => _name, _sizes, Apply);
+            _testHooks = new ContextMenuTestHooks(() => _name, _sizes, Apply, () => _sectionMemory = new InspectorSectionMemory());
             _textures = new ContextMenuTextureSection(this);
             _lightLinks = new ContextMenuLightLinkSection(this);
             _fields = new ContextMenuFieldTracker(Apply);
@@ -145,9 +154,7 @@ namespace KitchenDesigner.Core.UI
 
         KitchenElement? IContextMenuHost.Target => _target;
 
-        ContextMenuLayout IContextMenuHost.Layout => _layout;
-
-        ContextMenuRowFactory IContextMenuHost.Rows => _rows;
+        InspectorRows IContextMenuHost.Rows => _rows;
 
         ContextMenuFieldTracker IContextMenuHost.Fields => _fields;
 
@@ -159,7 +166,9 @@ namespace KitchenDesigner.Core.UI
 
         internal ContextMenuTextureSection Textures => _textures;
 
-        internal ContextMenuRowFactory RowFactory => _rows;
+        internal InspectorRows Rows => _rows;
+
+        internal WindowChrome? Chrome => _chrome;
 
         internal ContextMenuGrooveSection Grooves => _grooves;
 
@@ -188,82 +197,75 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform canvas)
         {
-            var panel = UIFactory.CreatePanel("ContextMenu", canvas, Vector2.zero, new Vector2(364, 560));
-            UIFactory.AnchorTopRight(panel.rectTransform);
-            panel.rectTransform.anchoredPosition = new Vector2(-10, -60);
+            _chrome = WindowChrome.Create(canvas, "ContextMenu", Loc.T("elementType.part"),
+                new Vector2(UIStyle.InspectorW, InspectorMinHeight), new WindowChromeOptions
+                {
+                    Kind = WindowKind.Tool,
+                    OnClose = Close,
+                    HasFooter = true,
+                    RuledHeader = true,
+                });
+            var panel = _chrome.Panel;
+            UIFactory.AnchorTopRight(panel);
+            panel.anchoredPosition = new Vector2(-UIStyle.Space3, -(UIStyle.ToolbarH + UIStyle.Space3));
             _root = panel.gameObject;
-            _panelRt = panel.rectTransform;
-            WindowDrag.Attach(panel.rectTransform, TopPad + TitleH + TitleGap);
-            _layout.Clear();
-            _rows = new ContextMenuRowFactory(panel.transform, _layout);
+            _panelRt = panel;
+            _body = _chrome.CreateBody();
+            _rows = new InspectorRows(_body.Content, () => _facets);
 
-            BuildTitleAndType(panel.transform);
+            _types.Build();
+            _name = _rows.NameField();
             BuildDimensions();
-            _grooves.Build(panel.transform);
-            _edges.Build(panel.transform);
+            BuildSpecificSection();
+            _grooves.Build();
+            _edges.Build(_body.Content);
             _gaps.Build();
-            BuildFacadeSection();
-            BuildDrawerSection();
-            BuildWindowSection();
-            BuildFurnitureSection();
-            BuildAttachmentSection();
-            _lights.Build();
-            BuildPositionSection(panel.transform);
-            _levels.Build();
-            _textures.Build(panel.transform, _materials.Build());
-            _lightLinks.Build(panel.transform);
+            BuildPositionSection();
+            _textures.Build(_materials.Build());
+            _lightLinks.Build();
             BuildPropertySection();
-            BuildActions(panel.transform);
+            _rows.EndSection();
+            BuildFooter(_chrome.Footer!);
             ConfigureFieldInput();
+            WireSectionMemory();
 
-            UIFactory.CreateCloseButton(panel.transform, Close);
-
-            ApplyLayout(ElementFacet.None);
+            _rows.Forms.Relayouted += FitPanel;
+            ApplyLayout();
             _root!.SetActive(false);
 
             if (SelectionManager.Instance != null)
                 SelectionManager.Instance.OnSelectionChanged += OnSelectionChanged;
         }
 
-        private void BuildTitleAndType(Transform parent)
-        {
-            _titleLabel = UIFactory.CreateLabel("CtxTitle", parent, Loc.T("elementType.part"), 20,
-                Vector2.zero, new Vector2(300, TitleH), TextAnchor.MiddleCenter);
-            WindowTitle.Mark(_titleLabel);
-            _titleLabel.overflowMode = TextOverflowModes.Ellipsis;
-            _titleLabel.enableWordWrapping = false;
-            _layout.Add(TitleH, TitleGap, _titleLabel.rectTransform);
-
-            _types.Build();
-        }
-
         private void BuildDimensions()
         {
-            _name = _rows.NameField();
             _sizes.Build();
             _radialFields.Build();
             _cooktopFields.Build();
         }
 
-        private void BuildFacadeSection()
+        private void BuildSpecificSection()
         {
+            _specific = _rows.BeginSection("Specific", Loc.T("elementType.part"), true);
             _facadeFields.Build();
-
             OpenButton("CtxDoor", OpenLabels.Open, RowVisibility.For(ElementFacet.Facade));
             OpenButton("CtxOvenDoor", OpenLabels.OpenDoor, RowVisibility.For(ElementFacet.Oven));
             OpenButton("CtxDishwasherDoor", OpenLabels.OpenDoor,
                 RowVisibility.For(ElementFacet.Dishwasher));
-
             _assembledFields.Build();
-        }
 
-        private void BuildDrawerSection()
-        {
             _drawerFields.Build();
             OpenButton("CtxDrawerAnim", OpenLabels.Open, RowVisibility.For(ElementFacet.Drawer));
+            BuildFacadeAttachment();
+
+            _openingFields.Build();
+            OpenButton("CtxWinDoor", OpenLabels.Open, RowVisibility.For(ElementFacet.Window));
+
+            BuildFurnitureSection();
+            _lights.Build();
         }
 
-        private void BuildAttachmentSection()
+        private void BuildFacadeAttachment()
         {
             (_drawerFacadeLabel, var facadeDropdown) = _rows.NamedDropdown("CtxDrawerFacade",
                 DrawerFacadeLabelText, new List<string> { FacadeNoneText }, _ => { },
@@ -271,7 +273,10 @@ namespace KitchenDesigner.Core.UI
             _attachedFacade = new NameDropdownBinder(facadeDropdown, FacadeNoneText,
                 () => (_target as IFacadeHost)?.AttachedFacadeName ?? "",
                 AttachableFacadeNames, AttachedFacadeIsDetached, CommitAttachedFacade);
+        }
 
+        private void BuildAttachment()
+        {
             (_, var attachToDropdown) = _rows.NamedDropdown("CtxAttachTo", AttachToLabelText,
                 new List<string> { AttachToNoneText }, _ => { },
                 RowVisibility.When(() => AttachLinks.CanChooseParent(_target)));
@@ -343,12 +348,6 @@ namespace KitchenDesigner.Core.UI
             if (command != null) CommandStack.Execute(command);
         }
 
-        private void BuildWindowSection()
-        {
-            _openingFields.Build();
-            OpenButton("CtxWinDoor", OpenLabels.Open, RowVisibility.For(ElementFacet.Window));
-        }
-
         private void BuildFurnitureSection()
         {
             _tableFields.Build();
@@ -377,49 +376,37 @@ namespace KitchenDesigner.Core.UI
             _pipeFittingFields.Build();
         }
 
-        private void BuildPositionSection(Transform parent)
+        private void BuildPositionSection()
         {
-            _rows.SectionHeader("CtxSecPos", Loc.T("element.common.position"));
+            _rows.BeginSection("Position", Loc.T("element.common.position"), true);
+            BuildAttachment();
+            _levels.Build();
 
-            _x = _rows.TriField(Loc.T("element.common.xMm"), TriCol1);
-            _y = _rows.TriField(Loc.T("element.common.yMm"), TriCol2);
-            _z = _rows.TriField(Loc.T("element.common.zMm"), TriCol3);
-            _layout.EndTriRow(TriLabelH, 2f, FieldH, RowGap, ElementFacet.None);
+            _position = _rows.Vector("Position", Loc.T("element.common.positionMm"), null, null,
+                RowVisibility.Always);
+            (_x, _y, _z) = (_position.Fields[0], _position.Fields[1], _position.Fields[2]);
 
-            _rx = _rows.TriField("X, °", TriCol1);
-            _ry = _rows.TriField("Y, °", TriCol2);
-            _rz = _rows.TriField("Z, °", TriCol3);
-            _layout.AddRotationXZ(_layout.PendingTriLabels[0]);
-            _layout.AddRotationXZ(_layout.PendingTriLabels[2]);
-            _layout.AddRotationXZ(_layout.PendingTriFields[0]);
-            _layout.AddRotationXZ(_layout.PendingTriFields[2]);
-            _layout.EndTriRow(TriLabelH, 2f, FieldH, RowGap, ElementFacet.Window);
-
-            var rotLbl = UIFactory.CreateLabel("CtxRotLbl", parent, Loc.T("element.common.rotate90"), 15,
-                Vector2.zero, new Vector2(340, RotLblH), TextAnchor.MiddleCenter);
-            _layout.AddExcept(ElementFacet.Window, RotLblH, RotLblGap, rotLbl.rectTransform);
-
-            var rotX = UIFactory.CreateButton("CtxRotX", parent, "X 90°",
-                new Vector2(-112, 0), new Vector2(112, BtnH), () => RotateAxis(RotationAxis.X));
-            var rotY = UIFactory.CreateButton("CtxRotY", parent, "Y 90°",
-                new Vector2(0, 0), new Vector2(112, BtnH), () => RotateAxis(RotationAxis.Y));
-            var rotZ = UIFactory.CreateButton("CtxRotZ", parent, "Z 90°",
-                new Vector2(112, 0), new Vector2(112, BtnH), () => RotateAxis(RotationAxis.Z));
-            _layout.AddExcept(ElementFacet.Window, BtnH, ActionGap,
-                rotX.GetComponent<RectTransform>(),
-                rotY.GetComponent<RectTransform>(),
-                rotZ.GetComponent<RectTransform>());
-            _layout.AddRotationXZ(rotX.GetComponent<RectTransform>());
-            _layout.AddRotationXZ(rotZ.GetComponent<RectTransform>());
-
-            var rotY180 = UIFactory.CreateButton("CtxRotY180", parent, "Y 180°",
-                new Vector2(0, 0), new Vector2(RowWidth, BtnH), () => RotateAxis(RotationAxis.Y, 180f));
-            _layout.AddFor(ElementFacet.Window, BtnH, ActionGap, rotY180.GetComponent<RectTransform>());
+            _rotation = _rows.Vector("Rotation", Loc.T("element.common.rotationDeg"), null,
+                axis => RotateAxis((RotationAxis)axis, RotationStepDegrees()), RowVisibility.Always);
+            (_rx, _ry, _rz) = (_rotation.Fields[0], _rotation.Fields[1], _rotation.Fields[2]);
+            for (int axis = 0; axis < _rotation.RotateButtons.Count; axis++)
+            {
+                int captured = axis;
+                _rotation.RotateButtons[axis].gameObject.name = RotateButtonPrefix + VectorField.AxisNames[axis];
+                TooltipUI.Attach(_rotation.RotateButtons[axis].gameObject, () => RotateTooltip(captured));
+            }
         }
+
+        private string RotateTooltip(int axis) =>
+            Loc.F("element.common.rotateAxis", RotationStepDegrees(), VectorField.AxisNames[axis]);
+
+        private float RotationStepDegrees() =>
+            _facets.Has(ElementFacet.Window) ? WindowRotationStepDegrees : QuarterTurnDegrees;
 
         private void BuildPropertySection()
         {
-            _transparentToggle = _rows.Toggle("CtxTransparent", Loc.T("element.common.transparent"), false, v =>
+            _rows.BeginSection("Properties", Loc.T("element.common.properties"), true);
+            _transparentToggle = _rows.Switch("CtxTransparent", Loc.T("element.common.transparent"), false, v =>
             {
                 var target = _target;
                 if (target == null) return;
@@ -428,28 +415,49 @@ namespace KitchenDesigner.Core.UI
                     ElementHighlighter.Instance.ApplyForElement(target);
                 if (SelectionManager.Instance != null)
                     SelectionManager.Instance.RefreshHighlight(target);
-            }, RowVisibility.Always, 7f);
+            }, RowVisibility.Always);
 
-            _lockToggle = _rows.Toggle("CtxLock", Loc.T("element.common.lock"), false,
+            _lockToggle = _rows.Switch("CtxLock", Loc.T("element.common.lock"), false,
                 v =>
                 {
                     var target = _target;
                     if (target == null) return;
                     ChoiceRowUndo.Commit(target, () => target.Movable = !v);
                 },
-                RowVisibility.Always, UIStyle.GapSection);
+                RowVisibility.Always);
         }
 
-        private void BuildActions(Transform parent)
+        private void BuildFooter(WindowFooter footer)
         {
-            var dup = UIFactory.CreateButton("CtxDup", parent, Loc.T("element.common.duplicate"),
-                new Vector2(-91, 0), new Vector2(150, 32), Duplicate);
-            var del = UIFactory.CreateConfirmDeleteButton("CtxDel", parent, Loc.T("common.delete"),
-                new Vector2(91, 0), new Vector2(150, 32), Delete);
-            _layout.Add(32f, 0f,
-                dup.GetComponent<RectTransform>(),
-                del.GetComponent<RectTransform>());
+            footer.AddLeft("CtxDup", Loc.T("element.common.duplicate"), Duplicate);
+            var delete = footer.AddRight("CtxDel", Loc.T("common.delete"), () => { }, ButtonRole.DangerOutline);
+            var confirm = ConfirmDeleteButton.Attach(delete, Delete);
+            confirm.ArmedChanged += armed =>
+                ButtonRoles.Paint(delete, armed ? ButtonRole.Danger : ButtonRole.DangerOutline);
         }
+
+        private void WireSectionMemory()
+        {
+            foreach (var section in _rows.Sections)
+            {
+                var captured = section;
+                section.View.Toggled += expanded =>
+                {
+                    if (_target != null) _sectionMemory.Remember(TypeKeyOf(_target), captured.Id, expanded);
+                };
+            }
+        }
+
+        private void RestoreSectionStates(KitchenElement element)
+        {
+            string type = TypeKeyOf(element);
+            foreach (var section in _rows.Sections)
+                section.View.SetExpanded(
+                    _sectionMemory.IsExpanded(type, section.Id, section.ExpandedByDefault), notify: false);
+        }
+
+        private static string TypeKeyOf(KitchenElement element) =>
+            element.GetComponent<Wall>() != null ? nameof(Wall) : element.GetType().Name;
 
         private void ConfigureFieldInput()
         {
@@ -602,6 +610,7 @@ namespace KitchenDesigner.Core.UI
 
             _gaps.RefreshFromTarget();
             foreach (var editor in _editors) editor.Refresh(_target);
+            _rows.SyncComputed();
         }
 
         private static string ToMM(float meters) =>
@@ -609,8 +618,8 @@ namespace KitchenDesigner.Core.UI
 
         private void RefreshTitle()
         {
-            if (_titleLabel == null || _target == null) return;
-            _titleLabel.text = $"{_target.DisplayTypeName} — {_target.PartName}";
+            if (_chrome == null || _target == null) return;
+            _chrome.SetTitle($"{_target.DisplayTypeName} — {_target.PartName}");
         }
 
         public void Open(KitchenElement element)
@@ -629,17 +638,15 @@ namespace KitchenDesigner.Core.UI
                 _materials.EndPreview();
                 _target = element;
                 _rotationDisplay.Forget();
-                _grooves.Collapse();
-                _textures.Collapse();
-                _lightLinks.Collapse();
-                _gaps.Collapse();
-                _lights.Collapse();
+                _lightLinks.ForgetPicking();
                 TextureOverlayHandles.End();
                 if (SelectionManager.Instance != null)
                     SelectionManager.Instance.Select(element);
 
                 _facets = ElementFacets.Of(element);
                 RefreshTitle();
+                _specific?.SetTitle(element.DisplayTypeName);
+                RestoreSectionStates(element);
                 _types.ShowFor(element);
 
                 _name!.text = element.PartName;
@@ -664,21 +671,22 @@ namespace KitchenDesigner.Core.UI
                 _materials.ShowFor(element);
                 _levels.ShowFor(element);
 
-            _grooves.Refresh();
-            _edges.Refresh();
-            if (element.SupportsTextureOverlays) _textures.RebuildMaterialOptions();
-            _textures.Refresh();
-            _lightLinks.Refresh();
-            RelayoutForTarget();
+                _grooves.Refresh();
+                _edges.Refresh();
+                if (element.SupportsTextureOverlays) _textures.RebuildMaterialOptions();
+                _textures.Refresh();
+                _lightLinks.Refresh();
+                RelayoutForTarget();
 
                 RefreshTransformFields();
-                _transparentToggle!.SetIsOnWithoutNotify(element.Transparent);
-                _lockToggle!.SetIsOnWithoutNotify(!element.Movable);
+                SwitchControl.SetWithoutNotify(_transparentToggle!, element.Transparent);
+                SwitchControl.SetWithoutNotify(_lockToggle!, !element.Movable);
 
                 _fields.ClearHighlights();
                 TrackAllFields();
 
                 _rows.SyncEnabledState();
+                _rows.SyncComputed();
 
                 _root!.transform.SetAsLastSibling();
                 _root.SetActive(true);
@@ -827,6 +835,7 @@ namespace KitchenDesigner.Core.UI
             TrackAllFields();
 
             _rows.SyncEnabledState();
+            _rows.SyncComputed();
 
             _fields.ShowRejections();
         }
@@ -868,16 +877,46 @@ namespace KitchenDesigner.Core.UI
         {
             if (_target == null) return;
             _facets = ElementFacets.Of(_target);
-            ApplyLayout(_facets);
+            ApplyLayout();
         }
 
-        private void ApplyLayout(ElementFacet facets)
+        private void ApplyLayout()
         {
-            bool showRotationXZ = (facets & ElementFacet.Window) == ElementFacet.None
-                && !FixedSize.IsYawOnly(_target);
-            float contentBottom = _layout.Apply(facets, showRotationXZ, TopPad);
-            if (_panelRt != null)
-                _panelRt.sizeDelta = new Vector2(_panelRt.sizeDelta.x, contentBottom + BottomPad);
+            ShowRotationAxes();
+            _rows.Relayout();
+        }
+
+        private void ShowRotationAxes()
+        {
+            if (_rotation == null) return;
+            bool allAxes = !_facets.Has(ElementFacet.Window) && !FixedSize.IsYawOnly(_target);
+            var fields = _rotation.Fields;
+            fields[0].gameObject.SetActive(allAxes);
+            fields[2].gameObject.SetActive(allAxes);
+
+            var yaw = (RectTransform)fields[1].transform;
+            _yawCell ??= (yaw.anchoredPosition.x, yaw.sizeDelta.x);
+            float width = allAxes ? _yawCell.Value.width : _rows.Metrics.Width;
+            yaw.anchoredPosition = new Vector2(allAxes ? _yawCell.Value.x : 0f, yaw.anchoredPosition.y);
+            yaw.sizeDelta = new Vector2(width, yaw.sizeDelta.y);
+        }
+
+        private void FitPanel()
+        {
+            if (_chrome == null || _panelRt == null || _body == null) return;
+            _chrome.FitHeightTo(_rows.Forms.Height);
+            float ceiling = MaxPanelHeight();
+            if (_panelRt.sizeDelta.y > ceiling)
+                _panelRt.sizeDelta = new Vector2(_panelRt.sizeDelta.x, ceiling);
+            _body.Fit();
+        }
+
+        private float MaxPanelHeight()
+        {
+            if (_panelRt == null || !(_panelRt.root is RectTransform canvas) || canvas.rect.height <= 0f)
+                return float.MaxValue;
+            float fits = canvas.rect.height - UIStyle.ToolbarH - UIStyle.StatusBarH - 2f * UIStyle.Space4;
+            return Mathf.Max(InspectorMinHeight, fits);
         }
 
         private ElementFieldsEditor? EditorFor(KitchenElement element)
@@ -901,7 +940,8 @@ namespace KitchenDesigner.Core.UI
         private void OpenButton(string node, string caption, RowVisibility visibility)
         {
             var binder = new OpenButtonBinder(() => _target as IOpenable);
-            binder.Bind(_rows.WideButton(node, caption, binder.Toggle, visibility, ActionGap));
+            var button = _rows.ValueButton(node, caption, binder.Toggle, visibility);
+            binder.Bind(button.GetComponentInChildren<TMP_Text>());
             _openButtons.Add(binder);
         }
 

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>Секция кромок в панели свойств: схема сторон, цикл состояний по клику, подсветка
 /// и поле толщины.
@@ -78,7 +79,7 @@ public class ContextMenuEdgeSectionTests
     {
         SideHighlighter.Hide();
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -96,10 +97,10 @@ public class ContextMenuEdgeSectionTests
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
     private Image Strip(string node) =>
-        Panel().Find("CtxEdgeDiagram")!.Find(node)!.GetComponent<Image>();
+        Panel().FindNode("CtxEdgeDiagram")!.Find(node)!.GetComponent<Image>();
 
     private TMP_InputField Thickness() =>
-        Panel().Find("F_EdgeThickness")!.GetComponent<TMP_InputField>();
+        Panel().FindNode("F_EdgeThickness")!.GetComponent<TMP_InputField>();
 
     private static void Hover(GameObject go, bool enter)
     {
@@ -112,11 +113,11 @@ public class ContextMenuEdgeSectionTests
     [Test]
     public void EdgeDiagram_KeepsItsWidgetNames()
     {
-        var diagram = Panel().Find("CtxEdgeDiagram");
+        var diagram = Panel().FindNode("CtxEdgeDiagram");
         Assert.NotNull(diagram, "схема кромок ищется тестами и снапшотами по имени CtxEdgeDiagram");
         foreach (var node in new[] { "CtxEdgeL1", "CtxEdgeL2", "CtxEdgeW1", "CtxEdgeW2" })
             Assert.NotNull(diagram!.Find(node), $"полоса-торец {node} должна остаться на месте");
-        Assert.NotNull(Panel().Find("F_EdgeThickness"),
+        Assert.NotNull(Panel().FindNode("F_EdgeThickness"),
             "поле толщины кромки ищется по имени F_EdgeThickness");
     }
 

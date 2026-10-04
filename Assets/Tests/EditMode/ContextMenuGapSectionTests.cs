@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class ContextMenuGapSectionTests
 {
@@ -72,7 +73,7 @@ public class ContextMenuGapSectionTests
     {
         SideHighlighter.Hide();
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -97,17 +98,17 @@ public class ContextMenuGapSectionTests
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
     private TMP_InputField GapField(GapSide side) =>
-        Panel().Find($"F_gap{side}")!.GetComponent<TMP_InputField>();
+        Panel().FindNode($"F_gap{side}")!.GetComponent<TMP_InputField>();
 
     private string Counter() =>
-        Panel().Find("CtxGaps")!.GetComponentInChildren<TMP_Text>().text;
+        Panel().FindNode("Sec_Gaps")!.FindNode(CollapsibleSection.CountNode)!.GetComponent<TMP_Text>().text;
 
     [Test]
     public void GapWidgets_KeepTheirNames()
     {
-        Assert.NotNull(Panel().Find("CtxGaps"), "раскрывашка ищется по имени CtxGaps");
+        Assert.NotNull(Panel().FindNode("Sec_Gaps"), "секция ищется по имени Sec_Gaps");
         foreach (var side in GapSides.All)
-            Assert.NotNull(Panel().Find($"F_gap{side}"), $"поле F_gap{side} ищется по имени");
+            Assert.NotNull(Panel().FindNode($"F_gap{side}"), $"поле F_gap{side} ищется по имени");
     }
 
     [Test]
@@ -158,7 +159,7 @@ public class ContextMenuGapSectionTests
         facade.GapBack = 0;
         _menu!.Open(facade);
 
-        StringAssert.Contains("(1)", Counter(), "ненулевой зазор ровно на одной стороне");
+        Assert.AreEqual("1", Counter(), "ненулевой зазор ровно на одной стороне");
     }
 
     [Test]
@@ -172,12 +173,12 @@ public class ContextMenuGapSectionTests
         facade.GapFront = 0;
         facade.GapBack = 0;
         _menu!.Open(facade);
-        Assume.That(Counter(), Does.Contain("(0)"));
+        Assume.That(Counter(), Is.EqualTo("0"));
 
         GapField(GapSide.Left).text = "19";
         _menu!.Gaps.RefreshCounter();
 
-        StringAssert.Contains("(1)", Counter(),
+        Assert.AreEqual("1", Counter(),
             "счётчик считает по ПОЛЯМ: пока курсор в поле, введённое значение ещё не применено, "
             + "а заголовок должен идти за ним");
     }
@@ -214,17 +215,20 @@ public class ContextMenuGapSectionTests
     }
 
     [Test]
-    public void OpeningAnElement_ShowsTheGapListCollapsed()
+    public void OpeningAnElement_ShowsTheGapListCollapsed_UntilTheUserOpensIt()
     {
         var facade = Facade();
         _menu!.Open(facade);
+        Assert.IsFalse(GapField(GapSide.Left).gameObject.activeInHierarchy,
+            "панель открывается со свёрнутой секцией зазоров");
+
         _menu!.Gaps.Toggle();
-        Assume.That(GapField(GapSide.Left).gameObject.activeSelf, Is.True);
+        Assume.That(GapField(GapSide.Left).gameObject.activeInHierarchy, Is.True);
 
         _menu!.Open(facade);
 
-        Assert.IsFalse(GapField(GapSide.Left).gameObject.activeSelf,
-            "панель открывается со свёрнутой секцией зазоров");
+        Assert.IsTrue(GapField(GapSide.Left).gameObject.activeInHierarchy,
+            "раскрытая секция остаётся раскрытой: свёрнутость помнится по типу элемента (D7)");
     }
 
     [Test]

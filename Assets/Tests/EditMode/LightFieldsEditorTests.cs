@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class LightFieldsEditorTests
 {
@@ -72,7 +73,7 @@ public class LightFieldsEditorTests
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -90,7 +91,7 @@ public class LightFieldsEditorTests
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
     private TMP_InputField Field(string label) =>
-        Panel().Find($"F_{label}")!.GetComponent<TMP_InputField>();
+        Panel().FindNode($"F_{label}")!.GetComponent<TMP_InputField>();
 
     private static string Text(TMP_InputField f) => f.text.Replace("​", "");
 
@@ -101,10 +102,10 @@ public class LightFieldsEditorTests
                      "Мягкость края", "Свет вверх", "Сила тени", "Свечение плафона",
                      "Отступ вниз", "Верхний конус", "Верхний радиус", "Радиус при 0 %",
                      "Радиус при 100 %", "Светоотдача", "Калибровка" })
-            Assert.NotNull(Panel().Find($"F_{label}"), $"поле F_{label} ищется по имени");
-        Assert.NotNull(Panel().Find("CtxLightShape"));
-        Assert.NotNull(Panel().Find("CtxLightShadow"));
-        Assert.NotNull(Panel().Find("CtxLightAdv"));
+            Assert.NotNull(Panel().FindNode($"F_{label}"), $"поле F_{label} ищется по имени");
+        Assert.NotNull(Panel().FindNode("CtxLightShape"));
+        Assert.NotNull(Panel().FindNode("CtxLightShadow"));
+        Assert.NotNull(Panel().FindNode("Sec_" + LightFieldsEditor.AdvancedSectionId));
     }
 
     [Test]
@@ -152,26 +153,26 @@ public class LightFieldsEditorTests
     {
         var lamp = Lamp();
         _menu!.Open(lamp);
-        Assert.IsFalse(Field("Светоотдача").gameObject.activeSelf,
+        Assert.IsFalse(Field("Светоотдача").gameObject.activeInHierarchy,
             "калибровка светотехники нужна редко, а места занимает больше всех остальных "
             + "параметров лампы вместе — панель открывается со свёрнутой раскрывашкой");
 
-        Panel().Find("CtxLightAdv")!.GetComponent<Button>().onClick.Invoke();
-        Assert.IsTrue(Field("Светоотдача").gameObject.activeSelf, "клик раскрывает тонкую настройку");
+        Panel().FindNode("Sec_" + LightFieldsEditor.AdvancedSectionId)!.GetComponent<CollapsibleSection>().Toggle();
+        Assert.IsTrue(Field("Светоотдача").gameObject.activeInHierarchy, "клик раскрывает тонкую настройку");
     }
 
     [Test]
-    public void OpeningAnotherElement_CollapsesTheAdvancedRowsAgain()
+    public void ReopeningTheLamp_KeepsTheAdvancedRowsAsTheUserLeftThem()
     {
         var lamp = Lamp();
         _menu!.Open(lamp);
-        Panel().Find("CtxLightAdv")!.GetComponent<Button>().onClick.Invoke();
-        Assume.That(Field("Светоотдача").gameObject.activeSelf, Is.True);
+        Panel().FindNode("Sec_" + LightFieldsEditor.AdvancedSectionId)!.GetComponent<CollapsibleSection>().Toggle();
+        Assume.That(Field("Светоотдача").gameObject.activeInHierarchy, Is.True);
 
         _menu!.Open(lamp);
 
-        Assert.IsFalse(Field("Светоотдача").gameObject.activeSelf,
-            "раскрывашка не должна переживать открытие панели");
+        Assert.IsTrue(Field("Светоотдача").gameObject.activeInHierarchy,
+            "тонкая настройка — секция как все: свёрнутость помнится по типу элемента (D7)");
     }
 
     [Test]
@@ -180,7 +181,7 @@ public class LightFieldsEditorTests
         var lamp = Lamp();
         _menu!.Open(lamp);
 
-        Panel().Find("CtxLightShape")!.GetComponent<TMP_Dropdown>().value = 1;
+        Panel().FindNode("CtxLightShape")!.GetComponent<TMP_Dropdown>().value = 1;
 
         Assert.AreEqual(LampShape.Sphere, lamp.Shape,
             "порядок пунктов «Плафон / Шар» — контракт: индекс кастуется в форму потока");
@@ -191,7 +192,7 @@ public class LightFieldsEditorTests
     {
         var lamp = Lamp();
         _menu!.Open(lamp);
-        var dd = Panel().Find("CtxLightShadow")!.GetComponent<TMP_Dropdown>();
+        var dd = Panel().FindNode("CtxLightShadow")!.GetComponent<TMP_Dropdown>();
 
         Assert.AreEqual(System.Enum.GetValues(typeof(LampShadow)).Length, dd.options.Count,
             "у каждого значения LampShadow обязан быть пункт");

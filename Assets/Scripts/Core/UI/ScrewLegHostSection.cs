@@ -1,5 +1,4 @@
 using TMPro;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -7,11 +6,9 @@ namespace KitchenDesigner.Core.UI
     {
         public const string NoHostText = "—";
 
-        private const float CaptionHeight = 18f;
-
         private readonly IContextMenuHost _host;
 
-        private TMP_InputField? _insertion;
+        private TMP_Text? _insertion;
         private TMP_InputField? _left;
         private TMP_InputField? _right;
         private TMP_InputField? _top;
@@ -23,10 +20,9 @@ namespace KitchenDesigner.Core.UI
         {
             var visibility = RowVisibility.For(ElementFacet.ScrewLeg);
 
-            _host.Rows.Hint("CtxSecScrewHost", Loc.T("element.screwLeg.host"), CaptionHeight, RowGap, visibility);
+            _host.Rows.Note("CtxSecScrewHost", Loc.T("element.screwLeg.host"), visibility);
 
-            _insertion = _host.Rows.NumberField(Loc.T("element.screwLeg.insertion"), visibility);
-            UIRowEnabled.SetControlEnabled(_insertion, false);
+            _insertion = _host.Rows.ReadOnlyField(Loc.T("element.screwLeg.insertion"), visibility);
 
             (_left, _right) = _host.Rows.PairField(Loc.T("element.common.leftRightMm"),
                 "screwLeft", "screwRight", NoHostText, visibility);
@@ -115,10 +111,12 @@ namespace KitchenDesigner.Core.UI
         private static string Shown(in ScrewLegMargins margins, int valueMM) =>
             margins.HasHost ? valueMM.ToString() : NoHostText;
 
-        private static void SetText(TMP_InputField? field, int? valueMM)
+        private static void SetText(TMP_Text? field, int? valueMM)
         {
             if (field == null) return;
-            field.SetTextWithoutNotify(valueMM.HasValue ? valueMM.Value.ToString() : NoHostText);
+            field.text = valueMM.HasValue
+                ? NumberFormat.WithUnit(valueMM.Value.ToString(), Loc.T("unit.mm"))
+                : NoHostText;
         }
     }
 }

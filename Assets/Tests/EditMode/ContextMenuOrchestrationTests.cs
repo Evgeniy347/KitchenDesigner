@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class ContextMenuOrchestrationTests
 {
@@ -67,7 +68,7 @@ public class ContextMenuOrchestrationTests
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -82,14 +83,14 @@ public class ContextMenuOrchestrationTests
 
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
-    private bool PanelOpen() => Panel().gameObject.activeSelf;
+    private bool PanelOpen() => Panel().gameObject.activeInHierarchy;
 
     private KitchenElement Board(string name) =>
         Spawn<KitchenElement>(ElementFactory.CreatePart(
             new Vector3Int(600, 300, 18), name, Vector3.zero));
 
-    private TMP_InputField Insertion() =>
-        Panel().Find("F_Заход в корпус")!.GetComponent<TMP_InputField>();
+    private TMP_Text Insertion() =>
+        Panel().FindNode("Val_Заход в корпус")!.GetComponent<TMP_Text>();
 
     /// <summary>«Заход в корпус» больше не вводят — его показывают. Поле в живом
     /// проекте стояло на заводских 25 мм, пока резьба сидела на 38: два описания
@@ -107,12 +108,12 @@ public class ContextMenuOrchestrationTests
         _menu!.Open(leg);
 
         Assert.AreEqual(host.PartName, leg.AttachedToName, "предусловие: хозяин вывелся");
-        Assert.AreEqual("38", Insertion().text,
+        Assert.AreEqual(NumberFormat.WithUnit("38", "мм"), Insertion().text,
             "резьба кончается на 58 мм, дно царги — на 20: панель показывает измеренные 38, "
             + "а не заводские 25 из поля");
-        Assert.IsFalse(Insertion().interactable,
-            "правит эту величину геометрия, а не человек — иначе поле снова разойдётся "
-            + "с тем, что показывает сцена");
+        Assert.IsNull(Panel().FindNode("F_Заход в корпус"),
+            "правит эту величину геометрия, а не человек: это строка «только чтение» (текст без рамки), "
+            + "а не поле ввода, которое снова разошлось бы с тем, что показывает сцена");
     }
 
     /// <summary>Тихий ноль здесь запрещён: он неотличим от «вошла на 0 мм».
@@ -223,7 +224,7 @@ public class ContextMenuOrchestrationTests
         _menu!.Open(drawer);
 
         Assert.AreEqual("Фасад ящика",
-            Panel().Find("L_Фасад ящика")!.GetComponent<TMP_Text>().text,
+            Panel().FindNode("L_Фасад ящика")!.GetComponent<TMP_Text>().text,
             "в панели ящика рядом стоят и другие «фасадные» строки — подпись обязана уточнять, "
             + "о каком фасаде речь");
     }
@@ -236,7 +237,7 @@ public class ContextMenuOrchestrationTests
         _menu!.Open(dishwasher);
 
         Assert.AreEqual("Фасад",
-            Panel().Find("L_Фасад ящика")!.GetComponent<TMP_Text>().text,
+            Panel().FindNode("L_Фасад ящика")!.GetComponent<TMP_Text>().text,
             "у посудомойки уточнять нечего — фасад у неё один");
     }
 
@@ -246,7 +247,7 @@ public class ContextMenuOrchestrationTests
         var assembled = Spawn<AssembledFacadeElement>(ElementFactory.CreateAssembledFacade(
             new Vector3Int(450, 700, 18), "Сборный", Vector3.zero));
         _menu!.Open(assembled);
-        var dd = Panel().Find("CtxFill")!.GetComponent<TMP_Dropdown>();
+        var dd = Panel().FindNode("CtxFill")!.GetComponent<TMP_Dropdown>();
 
         dd.value = 0;
         Assert.AreEqual(AssembledFill.Blind, assembled.Fill, "первый пункт — глухая панель");
@@ -266,7 +267,7 @@ public class ContextMenuOrchestrationTests
         var blind = Spawn<AssembledFacadeElement>(ElementFactory.CreateAssembledFacade(
             new Vector3Int(451, 701, 18), "Глухой", Vector3.zero, AssembledFill.Blind));
         _menu!.Open(blind);
-        Assert.AreEqual(0, Panel().Find("CtxFill")!.GetComponent<TMP_Dropdown>().value,
+        Assert.AreEqual(0, Panel().FindNode("CtxFill")!.GetComponent<TMP_Dropdown>().value,
             "предусловие: панель показывает глухую панель");
 
         var assembled = Spawn<AssembledFacadeElement>(ElementFactory.CreateAssembledFacade(
@@ -274,7 +275,7 @@ public class ContextMenuOrchestrationTests
         assembled.Fill = AssembledFill.Glass;
         _menu!.Open(assembled);
 
-        Assert.AreEqual(2, Panel().Find("CtxFill")!.GetComponent<TMP_Dropdown>().value,
+        Assert.AreEqual(2, Panel().FindNode("CtxFill")!.GetComponent<TMP_Dropdown>().value,
             "порядок пунктов не совпадает с порядком значений AssembledFill, поэтому перевод "
             + "значения в индекс идёт по таблице, а не кастом");
     }

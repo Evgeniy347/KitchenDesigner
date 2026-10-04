@@ -1,5 +1,4 @@
 using TMPro;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -8,8 +7,9 @@ namespace KitchenDesigner.Core.UI
         private readonly IContextMenuHost _host;
         private readonly TMP_InputField?[] _fieldsBySide = new TMP_InputField?[GapSides.All.Length];
 
-        private TMP_Text? _countLabel;
-        private bool _expanded;
+        public const string SectionId = "Gaps";
+
+        private InspectorSection? _section;
 
         public ContextMenuGapSection(IContextMenuHost host) => _host = host;
 
@@ -19,35 +19,26 @@ namespace KitchenDesigner.Core.UI
 
         public bool Eligible() => Target != null && Target.SupportsGaps;
 
-        public bool Expanded() => _expanded && Eligible();
-
-        public void Collapse() => _expanded = false;
+        public bool Expanded() => _section != null && _section.View.Expanded && Eligible();
 
         public void Build()
         {
-            _countLabel = _host.Rows.WideButton("CtxGaps", Loc.T("element.gaps.headerEmpty"), Toggle,
-                RowVisibility.When(Eligible), RowGap);
+            _section = _host.Rows.BeginSection(SectionId, Loc.T("element.gaps.title"), false);
 
             BuildRow(Loc.T("element.common.leftRightMm"), GapSide.Left, GapSide.Right);
             BuildRow(Loc.T("element.common.topBottomMm"), GapSide.Top, GapSide.Bottom);
             BuildRow(Loc.T("element.common.frontBackMm"), GapSide.Front, GapSide.Back);
         }
 
-        public void Toggle()
-        {
-            _expanded = !_expanded;
-            RefreshCounter();
-            _host.Relayout();
-        }
+        public void Toggle() => _section!.View.Toggle();
 
         public void RefreshCounter()
         {
-            if (_countLabel == null) return;
+            if (_section == null) return;
             int filled = 0;
             foreach (var f in _fieldsBySide)
                 if (f != null && _host.Fields.ParseInt(f, 0) != 0) filled++;
-            _countLabel.text =
-                Loc.F("element.gaps.header", filled, (_expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed));
+            _section.SetCount(NumberFormat.Integer(filled));
         }
 
         public void WriteFrom(KitchenElement? element)
@@ -99,7 +90,7 @@ namespace KitchenDesigner.Core.UI
         private void BuildRow(string label, GapSide first, GapSide second)
         {
             var (firstField, secondField) = _host.Rows.PairField(label,
-                $"gap{first}", $"gap{second}", "0", RowVisibility.When(Expanded));
+                $"gap{first}", $"gap{second}", "0", RowVisibility.When(Eligible));
             Remember(firstField, first);
             Remember(secondField, second);
         }

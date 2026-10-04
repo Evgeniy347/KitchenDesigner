@@ -6,6 +6,7 @@ using UnityEngine.TestTools;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>Строка «Текстура» в меню свойств: высота пункта под длинные
 /// названия и предпросмотр декора наведением.</summary>
@@ -564,7 +565,7 @@ public class MaterialPreviewTests
 
     private TMP_Dropdown Dropdown(string nodeName)
     {
-        var node = _canvasGo!.transform.Find("ContextMenu")!.Find(nodeName);
+        var node = _canvasGo!.transform.Find("ContextMenu")!.FindNode(nodeName);
         Assert.IsNotNull(node, $"дропдаун {nodeName} должен существовать в панели");
         return node!.GetComponent<TMP_Dropdown>();
     }

@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core.UI
 
         protected ContextMenuFieldTracker Fields => Host.Fields;
 
-        protected ContextMenuRowFactory Rows => Host.Rows;
+        protected InspectorRows Rows => Host.Rows;
 
         public abstract bool Handles(KitchenElement element);
 

@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>Схема концов трубы — тот же приём, что и схема кромок
 /// (<c>ContextMenuEdgeSection</c>): статическая картинка из панелей, собранная
@@ -84,7 +85,7 @@ public class PipeEndsDiagramTests
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var element in PartRegistry.GetAll())
             if (element != null) _spawned.Add(element.gameObject);
         foreach (var go in _spawned)
@@ -105,7 +106,7 @@ public class PipeEndsDiagramTests
 
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
-    private Transform Diagram() => Panel().Find("CtxPipeEndsDiagram")!;
+    private Transform Diagram() => Panel().FindNode("CtxPipeEndsDiagram")!;
 
     private TMP_Dropdown Choice(int end) =>
         Diagram().Find("CtxPipeEndFitting" + end)!.GetComponent<TMP_Dropdown>();
@@ -132,7 +133,7 @@ public class PipeEndsDiagramTests
     [Test]
     public void TheDiagram_KeepsItsWidgetNames()
     {
-        Assert.NotNull(Panel().Find("CtxPipeEndsDiagram"),
+        Assert.NotNull(Panel().FindNode("CtxPipeEndsDiagram"),
             "схема концов трубы ищется тестами и снимками панели по имени CtxPipeEndsDiagram");
         for (int end = 0; end < PipeEndsDiagram.EndCount; end++)
         {

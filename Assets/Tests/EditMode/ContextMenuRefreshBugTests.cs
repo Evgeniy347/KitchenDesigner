@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// Тесты на баг: при внешнем изменении элемента (ресайз через ручки, переименование)
@@ -153,12 +154,12 @@ public class ContextMenuRefreshBugTests
         CallRefreshTransformFields();
 
         // Позиция показывается в мм (правило 1 UI-GUIDELINES): 1,507 м = 1507 мм.
-        Assert.AreEqual(1507, int.Parse(FieldText("F_X, мм")),
-            $"x field: expected 1507 мм, got '{FieldText("F_X, мм")}'");
-        Assert.AreEqual(2503, int.Parse(FieldText("F_Y, мм")),
-            $"y field: expected 2503 мм, got '{FieldText("F_Y, мм")}'");
-        Assert.AreEqual(3511, int.Parse(FieldText("F_Z, мм")),
-            $"z field: expected 3511 мм, got '{FieldText("F_Z, мм")}'");
+        Assert.AreEqual(1507, int.Parse(FieldText("Vec_Position_X")),
+            $"x field: expected 1507 мм, got '{FieldText("Vec_Position_X")}'");
+        Assert.AreEqual(2503, int.Parse(FieldText("Vec_Position_Y")),
+            $"y field: expected 2503 мм, got '{FieldText("Vec_Position_Y")}'");
+        Assert.AreEqual(3511, int.Parse(FieldText("Vec_Position_Z")),
+            $"z field: expected 3511 мм, got '{FieldText("Vec_Position_Z")}'");
     }
 
     /// <summary>Кириллица здесь законна, а в остальном классе — нет: имя кладётся
@@ -399,7 +400,7 @@ public class ContextMenuRefreshBugTests
 
     private string FieldText(string nodeName)
     {
-        var node = _canvasGo!.transform.Find("ContextMenu")!.Find(nodeName);
+        var node = _canvasGo!.transform.FindNode("ContextMenu").FindNode(nodeName);
         Assert.IsNotNull(node, $"виджет {nodeName} должен существовать в панели");
         var inputField = node!.GetComponent<TMP_InputField>();
         Assert.IsNotNull(inputField, $"{nodeName} должен быть полем ввода");
@@ -456,7 +457,7 @@ public class ContextMenuRefreshBugTests
 
     private TMP_Dropdown GetDrawerFacadeDropdown()
     {
-        var node = _canvasGo!.transform.Find("ContextMenu")!.Find("CtxDrawerFacade");
+        var node = _canvasGo!.transform.FindNode("ContextMenu").FindNode("CtxDrawerFacade");
         Assert.IsNotNull(node, "дропдаун фасада ищется по имени CtxDrawerFacade");
         return node!.GetComponent<TMP_Dropdown>();
     }

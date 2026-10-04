@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class RoofFieldsEditorTests
 {
@@ -40,7 +41,7 @@ public class RoofFieldsEditorTests
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -57,7 +58,7 @@ public class RoofFieldsEditorTests
     private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
 
     private TMP_InputField Field(string node) =>
-        Panel().Find($"F_{node}")!.GetComponent<TMP_InputField>();
+        Panel().FindNode($"F_{node}")!.GetComponent<TMP_InputField>();
 
     [Test]
     public void EditingTheOverhang_DoesNotRoundThePitchToAWholeDegree()

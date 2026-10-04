@@ -1,23 +1,25 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
     internal sealed class ContextMenuEdgeSection
     {
         public const int RecomputeEveryNFrames = 15;
+        public const string SectionId = "Edges";
 
         private const float DiagramH = 140f;
+        private const int EdgeSides = 4;
+        private static readonly EdgeSide[] AllSides = { EdgeSide.L1, EdgeSide.L2, EdgeSide.W1, EdgeSide.W2 };
         private const float BoardW = 200f, BoardH = 110f, StripW = 10f, StripBorder = 2f;
         private const float BoardX = -50f, BoardY = -10f;
         private const float SideLabelOffsetY = 36f, SideLabelOffsetX = 76f;
-        private const float HintH = 20f;
 
         private readonly IContextMenuHost _host;
         private readonly FrameThrottle _recompute = new(RecomputeEveryNFrames);
 
+        private InspectorSection? _section;
         private Toggle? _enabledToggle;
         private TMP_InputField? _thickness;
         private RectTransform? _diagram;
@@ -37,17 +39,19 @@ namespace KitchenDesigner.Core.UI
 
         public void Build(Transform parent)
         {
+            var rows = _host.Rows;
             var shown = RowVisibility.For(ElementFacet.Part, Shown);
 
-            _enabledToggle = _host.Rows.Toggle("CtxEdges", Loc.T("element.edge.enabled"), true, OnEnabledToggled,
-                RowVisibility.For(ElementFacet.Part, Eligible), RowGap);
+            _section = rows.BeginSection(SectionId, Loc.T("element.edge.title"), true);
+            _enabledToggle = rows.Switch("CtxEdges", Loc.T("element.edge.enabled"), true, OnEnabledToggled,
+                RowVisibility.For(ElementFacet.Part, Eligible));
 
             _diagram = BuildDiagram(parent);
-            _host.Layout.AddFor(ElementFacet.Part, Shown, DiagramH, RowGap, _diagram);
+            rows.Custom(_diagram, DiagramH, shown);
 
-            _thickness = _host.Rows.NumberField(Loc.T("element.edge.thickness"), shown, Loc.T("unit.mm"), "EdgeThickness");
-            _host.Rows.Hint("CtxEdgeHint", Loc.T("element.edge.clickHint"), HintH, ActionGap,
-                shown, TextAnchor.MiddleCenter);
+            _thickness = rows.NumberField(Loc.T("element.edge.thickness"), shown, Loc.T("unit.mm"), "EdgeThickness",
+                allowDecimal: true);
+            rows.Note("CtxEdgeHint", Loc.T("element.edge.clickHint"), shown, centered: true);
         }
 
         public void Tick()
@@ -80,11 +84,15 @@ namespace KitchenDesigner.Core.UI
             _recompute.Reset();
             if (Target == null || !Target.SupportsEdges) return;
 
-            _enabledToggle?.SetIsOnWithoutNotify(Target.EdgeBandingEnabled);
+            if (_enabledToggle != null) SwitchControl.SetWithoutNotify(_enabledToggle, Target.EdgeBandingEnabled);
             _host.Fields.RefreshUnfocused(_thickness,
                 NumberFormat.Input(Target.EdgeThicknessMM, 1));
 
-            if (!Target.EdgeBandingEnabled) return;
+            if (!Target.EdgeBandingEnabled)
+            {
+                _section?.SetCount(null);
+                return;
+            }
 
             var layout = EdgeBanding.LayoutOf(Target.DimensionsMM);
             if (_lengthLabel != null) _lengthLabel.text = Loc.F("unit.mmValue", layout.LengthMM);
@@ -95,12 +103,21 @@ namespace KitchenDesigner.Core.UI
             PaintStrip(_stripL2, _holeL2, coverage, EdgeSide.L2);
             PaintStrip(_stripW1, _holeW1, coverage, EdgeSide.W1);
             PaintStrip(_stripW2, _holeW2, coverage, EdgeSide.W2);
+            _section?.SetCount(Loc.F("element.edge.countOf", EdgesPresent(coverage), EdgeSides));
+        }
+
+        private int EdgesPresent(EdgeCoverage coverage)
+        {
+            int present = 0;
+            foreach (var side in AllSides)
+                if (EdgeBanding.HasEdgeEffective(Target!, coverage, side)) present++;
+            return present;
         }
 
         private RectTransform BuildDiagram(Transform parent)
         {
             var root = UIFactory.CreateRect("CtxEdgeDiagram", parent);
-            root.sizeDelta = new Vector2(RowWidth, DiagramH);
+            root.sizeDelta = new Vector2(_host.Rows.Metrics.Width, DiagramH);
 
             UIFactory.CreatePanel("CtxEdgeBoard", root, new Vector2(BoardX, BoardY),
                 new Vector2(BoardW, BoardH), UIStyle.EdgeBoard);
@@ -119,11 +136,11 @@ namespace KitchenDesigner.Core.UI
             SideLabel(root, "CtxEdgeLblW1", "W1", new Vector2(BoardX + SideLabelOffsetX, BoardY));
             SideLabel(root, "CtxEdgeLblW2", "W2", new Vector2(BoardX - SideLabelOffsetX, BoardY));
 
-            _lengthLabel = UIFactory.CreateLabel("CtxEdgeLen", root, "", 12,
+            _lengthLabel = UIFactory.CreateLabel("CtxEdgeLen", root, "", UIStyle.FontCaption,
                 new Vector2(BoardX, BoardY + BoardH * 0.5f + 11f), new Vector2(120, 18),
                 TextAnchor.MiddleCenter);
             _lengthLabel.color = UIStyle.TextSecondary;
-            _widthLabel = UIFactory.CreateLabel("CtxEdgeWid", root, "", 12,
+            _widthLabel = UIFactory.CreateLabel("CtxEdgeWid", root, "", UIStyle.FontCaption,
                 new Vector2(BoardX + BoardW * 0.5f + 43f, BoardY), new Vector2(70, 18),
                 TextAnchor.MiddleLeft);
             _widthLabel.color = UIStyle.TextSecondary;
@@ -152,7 +169,7 @@ namespace KitchenDesigner.Core.UI
 
         private static void SideLabel(Transform parent, string name, string text, Vector2 pos)
         {
-            var lbl = UIFactory.CreateLabel(name, parent, text, 11, pos, new Vector2(30, 14),
+            var lbl = UIFactory.CreateLabel(name, parent, text, UIStyle.FontCaption, pos, new Vector2(30, 18),
                 TextAnchor.MiddleCenter);
             lbl.color = UIStyle.TextSecondary;
             lbl.raycastTarget = false;

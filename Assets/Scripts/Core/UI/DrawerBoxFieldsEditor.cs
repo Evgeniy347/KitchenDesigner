@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -52,8 +51,8 @@ namespace KitchenDesigner.Core.UI
             _boxWidth = Rows.NumberField(Loc.T("element.drawer.boxWidth"), drawerOnly,
                 hint: "element.drawer.boxWidth");
 
-            Rows.WideButton("CtxDrawerDouble", Loc.T("element.drawer.double"), CreatePaired,
-                RowVisibility.For(ElementFacet.Drawer, CanCreateDouble), ActionGap);
+            Rows.ValueButton("CtxDrawerDouble", Loc.T("element.drawer.double"), CreatePaired,
+                RowVisibility.For(ElementFacet.Drawer, CanCreateDouble));
 
             var upperLenNames = new List<string>();
             foreach (var l in DrawerConstants.ValidLengths) upperLenNames.Add(Loc.F("unit.mmValue", l));
@@ -64,8 +63,8 @@ namespace KitchenDesigner.Core.UI
             HintBadge.AttachAfterLabel(upperLenRow.label as TextMeshProUGUI,
                 hint: "element.drawer.upperLength");
 
-            Rows.WideButton("CtxDrawerRemoveUpper", Loc.T("element.drawer.removeUpper"), RemoveUpper,
-                RowVisibility.For(ElementFacet.Drawer, HasUpper), ActionGap);
+            Rows.ValueButton("CtxDrawerRemoveUpper", Loc.T("element.drawer.removeUpper"), RemoveUpper,
+                RowVisibility.For(ElementFacet.Drawer, HasUpper));
         }
 
         public override IEnumerable<TMP_InputField?> ArithmeticFields()

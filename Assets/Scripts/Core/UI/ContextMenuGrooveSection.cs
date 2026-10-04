@@ -1,20 +1,14 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
     internal sealed class ContextMenuGrooveSection : ContextMenuListSection<GrooveSpec>
     {
-        private const float RowHeight = 28f;
-        private const float RowSpacing = 4f;
-        private const float HintH = 16f;
-        private const float SideX = -114f, SideW = 104f;
-        private const float KindX = 26f, KindW = 168f;
-        private const float DelX = 148f, DelW = 28f;
-        private const float NewKindX = 0f, NewKindW = 116f;
-        private const float AddX = 116f, AddW = 100f;
+        public const string SectionId = "Grooves";
+        public const string AddNode = "CtxGrooveAdd";
 
         private static readonly LocalizedCache<string[]> SideLabelsCache =
             new LocalizedCache<string[]>(() => new string[] { Loc.T("element.groove.sideTop"), Loc.T("element.groove.sideBottom"), Loc.T("element.groove.sideLeft"), Loc.T("element.groove.sideRight") });
@@ -28,9 +22,6 @@ namespace KitchenDesigner.Core.UI
         private readonly TMP_Dropdown?[] _rowSide = new TMP_Dropdown?[AppConstants.GROOVE_MAX_PER_PART];
         private readonly TMP_Dropdown?[] _rowKind = new TMP_Dropdown?[AppConstants.GROOVE_MAX_PER_PART];
 
-        private TMP_Text? _countLabel;
-        private TMP_Dropdown? _newSide, _newKind;
-
         public ContextMenuGrooveSection(IContextMenuHost host) : base(host)
         {
         }
@@ -41,72 +32,77 @@ namespace KitchenDesigner.Core.UI
 
         protected override IReadOnlyList<GrooveSpec>? CurrentItems() => Target?.Grooves;
 
-        public void Build(Transform parent)
+        public void Build()
         {
+            var rows = Host.Rows;
             var partOnly = RowVisibility.For(ElementFacet.Part);
-            var expanded = RowVisibility.For(ElementFacet.Part, () => Expanded);
+            BeginSection(SectionId, Loc.T("element.groove.title"), false, "+ " + Loc.T("common.add"), AddFromUI);
+            Section.View.ActionButton!.gameObject.name = AddNode;
 
-            _countLabel = Host.Rows.WideButton("CtxGrooves", Loc.T("element.groove.headerEmpty"), Toggle, partOnly, RowGap);
-            Host.Rows.Hint("CtxGrooveHint",
+            rows.Note("CtxGrooveHint",
                 Loc.F("element.groove.hint", AppConstants.GROOVE_WIDTH_MM, AppConstants.GROOVE_DEPTH_MM, AppConstants.GROOVE_OFFSET_MM),
-                HintH, RowSpacing, expanded);
+                partOnly);
 
+            float deleteW = UIStyle.ControlHCompact;
+            float sideW = Mathf.Round((rows.Metrics.Width - deleteW - 2f * UIStyle.Space1) * 0.4f);
+            float kindW = rows.Metrics.Width - sideW - deleteW - 2f * UIStyle.Space1;
             for (int i = 0; i < AppConstants.GROOVE_MAX_PER_PART; i++)
             {
                 int index = i;
-                var sideDd = UIFactory.CreateDropdown($"CtxGrooveSide{i}", parent,
-                    new List<string>(SideLabels), new Vector2(SideX, 0), new Vector2(SideW, RowHeight),
+                var row = rows.NewRowRect("CtxGrooveRow" + i);
+                var sideDd = UIFactory.CreateDropdown($"CtxGrooveSide{i}", row,
+                    new List<string>(SideLabels), Vector2.zero, new Vector2(sideW, rows.Metrics.ControlH),
                     _ => Edit(index));
-                var kindDd = UIFactory.CreateDropdown($"CtxGrooveKind{i}", parent,
-                    new List<string>(KindLabels), new Vector2(KindX, 0), new Vector2(KindW, RowHeight),
+                var kindDd = UIFactory.CreateDropdown($"CtxGrooveKind{i}", row,
+                    new List<string>(KindLabels), Vector2.zero, new Vector2(kindW, rows.Metrics.ControlH),
                     _ => Edit(index));
-                var delBtn = UIFactory.CreateConfirmDeleteButton($"CtxGrooveDel{i}", parent,
-                    UIStyle.GlyphClose, new Vector2(DelX, 0), new Vector2(DelW, RowHeight),
-                    () => Remove(index));
+                var delBtn = QuietDeleteButton.Create($"CtxGrooveDel{i}", row, deleteW,
+                    Loc.T("common.delete"), () => Remove(index));
+                UIFactory.FitDropdownItems(sideDd);
+                UIFactory.FitDropdownItems(kindDd);
+                rows.PlaceCell((RectTransform)sideDd.transform, 0f, sideW);
+                rows.PlaceCell((RectTransform)kindDd.transform, sideW + UIStyle.Space1, kindW);
+                rows.PlaceCell((RectTransform)delBtn.transform, rows.Metrics.Width - deleteW, deleteW);
                 _rowSide[i] = sideDd;
                 _rowKind[i] = kindDd;
-                Host.Layout.AddFor(ElementFacet.Part,
-                    () => Expanded && Count() > index, RowHeight, RowSpacing,
-                    sideDd.GetComponent<RectTransform>(),
-                    kindDd.GetComponent<RectTransform>(),
-                    delBtn.GetComponent<RectTransform>());
+                rows.Custom(row, rows.Metrics.ControlH,
+                    RowVisibility.For(ElementFacet.Part, () => Expanded && Count() > index));
             }
-
-            _newSide = UIFactory.CreateDropdown("CtxGrooveSide", parent,
-                new List<string>(SideLabels), new Vector2(SideX, 0), new Vector2(SideW, RowHeight),
-                _ => { });
-            _newKind = UIFactory.CreateDropdown("CtxGrooveKind", parent,
-                new List<string>(KindLabels), new Vector2(NewKindX, 0), new Vector2(NewKindW, RowHeight),
-                _ => { });
-            var addBtn = UIFactory.CreateButton("CtxGrooveAdd", parent, Loc.T("common.add"),
-                new Vector2(AddX, 0), new Vector2(AddW, RowHeight), AddFromUI);
-            Host.Layout.AddFor(ElementFacet.Part, () => Expanded, RowHeight, ActionGap,
-                _newSide.GetComponent<RectTransform>(),
-                _newKind.GetComponent<RectTransform>(),
-                addBtn.GetComponent<RectTransform>());
         }
 
         internal void AddFromUI()
         {
-            if (Target == null || _newSide == null || _newKind == null) return;
-            var spec = new GrooveSpec((GrooveKind)_newKind.value, (GrooveSide)_newSide.value);
-
+            if (Target == null) return;
             var after = new List<GrooveSpec>(Target.Grooves);
-            if (after.Contains(spec))
-            {
-                ToastNotification.ShowIfAvailable(Loc.T("toast.grooveExists"));
-                return;
-            }
             if (after.Count >= AppConstants.GROOVE_MAX_PER_PART)
             {
                 ToastNotification.ShowIfAvailable(
                     Loc.F("toast.grooveLimit", AppConstants.GROOVE_MAX_PER_PART));
                 return;
             }
+            if (!TryFirstFree(after, out var spec))
+            {
+                ToastNotification.ShowIfAvailable(Loc.T("toast.grooveExists"));
+                return;
+            }
             after.Add(spec);
             Apply(after);
-            Expanded = true;
+            EnsureExpanded();
             AfterChange();
+        }
+
+        private static bool TryFirstFree(List<GrooveSpec> existing, out GrooveSpec spec)
+        {
+            foreach (GrooveKind kind in Enum.GetValues(typeof(GrooveKind)))
+                foreach (GrooveSide side in Enum.GetValues(typeof(GrooveSide)))
+                {
+                    var candidate = new GrooveSpec(kind, side);
+                    if (existing.Contains(candidate)) continue;
+                    spec = candidate;
+                    return true;
+                }
+            spec = default;
+            return false;
         }
 
         internal void Remove(int index)
@@ -142,9 +138,7 @@ namespace KitchenDesigner.Core.UI
 
         protected override void RefreshRows()
         {
-            if (_countLabel != null)
-                _countLabel.text =
-                    Loc.F("element.groove.header", Count(), (Expanded ? UIStyle.GlyphExpanded : UIStyle.GlyphCollapsed));
+            Section.SetCount(NumberFormat.Integer(Count()));
 
             IReadOnlyList<GrooveSpec>? grooves = CurrentItems();
             for (int i = 0; i < _rowSide.Length; i++)

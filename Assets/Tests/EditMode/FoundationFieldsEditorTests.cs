@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class FoundationFieldsEditorTests
 {
@@ -40,7 +41,7 @@ public class FoundationFieldsEditorTests
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -54,7 +55,7 @@ public class FoundationFieldsEditorTests
         return go.GetComponent<FoundationElement>();
     }
 
-    private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
+    private Transform Panel() => _canvas!.transform.FindNode("ContextMenu");
 
     [Test]
     public void FrostDepthField_DoesNotShowTheUnitTwice()
@@ -62,14 +63,12 @@ public class FoundationFieldsEditorTests
         var foundation = Foundation();
         _menu!.Open(foundation);
 
-        string fieldName = "F_" + FoundationFieldsEditor.FrostDepthLabel;
-        var field = Panel().Find(fieldName)!.GetComponent<TMP_InputField>();
-        var unit = field.transform.Find(fieldName + "_Unit")!.GetComponent<TMP_Text>();
+        var value = Panel().FindNode("Val_" + FoundationFieldsEditor.FrostDepthLabel)!.GetComponent<TMP_Text>();
 
-        Assert.AreEqual(foundation.FrostDepthText, field.text,
-            "поле показывает FrostDepthText как есть - тот уже несёт свою единицу (или прочерк)");
-        Assert.AreEqual("", unit.text,
-            "серый суффикс поля не должен дублировать единицу, которую уже несёт FrostDepthText " +
+        Assert.AreEqual(foundation.FrostDepthText, value.text,
+            "строка «только чтение» показывает FrostDepthText как есть - тот уже несёт свою единицу (или прочерк)");
+        Assert.IsNull(Panel().FindNode("F_" + FoundationFieldsEditor.FrostDepthLabel),
+            "вычисляемое значение - текст без рамки и без серого суффикса, который задвоил бы единицу " +
             "(«1079 мм мм», «> 2500 мм мм», «— мм»)");
     }
 }

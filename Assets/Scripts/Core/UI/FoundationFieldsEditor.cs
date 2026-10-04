@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
 using KitchenDesigner.Core.Construction;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -21,7 +20,7 @@ namespace KitchenDesigner.Core.UI
         private TMP_Dropdown? _soil;
         private TMP_Dropdown? _concrete;
         private Toggle? _compacted;
-        private TMP_InputField? _frostDepth;
+        private TMP_Text? _frostDepth;
 
         public FoundationFieldsEditor(IContextMenuHost host) : base(host) { }
 
@@ -38,7 +37,7 @@ namespace KitchenDesigner.Core.UI
             _soil = Rows.Dropdown(Loc.T("element.foundation.soil"), new List<string>(SoilKindTitles.All), OnSoilSelected,
                 isFoundation, SoilNode, hint: "element.foundation.soil");
 
-            _frostDepth = ReadOnlyField(FrostDepthLabel, isFoundation,
+            _frostDepth = Rows.ReadOnlyField(FrostDepthLabel, isFoundation,
                 hint: "element.foundation.frostDepth");
 
             var sandRow = Rows.NumberField(Loc.T("element.foundation.sand"), isFoundation, Loc.T("unit.mm"), SandNode,
@@ -51,8 +50,8 @@ namespace KitchenDesigner.Core.UI
             Bind<FoundationElement>(gravelRow, f => f.GravelMm, (f, v) => f.GravelMm = v,
                 KitchenSettings.Instance.ConstructionGravelMm.ToString());
 
-            _compacted = Rows.Toggle(CompactedNode, Loc.T("element.foundation.compacted"), true, OnCompactedToggled,
-                isFoundation, RowGap, hint: "element.foundation.compacted");
+            _compacted = Rows.Switch(CompactedNode, Loc.T("element.foundation.compacted"), true, OnCompactedToggled,
+                isFoundation, hint: "element.foundation.compacted");
 
             _concrete = Rows.Dropdown(Loc.T("element.foundation.concrete"), new List<string>(ConcreteGradeTitles.All),
                 OnConcreteSelected, isFoundation, ConcreteNode, hint: "element.foundation.concrete");
@@ -99,15 +98,8 @@ namespace KitchenDesigner.Core.UI
             _soil?.RefreshShownValue();
             _concrete?.SetValueWithoutNotify((int)foundation.ConcreteGrade);
             _concrete?.RefreshShownValue();
-            _compacted?.SetIsOnWithoutNotify(foundation.Compacted);
+            if (_compacted != null) SwitchControl.SetWithoutNotify(_compacted, foundation.Compacted);
             if (_frostDepth != null) _frostDepth.text = foundation.FrostDepthText;
-        }
-
-        private TMP_InputField ReadOnlyField(string label, RowVisibility visibility, string hint)
-        {
-            var field = Rows.NumberField(label, visibility, "", null, hint);
-            UIRowEnabled.SetControlEnabled(field, false);
-            return field;
         }
 
         private void OnSoilSelected(int index)

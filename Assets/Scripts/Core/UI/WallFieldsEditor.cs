@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine.UI;
 using KitchenDesigner.Core.Construction;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -37,8 +36,8 @@ namespace KitchenDesigner.Core.UI
         {
             var isWall = RowVisibility.When(
                 () => Host.Target != null && Host.Target.GetComponent<Wall>() != null);
-            _loadBearing = Rows.Toggle(LoadBearingNode, LoadBearingLabel, true, OnLoadBearingToggled,
-                isWall, RowGap, hint: "element.wall.loadBearing");
+            _loadBearing = Rows.Switch(LoadBearingNode, LoadBearingLabel, true, OnLoadBearingToggled,
+                isWall, hint: "element.wall.loadBearing");
 
             var masonryRow = Rows.NamedDropdown(MasonryNode, MasonryLabel, MasonryOptions(),
                 OnMasonryPicked, isWall);
@@ -67,7 +66,7 @@ namespace KitchenDesigner.Core.UI
         {
             var wall = element.GetComponent<Wall>();
             if (wall == null) return;
-            _loadBearing?.SetIsOnWithoutNotify(wall.LoadBearing);
+            if (_loadBearing != null) SwitchControl.SetWithoutNotify(_loadBearing, wall.LoadBearing);
             _masonry?.SetValueWithoutNotify((int)wall.Masonry);
             _masonry?.RefreshShownValue();
             Fields.RefreshUnfocused(_joint, wall.JointMm.ToString());
@@ -101,7 +100,7 @@ namespace KitchenDesigner.Core.UI
         {
             var wall = element.GetComponent<Wall>();
             if (wall == null) return;
-            _loadBearing?.SetIsOnWithoutNotify(wall.LoadBearing);
+            if (_loadBearing != null) SwitchControl.SetWithoutNotify(_loadBearing, wall.LoadBearing);
             _masonry?.SetValueWithoutNotify((int)wall.Masonry);
             _masonry?.RefreshShownValue();
             if (_joint != null) _joint.text = wall.JointMm.ToString();

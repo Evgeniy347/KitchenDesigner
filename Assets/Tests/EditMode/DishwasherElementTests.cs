@@ -8,6 +8,7 @@ using KitchenDesigner.Core.Analysis;
 using KitchenDesigner.Core.Bulk;
 using KitchenDesigner.Core.MCP;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// Встраиваемая посудомоечная машина Bosch SMV25EX02E — третья готовая модель
@@ -79,7 +80,7 @@ public class DishwasherElementTests : McpTestFixture
     [TearDown]
     public void TearDown()
     {
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
 
         foreach (var go in _spawned)
         {
@@ -2003,9 +2004,9 @@ public class DishwasherElementTests : McpTestFixture
         _spawned.Add(boardGo);
 
         _menu!.Open(dw);
-        var button = panel.Find("CtxDishwasherDoor");
+        var button = panel.FindNode("CtxDishwasherDoor");
         Assert.IsNotNull(button, "у машины должна быть кнопка открывания");
-        Assert.IsTrue(button!.gameObject.activeSelf);
+        Assert.IsTrue(button!.gameObject.activeInHierarchy);
         Assert.AreEqual("Открыть дверцу",
             button.GetComponentInChildren<TMPro.TMP_Text>().text);
 
@@ -2015,7 +2016,7 @@ public class DishwasherElementTests : McpTestFixture
             button.GetComponentInChildren<TMPro.TMP_Text>().text);
 
         _menu!.Open(boardGo.GetComponent<KitchenElement>());
-        Assert.IsFalse(button.gameObject.activeSelf, "обычной детали дверца не положена");
+        Assert.IsFalse(button.gameObject.activeInHierarchy, "обычной детали дверца не положена");
     }
 
     /// <summary>Кнопка «Открыть» у фасада-пассажира ведёт МАШИНУ: подпись
@@ -2032,7 +2033,7 @@ public class DishwasherElementTests : McpTestFixture
         dw.OnAttachedFacadeChanged(null, facade);
 
         _menu!.Open(facade);
-        var button = panel.Find("CtxDoor");
+        var button = panel.FindNode("CtxDoor");
         Assert.IsNotNull(button, "у фасада есть кнопка открывания");
         var label = button!.GetComponentInChildren<TMPro.TMP_Text>(true);
         Assert.AreEqual("Открыть дверцу", label.text,
@@ -2060,9 +2061,9 @@ public class DishwasherElementTests : McpTestFixture
         _menu!.Open(facade);
 
         Assert.IsTrue(panel.gameObject.activeSelf, "окно свойств обязано остаться открытым");
-        var mode = panel.Find("CtxMode");
+        var mode = panel.FindNode("CtxMode");
         Assert.IsNotNull(mode, "строка «Дверца» существует");
-        Assert.IsTrue(mode!.gameObject.activeSelf,
+        Assert.IsTrue(mode!.gameObject.activeInHierarchy,
             "строка видна: у фасада есть фасет Facade, и решает видимость раскладка");
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class ElementTypeConverterTests
 {
@@ -65,7 +66,7 @@ public class ElementTypeConverterTests
     public void Teardown()
     {
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -91,7 +92,7 @@ public class ElementTypeConverterTests
             DrawerType.A, 350, DrawerColor.Anthracite, 400, "Ящик", Vector3.zero));
 
     private TMP_Dropdown TypeDropdown() =>
-        _canvas!.transform.Find("ContextMenu")!.Find("CtxType")!.GetComponent<TMP_Dropdown>();
+        _canvas!.transform.FindNode("ContextMenu").FindNode("CtxType")!.GetComponent<TMP_Dropdown>();
 
     private static List<string> Labels(TMP_Dropdown dd)
     {
@@ -108,7 +109,7 @@ public class ElementTypeConverterTests
     [Test]
     public void TypeDropdown_KeepsItsName()
     {
-        Assert.NotNull(_canvas!.transform.Find("ContextMenu")!.Find("CtxType"),
+        Assert.NotNull(_canvas!.transform.FindNode("ContextMenu").FindNode("CtxType"),
             "строка «Тип» ищется тестами по имени CtxType");
     }
 
@@ -139,7 +140,7 @@ public class ElementTypeConverterTests
 
         Assert.AreEqual(0, TypeDropdown().options.Count,
             "у стола своя роль, конвертации нет");
-        Assert.IsFalse(TypeDropdown().gameObject.activeSelf,
+        Assert.IsFalse(TypeDropdown().gameObject.activeInHierarchy,
             "строка «Тип» без вариантов не показывается");
     }
 

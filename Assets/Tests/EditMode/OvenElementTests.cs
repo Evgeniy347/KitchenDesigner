@@ -7,6 +7,7 @@ using KitchenDesigner.Core;
 using KitchenDesigner.Core.Bulk;
 using KitchenDesigner.Core.MCP;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 /// <summary>
 /// Электрический духовой шкаф Bosch HBA514BB3 — вторая готовая модель группы
@@ -809,9 +810,9 @@ public class OvenElementTests : McpTestFixture
         _spawned.Add(boardGo);
 
         _menu!.Open(oven);
-        var button = panel.Find("CtxOvenDoor");
+        var button = panel.FindNode("CtxOvenDoor");
         Assert.IsNotNull(button, "у духовки должна быть кнопка открывания");
-        Assert.IsTrue(button!.gameObject.activeSelf);
+        Assert.IsTrue(button!.gameObject.activeInHierarchy);
         Assert.AreEqual("Открыть дверцу",
             button.GetComponentInChildren<TMPro.TMP_Text>().text);
 
@@ -821,6 +822,6 @@ public class OvenElementTests : McpTestFixture
             button.GetComponentInChildren<TMPro.TMP_Text>().text);
 
         _menu!.Open(boardGo.GetComponent<KitchenElement>());
-        Assert.IsFalse(button.gameObject.activeSelf, "обычной детали кнопка не нужна");
+        Assert.IsFalse(button.gameObject.activeInHierarchy, "обычной детали кнопка не нужна");
     }
 }

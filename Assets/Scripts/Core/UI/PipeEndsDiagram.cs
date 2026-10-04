@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.Update;
-using static KitchenDesigner.Core.UI.ContextMenuMetrics;
 
 namespace KitchenDesigner.Core.UI
 {
@@ -19,9 +18,7 @@ namespace KitchenDesigner.Core.UI
         private const float RunHalfW = 150f, BarH = 16f, BarY = 26f;
         private const float SlotW = 76f, SlotBorder = 2f, JointW = 2f;
         private const float LabelY = 46f, LabelW = 90f, LabelH = 14f;
-        private const int LabelFont = 12;
         private const float ChoiceY = -14f, ChoiceW = 152f, ChoiceH = 28f, ChoiceX = 84f;
-        private const float HintH = 20f;
 
         private static readonly LocalizedCache<string[]> EndCaptionsCache =
             new LocalizedCache<string[]>(() => new string[] { Loc.T("element.pipe.endStart"), Loc.T("element.pipe.endEnd") });
@@ -63,7 +60,7 @@ namespace KitchenDesigner.Core.UI
         public void Build(Transform parent)
         {
             var root = UIFactory.CreateRect("CtxPipeEndsDiagram", parent);
-            root.sizeDelta = new Vector2(RowWidth, DiagramH);
+            root.sizeDelta = new Vector2(_host.Rows.Metrics.Width, DiagramH);
             _hover.Guard(root.gameObject);
 
             UIFactory.CreatePanel("CtxPipeBody", root, new Vector2(0f, BarY),
@@ -92,10 +89,9 @@ namespace KitchenDesigner.Core.UI
                 _hover.Watch(_choices[end], end);
             }
 
-            _host.Layout.AddFor(ElementFacet.Pipe, DiagramH, RowGap, root);
-            _host.Rows.Hint("CtxPipeEndsHint",
-                Loc.T("element.pipe.endsHint"), HintH, ActionGap,
-                RowVisibility.For(ElementFacet.Pipe), TextAnchor.MiddleCenter);
+            _host.Rows.Custom(root, DiagramH, RowVisibility.For(ElementFacet.Pipe));
+            _host.Rows.Note("CtxPipeEndsHint", Loc.T("element.pipe.endsHint"),
+                RowVisibility.For(ElementFacet.Pipe), centered: true);
         }
 
         public void Show(PipeElement pipe)
@@ -162,7 +158,7 @@ namespace KitchenDesigner.Core.UI
 
         private static void Caption(Transform parent, string name, string text, Vector2 pos)
         {
-            var label = UIFactory.CreateLabel(name, parent, text, LabelFont, pos,
+            var label = UIFactory.CreateLabel(name, parent, text, UIStyle.FontCaption, pos,
                 new Vector2(LabelW, LabelH), TextAnchor.MiddleCenter);
             label.color = UIStyle.TextSecondary;
             label.raycastTarget = false;

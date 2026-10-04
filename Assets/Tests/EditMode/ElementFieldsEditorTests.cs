@@ -5,6 +5,7 @@ using UnityEngine;
 using KitchenDesigner.Core;
 using KitchenDesigner.Core.Plumbing;
 using KitchenDesigner.Core.UI;
+using KitchenDesigner.Tests;
 
 public class ElementFieldsEditorTests
 {
@@ -68,7 +69,7 @@ public class ElementFieldsEditorTests
     {
         KitchenSettings.Instance.BlockOnViolation = _blockOnViolation;
         CommandStack.Clear();
-        if (_menu != null) _menu!.Close();
+        if (_menu != null) { _menu!.Close(); _menu!.TestHooks.ForgetSectionStates(); }
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -81,10 +82,10 @@ public class ElementFieldsEditorTests
         return go.GetComponent<T>();
     }
 
-    private Transform Panel() => _canvas!.transform.Find("ContextMenu")!;
+    private Transform Panel() => _canvas!.transform.FindNode("ContextMenu");
 
     private TMP_InputField Field(string label) =>
-        Panel().Find($"F_{label}")!.GetComponent<TMP_InputField>();
+        Panel().FindNode($"F_{label}")!.GetComponent<TMP_InputField>();
 
     private static string Text(TMP_InputField f) => f.text.Replace("​", "");
 
@@ -182,7 +183,7 @@ public class ElementFieldsEditorTests
     {
         var stool = Stool();
         _menu!.Open(stool);
-        Assert.IsNotNull(Panel().Find("F_Скругление"),
+        Assert.IsNotNull(Panel().FindNode("F_Скругление"),
             "строка «Скругление» обязана быть ПОСТРОЕНА: занести редактор в реестр _editors "
             + "и забыть позвать его Build() — значит получить свойство, которое нечем "
             + "править, и молча");
@@ -216,10 +217,10 @@ public class ElementFieldsEditorTests
     {
         _menu!.Open(Stool());
 
-        Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
+        Assert.IsTrue(Panel().FindNode("CtxTableTop")!.gameObject.activeInHierarchy,
             "у табуретки два декора — сиденье и ножки: она носитель IHasTwoDecorSlots");
-        Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy);
-        Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
+        Assert.IsTrue(Panel().FindNode("CtxTableLegs")!.gameObject.activeInHierarchy);
+        Assert.IsFalse(Panel().FindNode("CtxMaterial")!.gameObject.activeInHierarchy,
             "общая строка «Текстура» у носителя столешницы скрыта — иначе один декор "
             + "спорит с двумя");
     }
@@ -229,7 +230,7 @@ public class ElementFieldsEditorTests
     {
         _menu!.Open(Stool());
 
-        var legInset = Panel().Find("F_Сдвиг опор");
+        var legInset = Panel().FindNode("F_Сдвиг опор");
         Assert.IsTrue(legInset == null || !legInset.gameObject.activeInHierarchy,
             "отступ ножек у табуретки — константа конструкции: показать поле, которое "
             + "редактор табуретки не обрабатывает, значит показать мёртвую строку");
@@ -250,11 +251,11 @@ public class ElementFieldsEditorTests
     {
         _menu!.Open(Chair());
 
-        Assert.IsNotNull(Panel().Find("F_" + ChairFieldsEditor.CornerRadiusNode),
+        Assert.IsNotNull(Panel().FindNode("F_" + ChairFieldsEditor.CornerRadiusNode),
             "строка «Скругление» стула обязана быть ПОСТРОЕНА: занести редактор в реестр "
             + "_editors и забыть позвать его Build() — значит получить свойство, которое "
             + "нечем править, и молча");
-        Assert.IsNotNull(Panel().Find("F_" + ChairFieldsEditor.SeatHeightNode),
+        Assert.IsNotNull(Panel().FindNode("F_" + ChairFieldsEditor.SeatHeightNode),
             "и строка «Высота сиденья» тоже");
         Assert.AreEqual("0", Text(Field(ChairFieldsEditor.CornerRadiusNode)));
         Assert.AreEqual("450", Text(Field(ChairFieldsEditor.SeatHeightNode)));
@@ -323,10 +324,10 @@ public class ElementFieldsEditorTests
     {
         _menu!.Open(Chair());
 
-        Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
+        Assert.IsTrue(Panel().FindNode("CtxTableTop")!.gameObject.activeInHierarchy,
             "у стула два декора — сиденье со спинкой и ножки: он носитель IHasTwoDecorSlots");
-        Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy);
-        Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
+        Assert.IsTrue(Panel().FindNode("CtxTableLegs")!.gameObject.activeInHierarchy);
+        Assert.IsFalse(Panel().FindNode("CtxMaterial")!.gameObject.activeInHierarchy,
             "общая строка «Текстура» у носителя столешницы скрыта");
     }
 
@@ -334,13 +335,13 @@ public class ElementFieldsEditorTests
     public void Chair_DoesNotShowTheStoolRow_AndTheStoolDoesNotShowTheChairRows()
     {
         _menu!.Open(Chair());
-        var stoolRow = Panel().Find("F_Скругление");
+        var stoolRow = Panel().FindNode("F_Скругление");
         Assert.IsTrue(stoolRow == null || !stoolRow.gameObject.activeInHierarchy,
             "строка табуретки у стула — мёртвая: её Apply не трогает стул, и человек "
             + "правил бы поле, которое ничего не делает");
 
         _menu!.Open(Stool());
-        var chairSeat = Panel().Find("F_" + ChairFieldsEditor.SeatHeightNode);
+        var chairSeat = Panel().FindNode("F_" + ChairFieldsEditor.SeatHeightNode);
         Assert.IsTrue(chairSeat == null || !chairSeat.gameObject.activeInHierarchy,
             "и наоборот: у табуретки высоты сиденья нет — это её общая высота");
     }
@@ -361,11 +362,11 @@ public class ElementFieldsEditorTests
     {
         _menu!.Open(Sofa());
 
-        Assert.IsNotNull(Panel().Find("F_" + SofaFieldsEditor.CornerRadiusNode),
+        Assert.IsNotNull(Panel().FindNode("F_" + SofaFieldsEditor.CornerRadiusNode),
             "строка «Скругление» дивана обязана быть ПОСТРОЕНА: занести редактор в "
             + "реестр _editors и забыть позвать его Build() — значит получить свойство, "
             + "которое нечем править, и молча");
-        Assert.IsNotNull(Panel().Find("F_" + SofaFieldsEditor.SeatHeightNode),
+        Assert.IsNotNull(Panel().FindNode("F_" + SofaFieldsEditor.SeatHeightNode),
             "и строка «Высота основания» тоже");
         Assert.AreEqual(SofaElement.DefaultCornerRadiusMM.ToString(),
             Text(Field(SofaFieldsEditor.CornerRadiusNode)),
@@ -410,7 +411,7 @@ public class ElementFieldsEditorTests
             BedLayout.DefaultDimensions(true, true), true, true, "Кровать", Vector3.zero));
 
     private TMP_Dropdown Dropdown(string node) =>
-        Panel().Find(node)!.GetComponent<TMP_Dropdown>();
+        Panel().FindNode(node)!.GetComponent<TMP_Dropdown>();
 
     /// <summary>Та же регрессия, что у табуретки: реестр редакторов состоит из
     /// ДВУХ половин — массива _editors и списка вызовов Build(), — и строка,
@@ -422,9 +423,9 @@ public class ElementFieldsEditorTests
         var bed = Bed();
         _menu!.Open(bed);
 
-        Assert.IsTrue(Panel().Find(BedFieldsEditor.SizeNode)!.gameObject.activeInHierarchy,
+        Assert.IsTrue(Panel().FindNode(BedFieldsEditor.SizeNode)!.gameObject.activeInHierarchy,
             "строка «Тип кровати» обязана быть видна у кровати");
-        Assert.IsTrue(Panel().Find(BedFieldsEditor.HeadboardNode)!.gameObject.activeInHierarchy,
+        Assert.IsTrue(Panel().FindNode(BedFieldsEditor.HeadboardNode)!.gameObject.activeInHierarchy,
             "и строка «Изголовье» тоже");
         Assert.AreEqual(1, Dropdown(BedFieldsEditor.SizeNode).value,
             "двуспальная — второй вариант списка; индекс, разошедшийся со смыслом, "
@@ -480,11 +481,11 @@ public class ElementFieldsEditorTests
     {
         _menu!.Open(Bed());
 
-        Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
+        Assert.IsTrue(Panel().FindNode("CtxTableTop")!.gameObject.activeInHierarchy,
             "у кровати два декора — каркас и постель: она носитель IHasTwoDecorSlots");
-        Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy,
+        Assert.IsTrue(Panel().FindNode("CtxTableLegs")!.gameObject.activeInHierarchy,
             "второй слот тоже обязан быть виден");
-        Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
+        Assert.IsFalse(Panel().FindNode("CtxMaterial")!.gameObject.activeInHierarchy,
             "общая строка «Текстура» у носителя двух слотов скрыта");
     }
 
@@ -494,10 +495,10 @@ public class ElementFieldsEditorTests
         _menu!.Open(Bed());
         _menu!.Open(Stool());
 
-        Assert.IsFalse(Panel().Find(BedFieldsEditor.SizeNode)!.gameObject.activeInHierarchy,
+        Assert.IsFalse(Panel().FindNode(BedFieldsEditor.SizeNode)!.gameObject.activeInHierarchy,
             "строки кровати у табуретки мертвы: человек правил бы переключатель, который "
             + "ничего не делает");
-        Assert.IsFalse(Panel().Find(BedFieldsEditor.HeadboardNode)!.gameObject.activeInHierarchy,
+        Assert.IsFalse(Panel().FindNode(BedFieldsEditor.HeadboardNode)!.gameObject.activeInHierarchy,
             "и вторая строка тоже");
     }
 
@@ -576,11 +577,11 @@ public class ElementFieldsEditorTests
     {
         _menu!.Open(Pouffe());
 
-        Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
+        Assert.IsTrue(Panel().FindNode("CtxTableTop")!.gameObject.activeInHierarchy,
             "у пуфика два декора — обивка и сидушка: он носитель IHasTwoDecorSlots");
-        Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy,
+        Assert.IsTrue(Panel().FindNode("CtxTableLegs")!.gameObject.activeInHierarchy,
             "второй слот тоже обязан быть виден");
-        Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
+        Assert.IsFalse(Panel().FindNode("CtxMaterial")!.gameObject.activeInHierarchy,
             "общая строка «Текстура» у носителя двух слотов скрыта");
     }
 
@@ -591,12 +592,12 @@ public class ElementFieldsEditorTests
         _menu!.Open(Stool());
 
         Assert.IsFalse(
-            Panel().Find("F_" + PouffeFieldsEditor.SeatThicknessNode)!.gameObject
+            Panel().FindNode("F_" + PouffeFieldsEditor.SeatThicknessNode)!.gameObject
                 .activeInHierarchy,
             "строка «Толщина сидушки» у табуретки мертва: сидушки у неё нет, и человек "
             + "правил бы поле, которое ничего не делает");
         Assert.IsFalse(
-            Panel().Find("F_" + PouffeFieldsEditor.CornerRadiusNode)!.gameObject
+            Panel().FindNode("F_" + PouffeFieldsEditor.CornerRadiusNode)!.gameObject
                 .activeInHierarchy,
             "и своя строка скругления тоже: у табуретки есть СВОЁ поле с той же "
             + "подписью, и показать оба разом значило бы дать человеку два поля с "
@@ -642,17 +643,17 @@ public class ElementFieldsEditorTests
     {
         _menu!.Open(WallHungToilet());
         Assert.IsTrue(
-            Panel().Find("F_" + ToiletFieldsEditor.FlushPlateHeightNode)!.gameObject
+            Panel().FindNode("F_" + ToiletFieldsEditor.FlushPlateHeightNode)!.gameObject
                 .activeInHierarchy,
             "у подвесного панель смыва есть, и её высота обязана быть видна");
 
         _menu!.Open(Toilet());
         Assert.IsTrue(
-            Panel().Find("F_" + ToiletFieldsEditor.SeatHeightNode)!.gameObject
+            Panel().FindNode("F_" + ToiletFieldsEditor.SeatHeightNode)!.gameObject
                 .activeInHierarchy,
             "общая строка обязана пережить смену выделения между двумя вариантами");
         Assert.IsFalse(
-            Panel().Find("F_" + ToiletFieldsEditor.FlushPlateHeightNode)!.gameObject
+            Panel().FindNode("F_" + ToiletFieldsEditor.FlushPlateHeightNode)!.gameObject
                 .activeInHierarchy,
             "у напольного панели смыва нет: видимая строка правила бы ничто");
     }
@@ -683,7 +684,7 @@ public class ElementFieldsEditorTests
         _menu!.Open(Stool());
 
         Assert.IsFalse(
-            Panel().Find("F_" + ToiletFieldsEditor.SeatHeightNode)!.gameObject
+            Panel().FindNode("F_" + ToiletFieldsEditor.SeatHeightNode)!.gameObject
                 .activeInHierarchy,
             "строка «Высота чаши» у табуретки мертва: правка поля, которое ничего "
             + "не делает, — худший вид молчаливого отказа");
@@ -696,11 +697,11 @@ public class ElementFieldsEditorTests
         {
             _menu!.Open(toilet);
 
-            Assert.IsTrue(Panel().Find("CtxTableTop")!.gameObject.activeInHierarchy,
+            Assert.IsTrue(Panel().FindNode("CtxTableTop")!.gameObject.activeInHierarchy,
                 "у унитаза два декора — керамика и хром: он носитель IHasTwoDecorSlots");
-            Assert.IsTrue(Panel().Find("CtxTableLegs")!.gameObject.activeInHierarchy,
+            Assert.IsTrue(Panel().FindNode("CtxTableLegs")!.gameObject.activeInHierarchy,
                 "второй слот тоже обязан быть виден");
-            Assert.IsFalse(Panel().Find("CtxMaterial")!.gameObject.activeInHierarchy,
+            Assert.IsFalse(Panel().FindNode("CtxMaterial")!.gameObject.activeInHierarchy,
                 "общая строка «Текстура» у носителя двух слотов скрыта");
         }
     }
@@ -775,12 +776,12 @@ public class ElementFieldsEditorTests
         var pillar = Pillar();
         _menu!.Open(pillar);
 
-        Assert.IsTrue(Field("Ширина").gameObject.activeInHierarchy,
+        Assert.IsTrue(ReadOnly("Computed_Ширина").gameObject.activeInHierarchy,
             "габарит колонны идёт в спецификацию: строку ширины прячут — прочитать её негде");
-        Assert.IsTrue(Field("Глубина").gameObject.activeInHierarchy, "и глубину тоже");
-        Assert.AreEqual(pillar.DiameterMM.ToString(), Text(Field("Ширина")),
+        Assert.IsTrue(ReadOnly("Computed_Глубина").gameObject.activeInHierarchy, "и глубину тоже");
+        Assert.AreEqual(Mm(pillar.DiameterMM.ToString()), ReadOnly("Computed_Ширина").text,
             "ширина колонны = диаметр: строка обязана показывать ту же величину, что и геометрия");
-        Assert.AreEqual(pillar.DiameterMM.ToString(), Text(Field("Глубина")), "и глубина тоже");
+        Assert.AreEqual(Mm(pillar.DiameterMM.ToString()), ReadOnly("Computed_Глубина").text, "и глубина тоже");
         Assert.IsTrue(Field("Высота").interactable, "высоту опоры править можно");
         Assert.IsTrue(Field("Диаметр").gameObject.activeInHierarchy, "а диаметр — вот он");
     }
@@ -874,7 +875,12 @@ public class ElementFieldsEditorTests
     }
 
     private TMP_Text Label(string label) =>
-        Panel().Find($"L_{label}")!.GetComponent<TMP_Text>();
+        Panel().FindNode($"L_{label}")!.GetComponent<TMP_Text>();
+
+    private TMP_Text ReadOnly(string label) =>
+        Panel().FindNode($"Val_{label}")!.GetComponent<TMP_Text>();
+
+    private static string Mm(string number) => NumberFormat.WithUnit(number, "мм");
 
     private static readonly string[] PipeDerivedRows =
         { "Наружный Ø", "Внутренний Ø", "Толщина стенки" };
@@ -888,12 +894,12 @@ public class ElementFieldsEditorTests
         _menu!.Open(Pipe());
 
         foreach (var row in PipeDerivedRows)
-            Assert.IsTrue(Field(row).gameObject.activeInHierarchy,
+            Assert.IsTrue(ReadOnly(row).gameObject.activeInHierarchy,
                 $"строка «{row}» обязана остаться на экране: её читают, а не печатают в неё");
 
-        Assert.AreEqual("26,8", Text(Field("Наружный Ø")), "ДУ 20 по ГОСТ 3262-75");
-        Assert.AreEqual("21,2", Text(Field("Внутренний Ø")));
-        Assert.AreEqual("2,8", Text(Field("Толщина стенки")));
+        Assert.AreEqual(Mm("26,8"), ReadOnly("Наружный Ø").text, "ДУ 20 по ГОСТ 3262-75");
+        Assert.AreEqual(Mm("21,2"), ReadOnly("Внутренний Ø").text);
+        Assert.AreEqual(Mm("2,8"), ReadOnly("Толщина стенки").text);
     }
 
     [Test]
@@ -903,10 +909,9 @@ public class ElementFieldsEditorTests
 
         foreach (var row in PipeDerivedRows)
         {
-            Assert.IsFalse(Field(row).interactable,
+            Assert.IsNull(Panel().FindNode($"F_{row}"),
                 $"«{row}» считает геометрия: поле, в которое человек правит ту же величину, — "
-                + "это второе её описание, и они разойдутся");
-            Assert.IsTrue(Field(row).readOnly, $"и печатать в «{row}» тоже нельзя");
+                + "это второе её описание, и они разойдутся; вычисляемое — текст без рамки");
             Assert.AreEqual(UIStyle.TextDisabled, Label(row).color,
                 $"яркая подпись у мёртвого поля читается как «сюда можно печатать» — «{row}»");
         }
@@ -959,9 +964,9 @@ public class ElementFieldsEditorTests
         Assert.AreEqual(KitchenDesigner.Core.Plumbing.PipeSpec.Dn40, pipe.SizeId);
         Assert.AreEqual(48, pipe.DimensionsMM.x, "ДУ 40 — наружный 48,0");
         Assert.AreEqual(48, pipe.DimensionsMM.z);
-        Assert.AreEqual("48", Text(Field("Наружный Ø")));
-        Assert.AreEqual("41", Text(Field("Внутренний Ø")), "48,0 − 2 × 3,5");
-        Assert.AreEqual("3,5", Text(Field("Толщина стенки")));
+        Assert.AreEqual(Mm("48"), ReadOnly("Наружный Ø").text);
+        Assert.AreEqual(Mm("41"), ReadOnly("Внутренний Ø").text, "48,0 − 2 × 3,5");
+        Assert.AreEqual(Mm("3,5"), ReadOnly("Толщина стенки").text);
         Assert.AreEqual(PipeElementSpec.DEFAULT_LENGTH_MM, pipe.LengthMM,
             "смена диаметра не имеет права трогать длину: это разные величины");
     }
@@ -996,11 +1001,11 @@ public class ElementFieldsEditorTests
     public void Pipe_AndFitting_HaveNoAttachToRow()
     {
         _menu!.Open(Pipe());
-        Assert.IsFalse(Panel().Find("CtxAttachTo")!.gameObject.activeInHierarchy,
+        Assert.IsFalse(Panel().FindNode("CtxAttachTo")!.gameObject.activeInHierarchy,
             "у трубы связи держатся на устьях портов, а не на поле «Прикрепить к»");
 
         _menu!.Open(Elbow());
-        Assert.IsFalse(Panel().Find("CtxAttachTo")!.gameObject.activeInHierarchy,
+        Assert.IsFalse(Panel().FindNode("CtxAttachTo")!.gameObject.activeInHierarchy,
             "у отвода — тоже: он стыкуется портами, как и труба");
     }
 
@@ -1008,7 +1013,7 @@ public class ElementFieldsEditorTests
     public void OrdinaryElement_HasAnAttachToRow()
     {
         _menu!.Open(Board());
-        Assert.IsTrue(Panel().Find("CtxAttachTo")!.gameObject.activeInHierarchy,
+        Assert.IsTrue(Panel().FindNode("CtxAttachTo")!.gameObject.activeInHierarchy,
             "обычная деталь по-прежнему может ехать за родителем через «Прикрепить к» — "
             + "это не отключено везде, а только у сантехники");
     }
@@ -1033,11 +1038,11 @@ public class ElementFieldsEditorTests
     {
         _menu!.Open(Elbow());
 
-        Assert.IsTrue(Field("Диаметр 1").gameObject.activeInHierarchy,
+        Assert.IsTrue(ReadOnly("Диаметр 1").gameObject.activeInHierarchy,
             "строка диаметра обязана остаться на экране даже пустой");
-        Assert.AreEqual(PipeSpec.NoValue, Text(Field("Диаметр 1")),
+        Assert.AreEqual(PipeSpec.NoValue, ReadOnly("Диаметр 1").text,
             "к порту ничего не подведено — значение брать неоткуда");
-        Assert.AreEqual(PipeSpec.NoValue, Text(Field("Диаметр 2")));
+        Assert.AreEqual(PipeSpec.NoValue, ReadOnly("Диаметр 2").text);
     }
 
     [Test]
@@ -1047,10 +1052,9 @@ public class ElementFieldsEditorTests
 
         foreach (var row in new[] { "Диаметр 1", "Диаметр 2", "Диаметр 3" })
         {
-            Assert.IsFalse(Field(row).interactable,
+            Assert.IsNull(Panel().FindNode($"F_{row}"),
                 $"«{row}» читается с трассы: поле, в которое человек впишет свой диаметр, — "
                 + "это второй писатель той же величины, и он разойдётся с PipeSurvey");
-            Assert.IsTrue(Field(row).readOnly, $"и печатать в «{row}» тоже нельзя");
             Assert.AreEqual(UIStyle.TextDisabled, Label(row).color,
                 $"яркая подпись у мёртвого поля читается как «сюда можно печатать» — «{row}»");
         }
@@ -1064,13 +1068,13 @@ public class ElementFieldsEditorTests
     public void Fitting_ShowsOneBoreRowPerPort_NotOnePerFilledValue()
     {
         _menu!.Open(Cap());
-        Assert.IsTrue(Field("Диаметр 1").gameObject.activeInHierarchy,
+        Assert.IsTrue(ReadOnly("Диаметр 1").gameObject.activeInHierarchy,
             "у заглушки один порт — и ровно одна строка диаметра");
-        Assert.IsFalse(Field("Диаметр 2").gameObject.activeInHierarchy,
+        Assert.IsFalse(ReadOnly("Диаметр 2").gameObject.activeInHierarchy,
             "второго диаметра у заглушки не бывает: пустая строка соврала бы, что бывает");
 
         _menu!.Open(Tee());
-        Assert.IsTrue(Field("Диаметр 3").gameObject.activeInHierarchy,
+        Assert.IsTrue(ReadOnly("Диаметр 3").gameObject.activeInHierarchy,
             "у тройника три порта, и третья строка обязана появиться — пустой, но появиться");
     }
 
