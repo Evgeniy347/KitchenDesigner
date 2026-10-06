@@ -127,6 +127,31 @@ public class FloorPickUnderBasePlateReproTests
             + "(раньше его перехватывала подложка с тем же итогом)");
     }
 
+    [TestCase(0f)]
+    [TestCase(0.0005f)]
+    public void Precondition_BothColliders_AreUnderTheRay_AndThePlateCountsAsOnTheCurrentLevel(float lift)
+    {
+        var floor = MakeFloor(polygon: false);
+        var plate = MakePlate(lift);
+        Physics.SyncTransforms();
+
+        var hits = Physics.RaycastAll(FromAbove);
+        bool floorHit = false, plateHit = false;
+        var seen = new List<string>();
+        foreach (var h in hits)
+        {
+            seen.Add(h.collider.name + "@" + h.distance.ToString("F4"));
+            if (h.collider.GetComponentInParent<FloorElement>() == floor) floorHit = true;
+            if (h.collider.GetComponentInParent<BasePlate>() == plate) plateHit = true;
+        }
+
+        Assert.IsTrue(floorHit && plateHit,
+            "посылка остальных тестов файла: под лучом лежат ОБА коллайдера, иначе зелёный результат "
+            + "на старом коде ничего не доказывает. Нашли: " + string.Join(", ", seen));
+        Assert.AreEqual(LevelRegistry.CurrentId, LevelRegistry.LevelOf(plate.Element).id,
+            "подложка на текущем уровне — иначе старый код отдавал бы null, а не подложку");
+    }
+
     [Test]
     public void BasePlate_ClickedAlone_PicksNothing()
     {
