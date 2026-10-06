@@ -205,6 +205,7 @@ namespace KitchenDesigner.Core
             if (!shiftHeld)
             {
                 if (!Physics.Raycast(ray, out hit)) return null;
+                if (IsBasePlateCollider(hit.collider)) return FirstBeyondBasePlate(ray, out hit);
                 var el = hit.collider.GetComponentInParent<KitchenElement>();
                 return el != null && IsOnCurrentLevel(el) ? el : null;
             }
@@ -213,6 +214,7 @@ namespace KitchenDesigner.Core
             System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
             foreach (var h in allHits)
             {
+                if (IsBasePlateCollider(h.collider)) continue;
                 var el = h.collider.GetComponentInParent<KitchenElement>();
                 if (el == null || el.Transparent || !IsOnCurrentLevel(el)) continue;
                 hit = h;
@@ -220,6 +222,24 @@ namespace KitchenDesigner.Core
             }
             return null;
         }
+
+        private static KitchenElement? FirstBeyondBasePlate(Ray ray, out RaycastHit hit)
+        {
+            var allHits = Physics.RaycastAll(ray);
+            System.Array.Sort(allHits, (a, b) => a.distance.CompareTo(b.distance));
+            foreach (var h in allHits)
+            {
+                if (IsBasePlateCollider(h.collider)) continue;
+                hit = h;
+                var el = h.collider.GetComponentInParent<KitchenElement>();
+                return el != null && IsOnCurrentLevel(el) ? el : null;
+            }
+            hit = default;
+            return null;
+        }
+
+        public static bool IsBasePlateCollider(Collider c) =>
+            c != null && c.GetComponentInParent<BasePlate>() != null;
 
         private static bool IsOnCurrentLevel(KitchenElement element) =>
             LevelRegistry.LevelOf(element).id == LevelRegistry.CurrentId;
@@ -233,7 +253,7 @@ namespace KitchenDesigner.Core
         {
             foreach (var col in orderedColliders)
             {
-                if (col == null || IsGizmoCollider(col)) continue;
+                if (col == null || IsGizmoCollider(col) || IsBasePlateCollider(col)) continue;
                 var el = col.GetComponentInParent<KitchenElement>();
                 if (!shiftHeld) return el;
                 if (el == null || el.Transparent) continue;
