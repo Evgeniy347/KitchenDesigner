@@ -442,6 +442,62 @@ public class SofaUnfoldElementTests
         Assert.Greater(steps, 40, "поворот прошёл за сорок шагов — тест ничего не проверил бы");
     }
 
+    private float LoadedBottomMM(int savedHeightMM, float savedCentreY)
+    {
+        var data = ElementCapture.FromElement(Sofa());
+        data.dimensionsMM = new[] { SofaLayout.DefaultWidthMM, savedHeightMM, SofaLayout.DefaultDepthMM };
+        data.position = new[] { 0f, savedCentreY, 0f };
+
+        var go = ElementRestorers.Restore(ElementFactory.Instance, data);
+        _spawned.Add(go);
+
+        return (go.transform.position.y - SofaLayout.OverallHeightMM * 0.5f * Mm) / Mm;
+    }
+
+    [Test]
+    public void OldSave_SofaWithHeight900_StandsOnTheFloorAfterLoad()
+    {
+        float bottomMM = LoadedBottomMM(900, 0.45f);
+
+        Assert.AreEqual(0f, bottomMM, 0.1f,
+            "старый проект хранит высоту 900 при центре 450 мм: низ на полу. Высота дивана "
+            + "теперь фиксирована (800), и загрузка обязана сдвинуть центр на половину разницы; "
+            + "иначе низ повисает на 50 мм над полом");
+    }
+
+    [TestCase(700, 0.35f)]
+    [TestCase(1200, 0.6f)]
+    [TestCase(SofaLayout.OverallHeightMM, 0.4f)]
+    public void OldSave_SofaOfAnyHeight_KeepsItsBottomWhereTheSaveHadIt(int savedHeightMM, float savedCentreY)
+    {
+        float bottomMM = LoadedBottomMM(savedHeightMM, savedCentreY);
+
+        Assert.AreEqual(0f, bottomMM, 0.1f,
+            "низ дивана остаётся там, где его оставил проект: ниже старой высоты он не тонет, "
+            + "выше не висит");
+    }
+
+    [Test]
+    public void Duplicate_OfAnUnfoldedSofa_IsFolded_LikeDrawersClose()
+    {
+        var source = Sofa();
+        source.SnapToStage(SofaStage.Bed);
+
+        var copyGo = ElementDuplicators.Copy(ElementFactory.Instance, source,
+            source.transform.position + Vector3.right);
+        _spawned.Add(copyGo);
+        var copy = copyGo.GetComponent<SofaElement>()!;
+
+        Assert.AreEqual(SofaStage.Folded, copy.UnfoldStage,
+            "копия всегда сложена, как ящик закрывается при копировании: разложенность это "
+            + "показ, а не свойство документа");
+        Assert.IsFalse(copy.IsOpen, "и не открыта");
+        Assert.AreEqual(Vector3.zero, Front(copy).localPosition, "сиденье на месте");
+        Assert.AreEqual(0f, HingeAngle(copy), Eps, "спинка стоит");
+        Assert.IsTrue(CushionsShown(copy), "подушки на месте");
+        Assert.AreEqual(SofaStage.Bed, source.UnfoldStage, "а оригинал остался разложенным");
+    }
+
     [Test]
     public void Sofa_IsActivatedByTheHotkeyLikeADrawer()
     {
