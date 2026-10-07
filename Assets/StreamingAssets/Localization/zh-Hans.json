@@ -758,6 +758,7 @@
   "issue.pip04.returnToReturn": "回水与回水直接相连——需要供水",
   "issue.pip04.supplyToSupply": "供水与供水直接相连——需要回水",
   "issue.seat01.message": "面板未插到槽底：{0:F1} / {1:F1} 毫米",
+  "issue.sof01.message": "沙发没有足够的空间展开：“{0}”挡住了滑出的坐垫——沙发前方需要 {1:F0} 毫米的空位",
   "issue.typ01.message": "未知的对象类型“{0}”——按普通部件显示；其字段会保留，并在更新版本的程序中恢复",
   "issue.vnt01.message": "风管“{0}”：风速 {1} m/s 超过建议值 {2} m/s（{3}）",
   "issue.vnt02.message": "风管接口“{0}” ↔ “{1}”：截面不一致（{2} 与 {3}）——需要变径过渡",

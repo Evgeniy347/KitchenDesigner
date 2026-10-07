@@ -20,7 +20,7 @@ namespace KitchenDesigner.Core.Analysis
             "dishwasherSupport", "panelSeating", "facadeGaps", "drawerFacadeLinks",
             "attachLinks", "dishwasherFacadeLinks", "screwLegMounting", "screwLegFooting",
             "pipeRuns", "unknownTypes", "millimetreGrid", "foundation", "floorSlab",
-            "wallLayerHosts", "ventilation",
+            "wallLayerHosts", "ventilation", "sofaBedReach",
         };
 
         public static int MostStagesRemembered => StageNames.Length;
@@ -79,6 +79,8 @@ namespace KitchenDesigner.Core.Analysis
             using (PerfMarkers.AnalyzeWallLayerHosts.Auto()) CollectWallLayerHosts(all, issues);
             t = NoteStage(StageNames[stage++], t);
             using (PerfMarkers.AnalyzeVentilation.Auto()) CollectVentilation(all, byName, issues);
+            t = NoteStage(StageNames[stage++], t);
+            using (PerfMarkers.AnalyzeSofaBedReach.Auto()) CollectSofaBedReach(all, issues);
             NoteStage(StageNames[stage++], t);
 
             LogBreakdownIfSlow(began);
@@ -383,6 +385,12 @@ namespace KitchenDesigner.Core.Analysis
                     FindByName(byName, finding.OtherElementId)));
         }
 
+        private static void CollectSofaBedReach(List<KitchenElement> all, List<AnalysisIssue> issues)
+        {
+            foreach (var block in ConstraintValidator.FindUnfoldBlocks(all))
+                issues.Add(IssueCatalog.SofaNoRoomToUnfold(block.sofa, block.blocker, block.travelMm));
+        }
+
         private static KitchenElement? FindByName(AttachLinks.PartsByName byName, string? name) =>
             byName.First(name);
 
@@ -400,6 +408,7 @@ namespace KitchenDesigner.Core.Analysis
         public const string CodeNearContact = "GAP-01";
         public const string CodeNearContactFar = "GAP-02";
         public const string CodePanelNotSeated = "SEAT-01";
+        public const string CodeSofaNoRoomToUnfold = "SOF-01";
         public const string CodeFacadeGap = "FAC-01";
         public const string CodeDrawerNoFacade = "DRW-01";
         public const string CodeDrawerFacadeOrphaned = "DRW-02";
@@ -498,6 +507,13 @@ namespace KitchenDesigner.Core.Analysis
                 $"{Name(panel)} ↔ {Name(board)}",
                 Loc.F("issue.seat01.message", insertionMm, depthMm),
                 panel, board);
+
+        public static AnalysisIssue SofaNoRoomToUnfold(KitchenElement sofa, KitchenElement blocker,
+            float travelMm) =>
+            new AnalysisIssue(IssueLevel.Warning, CodeSofaNoRoomToUnfold,
+                PairDetail(sofa, blocker),
+                Loc.F("issue.sof01.message", Name(blocker), travelMm),
+                sofa, blocker);
 
         public static AnalysisIssue FacadeGap(KitchenElement facade, string sides) =>
             new AnalysisIssue(IssueLevel.Warning, CodeFacadeGap,

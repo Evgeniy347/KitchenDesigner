@@ -16,6 +16,7 @@ namespace KitchenDesigner.Core
         public readonly bool HasExtraBody;
         public readonly int HostIndex;
         public readonly WallCentreline Centreline;
+        public readonly SofaBedReach? BedReach;
 
         public const int NoGroup = 0;
         public const int NoIndex = -1;
@@ -23,9 +24,11 @@ namespace KitchenDesigner.Core
         public ValidationElement(ElementGeometry geometry, Vector3[] vertices, ElementKind kind,
             int groupId, string? pairedName, Span heightSpan, int attachedWallIndex,
             ElementGeometry extraBody = default, bool hasExtraBody = false,
-            int hostIndex = NoIndex, WallCentreline centreline = default)
+            int hostIndex = NoIndex, WallCentreline centreline = default,
+            SofaBedReach? bedReach = null)
         {
             Centreline = centreline;
+            BedReach = bedReach;
             Geometry = geometry;
             Vertices = vertices;
             Kind = kind;
@@ -44,6 +47,9 @@ namespace KitchenDesigner.Core
         public bool Is(ElementKind kind) => (Kind & kind) != 0;
 
         public bool IgnoredInPairs => Is(ElementKind.Decor | ElementKind.Recessed);
+
+        public bool StaysOutOfTheBedsWay => Is(ElementKind.Decor | ElementKind.Recessed
+            | ElementKind.FloorAnchor | ElementKind.Foundation | ElementKind.Opening);
 
         public bool NeedsNoSupport => Is(ElementKind.Anchor | ElementKind.Drawer
             | ElementKind.SelfSupported

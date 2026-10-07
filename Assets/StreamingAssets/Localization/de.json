@@ -758,6 +758,7 @@
   "issue.pip04.returnToReturn": "Rücklauf ist direkt mit Rücklauf verbunden – ein Vorlauf ist nötig",
   "issue.pip04.supplyToSupply": "Vorlauf ist direkt mit Vorlauf verbunden – ein Rücklauf ist nötig",
   "issue.seat01.message": "Paneel sitzt nicht bis zum Nutgrund in der Nut: {0:F1} von {1:F1} mm",
+  "issue.sof01.message": "Nicht genug Platz zum Ausklappen des Sofas: „{0}“ steht dem ausfahrenden Sitz im Weg – vor dem Sofa müssen {1:F0} mm frei sein",
   "issue.typ01.message": "Unbekannter Objekttyp „{0}“ – als einfaches Teil angezeigt; seine Felder bleiben erhalten und kehren in einer neueren Programmversion zurück",
   "issue.vnt01.message": "Luftkanal „{0}“: Luftgeschwindigkeit {1} m/s übersteigt den empfohlenen Wert {2} m/s ({3})",
   "issue.vnt02.message": "Kanalstoß „{0}“ ↔ „{1}“: Querschnitte passen nicht zusammen ({2} und {3}) – ein Übergangsstück ist nötig",

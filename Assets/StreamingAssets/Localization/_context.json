@@ -3933,6 +3933,15 @@
       "1": "groove depth in mm"
     }
   },
+  "issue.sof01.message": {
+    "where": "Errors window, issue message text (SOF-01, warning)",
+    "meaning": "A part stands in the zone swept by the sliding-out sofa seat, so the sofa cannot be unfolded into a bed",
+    "maxLength": 160,
+    "placeholders": {
+      "0": "name of the part in the way",
+      "1": "free distance needed in front of the sofa, mm"
+    }
+  },
   "issue.typ01.message": {
     "where": "Errors window, issue message text (TYP-01)",
     "meaning": "The save file contains an element type this version does not know",

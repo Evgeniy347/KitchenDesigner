@@ -71,6 +71,23 @@ namespace KitchenDesigner.Core
             return pairs;
         }
 
+        public static List<(int lo, int hi)> ReachingPairsInNestedLoopOrder(
+            IReadOnlyList<ValidationElement> all, float contactDist) =>
+            CandidatePairsInNestedLoopOrder(all.Count, k =>
+            {
+                SolidBoundsIncludingBedReach(all[k], out var min, out var max);
+                return (min, max);
+            }, contactDist);
+
+        public static void SolidBoundsIncludingBedReach(in ValidationElement e,
+            out Vector3 min, out Vector3 max)
+        {
+            SolidBoundsIncludingExtraBody(e, out min, out max);
+            if (e.BedReach == null) return;
+            min = Vector3.Min(min, e.BedReach.Min);
+            max = Vector3.Max(max, e.BedReach.Max);
+        }
+
         public static void SolidBoundsIncludingExtraBody(in ValidationElement e,
             out Vector3 min, out Vector3 max)
         {

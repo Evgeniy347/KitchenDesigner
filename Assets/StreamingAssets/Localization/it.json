@@ -758,6 +758,7 @@
   "issue.pip04.returnToReturn": "Il ritorno è collegato direttamente a un ritorno — serve una mandata",
   "issue.pip04.supplyToSupply": "La mandata è collegata direttamente a una mandata — serve un ritorno",
   "issue.seat01.message": "Il pannello non è entrato fino in fondo alla scanalatura: {0:F1} di {1:F1} mm",
+  "issue.sof01.message": "Spazio insufficiente per aprire il divano: «{0}» ostacola la seduta estraibile — servono {1:F0} mm liberi davanti al divano",
   "issue.typ01.message": "Tipo di oggetto sconosciuto «{0}» — mostrato come componente semplice; i suoi campi vengono conservati e torneranno in una versione più recente del programma",
   "issue.vnt01.message": "Condotto «{0}»: la velocità dell'aria {1} m/s supera quella consigliata {2} m/s ({3})",
   "issue.vnt02.message": "Giunzione condotti «{0}» ↔ «{1}»: le sezioni non coincidono ({2} e {3}) — serve un raccordo di transizione",

@@ -758,6 +758,7 @@
   "issue.pip04.returnToReturn": "O retorno está ligado diretamente a outro retorno — é preciso uma alimentação",
   "issue.pip04.supplyToSupply": "A alimentação está ligada diretamente a outra alimentação — é preciso um retorno",
   "issue.seat01.message": "O painel não entrou até o fundo do rasgo: {0:F1} de {1:F1} mm",
+  "issue.sof01.message": "Não há espaço para abrir o sofá: “{0}” está no caminho do assento deslizante — são necessários {1:F0} mm livres à frente do sofá",
   "issue.typ01.message": "Tipo de objeto desconhecido “{0}” — exibido como peça comum; seus campos são mantidos e voltarão numa versão mais nova do programa",
   "issue.vnt01.message": "Duto “{0}”: a velocidade do ar, {1} m/s, excede a recomendada, {2} m/s ({3})",
   "issue.vnt02.message": "Junção de dutos “{0}” ↔ “{1}”: as seções não coincidem ({2} e {3}) — é preciso uma transição",

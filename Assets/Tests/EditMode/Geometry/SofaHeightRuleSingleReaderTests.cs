@@ -34,6 +34,7 @@ namespace KitchenDesigner.Tests.Geometry
             ("ElementRestorers.cs", "чтение полей дивана из сохранения"),
             ("ElementFacets.cs", "грань инспектора «диван»"),
             ("SofaFieldsEditor.cs", "редактор, который обрабатывает именно диван"),
+            ("ValidationSnapshot.cs", "снимок валидации несёт объём раскладки только у дивана"),
         };
 
         private static readonly (string file, string why)[] HeightReaders =

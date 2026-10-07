@@ -42,6 +42,8 @@ namespace KitchenDesigner.Core
 
         private static readonly List<KitchenElement> _elems = new List<KitchenElement>();
         private static readonly List<ValidationElement> _snapshots = new List<ValidationElement>();
+        private static readonly List<KitchenElement> _unfoldElems = new List<KitchenElement>();
+        private static readonly List<ValidationElement> _unfoldSnapshots = new List<ValidationElement>();
         private static readonly CoreValidationResult _core = new CoreValidationResult();
 
         private static readonly GestureValidation _gesture = new GestureValidation();
@@ -265,6 +267,39 @@ namespace KitchenDesigner.Core
                     if (best <= 0f || sum < best) best = sum;
                 }
             return best;
+        }
+
+        public readonly struct UnfoldBlock
+        {
+            public readonly KitchenElement sofa;
+            public readonly KitchenElement blocker;
+            public readonly float travelMm;
+            public UnfoldBlock(KitchenElement sofa, KitchenElement blocker, float travelMm)
+            {
+                this.sofa = sofa; this.blocker = blocker; this.travelMm = travelMm;
+            }
+        }
+
+        public static List<UnfoldBlock> FindUnfoldBlocks(List<KitchenElement> all)
+        {
+            var result = new List<UnfoldBlock>();
+            if (all == null) return result;
+
+            _unfoldElems.Clear();
+            bool anySofa = false;
+            for (int i = 0; i < all.Count; i++)
+            {
+                if (all[i] == null) continue;
+                _unfoldElems.Add(all[i]);
+                anySofa |= ValidationSnapshot.FoldsOut(all[i]);
+            }
+            if (!anySofa) return result;
+
+            ValidationSnapshot.Build(_unfoldElems, _unfoldSnapshots);
+            foreach (var block in SofaBedRoom.Blocks(_unfoldSnapshots))
+                result.Add(new UnfoldBlock(_unfoldElems[block.Sofa], _unfoldElems[block.Blocker],
+                    block.TravelMM));
+            return result;
         }
 
         public readonly struct UnseatedPanel

@@ -181,6 +181,8 @@ namespace KitchenDesigner.Core
         public static bool IsAnchor(KitchenElement e) =>
             e != null && (KindOf(e) & ElementKind.Anchor) != 0;
 
+        public static bool FoldsOut(KitchenElement e) => e is SofaElement;
+
         public static bool IsPanel(KitchenElement e) => e is PanelElement;
 
         public static bool IsDecor(KitchenElement e) => e is LightSourceElement;
@@ -188,6 +190,12 @@ namespace KitchenDesigner.Core
         public static DishwasherElement? AsDishwasher(KitchenElement e) => e as DishwasherElement;
 
         public static FacadeElement? AsFacade(KitchenElement e) => e as FacadeElement;
+
+        private static SofaBedReach? BedReachOf(KitchenElement e, in ElementGeometry body) =>
+            e is SofaElement sofa
+                ? SofaBedReach.Of(sofa.DimensionsMM, sofa.SeatHeightMM,
+                    (body.Min + body.Max) * 0.5f, sofa.transform.rotation)
+                : null;
 
         private static ValidationElement Assemble(KitchenElement e, in ElementGeometry body,
             Vector3[] vertices, Wall? wall, bool hasBasePlate,
@@ -224,7 +232,8 @@ namespace KitchenDesigner.Core
                 hostIndex,
                 wall != null
                     ? WallCentreline.Of(wall.FullPosition, e.transform.rotation, e.DimensionsMM)
-                    : default);
+                    : default,
+                BedReachOf(e, body));
         }
 
         private static ElementKind KindOf(KitchenElement e, Wall? wall, bool hasBasePlate)

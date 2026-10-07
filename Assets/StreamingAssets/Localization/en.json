@@ -758,6 +758,7 @@
   "issue.pip04.returnToReturn": "Return is connected directly to return — a supply is needed",
   "issue.pip04.supplyToSupply": "Supply is connected directly to supply — a return is needed",
   "issue.seat01.message": "Panel not fully inserted into the groove: {0:F1} of {1:F1} mm",
+  "issue.sof01.message": "Not enough room to unfold the sofa: “{0}” is in the way of the sliding seat — {1:F0} mm must be free in front of the sofa",
   "issue.typ01.message": "Unknown object type “{0}” — shown as a plain part; its fields are kept and will come back in a newer version of the app",
   "issue.vnt01.message": "Duct “{0}”: air velocity {1} m/s exceeds the recommended {2} m/s ({3})",
   "issue.vnt02.message": "Duct joint “{0}” ↔ “{1}”: cross-sections do not match ({2} and {3}) — a transition is needed",

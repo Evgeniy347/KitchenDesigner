@@ -758,6 +758,7 @@
   "issue.pip04.returnToReturn": "Retour raccordé directement à un retour — un départ est nécessaire",
   "issue.pip04.supplyToSupply": "Départ raccordé directement à un départ — un retour est nécessaire",
   "issue.seat01.message": "Panneau non enfoncé jusqu’au fond de la rainure : {0:F1} sur {1:F1} mm",
+  "issue.sof01.message": "Pas assez de place pour déplier le canapé : « {0} » gêne l’assise coulissante — il faut {1:F0} mm de libre devant le canapé",
   "issue.typ01.message": "Type d’objet inconnu « {0} » — affiché comme une pièce simple ; ses champs sont conservés et réapparaîtront dans une version plus récente du logiciel",
   "issue.vnt01.message": "Gaine « {0} » : la vitesse de l’air de {1} m/s dépasse la valeur recommandée de {2} m/s ({3})",
   "issue.vnt02.message": "Jonction de gaines « {0} » ↔ « {1} » : sections différentes ({2} et {3}) — une transition est nécessaire",

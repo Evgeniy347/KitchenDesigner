@@ -758,6 +758,7 @@
   "issue.pip04.returnToReturn": "El retorno está conectado directamente a otro retorno: hace falta una ida",
   "issue.pip04.supplyToSupply": "La ida está conectada directamente a otra ida: hace falta un retorno",
   "issue.seat01.message": "Panel no encajado hasta el fondo de la ranura: {0:F1} de {1:F1} mm",
+  "issue.sof01.message": "No hay espacio para desplegar el sofá: «{0}» queda en el recorrido del asiento extraíble; hacen falta {1:F0} mm libres delante del sofá",
   "issue.typ01.message": "Tipo de objeto desconocido «{0}»: se muestra como una pieza normal; sus campos se conservan y volverán en una versión más reciente del programa",
   "issue.vnt01.message": "Conducto «{0}»: la velocidad del aire {1} m/s supera la recomendada {2} m/s ({3})",
   "issue.vnt02.message": "Unión de conductos «{0}» ↔ «{1}»: las secciones no coinciden ({2} y {3}); hace falta una transición",

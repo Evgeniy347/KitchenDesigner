@@ -81,6 +81,7 @@ namespace KitchenDesigner.Core
         public static readonly PerfMarker AnalyzeFloorSlab = Reg("SceneAnalyzer.CollectFloorSlab");
         public static readonly PerfMarker AnalyzeWallLayerHosts = Reg("SceneAnalyzer.CollectWallLayerHosts");
         public static readonly PerfMarker AnalyzeVentilation = Reg("SceneAnalyzer.CollectVentilation");
+        public static readonly PerfMarker AnalyzeSofaBedReach = Reg("SceneAnalyzer.CollectSofaBedReach");
         public static readonly PerfMarker ErrorPanelAnalyze = Reg("ErrorPanelUI.Analyze");
         public static readonly PerfMarker ToolbarRefresh = Reg("ToolbarUI.Refresh");
 
