@@ -51,7 +51,7 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
-        private void ApplyNonGeometryEdits(
+        private void ApplyNonGeometryEdits(List<IUndoCommand> undo,
             List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)> resolved)
         {
             foreach (var (op, el, mat, _) in resolved)
@@ -69,7 +69,7 @@ namespace KitchenDesigner.Core.MCP
                 if (op.attached_to_name != null && AttachLinks.CanBeChild(el))
                     el.AttachedToName = op.attached_to_name;
                 if (op.level_id != null) el.LevelId = op.level_id;
-                ElementEditAppliers.ApplyTypeSpecific(op, el);
+                ElementEditAppliers.ApplyTypeSpecific(op, el, undo);
                 if (op.new_name != null && op.new_name != el.PartName)
                 {
                     DrawerLinks.Rename(el, op.new_name);
@@ -120,24 +120,21 @@ namespace KitchenDesigner.Core.MCP
         {
             var touched = ElementsWhoseStateTheEditCanTouch(resolved);
             var before = touched.Select(UndoableProperties.Capture).ToList();
-            bool commit = false;
-            CommandStack.BeginCapture();
-            try
+            var step = new List<IUndoCommand>();
+            if (hasGeometry)
             {
-                if (hasGeometry) CommandStack.Execute(geometry);
-                ApplyNonGeometryEdits(resolved);
-                for (int i = 0; i < touched.Count; i++)
-                {
-                    var propsCommand = SetPropertiesCommand.TryCreate(
-                        touched[i], before[i], UndoableProperties.Capture(touched[i]));
-                    if (propsCommand != null) CommandStack.Execute(propsCommand);
-                }
-                commit = true;
+                geometry.Execute();
+                step.Add(geometry);
             }
-            finally
+            ApplyNonGeometryEdits(step, resolved);
+            for (int i = 0; i < touched.Count; i++)
             {
-                CommandStack.EndCapture(geometry.Description, commit);
+                var propsCommand = SetPropertiesCommand.TryCreate(
+                    touched[i], before[i], UndoableProperties.Capture(touched[i]));
+                if (propsCommand != null) step.Add(propsCommand);
             }
+            if (step.Count > 0)
+                CommandStack.Execute(new AlreadyAppliedCommand(new CompositeCommand(geometry.Description, step)));
         }
 
         private McpResponse HandleEditElements(McpRequest req)

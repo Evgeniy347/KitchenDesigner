@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using KitchenDesigner.Core.MCP.Contract;
 
 namespace KitchenDesigner.Core.MCP
 {
     internal static class ElementEditAppliers
     {
-        private delegate void Applier(EditOp op, KitchenElement el);
+        private delegate void Applier(EditOp op, KitchenElement el, List<IUndoCommand> undo);
 
         private static readonly Applier[] All =
         {
@@ -233,16 +234,16 @@ namespace KitchenDesigner.Core.MCP
                 if (op.grille_airflow_m3_per_hour.HasValue)
                     grille.AirflowM3PerHour = op.grille_airflow_m3_per_hour.Value;
             }),
-            For<WallLayerElement>((op, layer) =>
+            ForRecording<WallLayerElement>((op, layer, undo) =>
             {
-                if (op.wall_layer_host_wall_name != null) RehostWithUndo(layer, op.wall_layer_host_wall_name);
+                if (op.wall_layer_host_wall_name != null) Rehost(layer, op.wall_layer_host_wall_name, undo);
                 if (op.wall_layer_thickness_mm.HasValue) layer.ThicknessMm = op.wall_layer_thickness_mm.Value;
             }),
             For<VentGapElement>((op, ventGap) =>
             {
                 if (op.wall_layer_batten_step_mm.HasValue) ventGap.BattenStepMm = op.wall_layer_batten_step_mm.Value;
             }),
-            (op, el) =>
+            (op, el, undo) =>
             {
                 var wall = el.GetComponent<Wall>();
                 if (wall == null) return;
@@ -250,7 +251,7 @@ namespace KitchenDesigner.Core.MCP
                 if (op.masonry_joint_mm.HasValue) wall.JointMm = op.masonry_joint_mm.Value;
                 if (op.masonry_waste_pct.HasValue) wall.WastePct = op.masonry_waste_pct.Value;
             },
-            (op, el) =>
+            (op, el, undo) =>
             {
                 if (!op.load_bearing.HasValue) return;
                 var wall = el.GetComponent<Wall>();
@@ -258,15 +259,18 @@ namespace KitchenDesigner.Core.MCP
             },
         };
 
-        public static void ApplyTypeSpecific(EditOp op, KitchenElement el)
+        public static void ApplyTypeSpecific(EditOp op, KitchenElement el, List<IUndoCommand> undo)
         {
-            foreach (var applier in All) applier(op, el);
+            foreach (var applier in All) applier(op, el, undo);
         }
 
         private static Applier For<T>(Action<EditOp, T> apply) where T : class
-            => (op, el) => { if (el is T typed) apply(op, typed); };
+            => (op, el, undo) => { if (el is T typed) apply(op, typed); };
 
-        private static void RehostWithUndo(WallLayerElement layer, string newHostWallName)
+        private static Applier ForRecording<T>(Action<EditOp, T, List<IUndoCommand>> apply) where T : class
+            => (op, el, undo) => { if (el is T typed) apply(op, typed, undo); };
+
+        private static void Rehost(WallLayerElement layer, string newHostWallName, List<IUndoCommand> undo)
         {
             string hostBefore = layer.HostWallName;
             var posBefore = layer.transform.position;
@@ -279,7 +283,7 @@ namespace KitchenDesigner.Core.MCP
             var command = new WallLayerRehostCommand(layer, hostBefore, layer.HostWallName,
                 posBefore, layer.transform.position, rotBefore, layer.transform.rotation,
                 dimsBefore, layer.DimensionsMM);
-            CommandStack.Execute(command);
+            undo.Add(command);
         }
 
         private static void ApplyDecorSlotMaterials(EditOp op, IHasTwoDecorSlots slots)

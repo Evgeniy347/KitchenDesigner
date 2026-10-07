@@ -164,6 +164,7 @@ public class SofaMcpTests : McpTestFixture
     public void EditSofa_EdgeRadius_IsUndoable_LikeThePanel()
     {
         var sofa = CreateSofa("SofaEdgeUndo");
+        CommandStack.Clear();
         int original = sofa.EdgeRadiusMM;
 
         _handler!.Handle(MakeReq("edit_elements", new
@@ -184,6 +185,7 @@ public class SofaMcpTests : McpTestFixture
     public void EditSofa_ResizeAndTypeFieldsTogether_AreOneUndoStep()
     {
         var sofa = CreateSofa("SofaOneStep");
+        CommandStack.Clear();
         var dimsBefore = sofa.DimensionsMM;
         int seatBefore = sofa.SeatHeightMM;
 

@@ -72,4 +72,30 @@ public class McpEditUndoTests : McpTestFixture
         Assert.IsEmpty(UndoableProperties.Changed(before, restored),
             "отмена обязана вернуть слепок целиком, как отмена из панели");
     }
+
+    [Test]
+    public void EditScrewLegThreadLength_LeavesTheDerivedInsertionWhereADirectSetterLeavesIt()
+    {
+        var viaWire = EveryElementType.Spawn(typeof(ScrewLegElement), "InsertionWire");
+        var direct = EveryElementType.Spawn(typeof(ScrewLegElement), "InsertionDirect");
+        _spawned.Add(viaWire.gameObject);
+        _spawned.Add(direct.gameObject);
+        PartRegistry.Register(viaWire);
+        PartRegistry.Register(direct);
+        var wireLeg = (ScrewLegElement)viaWire;
+        var directLeg = (ScrewLegElement)direct;
+        int target = directLeg.ThreadLengthMM + 25;
+
+        directLeg.ThreadLengthMM = target;
+        _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = wireLeg.PartName, screw_thread_length_mm = target } },
+        }));
+
+        Assert.AreEqual(directLeg.InsertionDepthMM, wireLeg.InsertionDepthMM,
+            "заход резьбы выводится из геометрии и в агентской правке не принадлежит ни одному полю: "
+            + "правка по проводу не должна менять его иначе, чем обычный сеттер (иначе паритет "
+            + "панели и MCP видит «только в MCP: InsertionDepthMM»)");
+        Assert.AreEqual(directLeg.ThreadLengthMM, wireLeg.ThreadLengthMM, "длина резьбы применена");
+    }
 }
