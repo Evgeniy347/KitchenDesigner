@@ -17,38 +17,25 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (op.fill != null) asm.Fill = McpWireEnums.ParseFill(op.fill);
             }),
-            For<RadialShelfElement>((op, shelf) =>
+            For<IHasCornerRadius>((op, rounded) =>
             {
-                if (op.corner_radius.HasValue) shelf.CornerRadius = op.corner_radius.Value;
+                if (op.corner_radius.HasValue) rounded.CornerRadiusMM = op.corner_radius.Value;
             }),
-            For<StoolElement>((op, stool) =>
+            For<IHasSeatHeight>((op, seated) =>
             {
-                if (op.corner_radius.HasValue) stool.CornerRadiusMM = op.corner_radius.Value;
+                if (op.seat_height.HasValue) seated.SeatHeightMM = op.seat_height.Value;
             }),
-            For<ChairElement>((op, chair) =>
+            For<IHasEdgeRadius>((op, edged) =>
             {
-                if (op.corner_radius.HasValue) chair.CornerRadiusMM = op.corner_radius.Value;
-                if (op.seat_height.HasValue) chair.SeatHeightMM = op.seat_height.Value;
-            }),
-            For<SofaElement>((op, sofa) =>
-            {
-                if (op.corner_radius.HasValue) sofa.CornerRadiusMM = op.corner_radius.Value;
-                if (op.seat_height.HasValue) sofa.SeatHeightMM = op.seat_height.Value;
-                if (op.edge_radius.HasValue) sofa.EdgeRadiusMM = op.edge_radius.Value;
+                if (op.edge_radius.HasValue) edged.EdgeRadiusMM = op.edge_radius.Value;
             }),
             For<PouffeElement>((op, pouffe) =>
             {
                 if (op.pouffe_seat_thickness.HasValue)
                     pouffe.SeatThicknessMM = op.pouffe_seat_thickness.Value;
-                if (op.corner_radius.HasValue) pouffe.CornerRadiusMM = op.corner_radius.Value;
-            }),
-            For<ToiletElement>((op, toilet) =>
-            {
-                if (op.seat_height.HasValue) toilet.SeatHeightMM = op.seat_height.Value;
             }),
             For<WallHungToiletElement>((op, toilet) =>
             {
-                if (op.seat_height.HasValue) toilet.SeatHeightMM = op.seat_height.Value;
                 if (op.flush_plate_height.HasValue)
                     toilet.FlushPlateHeightMM = op.flush_plate_height.Value;
             }),

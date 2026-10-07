@@ -4,7 +4,7 @@ using UnityEngine;
 namespace KitchenDesigner.Core
 {
     public class WallHungToiletElement : KitchenElement, IHasTwoDecorSlots, IFixedSizeElement,
-        IWallMounted, IStandsOnFloor, IQuantifies
+        IWallMounted, IStandsOnFloor, IQuantifies, IHasSeatHeight
     {
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("чаша и крышка подвесного унитаза видны и со стороны стены: защищённой лицевой детали нет");

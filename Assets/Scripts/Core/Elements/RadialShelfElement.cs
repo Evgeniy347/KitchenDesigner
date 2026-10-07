@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class RadialShelfElement : KitchenElement
+    public class RadialShelfElement : KitchenElement, IHasCornerRadius
     {
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("радиусная полка — сектор плиты, лицевой детали нет");
@@ -35,6 +35,12 @@ namespace KitchenDesigner.Core
                 _cornerRadius = value;
                 RebuildMesh();
             }
+        }
+
+        int IHasCornerRadius.CornerRadiusMM
+        {
+            get => CornerRadius;
+            set => CornerRadius = value;
         }
 
         private int ClampCornerRadius(int value)

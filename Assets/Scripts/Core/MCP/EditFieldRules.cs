@@ -16,15 +16,11 @@ namespace KitchenDesigner.Core.MCP
 
         internal static bool AcceptsDecorSlots(KitchenElement el) => el is IHasTwoDecorSlots;
 
-        internal static bool AcceptsCornerRadius(KitchenElement el) =>
-            el is RadialShelfElement || el is StoolElement || el is ChairElement
-            || el is SofaElement || el is PouffeElement;
+        internal static bool AcceptsCornerRadius(KitchenElement el) => el is IHasCornerRadius;
 
-        internal static bool AcceptsEdgeRadius(KitchenElement el) => el is SofaElement;
+        internal static bool AcceptsEdgeRadius(KitchenElement el) => el is IHasEdgeRadius;
 
-        internal static bool AcceptsSeatHeight(KitchenElement el) =>
-            el is ChairElement || el is SofaElement || el is ToiletElement
-            || el is WallHungToiletElement;
+        internal static bool AcceptsSeatHeight(KitchenElement el) => el is IHasSeatHeight;
 
         internal static bool AcceptsWallFields(KitchenElement el) => el.GetComponent<Wall>() != null;
 

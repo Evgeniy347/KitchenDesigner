@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class PouffeElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
+    public class PouffeElement : KitchenElement, IHasTwoDecorSlots, IQuantifies, IHasCornerRadius
     {
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("пуф — тумба с сиденьем сверху, лицевой детали у неё нет");

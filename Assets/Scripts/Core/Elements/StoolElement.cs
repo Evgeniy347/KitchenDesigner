@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class StoolElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
+    public class StoolElement : KitchenElement, IHasTwoDecorSlots, IQuantifies, IHasCornerRadius
     {
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("табурет — сиденье на ногах, лицевой детали у него нет");

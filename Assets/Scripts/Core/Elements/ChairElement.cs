@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class ChairElement : KitchenElement, IHasTwoDecorSlots, IQuantifies
+    public class ChairElement : KitchenElement, IHasTwoDecorSlots, IQuantifies, IHasCornerRadius, IHasSeatHeight
     {
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("лицо стула — сиденье, оно часть корневого меша и отдельной деталью не выделено");
