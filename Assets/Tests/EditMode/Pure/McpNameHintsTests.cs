@@ -65,6 +65,30 @@ public class McpNameHintsTests
         StringAssert.Contains("target_face 'right'", message);
     }
 
+    [Test]
+    public void UnknownScope_ListsTheModulesAndRooms_AndTheClosestName()
+    {
+        var message = McpNameHints.UnknownScope("Kichen", new[] { "B4", "B5" }, new[] { "Kitchen", "Hall" });
+
+        StringAssert.Contains("Scope 'Kichen' matches no module, room or part", message);
+        StringAssert.Contains("closest: Kitchen", message);
+        StringAssert.Contains("Modules: B4, B5.", message);
+        StringAssert.Contains("Rooms: Kitchen, Hall.", message);
+    }
+
+    [Test]
+    public void UnknownScope_ALongListIsCappedAndCounted_AnEmptyOneSaysNone()
+    {
+        var modules = Enumerable.Range(1, McpNameHints.MaxListedScopeNames + 4).Select(i => "M" + i).ToArray();
+
+        var message = McpNameHints.UnknownScope("zzz", modules, new string[0]);
+
+        StringAssert.Contains("M" + McpNameHints.MaxListedScopeNames + " (+4 more).", message);
+        StringAssert.DoesNotContain("M" + (McpNameHints.MaxListedScopeNames + 1) + ",", message);
+        StringAssert.Contains("Rooms: none.", message);
+        StringAssert.DoesNotContain("closest", message, "ничего похожего - не гадаем");
+    }
+
     [TestCase("left", 0, false)]
     [TestCase("RIGHT", 0, true)]
     [TestCase("bottom", 1, false)]

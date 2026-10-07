@@ -63,6 +63,23 @@ namespace KitchenDesigner.Core.MCP
                 + $"target_face '{facing}' (flush against it) or '{face}' (same side aligned)";
         }
 
+        public const int MaxListedScopeNames = 8;
+
+        public static string UnknownScope(string scope, IReadOnlyList<string> modules, IReadOnlyList<string> rooms)
+        {
+            var close = Closest(scope, modules.Concat(rooms));
+            var hint = close.Count > 0 ? $" (closest: {string.Join(", ", close)})" : string.Empty;
+            return $"Scope '{scope}' matches no module, room or part{hint}. Modules: {Listed(modules)}. Rooms: {Listed(rooms)}. "
+                + "A scope is a module name, room:ID or a selector (name mask, type:board, module:B4*; see guide topic bulk)";
+        }
+
+        private static string Listed(IReadOnlyList<string> names)
+        {
+            if (names.Count == 0) return "none";
+            var shown = string.Join(", ", names.Take(MaxListedScopeNames));
+            return names.Count > MaxListedScopeNames ? shown + " (+" + (names.Count - MaxListedScopeNames) + " more)" : shown;
+        }
+
         private static int Distance(string a, string b)
         {
             if (b.Contains(a) || a.Contains(b)) return Math.Abs(a.Length - b.Length) / 2;

@@ -52,6 +52,9 @@ namespace KitchenDesigner.Core.MCP
             if (response.type == "error")
                 return ErrorContent(FailureMessage(response.data));
 
+            if (response.data is string plainText)
+                return TextContent(plainText);
+
             return TextContent(McpJson.Serialize(response.data ?? new JObject()));
         }
 
