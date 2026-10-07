@@ -154,6 +154,54 @@ public class SofaMcpTests : McpTestFixture
         Assert.AreEqual(SofaStage.Folded, sofa.UnfoldStage, "и складывает диван одним вызовом");
     }
 
+    [SetUp]
+    public void ClearUndoHistory() => CommandStack.Clear();
+
+    [TearDown]
+    public void ClearUndoHistoryAfter() => CommandStack.Clear();
+
+    [Test]
+    public void EditSofa_EdgeRadius_IsUndoable_LikeThePanel()
+    {
+        var sofa = CreateSofa("SofaEdgeUndo");
+        int original = sofa.EdgeRadiusMM;
+
+        _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "SofaEdgeUndo", edge_radius = 25 } },
+        }));
+        Assert.AreEqual(25, sofa.EdgeRadiusMM, "предусловие: радиус применён");
+        Assert.AreEqual(1, CommandStack.UndoCount,
+            "правка радиуса по проводу — ровно один шаг отмены, как «Применить» в панели");
+
+        CommandStack.Undo();
+        Assert.AreEqual(original, sofa.EdgeRadiusMM, "отмена возвращает прежний радиус");
+        CommandStack.Redo();
+        Assert.AreEqual(25, sofa.EdgeRadiusMM, "а повтор — заказанный");
+    }
+
+    [Test]
+    public void EditSofa_ResizeAndTypeFieldsTogether_AreOneUndoStep()
+    {
+        var sofa = CreateSofa("SofaOneStep");
+        var dimsBefore = sofa.DimensionsMM;
+        int seatBefore = sofa.SeatHeightMM;
+
+        _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "SofaOneStep", depth = 1100, seat_height = 420 } },
+        }));
+        Assert.AreEqual(420, sofa.SeatHeightMM, "предусловие: высота сиденья применена");
+        Assert.AreEqual(1100, sofa.DimensionsMM.z, "предусловие: глубина применена");
+        Assert.AreEqual(1, CommandStack.UndoCount,
+            "габарит и типовое поле одним вызовом — один шаг, а не два: иначе отмена вернёт "
+            + "половину правки");
+
+        CommandStack.Undo();
+        Assert.AreEqual(dimsBefore, sofa.DimensionsMM, "габарит вернулся");
+        Assert.AreEqual(seatBefore, sofa.SeatHeightMM, "и высота сиденья вернулась тем же шагом");
+    }
+
     [Test]
     public void EditSofa_Depth_IsAccepted_AndOnlyTheSeatGrows()
     {

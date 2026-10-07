@@ -101,6 +101,45 @@ namespace KitchenDesigner.Core.MCP
             return (results, vr != null ? vr.violations.Count : 0);
         }
 
+        private static List<KitchenElement> ElementsWhoseStateTheEditCanTouch(
+            List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)> resolved)
+        {
+            bool renames = false;
+            foreach (var (op, el, _, _) in resolved)
+                if (op.new_name != null && op.new_name != el.PartName) renames = true;
+            var touched = new List<KitchenElement>();
+            var source = renames ? PartRegistry.All : resolved.Select(r => r.el).ToList();
+            foreach (var el in source)
+                if (el != null && !touched.Contains(el)) touched.Add(el);
+            return touched;
+        }
+
+        private void ApplyEditsAsOneUndoStep(
+            List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)> resolved,
+            CompositeCommand geometry, bool hasGeometry)
+        {
+            var touched = ElementsWhoseStateTheEditCanTouch(resolved);
+            var before = touched.Select(UndoableProperties.Capture).ToList();
+            bool commit = false;
+            CommandStack.BeginCapture();
+            try
+            {
+                if (hasGeometry) CommandStack.Execute(geometry);
+                ApplyNonGeometryEdits(resolved);
+                for (int i = 0; i < touched.Count; i++)
+                {
+                    var propsCommand = SetPropertiesCommand.TryCreate(
+                        touched[i], before[i], UndoableProperties.Capture(touched[i]));
+                    if (propsCommand != null) CommandStack.Execute(propsCommand);
+                }
+                commit = true;
+            }
+            finally
+            {
+                CommandStack.EndCapture(geometry.Description, commit);
+            }
+        }
+
         private McpResponse HandleEditElements(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsEditElements>();
@@ -176,8 +215,7 @@ namespace KitchenDesigner.Core.MCP
                 SceneChangeTracker.SettleDerivedLinks();
                 return McpResponse.Result(req.id, new { ok = true, dryRun = true, applied = false, results = dryResults, sceneViolationCount = drySceneCount });
             }
-            if (commands.Count > 0) CommandStack.Execute(composite);
-            ApplyNonGeometryEdits(resolved);
+            ApplyEditsAsOneUndoStep(resolved, composite, commands.Count > 0);
             SettleSceneAfterMutation();
             var (results, sceneCount) = DescribeBatch(resolved);
             Debug.Log($"[MCP] edit_elements: {resolved.Count} ops, {commands.Count} geometry");
