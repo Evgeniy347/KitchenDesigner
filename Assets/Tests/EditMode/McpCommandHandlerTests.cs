@@ -327,7 +327,7 @@ public class McpCommandHandlerTests : McpTestFixture
         var issues = r["issues"] as Newtonsoft.Json.Linq.JArray;
         Assert.IsNotNull(issues);
         Assert.Greater(issues!.Count, 0);
-        StringAssert.Contains(": B ", issues[0]!.Value<string>(), "размещение называет, с кем пересеклась деталь");
+        StringAssert.Contains(": B ", (string?)issues[0], "размещение называет, с кем пересеклась деталь");
     }
 
     [Test]
