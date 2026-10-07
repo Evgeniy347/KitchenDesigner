@@ -1617,6 +1617,22 @@ public class DishwasherElementTests : McpTestFixture
     }
 
     [Test]
+    public void Dishwasher_StandingOnTheImpliedGround_HasNoSupportIssue()
+    {
+        var dw = Make("Posudomoyka");
+        ConstraintValidator.Ground = ImpliedGround.At(dw.SoleCenterWorld.y);
+        try
+        {
+            CollectionAssert.IsEmpty(IssuesWithCode("DWH-05"),
+                "земля приложения под подошвой — опора есть, как у плиты пола");
+        }
+        finally { ConstraintValidator.Ground = ImpliedGround.None; }
+
+        Assert.IsNotEmpty(IssuesWithCode("DWH-05"),
+            "парный контроль: без земли и без пола под подошвой по-прежнему пусто");
+    }
+
+    [Test]
     public void Dishwasher_WithNothingUnderneath_FiresDwh05()
     {
         var dw = Make("Posudomoyka");

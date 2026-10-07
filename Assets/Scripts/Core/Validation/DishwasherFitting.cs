@@ -86,7 +86,7 @@ namespace KitchenDesigner.Core
 
                 KitchenElement? blocker = null;
                 float deepest = 0f;
-                bool supported = false;
+                bool supported = ConstraintValidator.Ground.Carries(soleY, reach, eps);
 
                 foreach (var other in all)
                 {

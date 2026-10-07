@@ -21,6 +21,12 @@ namespace KitchenDesigner.Core
         public bool Holds(in ElementGeometry body) =>
             Present && Mathf.Abs(body.Min.y - Y) <= Tolerance.ContactUnits;
 
+        public bool Touches(float bottomY, float contactUnits) =>
+            Present && Mathf.Abs(bottomY - Y) <= contactUnits;
+
+        public bool Carries(float soleY, float reachUnits, float contactUnits) =>
+            Present && Y <= soleY + contactUnits && Y >= soleY - reachUnits - contactUnits;
+
         public bool Equals(ImpliedGround other) =>
             Present == other.Present && (!Present || Y.Equals(other.Y));
 

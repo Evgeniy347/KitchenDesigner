@@ -177,6 +177,31 @@ public class ImpliedGroundTests
     }
 
     [Test]
+    public void Touches_IsTheContactWindowAroundTheGround_AndNeverWithoutGround()
+    {
+        float contact = Tolerance.ContactUnits;
+
+        Assert.IsTrue(Ground.Touches(0f, contact), "низ ровно на земле — касается");
+        Assert.IsTrue(Ground.Touches(contact * 0.9f, contact), "в допуске над землёй — касается");
+        Assert.IsFalse(Ground.Touches(contact * 2f, contact), "выше допуска — не касается");
+        Assert.IsFalse(Ground.Touches(-contact * 2f, contact), "глубже допуска — утоплен, не касается");
+        Assert.IsFalse(ImpliedGround.None.Touches(0f, contact), "без земли касаться нечего");
+    }
+
+    [Test]
+    public void Carries_CoversASoleWhoseFeetCanReachTheGround_ButNotOneAboveOrBelowIt()
+    {
+        float contact = Tolerance.ContactUnits;
+        float reach = 0.0045f;
+
+        Assert.IsTrue(Ground.Carries(0f, reach, contact), "подошва на земле — опора есть");
+        Assert.IsTrue(Ground.Carries(0.004f, reach, contact), "ножки выкручены до земли — опора есть");
+        Assert.IsFalse(Ground.Carries(0.02f, reach, contact), "подошва выше хода ножек — земля не достаёт");
+        Assert.IsFalse(Ground.Carries(-0.01f, reach, contact), "подошва утоплена под землю — опоры нет");
+        Assert.IsFalse(ImpliedGround.None.Carries(0f, reach, contact), "без земли опоры нет");
+    }
+
+    [Test]
     public void ImpliedGround_EqualityFollowsPresenceAndLevel()
     {
         Assert.AreEqual(ImpliedGround.None, default(ImpliedGround), "None — это default");

@@ -27,6 +27,9 @@ namespace KitchenDesigner.Core
             if (pad.IsEmpty) return false;
             float bottom = pad.Min.y;
 
+            var ground = ConstraintValidator.Ground;
+            if (ground.Touches(bottom, eps)) return false;
+
             KitchenElement? nearest = null;
             float nearestTop = 0f;
             string nearestName = "";

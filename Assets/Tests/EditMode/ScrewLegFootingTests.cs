@@ -85,6 +85,23 @@ public class ScrewLegFootingTests
     }
 
     [Test]
+    public void ALegStandingOnTheImpliedGround_IsNotReported_AndOneRaisedAboveItIs()
+    {
+        ConstraintValidator.Ground = ImpliedGround.At(0f);
+        try
+        {
+            var standing = LegWithPadBottomAt(0f);
+            Assert.IsNull(Footing(standing),
+                "земля приложения — такая же опора, как плита пола: пятак на ней стоит");
+
+            standing.transform.position += Vector3.up * (25f * U);
+            Assert.IsNotNull(Footing(standing),
+                "парный контроль: пятак на 25 мм выше земли по-прежнему висит");
+        }
+        finally { ConstraintValidator.Ground = ImpliedGround.None; }
+    }
+
+    [Test]
     public void ALegRaisedAboveTheFloor_IsReportedWithTheGapToIt()
     {
         Floor();
