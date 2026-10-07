@@ -155,6 +155,7 @@ namespace KitchenDesigner.Core.MCP
             }
             var go = ElementSpawners.Spawn(type, create, Vector3.zero);
             var element = go.GetComponent<KitchenElement>();
+            PartRegistry.Register(element);
             element.LevelId = LevelRegistry.CurrentId;
             if (item.rot_y.HasValue) go.transform.rotation = Quaternion.Euler(0f, item.rot_y.Value, 0f);
             return new PlaceWork(element, true);

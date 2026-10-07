@@ -89,7 +89,7 @@ public class McpEditFieldRulesTests : McpTestFixture
             + "Invalid field for 'Shelf': corner_radius | "
             + "Invalid field for 'Shelf': drawer_system | "
             + "Invalid field for 'Shelf': drawer_type | "
-            + "Invalid field for 'Shelf': leg_inset_mm",
+            + "Invalid field for 'Shelf': leg_inset_mm. " + KitchenDesigner.Core.MCP.McpNameHints.ResendAll,
             ErrorMessage(resp),
             "порядок склеенных сообщений — часть контракта: drawer_system открывает блок ящика, " +
             "ровно как и в EditOp, и стоит между corner_radius и drawer_type");

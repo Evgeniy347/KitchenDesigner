@@ -411,7 +411,7 @@ namespace KitchenDesigner.Core.MCP
             McpMutationReport? report)
         {
             SettleSceneAfterMutation();
-            var reply = new PlanReply { created = created, updatedCount = updated };
+            var reply = new PlanReply { created = created.Count > 0 ? created : null, updatedCount = updated };
             if (report != null) reply.sceneViolationDelta = report.Finish().sceneViolationDelta;
             return McpResponse.Result(req.id, reply);
         }

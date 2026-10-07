@@ -322,6 +322,7 @@ namespace KitchenDesigner.Core.MCP
         private McpResponse DryRunOfNewParts(McpRequest req, McpMutationReport report,
             List<KitchenElement> fresh, McpReference reference)
         {
+            foreach (var part in fresh) PartRegistry.Register(part);
             SnapOpeningsOnceEveryWallOfTheBatchIsRegistered(fresh);
             SettleSceneAfterMutation();
             var reply = report.Finish(fresh, reference);
