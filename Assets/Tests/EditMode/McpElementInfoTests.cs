@@ -22,10 +22,11 @@ public class McpElementInfoTests : McpTestFixture
         {
             ops = new object[] { new { name = "A", locked = false } }
         }));
-        var violations = (JArray)Data(resp)["results"]![0]!["violations"]!;
-        Assert.AreEqual(1, violations.Count, "ровно одно пересечение — с B");
-        Assert.AreEqual("overlap", violations[0]!["kind"]!.Value<string>());
-        return violations[0]!["severity"]!.Value<string>()!;
+        var issues = (JArray)PlacementOf(resp)["issues"]!;
+        Assert.AreEqual(1, issues.Count, "ровно одно пересечение — с B");
+        var issue = issues[0]!.Value<string>()!;
+        StringAssert.Contains(": B ", issue, "строка называет соседа");
+        return issue.Substring(0, issue.IndexOf(':'));
     }
 
     [Test]
@@ -60,8 +61,8 @@ public class McpElementInfoTests : McpTestFixture
             ops = new object[] { new { name = "A", locked = false } }
         }));
 
-        var violations = (JArray)Data(resp)["results"]![0]!["violations"]!;
-        Assert.AreEqual(0, violations.Count,
+        var issues = (JArray)PlacementOf(resp)["issues"]!;
+        Assert.AreEqual(0, issues.Count,
             "0,2 мм — шум координат, а не пересечение: иначе каждая стыкованная пара кричала бы об ошибке");
     }
 

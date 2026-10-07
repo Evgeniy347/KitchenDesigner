@@ -12,9 +12,12 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsSetAttr>();
             if (p == null || string.IsNullOrWhiteSpace(p.selector))
                 return McpResponse.Error(req.id, -32602, "selector required");
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
 
             var matched = ElementSelector.Match(p.selector);
             var commands = new List<IUndoCommand>();
+            var changed = new List<KitchenElement>();
             int updated = 0;
             if (!p.thickness.HasValue && !p.width.HasValue && !p.height.HasValue &&
                 !p.depth.HasValue && string.IsNullOrEmpty(p.material) && !p.locked.HasValue)
@@ -27,6 +30,7 @@ namespace KitchenDesigner.Core.MCP
                     return McpResponse.Error(req.id, -32602, $"Unknown material '{p.material}'");
             }
 
+            var report = McpMutationReport.Begin();
             foreach (var e in matched)
             {
                 var before = e.DimensionsMM;
@@ -40,13 +44,14 @@ namespace KitchenDesigner.Core.MCP
                 bool afterMovable = p.locked.HasValue ? !p.locked.Value : e.Movable;
                 if (after == before && afterMaterial == e.MaterialId && afterMovable == e.Movable) continue;
                 commands.Add(new SetElementAttributesCommand(e, after, afterMaterial, afterMovable));
+                changed.Add(e);
                 updated++;
             }
 
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP set_attr x{commands.Count}", commands));
             SettleSceneAfterMutation();
-            return TerseResult(req, matched.Count, updated);
+            return SelectionResult(req, report, changed, reference, matched.Count);
         }
 
         private McpResponse HandleMove(McpRequest req)
@@ -55,10 +60,15 @@ namespace KitchenDesigner.Core.MCP
             if (p == null || string.IsNullOrWhiteSpace(p.selector))
                 return McpResponse.Error(req.id, -32602, "selector required");
 
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
+
             var delta = new Vector3(p.dx, p.dy, p.dz) * AppConstants.MM_TO_UNITS;
             var matched = ElementSelector.Match(p.selector);
             var commands = new List<IUndoCommand>();
+            var moved = new List<KitchenElement>();
 
+            var report = McpMutationReport.Begin();
             foreach (var e in matched)
             {
                 if (!e.Movable) continue;
@@ -66,12 +76,13 @@ namespace KitchenDesigner.Core.MCP
                 var rot = e.transform.rotation;
                 commands.Add(new MoveCommand(e, before, before + delta, rot, rot));
                 AttachMove.AppendFollowers(commands, e, before, rot, before + delta, rot, matched);
+                moved.Add(e);
             }
 
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP move x{commands.Count}", commands));
             SettleSceneAfterMutation();
-            return TerseResult(req, matched.Count, commands.Count);
+            return SelectionResult(req, report, moved, reference, matched.Count);
         }
 
         private McpResponse HandleResizeModule(McpRequest req)
@@ -79,6 +90,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsResizeModule>();
             if (p == null || string.IsNullOrWhiteSpace(p.module))
                 return McpResponse.Error(req.id, -32602, "module (group name) required");
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
 
             var group = ResolveGroup(p.module);
             var members = group != null ? GroupManager.MembersOf(group) : new List<KitchenElement>();
@@ -89,7 +102,9 @@ namespace KitchenDesigner.Core.MCP
             char axis = string.IsNullOrEmpty(axisName) ? 'x' : axisName[0];
             var plan = ModuleResize.Plan(members, axis, p.delta_mm);
             var commands = new List<IUndoCommand>();
+            var changed = new List<KitchenElement>();
 
+            var report = McpMutationReport.Begin();
             foreach (var c in plan)
             {
                 var e = c.element;
@@ -99,12 +114,15 @@ namespace KitchenDesigner.Core.MCP
                     commands.Add(new ResizeCommand(e, e.DimensionsMM, c.newDimensions, posB, c.newPosition, rot, rot));
                 else if (c.newPosition != posB)
                     commands.Add(new MoveCommand(e, posB, c.newPosition, rot, rot));
+                else
+                    continue;
+                changed.Add(e);
             }
 
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP resize_module '{p.module}' x{commands.Count}", commands));
             SettleSceneAfterMutation();
-            return TerseResult(req, members.Count, commands.Count);
+            return SelectionResult(req, report, changed, reference, members.Count);
         }
 
         private McpResponse HandleGroupV2(McpRequest req)
@@ -140,6 +158,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsAlignSelection>();
             if (p == null || string.IsNullOrWhiteSpace(p.selector) || string.IsNullOrWhiteSpace(p.target))
                 return McpResponse.Error(req.id, -32602, "selector and target required");
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
             if (!McpWireEnums.TryParseFace(p.face, out int axis, out bool maxSide))
                 return McpResponse.Error(req.id, -32602, $"Unknown face '{p.face}'");
             string targetFace = string.IsNullOrEmpty(p.target_face) ? OppositeFace(p.face) : p.target_face;
@@ -176,7 +196,9 @@ namespace KitchenDesigner.Core.MCP
             var targetAabb = McpAabb.Of(target.GetVertices());
             float targetCoord = McpAabb.Side(targetAabb, targetAxis, targetMax);
             float gap = p.gap_mm * AppConstants.MM_TO_UNITS;
+            var report = McpMutationReport.Begin();
             var commands = new List<IUndoCommand>();
+            var moved = new List<KitchenElement>();
             foreach (var unit in units)
             {
                 var vertices = new List<Vector3>();
@@ -191,10 +213,11 @@ namespace KitchenDesigner.Core.MCP
                     var rot = e.transform.rotation;
                     commands.Add(new MoveCommand(e, before, after, rot, rot));
                     AttachMove.AppendFollowers(commands, e, before, rot, after, rot, unit);
+                    moved.Add(e);
                 }
             }
             CommandStack.Execute(new CompositeCommand($"MCP align x{units.Count} units", commands));
-            return TerseResult(req, matched.Count, commands.Count);
+            return SelectionResult(req, report, moved, reference, matched.Count);
         }
 
         private static string OppositeFace(string face) => face switch
@@ -285,60 +308,38 @@ namespace KitchenDesigner.Core.MCP
             });
         }
 
-        private static bool RoomContains(RoomData room, Vector3 world)
-        {
-            var poly = room.polygonXZ;
-            if (poly == null || poly.Length < 6 || poly.Length % 2 != 0) return false;
-            float x = world.x / AppConstants.MM_TO_UNITS, z = world.z / AppConstants.MM_TO_UNITS;
-            bool inside = false;
-            int count = poly.Length / 2;
-            for (int i = 0, j = count - 1; i < count; j = i++)
-            {
-                float xi = poly[i * 2], zi = poly[i * 2 + 1];
-                float xj = poly[j * 2], zj = poly[j * 2 + 1];
-                bool crosses = (zi > z) != (zj > z) &&
-                    x < (xj - xi) * (z - zi) / (zj - zi) + xi;
-                if (crosses) inside = !inside;
-            }
-            return inside;
-        }
+        private static bool RoomContains(RoomData room, Vector3 world) =>
+            McpRoomPolygon.Contains(room.polygonXZ, McpAnchor.ToMm(world.x), McpAnchor.ToMm(world.z));
 
         private McpResponse HandleGetCompact(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsGetCompact>();
             if (p == null || p.names == null || p.names.Length == 0)
                 return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
-            var allowed = new HashSet<string>(new[]
-                { "name", "kind", "anchorMm", "sizeMm", "rotYDeg", "hasViolations", "module", "wallKind" },
-                System.StringComparer.OrdinalIgnoreCase);
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
+            var allowed = McpCompactRow.Allowed();
             var fields = p.fields != null && p.fields.Length > 0
                 ? new HashSet<string>(p.fields, System.StringComparer.OrdinalIgnoreCase) : allowed;
             foreach (var f in fields) if (!allowed.Contains(f))
-                return McpResponse.Error(req.id, -32602, $"Unknown compact field '{f}'");
-            var all = PartRegistry.GetAll();
-            var validation = McpValidationCache.Get(all);
+                return McpResponse.Error(req.id, -32602,
+                    $"Unknown compact field '{f}'. Allowed: {string.Join(", ", McpCompactRow.Fields)}");
+            var validation = McpValidationCache.Get(PartRegistry.GetAll());
             var elements = new List<Dictionary<string, object?>>();
             var missing = new List<string>();
             foreach (var name in p.names)
             {
                 var e = FindElementByName(name);
                 if (e == null) { missing.Add(name); continue; }
-                var row = new Dictionary<string, object?>();
-                var wall = e.GetComponent<Wall>();
-                var aabb = McpAabb.Of(e.GetVertices());
-                Vector3 anchor = new Vector3(aabb.minX, aabb.minY, aabb.minZ);
-                if (fields.Contains("name")) row["name"] = e.PartName;
-                if (fields.Contains("kind")) row["kind"] = ElementSelector.TypeOf(e);
-                if (fields.Contains("anchorMm")) row["anchorMm"] = new[]
-                    { Mathf.RoundToInt(anchor.x / AppConstants.MM_TO_UNITS), Mathf.RoundToInt(anchor.z / AppConstants.MM_TO_UNITS) };
-                if (fields.Contains("sizeMm")) row["sizeMm"] = new[] { e.DimensionsMM.x, e.DimensionsMM.y, e.DimensionsMM.z };
-                if (fields.Contains("rotYDeg")) row["rotYDeg"] = Mathf.Round(e.transform.eulerAngles.y * 10f) / 10f;
-                if (fields.Contains("hasViolations")) row["hasViolations"] = validation != null && validation.violations.Contains(e);
-                if (fields.Contains("module")) row["module"] = GroupManager.GroupOf(e)?.name;
-                if (fields.Contains("wallKind")) row["wallKind"] = wall?.Kind;
-                elements.Add(row);
+                elements.Add(McpCompactRow.Build(e, fields, reference, validation));
             }
-            return McpResponse.Result(req.id, new { count = elements.Count, elements, missing = missing.Count > 0 ? missing : null });
+            return McpResponse.Result(req.id, new
+            {
+                @ref = reference.Canonical,
+                count = elements.Count,
+                elements,
+                missing = missing.Count > 0 ? missing : null
+            });
         }
 
         private McpResponse HandlePreviewFloorplan(McpRequest req)
@@ -379,17 +380,13 @@ namespace KitchenDesigner.Core.MCP
             return null;
         }
 
-        private McpResponse TerseResult(McpRequest req, int matched, int updated)
+        private McpResponse SelectionResult(McpRequest req, McpMutationReport report, List<KitchenElement> changed,
+            McpReference reference, int matchedCount)
         {
-            var all = PartRegistry.GetAll();
-            var vr = McpValidationCache.Get(all);
-            return McpResponse.Result(req.id, new
-            {
-                ok = true,
-                matched,
-                updated,
-                sceneViolationCount = vr != null ? vr.violations.Count : 0
-            });
+            var reply = report.Finish(changed, reference);
+            reply.matchedCount = matchedCount;
+            reply.updatedCount = changed.Count;
+            return McpResponse.Result(req.id, reply);
         }
     }
 }

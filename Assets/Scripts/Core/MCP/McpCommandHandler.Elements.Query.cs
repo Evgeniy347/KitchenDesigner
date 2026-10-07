@@ -37,6 +37,8 @@ namespace KitchenDesigner.Core.MCP
         private McpResponse HandleGetElements(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsGetElements>() ?? new ParamsGetElements();
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
             var all = PartRegistry.GetAll();
             var vr = McpValidationCache.Get(all);
 
@@ -72,12 +74,13 @@ namespace KitchenDesigner.Core.MCP
                 var list = new List<object>();
                 foreach (var el in matched)
                 {
-                    var pos = el.GetComponent<Wall>() is Wall w ? w.FullPosition : el.transform.position;
+                    var box = McpAnchor.ToMmBoxStruct(McpAabb.Of(el.GetVertices()));
                     list.Add(new
                     {
                         name = el.PartName,
                         type = el.GetType().Name,
-                        posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z),
+                        posMm = McpAnchor.MmTriple(reference.PointOf(box.Min, box.Max)),
+                        footprintMm = McpAnchor.MmTriple(box.Size),
                         dimXMm = el.DimensionsMM.x, dimYMm = el.DimensionsMM.y, dimZMm = el.DimensionsMM.z,
                         rotYDeg = el.transform.eulerAngles.y,
                         locked = !el.Movable,
@@ -91,12 +94,13 @@ namespace KitchenDesigner.Core.MCP
             {
                 var list = new List<ElementInfo>();
                 foreach (var el in matched)
-                    list.Add(ElementInfoBuilder.Build(el, all, false, vr));
+                    list.Add(ElementInfoBuilder.Build(el, all, false, vr, reference));
                 elements = list;
             }
 
             return McpResponse.Result(req.id, new
             {
+                @ref = reference.Canonical,
                 count = matched.Count,
                 elements,
                 missing = missing.Count > 0 ? missing : null
@@ -263,6 +267,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsSnapDiagnose>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
 
             var results = new List<object>();
             var missing = new List<string>();
@@ -271,11 +277,11 @@ namespace KitchenDesigner.Core.MCP
                 var element = FindElementByName(op.name);
                 if (element == null) { missing.Add(op.name); continue; }
                 var pos = McpAnchor.PositionForAnchorMm(op.anchor_x_mm, op.anchor_y_mm, op.anchor_z_mm,
-                    McpAnchor.MinCornerOffset(element), element.transform.position);
+                    McpAnchor.RefOffset(element, reference), element.transform.position);
                 var diagnosis = SnapSystem.Diagnose(element, PartRegistry.GetAll(), pos);
                 results.Add(diagnosis);
             }
-            return McpResponse.Result(req.id, new { results, missing = missing.Count > 0 ? missing : null });
+            return McpResponse.Result(req.id, new { @ref = reference.Canonical, results, missing = missing.Count > 0 ? missing : null });
         }
 
         private McpResponse HandleGetFreeSpace(McpRequest req)

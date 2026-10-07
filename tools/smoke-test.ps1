@@ -304,7 +304,7 @@ try {
         })
     }
     $t.Stop()
-    $createOk = $created -and $created.ok -eq $true -and ($created.created -contains $testName)
+    $createOk = $created -and $created.ok -eq $true -and (@($created.placements | Where-Object { $_.name -eq $testName }).Count -eq 1)
     Add-Result -Name 'create_elements' -Passed ([bool]$createOk) -Ms $t.Elapsed.TotalMilliseconds
 
     # ---- 4) read it back ----

@@ -100,12 +100,12 @@ public class McpUnitContractTests : McpTestFixture
         return found;
     }
 
-    private int[] AnchorMm(string name)
+    private float[] PosMm(string name)
     {
-        var resp = _handler!.Handle(MakeReq("get", new { names = new[] { name }, fields = new[] { "anchorMm" } }));
+        var resp = _handler!.Handle(MakeReq("get", new { names = new[] { name }, fields = new[] { "posMm" } }));
         Assert.AreEqual("result", resp.type, "get не ответил: " + JsonConvert.SerializeObject(resp.data));
         var jo = JObject.Parse(JsonConvert.SerializeObject(resp.data));
-        return jo["elements"]![0]!["anchorMm"]!.ToObject<int[]>()!;
+        return jo["elements"]![0]!["posMm"]!.ToObject<float[]>()!;
     }
 
     [Test]
@@ -172,22 +172,24 @@ public class McpUnitContractTests : McpTestFixture
     public void GetAnchor_FedStraightBackIntoEditElements_LeavesTheElementWhereItWas()
     {
         Make("B2_bottom", new Vector3(0.715f, 0.108f, -3.344f), new Vector3Int(564, 16, 552));
-        var before = AnchorMm("B2_bottom");
+        var before = PosMm("B2_bottom");
 
         var edit = _handler!.Handle(MakeReq("edit_elements", new
         {
-            ops = new[] { new { name = "B2_bottom", anchor_x_mm = before[0], anchor_z_mm = before[1] } }
+            ops = new[] { new { name = "B2_bottom", anchor_x_mm = before[0], anchor_y_mm = before[1], anchor_z_mm = before[2] } }
         }));
         Assert.AreEqual("result", edit.type,
             "edit_elements отказал: " + JsonConvert.SerializeObject(edit.data));
 
-        CollectionAssert.AreEqual(before, AnchorMm("B2_bottom"),
-            "цикл «прочитал → записал» не замыкается, и расхождений два, они складываются: "
-            + "get отдаёт anchor в МИЛЛИМЕТРАХ и от МИНИМАЛЬНОГО УГЛА, а edit_elements ждёт "
-            + "x/y/z в МЕТРАХ и от ЦЕНТРА. Клиент, честно подставивший прочитанное в запись, "
-            + "промахивается и по масштабу, и по началу координат — без единого сообщения об "
-            + "ошибке. Перевод одних только единиц чинит половину: этот сторож останется "
-            + "красным, пока запись не примет тот же угол, что отдаёт чтение.");
+        var after = PosMm("B2_bottom");
+        for (int axis = 0; axis < 3; axis++)
+            Assert.AreEqual(before[axis], after[axis], 0.1f,
+                "цикл «прочитал → записал» не замыкается, и расхождений два, они складываются: "
+                + "get отдаёт posMm в МИЛЛИМЕТРАХ и от МИНИМАЛЬНОГО УГЛА, а edit_elements ждёт "
+                + "x/y/z в МЕТРАХ и от ЦЕНТРА. Клиент, честно подставивший прочитанное в запись, "
+                + "промахивается и по масштабу, и по началу координат — без единого сообщения об "
+                + "ошибке. Перевод одних только единиц чинит половину: этот сторож останется "
+                + "красным, пока запись не примет ту же точку, что отдаёт чтение. Ось " + axis);
     }
 
     [Test]
@@ -249,7 +251,7 @@ public class McpUnitContractTests : McpTestFixture
     [Test]
     public void GetElementsSummary_ReportsPositionAndSize_InTheSameUnit()
     {
-        Make("B2_bottom", new Vector3(0.715f, 0.108f, -3.344f), new Vector3Int(564, 16, 552));
+        var element = Make("B2_bottom", new Vector3(0.715f, 0.108f, -3.344f), new Vector3Int(564, 16, 552));
 
         var resp = _handler!.Handle(MakeReq("get_elements", new { names = new[] { "B2_bottom" }, summary = true }));
         Assert.AreEqual("result", resp.type,
@@ -257,7 +259,8 @@ public class McpUnitContractTests : McpTestFixture
         var row = JObject.Parse(JsonConvert.SerializeObject(resp.data))["elements"]![0]!;
 
         Assert.AreEqual(564, (int)row["dimXMm"]!, "размер и так в мм — опора проверки");
-        Assert.AreEqual(715f, (float)row["posXMm"]!, 0.5f,
+        var minX = element.GetVertices().Min(v => v.x) * 1000f;
+        Assert.AreEqual(minX, row["posMm"]![0]!.Value<float>(), 0.5f,
             "один плоский объект ответа нёс posX в метрах и dimX в миллиметрах, и ничто в "
             + "именах полей об этом не говорило. Единицы ответов не описаны нигде, кроме прозы "
             + "guide {topic:\"fields\"} — то есть читающий агент обязан был помнить, какая "

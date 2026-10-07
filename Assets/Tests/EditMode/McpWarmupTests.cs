@@ -92,24 +92,43 @@ public class McpWarmupTests
     }
 
     [Test]
-    public void AfterTheWarmup_AResponseCostsAtMostItsOwnWrapper()
+    public void AfterTheWarmup_WritingAMutationReply_BuildsNoContracts()
+    {
+        int before = McpJson.Resolver.ContractsBuilt;
+        var placement = new PlacementInfo();
+        placement.touches = new List<PlacementContact> { new PlacementContact() };
+        placement.gaps = new List<PlacementGap> { new PlacementGap() };
+        var reply = new MutationReply();
+        reply.placements = new List<PlacementInfo> { placement };
+        reply.deleted = new List<string> { "sensor" };
+        reply.steps = new List<string> { "Create sensor" };
+
+        JsonConvert.SerializeObject(reply, Formatting.Indented, McpJson.Settings);
+
+        Assert.AreEqual(0, McpJson.Resolver.ContractsBuilt - before,
+            "ответ любой мутации — один и тот же MutationReply с placements: это DTO, а не "
+            + "анонимный тип, поэтому его контракты прогреваются целиком и первый create_elements "
+            + "сессии не платит за них на пути ответа");
+    }
+
+    [Test]
+    public void AfterTheWarmup_AGetElementsResponseCostsAtMostItsOwnWrapper()
     {
         int before = McpJson.Resolver.ContractsBuilt;
 
         JsonConvert.SerializeObject(
             new
             {
-                ok = true,
-                created = new List<string> { "sensor" },
-                elements = new List<ElementInfo> { new ElementInfo() },
-                sceneViolationCount = 0
+                @ref = McpReference.DefaultName,
+                count = 1,
+                elements = new List<ElementInfo> { new ElementInfo() }
             },
             Formatting.Indented, McpJson.Settings);
 
         Assert.LessOrEqual(McpJson.Resolver.ContractsBuilt - before, 1,
-            "обёртка ответа — анонимный тип, свой у каждого места вызова, и прогреть "
-            + "её заранее нельзя: это честный остаток холода. Но он ОДИН контракт на "
-            + "четыре скалярных поля, а не весь ElementInfo");
+            "обёртка ответа get_elements — анонимный тип, свой у каждого места вызова, и "
+            + "прогреть её заранее нельзя: это честный остаток холода. Но он ОДИН контракт на "
+            + "три скалярных поля, а не весь ElementInfo");
     }
 
     [Test]

@@ -16,9 +16,14 @@ START HERE:
 UNITS:
 - MILLIMETRES everywhere, in and out. There is no other unit on this wire.
 - Every dimensional field carries its unit in its NAME (anchor_x_mm, offset_x_mm,
-  posXMm, aabbMinXMm); angles carry Deg. Read the name, not this paragraph.
-- A position is the MINIMUM world corner, never the centre: what get returns in
-  anchor[] is exactly what edit_elements takes in anchor_x_mm / anchor_z_mm.
+  posMm, aabbMinXMm); angles carry Deg. Read the name, not this paragraph.
+- A position is ONE POINT of the part's world box, chosen by the request's ref.
+  Default ref = left-bottom-back = the MINIMUM corner, never the centre. Every
+  response reports positions in the SAME ref the request used and echoes it, so the
+  posMm you read goes back into anchor_x_mm / anchor_y_mm / anchor_z_mm unchanged
+  (same ref) and the part does not move. ref words, joined with '-': left|right (X),
+  bottom|top (Y), back|front (Z), center = middle of the axes not named
+  (center-bottom = middle of the footprint at floor level).
 
 IDENTITY:
 - Every board has a unique text ""name"". Use get_scene_tree to look around, then
@@ -43,8 +48,13 @@ HOW TO EDIT SINGLE ELEMENTS (batch-first):
    The whole batch is atomic and is ONE undo step.
 3. CREATE: create_elements {items:[...]} — only sets name, type, position, size.
    Use edit_elements to set all other properties afterwards.
-4. CHECK: every mutation response already contains ""violations"" for the changed
-   element ([] = clean) and sceneViolationCount for the whole scene.
+4. CHECK: every mutation returns a short ""placement"" per changed part: posMm,
+   footprintMm (WORLD size x,y,z after rotation), on (what it stands on), touches
+   [{n, face}], gaps [{n, face, gapMm}], room, level, issues ([] = clean) - and
+   sceneViolationDelta {added, removed}: the violations THIS call created or
+   fixed. Old violations of the scene are not counted.
+5. WRONG RESULT? undo {steps} takes the last mutating calls back (redo returns
+   them). Never delete and re-create to fix a mistake.
 
 PLACEMENT WITHOUT MATH:
 - align_elements — press a face flush against (or gap_mm away from) another board's face.
@@ -55,7 +65,7 @@ SAFETY:
 - locked:true in element info means move/resize/delete are rejected. Unlock with
   edit_elements {locked:false} ONLY when the user explicitly allowed it.
 - Prefer edit_elements over raw set_position / set_scale / delete_object.
-- delete_elements, edit_elements and clone_elements are undoable.
+- delete_elements, edit_elements and clone_elements are undoable (undo tool).
 - get_all_elements is a legacy full dump (~1 KB per element) — prefer
   get_scene_tree + get.
 
@@ -80,12 +90,14 @@ FIRST CALL OF A SESSION
 
 UNITS
   MILLIMETRES everywhere, in and out; the unit is in the field NAME.
-  A position is the MINIMUM world corner (anchor), never the centre.
+  A position is one POINT of the part's world box, chosen by ref (default
+  left-bottom-back = the MINIMUM corner, never the centre). Responses use the
+  ref you sent and echo it; posMm read -> anchor_*_mm written = no movement.
   dimZMm = board thickness (smallest side, usually 18 mm).
 
 READING THE SCENE (cheap -> expensive)
   get_scene_tree                                -> modules, bboxes, type counts
-  get {names:[""B4_Side_L""]}                     -> compact corner geometry (MM)
+  get {names:[""B4_Side_L""]}                     -> posMm + footprintMm + sizeMm (MM)
   get_elements {filter:""B4_*"", summary:true}     -> one cabinet, compact
   get_elements {names:[""A"",""B""]}                -> full info for exactly these
   get_free_space {between:[""Side_L"",""Side_R""]} -> the empty box between panels
@@ -100,7 +112,7 @@ CHANGING MANY BOARDS AT ONCE — let the server do the arithmetic
   set_attr / move / align / resize_module take a SELECTOR and an intent, so you
   pass one number instead of per-board coordinates. See guide {topic:""bulk""}.
 
-EDITING SINGLE ELEMENTS (every mutation returns element info + ITS violations)
+EDITING SINGLE ELEMENTS (every mutation returns a short placement per part)
   edit_elements {ops:[{name:""P1"", anchor_x_mm:1200}, {name:""P2"", width:600, rot_y:90}]}
      - MANY changes in ONE transactional call, single undo step.
      - dry_run:true = simulate first, nothing is kept.
@@ -112,11 +124,18 @@ EDITING SINGLE ELEMENTS (every mutation returns element info + ITS violations)
   convert_elements / delete_elements / select_elements — all batch, all atomic.
 
 CHECKING
-  Look at ""violations"" in EVERY mutation response: [] means this element is clean.
-  If sceneViolationCount grew after your change, call get_violations (optionally
-  with names:[...]) to see what else broke.
-  severity in overlaps: touching < minor_overlap < overlap < deep_penetration.
-  deep_penetration means the board is INSIDE another one - that is never OK.
+  Look at ""issues"" of each placement in EVERY mutation response: [] means this
+  part is clean. sceneViolationDelta.added lists the parts this call broke -
+  if it is not empty, call get_violations {names:[...]} to see why.
+  An issue ""deep_penetration: B 12.2mm"" means the board is INSIDE B - never OK.
+  Severity grades: touching < minor_overlap < overlap < deep_penetration.
+  ""on"" tells what the part stands on, ""gaps"" the free distance to the nearest
+  neighbour per face (gapMm, up to 500 mm): a floating shelf or a 12 mm slit shows up there.
+
+UNDO INSTEAD OF REDOING
+  A result is wrong -> undo {steps:1}; it restores positions, sizes and removed
+  or created parts exactly. redo {} re-applies. One step = one earlier mutating
+  call (or one edit the human made in the app).
 
 STEP-BY-STEP EXAMPLE: three shelves between two panels
   1. get_free_space {between:[""Side_L"",""Side_R""]}   -> inner width/position
@@ -125,7 +144,7 @@ STEP-BY-STEP EXAMPLE: three shelves between two panels
   3. align_elements  {ops:[{name:""Shelf1"", face:""left"", target:""Side_L"",
                             target_face:""right""}]}
   4. clone_elements  {ops:[{name:""Shelf1"", count:2, offset_y_mm:300}]}
-  5. get_violations {names:[""Shelf1"",""Shelf1_2"",""Shelf1_3""]}  -> expect []
+  5. read issues of the three placements in the replies -> expect [] each
 
 SAFETY
   LOCKED elements (locked:true in element info) reject changes. Unlock with
@@ -242,7 +261,9 @@ TOOLS
                                        the axis resize_module should use.
 
   Every one of them is atomic, ONE undo step, and returns
-  {matched, updated, sceneViolationCount} — no per-element dumps.
+  {matchedCount, updatedCount, placements (first 20 changed parts), omittedCount,
+  sceneViolationDelta} — no per-element dumps. ref decides which point of the
+  part the placements' posMm reports.
 
 RELATED: get_modules / module_info list modules; add_to_module,
 remove_from_module, dissolve_module, create_module manage membership one by one
@@ -607,8 +628,10 @@ dimXMm/dimYMm/dimZMm  LOCAL size in MM (dimZMm = thickness). Does NOT change whe
 worldDim*Mm           WORLD-axis extents in MM (from AABB). USE THESE when the
                       board is rotated: after rot_y=90 a 600x18 board has
                       worldDimXMm=18, worldDimZMm=600.
-posXMm/posYMm/posZMm  Centre position in MM (world). The MIN corner is aabbMin*Mm,
-                      and that is what edit_elements anchor_*_mm takes.
+posMm                 [x,y,z] in MM of the point chosen by the request's ref
+                      (default left-bottom-back = the MIN corner, equal to
+                      aabbMin*Mm). This is what edit_elements anchor_x_mm /
+                      anchor_y_mm / anchor_z_mm take when sent with the same ref.
 rotXDeg/rotYDeg/rotZDeg  Euler angles in DEGREES.
 aabbMin*Mm/aabbMax*Mm World bounding box in MM.
 effectiveDim*Mm       dim + gaps (any element that has them). NOT rotation-aware
@@ -700,18 +723,39 @@ roof                  Roof only: {type, ridgeAxis, pitchDeg, overhangMm,
                       roof frame (footprint, pitch, covering waste %) -
                       there is no matching edit field for either.
 
-COMPACT v2 GEOMETRY (get, get_scene_tree) — a different, terser shape:
-  {name, kind, anchorMm:[x,z] corner, sizeMm:[width,height,depth], rotYDeg,
-   hasViolations, module}. Positions are the MIN corner; every number is MM.
+COMPACT GEOMETRY (get) — a different, terser shape:
+  {ref, elements:[{name, kind, posMm:[x,y,z] in ref, footprintMm:[x,y,z] WORLD
+   extents after rotation, sizeMm:[width,height,depth] the part's OWN
+   dimensions, rotYDeg, hasViolations, module}]}. Every number is MM.
    Use it for reasoning about layout; use get_elements for full detail.
 
-MUTATION RESPONSES (create/edit/align/clone/...) always return:
-  { ok, element: <full info above>, violations: [<THIS element's problems>],
-    sceneViolationCount: <structural violations in the WHOLE scene> }
-Bulk and plan tools return counts instead: {matched/created/updated/deleted,
-violations, sceneViolationCount}.
-violations kinds: overlap (with severity + penetrationMm), disconnected,
-facade_facing_inward, face_obstruction, opening_collision, drawer_invalid.",
+MUTATION RESPONSES (create/edit/align/clone/distribute/convert/...) return:
+  { ok, ref, placements:[PLACEMENT...], sceneViolationDelta:{added, removed} }
+  PLACEMENT = { name,
+    posMm:[x,y,z]        the point chosen by ref, MM, world axes
+    footprintMm:[x,y,z]  WORLD extents of the part after rotation, MM
+                         (x = left-right, y = up, z = back-front)
+    on                   name of the part it stands on (touches its bottom), or absent
+    touches:[{n, face}]  neighbours in flush contact (< 0.5 mm); face is OUR face
+    gaps:[{n, face, gapMm}]  nearest free neighbour per face, up to 500 mm
+    room, level          the room (floorplan id) and storey it is in
+    issues:[]            this part's problems; [] = clean }
+  face words: left|right (X), bottom|top (Y), back|front (Z), same as align_elements.
+  issues strings: ""<severity>: <neighbour> <depth>mm"" (minor_overlap, overlap,
+  deep_penetration), disconnected, facade_facing_inward, ""face_obstruction <n>"",
+  ""opening_collision <n>"", ""drawer_invalid <message>"". At most 6 per part.
+  sceneViolationDelta: names of parts that BECAME violating (added) or STOPPED
+  (removed) because of this very call; violations that were already there are
+  not repeated. The whole-scene count is not returned (load_project and
+  save_project still report sceneViolationCount).
+  Bulk tools (set_attr/move/align/resize_module) add matchedCount/updatedCount;
+  placements are capped at 20 parts (omittedCount says how many were left out);
+  edit_elements adds dryRun/applied; delete_elements returns deleted names
+  instead of placements; undo/redo return steps (descriptions), doneCount,
+  undoAvailableCount, redoAvailableCount.
+  Full element info (every field of this topic) is returned ONLY by get_elements
+  (and the legacy get_all_elements): its posMm obeys the ref of the request and
+  the response echoes it.",
 
             ["drawers"] =
 @"GTV DRAWERS (DrawerElement)
@@ -747,8 +791,8 @@ Folded -> Extended -> Bed -> Folded). State is in element.drawer: isOpen,
 doubleState.
 
 VALIDATION: drawer problems (bad length, missing pair, ...) appear as
-kind:""drawer_invalid"" entries in the violations list of mutation responses
-and in get_violations.",
+""drawer_invalid ..."" entries in the placement issues of mutation responses
+and as drawer_invalid kinds in get_violations.",
 
             ["violations"] =
 @"VIOLATIONS - WHAT COUNTS AND WHAT DOES NOT
@@ -776,9 +820,9 @@ TOLERANCES: everything below 0.5 mm is float noise and is filtered out server-si
 All numbers arrive rounded to 0.1 mm. Boards standing flush report touching:true,
 gapMM:0 - treat that as a GOOD fit.
 
-CHECKING: every mutation response carries the changed element's violations plus
-sceneViolationCount. get_violations {names:[...]} checks specific boards;
-get_violations {} audits the whole scene."
+CHECKING: every mutation response carries the changed parts' issues and the
+sceneViolationDelta (what this call broke or fixed). get_violations
+{names:[...]} checks specific boards; get_violations {} audits the whole scene."
         };
     }
 }

@@ -45,9 +45,7 @@ namespace KitchenDesigner.Core.MCP
         public int dimXMm;
         public int dimYMm;
         public int dimZMm;
-        public float posXMm;
-        public float posYMm;
-        public float posZMm;
+        public float[] posMm = System.Array.Empty<float>();
         public float rotXDeg;
         public float rotYDeg;
         public float rotZDeg;

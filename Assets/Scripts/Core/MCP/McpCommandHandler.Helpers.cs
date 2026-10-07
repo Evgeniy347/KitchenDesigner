@@ -357,18 +357,5 @@ namespace KitchenDesigner.Core.MCP
 
             return list;
         }
-
-        private static object BuildMutationResult(KitchenElement el)
-        {
-            var all = PartRegistry.GetAll();
-            var vr = McpValidationCache.Get(all);
-            return new
-            {
-                ok = true,
-                element = ElementInfoBuilder.Build(el, all, includeFacadeValidation: false, validation: vr),
-                violations = BuildElementViolations(el, all, vr),
-                sceneViolationCount = vr != null ? vr.violations.Count : 0
-            };
-        }
     }
 }

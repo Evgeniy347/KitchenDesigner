@@ -217,23 +217,9 @@ public class McpCommandHandlerTests : McpTestFixture
         return (T)p.GetValue(obj, null);
     }
 
-    private static ElementInfo EnvElement(McpResponse resp)
-    {
-        var jObj = Newtonsoft.Json.Linq.JObject.FromObject(resp.data!);
-        var elements = jObj["elements"] as Newtonsoft.Json.Linq.JArray;
-        Assert.NotNull(elements);
-        Assert.Greater(elements!.Count, 0);
-        return elements[0].ToObject<ElementInfo>()!;
-    }
+    private ElementInfo EnvElement(McpResponse resp) => FirstElementInfo(resp);
 
-    private static Newtonsoft.Json.Linq.JObject EditResult(McpResponse resp)
-    {
-        var jObj = Newtonsoft.Json.Linq.JObject.FromObject(resp.data!);
-        var results = jObj["results"] as Newtonsoft.Json.Linq.JArray;
-        Assert.NotNull(results);
-        Assert.Greater(results!.Count, 0);
-        return (Newtonsoft.Json.Linq.JObject)results![0];
-    }
+    private static Newtonsoft.Json.Linq.JObject EditResult(McpResponse resp) => PlacementOf(resp);
 
     private KitchenElement MakeWall(string name, Vector3Int dims, Vector3 pos)
     {
@@ -338,9 +324,10 @@ public class McpCommandHandlerTests : McpTestFixture
 
         Assert.AreEqual("result", resp.type);
         var r = EditResult(resp);
-        var viol = r["violations"] as Newtonsoft.Json.Linq.JArray;
-        Assert.IsNotNull(viol);
-        Assert.Greater(viol!.Count, 0);
+        var issues = r["issues"] as Newtonsoft.Json.Linq.JArray;
+        Assert.IsNotNull(issues);
+        Assert.Greater(issues!.Count, 0);
+        StringAssert.Contains(": B ", issues[0]!.Value<string>(), "размещение называет, с кем пересеклась деталь");
     }
 
     [Test]
@@ -355,9 +342,9 @@ public class McpCommandHandlerTests : McpTestFixture
 
         Assert.AreEqual("result", resp.type);
         var r = EditResult(resp);
-        var viol = r["violations"] as Newtonsoft.Json.Linq.JArray;
-        Assert.IsNotNull(viol);
-        Assert.Greater(viol!.Count, 0);
+        var issues = r["issues"] as Newtonsoft.Json.Linq.JArray;
+        Assert.IsNotNull(issues);
+        Assert.Greater(issues!.Count, 0);
     }
 
     [Test]

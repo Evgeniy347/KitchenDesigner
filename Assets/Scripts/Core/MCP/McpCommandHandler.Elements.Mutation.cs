@@ -78,29 +78,6 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
-        private static (List<object> results, int sceneViolationCount) DescribeBatch(
-            List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)> resolved)
-        {
-            var all = PartRegistry.GetAll();
-            var vr = McpValidationCache.Get(all);
-            var results = new List<object>();
-            foreach (var item in resolved)
-            {
-                var el = item.el;
-                var pos = el.transform.position;
-                results.Add(new
-                {
-                    name = el.PartName,
-                    posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z),
-                    dimXMm = el.DimensionsMM.x, dimYMm = el.DimensionsMM.y, dimZMm = el.DimensionsMM.z,
-                    rotYDeg = el.transform.eulerAngles.y,
-                    locked = !el.Movable,
-                    violations = BuildElementViolations(el, all, vr)
-                });
-            }
-            return (results, vr != null ? vr.violations.Count : 0);
-        }
-
         private static List<KitchenElement> ElementsWhoseStateTheEditCanTouch(
             List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)> resolved)
         {
@@ -142,6 +119,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsEditElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
 
             var errors = new List<string>();
             var resolved = new List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)>();
@@ -178,6 +157,7 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -1,
                     "edit_elements rejected, NOTHING was applied: " + string.Join(" | ", errors));
 
+            var report = McpMutationReport.Begin();
             var commands = new List<IUndoCommand>();
             foreach (var (op, el, _, _) in resolved)
             {
@@ -195,7 +175,7 @@ namespace KitchenDesigner.Core.MCP
                     : el.DimensionsMM;
                 var posAfter = hasPos
                     ? McpAnchor.PositionForAnchorMm(op.anchor_x_mm, op.anchor_y_mm, op.anchor_z_mm,
-                        McpAnchor.MinCornerOffsetAfter(el, rotAfter, dimsAfter), posBefore)
+                        McpAnchor.RefOffsetAfter(el, rotAfter, dimsAfter, reference), posBefore)
                     : posBefore;
                 if (hasDims)
                     commands.Add(new ResizeCommand(el, el.DimensionsMM, dimsAfter, posBefore, posAfter, rotBefore, rotAfter));
@@ -203,20 +183,25 @@ namespace KitchenDesigner.Core.MCP
                 AttachMove.AppendFollowers(commands, el, posBefore, rotBefore, posAfter, rotAfter);
             }
             var composite = new CompositeCommand($"MCP edit_elements ({resolved.Count} ops)", commands);
+            var edited = resolved.Select(r => r.el).ToList();
             if (p.dry_run)
             {
                 composite.Execute();
                 SceneChangeTracker.SettleDerivedLinks();
-                var (dryResults, drySceneCount) = DescribeBatch(resolved);
+                var dryReply = report.Finish(edited, reference);
+                dryReply.dryRun = true;
+                dryReply.applied = false;
                 composite.Undo();
                 SceneChangeTracker.SettleDerivedLinks();
-                return McpResponse.Result(req.id, new { ok = true, dryRun = true, applied = false, results = dryResults, sceneViolationCount = drySceneCount });
+                return McpResponse.Result(req.id, dryReply);
             }
             ApplyEditsAsOneUndoStep(resolved, composite, commands.Count > 0);
             SettleSceneAfterMutation();
-            var (results, sceneCount) = DescribeBatch(resolved);
+            var reply = report.Finish(edited, reference);
+            reply.dryRun = false;
+            reply.applied = true;
             Debug.Log($"[MCP] edit_elements: {resolved.Count} ops, {commands.Count} geometry");
-            return McpResponse.Result(req.id, new { ok = true, dryRun = false, applied = true, results, sceneViolationCount = sceneCount });
+            return McpResponse.Result(req.id, reply);
         }
 
         private McpResponse HandleCloneElements(McpRequest req)
@@ -224,7 +209,10 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsCloneElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
 
+            var report = McpMutationReport.Begin();
             var commands = new List<IUndoCommand>();
             var allClones = new List<KitchenElement>();
             var errors = new List<string>();
@@ -252,13 +240,8 @@ namespace KitchenDesigner.Core.MCP
 
             CommandStack.Execute(new CompositeCommand($"MCP clone_elements x{allClones.Count}", commands));
             SettleSceneAfterMutation();
-            var all = PartRegistry.GetAll();
-            var vr = McpValidationCache.Get(all);
-            var created = new List<string>();
-            var elements = new List<ElementInfo>();
-            foreach (var el in allClones) { created.Add(el.PartName); elements.Add(ElementInfoBuilder.Build(el, all, false, vr)); }
             Debug.Log($"[MCP] Clone batch: {p.ops.Length} sources → {allClones.Count} clones");
-            return McpResponse.Result(req.id, new { ok = true, created, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
+            return McpResponse.Result(req.id, report.Finish(allClones, reference));
         }
 
         private McpResponse HandleAlignElements(McpRequest req)
@@ -266,7 +249,10 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsAlignElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
 
+            var report = McpMutationReport.Begin();
             var commands = new List<IUndoCommand>();
             var errors = new List<string>();
             foreach (var op in p.ops)
@@ -307,18 +293,14 @@ namespace KitchenDesigner.Core.MCP
 
             CommandStack.Execute(new CompositeCommand($"MCP align_elements ({commands.Count} moves)", commands));
             SettleSceneAfterMutation();
-            var all = PartRegistry.GetAll();
-            var vr = McpValidationCache.Get(all);
-            var results = new List<object>();
+            var moved = new List<KitchenElement>();
             foreach (var op in p.ops)
             {
                 var el = FindElementByName(op.name);
-                if (el == null) continue;
-                var pos = el.transform.position;
-                results.Add(new { name = el.PartName, posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z), violations = BuildElementViolations(el, all, vr) });
+                if (el != null && !moved.Contains(el)) moved.Add(el);
             }
             Debug.Log($"[MCP] Aligned {commands.Count} elements");
-            return McpResponse.Result(req.id, new { ok = true, aligned = results.Count, results, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
+            return McpResponse.Result(req.id, report.Finish(moved, reference));
         }
 
         private McpResponse HandleDistributeEvenly(McpRequest req)
@@ -326,6 +308,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsDistributeEvenly>();
             if (p == null || p.names == null || p.names.Length < 3)
                 return McpResponse.Error(req.id, -32602, "names: at least 3 board names required");
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
             int axis = p.axis == "x" ? 0 : p.axis == "y" ? 1 : p.axis == "z" ? 2 : -1;
             if (axis < 0)
                 return McpResponse.Error(req.id, -32602, $"Unknown axis '{p.axis}'. Valid: x | y | z");
@@ -343,6 +327,7 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -1,
                     "distribute_evenly rejected, NOTHING was moved: " + string.Join(" | ", errors));
 
+            var report = McpMutationReport.Begin();
             resolved.Sort((a, b) => a.transform.position[axis].CompareTo(b.transform.position[axis]));
             float first = resolved[0].transform.position[axis];
             float last = resolved[resolved.Count - 1].transform.position[axis];
@@ -363,28 +348,11 @@ namespace KitchenDesigner.Core.MCP
             CommandStack.Execute(new CompositeCommand($"MCP distribute {resolved.Count} elements", commands));
             SettleSceneAfterMutation();
 
-            var all = PartRegistry.GetAll();
-            var vr = McpValidationCache.Get(all);
-            var results = new List<object>();
-            foreach (var el in resolved)
-            {
-                var pos = el.transform.position;
-                results.Add(new
-                {
-                    name = el.PartName,
-                    posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z),
-                    violations = BuildElementViolations(el, all, vr)
-                });
-            }
             Debug.Log($"[MCP] Distributed {resolved.Count} elements along {p.axis}, spacing {spacing:F4} m");
-            return McpResponse.Result(req.id, new
-            {
-                ok = true,
-                axis = p.axis,
-                spacingMm = spacing / AppConstants.MM_TO_UNITS,
-                results,
-                sceneViolationCount = vr != null ? vr.violations.Count : 0
-            });
+            var reply = report.Finish(resolved, reference);
+            reply.axis = p.axis;
+            reply.spacingMm = spacing / AppConstants.MM_TO_UNITS;
+            return McpResponse.Result(req.id, reply);
         }
 
         private static void SnapOpeningsOnceEveryWallOfTheBatchIsRegistered(List<KitchenElement> created)
@@ -442,6 +410,8 @@ namespace KitchenDesigner.Core.MCP
             McpCallStages.End("parseJson", stage);
             if (p == null || p.items == null || p.items.Length == 0)
                 return McpResponse.Error(req.id, -32602, "items required (non-empty array)");
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
 
             stage = McpCallStages.Begin();
             var errors = new List<string>();
@@ -452,6 +422,7 @@ namespace KitchenDesigner.Core.MCP
                     "create_elements rejected, NOTHING was created: " + string.Join(" | ", errors));
 
             stage = McpCallStages.Begin();
+            var report = McpMutationReport.Begin();
             var commands = new List<IUndoCommand>();
             var created = new List<KitchenElement>();
             foreach (var (item, elementType) in accepted)
@@ -460,7 +431,7 @@ namespace KitchenDesigner.Core.MCP
                 var go = ElementSpawners.Spawn(elementType, item, anchorWorld);
                 commands.Add(new CreateCommand(go));
                 var spawned = go.GetComponent<KitchenElement>();
-                McpAnchor.PlaceMinCornerAt(spawned, anchorWorld);
+                McpAnchor.PlaceRefPointAt(spawned, reference, anchorWorld);
                 spawned.LevelId = string.IsNullOrEmpty(item.level_id) ? LevelRegistry.CurrentId : item.level_id;
                 created.Add(spawned);
             }
@@ -480,14 +451,10 @@ namespace KitchenDesigner.Core.MCP
             McpCallStages.End("settle", stage);
 
             stage = McpCallStages.Begin();
-            var all = PartRegistry.GetAll();
-            var vr = McpValidationCache.Get(all);
-            var elements = new List<ElementInfo>();
-            var createdNames = new List<string>();
-            foreach (var el in created) { createdNames.Add(el.PartName); elements.Add(ElementInfoBuilder.Build(el, all, false, vr)); }
+            var reply = report.Finish(created, reference);
             McpCallStages.End("describe", stage);
-            Debug.Log($"[MCP] Created {created.Count} elements: {string.Join(", ", createdNames)}");
-            return McpResponse.Result(req.id, new { ok = true, created = createdNames, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
+            Debug.Log($"[MCP] Created {created.Count} elements: {string.Join(", ", created.Select(c => c.PartName))}");
+            return McpResponse.Result(req.id, reply);
         }
 
         private McpResponse HandleConvertElements(McpRequest req)
@@ -495,7 +462,10 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsConvertElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
 
+            var report = McpMutationReport.Begin();
             var errors = new List<string>();
             var results = new List<KitchenElement>();
             foreach (var op in p.ops)
@@ -525,13 +495,8 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -1, "convert_elements rejected: " + string.Join(" | ", errors));
 
             SettleSceneAfterMutation();
-            var all = PartRegistry.GetAll();
-            var vr = McpValidationCache.Get(all);
-            var elements = new List<ElementInfo>();
-            var names = new List<string>();
-            foreach (var el in results) { names.Add(el.PartName); elements.Add(ElementInfoBuilder.Build(el, all, false, vr)); }
             Debug.Log($"[MCP] Converted {results.Count} elements");
-            return McpResponse.Result(req.id, new { ok = true, converted = names, elements, sceneViolationCount = vr != null ? vr.violations.Count : 0 });
+            return McpResponse.Result(req.id, report.Finish(results, reference));
         }
 
         private McpResponse HandleDeleteElements(McpRequest req)
@@ -540,6 +505,7 @@ namespace KitchenDesigner.Core.MCP
             if (p == null || p.names == null || p.names.Length == 0)
                 return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
+            var report = McpMutationReport.Begin();
             var commands = new List<IUndoCommand>();
             var errors = new List<string>();
             foreach (var name in p.names)
@@ -556,10 +522,10 @@ namespace KitchenDesigner.Core.MCP
             var deletedNames = p.names.ToList();
             CommandStack.Execute(new CompositeCommand($"MCP delete_elements x{commands.Count}", commands));
             SettleSceneAfterMutation();
-            var allAfter = PartRegistry.GetAll();
-            var vrAfter = McpValidationCache.Get(allAfter);
             Debug.Log($"[MCP] Deleted {commands.Count} elements");
-            return McpResponse.Result(req.id, new { ok = true, deleted = deletedNames, sceneViolationCount = vrAfter != null ? vrAfter.violations.Count : 0 });
+            var reply = report.Finish();
+            reply.deleted = deletedNames;
+            return McpResponse.Result(req.id, reply);
         }
 
         private McpResponse HandleSelectElements(McpRequest req)
@@ -593,7 +559,10 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsResizeFloor>();
             if (p == null)
                 return McpResponse.Error(req.id, -32602, "invalid parameters");
+            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
+                return McpResponse.Error(req.id, -32602, refError);
 
+            var report = McpMutationReport.Begin();
             var el = plate.Element;
             var dimsBefore = el.DimensionsMM;
             var posBefore = el.transform.position;
@@ -609,7 +578,7 @@ namespace KitchenDesigner.Core.MCP
             SettleSceneAfterMutation();
 
             Debug.Log($"[MCP] Resized floor to ({w}, {h}, {d})mm");
-            return McpResponse.Result(req.id, BuildMutationResult(el));
+            return McpResponse.Result(req.id, report.Finish(new[] { (KitchenElement)el }, reference));
         }
     }
 }

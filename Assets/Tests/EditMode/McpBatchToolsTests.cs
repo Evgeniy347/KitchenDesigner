@@ -123,14 +123,21 @@ public class McpBatchToolsTests : McpTestFixture
     [Test]
     public void GetElements_Summary_ReturnsCompactShape()
     {
-        MakeElement("A", new Vector3Int(500, 400, 18), new Vector3(1f, 2f, 3f));
+        var a = MakeElement("A", new Vector3Int(500, 400, 18), new Vector3(1f, 2f, 3f));
 
         var resp = _handler!.Handle(MakeReq("get_elements", new { names = new[] { "A" }, summary = true }));
 
-        var el = Data(resp)["elements"]![0]!;
+        var d = Data(resp);
+        var el = d["elements"]![0]!;
         Assert.AreEqual("A", el["name"]!.Value<string>());
         Assert.AreEqual(500, el["dimXMm"]!.Value<int>());
-        Assert.AreEqual(1000f, el["posXMm"]!.Value<float>(), 1e-1f);
+        Assert.AreEqual("left-bottom-back", d["ref"]!.Value<string>(), "без ref числа — минимальный угол, и ответ называет это вслух");
+        var min = MinCorner(a) * 1000f;
+        var pos = el["posMm"]!.ToObject<float[]>()!;
+        Assert.AreEqual(min.x, pos[0], 0.1f, "posMm — точка ref, по умолчанию минимальный угол из геометрии, а не центр: x");
+        Assert.AreEqual(min.y, pos[1], 0.1f, "y");
+        Assert.AreEqual(min.z, pos[2], 0.1f, "z");
+        Assert.IsNull(el["posXMm"], "центр-островок posXMm удалён: три системы координат были главной петлёй слабой модели");
         Assert.IsNotNull(el["locked"]);
         Assert.IsNull(el["aabbMinXMm"], "summary не несёт AABB");
     }
@@ -195,7 +202,7 @@ public class McpBatchToolsTests : McpTestFixture
         Assert.AreEqual(600, b.DimensionsMM.x);
         var d = Data(resp);
         Assert.IsTrue(d["ok"]!.Value<bool>());
-        Assert.AreEqual(2, (d["results"] as JArray)!.Count);
+        Assert.AreEqual(2, (d["placements"] as JArray)!.Count);
     }
 
     [Test]
@@ -253,8 +260,10 @@ public class McpBatchToolsTests : McpTestFixture
         var d = Data(resp);
         Assert.IsTrue(d["dryRun"]!.Value<bool>());
         Assert.IsFalse(d["applied"]!.Value<bool>());
-        var viol = d["results"]![0]!["violations"] as JArray;
-        Assert.Greater(viol!.Count, 0, "dry-run должен сообщить о пересечении");
+        var issues = d["placements"]![0]!["issues"] as JArray;
+        Assert.Greater(issues!.Count, 0, "dry-run должен сообщить о пересечении");
+        CollectionAssert.AreEquivalent(new[] { "A", "B" }, d["sceneViolationDelta"]!["added"]!.ToObject<string[]>(),
+            "dry-run показывает, что сломала бы правка, а не сколько всего нарушений в сцене");
         Assert.AreEqual(0f, a.transform.position.x, 1e-6f, "dry-run не меняет сцену");
     }
 
@@ -298,7 +307,8 @@ public class McpBatchToolsTests : McpTestFixture
 
         Assert.AreEqual("result", resp.type, "clone failed: " + resp.data);
         var d = Data(resp);
-        Assert.AreEqual(2, (d["created"] as JArray)!.Count);
+        CollectionAssert.AreEqual(new[] { "Shelf_1", "Shelf_2" },
+            (d["placements"] as JArray)!.Select(p => p["name"]!.Value<string>()).ToArray());
 
         // Суффикс уникальности идёт с «_1» (ElementNaming), а не с «_2».
         var c2 = PartRegistry.GetAll().Find(e => e.PartName == "Shelf_1");
@@ -467,7 +477,7 @@ public class McpBatchToolsTests : McpTestFixture
     // ── Конверт мутаций и блокировка ─────────────────────────────────────
 
     [Test]
-    public void MutationEnvelope_ContainsElementLockedField()
+    public void MutationEnvelope_CarriesPlacementsAndTheViolationDelta_NotTheWholeSceneCount()
     {
         MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
 
@@ -477,8 +487,23 @@ public class McpBatchToolsTests : McpTestFixture
         }));
 
         var d = Data(resp);
-        Assert.IsFalse(d["results"]![0]!["locked"]!.Value<bool>());
-        Assert.IsNotNull(d["sceneViolationCount"]);
+        Assert.AreEqual("A", d["placements"]![0]!["name"]!.Value<string>());
+        Assert.IsNotNull(d["sceneViolationDelta"]);
+        Assert.IsNull(d["sceneViolationCount"], "счётчик по всей сцене смешивал чужие старые нарушения с итогом вызова");
+        Assert.IsNull(d["results"], "прежние results с центром и габаритами заменены placements");
+    }
+
+    [Test]
+    public void EditElements_LockedPart_StaysAskableAsLocked_ThroughGetElements()
+    {
+        MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
+
+        _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name = "A", locked = true } }
+        }));
+
+        Assert.IsTrue(InfoOf("A").locked, "флаг locked остался в полном ответе get_elements");
     }
 
     [Test]

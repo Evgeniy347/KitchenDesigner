@@ -145,10 +145,13 @@ public class McpBulkOpsTests : McpTestFixture
         var resp = _handler!.Handle(MakeReq("get", new { names = new[] { "turned" } }));
         Assert.AreEqual("result", resp.type);
         var jo = Newtonsoft.Json.Linq.JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(resp.data));
-        var anchor = ((Newtonsoft.Json.Linq.JArray)jo["elements"]![0]!["anchorMm"]!).ToObject<List<int>>()!;
+        var pos = ((Newtonsoft.Json.Linq.JArray)jo["elements"]![0]!["posMm"]!).ToObject<List<float>>()!;
 
-        Assert.AreEqual(950, anchor[0], 1, "x: центр 1000 минус половина толщины 50");
-        Assert.AreEqual(1550, anchor[1], 1, "z: центр 2000 минус половина длины 450");
+        Assert.AreEqual(950f, pos[0], 1f, "x: центр 1000 минус половина толщины 50");
+        Assert.AreEqual(1550f, pos[2], 1f, "z: центр 2000 минус половина длины 450");
+        CollectionAssert.AreEqual(new[] { 100f, 1200f, 900f },
+            ((Newtonsoft.Json.Linq.JArray)jo["elements"]![0]!["footprintMm"]!).ToObject<float[]>(),
+            "мировой след повёрнутой доски: 100 по X и 900 по Z, а не локальные 900x100");
     }
 
     [Test]
@@ -254,13 +257,17 @@ public class McpBulkOpsTests : McpTestFixture
     {
         Make("Board", new Vector3(1f, 0.2f, 2f), new Vector3Int(600, 400, 18));
         var response = _handler!.Handle(MakeReq("get", new
-        { names = new[] { "Board" }, fields = new[] { "name", "anchorMm" } }));
+        { names = new[] { "Board" }, fields = new[] { "name", "posMm" } }));
         Assert.AreEqual("result", response.type);
         var jo = Newtonsoft.Json.Linq.JObject.Parse(Newtonsoft.Json.JsonConvert.SerializeObject(response.data));
         var row = jo["elements"]![0]!;
         Assert.AreEqual("Board", row["name"]!.ToString());
-        CollectionAssert.AreEqual(new[] { 700, 1991 }, row["anchorMm"]!.ToObject<int[]>());
+        var pos = row["posMm"]!.ToObject<float[]>()!;
+        Assert.AreEqual(700f, pos[0], 0.1f);
+        Assert.AreEqual(0f, pos[1], 0.1f, "высота низа доски над нулём: центр 200 минус половина высоты 200");
+        Assert.AreEqual(1991f, pos[2], 0.1f);
         Assert.IsNull(row["sizeMm"]);
+        Assert.IsNull(row["footprintMm"]);
     }
 
     [Test]

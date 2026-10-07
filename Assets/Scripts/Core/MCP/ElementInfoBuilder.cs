@@ -8,22 +8,20 @@ namespace KitchenDesigner.Core.MCP
     internal static class ElementInfoBuilder
     {
         public static ElementInfo Build(KitchenElement el, List<KitchenElement>? allElements,
-            bool includeFacadeValidation = false, ValidationResult? validation = null)
+            bool includeFacadeValidation = false, ValidationResult? validation = null,
+            McpReference reference = default)
         {
-            var info = BuildSharedFields(el, allElements, validation);
+            var info = BuildSharedFields(el, allElements, validation, reference);
             FillFacadeValidation(info, el, allElements, includeFacadeValidation);
             foreach (var detail in Details) detail(info, el);
             return info;
         }
 
         private static ElementInfo BuildSharedFields(KitchenElement el,
-            List<KitchenElement>? allElements, ValidationResult? validation)
+            List<KitchenElement>? allElements, ValidationResult? validation, McpReference reference)
         {
             var t = el.transform;
             var group = GroupManager.GroupOf(el);
-            var wall = el.GetComponent<Wall>();
-            Vector3 pos = wall != null ? wall.FullPosition : t.position;
-
             bool hasViolations = false;
             if (allElements != null && allElements.Count > 0)
             {
@@ -32,13 +30,14 @@ namespace KitchenDesigner.Core.MCP
             }
 
             var aabb = McpAabb.Of(el.GetVertices());
+            var aabbBox = McpAnchor.ToMmBoxStruct(aabb);
             var effDim = McpAabb.EffectiveDimMM(el);
 
             return new ElementInfo
             {
                 name = el.PartName, type = el.GetType().Name,
                 dimXMm = el.DimensionsMM.x, dimYMm = el.DimensionsMM.y, dimZMm = el.DimensionsMM.z,
-                posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z),
+                posMm = McpAnchor.MmTriple(reference.PointOf(aabbBox.Min, aabbBox.Max)),
                 rotXDeg = t.eulerAngles.x, rotYDeg = t.eulerAngles.y, rotZDeg = t.eulerAngles.z,
                 active = el.gameObject.activeInHierarchy,
                 locked = !el.Movable,

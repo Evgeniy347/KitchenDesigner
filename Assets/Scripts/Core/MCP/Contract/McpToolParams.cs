@@ -105,6 +105,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsResizeFloor
     {
+        [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Floor width (X) in MM.", Required = true, Min = 1)] public int width;
         [McpParam("Floor length (Y) in MM.", Required = true, Min = 1)] public int height;
         [McpParam("Floor thickness (Z) in MM.", Required = true, Min = 1)] public int depth;
@@ -119,9 +120,9 @@ namespace KitchenDesigner.Core.MCP.Contract
             + "and match ^[A-Za-z0-9_-]+$ — latin letters, digits, '-' and '_' only; no spaces, no cyrillic. Omit to keep.")]
         public string? new_name;
 
-        [McpParam("Target X of the MINIMUM world corner in MM — the same number get returns in anchor[0]. Omit to keep.")] public float? anchor_x_mm;
-        [McpParam("Target Y of the MINIMUM world corner in MM — the bottom of the element. Omit to keep.")] public float? anchor_y_mm;
-        [McpParam("Target Z of the MINIMUM world corner in MM — the same number get returns in anchor[1]. Omit to keep.")] public float? anchor_z_mm;
+        [McpParam("Target X in MM of the point chosen by ref (default: the MINIMUM world corner) — the same number posMm[0] reports. Omit to keep.")] public float? anchor_x_mm;
+        [McpParam("Target Y in MM of the point chosen by ref (default: the bottom of the element) — the same number posMm[1] reports. Omit to keep.")] public float? anchor_y_mm;
+        [McpParam("Target Z in MM of the point chosen by ref (default: the back edge, minimum Z) — the same number posMm[2] reports. Omit to keep.")] public float? anchor_z_mm;
 
         [McpParam("Move the element to a different level (storey) by id — see levels[].id in "
             + "get_scene_tree's output. anchor_y_mm stays an ABSOLUTE world height either way. Omit to keep.")]
@@ -572,6 +573,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsEditElements
     {
+        [McpParam(McpRefText.Input)] public string? @ref;
         [McpParam("Operations to apply — one per element. Each op: exact name + ANY editable properties (geometry, lock, material, facade gaps/mode/fill, drawer params, table/pillar/window/door params).",
             Required = true, Min = 1)]
         public EditOp[] ops = Array.Empty<EditOp>();
@@ -592,9 +594,9 @@ namespace KitchenDesigner.Core.MCP.Contract
             Enum = new[] { "board", "wall", "floor", "foundation", "floor_slab", "fence", "duct", "grille", "roof", "insulation", "vent_gap", "cladding", "facade", "assembled_facade", "radial_shelf", "panel", "drawer", "movento_drawer", "table", "radius_table", "stool", "chair", "sofa", "pouffe", "bed", "pillar", "screw_leg", "pipe", "pipe_elbow", "pipe_coupling", "pipe_tee", "pipe_cap", "pipe_supply", "pipe_return", "window", "door", "sink", "cooktop", "oven", "dishwasher", "toilet", "wall_hung_toilet", "bathtub", "bath_mixer", "shower_column", "socket", "light_switch", "washing_machine", "dryer" })]
         public string? type;
 
-        [McpParam("X of the MINIMUM world corner in MM — the same number get returns in anchor[0].")] public float anchor_x_mm;
-        [McpParam("Y of the MINIMUM world corner in MM — the bottom of the element.")] public float anchor_y_mm;
-        [McpParam("Z of the MINIMUM world corner in MM — the same number get returns in anchor[1].")] public float anchor_z_mm;
+        [McpParam("X in MM of the point chosen by ref (default: the MINIMUM world corner) — the same number posMm[0] reports.")] public float anchor_x_mm;
+        [McpParam("Y in MM of the point chosen by ref (default: the bottom of the element) — the same number posMm[1] reports.")] public float anchor_y_mm;
+        [McpParam("Z in MM of the point chosen by ref (default: the back edge, minimum Z) — the same number posMm[2] reports.")] public float anchor_z_mm;
 
         [McpParam("Level (storey) id to place the element on — see levels[].id in get_scene_tree's "
             + "output. Omit to use the currently viewed level. anchor_y_mm stays an ABSOLUTE world height "
@@ -630,6 +632,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsCreateElements
     {
+        [McpParam(McpRefText.Input)] public string? @ref;
         [McpParam("Elements to create. At least 1. Whole batch is ONE undo step.", Required = true, Min = 1)]
         public CreateItem[] items = Array.Empty<CreateItem>();
     }
@@ -724,6 +727,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsConvertElements
     {
+        [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Conversions to apply. At least 1.", Required = true, Min = 1)]
         public ConvertOp[] ops = Array.Empty<ConvertOp>();
     }
@@ -741,6 +745,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsCloneElements
     {
+        [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Clone operations. At least 1. Whole batch is ONE undo step.", Required = true, Min = 1)]
         public CloneOp[] ops = Array.Empty<CloneOp>();
     }
@@ -763,6 +768,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsAlignElements
     {
+        [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Align operations, applied IN ORDER (later ops see earlier moves). At least 1. Whole batch is ONE undo step.",
             Required = true, Min = 1)]
         public AlignOp[] ops = Array.Empty<AlignOp>();
@@ -772,14 +778,15 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class SnapDiagnoseOp
     {
         [McpParam("Exact board name.", Required = true)] public string name = string.Empty;
-        [McpParam("Test X of the MINIMUM world corner in MM (default: current).")] public float? anchor_x_mm;
-        [McpParam("Test Y of the MINIMUM world corner in MM (default: current).")] public float? anchor_y_mm;
-        [McpParam("Test Z of the MINIMUM world corner in MM (default: current).")] public float? anchor_z_mm;
+        [McpParam("Test X in MM of the point chosen by ref (default: the MINIMUM world corner; omit to keep the current).")] public float? anchor_x_mm;
+        [McpParam("Test Y in MM of the point chosen by ref (omit to keep the current).")] public float? anchor_y_mm;
+        [McpParam("Test Z in MM of the point chosen by ref (omit to keep the current).")] public float? anchor_z_mm;
     }
 
     [Serializable]
     public class ParamsSnapDiagnose
     {
+        [McpParam(McpRefText.Input)] public string? @ref;
         [McpParam("Boards (and optional test positions) to diagnose. At least 1.", Required = true, Min = 1)]
         public SnapDiagnoseOp[] ops = Array.Empty<SnapDiagnoseOp>();
     }
@@ -832,6 +839,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsSetAttr
     {
+        [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Selector over the scene. Space-separated clauses (AND): name mask 'B4_*', 'name:PAT', 'type:board|wall|floor|window|door|drawer|facade|assembled_facade|radial_shelf|panel|table|pillar|screw_leg|pipe|pipe_elbow|pipe_coupling|pipe_tee|pipe_cap|pipe_supply|pipe_return|light', 'module:NAME', 'thickness==18' (also width/height/depth with == != >= <= > <), 'all_boards', 'all_modules', '*'.", Required = true)]
         public string selector = "";
         [McpParam("New thickness (dimZ) in MM for every matched board (e.g. change all 18 to 16).")] public int? thickness;
@@ -845,6 +853,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsMove
     {
+        [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Selector (see set_attr).", Required = true)] public string selector = "";
         [McpParam("Shift along world X in MM.")] public float dx;
         [McpParam("Shift along world Y in MM.")] public float dy;
@@ -854,6 +863,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsResizeModule
     {
+        [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Module = exact group/module name (see get_modules).", Required = true)]
         public string module = "";
         [McpParam("World axis to resize along. Omit to use the module's stored width_axis.", Enum = new[] { "x", "y", "z" })]
@@ -917,13 +927,14 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsGetElements
     {
+        [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Exact board names to fetch. Omit to select by filter (or everything).")]
         public string[]? names;
 
         [McpParam("Name filter: substring or wildcard with '*', case-insensitive (e.g. 'B4_upper*'). Omit to skip.")]
         public string? filter;
 
-        [McpParam("true = compact one-line info per element (name, type, position, size, locked, hasViolations). Default false = full info.")]
+        [McpParam("true = compact one-line info per element (name, type, posMm, footprintMm, size, locked, hasViolations). Default false = full info.")]
         public bool summary;
 
         [McpParam("true = include facade validation fields (faceNormal, faceInward, faceObstructions, openingViolations) for facade elements. Default false.")]
@@ -947,6 +958,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsDistributeEvenly
     {
+        [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("At least 3 board names. The two outermost (along the axis) stay; the middle ones move so center-to-center spacing is equal.", Required = true, Min = 3)]
         public string[] names = Array.Empty<string>();
         [McpParam("World axis to distribute along.", Required = true, Enum = new[] { "x", "y", "z" })]
@@ -975,6 +987,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsAlignSelection
     {
+        [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Selector whose matched groups/elements move.", Required = true)] public string selector = "";
         [McpParam("Exact target element/wall name.", Required = true)] public string target = "";
         [McpParam("Moving selection face: left/right/bottom/top/back/front.", Required = true,
@@ -1064,8 +1077,9 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsGetCompact
     {
+        [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Exact element names.", Required = true, Min = 1)] public string[] names = Array.Empty<string>();
-        [McpParam("Optional fields: name,kind,anchor,size,rotY,hasViolations,module,wallKind.")]
+        [McpParam("Optional fields, exact names: name, kind, posMm, footprintMm, sizeMm, rotYDeg, hasViolations, module, wallKind. Omit for all.")]
         public string[] fields = Array.Empty<string>();
     }
 

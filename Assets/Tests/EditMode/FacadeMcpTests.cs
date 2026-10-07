@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core;
@@ -84,7 +85,7 @@ public class FacadeMcpTests : McpTestFixture
     }
 
     [Test]
-    public void CreateElements_Facade_ReturnsEnvelopeWithFacadeInfo()
+    public void CreateElements_Facade_ReturnsEnvelopeWithItsPlacement_AndFacadeInfoStaysInGetElements()
     {
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
@@ -96,12 +97,14 @@ public class FacadeMcpTests : McpTestFixture
 
         var json = JObject.FromObject(resp.data!);
         Assert.IsTrue(json["ok"]!.Value<bool>());
-        var elements = json["elements"] as JArray;
-        Assert.IsNotNull(elements);
-        Assert.AreEqual(1, elements!.Count);
-        Assert.AreEqual("FacadeElement", elements[0]!["type"]!.Value<string>());
-        Assert.IsNotNull(elements[0]!["facadeMode"]);
-        Assert.IsNotNull(json["sceneViolationCount"]);
+        var placements = json["placements"] as JArray;
+        Assert.IsNotNull(placements);
+        Assert.AreEqual(1, placements!.Count);
+        Assert.AreEqual("Door", placements[0]!["name"]!.Value<string>());
+        Assert.IsNotNull(json["sceneViolationDelta"]);
+        var info = InfoJsonOf("Door");
+        Assert.AreEqual("FacadeElement", info["type"]!.Value<string>());
+        Assert.IsNotNull(info["facadeMode"], "тип и режим фасада читаются полным get_elements, а не мутацией");
         var door = GameObject.Find("Door");
         if (door != null) _spawned.Add(door);
     }
@@ -118,10 +121,15 @@ public class FacadeMcpTests : McpTestFixture
         var json = JObject.FromObject(resp.data!);
         Assert.IsTrue(json["ok"]!.Value<bool>());
         Assert.IsTrue(json["applied"]!.Value<bool>());
-        var results = json["results"] as JArray;
-        Assert.IsNotNull(results);
-        Assert.AreEqual(1, results!.Count);
-        Assert.AreEqual(90f, results[0]!["rotYDeg"]!.Value<float>(), 0.01f);
+        var placements = json["placements"] as JArray;
+        Assert.IsNotNull(placements);
+        Assert.AreEqual(1, placements!.Count);
+        var world = InfoJsonOf("F");
+        var footprint = placements[0]!["footprintMm"]!.ToObject<float[]>()!;
+        Assert.AreEqual(world["worldDimXMm"]!.Value<float>(), footprint[0], 0.6f, "след по X совпадает с worldDimXMm");
+        Assert.AreEqual(world["worldDimZMm"]!.Value<float>(), footprint[2], 0.6f, "след по Z совпадает с worldDimZMm");
+        Assert.Less(footprint[0], footprint[2],
+            "после rot_y=90 фасад 400x300x18 лежит длинной стороной вдоль Z: ответ называет МИРОВОЙ след, а не локальные габариты");
 
         var info = _handler!.Handle(MakeReq("get_elements", new { names = new[] { "F" } }));
         var infoJson = JObject.FromObject(info.data!);
@@ -142,20 +150,9 @@ public class FacadeMcpTests : McpTestFixture
         var json = JObject.FromObject(resp.data!);
         Assert.IsTrue(json["ok"]!.Value<bool>());
 
-        var results = json["results"] as JArray;
-        Assert.IsNotNull(results);
-        var result = results![0]!;
-
-        var viol = result["violations"] as JArray;
-        Assert.IsNotNull(viol);
-        bool found = false;
-        foreach (var v in viol!)
-        {
-            if (v["kind"]!.Value<string>() != "opening_collision") continue;
-            found = true;
-            Assert.AreEqual("Obstacle", v["neighbor"]!.Value<string>());
-            Assert.AreEqual("drawer_out", v["openingMode"]!.Value<string>());
-        }
-        Assert.IsTrue(found, "opening_collision must be reported in the element violations");
+        var issues = PlacementOf(resp)["issues"] as JArray;
+        Assert.IsNotNull(issues);
+        CollectionAssert.Contains(issues!.Select(i => i.Value<string>()).ToArray(), "opening_collision Obstacle",
+            "opening_collision must be reported in the placement issues, naming the neighbour");
     }
 }

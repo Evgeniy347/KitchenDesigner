@@ -52,8 +52,7 @@ namespace KitchenDesigner.Core.MCP
             if (response.type == "error")
                 return ErrorContent(FailureMessage(response.data));
 
-            return TextContent(JsonConvert.SerializeObject(
-                response.data ?? new JObject(), Formatting.Indented, McpJson.Settings));
+            return TextContent(McpJson.Serialize(response.data ?? new JObject()));
         }
 
         private static string GuideText(JObject arguments)

@@ -56,14 +56,14 @@ namespace KitchenDesigner.Core.MCP
 
         private static void WriteOneResponse()
         {
-            var payload = new
-            {
-                ok = true,
-                created = new List<string> { "warmup" },
-                elements = new List<ElementInfo> { new ElementInfo() },
-                sceneViolationCount = 0
-            };
-            JsonConvert.SerializeObject(payload, Formatting.Indented, McpJson.Settings);
+            var placement = new PlacementInfo();
+            placement.touches = new List<PlacementContact> { new PlacementContact() };
+            placement.gaps = new List<PlacementGap> { new PlacementGap() };
+            var reply = new MutationReply();
+            reply.placements = new List<PlacementInfo> { placement };
+            reply.@ref = McpReference.DefaultName;
+            McpJson.Serialize(reply);
+            McpJson.Serialize(new List<ElementInfo> { new ElementInfo() });
         }
     }
 }
