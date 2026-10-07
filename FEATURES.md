@@ -71,6 +71,7 @@
 | Сверка MCP ↔ панель | ElementEditAppliers + *FieldsEditor | McpUiPropertyParityTests, McpUiCreationParityTests | MCP/, UI/ |
 | Сверка MCP ↔ сайдбар | SidebarSpawnRouter, ElementSpawners | SidebarSpawnRouterTests | UI/, MCP/ |
 | Сверка MCP ↔ настройки | SettingKeys, Settings*Tab | McpSettingsParityTests | MCP/, UI/ |
+| MCP для слабых моделей: ref (точка детали), placement в ответе мутации, sceneViolationDelta, undo/redo | McpReference, PlacementRelations, McpViolationDelta, McpRoomPolygon (Pure/MCP); McpAnchor, McpPlacementBuilder, McpPlacementIssues, McpMutationReport, McpCompactRow, McpCommandHandler.History | McpReferenceTests, PlacementRelationsTests, McpViolationDeltaTests, McpRoomPolygonTests (быстрый путь); McpReferenceRoundTripTests, McpPlacementReplyTests, McpUndoRedoTests | MCP/, Pure/MCP/ |
 
 ## UI
 

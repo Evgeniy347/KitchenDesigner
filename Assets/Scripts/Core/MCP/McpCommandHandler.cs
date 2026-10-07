@@ -53,6 +53,8 @@ namespace KitchenDesigner.Core.MCP
                     case "create_elements": return HandleCreateElements(request);
                     case "convert_elements": return HandleConvertElements(request);
                     case "delete_elements": return HandleDeleteElements(request);
+                    case "undo": return HandleUndo(request);
+                    case "redo": return HandleRedo(request);
                     case "select_elements": return HandleSelectElements(request);
                     case "resize_floor": return HandleResizeFloor(request);
 

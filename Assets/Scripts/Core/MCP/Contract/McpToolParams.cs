@@ -792,6 +792,13 @@ namespace KitchenDesigner.Core.MCP.Contract
     }
 
     [Serializable]
+    public class ParamsUndoSteps
+    {
+        [McpParam("COUNT of steps to go back or forward (default 1). One step is one earlier mutating call of any tool (or one edit made by the human in the app) - an edit_elements batch, a create_elements batch, an apply_floorplan are each ONE step.", Min = 1, Max = McpHistorySteps.Max)]
+        public int steps = 1;
+    }
+
+    [Serializable]
     public class ParamsMenuPath
     {
         [McpParam("Menu path, e.g. 'Edit/Undo'.", Required = true)] public string menu_path = string.Empty;
