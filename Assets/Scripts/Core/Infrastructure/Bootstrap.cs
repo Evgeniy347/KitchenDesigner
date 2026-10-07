@@ -34,6 +34,7 @@ namespace KitchenDesigner.Core
         private void SetupScene()
         {
             if (FindAnyObjectByType<BasePlate>() == null) BasePlate.Create();
+            ConstraintValidator.Ground = ImpliedGround.At(0f);
             if (FindAnyObjectByType<CameraController>() == null) gameObject.AddComponent<CameraController>();
             if (FindAnyObjectByType<SelectionManager>() == null) gameObject.AddComponent<SelectionManager>();
             if (FindAnyObjectByType<ElementMover>() == null) gameObject.AddComponent<ElementMover>();

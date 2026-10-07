@@ -28,14 +28,16 @@ namespace KitchenDesigner.Core
             return n;
         }
 
-        public static CoreValidationResult Validate(IReadOnlyList<ValidationElement> all)
+        public static CoreValidationResult Validate(IReadOnlyList<ValidationElement> all,
+            ImpliedGround ground = default)
         {
             var result = new CoreValidationResult();
-            Validate(all, result);
+            Validate(all, result, ground);
             return result;
         }
 
-        public static void Validate(IReadOnlyList<ValidationElement> all, CoreValidationResult result)
+        public static void Validate(IReadOnlyList<ValidationElement> all,
+            CoreValidationResult result, ImpliedGround ground = default)
         {
             result.Clear();
             ValidationBroadPhase.Clear();
@@ -52,7 +54,7 @@ namespace KitchenDesigner.Core
             var candidates = ValidationBroadPhase.CandidatePairsInNestedLoopOrder(
                 all!, ContactDistUnits);
             ProcessPairs(all!, candidates, result, marks);
-            Finish(all!, result, marks);
+            Finish(all!, result, marks, ground);
         }
 
         public static void ProcessPairs(IReadOnlyList<ValidationElement> all,
@@ -66,9 +68,9 @@ namespace KitchenDesigner.Core
         }
 
         public static void Finish(IReadOnlyList<ValidationElement> all,
-            CoreValidationResult result, OverlapMarks marks)
+            CoreValidationResult result, OverlapMarks marks, ImpliedGround ground = default)
         {
-            CheckConnectivity(all, result);
+            CheckConnectivity(all, result, ground);
             CheckWallHeightConstraints(all, result);
 
             var overlapping = marks.InOrder;
@@ -222,15 +224,17 @@ namespace KitchenDesigner.Core
             return false;
         }
 
-        public static bool HasAnchor(IReadOnlyList<ValidationElement> all)
+        public static bool HasAnchor(IReadOnlyList<ValidationElement> all,
+            ImpliedGround ground = default)
         {
+            if (ground.Present) return true;
             for (int i = 0; i < all.Count; i++)
                 if (all[i].Is(ElementKind.Anchor)) return true;
             return false;
         }
 
         private static void CheckConnectivity(IReadOnlyList<ValidationElement> all,
-            CoreValidationResult result)
+            CoreValidationResult result, ImpliedGround ground)
         {
             int n = all.Count;
             var adjacency = new List<int>[n];
@@ -256,7 +260,9 @@ namespace KitchenDesigner.Core
                 queue.Enqueue(i);
             }
 
-            if (!HasAnchor(all))
+            if (ground.Present)
+                SeedImpliedGround(all, ground, hasContact, visited, queue);
+            else if (!HasAnchor(all))
                 SeedGroundAtLowestStandingLevel(all, hasContact, visited, queue);
 
             while (queue.Count > 0)
@@ -283,6 +289,18 @@ namespace KitchenDesigner.Core
             GroupUnsupportedByConnectivity(adjacency, result);
 
             result.IsValid = result.Violations.Count == 0;
+        }
+
+        private static void SeedImpliedGround(IReadOnlyList<ValidationElement> all,
+            ImpliedGround ground, bool[] hasContact, bool[] visited, Queue<int> queue)
+        {
+            for (int i = 0; i < all.Count; i++)
+            {
+                if (visited[i] || !ground.Holds(all[i].Geometry)) continue;
+                hasContact[i] = true;
+                visited[i] = true;
+                queue.Enqueue(i);
+            }
         }
 
         private static void SeedGroundAtLowestStandingLevel(IReadOnlyList<ValidationElement> all,

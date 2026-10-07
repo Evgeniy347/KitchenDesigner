@@ -38,6 +38,7 @@ public class DragValidationIsIncrementalTests : ElementTestBase
     [TearDown]
     public void TearDown()
     {
+        ConstraintValidator.Ground = ImpliedGround.None;
         if (_mover != null) _mover.FinishDragNow();
         if (_mover != null) _mover.RestoreDragMaterial();
         KitchenSettings.Instance.SnapEnabled = _snapBefore;
@@ -59,24 +60,12 @@ public class DragValidationIsIncrementalTests : ElementTestBase
             new Vector3(0.6f, 0.36f, 0f));
         MakePrimitiveElement("Shelf", new Vector3Int(564, 18, 560),
             new Vector3(0.3f, 0.4f, 0f));
-        MakeFloorAnchor();
+        ConstraintValidator.Ground = ImpliedGround.At(0f);
         AssertTheSceneHasAnAnchor();
 
         _mover!.BeginDragOn(dragged);
         _mover.SaveDragMaterial(dragged);
         return dragged;
-    }
-
-    /// <summary>Пол — не «деталь, названная Floor». Роль решается в одном месте,
-    /// <c>ValidationSnapshot.KindOf</c>, и полом там считается носитель
-    /// <see cref="BasePlate"/> либо <c>FloorElement</c>. Примитив с подходящим
-    /// именем якорем не является.</summary>
-    private KitchenElement MakeFloorAnchor()
-    {
-        var floor = MakePrimitiveElement("Floor", new Vector3Int(4000, 18, 4000),
-            new Vector3(0f, -0.009f, 0f));
-        floor.gameObject.AddComponent<BasePlate>();
-        return floor;
     }
 
     /// <summary>Страж стенда, а не продукта, и он обязан стоять до первого
@@ -90,7 +79,7 @@ public class DragValidationIsIncrementalTests : ElementTestBase
     {
         var snapshots = new List<ValidationElement>();
         ValidationSnapshot.Build(PartRegistry.GetAll(), snapshots);
-        Assert.IsTrue(ValidationCore.HasAnchor(snapshots),
+        Assert.IsTrue(ValidationCore.HasAnchor(snapshots, ConstraintValidator.Ground),
             "в сцене стенда обязан быть якорь: без него заморозка отказывает по СВОЕЙ "
             + "причине, и тесты ниже мерили бы не шов, а этот отказ");
     }
@@ -104,7 +93,7 @@ public class DragValidationIsIncrementalTests : ElementTestBase
 
         var snapshots = new List<ValidationElement>();
         ValidationSnapshot.Build(scene, snapshots);
-        var full = ValidationCore.Validate(snapshots);
+        var full = ValidationCore.Validate(snapshots, ConstraintValidator.Ground);
         var expected = new List<string>();
         foreach (int i in full.Violations) expected.Add(snapshots[i].Name);
         expected.Sort(StringComparer.Ordinal);

@@ -14,8 +14,11 @@ namespace KitchenDesigner.Core
         private readonly List<int> _movers = new List<int>();
         private StaticContactIndex _index = null!;
         private bool[] _isMover = System.Array.Empty<bool>();
+        private ImpliedGround _ground;
 
         public int Count { get; private set; }
+
+        public ImpliedGround Ground => _ground;
 
         public IReadOnlyList<int> Movers => _movers;
 
@@ -24,12 +27,12 @@ namespace KitchenDesigner.Core
         public bool IsMover(int index) => index >= 0 && index < _isMover.Length && _isMover[index];
 
         public static FrozenValidation? Freeze(IReadOnlyList<ValidationElement> all,
-            IReadOnlyList<int> movers)
+            IReadOnlyList<int> movers, ImpliedGround ground = default)
         {
             if (all == null || all.Count == 0) return null;
-            if (!ValidationCore.HasAnchor(all)) return null;
+            if (!ValidationCore.HasAnchor(all, ground)) return null;
 
-            var frozen = new FrozenValidation { Count = all.Count };
+            var frozen = new FrozenValidation { Count = all.Count, _ground = ground };
             frozen._isMover = new bool[all.Count];
             for (int i = 0; i < movers.Count; i++)
             {
@@ -83,7 +86,7 @@ namespace KitchenDesigner.Core
             _livePairs.Sort(NestedLoopOrder);
 
             ValidationCore.ProcessPairs(all, _livePairs, result, _liveMarks);
-            ValidationCore.Finish(all, result, _liveMarks);
+            ValidationCore.Finish(all, result, _liveMarks, _ground);
             PairsInLastPass = _livePairs.Count;
         }
 

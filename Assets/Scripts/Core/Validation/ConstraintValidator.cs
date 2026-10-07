@@ -50,6 +50,8 @@ namespace KitchenDesigner.Core
 
         private static readonly ValidationReuse _reuse = new ValidationReuse();
 
+        public static ImpliedGround Ground { get; set; }
+
         public static int GestureFreezes => _gesture.Freezes;
 
         public static int GesturePairsInLastFrame => _gesture.PairsInLastFrame;
@@ -94,9 +96,9 @@ namespace KitchenDesigner.Core
 #endif
             var core = _core;
             if (!SceneGesture.InProgress) _gesture.Reset();
-            if (_reuse.NeedsAFreshAnswer(_snapshots)
-                && (!SceneGesture.InProgress || !_gesture.TryValidate(_snapshots, core)))
-                ValidationCore.Validate(_snapshots, core);
+            if (_reuse.NeedsAFreshAnswer(_snapshots, Ground)
+                && (!SceneGesture.InProgress || !_gesture.TryValidate(_snapshots, core, Ground)))
+                ValidationCore.Validate(_snapshots, core, Ground);
 
             foreach (var c in core.Contacts)
                 result.contacts.Add(new FaceContact(_elems[c.A], _elems[c.B],

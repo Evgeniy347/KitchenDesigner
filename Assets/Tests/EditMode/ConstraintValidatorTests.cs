@@ -101,27 +101,51 @@ public class ConstraintValidatorTests
     [Test]
     public void Validate_TwoIsolatedGroups_Violation()
     {
-        // Якорь связности — BasePlate. Две пары деталей висят в воздухе, не касаясь пола:
-        // каждая пара связна внутри себя, но изолирована от плиты → 2 группы, 4 нарушения.
-        var plate = CreateElement("BasePlate", new Vector3Int(3000, 18, 3000), new Vector3(0, -0.009f, 0));
-        plate.gameObject.AddComponent<BasePlate>();
+        // Якорь связности — неявная земля. Две пары деталей висят в воздухе, не касаясь её:
+        // каждая пара связна внутри себя, но изолирована от земли → 2 группы, 4 нарушения.
+        ConstraintValidator.Ground = ImpliedGround.At(0f);
 
         var a = CreateElement("A", new Vector3Int(800, 400, 18), new Vector3(0, 1.0f, 0));
         var b = CreateElement("B", new Vector3Int(800, 400, 18), new Vector3(0.8f, 1.0f, 0));
         var c = CreateElement("C", new Vector3Int(800, 400, 18), new Vector3(0, 3.0f, 0));
         var d = CreateElement("D", new Vector3Int(800, 400, 18), new Vector3(0.8f, 3.0f, 0));
 
-        var result = ConstraintValidator.Validate(new List<KitchenElement> { plate, a, b, c, d });
+        ValidationResult result;
+        try { result = ConstraintValidator.Validate(new List<KitchenElement> { a, b, c, d }); }
+        finally { ConstraintValidator.Ground = ImpliedGround.None; }
 
         Assert.IsFalse(result.isValid);
         Assert.AreEqual(2, result.isolatedGroups.Count);
         Assert.AreEqual(4, result.violations.Count);
 
-        Object.DestroyImmediate(plate.gameObject);
+
         Object.DestroyImmediate(a.gameObject);
         Object.DestroyImmediate(b.gameObject);
         Object.DestroyImmediate(c.gameObject);
         Object.DestroyImmediate(d.gameObject);
+    }
+
+    [Test]
+    public void Validate_BoardStandingOnImpliedGround_IsValid_OnlyWhileTheAppKeepsTheGroundOn()
+    {
+        var board = CreateElement("Board", new Vector3Int(800, 400, 18), new Vector3(0, 0.2f, 0));
+        var scene = new List<KitchenElement> { board };
+
+        Assert.IsFalse(ConstraintValidator.Validate(scene).isValid,
+            "земля выключена по умолчанию: одинокая деталь без контактов неподпёрта");
+
+        ConstraintValidator.Ground = ImpliedGround.At(0f);
+        try
+        {
+            Assert.IsTrue(ConstraintValidator.Validate(scene).isValid,
+                "приложение включило землю: деталь стоит на ней и подпёрта, хотя в сцене нет ни одного якоря");
+        }
+        finally { ConstraintValidator.Ground = ImpliedGround.None; }
+
+        Assert.IsFalse(ConstraintValidator.Validate(scene).isValid,
+            "землю выключили — кэш ответа не должен отдавать вердикт, посчитанный с ней");
+
+        Object.DestroyImmediate(board.gameObject);
     }
 
     [Test]

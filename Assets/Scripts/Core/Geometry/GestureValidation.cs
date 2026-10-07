@@ -25,17 +25,18 @@ namespace KitchenDesigner.Core
             _posedAtFreeze.Clear();
         }
 
-        public bool TryValidate(IReadOnlyList<ValidationElement> all, CoreValidationResult result)
+        public bool TryValidate(IReadOnlyList<ValidationElement> all, CoreValidationResult result,
+            ImpliedGround ground = default)
         {
             if (all == null || all.Count == 0) return false;
-            if (_frozen != null && _frozen.Count != all.Count) Reset();
+            if (_frozen != null && (_frozen.Count != all.Count || _frozen.Ground != ground)) Reset();
             if (_refused) return false;
 
             if (_frozen == null)
             {
-                if (!Freeze(all)) return false;
+                if (!Freeze(all, ground)) return false;
             }
-            else if (TakeDriftersAsMovers(all) && !Freeze(all))
+            else if (TakeDriftersAsMovers(all) && !Freeze(all, ground))
             {
                 return false;
             }
@@ -44,9 +45,9 @@ namespace KitchenDesigner.Core
             return true;
         }
 
-        private bool Freeze(IReadOnlyList<ValidationElement> all)
+        private bool Freeze(IReadOnlyList<ValidationElement> all, ImpliedGround ground)
         {
-            _frozen = FrozenValidation.Freeze(all, _movers);
+            _frozen = FrozenValidation.Freeze(all, _movers, ground);
             if (_frozen == null)
             {
                 _refused = true;
