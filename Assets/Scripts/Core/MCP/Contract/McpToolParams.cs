@@ -6,7 +6,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsGuide
     {
         [McpParam("Cheat-sheet topic. Omit for the workflow overview.",
-            Enum = new[] { "workflow", "planning", "bulk", "elements", "fields", "drawers", "violations" })]
+            Enum = new[] { "workflow", "planning", "bulk", "elements", "fields", "drawers", "violations", "place" })]
         public string? topic;
     }
 
@@ -623,6 +623,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsCreateElements
     {
+        [McpParam(McpDryRunText.Param)] public bool dry_run;
         [McpParam(McpRefText.Input)] public string? @ref;
         [McpParam("Elements to create. At least 1. Whole batch is ONE undo step.", Required = true, Min = 1)]
         public CreateItem[] items = Array.Empty<CreateItem>();
@@ -736,6 +737,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsCloneElements
     {
+        [McpParam(McpDryRunText.Param)] public bool dry_run;
         [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Clone operations. At least 1. Whole batch is ONE undo step.", Required = true, Min = 1)]
         public CloneOp[] ops = Array.Empty<CloneOp>();
@@ -759,6 +761,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsAlignElements
     {
+        [McpParam(McpDryRunText.Param)] public bool dry_run;
         [McpParam(McpRefText.Output)] public string? @ref;
         [McpParam("Align operations, applied IN ORDER (later ops see earlier moves). At least 1. Whole batch is ONE undo step.",
             Required = true, Min = 1)]

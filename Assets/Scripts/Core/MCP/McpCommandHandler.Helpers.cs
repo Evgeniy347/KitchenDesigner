@@ -19,6 +19,16 @@ namespace KitchenDesigner.Core.MCP
             return null;
         }
 
+        private static List<string> AllPartNames()
+        {
+            var names = new List<string>();
+            foreach (var el in PartRegistry.GetAll())
+                if (el != null) names.Add(el.PartName);
+            return names;
+        }
+
+        private static string NotFoundHint(string name) => McpNameHints.NotFound(name, AllPartNames());
+
         private static GameObject? FindGameObject(string path)
         {
             if (path.Contains("/"))
@@ -276,8 +286,7 @@ namespace KitchenDesigner.Core.MCP
         {
             if (element.Movable) return null;
             return McpResponse.Error(reqId, -1,
-                $"Element '{name}' is LOCKED, so move/resize/delete are rejected. " +
-                "Unlock it with set_element_lock {locked:false} — but ONLY if the user explicitly allowed editing this element.");
+                McpNameHints.Locked(name) + " (move, resize and delete are rejected while it is locked)");
         }
 
         private static void SettleSceneAfterMutation()
@@ -286,61 +295,6 @@ namespace KitchenDesigner.Core.MCP
             var hl = ElementHighlighter.Current;
             if (hl is null) return;
             hl.RefreshHighlights();
-        }
-
-        private static List<object> BuildElementViolations(KitchenElement el, List<KitchenElement>? all, ValidationResult? vr)
-        {
-            var list = new List<object>();
-            if (all == null || all.Count == 0) return list;
-
-            var overlaps = ComputeViolationOverlaps(el, all);
-            foreach (var o in overlaps) list.Add(o);
-
-            if (vr != null && vr.violations.Contains(el) && overlaps.Count == 0)
-                list.Add(new
-                {
-                    kind = "disconnected",
-                    message = "Element is not face-to-face connected to the wall/floor structure."
-                });
-
-            if (el is FacadeElement facade)
-            {
-                var data = McpFacadeIssues.Of(facade, all);
-                if (data.faceInward)
-                    list.Add(new
-                    {
-                        kind = "facade_facing_inward",
-                        message = "The facade's front face points INTO the cabinet. Rotate it 180 degrees."
-                    });
-                foreach (var o in data.obstructions)
-                    list.Add(new
-                    {
-                        kind = "face_obstruction",
-                        neighbor = o.neighbor,
-                        distanceFromFaceMm = o.distanceFromFaceMm,
-                        overlapWidthMm = o.overlapWidthMm,
-                        overlapHeightMm = o.overlapHeightMm
-                    });
-                foreach (var v in data.openingViolations)
-                    list.Add(new
-                    {
-                        kind = "opening_collision",
-                        neighbor = v.neighbor,
-                        openingMode = v.openingMode,
-                        collisionAtProgress = v.collisionAtProgress,
-                        collisionOverlapMm = v.collisionOverlapMm
-                    });
-            }
-
-            if (el is DrawerElement drawer)
-            {
-                var validation = DrawerValidator.ValidateAll(drawer, all);
-                if (!validation.IsValid)
-                    foreach (var err in validation.Errors)
-                        list.Add(new { kind = "drawer_invalid", message = err });
-            }
-
-            return list;
         }
     }
 }

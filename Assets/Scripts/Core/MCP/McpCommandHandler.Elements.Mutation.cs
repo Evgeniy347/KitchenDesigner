@@ -129,12 +129,12 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (string.IsNullOrEmpty(op.name)) { errors.Add("an op is missing 'name'"); continue; }
                 var el = FindElementByName(op.name);
-                if (el == null) { errors.Add($"Element not found: {op.name}"); continue; }
+                if (el == null) { errors.Add(NotFoundHint(op.name)); continue; }
                 bool geometry = op.anchor_x_mm.HasValue || op.anchor_y_mm.HasValue || op.anchor_z_mm.HasValue
                     || op.width.HasValue || op.height.HasValue || op.depth.HasValue
                     || op.rot_x.HasValue || op.rot_y.HasValue || op.rot_z.HasValue;
                 if (geometry && !el.Movable && op.locked != false)
-                { errors.Add($"Element '{op.name}' is LOCKED"); continue; }
+                { errors.Add(McpNameHints.Locked(op.name)); continue; }
                 foreach (var err in EditFieldRules.Reject(op, el, FindElementByName))
                     errors.Add($"Invalid field for '{op.name}': {err}");
                 if (op.new_name != null && op.new_name != op.name)
@@ -155,7 +155,7 @@ namespace KitchenDesigner.Core.MCP
             }
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1,
-                    "edit_elements rejected, NOTHING was applied: " + string.Join(" | ", errors));
+                    "edit_elements rejected, NOTHING was applied: " + string.Join(" | ", errors) + ". " + McpNameHints.ResendAll);
 
             var report = McpMutationReport.Begin();
             var commands = new List<IUndoCommand>();
@@ -220,7 +220,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (string.IsNullOrEmpty(op.name)) { errors.Add("an op is missing 'name'"); continue; }
                 var source = FindElementByName(op.name);
-                if (source == null) { errors.Add($"Element not found: {op.name}"); continue; }
+                if (source == null) { errors.Add(NotFoundHint(op.name)); continue; }
                 int count = Mathf.Clamp(op.count <= 0 ? 1 : op.count, 1, 50);
                 var offset = McpAnchor.FromMm(op.offset_x_mm, op.offset_y_mm, op.offset_z_mm);
                 var basePos = source.transform.position;
@@ -236,8 +236,12 @@ namespace KitchenDesigner.Core.MCP
                 }
             }
             if (errors.Count > 0)
-                return McpResponse.Error(req.id, -1, "clone_elements rejected: " + string.Join(" | ", errors));
+            {
+                McpSceneRollback.Discard(allClones);
+                return McpResponse.Error(req.id, -1, "clone_elements rejected: " + string.Join(" | ", errors) + ". " + McpNameHints.ResendAll);
+            }
 
+            if (p.dry_run) return DryRunOfNewParts(req, report, allClones, reference);
             CommandStack.Execute(new CompositeCommand($"MCP clone_elements x{allClones.Count}", commands));
             SettleSceneAfterMutation();
             Debug.Log($"[MCP] Clone batch: {p.ops.Length} sources → {allClones.Count} clones");
@@ -260,18 +264,18 @@ namespace KitchenDesigner.Core.MCP
                 if (string.IsNullOrEmpty(op.name) || string.IsNullOrEmpty(op.target))
                 { errors.Add("op missing name or target"); continue; }
                 if (!McpWireEnums.TryParseFace(op.face, out int axis, out bool maxSide))
-                { errors.Add($"Unknown face '{op.face}' for '{op.name}'"); continue; }
+                { errors.Add($"{McpNameHints.UnknownFace(op.face)} (op for '{op.name}')"); continue; }
                 if (!McpWireEnums.TryParseFace(op.target_face, out int tAxis, out bool tMaxSide))
-                { errors.Add($"Unknown target_face '{op.target_face}' for '{op.target}'"); continue; }
+                { errors.Add($"{McpNameHints.UnknownFace(op.target_face)} (target_face for '{op.target}')"); continue; }
                 if (axis != tAxis)
-                { errors.Add($"face '{op.face}' and target_face '{op.target_face}' on different axes"); continue; }
+                { errors.Add(McpNameHints.FaceAxisMismatch(op.face, op.target_face)); continue; }
                 var element = FindElementByName(op.name);
-                if (element == null) { errors.Add($"Element not found: {op.name}"); continue; }
+                if (element == null) { errors.Add(NotFoundHint(op.name)); continue; }
                 var target = FindElementByName(op.target);
-                if (target == null) { errors.Add($"Target not found: {op.target}"); continue; }
-                if (element == target) { errors.Add($"'{op.name}' and '{op.target}' must differ"); continue; }
+                if (target == null) { errors.Add(NotFoundHint(op.target)); continue; }
+                if (element == target) { errors.Add($"'{op.name}' and '{op.target}' must differ: a part cannot be aligned to itself, name another target"); continue; }
                 var lockErr = RequireMovable(element, op.name, req.id);
-                if (lockErr != null) { errors.Add($"'{op.name}' is LOCKED"); continue; }
+                if (lockErr != null) { errors.Add(McpNameHints.Locked(op.name)); continue; }
 
                 var elAabb = McpAabb.Of(element.GetVertices());
                 var tAabb = McpAabb.Of(target.GetVertices());
@@ -289,18 +293,43 @@ namespace KitchenDesigner.Core.MCP
                 AttachMove.AppendFollowers(commands, element, before, alignRot, after, alignRot);
             }
             if (errors.Count > 0)
-                return McpResponse.Error(req.id, -1, "align_elements rejected: " + string.Join(" | ", errors));
+                return McpResponse.Error(req.id, -1, "align_elements rejected: " + string.Join(" | ", errors) + ". " + McpNameHints.ResendAll);
 
-            CommandStack.Execute(new CompositeCommand($"MCP align_elements ({commands.Count} moves)", commands));
-            SettleSceneAfterMutation();
+            var composite = new CompositeCommand($"MCP align_elements ({commands.Count} moves)", commands);
             var moved = new List<KitchenElement>();
             foreach (var op in p.ops)
             {
                 var el = FindElementByName(op.name);
                 if (el != null && !moved.Contains(el)) moved.Add(el);
             }
+            if (p.dry_run)
+            {
+                composite.Execute();
+                SceneChangeTracker.SettleDerivedLinks();
+                var dryReply = report.Finish(moved, reference);
+                dryReply.dryRun = true;
+                dryReply.applied = false;
+                composite.Undo();
+                SceneChangeTracker.SettleDerivedLinks();
+                return McpResponse.Result(req.id, dryReply);
+            }
+            CommandStack.Execute(composite);
+            SettleSceneAfterMutation();
             Debug.Log($"[MCP] Aligned {commands.Count} elements");
             return McpResponse.Result(req.id, report.Finish(moved, reference));
+        }
+
+        private McpResponse DryRunOfNewParts(McpRequest req, McpMutationReport report,
+            List<KitchenElement> fresh, McpReference reference)
+        {
+            SnapOpeningsOnceEveryWallOfTheBatchIsRegistered(fresh);
+            SettleSceneAfterMutation();
+            var reply = report.Finish(fresh, reference);
+            reply.dryRun = true;
+            reply.applied = false;
+            McpSceneRollback.Discard(fresh);
+            SettleSceneAfterMutation();
+            return McpResponse.Result(req.id, reply);
         }
 
         private McpResponse HandleDistributeEvenly(McpRequest req)
@@ -319,13 +348,13 @@ namespace KitchenDesigner.Core.MCP
             foreach (var name in p.names)
             {
                 var el = FindElementByName(name);
-                if (el == null) { errors.Add($"Element not found: {name}"); continue; }
-                if (!el.Movable) { errors.Add($"Element '{name}' is LOCKED"); continue; }
+                if (el == null) { errors.Add(NotFoundHint(name)); continue; }
+                if (!el.Movable) { errors.Add(McpNameHints.Locked(name)); continue; }
                 resolved.Add(el);
             }
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1,
-                    "distribute_evenly rejected, NOTHING was moved: " + string.Join(" | ", errors));
+                    "distribute_evenly rejected, NOTHING was moved: " + string.Join(" | ", errors) + ". " + McpNameHints.ResendAll);
 
             var report = McpMutationReport.Begin();
             resolved.Sort((a, b) => a.transform.position[axis].CompareTo(b.transform.position[axis]));
@@ -377,7 +406,7 @@ namespace KitchenDesigner.Core.MCP
                 if (namesSeen.Contains(item.name)) { errors.Add($"duplicate name '{item.name}' in this batch"); continue; }
                 namesSeen.Add(item.name);
                 var existing = FindElementByName(item.name);
-                if (existing != null) { errors.Add($"Element '{item.name}' already exists"); continue; }
+                if (existing != null) { errors.Add(McpNameHints.AlreadyExists(item.name, AllPartNames())); continue; }
 
                 var elementType = (item.type ?? "board").Trim().ToLowerInvariant();
                 if (!ElementSpawners.CanSpawn(elementType))
@@ -419,7 +448,7 @@ namespace KitchenDesigner.Core.MCP
             McpCallStages.End("acceptItems", stage);
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1,
-                    "create_elements rejected, NOTHING was created: " + string.Join(" | ", errors));
+                    "create_elements rejected, NOTHING was created: " + string.Join(" | ", errors) + ". " + McpNameHints.ResendAll);
 
             stage = McpCallStages.Begin();
             var report = McpMutationReport.Begin();
@@ -436,6 +465,7 @@ namespace KitchenDesigner.Core.MCP
                 created.Add(spawned);
             }
             McpCallStages.End("spawn", stage);
+            if (p.dry_run) return DryRunOfNewParts(req, report, created, reference);
 
             stage = McpCallStages.Begin();
             if (commands.Count > 0)
@@ -474,9 +504,9 @@ namespace KitchenDesigner.Core.MCP
                 if (!McpWireEnums.TryParseConvertTarget(op.target, out var target))
                 { errors.Add($"Unknown target '{op.target}' for '{op.name}'"); continue; }
                 var element = FindElementByName(op.name);
-                if (element == null) { errors.Add($"Element not found: {op.name}"); continue; }
+                if (element == null) { errors.Add(NotFoundHint(op.name)); continue; }
                 var lockErr = RequireMovable(element, op.name, req.id);
-                if (lockErr != null) { errors.Add($"'{op.name}' is LOCKED"); continue; }
+                if (lockErr != null) { errors.Add(McpNameHints.Locked(op.name)); continue; }
                 if (!ElementConverter.CanConvert(element))
                 {
                     errors.Add($"'{op.name}' is a {Bulk.ElementSelector.TypeOf(element)} and cannot change type: "
@@ -492,7 +522,7 @@ namespace KitchenDesigner.Core.MCP
                 results.Add(converted);
             }
             if (errors.Count > 0)
-                return McpResponse.Error(req.id, -1, "convert_elements rejected: " + string.Join(" | ", errors));
+                return McpResponse.Error(req.id, -1, "convert_elements rejected: " + string.Join(" | ", errors) + ". " + McpNameHints.ResendAll);
 
             SettleSceneAfterMutation();
             Debug.Log($"[MCP] Converted {results.Count} elements");
@@ -511,13 +541,13 @@ namespace KitchenDesigner.Core.MCP
             foreach (var name in p.names)
             {
                 var el = FindElementByName(name);
-                if (el == null) { errors.Add($"Element not found: {name}"); continue; }
+                if (el == null) { errors.Add(NotFoundHint(name)); continue; }
                 var lockErr = RequireMovable(el, name, req.id);
-                if (lockErr != null) { errors.Add($"'{name}' is LOCKED"); continue; }
+                if (lockErr != null) { errors.Add(McpNameHints.Locked(name)); continue; }
                 commands.Add(new DeleteCommand(el.gameObject));
             }
             if (errors.Count > 0)
-                return McpResponse.Error(req.id, -1, "delete_elements rejected: " + string.Join(" | ", errors));
+                return McpResponse.Error(req.id, -1, "delete_elements rejected: " + string.Join(" | ", errors) + ". " + McpNameHints.ResendAll);
 
             var deletedNames = p.names.ToList();
             CommandStack.Execute(new CompositeCommand($"MCP delete_elements x{commands.Count}", commands));
