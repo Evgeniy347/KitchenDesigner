@@ -8,6 +8,8 @@ namespace KitchenDesigner.Core
 
         string OpenActionLabel { get; }
 
+        void SetOpen(bool open);
+
         void ToggleOpen();
 
         void CycleOpenState();

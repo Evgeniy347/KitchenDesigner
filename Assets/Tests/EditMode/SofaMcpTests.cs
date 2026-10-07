@@ -111,6 +111,49 @@ public class SofaMcpTests : McpTestFixture
         Assert.AreEqual(SofaLayout.OverallHeightMM, sofa.DimensionsMM.y, "высота та же");
     }
 
+    private McpResponse SetOpen(string name, bool open)
+        => _handler!.Handle(MakeReq("edit_elements", new
+        {
+            ops = new object[] { new { name, is_open = open } },
+        }));
+
+    [Test]
+    public void EditSofa_IsOpenTrue_GoesStraightToTheBed_WithoutAnIntermediateStage()
+    {
+        var sofa = CreateSofa("SofaOpenTrue");
+
+        var resp = SetOpen("SofaOpenTrue", true);
+
+        Assert.AreEqual("result", resp.type, "is_open диван принимает: он IOpenable");
+        Assert.AreEqual(SofaStage.Bed, sofa.UnfoldStage,
+            "true — это кровать одним вызовом: стадия «выдвинуто» остаётся для cycle_drawer_animation");
+    }
+
+    [Test]
+    public void EditSofa_IsOpenTrue_OnAnExtendedSofa_MakesItTheBed()
+    {
+        var sofa = CreateSofa("SofaOpenFromExtended");
+        Cycle("SofaOpenFromExtended");
+        Assert.AreEqual(SofaStage.Extended, sofa.UnfoldStage, "предусловие: диван выдвинут");
+
+        SetOpen("SofaOpenFromExtended", true);
+
+        Assert.AreEqual(SofaStage.Bed, sofa.UnfoldStage,
+            "is_open:true — это всегда кровать, а не «уже открыт, делать нечего»");
+    }
+
+    [Test]
+    public void EditSofa_IsOpenFalse_FoldsItFromAnyStage()
+    {
+        var sofa = CreateSofa("SofaOpenFalse");
+        SetOpen("SofaOpenFalse", true);
+
+        var resp = SetOpen("SofaOpenFalse", false);
+
+        Assert.AreEqual("result", resp.type, "is_open:false тоже принимается");
+        Assert.AreEqual(SofaStage.Folded, sofa.UnfoldStage, "и складывает диван одним вызовом");
+    }
+
     [Test]
     public void EditSofa_Depth_IsAccepted_AndOnlyTheSeatGrows()
     {

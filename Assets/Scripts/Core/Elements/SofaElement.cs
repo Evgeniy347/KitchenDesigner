@@ -123,6 +123,8 @@ namespace KitchenDesigner.Core
 
         private OwnedMeshBody Box => _box ??= new OwnedMeshBody(gameObject, AdoptOwnedMesh);
 
+        public void SetOpen(bool open) => GoToStage(open ? SofaStage.Bed : SofaStage.Folded);
+
         public void ToggleOpen() => GoToStage(IsOpen ? SofaStage.Folded : SofaStage.Bed);
 
         public void CycleOpenState() => GoToStage(SofaUnfold.Next(_motion.Target));

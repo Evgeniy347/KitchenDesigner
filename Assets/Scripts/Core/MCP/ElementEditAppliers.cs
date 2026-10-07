@@ -12,7 +12,6 @@ namespace KitchenDesigner.Core.MCP
             For<FacadeElement>((op, facade) =>
             {
                 if (op.mode != null && McpWireEnums.TryParseDoorMode(op.mode, out var m)) facade.Mode = m;
-                if (op.is_open.HasValue) facade.SetOpen(op.is_open.Value);
             }),
             For<AssembledFacadeElement>((op, asm) =>
             {
@@ -140,10 +139,6 @@ namespace KitchenDesigner.Core.MCP
                 host.AttachedFacadeName = op.attached_facade_name;
                 host.OnAttachedFacadeChanged(previous, host.FindAttachedFacade());
             }),
-            For<DishwasherElement>((op, dishwasher) =>
-            {
-                if (op.is_open.HasValue) dishwasher.SetOpen(op.is_open.Value);
-            }),
             For<IHasTwoDecorSlots>(ApplyDecorSlotMaterials),
             For<TableElement>((op, table) =>
             {
@@ -178,23 +173,20 @@ namespace KitchenDesigner.Core.MCP
                 if (op.tint != null) window.Tint = McpWireEnums.ParseGlassTint(op.tint);
                 if (op.sill_protrusion_mm.HasValue) window.SillProtrusionMM = op.sill_protrusion_mm.Value;
                 if (op.mode != null && McpWireEnums.TryParseDoorMode(op.mode, out var m)) window.Mode = m;
-                if (op.is_open.HasValue) window.SetOpen(op.is_open.Value);
             }),
             For<DoorElement>((op, door) =>
             {
                 if (op.sash_type != null) door.SashType = McpWireEnums.ParseDoorSashType(op.sash_type);
                 if (op.mode != null && McpWireEnums.TryParseDoorMode(op.mode, out var m)) door.Mode = m;
-                if (op.is_open.HasValue) door.SetOpen(op.is_open.Value);
-            }),
-            For<OvenElement>((op, oven) =>
-            {
-                if (op.is_open.HasValue) oven.SetOpen(op.is_open.Value);
             }),
             For<LaundryMachineElement>((op, machine) =>
             {
                 if (op.laundry_kind != null)
                     machine.Kind = McpWireEnums.ParseLaundryKind(op.laundry_kind);
-                if (op.is_open.HasValue) machine.SetOpen(op.is_open.Value);
+            }),
+            For<IOpenable>((op, openable) =>
+            {
+                if (op.is_open.HasValue) openable.SetOpen(op.is_open.Value);
             }),
             For<FoundationElement>((op, foundation) =>
             {

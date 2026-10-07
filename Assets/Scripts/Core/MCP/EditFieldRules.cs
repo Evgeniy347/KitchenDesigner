@@ -6,9 +6,7 @@ namespace KitchenDesigner.Core.MCP
 {
     internal static class EditFieldRules
     {
-        internal static bool AcceptsOpenFlag(KitchenElement el) =>
-            el is FacadeElement || el is WindowElement || el is DoorElement
-            || el is OvenElement || el is DishwasherElement || el is LaundryMachineElement;
+        internal static bool AcceptsOpenFlag(KitchenElement el) => el is IOpenable;
 
         internal static bool AcceptsHingeMode(KitchenElement el) =>
             el is FacadeElement || el is WindowElement || el is DoorElement;
