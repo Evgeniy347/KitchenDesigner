@@ -108,7 +108,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var (op, el, _, _) in resolved)
                 if (op.new_name != null && op.new_name != el.PartName) renames = true;
             var touched = new List<KitchenElement>();
-            var source = renames ? PartRegistry.All : resolved.Select(r => r.el).ToList();
+            var source = renames ? PartRegistry.GetAll() : resolved.Select(r => r.el).ToList();
             foreach (var el in source)
                 if (el != null && !touched.Contains(el)) touched.Add(el);
             return touched;
