@@ -52,6 +52,9 @@ namespace KitchenDesigner.Core
                 if (CarriesTheFootprint(foot, aabb) && aabb.maxY > bestY)
                     bestY = aabb.maxY;
             }
+            var ground = ConstraintValidator.Ground;
+            if (ground.Present && ground.Y <= centreY - BelowCentreUnits && ground.Y > bestY)
+                bestY = ground.Y;
             return bestY >= centreY - FloorSearchDepthUnits ? bestY : NoFloorFound;
         }
 

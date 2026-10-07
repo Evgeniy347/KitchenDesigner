@@ -75,6 +75,42 @@ public class PillarAutoFitTests
     }
 
     [Test]
+    public void FloorUnder_TheImpliedGround_IsTheFloorOfAnEmptyScene_ButOnlyWithinReach()
+    {
+        ConstraintValidator.Ground = ImpliedGround.At(0f);
+        try
+        {
+            var low = Pillar(new Vector3(0f, 0.08f, 0f), 75);
+            Assert.AreEqual(0f, PillarAutoFit.FloorUnder(low, Scene(low)), 1e-5f,
+                "в сцене без пола и плиты опора встаёт на землю приложения");
+
+            var high = Pillar(new Vector3(0f, 2f, 0f), 75);
+            Assert.AreEqual(PillarAutoFit.NoFloorFound, PillarAutoFit.FloorUnder(high, Scene(high)), 1e-3f,
+                "парный контроль: земля в двух метрах под опорой — не её пол, висящую опору не трогаем");
+        }
+        finally { ConstraintValidator.Ground = ImpliedGround.None; }
+
+        var alone = Pillar(new Vector3(0f, 0.08f, 0f), 75);
+        Assert.AreEqual(PillarAutoFit.NoFloorFound, PillarAutoFit.FloorUnder(alone, Scene(alone)), 1e-3f,
+            "земля выключена (по умолчанию) — под опорой ничего нет");
+    }
+
+    [Test]
+    public void Seat_OnTheImpliedGround_StandsThePillarOnIt()
+    {
+        ConstraintValidator.Ground = ImpliedGround.At(0f);
+        try
+        {
+            var pillar = Pillar(new Vector3(0f, 0.09f, 0f), 75);
+
+            PillarAutoFit.Seat(pillar, Scene(pillar));
+
+            Assert.AreEqual(0f, BottomOf(pillar), 1e-4f, "низ опоры — на земле");
+        }
+        finally { ConstraintValidator.Ground = ImpliedGround.None; }
+    }
+
+    [Test]
     public void FloorUnder_WithNothingBelow_ReportsNoFloor()
     {
         var pillar = Pillar(new Vector3(0f, 2f, 0f), 75);
