@@ -221,7 +221,6 @@ public class ElementNamingTests : ElementTestBase
     private static ProjectData ProjectOf(params ElementData[] items)
     {
         var data = new ProjectData(new List<ElementData>(items));
-        data.basePlateValid = false;
         return data;
     }
 

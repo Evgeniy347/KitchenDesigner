@@ -4,47 +4,9 @@ using KitchenDesigner.Core;
 /// <summary>Mirrors FoundationJsonTrimTests: ElementData now carries isFloorSlab + four detail
 /// fields for EVERY element, not only FloorSlabElement, because JsonUtility cannot skip a field
 /// by value. Without this trim, every old save and every one of the 30 golden snapshots would
-/// silently gain five new lines per element — not lost data, but not byte-identical either.
-/// basePlate is trimmed separately for the same reason LevelsJsonTrim and FoundationJsonTrim
-/// both already do: it is a named root object, not an array entry.</summary>
+/// silently gain five new lines per element — not lost data, but not byte-identical either.</summary>
 public class FloorSlabJsonTrimTests
 {
-    private const string ProjectWithABasePlate =
-        "{\n" +
-        "    \"version\": 1,\n" +
-        "    \"elements\": [],\n" +
-        "    \"basePlateValid\": true,\n" +
-        "    \"basePlate\": {\n" +
-        "        \"name\": \"BasePlate\",\n" +
-        "        \"isFloorSlab\": false,\n" +
-        "        \"slabTechnology\": 0,\n" +
-        "        \"slabConcreteGrade\": 1,\n" +
-        "        \"slabRebarDiameterMm\": 12,\n" +
-        "        \"slabRebarStepMm\": 300,\n" +
-        "        \"isLightSource\": false\n" +
-        "    },\n" +
-        "    \"lightsOn\": true\n" +
-        "}";
-
-    [Test]
-    public void RemoveWhenNotFloorSlab_ABasePlate_DropsAllFiveKeys_TooNotOnlyTheArray()
-    {
-        var trimmed = FloorSlabJsonTrim.RemoveWhenNotFloorSlab(ProjectWithABasePlate);
-
-        StringAssert.DoesNotContain("isFloorSlab", trimmed);
-        StringAssert.DoesNotContain("slabTechnology", trimmed);
-        StringAssert.DoesNotContain("slabRebarStepMm", trimmed);
-
-        var root = JsonText.RootObject(trimmed);
-        var basePlate = JsonText.MemberValue(trimmed, root, "basePlate");
-        Assert.IsTrue(basePlate.Found, "basePlate — не мусор, сама запись обязана остаться");
-        Assert.IsTrue(JsonText.MemberValue(trimmed, basePlate, "name").Found);
-        Assert.IsTrue(JsonText.MemberValue(trimmed, basePlate, "isLightSource").Found,
-            "поле ПОСЛЕ удалённой пятёрки внутри basePlate обязано пережить срез");
-        Assert.IsTrue(JsonText.MemberValue(trimmed, root, "lightsOn").Found,
-            "корневое поле ПОСЛЕ basePlate обязано пережить срез именованного объекта");
-    }
-
     private const string ProjectWithAPlainBoard =
         "{\n" +
         "    \"version\": 1,\n" +

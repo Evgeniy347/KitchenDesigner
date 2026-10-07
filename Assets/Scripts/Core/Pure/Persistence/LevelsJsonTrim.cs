@@ -3,7 +3,6 @@ namespace KitchenDesigner.Core
     public static class LevelsJsonTrim
     {
         private const string ElementsKey = "elements";
-        private const string BasePlateKey = "basePlate";
         private const string LevelIdKey = "levelId";
         private const string LevelsKey = "levels";
         private const string EmptyStringText = "\"\"";
@@ -14,7 +13,6 @@ namespace KitchenDesigner.Core
             if (string.IsNullOrEmpty(projectJson)) return projectJson;
 
             var result = RemoveEmptyLevelIdFromElements(projectJson);
-            result = RemoveEmptyLevelIdFromNamedObject(result, BasePlateKey);
             result = RemoveEmptyLevelsArray(result);
             return result;
         }
@@ -28,17 +26,6 @@ namespace KitchenDesigner.Core
             if (!elements.Found || source[elements.Start] != '[') return source;
 
             return JsonText.RewriteArrayItems(source, elements, RemoveEmptyLevelId);
-        }
-
-        private static string RemoveEmptyLevelIdFromNamedObject(string source, string key)
-        {
-            var root = JsonText.RootObject(source);
-            if (!root.Found) return source;
-
-            var obj = JsonText.MemberValue(source, root, key);
-            if (!obj.Found || source[obj.Start] != '{') return source;
-
-            return RemoveEmptyLevelId(source, obj);
         }
 
         internal static string RemoveEmptyLevelId(string source, JsonSpan objectSpan) =>

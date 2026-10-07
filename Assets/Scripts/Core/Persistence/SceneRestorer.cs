@@ -68,9 +68,6 @@ namespace KitchenDesigner.Core
                 System.Enum.TryParse<ResizeHandleManager.HandleMode>(data.handleMode, out var mode))
                 ResizeHandleManager.SetMode(mode);
 
-            if (data.basePlateValid && data.basePlate != null)
-                RestoreBasePlate(data.basePlate);
-
             if (data.settings != null)
                 KitchenSettings.Instance.ApplyFrom(data.settings);
 
@@ -123,29 +120,6 @@ namespace KitchenDesigner.Core
 
                 if (!movedAny) break;
             }
-        }
-
-        private static void RestoreBasePlate(ElementData data)
-        {
-            if (data == null) return;
-            var floorGo = GameObject.FindWithTag("Floor");
-            var element = floorGo != null
-                ? ExistingBasePlateElement(floorGo)
-                : BasePlate.Create().Element;
-            if (element == null) return;
-            element.DimensionsMM = data.Dimensions;
-            element.transform.position = data.Position;
-            element.transform.rotation = data.Rotation;
-            element.Movable = data.movable;
-            element.Transparent = data.transparent;
-            MaterialManager.ApplyById(element, data.materialId);
-        }
-
-        private static KitchenElement? ExistingBasePlateElement(GameObject floorGo)
-        {
-            var bp = floorGo.GetComponent<BasePlate>();
-            var element = bp != null ? (bp.Element ?? bp.GetComponent<KitchenElement>()) : null;
-            return element != null ? element : floorGo.GetComponent<KitchenElement>();
         }
     }
 }

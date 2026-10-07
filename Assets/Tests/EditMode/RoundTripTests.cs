@@ -505,33 +505,48 @@ public class RoundTripTests
             "full position should be restored, not lowered position");
     }
 
-    // ── 6. BasePlate ─────────────────────────────────────────────────────
+    // ── 6. BasePlate ушла из формата
 
     [Test]
-    public void BasePlate_RoundTrip()
+    public void RoundTrip_NewSave_HasNoBasePlateBlock()
     {
-        // создаём пол через BasePlate.Create и регистрируем
-        var bp = BasePlate.Create();
-        var floorGo = bp.Element.gameObject;
-        floorGo.tag = "Floor";
-        bp.Element.DimensionsMM = new Vector3Int(4000, 18, 5000);
-        floorGo.transform.position = new Vector3(0, -0.009f, 0);
-        _spawned.Add(floorGo);
+        MakeBoard("PlainBoard", new Vector3Int(400, 400, 18), Vector3.zero);
 
-        FullRoundTrip();
+        var json = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(PartRegistry.GetAll()));
 
-        var foundFloor = GameObject.FindWithTag("Floor");
-        Assert.IsNotNull(foundFloor, "floor should exist after restore");
+        StringAssert.DoesNotContain("basePlate", json,
+            "подложки больше нет: ни блока basePlate, ни флага basePlateValid в новом файле");
+        StringAssert.Contains("PlainBoard", json,
+            "контроль: сохранение не пустое, иначе отсутствие подложки ничего не доказывает");
+    }
 
-        var basePlate = foundFloor.GetComponent<BasePlate>();
-        Assert.IsNotNull(basePlate, "BasePlate component should exist");
+    [Test]
+    public void OldSave_WithBasePlate_LoadsAndIgnoresIt()
+    {
+        var path = Path.Combine(Application.dataPath,
+            "Tests/EditMode/Fixtures/distance-guides-scene.save.json");
+        var text = File.ReadAllText(path);
+        StringAssert.Contains("\"basePlate\"", text,
+            "посылка: замороженный файл написан до удаления подложки и несёт блок basePlate");
 
-        var el = basePlate.Element;
-        Assert.IsNotNull(el, "BasePlate.Element should not be null");
-        Assert.AreEqual(new Vector3Int(4000, 18, 5000), el.DimensionsMM, "floor dimensions");
-        Assert.AreEqual(0f, foundFloor.transform.position.x, 0.001f, "floor pos.x");
-        Assert.AreEqual(-0.009f, foundFloor.transform.position.y, 0.001f, "floor pos.y");
-        Assert.AreEqual(0f, foundFloor.transform.position.z, 0.001f, "floor pos.z");
+        var guard = ProjectLoadStateGuard.Capture();
+        try
+        {
+            var data = SaveLoadManager.Deserialize(text);
+            Assert.IsNotNull(data, "старый файл с блоком basePlate обязан разбираться");
+
+            foreach (var go in SaveLoadManager.RestoreScene(data!)) _spawned.Add(go);
+
+            Assert.Greater(PartRegistry.GetAll().Count, 0, "детали старого файла восстановились");
+            foreach (var e in PartRegistry.GetAll())
+                Assert.AreNotEqual("BasePlate", e.PartName,
+                    "блок basePlate читается и отбрасывается: подложка не появляется в сцене");
+
+            var resaved = SaveLoadManager.Serialize(SaveLoadManager.CaptureScene(PartRegistry.GetAll()));
+            StringAssert.DoesNotContain("basePlate", resaved,
+                "после загрузки старого файла новое сохранение блока подложки не пишет");
+        }
+        finally { guard.Restore(); }
     }
 
     // ── 7. HandleMode ────────────────────────────────────────────────────
@@ -621,9 +636,6 @@ public class RoundTripTests
         // стена
         Assert.IsTrue(json.Contains("\"isWall\""), "isWall field");
 
-        // basePlate
-        Assert.IsTrue(json.Contains("\"basePlate\""), "basePlate field");
-        Assert.IsTrue(json.Contains("\"basePlateValid\""), "basePlateValid field");
     }
 
     // ── 9. Multiple element types in one scene ───────────────────────────
@@ -965,10 +977,10 @@ public class RoundTripTests
         gs.ApplyFrom(backup);
     }
 
-    // ── 12. Full ProjectData round-trip (groups + camera + baseplate) ────
+    // ── 12. Full ProjectData round-trip (groups + camera) ────
 
     [Test]
-    public void FullProjectData_WithGroups_Camera_BasePlate_RoundTrip()
+    public void FullProjectData_WithGroups_Camera_RoundTrip()
     {
         // Элементы
         var board = MakeBoard("BoardG", new Vector3Int(800, 400, 18), new Vector3(0.5f, 0.2f, 0));
@@ -980,20 +992,11 @@ public class RoundTripTests
         Assert.AreEqual(group!.id, board.GroupId);
         Assert.AreEqual(group.id, facade.GroupId);
 
-        // BasePlate
-        var bp = BasePlate.Create();
-        bp.Element.DimensionsMM = new Vector3Int(3500, 18, 4000);
-        bp.transform.position = new Vector3(0, -0.009f, 0);
-        _spawned.Add(bp.gameObject);
-        PartRegistry.Register(bp.Element);
-
         // Capture
         var elements = new List<KitchenElement> { board, facade };
         var data = SaveLoadManager.CaptureScene(elements);
 
         // Проверяем capture
-        Assert.IsTrue(data.basePlateValid, "basePlateValid");
-        Assert.AreEqual(new[] { 3500, 18, 4000 }, data.basePlate!.dimensionsMM);
         Assert.AreEqual(1, data.groups.Length, "groups count");
         Assert.AreEqual(group!.id, data.groups[0].id);
         Assert.AreEqual("Группа", data.groups[0].name);
@@ -1011,10 +1014,6 @@ public class RoundTripTests
         Assert.AreEqual(1, restored.groups.Length);
         Assert.AreEqual(group.id, restored.groups[0].id);
         Assert.IsTrue(restored.groups[0].movable);
-
-        // BasePlate
-        Assert.IsTrue(restored.basePlateValid);
-        Assert.AreEqual(new[] { 3500, 18, 4000 }, restored!.basePlate!.dimensionsMM);
 
         // HandleMode
         Assert.AreEqual("Resize", restored.handleMode);

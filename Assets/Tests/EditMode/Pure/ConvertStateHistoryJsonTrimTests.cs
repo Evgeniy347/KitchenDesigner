@@ -4,7 +4,7 @@ using KitchenDesigner.Core;
 /// <summary>test-results/review-persistence.md #3: `ElementData` rides a second time inside
 /// `CommandRecord.convertState` (one entry, written by `ConvertElementCommand.ToRecord` on every
 /// undo/redo-able element-type conversion), but none of the eight *JsonTrim classes ever looked
-/// inside `undoHistory`/`redoHistory` - only `elements[]` and `basePlate`. A user who once
+/// inside `undoHistory`/`redoHistory` - only `elements[]`. A user who once
 /// converted a board into a panel (or any other structural conversion) got ~46 default-valued
 /// family keys appended to that one `convertState[0]` record on every resave, growing forever
 /// because nothing ever trims them back out.

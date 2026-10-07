@@ -3,7 +3,6 @@ namespace KitchenDesigner.Core
     public static class FenceJsonTrim
     {
         private const string ElementsKey = "elements";
-        private const string BasePlateKey = "basePlate";
         private const string IsFenceKey = "isFence";
         private const string FalseText = "false";
 
@@ -16,9 +15,7 @@ namespace KitchenDesigner.Core
         {
             if (string.IsNullOrEmpty(projectJson)) return projectJson;
 
-            projectJson = RemoveFromElementsArray(projectJson);
-            projectJson = RemoveFromNamedObject(projectJson, BasePlateKey);
-            return projectJson;
+            return RemoveFromElementsArray(projectJson);
         }
 
         internal static string RemoveFromElementsArray(string projectJson)
@@ -30,17 +27,6 @@ namespace KitchenDesigner.Core
             if (!elements.Found || projectJson[elements.Start] != '[') return projectJson;
 
             return JsonText.RewriteArrayItems(projectJson, elements, RemoveFromElement);
-        }
-
-        private static string RemoveFromNamedObject(string projectJson, string key)
-        {
-            var root = JsonText.RootObject(projectJson);
-            if (!root.Found) return projectJson;
-
-            var obj = JsonText.MemberValue(projectJson, root, key);
-            if (!obj.Found || projectJson[obj.Start] != '{') return projectJson;
-
-            return RemoveFromElement(projectJson, obj);
         }
 
         internal static string RemoveFromElement(string source, JsonSpan objectSpan) =>

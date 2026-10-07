@@ -5,7 +5,6 @@ namespace KitchenDesigner.Core
     public static class ProjectJsonTrim
     {
         private const string ElementsKey = "elements";
-        private const string BasePlateKey = "basePlate";
         private const string SettingsKey = "settings";
         private const string KeyBindingsKey = "keyBindings";
         private const string UndoHistoryKey = "undoHistory";
@@ -20,7 +19,6 @@ namespace KitchenDesigner.Core
         private static readonly TrimmedMember[] RootMembers =
         {
             new TrimmedMember(ElementsKey, MemberAction.ElementArray),
-            new TrimmedMember(BasePlateKey, MemberAction.ElementObject),
             new TrimmedMember(SettingsKey, MemberAction.SettingsObject),
             new TrimmedMember(UndoHistoryKey, MemberAction.RecordArray),
             new TrimmedMember(RedoHistoryKey, MemberAction.RecordArray),
@@ -68,7 +66,6 @@ namespace KitchenDesigner.Core
         {
             Copy,
             ElementArray,
-            ElementObject,
             RecordArray,
             SettingsObject,
             RemoveWhenEmptyString,
@@ -207,19 +204,17 @@ namespace KitchenDesigner.Core
             {
                 MemberAction.ElementArray => WriteArray(valueStart, true),
                 MemberAction.RecordArray => WriteArray(valueStart, false),
-                MemberAction.ElementObject => WriteElement(valueStart),
                 _ => WriteObject(valueStart, ObjectKind.Settings),
             };
 
             private static bool IsDescent(MemberAction action) =>
                 action == MemberAction.ElementArray || action == MemberAction.RecordArray
-                || action == MemberAction.ElementObject || action == MemberAction.SettingsObject;
+                || action == MemberAction.SettingsObject;
 
             private static bool FitsShape(MemberAction action, char first) => action switch
             {
                 MemberAction.ElementArray => first == '[',
                 MemberAction.RecordArray => first == '[',
-                MemberAction.ElementObject => first == '{',
                 MemberAction.SettingsObject => first == '{',
                 _ => true,
             };

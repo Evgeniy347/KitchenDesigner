@@ -634,7 +634,7 @@ public class SnapshotTests
         gs.PhotoSSGI = true;
     }
 
-    // ── Full ProjectData snapshot (elements + groups + camera + baseplate) ─
+    // ── Full ProjectData snapshot (elements + groups + camera) ─
 
     [Test]
     public void Snapshot_FullProjectData()
@@ -657,12 +657,6 @@ public class SnapshotTests
         // Groups — link board and facade
         var group = GroupManager.Link(new List<KitchenElement> {
             boardGo.GetComponent<KitchenElement>(), facade });
-
-        // BasePlate
-        var bp = BasePlate.Create();
-        bp.Element.DimensionsMM = new Vector3Int(3500, 18, 4000);
-        bp.transform.position = new Vector3(0, -0.009f, 0);
-        _spawned.Add(bp.gameObject);
 
         // Capture scene
         var data = SaveLoadManager.CaptureScene(elements);

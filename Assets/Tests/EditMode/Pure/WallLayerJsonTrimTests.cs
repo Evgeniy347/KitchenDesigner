@@ -8,44 +8,6 @@ using KitchenDesigner.Core;
 /// EditMode goldens for exactly this reason).</summary>
 public class WallLayerJsonTrimTests
 {
-    private const string ProjectWithABasePlate =
-        "{\n" +
-        "    \"version\": 1,\n" +
-        "    \"elements\": [],\n" +
-        "    \"basePlateValid\": true,\n" +
-        "    \"basePlate\": {\n" +
-        "        \"name\": \"BasePlate\",\n" +
-        "        \"isInsulation\": false,\n" +
-        "        \"isVentGap\": false,\n" +
-        "        \"isCladding\": false,\n" +
-        "        \"wallLayerHostWallName\": \"\",\n" +
-        "        \"ventGapBattenStepMm\": 600,\n" +
-        "        \"isLightSource\": false\n" +
-        "    },\n" +
-        "    \"lightsOn\": true\n" +
-        "}";
-
-    [Test]
-    public void RemoveWhenNotWallLayer_ABasePlate_DropsAllFiveKeys_TooNotOnlyTheArray()
-    {
-        var trimmed = WallLayerJsonTrim.RemoveWhenNotWallLayer(ProjectWithABasePlate);
-
-        StringAssert.DoesNotContain("isInsulation", trimmed);
-        StringAssert.DoesNotContain("isVentGap", trimmed);
-        StringAssert.DoesNotContain("isCladding", trimmed);
-        StringAssert.DoesNotContain("wallLayerHostWallName", trimmed);
-        StringAssert.DoesNotContain("ventGapBattenStepMm", trimmed);
-
-        var root = JsonText.RootObject(trimmed);
-        var basePlate = JsonText.MemberValue(trimmed, root, "basePlate");
-        Assert.IsTrue(basePlate.Found, "basePlate — не мусор, сама запись обязана остаться");
-        Assert.IsTrue(JsonText.MemberValue(trimmed, basePlate, "name").Found);
-        Assert.IsTrue(JsonText.MemberValue(trimmed, basePlate, "isLightSource").Found,
-            "поле ПОСЛЕ удалённой пятёрки внутри basePlate обязано пережить срез");
-        Assert.IsTrue(JsonText.MemberValue(trimmed, root, "lightsOn").Found,
-            "корневое поле ПОСЛЕ basePlate обязано пережить срез именованного объекта");
-    }
-
     [Test]
     public void RemoveWhenNotWallLayer_APlainBoard_DropsAllFiveKeys()
     {

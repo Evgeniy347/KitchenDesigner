@@ -10,19 +10,12 @@ namespace KitchenDesigner.Core
         {
             var items = new List<ElementData>();
             var ordered = new List<KitchenElement>();
-            ElementData? basePlateData = null;
             foreach (var e in elements)
             {
-                if (e == null) continue;
-                if (e.GetComponent<BasePlate>() != null)
-                {
-                    basePlateData ??= ElementCapture.FromElement(e);
-                    continue;
-                }
+                if (e == null || e.GetComponent<BasePlate>() != null) continue;
                 items.Add(ElementCapture.FromElement(e));
                 ordered.Add(e);
             }
-            basePlateData ??= BasePlateFromScene();
 
             var data = new ProjectData(items);
             data.appVersion = BuildInfo.Version;
@@ -38,12 +31,6 @@ namespace KitchenDesigner.Core
             data.handleMode = ResizeHandleManager.Mode.ToString();
             data.projectInstructions = ProjectInstructions.Text;
 
-            if (basePlateData != null)
-            {
-                data.basePlate = basePlateData;
-                data.basePlateValid = true;
-            }
-
             data.settings = KitchenSettings.Instance.ToData();
 
             data.lightsOn = LightSourceElement.GlobalOn;
@@ -53,15 +40,6 @@ namespace KitchenDesigner.Core
 
             CaptureHistory(data, ordered);
             return data;
-        }
-
-        private static ElementData? BasePlateFromScene()
-        {
-            var floorGo = GameObject.FindWithTag("Floor");
-            if (floorGo == null) return null;
-            var bp = floorGo.GetComponent<BasePlate>();
-            if (bp == null || bp.Element == null) return null;
-            return ElementCapture.FromElement(bp.Element);
         }
 
         private static GroupData[] CaptureGroups()

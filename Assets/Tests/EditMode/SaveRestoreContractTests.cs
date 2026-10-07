@@ -284,8 +284,6 @@ public class SaveRestoreContractTests
         Assert.IsTrue(data.lightsOn, "тумблеры вида — из умолчаний приложения: свет включён");
         Assert.IsEmpty(data.windows, "окна проекта остаются на местах по умолчанию");
         Assert.AreEqual("", data.projectInstructions, "инструкций проекта тогда не было");
-        Assert.IsFalse(data.basePlateValid,
-            "иначе JsonUtility отдал бы пустой ElementData вместо null и подложка обнулилась бы");
         Assert.IsEmpty(data.undoHistory, "истории нет — пустой массив");
         Assert.AreEqual("Resize", data.handleMode, "режим ручек по умолчанию");
     }

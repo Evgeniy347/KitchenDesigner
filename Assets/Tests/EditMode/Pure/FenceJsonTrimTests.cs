@@ -7,42 +7,6 @@ using KitchenDesigner.Core;
 /// lines per element.</summary>
 public class FenceJsonTrimTests
 {
-    private const string ProjectWithABasePlate =
-        "{\n" +
-        "    \"version\": 1,\n" +
-        "    \"elements\": [],\n" +
-        "    \"basePlateValid\": true,\n" +
-        "    \"basePlate\": {\n" +
-        "        \"name\": \"BasePlate\",\n" +
-        "        \"isFence\": false,\n" +
-        "        \"fencePostSectionMm\": 60,\n" +
-        "        \"fencePostStepMm\": 2500,\n" +
-        "        \"fencePitDepthMm\": 1200,\n" +
-        "        \"fenceSheetMark\": 0,\n" +
-        "        \"isLightSource\": false\n" +
-        "    },\n" +
-        "    \"lightsOn\": true\n" +
-        "}";
-
-    [Test]
-    public void RemoveWhenNotFence_ABasePlate_DropsAllFiveKeys_TooNotOnlyTheArray()
-    {
-        var trimmed = FenceJsonTrim.RemoveWhenNotFence(ProjectWithABasePlate);
-
-        StringAssert.DoesNotContain("isFence", trimmed);
-        StringAssert.DoesNotContain("fencePostSectionMm", trimmed);
-        StringAssert.DoesNotContain("fenceSheetMark", trimmed);
-
-        var root = JsonText.RootObject(trimmed);
-        var basePlate = JsonText.MemberValue(trimmed, root, "basePlate");
-        Assert.IsTrue(basePlate.Found, "basePlate — не мусор, сама запись обязана остаться");
-        Assert.IsTrue(JsonText.MemberValue(trimmed, basePlate, "name").Found);
-        Assert.IsTrue(JsonText.MemberValue(trimmed, basePlate, "isLightSource").Found,
-            "поле ПОСЛЕ удалённой пятёрки внутри basePlate обязано пережить срез");
-        Assert.IsTrue(JsonText.MemberValue(trimmed, root, "lightsOn").Found,
-            "корневое поле ПОСЛЕ basePlate обязано пережить срез именованного объекта");
-    }
-
     private const string ProjectWithAPlainBoard =
         "{\n" +
         "    \"version\": 1,\n" +

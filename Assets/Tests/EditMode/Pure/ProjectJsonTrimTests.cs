@@ -6,7 +6,7 @@ using KitchenDesigner.Core.Keybinding;
 
 /// <summary>`ProjectJson.Serialize` used to run twelve JSON trims one after another, each of
 /// them re-parsing and re-copying the whole project: the root object, the elements array, the
-/// basePlate, the undo/redo history. On the user's project (412 elements, 1267 undo records,
+/// undo/redo history. On the user's project (412 elements, 1267 undo records,
 /// 4.1 M characters before trimming) that chain took 2.35 s in the editor and allocated ~1 GB
 /// per save, and autosave ran it every interval — the 5 s freeze in
 /// test-results/perf/perf_20260927_095510.csv (frame 23032: 4988 ms, 995 MB of GC).
@@ -110,16 +110,15 @@ public class ProjectJsonTrimTests
     private static string OldChain(string json) =>
         LevelsJsonTrim.RemoveEmptyLevelsArray(
             ConvertStateHistoryJsonTrim.RemoveWhenNotNeeded(
-                BasePlateFamilyJsonTrim.RemoveWhenNotNeeded(
-                    KeyBindingsJsonTrim.RemoveWhenEmpty(
-                        DuctJsonTrim.RemoveFromElementsArray(
-                            RoofJsonTrim.RemoveFromElementsArray(
-                                WallLayerJsonTrim.RemoveFromElementsArray(
-                                    FenceJsonTrim.RemoveFromElementsArray(
-                                        FloorSlabJsonTrim.RemoveFromElementsArray(
-                                            FoundationJsonTrim.RemoveFromElementsArray(
-                                                LevelsJsonTrim.RemoveEmptyLevelIdFromElements(
-                                                    CreatedAtUtcJsonTrim.RemoveWhenEmpty(json))))))))))));
+                KeyBindingsJsonTrim.RemoveWhenEmpty(
+                    DuctJsonTrim.RemoveFromElementsArray(
+                        RoofJsonTrim.RemoveFromElementsArray(
+                            WallLayerJsonTrim.RemoveFromElementsArray(
+                                FenceJsonTrim.RemoveFromElementsArray(
+                                    FloorSlabJsonTrim.RemoveFromElementsArray(
+                                        FoundationJsonTrim.RemoveFromElementsArray(
+                                            LevelsJsonTrim.RemoveEmptyLevelIdFromElements(
+                                                CreatedAtUtcJsonTrim.RemoveWhenEmpty(json)))))))))));
 
     private static string BuildProject(int elementCount, int recordCount, bool emptyRootValues)
     {
@@ -134,9 +133,7 @@ public class ProjectJsonTrimTests
         }
         sb.Append("\n    ],\n    \"groups\": [],\n");
         sb.Append("    \"levels\": ").Append(emptyRootValues ? "[]" : "[\n        {\n            \"id\": \"L1\"\n        }\n    ]").Append(",\n");
-        sb.Append("    \"basePlate\": ");
-        AppendElement(sb, 8, "    ");
-        sb.Append(",\n    \"undoHistory\": [");
+        sb.Append("    \"undoHistory\": [");
         for (int r = 0; r < recordCount; r++)
         {
             sb.Append(r == 0 ? "\n        " : ",\n        ");

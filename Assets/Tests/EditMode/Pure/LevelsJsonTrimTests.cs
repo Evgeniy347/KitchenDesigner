@@ -42,17 +42,6 @@ public class LevelsJsonTrimTests
         "    ]\n" +
         "}";
 
-    private const string ProjectWithEmptyBasePlateLevelId =
-        "{\n" +
-        "    \"elements\": [],\n" +
-        "    \"basePlateValid\": true,\n" +
-        "    \"basePlate\": {\n" +
-        "        \"name\": \"Floor\",\n" +
-        "        \"levelId\": \"\",\n" +
-        "        \"movable\": false\n" +
-        "    }\n" +
-        "}";
-
     private const string ProjectWithTwoRealLevels =
         "{\n" +
         "    \"elements\": [],\n" +
@@ -127,19 +116,6 @@ public class LevelsJsonTrimTests
         StringAssert.DoesNotContain("levelId", trimmed);
         StringAssert.DoesNotContain(",\n        }", trimmed,
             "удаление последнего члена объекта не должно оставлять висячую запятую");
-    }
-
-    [Test]
-    public void RemoveWhenEmpty_RemovesEmptyLevelId_FromBasePlateToo()
-    {
-        var trimmed = LevelsJsonTrim.RemoveWhenEmpty(ProjectWithEmptyBasePlateLevelId);
-
-        var root = JsonText.RootObject(trimmed);
-        var basePlate = JsonText.MemberValue(trimmed, root, "basePlate");
-        Assert.IsTrue(basePlate.Found);
-        Assert.IsFalse(JsonText.MemberValue(trimmed, basePlate, "levelId").Found);
-        Assert.IsTrue(JsonText.MemberValue(trimmed, basePlate, "name").Found,
-            "соседние поля подложки обязаны пережить удаление levelId");
     }
 
     [Test]
