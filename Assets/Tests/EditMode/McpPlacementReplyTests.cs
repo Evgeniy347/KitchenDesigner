@@ -86,6 +86,23 @@ public class McpPlacementReplyTests : McpTestFixture
     }
 
     [Test]
+    public void CreateElements_InsideAPersistedRoom_NamesTheRoomAndTheLevel_OutsideItNamesNoRoom()
+    {
+        FloorAndBackWall();
+        ProjectRooms.Set(new[]
+        {
+            new RoomData { id = "Kitchen", floor = "Kitchen_floor", polygonXZ = new[] { -1000, -1000, 3000, -1000, 3000, 3000, -1000, 3000 } }
+        });
+
+        var inside = CreateCabinets(("Inside", 0f));
+        var outside = CreateCabinets(("Outside", 20000f));
+
+        Assert.AreEqual("Kitchen", PlacementOf(inside)["room"]!.Value<string>(), "центр следа лежит в полигоне комнаты");
+        Assert.IsNull(PlacementOf(outside)["room"], "за пределами комнаты поле отсутствует, а не пустая строка");
+        Assert.IsFalse(string.IsNullOrEmpty(PlacementOf(inside)["level"]!.Value<string>()), "этаж назван всегда");
+    }
+
+    [Test]
     public void CreateElements_ACabinetTwelveMillimetresFromItsNeighbour_ReportsTheGapOnThatFace()
     {
         FloorAndBackWall();

@@ -62,6 +62,27 @@ claude mcp add --transport http unity-kitchen http://127.0.0.1:9337/mcp
 
 Эндпоинт слушает только loopback и отбивает чужие `Host` и `Origin`.
 
+### Положение детали, ответ мутации и отмена (для слабых моделей)
+
+Слабая модель путалась в трёх системах координат (вход — минимальный угол, выход — центр,
+`get` без Y) и в ответах на 75 полей. Теперь контракт такой, тексты — в `McpGuideTexts`:
+
+- **`ref`** — параметр запроса: какая ТОЧКА мирового бокса детали (после поворота) имеется в
+  виду. Слова через `-`: `left|right` (X), `bottom|top` (Y), `back|front` (Z), `center` —
+  середина неназванных осей; по умолчанию `left-bottom-back` — прежний минимальный угол.
+  Разбор — `McpReference` (`Pure/MCP`, 27 значений, каноническое имя разбирается обратно в ту
+  же точку), применение — `McpAnchor.RefOffsetAfter`/`PlaceRefPointAt`. Ответ называет
+  канонический `ref` и даёт позиции в нём, поэтому «прочитал → записал» ничего не двигает.
+- **Ответ мутации** — всегда `MutationReply` (`Pure/MCP`): `placements` (на деталь: `posMm`,
+  мировой `footprintMm` x,y,z, `on`, `touches`, `gaps`, `room`, `level`, `issues`) и
+  `sceneViolationDelta {added, removed}` — только то, что сломал или починил ЭТОТ вызов.
+  Полный `ElementInfo` отдаёт только `get_elements` (и устаревший `get_all_elements`).
+  Отношения считает `PlacementRelations` (чистая функция над боксами в мм), собирает
+  `McpPlacementBuilder`, строки `issues` — `McpPlacementIssues`, «до/после» — `McpMutationReport`.
+- **`undo` / `redo`** `{steps}` — поверх `CommandStack`; шаг = один мутирующий вызов.
+- JSON на проводе компактный (без отступов), целые миллиметры без `.0`: сенсор бюджета —
+  `McpPlacementReplyTests.CreateElements_ThreeCabinetsOnTheWire_FitTheByteBudget_…`.
+
 ### Замер: разбивка одного вызова по этапам
 
 Каждый ответ пишет в лог одну строку `[MCP][Timing] method=… total=…ms
