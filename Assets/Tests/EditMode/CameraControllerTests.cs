@@ -182,6 +182,29 @@ public class CameraControllerTests
         }
     }
 
+    [Test]
+    public void ResolveBasePlate_FindsThePlateByComponent_NotByTheFloorTag()
+    {
+        var plate = BasePlate.Create();
+        plate.gameObject.tag = "Untagged";
+        try
+        {
+            _controller!.ResolveBasePlate();
+            _cameraGo!.transform.position = new Vector3(0, -1f, 0);
+            _cameraGo.transform.forward = new Vector3(0, 0.5f, 0.866f).normalized;
+
+            _controller.ApplyFloorVisibility(new List<FloorElement>());
+
+            Assert.IsFalse(plate.GetComponent<MeshRenderer>().enabled,
+                "камера снизу гасит плиту, найденную по компоненту: тег «Floor» не нужен");
+            Assert.IsFalse(plate.GetComponent<Collider>().enabled);
+        }
+        finally
+        {
+            Object.DestroyImmediate(plate.gameObject);
+        }
+    }
+
     // ── Полигональный пол: два коллайдера (Box отключён, работает Mesh) ───
 
     /// <summary>Строит пол так же, как ElementFactory.CreateFloor + SetPolygonLocalMm:

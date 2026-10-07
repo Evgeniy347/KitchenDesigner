@@ -252,9 +252,7 @@ namespace KitchenDesigner.Core
         internal static Color SampleFloorBounce(KitchenSettings? s)
         {
             float ceilingScale = s == null ? 1f : s.PhotoBounceMaxPct * PercentToUnit;
-            var floor = GameObject.FindWithTag("Floor");
-            var mr = floor != null ? floor.GetComponent<MeshRenderer>() : null;
-            var mat = mr != null ? mr.sharedMaterial : null;
+            var mat = FirstUserFloorMaterial();
             if (mat == null) return NeutralWarmBounce * ceilingScale;
             try
             {
@@ -268,6 +266,17 @@ namespace KitchenDesigner.Core
             {
                 return NeutralWarmBounce * ceilingScale;
             }
+        }
+
+        private static Material? FirstUserFloorMaterial()
+        {
+            foreach (var floor in UnityEngine.Object.FindObjectsByType<FloorElement>(FindObjectsSortMode.InstanceID))
+            {
+                if (floor == null || !floor.isActiveAndEnabled) continue;
+                var renderer = floor.GetComponent<MeshRenderer>();
+                if (renderer != null && renderer.sharedMaterial != null) return renderer.sharedMaterial;
+            }
+            return null;
         }
 
         internal static TonemappingMode TonemapModeFor(KitchenSettings s) => s.PhotoTonemap switch

@@ -107,7 +107,13 @@ namespace KitchenDesigner.Core
         {
             Instance = this;
             _cachedCamera = Camera.main;
-            _floor = GameObject.FindWithTag("Floor");
+            ResolveBasePlate();
+        }
+
+        internal void ResolveBasePlate()
+        {
+            var plate = FindAnyObjectByType<BasePlate>();
+            _floor = plate != null ? plate.gameObject : null;
         }
 
         private void Start()
