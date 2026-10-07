@@ -186,5 +186,92 @@ public class SelectionTintMathTests
             SelectionTintMath.Emission(OvenBody, false).maxColorComponent,
             "группа выделена мягче одиночного — как и было");
     }
+
+    private const int NeighbourhoodSteps = 8;
+    private const float NeighbourhoodStep = 0.01f;
+
+    private static Color Product(Color own, bool multi)
+    {
+        var tint = SelectionTintMath.TintOf(multi);
+        return new Color(own.r * tint.r, own.g * tint.g, own.b * tint.b, own.a);
+    }
+
+    private static System.Collections.Generic.IEnumerable<Color> AroundTheTint(bool multi)
+    {
+        var tint = SelectionTintMath.TintOf(multi);
+        for (int r = -NeighbourhoodSteps; r <= NeighbourhoodSteps; r++)
+            for (int g = -NeighbourhoodSteps; g <= NeighbourhoodSteps; g++)
+                for (int b = -NeighbourhoodSteps; b <= NeighbourhoodSteps; b++)
+                    yield return new Color(
+                        Mathf.Clamp01(tint.r + r * NeighbourhoodStep),
+                        Mathf.Clamp01(tint.g + g * NeighbourhoodStep),
+                        Mathf.Clamp01(tint.b + b * NeighbourhoodStep), 1f);
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    [Timeout(10000)]
+    public void Base_OfAColourNearTheTint_TerminatesAndStaysWithinOneStepOfTheTint(bool multi)
+    {
+        var tint = SelectionTintMath.TintOf(multi);
+        int checkedColours = 0;
+
+        foreach (var own in AroundTheTint(multi))
+        {
+            var tinted = SelectionTintMath.Base(own, multi);
+
+            Assert.GreaterOrEqual(SelectionTintMath.MaxShift(own, tinted),
+                SelectionTintMath.MinShift - EqualWithin,
+                "цвет " + own + " рядом с самим оттенком остался на " + tinted + ": выделения не видно");
+            Assert.LessOrEqual(SelectionTintMath.MaxShift(tinted, tint),
+                SelectionTintMath.MaxShift(Product(own, multi), tint) + EqualWithin,
+                "цвет " + own + " → " + tinted + ": подтяжка к оттенку не может уводить дальше от него, "
+                + "чем произведение, из которого она стартует");
+            checkedColours++;
+        }
+
+        Assert.AreEqual(17 * 17 * 17, checkedColours, "обход окрестности оттенка обязан дойти до конца");
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public void Base_WhenThePullLoopRuns_StopsWithinOneStepOfTheMinimumShift(bool multi)
+    {
+        int looped = 0;
+        foreach (var own in WarmOrDarkGrid())
+        {
+            var lifted = Lifted(own, multi);
+            if (SelectionTintMath.MaxShift(own, lifted) >= SelectionTintMath.MinShift) continue;
+            looped++;
+
+            float shift = SelectionTintMath.MaxShift(own, SelectionTintMath.Base(own, multi));
+
+            Assert.GreaterOrEqual(shift, SelectionTintMath.MinShift - EqualWithin,
+                "цвет " + own + ": подтяжка остановилась раньше минимума видимости");
+            Assert.LessOrEqual(shift, SelectionTintMath.MinShift + SelectionTintMath.ShiftStep + EqualWithin,
+                "цвет " + own + ": подтяжка ушла дальше минимума больше чем на один шаг ("
+                + shift.ToString("0.0000") + ") — накопленная погрешность шага или лишние итерации");
+        }
+
+        Assert.Greater(looped, 50,
+            "цикл подтяжки должен сработать на заметном числе цветов, иначе тест его не проверяет");
+    }
+
+    private static Color Lifted(Color own, bool multi)
+    {
+        var tint = SelectionTintMath.TintOf(multi);
+        float lift = SelectionTintMath.DarkLift * (1f - Mathf.Clamp01(SelectionTintMath.Luma(own)));
+        var product = Product(own, multi);
+        return new Color(Mathf.Lerp(product.r, tint.r, lift), Mathf.Lerp(product.g, tint.g, lift),
+            Mathf.Lerp(product.b, tint.b, lift), own.a);
+    }
+
+    private static System.Collections.Generic.IEnumerable<Color> WarmOrDarkGrid()
+    {
+        for (int r = 0; r <= 10; r++)
+            for (int g = 0; g <= 10; g++)
+                for (int b = 0; b <= 10; b++)
+                    yield return new Color(r / 10f, g / 10f, b / 10f, 1f);
+    }
 }
 
