@@ -110,6 +110,32 @@ public class MeasurePlaneHitTests
     }
 
     [Test]
+    public void MeasurePlaneHit_FloorTopUnderHiddenPlate_SetsHint()
+    {
+        var floorGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        floorGo.transform.position = new Vector3(0f, -0.05f, 0f);
+        _spawned.Add(floorGo);
+        var floor = floorGo.AddComponent<FloorElement>();
+        floor.PartName = "Пол";
+        floor.DimensionsMM = new Vector3Int(2000, 100, 2000);
+
+        var plate = BasePlate.Create();
+        _spawned.Add(plate.gameObject);
+        plate.transform.position += new Vector3(0f, 0.0005f, 0f);
+
+        _camera!.transform.position = new Vector3(0.3f, 5f, 0.2f);
+        _camera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        Physics.SyncTransforms();
+
+        _controller!.UpdatePlaneHit(_camera, ScreenCenter());
+
+        Assert.IsTrue(_controller.PlaneHint.HasValue,
+            "под лучом сверху пол, а подложка с ним не нарисована: замер берёт точку на верху пола. "
+            + "Твёрдая невидимая плита перехватывала луч, и подсказка пропадала над всей комнатой");
+        Assert.AreEqual(0f, _controller.PlaneHint!.Value.y, 0.001f, "точка лежит на верху пола, y = 0");
+    }
+
+    [Test]
     public void UpdatePlaneHit_AfterHit_LeavingGeometryClearsHintNextFrame()
     {
         MakeCubeAt("Box", Vector3.zero);

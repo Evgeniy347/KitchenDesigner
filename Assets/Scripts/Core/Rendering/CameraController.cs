@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using KitchenDesigner.Core.Keybinding;
 using TMPro;
 using UnityEngine;
@@ -296,9 +297,12 @@ namespace KitchenDesigner.Core
         public void UpdateFloorVisibility()
         {
             using var _ = PerfMarkers.CameraFloorVisibility.Auto();
-            if (_cachedCamera == null) return;
+            ApplyFloorVisibility(FloorElement.Active);
+        }
 
-            var floors = FloorElement.Active;
+        internal void ApplyFloorVisibility(IReadOnlyList<FloorElement> floors)
+        {
+            if (_cachedCamera == null) return;
 
             if (_floor != null)
                 ApplyFloorCameraHide(_floor, rendererVisible: BasePlateVisibleWith(floors.Count));
@@ -324,6 +328,13 @@ namespace KitchenDesigner.Core
             bool cameraBelow = _cachedCamera!.transform.position.y < topY;
             bool lookingUp = _cachedCamera.transform.forward.y > 0f;
             bool hide = FloorHiddenFromCamera(cameraBelow, lookingUp);
+
+            var plate = floor.GetComponent<BasePlate>();
+            if (plate != null)
+            {
+                plate.SetShown(rendererVisible && !hide);
+                return;
+            }
 
             renderer.enabled = rendererVisible && !hide;
 

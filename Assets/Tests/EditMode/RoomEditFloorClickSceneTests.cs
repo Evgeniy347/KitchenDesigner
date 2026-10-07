@@ -28,6 +28,7 @@ public class RoomEditFloorClickSceneTests
     private ProjectLoadStateGuard? _guard;
     private FloorElement _floor = null!;
     private BasePlate _plate = null!;
+    private Bounds _plateFootprint;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     [OneTimeSetUp]
@@ -50,6 +51,7 @@ public class RoomEditFloorClickSceneTests
         var plate = Object.FindAnyObjectByType<BasePlate>();
         Assert.IsNotNull(plate, "посылка: подложка восстановлена вместе со сценой");
         _plate = plate!;
+        _plateFootprint = FootprintOf(_plate.Element);
         Physics.SyncTransforms();
     }
 
@@ -117,6 +119,18 @@ public class RoomEditFloorClickSceneTests
                 yield return new Vector3(x, y, z);
     }
 
+    private static Bounds FootprintOf(KitchenElement element)
+    {
+        var vertices = element.GetVertices();
+        var bounds = new Bounds(vertices[0], Vector3.zero);
+        foreach (var v in vertices) bounds.Encapsulate(v);
+        return bounds;
+    }
+
+    private bool IsOverPlateFootprint(Vector3 point) =>
+        point.x >= _plateFootprint.min.x && point.x <= _plateFootprint.max.x
+        && point.z >= _plateFootprint.min.z && point.z <= _plateFootprint.max.z;
+
     private bool OnlyFloorAndPlateUnder(Ray ray, out bool plateAmongThem)
     {
         plateAmongThem = false;
@@ -140,7 +154,8 @@ public class RoomEditFloorClickSceneTests
     private sealed class Sweep
     {
         public int Candidates;
-        public int WithPlateUnder;
+        public int PlateHits;
+        public int OverPlateFootprint;
         public readonly List<string> Misses = new List<string>();
         public Ray FirstFreeRay;
         public bool HasFreeRay;
@@ -158,7 +173,8 @@ public class RoomEditFloorClickSceneTests
             if (!OnlyFloorAndPlateUnder(ray, out bool plate)) continue;
 
             sweep.Candidates++;
-            if (plate) sweep.WithPlateUnder++;
+            if (plate) sweep.PlateHits++;
+            if (IsOverPlateFootprint(point)) sweep.OverPlateFootprint++;
             if (!sweep.HasFreeRay) { sweep.FirstFreeRay = ray; sweep.HasFreeRay = true; }
 
             var picked = SelectionManager.RaycastTransparentAware(ray, shift);
@@ -172,12 +188,12 @@ public class RoomEditFloorClickSceneTests
     {
         Assert.Greater(sweep.Candidates, 0,
             "посылка: над полом в фрозене есть свободные от мебели точки — иначе проверять нечего");
-        Assert.Greater(sweep.WithPlateUnder, 0,
-            "посылка: хотя бы часть свободных точек лежит над подложкой — именно там верх пола с ней в одной плоскости");
+        Assert.Greater(sweep.OverPlateFootprint, 0,
+            "посылка: хотя бы часть свободных точек лежит над контуром подложки — именно там верх пола с ней в одной плоскости");
     }
 
     private static string Report(Sweep sweep) =>
-        $"промахов {sweep.Misses.Count} из {sweep.Candidates} (над подложкой {sweep.WithPlateUnder}); первые: "
+        $"промахов {sweep.Misses.Count} из {sweep.Candidates} (над контуром подложки {sweep.OverPlateFootprint}, лучей с коллайдером подложки {sweep.PlateHits}); первые: "
         + string.Join(" || ", sweep.Misses.Take(3));
 
     [TestCase(false)]
@@ -191,6 +207,29 @@ public class RoomEditFloorClickSceneTests
         AssertSweepIsMeaningful(sweep);
         Assert.IsEmpty(sweep.Misses,
             "в режиме помещения луч сверху в верх пола обязан дать пол. " + Report(sweep));
+    }
+
+    [Test]
+    public void RoomMode_UnderTheUserFloor_PlateColliderIsOff()
+    {
+        EnterRoomMode();
+
+        Assert.IsFalse(_plate.GetComponent<Collider>().enabled,
+            "с полом Pol_1 плита не нарисована, а невидимая плита не должна быть твёрдой: "
+            + "коллайдер ходит парой с рендерером");
+    }
+
+    [Test]
+    public void RoomMode_RawRaysOntoFloorTop_NeverMeetThePlateCollider()
+    {
+        EnterRoomMode();
+
+        var sweep = SweepRays(p => (p + Vector3.up * 20f, p));
+
+        AssertSweepIsMeaningful(sweep);
+        Assert.AreEqual(0, sweep.PlateHits,
+            "сырой Physics.RaycastAll над полом не должен встречать подложку: выбор проходит и с фильтром, "
+            + "а замер, лампа и камера без него упирались бы в невидимую плиту. " + Report(sweep));
     }
 
     [Test]

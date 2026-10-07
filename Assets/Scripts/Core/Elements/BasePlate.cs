@@ -29,10 +29,6 @@ namespace KitchenDesigner.Core
                 renderer.material = mat;
             }
 
-            var collider = go.GetComponent<BoxCollider>();
-            if (collider != null)
-                collider.enabled = true;
-
             var rb = go.AddComponent<Rigidbody>();
             rb.isKinematic = true;
             rb.useGravity = false;
@@ -42,7 +38,18 @@ namespace KitchenDesigner.Core
             var plate = go.AddComponent<BasePlate>();
             plate._element = element;
 
+            FloorElement.RefreshBasePlateVisibility();
+
             return plate;
+        }
+
+        public void SetShown(bool shown)
+        {
+            var renderer = GetComponent<MeshRenderer>();
+            if (renderer != null) renderer.enabled = shown;
+
+            var collider = GetComponent<Collider>();
+            if (collider != null) collider.enabled = shown;
         }
 
         private void Awake()

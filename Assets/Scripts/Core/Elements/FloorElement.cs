@@ -81,10 +81,7 @@ namespace KitchenDesigner.Core
                 if (f != null && f != except && f.isActiveAndEnabled) count++;
 
             foreach (var bp in Object.FindObjectsByType<BasePlate>(FindObjectsSortMode.None))
-            {
-                var renderer = bp.GetComponent<MeshRenderer>();
-                if (renderer != null) renderer.enabled = count == 0;
-            }
+                bp.SetShown(count == 0);
         }
     }
 }

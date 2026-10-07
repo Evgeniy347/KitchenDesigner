@@ -154,6 +154,34 @@ public class CameraControllerTests
         Assert.IsTrue(collider.enabled, "floor collider should be enabled when camera is above it");
     }
 
+    [Test]
+    public void ApplyFloorVisibility_PlateUnderAUserFloor_IsNeitherDrawnNorSolid_EvenFromAbove()
+    {
+        var plate = BasePlate.Create();
+        var userFloorGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        var userFloor = userFloorGo.AddComponent<FloorElement>();
+        var userFloors = new List<FloorElement> { userFloor };
+        try
+        {
+            Assert.IsTrue(plate.GetComponent<Collider>().enabled, "посылка: плита создана одна и твёрдая");
+            _controller!.AssignTestFloor(plate.gameObject);
+            _cameraGo!.transform.position = new Vector3(0, 10f, 0);
+
+            _controller.ApplyFloorVisibility(userFloors);
+
+            Assert.IsFalse(plate.GetComponent<MeshRenderer>().enabled,
+                "у комнаты есть свой пол: плита не рисуется");
+            Assert.IsFalse(plate.GetComponent<Collider>().enabled,
+                "и не твёрдая: камера, глядящая на плиту сверху, раньше гасила только рендерер и оставляла "
+                + "коллайдер включённым, а невидимый коллайдер загораживает пол от любого луча");
+        }
+        finally
+        {
+            Object.DestroyImmediate(userFloorGo);
+            Object.DestroyImmediate(plate.gameObject);
+        }
+    }
+
     // ── Полигональный пол: два коллайдера (Box отключён, работает Mesh) ───
 
     /// <summary>Строит пол так же, как ElementFactory.CreateFloor + SetPolygonLocalMm:

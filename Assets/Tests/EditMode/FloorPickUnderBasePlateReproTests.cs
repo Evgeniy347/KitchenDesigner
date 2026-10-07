@@ -11,7 +11,11 @@ using KitchenDesigner.Core;
 /// «снять выделение». Торец пола ниже подложки, её коллайдер луч не пересекал — торец работал.
 ///
 /// Правило: подложка выбора не принимает и не загораживает. Луч выбора проходит сквозь неё к
-/// тому, что лежит дальше. Так же ведут себя ПКМ и пипетка, поэтому они тоже под защитой.</summary>
+/// тому, что лежит дальше. Так же ведут себя ПКМ и пипетка, поэтому они тоже под защитой.
+///
+/// Корень устранён у источника: коллайдер подложки живёт только пока она нарисована (BasePlate.SetShown),
+/// поэтому под полом сырой Physics.Raycast подложки не видит вовсе. Фильтр SelectionManager.IsBasePlateCollider
+/// остался второй линией обороны и держит случай нарисованной подложки (пустая сцена без пола).</summary>
 public class FloorPickUnderBasePlateReproTests
 {
     private const int FloorSizeMm = 2000;
@@ -127,11 +131,13 @@ public class FloorPickUnderBasePlateReproTests
             + "(раньше его перехватывала подложка с тем же итогом)");
     }
 
-    [TestCase(0f)]
-    [TestCase(0.0005f)]
-    public void Precondition_BothColliders_AreUnderTheRay_AndThePlateCountsAsOnTheCurrentLevel(float lift)
+    [TestCase(0f, false)]
+    [TestCase(0.0005f, false)]
+    [TestCase(0f, true)]
+    [TestCase(0.0005f, true)]
+    public void FloorPresent_PlateIsNotUnderTheRay_SoThePickNeedsNoFilter(float lift, bool polygon)
     {
-        var floor = MakeFloor(polygon: false);
+        var floor = MakeFloor(polygon);
         var plate = MakePlate(lift);
         Physics.SyncTransforms();
 
@@ -145,11 +151,33 @@ public class FloorPickUnderBasePlateReproTests
             if (h.collider.GetComponentInParent<BasePlate>() == plate) plateHit = true;
         }
 
-        Assert.IsTrue(floorHit && plateHit,
-            "посылка остальных тестов файла: под лучом лежат ОБА коллайдера, иначе зелёный результат "
-            + "на старом коде ничего не доказывает. Нашли: " + string.Join(", ", seen));
+        Assert.IsTrue(floorHit, "посылка: пол под лучом. Нашли: " + string.Join(", ", seen));
+        Assert.IsFalse(plateHit,
+            "пока есть пол, плита не нарисована, и её коллайдер не должен стоять на пути ни у одного "
+            + "луча — иначе каждый потребитель Physics.Raycast (замер, лампа, камера, выбор) обязан "
+            + "помнить про фильтр. Нашли: " + string.Join(", ", seen));
+        Assert.IsTrue(Physics.Raycast(FromAbove, out var first), "посылка: луч во что-то попадает");
+        Assert.AreEqual(floor, first.collider.GetComponentInParent<FloorElement>(),
+            "первое попадание сырого луча — пол");
+    }
+
+    [TestCase(0f)]
+    [TestCase(0.0005f)]
+    public void Floor_TopClick_EvenWithThePlateColliderForcedOn_TheFilterStillLetsThePickThrough(float lift)
+    {
+        EditModeManager.SetMode(EditMode.Room);
+        var floor = MakeFloor(polygon: false);
+        var plate = MakePlate(lift);
+        plate.GetComponent<Collider>().enabled = true;
+        Physics.SyncTransforms();
+
+        var hits = new List<RaycastHit>(Physics.RaycastAll(FromAbove));
+        Assert.IsTrue(hits.Exists(h => h.collider.GetComponentInParent<BasePlate>() == plate),
+            "посылка: коллайдер плиты включён и стоит под лучом");
+        Assert.AreEqual(floor, Pick(FromAbove, shift: false), "вторая линия обороны: фильтр SelectionManager");
+        Assert.AreEqual(floor, Pick(FromAbove, shift: true));
         Assert.AreEqual(LevelRegistry.CurrentId, LevelRegistry.LevelOf(plate.Element).id,
-            "подложка на текущем уровне — иначе старый код отдавал бы null, а не подложку");
+            "подложка на текущем уровне — иначе без фильтра выбор отдавал бы null, а не подложку");
     }
 
     [Test]
