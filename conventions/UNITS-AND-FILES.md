@@ -27,10 +27,14 @@ island while the surrounding 58 spoke millimetres. The unit belongs in the FIELD
 `MissingMemberHandling.Error`, so renaming the field turns an old caller's metres into a loud
 refusal by name instead of a silent shift of three orders of magnitude. Guessing the unit from
 the magnitude (`x < 10` must be metres) is forbidden: that is a silent fallback, and a silent
-fallback is an outage. The anchor convention that goes with it: **a position on the wire is the
-MINIMUM world corner, never the centre** — `anchor_x_mm`/`anchor_y_mm`/`anchor_z_mm` in, `anchorMm`
-out, so what a read returns is exactly what a write takes. The wording the agent itself is shown
-lives in `Core/MCP/Contract/McpGuideTexts.cs` (search `MINIMUM world corner`). The metre island
+fallback is an outage. The anchor convention that goes with it: **a position on the wire is a
+NAMED point of the part's WORLD box (after rotation), chosen by the caller with `ref`** — default
+`left-bottom-back`, the minimum corner; `anchor_*_mm` in, `posMm` out in the SAME `ref`, echoed
+canonically in the response, so what a read returns is exactly what a write takes. Before
+2026-10-08 the input was the minimum corner while every response reported the CENTRE (`posXMm`),
+and weak models fed one into the other — the part slid half a width, overlapped, and was deleted
+and placed again in a loop; one coordinate meaning per call is the cure, not better prose. The
+guards are `McpReferenceRoundTripTests` (every `ref` × rotation, read → write → no move). The metre island
 is gone: every mutation op takes `anchor_*_mm`, and the one position that is deliberately NOT an
 anchor is `set_position`, whose `x_mm`/`y_mm`/`z_mm` are the raw transform origin — still
 millimetres, and the description says «raw» because that is what they are. The guards are
