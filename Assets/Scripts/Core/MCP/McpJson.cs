@@ -63,6 +63,8 @@ namespace KitchenDesigner.Core.MCP
 
         private sealed class RoundedNumberConverter : JsonConverter
         {
+            private const double MaxWholeNumber = 1e15;
+
             public override bool CanRead => false;
 
             public override bool CanConvert(Type t) =>
@@ -73,7 +75,11 @@ namespace KitchenDesigner.Core.MCP
             {
                 if (value == null) { writer.WriteNull(); return; }
                 double d = value is float f ? f : (double)value;
-                writer.WriteValue(Math.Round(d, TenthMillimetreDecimals));
+                double rounded = Math.Round(d, TenthMillimetreDecimals);
+                if (rounded == Math.Floor(rounded) && Math.Abs(rounded) < MaxWholeNumber)
+                    writer.WriteValue((long)rounded);
+                else
+                    writer.WriteValue(rounded);
             }
 
             public override object ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
