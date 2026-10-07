@@ -82,24 +82,39 @@ public class SofaElementTests
     }
 
     [Test]
-    public void Sofa_ElementConstants_AreTheOnesTheLayoutUses_NotACopy()
+    public void Sofa_BareComponent_StartsWithTheDefaultsTheLayoutDeclares()
     {
-        Assert.AreEqual(SofaLayout.DefaultWidthMM, SofaElement.DefaultWidthMM,
-            "умолчания живут в SofaLayout, потому что быстрый путь (dotnet) не видит "
-            + "Core/Elements; элемент обязан их ПЕРЕИЗЛУЧАТЬ, а не заводить свою копию — "
-            + "разошедшись, сайдбар и MCP заведут разные диваны");
-        Assert.AreEqual(SofaLayout.DefaultHeightMM, SofaElement.DefaultHeightMM,
-            "то же по высоте");
-        Assert.AreEqual(SofaLayout.DefaultDepthMM, SofaElement.DefaultDepthMM,
-            "то же по глубине");
-        Assert.AreEqual(SofaLayout.DefaultSeatHeightMM, SofaElement.DefaultSeatHeightMM,
-            "то же по высоте сиденья");
-        Assert.AreEqual(SofaLayout.DefaultCornerRadiusMM, SofaElement.DefaultCornerRadiusMM,
-            "то же по скруглению");
-        Assert.AreEqual(SofaLayout.MinSeatHeightMM, SofaElement.MinSeatHeightMM,
-            "и нижняя граница высоты сиденья");
-        Assert.AreEqual(SofaLayout.MaxSeatHeightMM, SofaElement.MaxSeatHeightMM,
-            "и верхняя");
+        var go = new GameObject("Диван без фабрики");
+        _spawned.Add(go);
+
+        var sofa = go.AddComponent<SofaElement>();
+
+        Assert.AreEqual(SofaLayout.DefaultSeatHeightMM, sofa.SeatHeightMM,
+            "умолчания живут в SofaLayout, потому что быстрый путь (dotnet) не видит Core/Elements; "
+            + "поле элемента, записанное числом вместо этой константы, разошлось бы с сайдбаром и MCP — "
+            + "они заводят диваны через умолчания layout, а загруженный старый проект без поля берёт "
+            + "умолчание самого компонента");
+        Assert.AreEqual(SofaLayout.DefaultCornerRadiusMM, sofa.CornerRadiusMM, "то же по скруглению");
+        Assert.AreEqual(SofaLayout.DefaultEdgeRadiusMM, sofa.EdgeRadiusMM, "и по скруглению кромки");
+    }
+
+    [Test]
+    public void SeatHeight_AtAndBeyondTheElementBounds_IsClampedToThem()
+    {
+        var sofa = DefaultSofa();
+
+        sofa.SeatHeightMM = SofaElement.MinSeatHeightMM - 1;
+        Assert.AreEqual(SofaElement.MinSeatHeightMM, sofa.SeatHeightMM,
+            "нижняя граница, которую элемент объявляет, и та, что он применяет, — одно число: иначе "
+            + "панель покажет предел, которого диван не держит");
+        sofa.SeatHeightMM = SofaElement.MaxSeatHeightMM + 1;
+        Assert.AreEqual(SofaElement.MaxSeatHeightMM, sofa.SeatHeightMM, "и верхняя");
+
+        sofa.SeatHeightMM = SofaElement.MinSeatHeightMM + 1;
+        Assert.AreEqual(SofaElement.MinSeatHeightMM + 1, sofa.SeatHeightMM,
+            "а значение внутри границ принимается как есть: зажим не должен срезать допустимое");
+        sofa.SeatHeightMM = SofaElement.MaxSeatHeightMM - 1;
+        Assert.AreEqual(SofaElement.MaxSeatHeightMM - 1, sofa.SeatHeightMM, "и у верхней границы тоже");
     }
 
     [Test]

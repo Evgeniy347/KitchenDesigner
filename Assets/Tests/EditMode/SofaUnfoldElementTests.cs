@@ -249,7 +249,7 @@ public class SofaUnfoldElementTests
     }
 
     [Test]
-    public void ForceClose_LeavesTheStageAlone_BecauseTheRootNeverMoves()
+    public void ForceClose_OnAnUnfoldedSofa_KeepsTheStage_SoEditingAFieldInThePanelDoesNotFoldIt()
     {
         var sofa = Sofa();
         sofa.SnapToStage(SofaStage.Bed);
@@ -257,7 +257,8 @@ public class SofaUnfoldElementTests
         sofa.ForceClose();
 
         Assert.AreEqual(SofaStage.Bed, sofa.UnfoldStage,
-            "ForceClose нужен элементам, у которых ДВИГАЕТСЯ корень (ящик, дверь), чтобы "
+            "ForceClose зовут ApplyFields панели при правке ЛЮБОГО поля и AttachLinks.ForceRest у предков."
+            + " Он нужен элементам, у которых ДВИГАЕТСЯ корень (ящик, дверь), чтобы "
             + "прочитать их логическую позу; у дивана корень неподвижен. Иначе правка любого "
             + "поля в панели (её обработчик зовёт ForceClose) складывала бы диван");
         Assert.IsTrue(sofa.IsClosedPose,
@@ -317,19 +318,23 @@ public class SofaUnfoldElementTests
     }
 
     [Test]
-    public void Stage_OfAFoldedSofa_IsWrittenAsZero_SoOtherTypesCannotInheritIt()
+    public void Stage_IsWrittenOnlyForTheSofa_AStoolBesideAnUnfoldedOneStaysZero()
     {
         var sofa = Sofa();
-
-        var data = ElementCapture.FromElement(sofa);
-
-        Assert.AreEqual(0, data.sofaUnfoldStage, "сложенный диван пишет ноль");
-
+        sofa.SnapToStage(SofaStage.Bed);
         var stool = ElementFactory.CreateStool(new Vector3Int(360, 450, 360), 0, "Табуретка-S",
             Vector3.zero);
         _spawned.Add(stool);
-        Assert.AreEqual(0, ElementCapture.FromElement(stool.GetComponent<KitchenElement>()).sofaUnfoldStage,
-            "у не-дивана поле остаётся нулём");
+
+        var sofaData = ElementCapture.FromElement(sofa);
+        var stoolData = ElementCapture.FromElement(stool.GetComponent<KitchenElement>());
+
+        Assert.AreEqual((int)SofaStage.Bed, sofaData.sofaUnfoldStage,
+            "раскладной диван пишет НЕНУЛЕВОЙ этап: ноль совпал бы с умолчанием поля, и потеря "
+            + "записи осталась бы незамеченной");
+        Assert.AreEqual(0, stoolData.sofaUnfoldStage,
+            "табуретка рядом с разложенным диваном пишет ноль: этап дивана не растекается на другие "
+            + "типы, и загруженная табуретка не получит чужую позу");
     }
 
     [Test]
