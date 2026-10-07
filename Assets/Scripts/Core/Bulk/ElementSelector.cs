@@ -25,8 +25,7 @@ namespace KitchenDesigner.Core.Bulk
 
         private static bool IsSelectableContent(KitchenElement e) =>
             e != null
-            && e.gameObject.activeInHierarchy
-            && e.GetComponent<BasePlate>() == null;
+            && e.gameObject.activeInHierarchy;
 
         private static readonly string[] CmpOps = { ">=", "<=", "==", "!=", "=", ">", "<" };
 

@@ -295,7 +295,7 @@ namespace KitchenDesigner.Core.UI
         private static bool AnyListedElement()
         {
             foreach (var e in PartRegistry.All)
-                if (e != null && SceneTree.IsListed(e)) return true;
+                if (e != null) return true;
             return false;
         }
 

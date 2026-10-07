@@ -137,9 +137,9 @@ public IEnumerator Iso{ElementType}_{Variant}()
 
 **Stand the element on the floor slab, and give a small one its own camera.** Two mistakes that
 have now been paid for twice each — by the socket and the light switch, then by all six pipe
-fittings at once. First: creating the element at `Vector3.zero` is COL-01 against `BasePlate`,
-which occupies y from −18 to 0 mm, so the lower half of the validation box sits INSIDE the slab
-and the frame test refuses to shoot. Use `StandOnFloor`, which lifts by the VALIDATION box, not
+fittings at once. First: creating the element at `Vector3.zero` puts the lower half of its
+validation box BELOW the ground plane (y = 0), so nothing supports it and the frame test refuses
+to shoot. Use `StandOnFloor`, which lifts by the VALIDATION box, not
 by half the physical height. Second: the shared iso camera clamps its distance to 0,5 m, so its
 frame is never narrower than ~414 mm — a Ø33,5 coupling in it is a twelfth of the width, and
 «I cannot see it» then says nothing about the mesh. Anything under ~150 mm takes

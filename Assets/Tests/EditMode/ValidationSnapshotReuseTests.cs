@@ -25,8 +25,7 @@ using KitchenDesigner.Core;
 ///
 /// Признак построен на ЗНАЧЕНИЯХ (поза, поза покоя, признак
 /// <c>PoseFollowsTransform</c>, масштаб, габариты, зазоры, пазы, имя, группа,
-/// наличие соседних компонентов <c>Wall</c> и
-/// <c>BasePlate</c> и три числа стены — опущена ли, полная высота, полная
+/// наличие соседнего компонента <c>Wall</c> и три числа стены — опущена ли, полная высота, полная
 /// позиция), а не на <c>Transform.hasChanged</c> и не на
 /// <c>SceneRevision</c>. Это не стилистический выбор: запись в <c>transform</c>
 /// тем же значением поднимает <c>hasChanged</c>, <c>SceneChangeTracker.Poll</c>
@@ -845,32 +844,6 @@ public class ValidationSnapshotReuseTests : ElementTestBase
             + "начинает менять документ");
         Assert.AreEqual(fullTop, into[0].Geometry.Max.y,
             "верх коробки опущенной стены обязан остаться на месте");
-    }
-
-    /// <summary>Роль якоря приходит от СОСЕДНЕГО компонента, а не от типа:
-    /// <c>BasePlate</c> вешают на объект в рантайме. Признак обязан спрашивать
-    /// про него каждый кадр, иначе деталь, ставшая полом, останется в кэше
-    /// обычной доской — и вся сцена повиснет без опоры молча.</summary>
-    [Test]
-    public void AddingABasePlateAtRuntime_ReachesTheSnapshot()
-    {
-        var subject = MakeBoard();
-        var scene = SceneAround(subject);
-        var into = new List<ValidationElement>();
-
-        ValidationSnapshot.Build(scene, into);
-        Assert.IsFalse(into[0].Is(ElementKind.Anchor),
-            "доска стенда обязана начинать НЕ якорем, иначе переход ниже не переход");
-        ValidationSnapshot.TakeGeometryBuilds();
-
-        subject.gameObject.AddComponent<BasePlate>();
-        ValidationSnapshot.Build(scene, into);
-
-        Assert.AreEqual(1, ValidationSnapshot.TakeGeometryBuilds(),
-            "деталь стала полом — снимок обязан пересобраться");
-        Assert.IsTrue(into[0].Is(ElementKind.FloorAnchor),
-            "роль «пол» обязана прийти из НОВОГО снимка: по ней ядро решает, на чём "
-            + "стоит вся сцена");
     }
 
     /// <summary>Самый тонкий из способов, и единственный, который не виден ни в

@@ -94,23 +94,22 @@ public class MeasurePlaneHitTests
     }
 
     [Test]
-    public void UpdatePlaneHit_RayHitsBasePlate_DoesNotSetPlaneHint()
+    public void UpdatePlaneHit_OverTheGroundQuadAlone_LeavesPlaneHintNull()
     {
-        // BasePlate — техническая подложка (см. CollectVertices, там же фильтр).
-        // Создаём руками, не через BasePlate.Create, чтобы не зависеть от URP-шейдера.
-        var go = MakeCubeAt("BasePlate", Vector3.zero);
-        go.AddComponent<KitchenElement>();
-        go.AddComponent<BasePlate>();
+        var ground = GroundQuad.Create();
+        _spawned.Add(ground.gameObject);
+        _camera!.transform.position = new Vector3(0.3f, 5f, 0.2f);
+        _camera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         Physics.SyncTransforms();
 
-        _controller!.UpdatePlaneHit(_camera!, ScreenCenter());
+        _controller!.UpdatePlaneHit(_camera, ScreenCenter());
 
         Assert.IsNull(_controller.PlaneHint,
-            "BasePlate — служебная плита, замер к ней привязывать нельзя");
+            "земля — картинка без коллайдера: замер к ней привязывать нечем, луч уходит в пустоту");
     }
 
     [Test]
-    public void MeasurePlaneHit_FloorTopUnderHiddenPlate_SetsHint()
+    public void MeasurePlaneHit_FloorTopUnderGroundQuad_SetsHint()
     {
         var floorGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
         floorGo.transform.position = new Vector3(0f, -0.05f, 0f);
@@ -119,9 +118,8 @@ public class MeasurePlaneHitTests
         floor.PartName = "Пол";
         floor.DimensionsMM = new Vector3Int(2000, 100, 2000);
 
-        var plate = BasePlate.Create();
-        _spawned.Add(plate.gameObject);
-        plate.transform.position += new Vector3(0f, 0.0005f, 0f);
+        var ground = GroundQuad.Create();
+        _spawned.Add(ground.gameObject);
 
         _camera!.transform.position = new Vector3(0.3f, 5f, 0.2f);
         _camera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
@@ -130,7 +128,7 @@ public class MeasurePlaneHitTests
         _controller!.UpdatePlaneHit(_camera, ScreenCenter());
 
         Assert.IsTrue(_controller.PlaneHint.HasValue,
-            "под лучом сверху пол, а подложка с ним не нарисована: замер берёт точку на верху пола. "
+            "под лучом сверху пол, а земля — картинка без коллайдера: замер берёт точку на верху пола. "
             + "Твёрдая невидимая плита перехватывала луч, и подсказка пропадала над всей комнатой");
         Assert.AreEqual(0f, _controller.PlaneHint!.Value.y, 0.001f, "точка лежит на верху пола, y = 0");
     }
@@ -333,16 +331,6 @@ public class MeasurePlaneHitTests
         int alone = _controller.CandidateVerticesWorld.Count;
         Assert.Greater(alone, 0, "предусловие: у обычной детали вершины есть");
 
-        var plateGo = new GameObject("BasePlate");
-        plateGo.AddComponent<MeshFilter>();
-        plateGo.AddComponent<MeshRenderer>();
-        var plate = plateGo.AddComponent<KitchenElement>();
-        plate.PartName = "BasePlate";
-        plate.DimensionsMM = new Vector3Int(3000, 18, 3000);
-        plateGo.AddComponent<BasePlate>();
-        PartRegistry.Register(plate);
-        _spawned.Add(plateGo);
-
         var hidden = MakeMeasurableElement("Скрытая", new Vector3(2f, 0f, 0f));
         hidden.GetComponentInChildren<MeshRenderer>().enabled = false;
 
@@ -352,8 +340,8 @@ public class MeasurePlaneHitTests
         _controller.CollectVertices(_camera!);
 
         Assert.AreEqual(alone, _controller.CandidateVerticesWorld.Count,
-            "опорная плита — техническая подложка, скрытая и выключенная деталь на "
-            + "экране не видны: привязываться к тому, чего не видно, нельзя");
+            "скрытая и выключенная деталь на экране не видны: "
+            + "привязываться к тому, чего не видно, нельзя");
     }
 
     [Test]

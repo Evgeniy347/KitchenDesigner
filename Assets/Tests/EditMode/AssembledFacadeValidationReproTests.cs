@@ -16,6 +16,7 @@ public class AssembledFacadeValidationReproTests
     [TearDown]
     public void Teardown()
     {
+        ConstraintValidator.Ground = ImpliedGround.None;
         foreach (var go in _spawned)
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -253,11 +254,7 @@ public class AssembledFacadeValidationReproTests
     [Test]
     public void Validate_WithFullScene_ConsistentViolationState()
     {
-        var plate = MakeElement("BasePlate",
-            new Vector3Int(3170, 18, 7240),
-            new Vector3(0f, -0.009f, 0f),
-            Quaternion.identity);
-        plate.gameObject.AddComponent<BasePlate>();
+        ConstraintValidator.Ground = ImpliedGround.At(0f);
 
         MakeElement("BackWall",
             new Vector3Int(3170, 2700, 100),

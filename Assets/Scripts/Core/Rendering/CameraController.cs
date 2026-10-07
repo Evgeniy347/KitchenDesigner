@@ -55,10 +55,8 @@ namespace KitchenDesigner.Core
         public const float MaxPitchDeg = 89f;
 
         private Camera? _cachedCamera;
-        private GameObject? _floor;
 
         public void AssignTestCamera(Camera camera) => _cachedCamera = camera;
-        public void AssignTestFloor(GameObject floor) => _floor = floor;
 
         private float Dist
         {
@@ -107,13 +105,6 @@ namespace KitchenDesigner.Core
         {
             Instance = this;
             _cachedCamera = Camera.main;
-            ResolveBasePlate();
-        }
-
-        internal void ResolveBasePlate()
-        {
-            var plate = FindAnyObjectByType<BasePlate>();
-            _floor = plate != null ? plate.gameObject : null;
         }
 
         private void Start()
@@ -310,22 +301,17 @@ namespace KitchenDesigner.Core
         {
             if (_cachedCamera == null) return;
 
-            if (_floor != null)
-                ApplyFloorCameraHide(_floor, rendererVisible: BasePlateVisibleWith(floors.Count));
-
             for (int i = 0; i < floors.Count; i++)
             {
                 var f = floors[i];
-                if (f != null) ApplyFloorCameraHide(f.gameObject, rendererVisible: true);
+                if (f != null) ApplyFloorCameraHide(f.gameObject);
             }
         }
-
-        public static bool BasePlateVisibleWith(int userFloorCount) => userFloorCount == 0;
 
         public static bool FloorHiddenFromCamera(bool cameraBelowTop, bool lookingUp) =>
             !PhotoMode.Active && cameraBelowTop && lookingUp;
 
-        private void ApplyFloorCameraHide(GameObject floor, bool rendererVisible)
+        private void ApplyFloorCameraHide(GameObject floor)
         {
             var renderer = floor.GetComponent<MeshRenderer>();
             if (renderer == null) return;
@@ -335,14 +321,7 @@ namespace KitchenDesigner.Core
             bool lookingUp = _cachedCamera.transform.forward.y > 0f;
             bool hide = FloorHiddenFromCamera(cameraBelow, lookingUp);
 
-            var plate = floor.GetComponent<BasePlate>();
-            if (plate != null)
-            {
-                plate.SetShown(rendererVisible && !hide);
-                return;
-            }
-
-            renderer.enabled = rendererVisible && !hide;
+            renderer.enabled = !hide;
 
             var mesh = floor.GetComponent<MeshCollider>();
             Collider? collider = mesh != null ? mesh : floor.GetComponent<Collider>();
@@ -544,7 +523,7 @@ namespace KitchenDesigner.Core
             if (Tools.ToolMode.MouseCaptured) return;
 
             var e = SelectionManager.RaycastElementThroughGizmos(ray, shiftHeld);
-            if (e == null || e.GetComponent<BasePlate>() != null) return;
+            if (e == null) return;
             if (!EditModeManager.IsInteractable(e)) return;
             if (UI.UIManager.Instance == null) return;
 

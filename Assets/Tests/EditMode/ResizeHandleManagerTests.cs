@@ -335,7 +335,6 @@ public class ResizeHandleManagerTests
     public void SnapResize_OnY_Axis_FlushToFloor()
     {
         var floor = Make(new Vector3(0, 0f, 0), new Vector3Int(3000, 18, 3000));
-        floor.gameObject.AddComponent<BasePlate>();
         var wall = Make(new Vector3(0, 1.5f, 0), new Vector3Int(2000, 2500, 100));
 
         Resize(wall, 3, 0.22f, new List<KitchenElement> { floor }, 0.05f,

@@ -166,17 +166,15 @@ public class SaveLoadManagerFileTests
     }
 
     [Test]
-    public void ClearBoards_RemovesBoards_KeepsBasePlate()
+    public void ClearBoards_RemovesTheListedBoards_AndOnlyThem()
     {
-        var plate = Make("BasePlate", new Vector3Int(3000, 18, 3000), Vector3.zero);
-        plate.gameObject.AddComponent<BasePlate>();
-        var board = Make("Board", new Vector3Int(800, 400, 18), new Vector3(1, 0, 0));
+        var doomed = Make("Doomed", new Vector3Int(800, 400, 18), new Vector3(1, 0, 0));
+        var bystander = Make("Bystander", new Vector3Int(800, 400, 18), new Vector3(2, 0, 0));
 
-        var list = new List<KitchenElement> { plate, board };
-        SaveLoadManager.ClearBoards(list);
+        SaveLoadManager.ClearBoards(new List<KitchenElement> { doomed });
 
-        Assert.IsTrue(plate != null && plate.gameObject != null && plate.gameObject.activeSelf);
-        Assert.IsTrue(board == null || board.Equals(null), "деталь удалена");
+        Assert.IsTrue(doomed == null || doomed.Equals(null), "названная деталь удалена");
+        Assert.IsTrue(bystander != null && bystander.gameObject.activeSelf, "непричастная деталь осталась");
     }
 
     [Test]

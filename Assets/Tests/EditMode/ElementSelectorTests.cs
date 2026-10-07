@@ -75,7 +75,7 @@ public class ElementSelectorTests
     }
 
     [Test]
-    public void TypeBoard_And_TypeFloor_And_BasePlateExcluded()
+    public void TypeBoard_And_TypeFloor_SelectOnlyTheirOwn()
     {
         Make("board1", new Vector3Int(600, 400, 18));
 
@@ -86,20 +86,14 @@ public class ElementSelectorTests
         PartRegistry.Register(floor);
         _spawned.Add(floorGo);
 
-        var plate = BasePlate.Create();
-        PartRegistry.Register(plate.Element);
-        _spawned.Add(plate.gameObject);
-
         var boards = ElementSelector.Match("type:board");
         Assert.AreEqual(1, boards.Count);
         Assert.AreEqual("board1", boards[0].PartName);
 
         Assert.AreEqual(1, ElementSelector.Match("type:floor").Count);
 
-        // BasePlate (якорь) не попадает ни в одну выборку.
         var all = ElementSelector.Match("*");
-        Assert.IsFalse(all.Exists(e => e.GetComponent<BasePlate>() != null));
-        Assert.AreEqual(2, all.Count, "board1 + floor1 (без BasePlate)");
+        Assert.AreEqual(2, all.Count, "board1 + floor1");
     }
 
     [Test]

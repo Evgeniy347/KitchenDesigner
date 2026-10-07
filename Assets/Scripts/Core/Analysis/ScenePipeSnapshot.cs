@@ -33,7 +33,7 @@ namespace KitchenDesigner.Core.Analysis
         public static PipeObstacleKind KindOf(KitchenElement e)
         {
             if (e.GetComponent<Wall>() != null) return PipeObstacleKind.Wall;
-            if (e.GetComponent<BasePlate>() != null || e is FloorElement) return PipeObstacleKind.Floor;
+            if (e is FloorElement) return PipeObstacleKind.Floor;
             return PipeObstacleKind.Part;
         }
 

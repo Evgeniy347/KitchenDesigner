@@ -47,8 +47,6 @@ public class SceneClearWorkTests
     [Test]
     public void ClearingTheWholeScene_AnnouncesTheChangeOnce_NotOncePerElement()
     {
-        var plate = Make("BasePlate");
-        plate.gameObject.AddComponent<BasePlate>();
         for (int i = 0; i < 20; i++) Make("Board" + i);
 
         var all = PartRegistry.GetAll();
@@ -59,25 +57,21 @@ public class SceneClearWorkTests
         int bumps = SceneRevision.TakeBumps();
         Assert.LessOrEqual(bumps, 2,
             $"объявлений о смене состава было {bumps} на 20 удалённых деталей. "
-            + "Реестр очищается ОДНИМ действием, уцелевшие возвращаются обратно — "
+            + "Реестр очищается ОДНИМ действием — "
             + "объявление на каждую деталь и есть та работа, что дала 860 мс на кадре 2789");
     }
 
     [Test]
-    public void ClearingTheWholeScene_KeepsTheBasePlate_AndEmptiesTheRest()
+    public void ClearingTheWholeScene_EmptiesTheRegistry_AndDestroysTheParts()
     {
-        var plate = Make("BasePlate");
-        plate.gameObject.AddComponent<BasePlate>();
+        var first = Make("First");
         var board = Make("Board");
 
         SaveLoadManager.ClearBoards(PartRegistry.GetAll());
 
-        var left = PartRegistry.GetAll();
-        Assert.AreEqual(1, left.Count, "в реестре обязана остаться ровно опорная плита");
-        Assert.AreSame(plate, left[0],
-            "быстрый путь чистит реестр целиком — уцелевшие обязаны вернуться в него, "
-            + "иначе плита есть в сцене, но её нет ни в одном обходе");
-        Assert.IsTrue(board == null || board.Equals(null), "деталь удалена");
+        Assert.AreEqual(0, PartRegistry.GetAll().Count, "в реестре не осталось ничего");
+        Assert.IsTrue(first == null || first.Equals(null), "деталь удалена");
+        Assert.IsTrue(board == null || board.Equals(null), "и вторая тоже");
     }
 
     [Test]

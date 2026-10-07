@@ -57,16 +57,6 @@ public class CutoutNeighbourRoleTests
     }
 
     [Test]
-    public void BasePlate_IsNoNeighbourAtAll()
-    {
-        var plate = BasePlate.Create();
-        _spawned.Add(plate.gameObject);
-        Assert.AreEqual(CutoutNeighbourRole.None, plate.Element.CutoutRole,
-            "подложка — якорь сцены под всей кухней: она перекрывает любой вырез "
-            + "и, посчитай её помехой, врезка была бы невозможна нигде");
-    }
-
-    [Test]
     public void Facade_AlignsTheCutout_ButNeverBlocksIt()
     {
         var facade = Spawn<FacadeElement>();

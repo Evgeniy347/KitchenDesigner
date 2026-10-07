@@ -48,7 +48,7 @@ namespace KitchenDesigner.Core
         public List<GameObject> RestoreScene(ProjectData data) => SceneRestorer.Restore(data);
 
         public void ClearBoards(IEnumerable<KitchenElement> elements) =>
-            SceneElements.ClearKeepingBasePlate(elements);
+            SceneElements.Clear(elements);
 
         public string CaptureCurrentJson() => Serialize(CaptureCurrentScene());
 
@@ -101,7 +101,7 @@ namespace KitchenDesigner.Core
 
             var backup = CaptureCurrentScene();
 
-            SceneElements.ClearKeepingBasePlate(SceneElements.All());
+            SceneElements.Clear(SceneElements.All());
             SceneRestorer.Restore(new ProjectData());
             ProjectCreationDate.Value = System.DateTime.UtcNow.ToString("o");
             SceneChangeTracker.SettleDerivedLinks();
@@ -111,7 +111,7 @@ namespace KitchenDesigner.Core
 
             if (SaveToPath(path)) return true;
 
-            SceneElements.ClearKeepingBasePlate(SceneElements.All());
+            SceneElements.Clear(SceneElements.All());
             SceneRestorer.Restore(backup);
             SceneChangeTracker.SettleDerivedLinks();
             if (hl is not null) hl.RefreshHighlights();
@@ -141,7 +141,7 @@ namespace KitchenDesigner.Core
             if (!IsVersionCompatible(data))
                 Debug.LogWarning($"[SaveLoad] Version mismatch: file={data.version}, app={AppConstants.SAVE_FORMAT_VERSION}");
 
-            SceneElements.ClearKeepingBasePlate(SceneElements.All());
+            SceneElements.Clear(SceneElements.All());
             SceneRestorer.Restore(data);
             SceneChangeTracker.SettleDerivedLinks();
 

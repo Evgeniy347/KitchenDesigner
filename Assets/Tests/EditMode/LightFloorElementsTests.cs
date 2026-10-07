@@ -29,7 +29,7 @@ public class LightFloorElementsTests
             FloorElement.DEFAULT_THICKNESS_MM,
             FloorElement.DEFAULT_SIZE_MM);
         // В EditMode OnEnable не вызывается — синхронизируем явно, как фабрика.
-        FloorElement.RefreshBasePlateVisibility();
+        FloorElement.RefreshGroundVisibility();
         return floor;
     }
 
@@ -100,22 +100,6 @@ public class LightFloorElementsTests
 
         Assert.IsFalse(result.violations.Contains(floor),
             "пол — якорь, отсутствие контактов не нарушение");
-    }
-
-    [Test]
-    public void Floor_HidesBasePlate_WhileExists()
-    {
-        var plate = BasePlate.Create();
-        _spawned.Add(plate.gameObject);
-        var renderer = plate.GetComponent<MeshRenderer>();
-        Assert.IsTrue(renderer.enabled, "без своих полов плита видима");
-
-        var floor = CreateFloor();
-        Assert.IsFalse(renderer.enabled, "с собственным полом дефолтная плита скрыта");
-
-        Object.DestroyImmediate(floor.gameObject);
-        FloorElement.RefreshBasePlateVisibility();
-        Assert.IsTrue(renderer.enabled, "полов нет — плита снова видима");
     }
 
     [Test]

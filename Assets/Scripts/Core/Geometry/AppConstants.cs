@@ -8,7 +8,7 @@ namespace KitchenDesigner.Core
         public const int SAVE_FORMAT_VERSION = 1;
         public const int DEFAULT_GRID_STEP = 1;
         public const int BOARD_THICKNESS_DEFAULT = 18;
-        public const int BASE_PLATE_SIZE = 3000;
+        public const int GROUND_QUAD_SIZE_MM = 3000;
         public const float MM_TO_UNITS = 0.001f;
 
         public static float HalfHeightUnits(float mm) => mm * 0.5f * MM_TO_UNITS;

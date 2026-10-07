@@ -4,12 +4,8 @@ namespace KitchenDesigner.Core
 {
     public class BasePlate : MonoBehaviour
     {
-        public const int PLATE_SIZE = 3000;
-
         private KitchenElement? _element;
         public KitchenElement Element => _element!;
-
-        public bool CoveredByUserFloor { get; private set; }
 
         public static BasePlate Create()
         {
@@ -18,59 +14,15 @@ namespace KitchenDesigner.Core
 
             var element = go.AddComponent<KitchenElement>();
             element.PartName = "BasePlate";
-            element.DimensionsMM = new Vector3Int(PLATE_SIZE, AppConstants.BOARD_THICKNESS_DEFAULT, PLATE_SIZE);
+            element.DimensionsMM = new Vector3Int(AppConstants.GROUND_QUAD_SIZE_MM,
+                AppConstants.BOARD_THICKNESS_DEFAULT, AppConstants.GROUND_QUAD_SIZE_MM);
             go.transform.position = new Vector3(0,
                 -AppConstants.HalfHeightUnits(AppConstants.BOARD_THICKNESS_DEFAULT), 0);
-
-            var renderer = go.GetComponent<MeshRenderer>();
-            var shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader != null)
-            {
-                var mat = new Material(shader);
-                mat.color = new Color(0.6f, 0.6f, 0.6f);
-                renderer.material = mat;
-            }
-
-            var rb = go.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
-
             go.tag = "Floor";
 
             var plate = go.AddComponent<BasePlate>();
             plate._element = element;
-
-            FloorElement.RefreshBasePlateVisibility();
-
             return plate;
-        }
-
-        public static bool Is(KitchenElement element) => element.TryGetComponent<BasePlate>(out _);
-
-        public static bool IsCoveredByUserFloor(KitchenElement element) =>
-            element.TryGetComponent<BasePlate>(out var plate) && plate.CoveredByUserFloor;
-
-        public void SetCoveredByUserFloor(bool covered)
-        {
-            CoveredByUserFloor = covered;
-            SetShown(!covered);
-        }
-
-        public void ApplyViewVisibility(bool visibleInView) => SetShown(visibleInView && !CoveredByUserFloor);
-
-        public void SetShown(bool shown)
-        {
-            var renderer = GetComponent<MeshRenderer>();
-            if (renderer != null) renderer.enabled = shown;
-
-            var collider = GetComponent<Collider>();
-            if (collider != null) collider.enabled = shown;
-        }
-
-        private void Awake()
-        {
-            if (_element == null)
-                _element = GetComponent<KitchenElement>();
         }
     }
 }

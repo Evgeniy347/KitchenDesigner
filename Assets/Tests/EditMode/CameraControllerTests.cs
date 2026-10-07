@@ -22,14 +22,21 @@ public class CameraControllerTests
 
         _floorGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
         _floorGo!.name = "TestFloor";
-        _floorGo!.tag = "Floor";
-        _floorGo!.transform.localScale = new Vector3(3, 0.018f, 3);
+        var floor = _floorGo!.AddComponent<FloorElement>();
+        floor.PartName = "TestFloor";
+        floor.DimensionsMM = new Vector3Int(3000, 18, 3000);
         _floorGo!.transform.position = new Vector3(0, -0.009f, 0);
 
         var controllerGo = new GameObject("CameraController");
         _controller = controllerGo.AddComponent<CameraController>();
         _controller!.AssignTestCamera(_cameraGo!.GetComponent<Camera>());
-        _controller!.AssignTestFloor(_floorGo);
+    }
+
+    private void ApplyFloors(GameObject? floorGo)
+    {
+        var floors = new List<FloorElement>();
+        if (floorGo != null) floors.Add(floorGo.GetComponent<FloorElement>());
+        _controller!.ApplyFloorVisibility(floors);
     }
 
     [TearDown]
@@ -117,7 +124,7 @@ public class CameraControllerTests
     {
         _cameraGo!.transform.position = new Vector3(0, -1f, 0);
         _cameraGo!.transform.forward = new Vector3(0, 0.5f, 0.866f).normalized;
-        _controller!.UpdateFloorVisibility();
+        ApplyFloors(_floorGo);
 
         var renderer = _floorGo!.GetComponent<MeshRenderer>();
         Assert.IsFalse(renderer.enabled, "floor should be invisible when camera is below it and looking up");
@@ -127,7 +134,7 @@ public class CameraControllerTests
     public void UpdateFloorVisibility_EnablesRenderer_WhenCameraAboveFloorTop()
     {
         _cameraGo!.transform.position = new Vector3(0, 10f, 0);
-        _controller!.UpdateFloorVisibility();
+        ApplyFloors(_floorGo);
 
         var renderer = _floorGo!.GetComponent<MeshRenderer>();
         Assert.IsTrue(renderer.enabled, "floor should be visible when camera is above it");
@@ -138,7 +145,7 @@ public class CameraControllerTests
     {
         _cameraGo!.transform.position = new Vector3(0, -1f, 0);
         _cameraGo!.transform.forward = new Vector3(0, 0.5f, 0.866f).normalized;
-        _controller!.UpdateFloorVisibility();
+        ApplyFloors(_floorGo);
 
         var collider = _floorGo!.GetComponent<Collider>();
         Assert.IsFalse(collider.enabled, "floor collider should be disabled when camera is below it and looking up");
@@ -148,61 +155,10 @@ public class CameraControllerTests
     public void UpdateFloorVisibility_EnablesCollider_WhenCameraAboveFloorTop()
     {
         _cameraGo!.transform.position = new Vector3(0, 10f, 0);
-        _controller!.UpdateFloorVisibility();
+        ApplyFloors(_floorGo);
 
         var collider = _floorGo!.GetComponent<Collider>();
         Assert.IsTrue(collider.enabled, "floor collider should be enabled when camera is above it");
-    }
-
-    [Test]
-    public void ApplyFloorVisibility_PlateUnderAUserFloor_IsNeitherDrawnNorSolid_EvenFromAbove()
-    {
-        var plate = BasePlate.Create();
-        var userFloorGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        var userFloor = userFloorGo.AddComponent<FloorElement>();
-        var userFloors = new List<FloorElement> { userFloor };
-        try
-        {
-            Assert.IsTrue(plate.GetComponent<Collider>().enabled, "посылка: плита создана одна и твёрдая");
-            _controller!.AssignTestFloor(plate.gameObject);
-            _cameraGo!.transform.position = new Vector3(0, 10f, 0);
-
-            _controller.ApplyFloorVisibility(userFloors);
-
-            Assert.IsFalse(plate.GetComponent<MeshRenderer>().enabled,
-                "у комнаты есть свой пол: плита не рисуется");
-            Assert.IsFalse(plate.GetComponent<Collider>().enabled,
-                "и не твёрдая: камера, глядящая на плиту сверху, раньше гасила только рендерер и оставляла "
-                + "коллайдер включённым, а невидимый коллайдер загораживает пол от любого луча");
-        }
-        finally
-        {
-            Object.DestroyImmediate(userFloorGo);
-            Object.DestroyImmediate(plate.gameObject);
-        }
-    }
-
-    [Test]
-    public void ResolveBasePlate_FindsThePlateByComponent_NotByTheFloorTag()
-    {
-        var plate = BasePlate.Create();
-        plate.gameObject.tag = "Untagged";
-        try
-        {
-            _controller!.ResolveBasePlate();
-            _cameraGo!.transform.position = new Vector3(0, -1f, 0);
-            _cameraGo.transform.forward = new Vector3(0, 0.5f, 0.866f).normalized;
-
-            _controller.ApplyFloorVisibility(new List<FloorElement>());
-
-            Assert.IsFalse(plate.GetComponent<MeshRenderer>().enabled,
-                "камера снизу гасит плиту, найденную по компоненту: тег «Floor» не нужен");
-            Assert.IsFalse(plate.GetComponent<Collider>().enabled);
-        }
-        finally
-        {
-            Object.DestroyImmediate(plate.gameObject);
-        }
     }
 
     // ── Полигональный пол: два коллайдера (Box отключён, работает Mesh) ───
@@ -228,11 +184,10 @@ public class CameraControllerTests
     public void UpdateFloorVisibility_DisablesMeshCollider_OfPolygonFloor_WhenCameraBelowAndLookingUp()
     {
         var polyGo = CreatePolygonFloor();
-        _controller!.AssignTestFloor(polyGo);
 
         _cameraGo!.transform.position = new Vector3(0, -1f, 0);
         _cameraGo!.transform.forward = new Vector3(0, 0.5f, 0.866f).normalized;
-        _controller!.UpdateFloorVisibility();
+        ApplyFloors(polyGo);
 
         var mesh = polyGo.GetComponent<MeshCollider>();
         Assert.IsFalse(mesh.enabled,
@@ -245,10 +200,9 @@ public class CameraControllerTests
     public void UpdateFloorVisibility_KeepsBoxColliderDisabled_OnPolygonFloor()
     {
         var polyGo = CreatePolygonFloor();
-        _controller!.AssignTestFloor(polyGo);
 
         _cameraGo!.transform.position = new Vector3(0, 10f, 0);
-        _controller!.UpdateFloorVisibility();
+        ApplyFloors(polyGo);
 
         var box = polyGo.GetComponent<BoxCollider>();
         Assert.IsFalse(box.enabled,
@@ -264,7 +218,7 @@ public class CameraControllerTests
     {
         _cameraGo!.transform.position = new Vector3(0, -1f, 0);
         _cameraGo!.transform.forward = new Vector3(0, -0.5f, 0.866f).normalized;
-        _controller!.UpdateFloorVisibility();
+        ApplyFloors(_floorGo);
 
         var renderer = _floorGo!.GetComponent<MeshRenderer>();
         Assert.IsTrue(renderer.enabled, "floor should stay visible when camera is below but looking down");
@@ -275,7 +229,7 @@ public class CameraControllerTests
     {
         _cameraGo!.transform.position = new Vector3(0, 10f, 0);
         _cameraGo!.transform.forward = new Vector3(0, 0.5f, 0.866f).normalized;
-        _controller!.UpdateFloorVisibility();
+        ApplyFloors(_floorGo);
 
         var renderer = _floorGo!.GetComponent<MeshRenderer>();
         Assert.IsTrue(renderer.enabled, "floor should stay visible when camera is above floor regardless of look direction");

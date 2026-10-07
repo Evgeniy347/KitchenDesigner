@@ -38,7 +38,7 @@ public class SceneLeakGuardIsKnownTests
     public void IsKnown_KnownWholeSceneLeakerTest_AcceptsAnyObjectName()
     {
         Assert.IsTrue(SceneLeakGuard.IsKnown(
-            "ValidationInvariantTests.Validation_ExampleSave_IsDeterministic", "BasePlate"));
+            "ValidationInvariantTests.Validation_ExampleSave_IsDeterministic", "Pol_1"));
         Assert.IsTrue(SceneLeakGuard.IsKnown(
             "ValidationInvariantTests.Validation_ExampleSave_IsDeterministic", "Vintovaya_opora_7"));
     }

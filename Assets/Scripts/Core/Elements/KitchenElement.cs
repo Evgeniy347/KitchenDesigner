@@ -177,11 +177,9 @@ namespace KitchenDesigner.Core
 
         public virtual bool IsFlatBoardElement =>
             GetType() == typeof(KitchenElement)
-            && GetComponent<Wall>() == null
-            && GetComponent<BasePlate>() == null;
+            && GetComponent<Wall>() == null;
 
-        public virtual CutoutNeighbourRole CutoutRole =>
-            GetComponent<BasePlate>() == null ? CutoutNeighbourRole.Carcass : CutoutNeighbourRole.None;
+        public virtual CutoutNeighbourRole CutoutRole => CutoutNeighbourRole.Carcass;
 
         public bool BlocksCutout => (CutoutRole & CutoutNeighbourRole.BlocksCutout) != 0;
 
@@ -220,8 +218,7 @@ namespace KitchenDesigner.Core
 
         public bool SupportsGrooves =>
             GetType() == typeof(KitchenElement)
-            && GetComponent<Wall>() == null
-            && GetComponent<BasePlate>() == null;
+            && GetComponent<Wall>() == null;
 
         public IReadOnlyList<GrooveSpec> Grooves => _data.Grooves;
 

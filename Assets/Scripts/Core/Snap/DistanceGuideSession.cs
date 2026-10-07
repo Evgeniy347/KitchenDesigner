@@ -34,7 +34,7 @@ namespace KitchenDesigner.Core
 
             _others.Clear();
             foreach (var e in scene)
-                if (e != null && !_moving.Contains(e) && e.GetComponent<BasePlate>() == null)
+                if (e != null && !_moving.Contains(e))
                     _others.Add(e);
 
             _boxes.Clear();

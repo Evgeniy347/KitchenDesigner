@@ -65,10 +65,8 @@ public class CreateEmptyProjectAtTests
     }
 
     [Test]
-    public void CreateEmptyProjectAt_ClearsExistingBoards_ButKeepsTheBasePlate()
+    public void CreateEmptyProjectAt_ClearsExistingBoards()
     {
-        var plate = Make("BasePlate", new Vector3Int(3000, 18, 3000), Vector3.zero);
-        plate.gameObject.AddComponent<BasePlate>();
         Make("SomeBoard", new Vector3Int(800, 400, 18), new Vector3(1, 0, 0));
 
         _path = Path.Combine(Application.temporaryCachePath, "new_empty_project_clears.kdproj");
@@ -79,7 +77,6 @@ public class CreateEmptyProjectAtTests
         var remaining = Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None);
         foreach (var e in remaining)
             Assert.AreNotEqual("SomeBoard", e.PartName, "обычная доска обязана быть удалена");
-        Assert.IsTrue(plate != null && plate.gameObject != null, "базовая плита остаётся");
     }
 
     [Test]
@@ -98,8 +95,6 @@ public class CreateEmptyProjectAtTests
     [Test]
     public void CreateEmptyProjectAt_WhenTheSaveFails_LeavesTheCurrentSceneAndLastPathUntouched()
     {
-        var plate = Make("BasePlate", new Vector3Int(3000, 18, 3000), Vector3.zero);
-        plate.gameObject.AddComponent<BasePlate>();
         Make("SomeBoard", new Vector3Int(800, 400, 18), new Vector3(1, 0, 0));
 
         _path = Path.Combine(Application.temporaryCachePath, "existing_before_failed_new.kdproj");

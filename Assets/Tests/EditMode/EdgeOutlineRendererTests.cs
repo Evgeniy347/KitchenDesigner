@@ -50,29 +50,4 @@ public class EdgeOutlineRendererTests
             Assert.AreEqual(3, degree[v],
                 "в каждом углу бокса сходятся ровно три ребра; вершина " + v + " выпала из контура");
     }
-
-    [Test]
-    public void Floor_GetsNoOutline_EvenWhenObjectOutlineIsOn()
-    {
-        var plate = Spawn(ElementFactory.CreatePart(
-            new Vector3Int(3000, 18, 3000), "BasePlate", new Vector3(0f, -0.009f, 0f)));
-        plate.AddComponent<BasePlate>();
-
-        var s = KitchenSettings.Instance;
-        bool edgeBefore = s.NormalView.edgeOutline;
-        bool wallBefore = s.NormalView.wallOutline;
-        s.NormalView.edgeOutline = true;
-        s.NormalView.wallOutline = true;
-        try
-        {
-            Assert.IsFalse(
-                EdgeOutlineRenderer.ShouldOutline(plate.GetComponent<KitchenElement>()!, ViewResolver.Current),
-                "пол обводить нечем: чёрная рамка по краю плиты читается как стена помещения");
-        }
-        finally
-        {
-            s.NormalView.edgeOutline = edgeBefore;
-            s.NormalView.wallOutline = wallBefore;
-        }
-    }
 }

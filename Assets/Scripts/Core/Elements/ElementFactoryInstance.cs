@@ -668,7 +668,7 @@ namespace KitchenDesigner.Core
             floor.Movable = true;
 
             MaterialManager.ApplyById(floor, MaterialCatalog.DefaultId);
-            FloorElement.RefreshBasePlateVisibility();
+            FloorElement.RefreshGroundVisibility();
 
             return ElementRoot.Publish(go, floor);
         }

@@ -60,50 +60,65 @@ public class SceneVisibilityTests
         return go;
     }
 
-    private BasePlate SpawnRegisteredPlate()
+    private GroundQuad SpawnGround()
     {
-        var plate = BasePlate.Create();
-        Spawn(plate.gameObject);
-        PartRegistry.Register(plate.Element);
-        return plate;
+        var ground = GroundQuad.Create();
+        Spawn(ground.gameObject);
+        return ground;
     }
 
     [Test]
-    public void ViewChange_UnderUserFloor_KeepsBasePlateHiddenAtEveryStep()
+    public void ViewChange_UnderUserFloor_KeepsTheGroundHiddenAtEveryStep()
     {
         Spawn(ElementFactory.CreateFloor(new Vector3Int(3000, 20, 3000), "F", Vector3.zero));
-        var plate = SpawnRegisteredPlate();
-        FloorElement.RefreshBasePlateVisibility();
-        var renderer = plate.GetComponent<MeshRenderer>()!;
-        var collider = plate.GetComponent<Collider>()!;
-        Assert.IsTrue(plate.CoveredByUserFloor, "посылка: пол накрывает плиту");
-        Assert.IsFalse(renderer.enabled, "посылка: плита под полом скрыта до смены вида");
+        var ground = SpawnGround();
+        FloorElement.RefreshGroundVisibility();
+        Assert.IsTrue(ground.CoveredByUserFloor, "посылка: пол накрывает землю");
+        Assert.IsFalse(ground.IsShown, "посылка: земля под полом скрыта до смены вида");
 
         foreach (var objectsVisible in new[] { false, true, false, true })
         {
             KitchenSettings.Instance.NormalView.objectsVisible = objectsVisible;
             SceneVisibilityManager.Apply();
-            Assert.IsFalse(renderer.enabled,
-                $"смена вида (objectsVisible={objectsVisible}) на кадр включала плиту под полом: мерцание серого");
-            Assert.IsFalse(collider.enabled, "рендерер и коллайдер плиты ходят парой");
+            Assert.IsFalse(ground.IsShown,
+                $"смена вида (objectsVisible={objectsVisible}) на кадр включала землю под полом: мерцание серого");
         }
     }
 
     [Test]
-    public void ViewChange_WithoutUserFloor_KeepsBasePlateDrawnAndSolid()
+    public void ViewChange_WithoutUserFloor_KeepsTheGroundDrawn()
     {
-        var plate = SpawnRegisteredPlate();
-        var renderer = plate.GetComponent<MeshRenderer>()!;
-        var collider = plate.GetComponent<Collider>()!;
-        Assert.IsFalse(plate.CoveredByUserFloor, "посылка: полов нет");
+        var ground = SpawnGround();
+        Assert.IsFalse(ground.CoveredByUserFloor, "посылка: полов нет");
 
         foreach (var objectsVisible in new[] { false, true, false, true })
         {
             KitchenSettings.Instance.NormalView.objectsVisible = objectsVisible;
             SceneVisibilityManager.Apply();
-            Assert.IsTrue(renderer.enabled, $"плита без пола обязана быть видна (objectsVisible={objectsVisible})");
-            Assert.IsTrue(collider.enabled, "и твёрдая");
+            Assert.IsTrue(ground.IsShown, $"земля без пола обязана быть видна (objectsVisible={objectsVisible})");
         }
+    }
+
+    [Test]
+    public void LevelAbove_WithNeighboursHidden_HidesTheGround_AndTheGroundLevelShowsIt()
+    {
+        KitchenSettings.Instance.NeighbourLevels = NeighbourLevelsMode.Hide;
+        LevelRegistry.Set(new[]
+        {
+            new Level("1", "1 этаж", 0, 3000),
+            new Level("2", "2 этаж", 3000, 3000),
+        });
+        var ground = SpawnGround();
+
+        LevelRegistry.CurrentId = "2";
+        SceneVisibilityManager.Invalidate();
+        SceneVisibilityManager.Apply();
+        Assert.IsFalse(ground.IsShown, "земля лежит на первом этаже: со второго при скрытых соседях её не видно");
+
+        LevelRegistry.CurrentId = "1";
+        SceneVisibilityManager.Invalidate();
+        SceneVisibilityManager.Apply();
+        Assert.IsTrue(ground.IsShown, "на первом этаже земля на месте");
     }
 
     // ── «Объекты» ───────────────────────────────────────────
@@ -144,11 +159,11 @@ public class SceneVisibilityTests
     }
 
     /// <summary>M1: до фикса <c>SceneVisibilityManager.Apply</c> целиком пропускал
-    /// «не объекты» (стены, окна, двери, пол, подложку) — этаж выше текущего оставался
-    /// нарисован независимо от <see cref="NeighbourLevelsMode"/>. Пол и подложка не
-    /// закреплены ни за одним другим менеджером, поэтому их прячет сам Apply.</summary>
+    /// «не объекты» (стены, окна, двери, пол) — этаж выше текущего оставался
+    /// нарисован независимо от <see cref="NeighbourLevelsMode"/>. Пол не закреплён
+    /// ни за одним другим менеджером, поэтому его прячет сам Apply.</summary>
     [Test]
-    public void LevelVisible_HidesFloorAndBasePlateOfTheLevelAbove()
+    public void LevelVisible_HidesTheFloorOfTheLevelAbove()
     {
         LevelRegistry.Set(new[]
         {
@@ -159,17 +174,11 @@ public class SceneVisibilityTests
 
         var floorUp = Spawn(ElementFactory.CreateFloor(new Vector3Int(3000, 20, 3000), "F2", new Vector3(0f, 3f, 0f)));
         floorUp.GetComponent<KitchenElement>()!.LevelId = "2";
-        var plateUp = Spawn(ElementFactory.CreatePart(new Vector3Int(3000, 18, 3000), "Plate2", new Vector3(0f, 3f, 0f)));
-        plateUp.AddComponent<BasePlate>();
-        plateUp.GetComponent<KitchenElement>()!.LevelId = "2";
-
         SceneVisibilityManager.Invalidate();
         SceneVisibilityManager.Apply();
 
         Assert.IsFalse(SceneVisibility.AnyRendererEnabled(floorUp.GetComponent<KitchenElement>()!),
             "пол второго этажа обязан скрыться, пока смотрим первый — иначе он висит над кухней");
-        Assert.IsFalse(SceneVisibility.AnyRendererEnabled(plateUp.GetComponent<KitchenElement>()!),
-            "подложка второго этажа — туда же");
     }
 
     /// <summary>Тот же баг для стен, окон и дверей — их рендерер ведёт

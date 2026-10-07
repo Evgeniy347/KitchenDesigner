@@ -58,13 +58,13 @@ namespace KitchenDesigner.Core
         private void OnEnable()
         {
             if (!_active.Contains(this)) _active.Add(this);
-            RefreshBasePlateVisibility();
+            RefreshGroundVisibility();
         }
 
         private void OnDisable()
         {
             _active.Remove(this);
-            RefreshBasePlateVisibility(except: this);
+            RefreshGroundVisibility(except: this);
         }
 
         protected override void OnElementDestroyed()
@@ -74,14 +74,14 @@ namespace KitchenDesigner.Core
             _polygonMesh = null;
         }
 
-        public static void RefreshBasePlateVisibility(FloorElement? except = null)
+        public static void RefreshGroundVisibility(FloorElement? except = null)
         {
             int count = 0;
             foreach (var f in Object.FindObjectsByType<FloorElement>(FindObjectsSortMode.None))
                 if (f != null && f != except && f.isActiveAndEnabled) count++;
 
-            foreach (var bp in Object.FindObjectsByType<BasePlate>(FindObjectsSortMode.None))
-                bp.SetCoveredByUserFloor(count > 0);
+            var ground = GroundQuad.Instance;
+            if (ground != null) ground.SetCoveredByUserFloor(count > 0);
         }
     }
 }

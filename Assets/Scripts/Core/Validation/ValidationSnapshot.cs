@@ -60,8 +60,7 @@ namespace KitchenDesigner.Core
                 }
 
                 var wall = e.GetComponent<Wall>();
-                _probes.Add(new Probe(wall, e.GetComponent<BasePlate>() != null,
-                    ReusesItsBox(e)));
+                _probes.Add(new Probe(wall, e is FloorElement, ReusesItsBox(e)));
 
                 if (wall != null)
                     (wallIndexByName ??= new Dictionary<string, int>())[e.gameObject.name] = i;
@@ -83,7 +82,7 @@ namespace KitchenDesigner.Core
                 if (probe.Reusable && ElementSnapshotReuse.TryReuseBox(e, probe.Wall, probe.IsFloor,
                     extraShapeSignature, out var keptBody, out var keptVertices))
                 {
-                    into.Add(Assemble(e, keptBody, keptVertices, probe.Wall, probe.IsFloor,
+                    into.Add(Assemble(e, keptBody, keptVertices, probe.Wall,
                         wallIndexByName, partIndexByName));
                     continue;
                 }
@@ -98,7 +97,7 @@ namespace KitchenDesigner.Core
                 if (probe.Reusable)
                     ElementSnapshotReuse.Keep(e, probe.Wall, probe.IsFloor, extraShapeSignature,
                         body, snapGeometry, vertices);
-                into.Add(Assemble(e, body, vertices, probe.Wall, probe.IsFloor,
+                into.Add(Assemble(e, body, vertices, probe.Wall,
                     wallIndexByName, partIndexByName));
             }
 
@@ -176,7 +175,7 @@ namespace KitchenDesigner.Core
                 : new[] { MainBody(e) };
 
         public static ElementKind KindOf(KitchenElement e) =>
-            KindOf(e, e.GetComponent<Wall>(), e.GetComponent<BasePlate>() != null);
+            KindOf(e, e.GetComponent<Wall>());
 
         public static bool IsAnchor(KitchenElement e) =>
             e != null && (KindOf(e) & ElementKind.Anchor) != 0;
@@ -198,11 +197,11 @@ namespace KitchenDesigner.Core
                 : null;
 
         private static ValidationElement Assemble(KitchenElement e, in ElementGeometry body,
-            Vector3[] vertices, Wall? wall, bool hasBasePlate,
+            Vector3[] vertices, Wall? wall,
             Dictionary<string, int>? wallIndexByName,
             Dictionary<string, int>? partIndexByName = null)
         {
-            var kind = KindOf(e, wall, hasBasePlate);
+            var kind = KindOf(e, wall);
 
             float centerY = wall != null ? wall.FullPosition.y : e.transform.position.y;
             var heightSpan = Span.FromCenter(centerY, e.DimensionsMM.y * AppConstants.MM_TO_UNITS);
@@ -236,11 +235,11 @@ namespace KitchenDesigner.Core
                 BedReachOf(e, body));
         }
 
-        private static ElementKind KindOf(KitchenElement e, Wall? wall, bool hasBasePlate)
+        private static ElementKind KindOf(KitchenElement e, Wall? wall)
         {
             var kind = ElementKind.None;
 
-            bool isFloor = hasBasePlate || e is FloorElement;
+            bool isFloor = e is FloorElement;
             bool isOpening = e is WallOpeningElement;
 
             bool isFoundation = e is FoundationElement;

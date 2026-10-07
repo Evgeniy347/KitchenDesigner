@@ -40,10 +40,8 @@ public class SaveLoadManagerTests
     }
 
     [Test]
-    public void CaptureScene_ExcludesBasePlate_KeepsBoards()
+    public void CaptureScene_KeepsBoards()
     {
-        var plate = CreateElement("BasePlate", new Vector3Int(3000, 18, 3000), Vector3.zero);
-        plate.gameObject.AddComponent<BasePlate>();
         CreateElement("Board", new Vector3Int(800, 400, 18), new Vector3(1, 2, 3));
 
         var data = SaveLoadManager.CaptureScene(_spawned.ConvertAll(g => g.GetComponent<KitchenElement>()));

@@ -83,7 +83,6 @@ namespace KitchenDesigner.Core.Tools
         {
             var element = SelectionManager.RaycastTransparentAware(ray, shiftHeld, out hit);
             if (element == null) return null;
-            if (element.GetComponent<BasePlate>() != null) return null;
             if (!EditModeManager.IsInteractable(element)) return null;
             if (ModuleEditMode.IsActive && !ModuleEditMode.IsEditable(element)) return null;
             return element;

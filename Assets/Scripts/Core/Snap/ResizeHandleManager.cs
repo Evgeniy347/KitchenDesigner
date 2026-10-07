@@ -83,7 +83,7 @@ namespace KitchenDesigner.Core
             if (IsResizing) return;
             var sel = SelectionManager.Instance;
             bool singleNonFloorSelection = sel != null && sel.SelectedElements.Count == 1
-                          && element != null && element.GetComponent<BasePlate>() == null;
+                          && element != null;
             SetTarget(singleNonFloorSelection ? element : null);
         }
 

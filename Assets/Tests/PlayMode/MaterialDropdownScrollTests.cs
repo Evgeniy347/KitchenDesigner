@@ -129,7 +129,7 @@ public class MaterialDropdownScrollTests
         UIManager.Instance!.SpawnPreset(0);
         KitchenElement? board = null;
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null && e.GetComponent<BasePlate>() == null) board = e;
+            if (e != null) board = e;
         Assert.IsNotNull(board, "деталь не создалась");
 
         ContextMenuUI.Instance!.Open(board!);

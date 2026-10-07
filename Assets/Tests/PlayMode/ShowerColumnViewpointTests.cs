@@ -110,17 +110,12 @@ public class ShowerColumnViewpointTests : ElementFrameTests
 
     // DestroyImmediate, not Destroy: a non-coroutine [OneTimeTearDown] never yields a frame
     // afterwards, so a queued Destroy can still be alive when the NEXT fixture's [UnitySetUp]
-    // runs right after. BasePlate is ALSO not a child of _bootstrap (Bootstrap.Awake creates
-    // it as its own root object) and every [TearDown] here deliberately skips it — see
-    // IsoScreenshotTests.OneTimeTearDownOnce for the cross-fixture leak this exact pattern
-    // caused (a stray BasePlate skewing a neighbour test's edge-banding geometry query).
+    // runs right after.
     [OneTimeTearDown]
     public void OneTimeTearDownOnce()
     {
         if (_bootstrap != null) Object.DestroyImmediate(_bootstrap);
         if (_mainCamera != null) Object.DestroyImmediate(_mainCamera);
-        var basePlate = Object.FindAnyObjectByType<BasePlate>();
-        if (basePlate != null) Object.DestroyImmediate(basePlate.gameObject);
         _bootstrap = null;
         _mainCamera = null;
         _defaultView = null;
@@ -163,9 +158,8 @@ public class ShowerColumnViewpointTests : ElementFrameTests
             if (go != null) Object.Destroy(go);
         _spawned.Clear();
 
-        // BasePlate живёт на общем Bootstrap и не пересоздаётся каждый тест.
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
-            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
+            if (e != null) Object.Destroy(e.gameObject);
         yield return null;
     }
 

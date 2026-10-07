@@ -103,7 +103,7 @@ public class DropdownListGuardTests
         if (overlay != null) Object.Destroy(overlay.gameObject);
         if (UIManager.Instance?.SettingsPanel != null) UIManager.Instance.SettingsPanel.SetVisible(false);
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
+            if (e != null) Object.Destroy(e.gameObject);
         yield break;
     }
 

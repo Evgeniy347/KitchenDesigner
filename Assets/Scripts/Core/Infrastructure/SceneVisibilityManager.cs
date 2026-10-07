@@ -28,7 +28,6 @@ namespace KitchenDesigner.Core
             if (element is WindowElement || element is DoorElement) return false;
             if (element is FloorElement) return false;
             if (element.GetComponent<Wall>() != null) return false;
-            if (element.GetComponent<BasePlate>() != null) return false;
             return true;
         }
 
@@ -40,12 +39,16 @@ namespace KitchenDesigner.Core
             if (element is LightSourceElement && view.HideLightSources) return false;
             if (IsObject(element) && !view.ObjectsVisible) return false;
 
-            var decision = LevelVisibility.Decide(
-                LevelRegistry.LevelOf(element).floorElevationMm,
-                LevelRegistry.Current.floorElevationMm,
-                KitchenSettings.Instance.NeighbourLevels);
-            return decision != LevelVisibilityDecision.Hidden;
+            return LevelShown(LevelRegistry.LevelOf(element).floorElevationMm);
         }
+
+        public static bool GroundShouldBeVisible() => LevelShown(LevelRegistry.Snapshot()[0].floorElevationMm);
+
+        private static bool LevelShown(int levelFloorElevationMm) =>
+            LevelVisibility.Decide(
+                levelFloorElevationMm,
+                LevelRegistry.Current.floorElevationMm,
+                KitchenSettings.Instance.NeighbourLevels) != LevelVisibilityDecision.Hidden;
     }
 
     public class SceneVisibilityManager : MonoBehaviour
@@ -69,10 +72,11 @@ namespace KitchenDesigner.Core
             foreach (var e in PartRegistry.All)
             {
                 if (e == null || SceneVisibility.IsDrivenByWallManager(e)) continue;
-                bool visible = SceneVisibility.ShouldBeVisible(e, view);
-                if (e.TryGetComponent<BasePlate>(out var plate)) plate.ApplyViewVisibility(visible);
-                else SceneVisibility.SetRenderersEnabled(e, visible);
+                SceneVisibility.SetRenderersEnabled(e, SceneVisibility.ShouldBeVisible(e, view));
             }
+
+            var ground = GroundQuad.Instance;
+            if (ground != null) ground.ApplyViewVisibility(SceneVisibility.GroundShouldBeVisible());
         }
     }
 }

@@ -80,7 +80,7 @@ namespace KitchenDesigner.Core
         }
 
         private static bool CanHost(KitchenElement el) =>
-            !(el is ScrewLegElement) && el.GetComponent<BasePlate>() == null
+            !(el is ScrewLegElement)
             && el.GetComponent<Wall>() == null && !(el is FloorElement);
 
         private static void StandOn(ScrewLegElement leg, float floorY)

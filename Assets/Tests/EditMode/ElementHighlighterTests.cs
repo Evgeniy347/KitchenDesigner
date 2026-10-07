@@ -25,6 +25,7 @@ public class ElementHighlighterTests
     [TearDown]
     public void TearDown()
     {
+        ConstraintValidator.Ground = ImpliedGround.None;
         ElementHighlighter.ViolationTintVisible = _violationTintBefore;
         foreach (var go in _spawned) if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
@@ -87,40 +88,14 @@ public class ElementHighlighterTests
             + "проходом: отдельного триггера у неё нет, и без него голый торец не появился бы");
     }
 
-    /// <summary>Подложка-план (<c>BasePlate</c>) раньше стояла в списке
-    /// исключений «держит свой материал, что бы ни сказала валидация»: тон был
-    /// СПЛОШНОЙ заливкой, и красная плита 3×3 м забивала сцену. Причина
-    /// исчезла вместе со сплошной заливкой — тон теперь подмешивается к
-    /// собственному цвету, — а правило у пользователя одно: любой объект с
-    /// нарушением затонирован. Исключений не осталось ни одного.</summary>
-    [Test]
-    public void BasePlate_IsTintedLikeAnythingElse_TheRuleHasNoExceptions()
-    {
-        var plate = MakePart(new Vector3Int(3000, 18, 3000), "Plate");
-        plate.gameObject.AddComponent<BasePlate>();
-        var plateMat = plate.GetComponent<MeshRenderer>().sharedMaterial;
-        MakePart(new Vector3Int(3000, 18, 3000), "PlateTwin");
-
-        Assume.That(ConstraintValidator.Validate(PartRegistry.GetAll()).violations.Contains(plate),
-            Is.True, "вторая плита стоит ровно на первой — иначе тонировать нечего");
-
-        _highlighter!.RefreshHighlights();
-
-        Assert.AreNotEqual(plateMat, plate.GetComponent<MeshRenderer>().sharedMaterial,
-            "подложка с нарушением обязана затониться: правило без исключений");
-    }
-
     [Test]
     public void ValidPart_KeepsItsOwnMaterialUntouched_ThereIsNoGreenTintAnyMore()
     {
-        var plate = MakePart(new Vector3Int(3000, 18, 3000), "AnchorPlate");
-        plate.transform.position = new Vector3(0f, -0.009f, 0f);
-        plate.gameObject.AddComponent<BasePlate>();
-
         var e = MakePart(new Vector3Int(600, 18, 500), "ValidPart");
         e.transform.position = new Vector3(0f, 0.009f, 0f);
         var ownDecor = e.GetComponent<MeshRenderer>().sharedMaterial;
 
+        ConstraintValidator.Ground = ImpliedGround.At(0f);
         Assume.That(ConstraintValidator.Validate(PartRegistry.GetAll()).violations.Contains(e), Is.False,
             "деталь должна быть валидной, иначе проверяется тон нарушения, а не его отсутствие");
 

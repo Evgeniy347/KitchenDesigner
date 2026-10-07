@@ -90,7 +90,6 @@ namespace KitchenDesigner.Core.Measure
         private static bool MeasurableContent(KitchenElement e) =>
             e != null
             && e.gameObject.activeInHierarchy
-            && e.GetComponent<BasePlate>() == null
             && SceneVisibility.AnyRendererEnabled(e);
 
         internal void UpdateHint(Vector2 mouse)
@@ -133,7 +132,6 @@ namespace KitchenDesigner.Core.Measure
             PlaneHint = null;
             Ray ray = cam.ScreenPointToRay(mouse);
             if (!Physics.Raycast(ray, out RaycastHit hit)) return;
-            if (hit.collider.GetComponentInParent<BasePlate>() != null) return;
             PlaneHint = hit.point;
         }
 

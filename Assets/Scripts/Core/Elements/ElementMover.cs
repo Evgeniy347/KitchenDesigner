@@ -99,7 +99,6 @@ namespace KitchenDesigner.Core
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             var element = SelectionManager.RaycastTransparentAware(ray, ShiftHeld);
             if (element == null) return;
-            if (element.GetComponent<BasePlate>() != null) return;
             if (!ModuleEditMode.IsEditable(element)) return;
             if (!EditModeManager.IsInteractable(element)) return;
 

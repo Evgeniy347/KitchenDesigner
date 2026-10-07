@@ -12,7 +12,7 @@ namespace KitchenDesigner.Core
             var ordered = new List<KitchenElement>();
             foreach (var e in elements)
             {
-                if (e == null || e.GetComponent<BasePlate>() != null) continue;
+                if (e == null) continue;
                 items.Add(ElementCapture.FromElement(e));
                 ordered.Add(e);
             }

@@ -20,17 +20,12 @@ public class SnapIntegrationTests
 
     // DestroyImmediate, not Destroy: a non-coroutine [OneTimeTearDown] never yields a frame
     // afterwards, so a queued Destroy can still be alive when the NEXT fixture's [UnitySetUp]
-    // runs right after. BasePlate is ALSO not a child of _bootGo (Bootstrap.Awake creates it
-    // as its own root object) and every [TearDown] here deliberately skips it — see
-    // IsoScreenshotTests.OneTimeTearDownOnce for the cross-fixture leak this exact pattern
-    // caused (a stray BasePlate skewing a neighbour test's edge-banding geometry query).
+    // runs right after.
     [OneTimeTearDown]
     public void OneTimeTearDownOnce()
     {
         if (_bootGo != null) Object.DestroyImmediate(_bootGo);
         if (_camera != null) Object.DestroyImmediate(_camera);
-        var basePlate = Object.FindAnyObjectByType<BasePlate>();
-        if (basePlate != null) Object.DestroyImmediate(basePlate.gameObject);
         _bootGo = null;
         _camera = null;
         _defaultSettings = null;
@@ -64,9 +59,8 @@ public class SnapIntegrationTests
     [UnityTearDown]
     public IEnumerator TearDown()
     {
-        // BasePlate живёт на общем Bootstrap и не пересоздаётся каждый тест.
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
+            if (e != null) Object.Destroy(e.gameObject);
         yield return null;
     }
 
@@ -76,11 +70,18 @@ public class SnapIntegrationTests
         return go.GetComponent<KitchenElement>();
     }
 
+    private static KitchenElement CreateFloorUnderTheOrigin()
+    {
+        var go = ElementFactory.CreateFloor(new Vector3Int(3000, 18, 3000), "TestFloor",
+            new Vector3(0f, -0.009f, 0f));
+        return go.GetComponent<KitchenElement>();
+    }
+
     private static List<KitchenElement> AllBoards()
     {
         var list = new List<KitchenElement>();
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null && e.GetComponent<BasePlate>() == null)
+            if (e != null)
                 list.Add(e);
         return list;
     }
@@ -88,14 +89,13 @@ public class SnapIntegrationTests
     [UnityTest]
     public IEnumerator DragBoard_NearOther_SnapsDuringDrag()
     {
-        var floor = Object.FindAnyObjectByType<BasePlate>();
-        Assert.IsNotNull(floor);
+        var floor = CreateFloorUnderTheOrigin();
 
         var a = CreatePart(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
         yield return null;
 
         // Симулируем близкую позицию — снэп должен сработать
-        var others = new List<KitchenElement> { floor.GetComponent<KitchenElement>() };
+        var others = new List<KitchenElement> { floor };
         var snap = SnapSystem.TrySnap(a, others, new Vector3(0f, 0.22f, 0.015f));
         Assert.IsTrue(snap.snapped, "деталь рядом с полом должна прилипнуть во время драга");
     }
@@ -104,16 +104,16 @@ public class SnapIntegrationTests
     public IEnumerator DragBoard_ThenRelease_StaysSnapped()
     {
         var a = CreatePart(new Vector3Int(800, 400, 18), new Vector3(0f, 0.2f, 0f));
-        var floor = Object.FindAnyObjectByType<BasePlate>();
+        var floor = CreateFloorUnderTheOrigin();
         yield return null;
 
-        var others = new List<KitchenElement> { floor.GetComponent<KitchenElement>() };
+        var others = new List<KitchenElement> { floor };
         var snap = SnapSystem.TrySnap(a, others, new Vector3(0f, 0.22f, 0.015f));
 
         if (snap.snapped)
         {
             a.transform.position = snap.position;
-            var val = ConstraintValidator.Validate(new List<KitchenElement> { a, floor.GetComponent<KitchenElement>() });
+            var val = ConstraintValidator.Validate(new List<KitchenElement> { a, floor });
             Assert.IsTrue(val.isValid, "после снэпа позиция валидна");
         }
     }
@@ -166,9 +166,7 @@ public class SnapIntegrationTests
         Vector3 prev = a.transform.position;
         a.transform.position = new Vector3(0f, 2.0f, 0f);
 
-        var list = new List<KitchenElement>(AllBoards());
-        list.Add(Object.FindAnyObjectByType<BasePlate>().GetComponent<KitchenElement>());
-        var result = ConstraintValidator.Validate(list);
+        var result = ConstraintValidator.Validate(AllBoards());
 
         Assert.IsTrue(result.violations.Contains(a), "деталь в воздухе — нарушение");
         a.transform.position = prev;

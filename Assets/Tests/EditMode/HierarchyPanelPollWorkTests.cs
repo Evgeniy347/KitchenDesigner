@@ -171,37 +171,13 @@ public class HierarchyPanelPollWorkTests
 
     private bool IsPainted(string label) => TintOf(label) == UIStyle.RowSelected;
 
-    private BasePlate MakePlate()
-    {
-        var plate = BasePlate.Create();
-        PartRegistry.Register(plate.Element);
-        _spawned.Add(plate.gameObject);
-        return plate;
-    }
-
     [Test]
-    public void BasePlate_HasNoRowInTheHierarchy()
+    public void EmptyScene_ShowsTheEmptyState()
     {
-        MakeElement("Полка");
-        MakePlate();
-
-        ShowAndSettle();
-
-        Assert.IsTrue(HasRowNamed("Полка"), "посылка: обычная деталь в дереве есть");
-        Assert.IsFalse(HasRowNamed("BasePlate"),
-            "плита - служебный якорь сцены, а не предмет проекта: строки у неё быть не должно. Строки: "
-            + string.Join(" | ", RowLabels()));
-    }
-
-    [Test]
-    public void SceneWithOnlyTheBasePlate_ShowsTheEmptyState()
-    {
-        MakePlate();
-
         ShowAndSettle();
 
         Assert.IsTrue(Panel.Find("HierEmpty").gameObject.activeSelf,
-            "в проекте одна плита - это пустой проект, и панель обязана сказать об этом, а не показывать служебную строку");
+            "в проекте нет ни одной детали, и панель обязана сказать об этом");
         Assert.AreEqual(0, RowLabels().Count);
     }
 

@@ -7,7 +7,7 @@ using KitchenDesigner.Core;
 
 /// <summary>Клик по полу в режиме помещения на ЗАМОРОЖЕННОЙ копии проекта пользователя
 /// (<c>Fixtures/distance-guides-scene.save.json</c> — его <c>docs/example.save.json</c> от 2026-10-04
-/// с полом Pol_1 и подложкой 3170×7240; живой файл не трогается).
+/// с полом Pol_1; блок подложки в файле старый и при загрузке отбрасывается; живой файл не трогается).
 ///
 /// Путь клика тот же, что в приложении: режим включает <c>EditModeManager.SetMode(EditMode.Room)</c>
 /// (его зовёт кнопка тулбара), видимость применяет <c>SceneVisibilityManager.Apply</c>, луч идёт из
@@ -15,20 +15,19 @@ using KitchenDesigner.Core;
 /// о клике — <c>SelectionManager.HandleClickOnElement</c> (её зовёт <c>Update</c> же). Своего пикинга у
 /// режима помещения нет: только <c>EditModeManager.IsInteractable</c> по категории элемента.
 ///
-/// Лучи берутся только там, где над верхом пола нет НИЧЕГО, кроме самого пола и подложки: клик по
+/// Лучи берутся только там, где над верхом пола нет НИЧЕГО, кроме самого пола: клик по
 /// мебели в режиме помещения снимает выделение по задумке (RoomMode_ClickRegularBoard_ShouldDeselect),
 /// и к этому багу отношения не имеет.</summary>
 public class RoomEditFloorClickSceneTests
 {
     private const string FixtureName = "Fixtures/distance-guides-scene.save.json";
     private const float GridStepMetres = 0.25f;
-    private const float PlateHalfX = 1.5f;
-    private const float PlateHalfZ = 3.5f;
+    private const float GridHalfX = 1.5f;
+    private const float GridHalfZ = 3.5f;
 
     private ProjectLoadStateGuard? _guard;
     private FloorElement _floor = null!;
-    private BasePlate _plate = null!;
-    private Bounds _plateFootprint;
+    private Bounds _floorFootprint;
     private readonly List<GameObject> _spawned = new List<GameObject>();
 
     [OneTimeSetUp]
@@ -48,10 +47,7 @@ public class RoomEditFloorClickSceneTests
         var floors = Object.FindObjectsByType<FloorElement>();
         Assert.AreEqual(1, floors.Length, "посылка: в фрозене ровно один пол — Pol_1");
         _floor = floors[0];
-        var plate = Object.FindAnyObjectByType<BasePlate>();
-        Assert.IsNotNull(plate, "посылка: подложка восстановлена вместе со сценой");
-        _plate = plate!;
-        _plateFootprint = FootprintOf(_plate.Element);
+        _floorFootprint = FootprintOf(_floor);
         Physics.SyncTransforms();
     }
 
@@ -114,8 +110,8 @@ public class RoomEditFloorClickSceneTests
     private IEnumerable<Vector3> GridOnTheFloorTop()
     {
         float y = _floor.transform.position.y + _floor.transform.localScale.y * 0.5f;
-        for (float x = -PlateHalfX; x <= PlateHalfX; x += GridStepMetres)
-            for (float z = -PlateHalfZ; z <= PlateHalfZ; z += GridStepMetres)
+        for (float x = -GridHalfX; x <= GridHalfX; x += GridStepMetres)
+            for (float z = -GridHalfZ; z <= GridHalfZ; z += GridStepMetres)
                 yield return new Vector3(x, y, z);
     }
 
@@ -127,18 +123,16 @@ public class RoomEditFloorClickSceneTests
         return bounds;
     }
 
-    private bool IsOverPlateFootprint(Vector3 point) =>
-        point.x >= _plateFootprint.min.x && point.x <= _plateFootprint.max.x
-        && point.z >= _plateFootprint.min.z && point.z <= _plateFootprint.max.z;
+    private bool IsOverFloorFootprint(Vector3 point) =>
+        point.x >= _floorFootprint.min.x && point.x <= _floorFootprint.max.x
+        && point.z >= _floorFootprint.min.z && point.z <= _floorFootprint.max.z;
 
-    private bool OnlyFloorAndPlateUnder(Ray ray, out bool plateAmongThem)
+    private bool OnlyFloorUnder(Ray ray)
     {
-        plateAmongThem = false;
         bool floorSeen = false;
         foreach (var h in Physics.RaycastAll(ray, 200f))
         {
             if (h.collider.GetComponentInParent<FloorElement>() == _floor) { floorSeen = true; continue; }
-            if (h.collider.GetComponentInParent<BasePlate>() == _plate) { plateAmongThem = true; continue; }
             return false;
         }
         return floorSeen;
@@ -154,8 +148,7 @@ public class RoomEditFloorClickSceneTests
     private sealed class Sweep
     {
         public int Candidates;
-        public int PlateHits;
-        public int OverPlateFootprint;
+        public int OverFloorFootprint;
         public readonly List<string> Misses = new List<string>();
         public Ray FirstFreeRay;
         public bool HasFreeRay;
@@ -170,11 +163,10 @@ public class RoomEditFloorClickSceneTests
             var (origin, target) = rayFor(point);
             var ray = RayFrom(cam, origin, target);
             Physics.SyncTransforms();
-            if (!OnlyFloorAndPlateUnder(ray, out bool plate)) continue;
+            if (!OnlyFloorUnder(ray)) continue;
 
             sweep.Candidates++;
-            if (plate) sweep.PlateHits++;
-            if (IsOverPlateFootprint(point)) sweep.OverPlateFootprint++;
+            if (IsOverFloorFootprint(point)) sweep.OverFloorFootprint++;
             if (!sweep.HasFreeRay) { sweep.FirstFreeRay = ray; sweep.HasFreeRay = true; }
 
             var picked = SelectionManager.RaycastTransparentAware(ray, shift);
@@ -188,12 +180,12 @@ public class RoomEditFloorClickSceneTests
     {
         Assert.Greater(sweep.Candidates, 0,
             "посылка: над полом в фрозене есть свободные от мебели точки — иначе проверять нечего");
-        Assert.Greater(sweep.OverPlateFootprint, 0,
-            "посылка: хотя бы часть свободных точек лежит над контуром подложки — именно там верх пола с ней в одной плоскости");
+        Assert.Greater(sweep.OverFloorFootprint, 0,
+            "посылка: хотя бы часть свободных точек лежит над контуром пола");
     }
 
     private static string Report(Sweep sweep) =>
-        $"промахов {sweep.Misses.Count} из {sweep.Candidates} (над контуром подложки {sweep.OverPlateFootprint}, лучей с коллайдером подложки {sweep.PlateHits}); первые: "
+        $"промахов {sweep.Misses.Count} из {sweep.Candidates} (над контуром пола {sweep.OverFloorFootprint}); первые: "
         + string.Join(" || ", sweep.Misses.Take(3));
 
     [TestCase(false)]
@@ -210,26 +202,13 @@ public class RoomEditFloorClickSceneTests
     }
 
     [Test]
-    public void RoomMode_UnderTheUserFloor_PlateColliderIsOff()
+    public void RoomMode_OldFileWithABasePlateBlock_RestoresNoPlateElement()
     {
         EnterRoomMode();
 
-        Assert.IsFalse(_plate.GetComponent<Collider>().enabled,
-            "с полом Pol_1 плита не нарисована, а невидимая плита не должна быть твёрдой: "
-            + "коллайдер ходит парой с рендерером");
-    }
-
-    [Test]
-    public void RoomMode_RawRaysOntoFloorTop_NeverMeetThePlateCollider()
-    {
-        EnterRoomMode();
-
-        var sweep = SweepRays(p => (p + Vector3.up * 20f, p));
-
-        AssertSweepIsMeaningful(sweep);
-        Assert.AreEqual(0, sweep.PlateHits,
-            "сырой Physics.RaycastAll над полом не должен встречать подложку: выбор проходит и с фильтром, "
-            + "а замер, лампа и камера без него упирались бы в невидимую плиту. " + Report(sweep));
+        foreach (var e in PartRegistry.GetAll())
+            Assert.AreNotEqual("BasePlate", e.PartName,
+                "блок basePlate в старом файле отброшен: над полом нечему перехватывать луч");
     }
 
     [Test]
@@ -281,7 +260,7 @@ public class RoomEditFloorClickSceneTests
         AssertSweepIsMeaningful(sweep);
         var sm = MakeSelectionManager();
         var board = Object.FindObjectsByType<KitchenElement>()
-            .First(e => e != _floor && e.GetComponent<Wall>() == null && e.GetComponent<BasePlate>() == null
+            .First(e => e != _floor && e.GetComponent<Wall>() == null
                 && EditModeManager.IsInteractable(e));
         sm.Select(board);
         Assert.AreEqual(board, sm.Selected, "посылка: деталь выделена");

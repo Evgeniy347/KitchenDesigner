@@ -45,25 +45,20 @@ public class KitchenElementContractTests
     // --- Кто является деталью ---
 
     [Test]
-    public void Wall_BasePlate_AndAppliance_AreNotParts_SoTheyGetNeitherGroovesNorGaps()
+    public void Wall_AndAppliance_AreNotParts_SoTheyGetNeitherGroovesNorGaps()
     {
         var wallGo = ElementFactory.CreateWall(new Vector3Int(3000, 2700, 100), "W", Vector3.zero);
         _spawned.Add(wallGo);
         var wall = wallGo.GetComponent<KitchenElement>();
-
-        var plate = MakePart(Sheet);
-        plate.gameObject.AddComponent<BasePlate>();
 
         var sinkGo = ElementFactory.CreateSink("S", Vector3.zero);
         _spawned.Add(sinkGo);
         var sink = sinkGo.GetComponent<KitchenElement>();
 
         Assert.IsFalse(wall.SupportsGrooves, "стена — не деталь: врезка пласти в неё не определена");
-        Assert.IsFalse(plate.SupportsGrooves, "подложка — не деталь");
         Assert.IsFalse(sink.SupportsGrooves, "у техники геометрия своя процедурная");
 
         Assert.IsFalse(wall.SupportsGaps, "у стены габарит — сама конструкция, зазору взяться неоткуда");
-        Assert.IsFalse(plate.SupportsGaps, "то же у подложки");
         Assert.IsFalse(sink.SupportsGaps, "габарит техники задан корпусом прибора");
     }
 

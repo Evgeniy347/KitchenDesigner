@@ -59,14 +59,15 @@ public class IntegrationPlayModeTests
     {
         int count = 0;
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null && e.GetComponent<BasePlate>() == null) count++;
+            if (e != null) count++;
         return count;
     }
 
     [UnityTest]
     public IEnumerator Bootstrap_CreatesCoreManagersAndUI()
     {
-        Assert.IsNotNull(Object.FindAnyObjectByType<BasePlate>(), "BasePlate должен быть создан");
+        Assert.IsNotNull(GroundQuad.Instance, "земля пустой сцены должна быть создана");
+        Assert.IsTrue(ConstraintValidator.Ground.Present, "приложение включает неявную землю валидации");
         Assert.IsNotNull(SelectionManager.Instance, "SelectionManager.Instance");
         Assert.IsNotNull(ElementHighlighter.Instance, "ElementHighlighter.Instance");
         Assert.IsNotNull(UIManager.Instance, "UIManager.Instance");
@@ -86,7 +87,7 @@ public class IntegrationPlayModeTests
 
         KitchenElement? spawned = null;
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null && e.GetComponent<BasePlate>() == null) spawned = e;
+            if (e != null) spawned = e;
 
         Assert.IsNotNull(spawned);
         Assert.AreEqual(AppConstants.PRESET_DIMENSIONS_MM[0], spawned!.DimensionsMM);
@@ -144,7 +145,7 @@ public class IntegrationPlayModeTests
 
         KitchenElement? board = null;
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null && e.GetComponent<BasePlate>() == null) board = e;
+            if (e != null) board = e;
 
         SelectionManager.Instance!.Select(board!);
         Assert.AreEqual(board, SelectionManager.Instance.Selected);

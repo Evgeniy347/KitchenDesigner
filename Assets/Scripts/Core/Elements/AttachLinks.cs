@@ -7,14 +7,14 @@ namespace KitchenDesigner.Core
     {
         public static bool CanBeChild(KitchenElement? e) =>
             e != null && e.CanFollowAnAttachParent && !(e is IPartCutout)
-            && e.GetComponent<Wall>() == null && e.GetComponent<BasePlate>() == null;
+            && e.GetComponent<Wall>() == null;
 
         public static bool CanChooseParent(KitchenElement? e) =>
             CanBeChild(e) && !e!.AttachIsDerived;
 
         public static bool CanBeParent(KitchenElement? e) =>
             e != null && e.CanCarryAttachedParts && !(e is IPartCutout)
-            && e.GetComponent<Wall>() == null && e.GetComponent<BasePlate>() == null;
+            && e.GetComponent<Wall>() == null;
 
         [System.ThreadStatic] private static int _partsLookedAtWhileSearchingForAParent;
 

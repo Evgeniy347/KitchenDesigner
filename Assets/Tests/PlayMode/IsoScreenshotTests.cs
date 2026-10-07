@@ -71,23 +71,12 @@ public class IsoScreenshotTests : ElementFrameTests
     // with no frame yield afterwards, and Destroy only queues removal for end-of-frame. The
     // next fixture's [UnitySetUp] can run before that frame boundary, so its FindObjectsByType
     // scans (and neighbour-sweep geometry queries, e.g. EdgeBanding.Coverage) still see this
-    // fixture's shared Bootstrap/BasePlate — a real cross-fixture leak this exact shape caused
-    // in SpecificationDiagramTests (a leaked BasePlate near world origin registered as a
-    // "covering" neighbour for one board and skewed its edge-banding key, silently merging it
-    // into a same-size board's row). DestroyImmediate removes the hierarchy synchronously.
-    //
-    // BasePlate itself is NOT a child of _bootstrap (Bootstrap.Awake creates it as its own
-    // root object, guarded by FindAnyObjectByType<BasePlate>() == null) and every [TearDown]
-    // in this fixture deliberately skips it so the next test in the SAME fixture keeps its
-    // floor — so it has to be found and destroyed explicitly here, once, or it outlives this
-    // whole fixture and pollutes every PlayMode fixture that runs after it in the same batch.
+    // fixture's shared Bootstrap. DestroyImmediate removes the hierarchy synchronously.
     [OneTimeTearDown]
     public void OneTimeTearDownOnce()
     {
         if (_bootstrap != null) Object.DestroyImmediate(_bootstrap);
         if (_mainCamera != null) Object.DestroyImmediate(_mainCamera);
-        var basePlate = Object.FindAnyObjectByType<BasePlate>();
-        if (basePlate != null) Object.DestroyImmediate(basePlate.gameObject);
         _bootstrap = null;
         _mainCamera = null;
         _defaultView = null;
@@ -135,11 +124,8 @@ public class IsoScreenshotTests : ElementFrameTests
             if (go != null) Object.Destroy(go);
         _spawned.Clear();
 
-        // BasePlate — тоже KitchenElement, но живёт на общем Bootstrap и не
-        // пересоздаётся каждый тест: удалять её тут значит оставить следующий
-        // тест без пола.
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
-            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
+            if (e != null) Object.Destroy(e.gameObject);
         yield return null;
     }
 
@@ -191,7 +177,7 @@ public class IsoScreenshotTests : ElementFrameTests
     {
         // Окно «Сцена» наполняется не по событию создания элемента, а дешёвым
         // поллингом раз в 0.5 с (HierarchyPanelUI.Update). В батч-прогоне кадры
-        // идут быстрее интервала, поэтому строки дерева (BasePlate, Кухня,
+        // идут быстрее интервала, поэтому строки дерева (Кухня,
         // IsoBoard…) то успевали попасть в снапшот канваса, то нет — снапшот
         // флакал. Форсируем перестройку (SetVisible(true) вызывает Refresh)
         // и ждём кадр, чтобы Destroy старых строк успел отработать.
@@ -1006,7 +992,7 @@ public class IsoScreenshotTests : ElementFrameTests
     ///
     /// Именно это и было на трёх кадрах. Прибор стоял в начале координат, то
     /// есть на 40 мм ВНУТРИ плиты пола, и валидатор красил его целиком: COL-01
-    /// («детали пересекаются в объёме») с BasePlate и COL-02 («деталь не имеет
+    /// («детали пересекаются в объёме») с подложкой и COL-02 («деталь не имеет
     /// опоры»), потому что опереться было не на что. На PNG это читалось как
     /// декор, а не как ошибка: доля розового по кадру 2–3 %, но не оттого, что
     /// тинта мало, а оттого, что сам прибор в кадре занимал 2–3 % — камера
@@ -2419,7 +2405,7 @@ public class IsoScreenshotTests : ElementFrameTests
     /// дороге, картинкой не ловится вовсе.
     ///
     /// Все шесть создавались в начале координат — то есть НАПОЛОВИНУ ВНУТРИ
-    /// опорной плиты (BasePlate занимает y от −18 до 0), и валидатор выписывал
+    /// опорной плиты (подложка занимала y от −18 до 0), и валидатор выписывал
     /// каждому COL-01 «детали пересекаются в объёме» с плитой. Ровно та же
     /// история, что уже была у розетки и выключателя, и лечится тем же:
     /// поставить на плиту по коробке ВАЛИДАЦИИ, а не по половине физической

@@ -133,17 +133,13 @@ public class AttachCapabilityTests
     }
 
     [Test]
-    public void WallAndBasePlate_AreNotPartsOfAnAssembly()
+    public void Wall_IsNotPartOfAnAssembly()
     {
         var wall = Adopt<KitchenElement>(
             ElementFactory.CreateWall(new Vector3Int(3000, 2700, 100), "Стена", Vector3.zero));
-        var plate = Board();
-        plate.gameObject.AddComponent<BasePlate>();
 
         Assert.IsFalse(AttachLinks.CanBeChild(wall), "стена — не часть сборки");
         Assert.IsFalse(AttachLinks.CanBeParent(wall));
-        Assert.IsFalse(AttachLinks.CanBeChild(plate), "подложка — тоже");
-        Assert.IsFalse(AttachLinks.CanBeParent(plate));
     }
 
     [Test]

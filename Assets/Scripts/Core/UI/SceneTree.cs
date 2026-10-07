@@ -71,13 +71,11 @@ namespace KitchenDesigner.Core.UI
             return nodes;
         }
 
-        public static bool IsListed(KitchenElement element) => !BasePlate.Is(element);
-
         private static IReadOnlyList<KitchenElement> Listed(IReadOnlyList<KitchenElement> allElements)
         {
             var listed = new List<KitchenElement>(allElements.Count);
             foreach (var e in allElements)
-                if (e != null && IsListed(e)) listed.Add(e);
+                if (e != null) listed.Add(e);
             return listed;
         }
 

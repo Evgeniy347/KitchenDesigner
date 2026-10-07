@@ -138,7 +138,6 @@ namespace KitchenDesigner.Core
         {
             if (element == null) return false;
             if (element.GetComponent<Wall>() != null) return false;
-            if (element.GetComponent<BasePlate>() != null) return false;
             if (element is AssembledFacadeElement) return true;
             if (element is RadialShelfElement) return true;
             if (element is FacadeElement) return true;

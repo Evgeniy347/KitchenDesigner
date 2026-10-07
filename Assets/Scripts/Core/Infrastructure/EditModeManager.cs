@@ -51,7 +51,7 @@ namespace KitchenDesigner.Core
             if (e == null) return Category.Regular;
             if (e is WindowElement || e is DoorElement) return Category.Always;
             if (IsBoxName(e.PartName)) return Category.Always;
-            if (e is FloorElement || e.GetComponent<Wall>() != null || e.GetComponent<BasePlate>() != null)
+            if (e is FloorElement || e.GetComponent<Wall>() != null)
                 return Category.Room;
             return Category.Regular;
         }

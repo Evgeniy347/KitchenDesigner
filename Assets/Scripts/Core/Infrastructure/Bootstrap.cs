@@ -33,7 +33,7 @@ namespace KitchenDesigner.Core
 
         private void SetupScene()
         {
-            if (FindAnyObjectByType<BasePlate>() == null) BasePlate.Create();
+            if (GroundQuad.Instance == null) GroundQuad.Create();
             ConstraintValidator.Ground = ImpliedGround.At(0f);
             if (FindAnyObjectByType<CameraController>() == null) gameObject.AddComponent<CameraController>();
             if (FindAnyObjectByType<SelectionManager>() == null) gameObject.AddComponent<SelectionManager>();
@@ -83,8 +83,10 @@ namespace KitchenDesigner.Core
 
         private void OnDestroy()
         {
+            ConstraintValidator.Ground = ImpliedGround.None;
+            var ground = GroundQuad.Instance;
+            if (ground != null) DestroyNow.The(ground.gameObject);
             GameContext.Clear();
         }
-
     }
 }

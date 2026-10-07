@@ -20,11 +20,11 @@ public class PhotoQualityControllerTests
         if (_before != null) KitchenSettings.Instance.ApplyFrom(_before);
     }
 
-    private BasePlate MakePlate()
+    private GroundQuad MakeGround()
     {
-        var plate = BasePlate.Create();
-        _spawned.Add(plate.gameObject);
-        return plate;
+        var ground = GroundQuad.Create();
+        _spawned.Add(ground.gameObject);
+        return ground;
     }
 
     private FloorElement MakeFloorOfColour(Color colour)
@@ -102,32 +102,32 @@ public class PhotoQualityControllerTests
     }
 
     [Test]
-    public void SampleFloorBounce_PrefersUserFloorOverHiddenPlate()
+    public void SampleFloorBounce_TakesTheColourOfTheUserFloor_NotOfTheGround()
     {
-        var plate = MakePlate();
+        var ground = MakeGround();
         var floorColour = new Color(0.2f, 0.4f, 0.8f);
         MakeFloorOfColour(floorColour);
-        FloorElement.RefreshBasePlateVisibility();
-        var fromThePlate = PhotoQualityController.DimmedBounceOf(plate.GetComponent<MeshRenderer>().sharedMaterial.color, 1f);
+        FloorElement.RefreshGroundVisibility();
+        var fromTheGround = PhotoQualityController.DimmedBounceOf(ground.GetComponent<MeshRenderer>().sharedMaterial.color, 1f);
         var expected = PhotoQualityController.DimmedBounceOf(floorColour, 1f);
-        Assert.Greater(Vector4.Distance(fromThePlate, expected), 0.05f, "посылка: цвет плиты и цвет пола различимы");
+        Assert.Greater(Vector4.Distance(fromTheGround, expected), 0.05f, "посылка: цвет земли и цвет пола различимы");
 
         var sampled = PhotoQualityController.SampleFloorBounce(null);
 
-        Assert.AreEqual(expected.r, sampled.r, 1e-4f, "отскок света берётся с пола, который виден, а не с невидимой серой плиты под ним");
+        Assert.AreEqual(expected.r, sampled.r, 1e-4f, "отскок света берётся с пола, который виден, а не с серой земли под ним");
         Assert.AreEqual(expected.g, sampled.g, 1e-4f);
         Assert.AreEqual(expected.b, sampled.b, 1e-4f);
     }
 
     [Test]
-    public void SampleFloorBounce_WithoutAUserFloor_IsNeutral_NotTheColourOfThePlate()
+    public void SampleFloorBounce_WithoutAUserFloor_IsNeutral_NotTheColourOfTheGround()
     {
-        MakePlate();
+        MakeGround();
 
         var sampled = PhotoQualityController.SampleFloorBounce(null);
 
         Assert.AreEqual(PhotoQualityController.NeutralWarmBounce.r, sampled.r, 1e-4f,
-            "своего пола нет: отскок нейтральный, а плита — служебный якорь, её цвет к освещению отношения не имеет");
+            "своего пола нет: отскок нейтральный, а земля — картинка, её цвет к освещению отношения не имеет");
         Assert.AreEqual(PhotoQualityController.NeutralWarmBounce.g, sampled.g, 1e-4f);
         Assert.AreEqual(PhotoQualityController.NeutralWarmBounce.b, sampled.b, 1e-4f);
     }

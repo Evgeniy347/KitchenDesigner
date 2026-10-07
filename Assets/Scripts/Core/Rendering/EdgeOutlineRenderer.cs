@@ -55,7 +55,6 @@ namespace KitchenDesigner.Core
         public static bool ShouldOutline(KitchenElement e, in ViewState view)
         {
             if (e == null) return false;
-            if (e.GetComponent<BasePlate>() != null) return false;
 
             bool isWall = e.GetComponent<Wall>() != null;
             if (!(isWall ? view.WallOutline : view.EdgeOutline)) return false;

@@ -16,17 +16,12 @@ public class SelectionContextMenuTests
 
     // DestroyImmediate, not Destroy: a non-coroutine [OneTimeTearDown] never yields a frame
     // afterwards, so a queued Destroy can still be alive when the NEXT fixture's [UnitySetUp]
-    // runs right after. BasePlate is ALSO not a child of _bootstrap (Bootstrap.Awake creates
-    // it as its own root object) and every [TearDown] here deliberately skips it — see
-    // IsoScreenshotTests.OneTimeTearDownOnce for the cross-fixture leak this exact pattern
-    // caused (a stray BasePlate skewing a neighbour test's edge-banding geometry query).
+    // runs right after.
     [OneTimeTearDown]
     public void OneTimeTearDownOnce()
     {
         if (_bootstrap != null) Object.DestroyImmediate(_bootstrap);
         if (_camera != null) Object.DestroyImmediate(_camera);
-        var basePlate = Object.FindAnyObjectByType<BasePlate>();
-        if (basePlate != null) Object.DestroyImmediate(basePlate.gameObject);
         _bootstrap = null;
         _camera = null;
     }
@@ -73,9 +68,8 @@ public class SelectionContextMenuTests
         ContextMenuUI.Instance?.Close();
         SelectionManager.Instance?.DeselectAll();
 
-        // BasePlate живёт на общем Bootstrap и не пересоздаётся каждый тест.
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
+            if (e != null) Object.Destroy(e.gameObject);
         yield return null;
     }
 
@@ -83,13 +77,13 @@ public class SelectionContextMenuTests
     {
         int before = 0;
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null && e.GetComponent<BasePlate>() == null) before++;
+            if (e != null) before++;
 
         UIManager.Instance!.SpawnPreset(0);
 
         KitchenElement? board = null;
         foreach (var e in Object.FindObjectsByType<KitchenElement>())
-            if (e != null && e.GetComponent<BasePlate>() == null && !IsAlreadyCounted(e, before))
+            if (e != null && !IsAlreadyCounted(e, before))
                 board = e;
 
         return board;
@@ -100,7 +94,7 @@ public class SelectionContextMenuTests
         int idx = 0;
         foreach (var el in Object.FindObjectsByType<KitchenElement>())
         {
-            if (el == null || el.GetComponent<BasePlate>() != null) continue;
+            if (el == null) continue;
             if (el == e) return idx < skipCount;
             idx++;
         }

@@ -170,7 +170,8 @@ silently rewrites a user's project on every load.
 
 The sentinel belongs to records that arrived FROM a file — nothing else. `JsonUtility` writes a
 nested object into the save even when the field is null, building it from the default
-constructor, so `ProjectData.basePlate = null` quietly shipped `edgeSuppressedMask: -1` into 26
+constructor, so `ProjectData.basePlate = null` (the field is gone since the base plate was removed;
+old files still carry the block and it is ignored on load) quietly shipped `edgeSuppressedMask: -1` into 26
 of 27 snapshot baselines: a record our own code constructed, wearing the «I am an old file»
 flag. Every object of the format that our code builds must therefore start already migrated —
 `ElementData.OfCurrentFormat()` — and a test should walk the format by reflection to say so,

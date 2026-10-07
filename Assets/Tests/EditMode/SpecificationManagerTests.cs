@@ -244,25 +244,6 @@ public class SpecificationManagerTests
     // Build_TwoIdenticalOneDifferent_TwoGroups выше — обе группы там из материала по
     // умолчанию, и порядок «2 шт, потом 1 шт» переживает сортировку по материалу без изменений.
 
-    [Test]
-    public void Build_ExcludesBasePlate()
-    {
-        var plate = CreateElement("BasePlate", new Vector3Int(3000, 18, 3000));
-        plate.gameObject.AddComponent<BasePlate>();
-        var board = CreateElement("Board", new Vector3Int(800, 400, 18));
-
-        var result = SpecificationManager.Build(new List<KitchenElement> { plate, board });
-
-        // Плита пола пропускается ДО кромки (BasePlate — не доскообразный элемент), но сама
-        // доска остаётся с кромкованием включённым по умолчанию — +1 строка погонных метров.
-        Assert.AreEqual(2, result.lines.Count, "доска + строка кромки; плита пола не считается вовсе");
-        Assert.AreEqual(1, result.totalCount);
-        Assert.AreEqual("Board", result.lines.Single(l => l.unit == SpecUnit.AreaM2).name);
-
-        Object.DestroyImmediate(plate.gameObject);
-        Object.DestroyImmediate(board.gameObject);
-    }
-
     // ── IQuantifies: обобщённая строка спецификации, тест-элемент, продакшн не трогаем ──
 
     /// <summary>Фиктивный элемент только для теста: доказывает, что "элемент объявляет свои

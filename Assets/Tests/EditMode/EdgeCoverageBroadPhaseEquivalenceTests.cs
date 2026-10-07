@@ -35,9 +35,9 @@ public class EdgeCoverageBroadPhaseEquivalenceTests
             if (go != null) Object.DestroyImmediate(go);
         _spawned.Clear();
 
-        // SaveLoadManager.RestoreScene (the frozen-fixture test) can create a BasePlate that
-        // never appears in its own returned object list, so sweeping only `_spawned` leaked
-        // one into the shared scene (caught by SceneLeakGuardReportTests). This is the same
+        // SaveLoadManager.RestoreScene (the frozen-fixture test) can create elements that
+        // never appear in its own returned object list, so sweeping only `_spawned` leaked
+        // them into the shared scene (caught by SceneLeakGuardReportTests). This is the same
         // FindObjectsByType sweep ValidationInvariantTests.ClearScene already uses for exactly
         // this reason.
         foreach (var e in Object.FindObjectsByType<KitchenElement>())

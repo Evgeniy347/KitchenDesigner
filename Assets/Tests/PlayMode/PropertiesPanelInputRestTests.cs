@@ -27,8 +27,6 @@ public class PropertiesPanelInputRestTests
     {
         if (_bootstrap != null) Object.DestroyImmediate(_bootstrap);
         if (_mainCamera != null) Object.DestroyImmediate(_mainCamera);
-        var basePlate = Object.FindAnyObjectByType<BasePlate>();
-        if (basePlate != null) Object.DestroyImmediate(basePlate.gameObject);
         _bootstrap = null;
         _mainCamera = null;
         _uiCanvas = null;
@@ -69,7 +67,7 @@ public class PropertiesPanelInputRestTests
     {
         ContextMenuUI.Instance?.Close();
         foreach (var e in Object.FindObjectsByType<KitchenElement>(FindObjectsSortMode.None))
-            if (e != null && e.GetComponent<BasePlate>() == null) Object.Destroy(e.gameObject);
+            if (e != null) Object.Destroy(e.gameObject);
         yield return null;
     }
 

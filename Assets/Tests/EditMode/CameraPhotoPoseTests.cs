@@ -6,7 +6,6 @@ using KitchenDesigner.Core.Tools;
 public class CameraPhotoPoseTests
 {
     private GameObject? _cameraGo;
-    private GameObject? _floorGo;
     private CameraController? _controller;
 
     [SetUp]
@@ -19,16 +18,9 @@ public class CameraPhotoPoseTests
         _cameraGo.tag = "MainCamera";
         _cameraGo.AddComponent<Camera>();
 
-        _floorGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        _floorGo.name = "TestFloor";
-        _floorGo.tag = "Floor";
-        _floorGo.transform.localScale = new Vector3(3f, 0.018f, 3f);
-        _floorGo.transform.position = new Vector3(0f, -0.009f, 0f);
-
         var controllerGo = new GameObject("CameraController");
         _controller = controllerGo.AddComponent<CameraController>();
         _controller.AssignTestCamera(_cameraGo.GetComponent<Camera>());
-        _controller.AssignTestFloor(_floorGo);
     }
 
     [TearDown]
@@ -37,7 +29,6 @@ public class CameraPhotoPoseTests
         EditModeManager.SetMode(EditMode.Normal);
         EyedropperMode.Reset();
         Object.DestroyImmediate(_controller!.gameObject);
-        Object.DestroyImmediate(_floorGo!);
         Object.DestroyImmediate(_cameraGo!);
         PartRegistry.Clear();
     }
@@ -113,16 +104,6 @@ public class CameraPhotoPoseTests
         Assert.AreEqual(-2f, s.photoTargetZ, 1e-4f);
         Assert.AreEqual(15f, s.photoAngleX, 1e-4f, "фото-углы старого проекта берутся у обычных");
         Assert.AreEqual(25f, s.photoAngleY, 1e-4f);
-    }
-
-    [Test]
-    public void BasePlate_GivesWayToUserFloors_SoTheirTopPlanesDoNotFlicker()
-    {
-        Assert.IsTrue(CameraController.BasePlateVisibleWith(0),
-            "без пользовательских полов опорная плита — единственный пол в кадре");
-        Assert.IsFalse(CameraController.BasePlateVisibleWith(1),
-            "с пользовательским полом обе плоскости лежат на y=0 и мерцают: рендер плиты гасим");
-        Assert.IsFalse(CameraController.BasePlateVisibleWith(5));
     }
 
     [Test]

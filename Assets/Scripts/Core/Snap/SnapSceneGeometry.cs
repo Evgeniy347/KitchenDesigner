@@ -12,8 +12,7 @@ namespace KitchenDesigner.Core
 
         public static bool IsCandidate(KitchenElement? element) =>
             element != null
-            && element.gameObject.activeInHierarchy
-            && !BasePlate.IsCoveredByUserFloor(element);
+            && element.gameObject.activeInHierarchy;
 
         public static List<ElementGeometry> For(IReadOnlyList<KitchenElement> elements,
             KitchenElement? seatedElement)
