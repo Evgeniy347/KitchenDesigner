@@ -70,13 +70,8 @@ public static class SceneLeakGuard
         // мог её вернуть) — agents/TEST-DESIGN.md: «удаление не уничтожает
         // объект». После Undo деталь уходит из PartRegistry, и общий цикл
         // TearDown'а (foreach PartRegistry.GetAll()) её больше не видит.
-        ("McpPlanGeometryTests.AddOpening_PositionsByWallStart_AttachesAndCutsMesh", "Win1",
-            "переживает CommandStack.Undo() в конце теста — деактивирован, не уничтожен"),
         ("PipePanelChoiceUndoGuardTests.EveryChoiceRowOfThePropertiesPanel_IsUndoableInOneStep", "P_*",
             "Spawn(type) именует деталь \"P_\" + имя типа (~34 типа) — та же форма деактивации после Undo"),
-        ("McpUiPropertyParityTests.EveryPropertyMcpCanEdit_IsAlsoEditableInThePanel", "Proba_pipe_elbow*",
-            "цепочка деталей (наблюдалось и голое имя Proba_pipe_elbow, и с числовым суффиксом) " +
-            "— та же форма деактивации после правки/undo"),
 
         // Побочный объект инфраструктуры, который тест не создаёт и не именует
         // сам — PhotoQualityController заводит Volume при применении настройки.
