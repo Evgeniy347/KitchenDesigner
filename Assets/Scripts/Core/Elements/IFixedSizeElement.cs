@@ -10,6 +10,9 @@ namespace KitchenDesigner.Core
         public static bool IsFixed(object? element) =>
             element is IFixedSizeElement fixedSize && fixedSize.HasFixedSize;
 
+        public static bool IsHeightFixed(KitchenElement? element) =>
+            IsFixed(element) || element is IFixedHeightElement;
+
         public static bool IsYawOnly(object? element) => element is IFixedSizeElement;
     }
 

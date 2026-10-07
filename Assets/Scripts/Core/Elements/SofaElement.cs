@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
-    public class SofaElement : KitchenElement, IHasTwoDecorSlots, IQuantifies, IOpenable, IMultiSurfaceDecor
+    public class SofaElement : KitchenElement, IHasTwoDecorSlots, IQuantifies, IOpenable, IMultiSurfaceDecor,
+        IFixedHeightElement
     {
         public override ElementFront Front =>
             ElementFront.NoSeparateFacePart("подушки дивана стоят между подлокотниками: ни одна из них не защищена от собственного подлокотника, поэтому проверяемой лицевой детали у типа нет");

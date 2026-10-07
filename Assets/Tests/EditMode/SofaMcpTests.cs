@@ -58,8 +58,8 @@ public class SofaMcpTests : McpTestFixture
             "правка высоты дивана отклоняется: молчаливый успех «применили 900» был бы "
             + "ложью, ведь высота всё равно вернулась бы к 800");
         Assert.That(JObject.FromObject(resp.data!)["message"]!.ToString(),
-            Does.Contain("height not settable on a sofa"),
-            "и отказ называет причину агенту");
+            Does.Contain("height not settable on this element"),
+            "и отказ называет причину агенту: высота фиксирована");
         Assert.AreEqual(SofaLayout.OverallHeightMM, sofa.DimensionsMM.y, "высота та же");
     }
 
