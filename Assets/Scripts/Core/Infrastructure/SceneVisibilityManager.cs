@@ -69,7 +69,9 @@ namespace KitchenDesigner.Core
             foreach (var e in PartRegistry.All)
             {
                 if (e == null || SceneVisibility.IsDrivenByWallManager(e)) continue;
-                SceneVisibility.SetRenderersEnabled(e, SceneVisibility.ShouldBeVisible(e, view));
+                bool visible = SceneVisibility.ShouldBeVisible(e, view);
+                if (e.TryGetComponent<BasePlate>(out var plate)) plate.ApplyViewVisibility(visible);
+                else SceneVisibility.SetRenderersEnabled(e, visible);
             }
         }
     }

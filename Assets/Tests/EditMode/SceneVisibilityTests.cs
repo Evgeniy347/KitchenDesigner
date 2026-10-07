@@ -60,6 +60,52 @@ public class SceneVisibilityTests
         return go;
     }
 
+    private BasePlate SpawnRegisteredPlate()
+    {
+        var plate = BasePlate.Create();
+        Spawn(plate.gameObject);
+        PartRegistry.Register(plate.Element);
+        return plate;
+    }
+
+    [Test]
+    public void ViewChange_UnderUserFloor_KeepsBasePlateHiddenAtEveryStep()
+    {
+        Spawn(ElementFactory.CreateFloor(new Vector3Int(3000, 20, 3000), "F", Vector3.zero));
+        var plate = SpawnRegisteredPlate();
+        FloorElement.RefreshBasePlateVisibility();
+        var renderer = plate.GetComponent<MeshRenderer>()!;
+        var collider = plate.GetComponent<Collider>()!;
+        Assert.IsTrue(plate.CoveredByUserFloor, "посылка: пол накрывает плиту");
+        Assert.IsFalse(renderer.enabled, "посылка: плита под полом скрыта до смены вида");
+
+        foreach (var objectsVisible in new[] { false, true, false, true })
+        {
+            KitchenSettings.Instance.NormalView.objectsVisible = objectsVisible;
+            SceneVisibilityManager.Apply();
+            Assert.IsFalse(renderer.enabled,
+                $"смена вида (objectsVisible={objectsVisible}) на кадр включала плиту под полом: мерцание серого");
+            Assert.IsFalse(collider.enabled, "рендерер и коллайдер плиты ходят парой");
+        }
+    }
+
+    [Test]
+    public void ViewChange_WithoutUserFloor_KeepsBasePlateDrawnAndSolid()
+    {
+        var plate = SpawnRegisteredPlate();
+        var renderer = plate.GetComponent<MeshRenderer>()!;
+        var collider = plate.GetComponent<Collider>()!;
+        Assert.IsFalse(plate.CoveredByUserFloor, "посылка: полов нет");
+
+        foreach (var objectsVisible in new[] { false, true, false, true })
+        {
+            KitchenSettings.Instance.NormalView.objectsVisible = objectsVisible;
+            SceneVisibilityManager.Apply();
+            Assert.IsTrue(renderer.enabled, $"плита без пола обязана быть видна (objectsVisible={objectsVisible})");
+            Assert.IsTrue(collider.enabled, "и твёрдая");
+        }
+    }
+
     // ── «Объекты» ───────────────────────────────────────────
 
     [Test]

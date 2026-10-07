@@ -56,6 +56,8 @@ namespace KitchenDesigner.Core
             SetShown(!covered);
         }
 
+        public void ApplyViewVisibility(bool visibleInView) => SetShown(visibleInView && !CoveredByUserFloor);
+
         public void SetShown(bool shown)
         {
             var renderer = GetComponent<MeshRenderer>();
