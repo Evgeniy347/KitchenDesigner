@@ -33,20 +33,8 @@ namespace KitchenDesigner.Core.MCP
             }
         }
 
-        public static bool TryParseFace(string s, out int axis, out bool maxSide)
-        {
-            axis = 0; maxSide = false;
-            switch ((s ?? "").Trim().ToLowerInvariant())
-            {
-                case "left": axis = 0; maxSide = false; return true;
-                case "right": axis = 0; maxSide = true; return true;
-                case "bottom": axis = 1; maxSide = false; return true;
-                case "top": axis = 1; maxSide = true; return true;
-                case "back": axis = 2; maxSide = false; return true;
-                case "front": axis = 2; maxSide = true; return true;
-                default: return false;
-            }
-        }
+        public static bool TryParseFace(string s, out int axis, out bool maxSide) =>
+            McpFace.TryParse(s, out axis, out maxSide);
 
         public static bool TryParseConvertTarget(string s, out ElementConverter.TargetType target)
         {
