@@ -216,40 +216,40 @@ namespace KitchenDesigner.Core.MCP
             if (p == null || p.names == null || p.names.Length == 0)
                 return McpResponse.Error(req.id, -32602, "names required (non-empty array)");
 
-            var results = new List<object>();
             var errors = new List<string>();
-            var targets = new List<(string name, KitchenElement element)>();
+            var targets = new List<(string name, IOpenable openable)>();
             foreach (var name in p.names)
             {
                 var el = FindElementByName(name);
                 if (el == null) { errors.Add($"Element not found: {name}"); continue; }
-                if (!(el is DrawerElement) && !(el is SofaElement))
-                { errors.Add($"Element '{name}' is not a drawer or a sofa"); continue; }
-                targets.Add((name, el));
+                if (!(el is IOpenable openable))
+                { errors.Add($"Element '{name}' does not open (cycle_drawer_animation takes drawers, sofas and anything else with an open state)"); continue; }
+                targets.Add((name, openable));
             }
             if (errors.Count > 0)
                 return McpResponse.Error(req.id, -1,
                     "cycle_drawer_animation rejected, NOTHING was cycled: " + string.Join(" | ", errors));
 
-            foreach (var (name, el) in targets)
-            {
-                if (el is SofaElement sofa)
-                {
-                    sofa.CycleOpenState();
-                    results.Add(new { name, isOpen = sofa.IsOpen, unfoldStage = sofa.UnfoldStage.ToString() });
-                    continue;
-                }
+            var results = new List<object>();
+            foreach (var (name, openable) in targets) results.Add(CycleOne(name, openable));
 
-                var drawer = (DrawerElement)el;
-                if (drawer.IsDouble)
-                    drawer.CycleDoubleState();
-                else
-                    drawer.ToggleOpen();
-                results.Add(new { name, isDouble = drawer.IsDouble, isOpen = drawer.IsOpen, doubleState = drawer.DoubleState.ToString() });
+            Debug.Log($"[MCP] Cycled {results.Count} openable elements");
+            return McpResponse.Result(req.id, new { ok = true, results, errors = errors.Count > 0 ? errors : null });
+        }
+
+        private static object CycleOne(string name, IOpenable openable)
+        {
+            if (openable is DrawerElement drawer)
+            {
+                if (drawer.IsDouble) drawer.CycleDoubleState();
+                else drawer.ToggleOpen();
+                return new { name, isDouble = drawer.IsDouble, isOpen = drawer.IsOpen, doubleState = drawer.DoubleState.ToString() };
             }
 
-            Debug.Log($"[MCP] Cycled {results.Count} drawers or sofas");
-            return McpResponse.Result(req.id, new { ok = true, results, errors = errors.Count > 0 ? errors : null });
+            openable.CycleOpenState();
+            if (openable is SofaElement sofa)
+                return new { name, isOpen = sofa.IsOpen, unfoldStage = sofa.UnfoldStage.ToString() };
+            return new { name, isOpen = openable.IsOpen };
         }
 
         private McpResponse HandleListMaterials(McpRequest req)
