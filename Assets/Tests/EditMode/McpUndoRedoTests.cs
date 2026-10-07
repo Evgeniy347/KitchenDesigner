@@ -33,7 +33,8 @@ public class McpUndoRedoTests : McpTestFixture
     [Test]
     public void CreateThenUndo_TheElementIsGone_AndTheViolationsItCausedGoWithIt()
     {
-        MakeElement("Existing", new Vector3Int(1000, 1000, 1000), Vector3.zero);
+        MakeSupportingFloor();
+        MakeElement("Existing", new Vector3Int(1000, 1000, 1000), new Vector3(0f, 0.5f, 0f));
         CommandStack.Clear();
         var created = CreateBoard("Clash", 0f);
         CollectionAssert.AreEquivalent(new[] { "Clash", "Existing" },
@@ -56,7 +57,8 @@ public class McpUndoRedoTests : McpTestFixture
     [Test]
     public void Redo_BringsTheUndoneElementBack_WithTheSameViolations()
     {
-        MakeElement("Existing", new Vector3Int(1000, 1000, 1000), Vector3.zero);
+        MakeSupportingFloor();
+        MakeElement("Existing", new Vector3Int(1000, 1000, 1000), new Vector3(0f, 0.5f, 0f));
         CommandStack.Clear();
         CreateBoard("Clash", 0f);
         Undo();

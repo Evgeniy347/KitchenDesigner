@@ -247,8 +247,9 @@ public class McpBatchToolsTests : McpTestFixture
     [Test]
     public void EditElements_DryRun_ReportsViolations_ButChangesNothing()
     {
-        var a = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
+        MakeSupportingFloor();
+        var a = MakeElement("A", new Vector3Int(500, 400, 18), new Vector3(0f, 0.2f, 0f));
+        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0.2f, 0f));
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {

@@ -57,6 +57,9 @@ public abstract class McpTestFixture : ElementTestBase
         Params = JObject.Parse(JsonConvert.SerializeObject(data))
     };
 
+    protected KitchenElement MakeSupportingFloor() =>
+        MakeElement("Floor", new Vector3Int(20000, 20, 20000), new Vector3(0f, -0.010f, 0f));
+
     protected static JObject ReplyOf(McpResponse resp) => JObject.Parse(McpJson.Serialize(resp.data!));
 
     protected static JObject PlacementOf(McpResponse resp, int index = 0)

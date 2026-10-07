@@ -154,15 +154,17 @@ public class McpPlacementReplyTests : McpTestFixture
     [Test]
     public void SceneViolationDelta_CountsOnlyWhatThisCallBrokeInASceneThatAlreadyHadViolations()
     {
-        MakeElement("OldA", new Vector3Int(1000, 1000, 1000), new Vector3(10f, 0f, 0f));
-        MakeElement("OldB", new Vector3Int(1000, 1000, 1000), new Vector3(10f, 0f, 0f));
-        MakeElement("Target", new Vector3Int(500, 400, 18), new Vector3(20f, 0f, 0f));
+        MakeSupportingFloor();
+        MakeElement("OldA", new Vector3Int(1000, 1000, 1000), new Vector3(8f, 3f, 0f));
+        MakeElement("OldB", new Vector3Int(1000, 1000, 1000), new Vector3(8f, 3f, 0f));
+        MakeElement("Target", new Vector3Int(500, 400, 18), new Vector3(2f, 0.2f, 0f));
         var preexisting = HasViolation("OldA") && HasViolation("OldB");
         Assume.That(preexisting, "предусловие: в сцене уже есть нарушения, не от нашего вызова");
+        Assume.That(HasViolation("Target"), Is.False, "предусловие: Target стоит на полу и чист");
 
         var resp = _handler!.Handle(MakeReq("create_elements", new
         {
-            items = new[] { new { name = "Newcomer", width = 500, height = 400, depth = 18, anchor_x_mm = 19750f, anchor_y_mm = -200f, anchor_z_mm = -9f } }
+            items = new[] { new { name = "Newcomer", width = 500, height = 400, depth = 18, anchor_x_mm = 1750f, anchor_y_mm = 0f, anchor_z_mm = -9f } }
         }));
 
         var delta = ReplyOf(resp)["sceneViolationDelta"]!;
@@ -174,8 +176,9 @@ public class McpPlacementReplyTests : McpTestFixture
     [Test]
     public void SceneViolationDelta_AfterFixingAnOverlap_ListsTheFixedPartsAsRemoved()
     {
-        MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(0.2f, 0f, 0f));
+        MakeSupportingFloor();
+        MakeElement("A", new Vector3Int(500, 400, 18), new Vector3(0f, 0.2f, 0f));
+        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(0.2f, 0.2f, 0f));
         Assume.That(HasViolation("A"), "предусловие: пересечение есть");
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
@@ -213,8 +216,9 @@ public class McpPlacementReplyTests : McpTestFixture
     [Test]
     public void EditElements_DryRun_ReportsTheResultingPlacementAndDelta_ButChangesNothing()
     {
-        var a = MakeElement("A", new Vector3Int(500, 400, 18), Vector3.zero);
-        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0f, 0f));
+        MakeSupportingFloor();
+        var a = MakeElement("A", new Vector3Int(500, 400, 18), new Vector3(0f, 0.2f, 0f));
+        MakeElement("B", new Vector3Int(500, 400, 18), new Vector3(2f, 0.2f, 0f));
 
         var resp = _handler!.Handle(MakeReq("edit_elements", new
         {
@@ -232,8 +236,9 @@ public class McpPlacementReplyTests : McpTestFixture
     [Test]
     public void DeleteElements_ReportsTheDeletedNames_AndTheViolationsThatWentAwayWithThem()
     {
-        MakeElement("A", new Vector3Int(1000, 1000, 1000), Vector3.zero);
-        MakeElement("B", new Vector3Int(1000, 1000, 1000), Vector3.zero);
+        MakeSupportingFloor();
+        MakeElement("A", new Vector3Int(1000, 1000, 1000), new Vector3(0f, 0.5f, 0f));
+        MakeElement("B", new Vector3Int(1000, 1000, 1000), new Vector3(0f, 0.5f, 0f));
 
         var resp = _handler!.Handle(MakeReq("delete_elements", new { names = new[] { "B" } }));
 

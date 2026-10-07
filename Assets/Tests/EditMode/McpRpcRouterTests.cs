@@ -159,8 +159,8 @@ public class McpRpcRouterTests
         var ok = Ask(Rpc("tools/call", "2", "{\"name\":\"ping\",\"arguments\":{}}"));
         var content = (JArray)ok["result"]!["content"]!;
         Assert.AreEqual("text", (string?)content[0]["type"]);
-        StringAssert.Contains("\"ok\": true", (string?)content[0]["text"],
-            "результат инструмента уезжает агенту как отформатированный JSON внутри текста");
+        Assert.AreEqual("{\"ok\":true}", (string?)content[0]["text"],
+            "результат инструмента уезжает агенту как КОМПАКТНЫЙ JSON внутри текста: отступы - байты контекста слабой модели впустую");
         Assert.IsNull(ok["result"]!["isError"], "успех не помечается isError");
 
         var failed = Ask(Rpc("tools/call", "2", "{\"name\":\"ping\",\"arguments\":{}}"),

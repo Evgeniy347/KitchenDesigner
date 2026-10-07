@@ -149,9 +149,10 @@ public class McpBulkOpsTests : McpTestFixture
 
         Assert.AreEqual(950f, pos[0], 1f, "x: центр 1000 минус половина толщины 50");
         Assert.AreEqual(1550f, pos[2], 1f, "z: центр 2000 минус половина длины 450");
-        CollectionAssert.AreEqual(new[] { 100f, 1200f, 900f },
-            ((Newtonsoft.Json.Linq.JArray)jo["elements"]![0]!["footprintMm"]!).ToObject<float[]>(),
-            "мировой след повёрнутой доски: 100 по X и 900 по Z, а не локальные 900x100");
+        var footprint = ((Newtonsoft.Json.Linq.JArray)jo["elements"]![0]!["footprintMm"]!).ToObject<float[]>()!;
+        Assert.AreEqual(100f, footprint[0], 0.1f, "мировой след повёрнутой доски: 100 по X, а не локальные 900");
+        Assert.AreEqual(1200f, footprint[1], 0.1f, "высота не поворачивается");
+        Assert.AreEqual(900f, footprint[2], 0.1f, "и 900 по Z");
     }
 
     [Test]
