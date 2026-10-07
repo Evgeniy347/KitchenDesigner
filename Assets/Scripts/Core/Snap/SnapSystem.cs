@@ -74,7 +74,7 @@ namespace KitchenDesigner.Core
             if (!moved.gameObject.activeInHierarchy) return default;
 
             using var _ = PerfMarkers.SnapTrySnap.Auto();
-            return TrySnap(moved, SnapSceneGeometry.For(others, moved), testPosition);
+            return TrySnap(moved, SnapSceneGeometry.ForSnapping(others, moved), testPosition);
         }
 
         public static SnapResult TrySnap(KitchenElement moved, IReadOnlyList<ElementGeometry> others,
@@ -109,8 +109,8 @@ namespace KitchenDesigner.Core
             };
             if (moved == null || others == null) return report;
 
-            var neighbours = new List<KitchenElement>(others.Count);
-            var scene = new List<ElementGeometry>(others.Count);
+            var neighbours = new List<KitchenElement?>(others.Count + 1);
+            var scene = new List<ElementGeometry>(others.Count + 1);
             foreach (var other in others)
             {
                 if (!SnapSceneGeometry.IsCandidate(other)) continue;
@@ -118,6 +118,12 @@ namespace KitchenDesigner.Core
                 scene.Add(PipeDocking.MaySeatOn(moved, other)
                     ? other.ToGeometry()
                     : other.ToGeometry().WithoutPorts());
+            }
+            if (GroundSnapGeometry.TryOffer(ConstraintValidator.Ground, scene,
+                    moved.GetInstanceID(), out var groundGeometry))
+            {
+                neighbours.Add(null);
+                scene.Add(groundGeometry);
             }
 
             var snap = knownSnap ?? TrySnap(moved, scene, testPosition);
@@ -162,9 +168,13 @@ namespace KitchenDesigner.Core
 
                 var n = new SnapNeighborReport
                 {
-                    name = other.PartName,
-                    centerDistanceMM = Vector3.Distance(testPosition, other.transform.position) / AppConstants.MM_TO_UNITS,
-                    intersects = ElementsIntersectAt(moved, movedVerts, other),
+                    name = other != null ? other.PartName : GroundSnapGeometry.Name,
+                    centerDistanceMM = other != null
+                        ? Vector3.Distance(testPosition, other.transform.position) / AppConstants.MM_TO_UNITS
+                        : Mathf.Abs(testPosition.y - ConstraintValidator.Ground.Y) / AppConstants.MM_TO_UNITS,
+                    intersects = other != null
+                        ? ElementsIntersectAt(moved, movedVerts, other)
+                        : BoundsIntersect(movedVerts, scene[index]),
                     bestDot = facts.bestDot,
                     hasFacingFaces = facts.hasFacingFaces,
                     movedFaceIndex = facts.movedFaceIndex,
@@ -310,6 +320,14 @@ namespace KitchenDesigner.Core
 
         public static bool ElementsIntersect(KitchenElement a, KitchenElement b)
             => ElementsIntersectAt(a, a.GetVertices(), b);
+
+        private static bool BoundsIntersect(Vector3[] va, in ElementGeometry other)
+        {
+            ElementGeometry.BoundsOf(va, out var min, out var max);
+            return Tolerance.IntervalsOverlap(min.x, max.x, other.Min.x, other.Max.x) &&
+                   Tolerance.IntervalsOverlap(min.y, max.y, other.Min.y, other.Max.y) &&
+                   Tolerance.IntervalsOverlap(min.z, max.z, other.Min.z, other.Max.z);
+        }
 
         public static bool ElementsIntersectAt(KitchenElement a, Vector3[] va, KitchenElement b)
         {

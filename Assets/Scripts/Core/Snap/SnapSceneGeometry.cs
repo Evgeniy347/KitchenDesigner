@@ -14,6 +14,15 @@ namespace KitchenDesigner.Core
             element != null
             && element.gameObject.activeInHierarchy;
 
+        public static List<ElementGeometry> ForSnapping(IReadOnlyList<KitchenElement> elements,
+            KitchenElement? seatedElement)
+        {
+            var scene = For(elements, seatedElement);
+            GroundSnapGeometry.AppendTo(scene, ConstraintValidator.Ground,
+                seatedElement != null ? seatedElement.GetInstanceID() : GroundSnapGeometry.Id);
+            return scene;
+        }
+
         public static List<ElementGeometry> For(IReadOnlyList<KitchenElement> elements,
             KitchenElement? seatedElement)
         {
