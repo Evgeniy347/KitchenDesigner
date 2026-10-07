@@ -79,6 +79,11 @@ claude mcp add --transport http unity-kitchen http://127.0.0.1:9337/mcp
   Полный `ElementInfo` отдаёт только `get_elements` (и устаревший `get_all_elements`).
   Отношения считает `PlacementRelations` (чистая функция над боксами в мм), собирает
   `McpPlacementBuilder`, строки `issues` — `McpPlacementIssues`, «до/после» — `McpMutationReport`.
+- **`place`** `{items:[{name, type/size, on, against, align}]}` - позиция считается сервером из слов
+  (`McpPlacer` + чистый `PlaceSolver`), отказ называет недостающую ось, спорящие ограничения, близкие
+  имена или перекрытого соседа с гранью, у которой встать. `dry_run` есть у `place`, `create_elements`,
+  `clone_elements`, `align_elements`, `edit_elements`; подсказки отказов — `McpNameHints`; планировочные
+  инструменты отвечают `PlanReply` с `sceneViolationDelta`.
 - **`undo` / `redo`** `{steps}` — поверх `CommandStack`; шаг = один мутирующий вызов.
 - JSON на проводе компактный (без отступов), целые миллиметры без `.0`: сенсор бюджета —
   `McpPlacementReplyTests.CreateElements_ThreeCabinetsOnTheWire_FitTheByteBudget_…`.
