@@ -15,13 +15,12 @@ namespace KitchenDesigner.Core.MCP
         public const string DefaultName = "left-bottom-back";
 
         public const string Syntax =
-            "ref names WHICH POINT of the part the numbers mean, in WORLD axes after rotation: "
-            + "left|right = X min|max, bottom|top = Y min|max, back|front = Z min|max, "
-            + "center = the middle of every axis you did not name. Words joined with '-'. "
-            + "Default left-bottom-back = the minimum corner. "
-            + "Examples: left-bottom-back, center-bottom (middle of the footprint at floor level), "
-            + "center (middle of the box), right-top-front (maximum corner). min and max are "
-            + "shortcuts for left-bottom-back and right-top-front";
+            "Words joined with '-': left|right = X min|max, bottom|top = Y min|max, "
+            + "back|front = Z min|max, center = the middle of every axis not named. "
+            + "Examples: left-bottom-back (the default, the minimum corner), "
+            + "center-bottom (middle of the footprint at floor level), center, right-top-front. "
+            + "min and max are shortcuts for the two opposite corners. "
+            + "Always WORLD axes of the box after rotation";
 
         private static readonly string[] XNames = { "left", "center", "right" };
         private static readonly string[] YNames = { "bottom", "center", "top" };
