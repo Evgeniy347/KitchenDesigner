@@ -153,6 +153,93 @@ public class InputFieldRestTests
         yield return AssertTypedMatchesProgrammatic("2000", "123456789012345678901234");
     }
 
+    private const float ScrolledBy = -30f;
+
+    private static float TextOffset(TMP_InputField field) =>
+        field.textComponent!.rectTransform.anchoredPosition.x;
+
+    private IEnumerator FocusTypeAndScroll(TMP_InputField field, string value)
+    {
+        field.ActivateInputField();
+        yield return null;
+        Assert.IsTrue(field.isFocused,
+            "поле обязано быть в фокусе перед набором — иначе тест ничего не доказывает");
+        foreach (char c in value)
+        {
+            field.ProcessEvent(new Event { type = EventType.KeyDown, character = c });
+            field.ForceLabelUpdate();
+            yield return null;
+        }
+        field.textComponent!.rectTransform.anchoredPosition = new Vector2(ScrolledBy, 0f);
+        Assert.AreEqual(ScrolledBy, TextOffset(field), Tolerance,
+            "посылка: текст сдвинут так, как его двигает TMP за кареткой, — иначе покой нечем доказать");
+    }
+
+    private static void RunUpdateSelectedLikeTheInputModuleDoes()
+    {
+        var events = EventSystem.current;
+        ExecuteEvents.Execute(events.currentSelectedGameObject, new BaseEventData(events),
+            ExecuteEvents.updateSelectedHandler);
+    }
+
+    /// <summary>Enter не снимает выделение с поля в EventSystem: TMP по Return зовёт
+    /// DeactivateInputField, а OnDeselect не приходит, пока пользователь не кликнет в другое
+    /// место. Поле остаётся выбранным и расфокусированным, и каждый кадр EventSystem зовёт его
+    /// OnUpdateSelected. Это единственная дорога, на которой ветка «выбрано, но не в фокусе»
+    /// успокаивает текст. Модуль ввода в batch-прогоне события из очереди не отдаёт, поэтому
+    /// Return шлётся в ProcessEvent, а то, что сделал бы OnUpdateSelected при Finish
+    /// (DeactivateInputField), и сам вызов обновления выбранного тест выполняет руками — тем же
+    /// ExecuteEvents.updateSelectedHandler, которым пользуется StandaloneInputModule.</summary>
+    [UnityTest]
+    public IEnumerator Enter_LeavesTheFieldSelected_ButRestsTheText()
+    {
+        var field = NewNumberField("Entered", "2000", 0f);
+        yield return null;
+        yield return FocusTypeAndScroll(field, "50");
+
+        field.ProcessEvent(new Event { type = EventType.KeyDown, keyCode = KeyCode.Return });
+        field.DeactivateInputField();
+
+        Assert.IsFalse(field.isFocused, "посылка: Enter снимает фокус ввода с поля");
+        Assert.AreSame(field.gameObject, EventSystem.current.currentSelectedGameObject,
+            "посылка: Enter не снимает выделение в EventSystem — OnDeselect не придёт, "
+            + "и покой может дать только OnUpdateSelected");
+        Assert.AreEqual(ScrolledBy, TextOffset(field), Tolerance,
+            "посылка: до обновления выбранного ничто, кроме проверяемой ветки, текст не двигало");
+
+        RunUpdateSelectedLikeTheInputModuleDoes();
+        Assert.AreEqual(0f, TextOffset(field), Tolerance,
+            "после Enter текст остался сдвинутым: ветка «выбрано, не в фокусе» в "
+            + "RestingInputField.OnUpdateSelected не вернула его в покой, а поле осталось выбранным");
+
+        yield return null;
+        yield return null;
+        Assert.AreEqual(0f, TextOffset(field), Tolerance,
+            "покой после Enter обязан держаться и на следующих кадрах, пока поле выбрано");
+    }
+
+    /// <summary>Парная к Enter_... проверка с обратной стороны условия: пока поле в фокусе,
+    /// OnUpdateSelected обязан оставить текст там, куда его вёл TMP. Снятая проверка фокуса
+    /// дёргала бы текст из-под каретки на каждом кадре набора; Enter_... без этой пары такую
+    /// поломку не видит, а эта без той — не видит удалённой ветки.</summary>
+    [UnityTest]
+    public IEnumerator UpdateSelected_WhileTheFieldIsFocused_DoesNotMoveTheTextUnderTheCaret()
+    {
+        var field = NewNumberField("Focused", "2000", 0f);
+        yield return null;
+        yield return FocusTypeAndScroll(field, "50");
+
+        Assert.IsTrue(field.isFocused, "посылка: поле всё ещё в фокусе");
+        Assert.AreSame(field.gameObject, EventSystem.current.currentSelectedGameObject,
+            "посылка: поле выбрано, значит модуль ввода зовёт его OnUpdateSelected");
+
+        RunUpdateSelectedLikeTheInputModuleDoes();
+
+        Assert.AreEqual(ScrolledBy, TextOffset(field), Tolerance,
+            "OnUpdateSelected вернул текст в покой, пока поле в фокусе: при наборе текст дёргало бы "
+            + "из-под каретки на каждом кадре");
+    }
+
     [UnityTest]
     public IEnumerator Retyping_TwiceInARow_DoesNotAccumulateAShift()
     {

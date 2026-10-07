@@ -108,6 +108,66 @@ public class PropertiesPanelInputRestTests
                 + "цифры выровнены вправо, зазор до края поля обязан быть одинаковым");
     }
 
+    private static KitchenElement NewSofa(float xUnits)
+    {
+        var dims = new Vector3Int(SofaElement.DefaultWidthMM, SofaElement.DefaultHeightMM,
+            SofaElement.DefaultDepthMM);
+        var pos = new Vector3(xUnits, dims.y * 0.5f * AppConstants.MM_TO_UNITS, 0f);
+        var go = ElementFactory.CreateSofa(dims, SofaElement.DefaultCornerRadiusMM,
+            SofaElement.DefaultSeatHeightMM, "Диван", pos);
+        return go.GetComponent<KitchenElement>();
+    }
+
+    /// <summary>Панель закрывается скрытием корня (ContextMenuUI.Close → SetActive(false)), а
+    /// поля и строки живут дальше и показывают следующий элемент. Если закрыть панель, пока в поле
+    /// идёт правка, TMP успевает сдвинуть текст за кареткой, а OnDeselect не приходит вовсе: поле
+    /// просто гаснет. Единственная ветка, которая вернёт текст в покой до следующего открытия, —
+    /// OnDisable в RestingInputField. Без неё открытая на другом элементе панель показывала бы
+    /// число левее нетронутых.</summary>
+    [UnityTest]
+    public IEnumerator PanelClosedMidEdit_ReopensWithTheTextAtRest()
+    {
+        var first = NewSofa(0f);
+        var second = NewSofa(4f);
+        ContextMenuUI.Instance!.Open(first);
+        yield return null;
+        yield return null;
+
+        var width = Field(Loc.T("element.common.width"));
+        var textRect = width.textComponent!.rectTransform;
+        float baseline = RightGap(width);
+        Assert.AreEqual(0f, textRect.anchoredPosition.x, Tolerance,
+            "посылка: нетронутое поле стоит в покое");
+
+        width.ActivateInputField();
+        yield return null;
+        Assert.IsTrue(width.isFocused, "посылка: правка идёт, поле в фокусе");
+        const float scrolledBy = -30f;
+        textRect.anchoredPosition = new Vector2(scrolledBy, 0f);
+        Assert.AreEqual(scrolledBy, textRect.anchoredPosition.x, Tolerance,
+            "посылка: текст сдвинут так, как его двигает TMP за кареткой");
+
+        ContextMenuUI.Instance!.Close();
+
+        Assert.IsFalse(width.isActiveAndEnabled,
+            "посылка: панель закрылась скрытием, поля не уничтожены — их ждёт повторное использование");
+        Assert.AreEqual(0f, textRect.anchoredPosition.x, Tolerance,
+            "панель закрыта посреди правки, а текст остался сдвинутым: OnDisable в "
+            + "RestingInputField не вернул его в покой, и сдвиг переживёт закрытие");
+
+        ContextMenuUI.Instance!.Open(second);
+        yield return null;
+        yield return null;
+
+        Assert.AreSame(width, Field(Loc.T("element.common.width")),
+            "посылка: на другом элементе панель переиспользует то же поле, а не строит новое");
+        Assert.AreEqual(0f, textRect.anchoredPosition.x, Tolerance,
+            "на другом элементе переиспользованное поле открылось со сдвинутым текстом");
+        Assert.AreEqual(baseline, RightGap(width), Tolerance,
+            "цифры в переиспользованном поле стоят не там, где в нетронутом: зазор до правого края "
+            + "должен совпасть с зазором до правки");
+    }
+
     [UnityTest]
     public IEnumerator SofaPanel_TypedNumbers_StandWhereUntouchedOnesStand()
     {
