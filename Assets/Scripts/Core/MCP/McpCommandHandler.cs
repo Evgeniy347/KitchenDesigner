@@ -48,6 +48,7 @@ namespace KitchenDesigner.Core.MCP
                     case "edit_elements": return HandleEditElements(request);
                     case "clone_elements": return HandleCloneElements(request);
                     case "align_elements": return HandleAlignElements(request);
+                    case "place": return HandlePlace(request);
                     case "distribute_evenly": return HandleDistributeEvenly(request);
                     case "create_elements": return HandleCreateElements(request);
                     case "convert_elements": return HandleConvertElements(request);

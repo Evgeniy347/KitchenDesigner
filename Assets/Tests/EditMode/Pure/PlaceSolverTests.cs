@@ -3,7 +3,6 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using KitchenDesigner.Core.MCP;
-using KitchenDesigner.Core.MCP.Contract;
 
 public class PlaceSolverTests
 {
@@ -19,28 +18,24 @@ public class PlaceSolverTests
         new NeighbourBox("Win1", Box(1500, 900, -100, 2700, 2100, 100)),
     };
 
-    private static PlaceItem Item(params object[] ops)
+    private static PlaceSpec Item(params object[] ops)
     {
-        var item = new PlaceItem { name = "Cab" };
-        var against = new List<PlaceAgainstOp>();
-        var align = new List<PlaceAlignOp>();
+        var item = new PlaceSpec { Name = "Cab" };
         foreach (var op in ops)
         {
-            if (op is PlaceAgainstOp a) against.Add(a);
-            if (op is PlaceAlignOp l) align.Add(l);
+            if (op is PlaceAgainstSpec a) item.Against.Add(a);
+            if (op is PlaceAlignSpec l) item.Align.Add(l);
         }
-        item.against = against.ToArray();
-        item.align = align.ToArray();
         return item;
     }
 
-    private static PlaceAgainstOp Against(string target, string face, float gap = 0f) =>
-        new PlaceAgainstOp { target = target, face = face, gap_mm = gap };
+    private static PlaceAgainstSpec Against(string target, string face, float gap = 0f) =>
+        new PlaceAgainstSpec(target, face, gap);
 
-    private static PlaceAlignOp Align(string target, string axis, string at, float offset = 0f) =>
-        new PlaceAlignOp { target = target, axis = axis, at = at, offset_mm = offset };
+    private static PlaceAlignSpec Align(string target, string axis, string at, float offset = 0f) =>
+        new PlaceAlignSpec(target, axis, at, offset);
 
-    private static PlaceOutcome Solve(PlaceItem item, List<NeighbourBox>? scene = null, Vector3? current = null) =>
+    private static PlaceOutcome Solve(PlaceSpec item, List<NeighbourBox>? scene = null, Vector3? current = null) =>
         PlaceSolver.Solve("Cab", item, Cabinet, current, scene ?? Kitchen(), 0f);
 
     [Test]
@@ -75,8 +70,8 @@ public class PlaceSolverTests
         var scene = Kitchen();
         scene.Add(new NeighbourBox("Base", Box(0, 0, 100, 600, 720, 660)));
         var item = Item(Against("Wall", "front"), Align("Base", "x", "min"));
-        item.on = "Base";
-        item.lift_mm = 5f;
+        item.On = "Base";
+        item.LiftMm = 5f;
 
         var outcome = Solve(item, scene);
 
@@ -88,7 +83,7 @@ public class PlaceSolverTests
     public void Solve_LiftWithTheFloorDefault_HangsThePartAboveTheFloor()
     {
         var item = Item(Against("Wall", "front"), Align("Win1", "x", "min"));
-        item.lift_mm = 1400f;
+        item.LiftMm = 1400f;
 
         var outcome = PlaceSolver.Solve("Cab", item, new Vector3(600, 400, 300), null, Kitchen(), 0f);
 
@@ -178,7 +173,7 @@ public class PlaceSolverTests
     {
         var scene = Kitchen();
         var item = Item(Against("Wall", "front"), Align("Win1", "x", "center"));
-        item.lift_mm = -50f;
+        item.LiftMm = -50f;
 
         var outcome = Solve(item, scene);
 

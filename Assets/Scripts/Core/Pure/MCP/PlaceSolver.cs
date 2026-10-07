@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
-using KitchenDesigner.Core.MCP.Contract;
 
 namespace KitchenDesigner.Core.MCP
 {
@@ -11,7 +10,7 @@ namespace KitchenDesigner.Core.MCP
         public const string FloorWord = "floor";
 
         private readonly string _name;
-        private readonly PlaceItem _item;
+        private readonly PlaceSpec _item;
         private readonly Vector3 _size;
         private readonly IReadOnlyList<NeighbourBox> _scene;
         private readonly Dictionary<string, BoxMm> _byName;
@@ -19,7 +18,7 @@ namespace KitchenDesigner.Core.MCP
         private readonly string[] _why = new string[3];
         private readonly PlaceOutcome _outcome = new PlaceOutcome();
 
-        private PlaceSolver(string name, PlaceItem item, Vector3 sizeMm, IReadOnlyList<NeighbourBox> scene)
+        private PlaceSolver(string name, PlaceSpec item, Vector3 sizeMm, IReadOnlyList<NeighbourBox> scene)
         {
             _name = name;
             _item = item;
@@ -29,7 +28,7 @@ namespace KitchenDesigner.Core.MCP
             foreach (var other in scene) _byName[other.Name] = other.Box;
         }
 
-        public static PlaceOutcome Solve(string name, PlaceItem item, Vector3 sizeMm, Vector3? currentMinMm,
+        public static PlaceOutcome Solve(string name, PlaceSpec item, Vector3 sizeMm, Vector3? currentMinMm,
             IReadOnlyList<NeighbourBox> sceneWithoutSelf, float groundMm)
         {
             var solver = new PlaceSolver(name, item, sizeMm, sceneWithoutSelf);
@@ -53,10 +52,10 @@ namespace KitchenDesigner.Core.MCP
         private void PinEverything(Vector3? current, float groundMm)
         {
             PinOn(groundMm);
-            foreach (var op in _item.against ?? Array.Empty<PlaceAgainstOp>()) PinAgainst(op);
-            foreach (var op in _item.align ?? Array.Empty<PlaceAlignOp>()) PinAlign(op);
-            if (string.IsNullOrWhiteSpace(_item.on) && !_pins[1].HasValue && !current.HasValue)
-                Pin(1, groundMm + _item.lift_mm, "the floor (default on:\"floor\")");
+            foreach (var op in _item.Against) PinAgainst(op);
+            foreach (var op in _item.Align) PinAlign(op);
+            if (string.IsNullOrWhiteSpace(_item.On) && !_pins[1].HasValue && !current.HasValue)
+                Pin(1, groundMm + _item.LiftMm, "the floor (default on:\"floor\")");
             bool clean = _outcome.Ok;
             for (int axis = 0; axis < 3; axis++)
             {
@@ -70,53 +69,53 @@ namespace KitchenDesigner.Core.MCP
 
         private void PinOn(float groundMm)
         {
-            if (string.IsNullOrWhiteSpace(_item.on)) return;
-            var on = _item.on!.Trim();
+            if (string.IsNullOrWhiteSpace(_item.On)) return;
+            var on = _item.On!.Trim();
             if (string.Equals(on, FloorWord, StringComparison.OrdinalIgnoreCase))
             {
-                Pin(1, groundMm + _item.lift_mm, "on:\"floor\"");
+                Pin(1, groundMm + _item.LiftMm, "on:\"floor\"");
                 return;
             }
             if (TryTarget(on, "on", out var box))
-                Pin(1, box.Max.y + _item.lift_mm, $"on:'{on}' (its top)");
+                Pin(1, box.Max.y + _item.LiftMm, $"on:'{on}' (its top)");
         }
 
-        private void PinAgainst(PlaceAgainstOp op)
+        private void PinAgainst(PlaceAgainstSpec op)
         {
-            if (!McpFace.TryParse(op.face, out int axis, out bool maxSide))
+            if (!McpFace.TryParse(op.Face, out int axis, out bool maxSide))
             {
-                _outcome.Problems.Add($"against '{op.target}': " + McpNameHints.UnknownFace(op.face));
+                _outcome.Problems.Add($"against '{op.Target}': " + McpNameHints.UnknownFace(op.Face));
                 return;
             }
-            if (op.gap_mm < 0f)
+            if (op.GapMm < 0f)
             {
-                _outcome.Problems.Add($"against '{op.target}': gap_mm {Fmt(op.gap_mm)} is negative - use 0 for flush contact");
+                _outcome.Problems.Add($"against '{op.Target}': gap_mm {Fmt(op.GapMm)} is negative - use 0 for flush contact");
                 return;
             }
-            if (!TryTarget(op.target, "against", out var box)) return;
-            float min = maxSide ? box.Max[axis] + op.gap_mm : box.Min[axis] - op.gap_mm - _size[axis];
-            Pin(axis, min, $"against '{op.target}' face {McpFace.NameOf(axis, maxSide)}");
+            if (!TryTarget(op.Target, "against", out var box)) return;
+            float min = maxSide ? box.Max[axis] + op.GapMm : box.Min[axis] - op.GapMm - _size[axis];
+            Pin(axis, min, $"against '{op.Target}' face {McpFace.NameOf(axis, maxSide)}");
         }
 
-        private void PinAlign(PlaceAlignOp op)
+        private void PinAlign(PlaceAlignSpec op)
         {
-            if (!McpFace.TryParseAxis(op.axis, out int axis))
+            if (!McpFace.TryParseAxis(op.Axis, out int axis))
             {
-                _outcome.Problems.Add($"align '{op.target}': axis '{op.axis}' is not x, y or z");
+                _outcome.Problems.Add($"align '{op.Target}': axis '{op.Axis}' is not x, y or z");
                 return;
             }
-            if (!TryTarget(op.target, "align", out var box)) return;
-            string at = (op.at ?? string.Empty).Trim().ToLowerInvariant();
+            if (!TryTarget(op.Target, "align", out var box)) return;
+            string at = (op.At ?? string.Empty).Trim().ToLowerInvariant();
             float? min = at == "min" ? box.Min[axis]
                 : at == "center" ? box.Center[axis] - _size[axis] * 0.5f
                 : at == "max" ? box.Max[axis] - _size[axis]
                 : (float?)null;
             if (!min.HasValue)
             {
-                _outcome.Problems.Add($"align '{op.target}': at '{op.at}' is not min, center or max");
+                _outcome.Problems.Add($"align '{op.Target}': at '{op.At}' is not min, center or max");
                 return;
             }
-            Pin(axis, min.Value + op.offset_mm, $"align '{op.target}' {McpFace.AxisLetter(axis)} {at}");
+            Pin(axis, min.Value + op.OffsetMm, $"align '{op.Target}' {McpFace.AxisLetter(axis)} {at}");
         }
 
         private bool TryTarget(string target, string role, out BoxMm box)
