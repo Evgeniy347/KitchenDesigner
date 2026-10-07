@@ -64,6 +64,7 @@ namespace KitchenDesigner.Core.MCP
             reply.@ref = McpReference.DefaultName;
             McpJson.Serialize(reply);
             McpJson.Serialize(new List<ElementInfo> { new ElementInfo() });
+            McpJson.Serialize(new PlanReply { created = new List<string> { "warmup" } });
         }
     }
 }

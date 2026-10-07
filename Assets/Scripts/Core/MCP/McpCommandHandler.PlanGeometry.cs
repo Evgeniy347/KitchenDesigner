@@ -7,7 +7,9 @@ namespace KitchenDesigner.Core.MCP
 {
     public partial class McpCommandHandler
     {
-        private McpResponse HandleCreateWalls(McpRequest req)
+        private McpResponse HandleCreateWalls(McpRequest req) => CreateWalls(req, McpMutationReport.Begin());
+
+        private McpResponse CreateWalls(McpRequest req, McpMutationReport? report)
         {
             var p = req.Params?.ToObjectStrict<ParamsCreateWalls>();
             if (p == null || p.segments == null || p.segments.Length == 0)
@@ -62,7 +64,6 @@ namespace KitchenDesigner.Core.MCP
 
             var shapes = ComputeWallEndShapes(prepared);
             var commands = new List<IUndoCommand>();
-            var affected = new List<KitchenElement>();
             var created = new List<string>();
             int updated = 0;
             string levelId = string.IsNullOrEmpty(p.level_id) ? LevelRegistry.CurrentId : p.level_id;
@@ -77,17 +78,17 @@ namespace KitchenDesigner.Core.MCP
                     el.LevelId = levelId;
                     var wall = go.GetComponent<Wall>(); wall.LoadBearing = x.item.kind.ToLowerInvariant() == "bearing"; wall.SetEndShape(shapes[i]);
                     MaterialManager.ApplyById(el, x.material);
-                    commands.Add(new CreateCommand(go)); affected.Add(el); created.Add(el.PartName);
+                    commands.Add(new CreateCommand(go)); created.Add(el.PartName);
                 }
                 else
                 {
                     commands.Add(new SetWallGeometryCommand(x.existing, x.dims, x.pos, x.rot,
                         x.item.kind.ToLowerInvariant() == "bearing", x.material, shapes[i]));
-                    affected.Add(x.existing); updated++;
+                    updated++;
                 }
             }
             CommandStack.Execute(new CompositeCommand($"MCP create_walls x{commands.Count}", commands));
-            return PlanMutationResult(req, created, updated, affected);
+            return PlanMutationResult(req, created, updated, report);
         }
 
         private static List<WallMeshBuilder.EndShape> ComputeWallEndShapes(
@@ -142,7 +143,9 @@ namespace KitchenDesigner.Core.MCP
             return found ? best : 0f;
         }
 
-        private McpResponse HandleCreateFloorV2(McpRequest req)
+        private McpResponse HandleCreateFloorV2(McpRequest req) => CreateFloorV2(req, McpMutationReport.Begin());
+
+        private McpResponse CreateFloorV2(McpRequest req, McpMutationReport? report)
         {
             var p = req.Params?.ToObjectStrict<ParamsCreateFloorV2>();
             if (p == null || !ElementNaming.IsValid(p.name))
@@ -178,7 +181,6 @@ namespace KitchenDesigner.Core.MCP
             var pos = new Vector3(p.origin_x_mm + cx, p.top_y_mm - thickness * 0.5f,
                 p.origin_z_mm + cz) * AppConstants.MM_TO_UNITS;
             var created = new List<string>();
-            var affected = new List<KitchenElement>();
             int updated = 0;
             IUndoCommand command;
             if (existing == null)
@@ -186,19 +188,21 @@ namespace KitchenDesigner.Core.MCP
                 var go = ElementFactory.CreateFloor(dims, p.name, pos);
                 var floor = go.GetComponent<FloorElement>(); floor.SetPolygonLocalMm(local);
                 floor.LevelId = string.IsNullOrEmpty(p.level_id) ? LevelRegistry.CurrentId : p.level_id;
-                command = new CreateCommand(go); created.Add(floor.PartName); affected.Add(floor);
+                command = new CreateCommand(go); created.Add(floor.PartName);
             }
             else
             {
                 var floor = (FloorElement)existing;
                 command = new SetFloorGeometryCommand(floor, dims, pos, local);
-                affected.Add(floor); updated = 1;
+                updated = 1;
             }
             CommandStack.Execute(new CompositeCommand("MCP create_floor", new List<IUndoCommand> { command }));
-            return PlanMutationResult(req, created, updated, affected);
+            return PlanMutationResult(req, created, updated, report);
         }
 
-        private McpResponse HandleAddOpening(McpRequest req)
+        private McpResponse HandleAddOpening(McpRequest req) => AddOpening(req, McpMutationReport.Begin());
+
+        private McpResponse AddOpening(McpRequest req, McpMutationReport? report)
         {
             var p = req.Params?.ToObjectStrict<ParamsAddOpening>();
             if (p == null || !ElementNaming.IsValid(p.name))
@@ -241,7 +245,6 @@ namespace KitchenDesigner.Core.MCP
                 (localPosMm * AppConstants.MM_TO_UNITS);
             var dims = new Vector3Int(p.width, p.height, wallThickness);
             var created = new List<string>();
-            var affected = new List<KitchenElement>();
             int updated = 0;
             IUndoCommand command;
             if (existing == null)
@@ -253,15 +256,15 @@ namespace KitchenDesigner.Core.MCP
                 opening.LevelId = string.IsNullOrEmpty(p.level_id) ? LevelRegistry.CurrentId : p.level_id;
                 if (opening is WindowElement window) window.AttachToWall(wall);
                 else if (opening is DoorElement door) door.AttachToWall(wall);
-                command = new CreateCommand(go); created.Add(opening.PartName); affected.Add(opening);
+                command = new CreateCommand(go); created.Add(opening.PartName);
             }
             else
             {
                 command = new SetOpeningGeometryCommand(existing, dims, pos, wall);
-                affected.Add(existing); updated = 1;
+                updated = 1;
             }
             CommandStack.Execute(new CompositeCommand("MCP add_opening", new List<IUndoCommand> { command }));
-            return PlanMutationResult(req, created, updated, affected);
+            return PlanMutationResult(req, created, updated, report);
         }
 
         private McpResponse HandleApplyFloorplan(McpRequest req)
@@ -294,6 +297,7 @@ namespace KitchenDesigner.Core.MCP
             }
             toDelete.Sort((a, b) => DeletePriority(a).CompareTo(DeletePriority(b)));
 
+            var applyReport = McpMutationReport.Begin();
             CommandStack.BeginCapture();
             string failedStep = "";
             McpResponse? failed = null;
@@ -317,9 +321,9 @@ namespace KitchenDesigner.Core.MCP
                             thickness_mm = w.thickness });
                     }
                     failedStep = "create walls";
-                    failed = HandleCreateWalls(InternalRequest(req.id, new ParamsCreateWalls
+                    failed = CreateWalls(InternalRequest(req.id, new ParamsCreateWalls
                     { origin_x_mm = compiled.originX, origin_z_mm = compiled.originZ, segments = segments.ToArray(),
-                        level_id = declaration!.level_id }));
+                        level_id = declaration!.level_id }), null);
                     if (failed.type == "error") throw new InvalidOperationException();
                 }
                 foreach (var f in compiled.floors)
@@ -328,19 +332,19 @@ namespace KitchenDesigner.Core.MCP
                     foreach (var pointId in f.poly)
                     { var point = compiled.points[pointId]; poly.Add(new PlanPointMm { x = point.x, z = point.y }); }
                     failedStep = "create floor " + f.id;
-                    failed = HandleCreateFloorV2(InternalRequest(req.id, new ParamsCreateFloorV2
+                    failed = CreateFloorV2(InternalRequest(req.id, new ParamsCreateFloorV2
                     { name = f.id, origin_x_mm = compiled.originX, origin_z_mm = compiled.originZ,
                         top_y_mm = f.topY, thickness_mm = f.thickness, poly = poly.ToArray(),
-                        level_id = declaration!.level_id }));
+                        level_id = declaration!.level_id }), null);
                     if (failed.type == "error") throw new InvalidOperationException();
                 }
                 foreach (var o in compiled.openings)
                 {
                     failedStep = "add opening " + o.id;
-                    failed = HandleAddOpening(InternalRequest(req.id, new ParamsAddOpening
+                    failed = AddOpening(InternalRequest(req.id, new ParamsAddOpening
                     { name = o.id, wall = o.wall, kind = o.kind, offset_mm = o.offset_mm,
                         width = o.width_mm, height = o.height_mm, sill_mm = o.sill_mm,
-                        level_id = declaration!.level_id }));
+                        level_id = declaration!.level_id }), null);
                     if (failed.type == "error") throw new InvalidOperationException();
                 }
 
@@ -358,20 +362,13 @@ namespace KitchenDesigner.Core.MCP
                     $"apply_floorplan rejected at {failedStep}, NOTHING changed: {detail}");
             }
 
-            var all = PartRegistry.GetAll();
-            var validation = McpValidationCache.Get(all);
-            var violations = new List<object>();
-            foreach (var name in desiredList)
+            var plan = applyReport.Finish();
+            return McpResponse.Result(req.id, new PlanReply
             {
-                var e = FindElementByName(name);
-                if (e != null) violations.AddRange(BuildElementViolations(e, all, validation));
-            }
-            return McpResponse.Result(req.id, new
-            {
-                ok = true, id = compiled.id, elements = desired.Count,
-                walls = compiled.walls.Count, floors = compiled.floors.Count,
-                openings = compiled.openings.Count, rooms = compiled.rooms.Count,
-                deleted = toDelete.Count, violations
+                id = compiled.id, elementCount = desired.Count,
+                wallCount = compiled.walls.Count, floorCount = compiled.floors.Count,
+                openingCount = compiled.openings.Count, roomCount = compiled.rooms.Count,
+                deletedCount = toDelete.Count, sceneViolationDelta = plan.sceneViolationDelta
             });
         }
 
@@ -411,14 +408,12 @@ namespace KitchenDesigner.Core.MCP
         }
 
         private McpResponse PlanMutationResult(McpRequest req, List<string> created, int updated,
-            List<KitchenElement> affected)
+            McpMutationReport? report)
         {
             SettleSceneAfterMutation();
-            var all = PartRegistry.GetAll();
-            var vr = McpValidationCache.Get(all);
-            var violations = new List<object>();
-            foreach (var el in affected) violations.AddRange(BuildElementViolations(el, all, vr));
-            return McpResponse.Result(req.id, new { ok = true, created, updated, deleted = 0, violations });
+            var reply = new PlanReply { created = created, updatedCount = updated };
+            if (report != null) reply.sceneViolationDelta = report.Finish().sceneViolationDelta;
+            return McpResponse.Result(req.id, reply);
         }
     }
 }
