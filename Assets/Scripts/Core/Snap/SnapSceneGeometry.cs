@@ -10,6 +10,11 @@ namespace KitchenDesigner.Core
         public static int ElementsInLastPass { get; private set; }
 #endif
 
+        public static bool IsCandidate(KitchenElement? element) =>
+            element != null
+            && element.gameObject.activeInHierarchy
+            && !BasePlate.IsCoveredByUserFloor(element);
+
         public static List<ElementGeometry> For(IReadOnlyList<KitchenElement> elements,
             KitchenElement? seatedElement)
         {
@@ -23,7 +28,7 @@ namespace KitchenDesigner.Core
             for (int i = 0; i < elements.Count; i++)
             {
                 var e = elements[i];
-                if (e == null || !e.gameObject.activeInHierarchy) continue;
+                if (!IsCandidate(e)) continue;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 ElementsInLastPass++;
 #endif

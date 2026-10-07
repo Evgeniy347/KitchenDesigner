@@ -14,7 +14,7 @@
     },
     {
       "type": "Label",
-      "text": "6",
+      "text": "5",
       "position": [-10, 0]
     },
     {
@@ -35,11 +35,6 @@
     {
       "type": "Button",
       "text": "A3_bokovina_R",
-      "position": [0, 0]
-    },
-    {
-      "type": "Button",
-      "text": "BasePlate",
       "position": [0, 0]
     },
     {

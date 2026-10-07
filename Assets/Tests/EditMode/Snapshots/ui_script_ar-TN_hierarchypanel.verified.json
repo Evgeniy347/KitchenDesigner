@@ -13,11 +13,6 @@
     },
     {
       "type": "Button",
-      "text": "BasePlate",
-      "position": [0, 0]
-    },
-    {
-      "type": "Button",
       "text": "Shelf",
       "position": [0, 0]
     },
@@ -28,7 +23,7 @@
     },
     {
       "type": "Label",
-      "text": "2",
+      "text": "1",
       "position": [10, 0]
     },
     {

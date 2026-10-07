@@ -9,17 +9,12 @@
     },
     {
       "type": "Label",
-      "text": "5",
+      "text": "4",
       "position": [-10, 0]
     },
     {
       "type": "Button",
       "text": "▼",
-      "position": [0, 0]
-    },
-    {
-      "type": "Button",
-      "text": "BasePlate",
       "position": [0, 0]
     },
     {

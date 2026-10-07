@@ -260,7 +260,7 @@ namespace KitchenDesigner.Core.UI
             if (_searchHint != null) _searchHint.gameObject.SetActive(filter.Length == 0);
 
             bool filtering = filter.Length > 0;
-            bool sceneEmpty = !filtering && PartRegistry.All.Count == 0 && !AnyGroups();
+            bool sceneEmpty = !filtering && !AnyListedElement() && !AnyGroups();
             var nodes = sceneEmpty ? new List<SceneTree.Node>()
                 : SceneTreeByLevel.Build(filtering ? NoCollapsedGroups : _collapsed,
                     filtering ? NoCollapsedLevels : _collapsedLevels);
@@ -290,6 +290,13 @@ namespace KitchenDesigner.Core.UI
         {
             if (_emptyScene != null) _emptyScene.Root.gameObject.SetActive(sceneEmpty);
             if (_noMatches != null) _noMatches.Root.gameObject.SetActive(filtering && shownRows == 0);
+        }
+
+        private static bool AnyListedElement()
+        {
+            foreach (var e in PartRegistry.All)
+                if (e != null && SceneTree.IsListed(e)) return true;
+            return false;
         }
 
         private static bool AnyGroups()

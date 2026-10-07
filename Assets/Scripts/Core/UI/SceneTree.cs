@@ -23,6 +23,7 @@ namespace KitchenDesigner.Core.UI
             IEnumerable<LinkGroup> groups,
             ISet<int>? collapsedGroupIds = null)
         {
+            allElements = Listed(allElements);
             var nodes = new List<Node>();
             var collapsed = collapsedGroupIds ?? new HashSet<int>();
             var facadeToHost = MapAttachedFacadesToHosts(allElements);
@@ -68,6 +69,16 @@ namespace KitchenDesigner.Core.UI
                 AddElementRows(nodes, allElements, e, 1);
 
             return nodes;
+        }
+
+        public static bool IsListed(KitchenElement element) => !BasePlate.Is(element);
+
+        private static IReadOnlyList<KitchenElement> Listed(IReadOnlyList<KitchenElement> allElements)
+        {
+            var listed = new List<KitchenElement>(allElements.Count);
+            foreach (var e in allElements)
+                if (e != null && IsListed(e)) listed.Add(e);
+            return listed;
         }
 
         private static Dictionary<KitchenElement, KitchenElement> MapAttachedFacadesToHosts(

@@ -9,6 +9,8 @@ namespace KitchenDesigner.Core
         private KitchenElement? _element;
         public KitchenElement Element => _element!;
 
+        public bool CoveredByUserFloor { get; private set; }
+
         public static BasePlate Create()
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -41,6 +43,17 @@ namespace KitchenDesigner.Core
             FloorElement.RefreshBasePlateVisibility();
 
             return plate;
+        }
+
+        public static bool Is(KitchenElement element) => element.TryGetComponent<BasePlate>(out _);
+
+        public static bool IsCoveredByUserFloor(KitchenElement element) =>
+            element.TryGetComponent<BasePlate>(out var plate) && plate.CoveredByUserFloor;
+
+        public void SetCoveredByUserFloor(bool covered)
+        {
+            CoveredByUserFloor = covered;
+            SetShown(!covered);
         }
 
         public void SetShown(bool shown)

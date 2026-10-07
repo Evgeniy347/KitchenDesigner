@@ -77,6 +77,38 @@ public class SceneTreeTests
         Assert.AreEqual(0, nodes[0].depth);
     }
 
+    private BasePlate MakePlate()
+    {
+        var plate = BasePlate.Create();
+        PartRegistry.Register(plate.Element);
+        _spawned.Add(plate.gameObject);
+        return plate;
+    }
+
+    [Test]
+    public void Build_BasePlate_IsNeitherARowNorCounted()
+    {
+        MakeElement("A");
+        MakePlate();
+
+        var nodes = Build();
+
+        Assert.AreEqual(2, nodes.Count, "корень и деталь A: плита - служебный якорь, строки у неё нет");
+        Assert.AreEqual(1, nodes[0].count, "и в счётчик корня она не входит");
+        Assert.AreEqual("A", nodes[1].element!.PartName);
+    }
+
+    [Test]
+    public void Build_OnlyTheBasePlateInTheScene_HasNoChildrenUnderTheRoot()
+    {
+        MakePlate();
+
+        var nodes = Build();
+
+        Assert.AreEqual(1, nodes.Count, "сцена из одной плиты - пустая сцена");
+        Assert.IsFalse(nodes[0].hasChildren);
+    }
+
     [Test]
     public void Build_GroupWithMembers_ThenUngrouped()
     {

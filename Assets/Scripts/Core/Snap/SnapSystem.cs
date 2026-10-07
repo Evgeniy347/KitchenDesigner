@@ -113,7 +113,7 @@ namespace KitchenDesigner.Core
             var scene = new List<ElementGeometry>(others.Count);
             foreach (var other in others)
             {
-                if (other == null || !other.gameObject.activeInHierarchy) continue;
+                if (!SnapSceneGeometry.IsCandidate(other)) continue;
                 neighbours.Add(other);
                 scene.Add(PipeDocking.MaySeatOn(moved, other)
                     ? other.ToGeometry()

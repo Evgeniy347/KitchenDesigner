@@ -81,7 +81,7 @@ namespace KitchenDesigner.Core
                 if (f != null && f != except && f.isActiveAndEnabled) count++;
 
             foreach (var bp in Object.FindObjectsByType<BasePlate>(FindObjectsSortMode.None))
-                bp.SetShown(count == 0);
+                bp.SetCoveredByUserFloor(count > 0);
         }
     }
 }
