@@ -17,17 +17,19 @@ public class GroundSnapTests : SnapCoreTestBase
 {
     private const int NoMovedPart = -1;
 
+    private static readonly Vector3 AtOrigin = Vector3.zero;
+
     private static List<ElementGeometry> EmptySceneWithGround(float y = 0f)
     {
         var scene = new List<ElementGeometry>();
-        GroundSnapGeometry.AppendTo(scene, ImpliedGround.At(y), NoMovedPart);
+        GroundSnapGeometry.AppendTo(scene, ImpliedGround.At(y), NoMovedPart, AtOrigin);
         return scene;
     }
 
     private static List<ElementGeometry> UserFloorScene(bool offerGround)
     {
         var scene = new List<ElementGeometry> { Floor() };
-        if (offerGround) GroundSnapGeometry.AppendTo(scene, ImpliedGround.At(0f), NoMovedPart);
+        if (offerGround) GroundSnapGeometry.AppendTo(scene, ImpliedGround.At(0f), NoMovedPart, AtOrigin);
         return scene;
     }
 
@@ -80,7 +82,7 @@ public class GroundSnapTests : SnapCoreTestBase
     {
         var scene = new List<ElementGeometry>();
 
-        Assert.IsFalse(GroundSnapGeometry.AppendTo(scene, ImpliedGround.None, NoMovedPart), "земли не объявлено: добавлять нечего");
+        Assert.IsFalse(GroundSnapGeometry.AppendTo(scene, ImpliedGround.None, NoMovedPart, AtOrigin), "земли не объявлено: добавлять нечего");
         Assert.IsEmpty(scene, "сцена осталась пустой");
         Assert.IsFalse(Snap(Board(), scene, BoardCentreWithBottomAt(15f * MM)).snapped, "без земли пустая сцена не прилипает");
     }
@@ -90,7 +92,7 @@ public class GroundSnapTests : SnapCoreTestBase
     {
         var scene = UserFloorScene(offerGround: false);
 
-        bool added = GroundSnapGeometry.AppendTo(scene, ImpliedGround.At(0f), NoMovedPart);
+        bool added = GroundSnapGeometry.AppendTo(scene, ImpliedGround.At(0f), NoMovedPart, AtOrigin);
 
         Assert.IsFalse(added, "верх пола лежит в плоскости земли — вторая грань была бы дублем");
         Assert.AreEqual(1, scene.Count, "в списке остался только пол");
@@ -137,7 +139,7 @@ public class GroundSnapTests : SnapCoreTestBase
             new Vector3(0f, 1.0f - 9f * MM, 0f));
         var scene = new List<ElementGeometry> { raisedFloor };
 
-        Assert.IsTrue(GroundSnapGeometry.AppendTo(scene, ImpliedGround.At(0f), NoMovedPart),
+        Assert.IsTrue(GroundSnapGeometry.AppendTo(scene, ImpliedGround.At(0f), NoMovedPart, AtOrigin),
             "верх этого пола на 1 м выше земли: на земле он стоять не помогает");
         Assert.AreEqual(2, scene.Count, "пол и земля - две разные плоскости");
     }
@@ -148,8 +150,64 @@ public class GroundSnapTests : SnapCoreTestBase
         var sunkFlat = Floor("Sunk");
         var scene = new List<ElementGeometry> { sunkFlat };
 
-        Assert.IsTrue(GroundSnapGeometry.AppendTo(scene, ImpliedGround.At(0f), sunkFlat.Id),
+        Assert.IsTrue(GroundSnapGeometry.AppendTo(scene, ImpliedGround.At(0f), sunkFlat.Id, AtOrigin),
             "деталь, которую тащат, не может быть опорой самой себе");
+    }
+
+    private static List<ElementGeometry> FloorSceneFor(Vector3 under)
+    {
+        var scene = new List<ElementGeometry> { Floor() };
+        GroundSnapGeometry.AppendTo(scene, ImpliedGround.At(0f), NoMovedPart, under);
+        return scene;
+    }
+
+    [Test]
+    public void BoardBesideTheFloor_OutsideItsOutline_SnapsToTheGround()
+    {
+        var beside = new Vector3(3f, 0f, 0f);
+
+        var r = Snap(Board(), FloorSceneFor(beside), BoardCentreWithBottomAt(15f * MM) + beside);
+
+        Assert.IsTrue(r.snapped, "вне контура пола прилипание к земле должно остаться");
+        Assert.AreEqual(200f * MM, r.position.y, Tol, "низ детали встаёт на y = 0");
+        Assert.AreEqual(GroundSnapGeometry.Name, r.targetName, "здесь пола под деталью нет - цель земля");
+    }
+
+    [Test]
+    public void BoardOverTheFloor_OneTarget_TheFloor_SameY()
+    {
+        var over = new Vector3(0.5f, 0f, -0.4f);
+
+        var scene = FloorSceneFor(over);
+        var r = Snap(Board(), scene, BoardCentreWithBottomAt(15f * MM) + over);
+
+        Assert.AreEqual(1, scene.Count, "над полом земля не предлагается");
+        Assert.AreEqual("Floor", r.targetName, "цель одна - пол пользователя");
+        Assert.AreEqual(200f * MM, r.position.y, Tol, "та же высота, что у земли");
+    }
+
+    [TestCase(1.4f, 1)]
+    [TestCase(1.6f, 2)]
+    public void GroundOffer_FollowsTheFloorEdge_AtTheMovedPartCentre(float x, int expectedCount)
+    {
+        var scene = FloorSceneFor(new Vector3(x, 0f, 0f));
+
+        Assert.AreEqual(expectedCount, scene.Count,
+            "пол 3000 мм кончается на x = 1,5 м: левее земля не нужна, правее - нужна");
+    }
+
+    [Test]
+    public void ResizeBottomEdge_BesideTheFloor_SnapsOntoTheGround()
+    {
+        var beside = new Vector3(4f, 0f, 0f);
+        var self = At(Board(), BoardCentreWithBottomAt(20f * MM) + beside);
+        var bottom = self.Faces[3];
+
+        bool found = ResizeSnap.SnapDelta(bottom.center, bottom.normal, bottom.rightAxis,
+            bottom.upAxis, bottom.size, FloorSceneFor(beside), self, Threshold, out float gap);
+
+        Assert.IsTrue(found, "ручка вне контура пола прилипает к земле");
+        Assert.AreEqual(20f * MM, gap, Tol, "кромка дотягивается до y = 0");
     }
 
     [Test]

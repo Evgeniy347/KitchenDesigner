@@ -22,8 +22,8 @@ namespace KitchenDesigner.Core
                 slab.GrooveWallFaces, slab.Min, slab.Max, false);
         }
 
-        public static bool IsServedBy(ImpliedGround ground, IReadOnlyList<ElementGeometry> scene,
-            int exceptId)
+        public static bool IsServedUnder(ImpliedGround ground, IReadOnlyList<ElementGeometry> scene,
+            int exceptId, Vector3 under)
         {
             if (!ground.Present || scene == null) return false;
 
@@ -34,7 +34,8 @@ namespace KitchenDesigner.Core
 
                 foreach (var face in geometry.Faces)
                     if (face.normal.y >= Tolerance.ParallelDot
-                        && Mathf.Abs(face.center.y - ground.Y) <= Tolerance.ContactUnits)
+                        && Mathf.Abs(face.center.y - ground.Y) <= Tolerance.ContactUnits
+                        && Contains(face, under))
                         return true;
             }
 
@@ -42,9 +43,9 @@ namespace KitchenDesigner.Core
         }
 
         public static bool TryOffer(ImpliedGround ground, IReadOnlyList<ElementGeometry> scene,
-            int exceptId, out ElementGeometry geometry)
+            int exceptId, Vector3 under, out ElementGeometry geometry)
         {
-            if (!ground.Present || IsServedBy(ground, scene, exceptId))
+            if (!ground.Present || IsServedUnder(ground, scene, exceptId, under))
             {
                 geometry = default;
                 return false;
@@ -54,12 +55,20 @@ namespace KitchenDesigner.Core
             return true;
         }
 
-        public static bool AppendTo(List<ElementGeometry> scene, ImpliedGround ground, int exceptId)
+        public static bool AppendTo(List<ElementGeometry> scene, ImpliedGround ground, int exceptId,
+            Vector3 under)
         {
-            if (!TryOffer(ground, scene, exceptId, out var geometry)) return false;
+            if (!TryOffer(ground, scene, exceptId, under, out var geometry)) return false;
 
             scene.Add(geometry);
             return true;
+        }
+
+        private static bool Contains(in Face face, Vector3 point)
+        {
+            var offset = point - face.center;
+            return Mathf.Abs(Vector3.Dot(offset, face.rightAxis)) <= face.size.x * 0.5f + Tolerance.ContactUnits
+                && Mathf.Abs(Vector3.Dot(offset, face.upAxis)) <= face.size.y * 0.5f + Tolerance.ContactUnits;
         }
     }
 }

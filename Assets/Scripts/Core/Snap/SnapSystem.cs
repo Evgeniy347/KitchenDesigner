@@ -74,7 +74,7 @@ namespace KitchenDesigner.Core
             if (!moved.gameObject.activeInHierarchy) return default;
 
             using var _ = PerfMarkers.SnapTrySnap.Auto();
-            return TrySnap(moved, SnapSceneGeometry.ForSnapping(others, moved), testPosition);
+            return TrySnap(moved, SnapSceneGeometry.ForSnapping(others, moved, testPosition), testPosition);
         }
 
         public static SnapResult TrySnap(KitchenElement moved, IReadOnlyList<ElementGeometry> others,
@@ -120,7 +120,7 @@ namespace KitchenDesigner.Core
                     : other.ToGeometry().WithoutPorts());
             }
             if (GroundSnapGeometry.TryOffer(ConstraintValidator.Ground, scene,
-                    moved.GetInstanceID(), out var groundGeometry))
+                    moved.GetInstanceID(), testPosition, out var groundGeometry))
             {
                 neighbours.Add(null);
                 scene.Add(groundGeometry);

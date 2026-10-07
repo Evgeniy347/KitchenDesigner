@@ -111,6 +111,7 @@ public class SnapMutationTests
     private readonly List<string> _errors = new();
     private readonly List<string> _warnings = new();
     private ProjectLoadStateGuard? _guard;
+    private ImpliedGround _groundBefore;
 
     /// <summary>Ось крепления текущей детали — снимается один раз на деталь:
     /// поворот внутри свипа восстанавливается, а ToGeometry() строит грани.</summary>
@@ -176,6 +177,8 @@ public class SnapMutationTests
         // Загрузка сейва переписывает блок настроек, режим ручек, свет и
         // тонировку целиком — точечного снимка трёх флагов не хватало.
         _guard = ProjectLoadStateGuard.Capture();
+        _groundBefore = ConstraintValidator.Ground;
+        ConstraintValidator.Ground = ImpliedGround.At(0f);
 
         s.AutoSave = false;
         s.SpatialGrid = false;
@@ -192,9 +195,17 @@ public class SnapMutationTests
         KitchenElement.SuppressVisualRebuild = false;
         ClearScene();
         _guard?.Restore();
+        ConstraintValidator.Ground = _groundBefore;
         _errors.Clear();
         _warnings.Clear();
         FaceCache.Clear();
+    }
+
+    private List<ElementGeometry> SceneWithGround(KitchenElement moved, Vector3 under)
+    {
+        var scene = new List<ElementGeometry>(_othersGeo);
+        GroundSnapGeometry.AppendTo(scene, ConstraintValidator.Ground, moved.GetInstanceID(), under);
+        return scene;
     }
 
     private void ClearScene()
@@ -389,8 +400,14 @@ public class SnapMutationTests
 
             // ── Phase 0 ──
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            foreach (var target in others)
-                TestExistingPairAttraction(moved, target, savedPos, savedDims, ref totalSnapOk);
+            var groundBefore = ConstraintValidator.Ground;
+            ConstraintValidator.Ground = ImpliedGround.None;
+            try
+            {
+                foreach (var target in others)
+                    TestExistingPairAttraction(moved, target, savedPos, savedDims, ref totalSnapOk);
+            }
+            finally { ConstraintValidator.Ground = groundBefore; }
             ticksP0 += sw.ElapsedTicks;
 
             // Врезную технику за грань не тянут (ручек ресайза у неё нет, размеры
@@ -673,7 +690,7 @@ public class SnapMutationTests
         RestoreElementState(moved, savedPos, savedDims, savedRot);
 
         Vector3 testPos = savedPos + dir.normalized * (distanceMm * AppConstants.MM_TO_UNITS);
-        var snap = SnapSystem.TrySnap(moved, _othersGeo, testPos);
+        var snap = SnapSystem.TrySnap(moved, SceneWithGround(moved, testPos), testPos);
 
         string label = $"{moved.PartName} MOVE {distanceMm}мм dir={dir}";
         if (snap.snapped)
@@ -814,7 +831,7 @@ public class SnapMutationTests
             Vector3 testPos = savedPos + d * (mm * AppConstants.MM_TO_UNITS);
 
             var swSnap = System.Diagnostics.Stopwatch.StartNew();
-            var snap = SnapSystem.TrySnap(moved, _othersGeo, testPos);
+            var snap = SnapSystem.TrySnap(moved, SceneWithGround(moved, testPos), testPos);
             _ticksTrySnap += swSnap.ElapsedTicks;
             _countTrySnap++;
             if (!snap.snapped)

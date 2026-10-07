@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace KitchenDesigner.Core
 {
@@ -15,11 +16,11 @@ namespace KitchenDesigner.Core
             && element.gameObject.activeInHierarchy;
 
         public static List<ElementGeometry> ForSnapping(IReadOnlyList<KitchenElement> elements,
-            KitchenElement? seatedElement)
+            KitchenElement? seatedElement, Vector3 under)
         {
             var scene = For(elements, seatedElement);
             GroundSnapGeometry.AppendTo(scene, ConstraintValidator.Ground,
-                seatedElement != null ? seatedElement.GetInstanceID() : GroundSnapGeometry.Id);
+                seatedElement != null ? seatedElement.GetInstanceID() : GroundSnapGeometry.Id, under);
             return scene;
         }
 

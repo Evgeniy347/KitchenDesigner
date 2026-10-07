@@ -94,11 +94,48 @@ public class SnapGroundSceneTests : SnapTestBase
     }
 
     [Test]
+    public void UserFloorPresent_BoardBesideIt_SnapsToTheGround()
+    {
+        var floor = MakeFloorTopAtGround();
+        var board = MakeStd("Board", StdCentreWithBottomAt(0.015f) + new Vector3(3f, 0f, 0f));
+
+        var r = Snap(board, new List<KitchenElement> { floor, board }, board.transform.position);
+
+        Assert.IsTrue(r.snapped, "вне контура пола земля остаётся опорой");
+        Assert.AreEqual(0.2f, r.position.y, Tol);
+        Assert.AreEqual(GroundSnapGeometry.Name, r.targetName);
+    }
+
+    [Test]
+    public void Diagnose_BoardBesideTheFloor_ListsTheGroundOnce()
+    {
+        var floor = MakeFloorTopAtGround();
+        var board = MakeStd("Board", StdCentreWithBottomAt(0.015f) + new Vector3(3f, 0f, 0f));
+
+        var d = SnapSystem.Diagnose(board, new List<KitchenElement> { floor, board },
+            board.transform.position);
+
+        Assert.AreEqual(GroundSnapGeometry.Name, d.snapTarget, "диагноз называет ту же цель, что и снэп");
+        Assert.AreEqual(1, GroundMentions(d), "земля названа ровно один раз");
+    }
+
+    [Test]
+    public void ForSnapping_UnderTheFloorOrBesideIt_FollowsThePosition()
+    {
+        var elements = new List<KitchenElement> { MakeFloorTopAtGround() };
+
+        Assert.AreEqual(1, SnapSceneGeometry.ForSnapping(elements, null, Vector3.zero).Count,
+            "над полом - только пол");
+        Assert.AreEqual(2, SnapSceneGeometry.ForSnapping(elements, null, new Vector3(3f, 0f, 0f)).Count,
+            "вне контура пола к нему добавлена земля");
+    }
+
+    [Test]
     public void ForSnapping_EmptyScene_HoldsOnlyTheGround_AndRegistersNothing()
     {
         int registered = PartRegistry.GetAll().Count;
 
-        var scene = SnapSceneGeometry.ForSnapping(new List<KitchenElement>(), null);
+        var scene = SnapSceneGeometry.ForSnapping(new List<KitchenElement>(), null, Vector3.zero);
 
         Assert.AreEqual(1, scene.Count);
         Assert.AreEqual(GroundSnapGeometry.Name, scene[0].Name);
@@ -112,7 +149,7 @@ public class SnapGroundSceneTests : SnapTestBase
         var floor = MakeFloorTopAtGround();
         var elements = new List<KitchenElement> { floor };
 
-        var scene = SnapSceneGeometry.ForSnapping(elements, null);
+        var scene = SnapSceneGeometry.ForSnapping(elements, null, Vector3.zero);
 
         Assert.AreEqual(SnapSceneGeometry.For(elements, null).Count, scene.Count);
         Assert.AreEqual("Floor", scene[0].Name);
