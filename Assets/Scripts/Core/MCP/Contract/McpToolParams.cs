@@ -603,7 +603,7 @@ namespace KitchenDesigner.Core.MCP.Contract
 
         [McpParam("Size along X in MM. Defaults: board 800, assembled facade 450, radial shelf 600, table 2000, window 900, door 900.", Min = 1)]
         public int? width;
-        [McpParam("Size along Y in MM. Defaults: board 400, assembled facade 700, table 750, window 1200, door 2000.", Min = 1)]
+        [McpParam("Size along Y in MM. Defaults: board 400, assembled facade 700, table 750, window 1200, door 2000. Sofa: the height is FIXED at 800 (backrest bottom + backrest height) - omit it or pass exactly 800; any other value is rejected (as on edit_elements), nothing is created.", Min = 1)]
         public int? height;
         [McpParam("Thickness along Z in MM. Defaults: board 18, radial shelf 400 (its depth), table 1000, window/door 100.", Min = 1)]
         public int? depth;

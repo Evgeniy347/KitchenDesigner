@@ -33,15 +33,63 @@ public class SofaMcpTests : McpTestFixture
     private McpResponse Cycle(params string[] names)
         => _handler!.Handle(MakeReq("cycle_drawer_animation", new { names }));
 
+    private McpResponse TryCreateSofa(string name, int? height)
+        => _handler!.Handle(MakeReq("create_elements", new
+        {
+            items = new object[]
+            {
+                new { name, type = "sofa", anchor_x_mm = 0f, anchor_y_mm = 0f, anchor_z_mm = 0f, height },
+            },
+        }));
+
     [Test]
-    public void CreateSofa_WithAnyHeight_GetsTheFixedHeight()
+    public void CreateSofa_WithAHeightOtherThanTheFixedOne_IsRefused_LikeEdit_AndNothingIsCreated()
     {
-        var sofa = CreateSofa("SofaHeight", 1800, 1500, 1000);
+        var resp = TryCreateSofa("SofaTall", 1500);
+
+        Assert.AreEqual("error", resp.type,
+            "заказанные 1500 по высоте отклоняются: молчаливое «получите 800» было бы ложью, "
+            + "как и в edit_elements, где то же самое число уже отказ");
+        var message = JObject.FromObject(resp.data!)["message"]!.ToString();
+        Assert.That(message, Does.Contain("height"), "отказ называет поле");
+        Assert.That(message, Does.Contain(SofaLayout.OverallHeightMM.ToString()),
+            "и называет фиксированное значение, чтобы агенту не пришлось гадать");
+        Assert.IsNull(PartRegistry.GetAll().Find(e => e.PartName == "SofaTall"),
+            "отказ целиком: диван не создан");
+    }
+
+    [Test]
+    public void CreateSofa_WithTheFixedHeightItself_IsAccepted()
+    {
+        var sofa = CreateSofa("SofaExact", 1800, SofaLayout.OverallHeightMM, 1000);
 
         Assert.AreEqual(new UnityEngine.Vector3Int(1800, SofaLayout.OverallHeightMM, 1000),
             sofa.DimensionsMM,
-            "заказанные 1500 по высоте не растягивают диван: высота фиксирована, а длина и "
-            + "глубина берутся как заказаны");
+            "высота, равная фиксированной, ничего не меняет, а длина и глубина берутся как заказаны");
+    }
+
+    [Test]
+    public void CreateSofa_WithoutAHeight_GetsTheFixedHeight()
+    {
+        var sofa = CreateSofa("SofaNoHeight", 1800, null, 1000);
+
+        Assert.AreEqual(SofaLayout.OverallHeightMM, sofa.DimensionsMM.y,
+            "не названная высота — это фиксированная высота, а не ноль");
+    }
+
+    [Test]
+    public void CreateItemHeight_Description_NamesTheSofaRule()
+    {
+        var field = typeof(KitchenDesigner.Core.MCP.Contract.CreateItem).GetField("height");
+        var description = ((KitchenDesigner.Core.MCP.Contract.McpParamAttribute)System.Attribute
+            .GetCustomAttribute(field!, typeof(KitchenDesigner.Core.MCP.Contract.McpParamAttribute))!)
+            .Description;
+
+        Assert.That(description, Does.Contain("sofa").IgnoreCase, "правило названо в описании параметра");
+        Assert.That(description, Does.Contain(SofaLayout.OverallHeightMM.ToString()),
+            "с числом, а не словами «фиксирована»");
+        Assert.That(description, Does.Contain("rejected"),
+            "и сказано, что чужое значение отклоняется, а не молча заменяется");
     }
 
     [Test]

@@ -295,7 +295,8 @@ SofaElement           Sofa-bed (type:""sofa"", 2000x800x900 mm by default). NO a
                       FRONT seat block, the BACKREST (180 mm thick, 700 mm tall, its
                       bottom 100 mm above the floor) and an inner BOX with three
                       compartments hidden under the seat. HEIGHT IS FIXED at 800 mm
-                      (height is rejected on edit); depth changes only the seat
+                      (a different height is rejected on edit AND on create, exactly
+                      800 is accepted); depth changes only the seat
                       (depth - 180 mm), width is free. corner_radius rounds the seat
                       block (120 mm by default); seat_height is its top above the
                       floor (360 mm by default, clamped to 300..460); edge_radius

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Newtonsoft.Json.Linq;
 using KitchenDesigner.Core;
+using KitchenDesigner.Core.MCP;
 
 /// <summary>Один признак «высота фиксирована» — <see cref="FixedSize.IsHeightFixed"/>.
 /// До него у дивана было пять независимых читателей (строка панели, ручки растяжки,
@@ -60,5 +61,33 @@ public class FixedHeightPredicateTests : McpTestFixture
             "тип, у которого признак говорит «высота фиксирована», обязан получить отказ при правке "
             + "height по проводу: " + string.Join(", ", notRefused));
         EveryElementType.ClearScene();
+    }
+
+    [Test]
+    public void TheSpawnersFixedHeights_AreExactlyTheTypesTheMarkerNames_AtTheHeightTheyAreBuiltWith()
+    {
+        var disagreements = new List<string>();
+        int n = 0;
+        foreach (var wireType in ElementSpawners.SpawnableTypes)
+        {
+            var go = ElementSpawners.Spawn(wireType,
+                new KitchenDesigner.Core.MCP.Contract.CreateItem { name = "SpawnProbe" + n++ },
+                UnityEngine.Vector3.zero);
+            _spawned.Add(go);
+            var element = go.GetComponent<KitchenElement>();
+            var tableHeight = ElementSpawners.FixedHeightMM(wireType);
+            bool marked = element is IFixedHeightElement;
+
+            if (marked != tableHeight.HasValue)
+                disagreements.Add($"{wireType}: marker={marked}, spawner table={tableHeight}");
+            else if (marked && element.DimensionsMM.y != tableHeight!.Value)
+                disagreements.Add($"{wireType}: built at {element.DimensionsMM.y}, table says {tableHeight}");
+        }
+
+        Assert.IsEmpty(disagreements,
+            "спаунер решает «высота фиксирована» ДО того, как элемент существует, поэтому у него своя "
+            + "таблица; признак на классе (IFixedHeightElement) — единственный источник, и таблица "
+            + "обязана с ним совпадать, иначе create_elements начнёт молча растягивать или молча "
+            + "отвергать: " + string.Join("; ", disagreements));
     }
 }

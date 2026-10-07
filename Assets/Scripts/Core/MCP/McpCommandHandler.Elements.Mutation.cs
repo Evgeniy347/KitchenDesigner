@@ -383,6 +383,8 @@ namespace KitchenDesigner.Core.MCP
                         + $"(allowed: {string.Join(", ", ElementSpawners.SpawnableTypes)})");
                     continue;
                 }
+                var fixedHeightRefusal = ElementSpawners.FixedHeightRefusal(elementType, item);
+                if (fixedHeightRefusal != null) { errors.Add($"{fixedHeightRefusal} ('{item.name}')"); continue; }
                 if (!string.IsNullOrEmpty(item.model))
                 {
                     if (!ApplianceModels.IsKnown(item.model))

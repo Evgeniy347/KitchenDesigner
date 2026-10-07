@@ -227,6 +227,19 @@ namespace KitchenDesigner.Core.MCP
 
         internal static bool CanSpawn(string elementType) => SpawnableTypeSet.Contains(elementType);
 
+        private static readonly Dictionary<string, int> FixedHeightsMM =
+            new Dictionary<string, int>(StringComparer.Ordinal) { ["sofa"] = SofaElement.DefaultHeightMM };
+
+        internal static string? FixedHeightRefusal(string elementType, CreateItem item)
+        {
+            if (!item.height.HasValue || !FixedHeightsMM.TryGetValue(elementType, out int fixedMm)) return null;
+            if (item.height.Value == fixedMm) return null;
+            return $"height {item.height.Value} not settable on a {elementType} (its height is fixed at {fixedMm} mm: omit height or pass exactly {fixedMm}; width and depth stay free)";
+        }
+
+        internal static int? FixedHeightMM(string elementType)
+            => FixedHeightsMM.TryGetValue(elementType, out int fixedMm) ? fixedMm : (int?)null;
+
         private static List<string> CollectSpawnableTypes()
         {
             var types = new List<string>(PlainCubeTypes);
@@ -259,7 +272,7 @@ namespace KitchenDesigner.Core.MCP
 
         private static Vector3Int SofaDims(CreateItem item) => new Vector3Int(
             item.width ?? SofaElement.DefaultWidthMM,
-            SofaElement.DefaultHeightMM,
+            FixedHeightsMM["sofa"],
             item.depth ?? SofaElement.DefaultDepthMM);
 
         private static Vector3Int PouffeDims(CreateItem item) => new Vector3Int(
