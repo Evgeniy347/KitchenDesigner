@@ -308,6 +308,7 @@ namespace KitchenDesigner.Core
                  RestoreDecorSlots(d, el);
                  if (el is not SofaElement sofa) return;
                  sofa.EdgeRadiusMM = d.sofaEdgeRadiusMM;
+                 KeepSofaBottomInPlace(d, sofa);
                  sofa.SnapToStage(SofaUnfold.StageFrom(d.sofaUnfoldStage));
              }),
 
@@ -456,6 +457,13 @@ namespace KitchenDesigner.Core
                 MaterialManager.ApplySecondarySlot(slots, MaterialCatalog.Get(data.legsMaterialId));
             if (!string.IsNullOrEmpty(data.tabletopMaterialId))
                 MaterialManager.ApplyPrimarySlot(slots, MaterialCatalog.Get(data.tabletopMaterialId));
+        }
+
+        private static void KeepSofaBottomInPlace(ElementData data, SofaElement sofa)
+        {
+            int shiftMM = SofaLayout.OverallHeightMM - data.Dimensions.y;
+            if (shiftMM == 0) return;
+            sofa.transform.position += Vector3.up * (shiftMM * 0.5f * AppConstants.MM_TO_UNITS);
         }
 
         private static void RestoreFacadeState(ElementData data, KitchenElement el)
