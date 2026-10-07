@@ -42,7 +42,6 @@ namespace KitchenDesigner.Core.MCP
                     case "get_element_debug": return HandleGetElementDebug(request);
                     case "get_element_gaps": return HandleGetElementGaps(request);
                     case "get_violations": return HandleGetViolations(request);
-                    case "get_floor_info": return HandleGetFloorInfo(request);
                     case "snap_diagnose": return HandleSnapDiagnose(request);
                     case "get_free_space": return HandleGetFreeSpace(request);
 
@@ -56,7 +55,6 @@ namespace KitchenDesigner.Core.MCP
                     case "undo": return HandleUndo(request);
                     case "redo": return HandleRedo(request);
                     case "select_elements": return HandleSelectElements(request);
-                    case "resize_floor": return HandleResizeFloor(request);
 
                     case "get_modules": return HandleGetModules(request);
                     case "module_info": return HandleModuleInfo(request);

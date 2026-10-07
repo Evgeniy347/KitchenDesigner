@@ -103,15 +103,6 @@ namespace KitchenDesigner.Core.MCP.Contract
     }
 
     [Serializable]
-    public class ParamsResizeFloor
-    {
-        [McpParam(McpRefText.Output)] public string? @ref;
-        [McpParam("Floor width (X) in MM.", Required = true, Min = 1)] public int width;
-        [McpParam("Floor length (Y) in MM.", Required = true, Min = 1)] public int height;
-        [McpParam("Floor thickness (Z) in MM.", Required = true, Min = 1)] public int depth;
-    }
-
-    [Serializable]
     public class EditOp
     {
         [McpParam("Exact element name.", Required = true)] public string name = string.Empty;

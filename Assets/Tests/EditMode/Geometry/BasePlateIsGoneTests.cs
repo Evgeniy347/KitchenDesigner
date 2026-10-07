@@ -6,28 +6,20 @@ using NUnit.Framework;
 namespace KitchenDesigner.Tests.Geometry
 {
     /// <summary>Подложки (<c>BasePlate</c>) больше нет: земля пустой сцены — <c>GroundQuad</c>,
-    /// якорь валидации — <c>ImpliedGround</c>. Единственное, что ещё называет старый тип, —
-    /// скорлупа <c>Elements/BasePlate.cs</c> и вызовы устаревших MCP-инструментов
-    /// get_floor_info/resize_floor в <c>Core/MCP</c>; скорлупа живёт, пока те вызовы не
-    /// удалены. Сторож не даёт имени просочиться обратно в остальной код.</summary>
+    /// якорь валидации — <c>ImpliedGround</c>. Скорлупа <c>Elements/BasePlate.cs</c> и вызовы
+    /// устаревших MCP-инструментов get_floor_info/resize_floor удалены, исключений у сторожа
+    /// больше нет: имя не должно просочиться обратно НИГДЕ в продакшен-коде.</summary>
     public class BasePlateIsGoneTests
     {
         private const string Word = "BasePlate";
 
-        private static readonly string[] MayNameIt =
-        {
-            Path.Combine("Core", "MCP") + Path.DirectorySeparatorChar,
-            Path.Combine("Core", "Elements", "BasePlate.cs"),
-        };
-
         private static string ScriptsDir() => RepoPaths.Subdir("Assets", "Scripts", "Core");
 
-        private static List<string> SourcesNaming(IEnumerable<string> files, Func<string, bool> exempt)
+        private static List<string> SourcesNaming(IEnumerable<string> files)
         {
             var hits = new List<string>();
             foreach (var file in files)
             {
-                if (exempt(file)) continue;
                 var lines = SourceCorpus.Lines(file);
                 for (int i = 0; i < lines.Length; i++)
                     if (lines[i].Contains(Word)) hits.Add(Path.GetFileName(file) + ":" + (i + 1));
@@ -35,17 +27,10 @@ namespace KitchenDesigner.Tests.Geometry
             return hits;
         }
 
-        private static bool IsExempt(string file)
-        {
-            foreach (var part in MayNameIt)
-                if (file.Contains(part)) return true;
-            return false;
-        }
-
         [Test]
-        public void ProductionSources_OutsideMcpAndTheShell_DoNotNameTheBasePlate()
+        public void ProductionSources_DoNotNameTheBasePlate_Anywhere()
         {
-            var hits = SourcesNaming(SourceCorpus.Files(ScriptsDir()), IsExempt);
+            var hits = SourcesNaming(SourceCorpus.Files(ScriptsDir()));
 
             Assert.IsEmpty(hits,
                 "Подложка удалена: землю рисует GroundQuad, опору валидации даёт ImpliedGround. "
@@ -54,14 +39,15 @@ namespace KitchenDesigner.Tests.Geometry
         }
 
         [Test]
-        public void TheScan_ActuallySeesTheShellAndTheMcpCallers_SoAnEmptyResultMeansSomething()
+        public void TheScan_ActuallySeesTheSources_SoAnEmptyResultMeansSomething()
         {
-            var all = SourcesNaming(SourceCorpus.Files(ScriptsDir()), _ => false);
+            Assert.Greater(SourceCorpus.Files(ScriptsDir()).Length, 100,
+                "сканер не нашёл исходники — пустой результат ничего бы не значил");
 
-            Assert.IsTrue(all.Exists(h => h.StartsWith("BasePlate.cs:", StringComparison.Ordinal)),
-                "сканер не видит скорлупу — он бы прошёл, ничего не проверив");
-            Assert.IsTrue(all.Exists(h => h.StartsWith("McpCommandHandler", StringComparison.Ordinal)),
-                "сканер не видит MCP-вызовы подложки — исключение для Core/MCP стоит на пустом месте");
+            var thisFile = Path.Combine(RepoPaths.Subdir("Assets", "Tests", "EditMode", "Geometry"),
+                nameof(BasePlateIsGoneTests) + ".cs");
+            Assert.IsNotEmpty(SourcesNaming(new[] { thisFile }),
+                "сканер не узнаёт слово в файле, где оно точно есть, — он бы прошёл на любом дереве");
         }
     }
 }

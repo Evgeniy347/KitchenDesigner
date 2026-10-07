@@ -281,8 +281,6 @@ Wall (component)      A board that is a structural ANCHOR. Other boards must
 FloorElement          A floor slab. Create with create_floor / apply_floorplan
                       (polygon, corner-anchored). create_elements {type:""floor""}
                       makes a single rectangular slab.
-BasePlate             The scene's floor anchor singleton (resize_floor). Legacy:
-                      real rooms use FloorElement.
 FacadeElement         Door/front, gaps default to 2 MM per side. It FLOATS in
                       its opening: a facade with gap > 0 is exempt from
                       connectivity. Opening mode: edit_elements {mode:..}

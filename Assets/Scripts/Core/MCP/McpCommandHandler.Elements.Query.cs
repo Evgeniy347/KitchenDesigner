@@ -244,24 +244,6 @@ namespace KitchenDesigner.Core.MCP
             });
         }
 
-        private McpResponse HandleGetFloorInfo(McpRequest req)
-        {
-            var plate = FindFloor();
-            if (plate == null || plate.Element == null)
-                return McpResponse.Error(req.id, -1, "Floor not found");
-
-            var el = plate.Element;
-            var dims = el.DimensionsMM;
-            var pos = el.transform.position;
-            return McpResponse.Result(req.id, new
-            {
-                name = el.PartName,
-                dimXMm = dims.x, dimYMm = dims.y, dimZMm = dims.z,
-                posXMm = McpAnchor.ToMm(pos.x), posYMm = McpAnchor.ToMm(pos.y), posZMm = McpAnchor.ToMm(pos.z),
-                hasViolations = HasViolations(el)
-            });
-        }
-
         private McpResponse HandleSnapDiagnose(McpRequest req)
         {
             var p = req.Params?.ToObjectStrict<ParamsSnapDiagnose>();

@@ -549,36 +549,5 @@ namespace KitchenDesigner.Core.MCP
             }
             return McpResponse.Result(req.id, new { ok = true, selected, missing = missing.Count > 0 ? missing : null });
         }
-
-        private McpResponse HandleResizeFloor(McpRequest req)
-        {
-            var plate = FindFloor();
-            if (plate == null || plate.Element == null)
-                return McpResponse.Error(req.id, -1, "Floor not found");
-
-            var p = req.Params?.ToObjectStrict<ParamsResizeFloor>();
-            if (p == null)
-                return McpResponse.Error(req.id, -32602, "invalid parameters");
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
-
-            var report = McpMutationReport.Begin();
-            var el = plate.Element;
-            var dimsBefore = el.DimensionsMM;
-            var posBefore = el.transform.position;
-            var rotBefore = el.transform.rotation;
-
-            var dimsAfter = ResolveDims(p.width, p.height, p.depth, null, null, null, dimsBefore);
-            int w = dimsAfter.x, h = dimsAfter.y, d = dimsAfter.z;
-
-            CommandStack.Execute(new ResizeCommand(el,
-                dimsBefore, dimsAfter,
-                posBefore, posBefore,
-                rotBefore, rotBefore));
-            SettleSceneAfterMutation();
-
-            Debug.Log($"[MCP] Resized floor to ({w}, {h}, {d})mm");
-            return McpResponse.Result(req.id, report.Finish(new[] { (KitchenElement)el }, reference));
-        }
     }
 }

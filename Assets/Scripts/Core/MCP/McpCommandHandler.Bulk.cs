@@ -265,7 +265,6 @@ namespace KitchenDesigner.Core.MCP
             foreach (var e in all)
             {
                 if (e == null || !e.gameObject.activeInHierarchy) continue;
-                if (e.GetComponent<BasePlate>() != null) continue;
                 elementCount++;
                 var t = ElementSelector.TypeOf(e);
                 typeCounts[t] = typeCounts.TryGetValue(t, out var n) ? n + 1 : 1;

@@ -217,7 +217,7 @@ public class McpReferenceRoundTripTests : McpTestFixture
     [Test]
     public void EveryToolThatReportsAPosition_ExposesTheRefParameter_InItsSchema()
     {
-        foreach (var name in ToolsThatTakeARef().Select(c => (string)c.Arguments[0]).Append("resize_floor"))
+        foreach (var name in ToolsThatTakeARef().Select(c => (string)c.Arguments[0]))
         {
             var tool = KitchenDesigner.Core.MCP.Contract.McpToolRegistry.Tools.First(t => t.Name == name);
             Assert.IsTrue(KitchenDesigner.Core.MCP.Contract.McpJsonSchema.ForTool(tool)["properties"] is IDictionary<string, object> props

@@ -1315,23 +1315,6 @@ public class McpCommandHandlerTests : McpTestFixture
     }
 
     [Test]
-    public void ResizeFloor_RefreshesHighlights_AfterMutation()
-    {
-        var hl = SetupHighlighter();
-        var plate = BasePlate.Create();
-        plate.Element.PartName = "Floor";
-        PartRegistry.Register(plate.Element);
-        _spawned.Add(plate.gameObject);
-        int before = hl.RefreshCount;
-
-        var resp = _handler!.Handle(MakeReq("resize_floor", new { width = 4000, height = 1, depth = 3000 }));
-
-        Assert.AreEqual("result", resp.type);
-        Assert.AreEqual(new Vector3Int(4000, 1, 3000), plate.Element.DimensionsMM);
-        Assert.Greater(hl.RefreshCount, before, "RefreshHighlights should be called after floor resize");
-    }
-
-    [Test]
     public void NonMutatingCommand_DoesNotCallRefreshHighlights()
     {
         var hl = SetupHighlighter();

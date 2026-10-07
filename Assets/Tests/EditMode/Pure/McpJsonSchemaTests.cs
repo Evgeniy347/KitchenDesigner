@@ -106,10 +106,10 @@ public class McpJsonSchemaTests
         Assert.IsTrue(((string)modeSchema["description"]).Length > 0,
             "описание поля — единственное, что объясняет агенту смысл значения");
 
-        var width = Property(Registry("resize_floor"), "width");
+        var width = Property(Registry("add_opening"), "width");
         Assert.AreEqual("integer", width["type"], "int отображается в integer, а не в number");
-        Assert.AreEqual(1L, width["minimum"], "Min = 1 у ширины пола обязан доехать до схемы");
-        Assert.IsFalse(width.ContainsKey("maximum"), "верхней границы у ширины пола не задано");
+        Assert.AreEqual(1L, width["minimum"], "Min = 1 у ширины проёма обязан доехать до схемы");
+        Assert.IsFalse(width.ContainsKey("maximum"), "верхней границы у ширины проёма не задано");
     }
 
     [Test]

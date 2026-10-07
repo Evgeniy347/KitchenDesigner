@@ -51,13 +51,6 @@ namespace KitchenDesigner.Core.MCP
             return null;
         }
 
-        private static BasePlate? FindFloor()
-        {
-            var go = GameObject.FindWithTag("Floor");
-            if (go == null) return null;
-            return go.GetComponent<BasePlate>();
-        }
-
         private static LinkGroup? FindModule(string module)
         {
             if (string.IsNullOrEmpty(module)) return null;
@@ -293,14 +286,6 @@ namespace KitchenDesigner.Core.MCP
             var hl = ElementHighlighter.Current;
             if (hl is null) return;
             hl.RefreshHighlights();
-        }
-
-        private static bool HasViolations(KitchenElement element)
-        {
-            var all = PartRegistry.GetAll();
-            if (all == null || all.Count == 0) return false;
-            var vr = McpValidationCache.Get(all);
-            return vr != null && vr.violations.Contains(element);
         }
 
         private static List<object> BuildElementViolations(KitchenElement el, List<KitchenElement>? all, ValidationResult? vr)
