@@ -399,7 +399,7 @@ namespace KitchenDesigner.Core
             bool heightOnly = Mode == HandleMode.Resize
                 && (_target is PillarElement || _target is PipeElement);
             bool skipDepth = _target is WindowElement || _target is DoorElement;
-            bool skipHeight = Mode == HandleMode.Resize && _target is SofaElement;
+            bool skipHeight = Mode == HandleMode.Resize && FixedSize.IsHeightFixed(_target);
             if (Mode == HandleMode.Resize && !SupportsHandleResize(_target)) return;
             var faces = _target!.GetFaces();
             for (int i = 0; i < faces.Length; i++)

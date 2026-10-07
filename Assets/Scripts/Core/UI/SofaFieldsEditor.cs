@@ -10,8 +10,6 @@ namespace KitchenDesigner.Core.UI
 
         public override bool Handles(KitchenElement element) => element is SofaElement;
 
-        public override bool HeightEditable => false;
-
         public override void Build()
         {
             var visibility = RowVisibility.For(ElementFacet.Sofa);

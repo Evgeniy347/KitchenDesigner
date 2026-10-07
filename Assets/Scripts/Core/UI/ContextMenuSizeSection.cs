@@ -83,7 +83,7 @@ namespace KitchenDesigner.Core.UI
         {
             bool unlocked = !FixedSize.IsFixed(element);
             _dimensions.SetEditable(Width, unlocked && (editor?.WidthEditable ?? true));
-            _dimensions.SetEditable(Height, unlocked && (editor?.HeightEditable ?? true));
+            _dimensions.SetEditable(Height, unlocked && !FixedSize.IsHeightFixed(element) && (editor?.HeightEditable ?? true));
             _dimensions.SetEditable(Depth, unlocked && (editor?.DepthEditable ?? true));
             _height?.SetCaption(editor?.HeightLabel ?? ElementFieldsEditor.DefaultHeightLabel);
         }
