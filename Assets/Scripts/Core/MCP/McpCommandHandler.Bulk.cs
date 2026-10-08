@@ -12,8 +12,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsSetAttr>();
             if (p == null || string.IsNullOrWhiteSpace(p.selector))
                 return McpResponse.Error(req.id, -32602, "selector required");
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
+            if (!McpReplyShape.TryParse(p.@ref, p.verbosity, out var reference, out var full, out var shapeError))
+                return McpResponse.Error(req.id, -32602, shapeError);
 
             var matched = ElementSelector.Match(p.selector);
             var commands = new List<IUndoCommand>();
@@ -51,7 +51,7 @@ namespace KitchenDesigner.Core.MCP
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP set_attr x{commands.Count}", commands));
             SettleSceneAfterMutation();
-            return SelectionResult(req, report, changed, reference, matched.Count);
+            return SelectionResult(req, report, changed, reference, full, matched.Count);
         }
 
         private McpResponse HandleMove(McpRequest req)
@@ -60,8 +60,8 @@ namespace KitchenDesigner.Core.MCP
             if (p == null || string.IsNullOrWhiteSpace(p.selector))
                 return McpResponse.Error(req.id, -32602, "selector required");
 
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
+            if (!McpReplyShape.TryParse(p.@ref, p.verbosity, out var reference, out var full, out var shapeError))
+                return McpResponse.Error(req.id, -32602, shapeError);
 
             var delta = new Vector3(p.dx, p.dy, p.dz) * AppConstants.MM_TO_UNITS;
             var matched = ElementSelector.Match(p.selector);
@@ -82,7 +82,7 @@ namespace KitchenDesigner.Core.MCP
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP move x{commands.Count}", commands));
             SettleSceneAfterMutation();
-            return SelectionResult(req, report, moved, reference, matched.Count);
+            return SelectionResult(req, report, moved, reference, full, matched.Count);
         }
 
         private McpResponse HandleResizeModule(McpRequest req)
@@ -90,8 +90,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsResizeModule>();
             if (p == null || string.IsNullOrWhiteSpace(p.module))
                 return McpResponse.Error(req.id, -32602, "module (group name) required");
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
+            if (!McpReplyShape.TryParse(p.@ref, p.verbosity, out var reference, out var full, out var shapeError))
+                return McpResponse.Error(req.id, -32602, shapeError);
 
             var group = ResolveGroup(p.module);
             var members = group != null ? GroupManager.MembersOf(group) : new List<KitchenElement>();
@@ -122,7 +122,7 @@ namespace KitchenDesigner.Core.MCP
             if (commands.Count > 0)
                 CommandStack.Execute(new CompositeCommand($"MCP resize_module '{p.module}' x{commands.Count}", commands));
             SettleSceneAfterMutation();
-            return SelectionResult(req, report, changed, reference, members.Count);
+            return SelectionResult(req, report, changed, reference, full, members.Count);
         }
 
         private McpResponse HandleGroupV2(McpRequest req)
@@ -158,8 +158,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsAlignSelection>();
             if (p == null || string.IsNullOrWhiteSpace(p.selector) || string.IsNullOrWhiteSpace(p.target))
                 return McpResponse.Error(req.id, -32602, "selector and target required");
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
+            if (!McpReplyShape.TryParse(p.@ref, p.verbosity, out var reference, out var full, out var shapeError))
+                return McpResponse.Error(req.id, -32602, shapeError);
             if (!McpWireEnums.TryParseFace(p.face, out int axis, out bool maxSide))
                 return McpResponse.Error(req.id, -32602, $"Unknown face '{p.face}'");
             string targetFace = string.IsNullOrEmpty(p.target_face) ? OppositeFace(p.face) : p.target_face;
@@ -217,7 +217,7 @@ namespace KitchenDesigner.Core.MCP
                 }
             }
             CommandStack.Execute(new CompositeCommand($"MCP align x{units.Count} units", commands));
-            return SelectionResult(req, report, moved, reference, matched.Count);
+            return SelectionResult(req, report, moved, reference, full, matched.Count);
         }
 
         private static string OppositeFace(string face) => face switch
@@ -380,9 +380,9 @@ namespace KitchenDesigner.Core.MCP
         }
 
         private McpResponse SelectionResult(McpRequest req, McpMutationReport report, List<KitchenElement> changed,
-            McpReference reference, int matchedCount)
+            McpReference reference, bool full, int matchedCount)
         {
-            var reply = report.Finish(changed, reference);
+            var reply = report.Finish(changed, reference, full);
             reply.matchedCount = matchedCount;
             reply.updatedCount = changed.Count;
             return McpResponse.Result(req.id, reply);

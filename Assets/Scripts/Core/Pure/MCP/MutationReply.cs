@@ -9,6 +9,7 @@ namespace KitchenDesigner.Core.MCP
         public bool ok = true;
         public string? @ref;
         public List<PlacementInfo>? placements;
+        public List<object>? elements;
         public int? omittedCount;
         public ViolationDeltaInfo sceneViolationDelta = new ViolationDeltaInfo();
         public bool? dryRun;

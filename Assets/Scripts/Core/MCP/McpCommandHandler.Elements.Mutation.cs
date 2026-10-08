@@ -119,8 +119,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsEditElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
+            if (!McpReplyShape.TryParse(p.@ref, p.verbosity, out var reference, out var full, out var shapeError))
+                return McpResponse.Error(req.id, -32602, shapeError);
 
             var errors = new List<string>();
             var resolved = new List<(EditOp op, KitchenElement el, MaterialDef? material, List<string> warnings)>();
@@ -188,7 +188,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 composite.Execute();
                 SceneChangeTracker.SettleDerivedLinks();
-                var dryReply = report.Finish(edited, reference);
+                var dryReply = report.Finish(edited, reference, full);
                 dryReply.dryRun = true;
                 dryReply.applied = false;
                 composite.Undo();
@@ -197,7 +197,7 @@ namespace KitchenDesigner.Core.MCP
             }
             ApplyEditsAsOneUndoStep(resolved, composite, commands.Count > 0);
             SettleSceneAfterMutation();
-            var reply = report.Finish(edited, reference);
+            var reply = report.Finish(edited, reference, full);
             reply.dryRun = false;
             reply.applied = true;
             Debug.Log($"[MCP] edit_elements: {resolved.Count} ops, {commands.Count} geometry");
@@ -209,8 +209,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsCloneElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
+            if (!McpReplyShape.TryParse(p.@ref, p.verbosity, out var reference, out var full, out var shapeError))
+                return McpResponse.Error(req.id, -32602, shapeError);
 
             var report = McpMutationReport.Begin();
             var commands = new List<IUndoCommand>();
@@ -241,11 +241,11 @@ namespace KitchenDesigner.Core.MCP
                 return McpResponse.Error(req.id, -1, "clone_elements rejected: " + string.Join(" | ", errors) + ". " + McpNameHints.ResendAll);
             }
 
-            if (p.dry_run) return DryRunOfNewParts(req, report, allClones, reference);
+            if (p.dry_run) return DryRunOfNewParts(req, report, allClones, reference, full);
             CommandStack.Execute(new CompositeCommand($"MCP clone_elements x{allClones.Count}", commands));
             SettleSceneAfterMutation();
             Debug.Log($"[MCP] Clone batch: {p.ops.Length} sources → {allClones.Count} clones");
-            return McpResponse.Result(req.id, report.Finish(allClones, reference));
+            return McpResponse.Result(req.id, report.Finish(allClones, reference, full));
         }
 
         private McpResponse HandleAlignElements(McpRequest req)
@@ -253,8 +253,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsAlignElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
+            if (!McpReplyShape.TryParse(p.@ref, p.verbosity, out var reference, out var full, out var shapeError))
+                return McpResponse.Error(req.id, -32602, shapeError);
 
             var report = McpMutationReport.Begin();
             var commands = new List<IUndoCommand>();
@@ -306,7 +306,7 @@ namespace KitchenDesigner.Core.MCP
             {
                 composite.Execute();
                 SceneChangeTracker.SettleDerivedLinks();
-                var dryReply = report.Finish(moved, reference);
+                var dryReply = report.Finish(moved, reference, full);
                 dryReply.dryRun = true;
                 dryReply.applied = false;
                 composite.Undo();
@@ -316,16 +316,16 @@ namespace KitchenDesigner.Core.MCP
             CommandStack.Execute(composite);
             SettleSceneAfterMutation();
             Debug.Log($"[MCP] Aligned {commands.Count} elements");
-            return McpResponse.Result(req.id, report.Finish(moved, reference));
+            return McpResponse.Result(req.id, report.Finish(moved, reference, full));
         }
 
         private McpResponse DryRunOfNewParts(McpRequest req, McpMutationReport report,
-            List<KitchenElement> fresh, McpReference reference)
+            List<KitchenElement> fresh, McpReference reference, bool full)
         {
             foreach (var part in fresh) PartRegistry.Register(part);
             SnapOpeningsOnceEveryWallOfTheBatchIsRegistered(fresh);
             SettleSceneAfterMutation();
-            var reply = report.Finish(fresh, reference);
+            var reply = report.Finish(fresh, reference, full);
             reply.dryRun = true;
             reply.applied = false;
             McpSceneRollback.Discard(fresh);
@@ -338,8 +338,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsDistributeEvenly>();
             if (p == null || p.names == null || p.names.Length < 3)
                 return McpResponse.Error(req.id, -32602, "names: at least 3 board names required");
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
+            if (!McpReplyShape.TryParse(p.@ref, p.verbosity, out var reference, out var full, out var shapeError))
+                return McpResponse.Error(req.id, -32602, shapeError);
             int axis = p.axis == "x" ? 0 : p.axis == "y" ? 1 : p.axis == "z" ? 2 : -1;
             if (axis < 0)
                 return McpResponse.Error(req.id, -32602, $"Unknown axis '{p.axis}'. Valid: x | y | z");
@@ -379,7 +379,7 @@ namespace KitchenDesigner.Core.MCP
             SettleSceneAfterMutation();
 
             Debug.Log($"[MCP] Distributed {resolved.Count} elements along {p.axis}, spacing {spacing:F4} m");
-            var reply = report.Finish(resolved, reference);
+            var reply = report.Finish(resolved, reference, full);
             reply.axis = p.axis;
             reply.spacingMm = spacing / AppConstants.MM_TO_UNITS;
             return McpResponse.Result(req.id, reply);
@@ -440,8 +440,8 @@ namespace KitchenDesigner.Core.MCP
             McpCallStages.End("parseJson", stage);
             if (p == null || p.items == null || p.items.Length == 0)
                 return McpResponse.Error(req.id, -32602, "items required (non-empty array)");
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
+            if (!McpReplyShape.TryParse(p.@ref, p.verbosity, out var reference, out var full, out var shapeError))
+                return McpResponse.Error(req.id, -32602, shapeError);
 
             stage = McpCallStages.Begin();
             var errors = new List<string>();
@@ -466,7 +466,7 @@ namespace KitchenDesigner.Core.MCP
                 created.Add(spawned);
             }
             McpCallStages.End("spawn", stage);
-            if (p.dry_run) return DryRunOfNewParts(req, report, created, reference);
+            if (p.dry_run) return DryRunOfNewParts(req, report, created, reference, full);
 
             stage = McpCallStages.Begin();
             if (commands.Count > 0)
@@ -482,7 +482,7 @@ namespace KitchenDesigner.Core.MCP
             McpCallStages.End("settle", stage);
 
             stage = McpCallStages.Begin();
-            var reply = report.Finish(created, reference);
+            var reply = report.Finish(created, reference, full);
             McpCallStages.End("describe", stage);
             Debug.Log($"[MCP] Created {created.Count} elements: {string.Join(", ", created.Select(c => c.PartName))}");
             return McpResponse.Result(req.id, reply);
@@ -493,8 +493,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsConvertElements>();
             if (p == null || p.ops == null || p.ops.Length == 0)
                 return McpResponse.Error(req.id, -32602, "ops required (non-empty array)");
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
+            if (!McpReplyShape.TryParse(p.@ref, p.verbosity, out var reference, out var full, out var shapeError))
+                return McpResponse.Error(req.id, -32602, shapeError);
 
             var report = McpMutationReport.Begin();
             var errors = new List<string>();
@@ -527,7 +527,7 @@ namespace KitchenDesigner.Core.MCP
 
             SettleSceneAfterMutation();
             Debug.Log($"[MCP] Converted {results.Count} elements");
-            return McpResponse.Result(req.id, report.Finish(results, reference));
+            return McpResponse.Result(req.id, report.Finish(results, reference, full));
         }
 
         private McpResponse HandleDeleteElements(McpRequest req)

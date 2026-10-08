@@ -15,7 +15,7 @@ namespace KitchenDesigner.Core.MCP
 
         public static McpMutationReport Begin() => new McpMutationReport(ViolatingNames(Validate().vr));
 
-        public MutationReply Finish(IReadOnlyList<KitchenElement>? changed = null, McpReference? reference = null)
+        public MutationReply Finish(IReadOnlyList<KitchenElement>? changed = null, McpReference? reference = null, bool full = false)
         {
             var (all, vr) = Validate();
             var reply = new MutationReply
@@ -23,7 +23,7 @@ namespace KitchenDesigner.Core.MCP
                 sceneViolationDelta = McpViolationDelta.Between(_violatingBefore, ViolatingNames(vr))
             };
             if (reference.HasValue && changed != null)
-                FillPlacements(reply, changed, reference.Value, all, vr);
+                FillPlacements(reply, changed, reference.Value, all, vr, full);
             return reply;
         }
 
@@ -43,17 +43,20 @@ namespace KitchenDesigner.Core.MCP
         }
 
         private static void FillPlacements(MutationReply reply, IReadOnlyList<KitchenElement> changed,
-            McpReference reference, List<KitchenElement> all, ValidationResult? vr)
+            McpReference reference, List<KitchenElement> all, ValidationResult? vr, bool full)
         {
             var builder = new McpPlacementBuilder(reference, all, vr);
             reply.@ref = reference.Canonical;
             reply.placements = new List<PlacementInfo>();
+            if (full) reply.elements = new List<object>();
             int live = 0;
             foreach (var el in changed)
             {
                 if (el == null) continue;
                 live++;
-                if (reply.placements.Count < MaxPlacements) reply.placements.Add(builder.Build(el));
+                if (reply.placements.Count >= MaxPlacements) continue;
+                reply.placements.Add(builder.Build(el));
+                if (full) reply.elements!.Add(ElementInfoBuilder.Build(el, all, false, vr, reference));
             }
             if (live > MaxPlacements) reply.omittedCount = live - MaxPlacements;
         }

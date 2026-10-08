@@ -565,6 +565,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsEditElements
     {
         [McpParam(McpRefText.Input)] public string? @ref;
+        [McpParam(McpVerbosity.Syntax, Enum = new[] { McpVerbosity.Terse, McpVerbosity.Full })] public string? verbosity;
         [McpParam("Operations to apply — one per element. Each op: exact name + ANY editable properties (geometry, lock, material, facade gaps/mode/fill, drawer params, table/pillar/window/door params).",
             Required = true, Min = 1)]
         public EditOp[] ops = Array.Empty<EditOp>();
@@ -625,6 +626,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     {
         [McpParam(McpDryRunText.Param)] public bool dry_run;
         [McpParam(McpRefText.Input)] public string? @ref;
+        [McpParam(McpVerbosity.Syntax, Enum = new[] { McpVerbosity.Terse, McpVerbosity.Full })] public string? verbosity;
         [McpParam("Elements to create. At least 1. Whole batch is ONE undo step.", Required = true, Min = 1)]
         public CreateItem[] items = Array.Empty<CreateItem>();
     }
@@ -720,6 +722,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsConvertElements
     {
         [McpParam(McpRefText.Output)] public string? @ref;
+        [McpParam(McpVerbosity.Syntax, Enum = new[] { McpVerbosity.Terse, McpVerbosity.Full })] public string? verbosity;
         [McpParam("Conversions to apply. At least 1.", Required = true, Min = 1)]
         public ConvertOp[] ops = Array.Empty<ConvertOp>();
     }
@@ -739,6 +742,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     {
         [McpParam(McpDryRunText.Param)] public bool dry_run;
         [McpParam(McpRefText.Output)] public string? @ref;
+        [McpParam(McpVerbosity.Syntax, Enum = new[] { McpVerbosity.Terse, McpVerbosity.Full })] public string? verbosity;
         [McpParam("Clone operations. At least 1. Whole batch is ONE undo step.", Required = true, Min = 1)]
         public CloneOp[] ops = Array.Empty<CloneOp>();
     }
@@ -763,6 +767,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     {
         [McpParam(McpDryRunText.Param)] public bool dry_run;
         [McpParam(McpRefText.Output)] public string? @ref;
+        [McpParam(McpVerbosity.Syntax, Enum = new[] { McpVerbosity.Terse, McpVerbosity.Full })] public string? verbosity;
         [McpParam("Align operations, applied IN ORDER (later ops see earlier moves). At least 1. Whole batch is ONE undo step.",
             Required = true, Min = 1)]
         public AlignOp[] ops = Array.Empty<AlignOp>();
@@ -841,6 +846,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsSetAttr
     {
         [McpParam(McpRefText.Output)] public string? @ref;
+        [McpParam(McpVerbosity.Syntax, Enum = new[] { McpVerbosity.Terse, McpVerbosity.Full })] public string? verbosity;
         [McpParam("Selector over the scene. Space-separated clauses (AND): name mask 'B4_*', 'name:PAT', 'type:board|wall|floor|window|door|drawer|facade|assembled_facade|radial_shelf|panel|table|pillar|screw_leg|pipe|pipe_elbow|pipe_coupling|pipe_tee|pipe_cap|pipe_supply|pipe_return|light', 'module:NAME', 'thickness==18' (also width/height/depth with == != >= <= > <), 'all_boards', 'all_modules', '*'.", Required = true)]
         public string selector = "";
         [McpParam("New thickness (dimZ) in MM for every matched board (e.g. change all 18 to 16).")] public int? thickness;
@@ -855,6 +861,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsMove
     {
         [McpParam(McpRefText.Output)] public string? @ref;
+        [McpParam(McpVerbosity.Syntax, Enum = new[] { McpVerbosity.Terse, McpVerbosity.Full })] public string? verbosity;
         [McpParam("Selector (see set_attr).", Required = true)] public string selector = "";
         [McpParam("Shift along world X in MM.")] public float dx;
         [McpParam("Shift along world Y in MM.")] public float dy;
@@ -865,6 +872,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsResizeModule
     {
         [McpParam(McpRefText.Output)] public string? @ref;
+        [McpParam(McpVerbosity.Syntax, Enum = new[] { McpVerbosity.Terse, McpVerbosity.Full })] public string? verbosity;
         [McpParam("Module = exact group/module name (see get_modules).", Required = true)]
         public string module = "";
         [McpParam("World axis to resize along. Omit to use the module's stored width_axis.", Enum = new[] { "x", "y", "z" })]
@@ -960,6 +968,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsDistributeEvenly
     {
         [McpParam(McpRefText.Output)] public string? @ref;
+        [McpParam(McpVerbosity.Syntax, Enum = new[] { McpVerbosity.Terse, McpVerbosity.Full })] public string? verbosity;
         [McpParam("At least 3 board names. The two outermost (along the axis) stay; the middle ones move so center-to-center spacing is equal.", Required = true, Min = 3)]
         public string[] names = Array.Empty<string>();
         [McpParam("World axis to distribute along.", Required = true, Enum = new[] { "x", "y", "z" })]
@@ -989,6 +998,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     public class ParamsAlignSelection
     {
         [McpParam(McpRefText.Output)] public string? @ref;
+        [McpParam(McpVerbosity.Syntax, Enum = new[] { McpVerbosity.Terse, McpVerbosity.Full })] public string? verbosity;
         [McpParam("Selector whose matched groups/elements move.", Required = true)] public string selector = "";
         [McpParam("Exact target element/wall name.", Required = true)] public string target = "";
         [McpParam("Moving selection face: left/right/bottom/top/back/front.", Required = true,

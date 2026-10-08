@@ -81,6 +81,7 @@ namespace KitchenDesigner.Core.MCP.Contract
         public PlaceItem[] items = Array.Empty<PlaceItem>();
 
         [McpParam(McpRefText.Output)] public string? @ref;
+        [McpParam(McpVerbosity.Syntax, Enum = new[] { McpVerbosity.Terse, McpVerbosity.Full })] public string? verbosity;
 
         [McpParam("true = DRY-RUN: place everything, report the resulting placements and sceneViolationDelta, then revert. Default false.")]
         public bool dry_run;

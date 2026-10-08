@@ -18,7 +18,7 @@ public class McpPlacementReplyTests : McpTestFixture
     private static readonly HashSet<string> ReplyKeys = new HashSet<string>
     {
         "ok", "ref", "placements", "omittedCount", "sceneViolationDelta", "dryRun", "applied", "axis", "spacingMm",
-        "deleted", "matchedCount", "updatedCount", "steps", "doneCount", "undoAvailableCount", "redoAvailableCount",
+        "deleted", "elements", "matchedCount", "updatedCount", "steps", "doneCount", "undoAvailableCount", "redoAvailableCount",
     };
 
     private static readonly HashSet<string> PlacementKeys = new HashSet<string>
@@ -301,7 +301,7 @@ public class McpPlacementReplyTests : McpTestFixture
             var reply = ReplyOf(resp);
             foreach (var key in reply.Properties().Select(p => p.Name))
                 Assert.IsTrue(ReplyKeys.Contains(key), $"ключ «{key}» ответа мутации не описан в guide");
-            Assert.IsNull(reply["elements"], "полный ElementInfo остался только у get_elements");
+            Assert.IsNull(reply["elements"], "полный ElementInfo по умолчанию отдаёт только get_elements; мутации - лишь при verbosity:full");
             foreach (var placement in (reply["placements"] as JArray) ?? new JArray())
                 foreach (var key in ((JObject)placement).Properties().Select(p => p.Name))
                     Assert.IsTrue(PlacementKeys.Contains(key), $"ключ «{key}» размещения не описан в guide");

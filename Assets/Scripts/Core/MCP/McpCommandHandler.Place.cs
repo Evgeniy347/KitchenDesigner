@@ -12,8 +12,8 @@ namespace KitchenDesigner.Core.MCP
             var p = req.Params?.ToObjectStrict<ParamsPlace>();
             if (p == null || p.items == null || p.items.Length == 0)
                 return McpResponse.Error(req.id, -32602, "items required (non-empty array)");
-            if (!McpReference.TryParse(p.@ref, out var reference, out var refError))
-                return McpResponse.Error(req.id, -32602, refError);
+            if (!McpReplyShape.TryParse(p.@ref, p.verbosity, out var reference, out var full, out var shapeError))
+                return McpResponse.Error(req.id, -32602, shapeError);
 
             var report = McpMutationReport.Begin();
             var placer = new McpPlacer(FindElementByName);
@@ -30,7 +30,7 @@ namespace KitchenDesigner.Core.MCP
             if (p.dry_run)
             {
                 SettleSceneAfterMutation();
-                var dryReply = report.Finish(placer.Changed, reference);
+                var dryReply = report.Finish(placer.Changed, reference, full);
                 dryReply.dryRun = true;
                 dryReply.applied = false;
                 placer.RollBack();
@@ -41,7 +41,7 @@ namespace KitchenDesigner.Core.MCP
             var changed = new List<KitchenElement>(placer.Changed);
             CommandStack.Execute(new CompositeCommand($"MCP place x{placer.Commands.Count}", placer.Commands.ToList()));
             SettleSceneAfterMutation();
-            var reply = report.Finish(changed, reference);
+            var reply = report.Finish(changed, reference, full);
             reply.dryRun = false;
             reply.applied = true;
             Debug.Log($"[MCP] place: {changed.Count} parts");
