@@ -84,6 +84,15 @@ claude mcp add --transport http unity-kitchen http://127.0.0.1:9337/mcp
   имена или перекрытого соседа с гранью, у которой встать. `dry_run` есть у `place`, `create_elements`,
   `clone_elements`, `align_elements`, `edit_elements`; подсказки отказов — `McpNameHints`; планировочные
   инструменты отвечают `PlanReply` с `sceneViolationDelta`.
+- **`verbosity`** `terse|full` у каждого изменяющего инструмента с `ref` (`McpVerbosity`, разбор вместе с `ref` —
+  `McpReplyShape`, оба в `Pure/MCP`): по умолчанию terse - только размещения и `sceneViolationDelta`; full добавляет
+  `elements` - полный `ElementInfo` изменённых деталей (те же 20 штук, что и размещения). Сторож
+  `McpVerbosityReplyTests.EveryMutatingTool_ThatTakesARef_AlsoTakesAVerbosity` не даёт забыть новый инструмент.
+- **`describe_scene`** `{max_chars (1500), scope?, ref?}` - текстовый (НЕ JSON) дайджест: сводка, уровни, комнаты, модули,
+  потом одиночные детали; строка `B4 board 600×720×560 @(1200,0,0) on Floor; back→Wall_N, left→B3, right→B5 gap2; ok`.
+  Слова отношений - те же, что в `placement` (`PlacementWording`), строки собирает чистый `SceneDigestText`
+  (бюджет, порядок, хвост «+N more, use scope»), сцену обходит `McpSceneDigest` (`McpDigestScope` разбирает scope:
+  имя модуля, `room:ID`/id комнаты, иначе селектор). Строка-значение ответа уходит агенту как есть (`McpToolCall`).
 - **`undo` / `redo`** `{steps}` — поверх `CommandStack`; шаг = один мутирующий вызов.
 - JSON на проводе компактный (без отступов), целые миллиметры без `.0`: сенсор бюджета —
   `McpPlacementReplyTests.CreateElements_ThreeCabinetsOnTheWire_FitTheByteBudget_…`.

@@ -337,6 +337,21 @@ public class McpDescribeSceneTests : McpTestFixture
     }
 
     [Test]
+    public void TheGuide_TeachesTheLoop_DescribeThenPlaceThenReadThenUndo_AndNamesVerbosity()
+    {
+        var workflow = McpGuideTexts.Topics["workflow"];
+        int loop = workflow.IndexOf("THE LOOP: DESCRIBE -> PLACE -> READ THE PLACEMENT -> UNDO", System.StringComparison.Ordinal);
+
+        Assert.GreaterOrEqual(loop, 0, "цикл назван в шпаргалке");
+        var steps = workflow.Substring(loop, 600);
+        Assert.Less(steps.IndexOf("describe_scene", System.StringComparison.Ordinal), steps.IndexOf("place {", System.StringComparison.Ordinal));
+        Assert.Less(steps.IndexOf("place {", System.StringComparison.Ordinal), steps.IndexOf("undo", System.StringComparison.Ordinal));
+        StringAssert.Contains("describe_scene", McpGuideTexts.Instructions);
+        StringAssert.Contains("verbosity", McpGuideTexts.Instructions);
+        StringAssert.Contains("PLAIN TEXT", McpGuideTexts.Topics["fields"], "поля дайджеста объяснены там же, где поля ответов");
+    }
+
+    [Test]
     public void TheToolIsRegistered_AsAReadOnlyTool_WithADescriptiveName()
     {
         var def = McpToolRegistry.Tools.Single(t => t.Name == "describe_scene");

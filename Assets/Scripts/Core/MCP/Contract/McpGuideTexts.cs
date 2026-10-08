@@ -26,7 +26,7 @@ UNITS:
   (center-bottom = middle of the footprint at floor level).
 
 IDENTITY:
-- Every board has a unique text ""name"". Use get_scene_tree to look around, then
+- Every board has a unique text ""name"". Use describe_scene to look around, then
   get_elements {filter/names} for detail.
 - dimZMm (depth) is the board's LOCAL thickness; worldDim*Mm are the world-axis
   sizes (use those when a board is rotated).
@@ -53,12 +53,13 @@ HOW TO EDIT SINGLE ELEMENTS (batch-first):
    [{n, face}], gaps [{n, face, gapMm}], room, level, issues ([] = clean) - and
    sceneViolationDelta {added, removed}: the violations THIS call created or
    fixed. Old violations of the scene are not counted.
+   verbosity:""full"" on a mutation adds the complete ElementInfo (about 1 KB per part).
 5. WRONG RESULT? undo {steps} takes the last mutating calls back (redo returns
    them). Never delete and re-create to fix a mistake.
 
 PLACEMENT WITHOUT MATH:
 - place {items:[{name, type/width/height/depth for a NEW part, on, against, align}]} - say WHERE
-  in words, the server computes the position. LOOP: look (get_scene_tree, get) ->
+  in words, the server computes the position. LOOP: look (describe_scene, get) ->
   place -> read the placement in the reply (issues, touches, gaps, sceneViolationDelta)
   -> wrong? undo, or place the same name again. See guide {topic:""place""}.
 - align_elements — press a face flush against (or gap_mm away from) another board's face.
@@ -100,6 +101,7 @@ UNITS
   dimZMm = board thickness (smallest side, usually 18 mm).
 
 READING THE SCENE (cheap -> expensive)
+  describe_scene {max_chars?, scope?}           -> TEXT digest: one line per module / part
   get_scene_tree                                -> modules, bboxes, type counts
   get {names:[""B4_Side_L""]}                     -> posMm + footprintMm + sizeMm (MM)
   get_elements {filter:""B4_*"", summary:true}     -> one cabinet, compact
@@ -141,8 +143,9 @@ UNDO INSTEAD OF REDOING
   or created parts exactly. redo {} re-applies. One step = one earlier mutating
   call (or one edit the human made in the app).
 
-THE LOOP: LOOK -> PLACE -> READ THE PLACEMENT -> UNDO
-  get_scene_tree / get {names:[...]}        -> names and where things are
+THE LOOP: DESCRIBE -> PLACE -> READ THE PLACEMENT -> UNDO
+  describe_scene {scope?}                   -> one text: modules, parts, what touches what
+  get {names:[...]}                         -> exact numbers of a few parts
   place {items:[...]}                       -> no coordinates, see guide {topic:""place""}
   reply: placements[].issues / touches / gaps and sceneViolationDelta.added
   anything wrong -> undo {} (or place the same name again), never delete+recreate.
@@ -811,9 +814,23 @@ MUTATION RESPONSES (create/edit/align/clone/distribute/convert/...) return:
   edit_elements adds dryRun/applied; delete_elements returns deleted names
   instead of placements; undo/redo return steps (descriptions), doneCount,
   undoAvailableCount, redoAvailableCount.
-  Full element info (every field of this topic) is returned ONLY by get_elements
-  (and the legacy get_all_elements): its posMm obeys the ref of the request and
-  the response echoes it.",
+  Full element info (every field of this topic) is returned by get_elements (and
+  the legacy get_all_elements) and, only when you ask verbosity:""full"", by every
+  mutation tool as elements:[ElementInfo...] next to placements (about 1 KB per
+  part, same cap of 20). Default verbosity:""terse"" = placements + delta only.
+  posMm obeys the ref of the request and the response echoes it.
+
+DESCRIBE_SCENE returns PLAIN TEXT (not JSON), at most max_chars characters:
+  scene: 50 parts, 4 modules, 18 loose; 2 with issues
+  mm; size x×y×z; @(x,y,z) = left-bottom-back point; ! = issue
+  levels: L1 ""Ground"" 0..2700 (50)
+  B4 module(8) 800×720×560 @(1500,0,2000) on Floor; ok
+  Cab2 board 600×720×560 @(600,0,0) on Floor; left→Cab1, back→Wall, right→Cab3 gap12; ok
+  +12 more, use scope
+  A line = name, kind, WORLD size, ref point, what it stands on, face→neighbour
+  touches, face→neighbour gapN = free MM, then ok or !issues. Same words as the
+  placement block. Parts with issues come first; scope (module name, room:ID or a
+  selector) lists the parts of one place.",
 
             ["drawers"] =
 @"GTV DRAWERS (DrawerElement)

@@ -106,12 +106,16 @@ url = "http://127.0.0.1:9337/mcp"
 
 ## Что агент умеет
 
-- **читать**: `get_scene_tree`, `get_elements`, `get_specification`,
-  `get_violations`, `get_free_space`;
+- **читать**: `describe_scene` (короткий текстовый дайджест сцены: по строке на модуль
+  и деталь, что на чём стоит и кого касается; `max_chars` ограничивает объём,
+  `scope` сужает до модуля, комнаты или выборки), `get_scene_tree`, `get_elements`,
+  `get_specification`, `get_violations`, `get_free_space`;
 - **строить**: `create_elements`, `apply_floorplan` (стены, полы, проёмы одной
   командой), `create_module`;
 - **править пачкой**: `edit_elements`, `align_elements`, `distribute_evenly`,
   `clone_elements` — одна отмена на весь пакет, есть `dry_run`;
+- **короткие ответы**: ответ любой правки — это размещение каждой изменённой детали и
+  разница нарушений; полный `ElementInfo` отдаётся только по `verbosity: "full"`;
 - **откатывать**: `undo` и `redo` — шаг назад или вперёд по истории (один шаг —
   один вызов агента или одна правка человека);
 - **смотреть**: `take_screenshot`, `set_photo_camera`.
