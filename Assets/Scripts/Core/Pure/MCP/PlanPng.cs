@@ -4,7 +4,7 @@ using System.IO.Compression;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanPng
+    internal static class PlanPng
     {
         private static readonly byte[] Signature = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 

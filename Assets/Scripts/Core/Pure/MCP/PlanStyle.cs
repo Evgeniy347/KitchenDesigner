@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core.MCP
 {
-    public readonly struct PlanStyle
+    internal readonly struct PlanStyle
     {
         public readonly int Fill;
         public readonly int Stroke;

@@ -2,7 +2,7 @@ using System;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public sealed class PlanCanvas
+    internal sealed class PlanCanvas
     {
         public readonly int Width;
         public readonly int Height;

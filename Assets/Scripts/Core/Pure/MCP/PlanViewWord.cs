@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanViewWord
+    internal static class PlanViewWord
     {
         public const string Words = "top|front";
 

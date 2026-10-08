@@ -74,13 +74,13 @@ namespace KitchenDesigner.Core.MCP
             foreach (var level in LevelRegistry.Items)
                 input.Levels.Add(new DigestGroup { Id = level.id, Detail = LevelDetail(level) });
             foreach (var room in ProjectRooms.Items)
-                input.Rooms.Add(new DigestGroup { Id = room.id, PolygonXz = room.polygonXZ });
+                input.Rooms.Add(new DigestGroup { Id = room.id, PolygonXzMm = room.polygonXZ });
         }
 
         private static void AddRoom(DigestInput input, string id)
         {
             foreach (var room in ProjectRooms.Items)
-                if (room.id == id) input.Rooms.Add(new DigestGroup { Id = room.id, PolygonXz = room.polygonXZ });
+                if (room.id == id) input.Rooms.Add(new DigestGroup { Id = room.id, PolygonXzMm = room.polygonXZ });
         }
 
         private static string LevelDetail(Level level)

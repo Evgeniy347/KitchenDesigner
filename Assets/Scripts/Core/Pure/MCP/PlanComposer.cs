@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanComposer
+    internal static class PlanComposer
     {
         private const int IssueMarkerUnits = 4;
         private const int LastLabelPass = 2;
@@ -115,7 +115,7 @@ namespace KitchenDesigner.Core.MCP
             var names = new List<(string id, PlanRect area)>();
             foreach (var room in input.Rooms)
             {
-                var polygon = room.PolygonXz;
+                var polygon = room.PolygonXzMm;
                 if (polygon == null || polygon.Length < 6) continue;
                 int count = polygon.Length / 2;
                 int left = int.MaxValue, top = int.MaxValue, right = int.MinValue, bottom = int.MinValue;

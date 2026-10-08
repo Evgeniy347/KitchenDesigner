@@ -2,7 +2,7 @@ using System;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanLayers
+    internal static class PlanLayers
     {
         private static readonly string[] Floors = { "floor", "floor_slab", "foundation" };
 

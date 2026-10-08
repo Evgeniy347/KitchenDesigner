@@ -37,7 +37,7 @@ public static class PlanFixtures
         input.Entries.Add(Entry("Upper", "board", 0, 1400, 0, 1800, 2100, 320, parts: 4));
         input.Entries.Add(Entry("Table1", "table", 1200, 0, 1500, 2400, 750, 2100));
         input.Entries.Add(Entry("Chair1", "chair", 1500, 0, 2150, 1900, 900, 2550));
-        input.Rooms.Add(new DigestGroup { Id = "kitchen", PolygonXz = new[] { 0, 0, 4000, 0, 4000, 3000, 0, 3000 } });
+        input.Rooms.Add(new DigestGroup { Id = "kitchen", PolygonXzMm = new[] { 0, 0, 4000, 0, 4000, 3000, 0, 3000 } });
         return input;
     }
 }

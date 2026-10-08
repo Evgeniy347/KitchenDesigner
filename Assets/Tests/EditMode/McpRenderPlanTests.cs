@@ -171,7 +171,7 @@ public class McpRenderPlanTests : McpTestFixture
         StringAssert.Contains("scope room Kitchen", caption);
         Assert.IsTrue(McpSceneDigest.TryCollect("room:Kitchen", McpReference.MinCorner, out var input, out _));
         CollectionAssert.AreEqual(new[] { "Kitchen" }, input.Rooms.Select(r => r.Id).ToList());
-        Assert.IsNotNull(input.Rooms[0].PolygonXz, "контур комнаты едет в рисунок вместе с её id");
+        Assert.IsNotNull(input.Rooms[0].PolygonXzMm, "контур комнаты едет в рисунок вместе с её id");
     }
 
     [Test]
@@ -207,7 +207,7 @@ public class McpRenderPlanTests : McpTestFixture
         var (caption, _) = Plan();
 
         StringAssert.Contains("2 with issues (red outline + triangle, ! before the name)", caption);
-        Assert.IsTrue(McpSceneDigest.TryCollect(null, McpReference.MinCorner, out var input, out _));
+        Assert.IsTrue(McpSceneDigest.TryCollect("Clash*", McpReference.MinCorner, out var input, out _));
         var svg = PlanRender.Svg(input, PlanView.Top, true, 512);
         StringAssert.Contains(">!ClashA<", svg, "восклицательный знак в самой подписи");
         StringAssert.Contains("stroke=\"#D21F1F\"", svg, "красная рамка");

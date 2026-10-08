@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanCrc32
+    internal static class PlanCrc32
     {
         private static readonly uint[] Table = Build();
 

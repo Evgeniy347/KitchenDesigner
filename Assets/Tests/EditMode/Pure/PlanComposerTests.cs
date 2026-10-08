@@ -348,7 +348,7 @@ public class PlanComposerTests
     public void ARoomOutsideThePartsExtends_TheTopViewToIt()
     {
         var input = Of(Part("Cab", 0, 0, 0, 600, 720, 560));
-        input.Rooms.Add(new DigestGroup { Id = "R", PolygonXz = new[] { 0, 0, 6000, 0, 6000, 4000, 0, 4000 } });
+        input.Rooms.Add(new DigestGroup { Id = "R", PolygonXzMm = new[] { 0, 0, 6000, 0, 6000, 4000, 0, 4000 } });
 
         var withRoom = Compose(input, PlanView.Top);
         var withoutRoom = Compose(input, PlanView.Front);

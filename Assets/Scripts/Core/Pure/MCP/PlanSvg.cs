@@ -4,7 +4,7 @@ using System.Text;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanSvg
+    internal static class PlanSvg
     {
         private const int EmPerScale = 10;
 

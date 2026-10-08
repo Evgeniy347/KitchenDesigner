@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core.MCP
 {
-    public readonly struct PlanRect
+    internal readonly struct PlanRect
     {
         public readonly int X0;
         public readonly int Y0;

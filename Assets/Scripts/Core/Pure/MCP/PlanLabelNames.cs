@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public sealed class PlanLabelNames
+    internal sealed class PlanLabelNames
     {
         public const int MaxVariants = 9;
 

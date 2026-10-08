@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public sealed class PlanLabeler
+    internal sealed class PlanLabeler
     {
         public const int MinReadableScale = 1;
 

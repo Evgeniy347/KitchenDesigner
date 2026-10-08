@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanStyles
+    internal static class PlanStyles
     {
         private const int OpeningOutlineWidth = 2;
 

@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core.MCP
 {
-    public enum PlanShapeKind
+    internal enum PlanShapeKind
     {
         Rect,
         Line,

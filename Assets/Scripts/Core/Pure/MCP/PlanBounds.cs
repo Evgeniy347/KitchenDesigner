@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public readonly struct PlanBounds
+    internal readonly struct PlanBounds
     {
         public readonly float MinX;
         public readonly float MaxX;
@@ -34,7 +34,7 @@ namespace KitchenDesigner.Core.MCP
             }
             if (view == PlanView.Top)
                 foreach (var room in input.Rooms)
-                    IncludeRoom(room.PolygonXz, ref minX, ref maxX, ref minV, ref maxV);
+                    IncludeRoom(room.PolygonXzMm, ref minX, ref maxX, ref minV, ref maxV);
             if (minX > maxX) { minX = 0f; maxX = PlanLayout.EmptySceneExtentMm; }
             if (minV > maxV) { minV = 0f; maxV = PlanLayout.EmptySceneExtentMm; }
             return new PlanBounds(minX, maxX, minV, maxV);

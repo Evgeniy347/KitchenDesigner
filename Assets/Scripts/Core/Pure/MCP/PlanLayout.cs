@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public sealed class PlanLayout
+    internal sealed class PlanLayout
     {
         public const int MinExtentMm = 100;
         public const int EmptySceneExtentMm = 1000;

@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanRender
+    internal static class PlanRender
     {
         public const int DefaultPx = 512;
         public const int MinPx = 256;

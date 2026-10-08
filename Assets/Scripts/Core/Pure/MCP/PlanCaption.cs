@@ -3,7 +3,7 @@ using System.Text;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanCaption
+    internal static class PlanCaption
     {
         public const int MaxNamesListed = 8;
         public const string WholeScene = "whole scene";

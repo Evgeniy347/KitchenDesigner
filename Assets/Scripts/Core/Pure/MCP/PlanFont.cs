@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanFont
+    internal static class PlanFont
     {
         public const int Columns = 5;
         public const int Rows = 8;

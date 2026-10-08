@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanRaster
+    internal static class PlanRaster
     {
         public static PlanCanvas Render(PlanDrawing drawing)
         {

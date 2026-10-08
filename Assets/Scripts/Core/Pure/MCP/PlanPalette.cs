@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public static class PlanPalette
+    internal static class PlanPalette
     {
         public const int Background = 0;
         public const int Floor = 1;

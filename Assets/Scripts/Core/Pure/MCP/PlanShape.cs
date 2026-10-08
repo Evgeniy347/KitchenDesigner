@@ -1,6 +1,6 @@
 namespace KitchenDesigner.Core.MCP
 {
-    public sealed class PlanShape
+    internal sealed class PlanShape
     {
         public const int NoColor = -1;
 

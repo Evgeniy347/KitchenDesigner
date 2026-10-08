@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace KitchenDesigner.Core.MCP
 {
-    public sealed class PlanLabelPlacer
+    internal sealed class PlanLabelPlacer
     {
         private readonly int _width;
         private readonly int _height;
