@@ -20,7 +20,7 @@ public class SceneDigestTextTests
     private static DigestEntry Module(string name, int parts, string? room = null)
     {
         var entry = Part(name, kind: "module");
-        entry.Parts = parts;
+        entry.PartsCount = parts;
         entry.Placement.room = room;
         return entry;
     }

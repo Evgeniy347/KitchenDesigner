@@ -4,10 +4,10 @@ namespace KitchenDesigner.Core.MCP
     {
         public string Name = string.Empty;
         public string Kind = string.Empty;
-        public int Parts;
+        public int PartsCount;
         public PlacementInfo Placement = new PlacementInfo();
 
-        public bool IsModule => Parts > 0;
+        public bool IsModule => PartsCount > 0;
 
         public bool HasIssues => Placement.issues.Count > 0;
     }

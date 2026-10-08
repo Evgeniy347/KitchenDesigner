@@ -48,7 +48,7 @@ namespace KitchenDesigner.Core.MCP
                 {
                     Name = group.name,
                     Kind = "module",
-                    Parts = members.Count,
+                    PartsCount = members.Count,
                     Placement = placements.BuildGroup(group.name, members),
                 });
             }

@@ -75,7 +75,7 @@ namespace KitchenDesigner.Core.MCP
             int modules = 0, loose = 0, parts = 0, withIssues = 0;
             foreach (var entry in input.Entries)
             {
-                if (entry.IsModule) { modules++; parts += entry.Parts; }
+                if (entry.IsModule) { modules++; parts += entry.PartsCount; }
                 else { loose++; parts++; }
                 if (entry.HasIssues) withIssues++;
             }
@@ -98,7 +98,7 @@ namespace KitchenDesigner.Core.MCP
                 var id = key(entry);
                 if (id == null) continue;
                 counts.TryGetValue(id, out int have);
-                counts[id] = have + Math.Max(entry.Parts, 1);
+                counts[id] = have + Math.Max(entry.PartsCount, 1);
             }
             var words = new List<string>();
             foreach (var group in groups)
@@ -128,7 +128,7 @@ namespace KitchenDesigner.Core.MCP
         {
             var placement = entry.Placement;
             var line = new StringBuilder(entry.Name).Append(' ')
-                .Append(entry.IsModule ? "module(" + entry.Parts + ")" : entry.Kind).Append(' ')
+                .Append(entry.IsModule ? "module(" + entry.PartsCount + ")" : entry.Kind).Append(' ')
                 .Append(Size(placement.footprintMm)).Append(" @(").Append(Join(",", placement.posMm)).Append(')');
             if (placement.on != null) line.Append(' ').Append(PlacementWording.On(placement.on));
             var relations = PlacementWording.Relations(placement);
