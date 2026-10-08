@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="365" viewBox="0 0 512 365" shape-rendering="crispEdges" font-family="monospace">
+<rect width="512" height="365" fill="#FFFFFF"/>
+<rect data-name="Floor" x="22.5" y="326.5" width="467" height="2" fill="#EFEBE2" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Wall_S" x="10.5" y="10.5" width="491" height="315" fill="#A3A3A3" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Wall_E" x="490.5" y="10.5" width="11" height="315" fill="#A3A3A3" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Wall_W" x="10.5" y="10.5" width="11" height="315" fill="#A3A3A3" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Wall_N" x="10.5" y="10.5" width="491" height="315" fill="#A3A3A3" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Door_1" x="373.5" y="80.5" width="105" height="245" fill="#D9B77E" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Window_1" x="197.5" y="80.5" width="117" height="140" fill="#9ED3F0" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Chair1" x="197.5" y="221.5" width="46" height="104" fill="#DDB88C" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Table1" x="162.5" y="238.5" width="140" height="87" fill="#DDB88C" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Cab01" x="22.5" y="242.5" width="69" height="83" fill="#DDB88C" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Cab02" x="92.5" y="242.5" width="69" height="83" fill="#DDB88C" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Cab_Left_Tall_Section" x="373.5" y="80.5" width="69" height="245" fill="#DDB88C" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Cooktop1" x="303.5" y="322.5" width="69" height="3" fill="#9FB5CC" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Sink1" x="233.5" y="227.5" width="69" height="98" fill="#9FB5CC" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Upper" x="22.5" y="80.5" width="210" height="81" fill="#F6E9A6" stroke="#1A1A1A" stroke-width="1"/>
+<rect data-name="Cab03" x="162" y="243" width="68" height="82" fill="#DDB88C" stroke="#D21F1F" stroke-width="2"/>
+<polygon points="161,242 169,242 165,234" fill="#D21F1F"/>
+<text x="127" y="127" font-size="20" text-anchor="middle" fill="#1A1A1A">Upper</text>
+<text x="196" y="287" font-size="10" text-anchor="middle" fill="#1A1A1A">!Cab03</text>
+<text x="57" y="290" font-size="20" text-anchor="middle" fill="#1A1A1A">Cab01</text>
+<text x="127" y="290" font-size="20" text-anchor="middle" fill="#1A1A1A">Cab02</text>
+<text x="408" y="209" font-size="20" text-anchor="middle" fill="#1A1A1A">C..on</text>
+<text x="301" y="209" font-size="20" text-anchor="start" fill="#1A1A1A">Door_1</text>
+<text x="268" y="282" font-size="20" text-anchor="middle" fill="#1A1A1A">Sink1</text>
+<text x="256" y="156" font-size="20" text-anchor="middle" fill="#1A1A1A">Window_1</text>
+<text x="453" y="171" font-size="10" text-anchor="start" fill="#1A1A1A">Wall_E</text>
+<text x="256" y="171" font-size="10" text-anchor="middle" fill="#1A1A1A">Wall_N</text>
+<text x="116" y="171" font-size="10" text-anchor="start" fill="#1A1A1A">Wall_S</text>
+<text x="24" y="171" font-size="10" text-anchor="start" fill="#1A1A1A">Wall_W</text>
+<rect x="466" y="355" width="18" height="2" fill="#1A1A1A"/>
+<polygon points="484,353 484,359 490,356" fill="#1A1A1A"/>
+<text x="492" y="362" font-size="20" text-anchor="start" fill="#1A1A1A">X</text>
+<rect x="466" y="339" width="2" height="18" fill="#1A1A1A"/>
+<polygon points="464,339 470,339 467,333" fill="#1A1A1A"/>
+<text x="472" y="349" font-size="20" text-anchor="start" fill="#1A1A1A">Y</text>
+<text x="458" y="359" font-size="20" text-anchor="end" fill="#1A1A1A">FRONT</text>
+<rect x="10" y="349" width="117" height="2" fill="#1A1A1A"/>
+<rect x="10" y="345" width="2" height="10" fill="#1A1A1A"/>
+<rect x="125" y="345" width="2" height="10" fill="#1A1A1A"/>
+<text x="133" y="355" font-size="20" text-anchor="start" fill="#1A1A1A">1000 mm</text>
+</svg>

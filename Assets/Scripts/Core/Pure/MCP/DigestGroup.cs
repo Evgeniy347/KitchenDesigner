@@ -4,5 +4,6 @@ namespace KitchenDesigner.Core.MCP
     {
         public string Id = string.Empty;
         public string? Detail;
+        public int[]? PolygonXz;
     }
 }

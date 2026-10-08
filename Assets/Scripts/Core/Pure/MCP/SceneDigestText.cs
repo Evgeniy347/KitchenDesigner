@@ -111,7 +111,7 @@ namespace KitchenDesigner.Core.MCP
             lines.Add(title + ": " + string.Join(", ", words));
         }
 
-        private static List<DigestEntry> Ordered(List<DigestEntry> entries, bool module)
+        public static List<DigestEntry> Ordered(List<DigestEntry> entries, bool module)
         {
             var picked = entries.FindAll(entry => entry.IsModule == module);
             picked.Sort(ByIssuesThenName);

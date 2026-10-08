@@ -5,6 +5,7 @@ namespace KitchenDesigner.Core.MCP
         public string Name = string.Empty;
         public string Kind = string.Empty;
         public int PartsCount;
+        public BoxMm Box;
         public PlacementInfo Placement = new PlacementInfo();
 
         public bool IsModule => PartsCount > 0;
