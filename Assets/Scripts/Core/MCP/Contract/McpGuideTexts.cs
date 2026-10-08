@@ -26,8 +26,8 @@ UNITS:
   (center-bottom = middle of the footprint at floor level).
 
 IDENTITY:
-- Every board has a unique text ""name"". Use describe_scene to look around, then
-  get_elements {filter/names} for detail.
+- Every board has a unique text ""name"". Use describe_scene to look around
+  (render_plan draws it as a picture), then get_elements {filter/names} for detail.
 - dimZMm (depth) is the board's LOCAL thickness; worldDim*Mm are the world-axis
   sizes (use those when a board is rotated).
 
@@ -102,6 +102,7 @@ UNITS
 
 READING THE SCENE (cheap -> expensive)
   describe_scene {max_chars?, scope?}           -> TEXT digest: one line per module / part
+  render_plan {view?, scope?, labels?, px?}      -> PICTURE (PNG): top plan or front elevation
   get_scene_tree                                -> modules, bboxes, type counts
   get {names:[""B4_Side_L""]}                     -> posMm + footprintMm + sizeMm (MM)
   get_elements {filter:""B4_*"", summary:true}     -> one cabinet, compact
@@ -142,6 +143,17 @@ UNDO INSTEAD OF REDOING
   A result is wrong -> undo {steps:1}; it restores positions, sizes and removed
   or created parts exactly. redo {} re-applies. One step = one earlier mutating
   call (or one edit the human made in the app).
+
+PICTURE, TEXT OR MILLIMETRES - which to reach for
+  render_plan {view:""top""|""front"", scope?}   orientation: where is the window, left or
+     right of the sink, is there a gap in the run, what stands in front of what.
+     About 3 KB. Red outline + triangle + ! = the part has an issue. Names are on the
+     parts; the caption lists those that did not fit (scope narrows and zooms, px
+     makes it larger). top = x right, z DOWN; front = x right, y UP.
+  describe_scene          text: what touches what, which parts have issues, exact
+     sizes. The same names and order as the picture.
+  get / place / the placement of a reply   MILLIMETRES. Never read a coordinate off
+     the picture - the scale bar says 1 px is several mm.
 
 THE LOOP: DESCRIBE -> PLACE -> READ THE PLACEMENT -> UNDO
   describe_scene {scope?}                   -> one text: modules, parts, what touches what

@@ -55,6 +55,9 @@ namespace KitchenDesigner.Core.MCP
             if (response.data is string plainText)
                 return TextContent(plainText);
 
+            if (response.data is McpImageReply picture)
+                return ImageContent(picture);
+
             return TextContent(McpJson.Serialize(response.data ?? new JObject()));
         }
 
@@ -81,6 +84,21 @@ namespace KitchenDesigner.Core.MCP
 
         private static JObject TextContent(string text) =>
             new JObject { ["content"] = ContentArray(text) };
+
+        private static JObject ImageContent(McpImageReply picture) =>
+            new JObject
+            {
+                ["content"] = new JArray
+                {
+                    new JObject { ["type"] = "text", ["text"] = picture.Text },
+                    new JObject
+                    {
+                        ["type"] = "image",
+                        ["data"] = Convert.ToBase64String(picture.Png),
+                        ["mimeType"] = McpImageReply.PngMimeType,
+                    },
+                },
+            };
 
         private static JObject ErrorContent(string message) =>
             new JObject { ["content"] = ContentArray("ERROR: " + message), ["isError"] = true };

@@ -29,17 +29,10 @@ namespace KitchenDesigner.Core.MCP
 
         public PlacementInfo BuildGroup(string name, IReadOnlyList<KitchenElement> members)
         {
-            var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
-            var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
             int violating = 0;
             foreach (var member in members)
-            {
-                var box = BoxOf(member);
-                min = Vector3.Min(min, box.Min);
-                max = Vector3.Max(max, box.Max);
                 if (_validation != null && _validation.violations.Contains(member)) violating++;
-            }
-            var union = new BoxMm(min, max);
+            var union = UnionBoxOf(members);
             var info = Describe(name, union, PlacementRelations.Of(union, NeighboursExcluding(members)));
             info.level = members.Count > 0 ? LevelRegistry.LevelOf(members[0]).id : null;
             if (violating > 0) info.issues.Add(violating + " of " + members.Count + " parts have issues");
@@ -67,8 +60,21 @@ namespace KitchenDesigner.Core.MCP
             return info;
         }
 
-        private static BoxMm BoxOf(KitchenElement el) =>
+        public static BoxMm BoxOf(KitchenElement el) =>
             McpAnchor.ToMmBoxStruct(McpAabb.Of(el.GetVertices()));
+
+        public static BoxMm UnionBoxOf(IReadOnlyList<KitchenElement> members)
+        {
+            var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+            var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+            foreach (var member in members)
+            {
+                var box = BoxOf(member);
+                min = Vector3.Min(min, box.Min);
+                max = Vector3.Max(max, box.Max);
+            }
+            return new BoxMm(min, max);
+        }
 
         private List<NeighbourBox> NeighboursExcluding(IEnumerable<KitchenElement> subjects)
         {

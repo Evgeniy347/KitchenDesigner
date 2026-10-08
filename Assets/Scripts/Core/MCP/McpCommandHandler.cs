@@ -76,6 +76,7 @@ namespace KitchenDesigner.Core.MCP
                     case "set_project_instructions": return HandleSetProjectInstructions(request);
 
                     case "describe_scene": return HandleDescribeScene(request);
+                    case "render_plan": return HandleRenderPlan(request);
                     case "get_scene_tree": return HandleGetSceneTree(request);
                     case "get": return HandleGetCompact(request);
                     case "preview_floorplan": return HandlePreviewFloorplan(request);

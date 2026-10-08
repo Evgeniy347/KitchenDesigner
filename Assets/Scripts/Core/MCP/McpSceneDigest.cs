@@ -17,6 +17,7 @@ namespace KitchenDesigner.Core.MCP
             if (scope.Detail != null) AddElements(input.Entries, scope.Detail, placements);
             else AddSceneView(input, live, placements, scope.RoomId);
             if (scope.Label == null) AddLevelsAndRooms(input);
+            else if (scope.RoomId != null) AddRoom(input, scope.RoomId);
             return true;
         }
 
@@ -49,6 +50,7 @@ namespace KitchenDesigner.Core.MCP
                     Name = group.name,
                     Kind = "module",
                     PartsCount = members.Count,
+                    Box = McpPlacementBuilder.UnionBoxOf(members),
                     Placement = placements.BuildGroup(group.name, members),
                 });
             }
@@ -63,6 +65,7 @@ namespace KitchenDesigner.Core.MCP
         {
             Name = element.PartName,
             Kind = ElementSelector.TypeOf(element),
+            Box = McpPlacementBuilder.BoxOf(element),
             Placement = placements.Build(element),
         };
 
@@ -71,7 +74,13 @@ namespace KitchenDesigner.Core.MCP
             foreach (var level in LevelRegistry.Items)
                 input.Levels.Add(new DigestGroup { Id = level.id, Detail = LevelDetail(level) });
             foreach (var room in ProjectRooms.Items)
-                input.Rooms.Add(new DigestGroup { Id = room.id });
+                input.Rooms.Add(new DigestGroup { Id = room.id, PolygonXz = room.polygonXZ });
+        }
+
+        private static void AddRoom(DigestInput input, string id)
+        {
+            foreach (var room in ProjectRooms.Items)
+                if (room.id == id) input.Rooms.Add(new DigestGroup { Id = room.id, PolygonXz = room.polygonXZ });
         }
 
         private static string LevelDetail(Level level)

@@ -93,6 +93,16 @@ claude mcp add --transport http unity-kitchen http://127.0.0.1:9337/mcp
   Слова отношений - те же, что в `placement` (`PlacementWording`), строки собирает чистый `SceneDigestText`
   (бюджет, порядок, хвост «+N more, use scope»), сцену обходит `McpSceneDigest` (`McpDigestScope` разбирает scope:
   имя модуля, `room:ID`/id комнаты, иначе селектор). Строка-значение ответа уходит агенту как есть (`McpToolCall`).
+- **`render_plan`** `{view top|front, scope?, labels (true), px (512)}` - картинка живой сцены для ОРИЕНТАЦИИ: PNG рядом со строкой подписи,
+  в одном ответе MCP (`McpToolCall` кладёт `{type:"text"}` и `{type:"image", data:<base64>, mimeType:"image/png"}`; handler
+  отдаёт `McpImageReply`). Вид сверху - x вправо, z ВНИЗ; спереди - x вправо, y ВВЕРХ. Сцену собирает тот же `McpSceneDigest`
+  (то же `scope`, те же имена и порядок, что в `describe_scene`), рисует и кодирует чистый слой без Unity: `PlanComposer`
+  (раскладка и подписи) -> `PlanDrawing` (список фигур в пикселях) -> `PlanSvg` (эталон, читается глазами) и `PlanRaster` ->
+  `PlanPng` (палитровый PNG 8 бит, плоские цвета, около 3 КБ на кухню при 512 px). Растр свой, а не камера и не разбор SVG:
+  камера зависит от GPU и PlayMode и не даёт ни одного байтового теста, разбирать SVG в Unity нечем. Красная рамка + треугольник +
+  `!` перед именем = у детали замечание (цвет не единственный носитель). Имена, не вошедшие в деталь, перечислены в подписи.
+  Когда брать картинку, а когда текст и миллиметры - в `McpGuideTexts` (workflow). Сторожа: `Assets/Tests/EditMode/Pure/Plan*Tests.cs`
+  (снапшоты SVG в `Pure/PlanSnapshots/*.verified.svg.txt`), `McpRenderPlanWireTests`, `McpRenderPlanTests`.
 - **`undo` / `redo`** `{steps}` — поверх `CommandStack`; шаг = один мутирующий вызов.
 - JSON на проводе компактный (без отступов), целые миллиметры без `.0`: сенсор бюджета —
   `McpPlacementReplyTests.CreateElements_ThreeCabinetsOnTheWire_FitTheByteBudget_…`.
