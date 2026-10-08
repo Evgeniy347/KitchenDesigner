@@ -16,6 +16,6 @@ namespace KitchenDesigner.Core.MCP
 
         public static string Name(PlanView view) => view == PlanView.Top ? "top" : "front";
 
-        public static string Axes(PlanView view) => view == PlanView.Top ? "x right, z down" : "x right, y up";
+        public static string Axes(PlanView view) => view == PlanView.Top ? "x right, z up" : "x right, y up";
     }
 }

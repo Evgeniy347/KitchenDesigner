@@ -65,7 +65,7 @@ public class PlanLayersAndWordsTests
     [Test]
     public void TheAxisWords_SayWhichWayEachAxisRuns()
     {
-        Assert.AreEqual("x right, z down", PlanViewWord.Axes(PlanView.Top));
+        Assert.AreEqual("x right, z up", PlanViewWord.Axes(PlanView.Top));
         Assert.AreEqual("x right, y up", PlanViewWord.Axes(PlanView.Front));
     }
 }

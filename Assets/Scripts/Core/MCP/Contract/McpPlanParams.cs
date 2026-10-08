@@ -5,7 +5,7 @@ namespace KitchenDesigner.Core.MCP.Contract
     [Serializable]
     public class ParamsRenderPlan
     {
-        [McpParam("Projection: top = plan seen from above (x RIGHT, z DOWN the picture), front = elevation (x RIGHT, y UP). Default top.",
+        [McpParam("Projection: top = plan seen from above (x RIGHT, z UP the picture, north up like preview_floorplan), front = elevation (x RIGHT, y UP). Default top.",
             Enum = new[] { "top", "front" })]
         public string view = "top";
 

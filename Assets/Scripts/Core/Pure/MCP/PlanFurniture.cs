@@ -35,31 +35,21 @@ namespace KitchenDesigner.Core.MCP
         private static void AddGizmo(PlanDrawing drawing, PlanLayout layout, int ox)
         {
             int s = layout.FontScale;
-            bool top = layout.View == PlanView.Top;
-            int oy = layout.FooterTop + (top ? s : 8 * s);
+            int oy = layout.FooterTop + 8 * s;
             drawing.Shapes.Add(PlanShape.Rect(ox, oy, ox + ArrowShaft * s, oy + s, PlanPalette.Ink, PlanShape.NoColor, 0));
             drawing.Shapes.Add(PlanShape.Triangle(ox + ArrowShaft * s, oy - s, ox + ArrowShaft * s, oy + 2 * s,
                 ox + (ArrowShaft + ArrowHead) * s, oy + s / 2, PlanPalette.Ink));
             drawing.Shapes.Add(PlanShape.Label(ox + (ArrowShaft + ArrowHead + 1) * s, oy + s / 2 - PlanFont.Rows * s / 2,
                 "X", PlanTextAnchor.Start, s, PlanPalette.Ink));
-            if (top) AddDownArrow(drawing, ox, oy, s);
-            else AddUpArrow(drawing, ox, oy, s);
+            AddUpArrow(drawing, ox, oy, s, layout.View == PlanView.Top ? "Z" : "Y");
         }
 
-        private static void AddDownArrow(PlanDrawing drawing, int ox, int oy, int s)
-        {
-            int end = oy + ArrowShaft * s;
-            drawing.Shapes.Add(PlanShape.Rect(ox, oy, ox + s, end, PlanPalette.Ink, PlanShape.NoColor, 0));
-            drawing.Shapes.Add(PlanShape.Triangle(ox - s, end, ox + 2 * s, end, ox + s / 2, end + ArrowHead * s, PlanPalette.Ink));
-            drawing.Shapes.Add(PlanShape.Label(ox + 3 * s, oy + 4 * s, "Z", PlanTextAnchor.Start, s, PlanPalette.Ink));
-        }
-
-        private static void AddUpArrow(PlanDrawing drawing, int ox, int oy, int s)
+        private static void AddUpArrow(PlanDrawing drawing, int ox, int oy, int s, string axis)
         {
             int start = oy + s - ArrowShaft * s;
             drawing.Shapes.Add(PlanShape.Rect(ox, start, ox + s, oy + s, PlanPalette.Ink, PlanShape.NoColor, 0));
             drawing.Shapes.Add(PlanShape.Triangle(ox - s, start, ox + 2 * s, start, ox + s / 2, start - ArrowHead * s, PlanPalette.Ink));
-            drawing.Shapes.Add(PlanShape.Label(ox + 3 * s, start - 2 * s, "Y", PlanTextAnchor.Start, s, PlanPalette.Ink));
+            drawing.Shapes.Add(PlanShape.Label(ox + 3 * s, start - 2 * s, axis, PlanTextAnchor.Start, s, PlanPalette.Ink));
         }
 
         private static void AddScaleBar(PlanDrawing drawing, PlanLayout layout, int rightLimit)

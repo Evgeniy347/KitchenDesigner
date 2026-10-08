@@ -5,14 +5,13 @@ namespace KitchenDesigner.Core.MCP
 {
     public static class PlanComposer
     {
-        private const int OutlineWidth = 1;
         private const int IssueMarkerUnits = 4;
         private const int LastLabelPass = 2;
         private const int LabelGapUnits = 2;
 
         public static PlanDrawing Compose(DigestInput input, PlanView view, bool labels, int px)
         {
-            var layout = PlanLayout.For(input, view, px);
+            var layout = PlanLayout.For(input, view, px, labels);
             var drawing = new PlanDrawing(layout.Width, layout.Height, layout.MmPerPixel, view, input.Scope)
             {
                 LabelsOn = labels,
@@ -20,7 +19,7 @@ namespace KitchenDesigner.Core.MCP
             };
             var placer = new PlanLabelPlacer(layout.Width, layout.Height, LabelGapUnits * layout.FontScale);
             var drawn = DrawEntries(input, layout, drawing, placer);
-            var labeler = new PlanLabeler(drawing, layout.FontScale, placer, Obstacles(drawn));
+            var labeler = new PlanLabeler(drawing, layout, placer, Obstacles(drawn));
             var roomNames = view == PlanView.Top ? AddRooms(input, layout, drawing) : new List<(string id, PlanRect area)>();
             if (labels) LabelEntries(input, drawn, drawing, labeler);
             if (labels) LabelRooms(roomNames, labeler);
@@ -41,8 +40,9 @@ namespace KitchenDesigner.Core.MCP
                 var layer = PlanLayers.Of(entry);
                 bool issue = entry.HasIssues;
                 if (issue) drawing.WithIssues++;
-                drawing.Shapes.Add(PlanShape.Rect(rect.X0, rect.Y0, rect.X1, rect.Y1, PlanPalette.FillOf(layer),
-                    issue ? PlanPalette.Issue : PlanPalette.Ink, issue ? Math.Max(layout.FontScale, 2) : OutlineWidth, entry.Name));
+                var style = PlanStyles.Of(entry, layer, layout.View);
+                drawing.Shapes.Add(PlanShape.Rect(rect.X0, rect.Y0, rect.X1, rect.Y1, style.Fill,
+                    issue ? PlanPalette.Issue : style.Stroke, issue ? Math.Max(layout.FontScale, 2) : style.StrokeWidth, entry.Name));
                 if (issue) markers.Add(IssueMarker(rect, layout.FontScale, placer));
             }
             drawing.Shapes.AddRange(markers);

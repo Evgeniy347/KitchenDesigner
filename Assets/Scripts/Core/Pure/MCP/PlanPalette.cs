@@ -15,10 +15,14 @@ namespace KitchenDesigner.Core.MCP
         public const int Part = 8;
         public const int Appliance = 9;
         public const int Issue = 10;
+        public const int WallFacing = 11;
+        public const int WallLine = 12;
+        public const int DoorLine = 13;
+        public const int WindowLine = 14;
 
         private static readonly int[] Rgb =
         {
-            0xFFFFFF, 0xEFEBE2, 0x5B84B8, 0xA3A3A3, 0x1A1A1A, 0xD9B77E, 0x9ED3F0, 0xF6E9A6, 0xDDB88C, 0x9FB5CC, 0xD21F1F,
+            0xFFFFFF, 0xEFEBE2, 0x5B84B8, 0xA3A3A3, 0x1A1A1A, 0xD9B77E, 0x9ED3F0, 0xF6E9A6, 0xDDB88C, 0x9FB5CC, 0xD21F1F, 0xE6E9EE, 0x6E6E6E, 0x8A5A1E, 0x2F6DA3,
         };
 
         public static int Count => Rgb.Length;

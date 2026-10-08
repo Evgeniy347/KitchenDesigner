@@ -8,6 +8,7 @@ namespace KitchenDesigner.Core.MCP
         public const int MinExtentMm = 100;
         public const int EmptySceneExtentMm = 1000;
         public const int MinPixelsPerRect = 2;
+        public const int MaxStripRows = 2;
 
         private const int MarginUnits = 5;
         private const int FooterUnits = 13;
@@ -21,54 +22,58 @@ namespace KitchenDesigner.Core.MCP
         public readonly int Width;
         public readonly int Height;
         public readonly int FooterTop;
+        public readonly int StripRows;
         public readonly double MmPerPixel;
 
         private readonly float _minX;
-        private readonly float _minV;
         private readonly float _maxV;
         private readonly int _left;
         private readonly int _top;
 
-        private PlanLayout(PlanView view, int fontScale, int width, int height, int footerTop, double mmPerPixel,
-            float minX, float minV, float maxV, int left)
+        private PlanLayout(PlanView view, int fontScale, int stripRows, int width, int height, int footerTop,
+            double mmPerPixel, PlanBounds bounds, int left)
         {
             View = view;
             FontScale = fontScale;
+            StripRows = stripRows;
             Margin = MarginUnits * fontScale;
             Width = width;
             Height = height;
             FooterTop = footerTop;
             MmPerPixel = mmPerPixel;
-            _minX = minX;
-            _minV = minV;
-            _maxV = maxV;
+            _minX = bounds.MinX;
+            _maxV = bounds.MaxV;
             _left = left;
-            _top = Margin;
+            _top = Margin + StripRows * StripRowPitch;
         }
+
+        public int StripRowPitch => (PlanFont.Rows + 1) * FontScale;
+
+        public int StripTop => Margin;
+
+        public int FooterHeight => Height - FooterTop;
 
         public static int FontScaleFor(int px) => Math.Max(1, Math.Min(MaxFontScale, px / PixelsPerFontScale));
 
-        public static PlanLayout For(DigestInput input, PlanView view, int px)
+        public static PlanLayout For(DigestInput input, PlanView view, int px, bool labels)
         {
             var bounds = PlanBounds.Of(input, view);
             int scale = FontScaleFor(px);
             int margin = MarginUnits * scale, footer = FooterUnits * scale;
-            double availW = px - 2 * margin, availH = px - 2 * margin - footer;
+            int rows = labels ? StripRowsFor(input, view) : 0;
+            int strip = rows * (PlanFont.Rows + 1) * scale;
+            double availW = px - 2 * margin, availH = px - 2 * margin - strip - footer;
             double k = Math.Max(bounds.Width / availW, bounds.Height / availH);
             int drawW = (int)Math.Min(availW, Math.Ceiling(bounds.Width / k - 1e-9));
             int drawH = (int)Math.Min(availH, Math.Ceiling(bounds.Height / k - 1e-9));
             int width = Math.Max(drawW + 2 * margin, MinWidthUnits * scale);
-            int footerTop = 2 * margin + drawH;
-            return new PlanLayout(view, scale, width, footerTop + footer, footerTop, k,
-                bounds.MinX, bounds.MinV, bounds.MaxV, (width - drawW) / 2);
+            int footerTop = margin + strip + drawH + margin;
+            return new PlanLayout(view, scale, rows, width, footerTop + footer, footerTop, k, bounds, (width - drawW) / 2);
         }
-
-        public int FooterHeight => Height - FooterTop;
 
         public int X(float xMm) => _left + Pixels((xMm - _minX) / MmPerPixel);
 
-        public int Y(float vMm) =>
-            View == PlanView.Top ? _top + Pixels((vMm - _minV) / MmPerPixel) : _top + Pixels((_maxV - vMm) / MmPerPixel);
+        public int Y(float vMm) => _top + Pixels((_maxV - vMm) / MmPerPixel);
 
         public PlanRect RectOf(BoxMm box)
         {
@@ -78,10 +83,12 @@ namespace KitchenDesigner.Core.MCP
             return new PlanRect(x0, y0, Math.Max(x1, x0 + MinPixelsPerRect), Math.Max(y1, y0 + MinPixelsPerRect));
         }
 
-        public PlanRect RectOf(Vector2 min, Vector2 max)
+        private static int StripRowsFor(DigestInput input, PlanView view)
         {
-            int x0 = X(min.x), x1 = X(max.x), y0 = Y(min.y), y1 = Y(max.y);
-            return new PlanRect(Math.Min(x0, x1), Math.Min(y0, y1), Math.Max(x0, x1), Math.Max(y0, y1));
+            int inStrip = 0;
+            foreach (var entry in input.Entries)
+                if (PlanStyles.LabelsInStrip(PlanLayers.Of(entry), view)) inStrip++;
+            return Math.Min(inStrip, MaxStripRows);
         }
 
         private static int Pixels(double value) => (int)Math.Floor(value + 0.5);

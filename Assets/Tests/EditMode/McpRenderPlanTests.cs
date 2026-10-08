@@ -104,6 +104,7 @@ public class McpRenderPlanTests : McpTestFixture
         var (width, height) = PngSize(png);
         Assert.AreEqual(512, Math.Max(width, height), "длинная сторона — запрошенное px");
         StringAssert.StartsWith($"render_plan top {width}x{height} px; scope whole scene;", caption);
+        StringAssert.Contains("x right, z up", caption, "север сверху, как в preview_floorplan");
         Assert.LessOrEqual(png.Length, PngBudgetBytes, "картинка пятидесяти деталей — в бюджет байтов");
         TestContext.WriteLine($"PLAN 50 parts: {png.Length} bytes PNG, caption: {caption}");
     }

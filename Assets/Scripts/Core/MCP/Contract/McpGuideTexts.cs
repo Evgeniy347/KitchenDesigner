@@ -149,7 +149,7 @@ PICTURE, TEXT OR MILLIMETRES - which to reach for
      right of the sink, is there a gap in the run, what stands in front of what.
      About 3 KB. Red outline + triangle + ! = the part has an issue. Names are on the
      parts; the caption lists those that did not fit (scope narrows and zooms, px
-     makes it larger). top = x right, z DOWN; front = x right, y UP.
+     makes it larger). top = x right, z UP (north up, like preview_floorplan); front = x right, y UP.
   describe_scene          text: what touches what, which parts have issues, exact
      sizes. The same names and order as the picture.
   get / place / the placement of a reply   MILLIMETRES. Never read a coordinate off

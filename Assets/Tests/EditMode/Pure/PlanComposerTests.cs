@@ -44,14 +44,14 @@ public class PlanComposerTests
     }
 
     [Test]
-    public void TopPutsGrowingZDownThePicture_FrontPutsGrowingYUp_BothPutGrowingXRight()
+    public void Projection_BothViewsPutGrowingXRightAndGrowingZOrYUp()
     {
         var input = Of(Part("Near", 0, 0, 0, 100, 100, 100), Part("Far", 900, 900, 900, 1000, 1000, 1000));
 
         var top = Compose(input, PlanView.Top);
         var front = Compose(input, PlanView.Front);
 
-        Assert.Less(RectOf(top, "Near").Y0, RectOf(top, "Far").Y0, "сверху: большая Z ниже по картинке");
+        Assert.Greater(RectOf(top, "Near").Y0, RectOf(top, "Far").Y0, "сверху: большая Z выше по картинке, север сверху, как в preview_floorplan");
         Assert.Greater(RectOf(front, "Near").Y0, RectOf(front, "Far").Y0, "спереди: большая Y выше по картинке");
         Assert.Less(RectOf(top, "Near").X0, RectOf(top, "Far").X0);
         Assert.Less(RectOf(front, "Near").X0, RectOf(front, "Far").X0);
@@ -209,9 +209,9 @@ public class PlanComposerTests
         var order = Compose(input).Shapes.Where(s => s.Kind == PlanShapeKind.Rect && s.Name != null).Select(s => s.Name).ToList();
 
         Assert.AreEqual("Floor", order[0]);
-        Assert.Less(order.IndexOf("Wall_N"), order.IndexOf("Window_1"));
+        Assert.Less(order.IndexOf("Wall_S"), order.IndexOf("Window_1"));
         Assert.Less(order.IndexOf("Window_1"), order.IndexOf("Cab01"));
-        Assert.Less(order.IndexOf("Wall_S"), order.IndexOf("Table1"));
+        Assert.Less(order.IndexOf("Wall_N"), order.IndexOf("Table1"));
     }
 
     [Test]
@@ -385,7 +385,7 @@ public class PlanComposerTests
         var front = PlanCaption.Of(Compose(PlanFixtures.Kitchen(), PlanView.Front));
 
         StringAssert.StartsWith("render_plan top 512x", top);
-        StringAssert.Contains("x right, z down", top);
+        StringAssert.Contains("x right, z up", top);
         StringAssert.Contains("x right, y up", front);
         StringAssert.Contains("scope whole scene", top);
         StringAssert.Contains("1 px = ", top);
@@ -400,6 +400,141 @@ public class PlanComposerTests
         input.Scope = "module Upper";
 
         StringAssert.Contains("scope module Upper", PlanCaption.Of(Compose(input)));
+    }
+
+    private static PlanShape FrontRect(string name) => RectOf(Compose(PlanFixtures.Kitchen(), PlanView.Front), name);
+
+    private static List<string> Names(PlanDrawing drawing) =>
+        drawing.Shapes.Where(s => s.Kind == PlanShapeKind.Rect && s.Name != null).Select(s => s.Name!).ToList();
+
+    [Test]
+    public void FrontView_AWallSeenEdgeOn_IsAThinOutlineWithNoFill()
+    {
+        foreach (var name in new[] { "Wall_W", "Wall_E" })
+        {
+            var wall = FrontRect(name);
+
+            Assert.AreEqual(PlanShape.NoColor, wall.Fill, name + ": боковая стена видна ребром и ничего не закрывает");
+            Assert.AreEqual(PlanPalette.WallLine, wall.Stroke);
+            Assert.AreEqual(1, wall.StrokeWidth);
+            Assert.Less(wall.X1 - wall.X0, 20, name + ": её ширина — её толщина");
+        }
+    }
+
+    [Test]
+    public void FrontView_AWallFacingTheViewer_IsALightBackdropNotAGreyBlock()
+    {
+        var drawing = Compose(PlanFixtures.Kitchen(), PlanView.Front);
+
+        foreach (var name in new[] { "Wall_N", "Wall_S" })
+        {
+            var wall = RectOf(drawing, name);
+            Assert.AreEqual(PlanPalette.WallFacing, wall.Fill, name);
+            Assert.AreNotEqual(PlanPalette.Wall, wall.Fill, "серая заливка на всю картинку прятала и путала детали");
+        }
+        Assert.That(drawing.Shapes.All(s => s.Fill != PlanPalette.Wall), "в разрезе серого цвета стен нет вовсе");
+    }
+
+    [Test]
+    public void TopView_KeepsItsGreyWalls()
+    {
+        Assert.AreEqual(PlanPalette.Wall, RectOf(Compose(PlanFixtures.Kitchen(), PlanView.Top), "Wall_N").Fill);
+    }
+
+    [Test]
+    public void FrontView_EveryWallIsDrawnBeforeEveryPart_FarWallsFirst()
+    {
+        var order = Names(Compose(PlanFixtures.Kitchen(), PlanView.Front));
+
+        int lastWall = new[] { "Wall_N", "Wall_S", "Wall_W", "Wall_E" }.Max(n => order.IndexOf(n));
+        foreach (var part in new[] { "Cab01", "Upper", "Sink1", "Table1", "Cab_Left_Tall_Section" })
+            Assert.Less(lastWall, order.IndexOf(part), "стена перекрыла бы деталь " + part);
+        Assert.Less(order.IndexOf("Wall_N"), order.IndexOf("Wall_S"), "север в глубине (Z 3000), юг ближе к зрителю");
+    }
+
+    [Test]
+    public void FrontView_WallAndFloorNamesSitInAStripAboveThePicture_NeverInTheFrame()
+    {
+        var drawing = Compose(PlanFixtures.Kitchen(), PlanView.Front);
+        int frameTop = drawing.Shapes.Where(s => s.Kind == PlanShapeKind.Rect && s.Name != null).Min(s => s.Y0);
+
+        foreach (var name in new[] { "Wall_N", "Wall_S", "Wall_W", "Wall_E", "Floor" })
+        {
+            var label = Texts(drawing).Single(t => t.Text == name);
+            Assert.LessOrEqual(label.Y0 + PlanFont.Rows * label.Scale, frameTop, name + ": подпись выше кадра, а не поверх деталей");
+        }
+    }
+
+    [Test]
+    public void FrontView_NoLabelsMeansNoStrip()
+    {
+        var input = PlanFixtures.Kitchen();
+
+        Assert.AreEqual(0, PlanLayout.For(input, PlanView.Front, 512, labels: false).StripRows);
+        Assert.AreEqual(PlanLayout.MaxStripRows, PlanLayout.For(input, PlanView.Front, 512, labels: true).StripRows);
+        Assert.AreEqual(0, PlanLayout.For(input, PlanView.Top, 512, labels: true).StripRows, "сверху стены подписаны на самом плане");
+    }
+
+    [Test]
+    public void FrontView_AnOpeningIsAnOutline_AndItsNameIsInsideItClearOfEveryPart()
+    {
+        var drawing = Compose(PlanFixtures.Kitchen(), PlanView.Front);
+
+        var window = RectOf(drawing, "Window_1");
+        var label = Texts(drawing).Single(t => t.Text == "Window_1");
+        var box = Box(label);
+
+        Assert.AreEqual(PlanShape.NoColor, window.Fill, "проём — контур: за ним видна стена");
+        Assert.AreEqual(PlanPalette.WindowLine, window.Stroke);
+        Assert.AreEqual(PlanPalette.DoorLine, FrontRect("Door_1").Stroke);
+        Assert.That(box.left >= window.X0 && box.right <= window.X1 && box.top >= window.Y0 && box.bottom <= window.Y1,
+            "подпись целиком внутри проёма");
+        foreach (var part in drawing.Shapes.Where(s => s.Kind == PlanShapeKind.Rect && s.Name is "Upper" or "Cab01" or "Sink1"))
+        {
+            bool overlap = box.left < part.X1 && part.X0 < box.right && box.top < part.Y1 && part.Y0 < box.bottom;
+            Assert.IsFalse(overlap, "подпись окна налезла на " + part.Name);
+        }
+    }
+
+    [Test]
+    public void FrontView_AnOpeningHiddenBehindAPart_IsReportedNotLeftFloating()
+    {
+        var input = Of(
+            PlanFixtures.Entry("Door_1", "door", 0, 0, 3000, 700, 2100, 3100),
+            PlanFixtures.Entry("Cab", "board", 0, 0, 0, 800, 2100, 560),
+            Part("Wide", 800, 0, 0, 4000, 700, 500));
+
+        var drawing = Compose(input, PlanView.Front);
+
+        Assert.IsFalse(Texts(drawing).Any(t => t.Text == "Door_1"), "негде встать внутри видимой части проёма: плавающей подписи нет");
+        CollectionAssert.Contains(drawing.Unlabelled, "Door_1");
+    }
+
+    [Test]
+    public void Label_TheFontShrinksBeforeTheNameIsShortened()
+    {
+        var input = Of(Part("Cab_Left_Tall_01", 0, 0, 0, 1200, 700, 500), Part("Wide", 1200, 0, 0, 6000, 700, 500));
+
+        var drawing = Compose(input);
+
+        var label = Texts(drawing).Single(t => t.Text == "Cab_Left_Tall_01");
+        Assert.AreEqual(1, label.Scale, "крупный шрифт не помещается, мелкий читаем — берём мелкий, имя целое");
+        CollectionAssert.IsEmpty(drawing.Shortened);
+    }
+
+    [Test]
+    public void OnlyWhenTheSmallestFontDoesNotFit_TheNameIsShortened_KeepingItsNumber()
+    {
+        var input = Of(Part("Cab_Left_Tall_Section_01", 0, 0, 0, 1500, 700, 500), Part("Wide", 1500, 0, 0, 12000, 700, 500));
+
+        var drawing = Compose(input);
+
+        var pair = drawing.Shortened.Single();
+        Assert.AreEqual("Cab_Left_Tall_Section_01", pair.Value);
+        StringAssert.EndsWith("_01", pair.Key, "номер на месте");
+        StringAssert.StartsWith("Cab_", pair.Key);
+        Assert.AreEqual(pair.Key, McpNameShortening.Fit(pair.Value, pair.Key.Length), "то же правило, что у любой другой строки с именем");
+        Assert.AreEqual(1, Texts(drawing).Single(t => t.Text == pair.Key).Scale, "сокращённое имя — только на минимальном шрифте");
     }
 
     private static double Ratio(PlanShape rect) => (rect.X1 - rect.X0) / (double)(rect.Y1 - rect.Y0);

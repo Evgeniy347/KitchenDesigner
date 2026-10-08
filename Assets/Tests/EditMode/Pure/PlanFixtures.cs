@@ -22,8 +22,8 @@ public static class PlanFixtures
     {
         var input = new DigestInput();
         input.Entries.Add(Entry("Floor", "floor", 0, -20, 0, 4000, 0, 3000));
-        input.Entries.Add(Entry("Wall_N", "wall", -100, 0, -100, 4100, 2700, 0));
-        input.Entries.Add(Entry("Wall_S", "wall", -100, 0, 3000, 4100, 2700, 3100));
+        input.Entries.Add(Entry("Wall_S", "wall", -100, 0, -100, 4100, 2700, 0));
+        input.Entries.Add(Entry("Wall_N", "wall", -100, 0, 3000, 4100, 2700, 3100));
         input.Entries.Add(Entry("Wall_W", "wall", -100, 0, 0, 0, 2700, 3000));
         input.Entries.Add(Entry("Wall_E", "wall", 4000, 0, 0, 4100, 2700, 3000));
         input.Entries.Add(Entry("Window_1", "window", 1500, 900, -100, 2500, 2100, 0));
