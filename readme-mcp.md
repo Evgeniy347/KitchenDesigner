@@ -42,6 +42,53 @@ directory is configured…`), а с ним — отказывает для лю�
 старте, настроен каталог или нет (`[MCP] Каталог, разрешённый для save_project: …` либо
 предупреждение, что параметр не задан).
 
+### Профиль инструментов: `-mcpProfile simple`
+
+Слабой модели 70 инструментов — много. Аргумент запуска `-mcpProfile simple` оставляет в `tools/list` 13
+инструментов основного цикла; без него (или с `full`) список прежний. Профиль ТОЛЬКО формирует список:
+скрытые инструменты по-прежнему вызываются по имени (`tools/call` реестр не фильтрует), и простой гайд говорит об
+этом одной фразой, не называя их. `initialize.instructions` и `guide` в простом профиле отдают только простой цикл
+(`McpSimpleGuideTexts`: темы workflow, place, run, planning, fields; чужая тема отвечает простым workflow, схема
+`guide` предлагает только простые темы). Мусор вместо `simple|full` оставляет полный список и пишет предупреждение.
+
+- Флаг профиля - поле `Simple` у `McpToolDef` (`simple: true` в `McpToolRegistry`); выборку делает `McpToolProfiles.Select`.
+- Разбор аргумента - `KitchenDesigner.Core.McpProfileArgument` (`Pure/Infrastructure/`), итог -
+  `McpProfileStatus.Current` (`Core/MCP/`), второго места, где решается профиль, нет; роутер получает его в
+  конструктор (`McpRpcRouter(dispatch, version, profile)`, по умолчанию `Full`).
+- Состав: guide, describe_scene, render_plan, get, place, apply_run, edit_elements, delete_elements, undo, redo,
+  apply_floorplan, get_violations, save_project. Причины: смотреть - describe_scene (текст), render_plan (картинка),
+  get (точные мм); объявлять - apply_floorplan (комната), apply_run (ряд шкафов), place (одиночные детали),
+  edit_elements (правка), delete_elements (удаление); отката нет без undo/redo; get_violations - аудит всей сцены;
+  save_project - единственный способ сохранить (работает при `-mcpSaveDir`); guide - шпаргалка.
+- Сторож `McpToolProfilesTests`: состав закреплён поимённо; у КАЖДОГО скрытого инструмента в таблице теста есть
+  замена из простого набора (таблица совпадает со списком скрытых - новый инструмент без замены краснит тест); тексты
+  простого профиля не называют скрытых инструментов. `McpToolProfileRouterTests` - список по умолчанию ровно прежний,
+  скрытые вызываются, `initialize` и `guide` следуют профилю.
+
+### Ряд шкафов: `apply_run`
+
+`apply_run {id, wall, from?, start_mm?, gap_mm?, base_y_mm?, room_side?, modules:[{name, kind, width_mm, height_mm?, depth_mm?}], dry_run?}`
+- декларация ряда вдоль ОДНОЙ стены (вдоль x или z), по образцу `apply_floorplan`: повтор с тем же `id` правит
+  ряд на месте (изменённая ширина сдвигает остальных, пропавшие из списка удаляются, идентичный вызов не меняет
+  ничего и не добавляет шаг отмены), один вызов - один шаг отмены. Позиции считает решатель `place`:
+  чистый `RunLayoutBuilder` (`Pure/MCP`) превращает декларацию в `PlaceSpec` (стена со стороны комнаты, правая/левая
+  грань предыдущего шкафа, выравнивание по концу стены или грань названной детали), `McpPlacer` ставит их по очереди
+  (ещё не поставленные шкафы ряда для решателя «не существуют»), `McpRunApplier` (`Core/MCP/`) ведёт транзакцию:
+  удаление выпавших, `ResizeCommand` для изменивших размер, размещение, запись состава ряда.
+- Состав ряда хранится в проекте под ключом `run:<id>` среди областей `ProjectFloorplans` (тот же сохраняемый
+  список, что у apply_floorplan; `:` в имени не даёт столкнуться с id плана); деталь с именем, которое занято вне
+  ряда, не присваивается - отказ.
+- Умолчания по виду (`RunKindDefaults`): base 720x560, wall 720x320 и подвес 1400 над полом, tall 2100x560.
+  720/560/1400 уже есть в проекте (пример guide place, `DishwasherBody.FACADE_NOMINAL_HEIGHT_MM`); 320 и 2100 -
+  типовая практика без процитированного ГОСТ (`docs/NORMATIVE-DEFAULTS.md` §7, тест с `NormativeUnverified`).
+- Сторона комнаты: `room_side` либо пол рядом со стеной (`RunRoomSide`); шкаф повёрнут лицом в комнату
+  (`rot_y` 0/180 для стены вдоль x, 90/270 вдоль z). Отказы с подсказкой, ничего не применено: ряд длиннее стены
+  (арифметика), нет пола или неясна сторона, чужое имя, навесной шкаф перед окном или напольный/высокий перед окном/дверью
+  (`RunOpeningConflicts`), перекрытие соседа (текст решателя), заблокированный выпавший шкаф.
+- Сенсоры: `RunLayoutBuilderTests`, `RunRoomSideTests`, `RunOpeningConflictsTests`, `RunKindDefaultsTests`,
+  `McpRunGuideTextTests` (быстрый путь); `McpApplyRunTests` (идемпотентность, правка ширины, удаление, окно, длина,
+  сценарий «три шкафа» за 2 вызова и до 2 КБ).
+
 ### Проверить связь
 
 ```powershell
@@ -103,7 +150,7 @@ claude mcp add --transport http unity-kitchen http://127.0.0.1:9337/mcp
   `!` перед именем = у детали замечание (цвет не единственный носитель). Имена, не вошедшие в деталь, перечислены в подписи.
   Когда брать картинку, а когда текст и миллиметры - в `McpGuideTexts` (workflow). Сторожа: `Assets/Tests/EditMode/Pure/Plan*Tests.cs`
   (снапшоты SVG в `Pure/PlanSnapshots/*.verified.svg.txt`), `McpRenderPlanWireTests`, `McpRenderPlanTests`.
-- **`undo` / `redo`** `{steps}` — поверх `CommandStack`; шаг = один мутирующий вызов.
+- **`apply_run`** - ряд шкафов вдоль стены одной декларацией, см. ниже. **`undo` / `redo`** `{steps}` — поверх `CommandStack`; шаг = один мутирующий вызов.
 - JSON на проводе компактный (без отступов), целые миллиметры без `.0`: сенсор бюджета —
   `McpPlacementReplyTests.CreateElements_ThreeCabinetsOnTheWire_FitTheByteBudget_…`.
 
