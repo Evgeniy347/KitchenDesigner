@@ -916,5 +916,11 @@ CHECKING: every mutation response carries the changed parts' issues and the
 sceneViolationDelta (what this call broke or fixed). get_violations
 {names:[...]} checks specific boards; get_violations {} audits the whole scene."
         };
+
+        public static string InstructionsFor(McpToolProfile profile) =>
+            profile == McpToolProfile.Simple ? McpSimpleGuideTexts.Instructions : Instructions;
+
+        public static IReadOnlyDictionary<string, string> TopicsFor(McpToolProfile profile) =>
+            profile == McpToolProfile.Simple ? McpSimpleGuideTexts.Topics : Topics;
     }
 }
