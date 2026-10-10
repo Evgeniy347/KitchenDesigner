@@ -13,7 +13,7 @@ using KitchenDesigner.Tests.Geometry;
 /// (test-results/ в .gitignore), а не в системной Temp: правило agents/GIT.md «Temp files»,
 /// и мусор после упавшего прогона виден там, где его ищут.
 /// </summary>
-internal sealed class TempUpdateFolder : IDisposable
+public sealed class TempUpdateFolder : IDisposable
 {
     public TempUpdateFolder()
     {
@@ -59,7 +59,7 @@ internal sealed class TempUpdateFolder : IDisposable
     }
 }
 
-internal static class Payload
+public static class Payload
 {
     public static byte[] Bytes(int length, int seed = 1)
     {
@@ -82,12 +82,12 @@ internal static class Payload
     }
 }
 
-internal sealed class InlineMainThread : IMainThread
+public sealed class InlineMainThread : IMainThread
 {
     public void Post(Action action) => action();
 }
 
-internal sealed class RecordingObserver : IDownloadObserver
+public sealed class RecordingObserver : IDownloadObserver
 {
     private readonly object _gate = new object();
     private readonly List<(long received, long total)> _progress = new List<(long, long)>();
@@ -135,7 +135,7 @@ internal sealed class RecordingObserver : IDownloadObserver
     }
 }
 
-internal sealed class FakeReleaseSource : IReleaseSource
+public sealed class FakeReleaseSource : IReleaseSource
 {
     public ReleaseLookup Answer;
     public int Fetches;
@@ -147,7 +147,7 @@ internal sealed class FakeReleaseSource : IReleaseSource
     }
 }
 
-internal sealed class SyncInspector : IFileInspector
+public sealed class SyncInspector : IFileInspector
 {
     private readonly IUpdateFolder _folder;
     public readonly List<(string name, bool hash)> Calls = new List<(string, bool)>();
@@ -163,7 +163,7 @@ internal sealed class SyncInspector : IFileInspector
     }
 }
 
-internal sealed class ScriptedDownloader : IPartDownloader
+public sealed class ScriptedDownloader : IPartDownloader
 {
     private readonly IUpdateFolder _folder;
     public readonly List<DownloadRequest> Requests = new List<DownloadRequest>();
@@ -189,7 +189,7 @@ internal sealed class ScriptedDownloader : IPartDownloader
     }
 }
 
-internal sealed class RecordingConsole : IUpdateConsole
+public sealed class RecordingConsole : IUpdateConsole
 {
     public readonly List<(UpdateLogLevel level, string text)> Lines = new List<(UpdateLogLevel, string)>();
 
@@ -198,7 +198,7 @@ internal sealed class RecordingConsole : IUpdateConsole
     public IEnumerable<string> Texts => Lines.Select(l => l.text);
 }
 
-internal sealed class RecordingDialog : IUpdateDialog
+public sealed class RecordingDialog : IUpdateDialog
 {
     public int Shown;
     public int Hidden;
@@ -217,7 +217,7 @@ internal sealed class RecordingDialog : IUpdateDialog
     public void Hide() => Hidden++;
 }
 
-internal sealed class RecordingApplier : IUpdateApplier
+public sealed class RecordingApplier : IUpdateApplier
 {
     public readonly List<string> Applied = new List<string>();
 

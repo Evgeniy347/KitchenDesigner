@@ -24,7 +24,7 @@ namespace KitchenDesigner.Core.Update
                     TaskScheduler.Default);
         }
 
-        internal static FileFacts Examine(string path, bool computeSha256)
+        public static FileFacts Examine(string path, bool computeSha256)
         {
             FileInfo info;
             try
