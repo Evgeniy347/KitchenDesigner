@@ -1,3 +1,5 @@
+using System;
+
 namespace KitchenDesigner.Core.Update
 {
     public sealed class DownloadProgressThrottle
@@ -19,7 +21,7 @@ namespace KitchenDesigner.Core.Update
         {
             if (total <= 0) return ReportIfQuietLongEnough(nowSeconds);
 
-            int percent = received >= total ? Complete : (int)(received * Complete / total);
+            int percent = (int)Math.Min(Complete, received * Complete / total);
             if (percent >= Complete) return ReportCompletionOnce(nowSeconds);
 
             int step = percent / PercentStep;

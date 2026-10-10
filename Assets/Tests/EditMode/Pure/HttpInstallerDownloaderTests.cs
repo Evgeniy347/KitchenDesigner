@@ -333,7 +333,7 @@ public class HttpInstallerDownloaderTests
         _temp.Write(PartName, new byte[] { 1, 2, 3 });
         var handler = new StubHandler((r, i, ct) => Done(Ok(Payload.Bytes(100))));
 
-        using (new FileStream(_temp.PathOf(PartName), FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        using (new FileStream(_temp.PathOf(PartName), FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
         {
             var observer = Run(Downloader(handler), Request());
 

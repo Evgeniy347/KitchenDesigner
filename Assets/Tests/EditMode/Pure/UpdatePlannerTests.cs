@@ -603,6 +603,8 @@ public class UpdatePlannerTests
         CollectionAssert.AreEqual(new[] { UpdateActionKind.Log, UpdateActionKind.Delete }, Kinds(actions));
         StringAssert.Contains("диск занят", actions[0].Message);
         Assert.AreEqual(UpdateLogLevel.Error, actions[0].Level);
+        Assert.AreEqual(PartName, Single(actions, UpdateActionKind.Delete).FileName,
+            "убирается недокачанный .part, а не готовый файл, которого ещё нет");
         Assert.AreEqual(UpdatePhase.Finished, planner.Phase);
     }
 
