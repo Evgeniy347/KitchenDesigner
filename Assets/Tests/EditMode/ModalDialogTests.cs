@@ -95,18 +95,6 @@ public class ModalDialogTests
         var buttons = RectIn(panel, (RectTransform)dialog.SecondaryButton.transform);
 
         float lowest = body.yMin;
-        if (dialog.Extra.gameObject.activeSelf)
-        {
-            var extra = RectIn(panel, dialog.Extra);
-            if (extra.yMax > body.yMin + 0.5f) offenders.Add($"{where}: вставка заходит на текст");
-            lowest = Mathf.Min(lowest, extra.yMin);
-        }
-        if (dialog.Note.gameObject.activeSelf)
-        {
-            var note = RectIn(panel, dialog.Note.rectTransform);
-            if (note.yMax > lowest + 0.5f) offenders.Add($"{where}: пояснение заходит на то, что над ним");
-            lowest = Mathf.Min(lowest, note.yMin);
-        }
 
         if (title.yMin < body.yMax - 0.5f) offenders.Add($"{where}: заголовок заходит на текст на {body.yMax - title.yMin:0.#} px");
         if (lowest < buttons.yMax + UIStyle.Space5 - 0.5f) offenders.Add($"{where}: текст ближе {UIStyle.Space5} px к кнопкам");
@@ -219,20 +207,6 @@ public class ModalDialogTests
         dialog.Cancel();
         Assert.AreEqual(1, cancelled);
         Assert.IsFalse(dialog.IsVisible);
-        Object.DestroyImmediate(dialog.Root.gameObject);
-    }
-
-    [Test]
-    public void ModalDialog_Note_AppearsOnlyWhenGiven()
-    {
-        var dialog = ModalDialog.Build(_canvas!.transform, "Probe");
-        dialog.Show(new ModalDialogContent { Title = "Т", Body = "Тело", PrimaryCaption = "OK" });
-        float without = dialog.Panel.sizeDelta.y;
-        Assert.IsFalse(dialog.Note.gameObject.activeSelf);
-
-        dialog.Show(new ModalDialogContent { Title = "Т", Body = "Тело", Note = "Пояснение", PrimaryCaption = "OK" });
-        Assert.IsTrue(dialog.Note.gameObject.activeSelf);
-        Assert.Greater(dialog.Panel.sizeDelta.y, without, "пояснение добавляет свою строку к высоте");
         Object.DestroyImmediate(dialog.Root.gameObject);
     }
 }

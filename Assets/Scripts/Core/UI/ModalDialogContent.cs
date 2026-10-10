@@ -6,8 +6,6 @@ namespace KitchenDesigner.Core.UI
     {
         public string Title { get; set; } = "";
         public string Body { get; set; } = "";
-        public string? Note { get; set; }
-        public float ExtraHeight { get; set; }
         public string PrimaryCaption { get; set; } = "";
         public Action? OnPrimary { get; set; }
         public string? SecondaryCaption { get; set; }
