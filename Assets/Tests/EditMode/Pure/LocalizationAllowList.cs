@@ -28,6 +28,7 @@ public static class LocalizationAllowList
         ["Core/Pure/Diagnostics/SceneScanLog.cs"] = "журнал замеров для разработчика",
         ["Core/Pure/Diagnostics/SelectionWorkLog.cs"] = "журнал замеров для разработчика",
         ["Core/Pure/Elements/CoplanarSurfaceDetector.cs"] = "диагностика, которую читают только тесты",
+        ["Core/Pure/Update/UpdateMessages.cs"] = "строки консоли разработчика (клавиша «ё») о ходе автообновления",
         ["Core/Pure/UI/ConsoleLog.cs"] = "консоль разработчика (клавиша «ё»)",
         ["Core/Pure/UI/ContentExtent.cs"] = "диагностика раскладки для тестов",
         ["Core/Snap/SnapSystem.cs"] = "вердикты Diagnose читает только MCP-инструмент snap_diagnose",
