@@ -121,6 +121,28 @@ namespace KitchenDesigner.Core.Update
 
         public static string UnexpectedFailure(string reason) => "сбой обновления: " + reason;
 
+        public static string NotInUpdatesFolder(string name) =>
+            "файл «" + name + "» не принадлежит папке обновлений: не трогаю";
+
+        public static string PartMissing(string part) => "недокачанный файл " + part + " не найден";
+
+        public static string PromoteNamesDiffer(string part, string final) =>
+            "файл " + part + " нельзя переименовать в " + final + ": версии в именах разные";
+
+        public static string HttpStatus(int code) => "сервер ответил HTTP " + code;
+
+        public static string NoConnection(string reason) => "нет соединения: " + reason;
+
+        public static string Stalled(double seconds) =>
+            "загрузка встала: нет новых байтов " + seconds.ToString("0", CultureInfo.InvariantCulture) + " с";
+
+        public static string Truncated(long received, long expected) =>
+            "соединение оборвано: получено " + received + " из " + expected + " байт";
+
+        public static string DiskFault(string reason) => "ошибка записи на диск: " + reason;
+
+        public static string DownloadCancelled => "загрузка отменена";
+
         public static string MethodName(IntegrityMethod method) => method switch
         {
             IntegrityMethod.Sha256 => "SHA-256",

@@ -9,18 +9,22 @@ namespace KitchenDesigner.Core.Update
         public const long TooManyRequestsStatus = 429;
         public const long FirstServerErrorStatus = 500;
 
-        private UpdateAttemptFailure(bool cancelledByUser, long httpStatus)
+        private UpdateAttemptFailure(bool cancelledByUser, long httpStatus, bool localFault = false)
         {
             CancelledByUser = cancelledByUser;
             HttpStatus = httpStatus;
+            IsLocalFault = localFault;
         }
 
         public bool CancelledByUser { get; }
         public long HttpStatus { get; }
+        public bool IsLocalFault { get; }
 
         public static UpdateAttemptFailure Cancelled() => new UpdateAttemptFailure(true, NoHttpStatus);
 
         public static UpdateAttemptFailure NoAnswer() => new UpdateAttemptFailure(false, NoHttpStatus);
+
+        public static UpdateAttemptFailure LocalFault() => new UpdateAttemptFailure(false, NoHttpStatus, true);
 
         public static UpdateAttemptFailure FromResponse(long httpStatus) =>
             new UpdateAttemptFailure(false, httpStatus);
@@ -60,6 +64,7 @@ namespace KitchenDesigner.Core.Update
         public bool IsWorthRetrying(UpdateAttemptFailure failure)
         {
             if (failure.CancelledByUser) return false;
+            if (failure.IsLocalFault) return false;
             if (failure.HttpStatus == UpdateAttemptFailure.NoHttpStatus) return true;
             if (failure.HttpStatus >= UpdateAttemptFailure.FirstServerErrorStatus) return true;
             return failure.HttpStatus == UpdateAttemptFailure.RequestTimeoutStatus

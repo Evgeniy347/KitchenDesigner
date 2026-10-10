@@ -84,6 +84,18 @@ public class UpdateRetryPolicyTests
     }
 
     [Test]
+    public void ALocalDiskFault_IsNeverRetried_ItWillFailTheSameWayAgain()
+    {
+        var failure = UpdateAttemptFailure.LocalFault();
+
+        Assert.IsTrue(failure.IsLocalFault);
+        Assert.IsFalse(TwoPauses().ShouldRetryAfter(1, failure),
+            "диск переполнен или папка закрыта на запись: повтор через две секунды упадёт так же, "
+            + "а перед ним ещё и пауза");
+        Assert.IsFalse(UpdateAttemptFailure.NoAnswer().IsLocalFault);
+    }
+
+    [Test]
     public void ANetworkFailureWithoutAnyResponse_IsRetried()
     {
         Assert.IsTrue(TwoPauses().ShouldRetryAfter(1, UpdateAttemptFailure.NoAnswer()),
