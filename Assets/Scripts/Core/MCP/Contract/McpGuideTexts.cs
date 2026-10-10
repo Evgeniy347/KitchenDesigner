@@ -62,6 +62,8 @@ PLACEMENT WITHOUT MATH:
   in words, the server computes the position. LOOP: look (describe_scene, get) ->
   place -> read the placement in the reply (issues, touches, gaps, sceneViolationDelta)
   -> wrong? undo, or place the same name again. See guide {topic:""place""}.
+- apply_run {id, wall, from, start_mm, modules:[{name, kind, width_mm}]} - a whole row of cabinets along a wall in one
+  call; send the same id again to change it (idempotent). See guide {topic:""run""}.
 - align_elements — press a face flush against (or gap_mm away from) another board's face.
 - get_free_space — the empty box between two boards (size, bounds, blockers).
 - clone_elements — N copies with a step offset; distribute_evenly — equal spacing.
@@ -78,7 +80,7 @@ IF A CALL FAILS:
 - ""Element not found"" -> get_elements {filter:...} to find the exact name, retry.
 - A connection error means the Kitchen Designer app is not running - ask the user to start it.
 
-Call guide {topic:""workflow""|""planning""|""bulk""|""elements""|""fields""|""drawers""|""violations""|""place""}
+Call guide {topic:""workflow""|""planning""|""bulk""|""elements""|""fields""|""drawers""|""violations""|""place""|""run""}
 any time.";
 
 
@@ -87,7 +89,7 @@ any time.";
             ["workflow"] =
 @"KITCHEN DESIGNER — WORKFLOW CHEAT-SHEET
 Other topics: guide {topic:""planning"" | ""bulk"" | ""elements"" | ""fields"" |
-""drawers"" | ""violations"" | ""place""}
+""drawers"" | ""violations"" | ""place"" | ""run""}
 
 FIRST CALL OF A SESSION
   get_project_instructions -> the project's own conventions (wall thicknesses,
@@ -159,6 +161,7 @@ THE LOOP: DESCRIBE -> PLACE -> READ THE PLACEMENT -> UNDO
   describe_scene {scope?}                   -> one text: modules, parts, what touches what
   get {names:[...]}                         -> exact numbers of a few parts
   place {items:[...]}                       -> no coordinates, see guide {topic:""place""}
+  apply_run {id, wall, modules:[...]}       -> a whole ROW of cabinets along a wall, see guide {topic:""run""}
   reply: placements[].issues / touches / gaps and sceneViolationDelta.added
   anything wrong -> undo {} (or place the same name again), never delete+recreate.
   Unsure? place {dry_run:true, items:[...]} (also create_elements / clone_elements /
@@ -296,6 +299,8 @@ REFUSALS (nothing is applied; resend the WHOLE batch after fixing):
   overlaps 'Cab2'...       names the face of Cab2 to stand against (or on:'Cab2')
   type 'window' ...        windows/doors: add_opening; walls: create_walls;
                            floors: create_floor",
+
+            ["run"] = McpRunGuideText.Text,
 
             ["bulk"] =
 @"BULK / RELATIONAL OPERATIONS — PASS INTENT, NOT COORDINATES

@@ -48,10 +48,11 @@ namespace KitchenDesigner.Core.MCP.Contract
         public bool Cached;
         public bool StaticText;
         public bool OpenWorld;
+        public bool Simple;
 
         public McpToolDef(string name, string title, string description,
             McpToolKind kind, Type? paramsType,
-            bool cached = false, bool staticText = false, bool openWorld = false)
+            bool cached = false, bool staticText = false, bool openWorld = false, bool simple = false)
         {
             Name = name;
             Title = title;
@@ -61,6 +62,7 @@ namespace KitchenDesigner.Core.MCP.Contract
             Cached = cached;
             StaticText = staticText;
             OpenWorld = openWorld;
+            Simple = simple;
         }
     }
 }

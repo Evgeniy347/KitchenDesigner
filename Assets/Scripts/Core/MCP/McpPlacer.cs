@@ -22,6 +22,7 @@ namespace KitchenDesigner.Core.MCP
         private readonly List<IUndoCommand> _commands = new List<IUndoCommand>();
         private readonly List<KitchenElement> _changed = new List<KitchenElement>();
         private readonly HashSet<string> _failed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _notYetPlaced = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public McpPlacer(Func<string, KitchenElement?> find)
         {
@@ -36,10 +37,18 @@ namespace KitchenDesigner.Core.MCP
 
         public bool Failed => _errors.Count > 0;
 
-        public void Place(int index, PlaceItem item)
+        public void IgnoreUntilPlaced(IEnumerable<string> names)
+        {
+            foreach (var name in names) _notYetPlaced.Add(name);
+        }
+
+        public void Place(int index, PlaceItem item) => Place(index, item, ToSpec(item));
+
+        public void Place(int index, PlaceItem item, PlaceSpec spec)
         {
             string tag = $"item {index + 1} '{item.name}'";
-            if (RefersToAFailedItem(item, out var broken))
+            _notYetPlaced.Remove(item.name);
+            if (RefersToAFailedItem(spec, out var broken))
             {
                 Reject(item, $"{tag}: skipped - it refers to '{broken}', which was rejected above");
                 return;
@@ -52,7 +61,7 @@ namespace KitchenDesigner.Core.MCP
                 return;
             }
 
-            var outcome = Solve(item, work);
+            var outcome = Solve(spec, work);
             if (!outcome.Ok)
             {
                 work.Undo();
@@ -77,14 +86,14 @@ namespace KitchenDesigner.Core.MCP
             _failed.Add(item.name);
         }
 
-        private bool RefersToAFailedItem(PlaceItem item, out string broken)
+        private bool RefersToAFailedItem(PlaceSpec spec, out string broken)
         {
             broken = string.Empty;
             if (_failed.Count == 0) return false;
             var targets = new List<string>();
-            if (!string.IsNullOrWhiteSpace(item.on)) targets.Add(item.on!.Trim());
-            foreach (var a in item.against ?? Array.Empty<PlaceAgainstOp>()) targets.Add(a.target);
-            foreach (var a in item.align ?? Array.Empty<PlaceAlignOp>()) targets.Add(a.target);
+            if (!string.IsNullOrWhiteSpace(spec.On)) targets.Add(spec.On!.Trim());
+            foreach (var a in spec.Against) targets.Add(a.Target);
+            foreach (var a in spec.Align) targets.Add(a.Target);
             foreach (var target in targets)
                 if (target != null && _failed.Contains(target)) { broken = target; return true; }
             return false;
@@ -161,20 +170,20 @@ namespace KitchenDesigner.Core.MCP
             return new PlaceWork(element, true);
         }
 
-        private PlaceOutcome Solve(PlaceItem item, PlaceWork work)
+        private PlaceOutcome Solve(PlaceSpec spec, PlaceWork work)
         {
             var element = work.Element;
             var box = McpAnchor.ToMmBoxStruct(McpAabb.Of(element.GetVertices()));
             var scene = new List<NeighbourBox>();
             foreach (var other in PartRegistry.GetAll())
-                if (other != null && other != element)
+                if (other != null && other != element && !_notYetPlaced.Contains(other.PartName))
                     scene.Add(new NeighbourBox(other.PartName,
                         McpAnchor.ToMmBoxStruct(McpAabb.Of(other.GetVertices()))));
             float ground = work.IsNew
                 ? LevelRegistry.CurrentFloorElevationMm
                 : LevelRegistry.LevelOf(element).floorElevationMm;
             Vector3? current = work.IsNew ? (Vector3?)null : box.Min;
-            return PlaceSolver.Solve(item.name, ToSpec(item), box.Size, current, scene, ground);
+            return PlaceSolver.Solve(spec.Name, spec, box.Size, current, scene, ground);
         }
 
         private static PlaceSpec ToSpec(PlaceItem item)

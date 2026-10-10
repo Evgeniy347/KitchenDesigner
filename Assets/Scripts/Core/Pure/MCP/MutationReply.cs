@@ -7,6 +7,8 @@ namespace KitchenDesigner.Core.MCP
     public class MutationReply
     {
         public bool ok = true;
+        public string? id;
+        public bool? unchanged;
         public string? @ref;
         public List<PlacementInfo>? placements;
         public List<object>? elements;
