@@ -50,6 +50,9 @@ namespace KitchenDesigner.Core.Update
         public static string Cleaning(IReadOnlyList<string> files) =>
             "удаляю устаревшие файлы обновлений (" + files.Count + "): " + string.Join(", ", files);
 
+        public static string LegacyCleaning(IReadOnlyList<string> files) =>
+            "удаляю установщики прежнего места загрузки (" + files.Count + "): " + string.Join(", ", files);
+
         public static string DeleteFailed(string file, string reason) =>
             "не удалось удалить " + file + ": " + reason;
 

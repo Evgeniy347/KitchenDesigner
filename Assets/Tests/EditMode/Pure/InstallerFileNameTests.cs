@@ -108,4 +108,35 @@ public class InstallerFileNameTests
         Assert.IsFalse(InstallerFileName.IsOurs("readme.txt"));
         Assert.IsFalse(InstallerFileName.IsOurs(null));
     }
+
+    [Test]
+    public void LogFor_IsWhatTheInstallerCommandLineWritesNextToTheInstaller()
+    {
+        var installerPath = System.IO.Path.Combine("C:", "x", InstallerFileName.For("0.2100"));
+
+        var logName = System.IO.Path.GetFileName(InstallerCommandLine.LogPathFor(installerPath));
+
+        Assert.AreEqual(InstallerFileName.LogFor("0.2100"), logName,
+            "чистка узнаёт лог установщика по имени; если ключ /LOG= сменит имя, логи перестанут убираться");
+        Assert.IsTrue(InstallerFileName.TryParseLog(logName, out var version));
+        Assert.AreEqual("0.2100", version);
+        Assert.IsTrue(InstallerFileName.IsOurs(logName));
+    }
+
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase("KitchenDesigner-Setup-0.2100-x64.log.bak")]
+    [TestCase("KitchenDesigner-Setup-0.2100-x86.log")]
+    [TestCase("KitchenDesigner-Setup--x64.log")]
+    [TestCase("KitchenDesigner-Setup-abc-x64.log")]
+    [TestCase("kitchendesigner-setup-0.2100-x64.log")]
+    [TestCase("KitchenDesigner-Setup-0.2100-x64.exe")]
+    [TestCase("KitchenDesigner-Setup-0.2100-x64.txt")]
+    [TestCase("../KitchenDesigner-Setup-0.2100-x64.log")]
+    [TestCase("install.log")]
+    public void TryParseLog_RejectsEveryLookalike(string name)
+    {
+        Assert.IsFalse(InstallerFileName.TryParseLog(name, out var version), name);
+        Assert.AreEqual(string.Empty, version);
+    }
 }

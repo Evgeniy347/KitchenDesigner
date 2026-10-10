@@ -135,9 +135,12 @@ public class UpdateAdapterContractTests
             "путь папки обновлений один и считается в одном месте: %TEMP%/KitchenDesigner/Updates. "
             + "Свой путь в UpdateService разошёлся бы с чисткой и со вторым запуском");
         foreach (var file in Directory.GetFiles(UpdateDir(), "*.cs"))
+        {
+            if (Path.GetFileName(file) == "UpdateService.cs") continue;
             Assert.IsFalse(File.ReadAllText(file).Contains("temporaryCachePath"),
                 Path.GetFileName(file) + ": установщики больше не лежат в temporaryCachePath приложения — "
                 + "там их не найдёт ни повторный запуск, ни чистка");
+        }
     }
 
     [Test]
@@ -159,5 +162,20 @@ public class UpdateAdapterContractTests
 
         StringAssert.Contains("_downloader?.Dispose()", source,
             "без этого фоновая загрузка переживает сцену и пишет в .part, когда приложение уже закрывается");
+    }
+
+    [Test]
+    public void UpdateService_TouchesTheOldCacheOnlyThroughTheOneTimeLegacyCleanup()
+    {
+        var source = Source("UpdateService.cs");
+
+        Assert.AreEqual(1, Regex.Matches(source, "temporaryCachePath").Count,
+            "прежняя папка загрузки упоминается один раз — в разовой уборке; любое другое обращение "
+            + "к кэшу приложения вернуло бы установщики туда, где их никто не чистит");
+        StringAssert.Contains("LegacyCacheCleanup.Run(legacy, console)", source);
+        StringAssert.Contains("preferences.GetInt(LegacyCacheCleanedKey, 0) == 1) return;", source,
+            "уборка идёт один раз: пометка читается раньше, чем что-либо удаляется");
+        StringAssert.Contains("if (!LegacyCacheCleanup.Run(legacy, console)) return;", source,
+            "пометка ставится только после полной уборки: занятый файл повторят при следующем запуске");
     }
 }

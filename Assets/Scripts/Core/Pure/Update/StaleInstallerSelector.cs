@@ -20,7 +20,8 @@ namespace KitchenDesigner.Core.Update
         private static bool IsStale(string name, string currentVersion, string? targetVersion)
         {
             if (InstallerFileName.TryParsePart(name, out _)) return true;
-            if (!InstallerFileName.TryParseInstaller(name, out var version)) return false;
+            if (!InstallerFileName.TryParseInstaller(name, out var version)
+                && !InstallerFileName.TryParseLog(name, out version)) return false;
             if (VersionUtil.Compare(version, currentVersion) <= 0) return true;
             return targetVersion != null && VersionUtil.Compare(version, targetVersion) < 0;
         }

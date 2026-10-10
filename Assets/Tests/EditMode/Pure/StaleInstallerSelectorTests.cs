@@ -56,7 +56,7 @@ public class StaleInstallerSelectorTests
     {
         var folder = Folder(
             "KitchenDesigner-Setup-0.1000-x64.exe.bak",
-            "KitchenDesigner-Setup-0.1000-x64.log",
+            "KitchenDesigner-Setup-0.1000-x64.log.bak",
             "KitchenDesigner-Setup-0.1000-x86.exe",
             "kitchendesigner-setup-0.1000-x64.exe",
             "KitchenDesigner-Setup--x64.exe",
@@ -99,5 +99,24 @@ public class StaleInstallerSelectorTests
 
         CollectionAssert.AreEqual(new[] { InstallerFileName.For("0.900") }, stale,
             "0.900 старее 0.2000, а 0.10000 новее — строковое сравнение перепутало бы их");
+    }
+
+    [Test]
+    public void InstallerLogs_FollowTheirInstallers_OldOnesGo_NewerOnesStayForDiagnosis()
+    {
+        var folder = Folder(
+            InstallerFileName.LogFor("0.1000"),
+            InstallerFileName.LogFor("0.2000"),
+            InstallerFileName.LogFor("0.2050"),
+            InstallerFileName.LogFor("0.2100"),
+            InstallerFileName.LogFor("0.2200"));
+
+        CollectionAssert.AreEquivalent(
+            new[] { InstallerFileName.LogFor("0.1000"), InstallerFileName.LogFor("0.2000") },
+            StaleInstallerSelector.Select(folder, Current, null));
+        CollectionAssert.AreEquivalent(
+            new[] { InstallerFileName.LogFor("0.1000"), InstallerFileName.LogFor("0.2000"), InstallerFileName.LogFor("0.2050") },
+            StaleInstallerSelector.Select(folder, Current, "0.2100"),
+            "лог попытки, не дошедшей до успеха (версия новее текущей), остаётся — по нему разбирают откат");
     }
 }

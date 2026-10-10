@@ -79,7 +79,7 @@ public class FileSystemUpdateFolderTests
 
     [TestCase("notes.txt")]
     [TestCase("KitchenDesigner-Setup-0.2100-x64.exe.bak")]
-    [TestCase("KitchenDesigner-Setup-0.2100-x64.log")]
+    [TestCase("KitchenDesigner-Setup-0.2100-x64.log.bak")]
     [TestCase("kitchendesigner-setup-0.2100-x64.exe")]
     [TestCase("KitchenDesigner-Setup-0.2100-x86.exe")]
     public void TryDelete_RefusesEveryNameThatIsNotOurs_EvenWhenTheFileIsInTheFolder(string name)
@@ -213,5 +213,17 @@ public class FileSystemUpdateFolderTests
     public void Constructor_RejectsAnEmptyRoot()
     {
         Assert.Throws<System.ArgumentException>(() => new FileSystemUpdateFolder(" "));
+    }
+
+    [Test]
+    public void TryDelete_RemovesAnInstallerLog_ButNotALookalike()
+    {
+        var log = InstallerFileName.LogFor("0.2100");
+        _temp.Write(log, new byte[1]);
+        _temp.Write(log + ".bak", new byte[1]);
+
+        Assert.IsTrue(_temp.Folder.TryDelete(log, out var error), error);
+
+        CollectionAssert.AreEqual(new[] { log + ".bak" }, _temp.Names());
     }
 }

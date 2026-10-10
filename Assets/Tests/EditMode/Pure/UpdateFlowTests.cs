@@ -313,7 +313,9 @@ public class UpdateFlowTests
         _temp.Write(InstallerFileName.For("0.2500"), new byte[10]);
         _temp.Write("notes.txt", new byte[10]);
         _temp.Write("KitchenDesigner-Setup-0.1000-x64.exe.bak", new byte[10]);
-        _temp.Write("KitchenDesigner-Setup-0.1000-x64.log", new byte[10]);
+        _temp.Write(InstallerFileName.LogFor("0.1000"), new byte[10]);
+        _temp.Write(InstallerFileName.LogFor("0.2500"), new byte[10]);
+        _temp.Write("KitchenDesigner-Setup-0.1000-x64.log.bak", new byte[10]);
         _temp.WriteOutside(InstallerFileName.For("0.1000"), new byte[10]);
         var h = NewHarness();
         var newest = Payload.Bytes(10);
@@ -326,7 +328,8 @@ public class UpdateFlowTests
         CollectionAssert.AreEqual(new[]
         {
             "KitchenDesigner-Setup-0.1000-x64.exe.bak",
-            "KitchenDesigner-Setup-0.1000-x64.log",
+            "KitchenDesigner-Setup-0.1000-x64.log.bak",
+            InstallerFileName.LogFor("0.2500"),
             InstallerFileName.For("0.2500"),
             "notes.txt",
         }.OrderBy(n => n, StringComparer.Ordinal), _temp.Names());

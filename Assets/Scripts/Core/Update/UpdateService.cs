@@ -13,6 +13,7 @@ namespace KitchenDesigner.Core.Update
     public sealed class UpdateService : MonoBehaviour
     {
         public static bool StartupCheckEnabled = true;
+        public const string LegacyCacheCleanedKey = "UpdateLegacyCacheCleaned";
 
         [SerializeField] private float _startupDelaySeconds = 2f;
 
@@ -40,6 +41,8 @@ namespace KitchenDesigner.Core.Update
                 return;
             }
 
+            var console = new UnityUpdateConsole();
+            CleanLegacyCacheOnce(console);
             var mainThread = gameObject.AddComponent<MainThreadQueue>();
             var checker = gameObject.AddComponent<GitHubReleaseChecker>();
             var folder = new FileSystemUpdateFolder(UpdateFolderLocation.RootUnder(Path.GetTempPath()));
@@ -60,12 +63,21 @@ namespace KitchenDesigner.Core.Update
                 folder,
                 new Sha256FileInspector(folder, mainThread),
                 _downloader,
-                new UnityUpdateConsole(),
+                console,
                 updateDialog,
                 new InnoUpdateApplier(),
                 () => Time.realtimeSinceStartup);
 
             StartCoroutine(CheckAfterDelay());
+        }
+
+        private static void CleanLegacyCacheOnce(IUpdateConsole console)
+        {
+            var preferences = PreferenceStore.Current;
+            if (preferences.GetInt(LegacyCacheCleanedKey, 0) == 1) return;
+            var legacy = new FileSystemUpdateFolder(Application.temporaryCachePath);
+            if (!LegacyCacheCleanup.Run(legacy, console)) return;
+            preferences.SetInt(LegacyCacheCleanedKey, 1);
         }
 
         private void OnDestroy()

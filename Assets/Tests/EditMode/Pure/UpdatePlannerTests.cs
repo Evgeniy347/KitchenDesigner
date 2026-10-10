@@ -338,7 +338,9 @@ public class UpdatePlannerTests
             InstallerFileName.For("0.2200"),
             InstallerFileName.For("0.2100") + ".bak",
             "KitchenDesigner-Setup-0.1500-x86.exe",
-            "KitchenDesigner-Setup-0.1500-x64.log",
+            InstallerFileName.LogFor("0.1500"),
+            InstallerFileName.LogFor("0.2300"),
+            "KitchenDesigner-Setup-0.1500-x64.log.bak",
             "notes.txt");
 
         Planned(Found(), folder, out var actions);
@@ -350,6 +352,7 @@ public class UpdatePlannerTests
             InstallerFileName.For(Current),
             InstallerFileName.For("0.2050"),
             InstallerFileName.PartFor("0.2050"),
+            InstallerFileName.LogFor("0.1500"),
         }, cleanup);
         Assert.AreEqual(UpdateActionKind.Download, actions.Last().Kind);
     }
