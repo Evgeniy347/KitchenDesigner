@@ -163,10 +163,6 @@ public static class LocalizationAllowList
             ("Core/Pure/Infrastructure/McpPortArgument.cs", "умолчанию ", Log),
             ("Core/Pure/Infrastructure/McpSaveDirectoryArgument.cs", " ожидает путь к каталогу, получена пустая строка", Log),
             ("Core/Pure/Rendering/FrontFaceVisibility.cs", " — такой детали в сцене нет", Dev),
-            ("Core/Pure/Update/UpdateCoordinator.cs", "[Update] загрузка не удалась: {reason}", Log),
-            ("Core/Pure/Update/UpdateCoordinator.cs", "[Update] проверка не удалась: {reason}", Log),
-            ("Core/Pure/Update/UpdateCoordinator.cs", "манифест не описывает устанавливаемый релиз: ", Log),
-            ("Core/Pure/Update/UpdateCoordinator.cs", "сервер не вернул манифест", Log),
             ("Core/Rendering/HoverTint.cs", " не найден — подсветка ", Log),
             ("Core/Rendering/HoverTint.cs", "[HoverTint] Шейдер ", Log),
             ("Core/Rendering/HoverTint.cs", "детали, названной пунктом списка, не будет видна", Log),
@@ -213,13 +209,8 @@ public static class LocalizationAllowList
             ("Core/UI/WallDeviceFieldsEditor.cs", "ШиринаРамки", Identifier),
             ("Core/UI/WallFieldsEditor.cs", "КладкаЗапас", Identifier),
             ("Core/UI/WallFieldsEditor.cs", "КладкаШов", Identifier),
-            ("Core/Update/ReleaseManifestParser.cs", "В ответе нет номера версии", Log),
-            ("Core/Update/ReleaseManifestParser.cs", "В релизе нет установщика x64 для версии ", Log),
-            ("Core/Update/ReleaseManifestParser.cs", "Не удалось разобрать номер версии: ", Log),
             ("Core/Update/ReleaseManifestParser.cs", "Некорректный ответ: ", Log),
             ("Core/Update/ReleaseManifestParser.cs", "Пустой ответ сервера", Log),
-            ("Core/Update/UnityWebRequestDownloader.cs", "Не удалось подготовить папку: ", Log),
-            ("Core/Update/UnityWebRequestDownloader.cs", "загрузка встала: нет новых байтов {watchdog.Idle", Log),
         };
 
     public static readonly ISet<string> ComputesKeys = new HashSet<string>(StringComparer.Ordinal)

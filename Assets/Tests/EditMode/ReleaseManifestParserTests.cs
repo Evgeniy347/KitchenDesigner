@@ -131,4 +131,73 @@ public class ReleaseManifestParserTests
         }";
         Assert.IsFalse(ReleaseManifestParser.TryParse(json, out _, out _));
     }
+
+    private const string Sha = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+
+    [Test]
+    public void Parse_CarriesTheSizeAndTheSha256Digest_OfTheChosenAsset()
+    {
+        string json = @"{
+            ""tag_name"": ""v0.700"",
+            ""assets"": [
+                { ""name"": ""KitchenDesigner-Setup-0.700-x64.exe"", ""browser_download_url"": ""u"",
+                  ""size"": 61234567, ""digest"": ""sha256:" + Sha.ToUpperInvariant() + @""" }
+            ]
+        }";
+
+        var lookup = ReleaseManifestParser.Parse(json);
+
+        Assert.AreEqual(ReleaseLookupStatus.Found, lookup.Status);
+        Assert.AreEqual(61234567L, lookup.Manifest.Size);
+        Assert.AreEqual(Sha, lookup.Manifest.Sha256, "digest из ответа GitHub нормализуется к нижнему регистру");
+    }
+
+    [Test]
+    public void Parse_WhenGitHubPublishesNoDigest_TheShaIsEmpty_AndTheSizeStays()
+    {
+        string withNull = @"{ ""tag_name"": ""v0.700"", ""assets"": [
+            { ""name"": ""KitchenDesigner-Setup-0.700-x64.exe"", ""browser_download_url"": ""u"", ""size"": 99, ""digest"": null } ] }";
+        string withoutField = @"{ ""tag_name"": ""v0.700"", ""assets"": [
+            { ""name"": ""KitchenDesigner-Setup-0.700-x64.exe"", ""browser_download_url"": ""u"", ""size"": 99 } ] }";
+
+        foreach (var json in new[] { withNull, withoutField })
+        {
+            var lookup = ReleaseManifestParser.Parse(json);
+            Assert.AreEqual(ReleaseLookupStatus.Found, lookup.Status);
+            Assert.AreEqual(string.Empty, lookup.Manifest.Sha256);
+            Assert.AreEqual(99L, lookup.Manifest.Size);
+        }
+    }
+
+    [Test]
+    public void Parse_NoSizeAndNoDigest_GivesAManifestTheFlowWillRefuse()
+    {
+        var lookup = ReleaseManifestParser.Parse(OneAsset);
+
+        Assert.AreEqual(0L, lookup.Manifest.Size);
+        Assert.AreEqual(string.Empty, lookup.Manifest.Sha256);
+        Assert.AreEqual(IntegrityMethod.None, new InstallerExpectation(lookup.Manifest.Sha256, lookup.Manifest.Size).Method);
+    }
+
+    [Test]
+    public void Parse_NoAssets_KeepsTheVersion_SoAnUpToDateAppCanStillClean()
+    {
+        var lookup = ReleaseManifestParser.Parse(@"{ ""tag_name"": ""v0.700"" }");
+
+        Assert.AreEqual(ReleaseLookupStatus.NoInstallerAsset, lookup.Status);
+        Assert.AreEqual("0.700", lookup.Version);
+    }
+
+    [Test]
+    public void Parse_EmptyBody_IsAFailure_NotANoRelease()
+    {
+        Assert.AreEqual(ReleaseLookupStatus.Failed, ReleaseManifestParser.Parse("").Status);
+        Assert.AreEqual(ReleaseLookupStatus.Failed, ReleaseManifestParser.Parse(null).Status);
+    }
+
+    [Test]
+    public void Parse_MissingTag_IsNoRelease()
+    {
+        Assert.AreEqual(ReleaseLookupStatus.NoRelease, ReleaseManifestParser.Parse(@"{ ""assets"": [] }").Status);
+    }
 }

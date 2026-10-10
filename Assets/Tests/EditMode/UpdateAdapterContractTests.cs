@@ -125,4 +125,39 @@ public class UpdateAdapterContractTests
                 + "установка пройдёт, приложение не поднимется");
         }
     }
+
+    [Test]
+    public void UpdateService_KeepsInstallersInTheOneFixedFolderUnderTheSystemTempPath()
+    {
+        var source = Source("UpdateService.cs");
+
+        StringAssert.Contains("UpdateFolderLocation.RootUnder(Path.GetTempPath())", source,
+            "путь папки обновлений один и считается в одном месте: %TEMP%/KitchenDesigner/Updates. "
+            + "Свой путь в UpdateService разошёлся бы с чисткой и со вторым запуском");
+        foreach (var file in Directory.GetFiles(UpdateDir(), "*.cs"))
+            Assert.IsFalse(File.ReadAllText(file).Contains("temporaryCachePath"),
+                Path.GetFileName(file) + ": установщики больше не лежат в temporaryCachePath приложения — "
+                + "там их не найдёт ни повторный запуск, ни чистка");
+    }
+
+    [Test]
+    public void UpdateService_BuildsExactlyOneWindow_TheOfferToUpdate_AndNoDownloadWindow()
+    {
+        var source = Source("UpdateService.cs");
+
+        Assert.AreEqual(1, Regex.Matches(source, @"AddComponent<\w+Dialog\w*>").Count,
+            "окно одно — «Доступно обновление». Окна загрузки нет: ход загрузки идёт в консоль");
+        StringAssert.Contains("AddComponent<UpdateDialogUI>", source);
+        Assert.IsFalse(Directory.GetFiles(UpdateDir(), "*Progress*").Any(),
+            "в Core/Update не должно остаться окна хода загрузки");
+    }
+
+    [Test]
+    public void UpdateService_ShutsTheDownloaderDown_WhenItIsDestroyed()
+    {
+        var source = Source("UpdateService.cs");
+
+        StringAssert.Contains("_downloader?.Dispose()", source,
+            "без этого фоновая загрузка переживает сцену и пишет в .part, когда приложение уже закрывается");
+    }
 }

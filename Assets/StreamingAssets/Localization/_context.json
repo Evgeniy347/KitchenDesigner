@@ -5733,7 +5733,7 @@
   },
   "update.available.accept": {
     "where": "Update dialog, primary button",
-    "meaning": "Download, install and relaunch the app",
+    "meaning": "Install the already downloaded update and relaunch the app",
     "maxLength": 24
   },
   "update.available.message": {
@@ -5748,48 +5748,6 @@
     "where": "Update dialog, title",
     "meaning": "A newer version can be installed",
     "maxLength": 40
-  },
-  "update.cancelled": {
-    "where": "Status bar, info after the user cancels the update download",
-    "meaning": "The update download was cancelled",
-    "maxLength": 90
-  },
-  "update.checkError": {
-    "where": "Status bar, error after an update check fails",
-    "meaning": "The update server could not be reached or answered badly",
-    "maxLength": 90
-  },
-  "update.download.message": {
-    "where": "Update download progress window, body text",
-    "meaning": "Shown while the update downloads; {0} is the version number",
-    "maxLength": 200,
-    "placeholders": {
-      "0": "see meaning"
-    }
-  },
-  "update.download.retry": {
-    "where": "Update download progress window, status line",
-    "meaning": "Download retry counter: attempt {0} of {1}",
-    "maxLength": 40,
-    "placeholders": {
-      "0": "see meaning",
-      "1": "see meaning"
-    }
-  },
-  "update.download.title": {
-    "where": "Update download progress window, title",
-    "meaning": "The new version is being downloaded and installed",
-    "maxLength": 40
-  },
-  "update.downloadError": {
-    "where": "Status bar, error after the update download fails",
-    "meaning": "Downloading the installer failed",
-    "maxLength": 90
-  },
-  "update.upToDate": {
-    "where": "Status bar, success message after an update check",
-    "meaning": "The installed version is current",
-    "maxLength": 90
   },
   "vent.tier.branch": {
     "where": "Errors window, VNT-01 message, in parentheses",

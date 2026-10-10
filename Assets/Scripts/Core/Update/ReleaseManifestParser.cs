@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KitchenDesigner.Core.Update
@@ -7,6 +8,8 @@ namespace KitchenDesigner.Core.Update
     {
         public string name = string.Empty;
         public string browser_download_url = string.Empty;
+        public long size;
+        public string digest = string.Empty;
     }
 
     [Serializable] internal sealed class GhRelease
@@ -17,16 +20,10 @@ namespace KitchenDesigner.Core.Update
 
     public static class ReleaseManifestParser
     {
-        public static bool TryParse(string json, out ReleaseManifest? manifest, out string error)
+        public static ReleaseLookup Parse(string json)
         {
-            manifest = null;
-            error = string.Empty;
-
             if (string.IsNullOrWhiteSpace(json))
-            {
-                error = "Пустой ответ сервера";
-                return false;
-            }
+                return ReleaseLookup.Failed("Пустой ответ сервера");
 
             GhRelease release;
             try
@@ -35,63 +32,37 @@ namespace KitchenDesigner.Core.Update
             }
             catch (Exception e)
             {
-                error = "Некорректный ответ: " + e.Message;
-                return false;
+                return ReleaseLookup.Failed("Некорректный ответ: " + e.Message);
             }
 
-            if (release == null || string.IsNullOrEmpty(release.tag_name))
-            {
-                error = "В ответе нет номера версии";
-                return false;
-            }
+            if (release == null) return ReleaseLookup.NoRelease(UpdateMessages.NoVersionInResponse);
+            return ReleaseAssetSelector.Select(release.tag_name, AssetsOf(release));
+        }
 
-            if (!VersionUtil.TryParse(release.tag_name, out _, out _, out _))
-            {
-                error = "Не удалось разобрать номер версии: " + release.tag_name;
-                return false;
-            }
+        public static bool TryParse(string json, out ReleaseManifest? manifest, out string error)
+        {
+            var lookup = Parse(json);
+            manifest = lookup.Manifest;
+            error = lookup.Status == ReleaseLookupStatus.Found ? string.Empty : lookup.Reason;
+            return lookup.Status == ReleaseLookupStatus.Found;
+        }
 
-            string version = release.tag_name.TrimStart('v', 'V');
-
-            GhAsset? best = null;
-            if (release.assets != null)
+        private static IReadOnlyList<ReleaseAssetInfo> AssetsOf(GhRelease release)
+        {
+            var assets = new List<ReleaseAssetInfo>();
+            if (release.assets == null) return assets;
+            foreach (var asset in release.assets)
             {
-                foreach (var a in release.assets)
+                if (asset == null) continue;
+                assets.Add(new ReleaseAssetInfo
                 {
-                    if (a == null || string.IsNullOrEmpty(a.name) ||
-                        string.IsNullOrEmpty(a.browser_download_url)) continue;
-                    if (!IsSetupAsset(a.name)) continue;
-                    if (!CarriesVersion(a.name, version)) continue;
-                    best = a;
-                    break;
-                }
+                    Name = asset.name ?? string.Empty,
+                    DownloadUrl = asset.browser_download_url ?? string.Empty,
+                    Size = asset.size,
+                    Digest = asset.digest ?? string.Empty,
+                });
             }
-
-            if (best == null)
-            {
-                error = "В релизе нет установщика x64 для версии " + version;
-                return false;
-            }
-
-            manifest = new ReleaseManifest
-            {
-                Version = version,
-                DownloadUrl = best.browser_download_url,
-                FileName = best.name,
-            };
-            return true;
-        }
-
-        private static bool IsSetupAsset(string name)
-        {
-            return name.IndexOf("Setup", StringComparison.OrdinalIgnoreCase) >= 0
-                && name.IndexOf("x64", StringComparison.OrdinalIgnoreCase) >= 0
-                && name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool CarriesVersion(string name, string version)
-        {
-            return name.IndexOf("-" + version + "-", StringComparison.Ordinal) >= 0;
+            return assets;
         }
     }
 }

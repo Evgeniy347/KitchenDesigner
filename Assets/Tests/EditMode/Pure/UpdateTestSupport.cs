@@ -134,3 +134,93 @@ internal sealed class RecordingObserver : IDownloadObserver
         return Outcome;
     }
 }
+
+internal sealed class FakeReleaseSource : IReleaseSource
+{
+    public ReleaseLookup Answer;
+    public int Fetches;
+
+    public void Fetch(Action<ReleaseLookup> done)
+    {
+        Fetches++;
+        done(Answer);
+    }
+}
+
+internal sealed class SyncInspector : IFileInspector
+{
+    private readonly IUpdateFolder _folder;
+    public readonly List<(string name, bool hash)> Calls = new List<(string, bool)>();
+    public Action<string> BeforeAnswer;
+
+    public SyncInspector(IUpdateFolder folder) => _folder = folder;
+
+    public void Inspect(string fileName, bool computeSha256, Action<FileFacts> done)
+    {
+        Calls.Add((fileName, computeSha256));
+        BeforeAnswer?.Invoke(fileName);
+        done(Sha256FileInspector.Examine(_folder.PathOf(fileName), computeSha256));
+    }
+}
+
+internal sealed class ScriptedDownloader : IPartDownloader
+{
+    private readonly IUpdateFolder _folder;
+    public readonly List<DownloadRequest> Requests = new List<DownloadRequest>();
+    public readonly Queue<byte[]> Payloads = new Queue<byte[]>();
+    public string FailWith;
+    public Action<IDownloadObserver> Script;
+
+    public ScriptedDownloader(IUpdateFolder folder) => _folder = folder;
+
+    public void Download(DownloadRequest request, IDownloadObserver observer)
+    {
+        Requests.Add(request);
+        Script?.Invoke(observer);
+        if (FailWith != null)
+        {
+            observer.OnFinished(DownloadOutcome.Failure(FailWith));
+            return;
+        }
+        var bytes = Payloads.Dequeue();
+        File.WriteAllBytes(_folder.PathOf(request.PartName), bytes);
+        observer.OnProgress(bytes.Length, bytes.Length);
+        observer.OnFinished(DownloadOutcome.Success());
+    }
+}
+
+internal sealed class RecordingConsole : IUpdateConsole
+{
+    public readonly List<(UpdateLogLevel level, string text)> Lines = new List<(UpdateLogLevel, string)>();
+
+    public void Write(UpdateLogLevel level, string text) => Lines.Add((level, text));
+
+    public IEnumerable<string> Texts => Lines.Select(l => l.text);
+}
+
+internal sealed class RecordingDialog : IUpdateDialog
+{
+    public int Shown;
+    public int Hidden;
+    public string Version;
+    public Action Accept;
+    public Action Decline;
+
+    public void ShowUpdateAvailable(string version, Action onUpdate, Action onCancel)
+    {
+        Shown++;
+        Version = version;
+        Accept = onUpdate;
+        Decline = onCancel;
+    }
+
+    public void Hide() => Hidden++;
+}
+
+internal sealed class RecordingApplier : IUpdateApplier
+{
+    public readonly List<string> Applied = new List<string>();
+
+    public void ApplyAndRelaunch(string installerPath) => Applied.Add(installerPath);
+}
+

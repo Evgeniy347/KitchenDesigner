@@ -132,7 +132,7 @@ Title, Body, Note?, PrimaryCaption, OnPrimary, SecondaryCaption? (= «Отмен
 Escape обязан передать `ModalOpen = ModalPresence.IsOpen` в свои `EscapeClaims`). Снимок окна для
 глаз — `UiCaptureStage` (PlayMode), образец `WindowChromeDiagramTests`.
 Переведены: «Инструкции проекта» (шапка+футер), все модальные окна (`DemoModeDialogUI`, `NewerVersionDialogUI`,
-`UpdateDialogUI`, `DownloadProgressUI`) и тост (T9). Остальные шапки — задачи T5–T8, T10, T11. Высота окна по содержимому — `chrome.FitHeightTo(rows.Relayout())`
+`UpdateDialogUI`; окно хода загрузки позже убрано) и тост (T9). Остальные шапки — задачи T5–T8, T10, T11. Высота окна по содержимому — `chrome.FitHeightTo(rows.Relayout())`
 до `body.Fit()`.
 
 **T4a — строки и контролы.** `FormRows(host, RowDensity.X)` — одна фабрика на все окна; колонки из

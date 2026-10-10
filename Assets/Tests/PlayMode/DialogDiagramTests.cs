@@ -86,22 +86,6 @@ public class DialogDiagramTests
     }
 
     [UnityTest]
-    public IEnumerator DownloadDialog_SavesPng()
-    {
-        _stage = new UiCaptureStage(600, 360);
-        var ui = _stage.Host.AddComponent<DownloadProgressUI>();
-        ui.Build(_stage.Canvas);
-        ui.ShowDownloading("0.2100", () => { });
-        ui.SetProgress(0.42f);
-        ui.ShowRetry(2, 3);
-        ui.SetProgress(0.42f);
-
-        yield return _stage.Capture("dialog_download.png");
-
-        Assert.IsTrue(ui.IsVisible);
-    }
-
-    [UnityTest]
     public IEnumerator DeleteConfirmDialog_Danger_SavesPng()
     {
         _stage = new UiCaptureStage(600, 300);

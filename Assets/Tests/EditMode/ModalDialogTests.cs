@@ -57,18 +57,11 @@ public class ModalDialogTests
         newer.Build(parent);
         var update = _host.AddComponent<UpdateDialogUI>();
         update.Build(parent);
-        var download = _host.AddComponent<DownloadProgressUI>();
-        download.Build(parent);
         return new List<(string, ModalDialog, System.Action)>
         {
             ("демо", demo.Dialog!, demo.Show),
             ("проект новее", newer.Dialog!, () => newer.Ask(NewerVersionStrings.Message("0.2100", "0.2092"), () => { })),
             ("обновление", update.Dialog!, () => update.ShowUpdateAvailable("0.2100", () => { }, () => { })),
-            ("загрузка", download.Dialog!, () =>
-            {
-                download.ShowDownloading("0.2100", () => { });
-                download.ShowRetry(2, 3);
-            }),
         };
     }
 
@@ -90,7 +83,7 @@ public class ModalDialogTests
         }
 
         Assert.GreaterOrEqual(Loc.Languages.Count, 10, "обход обязан видеть все языки");
-        Assert.AreEqual(4, modals.Count);
+        Assert.AreEqual(3, modals.Count);
         Assert.IsEmpty(offenders, "модальный диалог на каком-то языке собран внахлёст:\n" + string.Join("\n", offenders));
     }
 
@@ -156,22 +149,26 @@ public class ModalDialogTests
     }
 
     [Test]
-    public void DownloadModal_HasOnlyCancel_ItSitsAtTheRightEdge_AndEnterDoesNotCancelTheDownload()
+    public void ModalWithOnlyCancel_SitsAtTheRightEdge_AndEnterDoesNothing()
     {
-        var ui = _host!.AddComponent<DownloadProgressUI>();
-        ui.Build(_canvas!.transform);
+        var dialog = ModalDialog.Build(_canvas!.transform, "OnlyCancelProbe");
         int cancelled = 0;
-        ui.ShowDownloading("0.2100", () => cancelled++);
+        dialog.Show(new ModalDialogContent
+        {
+            Title = "t",
+            Body = "b",
+            SecondaryCaption = "x",
+            OnSecondary = () => cancelled++,
+        });
         Canvas.ForceUpdateCanvases();
-        var dialog = ui.Dialog!;
 
-        Assert.IsFalse(dialog.PrimaryButton.gameObject.activeSelf, "у загрузки нет основной кнопки — только «Отмена»");
+        Assert.IsFalse(dialog.PrimaryButton.gameObject.activeSelf, "у окна без основного действия нет основной кнопки — только «Отмена»");
         var cancel = RectIn(dialog.Panel, (RectTransform)dialog.SecondaryButton.transform);
         Assert.AreEqual(dialog.Panel.rect.xMax - UIStyle.ModalPad, cancel.xMax, 0.5f,
             "одинокая «Отмена» стоит у правого края, а не отступает на место скрытой основной");
 
         dialog.Confirm();
-        Assert.IsTrue(dialog.IsVisible, "Enter без основной кнопки ничего не делает: он не должен обрывать загрузку");
+        Assert.IsTrue(dialog.IsVisible, "Enter без основной кнопки ничего не делает: он не должен срабатывать как «Отмена»");
         Assert.AreEqual(0, cancelled);
         dialog.Cancel();
         Assert.AreEqual(1, cancelled);

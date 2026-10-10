@@ -132,9 +132,10 @@ system module`:
 
 - `Vector3`, `Vector2`, `Vector3Int`, `Rect`, `Bounds`, `Mathf`, `Color` are DATA and work.
 - `Debug.Log` does NOT. If a class logs, the reason it logs is a dependency: inject an
-  `Action<string>` and let the Unity-side adapter pass `Debug.Log`. `UpdateCoordinator`
-  did exactly this — and the injection turned out to be the only path by which a failure
-  reason reached anyone, which two tests now hold in place.
+  `Action<string>` (or a small interface) and let the Unity-side adapter pass `Debug.Log`.
+  `UpdateFlow` does exactly this through `IUpdateConsole` (`UnityUpdateConsole` writes
+  `Debug.Log*`) — and the injection is the only path by which a failure reason reaches anyone,
+  which `UpdateFlowTests` hold in place.
 - `JsonUtility` does not even COMPILE there: it lives in `UnityEngine.JSONSerializeModule`,
   not `CoreModule`. A class that binds JSON stays behind; split its DATA type out and move
   that instead (`ReleaseManifest` left `ReleaseManifestParser`).

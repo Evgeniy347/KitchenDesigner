@@ -104,14 +104,14 @@ public class UnityMagicMethodSignatureTests
     }
 
     [Test]
-    public void Scan_CoversRealBehaviours_AndNamesTheDownloaderAmongThem()
+    public void Scan_CoversRealBehaviours_AndNamesTheUpdateServiceAmongThem()
     {
         var behaviours = OurBehaviours().ToList();
 
         Assert.That(behaviours.Count, Is.GreaterThan(20),
             "отражение вернуло подозрительно мало MonoBehaviour — сборка сменила имя или фильтр сломан");
-        Assert.That(behaviours.Any(t => t.Name == "UnityWebRequestDownloader"), Is.True,
-            "класс, из-за которого написан этот сторож, обязан попадать в область сканирования");
+        Assert.That(behaviours.Any(t => t.Name == "UpdateService"), Is.True,
+            "поведение автообновления, живущее в плеере, обязано попадать в область сканирования");
     }
 
     private sealed class PlantedOffender

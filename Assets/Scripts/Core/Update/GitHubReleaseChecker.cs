@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 
 namespace KitchenDesigner.Core.Update
 {
-    public sealed class GitHubReleaseChecker : MonoBehaviour, IUpdateChecker
+    public sealed class GitHubReleaseChecker : MonoBehaviour, IReleaseSource
     {
         public const string ApiUrl =
             "https://api.github.com/repos/Evgeniy347/KitchenDesigner/releases/latest";
@@ -13,16 +13,15 @@ namespace KitchenDesigner.Core.Update
 
         private sealed class CheckOutcome : UpdateAttemptOutcome
         {
-            public ReleaseManifest? Manifest;
+            public ReleaseLookup? Lookup;
         }
 
-        public void Check(Action<ReleaseManifest> onSuccess, Action<string> onFailure)
+        public void Fetch(Action<ReleaseLookup> done)
         {
-            StartCoroutine(CheckRoutine(onSuccess, onFailure));
+            StartCoroutine(FetchRoutine(done));
         }
 
-        private System.Collections.IEnumerator CheckRoutine(
-            Action<ReleaseManifest> onSuccess, Action<string> onFailure)
+        private System.Collections.IEnumerator FetchRoutine(Action<ReleaseLookup> done)
         {
             var policy = UpdateRetryPolicy.ForReleaseCheck();
             var outcome = new CheckOutcome();
@@ -36,21 +35,21 @@ namespace KitchenDesigner.Core.Update
 
                 if (outcome.Succeeded)
                 {
-                    onSuccess?.Invoke(outcome.Manifest!);
+                    done?.Invoke(outcome.Lookup!);
                     yield break;
                 }
                 if (!policy.ShouldRetryAfter(attempt, outcome.Failure)) break;
             }
 
-            onFailure?.Invoke(outcome.Reason);
+            done?.Invoke(ReleaseLookup.Failed(outcome.Reason));
         }
 
         private System.Collections.IEnumerator SendOnce(CheckOutcome outcome)
         {
-            outcome.Manifest = null;
+            outcome.Lookup = null;
 
             var req = UnityWebRequest.Get(ApiUrl);
-            req.SetRequestHeader("User-Agent", "KitchenDesigner-Updater");
+            req.SetRequestHeader("User-Agent", HttpInstallerDownloader.UserAgent);
             req.SetRequestHeader("Accept", "application/vnd.github+json");
             req.timeout = _timeoutSeconds;
             yield return req.SendWebRequest();
@@ -66,12 +65,8 @@ namespace KitchenDesigner.Core.Update
                 outcome.Fail($"HTTP {code}: {error}", UpdateAttemptFailure.FromResponse(code));
                 yield break;
             }
-            if (!ReleaseManifestParser.TryParse(body, out var manifest, out var parseError))
-            {
-                outcome.Fail(parseError, UpdateAttemptFailure.FromResponse(code));
-                yield break;
-            }
-            outcome.Manifest = manifest;
+
+            outcome.Lookup = ReleaseManifestParser.Parse(body);
             outcome.Succeed();
         }
     }

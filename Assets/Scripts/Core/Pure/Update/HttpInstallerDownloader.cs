@@ -10,6 +10,7 @@ namespace KitchenDesigner.Core.Update
     {
         public const int BufferSize = 81920;
         public const string UserAgent = "KitchenDesigner-Updater";
+        public const float DefaultIdleSeconds = 30f;
 
         private readonly HttpClient _http;
         private readonly IUpdateFolder _folder;

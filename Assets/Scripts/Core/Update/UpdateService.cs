@@ -1,6 +1,12 @@
 using System.Collections;
 using UnityEngine;
 using KitchenDesigner.Core.UI;
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Threading;
+#endif
 
 namespace KitchenDesigner.Core.Update
 {
@@ -10,7 +16,11 @@ namespace KitchenDesigner.Core.Update
 
         [SerializeField] private float _startupDelaySeconds = 2f;
 
-        private UpdateCoordinator? _coordinator;
+        private UpdateFlow? _flow;
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+        private HttpClient? _http;
+        private HttpInstallerDownloader? _downloader;
+#endif
 
         private void Start()
         {
@@ -30,34 +40,45 @@ namespace KitchenDesigner.Core.Update
                 return;
             }
 
+            var mainThread = gameObject.AddComponent<MainThreadQueue>();
             var checker = gameObject.AddComponent<GitHubReleaseChecker>();
-            var downloader = gameObject.AddComponent<UnityWebRequestDownloader>();
-            var applier = new InnoUpdateApplier();
-            var status = new StatusBarSink();
+            var folder = new FileSystemUpdateFolder(UpdateFolderLocation.RootUnder(Path.GetTempPath()));
+
+            _http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
+            _downloader = new HttpInstallerDownloader(_http, folder, mainThread,
+                UpdateRetryPolicy.ForInstallerDownload(),
+                TimeSpan.FromSeconds(HttpInstallerDownloader.DefaultIdleSeconds));
 
             var updateGo = new GameObject("UpdateDialog");
             updateGo.transform.SetParent(canvas.transform, false);
             var updateDialog = updateGo.AddComponent<UpdateDialogUI>();
             updateDialog.Build(canvas.transform);
 
-            var downloadGo = new GameObject("DownloadProgress");
-            downloadGo.transform.SetParent(canvas.transform, false);
-            var downloadDialog = downloadGo.AddComponent<DownloadProgressUI>();
-            downloadDialog.Build(canvas.transform);
-
-            _coordinator = new UpdateCoordinator(
-                checker, downloader, applier, status, updateDialog, downloadDialog,
-                BuildInfo.Version, () => Application.temporaryCachePath,
-                message => Debug.Log(message));
+            _flow = new UpdateFlow(
+                new UpdatePlanner(BuildInfo.Version),
+                checker,
+                folder,
+                new Sha256FileInspector(folder, mainThread),
+                _downloader,
+                new UnityUpdateConsole(),
+                updateDialog,
+                new InnoUpdateApplier(),
+                () => Time.realtimeSinceStartup);
 
             StartCoroutine(CheckAfterDelay());
+        }
+
+        private void OnDestroy()
+        {
+            _downloader?.Dispose();
+            _http?.Dispose();
         }
 #endif
 
         private IEnumerator CheckAfterDelay()
         {
             yield return new WaitForSecondsRealtime(_startupDelaySeconds);
-            if (_coordinator != null) _coordinator.CheckForUpdates();
+            if (_flow != null) _flow.Start();
         }
     }
 }

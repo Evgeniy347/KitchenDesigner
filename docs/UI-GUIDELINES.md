@@ -155,8 +155,8 @@ Info — фиксация и видимость как тумблеры в па�
   Сборка — `ModalDialog.Build(parent, name)` один раз и `Show(new ModalDialogContent { … })` на
   каждый показ: высота по содержимому (`ModalDialogLayout`), Esc забирает диалог первым
   (`EscapeOwner.ModalDialog`). На нём все модальные окна: `DemoModeDialogUI`, `NewerVersionDialogUI`,
-  `UpdateDialogUI`, `DownloadProgressUI` (у него одна «Отмена», вставка `Extra` под текстом — полоса
-  хода `ProgressBar`; Enter без основной кнопки не делает ничего). Новое подтверждение — тоже оно,
+  `UpdateDialogUI`. Окна «хода загрузки» нет: ход обновления идёт строками консоли (клавиша «ё»),
+  модальное окно одно — предложение обновиться, когда файл уже загружен и проверен. Новое подтверждение — тоже оно,
   своих подложек и панелей не строят.
 - **Тост** (`ToastNotification`, `ToastView`): подложка `NavBg`, полоса уровня 3 px + значок + текст +
   действие ссылкой `AccentText` + ×; над строкой состояния по центру (bottom `StatusBarH + Space5`).
