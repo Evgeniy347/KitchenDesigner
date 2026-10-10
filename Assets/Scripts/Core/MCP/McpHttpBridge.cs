@@ -31,7 +31,8 @@ namespace KitchenDesigner.Core.MCP
         {
             DontDestroyOnLoad(gameObject);
             _handler = new McpCommandHandler();
-            _router = new McpRpcRouter(DispatchOnMainThread, Application.version);
+            McpProfileStatus.LogStartupStatus();
+            _router = new McpRpcRouter(DispatchOnMainThread, Application.version, McpProfileStatus.Current);
             _port = McpBridgeStatus.ResolvePort(_port);
             McpBridgeStatus.Report(_port, false);
             McpSaveDirectoryStatus.LogStartupStatus();

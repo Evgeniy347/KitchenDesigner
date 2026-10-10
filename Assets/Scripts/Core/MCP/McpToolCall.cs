@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using KitchenDesigner.Core.MCP.Contract;
@@ -10,16 +11,18 @@ namespace KitchenDesigner.Core.MCP
         public const int TimeoutSeconds = 30;
 
         private readonly Func<McpRequest, McpResponse> _dispatch;
+        private readonly McpToolProfile _profile;
 
-        public McpToolCall(Func<McpRequest, McpResponse> dispatch)
+        public McpToolCall(Func<McpRequest, McpResponse> dispatch, McpToolProfile profile = McpToolProfile.Full)
         {
             _dispatch = dispatch;
+            _profile = profile;
         }
 
         public JObject Invoke(McpToolDef tool, JObject arguments, string requestId)
         {
             if (tool.StaticText)
-                return TextContent(GuideText(arguments));
+                return TextContent(GuideText(arguments, McpGuideTexts.TopicsFor(_profile)));
 
             var wire = new JObject();
             var rename = McpJsonSchema.RenameTable(tool);
@@ -61,16 +64,16 @@ namespace KitchenDesigner.Core.MCP
             return TextContent(McpJson.Serialize(response.data ?? new JObject()));
         }
 
-        private static string GuideText(JObject arguments)
+        private static string GuideText(JObject arguments, IReadOnlyDictionary<string, string> topics)
         {
             var requested = arguments["topic"];
             if (requested != null && requested.Type == JTokenType.String)
             {
                 var topic = requested.Value<string>();
-                if (topic != null && McpGuideTexts.Topics.TryGetValue(topic, out var text))
+                if (topic != null && topics.TryGetValue(topic, out var text))
                     return text;
             }
-            return McpGuideTexts.Topics[McpGuideTexts.DefaultTopic];
+            return topics[McpGuideTexts.DefaultTopic];
         }
 
         private static string FailureMessage(object? data)

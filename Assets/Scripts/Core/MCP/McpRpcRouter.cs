@@ -26,11 +26,14 @@ namespace KitchenDesigner.Core.MCP
         private readonly McpToolCall _toolCall;
         private readonly string _serverVersion;
         private readonly JsonSerializer _serializer;
+        private readonly McpToolProfile _profile;
         private Action<string>? _noteMethod;
 
-        public McpRpcRouter(Func<McpRequest, McpResponse> dispatch, string serverVersion)
+        public McpRpcRouter(Func<McpRequest, McpResponse> dispatch, string serverVersion,
+            McpToolProfile profile = McpToolProfile.Full)
         {
-            _toolCall = new McpToolCall(dispatch);
+            _profile = profile;
+            _toolCall = new McpToolCall(dispatch, profile);
             _serverVersion = serverVersion;
             _serializer = JsonSerializer.Create(McpJson.Settings);
         }
@@ -121,7 +124,7 @@ namespace KitchenDesigner.Core.MCP
                     ["name"] = ServerName,
                     ["version"] = _serverVersion
                 },
-                ["instructions"] = McpGuideTexts.Instructions
+                ["instructions"] = McpGuideTexts.InstructionsFor(_profile)
             };
         }
 
@@ -138,18 +141,30 @@ namespace KitchenDesigner.Core.MCP
         private JObject ToolsList()
         {
             var tools = new JArray();
-            foreach (var tool in McpToolRegistry.Tools)
-            {
-                tools.Add(new JObject
-                {
-                    ["name"] = tool.Name,
-                    ["title"] = tool.Title,
-                    ["description"] = tool.Description,
-                    ["inputSchema"] = JToken.FromObject(McpJsonSchema.ForTool(tool), _serializer),
-                    ["annotations"] = JToken.FromObject(McpJsonSchema.Annotations(tool), _serializer)
-                });
-            }
+            foreach (var tool in McpToolProfiles.Select(McpToolRegistry.Tools, _profile))
+                tools.Add(Described(tool));
             return new JObject { ["tools"] = tools };
+        }
+
+        private JObject Described(McpToolDef tool)
+        {
+            var entry = new JObject
+            {
+                ["name"] = tool.Name,
+                ["title"] = tool.Title,
+                ["description"] = tool.Description,
+                ["inputSchema"] = JToken.FromObject(McpJsonSchema.ForTool(tool), _serializer),
+                ["annotations"] = JToken.FromObject(McpJsonSchema.Annotations(tool), _serializer)
+            };
+            if (_profile == McpToolProfile.Simple && tool.StaticText) NarrowTheGuide(entry);
+            return entry;
+        }
+
+        private static void NarrowTheGuide(JObject entry)
+        {
+            entry["description"] = McpSimpleGuideTexts.GuideDescription;
+            if (entry["inputSchema"]?["properties"]?["topic"] is JObject topic)
+                topic["enum"] = new JArray(McpSimpleGuideTexts.TopicWords);
         }
 
         private JObject ToolsCall(JToken id, JObject parameters)
